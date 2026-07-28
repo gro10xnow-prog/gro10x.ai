@@ -587,156 +587,237 @@ router.post('/webhooks/telegram', async (req, res) => {
   const nowTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   const update = req.body || {};
   const message = update.message || update.edited_message;
+  const callbackQuery = update.callback_query;
+  const isTeamBot = req.query.bot === 'team';
 
-  if (message && message.text) {
-    const chatId = message.chat.id;
-    const msgText = message.text.trim();
-    const senderName = message.from?.first_name || 'Telegram User';
-    const isTeamBot = req.query.bot === 'team';
+  const teamToken = process.env.TEAM_BOT_TOKEN || '8874232130:AAEs5JDOEEX9kIN9Z_V_k0UQp2lBao5MHLQ';
+  const clientToken = process.env.CLIENT_BOT_TOKEN || '8964646505:AAEBVLDRqG0JdiTSSl6uK08UCQk0ZNsmYMU';
+  const botToken = isTeamBot ? teamToken : clientToken;
 
-    const teamToken = process.env.TEAM_BOT_TOKEN || '8874232130:AAEs5JDOEEX9kIN9Z_V_k0UQp2lBao5MHLQ';
-    const clientToken = process.env.CLIENT_BOT_TOKEN || '8964646505:AAEBVLDRqG0JdiTSSl6uK08UCQk0ZNsmYMU';
-    const botToken = isTeamBot ? teamToken : clientToken;
+  // Handle Callback Queries from Inline Keyboards (Module B3.3)
+  if (callbackQuery) {
+    const queryId = callbackQuery.id;
+    const data = callbackQuery.data;
 
-    let replyText = '';
+    let callbackAnswerText = 'Action processed!';
 
-    if (isTeamBot) {
-      // Purple Man (Team Bot) Logic
-      if (msgText.startsWith('/start') || msgText.startsWith('/help')) {
-        replyText = `🤖 *Welcome to Purple Man (Crew Ops Bot)!*\n\n` +
-          `Commands for Purplebot Agency Crew:\n` +
-          `• /clockin - Log Studio Clock-In\n` +
-          `• /clockout - Log Studio Clock-Out\n` +
-          `• /myearnings - Check monthly salary & shoot commissions\n` +
-          `• /mybookings - View assigned shoot schedule\n` +
-          `• /pair - Pair account with employee code or phone (+8801708459008)`;
-      } else if (msgText.startsWith('/clockin')) {
-        const emp = (db.team || []).find(e => e.telegramId == chatId || (e.phone || '').includes('1708459008')) || db.team[0];
-        let record = (db.attendance || []).find(a => a.name === emp.name);
-        if (record) {
-          record.status = 'In Studio';
-          record.clockInTime = nowTime;
-        } else {
-          db.attendance = db.attendance || [];
-          db.attendance.push({
-            employeeId: emp.id || 'EMP-007',
-            name: emp.name,
-            status: 'In Studio',
-            clockInTime: nowTime,
-            location: 'Gulshan Studio'
-          });
-        }
+    if (data.startsWith('accept_shoot:')) {
+      const taskId = data.split(':')[1];
+      const task = (db.tasks || []).find(t => t.id === taskId);
+      if (task) {
+        task.stage = 'Confirmed';
         writeDB(db);
-        broadcast('attendance_update', db.attendance);
-        replyText = `✅ *Clock In Recorded by Purple Man!*\nStatus set to *In Studio* at ${nowTime}. Dashboard updated.`;
-      } else if (msgText.startsWith('/clockout')) {
-        const emp = (db.team || []).find(e => e.telegramId == chatId || (e.phone || '').includes('1708459008')) || db.team[0];
-        let record = (db.attendance || []).find(a => a.name === emp.name);
-        if (record) record.status = 'Clocked Out';
-        writeDB(db);
-        broadcast('attendance_update', db.attendance);
-        replyText = `🚪 *Clock Out Recorded by Purple Man!*\nStatus set to *Clocked Out*. Have a great evening!`;
-      } else if (msgText.startsWith('/myearnings')) {
-        const emp = (db.team || []).find(e => e.telegramId == chatId || (e.phone || '').includes('1708459008')) || db.team[0];
-        const basePay = emp.baseSalary || 85000;
-        const commissions = emp.earnedCommissions || 15000;
-        replyText = `💰 *Salary & Commission Breakdown for ${emp.name}*\n\n` +
-          `• Role: ${emp.role}\n` +
-          `• Base Pay: BDT ${basePay.toLocaleString()}\n` +
-          `• Shoot Commissions: BDT ${commissions.toLocaleString()}\n` +
-          `-----------------------------------------\n` +
-          `*Total Monthly Pay: BDT ${(basePay + commissions).toLocaleString()}*`;
-      } else if (msgText.startsWith('/mybookings')) {
-        const emp = (db.team || []).find(e => e.telegramId == chatId || (e.phone || '').includes('1708459008')) || db.team[0];
-        const tasks = (db.tasks || []).filter(t => (t.assignee || '').toLowerCase().includes((emp.name || '').split(' ')[0].toLowerCase()));
-        replyText = `📅 *Assigned Shoots & Tasks for ${emp.name}:*\n\n`;
-        if (tasks.length === 0) replyText += `No active shoot assignments found.`;
-        else tasks.forEach((t, i) => { replyText += `${i + 1}. *${t.title}*\n   Client: ${t.client}\n   Stage: ${t.stage}\n   Due: ${t.dueDate}\n\n`; });
-      } else if (msgText.startsWith('/pair')) {
-        const inputVal = msgText.split(' ')[1] || '+8801708459008';
-        const cleanPhoneInput = inputVal.replace(/[^0-9+]/g, '');
-        const matchingStaff = (db.team || []).find(t => 
-          (t.emp_code || t.id || '').toUpperCase() === inputVal.toUpperCase() ||
-          (t.phone || '').replace(/[^0-9+]/g, '').includes(cleanPhoneInput)
-        ) || db.team[0];
-
-        if (matchingStaff) {
-          matchingStaff.telegramId = String(chatId);
-          matchingStaff.phoneVerified = true;
-          writeDB(db);
-          broadcast('team_update', db.team);
-          replyText = `✅ *Telegram Account & Phone Paired Successfully!*\n\n` +
-            `👤 Staff Name: *${matchingStaff.name}*\n` +
-            `🛡️ Role: *${matchingStaff.role}*\n` +
-            `📱 Verified Phone: *${matchingStaff.phone}*\n` +
-            `🆔 Emp Code: \`${matchingStaff.emp_code || matchingStaff.id}\`\n` +
-            `💬 Telegram Chat ID: \`${chatId}\``;
-        } else {
-          replyText = `⚠️ Could not find staff profile with code or phone \`${inputVal}\` in agency database.`;
-        }
-      } else {
-        replyText = `🤖 *Purple Man Bot*: Received "${msgText}". Type /help to see crew commands!`;
+        broadcast('task_update', db.tasks);
+        callbackAnswerText = `Shoot assignment ${taskId} accepted!`;
       }
-    } else {
-      // Purple Bot (B2B Client Bot) Logic
-      if (msgText.startsWith('/start') || msgText.startsWith('/help')) {
-        replyText = `🤖 *Welcome to Purple Bot (Client B2B Assistant)!*\n\n` +
-          `We assist agency clients with campaign status, deliverables & billing:\n` +
-          `• /services - Browse agency packages & pricing\n` +
-          `• /portfolio - View video & TVC campaign reel\n` +
-          `• /review - Access Review Room V2 deliverable cuts\n` +
-          `• /invoices - View invoice status & payment instructions`;
-      } else if (msgText.startsWith('/services')) {
-        replyText = `🎨 *Purplebot Digital Core Services Catalog:*\n\n`;
-        (db.services || []).filter(s => s.public).forEach(s => {
-          replyText += `• *${s.title}* (${s.category})\n  Rate: ${s.price}\n  ${s.description}\n\n`;
-        });
-      } else if (msgText.startsWith('/portfolio')) {
-        replyText = `📁 *Purplebot Digital Portfolio Showcase*\n\n` +
-          `Explore our award-winning campaign portfolio:\n` +
-          `🔗 https://purpleos-iota.vercel.app/`;
-      } else if (msgText.startsWith('/review')) {
-        replyText = `🎬 *Review Room V2 Client Portal*\n\n` +
-          `Stream & approve your campaign video cuts in 4K:\n` +
-          `🔗 https://purpleos-iota.vercel.app/partners`;
-      } else if (msgText.startsWith('/invoices')) {
-        replyText = `💳 *Invoice & Payment Verification Portal*\n\n` +
-          `Verify & pay outstanding invoices via Bkash/Nagad or Bank Wire:\n` +
-          `🔗 https://purpleos-iota.vercel.app/partners`;
-      } else {
-        replyText = `👋 Hello! Thanks for contacting Purplebot Digital. Type /services to explore our packages or /review to check your campaign cuts.`;
+    } else if (data.startsWith('approve_cut:')) {
+      const reviewId = data.split(':')[1];
+      const review = (db.reviews || []).find(r => r.id === reviewId || r.reviewId === reviewId);
+      if (review) {
+        review.status = 'Approved';
+        writeDB(db);
+        broadcast('review_update', db.reviews);
+        callbackAnswerText = `Cut approved! Commercial invoice generated.`;
       }
     }
 
-    // Send HTTP POST response back to Telegram API with WebApp buttons
     try {
-      const inlineKeyboard = isTeamBot ? [
-        [{ text: '📱 Open Crew Mini App', web_app: { url: 'https://purpleos-iota.vercel.app/team-miniapp' } }]
-      ] : [
-        [{ text: '🎬 Open 4K Review Room Mini App', web_app: { url: 'https://purpleos-iota.vercel.app/client-miniapp' } }]
-      ];
+      await fetch(`https://api.telegram.org/bot${botToken}/answerCallbackQuery`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ callback_query_id: queryId, text: callbackAnswerText })
+      });
+    } catch (err) { console.error('Callback query error:', err); }
+
+    return res.json({ success: true });
+  }
+
+  // Handle Incoming Text, Contact, or Location Messages
+  if (message) {
+    const chatId = message.chat.id;
+    const senderName = message.from?.first_name || 'Telegram User';
+    let replyText = '';
+    let replyMarkup = null;
+
+    // Module B3.1: 1-Tap Native Contact Sharing Handler
+    if (message.contact) {
+      const phoneNum = message.contact.phone_number.replace(/[^0-9+]/g, '');
+      const matchingStaff = (db.team || []).find(t => (t.phone || '').replace(/[^0-9+]/g, '').includes(phoneNum));
+      const matchingClient = (db.clients || []).find(c => (c.phone || '').replace(/[^0-9+]/g, '').includes(phoneNum));
+
+      if (matchingStaff) {
+        matchingStaff.telegramId = String(chatId);
+        matchingStaff.phoneVerified = true;
+        writeDB(db);
+        broadcast('team_update', db.team);
+        replyText = `✅ *Verified Phone Paired by Purple Man!*\n\n` +
+          `👤 Staff Name: *${matchingStaff.name}*\n` +
+          `🛡️ Role: *${matchingStaff.role}*\n` +
+          `📱 Verified Phone: *${matchingStaff.phone}*\n` +
+          `🆔 Emp Code: \`${matchingStaff.emp_code || matchingStaff.id}\``;
+      } else if (matchingClient) {
+        matchingClient.telegramId = String(chatId);
+        writeDB(db);
+        broadcast('client_update', db.clients);
+        replyText = `✅ *Client Partner Phone Verified by Purple Bot!*\n\n` +
+          `🏢 Company: *${matchingClient.name}*\n` +
+          `📱 Phone: *${matchingClient.phone}*\n` +
+          `🆔 Client Code: \`${matchingClient.clientCode || matchingClient.id}\``;
+      } else {
+        replyText = `⚠️ Phone number \`${phoneNum}\` verified but not matched in agency CRM database.`;
+      }
+    }
+    // Module B3.2: 1-Tap Native GPS Location Handler
+    else if (message.location) {
+      const lat = message.location.latitude;
+      const lon = message.location.longitude;
+      
+      // Gulshan Studio Coordinates: 23.7925° N, 90.4078° E
+      const studioLat = 23.7925;
+      const studioLon = 90.4078;
+      const distMeters = Math.round(Math.sqrt(Math.pow((lat - studioLat)*111000, 2) + Math.pow((lon - studioLon)*111000, 2)));
+
+      const emp = (db.team || []).find(e => e.telegramId == chatId) || db.team[0];
+      let record = (db.attendance || []).find(a => a.name === emp.name);
+      if (record) {
+        record.status = 'In Studio';
+        record.clockInTime = nowTime;
+        record.locationVerified = `Verified GPS (${distMeters}m from Gulshan Studio)`;
+      } else {
+        db.attendance = db.attendance || [];
+        db.attendance.push({
+          employeeId: emp.id || 'EMP-007',
+          name: emp.name,
+          status: 'In Studio',
+          clockInTime: nowTime,
+          location: `Gulshan Studio (${distMeters}m distance)`
+        });
+      }
+      writeDB(db);
+      broadcast('attendance_update', db.attendance);
+
+      replyText = `📍 *GPS Location Verified by Purple Man!*\n\n` +
+        `👤 Staff: *${emp.name}*\n` +
+        `🌐 Geofence: *Gulshan Studio* (${distMeters}m away)\n` +
+        `⏱️ Clock-In Time: *${nowTime}*\n` +
+        `🟢 Status set to *In Studio*.`;
+    }
+    // Text Commands
+    else if (message.text) {
+      const msgText = message.text.trim();
+
+      if (isTeamBot) {
+        if (msgText.startsWith('/start') || msgText.startsWith('/help')) {
+          replyText = `🤖 *Welcome to Purple Man (Crew Ops Bot)!*\n\n` +
+            `Use the interactive buttons below or commands:\n` +
+            `• /clockin - Log Studio Clock-In\n` +
+            `• /clockout - Log Studio Clock-Out\n` +
+            `• /myearnings - Check monthly salary\n` +
+            `• /pair - Pair verified phone number`;
+          
+          replyMarkup = {
+            keyboard: [
+              [{ text: '📱 Share Verified Phone Number', request_contact: true }],
+              [{ text: '📍 Share GPS Location for Clock-In', request_location: true }]
+            ],
+            resize_keyboard: true
+          };
+        } else if (msgText.startsWith('/clockin')) {
+          replyText = `📍 Please tap **Share GPS Location for Clock-In** below to log verified attendance!`;
+          replyMarkup = {
+            keyboard: [[{ text: '📍 Share GPS Location for Clock-In', request_location: true }]],
+            resize_keyboard: true,
+            one_time_keyboard: true
+          };
+        } else if (msgText.startsWith('/clockout')) {
+          const emp = (db.team || []).find(e => e.telegramId == chatId) || db.team[0];
+          let record = (db.attendance || []).find(a => a.name === emp.name);
+          if (record) record.status = 'Clocked Out';
+          writeDB(db);
+          broadcast('attendance_update', db.attendance);
+          replyText = `🚪 *Clock Out Recorded by Purple Man!*\nStatus set to *Clocked Out*.`;
+        } else if (msgText.startsWith('/myearnings')) {
+          const emp = (db.team || []).find(e => e.telegramId == chatId) || db.team[0];
+          const basePay = emp.baseSalary || 85000;
+          const commissions = emp.earnedCommissions || 15000;
+          replyText = `💰 *Salary & Commission Breakdown for ${emp.name}*\n\n` +
+            `• Base Pay: BDT ${basePay.toLocaleString()}\n` +
+            `• Shoot Commissions: BDT ${commissions.toLocaleString()}\n` +
+            `*Total Monthly Pay: BDT ${(basePay + commissions).toLocaleString()}*`;
+        } else if (msgText.startsWith('/pair')) {
+          replyText = `📱 Please tap **Share Verified Phone Number** below to pair your profile!`;
+          replyMarkup = {
+            keyboard: [[{ text: '📱 Share Verified Phone Number', request_contact: true }]],
+            resize_keyboard: true,
+            one_time_keyboard: true
+          };
+        } else {
+          replyText = `🤖 *Purple Man Bot*: Type /help to see crew options!`;
+        }
+      } else {
+        // Client Bot (Purple Bot)
+        if (msgText.startsWith('/start') || msgText.startsWith('/help')) {
+          replyText = `🤖 *Welcome to Purple Bot (Client B2B Assistant)!*\n\n` +
+            `• /services - Browse agency packages & pricing\n` +
+            `• /portfolio - View video & TVC campaign reel\n` +
+            `• /review - Access Review Room V2 deliverable cuts\n` +
+            `• /invoices - View invoice status & billing`;
+          
+          replyMarkup = {
+            keyboard: [[{ text: '📱 Share Verified Phone Number', request_contact: true }]],
+            resize_keyboard: true
+          };
+        } else if (msgText.startsWith('/services')) {
+          replyText = `🎨 *Purplebot Digital Core Services Catalog:*\n\n`;
+          (db.services || []).filter(s => s.public).forEach(s => {
+            replyText += `• *${s.title}* (${s.category})\n  Rate: ${s.price}\n  ${s.description}\n\n`;
+          });
+        } else if (msgText.startsWith('/portfolio')) {
+          replyText = `📁 *Purplebot Digital Portfolio Showcase*\n\n🔗 https://purpleos-iota.vercel.app/`;
+        } else if (msgText.startsWith('/review')) {
+          replyText = `🎬 *Review Room V2 Client Portal*\n\n🔗 https://purpleos-iota.vercel.app/partners`;
+        } else if (msgText.startsWith('/invoices')) {
+          replyText = `💳 *Invoice Billing Portal*\n\n🔗 https://purpleos-iota.vercel.app/partners`;
+        } else {
+          replyText = `👋 Hello! Type /services to explore packages or /review to check campaign cuts.`;
+        }
+      }
+    }
+
+    // Default inline keyboard for WebApp
+    const inlineKeyboard = isTeamBot ? [
+      [{ text: '📱 Open Crew Mini App', web_app: { url: 'https://purpleos-iota.vercel.app/team-miniapp' } }]
+    ] : [
+      [{ text: '🎬 Open 4K Review Room Mini App', web_app: { url: 'https://purpleos-iota.vercel.app/client-miniapp' } }]
+    ];
+
+    try {
+      const payload = {
+        chat_id: chatId,
+        text: replyText,
+        parse_mode: 'Markdown'
+      };
+      if (replyMarkup) {
+        payload.reply_markup = replyMarkup;
+      } else {
+        payload.reply_markup = { inline_keyboard: inlineKeyboard };
+      }
 
       await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          chat_id: chatId,
-          text: replyText,
-          parse_mode: 'Markdown',
-          reply_markup: { inline_keyboard: inlineKeyboard }
-        })
+        body: JSON.stringify(payload)
       });
     } catch (sendErr) {
       console.error('Error sending Telegram webhook response:', sendErr);
     }
 
-    // Add webhook log entry
     const newLog = {
       id: `WHK-${Date.now()}`,
       channel: isTeamBot ? 'Telegram (Purple Man)' : 'Telegram (Purple Bot)',
       type: 'inbound_update',
       sender: senderName,
-      payload: msgText,
+      payload: message.text || (message.contact ? 'Contact Shared' : 'Location Shared'),
       status: '200 OK',
       timestamp: nowTime
     };
