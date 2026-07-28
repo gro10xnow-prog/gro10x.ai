@@ -151,6 +151,19 @@
       "permanentPassword": "MyNewPermPassword2026!",
       "telegramId": "87654321",
       "phoneVerified": true
+    },
+    {
+      "id": "EMP-007",
+      "emp_code": "EMP-007",
+      "name": "Arman Test Director",
+      "email": "teamtest@purplebot.digital",
+      "phone": "+8801708459008",
+      "role": "Lead Director / Operations",
+      "accessLevel": "Director / Manager",
+      "department": "Management",
+      "baseSalary": 85000,
+      "mustResetPassword": false,
+      "status": "In Studio"
     }
   ],
   "botConfig": {
@@ -200,7 +213,20 @@
       "clientByokEnabled": true
     }
   },
-  "clients": [],
+  "clients": [
+    {
+      "id": "CLT-009",
+      "clientCode": "CLT-009",
+      "name": "Test Brand Client",
+      "contactPerson": "Client Partner Lead",
+      "email": "clienttest@purplebot.digital",
+      "phone": "+8801889825025",
+      "tier": "Enterprise Retainer",
+      "monthlyRetainer": ",500 / month",
+      "status": "Active Retainer",
+      "onboardedDate": "2026-07-28"
+    }
+  ],
   "tasks": [],
   "reviews": [],
   "invoices": [
