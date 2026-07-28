@@ -1,0 +1,224 @@
+{
+  "services": [
+    {
+      "id": "SRV-001",
+      "title": "Social Media Retainer & Content Hub",
+      "category": "Digital & Content Marketing",
+      "price": "$1,500 / month",
+      "description": "Full end-to-end strategy, content calendar, graphic post design, copy, community management, and monthly performance report.",
+      "includedFeatures": [
+        "30 Visual Assets",
+        "Community Response SLA < 15m",
+        "Monthly Analytics Matrix"
+      ],
+      "public": true
+    },
+    {
+      "id": "SRV-002",
+      "title": "Short-Form Video & Reels Production",
+      "category": "AV Production",
+      "price": "$800 / package (10 Reels)",
+      "description": "Trend-driven short video creation tailored for TikTok, IG Reels, and FB Shorts including script, shoot, and motion edit.",
+      "includedFeatures": [
+        "1080x1920 Vertical Delivery",
+        "Color Grading & Sound FX",
+        "Licensed Music Track"
+      ],
+      "public": true
+    },
+    {
+      "id": "SRV-003",
+      "title": "TVC & OVC Commercial Production",
+      "category": "AV Production",
+      "price": "$3,500 / project",
+      "description": "High-production video commercial with creative storyboard, director, cinema crew, talent casting, and master edit.",
+      "includedFeatures": [
+        "4K Master Render",
+        "Voiceover & Audio Mix",
+        "Color Grading"
+      ],
+      "public": true
+    },
+    {
+      "id": "SRV-004",
+      "title": "360-Degree Brand Identity System",
+      "category": "Branding & Graphic Design",
+      "price": "$1,200 / project",
+      "description": "Complete corporate identity system including logo design, color palette, brand guidelines book, merchandise, and POSM templates.",
+      "includedFeatures": [
+        "Vector Source Files",
+        "Brand Book PDF",
+        "Print Production Ready"
+      ],
+      "public": true
+    },
+    {
+      "id": "SRV-005",
+      "title": "Custom Website & Portal Development",
+      "category": "Website & Tech Solutions",
+      "price": "$2,500 / project",
+      "description": "Responsive high-performance website or client portal built with modern web tech, SEO optimizations, and CMS.",
+      "includedFeatures": [
+        "Responsive UI/UX",
+        "CMS Panel Integration",
+        "SEO Architecture"
+      ],
+      "public": false
+    }
+  ],
+  "team": [
+    {
+      "id": "EMP-001",
+      "name": "Mahmudul Hasan",
+      "role": "Agency Director / Owner",
+      "department": "Management",
+      "telegramId": "12345678",
+      "phone": "+8801711019550",
+      "baseSalary": 150000,
+      "commissionRate": 0,
+      "earnedCommissions": 0,
+      "status": "In Studio",
+      "activeBookings": 0
+    },
+    {
+      "id": "EMP-002",
+      "name": "Farhan Ahmed",
+      "role": "Lead Cinematographer & Director",
+      "department": "AV Production",
+      "telegramId": "87654321",
+      "phone": "+8801712345678",
+      "baseSalary": 65000,
+      "commissionRate": 5,
+      "earnedCommissions": 12500,
+      "status": "On Field Shoot",
+      "activeBookings": 3
+    },
+    {
+      "id": "EMP-003",
+      "name": "Sabrin Akhtar",
+      "role": "Senior Motion Designer & Editor",
+      "department": "Post Production",
+      "telegramId": "45678912",
+      "phone": "+8801812345678",
+      "baseSalary": 55000,
+      "commissionRate": 3,
+      "earnedCommissions": 8400,
+      "status": "In Studio",
+      "activeBookings": 4
+    },
+    {
+      "id": "EMP-004",
+      "name": "Raihan Kabir",
+      "role": "Brand Identity Designer",
+      "department": "Graphic Design",
+      "telegramId": "98765432",
+      "phone": "+8801912345678",
+      "baseSalary": 48000,
+      "commissionRate": 2.5,
+      "earnedCommissions": 4500,
+      "status": "In Studio",
+      "activeBookings": 2
+    },
+    {
+      "id": "EMP-005",
+      "name": "Naimur Rahman",
+      "role": "Client Services & Account Lead",
+      "department": "Client Management",
+      "telegramId": "34567890",
+      "phone": "+8801612345678",
+      "baseSalary": 50000,
+      "commissionRate": 2,
+      "earnedCommissions": 6000,
+      "status": "In Studio",
+      "activeBookings": 5
+    }
+  ],
+  "botConfig": {
+    "clientBot": {
+      "name": "Purplebot Client Assistant",
+      "persona": "You are Purplebot, an AI agency assistant for Purplebot Digital. You help prospective clients book services, check invoice status, and view creative portfolios.",
+      "tone": "Empathetic & Creative",
+      "greeting": "Welcome to Purplebot Digital Agency! 🚀 How can we assist your brand today?",
+      "fallback": "I'm not sure about that specific request. Let me connect you with an Account Lead right away!"
+    },
+    "teamBot": {
+      "name": "Purplebot Crew Operations Bot",
+      "persona": "You are Purplebot Ops, an automated dispatch bot for shoot crews and video editors. You handle shoot assignments, earnings logs, and time tracking.",
+      "tone": "Fast & Casual",
+      "greeting": "Purplebot Ops Active! Type /mybookings to check your shoot schedule or /myearnings for payroll details.",
+      "fallback": "Command not recognized. Type /help to see available crew commands."
+    },
+    "knowledgeBase": [
+      {
+        "id": "KB-1",
+        "question": "What are your standard turnaround times for short-form Reels?",
+        "answer": "Our standard delivery for a batch of 10 Reels is 5 business days from shoot completion.",
+        "category": "Production"
+      },
+      {
+        "id": "KB-2",
+        "question": "What payment methods do you accept?",
+        "answer": "We accept Bank Transfers (UCB, City Bank), Wire Transfer, bKash, and Nagad merchant payments.",
+        "category": "Billing"
+      }
+    ],
+    "videoTutorials": [
+      {
+        "id": "VID-1",
+        "title": "How to Use Review Room V2 for Video Approvals",
+        "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+        "category": "Client Onboarding"
+      }
+    ]
+  },
+  "clients": [],
+  "tasks": [],
+  "reviews": [],
+  "invoices": [],
+  "expenses": [],
+  "assets": [],
+  "attendance": [
+    {
+      "employeeId": "EMP-001",
+      "name": "Mahmudul Hasan",
+      "status": "Clocked Out",
+      "clockInTime": "-",
+      "location": "Office"
+    },
+    {
+      "employeeId": "EMP-002",
+      "name": "Farhan Ahmed",
+      "status": "Clocked Out",
+      "clockInTime": "-",
+      "location": "Office"
+    },
+    {
+      "employeeId": "EMP-003",
+      "name": "Sabrin Akhtar",
+      "status": "Clocked Out",
+      "clockInTime": "-",
+      "location": "Office"
+    },
+    {
+      "employeeId": "EMP-004",
+      "name": "Raihan Kabir",
+      "status": "Clocked Out",
+      "clockInTime": "-",
+      "location": "Office"
+    },
+    {
+      "employeeId": "EMP-005",
+      "name": "Naimur Rahman",
+      "status": "Clocked Out",
+      "clockInTime": "-",
+      "location": "Office"
+    }
+  ],
+  "leads": [],
+  "quotes": [],
+  "posts": [],
+  "chats": [],
+  "webhookLogs": [],
+  "attendanceLog": [],
+  "checkoutLog": []
+}

@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PurpleOS - Authentication Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --bg-dark: #09090b;
+      --card-bg: rgba(24, 24, 27, 0.75);
+      --card-border: rgba(168, 85, 247, 0.25);
+      --primary-purple: #8b5cf6;
+      --primary-pink: #ec4899;
+      --text-main: #f4f4f5;
+      --text-muted: #a1a1aa;
+      --input-bg: rgba(9, 9, 11, 0.6);
+      --input-border: rgba(255, 255, 255, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+    }
+
+    body {
+      background: var(--bg-dark);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Ambient Animated Glow Background */
+    body::before {
+      content: '';
+      position: absolute;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(139, 92, 246, 0.35) 0%, rgba(0, 0, 0, 0) 70%);
+      top: -100px;
+      left: -100px;
+      border-radius: 50%;
+      filter: blur(80px);
+      z-index: 0;
+      animation: pulseGlow 12s infinite alternate ease-in-out;
+    }
+
+    body::after {
+      content: '';
+      position: absolute;
+      width: 450px;
+      height: 450px;
+      background: radial-gradient(circle, rgba(236, 72, 153, 0.25) 0%, rgba(0, 0, 0, 0) 70%);
+      bottom: -100px;
+      right: -100px;
+      border-radius: 50%;
+      filter: blur(90px);
+      z-index: 0;
+      animation: pulseGlow 10s infinite alternate-reverse ease-in-out;
+    }
+
+    @keyframes pulseGlow {
+      0% { transform: scale(1) translate(0, 0); }
+      100% { transform: scale(1.15) translate(30px, 30px); }
+    }
+
+    .auth-container {
+      width: 100%;
+      max-width: 440px;
+      padding: 2.5rem;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 30px rgba(168, 85, 247, 0.15);
+      z-index: 10;
+      position: relative;
+    }
+
+    .auth-brand {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .auth-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 0.85rem;
+      background: rgba(139, 92, 246, 0.12);
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #c084fc;
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .auth-brand h1 {
+      font-size: 1.85rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #ffffff 0%, #a855f7 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.5rem;
+    }
+
+    .auth-brand p {
+      color: var(--text-muted);
+      font-size: 0.875rem;
+    }
+
+    /* Auth Modes Navigation */
+    .auth-tabs {
+      display: flex;
+      background: rgba(9, 9, 11, 0.7);
+      padding: 0.25rem;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      margin-bottom: 1.75rem;
+    }
+
+    .auth-tab {
+      flex: 1;
+      padding: 0.6rem 0;
+      text-align: center;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      border: none;
+      background: transparent;
+      border-radius: 9px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+
+    .auth-tab.active {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.8), rgba(168, 85, 247, 0.6));
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+    }
+
+    /* Form Styles */
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #d4d4d8;
+      margin-bottom: 0.4rem;
+    }
+
+    .input-wrapper {
+      position: relative;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 0.8rem 1rem;
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      border-radius: 12px;
+      color: var(--text-main);
+      font-size: 0.9rem;
+      outline: none;
+      transition: all 0.25s ease;
+    }
+
+    .form-input:focus {
+      border-color: var(--primary-purple);
+      box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+      background: rgba(15, 15, 20, 0.9);
+    }
+
+    .btn-submit {
+      width: 100%;
+      padding: 0.85rem;
+      background: linear-gradient(135deg, var(--primary-purple) 0%, var(--primary-pink) 100%);
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 0.95rem;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 20px rgba(139, 92, 246, 0.4);
+      margin-top: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .btn-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(236, 72, 153, 0.5);
+    }
+
+    .btn-submit:active {
+      transform: translateY(0);
+    }
+
+    .btn-submit:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .alert {
+      padding: 0.75rem 1rem;
+      border-radius: 12px;
+      font-size: 0.825rem;
+      margin-bottom: 1.25rem;
+      display: none;
+    }
+
+    .alert-error {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #fca5a5;
+    }
+
+    .alert-success {
+      background: rgba(34, 197, 94, 0.15);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #86efac;
+    }
+
+    .form-footer {
+      margin-top: 1.5rem;
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .form-footer a {
+      color: #c084fc;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .form-footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="auth-container">
+    <div class="auth-brand">
+      <div class="auth-badge">
+        <span>⚡ PurpleOS Subdomain Auth</span>
+      </div>
+      <h1>Employee Portal</h1>
+      <p>Sign in to access your Purplebot workspace</p>
+    </div>
+
+    <!-- Mode Tabs -->
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-password" onclick="switchTab('password')">Password</button>
+      <button class="auth-tab" id="tab-magic" onclick="switchTab('magic')">Magic Link</button>
+    </div>
+
+    <!-- Alert Box -->
+    <div id="alert-box" class="alert"></div>
+
+    <!-- Password Sign In Form -->
+    <form id="form-password" onsubmit="handlePasswordLogin(event)">
+      <div class="form-group">
+        <label for="email">Work Email</label>
+        <div class="input-wrapper">
+          <input type="email" id="email" class="form-input" placeholder="e.g. farhan@purplebot.agency" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <div class="input-wrapper">
+          <input type="password" id="password" class="form-input" placeholder="••••••••••••" required>
+        </div>
+      </div>
+
+      <button type="submit" id="btn-password-submit" class="btn-submit">
+        <span>Sign In to Dashboard</span>
+        <span>→</span>
+      </button>
+    </form>
+
+    <!-- Magic Link Form (Hidden by default) -->
+    <form id="form-magic" style="display: none;" onsubmit="handleMagicLink(event)">
+      <div class="form-group">
+        <label for="magic-email">Work Email Address</label>
+        <div class="input-wrapper">
+          <input type="email" id="magic-email" class="form-input" placeholder="e.g. sabrin@purplebot.agency" required>
+        </div>
+      </div>
+
+      <button type="submit" id="btn-magic-submit" class="btn-submit">
+        <span>Send Magic Sign-In Link</span>
+        <span>✨</span>
+      </button>
+    </form>
+
+    <div class="form-footer">
+      <p>Protected by Supabase Auth & JWT Encryption</p>
+      <p style="margin-top: 0.4rem;">
+        Need assistance? Contact <a href="mailto:admin@purplebot.agency">Agency Admin</a>
+      </p>
+    </div>
+  </div>
+
+  <script src="/js/auth.js"></script>
+</body>
+</html>
