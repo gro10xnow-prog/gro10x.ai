@@ -17,6 +17,19 @@ function initBot() {
       teamBot = new TelegramBot(teamToken, { polling: true });
       console.log('🚀 Team Bot [Purple Man] initialized with Long Polling active!');
 
+      // Register persistent Chat Menu Button (Open App)
+      fetch(`https://api.telegram.org/bot${teamToken}/setChatMenuButton`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          menu_button: {
+            type: 'web_app',
+            text: 'Open App',
+            web_app: { url: 'https://purpleos-iota.vercel.app/team-miniapp' }
+          }
+        })
+      }).catch(e => {});
+
       teamBot.onText(/\/start|\/help/, (msg) => {
         const chatId = msg.chat.id;
         const welcome = `🤖 *Welcome to Purple Man (Crew Ops Bot)!*\n\n` +
@@ -111,6 +124,19 @@ function initBot() {
     try {
       clientBot = new TelegramBot(clientToken, { polling: true });
       console.log('🚀 B2B Client Bot [Purple Bot] initialized with Long Polling active!');
+
+      // Register persistent Chat Menu Button (Open App)
+      fetch(`https://api.telegram.org/bot${clientToken}/setChatMenuButton`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          menu_button: {
+            type: 'web_app',
+            text: 'Open App',
+            web_app: { url: 'https://purpleos-iota.vercel.app/client-miniapp' }
+          }
+        })
+      }).catch(e => {});
 
       clientBot.onText(/\/start|\/help/, (msg) => {
         const chatId = msg.chat.id;
