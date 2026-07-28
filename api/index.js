@@ -21,11 +21,11 @@ app.use('/api', apiRoutes);
 
 // Portal Routes
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '../public/landing.html'));
+  res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
 app.get(['/admin', '/dashboard', '/os'], (req, res) => {
-  res.sendFile(path.join(__dirname, '../public/index.html'));
+  res.sendFile(path.join(__dirname, '../public/admin.html'));
 });
 
 app.get(['/team', '/crew', '/staff'], (req, res) => {
