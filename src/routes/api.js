@@ -580,48 +580,166 @@ router.get('/webhooks/logs', (req, res) => {
   res.json(db.webhookLogs || []);
 });
 
-router.post('/webhooks/telegram', (req, res) => {
+router.post('/webhooks/telegram', async (req, res) => {
   const db = readDB();
   db.webhookLogs = db.webhookLogs || [];
 
   const nowTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   const update = req.body || {};
-  const msgText = update.message?.text || update.text || 'Simulated Telegram update';
-  const senderName = update.message?.from?.first_name || update.sender || 'Telegram User';
+  const message = update.message || update.edited_message;
 
-  const newLog = {
-    id: `WHK-${Date.now()}`,
-    channel: 'Telegram',
-    type: 'inbound_update',
-    sender: senderName,
-    payload: msgText,
-    status: '200 OK',
-    timestamp: nowTime
-  };
+  if (message && message.text) {
+    const chatId = message.chat.id;
+    const msgText = message.text.trim();
+    const senderName = message.from?.first_name || 'Telegram User';
+    const isTeamBot = req.query.bot === 'team';
 
-  db.webhookLogs.unshift(newLog);
-  if (db.webhookLogs.length > 30) db.webhookLogs = db.webhookLogs.slice(0, 30);
+    const teamToken = process.env.TEAM_BOT_TOKEN || '8874232130:AAEs5JDOEEX9kIN9Z_V_k0UQp2lBao5MHLQ';
+    const clientToken = process.env.CLIENT_BOT_TOKEN || '8964646505:AAEBVLDRqG0JdiTSSl6uK08UCQk0ZNsmYMU';
+    const botToken = isTeamBot ? teamToken : clientToken;
 
-  db.chats = db.chats || [];
-  let targetChat = db.chats.find(c => c.channel === 'Telegram') || db.chats[0];
-  if (targetChat) {
-    targetChat.messages = targetChat.messages || [];
-    targetChat.messages.push({
-      id: `MSG-${Date.now()}`,
+    let replyText = '';
+
+    if (isTeamBot) {
+      // Purple Man (Team Bot) Logic
+      if (msgText.startsWith('/start') || msgText.startsWith('/help')) {
+        replyText = `🤖 *Welcome to Purple Man (Crew Ops Bot)!*\n\n` +
+          `Commands for Purplebot Agency Crew:\n` +
+          `• /clockin - Log Studio Clock-In\n` +
+          `• /clockout - Log Studio Clock-Out\n` +
+          `• /myearnings - Check monthly salary & shoot commissions\n` +
+          `• /mybookings - View assigned shoot schedule\n` +
+          `• /pair - Pair account with employee code or phone (+8801708459008)`;
+      } else if (msgText.startsWith('/clockin')) {
+        const emp = (db.team || []).find(e => e.telegramId == chatId || (e.phone || '').includes('1708459008')) || db.team[0];
+        let record = (db.attendance || []).find(a => a.name === emp.name);
+        if (record) {
+          record.status = 'In Studio';
+          record.clockInTime = nowTime;
+        } else {
+          db.attendance = db.attendance || [];
+          db.attendance.push({
+            employeeId: emp.id || 'EMP-007',
+            name: emp.name,
+            status: 'In Studio',
+            clockInTime: nowTime,
+            location: 'Gulshan Studio'
+          });
+        }
+        writeDB(db);
+        broadcast('attendance_update', db.attendance);
+        replyText = `✅ *Clock In Recorded by Purple Man!*\nStatus set to *In Studio* at ${nowTime}. Dashboard updated.`;
+      } else if (msgText.startsWith('/clockout')) {
+        const emp = (db.team || []).find(e => e.telegramId == chatId || (e.phone || '').includes('1708459008')) || db.team[0];
+        let record = (db.attendance || []).find(a => a.name === emp.name);
+        if (record) record.status = 'Clocked Out';
+        writeDB(db);
+        broadcast('attendance_update', db.attendance);
+        replyText = `🚪 *Clock Out Recorded by Purple Man!*\nStatus set to *Clocked Out*. Have a great evening!`;
+      } else if (msgText.startsWith('/myearnings')) {
+        const emp = (db.team || []).find(e => e.telegramId == chatId || (e.phone || '').includes('1708459008')) || db.team[0];
+        const basePay = emp.baseSalary || 85000;
+        const commissions = emp.earnedCommissions || 15000;
+        replyText = `💰 *Salary & Commission Breakdown for ${emp.name}*\n\n` +
+          `• Role: ${emp.role}\n` +
+          `• Base Pay: BDT ${basePay.toLocaleString()}\n` +
+          `• Shoot Commissions: BDT ${commissions.toLocaleString()}\n` +
+          `-----------------------------------------\n` +
+          `*Total Monthly Pay: BDT ${(basePay + commissions).toLocaleString()}*`;
+      } else if (msgText.startsWith('/mybookings')) {
+        const emp = (db.team || []).find(e => e.telegramId == chatId || (e.phone || '').includes('1708459008')) || db.team[0];
+        const tasks = (db.tasks || []).filter(t => (t.assignee || '').toLowerCase().includes((emp.name || '').split(' ')[0].toLowerCase()));
+        replyText = `📅 *Assigned Shoots & Tasks for ${emp.name}:*\n\n`;
+        if (tasks.length === 0) replyText += `No active shoot assignments found.`;
+        else tasks.forEach((t, i) => { replyText += `${i + 1}. *${t.title}*\n   Client: ${t.client}\n   Stage: ${t.stage}\n   Due: ${t.dueDate}\n\n`; });
+      } else if (msgText.startsWith('/pair')) {
+        const inputVal = msgText.split(' ')[1] || '+8801708459008';
+        const cleanPhoneInput = inputVal.replace(/[^0-9+]/g, '');
+        const matchingStaff = (db.team || []).find(t => 
+          (t.emp_code || t.id || '').toUpperCase() === inputVal.toUpperCase() ||
+          (t.phone || '').replace(/[^0-9+]/g, '').includes(cleanPhoneInput)
+        ) || db.team[0];
+
+        if (matchingStaff) {
+          matchingStaff.telegramId = String(chatId);
+          matchingStaff.phoneVerified = true;
+          writeDB(db);
+          broadcast('team_update', db.team);
+          replyText = `✅ *Telegram Account & Phone Paired Successfully!*\n\n` +
+            `👤 Staff Name: *${matchingStaff.name}*\n` +
+            `🛡️ Role: *${matchingStaff.role}*\n` +
+            `📱 Verified Phone: *${matchingStaff.phone}*\n` +
+            `🆔 Emp Code: \`${matchingStaff.emp_code || matchingStaff.id}\`\n` +
+            `💬 Telegram Chat ID: \`${chatId}\``;
+        } else {
+          replyText = `⚠️ Could not find staff profile with code or phone \`${inputVal}\` in agency database.`;
+        }
+      } else {
+        replyText = `🤖 *Purple Man Bot*: Received "${msgText}". Type /help to see crew commands!`;
+      }
+    } else {
+      // Purple Bot (B2B Client Bot) Logic
+      if (msgText.startsWith('/start') || msgText.startsWith('/help')) {
+        replyText = `🤖 *Welcome to Purple Bot (Client B2B Assistant)!*\n\n` +
+          `We assist agency clients with campaign status, deliverables & billing:\n` +
+          `• /services - Browse agency packages & pricing\n` +
+          `• /portfolio - View video & TVC campaign reel\n` +
+          `• /review - Access Review Room V2 deliverable cuts\n` +
+          `• /invoices - View invoice status & payment instructions`;
+      } else if (msgText.startsWith('/services')) {
+        replyText = `🎨 *Purplebot Digital Core Services Catalog:*\n\n`;
+        (db.services || []).filter(s => s.public).forEach(s => {
+          replyText += `• *${s.title}* (${s.category})\n  Rate: ${s.price}\n  ${s.description}\n\n`;
+        });
+      } else if (msgText.startsWith('/portfolio')) {
+        replyText = `📁 *Purplebot Digital Portfolio Showcase*\n\n` +
+          `Explore our award-winning campaign portfolio:\n` +
+          `🔗 https://purpleos-iota.vercel.app/`;
+      } else if (msgText.startsWith('/review')) {
+        replyText = `🎬 *Review Room V2 Client Portal*\n\n` +
+          `Stream & approve your campaign video cuts in 4K:\n` +
+          `🔗 https://purpleos-iota.vercel.app/partners`;
+      } else if (msgText.startsWith('/invoices')) {
+        replyText = `💳 *Invoice & Payment Verification Portal*\n\n` +
+          `Verify & pay outstanding invoices via Bkash/Nagad or Bank Wire:\n` +
+          `🔗 https://purpleos-iota.vercel.app/partners`;
+      } else {
+        replyText = `👋 Hello! Thanks for contacting Purplebot Digital. Type /services to explore our packages or /review to check your campaign cuts.`;
+      }
+    }
+
+    // Send HTTP POST response back to Telegram API
+    try {
+      await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text: replyText,
+          parse_mode: 'Markdown'
+        })
+      });
+    } catch (sendErr) {
+      console.error('Error sending Telegram webhook response:', sendErr);
+    }
+
+    // Add webhook log entry
+    const newLog = {
+      id: `WHK-${Date.now()}`,
+      channel: isTeamBot ? 'Telegram (Purple Man)' : 'Telegram (Purple Bot)',
+      type: 'inbound_update',
       sender: senderName,
-      role: 'Telegram User',
-      text: msgText,
-      timestamp: nowTime,
-      isAgency: false
-    });
-    targetChat.lastUpdated = nowTime;
-    targetChat.unreadCount = (targetChat.unreadCount || 0) + 1;
-    broadcast('chat_update', db.chats);
+      payload: msgText,
+      status: '200 OK',
+      timestamp: nowTime
+    };
+    db.webhookLogs.unshift(newLog);
+    if (db.webhookLogs.length > 30) db.webhookLogs = db.webhookLogs.slice(0, 30);
+    writeDB(db);
+    broadcast('webhook_event', newLog);
   }
 
-  writeDB(db);
-  broadcast('webhook_event', newLog);
-  res.json({ success: true, log: newLog });
+  res.json({ success: true });
 });
 
 router.post('/webhooks/send-telegram-alert', (req, res) => {
