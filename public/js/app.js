@@ -4016,7 +4016,7 @@ function switchBotTarget(target) {
 
 function switchBotSubtab(subtabId) {
   activeBotSubtab = subtabId;
-  const subtabs = ['config', 'kb', 'videos', 'leads', 'users', 'analytics'];
+  const subtabs = ['channels', 'config', 'kb', 'videos', 'leads', 'users', 'analytics'];
 
   subtabs.forEach(st => {
     const btn = document.getElementById(`subtab-bot-${st}`);
@@ -4117,15 +4117,28 @@ function renderBotConfig() {
 
 async function saveBotConfig() {
   const currentBotCfg = {
-    name: document.getElementById('botCfgName').value.trim(),
-    tone: document.getElementById('botCfgTone').value,
-    persona: document.getElementById('botCfgPersona').value.trim(),
-    greeting: document.getElementById('botCfgGreeting').value.trim(),
-    fallback: document.getElementById('botCfgFallback').value.trim()
+    name: document.getElementById('botCfgName')?.value.trim() || '',
+    tone: document.getElementById('botCfgTone')?.value || '',
+    persona: document.getElementById('botCfgPersona')?.value.trim() || '',
+    greeting: document.getElementById('botCfgGreeting')?.value.trim() || '',
+    fallback: document.getElementById('botCfgFallback')?.value.trim() || ''
   };
 
+  const teamBotToken = document.getElementById('cfgTeamBotToken')?.value.trim();
+  const clientBotToken = document.getElementById('cfgClientBotToken')?.value.trim();
+  const aiProvider = document.getElementById('cfgAiProvider')?.value;
+  const aiGlobalKey = document.getElementById('cfgAiGlobalKey')?.value.trim();
+  const clientByokEnabled = document.getElementById('cfgAiClientByok')?.checked ?? true;
+
   const payload = {
-    [activeBotTarget]: currentBotCfg
+    [activeBotTarget]: currentBotCfg,
+    teamBotToken,
+    clientBotToken,
+    aiConfig: {
+      provider: aiProvider,
+      globalKey: aiGlobalKey,
+      clientByokEnabled
+    }
   };
 
   try {
