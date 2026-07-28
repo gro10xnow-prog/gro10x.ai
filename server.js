@@ -56,6 +56,18 @@ app.get(['/client-miniapp', '/review-app'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public/client-miniapp.html'));
 });
 
+// Dedicated Public Service Pages Routes
+app.get([
+  '/services/digital-marketing',
+  '/services/video-editing',
+  '/services/branding-graphics',
+  '/services/website-development',
+  '/services/custom-tech',
+  '/service-detail'
+], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/service-detail.html'));
+});
+
 // Robots.txt to hide internal portals from public search engine crawlers
 app.get('/robots.txt', (req, res) => {
   res.type('text/plain');

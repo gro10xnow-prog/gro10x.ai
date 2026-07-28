@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Service Details — Purplebot Digital Agency</title>
+  <meta name="description" content="Explore Purplebot Digital's specialized services in Digital Marketing, Video Production, Branding, Web Development, and Custom Tech Solutions.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/css/landing.css">
+</head>
+<body class="pb-landing-body">
+
+  <!-- TOP NAVBAR -->
+  <header class="pb-nav" id="topNav">
+    <div class="pb-nav-container">
+      <a href="/" class="pb-brand-logo">
+        <div class="pb-logo-badge">
+          <span class="pb-logo-owl">🦉</span>
+        </div>
+        <div class="pb-logo-text">
+          <span class="pb-brand-title">PURPLEBOT</span>
+          <span class="pb-brand-sub">DIGITAL</span>
+        </div>
+      </a>
+
+      <nav class="pb-nav-links">
+        <a href="/" class="pb-nav-link">Home</a>
+        <div class="pb-nav-dropdown">
+          <a href="#capabilities" class="pb-nav-link pb-dropdown-trigger">All Services <span class="chevron">▾</span></a>
+          <div class="pb-dropdown-menu">
+            <a href="/services/digital-marketing">Digital Marketing</a>
+            <a href="/services/video-editing">Video Production & Reels</a>
+            <a href="/services/branding-graphics">Branding & Identity</a>
+            <a href="/services/website-development">Website Development</a>
+            <a href="/services/custom-tech">Custom Tech Solutions</a>
+          </div>
+        </div>
+        <a href="/#portfolio" class="pb-nav-link">Our Work</a>
+        <a href="/#pricing" class="pb-nav-link">Plans & Pricing</a>
+      </nav>
+
+      <div class="pb-nav-actions">
+        <button onclick="openPurpleBot('Service Consultation')" class="pb-btn-quote">
+          💬 Talk to Purple Bot
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- SERVICE HERO SECTION -->
+  <section class="pb-hero-section">
+    <div class="pb-hero-bg-glow"></div>
+
+    <div class="pb-hero-container">
+      <div class="pb-hero-grid">
+        <div class="pb-hero-content">
+          <div class="pb-hero-badge">
+            <span class="pb-pulse-dot"></span>
+            <span id="svcCategoryBadge">SPECIALIZED AGENCY CAPABILITY</span>
+          </div>
+
+          <h1 class="pb-hero-title" id="svcTitle">
+            Digital Marketing & <br>
+            <span class="pb-gradient-text">Brand Growth</span>
+          </h1>
+
+          <p class="pb-hero-subtitle" id="svcSubtitle">
+            Tailored digital solutions built to drive measurable market share, viral engagement, and long-term brand equity for your business.
+          </p>
+
+          <div class="pb-hero-cta-group">
+            <button onclick="triggerServiceQuote()" class="pb-btn-primary" id="svcCtaBtn">
+              🚀 Book Campaign Consultation
+            </button>
+            <a href="#capabilities" class="pb-btn-secondary">
+              Explore Capabilities ↓
+            </a>
+          </div>
+        </div>
+
+        <div class="pb-hero-visual">
+          <div class="pb-mascot-wrapper">
+            <img src="/images/mascot.png" alt="Purplebot Service Visual" class="pb-hero-mascot-img">
+            <div class="pb-mascot-card pb-mascot-card-1">
+              <span class="card-icon">🎯</span>
+              <div>
+                <strong>Tailored Strategy</strong>
+                <span>Guaranteed SLA & Delivery</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CAPABILITIES & SUB-SERVICE BREAKDOWN -->
+  <section class="pb-services-section" id="capabilities">
+    <div class="pb-section-container">
+      <div class="pb-section-header">
+        <span class="pb-section-badge">SERVICE CAPABILITIES</span>
+        <h2 class="pb-section-title" id="svcBreakdownHeading">Services We Offer Under This Category</h2>
+        <p class="pb-section-desc" id="svcBreakdownDesc">From ideation to final execution, we bring together senior specialists to deliver frictionless results.</p>
+      </div>
+
+      <div class="pb-capabilities-pills-wrap" id="svcPillsContainer" style="display:flex; flex-wrap:wrap; justify-content:center; gap:0.85rem; margin-bottom:3rem;">
+        <!-- Dynamically rendered pills -->
+      </div>
+
+      <div class="pb-services-grid" id="svcFeatureGrid">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+  </section>
+
+  <!-- RELATED WORK SHOWCASE -->
+  <section class="pb-portfolio-section">
+    <div class="pb-section-container">
+      <div class="pb-section-header">
+        <span class="pb-section-badge">CASE STUDIES</span>
+        <h2 class="pb-section-title">Check Out Some of Our Best Work</h2>
+        <p class="pb-section-desc">Proven results delivered for FMCG, Lifestyle, Commercial, and Financial brands.</p>
+      </div>
+
+      <div class="pb-portfolio-grid" id="svcRelatedPortfolio">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+  </section>
+
+  <!-- CUSTOM CTA BANNER -->
+  <section class="pb-cta-banner-section">
+    <div class="pb-section-container">
+      <div class="pb-cta-banner">
+        <div class="pb-cta-content">
+          <h2>Ready to Scale Your Brand with This Service?</h2>
+          <p>Talk to Purple Bot to get an instant customized quotation and timeline target within minutes.</p>
+        </div>
+        <button onclick="triggerServiceQuote()" class="pb-btn-cta-light">
+          Get Instant Quote →
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- MAIN FOOTER -->
+  <footer class="pb-main-footer">
+    <div class="pb-footer-container">
+      <div class="pb-footer-brand">
+        <div class="pb-brand-logo">
+          <div class="pb-logo-badge">🦉</div>
+          <div class="pb-logo-text">
+            <span class="pb-brand-title" style="color:#fff;">PURPLEBOT</span>
+            <span class="pb-brand-sub" style="color:var(--purple-light);">DIGITAL</span>
+          </div>
+        </div>
+        <p class="pb-legal-note">
+          Purplebot Digital Limited is a private limited company incorporated under the Companies Act XVIII of 1994 at the Joint Stock Companies and Firms of Bangladesh.
+        </p>
+        <p class="pb-copy-note">© 2024–2026 Purplebot Digital Limited. All rights reserved.</p>
+      </div>
+
+      <div class="pb-footer-addresses">
+        <h4>Office Locations</h4>
+        <div class="pb-address-item">
+          <strong>📍 Registered Office:</strong>
+          <span>Plot 7, Road 17, Flat 2/C, Rupsha Tower, Banani C/A, Dhaka - 1213</span>
+        </div>
+        <div class="pb-address-item">
+          <strong>📍 Operating Office:</strong>
+          <span>Flat A5-B5-A4, House 9, Road 1, Block B, Niketon, Gulshan-1, Dhaka - 1212</span>
+        </div>
+      </div>
+
+      <div class="pb-footer-quick">
+        <h4>Quick Links</h4>
+        <a href="/">Home</a>
+        <a href="/services/digital-marketing">Digital Marketing</a>
+        <a href="/services/video-editing">Video Editing & Animation</a>
+        <a href="/services/branding-graphics">Branding & Graphics</a>
+        <a href="/services/website-development">Website Development</a>
+        <a href="/services/custom-tech">Custom Tech Solutions</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/js/landing.js"></script>
+  <script src="/js/chat-widget.js"></script>
+  <script src="/js/service-detail.js"></script>
+</body>
+</html>
