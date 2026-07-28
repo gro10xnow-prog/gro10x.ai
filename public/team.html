@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Purplebot Crew Portal — Studio Ops & Shoot Schedule</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/css/landing.css">
+</head>
+<body style="background:#0b0f19; color:#e2e8f0; min-height:100vh; padding-bottom:3rem;">
+
+  <!-- TOP HEADER BAR -->
+  <header style="background:rgba(11,15,25,0.9); border-bottom:1px solid rgba(255,255,255,0.08); padding:1rem 1.5rem; display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; z-index:100;">
+    <div style="display:flex; align-items:center; gap:0.8rem;">
+      <a href="/" style="text-decoration:none;" class="brand-logo">
+        <div class="logo-icon">🔮</div>
+      </a>
+      <div>
+        <h1 style="font-size:1.1rem; color:#fff; margin:0; font-weight:800;">PURPLEBOT CREW OPS PORTAL</h1>
+        <div style="font-size:0.75rem; color:#38bdf8; font-weight:600;">👥 Field Shoot & Studio Staff Dashboard</div>
+      </div>
+    </div>
+
+    <div style="display:flex; align-items:center; gap:0.8rem;">
+      <span style="font-size:0.82rem; color:var(--text-muted);">Staff Profile:</span>
+      <select id="teamStaffSelect" class="form-input" style="width:auto; padding:0.4rem 0.8rem; font-size:0.85rem;" onchange="switchTeamProfile(this.value)">
+        <!-- Loaded dynamically -->
+      </select>
+      <a href="/" class="btn-secondary" style="font-size:0.8rem; padding:0.4rem 0.8rem;">🌐 Website</a>
+    </div>
+  </header>
+
+  <!-- MAIN CREW PORTAL CONTENT -->
+  <main style="max-width:1100px; margin:1.5rem auto; padding:0 1.25rem;">
+
+    <!-- QUICK ATTENDANCE CLOCK-IN STRIP -->
+    <div class="glass-panel" style="margin-bottom:1.5rem; background:linear-gradient(135deg, rgba(6,182,212,0.15), rgba(168,85,247,0.1)); border:1px solid rgba(6,182,212,0.3);">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+        <div>
+          <div style="display:flex; align-items:center; gap:0.6rem; margin-bottom:0.3rem;">
+            <span class="badge badge-emerald" id="crewAttStatus">Studio Active</span>
+            <span style="font-size:0.8rem; color:var(--text-muted);" id="crewEmpCode">EMP-002</span>
+          </div>
+          <h2 style="font-size:1.5rem; color:#fff; margin:0;" id="crewStaffName">Loading Staff...</h2>
+          <div style="font-size:0.85rem; color:var(--purple-light); margin-top:0.2rem;" id="crewStaffRole">Director / Editor</div>
+        </div>
+
+        <div style="display:flex; gap:0.8rem;">
+          <button class="btn-purple" style="background:#10b981; border:none; padding:0.75rem 1.5rem; font-size:0.95rem;" onclick="crewClockIn()">
+            🟢 Clock In Studio
+          </button>
+          <button class="btn-secondary" style="color:#ef4444; border-color:rgba(239,68,68,0.4); padding:0.75rem 1.5rem; font-size:0.95rem;" onclick="crewClockOut()">
+            🔴 Clock Out
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2-COLUMN STATS & EARNINGS ROW -->
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.25rem; margin-bottom:1.5rem;">
+      <!-- EARNINGS SUMMARY CARD -->
+      <div class="glass-panel" style="display:flex; flex-direction:column; justify-content:space-between;">
+        <div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+            <span style="font-size:0.82rem; color:var(--text-muted); font-weight:700;">MONTHLY PAY & COMMISSIONS</span>
+            <span class="badge badge-purple">July 2026</span>
+          </div>
+          <div style="font-size:2rem; font-weight:800; color:#34d399; margin-bottom:0.5rem;" id="crewTotalPay">BDT 77,500</div>
+          <div style="font-size:0.82rem; color:var(--text-muted); line-height:1.6;" id="crewPayBreakdown">
+            • Base Salary: BDT 65,000<br>
+            • Shoot Commissions: BDT 12,500
+          </div>
+        </div>
+        <div style="margin-top:1rem; padding-top:0.6rem; border-top:1px dashed rgba(255,255,255,0.08);">
+          <button class="btn-secondary" style="width:100%; justify-center; font-size:0.8rem;" onclick="alert('Exporting monthly payroll slip PDF...')">📄 View Payslip</button>
+        </div>
+      </div>
+
+      <!-- GEAR CHECKOUT SUMMARY CARD -->
+      <div class="glass-panel" style="display:flex; flex-direction:column; justify-content:space-between;">
+        <div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+            <span style="font-size:0.82rem; color:var(--text-muted); font-weight:700;">EQUIPMENT IN FIELD</span>
+            <span class="badge badge-amber" id="crewGearCount">1 Checked Out</span>
+          </div>
+          <div style="font-size:1.05rem; font-weight:700; color:#fff; margin-bottom:0.4rem;" id="crewActiveGear">Sony FX3 Cinema Camera</div>
+          <div style="font-size:0.82rem; color:var(--text-muted);" id="crewGearDate">Checked Out: 2026-07-25</div>
+        </div>
+        <div style="margin-top:1rem; padding-top:0.6rem; border-top:1px dashed rgba(255,255,255,0.08); display:flex; gap:0.6rem;">
+          <button class="btn-approve-sm" style="flex:1; padding:0.4rem;" onclick="quickGearReturn()">📥 Return Gear</button>
+          <button class="btn-secondary" style="flex:1; padding:0.4rem; font-size:0.78rem;" onclick="quickGearCheckout()">📤 Check Out Gear</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MY ASSIGNED SHOOTS & TASKS LIST -->
+    <section class="glass-panel">
+      <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <h2 class="panel-title">📋 My Assigned Shoots & Edit Tasks</h2>
+          <div style="font-size:0.8rem; color:var(--text-muted);">Active shoot campaigns and deliverable deadlines assigned to your profile</div>
+        </div>
+        <span class="badge badge-purple" id="crewTaskBadge">0 Tasks</span>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:0.8rem; margin-top:1rem;" id="crewTaskList">
+        <!-- Loaded dynamically -->
+      </div>
+    </section>
+
+  </main>
+
+  <script src="/js/team.js"></script>
+</body>
+</html>

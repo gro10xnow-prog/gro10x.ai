@@ -27,9 +27,26 @@ app.get('/api/sync', sseHandler);
 // Mount API routes
 app.use('/api', apiRoutes);
 
-// Catch-all route to serve SPA index.html
-app.get('*', (req, res) => {
+// Explicit Multi-Portal Routes (Phase C Architecture)
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/landing.html'));
+});
+
+app.get(['/admin', '/dashboard', '/os'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public/index.html'));
+});
+
+app.get(['/team', '/crew', '/staff'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/team.html'));
+});
+
+app.get(['/partners', '/client', '/portal'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/partners.html'));
+});
+
+// Catch-all fallback route
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/landing.html'));
 });
 
 // Start Express Server (only when run directly, not when imported by Vercel serverless handler)

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Purplebot Client & Partner Portal — Deliverables & Review Room</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/css/landing.css">
+</head>
+<body style="background:#0f172a; color:#e2e8f0; min-height:100vh;">
+
+  <!-- TOP HEADER BAR -->
+  <header style="background:rgba(15,23,42,0.9); border-bottom:1px solid rgba(255,255,255,0.08); padding:1rem 2rem; display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; z-index:100;">
+    <div style="display:flex; align-items:center; gap:0.8rem;">
+      <a href="/" style="text-decoration:none;" class="brand-logo">
+        <div class="logo-icon">🔮</div>
+      </a>
+      <div>
+        <h1 style="font-size:1.15rem; color:#fff; margin:0; font-weight:800;">PURPLEBOT CLIENT PORTAL</h1>
+        <div style="font-size:0.75rem; color:var(--emerald-accent); font-weight:600;">🤝 Brand Partner Workspace • Frame.io Review Engine</div>
+      </div>
+    </div>
+
+    <div style="display:flex; align-items:center; gap:1rem;">
+      <span style="font-size:0.85rem; color:var(--text-muted);">Select Client Account:</span>
+      <select id="partnerClientSelect" class="form-input" style="width:auto; padding:0.4rem 0.8rem; font-size:0.88rem;" onchange="switchPartnerAccount(this.value)">
+        <!-- Loaded dynamically -->
+      </select>
+      <a href="/" class="btn-secondary" style="font-size:0.8rem; padding:0.4rem 0.8rem;">🌐 Main Website</a>
+    </div>
+  </header>
+
+  <!-- MAIN PORTAL WRAPPER -->
+  <main style="max-width:1240px; margin:2rem auto; padding:0 1.5rem;">
+
+    <!-- CLIENT WELCOME STRIP -->
+    <div class="glass-panel" style="margin-bottom:2rem; background:linear-gradient(135deg, rgba(168,85,247,0.15), rgba(16,185,129,0.1)); border:1px solid rgba(168,85,247,0.3);">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+        <div>
+          <span class="badge badge-emerald" id="partnerStatusBadge">Active Account</span>
+          <h2 style="font-size:1.6rem; color:#fff; margin:0.4rem 0 0.2rem;" id="partnerClientTitle">Loading Client Account...</h2>
+          <p style="color:var(--text-muted); margin:0; font-size:0.88rem;" id="partnerClientSub">Campaign deliverables, cut approvals, and commercial invoices</p>
+        </div>
+        <button class="btn-purple" onclick="openPartnerBriefModal()">+ Submit New Campaign Brief</button>
+      </div>
+    </div>
+
+    <!-- MAIN REVIEW ROOM V2 DELIVERABLE PLAYER -->
+    <section class="glass-panel" style="margin-bottom:2.5rem;">
+      <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.8rem;">
+        <div>
+          <h2 class="panel-title" style="display:flex; align-items:center; gap:0.5rem;">
+            🎬 Live Video Review Room (Frame.io Cut Approvals)
+          </h2>
+          <div style="font-size:0.8rem; color:var(--text-muted);">Stream latest video cuts, draw visual notes, leave timecoded feedback, and approve cuts</div>
+        </div>
+
+        <div style="display:flex; gap:0.6rem; align-items:center;">
+          <select id="partnerProjectSelect" class="form-input" style="width:auto; padding:0.4rem 0.8rem;" onchange="switchPartnerProject(this.value)">
+            <!-- Loaded dynamically -->
+          </select>
+          <button class="btn-purple" onclick="approvePartnerCut()">✅ Approve Cut for Production</button>
+        </div>
+      </div>
+
+      <!-- VIDEO PLAYER CONTAINER -->
+      <div style="display:grid; grid-template-columns: 2fr 1fr; gap:1.5rem; margin-top:1.5rem;" id="partnerPlayerGrid">
+        <div>
+          <div style="position:relative; background:#000; border-radius:14px; overflow:hidden; border:1px solid rgba(255,255,255,0.1);">
+            <video id="partnerVideo" style="width:100%; display:block;" controls poster="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=800&q=80">
+              <source id="partnerVideoSource" src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" type="video/mp4">
+            </video>
+          </div>
+          <div style="margin-top:0.8rem; display:flex; justify-content:space-between; color:var(--text-muted); font-size:0.85rem;">
+            <span>Project: <strong style="color:#fff;" id="partnerProjName">-</strong></span>
+            <span>Active Version: <span class="badge badge-purple" id="partnerVerBadge">V2 Final</span></span>
+          </div>
+        </div>
+
+        <!-- THREADED FEEDBACK PANEL -->
+        <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:1.25rem; display:flex; flex-direction:column; justify-content:space-between;">
+          <div>
+            <h3 style="font-size:1rem; color:#fff; margin-bottom:1rem; display:flex; justify-content:space-between; align-items:center;">
+              <span>💬 Cut Feedback Notes</span>
+              <span class="badge badge-purple" id="partnerCommentCount">0 Notes</span>
+            </h3>
+            <div id="partnerCommentsList" style="max-height:300px; overflow-y:auto; display:flex; flex-direction:column; gap:0.6rem;">
+              <!-- Loaded dynamically -->
+            </div>
+          </div>
+
+          <div style="margin-top:1rem; padding-top:0.8rem; border-top:1px dashed rgba(255,255,255,0.1);">
+            <input type="text" id="partnerNewComment" class="form-input" placeholder="Type feedback note on current video timestamp..." style="font-size:0.85rem; margin-bottom:0.5rem;" onkeydown="if(event.key==='Enter') submitPartnerComment()">
+            <button class="btn-purple" style="width:100%; justify-content:center; font-size:0.85rem;" onclick="submitPartnerComment()">💬 Add Feedback Note</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- INVOICES & BILLING SECTION -->
+    <section class="glass-panel">
+      <div class="panel-header">
+        <h2 class="panel-title">💳 Commercial Invoices & Statement of Account</h2>
+        <div style="font-size:0.8rem; color:var(--text-muted);">View billing history, auto-generated cut draft invoices, and payment instructions</div>
+      </div>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Invoice ID</th>
+            <th>Project Reference</th>
+            <th>Date Issued</th>
+            <th>Due Date</th>
+            <th>Amount ($ USD)</th>
+            <th>Status</th>
+            <th style="text-align:right;">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="partnerInvoicesTbody">
+          <!-- Loaded dynamically -->
+        </tbody>
+      </table>
+    </section>
+
+  </main>
+
+  <script src="/js/partners.js"></script>
+</body>
+</html>
