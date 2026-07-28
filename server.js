@@ -44,6 +44,10 @@ app.get(['/partners', '/client', '/portal'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public/partners.html'));
 });
 
+app.get(['/chat', '/bot-chat'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/chat.html'));
+});
+
 // Catch-all fallback route
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public/landing.html'));

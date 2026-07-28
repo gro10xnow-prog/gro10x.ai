@@ -155,18 +155,22 @@
   ],
   "botConfig": {
     "clientBot": {
-      "name": "Purplebot Client Assistant",
+      "name": "Purple Bot (B2B Client Bot)",
       "persona": "You are Purplebot, an AI agency assistant for Purplebot Digital. You help prospective clients book services, check invoice status, and view creative portfolios.",
       "tone": "Empathetic & Creative",
       "greeting": "Welcome to Purplebot Digital Agency! 🚀 How can we assist your brand today?",
-      "fallback": "I'm not sure about that specific request. Let me connect you with an Account Lead right away!"
+      "fallback": "I'm not sure about that specific request. Let me connect you with an Account Lead right away!",
+      "token": "8964646505:AAEBVLDRqG0JdiTSSl6uK08UCQk0ZNsmYMU",
+      "username": "PurpleBotAgencyBot"
     },
     "teamBot": {
-      "name": "Purplebot Crew Operations Bot",
+      "name": "Purple Man (Team Bot)",
       "persona": "You are Purplebot Ops, an automated dispatch bot for shoot crews and video editors. You handle shoot assignments, earnings logs, and time tracking.",
       "tone": "Fast & Casual",
       "greeting": "Purplebot Ops Active! Type /mybookings to check your shoot schedule or /myearnings for payroll details.",
-      "fallback": "Command not recognized. Type /help to see available crew commands."
+      "fallback": "Command not recognized. Type /help to see available crew commands.",
+      "token": "8874232130:AAEs5JDOEEX9kIN9Z_V_k0UQp2lBao5MHLQ",
+      "username": "PurpleManBot"
     },
     "knowledgeBase": [
       {
@@ -189,7 +193,12 @@
         "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
         "category": "Client Onboarding"
       }
-    ]
+    ],
+    "aiConfig": {
+      "provider": "Google Gemini API",
+      "globalKey": "",
+      "clientByokEnabled": true
+    }
   },
   "clients": [],
   "tasks": [],

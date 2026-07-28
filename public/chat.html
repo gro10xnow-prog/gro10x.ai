@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PurpleOS - Web Chat Assistant</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+  <style>
+    body {
+      background: #09090b;
+      color: #f4f4f5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .chat-card {
+      width: 100%;
+      max-width: 520px;
+      height: 90vh;
+      background: rgba(24, 24, 27, 0.85);
+      border: 1px solid rgba(168, 85, 247, 0.3);
+      border-radius: 24px;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 25px 50px rgba(0,0,0,0.8), 0 0 30px rgba(168,85,247,0.2);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .chat-header {
+      padding: 1.2rem 1.5rem;
+      background: rgba(9, 9, 11, 0.8);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .chat-body {
+      flex: 1;
+      padding: 1.25rem;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .msg-bubble {
+      max-width: 82%;
+      padding: 0.85rem 1.1rem;
+      border-radius: 18px;
+      font-size: 0.9rem;
+      line-height: 1.45;
+    }
+    .msg-bot {
+      background: rgba(168, 85, 247, 0.12);
+      border: 1px solid rgba(168, 85, 247, 0.3);
+      color: #f4f4f5;
+      align-self: flex-start;
+      border-bottom-left-radius: 4px;
+    }
+    .msg-user {
+      background: linear-gradient(135deg, #a855f7, #ec4899);
+      color: #ffffff;
+      align-self: flex-end;
+      border-bottom-right-radius: 4px;
+    }
+    .quick-chips {
+      padding: 0.6rem 1.2rem;
+      background: rgba(9, 9, 11, 0.6);
+      border-top: 1px solid rgba(255,255,255,0.06);
+      display: flex;
+      gap: 0.5rem;
+      overflow-x: auto;
+    }
+    .chip-btn {
+      padding: 0.35rem 0.75rem;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 999px;
+      color: #c084fc;
+      font-size: 0.78rem;
+      font-weight: 600;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .chip-btn:hover {
+      background: rgba(168,85,247,0.25);
+      border-color: #a855f7;
+      color: #fff;
+    }
+    .chat-footer {
+      padding: 1rem 1.2rem;
+      background: rgba(9, 9, 11, 0.9);
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      gap: 0.6rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="chat-card">
+    <div class="chat-header">
+      <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <div style="width: 42px; height: 42px; background: linear-gradient(135deg, #a855f7, #ec4899); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">🤖</div>
+        <div>
+          <div style="font-weight: 800; font-size: 1.05rem; color: #fff;" id="chatBotName">Purple Bot (B2B Assistant)</div>
+          <div style="font-size: 0.75rem; color: #34d399; display: flex; align-items: center; gap: 0.3rem;">
+            <span>🟢 AI Active</span> • <span>Web Link Channel</span>
+          </div>
+        </div>
+      </div>
+
+      <select id="chatModeSelect" class="role-select" style="padding: 0.3rem 0.6rem; font-size: 0.78rem;" onchange="switchChatMode(this.value)">
+        <option value="client">🤝 B2B Client Mode</option>
+        <option value="team">👥 Team Crew Mode</option>
+      </select>
+    </div>
+
+    <div class="chat-body" id="chatFeed">
+      <div class="msg-bubble msg-bot">
+        👋 Welcome to **Purplebot Digital Agency**! How can we assist your brand today? Select a quick action below or type your inquiry.
+      </div>
+    </div>
+
+    <div class="quick-chips" id="quickChipsBar">
+      <button type="button" class="chip-btn" onclick="sendQuickMessage('What are your service packages and rates?')">💰 Service Rates</button>
+      <button type="button" class="chip-btn" onclick="sendQuickMessage('Can I see your portfolio reel?')">📁 Campaign Portfolio</button>
+      <button type="button" class="chip-btn" onclick="sendQuickMessage('How do I review video cuts in Review Room?')">🎬 Review Room V2</button>
+      <button type="button" class="chip-btn" onclick="sendQuickMessage('How do I verify an invoice payment?')">💳 Invoice Billing</button>
+    </div>
+
+    <form class="chat-footer" onsubmit="handleSendWebChat(event)">
+      <input type="text" id="webChatInput" class="form-input" placeholder="Ask anything about campaigns, rates, or bookings..." required style="flex: 1;">
+      <button type="submit" class="btn-purple" style="padding: 0.75rem 1.25rem;">Send 🚀</button>
+    </form>
+  </div>
+
+  <script src="/js/chat.js"></script>
+</body>
+</html>

@@ -951,9 +951,10 @@
           </button>
         </div>
 
-        <!-- Subtab Navigation Bar (Matching Loomer Screenshot) -->
+        <!-- Subtab Navigation Bar -->
         <div style="display: flex; gap: 0.5rem; margin-bottom: 1.2rem; background: rgba(9,9,11,0.6); padding: 0.4rem; border-radius: 12px; border: 1px solid var(--border-color); overflow-x: auto;">
-          <button class="btn-purple" id="subtab-bot-config" style="padding: 0.35rem 0.85rem; font-size: 0.82rem;" onclick="switchBotSubtab('config')">⚙️ Configuration</button>
+          <button class="btn-purple" id="subtab-bot-channels" style="padding: 0.35rem 0.85rem; font-size: 0.82rem;" onclick="switchBotSubtab('channels')">🤖 Channels & AI Infrastructure</button>
+          <button class="btn-secondary" id="subtab-bot-config" style="padding: 0.35rem 0.85rem; font-size: 0.82rem;" onclick="switchBotSubtab('config')">⚙️ Configuration</button>
           <button class="btn-secondary" id="subtab-bot-kb" style="padding: 0.35rem 0.85rem; font-size: 0.82rem;" onclick="switchBotSubtab('kb')">📚 Knowledge Base</button>
           <button class="btn-secondary" id="subtab-bot-videos" style="padding: 0.35rem 0.85rem; font-size: 0.82rem;" onclick="switchBotSubtab('videos')">🎥 Video Tutorials</button>
           <button class="btn-secondary" id="subtab-bot-leads" style="padding: 0.35rem 0.85rem; font-size: 0.82rem;" onclick="switchBotSubtab('leads')">📥 Captured Leads</button>
@@ -961,8 +962,84 @@
           <button class="btn-secondary" id="subtab-bot-analytics" style="padding: 0.35rem 0.85rem; font-size: 0.82rem;" onclick="switchBotSubtab('analytics')">📊 Bot Analytics</button>
         </div>
 
+        <!-- SUB-PANEL 0: CHANNELS & AI INFRASTRUCTURE (Module B1.1) -->
+        <div id="bot-panel-channels">
+          <div class="glass-panel" style="display: flex; flex-direction: column; gap: 1.5rem; padding: 1.5rem;">
+            <div>
+              <h2 style="font-size: 1.1rem; color: #fff; font-family: var(--font-heading); margin-bottom: 0.3rem;">📲 Multi-Channel Bot Credentials</h2>
+              <div style="font-size: 0.8rem; color: var(--text-muted);">Manage Telegram tokens and shareable Web Chat portal links</div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+              <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--card-border); padding: 1.2rem; border-radius: 14px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
+                  <div style="font-size: 0.9rem; font-weight: 700; color: #c084fc;">👥 Team Bot (Purple Man)</div>
+                  <span class="badge badge-success">🟢 Active Polling</span>
+                </div>
+                <div class="form-group" style="margin-bottom: 0.8rem;">
+                  <label style="font-size: 0.78rem; font-weight: 600; color: #d4d4d8;">Telegram Bot API Token</label>
+                  <input type="text" id="cfgTeamBotToken" class="form-input" value="8874232130:AAEs5JDOEEX9kIN9Z_V_k0UQp2lBao5MHLQ">
+                </div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">Handles /clockin, /clockout, /myearnings, and crew shoot dispatch.</div>
+              </div>
+
+              <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--card-border); padding: 1.2rem; border-radius: 14px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
+                  <div style="font-size: 0.9rem; font-weight: 700; color: #38bdf8;">🤝 B2B Client Bot (Purple Bot)</div>
+                  <span class="badge badge-success">🟢 Active Polling</span>
+                </div>
+                <div class="form-group" style="margin-bottom: 0.8rem;">
+                  <label style="font-size: 0.78rem; font-weight: 600; color: #d4d4d8;">Telegram Bot API Token</label>
+                  <input type="text" id="cfgClientBotToken" class="form-input" value="8964646505:AAEBVLDRqG0JdiTSSl6uK08UCQk0ZNsmYMU">
+                </div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">Handles client package inquiries, review cut approvals, and invoice payments.</div>
+              </div>
+            </div>
+
+            <div style="background: rgba(168,85,247,0.08); border: 1px solid rgba(168,85,247,0.25); padding: 1.2rem; border-radius: 14px; display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <div style="font-size: 0.9rem; font-weight: 700; color: #fff;">🌐 Standalone Web Chat Link Channel</div>
+                <div style="font-size: 0.8rem; color: var(--purple-light); margin-top: 0.2rem;">Shareable link for client browser interaction without Telegram</div>
+                <code style="font-size: 0.8rem; color: #38bdf8; background: rgba(0,0,0,0.4); padding: 0.3rem 0.6rem; border-radius: 6px; display: inline-block; margin-top: 0.4rem;">https://purpleos-iota.vercel.app/chat</code>
+              </div>
+              <button class="btn-purple" onclick="navigator.clipboard.writeText('https://purpleos-iota.vercel.app/chat'); alert('📋 Web Chat Link copied to clipboard!')">📋 Copy Web Link</button>
+            </div>
+
+            <hr style="border: none; border-top: 1px solid rgba(255,255,255,0.08); margin: 0.5rem 0;">
+
+            <div>
+              <h2 style="font-size: 1.1rem; color: #fff; font-family: var(--font-heading); margin-bottom: 0.3rem;">🧠 AI Provider & Bring-Your-Own-Key (BYOK) Model</h2>
+              <div style="font-size: 0.8rem; color: var(--text-muted);">Connect AI providers (Gemini, OpenAI, Claude) and allow clients to supply their own API keys for custom usage billing</div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+              <div class="form-group">
+                <label style="font-size: 0.82rem; font-weight: 600; color: #d4d4d8;">Active Agency AI Provider Engine</label>
+                <select id="cfgAiProvider" class="role-select" style="width: 100%;">
+                  <option value="Google Gemini API" selected>Google Gemini API (Recommended)</option>
+                  <option value="OpenAI GPT-4o">OpenAI GPT-4o API</option>
+                  <option value="Anthropic Claude 3.5">Anthropic Claude 3.5 API</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label style="font-size: 0.82rem; font-weight: 600; color: #d4d4d8;">Global Agency AI API Key</label>
+                <input type="password" id="cfgAiGlobalKey" class="form-input" placeholder="AIzaSy... (Saved securely in env)">
+              </div>
+            </div>
+
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--card-border); padding: 1rem 1.2rem; border-radius: 12px; display: flex; align-items: center; justify-content: space-between;">
+              <div>
+                <div style="font-size: 0.88rem; font-weight: 700; color: #fff;">💳 Enable Client BYOK (Bring Your Own Key) in CRM</div>
+                <div style="font-size: 0.78rem; color: var(--text-muted);">Allows clients to attach their own API key in CRM so brief AI generation and bots bill their own account</div>
+              </div>
+              <input type="checkbox" id="cfgAiClientByok" checked style="width: 20px; height: 20px; accent-color: var(--purple-accent);">
+            </div>
+          </div>
+        </div>
+
         <!-- SUB-PANEL 1: CONFIGURATION -->
-        <div id="bot-panel-config">
+        <div id="bot-panel-config" style="display: none;">
           <div class="glass-panel" style="display: flex; flex-direction: column; gap: 1.2rem;">
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
               <div class="form-group">
