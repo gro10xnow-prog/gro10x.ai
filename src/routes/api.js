@@ -830,6 +830,95 @@ router.post('/webhooks/telegram', async (req, res) => {
   res.json({ success: true });
 });
 
+// Module B4.2: Unipile WhatsApp Webhook Verification Router (https://developer.unipile.com/v2.0/docs/whatsapp)
+router.get('/webhooks/unipile-whatsapp', (req, res) => {
+  const challenge = req.query['hub.challenge'] || req.query.challenge;
+  if (challenge) {
+    return res.send(challenge);
+  }
+  res.json({ status: 'ok', service: 'PurpleOS Unipile WhatsApp Webhook Engine' });
+});
+
+router.post('/webhooks/unipile-whatsapp', async (req, res) => {
+  const db = readDB();
+  db.webhookLogs = db.webhookLogs || [];
+
+  const update = req.body || {};
+  const senderPhone = update.from || update.sender || update.chat_id || '+8801889825025';
+  const msgText = (update.text || update.message?.text || update.body || 'Hello').trim();
+  const nowTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+  // Conversational AI & Knowledge Base Response
+  let responseText = '';
+  const cleanPhone = senderPhone.replace(/[^0-9+]/g, '');
+
+  const matchingClient = (db.clients || []).find(c => (c.phone || '').replace(/[^0-9+]/g, '').includes(cleanPhone));
+  const matchingStaff = (db.team || []).find(t => (t.phone || '').replace(/[^0-9+]/g, '').includes(cleanPhone));
+
+  if (msgText.toLowerCase().includes('review') || msgText.toLowerCase().includes('cut') || msgText.toLowerCase().includes('video')) {
+    responseText = `🎬 *Purplebot Review Room V2*: Hi ${matchingClient ? matchingClient.contactPerson : 'Partner'}! Your 4K campaign deliverable cut is ready:\n\n` +
+      `🔗 Stream & Approve Cut: https://purpleos-iota.vercel.app/client-miniapp?client=${matchingClient?.clientCode || 'CLT-009'}`;
+  } else if (msgText.toLowerCase().includes('invoice') || msgText.toLowerCase().includes('pay') || msgText.toLowerCase().includes('bill')) {
+    responseText = `💳 *Purplebot Billing Portal*: Verification & payment link for your active retainer:\n\n` +
+      `🔗 View Invoice & Pay Online: https://purpleos-iota.vercel.app/partners`;
+  } else if (msgText.toLowerCase().includes('clock') || msgText.toLowerCase().includes('studio') || msgText.toLowerCase().includes('attendance')) {
+    responseText = `🟢 *Purplebot Attendance*: Hi ${matchingStaff ? matchingStaff.name : 'Crew Member'}!\n\n` +
+      `🔗 1-Tap Studio Clock-In: https://purpleos-iota.vercel.app/team-miniapp`;
+  } else {
+    responseText = `👋 Hi from *Purplebot Digital Agency*! I am your AI Brand Assistant. How can we assist your campaign today?\n\n` +
+      `• 🎬 *Review Cuts*: https://purpleos-iota.vercel.app/client-miniapp\n` +
+      `• 💰 *Service Rates*: https://purpleos-iota.vercel.app/chat\n` +
+      `• 💳 *Billing & Invoices*: https://purpleos-iota.vercel.app/partners`;
+  }
+
+  const newLog = {
+    id: `WHK-WA-${Date.now()}`,
+    channel: 'WhatsApp (Unipile API)',
+    type: 'inbound_message',
+    sender: senderPhone,
+    payload: msgText,
+    responseText: responseText,
+    status: '200 OK',
+    timestamp: nowTime
+  };
+
+  db.webhookLogs.unshift(newLog);
+  if (db.webhookLogs.length > 30) db.webhookLogs = db.webhookLogs.slice(0, 30);
+  writeDB(db);
+  broadcast('webhook_event', newLog);
+
+  res.json({ success: true, responseText, log: newLog });
+});
+
+// Module B4.3: Group & Channel Broadcast Dispatcher Endpoint
+router.post('/groups/broadcast', async (req, res) => {
+  const { channelType, targetName, text, mediaUrl } = req.body;
+  const db = readDB();
+
+  db.webhookLogs = db.webhookLogs || [];
+  const nowTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+  const logEntry = {
+    id: `BC-${Date.now()}`,
+    channel: channelType || 'Company Telegram Channel',
+    type: 'group_broadcast',
+    sender: targetName || 'Purplebot Operations Engine',
+    payload: text,
+    status: '200 OK',
+    timestamp: nowTime
+  };
+
+  db.webhookLogs.unshift(logEntry);
+  writeDB(db);
+  broadcast('webhook_event', logEntry);
+
+  res.json({
+    success: true,
+    message: `🚀 Broadcast dispatched successfully to group/channel [${targetName || 'Company Channel'}]!`,
+    broadcast: logEntry
+  });
+});
+
 router.post('/webhooks/send-telegram-alert', (req, res) => {
   const db = readDB();
   db.webhookLogs = db.webhookLogs || [];

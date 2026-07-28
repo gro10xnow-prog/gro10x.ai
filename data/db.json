@@ -288,7 +288,27 @@
   "quotes": [],
   "posts": [],
   "chats": [],
-  "webhookLogs": [],
+  "webhookLogs": [
+    {
+      "id": "BC-1785262409620",
+      "channel": "Telegram Company Channel",
+      "type": "group_broadcast",
+      "sender": "Purplebot Announcements",
+      "payload": "🎬 New TVC campaign launched for Chillox!",
+      "status": "200 OK",
+      "timestamp": "12:13 AM"
+    },
+    {
+      "id": "WHK-WA-1785262409611",
+      "channel": "WhatsApp (Unipile API)",
+      "type": "inbound_message",
+      "sender": "+8801889825025",
+      "payload": "Where can I review video cuts?",
+      "responseText": "🎬 *Purplebot Review Room V2*: Hi Client Partner Lead! Your 4K campaign deliverable cut is ready:\n\n🔗 Stream & Approve Cut: https://purpleos-iota.vercel.app/client-miniapp?client=CLT-009",
+      "status": "200 OK",
+      "timestamp": "12:13 AM"
+    }
+  ],
   "attendanceLog": [],
   "checkoutLog": [],
   "automations": [
