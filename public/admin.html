@@ -5,8 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="/css/styles.css">
   <link rel="stylesheet" href="/css/command-center.css">
+  <link rel="stylesheet" href="/css/pwa.css">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0b0f19">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js').catch(err => console.log('SW reg error:', err));
+      });
+    }
+  </script>
 </head>
 <body>
 
@@ -90,6 +100,10 @@
       <a class="nav-item" onclick="switchTab('financials')">
         <span class="icon">💰</span>
         <span>Financials & Expenses</span>
+      </a>
+      <a class="nav-item" onclick="switchTab('analytics')">
+        <span class="icon">📈</span>
+        <span>BI Analytics & Reports</span>
       </a>
       <a class="nav-item" onclick="switchTab('assets')">
         <span class="icon">📷</span>
@@ -606,6 +620,41 @@
             <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">💳</div>
             <h3 style="font-size: 1.2rem; color: #fff; margin-bottom: 0.4rem;">Payment Verifications & Audit</h3>
             <p style="color: var(--text-muted); max-width: 480px; margin: 0 auto; font-size: 0.88rem;">Track bank transfers, Bkash/Nagad verification codes, and client payment confirmations.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB: EXECUTIVE BI ANALYTICS (Module C10) -->
+      <section id="tab-analytics" class="tab-page" style="display: none;">
+        <div class="page-title-box" style="display: flex; justify-content: space-between; align-items: flex-end;">
+          <div>
+            <h1 class="page-title">📈 Executive BI Analytics & Intelligence</h1>
+            <div class="page-subtitle">MRR growth trends, lead pipeline conversion funnels, and agency profitability matrices</div>
+          </div>
+          <button class="btn-purple" onclick="alert('Exporting Executive Performance Summary PDF Report...')">📄 Export Executive PDF Report</button>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.25rem; margin-bottom: 1.5rem;" id="analyticsMetricCards">
+          <!-- Rendered dynamically -->
+        </div>
+
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+          <div class="glass-panel">
+            <div class="panel-header">
+              <h2 class="panel-title">💰 6-Month MRR & Net Margin Growth Chart</h2>
+            </div>
+            <div id="analyticsChartBox" style="height: 220px; display: flex; align-items: flex-end; gap: 1.5rem; padding: 1.5rem 0.5rem 0.5rem;">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+
+          <div class="glass-panel">
+            <div class="panel-header">
+              <h2 class="panel-title">🎯 Lead Conversion Funnel</h2>
+            </div>
+            <div id="analyticsFunnelBox" style="display: flex; flex-direction: column; gap: 0.8rem; padding-top: 0.5rem;">
+              <!-- Rendered dynamically -->
+            </div>
           </div>
         </div>
       </section>
@@ -2026,6 +2075,30 @@
         <!-- Rendered dynamically -->
       </div>
     </div>
+  </div>
+
+  <!-- Module C9: Mobile PWA Touch Bottom Navigation Bar -->
+  <div class="mobile-bottom-nav">
+    <a href="/" class="mobile-nav-item">
+      <span class="mobile-nav-icon">🏠</span>
+      <span>Home</span>
+    </a>
+    <a onclick="switchTab('kanban')" class="mobile-nav-item">
+      <span class="mobile-nav-icon">📋</span>
+      <span>Kanban</span>
+    </a>
+    <a href="/team" class="mobile-nav-item">
+      <span class="mobile-nav-icon">👥</span>
+      <span>Crew</span>
+    </a>
+    <a href="/partners" class="mobile-nav-item">
+      <span class="mobile-nav-icon">🤝</span>
+      <span>Partners</span>
+    </a>
+    <a onclick="switchTab('analytics')" class="mobile-nav-item">
+      <span class="mobile-nav-icon">📈</span>
+      <span>Analytics</span>
+    </a>
   </div>
 
   <script src="/js/command-center.js"></script>

@@ -1790,4 +1790,102 @@ router.post('/telegram-simulator', async (req, res) => {
   res.json({ success: true, responseText, inlineButtons });
 });
 
+// Module C10: BI Dashboard & Aggregated Analytics API
+router.get('/analytics', (req, res) => {
+  const db = readDB();
+  const invoices = db.invoices || [];
+  const expenses = db.expenses || [];
+  const leads = db.leads || [];
+  const tasks = db.tasks || [];
+  const clients = db.clients || [];
+
+  const totalPaidRevenue = invoices.filter(i => i.status === 'Paid').reduce((sum, i) => sum + (Number(i.amount) || 0), 0);
+  const totalPendingRevenue = invoices.filter(i => i.status !== 'Paid').reduce((sum, i) => sum + (Number(i.amount) || 0), 0);
+  const totalExpenses = expenses.filter(e => e.status !== 'Rejected').reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+  const mrr = totalPaidRevenue + totalPendingRevenue;
+  const netProfit = mrr - totalExpenses;
+  const marginPercent = mrr > 0 ? Math.round((netProfit / mrr) * 100) : 0;
+
+  // Funnel Stage Metrics
+  const funnel = {
+    totalLeads: leads.length,
+    contacted: leads.filter(l => l.stage !== 'New Inquiry').length,
+    quoted: leads.filter(l => l.stage === 'Quoted' || l.stage === 'Won / Closed').length,
+    won: leads.filter(l => l.stage === 'Won / Closed' || l.stage === 'Won').length
+  };
+
+  res.json({
+    success: true,
+    financials: {
+      mrr,
+      paidRevenue: totalPaidRevenue,
+      pendingRevenue: totalPendingRevenue,
+      overheadExpenses: totalExpenses,
+      netProfit,
+      marginPercent
+    },
+    funnel,
+    activeTasksCount: tasks.filter(t => t.stage !== 'Approved').length,
+    totalClientsCount: clients.length,
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Module C11: Client Health Score Calculation Engine API
+router.get('/clients/health', (req, res) => {
+  const db = readDB();
+  const clients = db.clients || [];
+  const invoices = db.invoices || [];
+  const reviews = db.reviews || [];
+  const tasks = db.tasks || [];
+
+  const healthData = clients.map(client => {
+    const clientInvoices = invoices.filter(i => (i.clientName || '').toLowerCase().includes(client.name.toLowerCase()));
+    const clientReviews = reviews.filter(r => (r.client || '').toLowerCase().includes(client.name.toLowerCase()));
+    const clientTasks = tasks.filter(t => (t.client || '').toLowerCase().includes(client.name.toLowerCase()));
+
+    // 1. Payment Score (Max 40 Pts)
+    const overdueInvoices = clientInvoices.filter(i => i.status !== 'Paid');
+    let paymentScore = 40;
+    if (overdueInvoices.length > 0) paymentScore = Math.max(0, 40 - (overdueInvoices.length * 15));
+
+    // 2. Revision Score (Max 30 Pts)
+    let totalRevisions = 0;
+    clientReviews.forEach(r => { totalRevisions += (r.comments || []).length; });
+    let revisionScore = 30;
+    if (totalRevisions > 5) revisionScore = 15;
+    if (totalRevisions > 10) revisionScore = 5;
+
+    // 3. Velocity Score (Max 30 Pts)
+    const overdueTasks = clientTasks.filter(t => t.stage !== 'Approved' && new Date(t.dueDate) < new Date());
+    let velocityScore = 30;
+    if (overdueTasks.length > 0) velocityScore = Math.max(0, 30 - (overdueTasks.length * 10));
+
+    const totalHealthScore = Math.min(100, paymentScore + revisionScore + velocityScore);
+    let status = 'Excellent';
+    let badgeClass = 'badge-emerald';
+
+    if (totalHealthScore < 60) {
+      status = 'At Risk';
+      badgeClass = 'badge-pink';
+    } else if (totalHealthScore < 80) {
+      status = 'Attention';
+      badgeClass = 'badge-amber';
+    }
+
+    return {
+      clientId: client.id,
+      clientName: client.name,
+      healthScore: totalHealthScore,
+      paymentScore,
+      revisionScore,
+      velocityScore,
+      status,
+      badgeClass
+    };
+  });
+
+  res.json({ success: true, clientsHealth: healthData });
+});
+
 module.exports = router;

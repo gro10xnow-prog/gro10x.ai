@@ -115,6 +115,8 @@ function renderAllViews() {
   renderChatHub();
   renderBotConfig();
   renderPLWidget();
+  renderAnalytics();
+  renderClientHealthScores();
 }
 
 // ──────────────────────────────────────────────────────────────
@@ -4384,5 +4386,115 @@ function openSampleWhatsAppLink() {
   const sampleMsg = "Hi Arman! This is Naimur from Purplebot Digital. Your 8-Year Anniversary Vlog cut is ready in Review Room V2: https://portal.purplebot.digital/review";
   const waUrl = generateWhatsAppLink('+8801911998877', sampleMsg);
   window.open(waUrl, '_blank');
+}
+
+// Module C10: BI Dashboard & Aggregated Intelligence Rendering
+async function renderAnalytics() {
+  const cardsContainer = document.getElementById('analyticsMetricCards');
+  if (!cardsContainer) return;
+
+  try {
+    const res = await fetch('/api/analytics');
+    const data = await res.json();
+    if (!data.success) return;
+
+    const fin = data.financials;
+    const fun = data.funnel;
+
+    cardsContainer.innerHTML = `
+      <div class="stat-box" style="background: rgba(168,85,247,0.1); border: 1px solid rgba(168,85,247,0.3);">
+        <div style="font-size: 0.78rem; color: var(--purple-light); font-weight: 700;">MONTHLY RECURRING REVENUE</div>
+        <div style="font-size: 1.8rem; font-weight: 800; color: #fff; margin: 0.3rem 0;">$${fin.mrr.toLocaleString()} USD</div>
+        <div style="font-size: 0.75rem; color: #34d399;">🟢 Gross Margin: ${fin.marginPercent}%</div>
+      </div>
+      <div class="stat-box" style="background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3);">
+        <div style="font-size: 0.78rem; color: #34d399; font-weight: 700;">PAID COLLECTED REVENUE</div>
+        <div style="font-size: 1.8rem; font-weight: 800; color: #fff; margin: 0.3rem 0;">$${fin.paidRevenue.toLocaleString()} USD</div>
+        <div style="font-size: 0.75rem; color: var(--text-muted);">Verified in Bank/Bkash</div>
+      </div>
+      <div class="stat-box" style="background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3);">
+        <div style="font-size: 0.78rem; color: #fbbf24; font-weight: 700;">PENDING UNCOLLECTED</div>
+        <div style="font-size: 1.8rem; font-weight: 800; color: #fff; margin: 0.3rem 0;">$${fin.pendingRevenue.toLocaleString()} USD</div>
+        <div style="font-size: 0.75rem; color: #fbbf24;">Action required</div>
+      </div>
+      <div class="stat-box" style="background: rgba(6,182,212,0.1); border: 1px solid rgba(6,182,212,0.3);">
+        <div style="font-size: 0.78rem; color: #38bdf8; font-weight: 700;">ACTIVE RETAINER CLIENTS</div>
+        <div style="font-size: 1.8rem; font-weight: 800; color: #fff; margin: 0.3rem 0;">${data.totalClientsCount} Clients</div>
+        <div style="font-size: 0.75rem; color: #38bdf8;">${data.activeTasksCount} active campaigns</div>
+      </div>
+    `;
+
+    // 6-Month Growth Bar Chart
+    const chartBox = document.getElementById('analyticsChartBox');
+    if (chartBox) {
+      const months = ['Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'];
+      const revValues = [12000, 14500, 15000, 16800, 17200, fin.mrr || 18400];
+      const maxVal = Math.max(...revValues, 20000);
+
+      chartBox.innerHTML = months.map((m, idx) => {
+        const heightPct = Math.round((revValues[idx] / maxVal) * 100);
+        return `
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; height:100%; justify-content:flex-end;">
+            <div style="font-size:0.75rem; color:#34d399; font-weight:700; margin-bottom:0.4rem;">$${(revValues[idx]/1000).toFixed(1)}k</div>
+            <div style="width:100%; height:${heightPct}%; background:linear-gradient(180deg, #a855f7, #ec4899); border-radius:8px 8px 0 0; min-height:10px;"></div>
+            <div style="font-size:0.78rem; color:var(--text-muted); font-weight:600; margin-top:0.5rem;">${m}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Funnel Visual
+    const funnelBox = document.getElementById('analyticsFunnelBox');
+    if (funnelBox) {
+      const tot = Math.max(1, fun.totalLeads);
+      funnelBox.innerHTML = `
+        <div style="background:rgba(255,255,255,0.04); padding:0.6rem 0.8rem; border-radius:8px;">
+          <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#fff;">
+            <span>1. Inquiries Received</span> <strong>${fun.totalLeads} (100%)</strong>
+          </div>
+          <div style="height:6px; background:var(--purple-accent); border-radius:4px; margin-top:0.4rem;"></div>
+        </div>
+        <div style="background:rgba(255,255,255,0.04); padding:0.6rem 0.8rem; border-radius:8px;">
+          <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#fff;">
+            <span>2. Contacted & Qualified</span> <strong>${fun.contacted} (${Math.round((fun.contacted/tot)*100)}%)</strong>
+          </div>
+          <div style="height:6px; background:#38bdf8; width:${Math.round((fun.contacted/tot)*100)}%; border-radius:4px; margin-top:0.4rem;"></div>
+        </div>
+        <div style="background:rgba(255,255,255,0.04); padding:0.6rem 0.8rem; border-radius:8px;">
+          <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#fff;">
+            <span>3. Proposal Sent</span> <strong>${fun.quoted} (${Math.round((fun.quoted/tot)*100)}%)</strong>
+          </div>
+          <div style="height:6px; background:#fbbf24; width:${Math.round((fun.quoted/tot)*100)}%; border-radius:4px; margin-top:0.4rem;"></div>
+        </div>
+        <div style="background:rgba(255,255,255,0.04); padding:0.6rem 0.8rem; border-radius:8px;">
+          <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#fff;">
+            <span>4. Won & Converted</span> <strong>${fun.won} (${Math.round((fun.won/tot)*100)}%)</strong>
+          </div>
+          <div style="height:6px; background:#34d399; width:${Math.round((fun.won/tot)*100)}%; border-radius:4px; margin-top:0.4rem;"></div>
+        </div>
+      `;
+    }
+  } catch (err) {
+    console.error('Error rendering BI analytics:', err);
+  }
+}
+
+// Module C11: Client Health Score CRM Table Badge Rendering
+async function renderClientHealthScores() {
+  try {
+    const res = await fetch('/api/clients/health');
+    const data = await res.json();
+    if (!data.success || !data.clientsHealth) return;
+
+    data.clientsHealth.forEach(ch => {
+      const el = document.getElementById(`health-badge-${ch.clientId}`);
+      if (el) {
+        el.className = `badge ${ch.badgeClass}`;
+        el.innerHTML = `🩺 ${ch.healthScore}/100 ${ch.status}`;
+      }
+    });
+  } catch (err) {
+    console.error('Error rendering client health scores:', err);
+  }
 }
 

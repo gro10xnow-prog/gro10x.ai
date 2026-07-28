@@ -1,0 +1,81 @@
+/* -------------------------------------------------------------
+ * 📱 PURPLEOS MOBILE PWA & BOTTOM NAVIGATION STYLES (Module C9)
+ * ------------------------------------------------------------- */
+
+/* MOBILE BOTTOM NAVIGATION BAR (Hidden on Desktop, Visible on Mobile < 768px) */
+.mobile-bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  background: rgba(11, 15, 25, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 9999;
+  justify-content: space-around;
+  align-items: center;
+  padding: 0 0.5rem;
+}
+
+.mobile-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+  text-decoration: none;
+  font-size: 0.7rem;
+  font-weight: 600;
+  gap: 0.2rem;
+  transition: all 0.2s ease;
+  flex: 1;
+}
+
+.mobile-nav-icon {
+  font-size: 1.25rem;
+}
+
+.mobile-nav-item.active,
+.mobile-nav-item:hover {
+  color: var(--purple-light);
+}
+
+.mobile-nav-item.active .mobile-nav-icon {
+  transform: translateY(-2px);
+}
+
+/* PWA INSTALL BANNER */
+.pwa-install-banner {
+  position: fixed;
+  bottom: 74px;
+  left: 1rem;
+  right: 1rem;
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.95), rgba(14, 165, 233, 0.95));
+  color: #fff;
+  padding: 0.85rem 1.25rem;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  z-index: 9998;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  backdrop-filter: blur(12px);
+  animation: slideUpPwa 0.3s ease;
+}
+
+@keyframes slideUpPwa {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@media (max-width: 768px) {
+  .mobile-bottom-nav {
+    display: flex;
+  }
+  body {
+    padding-bottom: 70px !important;
+  }
+}
