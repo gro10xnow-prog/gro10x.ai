@@ -10,14 +10,14 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static assets
-app.use(express.static(path.join(__dirname, '../public')));
-
 // SSE Route
 app.get('/api/sync', sseHandler);
 
-// API Router
+// API Router (prioritized before static assets)
 app.use('/api', apiRoutes);
+
+// Serve static assets
+app.use(express.static(path.join(__dirname, '../public')));
 
 // Portal Routes
 app.get('/', (req, res) => {

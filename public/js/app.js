@@ -33,17 +33,25 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function checkAuthSession() {
   try {
-    const token = localStorage.getItem('sb-access-token');
+    const token = localStorage.getItem('sb-access-token') || localStorage.getItem('purpleos_pin_token');
     const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
     const res = await fetch('/api/auth/me', { headers });
+    if (res.status === 401) {
+      console.warn('⚠️ Unauthenticated access attempt. Redirecting to login...');
+      window.location.href = '/auth?redirect=/admin';
+      return;
+    }
     const data = await res.json();
     if (data.success && data.user) {
       console.log('👤 Authenticated Profile:', data.user.profile);
       window.currentUser = data.user;
       updateUserProfileUI();
+    } else {
+      window.location.href = '/auth?redirect=/admin';
     }
   } catch (err) {
     console.warn('Auth session check error:', err);
+    window.location.href = '/auth?redirect=/admin';
   }
 }
 
@@ -198,9 +206,23 @@ function setupSSE() {
 
 
 
-function renderDashboard() {
+async function renderDashboard() {
   const tbody = document.getElementById('dashboardTableBody');
   if (!tbody) return;
+
+  // Fetch live BI Analytics overview
+  try {
+    const res = await fetch('/api/analytics');
+    const analytics = await res.json();
+    if (analytics.success && analytics.financials) {
+      const kpiRev = document.getElementById('kpiMonthlyRevenue');
+      const kpiMargin = document.getElementById('kpiMarginSubtitle');
+      if (kpiRev) kpiRev.innerText = `$${analytics.financials.paidRevenue.toLocaleString()} USD`;
+      if (kpiMargin) kpiMargin.innerText = `Net Margin: ${analytics.financials.marginPercent}% ($${analytics.financials.netProfit.toLocaleString()})`;
+    }
+  } catch (err) {
+    console.warn('Dashboard analytics fetch error:', err);
+  }
 
   const clients = appData.clients || [];
   if (clients.length === 0) {
@@ -433,7 +455,9 @@ function filterCRM() {
     return;
   }
 
-  tbody.innerHTML = filtered.map(c => `
+  tbody.innerHTML = filtered.map(c => {
+    const healthBadge = c.healthScore ? `<span class="badge ${c.badgeClass || 'badge-emerald'}" style="font-size:0.7rem;">${c.status || 'Excellent'}</span>` : `<span class="badge badge-emerald" style="font-size:0.7rem;">${c.status}</span>`;
+    return `
     <tr style="cursor: pointer;" onclick="openClientProfile('${c.id}')">
       <td><code>${c.id}</code></td>
       <td><strong>${c.name}</strong></td>
@@ -441,7 +465,7 @@ function filterCRM() {
       <td>${c.contactPerson}</td>
       <td>${c.email}<br><small style="color:var(--text-muted)">${c.phone}</small></td>
       <td><strong>${c.totalSpent}</strong></td>
-      <td><span class="badge badge-emerald">${c.status}</span></td>
+      <td>${healthBadge}</td>
       <td style="text-align: right;">
         <div style="display: flex; justify-content: flex-end; gap: 0.4rem;" onclick="event.stopPropagation();">
           <button class="btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.78rem; color: #38bdf8;" onclick="generateUserAccessCard('${c.phone}', '${c.id}', 'client', '${c.email}')">🔑 Access Card</button>
@@ -449,7 +473,66 @@ function filterCRM() {
         </div>
       </td>
     </tr>
-  `).join('');
+  `;
+  }).join('');
+}
+
+async function renderClientHealthScores() {
+  try {
+    const res = await fetch('/api/clients/health');
+    const data = await res.json();
+    if (data.success && data.clientsHealth) {
+      data.clientsHealth.forEach(h => {
+        const client = (appData.clients || []).find(c => c.id === h.clientId);
+        if (client) {
+          client.healthScore = h.healthScore;
+          client.badgeClass = h.badgeClass;
+          client.healthStatus = h.status;
+        }
+      });
+      filterCRM();
+    }
+  } catch (err) {
+    console.warn('Error fetching client health scores:', err);
+  }
+}
+
+function mockImportCSV() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.csv';
+  input.onchange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async (evt) => {
+      const text = evt.target.result;
+      const lines = text.split('\n').filter(l => l.trim() !== '');
+      let added = 0;
+      for (let i = 1; i < lines.length; i++) {
+        const parts = lines[i].split(',').map(p => p.trim());
+        if (parts[0]) {
+          await fetch('/api/clients', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              name: parts[0],
+              contactPerson: parts[1] || 'Brand Manager',
+              email: parts[2] || '',
+              phone: parts[3] || '',
+              category: parts[4] || 'General',
+              status: 'Active Retainer'
+            })
+          });
+          added++;
+        }
+      }
+      alert(`✅ CSV Import Successful: Imported ${added} client record(s).`);
+      fetchInitialData();
+    };
+    reader.readAsText(file);
+  };
+  input.click();
 }
 
 function renderCRM() {
@@ -1254,12 +1337,20 @@ async function advanceTaskStage(taskId, currentStage) {
   const nextStage = stages[currentIdx + 1];
 
   try {
-    await fetch(`/api/tasks/${taskId}`, {
+    const res = await fetch(`/api/tasks/${taskId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ stage: nextStage })
     });
-    fetchInitialData();
+    const data = await res.json();
+    if (data.success) {
+      if (nextStage === 'Editing') {
+        alert(`🎬 Task advanced to "Editing"!\nAssigned editor notified via Telegram (AUT-001).`);
+      } else if (nextStage === 'Client Review') {
+        alert(`📩 Task advanced to "Client Review"!\nClient representative sent Review Room link via Telegram (AUT-004).`);
+      }
+      fetchInitialData();
+    }
   } catch (err) {
     console.error('Error advancing task:', err);
   }
@@ -1620,6 +1711,85 @@ function renderFinancials() {
   renderQuotations();
   filterExpenses();
   renderFinancialChart();
+  renderPaymentLogs();
+}
+
+function renderPaymentLogs() {
+  const tbody = document.getElementById('paymentLogsTableBody');
+  const badge = document.getElementById('paymentLogsCountBadge');
+  if (!tbody) return;
+
+  const logs = appData.paymentLogs || [];
+  if (badge) badge.innerText = `${logs.length} Payment${logs.length === 1 ? '' : 's'} Verified`;
+
+  if (logs.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2.5rem;">
+          💳 No payment verifications logged yet. Click "✅ Mark Paid" on invoices to log verified transactions.
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  tbody.innerHTML = logs.map(l => `
+    <tr>
+      <td><code>${l.id}</code></td>
+      <td><strong>${l.invoiceId}</strong></td>
+      <td><strong>${l.clientName || l.payerName}</strong></td>
+      <td><strong style="color:var(--emerald-accent);">$${(Number(l.amount) || 0).toLocaleString()} USD</strong></td>
+      <td><span class="badge badge-purple">${l.method || 'Bkash / Nagad'}</span></td>
+      <td><code style="color:var(--cyan-accent);">${l.reference || 'N/A'}</code></td>
+      <td><small style="color:var(--text-muted);">${(l.timestamp || '').split('T')[0] || new Date().toISOString().split('T')[0]}</small></td>
+    </tr>
+  `).join('');
+}
+
+async function updateInvoiceStatus(invoiceId, newStatus) {
+  openInvoiceActionId = null;
+
+  if (newStatus === 'Paid') {
+    const inv = (appData.invoices || []).find(i => i.id === invoiceId);
+    const method = prompt(`💳 Payment Verification for Invoice ${invoiceId}\nEnter Payment Method (e.g. Bkash, Nagad, Bank Wire, Credit Card):`, 'Bkash / Nagad Direct');
+    if (!method) return;
+    const trxId = prompt(`Enter Transaction Reference / TRX ID / Bank Ref:`, `TRX-${Date.now().toString().slice(-6)}`);
+    if (!trxId) return;
+
+    try {
+      const res = await fetch(`/api/invoices/${invoiceId}/pay`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          method,
+          trxId,
+          payerName: inv?.clientName || 'Client'
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert(`✅ Payment of $${inv?.amount || 0} USD verified for invoice ${invoiceId}!\nClient notified via Telegram (AUT-005).`);
+        await fetchInitialData();
+        return;
+      }
+    } catch (err) {
+      console.error('Error processing payment verification:', err);
+    }
+  }
+
+  try {
+    const res = await fetch(`/api/invoices/${invoiceId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: newStatus })
+    });
+    const data = await res.json();
+    if (data.success) {
+      fetchInitialData();
+    }
+  } catch (err) {
+    console.error('Error updating invoice status:', err);
+  }
 }
 
 // BC-5: Financial Revenue / Expense / Salary Bar Chart Renderer
@@ -2457,8 +2627,17 @@ async function checkOutAsset(assetId) {
   const asset = (appData.assets || []).find(a => a.id === assetId);
   if (!asset) return;
 
-  const borrower = prompt(`📤 Check Out "${asset.name}"\nEnter crew member name taking this equipment:`, 'Farhan Ahmed');
-  if (!borrower) return;
+  const teamList = (appData.team || []).map((t, idx) => `${idx + 1}. ${t.name} (${t.role})`).join('\n');
+  const teamPrompt = `📤 Check Out "${asset.name}"\nSelect crew member number or enter name:\n\n${teamList || '1. Farhan Ahmed (Video Director)'}`;
+  
+  const selected = prompt(teamPrompt, '1');
+  if (!selected) return;
+
+  let borrower = selected.trim();
+  const numIndex = parseInt(selected) - 1;
+  if (!isNaN(numIndex) && appData.team && appData.team[numIndex]) {
+    borrower = appData.team[numIndex].name;
+  }
 
   try {
     const res = await fetch(`/api/assets/${assetId}/checkout`, {
@@ -2468,7 +2647,7 @@ async function checkOutAsset(assetId) {
     });
     const data = await res.json();
     if (data.success) {
-      alert(`📤 ${asset.name} checked out to ${borrower}`);
+      alert(`📤 ${asset.name} checked out to ${borrower}! Status set to "In Use".`);
       fetchInitialData();
     }
   } catch (err) {
@@ -2489,7 +2668,7 @@ async function checkInAsset(assetId) {
     });
     const data = await res.json();
     if (data.success) {
-      alert(`📥 ${asset.name} returned to studio inventory`);
+      alert(`📥 ${asset.name} returned to studio inventory! Status reset to "Good".`);
       fetchInitialData();
     }
   } catch (err) {
@@ -2611,14 +2790,17 @@ function closeAssetFormModal() {
 async function submitAssetForm(event) {
   event.preventDefault();
 
+  const condition = document.getElementById('assetFormCondition').value;
+  const name = document.getElementById('assetFormName').value;
+
   const payload = {
-    name: document.getElementById('assetFormName').value,
+    name,
     serial: document.getElementById('assetFormSerial').value,
     category: document.getElementById('assetFormCategory').value,
     purchasePrice: Number(document.getElementById('assetFormPrice').value) || 0,
     monthlyDepreciation: Number(document.getElementById('assetFormDepreciation').value) || 0,
     assignedTo: document.getElementById('assetFormAssignedTo').value,
-    condition: document.getElementById('assetFormCondition').value
+    condition
   };
 
   const isEdit = !!_editingAssetId;
@@ -2636,6 +2818,26 @@ async function submitAssetForm(event) {
     if (data.success) {
       closeAssetFormModal();
       await fetchInitialData();
+
+      // Check if maintenance ticket should be generated
+      if (condition === 'Needs Repair' || condition === 'Damaged') {
+        if (confirm(`⚠️ Asset "${name}" marked as "${condition}". Log a support repair ticket in HR Ops?`)) {
+          await fetch('/api/tickets', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              category: 'Equipment Repair',
+              title: `Repair Request: ${name}`,
+              description: `Equipment marked as ${condition}. Requires inspection / maintenance.`,
+              urgency: 'High',
+              loggedBy: window.currentUser?.profile?.name || 'Mahmudul Hasan',
+              assignedTo: 'Maintenance Lead'
+            })
+          });
+          alert('🔧 Support repair ticket logged in HR Ops!');
+          await fetchInitialData();
+        }
+      }
     } else {
       alert('Failed to save asset: ' + (data.error || 'Unknown error'));
     }
@@ -5249,15 +5451,18 @@ function renderHrOps() {
 }
 
 async function approveLeave(leaveId) {
+  const leave = (appData.leaves || []).find(l => l.id === leaveId);
+  const reviewer = window.currentUser?.profile?.name || 'Agency Owner';
+
   try {
     const res = await fetch(`/api/leaves/${leaveId}/approve`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ reviewedBy: 'Line Manager / Owner' })
+      body: JSON.stringify({ reviewedBy: reviewer })
     });
     const data = await res.json();
     if (data.success) {
-      alert(`✅ Leave request ${leaveId} APPROVED!\nStaff attendance calendar updated.`);
+      alert(`✅ Leave request ${leaveId} for ${leave?.staffName || 'Staff'} APPROVED!\nStaff attendance status set to "On Leave" and Telegram notification dispatched (AUT-011).`);
       await fetchInitialData();
     }
   } catch (err) {
@@ -5266,15 +5471,18 @@ async function approveLeave(leaveId) {
 }
 
 async function rejectLeave(leaveId) {
+  const leave = (appData.leaves || []).find(l => l.id === leaveId);
+  const reviewer = window.currentUser?.profile?.name || 'Agency Owner';
+
   try {
     const res = await fetch(`/api/leaves/${leaveId}/reject`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ reviewedBy: 'Line Manager / Owner' })
+      body: JSON.stringify({ reviewedBy: reviewer })
     });
     const data = await res.json();
     if (data.success) {
-      alert(`❌ Leave request ${leaveId} DECLINED.`);
+      alert(`❌ Leave request ${leaveId} for ${leave?.staffName || 'Staff'} DECLINED.`);
       await fetchInitialData();
     }
   } catch (err) {
@@ -5283,10 +5491,40 @@ async function rejectLeave(leaveId) {
 }
 
 async function triggerManualEodPrompt() {
+  const activeCount = (appData.team || []).filter(t => t.telegramId).length;
   try {
     const res = await fetch('/api/eod/trigger-prompt', { method: 'POST' });
     const data = await res.json();
     if (data.success) {
+      alert(`✅ 7PM EOD prompt pushed to ${activeCount} active crew member(s) via Telegram (AUT-012)!`);
+      fetchInitialData();
+    }
+  } catch (err) {
+    console.error('Error triggering manual EOD prompt:', err);
+  }
+}
+
+async function updateTicketStatus(ticketId, newStatus) {
+  const ticket = (appData.tickets || []).find(t => t.id === ticketId);
+  const reviewer = window.currentUser?.profile?.name || 'Maintenance Lead';
+
+  try {
+    const res = await fetch(`/api/tickets/${ticketId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: newStatus, resolvedBy: reviewer })
+    });
+    const data = await res.json();
+    if (data.success) {
+      if (newStatus === 'Resolved') {
+        alert(`✅ Support Ticket ${ticketId} marked RESOLVED!\n${ticket?.loggedBy || 'Staff'} notified via Telegram (AUT-013).`);
+      }
+      fetchInitialData();
+    }
+  } catch (err) {
+    console.error('Error updating ticket status:', err);
+  }
+}
       alert('⚡ 7:00 PM Daily EOD Telegram prompt pushed to all active team members!');
     }
   } catch (err) {
@@ -5380,6 +5618,40 @@ function renderExecutiveIntelligence() {
       • Active Support Tickets: ${(appData.tickets || []).filter(t => t.status !== 'Resolved').length} Open
     `;
   }
+
+  renderAutomationLogs();
+}
+
+function renderAutomationLogs() {
+  const tbody = document.getElementById('automationLogsTableBody');
+  const badge = document.getElementById('automationLogsBadge');
+  if (!tbody) return;
+
+  const logs = appData.automationLogs || [];
+  if (badge) badge.innerText = `${logs.length} Dispatch${logs.length === 1 ? '' : 'es'} Logged`;
+
+  if (logs.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="7" style="text-align:center; color:var(--text-muted); padding:2rem;">
+          📲 No automation notification dispatches logged yet. Trigger an automated action or briefing to view audit entries.
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  tbody.innerHTML = logs.map(l => `
+    <tr>
+      <td><code>${l.id}</code></td>
+      <td><span class="badge badge-purple">${l.ruleId || 'AUT-SYS'}</span></td>
+      <td><strong>${l.event}</strong></td>
+      <td><small style="color:var(--cyan-accent);">${l.recipient || 'Telegram Target'}</small></td>
+      <td><small style="color:#cbd5e1;">${(l.payload || '').slice(0, 45)}...</small></td>
+      <td><small style="color:var(--text-muted);">${(l.timestamp || '').split('T')[0] || 'Today'}</small></td>
+      <td><span class="badge badge-emerald">Dispatched</span></td>
+    </tr>
+  `).join('');
 }
 
 async function triggerMorningBriefing() {

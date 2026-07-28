@@ -14,6 +14,10 @@ function readDB() {
 }
 
 function writeDB(data) {
+  if (process.env.FORCE_SUPABASE === 'true') {
+    // In production with Supabase enabled, bypass ephemeral db.json writes
+    return true;
+  }
   try {
     fs.writeFileSync(dbPath, JSON.stringify(data, null, 2), 'utf8');
     return true;

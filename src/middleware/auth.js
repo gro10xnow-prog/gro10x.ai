@@ -41,26 +41,50 @@ async function requireAuth(req, res, next) {
     }
   }
 
-  // Development Fallback: allow mock admin user session if unauthenticated in dev
-  const db = readDB();
-  const defaultEmp = (db.team && db.team[0]) || { name: 'Mahmudul Hasan', role: 'Agency Director' };
-
-  req.user = {
-    id: 'mock-user-001',
-    email: 'claycoinbank@gmail.com',
-    profile: {
-      emp_code: defaultEmp.id || 'EMP-001',
-      name: defaultEmp.name || 'Mahmudul Hasan',
-      email: 'claycoinbank@gmail.com',
-      role: defaultEmp.role || 'Agency Founder & Master Owner',
-      accessLevel: 'Owner / Admin',
-      phone: defaultEmp.phone || '+8801700000000',
-      department: defaultEmp.department || 'Management',
-      status: defaultEmp.status || 'In Studio'
+  // Check PIN auth records if token is PIN token
+  if (token) {
+    const dbData = readDB();
+    const pinUser = (dbData.authPins || []).find(p => p.pin === token || p.phone === token);
+    if (pinUser) {
+      const emp = (dbData.team || []).find(t => t.id === pinUser.linkedId || t.phone === pinUser.phone) || dbData.team[0];
+      req.user = {
+        id: emp.id || 'EMP-001',
+        email: emp.email || 'owner@purplebot.co',
+        profile: {
+          emp_code: emp.id || 'EMP-001',
+          name: emp.name || 'Mahmudul Hasan',
+          role: emp.role || 'Agency Owner',
+          accessLevel: 'Owner / Admin',
+          department: emp.department || 'Management'
+        }
+      };
+      return next();
     }
-  };
+  }
 
-  next();
+  // Development Fallback: allow mock admin user session ONLY in non-production development environments
+  if (process.env.NODE_ENV !== 'production' && !process.env.FORCE_SUPABASE) {
+    const db = readDB();
+    const defaultEmp = (db.team && db.team[0]) || { name: 'Mahmudul Hasan', role: 'Agency Director' };
+
+    req.user = {
+      id: 'mock-user-001',
+      email: 'claycoinbank@gmail.com',
+      profile: {
+        emp_code: defaultEmp.id || 'EMP-001',
+        name: defaultEmp.name || 'Mahmudul Hasan',
+        email: 'claycoinbank@gmail.com',
+        role: defaultEmp.role || 'Agency Founder & Master Owner',
+        accessLevel: 'Owner / Admin',
+        phone: defaultEmp.phone || '+8801700000000',
+        department: defaultEmp.department || 'Management',
+        status: defaultEmp.status || 'In Studio'
+      }
+    };
+    return next();
+  }
+
+  return res.status(401).json({ error: 'Unauthorized: Valid authentication token or session cookie is required' });
 }
 
 module.exports = {

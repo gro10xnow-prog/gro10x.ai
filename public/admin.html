@@ -743,12 +743,32 @@
           </div>
         </div>
 
-        <!-- SUB-TAB 4: PAYMENT VERIFICATIONS (Placeholder) -->
+        <!-- SUB-TAB 4: PAYMENT VERIFICATIONS LOG -->
         <div id="fin-subtab-verifications" style="display: none;">
-          <div class="glass-panel" style="text-align: center; padding: 3rem 1.5rem;">
-            <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">💳</div>
-            <h3 style="font-size: 1.2rem; color: #fff; margin-bottom: 0.4rem;">Payment Verifications & Audit</h3>
-            <p style="color: var(--text-muted); max-width: 480px; margin: 0 auto; font-size: 0.88rem;">Track bank transfers, Bkash/Nagad verification codes, and client payment confirmations.</p>
+          <div class="glass-panel">
+            <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+              <div>
+                <h2 class="panel-title">💳 Payment Verifications & Audit Log</h2>
+                <div style="font-size:0.8rem; color:var(--text-muted);">Verified bank wires, Bkash/Nagad transactions, and client payment receipts</div>
+              </div>
+              <span id="paymentLogsCountBadge" class="badge badge-emerald">0 Payments Verified</span>
+            </div>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Payment ID</th>
+                  <th>Invoice ID</th>
+                  <th>Client Name</th>
+                  <th>Amount</th>
+                  <th>Method</th>
+                  <th>Reference / TRX ID</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody id="paymentLogsTableBody">
+                <!-- Rendered dynamically via renderPaymentLogs() -->
+              </tbody>
+            </table>
           </div>
         </div>
       </section>
@@ -915,7 +935,7 @@
         </div>
 
         <!-- TEAM BROADCAST NOTICE CONTROL PANEL -->
-        <div class="glass-panel">
+        <div class="glass-panel" style="margin-bottom: 1.5rem;">
           <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center;">
             <div>
               <h2 class="panel-title">📢 Team Broadcast Announcement Control Panel</h2>
@@ -945,6 +965,33 @@
               <button class="btn-purple" style="background: #10b981; margin-top: 1rem; justify-content: center;" onclick="triggerSpecialistBriefings()">⚡ Push Specialist Briefings</button>
             </div>
           </div>
+        </div>
+
+        <!-- TELEGRAM NOTIFICATION DISPATCH AUDIT LOG -->
+        <div class="glass-panel">
+          <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <div>
+              <h2 class="panel-title">📲 Telegram Notification Dispatch Log (AUT-001 ➔ AUT-016)</h2>
+              <div style="font-size: 0.8rem; color: var(--text-muted);">Real-time audit record of automated alerts dispatches across clients, editors, finance, and agency owner</div>
+            </div>
+            <span id="automationLogsBadge" class="badge badge-purple">0 Dispatches Logged</span>
+          </div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Log ID</th>
+                <th>Rule Code</th>
+                <th>Trigger Event</th>
+                <th>Recipient / Chat Target</th>
+                <th>Dispatched Payload</th>
+                <th>Timestamp</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="automationLogsTableBody">
+              <!-- Rendered dynamically via renderAutomationLogs() -->
+            </tbody>
+          </table>
         </div>
       </section>
 
@@ -1472,6 +1519,53 @@
               <div class="metric-label">Top Command</div>
               <div class="metric-value" style="color: var(--amber-accent); font-size: 1.3rem;">/mybookings</div>
               <div class="metric-sub">412 calls</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 13: AGENCY SETTINGS PANEL & OWNER TELEGRAM ID CONFIGURATION (Phase I) -->
+      <section id="tab-settings" class="tab-page" style="display: none;">
+        <div class="page-title-box" style="display: flex; justify-content: space-between; align-items: flex-end;">
+          <div>
+            <h1 class="page-title">⚙️ Agency Settings & Telegram Dispatch Configuration</h1>
+            <div class="page-subtitle">Configure agency profile, target currency, owner Telegram Chat ID, and system notification preferences</div>
+          </div>
+          <button class="btn-purple" onclick="saveAgencySettings()">💾 Save Agency Settings</button>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+          <!-- CARD 1: AGENCY IDENTITY & CURRENCY -->
+          <div class="glass-panel">
+            <h2 style="font-size: 1.1rem; color: #fff; font-family: var(--font-heading); margin-bottom: 1rem;">🏢 Agency Profile & Currency</h2>
+            <div class="form-group" style="margin-bottom: 1rem;">
+              <label style="font-size: 0.8rem; font-weight: 600; color: #d4d4d8;">Agency Name</label>
+              <input type="text" id="setAgencyName" class="form-input" value="Purplebot Digital Agency">
+            </div>
+            <div class="form-group" style="margin-bottom: 1rem;">
+              <label style="font-size: 0.8rem; font-weight: 600; color: #d4d4d8;">Operating Currency</label>
+              <select id="setCurrency" class="role-select" style="width: 100%;">
+                <option value="USD" selected>USD ($) — International Client Billing</option>
+                <option value="BDT">BDT (৳) — Local Operations & Salary</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label style="font-size: 0.8rem; font-weight: 600; color: #d4d4d8;">Default Invoice Tax / VAT %</label>
+              <input type="number" id="setTaxRate" class="form-input" value="5">
+            </div>
+          </div>
+
+          <!-- CARD 2: OWNER TELEGRAM CHAT ID & ALERTS -->
+          <div class="glass-panel">
+            <h2 style="font-size: 1.1rem; color: #fff; font-family: var(--font-heading); margin-bottom: 1rem;">📱 Owner Telegram ID & Dispatch Target</h2>
+            <div class="form-group" style="margin-bottom: 1rem;">
+              <label style="font-size: 0.8rem; font-weight: 600; color: #d4d4d8;">Owner Telegram Chat ID *</label>
+              <input type="text" id="setOwnerTelegramId" class="form-input" value="123456789" placeholder="e.g. 123456789 (Use @userinfobot to get Chat ID)">
+              <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.3rem;">Receives Tier 3 expense release requests, 7PM EOD summaries, and high-urgency repair alerts.</div>
+            </div>
+            <div class="form-group">
+              <label style="font-size: 0.8rem; font-weight: 600; color: #d4d4d8;">Owner Contact Phone / WhatsApp</label>
+              <input type="text" id="setOwnerPhone" class="form-input" value="+8801700000000">
             </div>
           </div>
         </div>

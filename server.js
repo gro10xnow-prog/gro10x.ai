@@ -18,14 +18,14 @@ app.use(express.urlencoded({ extended: true }));
 // Subdomain & Auth Portal Routing
 app.use(subdomainRouter);
 
-// Serve static frontend assets from /public
-app.use(express.static(path.join(__dirname, 'public')));
-
 // SSE Endpoint for real-time synchronization
 app.get('/api/sync', sseHandler);
 
-// Mount API routes
+// Mount API routes (prioritized before static assets)
 app.use('/api', apiRoutes);
+
+// Serve static frontend assets from /public
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Explicit Multi-Portal Routes (Phase C Architecture)
 app.get('/', (req, res) => {

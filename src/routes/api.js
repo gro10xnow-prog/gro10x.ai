@@ -19,6 +19,162 @@ router.get('/health', (req, res) => {
   });
 });
 
+// LANDING PAGE CMS ENGINE API (v0.7.5.1)
+const defaultCMSContent = {
+  agencyInfo: {
+    heroTitle: "Digital. Design. Tech.",
+    heroSubtitle: "Expert solutions tailored to your brand. We combine data-driven marketing, viral short-form content, and cutting-edge tech to deliver measurable business growth.",
+    email: "contact@purplebot.digital",
+    phone: "+88 01711 019550",
+    whatsapp: "+8801711019550",
+    registeredAddress: "Plot 7, Road 17, Flat 2/C, Rupsha Tower, Banani C/A, Dhaka - 1213",
+    operatingAddress: "Flat A5-B5-A4, House 9, Road 1, Block B, Niketon, Gulshan-1, Dhaka - 1212",
+    stats: {
+      years: "8+",
+      clients: "100+",
+      creatives: "20,000+",
+      reach: "10M+"
+    }
+  },
+  clientMarquee: [
+    "Aarong Earth", "LG Electronics", "Chillox Burgers", "BAT Global", 
+    "Taptap Send", "Mortein", "Harpic", "Yatai Japanese", "Fortress Build", "UCB Bank"
+  ],
+  whyUs: [
+    {
+      icon: "🎯",
+      title: "Data-Driven Strategy",
+      description: "We don't guess. We analyze market trends, audience behavior, and performance metrics to craft winning campaigns."
+    },
+    {
+      icon: "🎬",
+      title: "In-House Production",
+      description: "From 4K commercial TVCs to viral short-form reels, our studio handles end-to-end creative execution."
+    },
+    {
+      icon: "🤖",
+      title: "Automated Workflows",
+      description: "Custom bot integrations, real-time client portals, and streamlined review rooms ensure 100% transparency."
+    }
+  ],
+  services: [
+    {
+      id: "SVC-001",
+      icon: "📢",
+      title: "Digital Marketing & Growth",
+      category: "Growth & Ads",
+      description: "Data-driven social media management, paid advertising, and conversion rate optimization.",
+      features: ["Paid Meta & Google Ads", "Social Media Strategy", "Audience Retargeting", "Monthly Growth Analytics"]
+    },
+    {
+      id: "SVC-002",
+      icon: "🎥",
+      title: "Video Production & Editing",
+      category: "Content & Film",
+      description: "High-impact commercial TVCs, viral Reels/TikToks, and full post-production color grading.",
+      features: ["Commercial TVC Shoots", "Short-Form Reels & TikToks", "Color Grading & Sound FX", "Frame.io Review Workflows"]
+    },
+    {
+      id: "SVC-003",
+      icon: "🎨",
+      title: "Branding & Motion Design",
+      category: "Design & Brand",
+      description: "Brand identity systems, 3D motion graphics, packaging, and high-converting ad creative.",
+      features: ["Brand Guidelines & Logos", "3D & 2D Motion Graphics", "Social Media Creative Kits", "Packaging & Print Design"]
+    },
+    {
+      id: "SVC-004",
+      icon: "💻",
+      title: "Website & Tech Development",
+      category: "Development",
+      description: "Custom web applications, responsive landing pages, e-commerce, and bot integrations.",
+      features: ["Custom React / Next.js Apps", "High-Converting Landing Pages", "Telegram & WhatsApp Bots", "API & CRM Integration"]
+    }
+  ],
+  portfolioShowcase: [
+    {
+      id: "PORT-001",
+      title: "Chillox Burgers",
+      subtitle: "360° Monthly Content Production & Viral Reels",
+      category: "Commercial Food TVC",
+      metric: "📈 2.4M Reach • 18% Order Spike",
+      image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=800&q=80"
+    },
+    {
+      id: "PORT-002",
+      title: "Clear Men (Unilever)",
+      subtitle: "MasterBrand Cinema Spot & Digital Launch Reels",
+      category: "Grooming & Lifestyle",
+      metric: "🎬 Cinema 4K Cut • Approved Frame 1",
+      image: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=800&q=80"
+    },
+    {
+      id: "PORT-003",
+      title: "United Commercial Bank (UCB)",
+      subtitle: "Annual Financial Report Video & Digital Campaign",
+      category: "Corporate Financial",
+      metric: "💼 100% On-Time Delivery",
+      image: "https://images.unsplash.com/photo-1556742049-0a67d57a3e6f?auto=format&fit=crop&w=800&q=80"
+    }
+  ],
+  pricingPackages: [
+    {
+      id: "PKG-001",
+      name: "Lite Plan",
+      tier: "STARTUP",
+      price: "$750",
+      period: "/ month",
+      featured: false,
+      features: [
+        "10 Total Content Items",
+        "8 Image Based Content",
+        "2 Motion or Carousel Content",
+        "Monthly Content Plan & Captions",
+        "Monthly Analytics Reporting",
+        "Shared Account Manager"
+      ]
+    },
+    {
+      id: "PKG-002",
+      name: "Essential Plan",
+      tier: "GROWTH",
+      price: "$1,000",
+      period: "/ month",
+      featured: true,
+      features: [
+        "16 Total Content Items",
+        "12 Image Based Content",
+        "4 Short-Form Video Reels",
+        "Dedicated Copywriter & Designer",
+        "Bi-Weekly Performance Meetings",
+        "Dedicated Account Manager"
+      ]
+    },
+    {
+      id: "PKG-003",
+      name: "Advanced Plan",
+      tier: "ENTERPRISE",
+      price: "$1,250",
+      period: "/ month",
+      featured: false,
+      features: [
+        "24 Total Content Items",
+        "16 Image Based Content",
+        "8 Short-Form Video Reels / TVCs",
+        "Paid Ad Campaign Management",
+        "Weekly Strategy & Shoot Dispatch",
+        "Senior Lead Account Director"
+      ]
+    }
+  ]
+};
+
+// CMS Content Endpoints (Prioritized)
+router.get(['/cms', '/cms/content', '/public/content'], (req, res) => {
+  const db = readDB();
+  res.json({ success: true, content: db.cmsContent || defaultCMSContent });
+});
+
 // Auth Config
 router.get('/auth/config', (req, res) => {
   res.json({
@@ -803,9 +959,14 @@ router.post('/webhooks/telegram', async (req, res) => {
   const callbackQuery = update.callback_query;
   const isTeamBot = req.query.bot === 'team';
 
-  const teamToken = process.env.TEAM_BOT_TOKEN || '8874232130:AAEs5JDOEEX9kIN9Z_V_k0UQp2lBao5MHLQ';
-  const clientToken = process.env.CLIENT_BOT_TOKEN || '8964646505:AAEBVLDRqG0JdiTSSl6uK08UCQk0ZNsmYMU';
+  const teamToken = process.env.TEAM_BOT_TOKEN || '';
+  const clientToken = process.env.CLIENT_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN || '';
   const botToken = isTeamBot ? teamToken : clientToken;
+
+  if (!botToken) {
+    console.warn('⚠️ Telegram Webhook Warning: Bot token environment variable is missing.');
+    return res.status(500).json({ error: 'Bot token configuration missing on server' });
+  }
 
   // Handle Callback Queries from Inline Keyboards (Module B3.3)
   if (callbackQuery) {
@@ -2282,6 +2443,85 @@ router.get('/assets', async (req, res) => {
   res.json(db.assets || []);
 });
 
+// BC-9: Asset Gear Check-Out Route
+router.post('/assets/:id/checkout', async (req, res) => {
+  const { id } = req.params;
+  const { borrower } = req.body;
+  const db = readDB();
+
+  if (isSupabaseConfigured()) {
+    const { data } = await supabase.from('assets').select('*').eq('id', id);
+    const asset = data && data[0];
+    if (asset) {
+      await supabase.from('assets').update({ assigned_to: borrower || 'Crew Member', condition: 'In Use' }).eq('id', asset.id);
+      const updatedAsset = { ...asset, assignedTo: borrower || 'Crew Member', condition: 'In Use' };
+      broadcast('asset_update', [updatedAsset]);
+      return res.json({ success: true, asset: updatedAsset });
+    }
+  }
+
+  const asset = (db.assets || []).find(a => String(a.id).toLowerCase() === String(id).toLowerCase());
+  if (!asset) return res.status(404).json({ error: 'Asset not found' });
+
+  asset.assignedTo = borrower || 'Crew Member';
+  asset.condition = 'In Use';
+
+  db.checkoutLog = db.checkoutLog || [];
+  const logNum = String(db.checkoutLog.length + 1).padStart(3, '0');
+  const newLog = {
+    id: `CHK-${logNum}`,
+    assetId: asset.id,
+    assetName: asset.name,
+    borrower: borrower || 'Crew Member',
+    checkoutDate: new Date().toISOString().split('T')[0],
+    returnDate: null,
+    status: 'Checked Out'
+  };
+
+  db.checkoutLog.unshift(newLog);
+  writeDB(db);
+  broadcast('asset_update', db.assets);
+  broadcast('db_updated', {});
+
+  res.json({ success: true, log: newLog, asset });
+});
+
+// BC-9: Asset Gear Check-In Route
+router.post('/assets/:id/checkin', async (req, res) => {
+  const { id } = req.params;
+  const db = readDB();
+
+  if (isSupabaseConfigured()) {
+    const { data } = await supabase.from('assets').select('*').eq('id', id);
+    const asset = data && data[0];
+    if (asset) {
+      await supabase.from('assets').update({ assigned_to: 'Unassigned / Studio Base', condition: 'Good' }).eq('id', asset.id);
+      const updatedAsset = { ...asset, assignedTo: 'Unassigned / Studio Base', condition: 'Good' };
+      broadcast('asset_update', [updatedAsset]);
+      return res.json({ success: true, asset: updatedAsset });
+    }
+  }
+
+  const asset = (db.assets || []).find(a => String(a.id).toLowerCase() === String(id).toLowerCase());
+  if (!asset) return res.status(404).json({ error: 'Asset not found' });
+
+  asset.assignedTo = 'Unassigned / Studio Base';
+  asset.condition = 'Good';
+
+  db.checkoutLog = db.checkoutLog || [];
+  const activeLog = db.checkoutLog.find(l => String(l.assetId).toLowerCase() === String(id).toLowerCase() && l.status === 'Checked Out');
+  if (activeLog) {
+    activeLog.returnDate = new Date().toISOString().split('T')[0];
+    activeLog.status = 'Checked In';
+  }
+
+  writeDB(db);
+  broadcast('asset_update', db.assets);
+  broadcast('db_updated', {});
+
+  res.json({ success: true, asset });
+});
+
 router.post('/assets', async (req, res) => {
   const newAsset = req.body;
 
@@ -2375,63 +2615,6 @@ router.delete('/assets/:id', async (req, res) => {
   writeDB(db);
   broadcast('asset_update', db.assets);
   res.json({ success: true });
-});
-
-// BC-9: Asset Gear Check-Out Route
-router.post('/assets/:id/checkout', (req, res) => {
-  const { id } = req.params;
-  const { borrower } = req.body;
-  const db = readDB();
-
-  const asset = (db.assets || []).find(a => a.id === id);
-  if (!asset) return res.status(404).json({ error: 'Asset not found' });
-
-  asset.assignedTo = borrower || 'Crew';
-  asset.condition = 'In Use';
-
-  db.checkoutLog = db.checkoutLog || [];
-  const logNum = String(db.checkoutLog.length + 1).padStart(3, '0');
-  const newLog = {
-    id: `CHK-${logNum}`,
-    assetId: asset.id,
-    assetName: asset.name,
-    borrower: borrower || 'Crew Member',
-    checkoutDate: new Date().toISOString().split('T')[0],
-    returnDate: null,
-    status: 'Checked Out'
-  };
-
-  db.checkoutLog.unshift(newLog);
-  writeDB(db);
-  broadcast('asset_update', db.assets);
-  broadcast('db_updated', {});
-
-  res.json({ success: true, log: newLog, asset });
-});
-
-// BC-9: Asset Gear Check-In Route
-router.post('/assets/:id/checkin', (req, res) => {
-  const { id } = req.params;
-  const db = readDB();
-
-  const asset = (db.assets || []).find(a => a.id === id);
-  if (!asset) return res.status(404).json({ error: 'Asset not found' });
-
-  asset.assignedTo = 'Unassigned';
-  asset.condition = 'Good';
-
-  db.checkoutLog = db.checkoutLog || [];
-  const activeLog = db.checkoutLog.find(l => l.assetId === id && l.status === 'Checked Out');
-  if (activeLog) {
-    activeLog.returnDate = new Date().toISOString().split('T')[0];
-    activeLog.status = 'Returned';
-  }
-
-  writeDB(db);
-  broadcast('asset_update', db.assets);
-  broadcast('db_updated', {});
-
-  res.json({ success: true, asset });
 });
 
 
@@ -2977,132 +3160,6 @@ router.get('/track', (req, res) => {
     },
     recentEvents: events.slice(0, 50)
   });
-});
-
-// LANDING PAGE CMS ENGINE API (v0.7.5.1)
-const defaultCMSContent = {
-  agencyInfo: {
-    heroTitle: "Digital. Design. Tech.",
-    heroSubtitle: "Expert solutions tailored to your brand. We combine data-driven marketing, viral short-form content, and cutting-edge tech to deliver measurable business growth.",
-    email: "contact@purplebot.digital",
-    phone: "+88 01711 019550",
-    whatsapp: "+8801711019550",
-    registeredAddress: "Plot 7, Road 17, Flat 2/C, Rupsha Tower, Banani C/A, Dhaka - 1213",
-    operatingAddress: "Flat A5-B5-A4, House 9, Road 1, Block B, Niketon, Gulshan-1, Dhaka - 1212",
-    stats: {
-      years: "8+",
-      clients: "100+",
-      creatives: "20,000+",
-      reach: "10M+"
-    }
-  },
-  clientMarquee: [
-    "Aarong Earth", "LG Electronics", "Chillox Burgers", "BAT Global", 
-    "Taptap Send", "Mortein", "Harpic", "Yatai Japanese", "Fortress Build", "UCB Bank"
-  ],
-  whyUs: [
-    { title: "DYNAMIC", icon: "⚡", description: "Much like social media trends and algorithms, we are drilled to be dynamic. With us, you will never fall short of fresh ideas." },
-    { title: "EXPERIENCED", icon: "🏆", description: "8+ years of experience. 20,000+ creatives delivered for 100+ clients across FMCG, Lifestyle, Tech, and Financial sectors." },
-    { title: "AGILE", icon: "🚀", description: "Optimized operating procedures supported by highly skilled designers and producers allow us to deliver with zero friction." }
-  ],
-  portfolio: [
-    {
-      id: "PORT-001",
-      title: "Chillox Fast Food Chain",
-      subtitle: "12x Short-Form Reels + Billboard Launch Campaign",
-      category: "Commercial Food TVC",
-      metric: "📈 2.4M Reach • 18% Order Spike",
-      image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=800&q=80"
-    },
-    {
-      id: "PORT-002",
-      title: "Clear Men (Unilever)",
-      subtitle: "MasterBrand Cinema Spot & Digital Launch Reels",
-      category: "Grooming & Lifestyle",
-      metric: "🎬 Cinema 4K Cut • Approved Frame 1",
-      image: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=800&q=80"
-    },
-    {
-      id: "PORT-003",
-      title: "United Commercial Bank (UCB)",
-      subtitle: "Annual Financial Report Video & Digital Campaign",
-      category: "Corporate Financial",
-      metric: "💼 100% On-Time Delivery",
-      image: "https://images.unsplash.com/photo-1556742049-0a67d57a3e6f?auto=format&fit=crop&w=800&q=80"
-    }
-  ],
-  pricingPackages: [
-    {
-      id: "PKG-001",
-      name: "Lite Plan",
-      tier: "STARTUP",
-      price: "$750",
-      period: "/ month",
-      featured: false,
-      features: [
-        "10 Total Content Items",
-        "8 Image Based Content",
-        "2 Motion or Carousel Content",
-        "Monthly Content Plan & Captions",
-        "Monthly Analytics Reporting",
-        "Shared Account Manager"
-      ]
-    },
-    {
-      id: "PKG-002",
-      name: "Essential Plan",
-      tier: "GROWTH",
-      price: "$1,000",
-      period: "/ month",
-      featured: true,
-      features: [
-        "16 Total Content Items",
-        "12 Image Based Content",
-        "4 Short-Form Video Reels",
-        "Dedicated Copywriter & Designer",
-        "Bi-Weekly Performance Meetings",
-        "Dedicated Account Manager"
-      ]
-    },
-    {
-      id: "PKG-003",
-      name: "Advanced Plan",
-      tier: "ENTERPRISE",
-      price: "$1,250",
-      period: "/ month",
-      featured: false,
-      features: [
-        "24 Total Content Items",
-        "16 Image Based Content",
-        "8 Short-Form Video Reels / TVCs",
-        "Paid Ad Campaign Management",
-        "Weekly Strategy & Shoot Dispatch",
-        "Senior Lead Account Director"
-      ]
-    }
-  ]
-};
-
-router.get('/public/content', (req, res) => {
-  const db = readDB();
-  if (!db.cmsContent) {
-    db.cmsContent = defaultCMSContent;
-    writeDB(db);
-  }
-  res.json({ success: true, content: db.cmsContent });
-});
-
-router.get('/cms/content', (req, res) => {
-  const db = readDB();
-  res.json({ success: true, content: db.cmsContent || defaultCMSContent });
-});
-
-router.put('/cms/content', (req, res) => {
-  const db = readDB();
-  db.cmsContent = { ...defaultCMSContent, ...(db.cmsContent || {}), ...req.body };
-  writeDB(db);
-  broadcast('cms_content_update', db.cmsContent);
-  res.json({ success: true, content: db.cmsContent });
 });
 
 module.exports = router;
