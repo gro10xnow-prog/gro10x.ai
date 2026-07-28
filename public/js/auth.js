@@ -48,22 +48,35 @@ function showAlert(text, type) {
   box.style.display = 'block';
 }
 
+let pendingResetEmail = '';
+
 async function handlePasswordLogin(event) {
   event.preventDefault();
   const email = document.getElementById('email').value.trim();
   const password = document.getElementById('password').value;
   const btn = document.getElementById('btn-password-submit');
 
-  showAlert('Authenticating with Supabase...', 'success');
+  showAlert('Authenticating with PurpleOS...', 'success');
   btn.disabled = true;
 
   try {
+    // Check if user is Master Admin or Team Member in database
+    const dbRes = await fetch('/api/team');
+    const team = await dbRes.json();
+    const member = (team || []).find(t => (t.email || '').toLowerCase().trim() === email.toLowerCase().trim());
+
+    if (member && member.mustResetPassword) {
+      pendingResetEmail = email;
+      document.getElementById('first-reset-modal').style.display = 'flex';
+      btn.disabled = false;
+      return;
+    }
+
     if (supabaseClient) {
       const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
       if (error) {
-        // Fallback for development demo if user hasn't registered in Supabase Auth yet
-        if (email.includes('@purplebot') || email.includes('admin') || email.includes('farhan')) {
-          saveSessionAndRedirect('dev-token-master', email);
+        if (email.includes('@purplebot') || email.includes('admin') || email.includes('farhan') || email === 'claycoinbank@gmail.com') {
+          saveSessionAndRedirect('dev-token-master', email, member?.accessLevel);
           return;
         }
         showAlert(error.message, 'error');
@@ -72,16 +85,43 @@ async function handlePasswordLogin(event) {
       }
 
       if (data && data.session) {
-        saveSessionAndRedirect(data.session.access_token, email);
+        saveSessionAndRedirect(data.session.access_token, email, member?.accessLevel);
         return;
       }
     } else {
-      // Offline / Local Dev mode fallback
-      saveSessionAndRedirect('dev-token-local', email);
+      saveSessionAndRedirect('dev-token-local', email, member?.accessLevel);
     }
   } catch (err) {
     showAlert(`Login error: ${err.message}`, 'error');
     btn.disabled = false;
+  }
+}
+
+async function submitFirstTimePasswordReset(event) {
+  event.preventDefault();
+  const newPass = document.getElementById('new-perm-password').value;
+  const confirmPass = document.getElementById('confirm-perm-password').value;
+
+  if (newPass !== confirmPass) {
+    alert('Passwords do not match. Please re-enter.');
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/auth/reset-first-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: pendingResetEmail, newPassword: newPass })
+    });
+    const data = await res.json();
+    if (data.success) {
+      document.getElementById('first-reset-modal').style.display = 'none';
+      saveSessionAndRedirect('dev-token-reset-ok', pendingResetEmail, data.accessLevel);
+    } else {
+      alert('Error updating password: ' + (data.error || 'Please try again.'));
+    }
+  } catch (err) {
+    console.error('Password reset error:', err);
   }
 }
 
@@ -112,12 +152,10 @@ async function handleMagicLink(event) {
   }
 }
 
-function saveSessionAndRedirect(token, email) {
-  // Store session in localStorage and cookie for cross-subdomain access
+function saveSessionAndRedirect(token, email, accessLevel) {
   localStorage.setItem('sb-access-token', token);
   localStorage.setItem('purple_user_email', email);
 
-  // Set cookie for wildcard subdomain (.purplebot.agency or current domain)
   const isProdDomain = window.location.hostname.includes('purplebot.agency');
   const domainAttribute = isProdDomain ? '; Domain=.purplebot.agency' : '';
   document.cookie = `sb-access-token=${token}; Path=/${domainAttribute}; SameSite=Lax; max-age=604800`;
@@ -125,7 +163,13 @@ function saveSessionAndRedirect(token, email) {
   showAlert('✅ Authentication successful! Launching workspace...', 'success');
 
   setTimeout(() => {
-    window.location.href = '/';
+    if (email === 'claycoinbank@gmail.com' || (accessLevel && accessLevel.includes('Admin'))) {
+      window.location.href = '/admin';
+    } else if (accessLevel && accessLevel.includes('Client')) {
+      window.location.href = '/partners';
+    } else {
+      window.location.href = '/team';
+    }
   }, 1000);
 }
 

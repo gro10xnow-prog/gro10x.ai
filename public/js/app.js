@@ -4479,22 +4479,44 @@ async function renderAnalytics() {
   }
 }
 
-// Module C11: Client Health Score CRM Table Badge Rendering
-async function renderClientHealthScores() {
-  try {
-    const res = await fetch('/api/clients/health');
-    const data = await res.json();
-    if (!data.success || !data.clientsHealth) return;
+// Module A2: Admin Panel Team User Invite Modal Logic
+function openInviteStaffModal() {
+  const modal = document.getElementById('inviteStaffModal');
+  if (modal) modal.classList.remove('hidden');
+}
 
-    data.clientsHealth.forEach(ch => {
-      const el = document.getElementById(`health-badge-${ch.clientId}`);
-      if (el) {
-        el.className = `badge ${ch.badgeClass}`;
-        el.innerHTML = `🩺 ${ch.healthScore}/100 ${ch.status}`;
-      }
+function closeInviteStaffModal() {
+  const modal = document.getElementById('inviteStaffModal');
+  if (modal) modal.classList.add('hidden');
+}
+
+async function submitStaffInvite(event) {
+  event.preventDefault();
+
+  const name = document.getElementById('invStaffName').value.trim();
+  const email = document.getElementById('invStaffEmail').value.trim();
+  const phone = document.getElementById('invStaffPhone').value.trim();
+  const accessLevel = document.getElementById('invStaffAccessLevel').value;
+  const department = document.getElementById('invStaffDept').value;
+  const baseSalary = document.getElementById('invStaffSalary').value;
+
+  try {
+    const res = await fetch('/api/team/invite', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, phone, accessLevel, department, baseSalary })
     });
+    const data = await res.json();
+    if (data.success) {
+      closeInviteStaffModal();
+      fetchInitialData();
+      navigator.clipboard.writeText(data.inviteCardText);
+      alert(`🎉 Staff Invite & Temp Password Created for ${name}!\n\nEmp Code: ${data.empCode}\nTemporary Password: ${data.tempPassword}\n\nInvite card copied to clipboard!`);
+    } else {
+      alert('Error creating staff invite: ' + (data.error || 'Please try again.'));
+    }
   } catch (err) {
-    console.error('Error rendering client health scores:', err);
+    console.error('Error creating staff invite:', err);
   }
 }
 

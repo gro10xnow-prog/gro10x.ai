@@ -47,11 +47,14 @@ async function requireAuth(req, res, next) {
 
   req.user = {
     id: 'mock-user-001',
-    email: 'admin@purplebot.agency',
+    email: 'claycoinbank@gmail.com',
     profile: {
       emp_code: defaultEmp.id || 'EMP-001',
-      name: defaultEmp.name,
-      role: defaultEmp.role,
+      name: defaultEmp.name || 'Mahmudul Hasan',
+      email: 'claycoinbank@gmail.com',
+      role: defaultEmp.role || 'Agency Founder & Master Owner',
+      accessLevel: 'Owner / Admin',
+      phone: defaultEmp.phone || '+8801700000000',
       department: defaultEmp.department || 'Management',
       status: defaultEmp.status || 'In Studio'
     }

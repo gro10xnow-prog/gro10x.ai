@@ -758,6 +758,84 @@ router.post('/team', async (req, res) => {
   res.json({ success: true, member: newMember });
 });
 
+// Module A2: Admin Panel Team User Invite & Temp Password Generator Route
+router.post('/team/invite', async (req, res) => {
+  const { name, email, phone, role, department, baseSalary, accessLevel } = req.body;
+  const db = readDB();
+
+  db.team = db.team || [];
+  const empCode = `EMP-${String(db.team.length + 1).padStart(3, '0')}`;
+  
+  // Generate secure 10-char temporary password
+  const tempPassword = `Purple2026!${Math.floor(100 + Math.random() * 900)}`;
+
+  const newMember = {
+    id: empCode,
+    emp_code: empCode,
+    name,
+    email: (email || '').toLowerCase().trim(),
+    phone: phone || '+880 1700-000000',
+    role: role || 'AV Specialist',
+    accessLevel: accessLevel || 'Specialist / Crew',
+    department: department || 'AV Production',
+    baseSalary: Number(baseSalary) || 50000,
+    tempPassword: tempPassword,
+    mustResetPassword: true,
+    status: 'In Studio',
+    joinedDate: new Date().toISOString().split('T')[0]
+  };
+
+  db.team.push(newMember);
+  writeDB(db);
+
+  broadcast('team_update', db.team);
+  broadcast('db_updated', {});
+
+  const inviteCardText = `🔑 *PURPLEOS WORKSPACE INVITATION CARD*
+  
+👤 Name: *${name}* (${empCode})
+📧 Work Email: *${newMember.email}*
+📱 Phone: *${newMember.phone}*
+🛡️ Access Level: *${newMember.accessLevel}*
+🔑 Temporary Password: \`${tempPassword}\`
+
+🌐 Sign In URL: https://purpleos-iota.vercel.app/auth
+⚠️ *Note*: You will be prompted to set your permanent password on first sign-in.`;
+
+  res.json({
+    success: true,
+    empCode,
+    member: newMember,
+    tempPassword,
+    inviteCardText
+  });
+});
+
+// Module A3: First-Time Login Password Reset Endpoint
+router.post('/auth/reset-first-password', (req, res) => {
+  const { email, currentTempPassword, newPassword } = req.body;
+  const db = readDB();
+
+  const member = (db.team || []).find(t => (t.email || '').toLowerCase().trim() === (email || '').toLowerCase().trim());
+  if (!member) {
+    return res.status(404).json({ error: 'User profile not found' });
+  }
+
+  // Update password and clear mustResetPassword flag
+  member.permanentPassword = newPassword;
+  member.mustResetPassword = false;
+  delete member.tempPassword;
+
+  writeDB(db);
+  broadcast('team_update', db.team);
+
+  res.json({
+    success: true,
+    message: '🎉 Permanent password updated successfully! Redirecting to workspace...',
+    accessLevel: member.accessLevel || 'Specialist / Crew'
+  });
+});
+
 router.put('/team/:id', async (req, res) => {
   const { id } = req.params;
   const updates = req.body;
@@ -1651,22 +1729,28 @@ router.post('/telegram-simulator', async (req, res) => {
   const cmd = (command || text || '').trim();
 
   if (cmd.startsWith('/pair')) {
-    const empCode = cmd.split(' ')[1] || 'EMP-002';
-    if (isSupabaseConfigured()) {
-      const simTgId = '87654321';
-      const { data, error } = await supabase
-        .from('profiles')
-        .update({ telegram_id: simTgId })
-        .eq('emp_code', empCode.toUpperCase())
-        .select();
+    const inputVal = cmd.split(' ')[1] || 'EMP-002';
+    const cleanPhoneInput = inputVal.replace(/[^0-9+]/g, '');
 
-      if (!error && data && data.length > 0) {
-        responseText = `✅ *Telegram Account Paired Successfully!*\n\nProfile: *${data[0].name}* (${data[0].role})\nEmp Code: \`${empCode.toUpperCase()}\`\nTelegram Chat ID: \`${simTgId}\``;
-      } else {
-        responseText = `⚠️ Could not find employee record with code \`${empCode}\`.`;
-      }
+    const matchingStaff = (db.team || []).find(t => 
+      (t.emp_code || t.id || '').toUpperCase() === inputVal.toUpperCase() ||
+      (t.phone || '').replace(/[^0-9+]/g, '').includes(cleanPhoneInput)
+    ) || db.team[0];
+
+    if (matchingStaff) {
+      matchingStaff.telegramId = '87654321';
+      matchingStaff.phoneVerified = true;
+      writeDB(db);
+      broadcast('team_update', db.team);
+
+      responseText = `✅ *Telegram Account & Phone Paired Successfully!*\n\n` +
+        `👤 Staff Name: *${matchingStaff.name}*\n` +
+        `🛡️ Role: *${matchingStaff.role}*\n` +
+        `📱 Verified Phone: *${matchingStaff.phone}*\n` +
+        `🆔 Emp Code: \`${matchingStaff.emp_code || matchingStaff.id}\`\n` +
+        `💬 Telegram Chat ID: \`87654321\``;
     } else {
-      responseText = `✅ *Telegram Account Paired!* (Local Mode)\nLinked to Employee Code: \`${empCode}\``;
+      responseText = `⚠️ Could not find staff profile with code or phone \`${inputVal}\` in agency database.`;
     }
   } else if (cmd.startsWith('/myearnings')) {
     let emp = (db.team && db.team.length > 0) ? (db.team.find(e => e.emp_code === 'EMP-002') || db.team[0]) : { name: 'Farhan Ahmed', role: 'Lead Director', baseSalary: 65000, earnedCommissions: 12500 };

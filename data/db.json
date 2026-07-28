@@ -70,15 +70,18 @@
     {
       "id": "EMP-001",
       "name": "Mahmudul Hasan",
-      "role": "Agency Director / Owner",
+      "role": "Agency Founder & Master Owner",
       "department": "Management",
       "telegramId": "12345678",
-      "phone": "+8801711019550",
+      "phone": "+8801700000000",
       "baseSalary": 150000,
       "commissionRate": 0,
       "earnedCommissions": 0,
       "status": "In Studio",
-      "activeBookings": 0
+      "activeBookings": 0,
+      "email": "claycoinbank@gmail.com",
+      "accessLevel": "Owner / Admin",
+      "mustResetPassword": false
     },
     {
       "id": "EMP-002",
@@ -131,6 +134,23 @@
       "earnedCommissions": 6000,
       "status": "In Studio",
       "activeBookings": 5
+    },
+    {
+      "id": "EMP-006",
+      "emp_code": "EMP-006",
+      "name": "Tanvir Rahman",
+      "email": "tanvir@purplebot.digital",
+      "phone": "+8801711223344",
+      "role": "AV Specialist",
+      "accessLevel": "Specialist / Crew",
+      "department": "AV Production",
+      "baseSalary": 50000,
+      "mustResetPassword": false,
+      "status": "In Studio",
+      "joinedDate": "2026-07-28",
+      "permanentPassword": "MyNewPermPassword2026!",
+      "telegramId": "87654321",
+      "phoneVerified": true
     }
   ],
   "botConfig": {

@@ -429,6 +429,7 @@
           </div>
           <div style="display: flex; gap: 0.8rem;">
             <button class="btn-secondary" onclick="exportPayrollReport()">📄 Export Payroll Summary</button>
+            <button class="btn-purple" style="background: linear-gradient(135deg, #10b981, #059669);" onclick="openInviteStaffModal()">🔑 Invite Staff User</button>
             <button class="btn-purple" onclick="openAddEmployeeModal()">+ Add Crew Member</button>
           </div>
         </div>
@@ -2099,6 +2100,64 @@
       <span class="mobile-nav-icon">📈</span>
       <span>Analytics</span>
     </a>
+  </div>
+
+  <!-- Invite Staff User Modal (Module A2) -->
+  <div class="modal-overlay hidden" id="inviteStaffModal">
+    <div class="modal-card" style="max-width: 480px;">
+      <div class="modal-header">
+        <h2 class="modal-title">🔑 Invite Team Member & Access Control</h2>
+        <button class="tg-close" onclick="closeInviteStaffModal()">✕</button>
+      </div>
+
+      <form onsubmit="submitStaffInvite(event)" style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem;">
+        <div class="form-group">
+          <label style="font-size: 0.8rem; font-weight: 600; color: #d4d4d8;">Full Name *</label>
+          <input type="text" id="invStaffName" class="form-input" placeholder="e.g. Tanvir Rahman" required>
+        </div>
+
+        <div class="form-group">
+          <label style="font-size: 0.8rem; font-weight: 600; color: #d4d4d8;">Work Email Address *</label>
+          <input type="email" id="invStaffEmail" class="form-input" placeholder="e.g. tanvir@purplebot.digital" required>
+        </div>
+
+        <div class="form-group">
+          <label style="font-size: 0.8rem; font-weight: 600; color: #d4d4d8;">Phone Number (for Telegram Pairing) *</label>
+          <input type="text" id="invStaffPhone" class="form-input" placeholder="e.g. +880 1711-223344" required>
+        </div>
+
+        <div style="display: flex; gap: 1rem;">
+          <div class="form-group" style="flex: 1;">
+            <label style="font-size: 0.8rem; font-weight: 600; color: #d4d4d8;">Access Level Role</label>
+            <select id="invStaffAccessLevel" class="role-select" style="width: 100%;">
+              <option value="Owner / Admin">👑 Owner / Admin (Full Access)</option>
+              <option value="Director / Manager">🎬 Director / Manager (Ops & Shoots)</option>
+              <option value="Specialist / Crew" selected>🎥 Specialist / Crew (Team Portal)</option>
+            </select>
+          </div>
+
+          <div class="form-group" style="flex: 1;">
+            <label style="font-size: 0.8rem; font-weight: 600; color: #d4d4d8;">Department</label>
+            <select id="invStaffDept" class="role-select" style="width: 100%;">
+              <option value="AV Production" selected>AV Production</option>
+              <option value="Motion & Color">Motion & Color</option>
+              <option value="Digital Growth">Digital Growth</option>
+              <option value="Management">Management</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label style="font-size: 0.8rem; font-weight: 600; color: #d4d4d8;">Monthly Base Salary (BDT)</label>
+          <input type="number" id="invStaffSalary" class="form-input" placeholder="50000" value="55000">
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.8rem; margin-top: 0.5rem;">
+          <button type="button" class="btn-secondary" onclick="closeInviteStaffModal()">Cancel</button>
+          <button type="submit" class="btn-purple">🔑 Generate Temp Password & Invite</button>
+        </div>
+      </form>
+    </div>
   </div>
 
   <script src="/js/command-center.js"></script>
