@@ -708,15 +708,22 @@ router.post('/webhooks/telegram', async (req, res) => {
       }
     }
 
-    // Send HTTP POST response back to Telegram API
+    // Send HTTP POST response back to Telegram API with WebApp buttons
     try {
+      const inlineKeyboard = isTeamBot ? [
+        [{ text: '📱 Open Crew Mini App', web_app: { url: 'https://purpleos-iota.vercel.app/team-miniapp' } }]
+      ] : [
+        [{ text: '🎬 Open 4K Review Room Mini App', web_app: { url: 'https://purpleos-iota.vercel.app/client-miniapp' } }]
+      ];
+
       await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           chat_id: chatId,
           text: replyText,
-          parse_mode: 'Markdown'
+          parse_mode: 'Markdown',
+          reply_markup: { inline_keyboard: inlineKeyboard }
         })
       });
     } catch (sendErr) {

@@ -40,5 +40,13 @@ app.get(['/chat', '/bot-chat'], (req, res) => {
   res.sendFile(path.join(__dirname, '../public/chat.html'));
 });
 
+app.get(['/team-miniapp', '/crew-app'], (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/team-miniapp.html'));
+});
+
+app.get(['/client-miniapp', '/review-app'], (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/client-miniapp.html'));
+});
+
 // Export serverless handler for Vercel
 module.exports = app;

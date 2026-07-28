@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Purple Man - Crew Ops Mini App</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #09090b;
+      --card: rgba(24, 24, 27, 0.9);
+      --border: rgba(168, 85, 247, 0.3);
+      --purple: #a855f7;
+      --pink: #ec4899;
+      --green: #34d399;
+      --text: #f4f4f5;
+      --muted: #a1a1aa;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+    body { background: var(--bg); color: var(--text); padding: 1rem; min-height: 100vh; }
+    .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
+    .title { font-size: 1.2rem; font-weight: 800; background: linear-gradient(135deg, #fff, var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 1.2rem; margin-bottom: 1rem; }
+    .btn { width: 100%; padding: 0.85rem; border: none; border-radius: 12px; font-weight: 700; font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.2s; }
+    .btn-green { background: linear-gradient(135deg, #10b981, #059669); color: #fff; }
+    .btn-purple { background: linear-gradient(135deg, var(--purple), var(--pink)); color: #fff; }
+    .btn-secondary { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #fff; }
+    .task-item { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 0.85rem; margin-bottom: 0.75rem; }
+    .task-title { font-weight: 700; font-size: 0.95rem; margin-bottom: 0.3rem; }
+    .task-meta { font-size: 0.78rem; color: var(--muted); display: flex; justify-content: space-between; margin-bottom: 0.6rem; }
+    .badge { padding: 0.25rem 0.6rem; border-radius: 999px; font-size: 0.72rem; font-weight: 700; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div>
+      <div style="font-size: 0.75rem; color: var(--purple); font-weight: 700;">PURPLE MAN MINI APP</div>
+      <div class="title">Crew Operations Hub</div>
+    </div>
+    <span class="badge" style="background: rgba(52,211,153,0.15); color: var(--green); border: 1px solid rgba(52,211,153,0.3);" id="attStatus">In Studio</span>
+  </div>
+
+  <!-- Attendance 1-Tap Control Card -->
+  <div class="card">
+    <div style="font-size: 0.82rem; font-weight: 700; color: var(--muted); margin-bottom: 0.75rem;">⏱️ 1-TAP STUDIO ATTENDANCE</div>
+    <div style="display: flex; gap: 0.75rem;">
+      <button class="btn btn-green" style="flex: 1;" onclick="handleClockIn()">🟢 Clock In</button>
+      <button class="btn btn-secondary" style="flex: 1;" onclick="handleClockOut()">🚪 Clock Out</button>
+    </div>
+  </div>
+
+  <!-- Assigned Shoots & Kanban Tasks -->
+  <div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem;">
+      <div style="font-size: 0.82rem; font-weight: 700; color: var(--muted);">📋 ASSIGNED SHOOTS & TASKS</div>
+      <button onclick="loadCrewTasks()" style="background: none; border: none; color: var(--purple); font-size: 0.8rem; font-weight: 700; cursor: pointer;">🔄 Refresh</button>
+    </div>
+    <div id="crewTaskList">
+      <div style="font-size: 0.85rem; color: var(--muted); text-align: center; padding: 1rem;">Loading your active shoot assignments...</div>
+    </div>
+  </div>
+
+  <!-- Earnings Card -->
+  <div class="card" style="background: rgba(168,85,247,0.08); border-color: rgba(168,85,247,0.3);">
+    <div style="font-size: 0.78rem; font-weight: 700; color: var(--purple);">💰 ESTIMATED MONTHLY EARNINGS</div>
+    <div style="font-size: 1.6rem; font-weight: 800; color: #fff; margin: 0.3rem 0;" id="crewTotalPay">BDT 100,000</div>
+    <div style="font-size: 0.75rem; color: var(--muted);" id="crewPaySub">Base: BDT 85,000 • Commissions: BDT 15,000</div>
+  </div>
+
+  <script>
+    const tg = window.Telegram.WebApp;
+    if (tg) { tg.expand(); tg.ready(); }
+
+    async function handleClockIn() {
+      try {
+        const res = await fetch('/api/telegram-simulator', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ command: '/clockin', mode: 'team' })
+        });
+        document.getElementById('attStatus').innerText = 'In Studio';
+        if (tg.showAlert) tg.showAlert('✅ Clocked In at Gulshan Studio!');
+        else alert('✅ Clocked In at Gulshan Studio!');
+      } catch (err) { console.error(err); }
+    }
+
+    async function handleClockOut() {
+      try {
+        await fetch('/api/telegram-simulator', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ command: '/clockout', mode: 'team' })
+        });
+        document.getElementById('attStatus').innerText = 'Clocked Out';
+        if (tg.showAlert) tg.showAlert('🚪 Clocked Out for today!');
+        else alert('🚪 Clocked Out for today!');
+      } catch (err) { console.error(err); }
+    }
+
+    async function loadCrewTasks() {
+      const container = document.getElementById('crewTaskList');
+      try {
+        const res = await fetch('/api/tasks');
+        const tasks = await res.json();
+        if (!tasks || tasks.length === 0) {
+          container.innerHTML = '<div style="font-size: 0.85rem; color: var(--muted); text-align: center; padding: 1rem;">No active shoot assignments.</div>';
+          return;
+        }
+
+        container.innerHTML = tasks.slice(0, 4).map(t => `
+          <div class="task-item">
+            <div class="task-title">${t.title}</div>
+            <div class="task-meta">
+              <span>Client: ${t.client}</span>
+              <span class="badge" style="background: rgba(168,85,247,0.2); color: #c084fc;">${t.stage}</span>
+            </div>
+            <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+              <button class="btn btn-purple" style="padding: 0.4rem; font-size: 0.78rem;" onclick="advanceTask('${t.id}', 'In Production')">▶️ Production</button>
+              <button class="btn btn-secondary" style="padding: 0.4rem; font-size: 0.78rem;" onclick="advanceTask('${t.id}', 'Editing / Cut')">✂️ Editing</button>
+            </div>
+          </div>
+        `).join('');
+      } catch (err) {
+        container.innerHTML = '<div style="font-size: 0.85rem; color: var(--muted);">Unable to load tasks.</div>';
+      }
+    }
+
+    async function advanceTask(taskId, nextStage) {
+      try {
+        await fetch(`/api/tasks/${taskId}/stage`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ stage: nextStage })
+        });
+        loadCrewTasks();
+        if (tg.showAlert) tg.showAlert(`Stage updated to ${nextStage}!`);
+      } catch (err) { console.error(err); }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadCrewTasks);
+  </script>
+</body>
+</html>

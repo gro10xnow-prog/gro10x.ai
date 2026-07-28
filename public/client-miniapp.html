@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Purple Bot - Client Review Room Mini App</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #09090b;
+      --card: rgba(24, 24, 27, 0.9);
+      --border: rgba(168, 85, 247, 0.3);
+      --purple: #a855f7;
+      --pink: #ec4899;
+      --green: #34d399;
+      --text: #f4f4f5;
+      --muted: #a1a1aa;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+    body { background: var(--bg); color: var(--text); padding: 1rem; min-height: 100vh; }
+    .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
+    .title { font-size: 1.2rem; font-weight: 800; background: linear-gradient(135deg, #fff, var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 1.2rem; margin-bottom: 1rem; }
+    .btn { width: 100%; padding: 0.85rem; border: none; border-radius: 12px; font-weight: 700; font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.2s; }
+    .btn-green { background: linear-gradient(135deg, #10b981, #059669); color: #fff; }
+    .btn-purple { background: linear-gradient(135deg, var(--purple), var(--pink)); color: #fff; }
+    .video-box { width: 100%; border-radius: 14px; overflow: hidden; background: #000; margin-bottom: 1rem; position: relative; }
+    video { width: 100%; display: block; border-radius: 14px; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div>
+      <div style="font-size: 0.75rem; color: var(--purple); font-weight: 700;">PURPLE BOT MINI APP</div>
+      <div class="title">Review Room V2 Player</div>
+    </div>
+    <span style="padding: 0.25rem 0.6rem; background: rgba(168,85,247,0.15); color: #c084fc; border: 1px solid var(--border); border-radius: 999px; font-size: 0.72rem; font-weight: 700;">4K Stream</span>
+  </div>
+
+  <!-- Video Streamer Card -->
+  <div class="card" style="padding: 0.8rem;">
+    <div style="font-size: 0.88rem; font-weight: 700; color: #fff; margin-bottom: 0.6rem;" id="videoTitle">Chillox Eid Special Reel Cut V2</div>
+    <div class="video-box">
+      <video id="revVideoPlayer" controls poster="https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=800">
+        <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" type="video/mp4">
+      </video>
+    </div>
+
+    <!-- 1-Tap Cut Approval Button -->
+    <button class="btn btn-green" onclick="handleApproveCut()" style="margin-bottom: 0.6rem;">
+      <span>✅ Approve Cut & Request Commercial Invoice</span>
+    </button>
+  </div>
+
+  <!-- Revision Notes Form -->
+  <div class="card">
+    <div style="font-size: 0.82rem; font-weight: 700; color: var(--muted); margin-bottom: 0.6rem;">💬 SUBMIT REVISION FEEDBACK</div>
+    <form onsubmit="handleSendFeedback(event)" style="display: flex; flex-direction: column; gap: 0.6rem;">
+      <input type="text" id="fbInput" class="form-input" style="width:100%; padding:0.75rem; background:rgba(9,9,11,0.6); border:1px solid rgba(255,255,255,0.15); border-radius:10px; color:#fff; font-size:0.85rem;" placeholder="e.g. 00:12 - Adjust background color..." required>
+      <button type="submit" class="btn btn-purple" style="padding: 0.65rem;">💬 Send Feedback Note</button>
+    </form>
+  </div>
+
+  <script>
+    const tg = window.Telegram.WebApp;
+    if (tg) { tg.expand(); tg.ready(); }
+
+    async function handleApproveCut() {
+      try {
+        const res = await fetch('/api/reviews/approve', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ reviewId: 'REV-001', clientName: 'Chillox Fast Food' })
+        });
+        if (tg.showAlert) tg.showAlert('🎉 Cut Approved! Commercial Invoice generated.');
+        else alert('🎉 Cut Approved! Commercial Invoice generated.');
+      } catch (err) { console.error(err); }
+    }
+
+    async function handleSendFeedback(e) {
+      e.preventDefault();
+      const val = document.getElementById('fbInput').value;
+      if (!val) return;
+      document.getElementById('fbInput').value = '';
+      if (tg.showAlert) tg.showAlert('💬 Revision feedback submitted to production team!');
+      else alert('💬 Revision feedback submitted to production team!');
+    }
+  </script>
+</body>
+</html>
