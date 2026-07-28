@@ -1,40 +1,13 @@
-// PurpleOS Subdomain Auth Client Script
+// PurpleOS Phone + 4-Digit PIN Authentication Script
 
-let supabaseClient = null;
+let currentPhone = '';
 
-async function initAuth() {
-  try {
-    const res = await fetch('/api/auth/config');
-    const config = await res.json();
-
-    if (config.supabaseUrl && config.supabaseAnonKey) {
-      const { createClient } = window.supabase;
-      supabaseClient = createClient(config.supabaseUrl, config.supabaseAnonKey);
-      console.log('✅ Supabase Auth SDK ready.');
-    }
-  } catch (err) {
-    console.warn('Could not initialize Supabase Auth SDK:', err);
+function initAuth() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const phoneParam = urlParams.get('phone');
+  if (phoneParam) {
+    document.getElementById('phone').value = phoneParam;
   }
-}
-
-function switchTab(mode) {
-  const tabPassword = document.getElementById('tab-password');
-  const tabMagic = document.getElementById('tab-magic');
-  const formPassword = document.getElementById('form-password');
-  const formMagic = document.getElementById('form-magic');
-
-  if (mode === 'password') {
-    tabPassword.classList.add('active');
-    tabMagic.classList.remove('active');
-    formPassword.style.display = 'block';
-    formMagic.style.display = 'none';
-  } else {
-    tabMagic.classList.add('active');
-    tabPassword.classList.remove('active');
-    formMagic.style.display = 'block';
-    formPassword.style.display = 'none';
-  }
-  showAlert('', '');
 }
 
 function showAlert(text, type) {
@@ -48,124 +21,98 @@ function showAlert(text, type) {
   box.style.display = 'block';
 }
 
-let pendingResetEmail = '';
-
-async function handlePasswordLogin(event) {
+async function handlePinLogin(event) {
   event.preventDefault();
+  const phone = document.getElementById('phone').value.trim();
+  const pin = document.getElementById('pin').value.trim();
   const email = document.getElementById('email').value.trim();
-  const password = document.getElementById('password').value;
-  const btn = document.getElementById('btn-password-submit');
+  const btn = document.getElementById('btn-pin-submit');
 
-  showAlert('Authenticating with PurpleOS...', 'success');
+  showAlert('Verifying credentials...', 'success');
   btn.disabled = true;
+  currentPhone = phone;
 
   try {
-    // Check if user is Master Admin or Team Member in database
-    const dbRes = await fetch('/api/team');
-    const team = await dbRes.json();
-    const member = (team || []).find(t => (t.email || '').toLowerCase().trim() === email.toLowerCase().trim());
+    const res = await fetch('/api/auth/pin/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone, pin })
+    });
 
-    if (member && member.mustResetPassword) {
-      pendingResetEmail = email;
-      document.getElementById('first-reset-modal').style.display = 'flex';
+    const data = await res.json();
+
+    if (!data.success) {
+      showAlert(data.error || 'Authentication failed', 'error');
       btn.disabled = false;
       return;
     }
 
-    if (supabaseClient) {
-      const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-      if (error) {
-        if (email.includes('@purplebot') || email.includes('admin') || email.includes('farhan') || email === 'claycoinbank@gmail.com') {
-          saveSessionAndRedirect('dev-token-master', email, member?.accessLevel);
-          return;
-        }
-        showAlert(error.message, 'error');
-        btn.disabled = false;
-        return;
+    if (data.isTemp) {
+      if (email && !data.email) {
+        document.getElementById('perm-email').value = email;
+      } else if (data.email) {
+        document.getElementById('perm-email').value = data.email;
       }
-
-      if (data && data.session) {
-        saveSessionAndRedirect(data.session.access_token, email, member?.accessLevel);
-        return;
-      }
-    } else {
-      saveSessionAndRedirect('dev-token-local', email, member?.accessLevel);
+      document.getElementById('setup-pin-modal').style.display = 'flex';
+      btn.disabled = false;
+      return;
     }
+
+    saveSessionAndRedirect(data.user, data.linkedType, email || data.email);
+
   } catch (err) {
-    showAlert(`Login error: ${err.message}`, 'error');
+    showAlert(`Authentication error: ${err.message}`, 'error');
     btn.disabled = false;
   }
 }
 
-async function submitFirstTimePasswordReset(event) {
+async function submitPermanentPinSetup(event) {
   event.preventDefault();
-  const newPass = document.getElementById('new-perm-password').value;
-  const confirmPass = document.getElementById('confirm-perm-password').value;
+  const newPin = document.getElementById('new-perm-pin').value.trim();
+  const confirmPin = document.getElementById('confirm-perm-pin').value.trim();
+  const email = document.getElementById('perm-email').value.trim();
 
-  if (newPass !== confirmPass) {
-    alert('Passwords do not match. Please re-enter.');
+  if (newPin !== confirmPin) {
+    alert('PIN codes do not match. Please re-enter.');
     return;
   }
 
   try {
-    const res = await fetch('/api/auth/reset-first-password', {
+    const res = await fetch('/api/auth/pin/set', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: pendingResetEmail, newPassword: newPass })
+      body: JSON.stringify({ phone: currentPhone, newPin, email })
     });
     const data = await res.json();
     if (data.success) {
-      document.getElementById('first-reset-modal').style.display = 'none';
-      saveSessionAndRedirect('dev-token-reset-ok', pendingResetEmail, data.accessLevel);
+      document.getElementById('setup-pin-modal').style.display = 'none';
+      saveSessionAndRedirect({ phone: currentPhone }, 'team', email);
     } else {
-      alert('Error updating password: ' + (data.error || 'Please try again.'));
+      alert('Error setting permanent PIN: ' + (data.error || 'Please try again.'));
     }
   } catch (err) {
-    console.error('Password reset error:', err);
+    console.error('Permanent PIN setup error:', err);
   }
 }
 
-async function handleMagicLink(event) {
-  event.preventDefault();
-  const email = document.getElementById('magic-email').value.trim();
-  const btn = document.getElementById('btn-magic-submit');
+function saveSessionAndRedirect(user, linkedType, email) {
+  const cleanPhone = (user?.phone || currentPhone || '').replace(/[^0-9+]/g, '');
+  localStorage.setItem('purple_user_phone', cleanPhone);
+  if (email) localStorage.setItem('purple_user_email', email);
+  if (user?.name) localStorage.setItem('purple_user_name', user.name);
+  if (user?.role) localStorage.setItem('purple_user_role', user.role);
 
-  showAlert('Sending Magic Link...', 'success');
-  btn.disabled = true;
-
-  try {
-    if (supabaseClient) {
-      const { error } = await supabaseClient.auth.signInWithOtp({ email });
-      if (error) {
-        showAlert(error.message, 'error');
-        btn.disabled = false;
-        return;
-      }
-      showAlert('✨ Magic link sent to your email! Check your inbox.', 'success');
-    } else {
-      showAlert('✨ Magic link simulated! Redirecting...', 'success');
-      setTimeout(() => saveSessionAndRedirect('dev-magic-token', email), 1500);
-    }
-  } catch (err) {
-    showAlert(err.message, 'error');
-    btn.disabled = false;
-  }
-}
-
-function saveSessionAndRedirect(token, email, accessLevel) {
+  const token = `pin-token-${Date.now()}`;
   localStorage.setItem('sb-access-token', token);
-  localStorage.setItem('purple_user_email', email);
-
-  const isProdDomain = window.location.hostname.includes('purplebot.agency');
-  const domainAttribute = isProdDomain ? '; Domain=.purplebot.agency' : '';
-  document.cookie = `sb-access-token=${token}; Path=/${domainAttribute}; SameSite=Lax; max-age=604800`;
+  document.cookie = `sb-access-token=${token}; Path=/; SameSite=Lax; max-age=604800`;
 
   showAlert('✅ Authentication successful! Launching workspace...', 'success');
 
   setTimeout(() => {
-    if (email === 'claycoinbank@gmail.com' || (accessLevel && accessLevel.includes('Admin'))) {
+    // Check if phone belongs to Master Admin / Owner
+    if (cleanPhone.includes('8801700000000') || (user?.role && user.role.includes('Owner'))) {
       window.location.href = '/admin';
-    } else if (accessLevel && accessLevel.includes('Client')) {
+    } else if (linkedType === 'client' || (user?.role && user.role.includes('Client'))) {
       window.location.href = '/partners';
     } else {
       window.location.href = '/team';

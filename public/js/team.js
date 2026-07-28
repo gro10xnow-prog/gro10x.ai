@@ -224,3 +224,99 @@ async function quickGearReturn() {
     console.error('Error returning gear:', err);
   }
 }
+
+async function submitCrewExpense(event) {
+  event.preventDefault();
+  const staff = crewStaffList.find(e => (e.emp_code || e.id) === currentCrewEmpCode) || crewStaffList[0];
+
+  const payload = {
+    submittedBy: staff ? staff.name : 'Crew Specialist',
+    submittedById: currentCrewEmpCode,
+    category: document.getElementById('crewExpCategory').value,
+    amount: Number(document.getElementById('crewExpAmount').value),
+    receiptUrl: document.getElementById('crewExpReceipt').value.trim(),
+    description: document.getElementById('crewExpDesc').value.trim(),
+    status: 'Tier 1 Pending'
+  };
+
+  try {
+    const res = await fetch('/api/expenses', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (data.success) {
+      alert(`✅ Field Expense claim ${data.expense.id} (BDT ${payload.amount.toLocaleString()}) submitted!\nStatus: Pending Line Manager (Tier 1) approval.`);
+      document.getElementById('crewExpAmount').value = '';
+      document.getElementById('crewExpReceipt').value = '';
+      document.getElementById('crewExpDesc').value = '';
+      initCrewPortal();
+    }
+  } catch (err) {
+    console.error('Error submitting crew expense:', err);
+  }
+}
+
+async function submitCrewLeave(event) {
+  event.preventDefault();
+  const staff = crewStaffList.find(e => (e.emp_code || e.id) === currentCrewEmpCode) || crewStaffList[0];
+
+  const payload = {
+    staffId: currentCrewEmpCode,
+    staffName: staff ? staff.name : 'Crew Specialist',
+    type: document.getElementById('crewLeaveType').value,
+    totalDays: Number(document.getElementById('crewLeaveDays').value) || 1,
+    startDate: document.getElementById('crewLeaveStart').value,
+    endDate: document.getElementById('crewLeaveEnd').value,
+    reason: document.getElementById('crewLeaveReason').value.trim()
+  };
+
+  try {
+    const res = await fetch('/api/leaves', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (data.success) {
+      alert(`🌴 Leave request ${data.leave.id} (${payload.type}) submitted!\nPending Line Manager review.`);
+      document.getElementById('crewLeaveReason').value = '';
+      initCrewPortal();
+    }
+  } catch (err) {
+    console.error('Error submitting leave:', err);
+  }
+}
+
+async function submitCrewEod(event) {
+  event.preventDefault();
+  const staff = crewStaffList.find(e => (e.emp_code || e.id) === currentCrewEmpCode) || crewStaffList[0];
+
+  const payload = {
+    staffId: currentCrewEmpCode,
+    staffName: staff ? staff.name : 'Crew Specialist',
+    date: new Date().toISOString().split('T')[0],
+    tasksCompleted: document.getElementById('crewEodCompleted').value.trim(),
+    tasksInProgress: document.getElementById('crewEodInProgress').value.trim() || 'None',
+    blockers: document.getElementById('crewEodBlockers').value.trim() || 'None'
+  };
+
+  try {
+    const res = await fetch('/api/eod', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (data.success) {
+      alert(`📋 Daily EOD report logged for ${payload.staffName}!`);
+      document.getElementById('crewEodCompleted').value = '';
+      document.getElementById('crewEodInProgress').value = '';
+      document.getElementById('crewEodBlockers').value = '';
+      initCrewPortal();
+    }
+  } catch (err) {
+    console.error('Error submitting EOD report:', err);
+  }
+}

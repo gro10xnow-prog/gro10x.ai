@@ -4,16 +4,17 @@ const { readDB, writeDB } = require('../services/db');
 const { broadcast } = require('../services/sse');
 const { sendTelegramNotification } = require('../services/bot');
 const { supabase, isSupabaseConfigured } = require('../services/supabase');
-const { processAutomationEvent } = require('../services/automation');
+const { processAutomationEvent, checkScheduledSocialDispatches } = require('../services/automation');
 
 const { requireAuth } = require('../middleware/auth');
+const { createTempPin, verifyPin, setPermanentPin } = require('../services/auth-pins');
 
 // Health Check
 router.get('/health', (req, res) => {
   res.json({
     status: 'ok',
     app: 'PurpleOS',
-    version: '0.6.0',
+    version: '0.7.0',
     supabaseConnected: isSupabaseConfigured()
   });
 });
@@ -32,6 +33,109 @@ router.get('/auth/me', requireAuth, (req, res) => {
     success: true,
     user: req.user
   });
+});
+
+// ==========================================
+// 🔑 PHONE + 4-DIGIT PIN AUTHENTICATION API
+// ==========================================
+
+router.post('/auth/pin/generate', (req, res) => {
+  const { phone, linkedId, linkedType, email, sendTelegram } = req.body;
+  if (!phone) {
+    return res.status(400).json({ error: 'Phone number is required' });
+  }
+
+  const db = readDB();
+  const cleanPhone = phone.replace(/[^0-9+]/g, '');
+
+  let userObj = null;
+  let name = 'User';
+  let targetType = linkedType || 'team';
+
+  if (targetType === 'team') {
+    userObj = (db.team || []).find(t => (t.phone || '').replace(/[^0-9+]/g, '').includes(cleanPhone) || t.id === linkedId || t.emp_code === linkedId);
+    if (userObj) {
+      name = userObj.name;
+      if (email) userObj.email = email;
+    }
+  } else {
+    userObj = (db.clients || []).find(c => (c.phone || '').replace(/[^0-9+]/g, '').includes(cleanPhone) || c.id === linkedId);
+    if (userObj) {
+      name = userObj.name;
+      if (email) userObj.email = email;
+    }
+  }
+
+  const pinRecord = createTempPin(cleanPhone, userObj?.id || linkedId, targetType, email || userObj?.email || '');
+
+  const portalPath = targetType === 'team' ? '/team' : '/partners';
+  const botUsername = targetType === 'team' ? 'PurpleManBot' : 'PurpleBotAgencyBot';
+  const portalUrl = `https://purpleos-iota.vercel.app${portalPath}?phone=${encodeURIComponent(cleanPhone)}`;
+
+  const inviteCardText = `📋 *PURPLEOS WORKSPACE ACCESS CARD*\n\n` +
+    `👤 Name: *${name}*\n` +
+    `📱 Mobile: \`${cleanPhone}\`\n` +
+    `🔑 Temporary 4-Digit PIN: \`${pinRecord.pin}\` *(Change on first login)*\n\n` +
+    `🌐 Web Portal Direct Link:\n${portalUrl}\n\n` +
+    `🤖 Telegram Bot: t.me/${botUsername}`;
+
+  const waText = encodeURIComponent(`Hi ${name}! Here is your PurpleOS Workspace Access Card:\n\nMobile: ${cleanPhone}\nTemp PIN: ${pinRecord.pin}\nPortal Link: ${portalUrl}`);
+  const whatsappLink = `https://wa.me/${cleanPhone.replace('+', '')}?text=${waText}`;
+
+  let telegramPushed = false;
+  if (sendTelegram && userObj && userObj.telegramId) {
+    const pushMsg = `🔑 *Your PurpleOS Login PIN Code*\n\n` +
+      `Hello ${name}! Here is your login PIN code for the portal:\n\n` +
+      `• Mobile: \`${cleanPhone}\`\n` +
+      `• Temp 4-Digit PIN: \`${pinRecord.pin}\`\n\n` +
+      `🌐 Direct Portal Access: ${portalUrl}`;
+
+    sendTelegramNotification(userObj.telegramId, pushMsg, [
+      [{ text: '🌐 Open Web Portal', url: portalUrl }]
+    ], targetType === 'team');
+    telegramPushed = true;
+  }
+
+  res.json({
+    success: true,
+    phone: cleanPhone,
+    pin: pinRecord.pin,
+    portalUrl,
+    whatsappLink,
+    telegramPushed,
+    inviteCardText
+  });
+});
+
+router.post('/auth/pin/verify', (req, res) => {
+  const { phone, pin } = req.body;
+  if (!phone || !pin) {
+    return res.status(400).json({ error: 'Phone number and PIN are required' });
+  }
+
+  const result = verifyPin(phone, pin);
+  if (!result.success) {
+    return res.status(401).json(result);
+  }
+
+  res.json({
+    success: true,
+    isTemp: result.isTemp,
+    linkedType: result.linkedType,
+    linkedId: result.linkedId,
+    email: result.email,
+    user: result.user
+  });
+});
+
+router.post('/auth/pin/set', (req, res) => {
+  const { phone, newPin, email } = req.body;
+  if (!phone || !newPin || String(newPin).length < 4) {
+    return res.status(400).json({ error: 'Valid phone number and 4-digit PIN are required' });
+  }
+
+  const result = setPermanentPin(phone, newPin, email);
+  res.json(result);
 });
 
 // Full DB State
@@ -207,6 +311,23 @@ router.post('/leads', (req, res) => {
   db.leads.push(newLead);
   writeDB(db);
   broadcast('lead_update', db.leads);
+
+  // Push Telegram Alert to Owner/Team Bot
+  try {
+    const ownerChatId = db.settings?.ownerTelegramId || process.env.OWNER_TELEGRAM_ID;
+    if (ownerChatId) {
+      sendTelegramNotification(ownerChatId,
+        `🔔 *New Lead from Purple Bot Website!*\n\n` +
+        `👤 *${newLead.contactPerson || newLead.clientName}* — ${newLead.clientName || 'Brand'}\n` +
+        `📞 Phone: \`${newLead.phone || newLead.whatsapp || 'N/A'}\`\n` +
+        `🎯 Interested Service: *${newLead.service || newLead.serviceTitle || 'General'}*\n` +
+        `📍 Source: ${newLead.source || 'Website Widget'}`, null, false
+      );
+    }
+  } catch (err) {
+    console.warn('Telegram notification for new lead failed:', err.message);
+  }
+
   res.json({ success: true, lead: newLead });
 });
 
@@ -424,21 +545,54 @@ router.post('/quotes/:id/convert', (req, res) => {
   res.json({ success: true, invoice: newInvoice, quote });
 });
 
-// SOCIAL CONTENT PLANNER & CALENDAR API
+// SOCIAL CONTENT PLANNER & 1-CLICK DISPATCH HUB API
 router.get('/posts', (req, res) => {
   const db = readDB();
+  checkScheduledSocialDispatches(db, writeDB, broadcast);
   res.json(db.posts || []);
+});
+
+router.get('/posts/client/:clientName', (req, res) => {
+  const { clientName } = req.params;
+  const db = readDB();
+  const decoded = decodeURIComponent(clientName).toLowerCase();
+  const clientPosts = (db.posts || []).filter(p => 
+    (p.clientName || '').toLowerCase().includes(decoded) || 
+    (p.clientId || '').toLowerCase() === decoded
+  );
+  res.json(clientPosts);
 });
 
 router.post('/posts', (req, res) => {
   const db = readDB();
   db.posts = db.posts || [];
   const count = db.posts.length + 101;
+
+  let targetUrl = req.body.targetUrl || '';
+  if (!targetUrl && (req.body.clientId || req.body.clientName) && req.body.platform) {
+    const client = (db.clients || []).find(c => c.id === req.body.clientId || (c.name || '').toLowerCase() === (req.body.clientName || '').toLowerCase());
+    if (client && client.socialLinks) {
+      const platKey = req.body.platform.toLowerCase();
+      targetUrl = client.socialLinks[platKey] || '';
+    }
+  }
+
   const newPost = {
     id: `PST-${count}`,
-    status: 'Scheduled',
-    ...req.body
+    clientId: req.body.clientId || '',
+    clientName: req.body.clientName || 'General Client',
+    platform: req.body.platform || 'Facebook',
+    targetUrl: targetUrl,
+    title: req.body.title || 'Untitled Post',
+    caption: req.body.caption || '',
+    mediaUrls: req.body.mediaUrls || (req.body.mediaUrl ? [req.body.mediaUrl] : []),
+    scheduledDate: req.body.scheduledDate || new Date().toISOString().split('T')[0],
+    scheduledTime: req.body.scheduledTime || '18:00',
+    assignedPublisher: req.body.assignedPublisher || 'Sabrin Akhtar',
+    status: req.body.status || 'Pending Client Approval',
+    createdAt: new Date().toISOString()
   };
+
   db.posts.push(newPost);
   writeDB(db);
   broadcast('post_update', db.posts);
@@ -455,6 +609,65 @@ router.put('/posts/:id', (req, res) => {
   writeDB(db);
   broadcast('post_update', db.posts);
   res.json({ success: true, post: db.posts[idx] });
+});
+
+router.post('/posts/:id/approve', (req, res) => {
+  const { id } = req.params;
+  const db = readDB();
+  const idx = (db.posts || []).findIndex(p => p.id === id);
+  if (idx === -1) return res.status(404).json({ error: 'Post not found' });
+
+  db.posts[idx].status = 'Approved';
+  db.posts[idx].approvedAt = new Date().toISOString();
+  db.posts[idx].approvedBy = req.body.approvedBy || db.posts[idx].clientName;
+  delete db.posts[idx].clientFeedback;
+
+  writeDB(db);
+  broadcast('post_update', db.posts);
+
+  // Trigger AUT-006 (Alert Assigned Publisher)
+  processAutomationEvent('social_post_approved', { post: db.posts[idx] }, db, writeDB, broadcast);
+
+  res.json({ success: true, post: db.posts[idx] });
+});
+
+router.post('/posts/:id/reject', (req, res) => {
+  const { id } = req.params;
+  const db = readDB();
+  const idx = (db.posts || []).findIndex(p => p.id === id);
+  if (idx === -1) return res.status(404).json({ error: 'Post not found' });
+
+  db.posts[idx].status = 'Changes Requested';
+  db.posts[idx].clientFeedback = req.body.feedback || 'Please revise caption & image styling.';
+
+  writeDB(db);
+  broadcast('post_update', db.posts);
+  res.json({ success: true, post: db.posts[idx] });
+});
+
+router.post('/posts/:id/publish', (req, res) => {
+  const { id } = req.params;
+  const db = readDB();
+  const idx = (db.posts || []).findIndex(p => p.id === id);
+  if (idx === -1) return res.status(404).json({ error: 'Post not found' });
+
+  db.posts[idx].status = 'Published';
+  db.posts[idx].publishedAt = new Date().toISOString();
+  db.posts[idx].publishedBy = req.body.publishedBy || 'Social Handler';
+
+  writeDB(db);
+  broadcast('post_update', db.posts);
+  res.json({ success: true, post: db.posts[idx] });
+});
+
+router.post('/posts/:id/dispatch-alert', (req, res) => {
+  const { id } = req.params;
+  const db = readDB();
+  const post = (db.posts || []).find(p => p.id === id);
+  if (!post) return res.status(404).json({ error: 'Post not found' });
+
+  processAutomationEvent('social_post_dispatch_alert', { post }, db, writeDB, broadcast);
+  res.json({ success: true, message: `1-Click Dispatch Alert pushed for post ${id}` });
 });
 
 router.delete('/posts/:id', (req, res) => {
@@ -648,23 +861,41 @@ router.post('/webhooks/telegram', async (req, res) => {
       if (matchingStaff) {
         matchingStaff.telegramId = String(chatId);
         matchingStaff.phoneVerified = true;
+        const pinRecord = createTempPin(phoneNum, matchingStaff.id || matchingStaff.emp_code, 'team', matchingStaff.email || '');
         writeDB(db);
         broadcast('team_update', db.team);
+
+        const portalUrl = `https://purpleos-iota.vercel.app/team?phone=${encodeURIComponent(phoneNum)}`;
+
         replyText = `✅ *Verified Phone Paired by Purple Man!*\n\n` +
           `👤 Staff Name: *${matchingStaff.name}*\n` +
           `🛡️ Role: *${matchingStaff.role}*\n` +
-          `📱 Verified Phone: *${matchingStaff.phone}*\n` +
-          `🆔 Emp Code: \`${matchingStaff.emp_code || matchingStaff.id}\``;
+          `📱 Verified Phone: \`${matchingStaff.phone}\`\n` +
+          `🔑 Temporary Login PIN: \`${pinRecord.pin}\` *(Change on first login)*\n\n` +
+          `🌐 Access Crew Portal:\n${portalUrl}`;
+
+        replyMarkup = {
+          inline_keyboard: [[{ text: '🌐 Open Crew Portal Web', url: portalUrl }]]
+        };
       } else if (matchingClient) {
         matchingClient.telegramId = String(chatId);
+        const pinRecord = createTempPin(phoneNum, matchingClient.id || matchingClient.clientCode, 'client', matchingClient.email || '');
         writeDB(db);
         broadcast('client_update', db.clients);
+
+        const portalUrl = `https://purpleos-iota.vercel.app/partners?phone=${encodeURIComponent(phoneNum)}`;
+
         replyText = `✅ *Client Partner Phone Verified by Purple Bot!*\n\n` +
           `🏢 Company: *${matchingClient.name}*\n` +
-          `📱 Phone: *${matchingClient.phone}*\n` +
-          `🆔 Client Code: \`${matchingClient.clientCode || matchingClient.id}\``;
+          `📱 Phone: \`${matchingClient.phone}\`\n` +
+          `🔑 Temporary Login PIN: \`${pinRecord.pin}\` *(Change on first login)*\n\n` +
+          `🌐 Access Client Portal:\n${portalUrl}`;
+
+        replyMarkup = {
+          inline_keyboard: [[{ text: '🌐 Open Client Portal Web', url: portalUrl }]]
+        };
       } else {
-        replyText = `⚠️ Phone number \`${phoneNum}\` verified but not matched in agency CRM database.`;
+        replyText = `⚠️ Phone number \`${phoneNum}\` verified but not matched in agency CRM database. Contact agency admin to issue portal access.`;
       }
     }
     // Module B3.2: 1-Tap Native GPS Location Handler
@@ -890,17 +1121,116 @@ router.post('/webhooks/unipile-whatsapp', async (req, res) => {
   res.json({ success: true, responseText, log: newLog });
 });
 
+// Telegram Groups & Channels Management API
+router.get('/groups', (req, res) => {
+  const db = readDB();
+  res.json(db.groups || []);
+});
+
+router.post('/groups', (req, res) => {
+  const { name, type, chatId, bot, description, linkedClientId, members } = req.body;
+  if (!name || !chatId) {
+    return res.status(400).json({ error: 'Group name and Telegram Chat ID are required' });
+  }
+
+  const db = readDB();
+  db.groups = db.groups || [];
+
+  const newGroup = {
+    id: `GRP-${String(db.groups.length + 1).padStart(3, '0')}`,
+    name,
+    type: type || 'group',
+    chatId: chatId.trim(),
+    bot: bot || 'teamBot',
+    description: description || '',
+    linkedClientId: linkedClientId || null,
+    members: members || [],
+    createdAt: new Date().toISOString()
+  };
+
+  db.groups.push(newGroup);
+  writeDB(db);
+  broadcast('group_update', db.groups);
+  res.json({ success: true, group: newGroup });
+});
+
+router.put('/groups/:id', (req, res) => {
+  const { id } = req.params;
+  const db = readDB();
+  const idx = (db.groups || []).findIndex(g => g.id === id);
+  if (idx === -1) return res.status(404).json({ error: 'Group not found' });
+
+  db.groups[idx] = { ...db.groups[idx], ...req.body };
+  writeDB(db);
+  broadcast('group_update', db.groups);
+  res.json({ success: true, group: db.groups[idx] });
+});
+
+router.delete('/groups/:id', (req, res) => {
+  const { id } = req.params;
+  const db = readDB();
+  db.groups = (db.groups || []).filter(g => g.id !== id);
+  writeDB(db);
+  broadcast('group_update', db.groups);
+  res.json({ success: true });
+});
+
+router.post('/groups/:id/test-post', (req, res) => {
+  const { id } = req.params;
+  const { text } = req.body;
+  const db = readDB();
+
+  const group = (db.groups || []).find(g => g.id === id);
+  if (!group) return res.status(404).json({ error: 'Group record not found' });
+
+  const isTeam = group.bot === 'teamBot';
+  const postMsg = text || `🤖 *PurpleOS Bot Connection Verification*\n\nVerified post to group/channel: *${group.name}* (\`${group.chatId}\`)`;
+
+  const sent = sendTelegramNotification(group.chatId, postMsg, null, isTeam);
+
+  const nowTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const logEntry = {
+    id: `BC-${Date.now()}`,
+    channel: group.name,
+    type: 'group_test_post',
+    sender: 'PurpleOS Admin',
+    payload: postMsg,
+    status: sent ? '200 OK' : 'Attempted',
+    timestamp: nowTime
+  };
+
+  db.webhookLogs = db.webhookLogs || [];
+  db.webhookLogs.unshift(logEntry);
+  writeDB(db);
+  broadcast('webhook_event', logEntry);
+
+  res.json({
+    success: true,
+    sent,
+    message: `Message sent to group [${group.name}] via ${group.bot}!`,
+    log: logEntry
+  });
+});
+
 // Module B4.3: Group & Channel Broadcast Dispatcher Endpoint
 router.post('/groups/broadcast', async (req, res) => {
-  const { channelType, targetName, text, mediaUrl } = req.body;
+  const { channelType, targetName, text, mediaUrl, groupId } = req.body;
   const db = readDB();
 
   db.webhookLogs = db.webhookLogs || [];
   const nowTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
+  if (groupId) {
+    const targetGroup = (db.groups || []).find(g => g.id === groupId);
+    if (targetGroup) {
+      const isTeam = targetGroup.bot === 'teamBot';
+      sendTelegramNotification(targetGroup.chatId, text, null, isTeam);
+    }
+  }
+
   const logEntry = {
     id: `BC-${Date.now()}`,
-    channel: channelType || 'Company Telegram Channel',
+    channel: channelType || targetName || 'Company Telegram Channel',
     type: 'group_broadcast',
     sender: targetName || 'Purplebot Operations Engine',
     payload: text,
@@ -914,7 +1244,7 @@ router.post('/groups/broadcast', async (req, res) => {
 
   res.json({
     success: true,
-    message: `🚀 Broadcast dispatched successfully to group/channel [${targetName || 'Company Channel'}]!`,
+    message: `🚀 Broadcast dispatched successfully to [${targetName || 'Company Channel'}]!`,
     broadcast: logEntry
   });
 });
@@ -1797,10 +2127,25 @@ router.get('/expenses', async (req, res) => {
 
 router.post('/expenses', (req, res) => {
   const db = readDB();
-  const newExp = req.body;
-  newExp.id = `EXP-${String((db.expenses.length || 0) + 1).padStart(3, '0')}`;
-  newExp.date = new Date().toISOString().split('T')[0];
-  newExp.status = newExp.status || 'Pending';
+  db.expenses = db.expenses || [];
+  const count = String(db.expenses.length + 101).padStart(3, '0');
+
+  const newExp = {
+    id: `EXP-${count}`,
+    submittedBy: req.body.submittedBy || 'Ground Staff Member',
+    submittedById: req.body.submittedById || '',
+    category: req.body.category || 'Shoot Refreshments',
+    amount: Number(req.body.amount) || 0,
+    description: req.body.description || 'Field operational expense',
+    receiptUrl: req.body.receiptUrl || '',
+    date: req.body.date || new Date().toISOString().split('T')[0],
+    status: req.body.status || 'Tier 1 Pending',
+    tier1: req.body.tier1 || { approved: false, approvedBy: null, date: null },
+    tier2: req.body.tier2 || { approved: false, approvedBy: null, date: null },
+    tier3: req.body.tier3 || { approved: false, approvedBy: null, date: null },
+    createdAt: new Date().toISOString()
+  };
+
   db.expenses.push(newExp);
   writeDB(db);
   broadcast('expense_update', db.expenses);
@@ -1808,17 +2153,109 @@ router.post('/expenses', (req, res) => {
   res.json({ success: true, expense: newExp });
 });
 
-// BC-8: Update Expense Status (Approved / Rejected)
+router.post('/expenses/:id/approve-tier1', (req, res) => {
+  const expenseId = req.params.id;
+  const db = readDB();
+  db.expenses = db.expenses || [];
+  const exp = db.expenses.find(e => e.id === expenseId);
+
+  if (!exp) return res.status(404).json({ error: 'Expense claim not found' });
+
+  exp.tier1 = {
+    approved: true,
+    approvedBy: req.body.approvedBy || 'Line Manager',
+    date: new Date().toISOString()
+  };
+  exp.status = 'Tier 2 Pending';
+
+  writeDB(db);
+  broadcast('expense_update', db.expenses);
+  broadcast('db_updated', {});
+
+  // Trigger AUT-008 (Notify Finance)
+  processAutomationEvent('expense_tier1_approved', { expense: exp }, db, writeDB, broadcast);
+
+  res.json({ success: true, expense: exp });
+});
+
+router.post('/expenses/:id/approve-tier2', (req, res) => {
+  const expenseId = req.params.id;
+  const db = readDB();
+  db.expenses = db.expenses || [];
+  const exp = db.expenses.find(e => e.id === expenseId);
+
+  if (!exp) return res.status(404).json({ error: 'Expense claim not found' });
+
+  exp.tier2 = {
+    approved: true,
+    approvedBy: req.body.approvedBy || 'Finance Lead',
+    date: new Date().toISOString()
+  };
+  exp.status = 'Tier 3 Pending';
+
+  writeDB(db);
+  broadcast('expense_update', db.expenses);
+  broadcast('db_updated', {});
+
+  // Trigger AUT-009 (Notify Owner)
+  processAutomationEvent('expense_tier2_approved', { expense: exp }, db, writeDB, broadcast);
+
+  res.json({ success: true, expense: exp });
+});
+
+router.post('/expenses/:id/approve-tier3', (req, res) => {
+  const expenseId = req.params.id;
+  const db = readDB();
+  db.expenses = db.expenses || [];
+  const exp = db.expenses.find(e => e.id === expenseId);
+
+  if (!exp) return res.status(404).json({ error: 'Expense claim not found' });
+
+  exp.tier3 = {
+    approved: true,
+    approvedBy: req.body.approvedBy || 'Agency Owner',
+    date: new Date().toISOString()
+  };
+  exp.status = 'Disbursed';
+  exp.disbursedAt = new Date().toISOString();
+
+  writeDB(db);
+  broadcast('expense_update', db.expenses);
+  broadcast('db_updated', {});
+
+  // Trigger AUT-010 (Notify Staff)
+  processAutomationEvent('expense_disbursed', { expense: exp }, db, writeDB, broadcast);
+
+  res.json({ success: true, expense: exp });
+});
+
+router.post('/expenses/:id/reject', (req, res) => {
+  const expenseId = req.params.id;
+  const db = readDB();
+  db.expenses = db.expenses || [];
+  const exp = db.expenses.find(e => e.id === expenseId);
+
+  if (!exp) return res.status(404).json({ error: 'Expense claim not found' });
+
+  exp.status = 'Rejected';
+  exp.rejectionNote = req.body.rejectionNote || 'Claim rejected by management.';
+
+  writeDB(db);
+  broadcast('expense_update', db.expenses);
+  broadcast('db_updated', {});
+
+  res.json({ success: true, expense: exp });
+});
+
 router.put('/expenses/:id', (req, res) => {
   const expenseId = req.params.id;
-  const { status } = req.body;
   const db = readDB();
 
   db.expenses = db.expenses || [];
   const exp = db.expenses.find(e => e.id === expenseId);
 
   if (exp) {
-    exp.status = status;
+    Object.assign(exp, req.body);
     writeDB(db);
     broadcast('expense_update', db.expenses);
     broadcast('db_updated', {});
@@ -2148,6 +2585,19 @@ router.post('/telegram-simulator', async (req, res) => {
     broadcast('attendance_update', db.attendance);
     broadcast('db_updated', {});
     responseText = `🚪 *Clock Out Recorded!*\nStatus: *Clocked Out*. Have a great evening!`;
+  } else if (cmd.startsWith('/broadcast')) {
+    const broadcastText = cmd.replace('/broadcast', '').trim();
+    if (!broadcastText) {
+      responseText = `⚠️ *Format:* \`/broadcast [Notice message text]\`\nExample: \`/broadcast Team meeting at 4 PM in Studio B\``;
+    } else {
+      processAutomationEvent('team_broadcast_notice', {
+        title: 'Leadership Instant Notice',
+        message: broadcastText,
+        senderName: 'Farhan Ahmed (Lead Director)',
+        urgent: true
+      }, db, writeDB, broadcast);
+      responseText = `📢 *BROADCAST SENT SUCCESSFULLY!*\n\nNotice has been dispatched to all team members and production Telegram groups.`;
+    }
   } else if (cmd.startsWith('/report')) {
     const paid = (db.invoices || []).filter(i => i.status === 'Paid').reduce((s, i) => s + (Number(i.amount) || 0), 0);
     const pending = (db.invoices || []).filter(i => i.status === 'Pending' || i.status === 'Sent' || i.status === 'Draft').reduce((s, i) => s + (Number(i.amount) || 0), 0);
@@ -2265,6 +2715,394 @@ router.get('/clients/health', (req, res) => {
   });
 
   res.json({ success: true, clientsHealth: healthData });
+});
+
+// ==========================================
+// 🏥 PHASE C: HR OPS (LEAVES, EOD, TICKETS)
+// ==========================================
+
+// LEAVE MANAGEMENT API
+router.get('/leaves', (req, res) => {
+  const db = readDB();
+  res.json(db.leaves || []);
+});
+
+router.post('/leaves', (req, res) => {
+  const db = readDB();
+  db.leaves = db.leaves || [];
+  const count = String(db.leaves.length + 101).padStart(3, '0');
+
+  const newLeave = {
+    id: `LEV-${count}`,
+    staffId: req.body.staffId || 'EMP-001',
+    staffName: req.body.staffName || 'Crew Member',
+    type: req.body.type || 'Casual Leave',
+    startDate: req.body.startDate || new Date().toISOString().split('T')[0],
+    endDate: req.body.endDate || new Date().toISOString().split('T')[0],
+    totalDays: Number(req.body.totalDays) || 1,
+    reason: req.body.reason || 'Personal leave request',
+    status: 'Pending',
+    createdAt: new Date().toISOString()
+  };
+
+  db.leaves.push(newLeave);
+  writeDB(db);
+  broadcast('leave_update', db.leaves);
+  broadcast('db_updated', {});
+  res.json({ success: true, leave: newLeave });
+});
+
+router.post('/leaves/:id/approve', (req, res) => {
+  const { id } = req.params;
+  const db = readDB();
+  db.leaves = db.leaves || [];
+  const leave = db.leaves.find(l => l.id === id);
+  if (!leave) return res.status(404).json({ error: 'Leave request not found' });
+
+  leave.status = 'Approved';
+  leave.reviewedBy = req.body.reviewedBy || 'Line Manager';
+  leave.approvedAt = new Date().toISOString();
+
+  // Mark staff attendance status for leave date
+  db.attendance = db.attendance || [];
+  const staffAtt = db.attendance.find(a => (a.employeeId || a.id) === leave.staffId || a.name === leave.staffName);
+  if (staffAtt) staffAtt.status = 'On Leave';
+
+  writeDB(db);
+  broadcast('leave_update', db.leaves);
+  broadcast('attendance_update', db.attendance);
+  broadcast('db_updated', {});
+
+  // Trigger AUT-011
+  processAutomationEvent('leave_decision', { leave }, db, writeDB, broadcast);
+
+  res.json({ success: true, leave });
+});
+
+router.post('/leaves/:id/reject', (req, res) => {
+  const { id } = req.params;
+  const db = readDB();
+  db.leaves = db.leaves || [];
+  const leave = db.leaves.find(l => l.id === id);
+  if (!leave) return res.status(404).json({ error: 'Leave request not found' });
+
+  leave.status = 'Declined';
+  leave.reviewedBy = req.body.reviewedBy || 'Line Manager';
+  leave.rejectedAt = new Date().toISOString();
+
+  writeDB(db);
+  broadcast('leave_update', db.leaves);
+  broadcast('db_updated', {});
+
+  // Trigger AUT-011
+  processAutomationEvent('leave_decision', { leave }, db, writeDB, broadcast);
+
+  res.json({ success: true, leave });
+});
+
+// EOD DAILY REPORTS API
+router.get('/eod', (req, res) => {
+  const db = readDB();
+  res.json(db.eod_reports || []);
+});
+
+router.post('/eod', (req, res) => {
+  const db = readDB();
+  db.eod_reports = db.eod_reports || [];
+  const count = String(db.eod_reports.length + 101).padStart(3, '0');
+
+  const newReport = {
+    id: `EOD-${count}`,
+    staffId: req.body.staffId || 'EMP-001',
+    staffName: req.body.staffName || 'Staff Member',
+    date: req.body.date || new Date().toISOString().split('T')[0],
+    tasksCompleted: req.body.tasksCompleted || 'Completed daily deliverables.',
+    tasksInProgress: req.body.tasksInProgress || 'In progress tasks.',
+    blockers: req.body.blockers || 'None',
+    submittedAt: new Date().toISOString()
+  };
+
+  db.eod_reports.unshift(newReport);
+  if (db.eod_reports.length > 200) db.eod_reports = db.eod_reports.slice(0, 200);
+
+  writeDB(db);
+  broadcast('eod_update', db.eod_reports);
+  broadcast('db_updated', {});
+
+  res.json({ success: true, report: newReport });
+});
+
+router.post('/eod/trigger-prompt', (req, res) => {
+  const db = readDB();
+  processAutomationEvent('eod_daily_prompt', {}, db, writeDB, broadcast);
+  res.json({ success: true, message: '7:00 PM Daily EOD prompt pushed to active team via Telegram' });
+});
+
+// SUPPORT & REPAIR TICKETS API
+router.get('/tickets', (req, res) => {
+  const db = readDB();
+  res.json(db.tickets || []);
+});
+
+router.post('/tickets', (req, res) => {
+  const db = readDB();
+  db.tickets = db.tickets || [];
+  const count = String(db.tickets.length + 101).padStart(3, '0');
+
+  const newTicket = {
+    id: `TKT-${count}`,
+    category: req.body.category || 'Equipment Repair',
+    title: req.body.title || 'Studio Support Issue',
+    description: req.body.description || '',
+    urgency: req.body.urgency || 'Medium',
+    loggedBy: req.body.loggedBy || 'Staff Member',
+    assignedTo: req.body.assignedTo || 'Maintenance Lead',
+    status: 'Open',
+    createdAt: new Date().toISOString()
+  };
+
+  db.tickets.push(newTicket);
+  writeDB(db);
+  broadcast('ticket_update', db.tickets);
+  broadcast('db_updated', {});
+
+  res.json({ success: true, ticket: newTicket });
+});
+
+router.put('/tickets/:id', (req, res) => {
+  const { id } = req.params;
+  const db = readDB();
+  db.tickets = db.tickets || [];
+  const ticket = db.tickets.find(t => t.id === id);
+  if (!ticket) return res.status(404).json({ error: 'Ticket not found' });
+
+  const prevStatus = ticket.status;
+  Object.assign(ticket, req.body);
+
+  if (req.body.status === 'Resolved' && prevStatus !== 'Resolved') {
+    ticket.resolvedAt = new Date().toISOString();
+    ticket.resolvedBy = req.body.resolvedBy || 'Maintenance Lead';
+    processAutomationEvent('ticket_resolved', { ticket }, db, writeDB, broadcast);
+  }
+
+  writeDB(db);
+  broadcast('ticket_update', db.tickets);
+  broadcast('db_updated', {});
+
+  res.json({ success: true, ticket });
+});
+
+// ==========================================
+// 👑 PHASE D: LEADERSHIP INTELLIGENCE & BROADCAST API
+// ==========================================
+
+router.post('/reports/morning', (req, res) => {
+  const db = readDB();
+  processAutomationEvent('morning_executive_briefing', {}, db, writeDB, broadcast);
+  res.json({ success: true, message: '9:00 AM Morning Executive Briefing pushed to Telegram' });
+});
+
+router.post('/reports/evening', (req, res) => {
+  const db = readDB();
+  processAutomationEvent('evening_digest', {}, db, writeDB, broadcast);
+  res.json({ success: true, message: '8:30 PM Evening Executive Digest pushed to Telegram' });
+});
+
+router.post('/reports/weekly', (req, res) => {
+  const db = readDB();
+  processAutomationEvent('weekly_kpi_summary', {}, db, writeDB, broadcast);
+  res.json({ success: true, message: 'Weekly Executive KPI Summary pushed to Telegram' });
+});
+
+router.post('/reports/specialist-briefing', (req, res) => {
+  const db = readDB();
+  processAutomationEvent('specialist_daily_briefing', {}, db, writeDB, broadcast);
+  res.json({ success: true, message: '9:00 AM Personal Daily Task Briefings pushed to all team specialists' });
+});
+
+router.post('/broadcast', (req, res) => {
+  const db = readDB();
+  const { title, message, targetGroup, senderName, urgent } = req.body;
+
+  processAutomationEvent('team_broadcast_notice', {
+    title: title || 'Team Announcement',
+    message: message || 'Notice from agency leadership.',
+    targetGroup: targetGroup || 'All Staff & Groups',
+    senderName: senderName || 'Mahmudul Hasan (Owner)',
+    urgent: urgent !== false
+  }, db, writeDB, broadcast);
+
+  res.json({ success: true, message: 'Team Broadcast Notice dispatched to all staff and Telegram groups!' });
+});
+
+// PUBLIC WEBSITE CLICK & PAGEVIEW TRACKING API (v0.7.5.1)
+router.post('/track', (req, res) => {
+  const db = readDB();
+  db.pageEvents = db.pageEvents || [];
+
+  const newEvent = {
+    id: `EVT-${Date.now()}`,
+    event: req.body.event || 'page_view',
+    label: req.body.label || '',
+    referrer: req.body.referrer || '',
+    utm: req.body.utm || '',
+    timestamp: new Date().toISOString()
+  };
+
+  db.pageEvents.unshift(newEvent);
+  if (db.pageEvents.length > 500) {
+    db.pageEvents = db.pageEvents.slice(0, 500);
+  }
+
+  writeDB(db);
+  broadcast('page_event_update', db.pageEvents);
+  res.json({ success: true });
+});
+
+router.get('/track', (req, res) => {
+  const db = readDB();
+  const events = db.pageEvents || [];
+  const totalViews = events.filter(e => e.event === 'page_view').length;
+  const totalClicks = events.filter(e => e.event === 'cta_click').length;
+  const botOpens = events.filter(e => e.event === 'bot_open').length;
+  const leadsCaptured = events.filter(e => e.event === 'lead_captured').length;
+
+  res.json({
+    success: true,
+    summary: {
+      totalViews,
+      totalClicks,
+      botOpens,
+      leadsCaptured
+    },
+    recentEvents: events.slice(0, 50)
+  });
+});
+
+// LANDING PAGE CMS ENGINE API (v0.7.5.1)
+const defaultCMSContent = {
+  agencyInfo: {
+    heroTitle: "Digital. Design. Tech.",
+    heroSubtitle: "Expert solutions tailored to your brand. We combine data-driven marketing, viral short-form content, and cutting-edge tech to deliver measurable business growth.",
+    email: "contact@purplebot.digital",
+    phone: "+88 01711 019550",
+    whatsapp: "+8801711019550",
+    registeredAddress: "Plot 7, Road 17, Flat 2/C, Rupsha Tower, Banani C/A, Dhaka - 1213",
+    operatingAddress: "Flat A5-B5-A4, House 9, Road 1, Block B, Niketon, Gulshan-1, Dhaka - 1212",
+    stats: {
+      years: "8+",
+      clients: "100+",
+      creatives: "20,000+",
+      reach: "10M+"
+    }
+  },
+  clientMarquee: [
+    "Aarong Earth", "LG Electronics", "Chillox Burgers", "BAT Global", 
+    "Taptap Send", "Mortein", "Harpic", "Yatai Japanese", "Fortress Build", "UCB Bank"
+  ],
+  whyUs: [
+    { title: "DYNAMIC", icon: "⚡", description: "Much like social media trends and algorithms, we are drilled to be dynamic. With us, you will never fall short of fresh ideas." },
+    { title: "EXPERIENCED", icon: "🏆", description: "8+ years of experience. 20,000+ creatives delivered for 100+ clients across FMCG, Lifestyle, Tech, and Financial sectors." },
+    { title: "AGILE", icon: "🚀", description: "Optimized operating procedures supported by highly skilled designers and producers allow us to deliver with zero friction." }
+  ],
+  portfolio: [
+    {
+      id: "PORT-001",
+      title: "Chillox Fast Food Chain",
+      subtitle: "12x Short-Form Reels + Billboard Launch Campaign",
+      category: "Commercial Food TVC",
+      metric: "📈 2.4M Reach • 18% Order Spike",
+      image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=800&q=80"
+    },
+    {
+      id: "PORT-002",
+      title: "Clear Men (Unilever)",
+      subtitle: "MasterBrand Cinema Spot & Digital Launch Reels",
+      category: "Grooming & Lifestyle",
+      metric: "🎬 Cinema 4K Cut • Approved Frame 1",
+      image: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=800&q=80"
+    },
+    {
+      id: "PORT-003",
+      title: "United Commercial Bank (UCB)",
+      subtitle: "Annual Financial Report Video & Digital Campaign",
+      category: "Corporate Financial",
+      metric: "💼 100% On-Time Delivery",
+      image: "https://images.unsplash.com/photo-1556742049-0a67d57a3e6f?auto=format&fit=crop&w=800&q=80"
+    }
+  ],
+  pricingPackages: [
+    {
+      id: "PKG-001",
+      name: "Lite Plan",
+      tier: "STARTUP",
+      price: "$750",
+      period: "/ month",
+      featured: false,
+      features: [
+        "10 Total Content Items",
+        "8 Image Based Content",
+        "2 Motion or Carousel Content",
+        "Monthly Content Plan & Captions",
+        "Monthly Analytics Reporting",
+        "Shared Account Manager"
+      ]
+    },
+    {
+      id: "PKG-002",
+      name: "Essential Plan",
+      tier: "GROWTH",
+      price: "$1,000",
+      period: "/ month",
+      featured: true,
+      features: [
+        "16 Total Content Items",
+        "12 Image Based Content",
+        "4 Short-Form Video Reels",
+        "Dedicated Copywriter & Designer",
+        "Bi-Weekly Performance Meetings",
+        "Dedicated Account Manager"
+      ]
+    },
+    {
+      id: "PKG-003",
+      name: "Advanced Plan",
+      tier: "ENTERPRISE",
+      price: "$1,250",
+      period: "/ month",
+      featured: false,
+      features: [
+        "24 Total Content Items",
+        "16 Image Based Content",
+        "8 Short-Form Video Reels / TVCs",
+        "Paid Ad Campaign Management",
+        "Weekly Strategy & Shoot Dispatch",
+        "Senior Lead Account Director"
+      ]
+    }
+  ]
+};
+
+router.get('/public/content', (req, res) => {
+  const db = readDB();
+  if (!db.cmsContent) {
+    db.cmsContent = defaultCMSContent;
+    writeDB(db);
+  }
+  res.json({ success: true, content: db.cmsContent });
+});
+
+router.get('/cms/content', (req, res) => {
+  const db = readDB();
+  res.json({ success: true, content: db.cmsContent || defaultCMSContent });
+});
+
+router.put('/cms/content', (req, res) => {
+  const db = readDB();
+  db.cmsContent = { ...defaultCMSContent, ...(db.cmsContent || {}), ...req.body };
+  writeDB(db);
+  broadcast('cms_content_update', db.cmsContent);
+  res.json({ success: true, content: db.cmsContent });
 });
 
 module.exports = router;

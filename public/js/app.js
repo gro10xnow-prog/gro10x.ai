@@ -117,6 +117,8 @@ function renderAllViews() {
   renderPLWidget();
   renderAnalytics();
   renderClientHealthScores();
+  renderHrOps();
+  renderExecutiveIntelligence();
 }
 
 // ──────────────────────────────────────────────────────────────
@@ -140,6 +142,9 @@ async function fetchInitialData() {
     appData.quotes     = db.quotes     || [];
     appData.posts      = db.posts      || [];
     appData.chats      = db.chats      || [];
+    appData.leaves     = db.leaves     || [];
+    appData.eod_reports = db.eod_reports || [];
+    appData.tickets    = db.tickets    || [];
     appData.botConfig     = db.botConfig     || {};
     appData.webhookLogs   = db.webhookLogs   || [];
     appData.attendanceLog = db.attendanceLog || [];
@@ -438,9 +443,10 @@ function filterCRM() {
       <td><strong>${c.totalSpent}</strong></td>
       <td><span class="badge badge-emerald">${c.status}</span></td>
       <td style="text-align: right;">
-        <button class="btn-secondary" style="padding: 0.25rem 0.65rem; font-size: 0.78rem;" onclick="event.stopPropagation(); openClientProfile('${c.id}')">
-          👤 Profile
-        </button>
+        <div style="display: flex; justify-content: flex-end; gap: 0.4rem;" onclick="event.stopPropagation();">
+          <button class="btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.78rem; color: #38bdf8;" onclick="generateUserAccessCard('${c.phone}', '${c.id}', 'client', '${c.email}')">🔑 Access Card</button>
+          <button class="btn-secondary" style="padding: 0.25rem 0.65rem; font-size: 0.78rem;" onclick="openClientProfile('${c.id}')">👤 Profile</button>
+        </div>
       </td>
     </tr>
   `).join('');
@@ -1299,6 +1305,7 @@ function renderTeam() {
     const att = (appData.attendance || []).find(a => a.name === t.name);
     const status = att ? att.status : (t.status || 'In Studio');
     const isStudio = status.includes('Studio');
+    const displaySalary = currentRole === 'admin' ? `BDT ${(Number(t.baseSalary) || 0).toLocaleString()}` : '🔒 Protected';
     
     return `
       <tr>
@@ -1306,11 +1313,12 @@ function renderTeam() {
         <td>${t.role}</td>
         <td><span class="badge badge-purple">${t.department}</span></td>
         <td><code style="color:var(--cyan-accent);">${t.telegramId || 'N/A'}</code></td>
-        <td>BDT ${(Number(t.baseSalary) || 0).toLocaleString()}</td>
+        <td>${displaySalary}</td>
         <td><strong style="color:var(--emerald-accent);">+BDT ${(Number(t.earnedCommissions) || 0).toLocaleString()}</strong></td>
         <td><span class="badge ${isStudio ? 'badge-emerald' : 'badge-amber'}">${status}</span></td>
         <td style="text-align: right;">
           <div style="display: flex; justify-content: flex-end; gap: 0.4rem;">
+            <button class="btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.78rem; color: #38bdf8;" onclick="generateUserAccessCard('${t.phone}', '${t.id}', 'team', '${t.email}')">🔑 Access Card</button>
             <button class="btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.78rem;" onclick="openEditEmployeeModal('${t.id}')">✏️ Edit</button>
             <button class="btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.78rem; color: var(--pink-accent); border-color: rgba(239, 68, 68, 0.3);" onclick="executeDeleteEmployee('${t.id}')">🗑️ Delete</button>
           </div>
@@ -1676,14 +1684,29 @@ function renderFinancialChart() {
   `;
 }
 
-// BC-8: Expense Approval Workflow Logic
+// ==========================================
+// 💰 3-TIER EXPENSE APPROVAL CHAIN (Phase B)
+// ==========================================
+
+let expenseStatusFilter = 'ALL';
+let _inspectorExpId = null;
+
 function setExpenseFilter(status) {
   expenseStatusFilter = status;
-  ['ALL', 'Pending', 'Approved', 'Rejected'].forEach(s => {
-    const chipId = s === 'ALL' ? 'chipExpAll' : `chipExp${s}`;
-    const chip = document.getElementById(chipId);
-    if (chip) chip.classList.toggle('active', s === status);
+
+  const chips = [
+    { id: 'chipExpAll', key: 'ALL' },
+    { id: 'chipExpT1', key: 'Tier 1 Pending' },
+    { id: 'chipExpT2', key: 'Tier 2 Pending' },
+    { id: 'chipExpT3', key: 'Tier 3 Pending' },
+    { id: 'chipExpDisbursed', key: 'Disbursed' }
+  ];
+
+  chips.forEach(c => {
+    const el = document.getElementById(c.id);
+    if (el) el.classList.toggle('active', c.key === status);
   });
+
   filterExpenses();
 }
 
@@ -1692,16 +1715,33 @@ function filterExpenses() {
   if (!expBody) return;
 
   const expenses = appData.expenses || [];
+
+  // Compute KPI Metrics
+  const t1Count = expenses.filter(e => e.status === 'Tier 1 Pending').length;
+  const t2Count = expenses.filter(e => e.status === 'Tier 2 Pending').length;
+  const t3Count = expenses.filter(e => e.status === 'Tier 3 Pending').length;
+  const disbursedTotal = expenses.filter(e => e.status === 'Disbursed').reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+
+  const kpiT1 = document.getElementById('kpiExpTier1');
+  const kpiT2 = document.getElementById('kpiExpTier2');
+  const kpiT3 = document.getElementById('kpiExpTier3');
+  const kpiDis = document.getElementById('kpiExpDisbursed');
+
+  if (kpiT1) kpiT1.innerText = t1Count;
+  if (kpiT2) kpiT2.innerText = t2Count;
+  if (kpiT3) kpiT3.innerText = t3Count;
+  if (kpiDis) kpiDis.innerText = `BDT ${disbursedTotal.toLocaleString()}`;
+
   let filtered = expenses;
   if (expenseStatusFilter !== 'ALL') {
-    filtered = expenses.filter(e => (e.status || 'Approved') === expenseStatusFilter);
+    filtered = expenses.filter(e => (e.status || 'Disbursed') === expenseStatusFilter);
   }
 
   if (filtered.length === 0) {
     expBody.innerHTML = `
       <tr>
         <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">
-          💳 No expense records match the selected filter.
+          💳 No expense claims match the selected filter.
         </td>
       </tr>
     `;
@@ -1709,42 +1749,186 @@ function filterExpenses() {
   }
 
   expBody.innerHTML = filtered.map(e => {
-    const status = e.status || 'Approved';
-    let badgeClass = 'badge-approved';
-    if (status === 'Pending') badgeClass = 'badge-pending';
-    else if (status === 'Rejected') badgeClass = 'badge-rejected';
+    const status = e.status || 'Tier 1 Pending';
+    let badgeClass = 'badge-purple';
+    if (status === 'Tier 1 Pending') badgeClass = 'badge-amber';
+    else if (status === 'Tier 2 Pending') badgeClass = 'badge-cyan';
+    else if (status === 'Tier 3 Pending') badgeClass = 'badge-pink';
+    else if (status === 'Disbursed') badgeClass = 'badge-emerald';
+    else if (status === 'Rejected') badgeClass = 'badge-pink';
+
+    const amountBdt = (Number(e.amount) || 0).toLocaleString();
+    const receiptPhoto = e.receiptUrl || 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=800&q=80';
+
+    // Build 3-Tier Stepper HTML
+    const t1Icon = e.tier1?.approved ? '✅' : (status === 'Tier 1 Pending' ? '⏳' : '⚪');
+    const t2Icon = e.tier2?.approved ? '✅' : (status === 'Tier 2 Pending' ? '⏳' : '⚪');
+    const t3Icon = e.tier3?.approved ? '✅' : (status === 'Tier 3 Pending' ? '⏳' : '⚪');
+
+    const stepperHtml = `
+      <div style="display:flex; align-items:center; gap:0.3rem; font-size:0.75rem; color:var(--text-muted);">
+        <span title="Tier 1: Line Manager">${t1Icon} T1</span> ➔
+        <span title="Tier 2: Finance">${t2Icon} T2</span> ➔
+        <span title="Tier 3: Owner Release">${t3Icon} T3</span>
+      </div>
+    `;
 
     return `
       <tr>
         <td><code>${e.id}</code></td>
-        <td><strong>${e.title}</strong></td>
-        <td><span class="badge badge-purple">${e.category}</span></td>
-        <td style="color:var(--pink-accent); font-weight:700;">-$${e.amount}</td>
+        <td><strong>${e.submittedBy || e.loggedBy || 'Ground Staff'}</strong></td>
+        <td><span class="badge badge-purple">${e.category || 'Miscellaneous'}</span></td>
+        <td style="color:#fbbf24; font-weight:700;">BDT ${amountBdt}</td>
         <td>${e.date || '2026-07-28'}</td>
-        <td>${e.loggedBy || 'Crew'}</td>
-        <td><span class="badge ${badgeClass}">${status}</span></td>
+        <td>
+          <a href="${receiptPhoto}" target="_blank" style="color:#38bdf8; font-size:0.78rem; text-decoration:underline;">📷 View Photo</a>
+        </td>
+        <td>
+          <div style="display:flex; flex-direction:column; gap:0.2rem;">
+            <span class="badge ${badgeClass}" style="width:fit-content;">${status}</span>
+            ${stepperHtml}
+          </div>
+        </td>
         <td style="text-align: right;">
-          ${status === 'Pending' ? `
-            <div style="display:flex; justify-content:flex-end; gap:0.4rem;">
-              <button class="btn-approve-sm" onclick="approveExpense('${e.id}')">✓ Approve</button>
-              <button class="btn-reject-sm" onclick="rejectExpense('${e.id}')">✕ Reject</button>
-            </div>
-          ` : `<span style="font-size:0.75rem; color:var(--text-muted);">—</span>`}
+          <button class="btn-purple" style="padding:0.25rem 0.65rem; font-size:0.78rem;" onclick="openReceiptInspectorModal('${e.id}')">🔍 Inspect & Approve</button>
         </td>
       </tr>
     `;
   }).join('');
+
+  // Check if URL has expenseId param to open inspector automatically
+  const urlParams = new URLSearchParams(window.location.search);
+  const expParam = urlParams.get('expenseId');
+  if (expParam && !window._expenseModalOpened) {
+    window._expenseModalOpened = true;
+    openReceiptInspectorModal(expParam);
+  }
 }
 
-async function approveExpense(expId) {
+function openReceiptInspectorModal(expId) {
+  const exp = (appData.expenses || []).find(e => e.id === expId);
+  if (!exp) return;
+
+  _inspectorExpId = expId;
+
+  document.getElementById('riClaimId').innerText = `${exp.id} (${exp.date || '2026-07-28'})`;
+  document.getElementById('riSubmittedBy').innerText = exp.submittedBy || exp.loggedBy || 'Ground Staff';
+  document.getElementById('riCategory').innerText = exp.category || 'Miscellaneous';
+  document.getElementById('riAmount').innerText = `BDT ${(Number(exp.amount) || 0).toLocaleString()}`;
+  document.getElementById('riDescription').innerText = exp.description || 'Field operational expense claim.';
+
+  const receiptUrl = exp.receiptUrl || 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=800&q=80';
+  document.getElementById('riReceiptImg').src = receiptUrl;
+  document.getElementById('riReceiptFullLink').href = receiptUrl;
+
+  // Update Stepper Boxes
+  const s1Box = document.getElementById('stepT1Box');
+  const s1Text = document.getElementById('stepT1Text');
+  if (exp.tier1?.approved) {
+    s1Box.style.background = 'rgba(34,197,94,0.2)';
+    s1Box.style.borderColor = 'rgba(34,197,94,0.4)';
+    s1Text.innerText = `✅ ${exp.tier1.approvedBy || 'Approved'}`;
+  } else {
+    s1Box.style.background = 'rgba(234,179,8,0.15)';
+    s1Box.style.borderColor = 'rgba(234,179,8,0.3)';
+    s1Text.innerText = exp.status === 'Tier 1 Pending' ? '⏳ Pending Review' : '⚪ Awaiting';
+  }
+
+  const s2Box = document.getElementById('stepT2Box');
+  const s2Text = document.getElementById('stepT2Text');
+  if (exp.tier2?.approved) {
+    s2Box.style.background = 'rgba(34,197,94,0.2)';
+    s2Box.style.borderColor = 'rgba(34,197,94,0.4)';
+    s2Text.innerText = `✅ ${exp.tier2.approvedBy || 'Verified'}`;
+  } else {
+    s2Box.style.background = 'rgba(6,182,212,0.15)';
+    s2Box.style.borderColor = 'rgba(6,182,212,0.3)';
+    s2Text.innerText = exp.status === 'Tier 2 Pending' ? '⏳ Pending Verification' : '⚪ Awaiting';
+  }
+
+  const s3Box = document.getElementById('stepT3Box');
+  const s3Text = document.getElementById('stepT3Text');
+  if (exp.tier3?.approved || exp.status === 'Disbursed') {
+    s3Box.style.background = 'rgba(34,197,94,0.2)';
+    s3Box.style.borderColor = 'rgba(34,197,94,0.4)';
+    s3Text.innerText = `🎉 Disbursed (${exp.tier3?.approvedBy || 'Owner'})`;
+  } else {
+    s3Box.style.background = 'rgba(168,85,247,0.15)';
+    s3Box.style.borderColor = 'rgba(168,85,247,0.3)';
+    s3Text.innerText = exp.status === 'Tier 3 Pending' ? '⏳ Pending Release' : '⚪ Awaiting';
+  }
+
+  // Update Action Buttons Visibility
+  const t1Btn = document.getElementById('riApproveT1Btn');
+  const t2Btn = document.getElementById('riApproveT2Btn');
+  const t3Btn = document.getElementById('riApproveT3Btn');
+
+  if (t1Btn) t1Btn.style.display = exp.status === 'Tier 1 Pending' ? 'inline-block' : 'none';
+  if (t2Btn) t2Btn.style.display = exp.status === 'Tier 2 Pending' ? 'inline-block' : 'none';
+  if (t3Btn) t3Btn.style.display = exp.status === 'Tier 3 Pending' ? 'inline-block' : 'none';
+
+  document.getElementById('receiptInspectorModal')?.classList.remove('hidden');
+}
+
+function closeReceiptInspectorModal() {
+  document.getElementById('receiptInspectorModal')?.classList.add('hidden');
+  _inspectorExpId = null;
+}
+
+async function approveExpenseTier(tier) {
+  if (!_inspectorExpId) return;
+
+  const endpointMap = {
+    1: `/api/expenses/${_inspectorExpId}/approve-tier1`,
+    2: `/api/expenses/${_inspectorExpId}/approve-tier2`,
+    3: `/api/expenses/${_inspectorExpId}/approve-tier3`
+  };
+
+  const approverRoleMap = {
+    1: 'Line Manager / Lead',
+    2: 'Finance & Accounts Lead',
+    3: 'Agency Owner / Director'
+  };
+
   try {
-    const res = await fetch(`/api/expenses/${expId}`, {
-      method: 'PUT',
+    const res = await fetch(endpointMap[tier], {
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: 'Approved' })
+      body: JSON.stringify({ approvedBy: approverRoleMap[tier] })
     });
     const data = await res.json();
     if (data.success) {
+      alert(`✅ Tier ${tier} approval registered for claim ${_inspectorExpId}!\nNew Status: ${data.expense.status}`);
+      closeReceiptInspectorModal();
+      await fetchInitialData();
+    }
+  } catch (err) {
+    console.error(`Error approving Tier ${tier} expense:`, err);
+  }
+}
+
+async function rejectExpenseClaim() {
+  if (!_inspectorExpId) return;
+
+  const note = prompt('Enter rejection reason for this expense claim:', 'Receipt illegible / unapproved budget category.');
+  if (!note) return;
+
+  try {
+    const res = await fetch(`/api/expenses/${_inspectorExpId}/reject`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ rejectionNote: note })
+    });
+    const data = await res.json();
+    if (data.success) {
+      alert(`❌ Expense claim ${_inspectorExpId} has been REJECTED.`);
+      closeReceiptInspectorModal();
+      await fetchInitialData();
+    }
+  } catch (err) {
+    console.error('Error rejecting expense claim:', err);
+  }
+}
       fetchInitialData();
     }
   } catch (err) {
@@ -3563,6 +3747,9 @@ function switchSocialView(mode) {
   }
 }
 
+let _editingPostId = null;
+let _dispatchPostId = null;
+
 function renderSocialCalendar() {
   const posts = appData.posts || [];
   const clients = appData.clients || [];
@@ -3582,21 +3769,16 @@ function renderSocialCalendar() {
   const clientFilter = document.getElementById('socialFilterClient')?.value || 'ALL';
 
   const filteredPosts = posts.filter(p => {
+    const pClient = p.clientName || p.client || '';
     const matchPlat = (platformFilter === 'ALL') || (p.platform === platformFilter);
-    const matchClient = (clientFilter === 'ALL') || (p.client === clientFilter);
+    const matchClient = (clientFilter === 'ALL') || (pClient === clientFilter);
     return matchPlat && matchClient;
   });
 
   // Compute KPIs
-  const scheduledCount = posts.filter(p => p.status === 'Scheduled').length;
-  const draftCount = posts.filter(p => p.status === 'Draft').length;
-  const dueThisWeek = posts.filter(p => {
-    if (!p.scheduledDate) return false;
-    const d = new Date(p.scheduledDate);
-    const now = new Date();
-    const diffDays = (d - now) / (1000 * 3600 * 24);
-    return diffDays >= -1 && diffDays <= 7;
-  }).length;
+  const scheduledCount = posts.filter(p => p.status === 'Approved' || p.status === 'Scheduled').length;
+  const draftCount = posts.filter(p => p.status === 'Draft' || p.status === 'Pending Client Approval').length;
+  const dueThisWeek = posts.filter(p => p.status === 'Due Today' || p.status === 'Approved').length;
 
   const kpiSch = document.getElementById('kpiScheduledPosts');
   const kpiDue = document.getElementById('kpiPostsThisWeek');
@@ -3606,11 +3788,11 @@ function renderSocialCalendar() {
   if (kpiDue) kpiDue.innerText = dueThisWeek;
   if (kpiDraft) kpiDraft.innerText = draftCount;
 
-  // Render Month Calendar Grid (July 2026: 31 days, July 1st is Wednesday -> 3 empty padding cells)
+  // Render Month Calendar Grid (July 2026)
   const gridContainer = document.getElementById('socialCalendarGrid');
   if (gridContainer) {
     let html = '';
-    // Empty padding cells for Wed start (Sun=0, Mon=1, Tue=2, Wed=3 -> 3 blank padding cells)
+    // Empty padding cells for Wed start (3 cells)
     for (let p = 0; p < 3; p++) {
       html += `<div style="background: rgba(10,5,22,0.3); border-radius:8px; min-height:100px; opacity:0.3;"></div>`;
     }
@@ -3632,12 +3814,14 @@ function renderSocialCalendar() {
               else if (p.platform === 'TikTok') { bg = 'rgba(30, 41, 59, 0.6)'; border = '#94a3b8'; }
               else if (p.platform === 'LinkedIn') { bg = 'rgba(6, 182, 212, 0.25)'; border = 'var(--cyan-accent)'; }
 
+              const clientName = p.clientName || p.client || 'Client';
+
               return `
-                <div onclick="openEditPostModal('${p.id}')" style="background:${bg}; border-left:3px solid ${border}; border-radius:4px; padding:0.25rem 0.35rem; cursor:pointer; font-size:0.72rem;" title="${p.title} (${p.client})">
+                <div onclick="openDispatchHubModal('${p.id}')" style="background:${bg}; border-left:3px solid ${border}; border-radius:4px; padding:0.25rem 0.35rem; cursor:pointer; font-size:0.72rem;" title="${p.title} (${clientName}) - Click for 1-Click Dispatch">
                   <div style="font-weight:700; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.title}</div>
                   <div style="font-size:0.68rem; color:var(--text-muted); display:flex; justify-content:space-between;">
                     <span>${p.platform}</span>
-                    <span>${p.scheduledTime || ''}</span>
+                    <span style="color:#4ade80;">${p.status === 'Due Today' ? '🔥 Due' : p.status}</span>
                   </div>
                 </div>
               `;
@@ -3669,14 +3853,19 @@ function renderSocialCalendar() {
 
         let statusBadge = 'badge-purple';
         if (p.status === 'Published') statusBadge = 'badge-emerald';
-        else if (p.status === 'Draft') statusBadge = 'badge-amber';
+        else if (p.status === 'Approved') statusBadge = 'badge-emerald';
+        else if (p.status === 'Due Today') statusBadge = 'badge-pink';
+        else if (p.status === 'Pending Client Approval') statusBadge = 'badge-amber';
+        else if (p.status === 'Changes Requested') statusBadge = 'badge-pink';
+
+        const clientName = p.clientName || p.client || 'Client';
 
         return `
           <tr>
             <td><code>${p.id}</code></td>
-            <td><strong>${p.client}</strong></td>
+            <td><strong>${clientName}</strong></td>
             <td><span class="badge ${badgeClass}">${p.platform}</span></td>
-            <td><small style="color:var(--text-muted);">${p.format || 'Post'}</small></td>
+            <td><small style="color:var(--text-muted);">${p.assignedPublisher || 'Social Team'}</small></td>
             <td>
               <strong style="color:#fff;">${p.title}</strong><br>
               <small style="color:var(--text-muted); font-size:0.75rem;">${(p.caption || '').slice(0, 60)}...</small>
@@ -3685,6 +3874,7 @@ function renderSocialCalendar() {
             <td><span class="badge ${statusBadge}">${p.status}</span></td>
             <td style="text-align: right;">
               <div style="display:flex; justify-content:flex-end; gap:0.3rem;">
+                <button class="btn-purple" style="padding:0.2rem 0.6rem; font-size:0.75rem;" onclick="openDispatchHubModal('${p.id}')">🚀 1-Click Dispatch</button>
                 <button class="btn-secondary" style="padding:0.2rem 0.5rem; font-size:0.75rem;" onclick="openEditPostModal('${p.id}')">✏️ Edit</button>
                 <button class="btn-secondary" style="padding:0.2rem 0.5rem; font-size:0.75rem; color:var(--pink-accent);" onclick="executeDeletePost('${p.id}')">🗑️</button>
               </div>
@@ -3694,30 +3884,53 @@ function renderSocialCalendar() {
       }).join('');
     }
   }
+
+  // Check if URL has dispatchId param to open hub automatically
+  const urlParams = new URLSearchParams(window.location.search);
+  const dispatchParam = urlParams.get('dispatchId');
+  if (dispatchParam && !window._dispatchModalOpened) {
+    window._dispatchModalOpened = true;
+    openDispatchHubModal(dispatchParam);
+  }
 }
 
 function openCreatePostModal() {
   _editingPostId = null;
-  document.getElementById('postModalTitle').innerText = '📱 Schedule Social Post';
-  document.getElementById('postModalSubtitle').innerText = 'Schedule a client post for publication';
-  document.getElementById('postFormSubmitBtn').innerText = '💾 Save & Schedule Post';
+  document.getElementById('postModalTitle').innerText = '📱 Create Social Post & Schedule Dispatch';
+  document.getElementById('postIdInput').value = '';
 
-  const clientSelect = document.getElementById('postFormClient');
+  const clientSelect = document.getElementById('postClientSelect');
   if (clientSelect && appData.clients) {
     clientSelect.innerHTML = appData.clients.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
   }
 
-  document.getElementById('postFormPlatform').value = 'Instagram';
-  document.getElementById('postFormFormat').value = 'Reel / Short Video';
-  document.getElementById('postFormStatus').value = 'Scheduled';
-  document.getElementById('postFormTitle').value = '';
-  document.getElementById('postFormCaption').value = '';
+  document.getElementById('postPlatformSelect').value = 'Facebook';
+  document.getElementById('postTitleInput').value = '';
+  document.getElementById('postCaptionInput').value = '';
+  document.getElementById('postMediaUrlInput').value = '';
 
   const tomorrow = new Date(Date.now() + 86400000);
-  document.getElementById('postFormDate').value = tomorrow.toISOString().split('T')[0];
-  document.getElementById('postFormTime').value = '18:00';
+  document.getElementById('postDateInput').value = tomorrow.toISOString().split('T')[0];
+  document.getElementById('postTimeInput').value = '18:00';
+  document.getElementById('postStatusSelect').value = 'Pending Client Approval';
 
-  document.getElementById('postFormModal')?.classList.remove('hidden');
+  onSocialClientChange();
+  document.getElementById('createPostModal')?.classList.remove('hidden');
+}
+
+function onSocialClientChange() {
+  const clientName = document.getElementById('postClientSelect')?.value;
+  const platform = document.getElementById('postPlatformSelect')?.value || 'Facebook';
+  const targetUrlInput = document.getElementById('postTargetUrlInput');
+
+  if (!clientName || !targetUrlInput || _editingPostId) return;
+
+  const clientObj = (appData.clients || []).find(c => c.name === clientName);
+  if (clientObj && clientObj.socialLinks) {
+    const platKey = platform.toLowerCase().replace(/[^a-z]/g, '');
+    const foundUrl = clientObj.socialLinks[platKey] || clientObj.socialLinks['facebook'] || clientObj.socialLinks['instagram'] || '';
+    if (foundUrl) targetUrlInput.value = foundUrl;
+  }
 }
 
 function openEditPostModal(postId) {
@@ -3726,42 +3939,50 @@ function openEditPostModal(postId) {
 
   _editingPostId = postId;
   document.getElementById('postModalTitle').innerText = `✏️ Edit Post (${post.id})`;
-  document.getElementById('postModalSubtitle').innerText = 'Update caption, platform, or publication date';
-  document.getElementById('postFormSubmitBtn').innerText = '💾 Save Changes';
+  document.getElementById('postIdInput').value = post.id;
 
-  const clientSelect = document.getElementById('postFormClient');
+  const clientSelect = document.getElementById('postClientSelect');
   if (clientSelect && appData.clients) {
-    clientSelect.innerHTML = appData.clients.map(c => `<option value="${c.name}" ${c.name === post.client ? 'selected' : ''}>${c.name}</option>`).join('');
+    const curClient = post.clientName || post.client || '';
+    clientSelect.innerHTML = appData.clients.map(c => `<option value="${c.name}" ${c.name === curClient ? 'selected' : ''}>${c.name}</option>`).join('');
   }
 
-  document.getElementById('postFormPlatform').value = post.platform || 'Instagram';
-  document.getElementById('postFormFormat').value = post.format || 'Reel / Short Video';
-  document.getElementById('postFormStatus').value = post.status || 'Scheduled';
-  document.getElementById('postFormTitle').value = post.title || '';
-  document.getElementById('postFormCaption').value = post.caption || '';
-  document.getElementById('postFormDate').value = post.scheduledDate || '';
-  document.getElementById('postFormTime').value = post.scheduledTime || '18:00';
+  document.getElementById('postPlatformSelect').value = post.platform || 'Facebook';
+  document.getElementById('postTitleInput').value = post.title || '';
+  document.getElementById('postTargetUrlInput').value = post.targetUrl || '';
+  document.getElementById('postCaptionInput').value = post.caption || '';
+  document.getElementById('postMediaUrlInput').value = (post.mediaUrls && post.mediaUrls[0]) || '';
+  document.getElementById('postDateInput').value = post.scheduledDate || '';
+  document.getElementById('postTimeInput').value = post.scheduledTime || '18:00';
+  document.getElementById('postPublisherSelect').value = post.assignedPublisher || 'Sabrin Akhtar';
+  document.getElementById('postStatusSelect').value = post.status || 'Pending Client Approval';
 
-  document.getElementById('postFormModal')?.classList.remove('hidden');
+  document.getElementById('createPostModal')?.classList.remove('hidden');
 }
 
-function closePostFormModal() {
-  document.getElementById('postFormModal')?.classList.add('hidden');
+function closeCreatePostModal() {
+  document.getElementById('createPostModal')?.classList.add('hidden');
   _editingPostId = null;
 }
 
-async function submitPostForm(event) {
+async function submitSocialPost(event) {
   event.preventDefault();
 
+  const clientName = document.getElementById('postClientSelect').value;
+  const clientObj = (appData.clients || []).find(c => c.name === clientName);
+
   const payload = {
-    client: document.getElementById('postFormClient').value,
-    platform: document.getElementById('postFormPlatform').value,
-    format: document.getElementById('postFormFormat').value,
-    status: document.getElementById('postFormStatus').value,
-    title: document.getElementById('postFormTitle').value.trim(),
-    caption: document.getElementById('postFormCaption').value.trim(),
-    scheduledDate: document.getElementById('postFormDate').value,
-    scheduledTime: document.getElementById('postFormTime').value
+    clientId: clientObj?.id || '',
+    clientName: clientName,
+    platform: document.getElementById('postPlatformSelect').value,
+    title: document.getElementById('postTitleInput').value.trim(),
+    targetUrl: document.getElementById('postTargetUrlInput').value.trim(),
+    caption: document.getElementById('postCaptionInput').value.trim(),
+    mediaUrls: [document.getElementById('postMediaUrlInput').value.trim()].filter(Boolean),
+    scheduledDate: document.getElementById('postDateInput').value,
+    scheduledTime: document.getElementById('postTimeInput').value,
+    assignedPublisher: document.getElementById('postPublisherSelect').value,
+    status: document.getElementById('postStatusSelect').value
   };
 
   const url = _editingPostId ? `/api/posts/${_editingPostId}` : '/api/posts';
@@ -3775,12 +3996,124 @@ async function submitPostForm(event) {
     });
     const data = await res.json();
     if (data.success) {
-      closePostFormModal();
-      fetchInitialData();
-      alert(`✅ Social post "${payload.title}" scheduled successfully!`);
+      closeCreatePostModal();
+      await fetchInitialData();
+      alert(`✅ Social post "${payload.title}" saved successfully!\nStatus: ${payload.status}`);
     }
   } catch (err) {
     console.error('Error saving social post:', err);
+  }
+}
+
+// ==========================================
+// 🚀 1-CLICK DISPATCH HUB HANDLERS (Phase A)
+// ==========================================
+
+function openDispatchHubModal(postId) {
+  const post = (appData.posts || []).find(p => p.id === postId);
+  if (!post) return;
+
+  _dispatchPostId = postId;
+  const clientName = post.clientName || post.client || 'Client';
+
+  document.getElementById('dhPlatformBadge').innerText = post.platform || 'Social';
+  document.getElementById('dhStatusBadge').innerText = post.status || 'Approved';
+  document.getElementById('dhPostTitle').innerText = post.title || 'Untitled Post';
+  document.getElementById('dhClientScheduled').innerText = `Client: ${clientName} • Scheduled: ${post.scheduledDate} at ${post.scheduledTime || '18:00'}`;
+
+  const targetUrl = post.targetUrl || 'https://facebook.com';
+  const targetLink = document.getElementById('dhTargetUrlLink');
+  const launchBtn = document.getElementById('dhLaunchBtn');
+
+  if (targetLink) {
+    targetLink.href = targetUrl;
+    targetLink.innerText = targetUrl;
+  }
+  if (launchBtn) {
+    launchBtn.href = targetUrl;
+  }
+
+  const captionText = document.getElementById('dhCaptionText');
+  if (captionText) {
+    captionText.value = post.caption || '';
+  }
+
+  const mediaBox = document.getElementById('dhMediaAssetsBox');
+  if (mediaBox) {
+    const urls = post.mediaUrls && post.mediaUrls.length > 0 ? post.mediaUrls : ['https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=800&q=80'];
+    mediaBox.innerHTML = urls.map((url, i) => `
+      <div style="display:flex; align-items:center; gap:0.6rem; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); padding:0.4rem 0.8rem; border-radius:8px;">
+        <span style="font-size:0.8rem; color:#a855f7;">🖼️ Asset #${i + 1}</span>
+        <a href="${url}" target="_blank" class="btn-secondary" style="font-size:0.75rem; padding:0.2rem 0.5rem; text-decoration:none;">📥 Open Asset Link</a>
+      </div>
+    `).join('');
+  }
+
+  const publishBtn = document.getElementById('dhMarkPublishedBtn');
+  if (publishBtn) {
+    if (post.status === 'Published') {
+      publishBtn.innerText = '✅ Already Published';
+      publishBtn.disabled = true;
+      publishBtn.style.opacity = '0.6';
+    } else {
+      publishBtn.innerText = '✅ Mark as Published';
+      publishBtn.disabled = false;
+      publishBtn.style.opacity = '1';
+    }
+  }
+
+  document.getElementById('dispatchHubModal')?.classList.remove('hidden');
+}
+
+function closeDispatchHubModal() {
+  document.getElementById('dispatchHubModal')?.classList.add('hidden');
+  _dispatchPostId = null;
+}
+
+function copyDispatchCaption() {
+  const captionText = document.getElementById('dhCaptionText')?.value;
+  if (!captionText) return;
+
+  navigator.clipboard.writeText(captionText).then(() => {
+    alert('📋 Caption copied to clipboard! You can now paste it directly on the social media page.');
+  }).catch(err => {
+    console.error('Failed to copy text:', err);
+  });
+}
+
+async function markPostAsPublished() {
+  if (!_dispatchPostId) return;
+
+  try {
+    const res = await fetch(`/api/posts/${_dispatchPostId}/publish`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ publishedBy: 'Social Handler' })
+    });
+    const data = await res.json();
+    if (data.success) {
+      alert('✅ Post status updated to PUBLISHED!');
+      closeDispatchHubModal();
+      await fetchInitialData();
+    }
+  } catch (err) {
+    console.error('Error marking post as published:', err);
+  }
+}
+
+async function triggerDispatchTelegramAlert() {
+  if (!_dispatchPostId) return;
+
+  try {
+    const res = await fetch(`/api/posts/${_dispatchPostId}/dispatch-alert`, {
+      method: 'POST'
+    });
+    const data = await res.json();
+    if (data.success) {
+      alert('⚡ 1-Click Dispatch alert re-pushed via Telegram!');
+    }
+  } catch (err) {
+    console.error('Error pushing dispatch alert:', err);
   }
 }
 
@@ -4112,6 +4445,166 @@ function renderBotConfig() {
         <td><span class="badge badge-emerald">Verified Active</span></td>
       </tr>
     `).join('');
+  }
+
+  // Panel 6: Telegram Groups & Channels Directory
+  const groupsBody = document.getElementById('groupsTableBody');
+  if (groupsBody) {
+    fetch('/api/groups')
+      .then(res => res.json())
+      .then(groups => {
+        appData.groups = groups || [];
+        if (groups.length === 0) {
+          groupsBody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:1.5rem;">No Telegram Groups or Channels registered yet. Click "+ Add Group / Channel" to register one.</td></tr>`;
+        } else {
+          groupsBody.innerHTML = groups.map(g => `
+            <tr>
+              <td><code>${g.id}</code></td>
+              <td><strong>${g.name}</strong><br><small style="color:var(--text-muted);">${g.description || 'No description'}</small></td>
+              <td><span class="badge ${g.type === 'channel' ? 'badge-purple' : 'badge-emerald'}">${g.type === 'channel' ? '📢 Channel' : '👥 Group'}</span></td>
+              <td><code>${g.chatId}</code></td>
+              <td><span class="badge badge-purple">${g.bot === 'teamBot' ? 'Purple Man' : 'Purple Bot'}</span></td>
+              <td>${g.linkedClientId || 'Internal Agency'}</td>
+              <td style="text-align:right; display:flex; gap:0.4rem; justify-content:flex-end;">
+                <button class="btn-secondary" style="padding:0.2rem 0.5rem; font-size:0.75rem;" onclick="testPostGroup('${g.id}')">⚡ Test Post</button>
+                <button class="btn-secondary" style="padding:0.2rem 0.5rem; font-size:0.75rem; color:var(--pink-accent);" onclick="deleteGroup('${g.id}')">🗑️ Remove</button>
+              </td>
+            </tr>
+          `).join('');
+        }
+      }).catch(err => console.warn('Fetch groups error:', err));
+  }
+}
+
+// Telegram Groups Modal Handlers
+function openAddGroupModal() {
+  const select = document.getElementById('grpLinkedClient');
+  if (select) {
+    select.innerHTML = '<option value="">None (Internal Agency Channel)</option>' +
+      (appData.clients || []).map(c => `<option value="${c.id}">${c.name} (${c.id})</option>`).join('');
+  }
+  document.getElementById('addGroupModal')?.classList.remove('hidden');
+}
+
+function closeAddGroupModal() {
+  document.getElementById('addGroupModal')?.classList.add('hidden');
+}
+
+async function submitAddGroup(e) {
+  e.preventDefault();
+  const name = document.getElementById('grpName').value.trim();
+  const type = document.getElementById('grpType').value;
+  const bot = document.getElementById('grpBot').value;
+  const chatId = document.getElementById('grpChatId').value.trim();
+  const linkedClientId = document.getElementById('grpLinkedClient').value;
+  const description = document.getElementById('grpDesc').value.trim();
+
+  try {
+    const res = await fetch('/api/groups', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, type, bot, chatId, linkedClientId, description })
+    });
+    const data = await res.json();
+    if (data.success) {
+      closeAddGroupModal();
+      renderBotConfig();
+      alert(`✅ Telegram group [${name}] registered successfully!`);
+    } else {
+      alert('Error adding group: ' + (data.error || 'Failed'));
+    }
+  } catch (err) {
+    alert('Failed to register group: ' + err.message);
+  }
+}
+
+async function deleteGroup(id) {
+  if (!confirm('Are you sure you want to remove this Telegram Group record?')) return;
+  try {
+    await fetch(`/api/groups/${id}`, { method: 'DELETE' });
+    renderBotConfig();
+  } catch (err) {
+    console.error('Delete group error:', err);
+  }
+}
+
+async function testPostGroup(id) {
+  try {
+    const res = await fetch(`/api/groups/${id}/test-post`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: '🤖 *PurpleOS Bot Test Broadcast*\nConnection active & verified!' })
+    });
+    const data = await res.json();
+    alert(data.message || 'Test post sent!');
+  } catch (err) {
+    alert('Test post error: ' + err.message);
+  }
+}
+
+// Workspace Access Card Generator Handler
+let currentAccessCardData = null;
+
+async function generateUserAccessCard(phone, linkedId, linkedType = 'team', email = '') {
+  try {
+    const res = await fetch('/api/auth/pin/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone, linkedId, linkedType, email, sendTelegram: false })
+    });
+    const data = await res.json();
+    if (!data.success) {
+      alert('Error generating access PIN: ' + (data.error || 'Failed'));
+      return;
+    }
+
+    currentAccessCardData = { ...data, phone, linkedId, linkedType };
+
+    const cardTextEl = document.getElementById('accessCardText');
+    if (cardTextEl) cardTextEl.innerText = data.inviteCardText;
+
+    const waBtn = document.getElementById('accessCardWaBtn');
+    if (waBtn) waBtn.href = data.whatsappLink;
+
+    document.getElementById('accessCardModal')?.classList.remove('hidden');
+
+  } catch (err) {
+    alert('Generate PIN error: ' + err.message);
+  }
+}
+
+function closeAccessCardModal() {
+  document.getElementById('accessCardModal')?.classList.add('hidden');
+}
+
+function copyAccessCard() {
+  if (currentAccessCardData?.inviteCardText) {
+    navigator.clipboard.writeText(currentAccessCardData.inviteCardText);
+    alert('📋 Workspace Access Card copied to clipboard!');
+  }
+}
+
+async function pushAccessCardTelegram() {
+  if (!currentAccessCardData) return;
+  try {
+    const res = await fetch('/api/auth/pin/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        phone: currentAccessCardData.phone,
+        linkedId: currentAccessCardData.linkedId,
+        linkedType: currentAccessCardData.linkedType,
+        sendTelegram: true
+      })
+    });
+    const data = await res.json();
+    if (data.telegramPushed) {
+      alert('🚀 Access PIN pushed directly to user via Telegram!');
+    } else {
+      alert('⚠️ Could not push to Telegram. User may not have paired their Telegram chat ID yet.');
+    }
+  } catch (err) {
+    alert('Telegram push error: ' + err.message);
   }
 }
 
@@ -4487,6 +4980,38 @@ async function renderAnalytics() {
         </div>
       `;
     }
+
+    // Public Website Activity Tracker (v0.7.5.1)
+    try {
+      const trackRes = await fetch('/api/track');
+      const trackData = await trackRes.json();
+      if (trackData.success && trackData.summary) {
+        const sum = trackData.summary;
+        const webCard = document.getElementById('analyticsWebsiteActivity');
+        if (webCard) {
+          webCard.innerHTML = `
+            <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:1rem; margin-top:1rem;">
+              <div style="background:rgba(124,58,237,0.1); border:1px solid rgba(124,58,237,0.25); padding:0.85rem; border-radius:12px; text-align:center;">
+                <div style="font-size:0.75rem; color:#a78bfa; font-weight:700;">PAGE VIEWS</div>
+                <div style="font-size:1.4rem; font-weight:800; color:#fff; margin-top:0.2rem;">${sum.totalViews}</div>
+              </div>
+              <div style="background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.25); padding:0.85rem; border-radius:12px; text-align:center;">
+                <div style="font-size:0.75rem; color:#38bdf8; font-weight:700;">CTA CLICKS</div>
+                <div style="font-size:1.4rem; font-weight:800; color:#fff; margin-top:0.2rem;">${sum.totalClicks}</div>
+              </div>
+              <div style="background:rgba(236,72,153,0.1); border:1px solid rgba(236,72,153,0.25); padding:0.85rem; border-radius:12px; text-align:center;">
+                <div style="font-size:0.75rem; color:#f472b6; font-weight:700;">BOT OPENS</div>
+                <div style="font-size:1.4rem; font-weight:800; color:#fff; margin-top:0.2rem;">${sum.botOpens}</div>
+              </div>
+              <div style="background:rgba(52,211,153,0.1); border:1px solid rgba(52,211,153,0.25); padding:0.85rem; border-radius:12px; text-align:center;">
+                <div style="font-size:0.75rem; color:#34d399; font-weight:700;">LEADS CAPTURED</div>
+                <div style="font-size:1.4rem; font-weight:800; color:#fff; margin-top:0.2rem;">${sum.leadsCaptured}</div>
+              </div>
+            </div>
+          `;
+        }
+      }
+    } catch (e) {}
   } catch (err) {
     console.error('Error rendering BI analytics:', err);
   }
@@ -4530,6 +5055,482 @@ async function submitStaffInvite(event) {
     }
   } catch (err) {
     console.error('Error creating staff invite:', err);
+  }
+}
+
+// ==========================================
+// 🏥 PHASE C: HR OPERATIONS HUB (Leaves, EOD, Tickets)
+// ==========================================
+
+let activeHrSubtab = 'leaves';
+
+function switchHrSubtab(tabName) {
+  activeHrSubtab = tabName;
+
+  ['leaves', 'eod', 'tickets'].forEach(t => {
+    const btn = document.getElementById(`hr-subtab-btn-${t}`);
+    const div = document.getElementById(`hr-subtab-${t}`);
+    if (btn) btn.className = t === tabName ? 'fin-subtab-btn active' : 'fin-subtab-btn';
+    if (div) div.style.display = t === tabName ? 'block' : 'none';
+  });
+
+  renderHrOps();
+}
+
+function renderHrOps() {
+  const leaves = appData.leaves || [];
+  const eodReports = appData.eod_reports || [];
+  const tickets = appData.tickets || [];
+
+  // 1. LEAVE APPROVALS QUEUE
+  const leavesTbody = document.getElementById('leavesTableBody');
+  const pendingLeavesBadge = document.getElementById('hrPendingLeavesBadge');
+  const pendingLeaves = leaves.filter(l => l.status === 'Pending');
+
+  if (pendingLeavesBadge) {
+    pendingLeavesBadge.innerText = `${pendingLeaves.length} Pending`;
+    pendingLeavesBadge.className = pendingLeaves.length > 0 ? 'badge badge-amber' : 'badge badge-emerald';
+  }
+
+  if (leavesTbody) {
+    if (leaves.length === 0) {
+      leavesTbody.innerHTML = `
+        <tr>
+          <td colspan="7" style="text-align:center; color:var(--text-muted); padding:2rem;">
+            🌴 No leave requests logged. Click "+ Request Leave" in Crew Portal to log.
+          </td>
+        </tr>
+      `;
+    } else {
+      leavesTbody.innerHTML = leaves.map(l => {
+        let statusBadge = 'badge-purple';
+        if (l.status === 'Approved') statusBadge = 'badge-emerald';
+        else if (l.status === 'Declined') statusBadge = 'badge-pink';
+        else if (l.status === 'Pending') statusBadge = 'badge-amber';
+
+        return `
+          <tr>
+            <td><code>${l.id}</code></td>
+            <td><strong>${l.staffName}</strong></td>
+            <td><span class="badge badge-purple">${l.type}</span></td>
+            <td>
+              ${l.startDate} to ${l.endDate}<br>
+              <small style="color:var(--purple-light); font-weight:700;">(${l.totalDays || 1} Days)</small>
+            </td>
+            <td><small style="color:#cbd5e1;">${l.reason}</small></td>
+            <td><span class="badge ${statusBadge}">${l.status}</span></td>
+            <td style="text-align:right;">
+              ${l.status === 'Pending' ? `
+                <div style="display:flex; justify-content:flex-end; gap:0.4rem;">
+                  <button class="btn-purple" style="padding:0.2rem 0.6rem; font-size:0.75rem; background:#10b981;" onclick="approveLeave('${l.id}')">✅ Approve</button>
+                  <button class="btn-secondary" style="padding:0.2rem 0.5rem; font-size:0.75rem; color:#f43f5e;" onclick="rejectLeave('${l.id}')">❌ Decline</button>
+                </div>
+              ` : `<small style="color:var(--text-muted);">${l.reviewedBy || 'Manager'}</small>`}
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+  }
+
+  // 2. DAILY 7PM EOD DIGEST FEED
+  const eodContainer = document.getElementById('eodReportsContainer');
+  const eodBadge = document.getElementById('hrEodSubmittedBadge');
+
+  const todayStr = new Date().toISOString().split('T')[0];
+  const todayEods = eodReports.filter(e => (e.date || '').startsWith(todayStr) || (e.submittedAt || '').startsWith(todayStr));
+
+  if (eodBadge) {
+    eodBadge.innerText = `${todayEods.length} Submitted Today`;
+  }
+
+  if (eodContainer) {
+    if (eodReports.length === 0) {
+      eodContainer.innerHTML = `
+        <div style="text-align:center; padding:2rem; color:var(--text-muted);">
+          📋 No EOD daily reports logged yet today. Click "⚡ Trigger 7PM EOD Prompt" to prompt team.
+        </div>
+      `;
+    } else {
+      eodContainer.innerHTML = eodReports.map(e => `
+        <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:1rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem;">
+            <div style="display:flex; align-items:center; gap:0.6rem;">
+              <span style="font-size:1.2rem;">👤</span>
+              <div>
+                <strong style="color:#fff; font-size:0.95rem;">${e.staffName}</strong>
+                <div style="font-size:0.75rem; color:var(--text-muted);">${e.date || 'Today'} • Submitted at ${(e.submittedAt || '').split('T')[1]?.slice(0, 5) || '19:00'}</div>
+              </div>
+            </div>
+            ${e.blockers && e.blockers.toLowerCase() !== 'none' ? `
+              <span class="badge badge-pink">⚠️ Blocker Reported</span>
+            ` : `<span class="badge badge-emerald">✅ Smooth Ops</span>`}
+          </div>
+
+          <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:1rem; font-size:0.85rem; margin-top:0.6rem;">
+            <div style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.2); padding:0.6rem; border-radius:8px;">
+              <div style="font-weight:700; color:#4ade80; margin-bottom:0.2rem; font-size:0.75rem; text-transform:uppercase;">1. Tasks Completed</div>
+              <div style="color:#cbd5e1; white-space:pre-wrap;">${e.tasksCompleted}</div>
+            </div>
+
+            <div style="background:rgba(6,182,212,0.08); border:1px solid rgba(6,182,212,0.2); padding:0.6rem; border-radius:8px;">
+              <div style="font-weight:700; color:#38bdf8; margin-bottom:0.2rem; font-size:0.75rem; text-transform:uppercase;">2. Tasks In Progress</div>
+              <div style="color:#cbd5e1; white-space:pre-wrap;">${e.tasksInProgress}</div>
+            </div>
+
+            <div style="background:rgba(244,63,94,0.08); border:1px solid rgba(244,63,94,0.2); padding:0.6rem; border-radius:8px;">
+              <div style="font-weight:700; color:#fb7185; margin-bottom:0.2rem; font-size:0.75rem; text-transform:uppercase;">3. Blockers / Help Needed</div>
+              <div style="color:#cbd5e1; white-space:pre-wrap;">${e.blockers}</div>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+  }
+
+  // 3. SUPPORT & MAINTENANCE TICKETS BOARD
+  const ticketsTbody = document.getElementById('ticketsTableBody');
+  const openTicketsBadge = document.getElementById('hrOpenTicketsBadge');
+  const openTickets = tickets.filter(t => t.status === 'Open' || t.status === 'In Progress');
+
+  if (openTicketsBadge) {
+    openTicketsBadge.innerText = `${openTickets.length} Open Tickets`;
+    openTicketsBadge.className = openTickets.length > 0 ? 'badge badge-amber' : 'badge badge-emerald';
+  }
+
+  if (ticketsTbody) {
+    if (tickets.length === 0) {
+      ticketsTbody.innerHTML = `
+        <tr>
+          <td colspan="8" style="text-align:center; color:var(--text-muted); padding:2rem;">
+            🔧 No support tickets logged. Click "+ Report Support Ticket" to log an issue.
+          </td>
+        </tr>
+      `;
+    } else {
+      ticketsTbody.innerHTML = tickets.map(t => {
+        let urgBadge = 'badge-purple';
+        if (t.urgency === 'High') urgBadge = 'badge-pink';
+        else if (t.urgency === 'Medium') urgBadge = 'badge-amber';
+
+        let statusBadge = 'badge-purple';
+        if (t.status === 'Resolved') statusBadge = 'badge-emerald';
+        else if (t.status === 'In Progress') statusBadge = 'badge-cyan';
+        else if (t.status === 'Open') statusBadge = 'badge-amber';
+
+        return `
+          <tr>
+            <td><code>${t.id}</code></td>
+            <td><span class="badge badge-purple">${t.category}</span></td>
+            <td>
+              <strong style="color:#fff;">${t.title}</strong><br>
+              <small style="color:var(--text-muted); font-size:0.75rem;">${t.description}</small>
+            </td>
+            <td><span class="badge ${urgBadge}">${t.urgency}</span></td>
+            <td><small style="color:#cbd5e1;">${t.loggedBy}</small></td>
+            <td><small style="color:var(--purple-light);">${t.assignedTo || 'Maintenance'}</small></td>
+            <td>
+              <select class="role-select" style="font-size:0.75rem; padding:0.2rem 0.4rem;" onchange="updateTicketStatus('${t.id}', this.value)">
+                <option value="Open" ${t.status === 'Open' ? 'selected' : ''}>Open</option>
+                <option value="In Progress" ${t.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+                <option value="Resolved" ${t.status === 'Resolved' ? 'selected' : ''}>✅ Resolved</option>
+              </select>
+            </td>
+            <td style="text-align:right;">
+              ${t.status !== 'Resolved' ? `
+                <button class="btn-purple" style="padding:0.2rem 0.6rem; font-size:0.75rem; background:#10b981;" onclick="updateTicketStatus('${t.id}', 'Resolved')">✅ Resolve</button>
+              ` : `<small style="color:#4ade80;">Resolved</small>`}
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+  }
+}
+
+async function approveLeave(leaveId) {
+  try {
+    const res = await fetch(`/api/leaves/${leaveId}/approve`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ reviewedBy: 'Line Manager / Owner' })
+    });
+    const data = await res.json();
+    if (data.success) {
+      alert(`✅ Leave request ${leaveId} APPROVED!\nStaff attendance calendar updated.`);
+      await fetchInitialData();
+    }
+  } catch (err) {
+    console.error('Error approving leave:', err);
+  }
+}
+
+async function rejectLeave(leaveId) {
+  try {
+    const res = await fetch(`/api/leaves/${leaveId}/reject`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ reviewedBy: 'Line Manager / Owner' })
+    });
+    const data = await res.json();
+    if (data.success) {
+      alert(`❌ Leave request ${leaveId} DECLINED.`);
+      await fetchInitialData();
+    }
+  } catch (err) {
+    console.error('Error rejecting leave:', err);
+  }
+}
+
+async function triggerManualEodPrompt() {
+  try {
+    const res = await fetch('/api/eod/trigger-prompt', { method: 'POST' });
+    const data = await res.json();
+    if (data.success) {
+      alert('⚡ 7:00 PM Daily EOD Telegram prompt pushed to all active team members!');
+    }
+  } catch (err) {
+    console.error('Error pushing EOD prompt:', err);
+  }
+}
+
+function openNewTicketModal() {
+  document.getElementById('ticketTitleInput').value = '';
+  document.getElementById('ticketDescInput').value = '';
+  document.getElementById('createTicketModal')?.classList.remove('hidden');
+}
+
+function closeCreateTicketModal() {
+  document.getElementById('createTicketModal')?.classList.add('hidden');
+}
+
+async function submitNewTicket(event) {
+  event.preventDefault();
+
+  const payload = {
+    category: document.getElementById('ticketCategoryInput').value,
+    urgency: document.getElementById('ticketUrgencyInput').value,
+    title: document.getElementById('ticketTitleInput').value.trim(),
+    assignedTo: document.getElementById('ticketAssignedToInput').value.trim(),
+    description: document.getElementById('ticketDescInput').value.trim(),
+    loggedBy: 'Mahmudul Hasan (Owner)'
+  };
+
+  try {
+    const res = await fetch('/api/tickets', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (data.success) {
+      alert(`✅ Support Ticket ${data.ticket.id} logged successfully!`);
+      closeCreateTicketModal();
+      await fetchInitialData();
+    }
+  } catch (err) {
+    console.error('Error logging ticket:', err);
+  }
+}
+
+async function updateTicketStatus(ticketId, newStatus) {
+  try {
+    const res = await fetch(`/api/tickets/${ticketId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: newStatus, resolvedBy: 'Maintenance Lead' })
+    });
+    const data = await res.json();
+    if (data.success) {
+      if (newStatus === 'Resolved') alert(`✅ Ticket ${ticketId} resolved! Staff notified via Telegram.`);
+      await fetchInitialData();
+    }
+  } catch (err) {
+    console.error('Error updating ticket status:', err);
+  }
+}
+
+// ==========================================
+// 👑 PHASE D: EXECUTIVE INTELLIGENCE & BROADCASTS
+// ==========================================
+
+function renderExecutiveIntelligence() {
+  const openTasks = (appData.tasks || []).filter(t => t.stage !== 'Approved').length;
+  const pendingExp = (appData.expenses || []).filter(e => e.status !== 'Disbursed' && e.status !== 'Rejected').length;
+  const activeStaff = (appData.team || []).length;
+  const paidRev = (appData.invoices || []).filter(i => i.status === 'Paid').reduce((s, i) => s + (Number(i.amount) || 0), 0);
+  const totalRev = (appData.invoices || []).reduce((s, i) => s + (Number(i.amount) || 0), 0);
+
+  const mBody = document.getElementById('eiMorningBody');
+  if (mBody) {
+    mBody.innerHTML = `
+      • Active Shoot Campaigns: ${openTasks} Workflows<br>
+      • Team Capacity: ${activeStaff} Staff Members Active<br>
+      • Pending Approvals: ${pendingExp} Expense Claims<br>
+      • Social Dispatches: Check Social Hub
+    `;
+  }
+
+  const eBody = document.getElementById('eiEveningBody');
+  if (eBody) {
+    eBody.innerHTML = `
+      • Total Paid Revenue: $${paidRev.toLocaleString()} USD<br>
+      • Portfolio Total Revenue: $${totalRev.toLocaleString()} USD<br>
+      • Team EOD Status: Check HR Ops Tab<br>
+      • Active Support Tickets: ${(appData.tickets || []).filter(t => t.status !== 'Resolved').length} Open
+    `;
+  }
+}
+
+async function triggerMorningBriefing() {
+  try {
+    const res = await fetch('/api/reports/morning', { method: 'POST' });
+    const data = await res.json();
+    if (data.success) {
+      alert('⚡ 9:00 AM Morning Executive Briefing pushed to Telegram!');
+    }
+  } catch (err) {
+    console.error('Error triggering morning briefing:', err);
+  }
+}
+
+async function triggerEveningDigest() {
+  try {
+    const res = await fetch('/api/reports/evening', { method: 'POST' });
+    const data = await res.json();
+    if (data.success) {
+      alert('⚡ 8:30 PM Evening Executive Digest pushed to Telegram!');
+    }
+  } catch (err) {
+    console.error('Error triggering evening digest:', err);
+  }
+}
+
+async function triggerWeeklyReport() {
+  try {
+    const res = await fetch('/api/reports/weekly', { method: 'POST' });
+    const data = await res.json();
+    if (data.success) {
+      alert('⚡ Weekly Executive KPI Summary pushed to Telegram!');
+    }
+  } catch (err) {
+    console.error('Error triggering weekly report:', err);
+  }
+}
+
+async function triggerSpecialistBriefings() {
+  try {
+    const res = await fetch('/api/reports/specialist-briefing', { method: 'POST' });
+    const data = await res.json();
+    if (data.success) {
+      alert('⚡ 9:00 AM Personal Daily Task Briefings pushed to all team specialists via Telegram!');
+    }
+  } catch (err) {
+    console.error('Error triggering specialist briefings:', err);
+  }
+}
+
+function openBroadcastModal() {
+  document.getElementById('bcTitleInput').value = '';
+  document.getElementById('bcMessageInput').value = '';
+  document.getElementById('broadcastModal')?.classList.remove('hidden');
+}
+
+function closeBroadcastModal() {
+  document.getElementById('broadcastModal')?.classList.add('hidden');
+}
+
+async function submitBroadcastNotice(event) {
+  event.preventDefault();
+
+  const payload = {
+    title: document.getElementById('bcTitleInput').value.trim(),
+    targetGroup: document.getElementById('bcTargetInput').value,
+    message: document.getElementById('bcMessageInput').value.trim(),
+    urgent: document.getElementById('bcUrgentInput').checked,
+    senderName: 'Mahmudul Hasan (Owner)'
+  };
+
+  try {
+    const res = await fetch('/api/broadcast', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (data.success) {
+      alert('📢 Team Broadcast Notice dispatched instantly to all staff & Telegram groups!');
+      closeBroadcastModal();
+    }
+  } catch (err) {
+    console.error('Error sending broadcast:', err);
+  }
+}
+
+// PUBLIC LANDING CMS MANAGER HANDLERS (v0.7.5.1)
+async function openCMSManagerModal() {
+  const modal = document.getElementById('cmsModal');
+  if (!modal) return;
+
+  try {
+    const res = await fetch('/api/cms/content');
+    const data = await res.json();
+    if (data.success && data.content) {
+      const cms = data.content;
+      const info = cms.agencyInfo || {};
+
+      document.getElementById('cmsEmailInput').value = info.email || 'contact@purplebot.digital';
+      document.getElementById('cmsPhoneInput').value = info.phone || '+88 01711 019550';
+      document.getElementById('cmsWhatsappInput').value = info.whatsapp || '+8801711019550';
+      document.getElementById('cmsRegAddressInput').value = info.registeredAddress || '';
+      document.getElementById('cmsOpAddressInput').value = info.operatingAddress || '';
+      document.getElementById('cmsMarqueeInput').value = (cms.clientMarquee || []).join(', ');
+    }
+  } catch (err) {
+    console.error('Error opening CMS modal:', err);
+  }
+
+  modal.style.display = 'flex';
+}
+
+function closeCMSManagerModal() {
+  const modal = document.getElementById('cmsModal');
+  if (modal) modal.style.display = 'none';
+}
+
+async function saveCMSContent(e) {
+  e.preventDefault();
+
+  const marqueeArr = document.getElementById('cmsMarqueeInput').value
+    .split(',')
+    .map(s => s.trim())
+    .filter(Boolean);
+
+  const payload = {
+    agencyInfo: {
+      email: document.getElementById('cmsEmailInput').value.trim(),
+      phone: document.getElementById('cmsPhoneInput').value.trim(),
+      whatsapp: document.getElementById('cmsWhatsappInput').value.trim(),
+      registeredAddress: document.getElementById('cmsRegAddressInput').value.trim(),
+      operatingAddress: document.getElementById('cmsOpAddressInput').value.trim()
+    },
+    clientMarquee: marqueeArr
+  };
+
+  try {
+    const res = await fetch('/api/cms/content', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+    if (data.success) {
+      alert('🎉 Landing Page CMS updated! Changes are now live on purplebot.digital.');
+      closeCMSManagerModal();
+    }
+  } catch (err) {
+    console.error('Error saving CMS content:', err);
   }
 }
 

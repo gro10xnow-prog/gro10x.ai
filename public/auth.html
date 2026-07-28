@@ -3,11 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PurpleOS - Authentication Portal</title>
+  <title>PurpleOS - Workspace Authentication Portal</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root {
       --bg-dark: #09090b;
@@ -39,7 +38,6 @@
       position: relative;
     }
 
-    /* Ambient Animated Glow Background */
     body::before {
       content: '';
       position: absolute;
@@ -123,37 +121,6 @@
       font-size: 0.875rem;
     }
 
-    /* Auth Modes Navigation */
-    .auth-tabs {
-      display: flex;
-      background: rgba(9, 9, 11, 0.7);
-      padding: 0.25rem;
-      border-radius: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      margin-bottom: 1.75rem;
-    }
-
-    .auth-tab {
-      flex: 1;
-      padding: 0.6rem 0;
-      text-align: center;
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: var(--text-muted);
-      border: none;
-      background: transparent;
-      border-radius: 9px;
-      cursor: pointer;
-      transition: all 0.25s ease;
-    }
-
-    .auth-tab.active {
-      background: linear-gradient(135deg, rgba(139, 92, 246, 0.8), rgba(168, 85, 247, 0.6));
-      color: #ffffff;
-      box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
-    }
-
-    /* Form Styles */
     .form-group {
       margin-bottom: 1.25rem;
     }
@@ -164,10 +131,6 @@
       font-weight: 600;
       color: #d4d4d8;
       margin-bottom: 0.4rem;
-    }
-
-    .input-wrapper {
-      position: relative;
     }
 
     .form-input {
@@ -216,11 +179,6 @@
       transform: translateY(0);
     }
 
-    .btn-submit:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
     .alert {
       padding: 0.75rem 1rem;
       border-radius: 12px;
@@ -241,21 +199,28 @@
       color: #86efac;
     }
 
+    .bot-help-box {
+      margin-top: 1.2rem;
+      padding: 0.85rem;
+      background: rgba(139, 92, 246, 0.1);
+      border: 1px dashed rgba(168, 85, 247, 0.3);
+      border-radius: 12px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    .bot-help-box a {
+      color: #c084fc;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
     .form-footer {
       margin-top: 1.5rem;
       text-align: center;
       font-size: 0.8rem;
       color: var(--text-muted);
-    }
-
-    .form-footer a {
-      color: #c084fc;
-      text-decoration: none;
-      font-weight: 600;
-    }
-
-    .form-footer a:hover {
-      text-decoration: underline;
     }
   </style>
 </head>
@@ -264,84 +229,74 @@
   <div class="auth-container">
     <div class="auth-brand">
       <div class="auth-badge">
-        <span>⚡ PurpleOS Subdomain Auth</span>
+        <span>🔑 Phone + PIN Security</span>
       </div>
-      <h1>Employee Portal</h1>
-      <p>Sign in to access your Purplebot workspace</p>
-    </div>
-
-    <!-- Mode Tabs -->
-    <div class="auth-tabs">
-      <button class="auth-tab active" id="tab-password" onclick="switchTab('password')">Password</button>
-      <button class="auth-tab" id="tab-magic" onclick="switchTab('magic')">Magic Link</button>
+      <h1>PurpleOS Workspace</h1>
+      <p>Enter your verified phone number & 4-digit PIN</p>
     </div>
 
     <!-- Alert Box -->
     <div id="alert-box" class="alert"></div>
 
-    <!-- Password Sign In Form -->
-    <form id="form-password" onsubmit="handlePasswordLogin(event)">
+    <!-- Main Phone + PIN Login Form -->
+    <form id="form-pin-login" onsubmit="handlePinLogin(event)">
       <div class="form-group">
-        <label for="email">Work Email</label>
-        <div class="input-wrapper">
-          <input type="email" id="email" class="form-input" placeholder="e.g. farhan@purplebot.agency" required>
-        </div>
+        <label for="phone">Verified Phone Number</label>
+        <input type="tel" id="phone" class="form-input" placeholder="+880 1700-000000" required>
       </div>
 
       <div class="form-group">
-        <label for="password">Password</label>
-        <div class="input-wrapper">
-          <input type="password" id="password" class="form-input" placeholder="••••••••••••" required>
-        </div>
+        <label for="pin">4-Digit Access PIN</label>
+        <input type="password" id="pin" class="form-input" placeholder="••••" maxlength="6" required style="letter-spacing: 0.3em; font-size: 1.2rem; text-align: center;">
       </div>
 
-      <button type="submit" id="btn-password-submit" class="btn-submit">
-        <span>Sign In to Dashboard</span>
+      <div class="form-group">
+        <label for="email" style="display: flex; justify-content: space-between;">
+          <span>Work Email</span>
+          <span style="color: var(--text-muted); font-weight: 400;">(Optional for communication)</span>
+        </label>
+        <input type="email" id="email" class="form-input" placeholder="e.g. name@purplebot.digital">
+      </div>
+
+      <button type="submit" id="btn-pin-submit" class="btn-submit">
+        <span>Sign In to Workspace</span>
         <span>→</span>
       </button>
     </form>
 
-    <!-- Magic Link Form (Hidden by default) -->
-    <form id="form-magic" style="display: none;" onsubmit="handleMagicLink(event)">
-      <div class="form-group">
-        <label for="magic-email">Work Email Address</label>
-        <div class="input-wrapper">
-          <input type="email" id="magic-email" class="form-input" placeholder="e.g. sabrin@purplebot.agency" required>
-        </div>
-      </div>
-
-      <button type="submit" id="btn-magic-submit" class="btn-submit">
-        <span>Send Magic Sign-In Link</span>
-        <span>✨</span>
-      </button>
-    </form>
+    <div class="bot-help-box">
+      🤖 Don't have a PIN? Open Telegram Bot:<br>
+      • Crew: <a href="https://t.me/PurpleManBot?start=join_crew" target="_blank">@PurpleManBot</a><br>
+      • Client: <a href="https://t.me/PurpleBotAgencyBot?start=join_client" target="_blank">@PurpleBotAgencyBot</a>
+    </div>
 
     <div class="form-footer">
-      <p>Protected by Supabase Auth & JWT Encryption</p>
-      <p style="margin-top: 0.4rem;">
-        Need assistance? Contact <a href="mailto:admin@purplebot.agency">Agency Admin</a>
-      </p>
+      <p>Purplebot Digital Agency Operating System</p>
     </div>
   </div>
 
-  <!-- First-Time Login Password Reset Modal (Module A3) -->
-  <div id="first-reset-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(16px); z-index: 9999; align-items: center; justify-content: center; padding: 1.5rem;">
+  <!-- First-Time PIN Setup Modal -->
+  <div id="setup-pin-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(16px); z-index: 9999; align-items: center; justify-content: center; padding: 1.5rem;">
     <div style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 20px; max-width: 420px; width: 100%; padding: 2rem; text-align: left; box-shadow: 0 20px 50px rgba(0,0,0,0.8);">
-      <div style="font-size: 0.8rem; color: #c084fc; font-weight: 700; text-transform: uppercase; margin-bottom: 0.4rem;">🔑 FIRST-TIME SIGN-IN DETECTED</div>
-      <h2 style="font-size: 1.4rem; color: #fff; margin-bottom: 0.5rem;">Set Your Permanent Password</h2>
-      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem;">You signed in with a temporary password. Please create your permanent security password to continue.</p>
+      <div style="font-size: 0.8rem; color: #c084fc; font-weight: 700; text-transform: uppercase; margin-bottom: 0.4rem;">🔑 FIRST-TIME LOGIN DETECTED</div>
+      <h2 style="font-size: 1.4rem; color: #fff; margin-bottom: 0.5rem;">Set Your Permanent 4-Digit PIN</h2>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem;">You logged in with a temporary PIN. Create your personal 4-digit PIN for future sign-ins.</p>
 
-      <form onsubmit="submitFirstTimePasswordReset(event)">
+      <form onsubmit="submitPermanentPinSetup(event)">
         <div class="form-group">
-          <label>New Permanent Password</label>
-          <input type="password" id="new-perm-password" class="form-input" placeholder="At least 8 characters..." required minlength="8">
+          <label>New 4-Digit PIN</label>
+          <input type="password" id="new-perm-pin" class="form-input" placeholder="••••" maxlength="6" required style="letter-spacing: 0.3em; font-size: 1.2rem; text-align: center;">
         </div>
         <div class="form-group">
-          <label>Confirm Permanent Password</label>
-          <input type="password" id="confirm-perm-password" class="form-input" placeholder="Re-enter password..." required minlength="8">
+          <label>Confirm 4-Digit PIN</label>
+          <input type="password" id="confirm-perm-pin" class="form-input" placeholder="••••" maxlength="6" required style="letter-spacing: 0.3em; font-size: 1.2rem; text-align: center;">
+        </div>
+        <div class="form-group">
+          <label>Work Email Address</label>
+          <input type="email" id="perm-email" class="form-input" placeholder="Primary communication email...">
         </div>
         <button type="submit" class="btn-submit" style="margin-top: 1rem;">
-          <span>💾 Save Permanent Password & Launch</span>
+          <span>💾 Save Permanent PIN & Launch</span>
         </button>
       </form>
     </div>

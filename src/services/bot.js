@@ -39,7 +39,15 @@ function initBot() {
           `• /myearnings - Check monthly salary & shoot commissions\n` +
           `• /mybookings - View assigned shoot schedule\n` +
           `• /pair - Pair account with employee code or phone`;
-        teamBot.sendMessage(chatId, welcome, { parse_mode: 'Markdown' });
+        
+        const keyboard = {
+          keyboard: [
+            [{ text: '📱 Share Verified Phone Number', request_contact: true }],
+            [{ text: '📍 Share GPS Location for Clock-In', request_location: true }]
+          ],
+          resize_keyboard: true
+        };
+        teamBot.sendMessage(chatId, welcome, { parse_mode: 'Markdown', reply_markup: keyboard });
       });
 
       teamBot.onText(/\/clockin/, (msg) => {
@@ -146,7 +154,14 @@ function initBot() {
           `• /portfolio - View video & TVC campaign reel\n` +
           `• /review - Access Review Room V2 deliverable cuts\n` +
           `• /invoices - View invoice status & payment instructions`;
-        clientBot.sendMessage(chatId, welcome, { parse_mode: 'Markdown' });
+        
+        const keyboard = {
+          keyboard: [
+            [{ text: '📱 Share Verified Phone Number', request_contact: true }]
+          ],
+          resize_keyboard: true
+        };
+        clientBot.sendMessage(chatId, welcome, { parse_mode: 'Markdown', reply_markup: keyboard });
       });
 
       clientBot.onText(/\/services/, (msg) => {
@@ -199,11 +214,16 @@ function sendTelegramNotification(chatId, text, inlineKeyboard = null, isTeam = 
   if (inlineKeyboard) {
     options.reply_markup = { inline_keyboard: inlineKeyboard };
   }
-  targetBot.sendMessage(chatId, text, options);
+  targetBot.sendMessage(chatId, text, options).catch(err => console.warn('Telegram send error:', err.message));
   return true;
+}
+
+function sendToGroup(chatId, text, isTeam = true) {
+  return sendTelegramNotification(chatId, text, null, isTeam);
 }
 
 module.exports = {
   initBot,
-  sendTelegramNotification
+  sendTelegramNotification,
+  sendToGroup
 };

@@ -3,223 +3,431 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Purplebot Digital — Video Production & Performance Marketing Engine</title>
-  <meta name="description" content="Next-generation digital marketing agency and video production house powering high-growth commercial brands across Bangladesh & global markets.">
+  <title>Purplebot Digital — Award-Winning Digital Marketing & Tech Agency</title>
+  <meta name="description" content="Purplebot Digital is a leading digital marketing, video production, branding, and web development agency driving high-impact growth for commercial brands.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/styles.css">
   <link rel="stylesheet" href="/css/landing.css">
 </head>
-<body class="landing-body">
+<body class="pb-landing-body">
 
   <!-- TOP NAVBAR -->
-  <header class="landing-nav">
-    <div class="nav-container">
-      <a href="/" class="brand-logo">
-        <div class="logo-icon">🔮</div>
-        <div class="logo-text">
-          <span class="brand-title">PURPLEBOT</span>
-          <span class="brand-sub">DIGITAL AGENCY</span>
+  <header class="pb-nav" id="topNav">
+    <div class="pb-nav-container">
+      <a href="/" class="pb-brand-logo">
+        <div class="pb-logo-badge">
+          <span class="pb-logo-owl">🦉</span>
+        </div>
+        <div class="pb-logo-text">
+          <span class="pb-brand-title">PURPLEBOT</span>
+          <span class="pb-brand-sub">DIGITAL</span>
         </div>
       </a>
 
-      <nav class="nav-links">
-        <a href="#services">Services</a>
-        <a href="#portfolio">Showcase</a>
-        <a href="#stats">Impact</a>
-        <a href="#inquiry">Book Campaign</a>
+      <nav class="pb-nav-links">
+        <a href="#about" class="pb-nav-link">About</a>
+        <div class="pb-nav-dropdown">
+          <a href="#services" class="pb-nav-link pb-dropdown-trigger">Services <span class="chevron">▾</span></a>
+          <div class="pb-dropdown-menu">
+            <a href="#services" onclick="selectServiceCategory('Digital Marketing')">Digital Marketing</a>
+            <a href="#services" onclick="selectServiceCategory('Video Editing & Animation')">Video Production & Reels</a>
+            <a href="#services" onclick="selectServiceCategory('Branding & Graphics')">Branding & Identity</a>
+            <a href="#services" onclick="selectServiceCategory('Website & Tech')">Web Development & Apps</a>
+          </div>
+        </div>
+        <a href="#portfolio" class="pb-nav-link">Our Work</a>
+        <a href="#pricing" class="pb-nav-link">Plans & Pricing</a>
       </nav>
 
-      <div class="nav-portal-actions">
-        <a href="/partners" class="portal-btn partner-btn">
-          <span>🤝 Client Portal</span>
-        </a>
-        <a href="/team" class="portal-btn team-btn">
-          <span>👥 Crew Portal</span>
-        </a>
-        <a href="/admin" class="portal-btn admin-btn">
-          <span>⚡ Owner OS</span>
-        </a>
+      <div class="pb-nav-actions">
+        <button onclick="openPurpleBot('General Inquiry')" class="pb-btn-quote">
+          💬 Talk to Purple Bot
+        </button>
       </div>
     </div>
   </header>
 
   <!-- HERO SECTION -->
-  <section class="hero-section">
-    <div class="hero-glow hero-glow-1"></div>
-    <div class="hero-glow hero-glow-2"></div>
+  <section class="pb-hero-section" id="about">
+    <div class="pb-hero-bg-glow"></div>
 
-    <div class="hero-container">
-      <div class="hero-badge">
-        <span class="pulse-dot"></span>
-        <span>NEXT-GEN CREATIVE & OPERATIONAL PLATFORM</span>
+    <div class="pb-hero-container">
+      <div class="pb-hero-grid">
+        <div class="pb-hero-content">
+          <div class="pb-hero-badge">
+            <span class="pb-pulse-dot"></span>
+            <span>INNOVATIVE DIGITAL AGENCY</span>
+          </div>
+
+          <h1 class="pb-hero-title">
+            Digital. <br>
+            <span class="pb-gradient-text">Design. Tech.</span>
+          </h1>
+
+          <p class="pb-hero-subtitle">
+            Expert solutions tailored to your brand. We combine data-driven marketing, viral short-form content, and cutting-edge tech to deliver measurable business growth.
+          </p>
+
+          <div class="pb-hero-cta-group">
+            <button onclick="openPurpleBot('Get Started')" class="pb-btn-primary">
+              🚀 Get Started
+            </button>
+            <a href="#portfolio" class="pb-btn-secondary">
+              Explore Our Work
+            </a>
+          </div>
+        </div>
+
+        <div class="pb-hero-visual">
+          <div class="pb-mascot-wrapper">
+            <img src="/images/mascot.png" alt="Purple Bot AI Mascot" class="pb-hero-mascot-img">
+            <div class="pb-mascot-card pb-mascot-card-1">
+              <span class="card-icon">⚡</span>
+              <div>
+                <strong>8+ Years</strong>
+                <span>Industry Leadership</span>
+              </div>
+            </div>
+            <div class="pb-mascot-card pb-mascot-card-2">
+              <span class="card-icon">🎯</span>
+              <div>
+                <strong>100+ Clients</strong>
+                <span>Multi-National & Brands</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <h1 class="hero-title">
-        High-Impact Video Production & <span class="gradient-text">Performance Marketing Engine</span>
-      </h1>
-
-      <p class="hero-subtitle">
-        Purplebot Digital scales commercial brands with viral short-form video reels, high-converting performance ads, automated shoot logistics, and client review rooms.
-      </p>
-
-      <div class="hero-cta-group">
-        <a href="#inquiry" class="btn-hero-primary">
-          🚀 Start Your Campaign
-        </a>
-        <a href="/partners" class="btn-hero-secondary">
-          🎥 Open Review Room
-        </a>
+      <!-- HERO STATS STRIP -->
+      <div class="pb-stats-strip" id="stats">
+        <div class="pb-stat-card">
+          <div class="pb-stat-num" data-target="8">8+</div>
+          <div class="pb-stat-label">Years of Experience</div>
+        </div>
+        <div class="pb-stat-card">
+          <div class="pb-stat-num" data-target="100">100+</div>
+          <div class="pb-stat-label">Clients Across Industries</div>
+        </div>
+        <div class="pb-stat-card">
+          <div class="pb-stat-num" data-target="20000">20,000+</div>
+          <div class="pb-stat-label">Creatives & Reels Delivered</div>
+        </div>
+        <div class="pb-stat-card">
+          <div class="pb-stat-num" data-target="10">10M+</div>
+          <div class="pb-stat-label">Organic Video Reach</div>
+        </div>
       </div>
+    </div>
+  </section>
 
-      <!-- LIVE AGENCY STATS STRIP -->
-      <div class="hero-stats-strip" id="stats">
-        <div class="stat-card">
-          <div class="stat-num">200+</div>
-          <div class="stat-label">Commercial Campaigns</div>
+  <!-- TRUSTED CLIENTS LOGO MARQUEE -->
+  <section class="pb-clients-section">
+    <div class="pb-section-container">
+      <p class="pb-clients-header">Trusted by renowned multi-nationals, startups, and SMEs</p>
+      
+      <div class="pb-marquee-wrapper">
+        <div class="pb-marquee-content" id="clientMarquee">
+          <div class="pb-client-pill"><span>Aarong Earth</span></div>
+          <div class="pb-client-pill"><span>LG Electronics</span></div>
+          <div class="pb-client-pill"><span>Chillox Burgers</span></div>
+          <div class="pb-client-pill"><span>BAT Global</span></div>
+          <div class="pb-client-pill"><span>Taptap Send</span></div>
+          <div class="pb-client-pill"><span>Mortein</span></div>
+          <div class="pb-client-pill"><span>Harpic</span></div>
+          <div class="pb-client-pill"><span>Yatai Japanese</span></div>
+          <div class="pb-client-pill"><span>Fortress Build</span></div>
+          <div class="pb-client-pill"><span>UCB Bank</span></div>
         </div>
-        <div class="stat-card">
-          <div class="stat-num">98.4%</div>
-          <div class="stat-label">Client Approval Rate</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHY CHOOSE PURPLEBOT -->
+  <section class="pb-why-section">
+    <div class="pb-section-container">
+      <div class="pb-why-box">
+        <div class="pb-why-content">
+          <span class="pb-section-badge">WHY CHOOSE US</span>
+          <h2 class="pb-why-title">Why Choose <br><span class="pb-gradient-text-light">Purplebot?</span></h2>
+          <p class="pb-why-desc">Discover the perks of going Purple. We embrace and adapt to new tools, channels, and technologies to offer effective design and content solutions.</p>
+          
+          <button onclick="openPurpleBot('Why Choose Purplebot')" class="pb-btn-white">
+            Learn More →
+          </button>
         </div>
-        <div class="stat-card">
-          <div class="stat-num">48h</div>
-          <div class="stat-label">Deliverable Cut Turnaround</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-num">10M+</div>
-          <div class="stat-label">Organic Video Views</div>
+
+        <div class="pb-why-grid">
+          <div class="pb-why-card">
+            <div class="pb-why-icon">⚡</div>
+            <h3>DYNAMIC</h3>
+            <p>Much like social media trends and algorithms, we are drilled to be dynamic. With us, you will never fall short of fresh ideas.</p>
+          </div>
+
+          <div class="pb-why-card">
+            <div class="pb-why-icon">🏆</div>
+            <h3>EXPERIENCED</h3>
+            <p>8+ years of experience. 20,000+ creatives delivered for 100+ clients across FMCG, Lifestyle, Tech, and Financial sectors.</p>
+          </div>
+
+          <div class="pb-why-card">
+            <div class="pb-why-icon">🚀</div>
+            <h3>AGILE</h3>
+            <p>Optimized operating procedures supported by highly skilled designers and producers allow us to deliver with zero friction.</p>
+          </div>
         </div>
       </div>
     </div>
   </section>
 
   <!-- SERVICES CATALOG SECTION -->
-  <section class="services-section" id="services">
-    <div class="section-container">
-      <div class="section-header">
-        <div class="section-badge">CORE CAPABILITIES</div>
-        <h2 class="section-title">Designed for Modern High-Growth Brands</h2>
-        <p class="section-desc">Transparent pricing, dedicated shoot crews, and real-time client review rooms.</p>
+  <section class="pb-services-section" id="services">
+    <div class="pb-section-container">
+      <div class="pb-section-header">
+        <span class="pb-section-badge">OUR EXPERTISE</span>
+        <h2 class="pb-section-title">Services We Offer</h2>
+        <p class="pb-section-desc">Explore the full spectrum of services. We combine marketing, design, and tech prowess to deliver tailored solutions for your brand.</p>
       </div>
 
-      <div class="services-grid" id="landingServicesGrid">
+      <div class="pb-services-grid" id="landingServicesGrid">
         <!-- Rendered dynamically by landing.js -->
+        <div class="pb-service-card-fallback">
+          <div class="pb-svc-icon">📱</div>
+          <h3>Digital Marketing</h3>
+          <p>Social Media Strategy, Meta & Google Ads, Content Creation & Community Management.</p>
+          <button onclick="openPurpleBot('Digital Marketing')" class="pb-btn-svc">Get Quotation →</button>
+        </div>
+        <div class="pb-service-card-fallback">
+          <div class="pb-svc-icon">🎬</div>
+          <h3>Video Editing & Animation</h3>
+          <p>Viral Short-Form Reels, 2D/3D Motion Graphics, Scriptwriting & TVC Editing.</p>
+          <button onclick="openPurpleBot('Video Production')" class="pb-btn-svc">Get Quotation →</button>
+        </div>
+        <div class="pb-service-card-fallback">
+          <div class="pb-svc-icon">🎨</div>
+          <h3>Branding & Graphics</h3>
+          <p>Brand Identity, Logo Design, Packaging, Marketing Collaterals & Brand Toolkits.</p>
+          <button onclick="openPurpleBot('Branding & Graphics')" class="pb-btn-svc">Get Quotation →</button>
+        </div>
+        <div class="pb-service-card-fallback">
+          <div class="pb-svc-icon">💻</div>
+          <h3>Website & Tech</h3>
+          <p>Custom Corporate Websites, E-Commerce Stores, CRM & Customized ERP Solutions.</p>
+          <button onclick="openPurpleBot('Website & Tech')" class="pb-btn-svc">Get Quotation →</button>
+        </div>
       </div>
     </div>
   </section>
 
   <!-- PORTFOLIO SHOWCASE SECTION -->
-  <section class="portfolio-section" id="portfolio">
-    <div class="section-container">
-      <div class="section-header">
-        <div class="section-badge">CLIENT SHOWCASE</div>
-        <h2 class="section-title">Trusted by Leading FMCG & Food Brands</h2>
+  <section class="pb-portfolio-section" id="portfolio">
+    <div class="pb-section-container">
+      <div class="pb-section-header">
+        <span class="pb-section-badge">CLIENT SHOWCASE</span>
+        <h2 class="pb-section-title">Check Out Some of Our Best Work</h2>
+        <p class="pb-section-desc">From commercial TVCs to viral social reels and corporate platforms.</p>
       </div>
 
-      <div class="portfolio-grid">
-        <div class="portfolio-card">
-          <div class="portfolio-thumb" style="background-image: url('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=800&q=80');">
-            <span class="category-tag">Commercial Food TVC</span>
+      <div class="pb-portfolio-grid">
+        <div class="pb-portfolio-card">
+          <div class="pb-portfolio-thumb" style="background-image: url('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=800&q=80');">
+            <span class="pb-category-tag">Commercial Food TVC</span>
           </div>
-          <div class="portfolio-info">
+          <div class="pb-portfolio-info">
             <h3>Chillox Fast Food Chain</h3>
             <p>12x Short-Form Reels + Billboard Launch Campaign</p>
-            <div class="portfolio-metric">📈 2.4M Reach • 18% Order Spike</div>
+            <div class="pb-portfolio-metric">📈 2.4M Reach • 18% Order Spike</div>
           </div>
         </div>
 
-        <div class="portfolio-card">
-          <div class="portfolio-thumb" style="background-image: url('https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=800&q=80');">
-            <span class="category-tag">Grooming & Lifestyle</span>
+        <div class="pb-portfolio-card">
+          <div class="pb-portfolio-thumb" style="background-image: url('https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=800&q=80');">
+            <span class="pb-category-tag">Grooming & Lifestyle</span>
           </div>
-          <div class="portfolio-info">
+          <div class="pb-portfolio-info">
             <h3>Clear Men (Unilever)</h3>
             <p>MasterBrand Cinema Spot & Digital Launch Reels</p>
-            <div class="portfolio-metric">🎬 Cinema 4K Cut • Approved Frame 1</div>
+            <div class="pb-portfolio-metric">🎬 Cinema 4K Cut • Approved Frame 1</div>
           </div>
         </div>
 
-        <div class="portfolio-card">
-          <div class="portfolio-thumb" style="background-image: url('https://images.unsplash.com/photo-1556742049-0a67d57a3e6f?auto=format&fit=crop&w=800&q=80');">
-            <span class="category-tag">Corporate Financial</span>
+        <div class="pb-portfolio-card">
+          <div class="pb-portfolio-thumb" style="background-image: url('https://images.unsplash.com/photo-1556742049-0a67d57a3e6f?auto=format&fit=crop&w=800&q=80');">
+            <span class="pb-category-tag">Corporate Financial</span>
           </div>
-          <div class="portfolio-info">
+          <div class="pb-portfolio-info">
             <h3>United Commercial Bank (UCB)</h3>
             <p>Annual Financial Report Video & Digital Campaign</p>
-            <div class="portfolio-metric">💼 100% On-Time Delivery</div>
+            <div class="pb-portfolio-metric">💼 100% On-Time Delivery</div>
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- INTERACTIVE INQUIRY & BOOKING MODAL SECTION -->
-  <section class="inquiry-section" id="inquiry">
-    <div class="section-container">
-      <div class="inquiry-card glass-panel">
-        <div class="inquiry-header">
-          <h2>Ready to Scale Your Brand?</h2>
-          <p>Submit your campaign brief below to get a custom commercial quotation within 4 hours.</p>
+  <!-- PLANS & PRICING SECTION -->
+  <section class="pb-pricing-section" id="pricing">
+    <div class="pb-section-container">
+      <div class="pb-section-header">
+        <span class="pb-section-badge">TRANSPARENT RATES</span>
+        <h2 class="pb-section-title">Service Packages for Social Media Management</h2>
+        <p class="pb-section-desc">Flexible packages structured to scale your brand's digital presence smoothly.</p>
+      </div>
+
+      <div class="pb-pricing-grid">
+        <div class="pb-pricing-card">
+          <div class="pb-price-header">
+            <span class="pb-plan-badge">STARTUP</span>
+            <h3>Lite Plan</h3>
+            <div class="pb-price-tag">$750 <span>/ month</span></div>
+          </div>
+          <ul class="pb-price-features">
+            <li>✓ 10 Total Content Items</li>
+            <li>✓ 8 Image Based Content</li>
+            <li>✓ 2 Motion or Carousel Content</li>
+            <li>✓ Monthly Content Plan & Captions</li>
+            <li>✓ Monthly Analytics Reporting</li>
+            <li>✓ Shared Account Manager</li>
+          </ul>
+          <button onclick="openPurpleBot('Lite Plan ($750/mo)')" class="pb-btn-plan">
+            Select Lite Plan
+          </button>
         </div>
 
-        <form id="publicInquiryForm" onsubmit="submitPublicInquiry(event)">
-          <div class="form-grid">
-            <div class="form-group">
-              <label>Company / Brand Name *</label>
-              <input type="text" id="inqClient" class="form-input" placeholder="e.g. Acme Corp" required>
-            </div>
-            <div class="form-group">
-              <label>Contact Person & Role *</label>
-              <input type="text" id="inqContact" class="form-input" placeholder="e.g. Sarah Khan (Brand Lead)" required>
-            </div>
-            <div class="form-group">
-              <label>Work Email / WhatsApp Number *</label>
-              <input type="text" id="inqEmail" class="form-input" placeholder="e.g. sarah@acme.com / +880..." required>
-            </div>
-            <div class="form-group">
-              <label>Campaign Package Interested In</label>
-              <select id="inqService" class="form-input">
-                <option value="Short-Form Video Reels">Short-Form Video Reels Package ($1,200/mo)</option>
-                <option value="Brand Identity & Strategy">Brand Identity & Digital Design ($2,500)</option>
-                <option value="Performance Marketing">Performance Growth & Meta Ads ($1,800/mo)</option>
-                <option value="Corporate Video Production">Corporate AV & TVC Shoot ($3,500)</option>
-                <option value="Custom Project">Custom Project Brief</option>
-              </select>
-            </div>
+        <div class="pb-pricing-card pb-featured-plan">
+          <div class="pb-featured-tag">MOST POPULAR</div>
+          <div class="pb-price-header">
+            <span class="pb-plan-badge">GROWTH</span>
+            <h3>Essential Plan</h3>
+            <div class="pb-price-tag">$1,000 <span>/ month</span></div>
           </div>
+          <ul class="pb-price-features">
+            <li>✓ 16 Total Content Items</li>
+            <li>✓ 12 Image Based Content</li>
+            <li>✓ 4 Short-Form Video Reels</li>
+            <li>✓ Dedicated Copywriter & Designer</li>
+            <li>✓ Bi-Weekly Performance Meetings</li>
+            <li>✓ Dedicated Account Manager</li>
+          </ul>
+          <button onclick="openPurpleBot('Essential Plan ($1000/mo)')" class="pb-btn-plan pb-btn-plan-featured">
+            Select Essential Plan
+          </button>
+        </div>
 
-          <div class="form-group" style="margin-top: 1rem;">
-            <label>Project Brief / Notes</label>
-            <textarea id="inqNotes" class="form-input" rows="3" placeholder="Tell us about your shoot timeline, budget target, or campaign goals..."></textarea>
+        <div class="pb-pricing-card">
+          <div class="pb-price-header">
+            <span class="pb-plan-badge">ENTERPRISE</span>
+            <h3>Advanced Plan</h3>
+            <div class="pb-price-tag">$1,250 <span>/ month</span></div>
           </div>
-
-          <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end;">
-            <button type="submit" class="btn-hero-primary" style="width: auto; padding: 0.8rem 2rem;">
-              ✨ Submit Inquiry & Get Quote
-            </button>
-          </div>
-        </form>
+          <ul class="pb-price-features">
+            <li>✓ 24 Total Content Items</li>
+            <li>✓ 16 Image Based Content</li>
+            <li>✓ 8 Short-Form Video Reels / TVCs</li>
+            <li>✓ Paid Ad Campaign Management</li>
+            <li>✓ Weekly Strategy & Shoot Dispatch</li>
+            <li>✓ Senior Lead Account Director</li>
+          </ul>
+          <button onclick="openPurpleBot('Advanced Plan ($1250/mo)')" class="pb-btn-plan">
+            Select Advanced Plan
+          </button>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- FOOTER -->
-  <footer class="landing-footer">
-    <div class="footer-container">
-      <div class="footer-brand">
-        <div class="logo-icon">🔮</div>
-        <div>
-          <strong style="color: #fff; font-size: 1.1rem;">PURPLEBOT DIGITAL AGENCY</strong>
-          <p style="color: var(--text-dim); font-size: 0.82rem; margin-top: 0.3rem;">Operated on PurpleOS Platform v0.7.0 • Next-Gen Brand Engine</p>
+  <!-- CUSTOM PRICES CTA BANNER -->
+  <section class="pb-cta-banner-section">
+    <div class="pb-section-container">
+      <div class="pb-cta-banner">
+        <div class="pb-cta-content">
+          <h2>Custom Prices. Tailored Solutions.</h2>
+          <p>Feel free to let us know more about your requirements. We will reach out to you with a tailored response.</p>
+        </div>
+        <button onclick="openPurpleBot('Custom Quotation')" class="pb-btn-cta-light">
+          Get A Quote →
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- LET'S TALK & NEWSLETTER FOOTER SECTION -->
+  <section class="pb-contact-section">
+    <div class="pb-section-container">
+      <div class="pb-contact-grid">
+        <div class="pb-contact-info">
+          <h2 class="pb-contact-title">Let's Talk.</h2>
+          
+          <div class="pb-contact-item">
+            <span class="item-label">Email Us</span>
+            <a href="mailto:contact@purplebot.digital" class="item-value">contact@purplebot.digital</a>
+          </div>
+
+          <div class="pb-contact-item">
+            <span class="item-label">Call / WhatsApp Us →</span>
+            <a href="https://wa.me/8801711019550" target="_blank" class="item-value">+88 01711 019550</a>
+          </div>
+
+          <div class="pb-social-links">
+            <a href="https://facebook.com" target="_blank" aria-label="Facebook">🌐</a>
+            <a href="https://instagram.com" target="_blank" aria-label="Instagram">📷</a>
+            <a href="https://linkedin.com" target="_blank" aria-label="LinkedIn">💼</a>
+            <a href="https://youtube.com" target="_blank" aria-label="YouTube">▶️</a>
+            <a href="https://behance.net" target="_blank" aria-label="Behance">🎨</a>
+          </div>
+        </div>
+
+        <div class="pb-newsletter-card">
+          <h3>Join the Newsletter</h3>
+          <p>Drop your email address and we'll send you a monthly update of the cool stuff we made for our clients. We'll keep it fun and short — we promise!</p>
+
+          <form id="newsletterForm" onsubmit="handleNewsletterSubmit(event)" class="pb-newsletter-form">
+            <input type="email" id="newsEmail" placeholder="Your Email Address *" required class="pb-input">
+            <button type="submit" class="pb-btn-primary">Subscribe Now</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MAIN FOOTER -->
+  <footer class="pb-main-footer">
+    <div class="pb-footer-container">
+      <div class="pb-footer-brand">
+        <div class="pb-brand-logo">
+          <div class="pb-logo-badge">🦉</div>
+          <div class="pb-logo-text">
+            <span class="pb-brand-title" style="color:#fff;">PURPLEBOT</span>
+            <span class="pb-brand-sub" style="color:var(--purple-light);">DIGITAL</span>
+          </div>
+        </div>
+        <p class="pb-legal-note">
+          Purplebot Digital Limited is a private limited company incorporated under the Companies Act XVIII of 1994 at the Joint Stock Companies and Firms of Bangladesh.
+        </p>
+        <p class="pb-copy-note">© 2024–2026 Purplebot Digital Limited. All rights reserved.</p>
+      </div>
+
+      <div class="pb-footer-addresses">
+        <h4>Office Locations</h4>
+        <div class="pb-address-item">
+          <strong>📍 Registered Office:</strong>
+          <span>Plot 7, Road 17, Flat 2/C, Rupsha Tower, Banani C/A, Dhaka - 1213</span>
+        </div>
+        <div class="pb-address-item">
+          <strong>📍 Operating Office:</strong>
+          <span>Flat A5-B5-A4, House 9, Road 1, Block B, Niketon, Gulshan-1, Dhaka - 1212</span>
         </div>
       </div>
 
-      <div class="footer-links">
-        <a href="/admin">Owner OS Login</a>
-        <a href="/team">Crew Operations Portal</a>
-        <a href="/partners">Client Partner Portal</a>
+      <div class="pb-footer-quick">
+        <h4>Quick Links</h4>
+        <a href="#about">About Agency</a>
+        <a href="#services">Core Services</a>
+        <a href="#portfolio">Our Work</a>
+        <a href="#pricing">Plans & Pricing</a>
+        <a href="javascript:void(0)" onclick="openPurpleBot('FAQ')">FAQ & Support</a>
       </div>
     </div>
   </footer>

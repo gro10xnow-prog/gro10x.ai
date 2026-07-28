@@ -94,7 +94,9 @@
       "commissionRate": 5,
       "earnedCommissions": 12500,
       "status": "On Field Shoot",
-      "activeBookings": 3
+      "activeBookings": 3,
+      "email": "farhan@purplebot.digital",
+      "permanentPinSet": true
     },
     {
       "id": "EMP-003",
@@ -215,6 +217,56 @@
   },
   "clients": [
     {
+      "id": "CLT-001",
+      "clientCode": "CLT-001",
+      "name": "Chillox Fast Food Chain",
+      "contactPerson": "Tanvir Ahmed (Marketing Lead)",
+      "email": "marketing@chillox.bd",
+      "phone": "+8801711223344",
+      "tier": "Enterprise Retainer",
+      "monthlyRetainer": "$2,500 / month",
+      "status": "Active Retainer",
+      "onboardedDate": "2026-06-15",
+      "socialLinks": {
+        "facebook": "https://facebook.com/chillox.bd",
+        "instagram": "https://instagram.com/chillox_bd",
+        "tiktok": "https://tiktok.com/@chillox.bd"
+      }
+    },
+    {
+      "id": "CLT-002",
+      "clientCode": "CLT-002",
+      "name": "Clear Men (Unilever)",
+      "contactPerson": "Nusrat Jahan (Brand Manager)",
+      "email": "nusrat.jahan@unilever.com",
+      "phone": "+8801812345678",
+      "tier": "Campaign Retainer",
+      "monthlyRetainer": "$3,200 / month",
+      "status": "Active Retainer",
+      "onboardedDate": "2026-05-10",
+      "socialLinks": {
+        "facebook": "https://facebook.com/clearmenbd",
+        "instagram": "https://instagram.com/clearmen_bd",
+        "youtube": "https://youtube.com/clearmenbd"
+      }
+    },
+    {
+      "id": "CLT-003",
+      "clientCode": "CLT-003",
+      "name": "United Commercial Bank (UCB)",
+      "contactPerson": "Kamrul Islam (Communications Head)",
+      "email": "kamrul.islam@ucb.com.bd",
+      "phone": "+8801911998877",
+      "tier": "Enterprise Retainer",
+      "monthlyRetainer": "$4,000 / month",
+      "status": "Active Retainer",
+      "onboardedDate": "2026-04-01",
+      "socialLinks": {
+        "facebook": "https://facebook.com/ucb.bank",
+        "linkedin": "https://linkedin.com/company/ucb-bank"
+      }
+    },
+    {
       "id": "CLT-009",
       "clientCode": "CLT-009",
       "name": "Test Brand Client",
@@ -222,9 +274,13 @@
       "email": "clienttest@purplebot.digital",
       "phone": "+8801889825025",
       "tier": "Enterprise Retainer",
-      "monthlyRetainer": ",500 / month",
+      "monthlyRetainer": "$1,500 / month",
       "status": "Active Retainer",
-      "onboardedDate": "2026-07-28"
+      "onboardedDate": "2026-07-28",
+      "socialLinks": {
+        "facebook": "https://facebook.com/purplebotdigital",
+        "instagram": "https://instagram.com/purplebot.digital"
+      }
     }
   ],
   "tasks": [],
@@ -245,7 +301,156 @@
       "paymentReference": "TRX998811"
     }
   ],
-  "expenses": [],
+  "expenses": [
+    {
+      "id": "EXP-101",
+      "submittedBy": "Rafiul Islam (Transport Lead)",
+      "submittedById": "EMP-006",
+      "category": "Fuel / Transport",
+      "amount": 1800,
+      "description": "Fuel reimbursement for Chillox TVC outdoor shoot location in Uttara",
+      "receiptUrl": "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=800&q=80",
+      "date": "2026-07-28",
+      "status": "Tier 1 Pending",
+      "tier1": {
+        "approved": false,
+        "approvedBy": null,
+        "date": null
+      },
+      "tier2": {
+        "approved": false,
+        "approvedBy": null,
+        "date": null
+      },
+      "tier3": {
+        "approved": false,
+        "approvedBy": null,
+        "date": null
+      },
+      "createdAt": "2026-07-28T14:00:00.000Z"
+    },
+    {
+      "id": "EXP-102",
+      "submittedBy": "Farhan Ahmed (Lead Director)",
+      "submittedById": "EMP-002",
+      "category": "Shoot Refreshments",
+      "amount": 3500,
+      "description": "Catering & beverages for 12 crew members during Clear Men night shoot",
+      "receiptUrl": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=800&q=80",
+      "date": "2026-07-27",
+      "status": "Tier 2 Pending",
+      "tier1": {
+        "approved": true,
+        "approvedBy": "Mahmudul Hasan (Director)",
+        "date": "2026-07-27T18:00:00.000Z"
+      },
+      "tier2": {
+        "approved": false,
+        "approvedBy": null,
+        "date": null
+      },
+      "tier3": {
+        "approved": false,
+        "approvedBy": null,
+        "date": null
+      },
+      "createdAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "EXP-103",
+      "submittedBy": "Naimur Rahman (Senior Editor)",
+      "submittedById": "EMP-005",
+      "category": "Gear Rental",
+      "amount": 12000,
+      "description": "Specialized 4K Cinema Lens Set rental for UCB Financial TVC shoot",
+      "receiptUrl": "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=800&q=80",
+      "date": "2026-07-26",
+      "status": "Tier 3 Pending",
+      "tier1": {
+        "approved": true,
+        "approvedBy": "Farhan Ahmed (Lead Director)",
+        "date": "2026-07-26T12:00:00.000Z"
+      },
+      "tier2": {
+        "approved": true,
+        "approvedBy": "Accounts Lead",
+        "date": "2026-07-26T15:00:00.000Z"
+      },
+      "tier3": {
+        "approved": false,
+        "approvedBy": null,
+        "date": null
+      },
+      "createdAt": "2026-07-26T10:00:00.000Z"
+    },
+    {
+      "id": "EXP-104",
+      "submittedBy": "Sabrin Akhtar (Social Lead)",
+      "submittedById": "EMP-003",
+      "category": "Studio Supplies",
+      "amount": 4200,
+      "description": "Annual Envato Elements & Adobe Fonts stock asset subscription renewal",
+      "receiptUrl": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=800&q=80",
+      "date": "2026-07-25",
+      "status": "Disbursed",
+      "tier1": {
+        "approved": true,
+        "approvedBy": "Mahmudul Hasan",
+        "date": "2026-07-25T11:00:00.000Z"
+      },
+      "tier2": {
+        "approved": true,
+        "approvedBy": "Accounts Lead",
+        "date": "2026-07-25T14:00:00.000Z"
+      },
+      "tier3": {
+        "approved": true,
+        "approvedBy": "Mahmudul Hasan (Owner)",
+        "date": "2026-07-25T17:00:00.000Z"
+      },
+      "disbursedAt": "2026-07-25T17:05:00.000Z",
+      "createdAt": "2026-07-25T09:00:00.000Z"
+    },
+    {
+      "submittedBy": "Test Crew Member (Assistant Photographer)",
+      "submittedById": "EMP-007",
+      "category": "Fuel / Transport",
+      "amount": 2500,
+      "description": "Highway toll & taxi fare for outdoor brand shoot",
+      "receiptUrl": "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=800&q=80",
+      "id": "EXP-005",
+      "date": "2026-07-28",
+      "status": "Pending"
+    },
+    {
+      "id": "EXP-106",
+      "submittedBy": "Test Crew Member (Assistant Photographer)",
+      "submittedById": "EMP-007",
+      "category": "Fuel / Transport",
+      "amount": 2500,
+      "description": "Highway toll & taxi fare for outdoor brand shoot",
+      "receiptUrl": "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=800&q=80",
+      "date": "2026-07-28",
+      "status": "Disbursed",
+      "tier1": {
+        "approved": true,
+        "approvedBy": "Farhan Ahmed (Lead Director)",
+        "date": "2026-07-28T19:30:05.389Z"
+      },
+      "tier2": {
+        "approved": true,
+        "approvedBy": "Accounts Lead",
+        "date": "2026-07-28T19:30:05.422Z"
+      },
+      "tier3": {
+        "approved": true,
+        "approvedBy": "Mahmudul Hasan (Owner)",
+        "date": "2026-07-28T19:30:05.429Z"
+      },
+      "createdAt": "2026-07-28T19:30:05.383Z",
+      "disbursedAt": "2026-07-28T19:30:05.429Z"
+    }
+  ],
   "assets": [],
   "attendance": [
     {
@@ -265,7 +470,7 @@
     {
       "employeeId": "EMP-003",
       "name": "Sabrin Akhtar",
-      "status": "Clocked Out",
+      "status": "On Leave",
       "clockInTime": "-",
       "location": "Office"
     },
@@ -286,7 +491,82 @@
   ],
   "leads": [],
   "quotes": [],
-  "posts": [],
+  "posts": [
+    {
+      "id": "PST-101",
+      "clientId": "CLT-001",
+      "clientName": "Chillox Fast Food Chain",
+      "platform": "Facebook",
+      "targetUrl": "https://facebook.com/chillox.bd",
+      "title": "Weekend Crunch Special Combo Teaser",
+      "caption": "Get ready for the ultimate weekend crunch! 🍔🔥 Grab 2 Smoky Beef Burgers + 2 Fries for only 499 BDT this Friday & Saturday.\n\nTag your burger partner below! 👇 #ChilloxBD #WeekendCrunch #SmokyBeef",
+      "mediaUrls": [
+        "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=800&q=80"
+      ],
+      "scheduledDate": "2026-07-30",
+      "scheduledTime": "18:00",
+      "assignedPublisher": "Sabrin Akhtar",
+      "status": "Pending Client Approval",
+      "createdAt": "2026-07-28T18:00:00.000Z"
+    },
+    {
+      "id": "PST-102",
+      "clientId": "CLT-002",
+      "clientName": "Clear Men (Unilever)",
+      "platform": "Instagram",
+      "targetUrl": "https://instagram.com/clearmen_bd",
+      "title": "Cool Sport Menthol 24h Scalp Protection Reel",
+      "caption": "Zero dandruff. 100% confidence on the field ⚽ Stay cool under pressure with Clear Men Cool Sport Menthol.\n\nAvailable nationwide. #ClearMenBD #ScalpProtection #FreshAllDay",
+      "mediaUrls": [
+        "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=800&q=80"
+      ],
+      "scheduledDate": "2026-07-29",
+      "scheduledTime": "19:30",
+      "assignedPublisher": "Sabrin Akhtar",
+      "status": "Approved",
+      "approvedAt": "2026-07-28T19:10:00.000Z",
+      "approvedBy": "Nusrat Jahan (Brand Manager)",
+      "createdAt": "2026-07-28T17:30:00.000Z"
+    },
+    {
+      "id": "PST-103",
+      "clientId": "CLT-003",
+      "clientName": "United Commercial Bank (UCB)",
+      "platform": "LinkedIn",
+      "targetUrl": "https://linkedin.com/company/ucb-bank",
+      "title": "Upay Mobile Financial Services Expansion",
+      "caption": "Empowering seamless digital transactions across Bangladesh 💳 UCB's Upay MFS expands merchant network across 64 districts.\n\nRead full press release on our corporate portal. #UCBBank #UpayMFS #DigitalFintech",
+      "mediaUrls": [
+        "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=800&q=80"
+      ],
+      "scheduledDate": "2026-07-29",
+      "scheduledTime": "10:00",
+      "assignedPublisher": "Farhan Ahmed",
+      "status": "Due Today",
+      "approvedAt": "2026-07-27T12:00:00.000Z",
+      "approvedBy": "Kamrul Islam",
+      "createdAt": "2026-07-27T10:00:00.000Z"
+    },
+    {
+      "id": "PST-104",
+      "clientId": "CLT-001",
+      "clientName": "Chillox Fast Food Chain",
+      "platform": "Facebook",
+      "targetUrl": "https://facebook.com/chillox.bd",
+      "title": "Automated Test Burger Promo",
+      "caption": "Delicious burgers hot off the grill! 🔥 #ChilloxTest",
+      "mediaUrls": [],
+      "scheduledDate": "2026-07-30",
+      "scheduledTime": "18:00",
+      "assignedPublisher": "Sabrin Akhtar",
+      "status": "Published",
+      "createdAt": "2026-07-28T19:26:49.431Z",
+      "approvedAt": "2026-07-28T19:26:49.438Z",
+      "approvedBy": "Chillox Brand Director",
+      "publishedAt": "2026-07-28T19:26:49.453Z",
+      "publishedBy": "Sabrin Akhtar"
+    }
+  ],
   "chats": [],
   "webhookLogs": [
     {
@@ -337,7 +617,16 @@
       "active": true
     }
   ],
-  "automationLogs": [],
+  "automationLogs": [
+    {
+      "id": "LOG-1785267305330",
+      "rule": "AUT-013 (Ticket Resolution Alert)",
+      "event": "ticket_resolved",
+      "target": "TKT-103 (Studio Lighting Softbox Cable Replacement)",
+      "status": "Executed",
+      "timestamp": "2026-07-28T19:35:05.330Z"
+    }
+  ],
   "paymentLogs": [
     {
       "id": "PAY-1785250948490",
@@ -348,6 +637,194 @@
       "reference": "TRX998811",
       "payerName": "Chillox",
       "timestamp": "2026-07-28T15:02:28.490Z"
+    }
+  ],
+  "groups": [
+    {
+      "id": "GRP-001",
+      "name": "Chillox Production Ops Group",
+      "type": "group",
+      "chatId": "-1009876543210",
+      "bot": "teamBot",
+      "description": "Active production dispatch group",
+      "linkedClientId": null,
+      "members": [],
+      "createdAt": "2026-07-28T19:01:24.015Z"
+    },
+    {
+      "id": "GRP-002",
+      "name": "Chillox Production Ops Group",
+      "type": "group",
+      "chatId": "-1009876543210",
+      "bot": "teamBot",
+      "description": "Active production dispatch group",
+      "linkedClientId": null,
+      "members": [],
+      "createdAt": "2026-07-28T19:01:35.657Z"
+    },
+    {
+      "id": "GRP-003",
+      "name": "Chillox Production Ops Group",
+      "type": "group",
+      "chatId": "-1009876543210",
+      "bot": "teamBot",
+      "description": "Active production dispatch group",
+      "linkedClientId": null,
+      "members": [],
+      "createdAt": "2026-07-28T19:01:47.416Z"
+    },
+    {
+      "id": "GRP-004",
+      "name": "Chillox Production Ops Group",
+      "type": "group",
+      "chatId": "-1009876543210",
+      "bot": "teamBot",
+      "description": "Active production dispatch group",
+      "linkedClientId": null,
+      "members": [],
+      "createdAt": "2026-07-28T19:01:57.419Z"
+    }
+  ],
+  "authPins": [
+    {
+      "phone": "+8801712345678",
+      "normPhone": "1712345678",
+      "pin": "9988",
+      "isTemp": false,
+      "linkedId": "EMP-002",
+      "linkedType": "team",
+      "email": "farhan@purplebot.digital",
+      "createdAt": "2026-07-28T19:01:57.380Z",
+      "attempts": 0
+    }
+  ],
+  "leaves": [
+    {
+      "id": "LEV-101",
+      "staffId": "EMP-003",
+      "staffName": "Raihan Kabir",
+      "type": "Casual Leave",
+      "startDate": "2026-08-01",
+      "endDate": "2026-08-02",
+      "totalDays": 2,
+      "reason": "Family wedding event in Chittagong",
+      "status": "Pending",
+      "createdAt": "2026-07-28T10:00:00.000Z"
+    },
+    {
+      "id": "LEV-102",
+      "staffId": "EMP-002",
+      "staffName": "Farhan Ahmed",
+      "type": "Shoot Off",
+      "startDate": "2026-07-25",
+      "endDate": "2026-07-25",
+      "totalDays": 1,
+      "reason": "Compensatory off after 16-hour overnight outdoor shoot",
+      "status": "Approved",
+      "reviewedBy": "Mahmudul Hasan (Director)",
+      "approvedAt": "2026-07-25T08:00:00.000Z",
+      "createdAt": "2026-07-24T20:00:00.000Z"
+    },
+    {
+      "id": "LEV-103",
+      "staffId": "EMP-003",
+      "staffName": "Raihan Kabir",
+      "type": "Casual Leave",
+      "startDate": "2026-08-05",
+      "endDate": "2026-08-06",
+      "totalDays": 2,
+      "reason": "Automated test leave request",
+      "status": "Approved",
+      "createdAt": "2026-07-28T19:35:05.291Z",
+      "reviewedBy": "Mahmudul Hasan (Director)",
+      "approvedAt": "2026-07-28T19:35:05.298Z"
+    }
+  ],
+  "eod_reports": [
+    {
+      "id": "EOD-103",
+      "staffId": "EMP-002",
+      "staffName": "Farhan Ahmed (Lead Director)",
+      "date": "2026-07-28",
+      "tasksCompleted": "Completed 4K outdoor shoot for Chillox",
+      "tasksInProgress": "Review room cut preparation",
+      "blockers": "None",
+      "submittedAt": "2026-07-28T19:35:05.306Z"
+    },
+    {
+      "id": "EOD-101",
+      "staffId": "EMP-003",
+      "staffName": "Raihan Kabir (Senior Editor)",
+      "date": "2026-07-28",
+      "tasksCompleted": "1. Finished V2 color grade on Chillox 4K Commercial Cut\n2. Rendered 1080x1920 IG Reel masters",
+      "tasksInProgress": "Clear Men MasterBrand OVC sound mix",
+      "blockers": "None",
+      "submittedAt": "2026-07-28T19:05:00.000Z"
+    },
+    {
+      "id": "EOD-102",
+      "staffId": "EMP-004",
+      "staffName": "Sabrin Akhtar (Social Lead)",
+      "date": "2026-07-28",
+      "tasksCompleted": "1. Prepared 5 social post drafts for Chillox & Clear Men\n2. Scheduled weekend campaign dispatch",
+      "tasksInProgress": "UCB Digital Banking carousel design",
+      "blockers": "Waiting for brand high-res logo asset link",
+      "submittedAt": "2026-07-28T19:12:00.000Z"
+    }
+  ],
+  "tickets": [
+    {
+      "id": "TKT-101",
+      "category": "Equipment Repair",
+      "title": "Sony FX3 Camera Lens Mount Loose Screws",
+      "description": "Autofocus contact pins glitching when attaching 24-70mm f2.8 lens. Needs technical service.",
+      "urgency": "High",
+      "loggedBy": "Farhan Ahmed (Lead Director)",
+      "assignedTo": "Maintenance & AV Tech Lead",
+      "status": "Open",
+      "createdAt": "2026-07-28T11:00:00.000Z"
+    },
+    {
+      "id": "TKT-102",
+      "category": "Studio B Maintenance",
+      "title": "Studio B Secondary AC Unit Servicing",
+      "description": "AC unit cooling performance reduced during long video lighting shoots. Needs technician visit.",
+      "urgency": "Medium",
+      "loggedBy": "Mahmudul Hasan",
+      "assignedTo": "Office Manager",
+      "status": "In Progress",
+      "createdAt": "2026-07-27T15:00:00.000Z"
+    },
+    {
+      "id": "TKT-103",
+      "category": "Equipment Repair",
+      "title": "Studio Lighting Softbox Cable Replacement",
+      "description": "Secondary softbox cable worn out during shoot",
+      "urgency": "Medium",
+      "loggedBy": "Farhan Ahmed",
+      "assignedTo": "Maintenance Lead",
+      "status": "Resolved",
+      "createdAt": "2026-07-28T19:35:05.326Z",
+      "resolvedBy": "Maintenance Lead",
+      "resolvedAt": "2026-07-28T19:35:05.329Z"
+    }
+  ],
+  "pageEvents": [
+    {
+      "id": "EVT-1785270323235",
+      "event": "page_view",
+      "label": "/test",
+      "referrer": "",
+      "utm": "",
+      "timestamp": "2026-07-28T20:25:23.235Z"
+    },
+    {
+      "id": "EVT-1785269726132",
+      "event": "page_view",
+      "label": "/test",
+      "referrer": "",
+      "utm": "",
+      "timestamp": "2026-07-28T20:15:26.132Z"
     }
   ]
 }

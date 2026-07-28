@@ -56,9 +56,25 @@ app.get(['/client-miniapp', '/review-app'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public/client-miniapp.html'));
 });
 
+// Robots.txt to hide internal portals from public search engine crawlers
+app.get('/robots.txt', (req, res) => {
+  res.type('text/plain');
+  res.send(
+    'User-agent: *\n' +
+    'Disallow: /admin\n' +
+    'Disallow: /dashboard\n' +
+    'Disallow: /os\n' +
+    'Disallow: /team\n' +
+    'Disallow: /crew\n' +
+    'Disallow: /partners\n' +
+    'Disallow: /api/\n' +
+    'Allow: /\n'
+  );
+});
+
 // Catch-all fallback route
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public/landing.html'));
+  res.sendFile(path.join(__dirname, 'public/index.html'));
 });
 
 // Start Express Server (only when run directly, not when imported by Vercel serverless handler)

@@ -9,6 +9,20 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/styles.css">
   <link rel="stylesheet" href="/css/landing.css">
+  <script>
+    (function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const phoneParam = urlParams.get('phone');
+      const savedPhone = localStorage.getItem('purple_user_phone');
+      const token = localStorage.getItem('sb-access-token');
+
+      if (phoneParam) {
+        localStorage.setItem('purple_user_phone', phoneParam.replace(/[^0-9+]/g, ''));
+      } else if (!savedPhone && !token) {
+        window.location.href = '/auth';
+      }
+    })();
+  </script>
 </head>
 <body style="background:#0b0f19; color:#e2e8f0; min-height:100vh; padding-bottom:3rem;">
 
@@ -96,6 +110,48 @@
       </div>
     </div>
 
+    <!-- SUBMIT GROUND EXPENSE CLAIM (Phase B) -->
+    <section class="glass-panel" style="margin-bottom:1.5rem;">
+      <div class="panel-header">
+        <h2 class="panel-title">💰 Submit Field Expense Claim</h2>
+        <div style="font-size:0.8rem; color:var(--text-muted);">Log transport, refreshments, or gear expenses with receipt photo for 3-tier manager approval</div>
+      </div>
+
+      <form onsubmit="submitCrewExpense(event)" style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:1rem; margin-top:0.8rem;">
+        <div>
+          <label style="font-size:0.78rem; color:var(--text-muted); font-weight:700;">Expense Category *</label>
+          <select id="crewExpCategory" class="form-input" style="width:100%; margin-top:0.3rem;" required>
+            <option value="Fuel / Transport">Fuel / Transport</option>
+            <option value="Shoot Refreshments">Shoot Refreshments</option>
+            <option value="Gear Rental">Gear Rental</option>
+            <option value="Studio Supplies">Studio Supplies</option>
+            <option value="Miscellaneous">Miscellaneous</option>
+          </select>
+        </div>
+
+        <div>
+          <label style="font-size:0.78rem; color:var(--text-muted); font-weight:700;">Amount (BDT) *</label>
+          <input type="number" id="crewExpAmount" class="form-input" placeholder="e.g. 1500" style="margin-top:0.3rem;" required>
+        </div>
+
+        <div>
+          <label style="font-size:0.78rem; color:var(--text-muted); font-weight:700;">Receipt Photo URL *</label>
+          <input type="url" id="crewExpReceipt" class="form-input" placeholder="https://images.unsplash.com/... or image link" style="margin-top:0.3rem;" required>
+        </div>
+
+        <div style="grid-column: span 2;">
+          <label style="font-size:0.78rem; color:var(--text-muted); font-weight:700;">Description / Purpose *</label>
+          <input type="text" id="crewExpDesc" class="form-input" placeholder="e.g. Fuel for shoot trip to Uttara" style="margin-top:0.3rem;" required>
+        </div>
+
+        <div style="display:flex; align-items:flex-end;">
+          <button type="submit" class="btn-purple" style="width:100%; justify-content:center; padding:0.65rem;">
+            📤 Submit Expense Claim
+          </button>
+        </div>
+      </form>
+    </section>
+
     <!-- MY ASSIGNED SHOOTS & TASKS LIST -->
     <section class="glass-panel">
       <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center;">
@@ -110,6 +166,80 @@
         <!-- Loaded dynamically -->
       </div>
     </section>
+
+    <!-- CREW HR & DAILY OPERATIONS SECTION (Phase C) -->
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.25rem; margin-top:1.5rem;">
+      <!-- LEAVE REQUEST FORM CARD -->
+      <div class="glass-panel">
+        <div class="panel-header">
+          <h2 class="panel-title">🌴 Request Leave</h2>
+          <div style="font-size:0.8rem; color:var(--text-muted);">Submit casual, sick, or shoot off leave for manager approval</div>
+        </div>
+
+        <form onsubmit="submitCrewLeave(event)" style="display:flex; flex-direction:column; gap:0.8rem; margin-top:0.8rem;">
+          <div style="display:flex; gap:0.8rem;">
+            <div style="flex:1;">
+              <label style="font-size:0.75rem; color:var(--text-muted); font-weight:700;">Leave Type</label>
+              <select id="crewLeaveType" class="form-input" style="width:100%; margin-top:0.2rem;">
+                <option value="Casual Leave">Casual Leave</option>
+                <option value="Sick Leave">Sick Leave</option>
+                <option value="Shoot Off">Shoot Off (Compensatory)</option>
+                <option value="Unpaid Leave">Unpaid Leave</option>
+              </select>
+            </div>
+            <div style="flex:1;">
+              <label style="font-size:0.75rem; color:var(--text-muted); font-weight:700;">Total Days</label>
+              <input type="number" id="crewLeaveDays" class="form-input" value="1" min="1" style="margin-top:0.2rem;" required>
+            </div>
+          </div>
+
+          <div style="display:flex; gap:0.8rem;">
+            <div style="flex:1;">
+              <label style="font-size:0.75rem; color:var(--text-muted); font-weight:700;">Start Date *</label>
+              <input type="date" id="crewLeaveStart" class="form-input" style="margin-top:0.2rem;" required>
+            </div>
+            <div style="flex:1;">
+              <label style="font-size:0.75rem; color:var(--text-muted); font-weight:700;">End Date *</label>
+              <input type="date" id="crewLeaveEnd" class="form-input" style="margin-top:0.2rem;" required>
+            </div>
+          </div>
+
+          <div>
+            <label style="font-size:0.75rem; color:var(--text-muted); font-weight:700;">Reason *</label>
+            <input type="text" id="crewLeaveReason" class="form-input" placeholder="e.g. Family function in Chittagong" style="margin-top:0.2rem;" required>
+          </div>
+
+          <button type="submit" class="btn-purple" style="justify-content:center; padding:0.55rem;">🌴 Submit Leave Request</button>
+        </form>
+      </div>
+
+      <!-- DAILY 7PM EOD REPORT CARD -->
+      <div class="glass-panel">
+        <div class="panel-header">
+          <h2 class="panel-title">📋 Submit Daily EOD Report</h2>
+          <div style="font-size:0.8rem; color:var(--text-muted);">7:00 PM daily task summary & blocker reporting</div>
+        </div>
+
+        <form onsubmit="submitCrewEod(event)" style="display:flex; flex-direction:column; gap:0.8rem; margin-top:0.8rem;">
+          <div>
+            <label style="font-size:0.75rem; color:var(--text-muted); font-weight:700;">1. Tasks Completed Today *</label>
+            <textarea id="crewEodCompleted" class="form-input" rows="2" placeholder="List completed tasks..." required></textarea>
+          </div>
+
+          <div>
+            <label style="font-size:0.75rem; color:var(--text-muted); font-weight:700;">2. Tasks In Progress</label>
+            <input type="text" id="crewEodInProgress" class="form-input" placeholder="e.g. Clear Men sound mix">
+          </div>
+
+          <div>
+            <label style="font-size:0.75rem; color:var(--text-muted); font-weight:700;">3. Blockers / Help Needed</label>
+            <input type="text" id="crewEodBlockers" class="form-input" placeholder="e.g. None or Need brand logo asset">
+          </div>
+
+          <button type="submit" class="btn-purple" style="justify-content:center; padding:0.55rem; background:#10b981;">📋 Log EOD Summary</button>
+        </form>
+      </div>
+    </div>
 
   </main>
 

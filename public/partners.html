@@ -9,6 +9,20 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/styles.css">
   <link rel="stylesheet" href="/css/landing.css">
+  <script>
+    (function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const phoneParam = urlParams.get('phone');
+      const savedPhone = localStorage.getItem('purple_user_phone');
+      const token = localStorage.getItem('sb-access-token');
+
+      if (phoneParam) {
+        localStorage.setItem('purple_user_phone', phoneParam.replace(/[^0-9+]/g, ''));
+      } else if (!savedPhone && !token) {
+        window.location.href = '/auth';
+      }
+    })();
+  </script>
 </head>
 <body style="background:#0f172a; color:#e2e8f0; min-height:100vh;">
 
@@ -97,6 +111,23 @@
             <button class="btn-purple" style="width:100%; justify-content:center; font-size:0.85rem;" onclick="submitPartnerComment()">💬 Add Feedback Note</button>
           </div>
         </div>
+      </div>
+    </section>
+
+    <!-- PENDING SOCIAL MEDIA POST APPROVALS (Phase A) -->
+    <section class="glass-panel" style="margin-bottom:2.5rem;">
+      <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.8rem;">
+        <div>
+          <h2 class="panel-title" style="display:flex; align-items:center; gap:0.5rem;">
+            📱 Social Media Post Approvals
+          </h2>
+          <div style="font-size:0.8rem; color:var(--text-muted);">Review scheduled campaign posts, copy captions, and approve before public dispatch</div>
+        </div>
+        <span class="badge badge-purple" id="partnerSocialBadge">0 Pending</span>
+      </div>
+
+      <div id="partnerSocialGrid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap:1.2rem; margin-top:1.2rem;">
+        <!-- Loaded dynamically -->
       </div>
     </section>
 

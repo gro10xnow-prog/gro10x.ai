@@ -95,6 +95,10 @@
         <span class="icon">👨‍💼</span>
         <span>Team & Attendance</span>
       </a>
+      <a class="nav-item" onclick="switchTab('hrops')">
+        <span class="icon">🏥</span>
+        <span>HR Ops & Delegation</span>
+      </a>
 
       <div class="nav-category">Finance & Assets</div>
       <a class="nav-item" onclick="switchTab('financials')">
@@ -104,6 +108,10 @@
       <a class="nav-item" onclick="switchTab('analytics')">
         <span class="icon">📈</span>
         <span>BI Analytics & Reports</span>
+      </a>
+      <a class="nav-item" onclick="switchTab('intelligence')">
+        <span class="icon">👑</span>
+        <span>Executive Intelligence</span>
       </a>
       <a class="nav-item" onclick="switchTab('assets')">
         <span class="icon">📷</span>
@@ -469,6 +477,101 @@
         </div>
       </section>
 
+      <!-- TAB 5.5: HR OPERATIONS & DELEGATION HUB (Phase C) -->
+      <section id="tab-hrops" class="tab-page" style="display: none;">
+        <div class="page-title-box" style="display: flex; justify-content: space-between; align-items: flex-end;">
+          <div>
+            <h1 class="page-title">HR Operations & Delegation Hub</h1>
+            <div class="page-subtitle">Leave approvals, 7PM EOD daily digests, and support ticket resolution board</div>
+          </div>
+          <div style="display: flex; gap: 0.8rem;">
+            <button class="btn-secondary" onclick="triggerManualEodPrompt()">⚡ Trigger 7PM EOD Prompt</button>
+            <button class="btn-purple" onclick="openNewTicketModal()">+ Report Support Ticket</button>
+          </div>
+        </div>
+
+        <!-- HR Subtab Bar -->
+        <div class="fin-subtab-nav" style="margin-bottom: 1.2rem;">
+          <button class="fin-subtab-btn active" id="hr-subtab-btn-leaves" onclick="switchHrSubtab('leaves')">🌴 Leave Approvals</button>
+          <button class="fin-subtab-btn" id="hr-subtab-btn-eod" onclick="switchHrSubtab('eod')">📋 7PM Daily EOD Digest</button>
+          <button class="fin-subtab-btn" id="hr-subtab-btn-tickets" onclick="switchHrSubtab('tickets')">🔧 Equipment & Support Tickets</button>
+        </div>
+
+        <!-- SUBTAB 1: LEAVE APPROVALS QUEUE -->
+        <div id="hr-subtab-leaves">
+          <div class="glass-panel">
+            <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center;">
+              <h2 class="panel-title">🌴 Staff Leave Requests & Balances</h2>
+              <span class="badge badge-purple" id="hrPendingLeavesBadge">0 Pending</span>
+            </div>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Request ID</th>
+                  <th>Staff Member</th>
+                  <th>Leave Type</th>
+                  <th>Dates & Duration</th>
+                  <th>Reason</th>
+                  <th>Status</th>
+                  <th style="text-align: right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="leavesTableBody">
+                <!-- Loaded dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- SUBTAB 2: DAILY 7PM EOD DIGEST -->
+        <div id="hr-subtab-eod" style="display: none;">
+          <div class="glass-panel">
+            <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <h2 class="panel-title">📋 Today's Team EOD Log & Digest</h2>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">Real-time daily task completion, active progress, and blockers logged by team</div>
+              </div>
+              <span class="badge badge-emerald" id="hrEodSubmittedBadge">0 Submitted Today</span>
+            </div>
+
+            <div id="eodReportsContainer" style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem;">
+              <!-- Loaded dynamically -->
+            </div>
+          </div>
+        </div>
+
+        <!-- SUBTAB 3: SUPPORT & MAINTENANCE TICKETS -->
+        <div id="hr-subtab-tickets" style="display: none;">
+          <div class="glass-panel">
+            <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <h2 class="panel-title">🔧 Equipment & Office Support Tickets</h2>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">Reported maintenance issues, gear repair requests, and IT tickets</div>
+              </div>
+              <span class="badge badge-amber" id="hrOpenTicketsBadge">0 Open Tickets</span>
+            </div>
+
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Ticket ID</th>
+                  <th>Category</th>
+                  <th>Issue Title & Description</th>
+                  <th>Urgency</th>
+                  <th>Logged By</th>
+                  <th>Assigned To</th>
+                  <th>Status</th>
+                  <th style="text-align: right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="ticketsTableBody">
+                <!-- Loaded dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
       <!-- TAB 6: FINANCIALS & ASSETS -->
       <section id="tab-financials" class="tab-page" style="display: none;">
         <div class="page-title-box" style="display: flex; justify-content: space-between; align-items: flex-end;">
@@ -577,34 +680,59 @@
           </div>
         </div>
 
-        <!-- SUB-TAB 3: STUDIO EXPENSES -->
+        <!-- SUB-TAB 3: 3-TIER EXPENSE APPROVAL CHAIN (Phase B) -->
         <div id="fin-subtab-expenses" style="display: none;">
+          <!-- KPI Metrics Row -->
+          <div class="metrics-grid" style="margin-bottom: 1.2rem; grid-template-columns: repeat(4, 1fr);">
+            <div class="metric-card" style="padding: 0.9rem;">
+              <div class="metric-label">Tier 1 Queue (Manager)</div>
+              <div class="metric-value" id="kpiExpTier1" style="font-size: 1.3rem; color: var(--amber-accent);">0</div>
+              <div class="metric-sub">Pending Line Manager</div>
+            </div>
+            <div class="metric-card" style="padding: 0.9rem;">
+              <div class="metric-label">Tier 2 Queue (Finance)</div>
+              <div class="metric-value" id="kpiExpTier2" style="font-size: 1.3rem; color: var(--cyan-accent);">0</div>
+              <div class="metric-sub">Budget verification</div>
+            </div>
+            <div class="metric-card" style="padding: 0.9rem;">
+              <div class="metric-label">Tier 3 Queue (Owner)</div>
+              <div class="metric-value" id="kpiExpTier3" style="font-size: 1.3rem; color: var(--purple-light);">0</div>
+              <div class="metric-sub">Executive disbursement release</div>
+            </div>
+            <div class="metric-card" style="padding: 0.9rem;">
+              <div class="metric-label">Total Disbursed</div>
+              <div class="metric-value" id="kpiExpDisbursed" style="font-size: 1.3rem; color: var(--emerald-accent);">BDT 0</div>
+              <div class="metric-sub">Approved & paid</div>
+            </div>
+          </div>
+
           <div class="glass-panel">
             <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.8rem;">
               <div>
-                <h2 class="panel-title">Studio Overhead Expenses & Claims</h2>
-                <div style="font-size: 0.8rem; color: var(--text-muted);">Owner approval workflow for equipment, software, and shoot claims</div>
+                <h2 class="panel-title">💰 3-Tier Ground-Up Expense Approval Chain</h2>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">Ground Staff → Line Manager → Finance Lead → Agency Owner</div>
               </div>
-              <div style="display: flex; gap: 0.8rem; align-items: center;">
+              <div style="display: flex; gap: 0.8rem; align-items: center; flex-wrap: wrap;">
                 <div class="crm-chips-group">
                   <button onclick="setExpenseFilter('ALL')" class="crm-filter-chip active" id="chipExpAll">All</button>
-                  <button onclick="setExpenseFilter('Pending')" class="crm-filter-chip" id="chipExpPending">Pending</button>
-                  <button onclick="setExpenseFilter('Approved')" class="crm-filter-chip" id="chipExpApproved">Approved</button>
-                  <button onclick="setExpenseFilter('Rejected')" class="crm-filter-chip" id="chipExpRejected">Rejected</button>
+                  <button onclick="setExpenseFilter('Tier 1 Pending')" class="crm-filter-chip" id="chipExpT1">Tier 1 (Manager)</button>
+                  <button onclick="setExpenseFilter('Tier 2 Pending')" class="crm-filter-chip" id="chipExpT2">Tier 2 (Finance)</button>
+                  <button onclick="setExpenseFilter('Tier 3 Pending')" class="crm-filter-chip" id="chipExpT3">Tier 3 (Owner)</button>
+                  <button onclick="setExpenseFilter('Disbursed')" class="crm-filter-chip" id="chipExpDisbursed">Disbursed</button>
                 </div>
-                <button class="btn-purple" onclick="openAddExpenseModal()">+ Add Expense</button>
+                <button class="btn-purple" onclick="openAddExpenseModal()">+ Submit Expense Claim</button>
               </div>
             </div>
             <table class="data-table">
               <thead>
                 <tr>
-                  <th>Expense ID</th>
-                  <th>Title</th>
+                  <th>Claim ID</th>
+                  <th>Submitted By</th>
                   <th>Category</th>
-                  <th>Amount</th>
+                  <th>Amount (BDT)</th>
                   <th>Date</th>
-                  <th>Logged By</th>
-                  <th>Approval Status</th>
+                  <th>Receipt Photo</th>
+                  <th>Approval Pipeline Stepper</th>
                   <th style="text-align: right;">Actions</th>
                 </tr>
               </thead>
@@ -658,6 +786,16 @@
             </div>
           </div>
         </div>
+
+        <div class="glass-panel" style="margin-top: 1.5rem;">
+          <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <h2 class="panel-title">🌐 Public Website & Purple Bot Live Traffic</h2>
+            <button class="btn-purple" style="font-size: 0.82rem; padding: 0.4rem 1rem;" onclick="openCMSManagerModal()">✏️ Edit Public Landing CMS Content</button>
+          </div>
+          <div id="analyticsWebsiteActivity">
+            <!-- Rendered dynamically by app.js -->
+          </div>
+        </div>
       </section>
 
       <!-- TAB 7: EQUIPMENT TRACKER -->
@@ -693,6 +831,120 @@
         <!-- BC-9 Equipment & Gear Check-In / Check-Out Log Panel -->
         <div class="glass-panel checkout-log-panel" id="checkoutLogPanel">
           <!-- Rendered dynamically -->
+        </div>
+      </section>
+
+      <!-- TAB 7.5: EXECUTIVE INTELLIGENCE & LEADERSHIP DISPATCHES (Phase D) -->
+      <section id="tab-intelligence" class="tab-page" style="display: none;">
+        <div class="page-title-box" style="display: flex; justify-content: space-between; align-items: flex-end;">
+          <div>
+            <h1 class="page-title">👑 Executive Intelligence & Leadership Dispatches</h1>
+            <div class="page-subtitle">Automated morning briefings, evening digests, weekly KPI summaries, and instant team broadcasts</div>
+          </div>
+          <div style="display: flex; gap: 0.6rem; flex-wrap: wrap;">
+            <button class="btn-secondary" onclick="triggerMorningBriefing()">⚡ 9AM Morning Briefing</button>
+            <button class="btn-secondary" onclick="triggerEveningDigest()">⚡ 8:30PM Evening Digest</button>
+            <button class="btn-secondary" onclick="triggerWeeklyReport()">⚡ Weekly KPI Summary</button>
+            <button class="btn-secondary" onclick="triggerSpecialistBriefings()">⚡ Specialist Briefings</button>
+            <button class="btn-purple" onclick="openBroadcastModal()">📢 Send Team Broadcast</button>
+          </div>
+        </div>
+
+        <!-- 3-COLUMN REPORT PREVIEW CARDS -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.25rem; margin-bottom: 1.5rem;">
+
+          <!-- MORNING BRIEFING CARD -->
+          <div class="glass-panel" style="display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                <span style="font-size: 0.82rem; color: var(--text-muted); font-weight: 700;">☀️ MORNING EXECUTIVE BRIEFING</span>
+                <span class="badge badge-emerald">Scheduled 9:00 AM</span>
+              </div>
+              <div style="font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 0.5rem;" id="eiMorningTitle">Daily Operational Launch Briefing</div>
+              <div style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.6;" id="eiMorningBody">
+                • Active Shoot Campaigns: 4 In Production<br>
+                • Team Attendance: 4/4 Staff Active<br>
+                • Pending Approvals: Tier 3 Expense Release<br>
+                • Social Media Dispatches: 3 Ready for Launch
+              </div>
+            </div>
+            <div style="margin-top: 1rem; padding-top: 0.6rem; border-top: 1px dashed rgba(255,255,255,0.08);">
+              <button class="btn-secondary" style="width: 100%; justify-content: center; font-size: 0.8rem;" onclick="triggerMorningBriefing()">📲 Push Morning Briefing Now</button>
+            </div>
+          </div>
+
+          <!-- EVENING DIGEST CARD -->
+          <div class="glass-panel" style="display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                <span style="font-size: 0.82rem; color: var(--text-muted); font-weight: 700;">🌙 EVENING EXECUTIVE DIGEST</span>
+                <span class="badge badge-purple">Scheduled 8:30 PM</span>
+              </div>
+              <div style="font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 0.5rem;" id="eiEveningTitle">Daily Financial & Ops Summary</div>
+              <div style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.6;" id="eiEveningBody">
+                • Total Revenue Collected: $12,500 USD<br>
+                • Disbursed Expenses: BDT 4,300<br>
+                • Team EOD Completion Rate: 100%<br>
+                • Active Support Tickets: 1 Open Repair
+              </div>
+            </div>
+            <div style="margin-top: 1rem; padding-top: 0.6rem; border-top: 1px dashed rgba(255,255,255,0.08);">
+              <button class="btn-secondary" style="width: 100%; justify-content: center; font-size: 0.8rem;" onclick="triggerEveningDigest()">📲 Push Evening Digest Now</button>
+            </div>
+          </div>
+
+          <!-- WEEKLY KPI SUMMARY CARD -->
+          <div class="glass-panel" style="display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                <span style="font-size: 0.82rem; color: var(--text-muted); font-weight: 700;">📈 WEEKLY EXECUTIVE KPI SUMMARY</span>
+                <span class="badge badge-cyan">Scheduled Sun 10 AM</span>
+              </div>
+              <div style="font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 0.5rem;" id="eiWeeklyTitle">Agency Profitability Index</div>
+              <div style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.6;" id="eiWeeklyBody">
+                • Total Client Portfolio Revenue: $38,500 USD<br>
+                • Active Brand Retainers: 4 Key Accounts<br>
+                • Portfolio Health Index: 100% Excellent<br>
+                • Total Production Shoots: 8 Delivered
+              </div>
+            </div>
+            <div style="margin-top: 1rem; padding-top: 0.6rem; border-top: 1px dashed rgba(255,255,255,0.08);">
+              <button class="btn-secondary" style="width: 100%; justify-content: center; font-size: 0.8rem;" onclick="triggerWeeklyReport()">📲 Push Weekly KPI Summary</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- TEAM BROADCAST NOTICE CONTROL PANEL -->
+        <div class="glass-panel">
+          <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <h2 class="panel-title">📢 Team Broadcast Announcement Control Panel</h2>
+              <div style="font-size: 0.8rem; color: var(--text-muted);">Send instant notice & final shoot plan to all crew members via Web or Telegram command <code>/broadcast</code></div>
+            </div>
+            <button class="btn-purple" onclick="openBroadcastModal()">+ New Team Broadcast</button>
+          </div>
+
+          <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+            <div style="flex: 2; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08); padding: 1.25rem; border-radius: 12px;">
+              <h4 style="color: var(--purple-light); margin: 0 0 0.6rem 0; font-size: 0.95rem;">💡 Telegram Quick Broadcast Command</h4>
+              <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; margin: 0 0 0.8rem 0;">
+                Owners and Team Leaders can broadcast instant team announcements directly from Telegram by sending:
+              </p>
+              <div style="background: #090d16; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid rgba(168,85,247,0.3); font-family: monospace; color: #a855f7; font-size: 0.88rem;">
+                /broadcast Team call at 4:00 PM in Studio B for final shoot plan
+              </div>
+            </div>
+
+            <div style="flex: 1; background: rgba(16,185,129,0.05); border: 1px solid rgba(16,185,129,0.2); padding: 1.25rem; border-radius: 12px; display: flex; flex-direction: column; justify-content: space-between;">
+              <div>
+                <h4 style="color: #34d399; margin: 0 0 0.4rem 0; font-size: 0.95rem;">🎯 Specialist Daily Briefings</h4>
+                <p style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; margin: 0;">
+                  Automated 9:00 AM personal task briefing dispatches assigned deliverables & equipment directly to each specialist.
+                </p>
+              </div>
+              <button class="btn-purple" style="background: #10b981; margin-top: 1rem; justify-content: center;" onclick="triggerSpecialistBriefings()">⚡ Push Specialist Briefings</button>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -954,6 +1206,7 @@
         <!-- Subtab Navigation Bar -->
         <div style="display: flex; gap: 0.5rem; margin-bottom: 1.2rem; background: rgba(9,9,11,0.6); padding: 0.4rem; border-radius: 12px; border: 1px solid var(--border-color); overflow-x: auto;">
           <button class="btn-purple" id="subtab-bot-channels" style="padding: 0.35rem 0.85rem; font-size: 0.82rem;" onclick="switchBotSubtab('channels')">🤖 Channels & AI Infrastructure</button>
+          <button class="btn-secondary" id="subtab-bot-groups" style="padding: 0.35rem 0.85rem; font-size: 0.82rem;" onclick="switchBotSubtab('groups')">📡 Telegram Groups & Channels</button>
           <button class="btn-secondary" id="subtab-bot-config" style="padding: 0.35rem 0.85rem; font-size: 0.82rem;" onclick="switchBotSubtab('config')">⚙️ Configuration</button>
           <button class="btn-secondary" id="subtab-bot-kb" style="padding: 0.35rem 0.85rem; font-size: 0.82rem;" onclick="switchBotSubtab('kb')">📚 Knowledge Base</button>
           <button class="btn-secondary" id="subtab-bot-videos" style="padding: 0.35rem 0.85rem; font-size: 0.82rem;" onclick="switchBotSubtab('videos')">🎥 Video Tutorials</button>
@@ -1035,6 +1288,38 @@
               </div>
               <input type="checkbox" id="cfgAiClientByok" checked style="width: 20px; height: 20px; accent-color: var(--purple-accent);">
             </div>
+          </div>
+        </div>
+
+        <!-- SUB-PANEL 0.5: TELEGRAM GROUPS & CHANNELS MANAGER -->
+        <div id="bot-panel-groups" style="display: none;">
+          <div class="glass-panel" style="display: flex; flex-direction: column; gap: 1.25rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+              <div>
+                <h2 style="font-size: 1.1rem; color: #fff; font-family: var(--font-heading); margin-bottom: 0.3rem;">📡 Telegram Groups & Channels Directory</h2>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">Manage Telegram group chat IDs, assigned bot instances, linked clients, and group member lists</div>
+              </div>
+              <div style="display: flex; gap: 0.8rem;">
+                <button class="btn-purple" onclick="openAddGroupModal()">+ Add Group / Channel</button>
+              </div>
+            </div>
+
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Group ID</th>
+                  <th>Name & Description</th>
+                  <th>Type</th>
+                  <th>Telegram Chat ID</th>
+                  <th>Assigned Bot</th>
+                  <th>Linked Client</th>
+                  <th style="text-align: right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="groupsTableBody">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
           </div>
         </div>
 
@@ -2232,6 +2517,455 @@
         <div style="display: flex; justify-content: flex-end; gap: 0.8rem; margin-top: 0.5rem;">
           <button type="button" class="btn-secondary" onclick="closeInviteStaffModal()">Cancel</button>
           <button type="submit" class="btn-purple">🔑 Generate Temp Password & Invite</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add Telegram Group / Channel Modal -->
+  <div class="modal-overlay hidden" id="addGroupModal">
+    <div class="modal-card" style="max-width: 480px;">
+      <div class="modal-header">
+        <h2 class="modal-title">📡 Register Telegram Group or Channel</h2>
+        <button class="tg-close" onclick="closeAddGroupModal()">✕</button>
+      </div>
+
+      <form onsubmit="submitAddGroup(event)" style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem;">
+        <div class="form-group">
+          <label style="font-size: 0.8rem; font-weight: 600; color: #d4d4d8;">Group / Channel Name *</label>
+          <input type="text" id="grpName" class="form-input" placeholder="e.g. Chillox TVC Production Group" required>
+        </div>
+
+        <div style="display: flex; gap: 1rem;">
+          <div class="form-group" style="flex: 1;">
+            <label style="font-size: 0.8rem; font-weight: 600; color: #d4d4d8;">Type</label>
+            <select id="grpType" class="role-select" style="width: 100%;">
+              <option value="group">Group Chat</option>
+              <option value="channel">Broadcast Channel</option>
+            </select>
+          </div>
+
+          <div class="form-group" style="flex: 1;">
+            <label style="font-size: 0.8rem; font-weight: 600; color: #d4d4d8;">Assigned Bot</label>
+            <select id="grpBot" class="role-select" style="width: 100%;">
+              <option value="teamBot">Purple Man (Team Bot)</option>
+              <option value="clientBot">Purple Bot (Client Bot)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label style="font-size: 0.8rem; font-weight: 600; color: #d4d4d8;">Telegram Chat ID * (e.g. -100123456789)</label>
+          <input type="text" id="grpChatId" class="form-input" placeholder="-100123456789" required>
+        </div>
+
+        <div class="form-group">
+          <label style="font-size: 0.8rem; font-weight: 600; color: #d4d4d8;">Link to Client (Optional)</label>
+          <select id="grpLinkedClient" class="role-select" style="width: 100%;">
+            <option value="">None (Internal Agency Channel)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label style="font-size: 0.8rem; font-weight: 600; color: #d4d4d8;">Description</label>
+          <input type="text" id="grpDesc" class="form-input" placeholder="Campaign group purpose...">
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.8rem; margin-top: 0.5rem;">
+          <button type="button" class="btn-secondary" onclick="closeAddGroupModal()">Cancel</button>
+          <button type="submit" class="btn-purple">📡 Register Group</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Workspace Access Card Modal -->
+  <div class="modal-overlay hidden" id="accessCardModal">
+    <div class="modal-card" style="max-width: 500px;">
+      <div class="modal-header">
+        <h2 class="modal-title">🔑 Workspace Access Card & PIN Code</h2>
+        <button class="tg-close" onclick="closeAccessCardModal()">✕</button>
+      </div>
+
+      <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 1rem;">
+        <pre id="accessCardText" style="background: rgba(9,9,11,0.8); border: 1px solid var(--border-glow); padding: 1.2rem; border-radius: 12px; font-family: monospace; font-size: 0.85rem; color: #38bdf8; white-space: pre-wrap; word-break: break-word;"></pre>
+
+        <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
+          <button class="btn-purple" style="flex: 1;" onclick="copyAccessCard()">📋 Copy Invite Card</button>
+          <a id="accessCardWaBtn" class="btn-secondary" style="flex: 1; text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center; background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.3); color: #4ade80;" target="_blank">💬 Send WhatsApp</a>
+          <button id="accessCardTgBtn" class="btn-purple" style="background: #0284c7;" onclick="pushAccessCardTelegram()">🤖 Push Telegram</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create Social Post Modal (Phase A) -->
+  <div class="modal-overlay hidden" id="createPostModal">
+    <div class="modal-card" style="max-width: 600px;">
+      <div class="modal-header">
+        <h2 class="modal-title" id="postModalTitle">📱 Create Social Post & Schedule Dispatch</h2>
+        <button class="tg-close" onclick="closeCreatePostModal()">✕</button>
+      </div>
+
+      <form onsubmit="submitSocialPost(event)" style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem;">
+        <input type="hidden" id="postIdInput" value="">
+
+        <div style="display: flex; gap: 1rem;">
+          <div class="form-group" style="flex: 1;">
+            <label style="font-size: 0.8rem; font-weight: 600; color: #d4d4d8;">Client Account *</label>
+            <select id="postClientSelect" class="role-select" style="width: 100%;" onchange="onSocialClientChange()" required>
+              <!-- Loaded dynamically -->
+            </select>
+          </div>
+
+          <div class="form-group" style="flex: 1;">
+            <label style="font-size: 0.8rem; font-weight: 600; color: #d4d4d8;">Social Platform *</label>
+            <select id="postPlatformSelect" class="role-select" style="width: 100%;" onchange="onSocialClientChange()">
+              <option value="Facebook" selected>Facebook</option>
+              <option value="Instagram">Instagram</option>
+              <option value="TikTok">TikTok</option>
+              <option value="LinkedIn">LinkedIn</option>
+              <option value="YouTube">YouTube</option>
+              <option value="Twitter/X">Twitter / X</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label style="font-size: 0.8rem; font-weight: 600; color: #d4d4d8;">Post Topic / Title *</label>
+          <input type="text" id="postTitleInput" class="form-input" placeholder="e.g. Weekend Special Combo Teaser" required>
+        </div>
+
+        <div class="form-group">
+          <label style="font-size: 0.8rem; font-weight: 600; color: #d4d4d8;">Target Page / Group / Channel URL *</label>
+          <input type="url" id="postTargetUrlInput" class="form-input" placeholder="https://facebook.com/chillox.bd" required>
+          <span style="font-size: 0.75rem; color: var(--text-muted);">Auto-filled from Client CRM stored social links when client & platform are picked</span>
+        </div>
+
+        <div style="display: flex; gap: 1rem;">
+          <div class="form-group" style="flex: 1;">
+            <label style="font-size: 0.8rem; font-weight: 600; color: #d4d4d8;">Scheduled Date *</label>
+            <input type="date" id="postDateInput" class="form-input" required>
+          </div>
+
+          <div class="form-group" style="flex: 1;">
+            <label style="font-size: 0.8rem; font-weight: 600; color: #d4d4d8;">Scheduled Time *</label>
+            <input type="time" id="postTimeInput" class="form-input" value="18:00" required>
+          </div>
+
+          <div class="form-group" style="flex: 1.2;">
+            <label style="font-size: 0.8rem; font-weight: 600; color: #d4d4d8;">Assigned Publisher</label>
+            <select id="postPublisherSelect" class="role-select" style="width: 100%;">
+              <option value="Sabrin Akhtar">Sabrin Akhtar (Social Lead)</option>
+              <option value="Farhan Ahmed">Farhan Ahmed (Media Director)</option>
+              <option value="Raihan Kabir">Raihan Kabir (Growth Lead)</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 1rem;">
+          <div class="form-group" style="flex: 1;">
+            <label style="font-size: 0.8rem; font-weight: 600; color: #d4d4d8;">Initial Status</label>
+            <select id="postStatusSelect" class="role-select" style="width: 100%;">
+              <option value="Pending Client Approval" selected>Pending Client Approval (Recommended)</option>
+              <option value="Draft">Draft Idea (Internal)</option>
+              <option value="Approved">Approved (Queued for Dispatch)</option>
+            </select>
+          </div>
+
+          <div class="form-group" style="flex: 1;">
+            <label style="font-size: 0.8rem; font-weight: 600; color: #d4d4d8;">Media Asset URL / Drive Link</label>
+            <input type="text" id="postMediaUrlInput" class="form-input" placeholder="https://images.unsplash.com/... or Drive Link">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label style="font-size: 0.8rem; font-weight: 600; color: #d4d4d8;">Post Caption & Copy Text *</label>
+          <textarea id="postCaptionInput" class="form-input" rows="4" placeholder="Write full copy with hashtags & emojis..." required></textarea>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.8rem; margin-top: 0.5rem;">
+          <button type="button" class="btn-secondary" onclick="closeCreatePostModal()">Cancel</button>
+          <button type="submit" class="btn-purple">💾 Save & Queue Post</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 1-Click Social Media Dispatch Hub Modal (Phase A) -->
+  <div class="modal-overlay hidden" id="dispatchHubModal">
+    <div class="modal-card" style="max-width: 650px; background: #0f172a; border: 1px solid var(--purple-light);">
+      <div class="modal-header">
+        <h2 class="modal-title">🚀 1-Click Social Media Dispatch Hub</h2>
+        <button class="tg-close" onclick="closeDispatchHubModal()">✕</button>
+      </div>
+
+      <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 1.2rem;">
+        <!-- Header Info Card -->
+        <div style="background: rgba(168,85,247,0.1); border: 1px solid rgba(168,85,247,0.3); border-radius: 12px; padding: 1rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+            <span class="badge badge-purple" id="dhPlatformBadge">Facebook</span>
+            <span class="badge badge-emerald" id="dhStatusBadge">Approved</span>
+          </div>
+          <h3 id="dhPostTitle" style="color: #fff; font-size: 1.1rem; margin: 0.2rem 0;">Post Title</h3>
+          <div style="font-size: 0.85rem; color: var(--text-muted);" id="dhClientScheduled">Client: Chillox • Scheduled: 2026-07-30 at 18:00</div>
+        </div>
+
+        <!-- Direct Target Link -->
+        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 0.8rem 1rem; border-radius: 10px; display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Target Page / Group Link</div>
+            <a id="dhTargetUrlLink" href="#" target="_blank" style="color: #38bdf8; font-size: 0.9rem; word-break: break-all; text-decoration: underline;">https://facebook.com/chillox.bd</a>
+          </div>
+          <a id="dhLaunchBtn" href="#" target="_blank" class="btn-purple" style="font-size: 0.8rem; padding: 0.4rem 0.8rem; white-space: nowrap; text-decoration: none;">🚀 Launch Page</a>
+        </div>
+
+        <!-- Caption Box with 1-Click Copy -->
+        <div style="position: relative;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+            <label style="font-size: 0.82rem; font-weight: 700; color: #fff;">📝 Approved Caption & Hashtags</label>
+            <button class="btn-purple" style="font-size: 0.78rem; padding: 0.25rem 0.65rem;" onclick="copyDispatchCaption()">📋 Copy Caption</button>
+          </div>
+          <textarea id="dhCaptionText" class="form-input" rows="5" readonly style="background: rgba(0,0,0,0.4); color: #e2e8f0; font-size: 0.9rem; line-height: 1.5;"></textarea>
+        </div>
+
+        <!-- Media Assets Bundle -->
+        <div>
+          <div style="font-size: 0.82rem; font-weight: 700; color: #fff; margin-bottom: 0.4rem;">🖼️ Media Assets & Visual Packs</div>
+          <div id="dhMediaAssetsBox" style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- Footer Actions -->
+        <div style="display: flex; gap: 0.8rem; margin-top: 0.5rem; flex-wrap: wrap;">
+          <button class="btn-purple" style="flex: 1; background: #10b981;" id="dhMarkPublishedBtn" onclick="markPostAsPublished()">✅ Mark as Published</button>
+          <button class="btn-secondary" style="flex: 1;" onclick="triggerDispatchTelegramAlert()">⚡ Re-send Telegram Alert</button>
+          <button class="btn-secondary" onclick="closeDispatchHubModal()">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3-Tier Expense Claim & Receipt Inspector Modal (Phase B) -->
+  <div class="modal-overlay hidden" id="receiptInspectorModal">
+    <div class="modal-card" style="max-width: 720px; background: #0f172a; border: 1px solid var(--purple-light);">
+      <div class="modal-header">
+        <h2 class="modal-title">🧾 Expense Claim & 3-Tier Approval Inspector</h2>
+        <button class="tg-close" onclick="closeReceiptInspectorModal()">✕</button>
+      </div>
+
+      <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 1.2rem;">
+        <!-- 3-Tier Approval Stepper Bar -->
+        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 1rem; border-radius: 12px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.8rem; text-align: center;">
+          <div id="stepT1Box" style="background: rgba(234,179,8,0.15); border: 1px solid rgba(234,179,8,0.3); padding: 0.6rem; border-radius: 8px;">
+            <div style="font-size: 0.72rem; text-transform: uppercase; font-weight: 700; color: #fde047;">Tier 1: Line Manager</div>
+            <div id="stepT1Text" style="font-size: 0.85rem; font-weight: 700; color: #fff; margin-top: 0.2rem;">Pending</div>
+          </div>
+          <div id="stepT2Box" style="background: rgba(6,182,212,0.15); border: 1px solid rgba(6,182,212,0.3); padding: 0.6rem; border-radius: 8px;">
+            <div style="font-size: 0.72rem; text-transform: uppercase; font-weight: 700; color: #67e8f9;">Tier 2: Finance</div>
+            <div id="stepT2Text" style="font-size: 0.85rem; font-weight: 700; color: #fff; margin-top: 0.2rem;">Pending</div>
+          </div>
+          <div id="stepT3Box" style="background: rgba(168,85,247,0.15); border: 1px solid rgba(168,85,247,0.3); padding: 0.6rem; border-radius: 8px;">
+            <div style="font-size: 0.72rem; text-transform: uppercase; font-weight: 700; color: #c084fc;">Tier 3: Owner Release</div>
+            <div id="stepT3Text" style="font-size: 0.85rem; font-weight: 700; color: #fff; margin-top: 0.2rem;">Pending</div>
+          </div>
+        </div>
+
+        <!-- Receipt & Claim Details Grid -->
+        <div style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 1.2rem;">
+          <!-- Receipt Photo Container -->
+          <div>
+            <label style="font-size: 0.82rem; font-weight: 700; color: #fff; display: block; margin-bottom: 0.4rem;">📷 Ground Receipt Photo</label>
+            <div style="position: relative; background: #000; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); height: 220px;">
+              <img id="riReceiptImg" src="https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=800&q=80" style="width: 100%; height: 100%; object-fit: cover;" alt="Receipt Photo">
+            </div>
+            <a id="riReceiptFullLink" href="#" target="_blank" style="display: block; text-align: center; font-size: 0.78rem; color: #38bdf8; margin-top: 0.4rem; text-decoration: underline;">🔍 Open Full Resolution Receipt Image</a>
+          </div>
+
+          <!-- Metadata List -->
+          <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 1rem; border-radius: 12px; display: flex; flex-direction: column; gap: 0.6rem;">
+            <div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Claim ID & Date</div>
+              <strong style="color: #fff; font-size: 0.95rem;" id="riClaimId">EXP-101 (2026-07-28)</strong>
+            </div>
+            <div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Submitted By</div>
+              <strong style="color: #34d399; font-size: 0.95rem;" id="riSubmittedBy">Rafiul Islam (Transport Lead)</strong>
+            </div>
+            <div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Category & Purpose</div>
+              <strong style="color: #fff; font-size: 0.9rem;" id="riCategory">Fuel / Transport</strong>
+            </div>
+            <div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Amount Claimed</div>
+              <strong style="color: #fbbf24; font-size: 1.2rem;" id="riAmount">BDT 1,800</strong>
+            </div>
+            <div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Field Note / Description</div>
+              <div style="font-size: 0.85rem; color: #cbd5e1; background: rgba(0,0,0,0.3); padding: 0.5rem; border-radius: 6px;" id="riDescription">Fuel reimbursement for shoot.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer Approval Action Buttons -->
+        <div style="display: flex; gap: 0.8rem; margin-top: 0.5rem; flex-wrap: wrap;" id="riActionsContainer">
+          <button class="btn-purple" style="flex: 1; background: #eab308; color: #000; font-weight: 700;" id="riApproveT1Btn" onclick="approveExpenseTier(1)">✅ Approve Tier 1 (Manager)</button>
+          <button class="btn-purple" style="flex: 1; background: #06b6d4; color: #000; font-weight: 700;" id="riApproveT2Btn" onclick="approveExpenseTier(2)">✅ Verify Tier 2 (Finance)</button>
+          <button class="btn-purple" style="flex: 1; background: #10b981; font-weight: 700;" id="riApproveT3Btn" onclick="approveExpenseTier(3)">💸 Release Disbursement (Tier 3)</button>
+          <button class="btn-secondary" style="color: #f43f5e;" onclick="rejectExpenseClaim()">❌ Reject Claim</button>
+          <button class="btn-secondary" onclick="closeReceiptInspectorModal()">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Report Support Ticket Modal (Phase C) -->
+  <div class="modal-overlay hidden" id="createTicketModal">
+    <div class="modal-card" style="max-width: 520px;">
+      <div class="modal-header">
+        <h2 class="modal-title">🔧 Report Support & Maintenance Ticket</h2>
+        <button class="tg-close" onclick="closeCreateTicketModal()">✕</button>
+      </div>
+
+      <form onsubmit="submitNewTicket(event)" style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem;">
+        <div style="display: flex; gap: 1rem;">
+          <div class="form-group" style="flex: 1;">
+            <label style="font-size: 0.8rem; font-weight: 600; color: #d4d4d8;">Category *</label>
+            <select id="ticketCategoryInput" class="role-select" style="width: 100%;">
+              <option value="Equipment Repair">Equipment Repair</option>
+              <option value="Studio B Maintenance">Studio B Maintenance</option>
+              <option value="IT / Software Support">IT / Software Support</option>
+              <option value="General Support">General Support</option>
+            </select>
+          </div>
+
+          <div class="form-group" style="flex: 1;">
+            <label style="font-size: 0.8rem; font-weight: 600; color: #d4d4d8;">Urgency Level *</label>
+            <select id="ticketUrgencyInput" class="role-select" style="width: 100%;">
+              <option value="Low">Low (General)</option>
+              <option value="Medium" selected>Medium (Standard)</option>
+              <option value="High">High (Urgent Shoot Blocker)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label style="font-size: 0.8rem; font-weight: 600; color: #d4d4d8;">Issue Summary / Title *</label>
+          <input type="text" id="ticketTitleInput" class="form-input" placeholder="e.g. Sony FX3 Lens Mount Autofocus Glitch" required>
+        </div>
+
+        <div class="form-group">
+          <label style="font-size: 0.8rem; font-weight: 600; color: #d4d4d8;">Assigned Technician / Lead</label>
+          <input type="text" id="ticketAssignedToInput" class="form-input" placeholder="e.g. Maintenance & AV Tech Lead" value="Maintenance Lead">
+        </div>
+
+        <div class="form-group">
+          <label style="font-size: 0.8rem; font-weight: 600; color: #d4d4d8;">Detailed Problem Description *</label>
+          <textarea id="ticketDescInput" class="form-input" rows="4" placeholder="Describe symptoms, location, and equipment ID..." required></textarea>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.8rem; margin-top: 0.5rem;">
+          <button type="button" class="btn-secondary" onclick="closeCreateTicketModal()">Cancel</button>
+          <button type="submit" class="btn-purple">🔧 Log Ticket</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Send Team Broadcast Notice Modal (Phase D) -->
+  <div class="modal-overlay hidden" id="broadcastModal">
+    <div class="modal-card" style="max-width: 540px;">
+      <div class="modal-header">
+        <h2 class="modal-title">📢 Send Team Broadcast Announcement</h2>
+        <button class="tg-close" onclick="closeBroadcastModal()">✕</button>
+      </div>
+
+      <form onsubmit="submitBroadcastNotice(event)" style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem;">
+        <div style="display: flex; gap: 1rem;">
+          <div class="form-group" style="flex: 2;">
+            <label style="font-size: 0.8rem; font-weight: 600; color: #d4d4d8;">Notice Title / Header *</label>
+            <input type="text" id="bcTitleInput" class="form-input" placeholder="e.g. Studio B Shoot Plan & Schedule Change" required>
+          </div>
+
+          <div class="form-group" style="flex: 1;">
+            <label style="font-size: 0.8rem; font-weight: 600; color: #d4d4d8;">Target Group</label>
+            <select id="bcTargetInput" class="role-select" style="width: 100%;">
+              <option value="All Staff & Groups">All Staff & Groups</option>
+              <option value="Shoot Directors & Crew">Shoot Directors & Crew</option>
+              <option value="Video Editors">Video Editors</option>
+              <option value="Social Media Team">Social Media Team</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label style="font-size: 0.8rem; font-weight: 600; color: #d4d4d8;">Announcement Message / Shoot Plan Details *</label>
+          <textarea id="bcMessageInput" class="form-input" rows="5" placeholder="Enter broadcast message, instructions, location, or timing updates..." required></textarea>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 0.6rem; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); padding: 0.65rem 0.9rem; border-radius: 8px;">
+          <input type="checkbox" id="bcUrgentInput" checked style="width: 16px; height: 16px; cursor: pointer;">
+          <label for="bcUrgentInput" style="font-size: 0.82rem; color: #f87171; font-weight: 600; cursor: pointer;">
+            🚨 Urgent Banner Notice (Pushes high-priority alert to Telegram DMs & Production Groups)
+          </label>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.8rem; margin-top: 0.5rem;">
+          <button type="button" class="btn-secondary" onclick="closeBroadcastModal()">Cancel</button>
+          <button type="submit" class="btn-purple" style="background: #a855f7;">📢 Dispatch Broadcast</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- LANDING PAGE CMS CONTENT MANAGER MODAL -->
+  <div id="cmsModal" class="tg-modal-overlay" style="display: none;">
+    <div class="tg-modal-box" style="max-width: 680px; max-height: 88vh; overflow-y: auto;">
+      <div class="tg-modal-header">
+        <h3 style="margin: 0; font-size: 1.1rem; color: #fff;">✏️ Public Landing Page CMS Editor</h3>
+        <button class="tg-close" onclick="closeCMSManagerModal()">✕</button>
+      </div>
+
+      <form onsubmit="saveCMSContent(event)" style="display: flex; flex-direction: column; gap: 1.25rem; margin-top: 1rem;">
+        <div style="background: rgba(168,85,247,0.1); border: 1px solid rgba(168,85,247,0.3); padding: 0.8rem; border-radius: 10px; font-size: 0.82rem; color: #e9d5ff;">
+          💡 Changes saved here immediately update the live public website (<strong style="color:#fff;">purplebot.digital</strong>) for all prospective clients and visitors.
+        </div>
+
+        <div class="form-group">
+          <label style="font-size: 0.8rem; font-weight: 600; color: #d4d4d8;">Agency Contact Email *</label>
+          <input type="email" id="cmsEmailInput" class="form-input" required>
+        </div>
+
+        <div style="display: flex; gap: 1rem;">
+          <div class="form-group" style="flex: 1;">
+            <label style="font-size: 0.8rem; font-weight: 600; color: #d4d4d8;">Public Phone Number *</label>
+            <input type="text" id="cmsPhoneInput" class="form-input" required>
+          </div>
+          <div class="form-group" style="flex: 1;">
+            <label style="font-size: 0.8rem; font-weight: 600; color: #d4d4d8;">WhatsApp Direct Link Number *</label>
+            <input type="text" id="cmsWhatsappInput" class="form-input" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label style="font-size: 0.8rem; font-weight: 600; color: #d4d4d8;">Registered Office Address</label>
+          <input type="text" id="cmsRegAddressInput" class="form-input" required>
+        </div>
+
+        <div class="form-group">
+          <label style="font-size: 0.8rem; font-weight: 600; color: #d4d4d8;">Operating Studio Address</label>
+          <input type="text" id="cmsOpAddressInput" class="form-input" required>
+        </div>
+
+        <div class="form-group">
+          <label style="font-size: 0.8rem; font-weight: 600; color: #d4d4d8;">Client Marquee Brands (Comma-separated)</label>
+          <textarea id="cmsMarqueeInput" class="form-input" rows="2" required></textarea>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.8rem; margin-top: 0.5rem;">
+          <button type="button" class="btn-secondary" onclick="closeCMSManagerModal()">Cancel</button>
+          <button type="submit" class="btn-purple" style="background: linear-gradient(135deg, #a855f7, #ec4899);">💾 Save & Publish to Live Site</button>
         </div>
       </form>
     </div>

@@ -1,9 +1,66 @@
-// 🔮 PURPLEBOT DIGITAL — PUBLIC AGENCY LANDING PAGE JS
+// 🔮 PURPLEBOT DIGITAL — PUBLIC LANDING PAGE SCRIPT (v0.7.5.1)
 
 document.addEventListener('DOMContentLoaded', () => {
+  captureUTM();
+  trackPageView();
   fetchLandingServices();
+  fetchCMSContent();
+  initNavbarScroll();
+  initStatCounters();
 });
 
+// UTM CAPTURE & SESSION STORAGE
+function captureUTM() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const utmKeys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'];
+    const utmObj = {};
+    let found = false;
+
+    utmKeys.forEach(key => {
+      if (params.has(key)) {
+        utmObj[key] = params.get(key);
+        found = true;
+      }
+    });
+
+    if (found) {
+      sessionStorage.setItem('utm', JSON.stringify(utmObj));
+    }
+  } catch (err) {}
+}
+
+// CLICK & PAGE EVENT TRACKING
+function trackPageView() {
+  try {
+    fetch('/api/track', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        event: 'page_view',
+        label: window.location.pathname,
+        referrer: document.referrer,
+        utm: sessionStorage.getItem('utm') || ''
+      })
+    }).catch(e => {});
+  } catch (err) {}
+}
+
+function trackClick(label) {
+  try {
+    fetch('/api/track', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        event: 'cta_click',
+        label: label || 'Button Click',
+        referrer: document.referrer
+      })
+    }).catch(e => {});
+  } catch (err) {}
+}
+
+// FETCH & RENDER PUBLIC SERVICES
 async function fetchLandingServices() {
   const container = document.getElementById('landingServicesGrid');
   if (!container) return;
@@ -14,83 +71,195 @@ async function fetchLandingServices() {
 
     if (!services || services.length === 0) return;
 
-    container.innerHTML = services.map(s => `
-      <div class="landing-service-card">
+    const publicServices = services.filter(s => s.public !== false);
+    if (publicServices.length === 0) return;
+
+    const categoryIcons = {
+      'Digital Marketing': '📱',
+      'Video Production': '🎬',
+      'Video Editing & Animation': '🎬',
+      'Branding & Graphics': '🎨',
+      'Branding': '🎨',
+      'Website & Tech': '💻',
+      'Tech & Web': '💻'
+    };
+
+    container.innerHTML = publicServices.map(s => `
+      <div class="pb-service-card">
         <div>
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
-            <span class="badge badge-purple">${s.category}</span>
-            <strong style="color:#34d399; font-size:1.1rem;">${s.price}</strong>
+          <div class="pb-svc-icon">${categoryIcons[s.category] || '⚡'}</div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+            <span style="font-size:0.75rem; font-weight:800; color:#7c3aed; text-transform:uppercase; letter-spacing:0.05em;">${s.category}</span>
+            <strong style="color:#059669; font-size:1.05rem;">${s.price}</strong>
           </div>
-          <h3 style="font-size:1.25rem; color:#fff; font-weight:700; margin-bottom:0.5rem;">${s.title}</h3>
-          <p style="font-size:0.88rem; color:#94a3b8; line-height:1.5; margin-bottom:1rem;">${s.description}</p>
-          
-          <div style="display:flex; flex-direction:column; gap:0.4rem; margin-bottom:1.5rem;">
-            ${(s.includedFeatures || []).map(f => `
-              <div style="font-size:0.8rem; color:#cbd5e1; display:flex; align-items:center; gap:0.4rem;">
-                <span style="color:#a855f7;">✓</span> ${f}
-              </div>
-            `).join('')}
-          </div>
+          <h3>${s.title}</h3>
+          <p>${s.description}</p>
         </div>
 
-        <button onclick="selectLandingService('${s.title}')" class="btn-hero-secondary" style="width:100%; text-align:center; font-size:0.88rem; padding:0.6rem 1rem;">
-          📋 Select This Package
+        <button onclick="openPurpleBot('${s.title}')" class="pb-btn-svc">
+          Get Quote for ${s.title.split(' ')[0]} →
         </button>
       </div>
     `).join('');
   } catch (err) {
-    console.error('Error fetching landing services:', err);
+    console.error('Error fetching services:', err);
   }
 }
 
-function selectLandingService(serviceTitle) {
-  const select = document.getElementById('inqService');
-  if (select) {
-    for (let opt of select.options) {
-      if (opt.text.toLowerCase().includes(serviceTitle.toLowerCase())) {
-        opt.selected = true;
-        break;
-      }
-    }
-  }
-  const inquirySec = document.getElementById('inquiry');
+function selectServiceCategory(category) {
+  const inquirySec = document.getElementById('services');
   if (inquirySec) {
     inquirySec.scrollIntoView({ behavior: 'smooth' });
   }
 }
 
-async function submitPublicInquiry(event) {
-  event.preventDefault();
+// NAVBAR SCROLL EFFECT
+function initNavbarScroll() {
+  const nav = document.getElementById('topNav');
+  if (!nav) return;
 
-  const clientName = document.getElementById('inqClient').value;
-  const contactPerson = document.getElementById('inqContact').value;
-  const contactEmail = document.getElementById('inqEmail').value;
-  const serviceTitle = document.getElementById('inqService').value;
-  const notes = document.getElementById('inqNotes').value;
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 40) {
+      nav.classList.add('scrolled');
+    } else {
+      nav.classList.remove('scrolled');
+    }
+  });
+}
+
+// STAT COUNTER ANIMATION
+function initStatCounters() {
+  const statElements = document.querySelectorAll('.pb-stat-num');
+  if (!statElements || statElements.length === 0) return;
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const el = entry.target;
+        const target = parseInt(el.getAttribute('data-target') || '0', 10);
+        if (target > 0) {
+          animateCount(el, target);
+        }
+        observer.unobserve(el);
+      }
+    });
+  }, { threshold: 0.5 });
+
+  statElements.forEach(el => observer.observe(el));
+}
+
+function animateCount(el, target) {
+  let current = 0;
+  const increment = Math.ceil(target / 40);
+  const timer = setInterval(() => {
+    current += increment;
+    if (current >= target) {
+      current = target;
+      clearInterval(timer);
+    }
+    
+    if (target === 8) el.innerText = current + '+';
+    else if (target === 100) el.innerText = current + '+';
+    else if (target === 20000) el.innerText = current.toLocaleString() + '+';
+    else if (target === 10) el.innerText = current + 'M+';
+    else el.innerText = current + '+';
+  }, 40);
+}
+
+// NEWSLETTER SUBMISSION
+async function handleNewsletterSubmit(e) {
+  e.preventDefault();
+  const input = document.getElementById('newsEmail');
+  if (!input || !input.value) return;
+
+  const email = input.value.trim();
 
   try {
     const res = await fetch('/api/leads', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        clientName,
-        contactPerson,
-        contactEmail,
-        serviceTitle,
-        notes,
-        source: 'Public Agency Website'
+        clientName: 'Newsletter Subscriber',
+        contactPerson: 'Subscriber',
+        contactEmail: email,
+        service: 'Monthly Newsletter',
+        source: 'Landing Page Newsletter'
       })
     });
 
     const data = await res.json();
     if (data.success) {
-      alert(`🎉 Thank you ${contactPerson}! Your campaign brief for "${serviceTitle}" has been received by Purplebot Digital.\nOur account team will contact you shortly.`);
-      document.getElementById('publicInquiryForm').reset();
-    } else {
-      alert('Error submitting inquiry: ' + (data.error || 'Please try again.'));
+      alert(`🎉 Thank you! ${email} has been subscribed to the Purplebot Digital Newsletter.`);
+      input.value = '';
+      trackClick('Newsletter Subscribed');
     }
   } catch (err) {
-    console.error('Error submitting public inquiry:', err);
-    alert('Network error while submitting inquiry.');
+    alert('Thank you for subscribing!');
+    input.value = '';
+  }
+}
+
+// FETCH & RENDER PUBLIC CMS CONTENT
+async function fetchCMSContent() {
+  try {
+    const res = await fetch('/api/public/content');
+    const data = await res.json();
+    if (!data.success || !data.content) return;
+
+    const cms = data.content;
+
+    // 1. Client Marquee
+    if (cms.clientMarquee && cms.clientMarquee.length > 0) {
+      const marqueeContainer = document.getElementById('clientMarquee');
+      if (marqueeContainer) {
+        marqueeContainer.innerHTML = cms.clientMarquee.map(brand => `
+          <div class="pb-client-pill"><span>${brand}</span></div>
+        `).join('');
+      }
+    }
+
+    // 2. Portfolio Showcase
+    if (cms.portfolio && cms.portfolio.length > 0) {
+      const portGrid = document.querySelector('.pb-portfolio-grid');
+      if (portGrid) {
+        portGrid.innerHTML = cms.portfolio.map(p => `
+          <div class="pb-portfolio-card">
+            <div class="pb-portfolio-thumb" style="background-image: url('${p.image}');">
+              <span class="pb-category-tag">${p.category}</span>
+            </div>
+            <div class="pb-portfolio-info">
+              <h3>${p.title}</h3>
+              <p>${p.subtitle}</p>
+              <div class="pb-portfolio-metric">${p.metric}</div>
+            </div>
+          </div>
+        `).join('');
+      }
+    }
+
+    // 3. Pricing Packages
+    if (cms.pricingPackages && cms.pricingPackages.length > 0) {
+      const priceGrid = document.querySelector('.pb-pricing-grid');
+      if (priceGrid) {
+        priceGrid.innerHTML = cms.pricingPackages.map(pkg => `
+          <div class="pb-pricing-card ${pkg.featured ? 'pb-featured-plan' : ''}">
+            ${pkg.featured ? '<div class="pb-featured-tag">MOST POPULAR</div>' : ''}
+            <div class="pb-price-header">
+              <span class="pb-plan-badge">${pkg.tier || 'PACKAGE'}</span>
+              <h3>${pkg.name}</h3>
+              <div class="pb-price-tag">${pkg.price} <span>${pkg.period || '/ month'}</span></div>
+            </div>
+            <ul class="pb-price-features">
+              ${(pkg.features || []).map(f => `<li>✓ ${f}</li>`).join('')}
+            </ul>
+            <button onclick="openPurpleBot('${pkg.name} (${pkg.price})')" class="pb-btn-plan ${pkg.featured ? 'pb-btn-plan-featured' : ''}">
+              Select ${pkg.name}
+            </button>
+          </div>
+        `).join('');
+      }
+    }
+  } catch (err) {
+    console.error('Error loading public CMS content:', err);
   }
 }

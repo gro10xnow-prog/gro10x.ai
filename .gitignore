@@ -10,3 +10,5 @@ data/db.backup.json
 
 # Large assets not needed in repo
 *.pdf
+Screenshot*.png
+scratch/
