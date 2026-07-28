@@ -174,7 +174,22 @@
   "clients": [],
   "tasks": [],
   "reviews": [],
-  "invoices": [],
+  "invoices": [
+    {
+      "id": "INV-2026-001",
+      "clientId": "CLI-0001",
+      "clientName": "Chillox",
+      "projectName": "Commercial Campaign Deliverable",
+      "date": "2026-07-28",
+      "dueDate": "2026-07-28",
+      "amount": 1200,
+      "status": "Paid",
+      "notes": "Auto-generated invoice from payment verification portal",
+      "paidDate": "2026-07-28",
+      "paymentMethod": "Bkash Direct Merchant (TrxID)",
+      "paymentReference": "TRX998811"
+    }
+  ],
   "expenses": [],
   "assets": [],
   "attendance": [
@@ -220,5 +235,44 @@
   "chats": [],
   "webhookLogs": [],
   "attendanceLog": [],
-  "checkoutLog": []
+  "checkoutLog": [],
+  "automations": [
+    {
+      "id": "AUT-001",
+      "name": "Editing Stage Telegram Alert",
+      "event": "task_stage_change",
+      "condition": "stage === Editing",
+      "action": "telegram_notify",
+      "active": true
+    },
+    {
+      "id": "AUT-002",
+      "name": "Review Cut Approval Auto-Invoice",
+      "event": "review_approve",
+      "condition": "status === Approved",
+      "action": "create_invoice",
+      "active": true
+    },
+    {
+      "id": "AUT-003",
+      "name": "Won Lead Client Conversion",
+      "event": "lead_won",
+      "condition": "status === Won",
+      "action": "convert_to_client",
+      "active": true
+    }
+  ],
+  "automationLogs": [],
+  "paymentLogs": [
+    {
+      "id": "PAY-1785250948490",
+      "invoiceId": "INV-2026-001",
+      "clientName": "Chillox",
+      "amount": 1200,
+      "method": "Bkash Direct Merchant (TrxID)",
+      "reference": "TRX998811",
+      "payerName": "Chillox",
+      "timestamp": "2026-07-28T15:02:28.490Z"
+    }
+  ]
 }

@@ -1967,6 +1967,14 @@
         </div>
 
         <div class="form-group">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.3rem;">
+            <label style="font-size: 0.8rem; font-weight: 600; color: #d4d4d8;">Campaign Description & AI Creative Brief</label>
+            <button type="button" class="btn-secondary" style="padding:0.2rem 0.5rem; font-size:0.75rem; color:var(--purple-light);" onclick="generateTaskAIBrief()">✨ Generate AI Brief</button>
+          </div>
+          <textarea id="newTaskDescription" class="form-input" rows="4" placeholder="Task description or click ✨ Generate AI Brief to auto-build campaign hook, shot list, and timeline..."></textarea>
+        </div>
+
+        <div class="form-group">
           <label style="font-size: 0.8rem; font-weight: 600; color: #d4d4d8;">Due Date</label>
           <input type="date" id="newTaskDueDate" class="form-input" required>
         </div>

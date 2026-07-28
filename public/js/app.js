@@ -1172,6 +1172,44 @@ function closeAddTaskModal() {
   if (modal) modal.classList.add('hidden');
 }
 
+// Module C7: AI Creative Brief Generator Logic
+async function generateTaskAIBrief() {
+  const title = document.getElementById('newTaskTitle').value || 'Commercial Video Reel';
+  const client = document.getElementById('newTaskClient').value || 'Chillox';
+
+  try {
+    const res = await fetch('/api/tasks/ai-brief', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ client, title, goal: 'Drive viral commercial brand engagement' })
+    });
+    const data = await res.json();
+    if (data.success) {
+      document.getElementById('newTaskDescription').value = data.generatedBrief;
+      alert(`✨ AI Creative Brief generated for "${title}"!\nShot list, concept hook, and timeline auto-built.`);
+    }
+  } catch (err) {
+    console.error('Error generating AI brief:', err);
+  }
+}
+
+// Module C6: Magic Link Onboarding Email Generator Trigger
+async function triggerLeadOnboardingEmail(leadId) {
+  try {
+    const res = await fetch(`/api/leads/${leadId}/onboard`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    const data = await res.json();
+    if (data.success) {
+      navigator.clipboard.writeText(data.magicLink);
+      alert(`✉️ Client Portal Magic Link Generated for ${data.clientName}!\n\nMagic URL:\n${data.magicLink}\n\nCopied to clipboard!`);
+    }
+  } catch (err) {
+    console.error('Error generating onboarding email:', err);
+  }
+}
+
 async function submitNewTask(event) {
   event.preventDefault();
   const title = document.getElementById('newTaskTitle').value.trim();

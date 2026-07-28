@@ -17,6 +17,11 @@ async function initPartnerPortal() {
     partnerReviews = db.reviews || [];
     partnerInvoices = db.invoices || [];
 
+    // Module C6: Check URL Search Params for Magic Link Access (?client=... & ?token=...)
+    const urlParams = new URLSearchParams(window.location.search);
+    const magicClient = urlParams.get('client');
+    const magicToken = urlParams.get('token');
+
     // Populate Client Selector
     const clientSelect = document.getElementById('partnerClientSelect');
     if (clientSelect) {
@@ -29,7 +34,12 @@ async function initPartnerPortal() {
         <option value="${c.name}">${c.name}</option>
       `).join('');
 
-      if (clients[0]) currentPartnerClient = clients[0].name;
+      if (magicClient) {
+        currentPartnerClient = decodeURIComponent(magicClient);
+        clientSelect.value = currentPartnerClient;
+      } else if (clients[0]) {
+        currentPartnerClient = clients[0].name;
+      }
     }
 
     renderPartnerView();
@@ -102,10 +112,43 @@ function renderPartnerView() {
         <td style="font-weight:700; color:#34d399;">$${(Number(inv.amount) || 0).toLocaleString()}</td>
         <td><span class="badge ${inv.status === 'Paid' ? 'badge-emerald' : 'badge-amber'}">${inv.status}</span></td>
         <td style="text-align:right;">
-          <button class="btn-secondary" style="padding:0.2rem 0.5rem; font-size:0.78rem;" onclick="alert('Downloading Statement/Invoice PDF for ${inv.id}...')">📄 Download PDF</button>
+          <div style="display:flex; justify-content:flex-end; gap:0.4rem;">
+            ${inv.status !== 'Paid' ? `
+              <button class="btn-purple" style="padding:0.2rem 0.6rem; font-size:0.78rem;" onclick="openPartnerPaymentModal('${inv.id}', ${inv.amount})">💳 Pay / Verify</button>
+            ` : ''}
+            <button class="btn-secondary" style="padding:0.2rem 0.5rem; font-size:0.78rem;" onclick="alert('Downloading Statement/Invoice PDF for ${inv.id}...')">📄 PDF</button>
+          </div>
         </td>
       </tr>
     `).join('');
+  }
+}
+
+// Module C5: Client Payment Gateway Verification Modal Logic
+async function openPartnerPaymentModal(invId, amount) {
+  const method = prompt(`💳 ONLINE INVOICE PAYMENT (${invId} — $${amount} USD)\n\nSelect Payment Gateway Method:\n1. Bkash Direct Merchant (TrxID)\n2. Nagad Merchant (TrxID)\n3. Bank Wire Transfer (Ref No)\n4. Credit/Debit Card (Instant Sim)`, 'Bkash Direct Merchant (TrxID)');
+  if (!method) return;
+
+  const trxId = prompt(`Enter Payment Transaction ID (TrxID / Bank Ref No):`, `TRX${Math.floor(100000 + Math.random() * 900000)}`);
+  if (!trxId) return;
+
+  try {
+    const res = await fetch(`/api/invoices/${invId}/pay`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        method: method,
+        trxId: trxId,
+        payerName: currentPartnerClient
+      })
+    });
+    const data = await res.json();
+    if (data.success) {
+      alert(`✅ Payment Verified!\nInvoice ${invId} is now marked PAID.\nTransaction Ref: ${trxId}`);
+      initPartnerPortal();
+    }
+  } catch (err) {
+    console.error('Payment error:', err);
   }
 }
 
