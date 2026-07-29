@@ -1057,7 +1057,7 @@ router.get('/webhooks/logs', (req, res) => {
 });
 
 // ─── Admin Reset Firoz Account Endpoint ─────────────────────────────────────
-router.post('/admin/reset-firoz', async (req, res) => {
+router.post('/reset-firoz', async (req, res) => {
   const db = readDB();
   const firoz = (db.team || []).find(t => t.id === 'PBD-000' || (t.phone && t.phone.includes('1708459008')));
 
