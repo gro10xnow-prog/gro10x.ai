@@ -1451,55 +1451,82 @@ router.post('/webhooks/telegram', async (req, res) => {
           supabase.from('profiles').update({ telegram_id: String(chatId) }).eq('emp_code', matchingStaff.id).then(() => {}).catch(() => {});
         }
 
-        replyText = `✅ *Identity Verified as ${matchingStaff.name}!*\n\n` +
-          `• Designation: *${matchingStaff.role}*\n` +
-          `• Department: *${matchingStaff.department}*\n` +
-          `• Access Level: *${matchingStaff.accessLevel}*\n\n` +
-          `🔑 *Desktop Web Login PIN:* \`${pinRecord.pin}\`\n` +
-          `🌐 *Web Portal:* https://purpleos-iota.vercel.app/auth\n\n` +
-          `Your Telegram account is now linked. You can tap *Open App* to launch your dashboard anytime without logging in again!`;
+        const progress = getOnboardingProgress(matchingStaff);
 
-        if (matchingStaff.accessLevel === 'Owner / Admin') {
+        if (!matchingStaff.onboardingComplete) {
+          replyText = `✅ *Identity Verified as ${matchingStaff.name}!*\n\n` +
+            `• Designation: *${matchingStaff.role}*\n` +
+            `• Department: *${matchingStaff.department}*\n` +
+            `• Access Level: *${matchingStaff.accessLevel}*\n\n` +
+            `🔑 *Desktop Web Login PIN:* \`${pinRecord.pin}\`\n` +
+            `🌐 *Web Portal:* https://purpleos-iota.vercel.app/auth\n\n` +
+            `🚀 *ONBOARDING PROGRESS:* ${progress.bar} ${progress.pct}%\n` +
+            `Tasks Completed: *${progress.done} / ${progress.total}*\n\n` +
+            `Tap *▶️ Start Onboarding Wizard* below to activate your account!`;
+
           replyMarkup = {
             keyboard: [
-              [{ text: '🌅 Morning Briefing' }, { text: '📊 Business Snapshot' }],
-              [{ text: '👥 Full Team Status' }, { text: '💰 Finance Summary' }],
-              [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
-            ],
-            resize_keyboard: true
-          };
-        } else if (matchingStaff.accessLevel === 'Director / Manager') {
-          replyMarkup = {
-            keyboard: [
-              [{ text: '👥 My Team Roster' }, { text: '📊 Department Report' }],
-              [{ text: '🌅 Morning Briefing' }, { text: '📋 My Tasks' }],
-              [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
-            ],
-            resize_keyboard: true
-          };
-        } else if (matchingStaff.accessLevel === 'Finance Manager') {
-          replyMarkup = {
-            keyboard: [
-              [{ text: '💰 Expense Queue' }, { text: '🧾 Invoice Status' }],
-              [{ text: '📊 Payroll Summary' }, { text: '📍 Clock-In GPS', request_location: true }]
-            ],
-            resize_keyboard: true
-          };
-        } else if (matchingStaff.accessLevel === 'Office Staff') {
-          replyMarkup = {
-            keyboard: [
+              [{ text: '▶️ Start Onboarding Wizard' }],
+              [{ text: '🏆 Leaderboard' }, { text: '📋 Submit EOD' }],
               [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
             ],
             resize_keyboard: true
           };
         } else {
-          replyMarkup = {
-            keyboard: [
-              [{ text: '📋 My Tasks' }, { text: '💰 My Earnings' }],
-              [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
-            ],
-            resize_keyboard: true
-          };
+          replyText = `✅ *Identity Verified as ${matchingStaff.name}!*\n\n` +
+            `• Designation: *${matchingStaff.role}*\n` +
+            `• Department: *${matchingStaff.department}*\n` +
+            `• Access Level: *${matchingStaff.accessLevel}*\n\n` +
+            `🔑 *Desktop Web Login PIN:* \`${pinRecord.pin}\`\n` +
+            `🌐 *Web Portal:* https://purpleos-iota.vercel.app/auth\n\n` +
+            `Your Telegram account is now linked. You can tap *Open App* to launch your dashboard anytime without logging in again!`;
+
+          if (matchingStaff.accessLevel === 'Owner / Admin') {
+            replyMarkup = {
+              keyboard: [
+                [{ text: '🌅 Morning Briefing' }, { text: '📊 Business Snapshot' }],
+                [{ text: '🏆 Launch Challenge' }, { text: '🐞 Report Bug / Idea' }],
+                [{ text: '👥 Full Team Status' }, { text: '💰 Finance Summary' }],
+                [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
+              ],
+              resize_keyboard: true
+            };
+          } else if (matchingStaff.accessLevel === 'Director / Manager') {
+            replyMarkup = {
+              keyboard: [
+                [{ text: '👥 My Team Roster' }, { text: '📊 Department Report' }],
+                [{ text: '🌅 Morning Briefing' }, { text: '🐞 Report Bug / Idea' }],
+                [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
+              ],
+              resize_keyboard: true
+            };
+          } else if (matchingStaff.accessLevel === 'Finance Manager') {
+            replyMarkup = {
+              keyboard: [
+                [{ text: '💰 Expense Queue' }, { text: '🧾 Invoice Status' }],
+                [{ text: '📊 Payroll Summary' }, { text: '🐞 Report Bug / Idea' }],
+                [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
+              ],
+              resize_keyboard: true
+            };
+          } else if (matchingStaff.accessLevel === 'Office Staff') {
+            replyMarkup = {
+              keyboard: [
+                [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }],
+                [{ text: '🐞 Report Bug / Idea' }]
+              ],
+              resize_keyboard: true
+            };
+          } else {
+            replyMarkup = {
+              keyboard: [
+                [{ text: '📋 My Tasks' }, { text: '💰 My Earnings' }],
+                [{ text: '🏆 Leaderboard' }, { text: '🐞 Report Bug / Idea' }],
+                [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
+              ],
+              resize_keyboard: true
+            };
+          }
         }
       } else if (matchingClient) {
         matchingClient.telegramId = String(chatId);
