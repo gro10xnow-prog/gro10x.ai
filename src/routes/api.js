@@ -1150,11 +1150,21 @@ router.post('/webhooks/telegram', async (req, res) => {
       const exp = (db.expenses || []).find(e => e.id === expId);
       if (exp) {
         exp.tier1 = { approved: true, approvedBy: 'Line Manager (Telegram 1-Tap)', date: new Date().toISOString() };
-        exp.status = 'Tier 2 Pending';
         writeDB(db);
         broadcast('expense_update', db.expenses);
         processAutomationEvent('expense_tier1_approved', { expense: exp }, db, writeDB, broadcast);
-        callbackAnswerText = `✅ Expense ${expId} Tier 1 Approved! Forwarded to Finance Manager.`;
+        callbackAnswerText = `✅ Expense ${expId} Tier 1 Approved! Forwarded to Ops Head.`;
+      }
+    } else if (data.startsWith('approve_expense_t1_5:')) {
+      const expId = data.split(':')[1];
+      const exp = (db.expenses || []).find(e => e.id === expId);
+      if (exp) {
+        exp.tier1_5 = { approved: true, approvedBy: 'Kafil Mahmud (Head of Ops)', date: new Date().toISOString() };
+        exp.status = 'Tier 2 Pending';
+        writeDB(db);
+        broadcast('expense_update', db.expenses);
+        processAutomationEvent('expense_tier1_5_approved', { expense: exp }, db, writeDB, broadcast);
+        callbackAnswerText = `🚨 Expense ${expId} Tier 1.5 Ops Approved! Forwarded to Finance.`;
       }
     } else if (data.startsWith('approve_expense_t2:')) {
       const expId = data.split(':')[1];

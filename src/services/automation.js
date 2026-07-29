@@ -547,6 +547,68 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
       });
     }
 
+    // TRIGGER 19.1: Expense Tier 1 Approved -> Check High-Value (> BDT 10k) Ops Routing
+    if (eventType === 'expense_tier1_approved') {
+      const expense = eventData.expense;
+      const amt = Number(expense.amount) || 0;
+
+      if (amt > 10000) {
+        // High-Value Claim (> 10k) -> Route to Kafil Mahmud (Head of Business Operations) for Tier 1.5
+        const kafil = (db.team || []).find(t => t.id === 'PBD-004' || (t.role || '').toLowerCase().includes('business operations'));
+        expense.status = 'Tier 1.5 Pending (Ops Review)';
+
+        const msgText = `🚨 *HIGH-VALUE EXPENSE CLAIM (> BDT 10,000) — TIER 1.5 OPS REVIEW*\n\n` +
+          `📋 Claim ID: *${expense.id}*\n` +
+          `👤 Submitted By: *${expense.submittedBy}*\n` +
+          `💵 Amount: *BDT ${amt.toLocaleString()}*\n` +
+          `✍️ T1 Approved By: *${expense.tier1?.approvedBy || 'Line Manager'}*\n\n` +
+          `Requires Head of Business Operations sign-off before Finance disbursement.`;
+
+        const targetId = kafil?.telegramId || '1708459008';
+        sendTelegramNotification(targetId, msgText, [
+          [{ text: '✅ Approve T1.5 (Ops Head)', callback_data: `approve_expense_t1_5:${expense.id}` }],
+          [{ text: '🔍 Inspect in Portal', url: `https://purpleos-iota.vercel.app/admin` }]
+        ], true);
+      } else {
+        // Standard Claim (<= 10k) -> Route directly to Borhan Siddique (Finance Manager) for Tier 2
+        const borhan = (db.team || []).find(t => t.id === 'PBD-029' || (t.role || '').toLowerCase().includes('finance manager'));
+        expense.status = 'Tier 2 Pending';
+
+        const msgText = `💰 *EXPENSE CLAIM TIER 1 APPROVED — AWAITING TIER 2 FINANCE VERIFICATION*\n\n` +
+          `📋 Claim ID: *${expense.id}*\n` +
+          `👤 Submitted By: *${expense.submittedBy}*\n` +
+          `💵 Amount: *BDT ${amt.toLocaleString()}*\n` +
+          `✍️ T1 Approved By: *${expense.tier1?.approvedBy || 'Line Manager'}*\n\n` +
+          `Click below to verify for final disbursement.`;
+
+        const targetId = borhan?.telegramId || '1708459008';
+        sendTelegramNotification(targetId, msgText, [
+          [{ text: '💰 Verify T2 (Finance)', callback_data: `approve_expense_t2:${expense.id}` }],
+          [{ text: '🔍 Inspect in Admin Portal', url: `https://purpleos-iota.vercel.app/admin` }]
+        ], true);
+      }
+    }
+
+    // TRIGGER 19.2: Expense Tier 1.5 Approved -> Route to Finance Manager (Tier 2)
+    if (eventType === 'expense_tier1_5_approved') {
+      const expense = eventData.expense;
+      const borhan = (db.team || []).find(t => t.id === 'PBD-029' || (t.role || '').toLowerCase().includes('finance manager'));
+      expense.status = 'Tier 2 Pending';
+
+      const msgText = `💰 *HIGH-VALUE EXPENSE TIER 1.5 OPS APPROVED — AWAITING FINANCE VERIFICATION*\n\n` +
+        `📋 Claim ID: *${expense.id}*\n` +
+        `👤 Submitted By: *${expense.submittedBy}*\n` +
+        `💵 Amount: *BDT ${(Number(expense.amount) || 0).toLocaleString()}*\n` +
+        `✍️ Ops Approved By: *${expense.tier1_5?.approvedBy || 'Kafil Mahmud (Head of Ops)'}*\n\n` +
+        `Click below to verify for final disbursement.`;
+
+      const targetId = borhan?.telegramId || '1708459008';
+      sendTelegramNotification(targetId, msgText, [
+        [{ text: '💰 Verify T2 (Finance)', callback_data: `approve_expense_t2:${expense.id}` }],
+        [{ text: '🔍 Inspect in Admin Portal', url: `https://purpleos-iota.vercel.app/admin` }]
+      ], true);
+    }
+
     // TRIGGER 20: New Leave Request Submitted -> Alert Line Manager (AUT-020)
     if (eventType === 'leave_submitted') {
       const leave = eventData.leave;
