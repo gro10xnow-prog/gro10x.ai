@@ -1056,6 +1056,40 @@ router.get('/webhooks/logs', (req, res) => {
   res.json(db.webhookLogs || []);
 });
 
+// ─── Phase 9: Creative Review Room Approval Endpoint ───────────────────────
+router.post('/reviews/approve', (req, res) => {
+  const db = readDB();
+  const { assetTitle, clientName } = req.body;
+
+  const invId = Date.now().toString().slice(-6);
+  db.invoices = db.invoices || [];
+  const newInvoice = {
+    id: `INV-2026-${invId}`,
+    clientName: clientName || 'Chillox Fast Food Chain',
+    amount: 150000,
+    issueDate: new Date().toISOString().split('T')[0],
+    dueDate: new Date(Date.now() + 864000000).toISOString().split('T')[0],
+    status: 'Pending Payment',
+    releasedBy: 'Review Room Approval'
+  };
+  db.invoices.unshift(newInvoice);
+
+  writeDB(db);
+  broadcast('invoice_update', db.invoices);
+
+  // Notify Production & Finance teams via Telegram
+  const alertMsg = `🎉 *FINAL CUT APPROVED BY CLIENT!* 🎬\n\n` +
+    `📌 Asset: *${assetTitle || 'Chillox Commercial Cut (v2.4)'}*\n` +
+    `👤 Client: *${clientName || 'Chillox'}*\n` +
+    `💰 Auto-Invoice Generated: *INV-2026-${invId}* (BDT 150,000)\n\n` +
+    `Production team can proceed to master delivery. Finance has been notified for disbursement.`;
+
+  broadcastToGroup(db, 'content_production', alertMsg);
+  broadcastToGroup(db, 'finance_alerts', alertMsg);
+
+  res.json({ success: true, invoiceId: invId });
+});
+
 // ─── Phase 8: Historical Data Import Endpoints ──────────────────────────────
 router.post('/admin/import/clients', (req, res) => {
   const db = readDB();
