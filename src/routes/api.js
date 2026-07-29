@@ -2508,22 +2508,33 @@ router.post('/services/aispec', (req, res) => {
 
 // TEAM & SALARY MANAGEMENT
 router.get('/team', async (req, res) => {
+  const db = readDB();
+  const jsonTeam = db.team || [];
+
   if (isSupabaseConfigured()) {
     const { data, error } = await supabase.from('profiles').select('*');
     if (!error && data && data.length > 0) {
-      return res.json(data.map(t => ({
-        ...t,
-        id: t.emp_code,
-        telegramId: t.telegram_id,
-        baseSalary: t.base_salary,
-        commissionRate: t.commission_rate,
-        earnedCommissions: t.earned_commissions,
-        activeBookings: t.active_bookings
-      })));
+      return res.json(data.map(t => {
+        const localEmp = jsonTeam.find(m => m.id === t.emp_code || m.emp_code === t.emp_code) || {};
+        return {
+          ...localEmp,
+          ...t,
+          id: t.emp_code,
+          telegramId: t.telegram_id !== undefined ? t.telegram_id : localEmp.telegramId,
+          baseSalary: t.base_salary || localEmp.baseSalary || 0,
+          commissionRate: t.commission_rate || localEmp.commissionRate || 0,
+          earnedCommissions: t.earned_commissions || localEmp.earnedCommissions || 0,
+          activeBookings: t.active_bookings || localEmp.activeBookings || 0,
+          xp: localEmp.xp !== undefined ? localEmp.xp : 0,
+          badge: localEmp.badge || '🌱 Recruit',
+          onboardingComplete: localEmp.onboardingComplete || false,
+          onboardingStarted: localEmp.onboardingStarted || false,
+          onboardingTasks: localEmp.onboardingTasks || []
+        };
+      }));
     }
   }
-  const db = readDB();
-  res.json(db.team || []);
+  res.json(jsonTeam);
 });
 
 router.post('/team', async (req, res) => {
