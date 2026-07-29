@@ -69,6 +69,30 @@
       <div class="stat-label">SALARIES CONFIGURED</div>
       <div class="stat-val" style="color: #fbbf24;" id="statSalaries">0</div>
     </div>
+  <!-- HISTORICAL DATA IMPORT PANEL -->
+  <div class="table-container" style="margin-bottom: 2rem; background: rgba(168, 85, 247, 0.05); border: 1px dashed var(--purple-accent);">
+    <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 0.5rem; color: #c084fc;">📁 Phase 8: Historical Excel / CSV Data Import Hub</h3>
+    <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+      Upload historical spreadsheets to populate past invoices, client master lists, or payroll records into system database.
+    </p>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
+      <!-- Client Import -->
+      <div style="background: var(--card-bg); padding: 1rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+        <h4 style="font-size: 0.9rem; font-weight: 700; margin-bottom: 0.4rem;">👥 Client Master List CSV</h4>
+        <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.8rem;">Columns: Name, ContactPerson, Phone, RetainerValue</p>
+        <textarea id="csvClients" class="input-sm" style="width: 100%; height: 70px; font-family: monospace; font-size: 0.72rem; margin-bottom: 0.6rem;" placeholder="Chillox Fast Food, Director, 01711223344, 150000&#10;Apex Shoes, Brand Mgr, 01811223344, 95000"></textarea>
+        <button class="btn btn-primary" style="width: 100%; font-size: 0.78rem;" onclick="importClientsCSV()">📥 Import Clients to DB</button>
+      </div>
+
+      <!-- Invoice Import -->
+      <div style="background: var(--card-bg); padding: 1rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+        <h4 style="font-size: 0.9rem; font-weight: 700; margin-bottom: 0.4rem;">🧾 Historical Invoices CSV</h4>
+        <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.8rem;">Columns: InvoiceID, ClientName, Amount, IssueDate, Status</p>
+        <textarea id="csvInvoices" class="input-sm" style="width: 100%; height: 70px; font-family: monospace; font-size: 0.72rem; margin-bottom: 0.6rem;" placeholder="INV-2026-001, Chillox, 150000, 2026-06-01, Paid&#10;INV-2026-002, Apex Shoes, 95000, 2026-06-05, Paid"></textarea>
+        <button class="btn btn-primary" style="width: 100%; font-size: 0.78rem;" onclick="importInvoicesCSV()">📥 Import Invoices to DB</button>
+      </div>
+    </div>
   </div>
 
   <!-- ONBOARDING ROSTER TABLE -->
@@ -187,6 +211,48 @@
           alert(data.error || 'Failed to request PIN');
         }
       } catch (err) { alert('Error: ' + err.message); }
+    }
+
+    async function importClientsCSV() {
+      const text = document.getElementById('csvClients').value.trim();
+      if (!text) { alert('Please paste CSV rows first.'); return; }
+      const lines = text.split('\n');
+      const rows = lines.map(line => {
+        const parts = line.split(',').map(p => p.trim());
+        return { name: parts[0], contactPerson: parts[1] || 'Director', phone: parts[2] || '', retainerValue: parseFloat(parts[3]) || 0 };
+      }).filter(r => r.name);
+
+      try {
+        const res = await fetch('/api/admin/import/clients', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ rows })
+        });
+        const data = await res.json();
+        alert(`✅ Imported ${data.addedCount} client(s) into database! Total clients: ${data.totalClients}`);
+        document.getElementById('csvClients').value = '';
+      } catch (err) { alert('Import error: ' + err.message); }
+    }
+
+    async function importInvoicesCSV() {
+      const text = document.getElementById('csvInvoices').value.trim();
+      if (!text) { alert('Please paste CSV rows first.'); return; }
+      const lines = text.split('\n');
+      const rows = lines.map(line => {
+        const parts = line.split(',').map(p => p.trim());
+        return { invoiceId: parts[0], clientName: parts[1] || 'Client', amount: parseFloat(parts[2]) || 0, issueDate: parts[3] || '', status: parts[4] || 'Paid' };
+      }).filter(r => r.invoiceId || r.clientName);
+
+      try {
+        const res = await fetch('/api/admin/import/invoices', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ rows })
+        });
+        const data = await res.json();
+        alert(`✅ Imported ${data.addedCount} invoice(s) into database! Total invoices: ${data.totalInvoices}`);
+        document.getElementById('csvInvoices').value = '';
+      } catch (err) { alert('Import error: ' + err.message); }
     }
 
     document.addEventListener('DOMContentLoaded', loadOnboardingData);

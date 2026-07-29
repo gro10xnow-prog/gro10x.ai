@@ -1056,6 +1056,64 @@ router.get('/webhooks/logs', (req, res) => {
   res.json(db.webhookLogs || []);
 });
 
+// ─── Phase 8: Historical Data Import Endpoints ──────────────────────────────
+router.post('/admin/import/clients', (req, res) => {
+  const db = readDB();
+  const rows = req.body.rows || [];
+  let addedCount = 0;
+
+  db.clients = db.clients || [];
+  rows.forEach(r => {
+    if (!r.name) return;
+    const existing = db.clients.find(c => c.name.toLowerCase() === r.name.toLowerCase());
+    if (!existing) {
+      db.clients.push({
+        id: `CLT-${Date.now().toString().slice(-6)}-${addedCount}`,
+        name: r.name,
+        contactPerson: r.contactPerson || 'Brand Director',
+        phone: r.phone || '',
+        email: r.email || '',
+        retainerValue: Number(r.retainerValue) || 0,
+        status: r.status || 'Active',
+        importedAt: new Date().toISOString()
+      });
+      addedCount++;
+    }
+  });
+
+  writeDB(db);
+  broadcast('client_update', db.clients);
+  res.json({ success: true, addedCount, totalClients: db.clients.length });
+});
+
+router.post('/admin/import/invoices', (req, res) => {
+  const db = readDB();
+  const rows = req.body.rows || [];
+  let addedCount = 0;
+
+  db.invoices = db.invoices || [];
+  rows.forEach(r => {
+    if (!r.invoiceId && !r.clientName) return;
+    const existing = db.invoices.find(inv => inv.id === r.invoiceId);
+    if (!existing) {
+      db.invoices.push({
+        id: r.invoiceId || `INV-${Date.now().toString().slice(-6)}-${addedCount}`,
+        clientName: r.clientName || 'Client',
+        amount: Number(r.amount) || 0,
+        issueDate: r.issueDate || new Date().toISOString().split('T')[0],
+        dueDate: r.dueDate || new Date().toISOString().split('T')[0],
+        status: r.status || 'Paid',
+        importedAt: new Date().toISOString()
+      });
+      addedCount++;
+    }
+  });
+
+  writeDB(db);
+  broadcast('invoice_update', db.invoices);
+  res.json({ success: true, addedCount, totalInvoices: db.invoices.length });
+});
+
 
 // ─── XP & Gamification Utilities ────────────────────────────────────────────
 function addXP(db, empId, amount, reason) {
@@ -1079,6 +1137,17 @@ function completeOnboardingTask(db, empId, taskId, xpReward = 10) {
   if (allDone && !emp.onboardingComplete) {
     emp.onboardingComplete = true;
     addXP(db, empId, 20, 'onboarding_complete_bonus');
+
+    // Phase 8: Broadcast New Team Member Welcome Card to Announcements & Executive channels
+    const welcomeMsg = `🎉 *WELCOME TO PURPLEBOT DIGITAL!* 🚀\n\n` +
+      `👤 New Team Member: *${emp.name}*\n` +
+      `👔 Role: *${emp.role}*\n` +
+      `🏢 Department: *${emp.department}*\n` +
+      `🎖️ Starting Rank: *${emp.badge || '🔥 Active'}* (+60 XP)\n\n` +
+      `Welcome aboard, *${emp.name}*! We're excited to have you on the team! 💜`;
+
+    broadcastToGroup(db, 'announcements', welcomeMsg);
+    broadcastToGroup(db, 'executive', welcomeMsg);
   }
 }
 
