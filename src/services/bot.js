@@ -10,12 +10,21 @@ function initBot() {
 
   const teamToken = process.env.TEAM_BOT_TOKEN || db.botConfig?.teamBot?.token;
   const clientToken = process.env.CLIENT_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN || db.botConfig?.clientBot?.token;
+  const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://purpleos-iota.vercel.app';
 
   // 1. Initialize Team Bot (Purple Man)
   if (teamToken && teamToken.trim() !== '' && !teamToken.includes('your_token')) {
     try {
-      teamBot = new TelegramBot(teamToken, { polling: true });
-      console.log('🚀 Team Bot [Purple Man] initialized with Long Polling active!');
+      const isVercel = Boolean(process.env.VERCEL);
+      teamBot = new TelegramBot(teamToken, { polling: !isVercel });
+
+      if (isVercel) {
+        fetch(`https://api.telegram.org/bot${teamToken}/setWebhook`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: `${baseUrl}/api/webhooks/telegram?bot=team` })
+        }).catch(e => console.error('Error setting team webhook:', e));
+      }
 
       // Register persistent Chat Menu Button (Open App)
       fetch(`https://api.telegram.org/bot${teamToken}/setChatMenuButton`, {
@@ -130,8 +139,16 @@ function initBot() {
   // 2. Initialize Client Bot (Purple Bot)
   if (clientToken && clientToken.trim() !== '' && !clientToken.includes('your_token')) {
     try {
-      clientBot = new TelegramBot(clientToken, { polling: true });
-      console.log('🚀 B2B Client Bot [Purple Bot] initialized with Long Polling active!');
+      const isVercel = Boolean(process.env.VERCEL);
+      clientBot = new TelegramBot(clientToken, { polling: !isVercel });
+
+      if (isVercel) {
+        fetch(`https://api.telegram.org/bot${clientToken}/setWebhook`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: `${baseUrl}/api/webhooks/telegram?bot=client` })
+        }).catch(e => console.error('Error setting client webhook:', e));
+      }
 
       // Register persistent Chat Menu Button (Open App)
       fetch(`https://api.telegram.org/bot${clientToken}/setChatMenuButton`, {
