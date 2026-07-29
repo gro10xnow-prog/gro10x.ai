@@ -3,8 +3,12 @@ const cors = require('cors');
 const path = require('path');
 const apiRoutes = require('../src/routes/api');
 const { sseHandler } = require('../src/services/sse');
+const { initBot } = require('../src/services/bot');
 
 const app = express();
+
+// Initialize Telegram Bot & Webhooks for Vercel deployment
+initBot();
 
 app.use(cors());
 app.use(express.json());

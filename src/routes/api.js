@@ -514,6 +514,86 @@ router.delete('/leads/:id', (req, res) => {
   res.json({ success: true });
 });
 
+// Phase MA7 & MA8: Social Media Posts & Manager KPI Endpoints
+router.get('/social-posts', (req, res) => {
+  const db = readDB();
+  res.json(db.social_posts || []);
+});
+
+router.post('/social-posts', (req, res) => {
+  const db = readDB();
+  db.social_posts = db.social_posts || [];
+  const newPost = {
+    id: `POST-${Date.now().toString().slice(-4)}`,
+    title: req.body.title || 'Campaign Reel',
+    client: req.body.client || 'Chillox Fast Food Chain',
+    platform: req.body.platform || 'Instagram',
+    scheduledTime: req.body.scheduledTime || new Date(Date.now() + 86400000).toISOString(),
+    caption: req.body.caption || '',
+    mediaUrl: req.body.mediaUrl || '',
+    status: req.body.status || 'Pending Client Approval',
+    author: req.body.author || 'Mehedi Hasan (Social Lead)',
+    createdAt: new Date().toISOString()
+  };
+  db.social_posts.unshift(newPost);
+  writeDB(db);
+  broadcast('social_post_update', db.social_posts);
+
+  processAutomationEvent('social_post_created', { post: newPost }, db, writeDB, broadcast);
+  res.json({ success: true, post: newPost });
+});
+
+router.put('/social-posts/:id', (req, res) => {
+  const { id } = req.params;
+  const db = readDB();
+  db.social_posts = db.social_posts || [];
+  const idx = db.social_posts.findIndex(p => p.id === id);
+  if (idx === -1) return res.status(404).json({ error: 'Post not found' });
+
+  db.social_posts[idx] = { ...db.social_posts[idx], ...req.body, updatedAt: new Date().toISOString() };
+  writeDB(db);
+  broadcast('social_post_update', db.social_posts);
+  res.json({ success: true, post: db.social_posts[idx] });
+});
+
+router.get('/manager/kpis', (req, res) => {
+  const db = readDB();
+  const dept = (req.query.dept || 'Operations').toLowerCase();
+  const team = db.team || [];
+  const tasks = db.tasks || [];
+  const expenses = db.expenses || [];
+
+  const deptTeam = dept.includes('all') || dept.includes('management') || dept.includes('operations')
+    ? team
+    : team.filter(t => (t.department || '').toLowerCase().includes(dept));
+
+  const totalTasks = tasks.length || 1;
+  const completedTasks = tasks.filter(t => (t.stage || '').toLowerCase().includes('approved') || (t.stage || '').toLowerCase().includes('done')).length;
+  const taskCompletionRate = Math.round((completedTasks / totalTasks) * 100);
+
+  const inStudioCount = deptTeam.filter(t => (t.status || '').toLowerCase().includes('studio')).length;
+  const fieldShootCount = deptTeam.filter(t => (t.status || '').toLowerCase().includes('shoot') || (t.status || '').toLowerCase().includes('field')).length;
+  const onLeaveCount = deptTeam.filter(t => (t.status || '').toLowerCase().includes('leave')).length;
+
+  const totalExpensesBdt = expenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+
+  res.json({
+    dept: req.query.dept || 'Operations',
+    taskCompletionRate,
+    totalTasks,
+    completedTasks,
+    crewStatus: {
+      inStudio: inStudioCount,
+      fieldShoot: fieldShootCount,
+      onLeave: onLeaveCount,
+      totalTeam: deptTeam.length
+    },
+    totalExpensesBdt,
+    pendingLeavesCount: (db.leaves || []).filter(l => l.status === 'Pending Line Review').length,
+    pendingExpensesCount: (db.expenses || []).filter(e => !e.tier1?.approved).length
+  });
+});
+
 // Module C6: Magic Link Onboarding & Email Notification Generator
 router.post('/leads/:id/onboard', (req, res) => {
   const { id } = req.params;
@@ -950,8 +1030,12 @@ router.get('/webhooks/logs', (req, res) => {
 });
 
 router.post('/webhooks/telegram', async (req, res) => {
-  // Acknowledge Telegram immediately to prevent webhook timeout (Telegram times out & retries after 5s)
-  res.json({ success: true });
+  // ─── VERCEL SERVERLESS CRITICAL RULE ────────────────────────────────────────
+  // DO NOT call res.json() early. On Vercel, res.json() freezes the Lambda
+  // immediately — any await fetch() after it is silently dropped and never runs.
+  // All async processing (including Telegram sendMessage) must complete FIRST,
+  // then we acknowledge. Telegram allows 5 seconds; we respond in ~200-500ms.
+  // ────────────────────────────────────────────────────────────────────────────
 
   const db = readDB();
   db.webhookLogs = db.webhookLogs || [];
@@ -968,7 +1052,7 @@ router.post('/webhooks/telegram', async (req, res) => {
 
   if (!botToken) {
     console.warn('⚠️ Telegram Webhook Warning: Bot token environment variable is missing.');
-    return;
+    return res.json({ ok: true });
   }
 
   // Handle Callback Queries from Inline Keyboards (Module B3.3)
@@ -996,17 +1080,90 @@ router.post('/webhooks/telegram', async (req, res) => {
         broadcast('review_update', db.reviews);
         callbackAnswerText = `Cut approved! Commercial invoice generated.`;
       }
+    } else if (data.startsWith('approve_leave:')) {
+      const leaveId = data.split(':')[1];
+      const leave = (db.leaves || []).find(l => l.id === leaveId);
+      if (leave) {
+        leave.status = 'Manager Approved';
+        leave.managerReviewedBy = 'Line Manager (Telegram 1-Tap)';
+        leave.managerApprovedAt = new Date().toISOString();
+        writeDB(db);
+        broadcast('leave_update', db.leaves);
+        processAutomationEvent('leave_manager_approved', { leave }, db, writeDB, broadcast);
+        callbackAnswerText = `✅ Leave ${leaveId} Manager Approved! Owner notified.`;
+      }
+    } else if (data.startsWith('reject_leave:')) {
+      const leaveId = data.split(':')[1];
+      const leave = (db.leaves || []).find(l => l.id === leaveId);
+      if (leave) {
+        leave.status = 'Declined';
+        leave.rejectionReason = 'Line manager declined request';
+        leave.rejectedAt = new Date().toISOString();
+        writeDB(db);
+        broadcast('leave_update', db.leaves);
+        processAutomationEvent('leave_decision', { leave }, db, writeDB, broadcast);
+        callbackAnswerText = `❌ Leave ${leaveId} Rejected. Staff member notified.`;
+      }
+    } else if (data.startsWith('approve_leave_owner:')) {
+      const leaveId = data.split(':')[1];
+      const leave = (db.leaves || []).find(l => l.id === leaveId);
+      if (leave) {
+        leave.status = 'Approved';
+        leave.reviewedBy = 'Agency Owner (Telegram 1-Tap)';
+        leave.approvedAt = new Date().toISOString();
+        writeDB(db);
+        broadcast('leave_update', db.leaves);
+        processAutomationEvent('leave_decision', { leave }, db, writeDB, broadcast);
+        callbackAnswerText = `👑 Leave ${leaveId} Owner Approved & Calendar Updated!`;
+      }
+    } else if (data.startsWith('approve_expense_t2:')) {
+      const expId = data.split(':')[1];
+      const exp = (db.expenses || []).find(e => e.id === expId);
+      if (exp) {
+        exp.tier2 = { approved: true, approvedBy: 'Finance Lead (Telegram 1-Tap)', date: new Date().toISOString() };
+        exp.status = 'Tier 3 Pending';
+        writeDB(db);
+        broadcast('expense_update', db.expenses);
+        processAutomationEvent('expense_tier2_approved', { expense: exp }, db, writeDB, broadcast);
+        callbackAnswerText = `💰 Expense ${expId} Tier 2 Verified! Owner notified for release.`;
+      }
+    } else if (data.startsWith('disburse_expense_t3:')) {
+      const expId = data.split(':')[1];
+      const exp = (db.expenses || []).find(e => e.id === expId);
+      if (exp) {
+        exp.tier3 = { approved: true, approvedBy: 'Agency Owner (Telegram 1-Tap)', date: new Date().toISOString() };
+        exp.status = 'Disbursed';
+        exp.disbursedAt = new Date().toISOString();
+        writeDB(db);
+        broadcast('expense_update', db.expenses);
+        processAutomationEvent('expense_disbursed', { expense: exp }, db, writeDB, broadcast);
+        callbackAnswerText = `💸 Expense ${expId} Disbursed & Paid! Staff notified.`;
+      }
     }
 
     try {
       await fetch(`https://api.telegram.org/bot${botToken}/answerCallbackQuery`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ callback_query_id: queryId, text: callbackAnswerText })
+        body: JSON.stringify({ callback_query_id: queryId, text: callbackAnswerText, show_alert: true })
       });
+
+      if (callbackQuery.message) {
+        await fetch(`https://api.telegram.org/bot${botToken}/editMessageReplyMarkup`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: callbackQuery.message.chat.id,
+            message_id: callbackQuery.message.message_id,
+            reply_markup: {
+              inline_keyboard: [[{ text: callbackAnswerText, callback_data: 'noop' }]]
+            }
+          })
+        });
+      }
     } catch (err) { console.error('Callback query error:', err); }
 
-    return;
+    return res.json({ ok: true });
   }
 
   // Handle Incoming Text, Contact, or Location Messages
@@ -1035,7 +1192,7 @@ router.post('/webhooks/telegram', async (req, res) => {
           `👤 Staff Name: *${matchingStaff.name}*\n` +
           `🛡️ Role: *${matchingStaff.role}*\n` +
           `📱 Verified Phone: \`${matchingStaff.phone}\`\n` +
-          `🔑 Temporary Login PIN: \`${pinRecord.pin}\` *(Change on first login)*\n\n` +
+          `🔑 Temporary Login PIN: \`${pinRecord.pin}\` _(Change on first login)_\n\n` +
           `🌐 Access Crew Portal:\n${portalUrl}`;
 
         replyMarkup = {
@@ -1052,7 +1209,7 @@ router.post('/webhooks/telegram', async (req, res) => {
         replyText = `✅ *Client Partner Phone Verified by Purple Bot!*\n\n` +
           `🏢 Company: *${matchingClient.name}*\n` +
           `📱 Phone: \`${matchingClient.phone}\`\n` +
-          `🔑 Temporary Login PIN: \`${pinRecord.pin}\` *(Change on first login)*\n\n` +
+          `🔑 Temporary Login PIN: \`${pinRecord.pin}\` _(Change on first login)_\n\n` +
           `🌐 Access Client Portal:\n${portalUrl}`;
 
         replyMarkup = {
@@ -1067,12 +1224,12 @@ router.post('/webhooks/telegram', async (req, res) => {
       const lat = message.location.latitude;
       const lon = message.location.longitude;
       
-      // Gulshan Studio Coordinates: 23.7925° N, 90.4078° E
       const studioLat = 23.7925;
       const studioLon = 90.4078;
       const distMeters = Math.round(Math.sqrt(Math.pow((lat - studioLat)*111000, 2) + Math.pow((lon - studioLon)*111000, 2)));
 
-      const emp = (db.team || []).find(e => e.telegramId == chatId) || db.team[0];
+      const teamList = db.team || [];
+      const emp = teamList.find(e => e.telegramId == chatId) || teamList[0] || { name: senderName, id: 'EMP-007' };
       let record = (db.attendance || []).find(a => a.name === emp.name);
       if (record) {
         record.status = 'In Studio';
@@ -1102,109 +1259,222 @@ router.post('/webhooks/telegram', async (req, res) => {
       const msgText = message.text.trim();
 
       if (isTeamBot) {
+        const isManager = (db.team || []).some(t => t.telegramId == chatId && ((t.accessLevel || '').includes('Manager') || (t.role || '').toLowerCase().includes('director') || (t.role || '').toLowerCase().includes('owner')));
+
         if (msgText.startsWith('/start') || msgText.startsWith('/help')) {
-          replyText = `🤖 *Welcome to Purple Man (Crew Ops Bot)!*\n\n` +
-            `Use the interactive buttons below or commands:\n` +
-            `• /clockin - Log Studio Clock-In\n` +
-            `• /clockout - Log Studio Clock-Out\n` +
-            `• /myearnings - Check monthly salary\n` +
-            `• /pair - Pair verified phone number`;
-          
+          replyText = `🤖 *Welcome to Purple Man (Agency Crew & Manager Bot)!*\n\n` +
+            `Tap any button below to manage your department, check team rosters, view daily briefings, and log attendance without typing slash commands!`;
+
           replyMarkup = {
             keyboard: [
-              [{ text: '📱 Share Verified Phone Number', request_contact: true }],
-              [{ text: '📍 Share GPS Location for Clock-In', request_location: true }]
+              [{ text: '👥 My Team Roster' }, { text: '📊 Department Report' }],
+              [{ text: '🌅 Morning Briefing' }, { text: '💰 My Salary & Earnings' }],
+              [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }],
+              [{ text: '📱 Share Verified Phone', request_contact: true }]
             ],
             resize_keyboard: true
           };
-        } else if (msgText.startsWith('/clockin')) {
-          replyText = `📍 Please tap **Share GPS Location for Clock-In** below to log verified attendance!`;
+        } else if (msgText.startsWith('/clockin') || msgText.includes('Clock-In')) {
+          replyText = `📍 Please tap *Clock-In GPS* below to log verified attendance!`;
           replyMarkup = {
-            keyboard: [[{ text: '📍 Share GPS Location for Clock-In', request_location: true }]],
+            keyboard: [
+              [{ text: '📍 Clock-In GPS', request_location: true }],
+              [{ text: '👥 My Team Roster' }, { text: '📊 Department Report' }]
+            ],
             resize_keyboard: true,
             one_time_keyboard: true
           };
-        } else if (msgText.startsWith('/clockout')) {
-          const emp = (db.team || []).find(e => e.telegramId == chatId) || db.team[0];
+        } else if (msgText.startsWith('/clockout') || msgText.includes('Clock Out')) {
+          const teamList = db.team || [];
+          const emp = teamList.find(e => e.telegramId == chatId) || teamList[0] || { name: senderName };
           let record = (db.attendance || []).find(a => a.name === emp.name);
           if (record) record.status = 'Clocked Out';
           writeDB(db);
           broadcast('attendance_update', db.attendance);
-          replyText = `🚪 *Clock Out Recorded by Purple Man!*\nStatus set to *Clocked Out*.`;
-        } else if (msgText.startsWith('/myearnings')) {
-          const emp = (db.team || []).find(e => e.telegramId == chatId) || db.team[0];
+          replyText = `🚪 *Clock Out Recorded by Purple Man!*\nStatus set to *Clocked Out*. Have a great evening!`;
+        } else if (msgText.startsWith('/myteam') || msgText.includes('My Team Roster') || msgText.includes('My Team')) {
+          const teamList = db.team || [];
+          const emp = teamList.find(e => e.telegramId == chatId) || teamList[0];
+          const isOps = (emp?.role || '').toLowerCase().includes('operations') || emp?.department === 'Management';
+          const userDept = (emp?.department || '').toLowerCase();
+
+          const deptMembers = isOps
+            ? teamList
+            : teamList.filter(t => (t.department || '').toLowerCase().includes(userDept) || userDept.includes((t.department || '').toLowerCase()));
+
+          replyText = `👥 *DEPARTMENT TEAM ROSTER (${emp?.department || 'Operations'}):*\n\n`;
+          deptMembers.forEach((m, idx) => {
+            const statusIcon = m.status === 'In Studio' ? '🟢' : (m.status === 'On Field Shoot' ? '🎬' : '🌴');
+            const activeTasks = (db.tasks || []).filter(t => (t.assignee || '').toLowerCase().includes((m.name || '').split(' ')[0].toLowerCase())).length;
+            replyText += `${idx + 1}. *${m.name}* (${m.role})\n   ${statusIcon} Status: *${m.status || 'In Studio'}* | 📋 Active Tasks: *${activeTasks}*\n\n`;
+          });
+        } else if (msgText.startsWith('/deptreport') || msgText.includes('Department Report') || msgText.includes('Dept Report')) {
+          const teamList = db.team || [];
+          const emp = teamList.find(e => e.telegramId == chatId) || teamList[0];
+          const tasks = db.tasks || [];
+          const pendingLeaves = (db.leaves || []).filter(l => l.status === 'Pending Line Review').length;
+          const pendingExpenses = (db.expenses || []).filter(e => !e.tier1?.approved).length;
+
+          replyText = `📊 *DEPARTMENT OPERATIONAL REPORT*\n` +
+            `📍 Department: *${emp.department || 'Operations'}*\n\n` +
+            `📋 *Kanban Task Stages:*\n` +
+            `• 📝 Briefing & Scripting: *${tasks.filter(t => (t.stage || '').toLowerCase().includes('script') || (t.stage || '').toLowerCase().includes('brief')).length}*\n` +
+            `• 🎬 Field Shoot: *${tasks.filter(t => (t.stage || '').toLowerCase().includes('prod') || (t.stage || '').toLowerCase().includes('shoot')).length}*\n` +
+            `• ✂️ Editing & FX: *${tasks.filter(t => (t.stage || '').toLowerCase().includes('edit') || (t.stage || '').toLowerCase().includes('motion')).length}*\n` +
+            `• 👁️ Client Review: *${tasks.filter(t => (t.stage || '').toLowerCase().includes('client') || (t.stage || '').toLowerCase().includes('review')).length}*\n` +
+            `• ✅ Approved: *${tasks.filter(t => (t.stage || '').toLowerCase().includes('approved') || (t.stage || '').toLowerCase().includes('done')).length}*\n\n` +
+            `⏳ *Open Manager Approvals:*\n` +
+            `• 🌴 Pending Leave Reviews: *${pendingLeaves}*\n` +
+            `• 💰 Pending T1 Expense Claims: *${pendingExpenses}*\n\n` +
+            `🌐 Open Manager Portal: https://purpleos-iota.vercel.app/manager`;
+        } else if (msgText.startsWith('/morning') || msgText.includes('Morning Briefing') || msgText.includes('Morning')) {
+          const teamList = db.team || [];
+          const emp = teamList.find(e => e.telegramId == chatId) || teamList[0];
+          replyText = `🌅 *9:00 AM DEPARTMENT MORNING BRIEFING*\n` +
+            `📍 Department: *${emp.department || 'Operations'}*\n\n` +
+            `📋 *Today's Production Schedule:*\n`;
+
+          const todayTasks = (db.tasks || []).slice(0, 3);
+          todayTasks.forEach((t, idx) => {
+            replyText += `${idx + 1}. *${t.title}* (${t.client})\n   👤 Assignee: ${t.assignee} | 📌 Priority: ${t.priority}\n`;
+          });
+          replyText += `\nHave a productive shoot day! 🎬`;
+        } else if (msgText.startsWith('/myearnings') || msgText.includes('Salary') || msgText.includes('Earnings')) {
+          const teamList = db.team || [];
+          const emp = teamList.find(e => e.telegramId == chatId) || teamList[0] || { name: senderName, baseSalary: 85000, earnedCommissions: 15000 };
           const basePay = emp.baseSalary || 85000;
           const commissions = emp.earnedCommissions || 15000;
           replyText = `💰 *Salary & Commission Breakdown for ${emp.name}*\n\n` +
             `• Base Pay: BDT ${basePay.toLocaleString()}\n` +
             `• Shoot Commissions: BDT ${commissions.toLocaleString()}\n` +
             `*Total Monthly Pay: BDT ${(basePay + commissions).toLocaleString()}*`;
-        } else if (msgText.startsWith('/pair')) {
-          replyText = `📱 Please tap **Share Verified Phone Number** below to pair your profile!`;
-          replyMarkup = {
-            keyboard: [[{ text: '📱 Share Verified Phone Number', request_contact: true }]],
-            resize_keyboard: true,
-            one_time_keyboard: true
-          };
+        } else if (msgText.startsWith('/approveleave')) {
+          const leaveId = msgText.replace('/approveleave', '').trim().toUpperCase();
+          const leave = (db.leaves || []).find(l => l.id === leaveId);
+          if (leave) {
+            leave.status = 'Manager Approved';
+            leave.managerReviewedBy = senderName;
+            leave.managerApprovedAt = new Date().toISOString();
+            writeDB(db);
+            broadcast('leave_update', db.leaves);
+            processAutomationEvent('leave_manager_approved', { leave }, db, writeDB, broadcast);
+            replyText = `🌴 *Leave Request ${leaveId} Manager Approved!*\nStatus set to *Manager Approved*. Forwarded to Owner for final sign-off.`;
+          } else {
+            replyText = `❌ Leave request *${leaveId || 'ID'}* not found.`;
+          }
+        } else if (msgText.startsWith('/approve2')) {
+          const expId = msgText.replace('/approve2', '').trim().toUpperCase();
+          const exp = (db.expenses || []).find(e => e.id === expId);
+          if (exp) {
+            exp.tier2 = { approved: true, approvedBy: senderName, date: new Date().toISOString() };
+            exp.status = 'Tier 3 Pending';
+            writeDB(db);
+            broadcast('expense_update', db.expenses);
+            processAutomationEvent('expense_tier2_approved', { expense: exp }, db, writeDB, broadcast);
+            replyText = `💰 *Expense ${expId} Tier 2 Verified!*\nStatus set to *Tier 3 Pending*. Owner notified for final disbursement.`;
+          } else {
+            replyText = `❌ Expense claim *${expId || 'ID'}* not found.`;
+          }
+        } else if (msgText.startsWith('/approve')) {
+          const expId = msgText.replace('/approve', '').trim().toUpperCase();
+          const exp = (db.expenses || []).find(e => e.id === expId);
+          if (exp) {
+            exp.tier1 = { approved: true, approvedBy: senderName, date: new Date().toISOString() };
+            exp.status = 'Tier 2 Pending';
+            writeDB(db);
+            broadcast('expense_update', db.expenses);
+            processAutomationEvent('expense_tier1_approved', { expense: exp }, db, writeDB, broadcast);
+            replyText = `✅ *Expense ${expId} Tier 1 Approved!*\nStatus set to *Tier 2 Pending*. Finance Lead Roksana notified.`;
+          } else {
+            replyText = `❌ Expense claim *${expId || 'ID'}* not found.`;
+          }
         } else {
-          replyText = `🤖 *Purple Man Bot*: Type /help to see crew options!`;
+          replyText = `🤖 *Purple Man Bot*: Type /help to see crew options, or /myteam, /deptreport, /morning for department management!`;
         }
       } else {
         // Client Bot (Purple Bot)
         if (msgText.startsWith('/start') || msgText.startsWith('/help')) {
-          replyText = `🤖 *Welcome to Purple Bot (Client B2B Assistant)!*\n\n` +
-            `• /services - Browse agency packages & pricing\n` +
-            `• /portfolio - View video & TVC campaign reel\n` +
-            `• /review - Access Review Room V2 deliverable cuts\n` +
-            `• /invoices - View invoice status & billing`;
+          replyText = `🤖 *Welcome to Purple Bot (Client B2B Assistant)!*
+
+• /services - Browse agency packages & pricing
+• /portfolio - View video & TVC campaign reel
+• /review - Access Review Room V2 deliverable cuts
+• /invoices - View invoice status & billing`;
           
           replyMarkup = {
             keyboard: [[{ text: '📱 Share Verified Phone Number', request_contact: true }]],
             resize_keyboard: true
           };
         } else if (msgText.startsWith('/services')) {
-          replyText = `🎨 *Purplebot Digital Core Services Catalog:*\n\n`;
-          (db.services || []).filter(s => s.public).forEach(s => {
-            replyText += `• *${s.title}* (${s.category})\n  Rate: ${s.price}\n  ${s.description}\n\n`;
-          });
+          let serviceList = (db.services || []).filter(s => s.public);
+          if (serviceList.length > 0) {
+            replyText = `🎨 *Purplebot Digital Core Services Catalog:*
+
+`;
+            serviceList.forEach(s => {
+              replyText += `• *${s.title}* (${s.category})
+  Rate: ${s.price}
+  ${s.description}
+
+`;
+            });
+          } else {
+            replyText = `🎨 *Purplebot Digital Core Services Catalog:*
+
+Contact us for a full package quote:
+📧 contact@purplebot.digital`;
+          }
         } else if (msgText.startsWith('/portfolio')) {
-          replyText = `📁 *Purplebot Digital Portfolio Showcase*\n\n🔗 https://purpleos-iota.vercel.app/`;
+          replyText = `📁 *Purplebot Digital Portfolio Showcase*
+
+🔗 https://purpleos-iota.vercel.app/`;
         } else if (msgText.startsWith('/review')) {
-          replyText = `🎬 *Review Room V2 Client Portal*\n\n🔗 https://purpleos-iota.vercel.app/partners`;
+          replyText = `🎬 *Review Room V2 Client Portal*
+
+🔗 https://purpleos-iota.vercel.app/partners`;
         } else if (msgText.startsWith('/invoices')) {
-          replyText = `💳 *Invoice Billing Portal*\n\n🔗 https://purpleos-iota.vercel.app/partners`;
+          replyText = `💳 *Invoice Billing Portal*
+
+🔗 https://purpleos-iota.vercel.app/partners`;
         } else {
           replyText = `👋 Hello! Type /services to explore packages or /review to check campaign cuts.`;
         }
       }
     }
 
-    // Default inline keyboard for WebApp
     const inlineKeyboard = isTeamBot ? [
       [{ text: '📱 Open Crew Mini App', web_app: { url: 'https://purpleos-iota.vercel.app/team-miniapp' } }]
     ] : [
       [{ text: '🎬 Open 4K Review Room Mini App', web_app: { url: 'https://purpleos-iota.vercel.app/client-miniapp' } }]
     ];
 
-    try {
-      const payload = {
-        chat_id: chatId,
-        text: replyText,
-        parse_mode: 'Markdown'
-      };
-      if (replyMarkup) {
-        payload.reply_markup = replyMarkup;
-      } else {
-        payload.reply_markup = { inline_keyboard: inlineKeyboard };
-      }
+    if (replyText && replyText.trim() !== '') {
+      try {
+        const payload = {
+          chat_id: chatId,
+          text: replyText,
+          parse_mode: 'Markdown'
+        };
+        if (replyMarkup) {
+          payload.reply_markup = replyMarkup;
+        } else {
+          payload.reply_markup = { inline_keyboard: inlineKeyboard };
+        }
 
-      await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-    } catch (sendErr) {
-      console.error('Error sending Telegram webhook response:', sendErr);
+        const tgRes = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const tgBody = await tgRes.json();
+        if (!tgBody.ok) {
+          console.error('Telegram sendMessage failed:', JSON.stringify(tgBody));
+        } else {
+          console.log(`✅ Bot replied to ${senderName} (chat ${chatId}): ${replyText.substring(0, 60)}...`);
+        }
+      } catch (sendErr) {
+        console.error('Error sending Telegram webhook response:', sendErr);
+      }
     }
 
     const newLog = {
@@ -1221,6 +1491,8 @@ router.post('/webhooks/telegram', async (req, res) => {
     writeDB(db);
     broadcast('webhook_event', newLog);
   }
+
+  res.json({ ok: true });
 });
 
 // Module B4.2: Unipile WhatsApp Webhook Verification Router (https://developer.unipile.com/v2.0/docs/whatsapp)
@@ -1753,6 +2025,10 @@ router.put('/tasks/:id', async (req, res) => {
     const { data, error } = await supabase.from('tasks').update(updateObj).eq('id', taskId).select();
     if (!error && data && data.length > 0) {
       const task = data[0];
+      const db = readDB();
+      if (stage) {
+        processAutomationEvent('task_stage_change', { stage, task }, db, writeDB, broadcast);
+      }
       broadcast('task_update', [task]);
       return res.json({ success: true, task: { ...task, dueDate: task.due_date } });
     }
@@ -2925,7 +3201,7 @@ router.post('/leaves', (req, res) => {
     endDate: req.body.endDate || new Date().toISOString().split('T')[0],
     totalDays: Number(req.body.totalDays) || 1,
     reason: req.body.reason || 'Personal leave request',
-    status: 'Pending',
+    status: 'Pending Line Review',
     createdAt: new Date().toISOString()
   };
 
@@ -2933,7 +3209,32 @@ router.post('/leaves', (req, res) => {
   writeDB(db);
   broadcast('leave_update', db.leaves);
   broadcast('db_updated', {});
+
+  // Trigger AUT-020 (Notify Line Manager)
+  processAutomationEvent('leave_submitted', { leave: newLeave }, db, writeDB, broadcast);
+
   res.json({ success: true, leave: newLeave });
+});
+
+router.post('/leaves/:id/manager-approve', (req, res) => {
+  const { id } = req.params;
+  const db = readDB();
+  db.leaves = db.leaves || [];
+  const leave = db.leaves.find(l => l.id === id);
+  if (!leave) return res.status(404).json({ error: 'Leave request not found' });
+
+  leave.status = 'Manager Approved';
+  leave.managerReviewedBy = req.body.approvedBy || 'Line Manager';
+  leave.managerApprovedAt = new Date().toISOString();
+
+  writeDB(db);
+  broadcast('leave_update', db.leaves);
+  broadcast('db_updated', {});
+
+  // Trigger leave_manager_approved event
+  processAutomationEvent('leave_manager_approved', { leave }, db, writeDB, broadcast);
+
+  res.json({ success: true, leave });
 });
 
 router.post('/leaves/:id/approve', (req, res) => {
@@ -2944,7 +3245,7 @@ router.post('/leaves/:id/approve', (req, res) => {
   if (!leave) return res.status(404).json({ error: 'Leave request not found' });
 
   leave.status = 'Approved';
-  leave.reviewedBy = req.body.reviewedBy || 'Line Manager';
+  leave.reviewedBy = req.body.reviewedBy || 'Agency Owner';
   leave.approvedAt = new Date().toISOString();
 
   // Mark staff attendance status for leave date

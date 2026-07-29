@@ -191,6 +191,9 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
       const financeUser = (db.team || []).find(t => (t.role || '').toLowerCase().includes('finance') || (t.role || '').toLowerCase().includes('owner'));
       if (financeUser && financeUser.telegramId) {
         sendTelegramNotification(financeUser.telegramId, msgText, [
+          [
+            { text: '💰 Verify Tier 2', callback_data: `approve_expense_t2:${expense.id}` }
+          ],
           [{ text: '🔍 Inspect in Finance Portal', url: portalUrl }]
         ], true);
       }
@@ -221,7 +224,10 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
       const owner = (db.team || []).find(t => (t.role || '').toLowerCase().includes('owner'));
       if (owner && owner.telegramId) {
         sendTelegramNotification(owner.telegramId, msgText, [
-          [{ text: '💸 Release Disbursement', url: portalUrl }]
+          [
+            { text: '💸 Release Disbursement', callback_data: `disburse_expense_t3:${expense.id}` }
+          ],
+          [{ text: '🔍 Inspect in Admin Portal', url: portalUrl }]
         ], true);
       }
 
@@ -501,6 +507,138 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
         rule: 'AUT-018 (Specialist Personal Daily Task Briefing)',
         event: eventType,
         target: 'All Team Specialists',
+        status: 'Executed',
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    // TRIGGER 19: New Expense Claim Submitted -> Alert Line Manager (AUT-019)
+    if (eventType === 'expense_submitted') {
+      const expense = eventData.expense;
+      const staffName = (expense.submittedBy || '').split(' ')[0].toLowerCase();
+      const staffObj = (db.team || []).find(t => (t.name || '').toLowerCase().includes(staffName));
+      const dept = staffObj?.department || 'Operations';
+
+      const lineManager = (db.team || []).find(t => (t.department || '').toLowerCase() === dept.toLowerCase() && (t.accessLevel || '').includes('Manager'));
+      const targetManager = lineManager || (db.team || []).find(t => (t.role || '').toLowerCase().includes('operations'));
+
+      const msgText = `💰 *NEW EXPENSE CLAIM SUBMITTED (TIER 1 PENDING)*\n\n` +
+        `📋 Claim ID: *${expense.id}*\n` +
+        `👤 Submitted By: *${expense.submittedBy}*\n` +
+        `📂 Category: *${expense.category}*\n` +
+        `💵 Amount: *BDT ${(Number(expense.amount) || 0).toLocaleString()}*\n` +
+        `📝 Note: *${expense.description || 'Field operational expense'}*\n\n` +
+        `Reply /approve ${expense.id} or inspect in Manager Portal.`;
+
+      if (targetManager && targetManager.telegramId) {
+        sendTelegramNotification(targetManager.telegramId, msgText, [
+          [{ text: '🔍 Inspect in Manager Portal', url: `https://purpleos-iota.vercel.app/manager` }]
+        ], true);
+      }
+
+      logs.unshift({
+        id: `LOG-${Date.now()}`,
+        rule: 'AUT-019 (Expense Submitted Alert)',
+        event: eventType,
+        target: `${expense.submittedBy} - ${expense.id}`,
+        status: 'Executed',
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    // TRIGGER 20: New Leave Request Submitted -> Alert Line Manager (AUT-020)
+    if (eventType === 'leave_submitted') {
+      const leave = eventData.leave;
+      const staffName = (leave.staffName || '').split(' ')[0].toLowerCase();
+      const staffObj = (db.team || []).find(t => (t.name || '').toLowerCase().includes(staffName));
+      const dept = staffObj?.department || 'Operations';
+
+      const lineManager = (db.team || []).find(t => (t.department || '').toLowerCase() === dept.toLowerCase() && (t.accessLevel || '').includes('Manager'));
+      const targetManager = lineManager || (db.team || []).find(t => (t.role || '').toLowerCase().includes('operations')) || (db.team || []).find(t => t.id === 'EMP-007');
+
+      const msgText = `🌴 *NEW LEAVE REQUEST SUBMITTED (PENDING MANAGER REVIEW)*\n\n` +
+        `📋 Leave ID: *${leave.id}*\n` +
+        `👤 Staff: *${leave.staffName}*\n` +
+        `🌴 Type: *${leave.type}*\n` +
+        `📅 Dates: *${leave.startDate} to ${leave.endDate}* (${leave.totalDays || 1} Days)\n` +
+        `📝 Reason: *${leave.reason}*\n\n` +
+        `Reply /approveleave ${leave.id} or inspect in Manager Portal.`;
+
+      const targetId = targetManager?.telegramId || '1708459008';
+      sendTelegramNotification(targetId, msgText, [
+        [
+          { text: '✅ Approve Leave', callback_data: `approve_leave:${leave.id}` },
+          { text: '❌ Reject Leave', callback_data: `reject_leave:${leave.id}` }
+        ],
+        [{ text: '🔍 Inspect in Manager Portal', url: `https://purpleos-iota.vercel.app/manager` }]
+      ], true);
+
+      logs.unshift({
+        id: `LOG-${Date.now()}`,
+        rule: 'AUT-020 (Leave Submitted Alert)',
+        event: eventType,
+        target: `${leave.staffName} - ${leave.id}`,
+        status: 'Executed',
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    // TRIGGER: Leave Manager Approved -> Alert Owner for Final Sign-off
+    if (eventType === 'leave_manager_approved') {
+      const leave = eventData.leave;
+      const owner = (db.team || []).find(t => (t.role || '').toLowerCase().includes('owner')) || (db.team || []).find(t => t.id === 'EMP-007');
+
+      const msgText = `👑 *LEAVE MANAGER APPROVED — AWAITING OWNER FINAL SIGN-OFF*\n\n` +
+        `📋 Leave ID: *${leave.id}*\n` +
+        `👤 Staff: *${leave.staffName}*\n` +
+        `🌴 Type: *${leave.type}*\n` +
+        `📅 Dates: *${leave.startDate} to ${leave.endDate}*\n` +
+        `✍️ Manager Approved By: *${leave.managerReviewedBy || 'Line Manager'}*\n\n` +
+        `Click below to issue final leave sign-off.`;
+
+      const targetId = owner?.telegramId || '1708459008';
+      sendTelegramNotification(targetId, msgText, [
+        [
+          { text: '👑 Final Leave Sign-off', callback_data: `approve_leave_owner:${leave.id}` }
+        ],
+        [{ text: '🔍 Inspect in Admin Portal', url: `https://purpleos-iota.vercel.app/admin` }]
+      ], true);
+
+      logs.unshift({
+        id: `LOG-${Date.now()}`,
+        rule: 'Leave Manager Approved Alert',
+        event: eventType,
+        target: `${leave.staffName} (${leave.id})`,
+        status: 'Executed',
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    // TRIGGER 21: Daily 7:30 PM Manager EOD Digest (AUT-021)
+    if (eventType === 'eod_evening_digest') {
+      const todayStr = new Date().toISOString().split('T')[0];
+      const todayEods = (db.eod_reports || []).filter(e => (e.date || '').startsWith(todayStr) || (e.submittedAt || '').startsWith(todayStr));
+      const blockersCount = todayEods.filter(e => e.blockers && !e.blockers.toLowerCase().includes('none') && e.blockers.trim() !== '').length;
+
+      const managers = (db.team || []).filter(t => (t.accessLevel || '').includes('Manager') || (t.role || '').toLowerCase().includes('operations'));
+
+      managers.forEach(mgr => {
+        const dept = mgr.department || 'Operations';
+        const msgText = `📋 *PURPLEBOT 7:30 PM DEPARTMENT EOD DIGEST*\n` +
+          `📍 Department: *${dept}*\n\n` +
+          `✅ *Reports Logged Today:* ${todayEods.length} Submissions\n` +
+          `🔴 *Blockers Flagged:* ${blockersCount} Action Item(s)\n\n` +
+          `🌐 Open Manager Portal: https://purpleos-iota.vercel.app/manager`;
+
+        const targetId = mgr.telegramId || '1708459008';
+        sendTelegramNotification(targetId, msgText, null, true);
+      });
+
+      logs.unshift({
+        id: `LOG-${Date.now()}`,
+        rule: 'AUT-021 (7:30PM Manager EOD Digest)',
+        event: eventType,
+        target: 'Department Managers',
         status: 'Executed',
         timestamp: new Date().toISOString()
       });

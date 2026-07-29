@@ -36,6 +36,10 @@ app.get(['/admin', '/dashboard', '/os'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public/admin.html'));
 });
 
+app.get(['/manager', '/manager-portal'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/manager.html'));
+});
+
 app.get(['/team', '/crew', '/staff'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public/team.html'));
 });

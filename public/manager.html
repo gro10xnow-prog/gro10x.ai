@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PurpleOS — Department Manager Portal</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/css/command-center.css">
+  <link rel="stylesheet" href="/css/pwa.css">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0b0f19">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body>
+
+  <!-- Top Header Navigation -->
+  <header class="top-header">
+    <div class="brand-container">
+      <div class="brand-logo" style="background: linear-gradient(135deg, #3b82f6, #8b5cf6);">MP</div>
+      <div>
+        <div class="brand-title">PurpleOS</div>
+        <div style="font-size: 0.72rem; color: #60a5fa; font-weight: 600;">Department Manager Portal v0.8</div>
+      </div>
+    </div>
+
+    <!-- Universal Search / Command Center Trigger -->
+    <div class="cmd-trigger-btn" onclick="toggleCommandCenter()" style="display: flex; align-items: center; gap: 0.6rem; padding: 0.45rem 1rem; background: rgba(9,9,11,0.6); border: 1px solid rgba(59,130,246,0.3); border-radius: 12px; cursor: pointer; color: #a1a1aa; font-size: 0.85rem;">
+      <span>🔍 Search Department Operations...</span>
+      <span style="padding: 0.15rem 0.45rem; background: rgba(255,255,255,0.08); border-radius: 6px; font-size: 0.75rem; font-weight: 700; color: #60a5fa;">Ctrl + K</span>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 1.25rem;">
+      <div class="system-status">
+        <div class="status-dot" style="background: #3b82f6; box-shadow: 0 0 10px #3b82f6;"></div>
+        <span id="userDeptTag" style="font-weight: 600; color: #93c5fd;">📍 Department Manager</span>
+      </div>
+
+      <div class="user-profile-badge">
+        <div class="user-avatar" id="userAvatar" style="background: linear-gradient(135deg, #2563eb, #7c3aed);">M</div>
+        <div class="user-info">
+          <span class="user-name" id="userName">Manager Name</span>
+          <span class="user-role-tag" id="userRoleTag" style="color: #60a5fa;">Department Lead</span>
+        </div>
+      </div>
+
+      <button onclick="logoutManager()" style="color: #f87171; text-decoration: none; font-size: 0.825rem; font-weight: 600; padding: 0.4rem 0.75rem; background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3); border-radius: 10px; cursor: pointer;">Sign Out</button>
+    </div>
+  </header>
+
+  <div class="main-wrapper">
+    <!-- Manager Scoped Sidebar Navigation -->
+    <nav class="sidebar-nav">
+      <div class="nav-category">Overview & Pipeline</div>
+      <a class="nav-item active" onclick="switchTab('dashboard')">
+        <span class="icon">📊</span>
+        <span>Department Dashboard</span>
+      </a>
+      <a class="nav-item" onclick="switchTab('crm')">
+        <span class="icon">👥</span>
+        <span>Client CRM</span>
+      </a>
+      <a class="nav-item" onclick="switchTab('kanban')">
+        <span class="icon">📅</span>
+        <span>Kanban & Shoots</span>
+      </a>
+
+      <div class="nav-category">HR & Workflows</div>
+      <a class="nav-item" onclick="switchTab('hrops')">
+        <span class="icon">🏥</span>
+        <span>HR Ops & Leaves</span>
+      </a>
+      <a class="nav-item" onclick="switchTab('financials')">
+        <span class="icon">💰</span>
+        <span>Financials & Expenses</span>
+      </a>
+
+      <div class="nav-category">Production & Media</div>
+      <a class="nav-item" onclick="switchTab('reviewroom')">
+        <span class="icon">🎬</span>
+        <span>Review Room V2</span>
+      </a>
+      <a class="nav-item" onclick="switchTab('social')">
+        <span class="icon">📱</span>
+        <span>Social Planner</span>
+      </a>
+      <a class="nav-item" onclick="switchTab('assets')">
+        <span class="icon">🔧</span>
+        <span>Asset Registry</span>
+      </a>
+      <a class="nav-item" onclick="switchTab('chat')">
+        <span class="icon">💬</span>
+        <span>Client Chat Hub</span>
+      </a>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="content-area">
+      <!-- 1. DASHBOARD OVERVIEW -->
+      <section id="tab-dashboard" class="tab-pane active">
+        <div class="section-header" style="margin-bottom: 1.5rem;">
+          <div>
+            <h1 class="page-title">📈 Manager Command Centre</h1>
+            <p class="page-subtitle">Real-time department performance metrics, attendance, and open approvals.</p>
+          </div>
+        </div>
+
+        <div class="kpi-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+          <div class="kpi-card" style="background: rgba(17,24,39,0.7); border: 1px solid rgba(59,130,246,0.3); border-radius: 14px; padding: 1.25rem;">
+            <div style="font-size: 0.8rem; color: #9ca3af; font-weight: 500;">Active Tasks</div>
+            <div style="font-size: 1.8rem; font-weight: 800; color: #60a5fa; margin-top: 0.3rem;" id="kpiActiveTasks">4</div>
+            <div style="font-size: 0.72rem; color: #34d399; margin-top: 0.2rem;">In Department Queue</div>
+          </div>
+          <div class="kpi-card" style="background: rgba(17,24,39,0.7); border: 1px solid rgba(59,130,246,0.3); border-radius: 14px; padding: 1.25rem;">
+            <div style="font-size: 0.8rem; color: #9ca3af; font-weight: 500;">Team Active Today</div>
+            <div style="font-size: 1.8rem; font-weight: 800; color: #a78bfa; margin-top: 0.3rem;" id="kpiTeamActive">3 / 4</div>
+            <div style="font-size: 0.72rem; color: #a78bfa; margin-top: 0.2rem;">75% Attendance Rate</div>
+          </div>
+          <div class="kpi-card" style="background: rgba(17,24,39,0.7); border: 1px solid rgba(59,130,246,0.3); border-radius: 14px; padding: 1.25rem;">
+            <div style="font-size: 0.8rem; color: #9ca3af; font-weight: 500;">Pending Approvals</div>
+            <div style="font-size: 1.8rem; font-weight: 800; color: #fbbf24; margin-top: 0.3rem;" id="kpiPendingApprovals">2</div>
+            <div style="font-size: 0.72rem; color: #fbbf24; margin-top: 0.2rem;">T1 Expense & Leaves</div>
+          </div>
+          <div class="kpi-card" style="background: rgba(17,24,39,0.7); border: 1px solid rgba(59,130,246,0.3); border-radius: 14px; padding: 1.25rem;">
+            <div style="font-size: 0.8rem; color: #9ca3af; font-weight: 500;">Review Deliverables</div>
+            <div style="font-size: 1.8rem; font-weight: 800; color: #f472b6; margin-top: 0.3rem;" id="kpiReviewCuts">1</div>
+            <div style="font-size: 0.72rem; color: #f472b6; margin-top: 0.2rem;">Awaiting Client Sign-off</div>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.25rem;">
+          <div style="background: rgba(17,24,39,0.7); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 1.25rem;">
+            <h3 style="font-size: 1rem; font-weight: 700; color: #f3f4f6; margin-bottom: 1rem;">🎯 Department Production Status</h3>
+            <div style="color: #9ca3af; font-size: 0.88rem; line-height: 1.6;">
+              Welcome to the <strong>Department Manager Portal</strong>. Use the sidebar menu to manage your department's Kanban tasks, line expense approvals (Tier 1), team leave requests, and client review sessions.
+            </div>
+          </div>
+
+          <div style="background: rgba(17,24,39,0.7); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 1.25rem;">
+            <h3 style="font-size: 1rem; font-weight: 700; color: #f3f4f6; margin-bottom: 1rem;">👥 My Team Today</h3>
+            <div id="managerTeamRoster" style="display: flex; flex-direction: column; gap: 0.6rem;">
+              <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.5rem; background: rgba(255,255,255,0.03); border-radius: 8px;">
+                <span style="font-size: 0.85rem; font-weight: 600; color: #e4e4e7;">Farhan Ahmed</span>
+                <span style="font-size: 0.72rem; padding: 0.15rem 0.45rem; background: rgba(52,211,153,0.15); color: #34d399; border-radius: 6px; font-weight: 700;">In Studio</span>
+              </div>
+              <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.5rem; background: rgba(255,255,255,0.03); border-radius: 8px;">
+                <span style="font-size: 0.85rem; font-weight: 600; color: #e4e4e7;">Sabrin Akhtar</span>
+                <span style="font-size: 0.72rem; padding: 0.15rem 0.45rem; background: rgba(52,211,153,0.15); color: #34d399; border-radius: 6px; font-weight: 700;">In Studio</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. CRM -->
+      <section id="tab-crm" class="tab-pane" style="display: none;">
+        <div class="section-header">
+          <h1 class="page-title">👥 Client CRM (Account Manager)</h1>
+          <p class="page-subtitle">Manage client retainers, contacts, and account health.</p>
+        </div>
+        <div style="padding: 2rem; background: rgba(17,24,39,0.7); border-radius: 14px; border: 1px solid rgba(255,255,255,0.08); color: #9ca3af;">
+          Client CRM view accessible for Account Leads & Operations Director.
+        </div>
+      </section>
+
+      <!-- 3. KANBAN -->
+      <section id="tab-kanban" class="tab-pane" style="display: none;">
+        <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+          <div>
+            <h1 class="page-title">📅 Department Kanban & Shoots</h1>
+            <p class="page-subtitle">Track task stages, assign specialists, and manage workflow handoffs.</p>
+          </div>
+          <div style="display: flex; gap: 0.8rem; align-items: center;">
+            <div class="filter-toggle-group" style="display: flex; background: rgba(9,9,11,0.6); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 0.2rem;">
+              <button id="btnFilterMyDept" class="btn-toggle active" onclick="setKanbanDeptFilter('my')" style="padding: 0.4rem 0.8rem; font-size: 0.78rem; font-weight: 600; border-radius: 8px; border: none; cursor: pointer; background: #3b82f6; color: #fff;">📍 My Dept</button>
+              <button id="btnFilterAllDepts" class="btn-toggle" onclick="setKanbanDeptFilter('all')" style="padding: 0.4rem 0.8rem; font-size: 0.78rem; font-weight: 600; border-radius: 8px; border: none; cursor: pointer; background: transparent; color: #a1a1aa;">🌐 All Depts</button>
+            </div>
+            <button class="btn-purple" onclick="openManagerTaskModal()" style="background: linear-gradient(135deg, #3b82f6, #8b5cf6); padding: 0.5rem 1rem; font-size: 0.85rem; font-weight: 600; border-radius: 10px; border: none; color: #fff; cursor: pointer;">➕ Create Production Task</button>
+          </div>
+        </div>
+
+        <!-- Kanban Board Columns Grid -->
+        <div class="kanban-grid" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem; overflow-x: auto; padding-bottom: 1rem;">
+          <!-- Column 1: Scripting & Briefing -->
+          <div class="kanban-column" style="background: rgba(17,24,39,0.7); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 1rem; min-height: 480px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.08);">
+              <span style="font-size: 0.85rem; font-weight: 700; color: #60a5fa;">📝 Briefing & Scripting</span>
+              <span id="count-Briefing" style="font-size: 0.72rem; padding: 0.1rem 0.4rem; background: rgba(59,130,246,0.2); color: #60a5fa; border-radius: 10px; font-weight: 700;">0</span>
+            </div>
+            <div id="col-Briefing" class="column-card-container" style="display: flex; flex-direction: column; gap: 0.75rem;"></div>
+          </div>
+
+          <!-- Column 2: Field Shoot / Production -->
+          <div class="kanban-column" style="background: rgba(17,24,39,0.7); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 1rem; min-height: 480px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.08);">
+              <span style="font-size: 0.85rem; font-weight: 700; color: #fbbf24;">🎬 Field Shoot / Prod</span>
+              <span id="count-Production" style="font-size: 0.72rem; padding: 0.1rem 0.4rem; background: rgba(251,191,36,0.2); color: #fbbf24; border-radius: 10px; font-weight: 700;">0</span>
+            </div>
+            <div id="col-Production" class="column-card-container" style="display: flex; flex-direction: column; gap: 0.75rem;"></div>
+          </div>
+
+          <!-- Column 3: Editing & Motion FX -->
+          <div class="kanban-column" style="background: rgba(17,24,39,0.7); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 1rem; min-height: 480px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.08);">
+              <span style="font-size: 0.85rem; font-weight: 700; color: #c084fc;">✂️ Editing & Motion FX</span>
+              <span id="count-Editing" style="font-size: 0.72rem; padding: 0.1rem 0.4rem; background: rgba(192,132,252,0.2); color: #c084fc; border-radius: 10px; font-weight: 700;">0</span>
+            </div>
+            <div id="col-Editing" class="column-card-container" style="display: flex; flex-direction: column; gap: 0.75rem;"></div>
+          </div>
+
+          <!-- Column 4: Client Review -->
+          <div class="kanban-column" style="background: rgba(17,24,39,0.7); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 1rem; min-height: 480px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.08);">
+              <span style="font-size: 0.85rem; font-weight: 700; color: #f472b6;">👁️ Client Review</span>
+              <span id="count-ClientReview" style="font-size: 0.72rem; padding: 0.1rem 0.4rem; background: rgba(244,114,182,0.2); color: #f472b6; border-radius: 10px; font-weight: 700;">0</span>
+            </div>
+            <div id="col-ClientReview" class="column-card-container" style="display: flex; flex-direction: column; gap: 0.75rem;"></div>
+          </div>
+
+          <!-- Column 5: Approved & Ready -->
+          <div class="kanban-column" style="background: rgba(17,24,39,0.7); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 1rem; min-height: 480px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.08);">
+              <span style="font-size: 0.85rem; font-weight: 700; color: #34d399;">✅ Approved & Ready</span>
+              <span id="count-Approved" style="font-size: 0.72rem; padding: 0.1rem 0.4rem; background: rgba(52,211,153,0.2); color: #34d399; border-radius: 10px; font-weight: 700;">0</span>
+            </div>
+            <div id="col-Approved" class="column-card-container" style="display: flex; flex-direction: column; gap: 0.75rem;"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Task Create Modal -->
+      <div id="managerTaskModal" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 999; justify-content: center; align-items: center;">
+        <div style="background: #0f172a; border: 1px solid rgba(59,130,246,0.3); border-radius: 16px; padding: 1.75rem; width: 100%; max-width: 500px;">
+          <h2 style="font-size: 1.2rem; font-weight: 700; color: #f8fafc; margin-bottom: 1rem;">➕ Create Production Task</h2>
+          <form onsubmit="submitManagerTask(event)">
+            <div style="display: flex; flex-direction: column; gap: 0.8rem;">
+              <div>
+                <label style="font-size: 0.8rem; font-weight: 600; color: #cbd5e1;">Task Title *</label>
+                <input type="text" id="taskTitleInput" class="form-input" style="width: 100%; padding: 0.5rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff;" required placeholder="e.g. Chillox Commercial Reel Edit">
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem;">
+                <div>
+                  <label style="font-size: 0.8rem; font-weight: 600; color: #cbd5e1;">Client Account *</label>
+                  <select id="taskClientSelect" class="form-input" style="width: 100%; padding: 0.5rem; background: #1e293b; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff;" required>
+                    <option value="Chillox Fast Food Chain">Chillox Fast Food Chain</option>
+                    <option value="Clear Men (Unilever)">Clear Men (Unilever)</option>
+                    <option value="United Commercial Bank (UCB)">United Commercial Bank (UCB)</option>
+                    <option value="Test Brand Phase B">Test Brand Phase B</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="font-size: 0.8rem; font-weight: 600; color: #cbd5e1;">Priority</label>
+                  <select id="taskPrioritySelect" class="form-input" style="width: 100%; padding: 0.5rem; background: #1e293b; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff;">
+                    <option value="High">🔴 High Priority</option>
+                    <option value="Medium" selected>🟡 Medium Priority</option>
+                    <option value="Normal">🟢 Normal Priority</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem;">
+                <div>
+                  <label style="font-size: 0.8rem; font-weight: 600; color: #cbd5e1;">Assigned Specialist</label>
+                  <select id="taskAssigneeSelect" class="form-input" style="width: 100%; padding: 0.5rem; background: #1e293b; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff;">
+                    <!-- Populated dynamically per manager dept -->
+                  </select>
+                </div>
+                <div>
+                  <label style="font-size: 0.8rem; font-weight: 600; color: #cbd5e1;">Due Date</label>
+                  <input type="date" id="taskDueDateInput" class="form-input" style="width: 100%; padding: 0.5rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff;">
+                </div>
+              </div>
+
+              <div style="display: flex; justify-content: flex-end; gap: 0.8rem; margin-top: 1rem;">
+                <button type="button" class="btn-secondary" onclick="closeManagerTaskModal()" style="padding: 0.5rem 1rem; border-radius: 8px; background: rgba(255,255,255,0.08); border: none; color: #ccc; cursor: pointer;">Cancel</button>
+                <button type="submit" class="btn-purple" style="padding: 0.5rem 1rem; border-radius: 8px; background: linear-gradient(135deg, #3b82f6, #8b5cf6); border: none; color: #fff; font-weight: 600; cursor: pointer;">💾 Create Task</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- 4. HR OPS -->
+      <section id="tab-hrops" class="tab-pane" style="display: none;">
+        <div class="section-header" style="margin-bottom: 1.25rem;">
+          <h1 class="page-title">🏥 HR Ops: 3-Tier Leaves & Team EOD Digest</h1>
+          <p class="page-subtitle">Line Manager leave sign-offs and daily team EOD submission inspection.</p>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+          <!-- 1. Team Leave Requests Section -->
+          <div style="background: rgba(17,24,39,0.7); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 1.25rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+              <h3 style="font-size: 1rem; font-weight: 700; color: #f3f4f6;">🌴 Team Leave Requests (3-Tier Chain)</h3>
+              <span style="font-size: 0.75rem; color: #94a3b8;">Staff $\rightarrow$ Line Manager Approval $\rightarrow$ Owner Sign-off</span>
+            </div>
+            <div style="overflow-x: auto;">
+              <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;">
+                <thead>
+                  <tr style="border-bottom: 1px solid rgba(255,255,255,0.1); color: #94a3b8; font-weight: 600;">
+                    <th style="padding: 0.6rem 0.5rem;">Leave ID</th>
+                    <th style="padding: 0.6rem 0.5rem;">Staff Member</th>
+                    <th style="padding: 0.6rem 0.5rem;">Type</th>
+                    <th style="padding: 0.6rem 0.5rem;">Dates</th>
+                    <th style="padding: 0.6rem 0.5rem;">Reason</th>
+                    <th style="padding: 0.6rem 0.5rem;">Status</th>
+                    <th style="padding: 0.6rem 0.5rem; text-align: right;">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="managerLeaveTableBody">
+                  <!-- Rendered dynamically by manager.js -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- 2. Team EOD Reports Section -->
+          <div style="background: rgba(17,24,39,0.7); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 1.25rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+              <div>
+                <h3 style="font-size: 1rem; font-weight: 700; color: #f3f4f6;">📋 Daily EOD Submissions & Blockers</h3>
+                <p style="font-size: 0.78rem; color: #94a3b8; margin-top: 0.2rem;">Inspect daily tasks completed, in-progress work, and flagged team blockers.</p>
+              </div>
+              <div id="eodRateBadge" style="padding: 0.35rem 0.75rem; background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.3); color: #60a5fa; border-radius: 8px; font-weight: 700; font-size: 0.8rem;">
+                📊 2 / 3 Team Submitted Today
+              </div>
+            </div>
+            <div id="managerEodList" style="display: flex; flex-direction: column; gap: 0.8rem;">
+              <!-- Rendered dynamically by manager.js -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5. FINANCIALS -->
+      <section id="tab-financials" class="tab-pane" style="display: none;">
+        <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+          <div>
+            <h1 class="page-title">💰 Financials & 3-Tier Expense Approvals</h1>
+            <p class="page-subtitle">Line Manager Tier 1 approvals, Finance Lead Tier 2 verifications, and disbursement tracking.</p>
+          </div>
+          <button class="btn-purple" onclick="openSubmitExpenseModal()" style="background: linear-gradient(135deg, #10b981, #059669); padding: 0.5rem 1rem; font-size: 0.85rem; font-weight: 600; border-radius: 10px; border: none; color: #fff; cursor: pointer;">➕ Submit Expense Claim</button>
+        </div>
+
+        <div style="background: rgba(17,24,39,0.7); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 1.25rem; overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;">
+            <thead>
+              <tr style="border-bottom: 1px solid rgba(255,255,255,0.1); color: #94a3b8; font-weight: 600;">
+                <th style="padding: 0.75rem 0.5rem;">Claim ID</th>
+                <th style="padding: 0.75rem 0.5rem;">Submitted By</th>
+                <th style="padding: 0.75rem 0.5rem;">Category</th>
+                <th style="padding: 0.75rem 0.5rem;">Amount</th>
+                <th style="padding: 0.75rem 0.5rem;">Receipt</th>
+                <th style="padding: 0.75rem 0.5rem;">Tier Status</th>
+                <th style="padding: 0.75rem 0.5rem; text-align: right;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="managerExpenseTableBody">
+              <!-- Rendered dynamically by manager.js -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 6. REVIEW ROOM -->
+      <section id="tab-reviewroom" class="tab-pane" style="display: none;">
+        <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+          <div>
+            <h1 class="page-title">🎬 Review Room V2 (Video Cuts & Client Sign-off)</h1>
+            <p class="page-subtitle">Upload video cut deliverables, track client timestamped feedback, and trigger invoice release.</p>
+          </div>
+          <button class="btn-purple" onclick="openUploadCutModal()" style="background: linear-gradient(135deg, #ec4899, #8b5cf6); padding: 0.5rem 1rem; font-size: 0.85rem; font-weight: 600; border-radius: 10px; border: none; color: #fff; cursor: pointer;">➕ Upload New Video Cut</button>
+        </div>
+
+        <div style="background: rgba(17,24,39,0.7); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 1.25rem; overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;">
+            <thead>
+              <tr style="border-bottom: 1px solid rgba(255,255,255,0.1); color: #94a3b8; font-weight: 600;">
+                <th style="padding: 0.75rem 0.5rem;">Review ID</th>
+                <th style="padding: 0.75rem 0.5rem;">Project Title</th>
+                <th style="padding: 0.75rem 0.5rem;">Client</th>
+                <th style="padding: 0.75rem 0.5rem;">Cut Version</th>
+                <th style="padding: 0.75rem 0.5rem;">Video Deliverable</th>
+                <th style="padding: 0.75rem 0.5rem;">Status</th>
+                <th style="padding: 0.75rem 0.5rem; text-align: right;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="managerReviewTableBody">
+              <!-- Rendered dynamically by manager.js -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Upload Cut Modal -->
+      <div id="managerUploadCutModal" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 999; justify-content: center; align-items: center;">
+        <div style="background: #0f172a; border: 1px solid rgba(236,72,153,0.3); border-radius: 16px; padding: 1.75rem; width: 100%; max-width: 500px;">
+          <h2 style="font-size: 1.2rem; font-weight: 700; color: #f8fafc; margin-bottom: 1rem;">➕ Upload New Video Cut Deliverable</h2>
+          <form onsubmit="submitManagerReviewCut(event)">
+            <div style="display: flex; flex-direction: column; gap: 0.8rem;">
+              <div>
+                <label style="font-size: 0.8rem; font-weight: 600; color: #cbd5e1;">Project Title *</label>
+                <input type="text" id="cutTitleInput" class="form-input" style="width: 100%; padding: 0.5rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff;" required placeholder="e.g. Chillox Commercial Reel Cut v1.0">
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem;">
+                <div>
+                  <label style="font-size: 0.8rem; font-weight: 600; color: #cbd5e1;">Client Account *</label>
+                  <select id="cutClientSelect" class="form-input" style="width: 100%; padding: 0.5rem; background: #1e293b; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff;" required>
+                    <option value="Chillox Fast Food Chain">Chillox Fast Food Chain</option>
+                    <option value="Clear Men (Unilever)">Clear Men (Unilever)</option>
+                    <option value="United Commercial Bank (UCB)">United Commercial Bank (UCB)</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="font-size: 0.8rem; font-weight: 600; color: #cbd5e1;">Version Tag</label>
+                  <input type="text" id="cutVersionInput" class="form-input" style="width: 100%; padding: 0.5rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff;" value="v1.0 Rough Cut">
+                </div>
+              </div>
+
+              <div>
+                <label style="font-size: 0.8rem; font-weight: 600; color: #cbd5e1;">Video Deliverable URL (MP4 / Frame.io / Vimeo) *</label>
+                <input type="url" id="cutVideoUrlInput" class="form-input" style="width: 100%; padding: 0.5rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff;" required placeholder="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4">
+              </div>
+
+              <div style="display: flex; justify-content: flex-end; gap: 0.8rem; margin-top: 1rem;">
+                <button type="button" class="btn-secondary" onclick="closeUploadCutModal()" style="padding: 0.5rem 1rem; border-radius: 8px; background: rgba(255,255,255,0.08); border: none; color: #ccc; cursor: pointer;">Cancel</button>
+                <button type="submit" class="btn-purple" style="padding: 0.5rem 1rem; border-radius: 8px; background: linear-gradient(135deg, #ec4899, #8b5cf6); border: none; color: #fff; font-weight: 600; cursor: pointer;">🎬 Upload & Notify Client</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- 7. SOCIAL PLANNER -->
+      <section id="tab-social" class="tab-pane" style="display: none;">
+        <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+          <div>
+            <h1 class="page-title">📱 Social Planner & Content Dispatch</h1>
+            <p class="page-subtitle">Schedule multi-platform reels, manage client post approvals, and trigger publishing dispatches.</p>
+          </div>
+          <button class="btn-purple" onclick="openSocialPostModal()" style="background: linear-gradient(135deg, #06b6d4, #3b82f6); padding: 0.5rem 1rem; font-size: 0.85rem; font-weight: 600; border-radius: 10px; border: none; color: #fff; cursor: pointer;">➕ Schedule New Social Post</button>
+        </div>
+
+        <div style="background: rgba(17,24,39,0.7); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 1.25rem; overflow-x: auto;">
+          <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap;">
+            <button onclick="filterSocialPlatform('all')" class="platform-btn active" style="padding: 0.35rem 0.75rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: rgba(59,130,246,0.2); color: #60a5fa; font-size: 0.8rem; font-weight: 600; cursor: pointer;">🌐 All Platforms</button>
+            <button onclick="filterSocialPlatform('Instagram')" class="platform-btn" style="padding: 0.35rem 0.75rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: #94a3b8; font-size: 0.8rem; font-weight: 600; cursor: pointer;">📷 Instagram</button>
+            <button onclick="filterSocialPlatform('Facebook')" class="platform-btn" style="padding: 0.35rem 0.75rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: #94a3b8; font-size: 0.8rem; font-weight: 600; cursor: pointer;">📘 Facebook</button>
+            <button onclick="filterSocialPlatform('TikTok')" class="platform-btn" style="padding: 0.35rem 0.75rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: #94a3b8; font-size: 0.8rem; font-weight: 600; cursor: pointer;">🎵 TikTok</button>
+            <button onclick="filterSocialPlatform('LinkedIn')" class="platform-btn" style="padding: 0.35rem 0.75rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: #94a3b8; font-size: 0.8rem; font-weight: 600; cursor: pointer;">💼 LinkedIn</button>
+          </div>
+
+          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;">
+            <thead>
+              <tr style="border-bottom: 1px solid rgba(255,255,255,0.1); color: #94a3b8; font-weight: 600;">
+                <th style="padding: 0.75rem 0.5rem;">Post ID</th>
+                <th style="padding: 0.75rem 0.5rem;">Title / Campaign</th>
+                <th style="padding: 0.75rem 0.5rem;">Client</th>
+                <th style="padding: 0.75rem 0.5rem;">Platform</th>
+                <th style="padding: 0.75rem 0.5rem;">Scheduled Publish</th>
+                <th style="padding: 0.75rem 0.5rem;">Status</th>
+                <th style="padding: 0.75rem 0.5rem; text-align: right;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="managerSocialTableBody">
+              <!-- Rendered dynamically by manager.js -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Schedule Social Post Modal -->
+      <div id="managerSocialPostModal" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 999; justify-content: center; align-items: center;">
+        <div style="background: #0f172a; border: 1px solid rgba(6,182,212,0.3); border-radius: 16px; padding: 1.75rem; width: 100%; max-width: 520px;">
+          <h2 style="font-size: 1.2rem; font-weight: 700; color: #f8fafc; margin-bottom: 1rem;">📱 Schedule New Social Media Post</h2>
+          <form onsubmit="submitManagerSocialPost(event)">
+            <div style="display: flex; flex-direction: column; gap: 0.8rem;">
+              <div>
+                <label style="font-size: 0.8rem; font-weight: 600; color: #cbd5e1;">Post Title / Campaign *</label>
+                <input type="text" id="postTitleInput" class="form-input" style="width: 100%; padding: 0.5rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff;" required placeholder="e.g. Chillox Burger Madness Reel">
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem;">
+                <div>
+                  <label style="font-size: 0.8rem; font-weight: 600; color: #cbd5e1;">Client Account *</label>
+                  <select id="postClientSelect" class="form-input" style="width: 100%; padding: 0.5rem; background: #1e293b; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff;" required>
+                    <option value="Chillox Fast Food Chain">Chillox Fast Food Chain</option>
+                    <option value="Clear Men (Unilever)">Clear Men (Unilever)</option>
+                    <option value="United Commercial Bank (UCB)">United Commercial Bank (UCB)</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="font-size: 0.8rem; font-weight: 600; color: #cbd5e1;">Target Platform</label>
+                  <select id="postPlatformSelect" class="form-input" style="width: 100%; padding: 0.5rem; background: #1e293b; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff;">
+                    <option value="Instagram">📷 Instagram</option>
+                    <option value="Facebook">📘 Facebook</option>
+                    <option value="TikTok">🎵 TikTok</option>
+                    <option value="LinkedIn">💼 LinkedIn</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label style="font-size: 0.8rem; font-weight: 600; color: #cbd5e1;">Caption & Hashtags</label>
+                <textarea id="postCaptionInput" class="form-input" style="width: 100%; height: 70px; padding: 0.5rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff;" placeholder="Check out our newest flame-grilled burger! 🔥 #Chillox #DhakaEats"></textarea>
+              </div>
+
+              <div style="display: flex; justify-content: flex-end; gap: 0.8rem; margin-top: 1rem;">
+                <button type="button" class="btn-secondary" onclick="closeSocialPostModal()" style="padding: 0.5rem 1rem; border-radius: 8px; background: rgba(255,255,255,0.08); border: none; color: #ccc; cursor: pointer;">Cancel</button>
+                <button type="submit" class="btn-purple" style="padding: 0.5rem 1rem; border-radius: 8px; background: linear-gradient(135deg, #06b6d4, #3b82f6); border: none; color: #fff; font-weight: 600; cursor: pointer;">🚀 Schedule Post</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- 8. ASSETS -->
+      <section id="tab-assets" class="tab-pane" style="display: none;">
+        <div class="section-header">
+          <h1 class="page-title">🔧 Equipment Asset Registry</h1>
+          <p class="page-subtitle">Camera, audio, and lighting gear checkout logs.</p>
+        </div>
+        <div style="padding: 2rem; background: rgba(17,24,39,0.7); border-radius: 14px; border: 1px solid rgba(255,255,255,0.08); color: #9ca3af;">
+          Equipment Registry view: check out gear to specialists.
+        </div>
+      </section>
+
+      <!-- 9. CHAT HUB -->
+      <section id="tab-chat" class="tab-pane" style="display: none;">
+        <div class="section-header">
+          <h1 class="page-title">💬 Client Chat Hub</h1>
+          <p class="page-subtitle">Telegram client messages and thread management.</p>
+        </div>
+        <div style="padding: 2rem; background: rgba(17,24,39,0.7); border-radius: 14px; border: 1px solid rgba(255,255,255,0.08); color: #9ca3af;">
+          Client Chat Hub view: reply to client queries from Telegram.
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="/js/manager.js"></script>
+</body>
+</html>

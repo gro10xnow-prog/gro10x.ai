@@ -109,10 +109,15 @@ function saveSessionAndRedirect(user, linkedType, email) {
   showAlert('✅ Authentication successful! Launching workspace...', 'success');
 
   setTimeout(() => {
-    // Check if phone belongs to Master Admin / Owner
-    if (cleanPhone.includes('8801700000000') || (user?.role && user.role.includes('Owner'))) {
+    const role = (user?.role || user?.accessLevel || '').toLowerCase();
+    const isOwner = cleanPhone.includes('8801700000000') || role.includes('owner') || role.includes('founder');
+    const isManager = role.includes('director') || role.includes('manager');
+
+    if (isOwner) {
       window.location.href = '/admin';
-    } else if (linkedType === 'client' || (user?.role && user.role.includes('Client'))) {
+    } else if (isManager) {
+      window.location.href = '/manager';
+    } else if (linkedType === 'client' || role.includes('client')) {
       window.location.href = '/partners';
     } else {
       window.location.href = '/team';
