@@ -1202,48 +1202,102 @@ router.post('/webhooks/telegram', async (req, res) => {
 
     // Module B3.1: 1-Tap Native Contact Sharing Handler
     if (message.contact) {
-      const phoneNum = message.contact.phone_number.replace(/[^0-9+]/g, '');
-      const matchingStaff = (db.team || []).find(t => (t.phone || '').replace(/[^0-9+]/g, '').includes(phoneNum));
-      const matchingClient = (db.clients || []).find(c => (c.phone || '').replace(/[^0-9+]/g, '').includes(phoneNum));
+      const rawContactPhone = message.contact.phone_number || '';
+      const normDigits = String(rawContactPhone).replace(/[^0-9]/g, '');
+      const normContact = normDigits.length >= 10 ? normDigits.slice(-10) : normDigits;
+
+      const matchingStaff = (db.team || []).find(t => {
+        const tDigits = String(t.phone || '').replace(/[^0-9]/g, '');
+        const tNorm = tDigits.length >= 10 ? tDigits.slice(-10) : tDigits;
+        return tNorm === normContact && tNorm !== '';
+      });
+
+      const matchingClient = (db.clients || []).find(c => {
+        const cDigits = String(c.phone || '').replace(/[^0-9]/g, '');
+        const cNorm = cDigits.length >= 10 ? cDigits.slice(-10) : cDigits;
+        return cNorm === normContact && cNorm !== '';
+      });
 
       if (matchingStaff) {
         matchingStaff.telegramId = String(chatId);
         matchingStaff.phoneVerified = true;
-        const pinRecord = createTempPin(phoneNum, matchingStaff.id || matchingStaff.emp_code, 'team', matchingStaff.email || '');
+        const pinRecord = createTempPin(matchingStaff.phone, matchingStaff.id || matchingStaff.emp_code, 'team', matchingStaff.email || '');
         writeDB(db);
         broadcast('team_update', db.team);
 
-        const portalUrl = `https://purpleos-iota.vercel.app/team?phone=${encodeURIComponent(phoneNum)}`;
+        if (isSupabaseConfigured()) {
+          supabase.from('profiles').update({ telegram_id: String(chatId) }).eq('emp_code', matchingStaff.id).then(() => {}).catch(() => {});
+        }
 
-        replyText = `✅ *Verified Phone Paired by Purple Man!*\n\n` +
-          `👤 Staff Name: *${matchingStaff.name}*\n` +
-          `🛡️ Role: *${matchingStaff.role}*\n` +
-          `📱 Verified Phone: \`${matchingStaff.phone}\`\n` +
-          `🔑 Temporary Login PIN: \`${pinRecord.pin}\` _(Change on first login)_\n\n` +
-          `🌐 Access Crew Portal:\n${portalUrl}`;
+        replyText = `✅ *Identity Verified as ${matchingStaff.name}!*\n\n` +
+          `• Designation: *${matchingStaff.role}*\n` +
+          `• Department: *${matchingStaff.department}*\n` +
+          `• Access Level: *${matchingStaff.accessLevel}*\n\n` +
+          `🔑 *Desktop Web Login PIN:* \`${pinRecord.pin}\`\n` +
+          `🌐 *Web Portal:* https://purpleos-iota.vercel.app/auth\n\n` +
+          `Your Telegram account is now linked. You can tap *Open App* to launch your dashboard anytime without logging in again!`;
 
-        replyMarkup = {
-          inline_keyboard: [[{ text: '🌐 Open Crew Portal Web', url: portalUrl }]]
-        };
+        if (matchingStaff.accessLevel === 'Owner / Admin') {
+          replyMarkup = {
+            keyboard: [
+              [{ text: '🌅 Morning Briefing' }, { text: '📊 Business Snapshot' }],
+              [{ text: '👥 Full Team Status' }, { text: '💰 Finance Summary' }],
+              [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
+            ],
+            resize_keyboard: true
+          };
+        } else if (matchingStaff.accessLevel === 'Director / Manager') {
+          replyMarkup = {
+            keyboard: [
+              [{ text: '👥 My Team Roster' }, { text: '📊 Department Report' }],
+              [{ text: '🌅 Morning Briefing' }, { text: '📋 My Tasks' }],
+              [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
+            ],
+            resize_keyboard: true
+          };
+        } else if (matchingStaff.accessLevel === 'Finance Manager') {
+          replyMarkup = {
+            keyboard: [
+              [{ text: '💰 Expense Queue' }, { text: '🧾 Invoice Status' }],
+              [{ text: '📊 Payroll Summary' }, { text: '📍 Clock-In GPS', request_location: true }]
+            ],
+            resize_keyboard: true
+          };
+        } else if (matchingStaff.accessLevel === 'Office Staff') {
+          replyMarkup = {
+            keyboard: [
+              [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
+            ],
+            resize_keyboard: true
+          };
+        } else {
+          replyMarkup = {
+            keyboard: [
+              [{ text: '📋 My Tasks' }, { text: '💰 My Earnings' }],
+              [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
+            ],
+            resize_keyboard: true
+          };
+        }
       } else if (matchingClient) {
         matchingClient.telegramId = String(chatId);
-        const pinRecord = createTempPin(phoneNum, matchingClient.id || matchingClient.clientCode, 'client', matchingClient.email || '');
+        const pinRecord = createTempPin(matchingClient.phone, matchingClient.id || matchingClient.clientCode, 'client', matchingClient.email || '');
         writeDB(db);
         broadcast('client_update', db.clients);
 
-        const portalUrl = `https://purpleos-iota.vercel.app/partners?phone=${encodeURIComponent(phoneNum)}`;
+        const portalUrl = `https://purpleos-iota.vercel.app/partners?phone=${encodeURIComponent(matchingClient.phone)}`;
 
         replyText = `✅ *Client Partner Phone Verified by Purple Bot!*\n\n` +
           `🏢 Company: *${matchingClient.name}*\n` +
           `📱 Phone: \`${matchingClient.phone}\`\n` +
-          `🔑 Temporary Login PIN: \`${pinRecord.pin}\` _(Change on first login)_\n\n` +
+          `🔑 Temporary Login PIN: \`${pinRecord.pin}\`\n\n` +
           `🌐 Access Client Portal:\n${portalUrl}`;
 
         replyMarkup = {
           inline_keyboard: [[{ text: '🌐 Open Client Portal Web', url: portalUrl }]]
         };
       } else {
-        replyText = `⚠️ Phone number \`${phoneNum}\` verified but not matched in agency CRM database. Contact agency admin to issue portal access.`;
+        replyText = `⚠️ Phone number \`${rawContactPhone}\` is not registered in the PBD employee database.\n\nPlease contact Technology Admin *Firoz Uddin Ahmed* (01708-459008) to authorize your account.`;
       }
     }
     // Module B3.2: 1-Tap Native GPS Location Handler
