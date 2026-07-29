@@ -1521,53 +1521,304 @@ router.post('/webhooks/telegram', async (req, res) => {
             processAutomationEvent('eod_submitted', { eod: newEod }, db, writeDB, broadcast);
           }
 
+        // ── /onboard — Trigger First-Time Interactive Onboarding ─────────────────
+        } else if (msgText.startsWith('/onboard') || msgText.toLowerCase() === '▶️ start onboarding') {
+          if (!emp) {
+            replyText = `⚠️ Please verify your phone number first by sending /start.`;
+          } else {
+            emp.onboardingStarted = true;
+            const progress = getOnboardingProgress(emp);
+            const nextTask = (emp.onboardingTasks || []).find(t => !t.completed);
+
+            if (!nextTask) {
+              emp.onboardingComplete = true;
+              replyText = `🎉 *Onboarding 100% Complete!* +20 XP Bonus Awarded!\n\n` +
+                `👤 Name: *${emp.name}*\n` +
+                `🎖️ Rank: *${emp.badge || '🔥 Active'}* (${emp.xp || 0} XP)\n\n` +
+                `Your workspace is fully activated! Tap *Open App* to launch your dashboard.`;
+            } else {
+              db.onboardingSessions = db.onboardingSessions || {};
+              db.onboardingSessions[String(chatId)] = { taskId: nextTask.id };
+              writeDB(db);
+
+              let promptMsg = '';
+              if (nextTask.id === 'email') promptMsg = `📧 *STEP 1: Work Email*\n\nPlease reply to this message with your official work email address (e.g. \`name@purplebot.digital\`):`;
+              else if (nextTask.id === 'webLogin') promptMsg = `🌐 *STEP 2: Web Portal Activation*\n\nOpen https://purpleos-iota.vercel.app/auth on your phone or laptop. Your 1-time PIN was sent in your DM!`;
+              else if (nextTask.id === 'firstClockIn') promptMsg = `📍 *STEP 3: First GPS Clock-In*\n\nPlease tap *Clock-In GPS* on your keyboard below to log your first location-verified attendance!`;
+              else if (nextTask.id === 'firstEod') promptMsg = `📋 *STEP 4: First EOD Report*\n\nPlease type \`/eod\` or tap *Submit EOD* on your keyboard to complete your first daily report!`;
+              else if (nextTask.id === 'firstLeave') promptMsg = `🌴 *STEP 5: Test Leave Request*\n\nType \`/leave\` to submit a test leave request for manager review!`;
+              else if (nextTask.id === 'assignFirstTask') promptMsg = `✅ *MANAGER STEP: Task Assignment*\n\nType \`/assign_task [staff name] [task title]\` to assign your first task!`;
+              else if (nextTask.id === 'submitSalaryData') promptMsg = `💰 *FINANCE STEP: Salary Entry*\n\nType \`/salary_setup\` to begin entering team base salaries and commission rates!`;
+              else if (nextTask.id === 'registerGroups') promptMsg = `📡 *TECH ADMIN STEP: Telegram Groups*\n\nType \`/setup_groups\` to begin setting up and registering all 13 Telegram groups!`;
+
+              replyText = `🚀 *PURPLEOS ONBOARDING WIZARD*\n\n` +
+                `Progress: ${progress.bar} ${progress.pct}% (${progress.done}/${progress.total} Tasks)\n\n` +
+                `${promptMsg}`;
+            }
+          }
+
+        // ── Active Onboarding Session Handler ────────────────────────────────────
+        } else if (db.onboardingSessions && db.onboardingSessions[String(chatId)]) {
+          const session = db.onboardingSessions[String(chatId)];
+
+          if (session.taskId === 'email' && emp) {
+            const inputEmail = msgText.trim();
+            if (!inputEmail.includes('@')) {
+              replyText = `⚠️ Please enter a valid email address containing "@" (e.g. \`name@purplebot.digital\`).`;
+            } else {
+              emp.email = inputEmail;
+              emp.workEmail = inputEmail;
+              completeOnboardingTask(db, emp.id, 'email', 10);
+              delete db.onboardingSessions[String(chatId)];
+              writeDB(db);
+              broadcast('team_update', db.team);
+
+              const progress = getOnboardingProgress(emp);
+              replyText = `✅ *Email Saved!* +10 XP earned!\n\n` +
+                `Progress: ${progress.bar} ${progress.pct}% (${progress.done}/${progress.total} Tasks)\n\n` +
+                `Type \`/onboard\` to proceed to the next onboarding step!`;
+            }
+          } else {
+            delete db.onboardingSessions[String(chatId)];
+          }
+
+        // ── /salary_setup — Sequential 1-by-1 Salary Entry ──────────────────────
+        } else if (msgText.startsWith('/salary_setup')) {
+          if (!isManager && emp?.id !== 'PBD-000' && emp?.id !== 'PBD-029') {
+            replyText = `⚠️ Salary setup is restricted to Finance Manager (Md. Borhan Siddique) & Technology Admin (Firoz Uddin Ahmed).`;
+          } else {
+            db.salarySessions = db.salarySessions || {};
+            db.salarySessions[String(chatId)] = { index: 0, step: 'salary' };
+            writeDB(db);
+
+            const targetEmp = (db.team || [])[0];
+            replyText = `💰 *PURPLEOS SALARY SETUP WIZARD (Member 1/${db.team.length})*\n\n` +
+              `👤 Employee: *${targetEmp.name}* (${targetEmp.role} · ${targetEmp.department})\n\n` +
+              `Enter Base Salary in BDT (type \`0\` if un-salaried):`;
+          }
+
+        } else if (db.salarySessions && db.salarySessions[String(chatId)]) {
+          const session = db.salarySessions[String(chatId)];
+          const targetEmp = (db.team || [])[session.index];
+
+          if (targetEmp) {
+            if (session.step === 'salary') {
+              const val = parseInt(msgText.replace(/[^0-9]/g, ''), 10) || 0;
+              targetEmp.baseSalary = val;
+              session.step = 'commission';
+              db.salarySessions[String(chatId)] = session;
+              writeDB(db);
+
+              replyText = `✅ Base salary for *${targetEmp.name}* set to *BDT ${val.toLocaleString()}*.\n\nNow enter Commission Rate % (e.g. \`5\` for 5%, or \`0\` if none):`;
+            } else if (session.step === 'commission') {
+              const val = parseFloat(msgText.replace(/[^0-9.]/g, '')) || 0;
+              targetEmp.commissionRate = val;
+              session.index += 1;
+              session.step = 'salary';
+
+              const nextEmp = (db.team || [])[session.index];
+
+              if (nextEmp) {
+                db.salarySessions[String(chatId)] = session;
+                writeDB(db);
+                replyText = `✅ Commission for *${targetEmp.name}* set to *${val}%*!\n\n` +
+                  `─── NEXT MEMBER ───────────────────────────\n` +
+                  `👤 Employee ${session.index + 1}/${db.team.length}: *${nextEmp.name}* (${nextEmp.role})\n\n` +
+                  `Enter Base Salary in BDT (type \`0\` if un-salaried):`;
+              } else {
+                delete db.salarySessions[String(chatId)];
+                if (emp) completeOnboardingTask(db, emp.id, 'submitSalaryData', 50);
+                writeDB(db);
+                broadcast('team_update', db.team);
+
+                // Mark setup task done
+                if (db.setupProject) {
+                  const task = db.setupProject.tasks.find(t => t.id === 'SETUP-001');
+                  if (task) task.status = 'Done';
+                }
+
+                replyText = `🎉 *SALARY SETUP 100% COMPLETE!* +50 XP Earned!\n\n` +
+                  `Base salaries & commission rates for all ${db.team.length} team members have been saved to system database and synced to cloud!`;
+              }
+            }
+          } else {
+            delete db.salarySessions[String(chatId)];
+          }
+
+        // ── /add_asset — Sequential Step-by-Step Asset Entry ────────────────────
+        } else if (msgText.startsWith('/add_asset')) {
+          db.assetSessions = db.assetSessions || {};
+          db.assetSessions[String(chatId)] = { step: 1, category: '', name: '', serial: '', condition: '' };
+          writeDB(db);
+
+          replyText = `📦 *ADD AGENCY ASSET WIZARD (Step 1/4)*\n\n` +
+            `Select category:\n` +
+            `1️⃣ Camera & AV Gear\n` +
+            `2️⃣ Studio Equipment\n` +
+            `3️⃣ IT & Computing\n` +
+            `4️⃣ Office Furniture\n` +
+            `5️⃣ Kitchen & Pantry\n` +
+            `6️⃣ Software Subscriptions\n\n` +
+            `Reply with a number (1-6) or category name:`;
+
+        } else if (db.assetSessions && db.assetSessions[String(chatId)]) {
+          const session = db.assetSessions[String(chatId)];
+
+          if (session.step === 1) {
+            const catMap = { '1': 'Camera & AV Gear', '2': 'Studio Equipment', '3': 'IT & Computing', '4': 'Office Furniture', '5': 'Kitchen & Pantry', '6': 'Software Subscriptions' };
+            session.category = catMap[msgText] || msgText;
+            session.step = 2;
+            db.assetSessions[String(chatId)] = session;
+            writeDB(db);
+            replyText = `📦 *Step 2/4: Asset Name*\n\nCategory: *${session.category}*\n\nEnter item name (e.g. \`Sony FX3 Cinema Camera\` or \`Executive Conference Desk\`):`;
+
+          } else if (session.step === 2) {
+            session.name = msgText;
+            session.step = 3;
+            db.assetSessions[String(chatId)] = session;
+            writeDB(db);
+            replyText = `📦 *Step 3/4: Model / Serial Number*\n\nItem: *${session.name}*\n\nEnter serial number or model code (type \`None\` if N/A):`;
+
+          } else if (session.step === 3) {
+            session.serial = msgText;
+            session.step = 4;
+            db.assetSessions[String(chatId)] = session;
+            writeDB(db);
+            replyText = `📦 *Step 4/4: Condition*\n\nEnter condition (\`New\`, \`Good\`, \`Fair\`, \`Needs Repair\`):`;
+
+          } else if (session.step === 4) {
+            session.condition = msgText;
+            const newAsset = {
+              id: `ASST-${Date.now().toString().slice(-6)}`,
+              name: session.name,
+              category: session.category,
+              serial: session.serial,
+              condition: session.condition,
+              addedBy: emp?.name || senderName,
+              addedAt: new Date().toISOString(),
+              status: 'Available'
+            };
+            db.assets = db.assets || [];
+            db.assets.unshift(newAsset);
+            delete db.assetSessions[String(chatId)];
+            if (emp) addXP(db, emp.id, 15, 'asset_added');
+            writeDB(db);
+            broadcast('assets_update', db.assets);
+
+            replyText = `🎉 *Asset Recorded Successfully!* +15 XP Earned!\n\n` +
+              `📦 Name: *${newAsset.name}*\n` +
+              `🏷️ Category: *${newAsset.category}*\n` +
+              `🔢 Serial/Model: *${newAsset.serial}*\n` +
+              `🟢 Condition: *${newAsset.condition}*\n\n` +
+              `Type \`/add_asset\` to add another item!`;
+          }
+
+        // ── /setup_groups — Interactive Group Guide for Firoz ──────────────────
+        } else if (msgText.startsWith('/setup_groups')) {
+          const groupTypes = ['executive', 'leadership', 'design_post', 'content_production', 'client_services', 'strategy', 'finance_admin', 'tech_ai', 'announcements', 'daily_briefing', 'finance_alerts', 'leaderboard', 'production_updates'];
+          db.groupWizardSessions = db.groupWizardSessions || {};
+          db.groupWizardSessions[String(chatId)] = { index: 0 };
+          writeDB(db);
+
+          const currentType = groupTypes[0];
+          replyText = `📡 *TELEGRAM GROUP SETUP WIZARD (1/${groupTypes.length})*\n\n` +
+            `1️⃣ Create Telegram group/channel named: *PBD Executive*\n` +
+            `2️⃣ Add @PurpleManBot as Administrator (full rights).\n` +
+            `3️⃣ Send this exact command inside that new group:\n` +
+            `\`/register_group ${currentType}\`\n\n` +
+            `The bot will capture the group ID automatically!\n\n` +
+            `Type \`/next_group\` when ready for the next group!`;
+
+        } else if (msgText.startsWith('/next_group')) {
+          const groupTypes = ['executive', 'leadership', 'design_post', 'content_production', 'client_services', 'strategy', 'finance_admin', 'tech_ai', 'announcements', 'daily_briefing', 'finance_alerts', 'leaderboard', 'production_updates'];
+          db.groupWizardSessions = db.groupWizardSessions || {};
+          const session = db.groupWizardSessions[String(chatId)] || { index: 0 };
+          session.index = (session.index + 1) % groupTypes.length;
+          db.groupWizardSessions[String(chatId)] = session;
+          writeDB(db);
+
+          const currentType = groupTypes[session.index];
+          const groupNames = {
+            executive: 'PBD Executive', leadership: 'PBD Leadership', design_post: 'PBD Design & Post', content_production: 'PBD Production',
+            client_services: 'PBD Client Services', strategy: 'PBD Strategy', finance_admin: 'PBD Finance & Admin', tech_ai: 'PBD Tech & AI',
+            announcements: 'PBD Announcements Channel', daily_briefing: 'PBD Daily Briefing Channel', finance_alerts: 'PBD Finance Alerts Channel',
+            leaderboard: 'PBD Leaderboard Channel', production_updates: 'PBD Production Updates Channel'
+          };
+
+          replyText = `📡 *TELEGRAM GROUP SETUP WIZARD (${session.index + 1}/${groupTypes.length})*\n\n` +
+            `1️⃣ Create group/channel named: *${groupNames[currentType]}*\n` +
+            `2️⃣ Add @PurpleManBot as Administrator.\n` +
+            `3️⃣ Send this exact command inside that group:\n` +
+            `\`/register_group ${currentType}\`\n\n` +
+            `Type \`/next_group\` to continue to next group guide!`;
+
         } else if (msgText.startsWith('/start') || msgText.startsWith('/help')) {
           if (emp) {
-            replyText = `🤖 *Welcome back, ${emp.name}!*\n\n` +
-              `Role: *${emp.role}* (${emp.department})\n\n` +
-              `Use the menu below or tap *Open App* to launch your dashboard.`;
+            const progress = getOnboardingProgress(emp);
 
-            if (emp.accessLevel === 'Owner / Admin') {
+            if (!emp.onboardingComplete) {
+              replyText = `🤖 *Welcome to PurpleOS, ${emp.name}!*\n\n` +
+                `Role: *${emp.role}* (${emp.department})\n\n` +
+                `🚀 *ONBOARDING PROGRESS:* ${progress.bar} ${progress.pct}%\n` +
+                `Tasks Completed: *${progress.done} / ${progress.total}*\n\n` +
+                `Tap *▶️ Start Onboarding Wizard* below to activate your account!`;
+
               replyMarkup = {
                 keyboard: [
-                  [{ text: '🌅 Morning Briefing' }, { text: '📊 Business Snapshot' }],
-                  [{ text: '👥 Full Team Status' }, { text: '💰 Finance Summary' }],
-                  [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
-                ],
-                resize_keyboard: true
-              };
-            } else if (emp.accessLevel === 'Director / Manager') {
-              replyMarkup = {
-                keyboard: [
-                  [{ text: '👥 My Team Roster' }, { text: '📊 Department Report' }],
-                  [{ text: '🌅 Morning Briefing' }, { text: '📋 My Tasks' }],
-                  [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
-                ],
-                resize_keyboard: true
-              };
-            } else if (emp.accessLevel === 'Finance Manager') {
-              replyMarkup = {
-                keyboard: [
-                  [{ text: '💰 Expense Queue' }, { text: '🧾 Invoice Status' }],
-                  [{ text: '📊 Payroll Summary' }, { text: '📍 Clock-In GPS', request_location: true }]
-                ],
-                resize_keyboard: true
-              };
-            } else if (emp.accessLevel === 'Office Staff') {
-              replyMarkup = {
-                keyboard: [
+                  [{ text: '▶️ Start Onboarding Wizard' }],
+                  [{ text: '🏆 Leaderboard' }, { text: '📋 Submit EOD' }],
                   [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
                 ],
                 resize_keyboard: true
               };
             } else {
-              replyMarkup = {
-                keyboard: [
-                  [{ text: '📋 My Tasks' }, { text: '💰 My Earnings' }],
-                  [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
-                ],
-                resize_keyboard: true
-              };
+              replyText = `🤖 *Welcome back, ${emp.name}!*\n\n` +
+                `Role: *${emp.role}* (${emp.department})\n` +
+                `Rank: *${emp.badge || '🔥 Active'}* (${emp.xp || 0} XP)\n\n` +
+                `Use the menu below or tap *Open App* to launch your dashboard.`;
+
+              if (emp.accessLevel === 'Owner / Admin') {
+                replyMarkup = {
+                  keyboard: [
+                    [{ text: '🌅 Morning Briefing' }, { text: '📊 Business Snapshot' }],
+                    [{ text: '👥 Full Team Status' }, { text: '💰 Finance Summary' }],
+                    [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
+                  ],
+                  resize_keyboard: true
+                };
+              } else if (emp.accessLevel === 'Director / Manager') {
+                replyMarkup = {
+                  keyboard: [
+                    [{ text: '👥 My Team Roster' }, { text: '📊 Department Report' }],
+                    [{ text: '🌅 Morning Briefing' }, { text: '📋 My Tasks' }],
+                    [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
+                  ],
+                  resize_keyboard: true
+                };
+              } else if (emp.accessLevel === 'Finance Manager') {
+                replyMarkup = {
+                  keyboard: [
+                    [{ text: '💰 Expense Queue' }, { text: '🧾 Invoice Status' }],
+                    [{ text: '📊 Payroll Summary' }, { text: '📍 Clock-In GPS', request_location: true }]
+                  ],
+                  resize_keyboard: true
+                };
+              } else if (emp.accessLevel === 'Office Staff') {
+                replyMarkup = {
+                  keyboard: [
+                    [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
+                  ],
+                  resize_keyboard: true
+                };
+              } else {
+                replyMarkup = {
+                  keyboard: [
+                    [{ text: '📋 My Tasks' }, { text: '💰 My Earnings' }],
+                    [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
+                  ],
+                  resize_keyboard: true
+                };
+              }
             }
           } else {
             replyText = `🤖 *Welcome to Purple Man (Purplebot Digital Team Bot)!*\n\n` +
