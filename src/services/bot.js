@@ -2,9 +2,77 @@ const TelegramBot = require('node-telegram-bot-api');
 const { readDB, writeDB } = require('./db');
 const { broadcast } = require('./sse');
 const { processAutomationEvent } = require('./automation');
+const { createTempPin } = require('./auth-pins');
 
 let teamBot = null;
 let clientBot = null;
+
+function normalizePhone(p) {
+  if (!p) return '';
+  const digits = String(p).replace(/[^0-9]/g, '');
+  return digits.length >= 10 ? digits.slice(-10) : digits;
+}
+
+function getRoleKeyboard(accessLevel, isVerified = false) {
+  if (!isVerified) {
+    return {
+      keyboard: [
+        [{ text: '📱 Verify My Phone Number', request_contact: true }]
+      ],
+      resize_keyboard: true
+    };
+  }
+
+  if (accessLevel === 'Owner / Admin') {
+    return {
+      keyboard: [
+        [{ text: '🌅 Morning Briefing' }, { text: '📊 Business Snapshot' }],
+        [{ text: '👥 Full Team Status' }, { text: '💰 Finance Summary' }],
+        [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
+      ],
+      resize_keyboard: true
+    };
+  }
+
+  if (accessLevel === 'Director / Manager') {
+    return {
+      keyboard: [
+        [{ text: '👥 My Team Roster' }, { text: '📊 Department Report' }],
+        [{ text: '🌅 Morning Briefing' }, { text: '📋 My Tasks' }],
+        [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
+      ],
+      resize_keyboard: true
+    };
+  }
+
+  if (accessLevel === 'Finance Manager') {
+    return {
+      keyboard: [
+        [{ text: '💰 Expense Queue' }, { text: '🧾 Invoice Status' }],
+        [{ text: '📊 Payroll Summary' }, { text: '📍 Clock-In GPS', request_location: true }]
+      ],
+      resize_keyboard: true
+    };
+  }
+
+  if (accessLevel === 'Office Staff') {
+    return {
+      keyboard: [
+        [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
+      ],
+      resize_keyboard: true
+    };
+  }
+
+  // Default: Specialist / Crew
+  return {
+    keyboard: [
+      [{ text: '📋 My Tasks' }, { text: '💰 My Earnings' }],
+      [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
+    ],
+    resize_keyboard: true
+  };
+}
 
 function initBot() {
   const db = readDB();
@@ -13,7 +81,6 @@ function initBot() {
   const clientToken = process.env.CLIENT_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN || db.botConfig?.clientBot?.token;
   const rawUrl = process.env.PUBLIC_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL.replace(/^https?:\/\//, '')}` : 'https://purpleos-iota.vercel.app');
   const baseUrl = rawUrl.endsWith('/') ? rawUrl.slice(0, -1) : rawUrl;
-  const isVercel = Boolean(process.env.VERCEL) || Boolean(process.env.VERCEL_URL) || process.env.NODE_ENV === 'production';
 
   // 1. Initialize Team Bot (Purple Man)
   if (teamToken && teamToken.trim() !== '' && !teamToken.includes('your_token')) {
@@ -44,209 +111,208 @@ function initBot() {
         })
       }).catch(e => {});
 
-      teamBot.onText(/\/start|\/help/, (msg) => {
+      // 📱 TELEGRAM CONTACT VERIFICATION HANDLER (1-time phone link)
+      teamBot.on('contact', (msg) => {
         const chatId = msg.chat.id;
-        const welcome = `🤖 *Welcome to Purple Man (Agency Crew & Manager Bot)!*\n\n` +
-          `Tap any button below to manage department tasks, check team rosters, view daily briefings, check salary, and log attendance directly!`;
-        
-        const keyboard = {
-          keyboard: [
-            [{ text: '👥 My Team Roster' }, { text: '📊 Department Report' }],
-            [{ text: '🌅 Morning Briefing' }, { text: '💰 My Salary & Earnings' }],
-            [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }],
-            [{ text: '📱 Share Verified Phone', request_contact: true }]
-          ],
-          resize_keyboard: true
-        };
-        teamBot.sendMessage(chatId, welcome, { parse_mode: 'Markdown', reply_markup: keyboard });
+        const contact = msg.contact;
+        if (!contact || !contact.phone_number) return;
+
+        const dbData = readDB();
+        const normPhone = normalizePhone(contact.phone_number);
+
+        // Match against dbData.team
+        const emp = (dbData.team || []).find(e => normalizePhone(e.phone) === normPhone);
+
+        if (!emp) {
+          const errorMsg = `🔒 *Access Restricted — Purplebot Digital Internal Portal*\n\n` +
+            `The phone number *+${normPhone}* is not registered in the PBD employee database.\n\n` +
+            `If you are an authorized employee, please contact Technology Admin *Firoz Uddin Ahmed* (01708-459008) to authorize your account.`;
+          return teamBot.sendMessage(chatId, errorMsg, { parse_mode: 'Markdown' });
+        }
+
+        // Link Telegram ID
+        emp.telegramId = String(chatId);
+
+        // Generate web temp PIN
+        const pinRecord = createTempPin(emp.phone, emp.id, 'team', emp.email);
+
+        writeDB(dbData);
+        broadcast('team_update', dbData.team);
+
+        const welcomeMsg = `✅ *Identity Verified as ${emp.name}!*\n\n` +
+          `• Designation: *${emp.role}*\n` +
+          `• Department: *${emp.department}*\n` +
+          `• Access Level: *${emp.accessLevel}*\n\n` +
+          `🔑 *Desktop Web Login PIN:* \`${pinRecord.pin}\`\n` +
+          `🌐 *Web Portal:* https://purpleos-iota.vercel.app/auth\n\n` +
+          `Your Telegram account is now linked. Tapping *Open App* will launch your role dashboard automatically without logging in again!`;
+
+        const keyboard = getRoleKeyboard(emp.accessLevel, true);
+        teamBot.sendMessage(chatId, welcomeMsg, { parse_mode: 'Markdown', reply_markup: keyboard });
       });
 
-      teamBot.onText(/\/clockin/, (msg) => {
+      // /start or /help handler
+      teamBot.onText(/\/start|\/help/, (msg) => {
         const chatId = msg.chat.id;
         const dbData = readDB();
-        const emp = dbData.team.find(e => e.telegramId == chatId) || dbData.team[0];
-        
+        const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId));
+
+        if (emp) {
+          const welcome = `🤖 *Welcome back, ${emp.name}!*\n\n` +
+            `Role: *${emp.role}* (${emp.department})\n\n` +
+            `Use the quick menu below or tap *Open App* to launch your dashboard.`;
+          const keyboard = getRoleKeyboard(emp.accessLevel, true);
+          teamBot.sendMessage(chatId, welcome, { parse_mode: 'Markdown', reply_markup: keyboard });
+        } else {
+          const welcome = `🤖 *Welcome to Purple Man (Purplebot Digital Team Bot)!*\n\n` +
+            `Please tap the button below to verify your phone number and link your PBD account.`;
+          const keyboard = getRoleKeyboard('Specialist / Crew', false);
+          teamBot.sendMessage(chatId, welcome, { parse_mode: 'Markdown', reply_markup: keyboard });
+        }
+      });
+
+      // Reset PIN Command
+      teamBot.onText(/\/resetpin/, (msg) => {
+        const chatId = msg.chat.id;
+        const dbData = readDB();
+        const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId));
+
+        if (!emp) {
+          return teamBot.sendMessage(chatId, `❌ Please verify your phone number first by tapping "Verify My Phone Number".`, { parse_mode: 'Markdown' });
+        }
+
+        const pinRecord = createTempPin(emp.phone, emp.id, 'team', emp.email);
+        teamBot.sendMessage(chatId, `🔑 *New Desktop Web PIN:* \`${pinRecord.pin}\`\n\nGo to https://purpleos-iota.vercel.app/auth to log in on your laptop.`, { parse_mode: 'Markdown' });
+      });
+
+      // Location / Clock In
+      teamBot.on('location', (msg) => {
+        const chatId = msg.chat.id;
+        const dbData = readDB();
+        const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId)) || (dbData.team || [])[0];
+
         const now = new Date();
         const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        
-        let record = dbData.attendance.find(a => a.name === emp.name);
+
+        let record = dbData.attendance.find(a => a.employeeId === emp.id || a.name === emp.name);
+        if (record) {
+          record.status = 'In Studio';
+          record.clockInTime = timeStr;
+          record.location = 'GPS Verified';
+        } else {
+          dbData.attendance.push({
+            employeeId: emp.id,
+            name: emp.name,
+            status: 'In Studio',
+            clockInTime: timeStr,
+            location: 'GPS Verified'
+          });
+        }
+        emp.status = 'In Studio';
+        writeDB(dbData);
+        broadcast('attendance_update', dbData.attendance);
+
+        teamBot.sendMessage(chatId, `✅ *GPS Clock-In Verified for ${emp.name}!*\nStatus set to *In Studio* at ${timeStr}.`, { parse_mode: 'Markdown' });
+      });
+
+      teamBot.onText(/\/clockin|📍 Clock-In GPS/, (msg) => {
+        const chatId = msg.chat.id;
+        const dbData = readDB();
+        const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId)) || (dbData.team || [])[0];
+
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        let record = dbData.attendance.find(a => a.employeeId === emp.id || a.name === emp.name);
         if (record) {
           record.status = 'In Studio';
           record.clockInTime = timeStr;
         } else {
           dbData.attendance.push({
-            employeeId: emp.id || 'EMP-001',
+            employeeId: emp.id,
             name: emp.name,
             status: 'In Studio',
             clockInTime: timeStr,
             location: 'Gulshan Studio'
           });
         }
+        emp.status = 'In Studio';
         writeDB(dbData);
         broadcast('attendance_update', dbData.attendance);
-        
-        teamBot.sendMessage(chatId, `✅ *Clock In Recorded by Purple Man!*\nStatus set to *In Studio* at ${timeStr}. Dashboard updated.`, { parse_mode: 'Markdown' });
+
+        teamBot.sendMessage(chatId, `✅ *Clock In Recorded for ${emp.name}!*\nStatus set to *In Studio* at ${timeStr}.`, { parse_mode: 'Markdown' });
       });
 
-      teamBot.onText(/\/clockout/, (msg) => {
+      teamBot.onText(/\/clockout|🚪 Clock Out/, (msg) => {
         const chatId = msg.chat.id;
         const dbData = readDB();
-        const emp = dbData.team.find(e => e.telegramId == chatId) || dbData.team[0];
-        
-        let record = dbData.attendance.find(a => a.name === emp.name);
+        const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId)) || (dbData.team || [])[0];
+
+        let record = dbData.attendance.find(a => a.employeeId === emp.id || a.name === emp.name);
         if (record) {
           record.status = 'Clocked Out';
         }
+        emp.status = 'Offline';
         writeDB(dbData);
         broadcast('attendance_update', dbData.attendance);
-        
-        teamBot.sendMessage(chatId, `🚪 *Clock Out Recorded by Purple Man!*\nStatus set to *Clocked Out*. Have a great evening!`, { parse_mode: 'Markdown' });
+
+        teamBot.sendMessage(chatId, `🚪 *Clock Out Recorded for ${emp.name}!*\nStatus set to *Offline*. Have a great evening!`, { parse_mode: 'Markdown' });
       });
 
-      teamBot.onText(/\/myearnings/, (msg) => {
+      teamBot.onText(/\/myearnings|💰 My Earnings/, (msg) => {
         const chatId = msg.chat.id;
         const dbData = readDB();
-        const emp = dbData.team.find(e => e.telegramId == chatId) || dbData.team[0];
-        const total = (emp.baseSalary || 65000) + (emp.earnedCommissions || 12500);
+        const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId)) || (dbData.team || [])[0];
+        const total = (emp.baseSalary || 0) + (emp.earnedCommissions || 0);
         const message = `💰 *Salary & Commission Breakdown for ${emp.name}*\n\n` +
-          `• Role: ${emp.role}\n` +
-          `• Base Pay: BDT ${(emp.baseSalary || 65000).toLocaleString()}\n` +
-          `• Booking Commissions: BDT ${(emp.earnedCommissions || 12500).toLocaleString()}\n` +
+          `• Role: *${emp.role}*\n` +
+          `• Base Pay: *BDT ${(emp.baseSalary || 0).toLocaleString()}*\n` +
+          `• Commissions: *BDT ${(emp.earnedCommissions || 0).toLocaleString()}*\n` +
           `-----------------------------------------\n` +
           `*Total Monthly Pay: BDT ${total.toLocaleString()}*`;
         teamBot.sendMessage(chatId, message, { parse_mode: 'Markdown' });
       });
 
-      teamBot.onText(/\/mybookings/, (msg) => {
+      teamBot.onText(/\/mytasks|📋 My Tasks/, (msg) => {
         const chatId = msg.chat.id;
         const dbData = readDB();
-        const emp = dbData.team.find(e => e.telegramId == chatId) || dbData.team[0];
-        const tasks = dbData.tasks.filter(t => t.assignee.toLowerCase().includes((emp.name || '').split(' ')[0].toLowerCase()));
-        
-        let message = `📅 *Assigned Shoots & Tasks for ${emp.name}:*\n\n`;
+        const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId)) || (dbData.team || [])[0];
+        const tasks = (dbData.tasks || []).filter(t => (t.assignee || '').toLowerCase().includes((emp.name || '').split(' ')[0].toLowerCase()));
+
+        let message = `📋 *Assigned Shoots & Tasks for ${emp.name}:*\n\n`;
         if (tasks.length === 0) {
-          message += `No active shoot assignments found.`;
+          message += `No active task assignments found right now.`;
         } else {
           tasks.forEach((t, index) => {
-            message += `${index + 1}. *${t.title}*\n   Client: ${t.client}\n   Stage: ${t.stage}\n   Due: ${t.dueDate}\n\n`;
+            message += `${index + 1}. *${t.title}*\n   Client: ${t.client} | Stage: *${t.stage}* | Due: ${t.dueDate || 'ASAP'}\n\n`;
           });
         }
         teamBot.sendMessage(chatId, message, { parse_mode: 'Markdown' });
       });
 
-      teamBot.onText(/\/approve (.+)/, (msg, match) => {
-        const chatId = msg.chat.id;
-        const expId = (match[1] || '').trim().toUpperCase();
-        const dbData = readDB();
-        const exp = (dbData.expenses || []).find(e => e.id === expId);
-        const emp = (dbData.team || []).find(e => e.telegramId == chatId) || { name: 'Line Manager' };
-
-        if (!exp) {
-          return teamBot.sendMessage(chatId, `❌ Expense claim *${expId}* not found.`, { parse_mode: 'Markdown' });
-        }
-
-        exp.tier1 = { approved: true, approvedBy: emp.name, date: new Date().toISOString() };
-        exp.status = 'Tier 2 Pending';
-        writeDB(dbData);
-        broadcast('expense_update', dbData.expenses);
-
-        processAutomationEvent('expense_tier1_approved', { expense: exp }, dbData, writeDB, broadcast);
-        teamBot.sendMessage(chatId, `✅ *Expense ${expId} Tier 1 Approved!*\nStatus set to *Tier 2 Pending*. Finance Lead Roksana notified.`, { parse_mode: 'Markdown' });
-      });
-
-      teamBot.onText(/\/approve2 (.+)/, (msg, match) => {
-        const chatId = msg.chat.id;
-        const expId = (match[1] || '').trim().toUpperCase();
-        const dbData = readDB();
-        const exp = (dbData.expenses || []).find(e => e.id === expId);
-        const emp = (dbData.team || []).find(e => e.telegramId == chatId) || { name: 'Roksana Islam (Finance Lead)' };
-
-        if (!exp) {
-          return teamBot.sendMessage(chatId, `❌ Expense claim *${expId}* not found.`, { parse_mode: 'Markdown' });
-        }
-
-        exp.tier2 = { approved: true, approvedBy: emp.name, date: new Date().toISOString() };
-        exp.status = 'Tier 3 Pending';
-        writeDB(dbData);
-        broadcast('expense_update', dbData.expenses);
-
-        processAutomationEvent('expense_tier2_approved', { expense: exp }, dbData, writeDB, broadcast);
-        teamBot.sendMessage(chatId, `💰 *Expense ${expId} Tier 2 Verified!*\nStatus set to *Tier 3 Pending*. Owner notified for final disbursement.`, { parse_mode: 'Markdown' });
-      });
-
-      teamBot.onText(/\/approveleave (.+)/, (msg, match) => {
-        const chatId = msg.chat.id;
-        const leaveId = (match[1] || '').trim().toUpperCase();
-        const dbData = readDB();
-        const leave = (dbData.leaves || []).find(l => l.id === leaveId);
-        const emp = (dbData.team || []).find(e => e.telegramId == chatId) || { name: 'Line Manager' };
-
-        if (!leave) {
-          return teamBot.sendMessage(chatId, `❌ Leave request *${leaveId}* not found.`, { parse_mode: 'Markdown' });
-        }
-
-        leave.status = 'Manager Approved';
-        leave.managerReviewedBy = emp.name;
-        leave.managerApprovedAt = new Date().toISOString();
-        writeDB(dbData);
-        broadcast('leave_update', dbData.leaves);
-
-        processAutomationEvent('leave_manager_approved', { leave }, dbData, writeDB, broadcast);
-        teamBot.sendMessage(chatId, `🌴 *Leave Request ${leaveId} Manager Approved!*\nStatus set to *Manager Approved*. Forwarded to Owner for final sign-off.`, { parse_mode: 'Markdown' });
-      });
-
-      teamBot.onText(/\/rejectleave (.+)/, (msg, match) => {
-        const chatId = msg.chat.id;
-        const args = (match[1] || '').trim();
-        const parts = args.split(' ');
-        const leaveId = parts[0].toUpperCase();
-        const reason = parts.slice(1).join(' ') || 'Line manager declined request';
-
-        const dbData = readDB();
-        const leave = (dbData.leaves || []).find(l => l.id === leaveId);
-        const emp = (dbData.team || []).find(e => e.telegramId == chatId) || { name: 'Line Manager' };
-
-        if (!leave) {
-          return teamBot.sendMessage(chatId, `❌ Leave request *${leaveId}* not found.`, { parse_mode: 'Markdown' });
-        }
-
-        leave.status = 'Declined';
-        leave.reviewedBy = emp.name;
-        leave.rejectionReason = reason;
-        leave.rejectedAt = new Date().toISOString();
-        writeDB(dbData);
-        broadcast('leave_update', dbData.leaves);
-
-        processAutomationEvent('leave_decision', { leave }, dbData, writeDB, broadcast);
-        teamBot.sendMessage(chatId, `❌ *Leave Request ${leaveId} Rejected*\nStaff member notified via Telegram.`, { parse_mode: 'Markdown' });
-      });
-
-      // Command: /myteam
-      teamBot.onText(/\/myteam/, (msg) => {
+      teamBot.onText(/\/myteam|👥 My Team Roster/, (msg) => {
         const chatId = msg.chat.id;
         const dbData = readDB();
-        const emp = (dbData.team || []).find(e => e.telegramId == chatId) || (dbData.team || [])[0];
-        const isOps = (emp?.role || '').toLowerCase().includes('operations') || emp?.department === 'Management';
+        const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId)) || (dbData.team || [])[0];
+        const isOps = (emp?.role || '').toLowerCase().includes('operations') || emp?.department === 'Top Management' || emp?.accessLevel === 'Owner / Admin';
         const userDept = (emp?.department || '').toLowerCase();
 
         const deptMembers = isOps
           ? (dbData.team || [])
           : (dbData.team || []).filter(t => (t.department || '').toLowerCase().includes(userDept) || userDept.includes((t.department || '').toLowerCase()));
 
-        let text = `👥 *DEPARTMENT TEAM ROSTER (${emp?.department || 'Operations'}):*\n\n`;
+        let text = `👥 *DEPARTMENT ROSTER (${emp?.department || 'All Departments'}):*\n\n`;
         deptMembers.forEach((m, idx) => {
-          const statusIcon = m.status === 'In Studio' ? '🟢' : (m.status === 'On Field Shoot' ? '🎬' : '🌴');
-          const activeTasks = (dbData.tasks || []).filter(t => (t.assignee || '').toLowerCase().includes((m.name || '').split(' ')[0].toLowerCase())).length;
-          text += `${idx + 1}. *${m.name}* (${m.role})\n   ${statusIcon} Status: *${m.status || 'In Studio'}* | 📋 Active Tasks: *${activeTasks}*\n\n`;
+          const statusIcon = m.status === 'In Studio' ? '🟢' : (m.status === 'On Field Shoot' ? '🎬' : (m.status === 'On Leave' ? '🌴' : '⬛'));
+          text += `${idx + 1}. *${m.name}* (${m.role})\n   ${statusIcon} Status: *${m.status || 'Offline'}*\n\n`;
         });
         teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
       });
 
-      // Command: /deptreport
-      teamBot.onText(/\/deptreport/, (msg) => {
+      teamBot.onText(/\/deptreport|📊 Department Report/, (msg) => {
         const chatId = msg.chat.id;
         const dbData = readDB();
-        const emp = (dbData.team || []).find(e => e.telegramId == chatId) || (dbData.team || [])[0];
+        const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId)) || (dbData.team || [])[0];
 
         const tasks = dbData.tasks || [];
         const pendingLeaves = (dbData.leaves || []).filter(l => l.status === 'Pending Line Review').length;
@@ -254,36 +320,90 @@ function initBot() {
 
         let text = `📊 *DEPARTMENT OPERATIONAL REPORT*\n` +
           `📍 Department: *${emp.department || 'Operations'}*\n\n` +
-          `📋 *Kanban Task Stages:*\n` +
-          `• 📝 Briefing & Scripting: *${tasks.filter(t => (t.stage || '').toLowerCase().includes('script') || (t.stage || '').toLowerCase().includes('brief')).length}*\n` +
-          `• 🎬 Field Shoot: *${tasks.filter(t => (t.stage || '').toLowerCase().includes('prod') || (t.stage || '').toLowerCase().includes('shoot')).length}*\n` +
-          `• ✂️ Editing & FX: *${tasks.filter(t => (t.stage || '').toLowerCase().includes('edit') || (t.stage || '').toLowerCase().includes('motion')).length}*\n` +
-          `• 👁️ Client Review: *${tasks.filter(t => (t.stage || '').toLowerCase().includes('client') || (t.stage || '').toLowerCase().includes('review')).length}*\n` +
-          `• ✅ Approved: *${tasks.filter(t => (t.stage || '').toLowerCase().includes('approved') || (t.stage || '').toLowerCase().includes('done')).length}*\n\n` +
-          `⏳ *Open Manager Approvals:*\n` +
-          `• 🌴 Pending Leave Reviews: *${pendingLeaves}*\n` +
-          `• 💰 Pending T1 Expense Claims: *${pendingExpenses}*\n\n` +
-          `🌐 Open Manager Portal: https://purpleos-iota.vercel.app/manager`;
+          `📋 *Task Pipeline:*\n` +
+          `• 📝 Briefing: *${tasks.filter(t => (t.stage || '').toLowerCase().includes('brief')).length}*\n` +
+          `• 🎬 Shoot/Prod: *${tasks.filter(t => (t.stage || '').toLowerCase().includes('prod')).length}*\n` +
+          `• ✂️ Editing: *${tasks.filter(t => (t.stage || '').toLowerCase().includes('edit')).length}*\n` +
+          `• 👁️ Client Review: *${tasks.filter(t => (t.stage || '').toLowerCase().includes('review')).length}*\n\n` +
+          `⏳ *Open Approvals:*\n` +
+          `• 🌴 Pending Leaves: *${pendingLeaves}*\n` +
+          `• 💰 Pending Expenses: *${pendingExpenses}*`;
 
         teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
       });
 
-      // Command: /morning
-      teamBot.onText(/\/morning/, (msg) => {
+      teamBot.onText(/\/morning|🌅 Morning Briefing/, (msg) => {
         const chatId = msg.chat.id;
         const dbData = readDB();
-        const emp = (dbData.team || []).find(e => e.telegramId == chatId) || (dbData.team || [])[0];
+        const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId)) || (dbData.team || [])[0];
 
-        let text = `🌅 *9:00 AM DEPARTMENT MORNING BRIEFING*\n` +
-          `📍 Department: *${emp.department || 'Operations'}*\n\n` +
-          `📋 *Today's Production Schedule:*\n`;
+        const totalStaff = (dbData.team || []).length;
+        const inStudio = (dbData.team || []).filter(t => t.status === 'In Studio').length;
+        const onShoot = (dbData.team || []).filter(t => t.status === 'On Field Shoot').length;
+        const onLeave = (dbData.team || []).filter(t => t.status === 'On Leave').length;
+        const offline = totalStaff - (inStudio + onShoot + onLeave);
 
-        const todayTasks = (dbData.tasks || []).slice(0, 3);
-        todayTasks.forEach((t, idx) => {
-          text += `${idx + 1}. *${t.title}* (${t.client})\n   👤 Assignee: ${t.assignee} | 📌 Priority: ${t.priority}\n`;
+        let text = `🌅 *PURPLEBOT MORNING BRIEFING*\n` +
+          `📅 ${new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })}\n\n` +
+          `👥 *Team Status (${totalStaff} Members):*\n` +
+          `• 🟢 In Studio: *${inStudio}*\n` +
+          `• 🎬 On Shoot: *${onShoot}*\n` +
+          `• 🌴 On Leave: *${onLeave}*\n` +
+          `• ⬛ Offline: *${offline}*\n\n` +
+          `📋 *Today's Production Focus:*\n`;
+
+        const topTasks = (dbData.tasks || []).slice(0, 3);
+        if (topTasks.length === 0) {
+          text += `No urgent production tasks flagged for today.\n`;
+        } else {
+          topTasks.forEach((t, idx) => {
+            text += `${idx + 1}. *${t.title}* (${t.client})\n   👤 Assignee: ${t.assignee}\n`;
+          });
+        }
+
+        text += `\nHave a productive day! 💜`;
+        teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
+      });
+
+      teamBot.onText(/👥 Full Team Status/, (msg) => {
+        const chatId = msg.chat.id;
+        const dbData = readDB();
+        let text = `👥 *PURPLEBOT DIGITAL FULL TEAM STATUS (${(dbData.team || []).length} Members):*\n\n`;
+        (dbData.team || []).forEach((m, idx) => {
+          const statusIcon = m.status === 'In Studio' ? '🟢' : (m.status === 'On Field Shoot' ? '🎬' : (m.status === 'On Leave' ? '🌴' : '⬛'));
+          text += `${idx + 1}. *${m.name}*\n   Role: ${m.role} (${m.department})\n   ${statusIcon} Status: *${m.status || 'Offline'}*\n\n`;
         });
+        teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
+      });
 
-        text += `\nHave a productive shoot day! 🎬`;
+      teamBot.onText(/💰 Finance Summary/, (msg) => {
+        const chatId = msg.chat.id;
+        const dbData = readDB();
+        const invoices = dbData.invoices || [];
+        const paid = invoices.filter(i => i.status === 'Paid').reduce((sum, i) => sum + (i.amount || 0), 0);
+        const draft = invoices.filter(i => i.status === 'Draft').reduce((sum, i) => sum + (i.amount || 0), 0);
+        const pendingExpenses = (dbData.expenses || []).filter(e => e.status !== 'Disbursed').length;
+
+        let text = `💰 *PURPLEBOT FINANCE SNAPSHOT*\n\n` +
+          `• Paid Invoices: *$${paid.toLocaleString()} USD*\n` +
+          `• Draft/Pending Invoices: *$${draft.toLocaleString()} USD*\n` +
+          `• Pending Expense Claims: *${pendingExpenses} claims*\n\n` +
+          `🌐 Open Web Finance Portal: https://purpleos-iota.vercel.app/admin`;
+        teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
+      });
+
+      teamBot.onText(/📊 Business Snapshot/, (msg) => {
+        const chatId = msg.chat.id;
+        const dbData = readDB();
+        const teamCount = (dbData.team || []).length;
+        const clientCount = (dbData.clients || []).length;
+        const taskCount = (dbData.tasks || []).length;
+
+        let text = `📊 *PURPLEBOT DIGITAL BUSINESS SNAPSHOT*\n\n` +
+          `• Total Team Roster: *${teamCount} Members*\n` +
+          `• Active Retainer Clients: *${clientCount} Clients*\n` +
+          `• Active Production Tasks: *${taskCount} Tasks*\n\n` +
+          `System Status: 🟢 Operational & Live`;
         teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
       });
 
@@ -294,7 +414,7 @@ function initBot() {
         const chatId = query.message.chat.id;
         const messageId = query.message.message_id;
         const dbData = readDB();
-        const emp = (dbData.team || []).find(e => e.telegramId == chatId) || { name: 'Line Manager' };
+        const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId)) || { name: 'Line Manager' };
 
         let alertMsg = 'Action processed!';
         let statusBadge = `✅ Completed by ${emp.name}`;
@@ -311,7 +431,7 @@ function initBot() {
             processAutomationEvent('leave_manager_approved', { leave }, dbData, writeDB, broadcast);
             alertMsg = `✅ Leave ${leaveId} Manager Approved! Forwarded to Owner for sign-off.`;
             statusBadge = `✅ Approved by Manager (${emp.name})`;
-            teamBot.sendMessage(chatId, `✅ *Leave ${leaveId} Manager Approved!*\nStatus set to *Manager Approved*. Forwarded to Owner for final sign-off.`, { parse_mode: 'Markdown' });
+            teamBot.sendMessage(chatId, `✅ *Leave ${leaveId} Manager Approved!*\nForwarded to Owner for final sign-off.`, { parse_mode: 'Markdown' });
           }
         } else if (data.startsWith('reject_leave:')) {
           const leaveId = data.split(':')[1];
@@ -326,7 +446,7 @@ function initBot() {
             processAutomationEvent('leave_decision', { leave }, dbData, writeDB, broadcast);
             alertMsg = `❌ Leave ${leaveId} Rejected.`;
             statusBadge = `❌ Rejected by ${emp.name}`;
-            teamBot.sendMessage(chatId, `❌ *Leave ${leaveId} Rejected by Line Manager.*\nStaff member notified via Telegram.`, { parse_mode: 'Markdown' });
+            teamBot.sendMessage(chatId, `❌ *Leave ${leaveId} Rejected by Manager.*`, { parse_mode: 'Markdown' });
           }
         } else if (data.startsWith('approve_leave_owner:')) {
           const leaveId = data.split(':')[1];
@@ -340,7 +460,7 @@ function initBot() {
             processAutomationEvent('leave_decision', { leave }, dbData, writeDB, broadcast);
             alertMsg = `👑 Leave ${leaveId} Owner Approved & Calendar Updated!`;
             statusBadge = `👑 Owner Final Sign-off Granted`;
-            teamBot.sendMessage(chatId, `👑 *Leave ${leaveId} Owner Approved!*\nStaff attendance calendar updated.`, { parse_mode: 'Markdown' });
+            teamBot.sendMessage(chatId, `👑 *Leave ${leaveId} Owner Approved!*`, { parse_mode: 'Markdown' });
           }
         } else if (data.startsWith('approve_expense_t2:')) {
           const expId = data.split(':')[1];
@@ -353,7 +473,7 @@ function initBot() {
             processAutomationEvent('expense_tier2_approved', { expense: exp }, dbData, writeDB, broadcast);
             alertMsg = `💰 Expense ${expId} Tier 2 Verified!`;
             statusBadge = `💰 Tier 2 Verified (${emp.name})`;
-            teamBot.sendMessage(chatId, `💰 *Expense ${expId} Tier 2 Verified!*\nStatus set to *Tier 3 Pending*. Owner notified for final disbursement release.`, { parse_mode: 'Markdown' });
+            teamBot.sendMessage(chatId, `💰 *Expense ${expId} Tier 2 Verified!*\nStatus set to Tier 3 Pending.`, { parse_mode: 'Markdown' });
           }
         } else if (data.startsWith('disburse_expense_t3:')) {
           const expId = data.split(':')[1];
@@ -367,11 +487,10 @@ function initBot() {
             processAutomationEvent('expense_disbursed', { expense: exp }, dbData, writeDB, broadcast);
             alertMsg = `💸 Expense ${expId} Disbursed & Paid!`;
             statusBadge = `💸 Disbursed & Paid`;
-            teamBot.sendMessage(chatId, `🎉 *Expense ${expId} Disbursed & Paid!*\nStaff member notified.`, { parse_mode: 'Markdown' });
+            teamBot.sendMessage(chatId, `🎉 *Expense ${expId} Disbursed & Paid!*`, { parse_mode: 'Markdown' });
           }
         }
 
-        // Disable inline buttons and replace with locked status badge
         try {
           await teamBot.editMessageReplyMarkup({
             inline_keyboard: [[{ text: statusBadge, callback_data: 'noop' }]]
@@ -418,13 +537,13 @@ function initBot() {
 
       clientBot.onText(/\/start|\/help/, (msg) => {
         const chatId = msg.chat.id;
-        const welcome = `🤖 *Welcome to Purple Bot (Client B2B Assistant)!*\n\n` +
+        const welcome = `🤖 *Welcome to Purple Bot (Client Assistant)!*\n\n` +
           `We assist agency clients with campaign status, deliverables & billing:\n` +
           `• /services - Browse agency packages & pricing\n` +
           `• /portfolio - View video & TVC campaign reel\n` +
           `• /review - Access Review Room V2 deliverable cuts\n` +
           `• /invoices - View invoice status & payment instructions`;
-        
+
         const keyboard = {
           keyboard: [
             [{ text: '📱 Share Verified Phone Number', request_contact: true }]
@@ -447,7 +566,7 @@ function initBot() {
       clientBot.onText(/\/portfolio/, (msg) => {
         const chatId = msg.chat.id;
         const text = `📁 *Purplebot Digital Portfolio Showcase*\n\n` +
-          `Explore our award-winning campaign portfolio:\n` +
+          `Explore our campaign portfolio:\n` +
           `🔗 https://purpleos-iota.vercel.app/`;
         clientBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
       });
@@ -470,10 +589,6 @@ function initBot() {
     } catch (err) {
       console.warn('⚠️ Client Bot Init Warning:', err.message);
     }
-  }
-
-  if (!teamBot && !clientBot) {
-    console.log('ℹ️ No Telegram Bot Tokens active. In-app simulator will handle testing.');
   }
 }
 

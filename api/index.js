@@ -52,5 +52,9 @@ app.get(['/client-miniapp', '/review-app'], (req, res) => {
   res.sendFile(path.join(__dirname, '../public/client-miniapp.html'));
 });
 
+app.get(['/onboarding', '/onboard'], (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/onboarding.html'));
+});
+
 // Export serverless handler for Vercel
 module.exports = app;

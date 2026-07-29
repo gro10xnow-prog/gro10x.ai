@@ -1289,18 +1289,66 @@ router.post('/webhooks/telegram', async (req, res) => {
         const isManager = (db.team || []).some(t => t.telegramId == chatId && ((t.accessLevel || '').includes('Manager') || (t.role || '').toLowerCase().includes('director') || (t.role || '').toLowerCase().includes('owner')));
 
         if (msgText.startsWith('/start') || msgText.startsWith('/help')) {
-          replyText = `🤖 *Welcome to Purple Man (Agency Crew & Manager Bot)!*\n\n` +
-            `Tap any button below to manage your department, check team rosters, view daily briefings, and log attendance without typing slash commands!`;
+          const emp = (db.team || []).find(e => String(e.telegramId) === String(chatId));
 
-          replyMarkup = {
-            keyboard: [
-              [{ text: '👥 My Team Roster' }, { text: '📊 Department Report' }],
-              [{ text: '🌅 Morning Briefing' }, { text: '💰 My Salary & Earnings' }],
-              [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }],
-              [{ text: '📱 Share Verified Phone', request_contact: true }]
-            ],
-            resize_keyboard: true
-          };
+          if (emp) {
+            replyText = `🤖 *Welcome back, ${emp.name}!*\n\n` +
+              `Role: *${emp.role}* (${emp.department})\n\n` +
+              `Use the menu below or tap *Open App* to launch your dashboard.`;
+
+            if (emp.accessLevel === 'Owner / Admin') {
+              replyMarkup = {
+                keyboard: [
+                  [{ text: '🌅 Morning Briefing' }, { text: '📊 Business Snapshot' }],
+                  [{ text: '👥 Full Team Status' }, { text: '💰 Finance Summary' }],
+                  [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
+                ],
+                resize_keyboard: true
+              };
+            } else if (emp.accessLevel === 'Director / Manager') {
+              replyMarkup = {
+                keyboard: [
+                  [{ text: '👥 My Team Roster' }, { text: '📊 Department Report' }],
+                  [{ text: '🌅 Morning Briefing' }, { text: '📋 My Tasks' }],
+                  [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
+                ],
+                resize_keyboard: true
+              };
+            } else if (emp.accessLevel === 'Finance Manager') {
+              replyMarkup = {
+                keyboard: [
+                  [{ text: '💰 Expense Queue' }, { text: '🧾 Invoice Status' }],
+                  [{ text: '📊 Payroll Summary' }, { text: '📍 Clock-In GPS', request_location: true }]
+                ],
+                resize_keyboard: true
+              };
+            } else if (emp.accessLevel === 'Office Staff') {
+              replyMarkup = {
+                keyboard: [
+                  [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
+                ],
+                resize_keyboard: true
+              };
+            } else {
+              replyMarkup = {
+                keyboard: [
+                  [{ text: '📋 My Tasks' }, { text: '💰 My Earnings' }],
+                  [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
+                ],
+                resize_keyboard: true
+              };
+            }
+          } else {
+            replyText = `🤖 *Welcome to Purple Man (Purplebot Digital Team Bot)!*\n\n` +
+              `Please tap the button below to verify your phone number and link your account.`;
+
+            replyMarkup = {
+              keyboard: [
+                [{ text: '📱 Verify My Phone Number', request_contact: true }]
+              ],
+              resize_keyboard: true
+            };
+          }
         } else if (msgText.startsWith('/clockin') || msgText.includes('Clock-In')) {
           replyText = `📍 Please tap *Clock-In GPS* below to log verified attendance!`;
           replyMarkup = {

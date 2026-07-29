@@ -109,9 +109,10 @@ function saveSessionAndRedirect(user, linkedType, email) {
   showAlert('✅ Authentication successful! Launching workspace...', 'success');
 
   setTimeout(() => {
-    const role = (user?.role || user?.accessLevel || '').toLowerCase();
-    const isOwner = cleanPhone.includes('8801700000000') || role.includes('owner') || role.includes('founder');
-    const isManager = role.includes('director') || role.includes('manager');
+    const role = (user?.role || '').toLowerCase();
+    const access = (user?.accessLevel || '').toLowerCase();
+    const isOwner = cleanPhone.includes('1708459008') || cleanPhone.includes('1612309290') || cleanPhone.includes('1708455081') || access.includes('owner') || role.includes('owner') || role.includes('admin') || role.includes('md') || role.includes('chairman');
+    const isManager = access.includes('director') || access.includes('manager') || role.includes('director') || role.includes('manager') || role.includes('head');
 
     if (isOwner) {
       window.location.href = '/admin';
@@ -120,7 +121,7 @@ function saveSessionAndRedirect(user, linkedType, email) {
     } else if (linkedType === 'client' || role.includes('client')) {
       window.location.href = '/partners';
     } else {
-      window.location.href = '/team';
+      window.location.href = '/team-miniapp';
     }
   }, 1000);
 }
