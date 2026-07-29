@@ -950,6 +950,9 @@ router.get('/webhooks/logs', (req, res) => {
 });
 
 router.post('/webhooks/telegram', async (req, res) => {
+  // Acknowledge Telegram immediately to prevent webhook timeout (Telegram times out & retries after 5s)
+  res.json({ success: true });
+
   const db = readDB();
   db.webhookLogs = db.webhookLogs || [];
 
@@ -965,7 +968,7 @@ router.post('/webhooks/telegram', async (req, res) => {
 
   if (!botToken) {
     console.warn('⚠️ Telegram Webhook Warning: Bot token environment variable is missing.');
-    return res.status(500).json({ error: 'Bot token configuration missing on server' });
+    return;
   }
 
   // Handle Callback Queries from Inline Keyboards (Module B3.3)
@@ -1003,7 +1006,7 @@ router.post('/webhooks/telegram', async (req, res) => {
       });
     } catch (err) { console.error('Callback query error:', err); }
 
-    return res.json({ success: true });
+    return;
   }
 
   // Handle Incoming Text, Contact, or Location Messages
@@ -1218,8 +1221,6 @@ router.post('/webhooks/telegram', async (req, res) => {
     writeDB(db);
     broadcast('webhook_event', newLog);
   }
-
-  res.json({ success: true });
 });
 
 // Module B4.2: Unipile WhatsApp Webhook Verification Router (https://developer.unipile.com/v2.0/docs/whatsapp)
