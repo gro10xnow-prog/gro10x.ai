@@ -1056,6 +1056,53 @@ router.get('/webhooks/logs', (req, res) => {
   res.json(db.webhookLogs || []);
 });
 
+// ─── Admin Reset Firoz Account Endpoint ─────────────────────────────────────
+router.post('/admin/reset-firoz', async (req, res) => {
+  const db = readDB();
+  const firoz = (db.team || []).find(t => t.id === 'PBD-000' || (t.phone && t.phone.includes('1708459008')));
+
+  const defaultTasks = [
+    { id: 'email', label: '📧 Add Your Work Email', completed: false, completedAt: null },
+    { id: 'webLogin', label: '🌐 Activate Web Portal (First Login)', completed: false, completedAt: null },
+    { id: 'firstClockIn', label: '📍 Submit Your First GPS Clock-In', completed: false, completedAt: null },
+    { id: 'firstEod', label: '📋 Submit Your First EOD Report', completed: false, completedAt: null },
+    { id: 'firstLeave', label: '🌴 Submit a Test Leave Request', completed: false, completedAt: null },
+    { id: 'registerGroups', label: '📡 Register All Telegram Groups in System', completed: false, completedAt: null }
+  ];
+
+  if (firoz) {
+    firoz.telegramId = null;
+    firoz.xp = 0;
+    firoz.badge = '🌱 Recruit';
+    firoz.onboardingComplete = false;
+    firoz.onboardingStarted = false;
+    firoz.permanentPinSet = false;
+    firoz.mustResetPassword = true;
+    firoz.onboardingTasks = defaultTasks;
+    writeDB(db);
+  }
+
+  if (isSupabaseConfigured()) {
+    try {
+      await supabase.from('profiles').update({
+        telegram_id: null,
+        onboarding_complete: false,
+        onboarding_started: false,
+        xp: 0,
+        badge: '🌱 Recruit'
+      }).eq('emp_code', 'PBD-000');
+    } catch (err) {
+      console.error('Error resetting Firoz in Supabase:', err);
+    }
+  }
+
+  db.authPins = (db.authPins || []).filter(p => !(p.phone || '').includes('1708459008'));
+  writeDB(db);
+  broadcast('team_update', db.team);
+
+  res.json({ success: true, message: 'Firoz account PBD-000 reset in all database layers!' });
+});
+
 // ─── Phase 9: Creative Review Room Approval Endpoint ───────────────────────
 router.post('/reviews/approve', (req, res) => {
   const db = readDB();
