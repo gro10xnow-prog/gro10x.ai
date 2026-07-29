@@ -83,7 +83,52 @@
       "mustResetPassword": true,
       "permanentPinSet": false,
       "reportsTo": "PBD-001",
-      "reportsToName": "H. M. Ifteker Mahmud"
+      "reportsToName": "H. M. Ifteker Mahmud",
+      "xp": 0,
+      "badge": "Recruit",
+      "onboardingComplete": false,
+      "onboardingStarted": false,
+      "onboardingTasks": [
+        {
+          "id": "email",
+          "label": "📧 Add Your Work Email",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "webLogin",
+          "label": "🌐 Activate Web Portal (First Login)",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstClockIn",
+          "label": "📍 Submit Your First GPS Clock-In",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstEod",
+          "label": "📋 Submit Your First EOD Report",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstLeave",
+          "label": "🌴 Submit a Test Leave Request",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "registerGroups",
+          "label": "📡 Register All Telegram Groups in System",
+          "completed": false,
+          "completedAt": null
+        }
+      ],
+      "workEmail": "claycoinbank@gmail.com",
+      "deskNumber": "",
+      "joinDate": ""
     },
     {
       "id": "PBD-001",
@@ -101,7 +146,52 @@
       "mustResetPassword": true,
       "permanentPinSet": false,
       "reportsTo": "PBD-001",
-      "reportsToName": "H. M. Ifteker Mahmud"
+      "reportsToName": "H. M. Ifteker Mahmud",
+      "xp": 0,
+      "badge": "Recruit",
+      "onboardingComplete": false,
+      "onboardingStarted": false,
+      "onboardingTasks": [
+        {
+          "id": "email",
+          "label": "📧 Add Your Work Email",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "webLogin",
+          "label": "🌐 Activate Web Portal (First Login)",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstClockIn",
+          "label": "📍 Submit Your First GPS Clock-In",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstEod",
+          "label": "📋 Submit Your First EOD Report",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstLeave",
+          "label": "🌴 Submit a Test Leave Request",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "registerGroups",
+          "label": "📡 Register All Telegram Groups in System",
+          "completed": false,
+          "completedAt": null
+        }
+      ],
+      "workEmail": "ifteker@purplebot.digital",
+      "deskNumber": "",
+      "joinDate": ""
     },
     {
       "id": "PBD-002",
@@ -119,7 +209,52 @@
       "mustResetPassword": true,
       "permanentPinSet": false,
       "reportsTo": "PBD-001",
-      "reportsToName": "H. M. Ifteker Mahmud"
+      "reportsToName": "H. M. Ifteker Mahmud",
+      "xp": 0,
+      "badge": "Recruit",
+      "onboardingComplete": false,
+      "onboardingStarted": false,
+      "onboardingTasks": [
+        {
+          "id": "email",
+          "label": "📧 Add Your Work Email",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "webLogin",
+          "label": "🌐 Activate Web Portal (First Login)",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstClockIn",
+          "label": "📍 Submit Your First GPS Clock-In",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstEod",
+          "label": "📋 Submit Your First EOD Report",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstLeave",
+          "label": "🌴 Submit a Test Leave Request",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "registerGroups",
+          "label": "📡 Register All Telegram Groups in System",
+          "completed": false,
+          "completedAt": null
+        }
+      ],
+      "workEmail": "tariful@purplebot.digital",
+      "deskNumber": "",
+      "joinDate": ""
     },
     {
       "id": "PBD-003",
@@ -137,7 +272,52 @@
       "mustResetPassword": true,
       "permanentPinSet": false,
       "reportsTo": "PBD-001",
-      "reportsToName": "H. M. Ifteker Mahmud"
+      "reportsToName": "H. M. Ifteker Mahmud",
+      "xp": 0,
+      "badge": "Recruit",
+      "onboardingComplete": false,
+      "onboardingStarted": false,
+      "onboardingTasks": [
+        {
+          "id": "email",
+          "label": "📧 Add Your Work Email",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "webLogin",
+          "label": "🌐 Activate Web Portal (First Login)",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstClockIn",
+          "label": "📍 Submit Your First GPS Clock-In",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstEod",
+          "label": "📋 Submit Your First EOD Report",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstLeave",
+          "label": "🌴 Submit a Test Leave Request",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "assignFirstTask",
+          "label": "✅ Assign Your First Task to a Team Member",
+          "completed": false,
+          "completedAt": null
+        }
+      ],
+      "workEmail": "mehedi@purplebot.digital",
+      "deskNumber": "",
+      "joinDate": ""
     },
     {
       "id": "PBD-004",
@@ -155,7 +335,52 @@
       "mustResetPassword": true,
       "permanentPinSet": false,
       "reportsTo": "PBD-001",
-      "reportsToName": "H. M. Ifteker Mahmud"
+      "reportsToName": "H. M. Ifteker Mahmud",
+      "xp": 0,
+      "badge": "Recruit",
+      "onboardingComplete": false,
+      "onboardingStarted": false,
+      "onboardingTasks": [
+        {
+          "id": "email",
+          "label": "📧 Add Your Work Email",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "webLogin",
+          "label": "🌐 Activate Web Portal (First Login)",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstClockIn",
+          "label": "📍 Submit Your First GPS Clock-In",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstEod",
+          "label": "📋 Submit Your First EOD Report",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstLeave",
+          "label": "🌴 Submit a Test Leave Request",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "assignFirstTask",
+          "label": "✅ Assign Your First Task to a Team Member",
+          "completed": false,
+          "completedAt": null
+        }
+      ],
+      "workEmail": "kafil@purplebot.digital",
+      "deskNumber": "",
+      "joinDate": ""
     },
     {
       "id": "PBD-005",
@@ -173,7 +398,52 @@
       "mustResetPassword": true,
       "permanentPinSet": false,
       "reportsTo": "PBD-001",
-      "reportsToName": "H. M. Ifteker Mahmud"
+      "reportsToName": "H. M. Ifteker Mahmud",
+      "xp": 0,
+      "badge": "Recruit",
+      "onboardingComplete": false,
+      "onboardingStarted": false,
+      "onboardingTasks": [
+        {
+          "id": "email",
+          "label": "📧 Add Your Work Email",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "webLogin",
+          "label": "🌐 Activate Web Portal (First Login)",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstClockIn",
+          "label": "📍 Submit Your First GPS Clock-In",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstEod",
+          "label": "📋 Submit Your First EOD Report",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstLeave",
+          "label": "🌴 Submit a Test Leave Request",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "assignFirstTask",
+          "label": "✅ Assign Your First Task to a Team Member",
+          "completed": false,
+          "completedAt": null
+        }
+      ],
+      "workEmail": "zahin@purplebot.digital",
+      "deskNumber": "",
+      "joinDate": ""
     },
     {
       "id": "PBD-006",
@@ -191,7 +461,52 @@
       "mustResetPassword": true,
       "permanentPinSet": false,
       "reportsTo": "PBD-004",
-      "reportsToName": "Kafil Uddin Mahmud"
+      "reportsToName": "Kafil Uddin Mahmud",
+      "xp": 0,
+      "badge": "Recruit",
+      "onboardingComplete": false,
+      "onboardingStarted": false,
+      "onboardingTasks": [
+        {
+          "id": "email",
+          "label": "📧 Add Your Work Email",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "webLogin",
+          "label": "🌐 Activate Web Portal (First Login)",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstClockIn",
+          "label": "📍 Submit Your First GPS Clock-In",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstEod",
+          "label": "📋 Submit Your First EOD Report",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstLeave",
+          "label": "🌴 Submit a Test Leave Request",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "assignFirstTask",
+          "label": "✅ Assign Your First Task to a Team Member",
+          "completed": false,
+          "completedAt": null
+        }
+      ],
+      "workEmail": "ruhuldream@gmail.com",
+      "deskNumber": "",
+      "joinDate": ""
     },
     {
       "id": "PBD-007",
@@ -209,7 +524,46 @@
       "mustResetPassword": true,
       "permanentPinSet": false,
       "reportsTo": "PBD-006",
-      "reportsToName": "Ruhul Amin Rupom"
+      "reportsToName": "Ruhul Amin Rupom",
+      "xp": 0,
+      "badge": "Recruit",
+      "onboardingComplete": false,
+      "onboardingStarted": false,
+      "onboardingTasks": [
+        {
+          "id": "email",
+          "label": "📧 Add Your Work Email",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "webLogin",
+          "label": "🌐 Activate Web Portal (First Login)",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstClockIn",
+          "label": "📍 Submit Your First GPS Clock-In",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstEod",
+          "label": "📋 Submit Your First EOD Report",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstLeave",
+          "label": "🌴 Submit a Test Leave Request",
+          "completed": false,
+          "completedAt": null
+        }
+      ],
+      "workEmail": "sh.shuvoh007@gmail.com",
+      "deskNumber": "",
+      "joinDate": ""
     },
     {
       "id": "PBD-008",
@@ -227,7 +581,46 @@
       "mustResetPassword": true,
       "permanentPinSet": false,
       "reportsTo": "PBD-006",
-      "reportsToName": "Ruhul Amin Rupom"
+      "reportsToName": "Ruhul Amin Rupom",
+      "xp": 0,
+      "badge": "Recruit",
+      "onboardingComplete": false,
+      "onboardingStarted": false,
+      "onboardingTasks": [
+        {
+          "id": "email",
+          "label": "📧 Add Your Work Email",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "webLogin",
+          "label": "🌐 Activate Web Portal (First Login)",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstClockIn",
+          "label": "📍 Submit Your First GPS Clock-In",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstEod",
+          "label": "📋 Submit Your First EOD Report",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstLeave",
+          "label": "🌴 Submit a Test Leave Request",
+          "completed": false,
+          "completedAt": null
+        }
+      ],
+      "workEmail": "arif@editory.digital",
+      "deskNumber": "",
+      "joinDate": ""
     },
     {
       "id": "PBD-009",
@@ -245,7 +638,46 @@
       "mustResetPassword": true,
       "permanentPinSet": false,
       "reportsTo": "PBD-006",
-      "reportsToName": "Ruhul Amin Rupom"
+      "reportsToName": "Ruhul Amin Rupom",
+      "xp": 0,
+      "badge": "Recruit",
+      "onboardingComplete": false,
+      "onboardingStarted": false,
+      "onboardingTasks": [
+        {
+          "id": "email",
+          "label": "📧 Add Your Work Email",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "webLogin",
+          "label": "🌐 Activate Web Portal (First Login)",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstClockIn",
+          "label": "📍 Submit Your First GPS Clock-In",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstEod",
+          "label": "📋 Submit Your First EOD Report",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstLeave",
+          "label": "🌴 Submit a Test Leave Request",
+          "completed": false,
+          "completedAt": null
+        }
+      ],
+      "workEmail": "asmaulhusna.kamona@gmail.com",
+      "deskNumber": "",
+      "joinDate": ""
     },
     {
       "id": "PBD-010",
@@ -263,7 +695,46 @@
       "mustResetPassword": true,
       "permanentPinSet": false,
       "reportsTo": "PBD-006",
-      "reportsToName": "Ruhul Amin Rupom"
+      "reportsToName": "Ruhul Amin Rupom",
+      "xp": 0,
+      "badge": "Recruit",
+      "onboardingComplete": false,
+      "onboardingStarted": false,
+      "onboardingTasks": [
+        {
+          "id": "email",
+          "label": "📧 Add Your Work Email",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "webLogin",
+          "label": "🌐 Activate Web Portal (First Login)",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstClockIn",
+          "label": "📍 Submit Your First GPS Clock-In",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstEod",
+          "label": "📋 Submit Your First EOD Report",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstLeave",
+          "label": "🌴 Submit a Test Leave Request",
+          "completed": false,
+          "completedAt": null
+        }
+      ],
+      "workEmail": "ronyfaruk58@gmail.com",
+      "deskNumber": "",
+      "joinDate": ""
     },
     {
       "id": "PBD-011",
@@ -281,7 +752,46 @@
       "mustResetPassword": true,
       "permanentPinSet": false,
       "reportsTo": "PBD-006",
-      "reportsToName": "Ruhul Amin Rupom"
+      "reportsToName": "Ruhul Amin Rupom",
+      "xp": 0,
+      "badge": "Recruit",
+      "onboardingComplete": false,
+      "onboardingStarted": false,
+      "onboardingTasks": [
+        {
+          "id": "email",
+          "label": "📧 Add Your Work Email",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "webLogin",
+          "label": "🌐 Activate Web Portal (First Login)",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstClockIn",
+          "label": "📍 Submit Your First GPS Clock-In",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstEod",
+          "label": "📋 Submit Your First EOD Report",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstLeave",
+          "label": "🌴 Submit a Test Leave Request",
+          "completed": false,
+          "completedAt": null
+        }
+      ],
+      "workEmail": "shalmir.work@gmail.com",
+      "deskNumber": "",
+      "joinDate": ""
     },
     {
       "id": "PBD-012",
@@ -299,7 +809,46 @@
       "mustResetPassword": true,
       "permanentPinSet": false,
       "reportsTo": "PBD-006",
-      "reportsToName": "Ruhul Amin Rupom"
+      "reportsToName": "Ruhul Amin Rupom",
+      "xp": 0,
+      "badge": "Recruit",
+      "onboardingComplete": false,
+      "onboardingStarted": false,
+      "onboardingTasks": [
+        {
+          "id": "email",
+          "label": "📧 Add Your Work Email",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "webLogin",
+          "label": "🌐 Activate Web Portal (First Login)",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstClockIn",
+          "label": "📍 Submit Your First GPS Clock-In",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstEod",
+          "label": "📋 Submit Your First EOD Report",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstLeave",
+          "label": "🌴 Submit a Test Leave Request",
+          "completed": false,
+          "completedAt": null
+        }
+      ],
+      "workEmail": "aniksaha.citygfx@gmail.com",
+      "deskNumber": "",
+      "joinDate": ""
     },
     {
       "id": "PBD-013",
@@ -317,7 +866,52 @@
       "mustResetPassword": true,
       "permanentPinSet": false,
       "reportsTo": "PBD-004",
-      "reportsToName": "Kafil Uddin Mahmud"
+      "reportsToName": "Kafil Uddin Mahmud",
+      "xp": 0,
+      "badge": "Recruit",
+      "onboardingComplete": false,
+      "onboardingStarted": false,
+      "onboardingTasks": [
+        {
+          "id": "email",
+          "label": "📧 Add Your Work Email",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "webLogin",
+          "label": "🌐 Activate Web Portal (First Login)",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstClockIn",
+          "label": "📍 Submit Your First GPS Clock-In",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstEod",
+          "label": "📋 Submit Your First EOD Report",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstLeave",
+          "label": "🌴 Submit a Test Leave Request",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "assignFirstTask",
+          "label": "✅ Assign Your First Task to a Team Member",
+          "completed": false,
+          "completedAt": null
+        }
+      ],
+      "workEmail": "nahian@purplebot.digital",
+      "deskNumber": "",
+      "joinDate": ""
     },
     {
       "id": "PBD-014",
@@ -335,7 +929,46 @@
       "mustResetPassword": true,
       "permanentPinSet": false,
       "reportsTo": "PBD-013",
-      "reportsToName": "Nasir Ullah Khan Al Nahian"
+      "reportsToName": "Nasir Ullah Khan Al Nahian",
+      "xp": 0,
+      "badge": "Recruit",
+      "onboardingComplete": false,
+      "onboardingStarted": false,
+      "onboardingTasks": [
+        {
+          "id": "email",
+          "label": "📧 Add Your Work Email",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "webLogin",
+          "label": "🌐 Activate Web Portal (First Login)",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstClockIn",
+          "label": "📍 Submit Your First GPS Clock-In",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstEod",
+          "label": "📋 Submit Your First EOD Report",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstLeave",
+          "label": "🌴 Submit a Test Leave Request",
+          "completed": false,
+          "completedAt": null
+        }
+      ],
+      "workEmail": "masud@purplebot.digital",
+      "deskNumber": "",
+      "joinDate": ""
     },
     {
       "id": "PBD-015",
@@ -353,7 +986,46 @@
       "mustResetPassword": true,
       "permanentPinSet": false,
       "reportsTo": "PBD-013",
-      "reportsToName": "Nasir Ullah Khan Al Nahian"
+      "reportsToName": "Nasir Ullah Khan Al Nahian",
+      "xp": 0,
+      "badge": "Recruit",
+      "onboardingComplete": false,
+      "onboardingStarted": false,
+      "onboardingTasks": [
+        {
+          "id": "email",
+          "label": "📧 Add Your Work Email",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "webLogin",
+          "label": "🌐 Activate Web Portal (First Login)",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstClockIn",
+          "label": "📍 Submit Your First GPS Clock-In",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstEod",
+          "label": "📋 Submit Your First EOD Report",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstLeave",
+          "label": "🌴 Submit a Test Leave Request",
+          "completed": false,
+          "completedAt": null
+        }
+      ],
+      "workEmail": "shadlybenzadid@gmail.com",
+      "deskNumber": "",
+      "joinDate": ""
     },
     {
       "id": "PBD-016",
@@ -371,7 +1043,52 @@
       "mustResetPassword": true,
       "permanentPinSet": false,
       "reportsTo": "PBD-003",
-      "reportsToName": "MD Mehedi Bin Jayed"
+      "reportsToName": "MD Mehedi Bin Jayed",
+      "xp": 0,
+      "badge": "Recruit",
+      "onboardingComplete": false,
+      "onboardingStarted": false,
+      "onboardingTasks": [
+        {
+          "id": "email",
+          "label": "📧 Add Your Work Email",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "webLogin",
+          "label": "🌐 Activate Web Portal (First Login)",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstClockIn",
+          "label": "📍 Submit Your First GPS Clock-In",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstEod",
+          "label": "📋 Submit Your First EOD Report",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstLeave",
+          "label": "🌴 Submit a Test Leave Request",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "assignFirstTask",
+          "label": "✅ Assign Your First Task to a Team Member",
+          "completed": false,
+          "completedAt": null
+        }
+      ],
+      "workEmail": "tasin@purplebot.digital",
+      "deskNumber": "",
+      "joinDate": ""
     },
     {
       "id": "PBD-017",
@@ -389,7 +1106,52 @@
       "mustResetPassword": true,
       "permanentPinSet": false,
       "reportsTo": "PBD-016",
-      "reportsToName": "Tasin Kabir"
+      "reportsToName": "Tasin Kabir",
+      "xp": 0,
+      "badge": "Recruit",
+      "onboardingComplete": false,
+      "onboardingStarted": false,
+      "onboardingTasks": [
+        {
+          "id": "email",
+          "label": "📧 Add Your Work Email",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "webLogin",
+          "label": "🌐 Activate Web Portal (First Login)",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstClockIn",
+          "label": "📍 Submit Your First GPS Clock-In",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstEod",
+          "label": "📋 Submit Your First EOD Report",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstLeave",
+          "label": "🌴 Submit a Test Leave Request",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "assignFirstTask",
+          "label": "✅ Assign Your First Task to a Team Member",
+          "completed": false,
+          "completedAt": null
+        }
+      ],
+      "workEmail": "sayed@purplebot.digital",
+      "deskNumber": "",
+      "joinDate": ""
     },
     {
       "id": "PBD-018",
@@ -407,7 +1169,52 @@
       "mustResetPassword": true,
       "permanentPinSet": false,
       "reportsTo": "PBD-016",
-      "reportsToName": "Tasin Kabir"
+      "reportsToName": "Tasin Kabir",
+      "xp": 0,
+      "badge": "Recruit",
+      "onboardingComplete": false,
+      "onboardingStarted": false,
+      "onboardingTasks": [
+        {
+          "id": "email",
+          "label": "📧 Add Your Work Email",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "webLogin",
+          "label": "🌐 Activate Web Portal (First Login)",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstClockIn",
+          "label": "📍 Submit Your First GPS Clock-In",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstEod",
+          "label": "📋 Submit Your First EOD Report",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstLeave",
+          "label": "🌴 Submit a Test Leave Request",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "assignFirstTask",
+          "label": "✅ Assign Your First Task to a Team Member",
+          "completed": false,
+          "completedAt": null
+        }
+      ],
+      "workEmail": "rimjhim@purplebot.digital",
+      "deskNumber": "",
+      "joinDate": ""
     },
     {
       "id": "PBD-019",
@@ -425,7 +1232,52 @@
       "mustResetPassword": true,
       "permanentPinSet": false,
       "reportsTo": "PBD-003",
-      "reportsToName": "MD Mehedi Bin Jayed"
+      "reportsToName": "MD Mehedi Bin Jayed",
+      "xp": 0,
+      "badge": "Recruit",
+      "onboardingComplete": false,
+      "onboardingStarted": false,
+      "onboardingTasks": [
+        {
+          "id": "email",
+          "label": "📧 Add Your Work Email",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "webLogin",
+          "label": "🌐 Activate Web Portal (First Login)",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstClockIn",
+          "label": "📍 Submit Your First GPS Clock-In",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstEod",
+          "label": "📋 Submit Your First EOD Report",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstLeave",
+          "label": "🌴 Submit a Test Leave Request",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "assignFirstTask",
+          "label": "✅ Assign Your First Task to a Team Member",
+          "completed": false,
+          "completedAt": null
+        }
+      ],
+      "workEmail": "shafket@purplebot.digital",
+      "deskNumber": "",
+      "joinDate": ""
     },
     {
       "id": "PBD-020",
@@ -443,7 +1295,46 @@
       "mustResetPassword": true,
       "permanentPinSet": false,
       "reportsTo": "PBD-019",
-      "reportsToName": "Shafket Hossan Pranto"
+      "reportsToName": "Shafket Hossan Pranto",
+      "xp": 0,
+      "badge": "Recruit",
+      "onboardingComplete": false,
+      "onboardingStarted": false,
+      "onboardingTasks": [
+        {
+          "id": "email",
+          "label": "📧 Add Your Work Email",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "webLogin",
+          "label": "🌐 Activate Web Portal (First Login)",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstClockIn",
+          "label": "📍 Submit Your First GPS Clock-In",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstEod",
+          "label": "📋 Submit Your First EOD Report",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstLeave",
+          "label": "🌴 Submit a Test Leave Request",
+          "completed": false,
+          "completedAt": null
+        }
+      ],
+      "workEmail": "sabrina@purplebot.digital",
+      "deskNumber": "",
+      "joinDate": ""
     },
     {
       "id": "PBD-021",
@@ -461,7 +1352,46 @@
       "mustResetPassword": true,
       "permanentPinSet": false,
       "reportsTo": "PBD-019",
-      "reportsToName": "Shafket Hossan Pranto"
+      "reportsToName": "Shafket Hossan Pranto",
+      "xp": 0,
+      "badge": "Recruit",
+      "onboardingComplete": false,
+      "onboardingStarted": false,
+      "onboardingTasks": [
+        {
+          "id": "email",
+          "label": "📧 Add Your Work Email",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "webLogin",
+          "label": "🌐 Activate Web Portal (First Login)",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstClockIn",
+          "label": "📍 Submit Your First GPS Clock-In",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstEod",
+          "label": "📋 Submit Your First EOD Report",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstLeave",
+          "label": "🌴 Submit a Test Leave Request",
+          "completed": false,
+          "completedAt": null
+        }
+      ],
+      "workEmail": "rahin@purplebot.digital",
+      "deskNumber": "",
+      "joinDate": ""
     },
     {
       "id": "PBD-022",
@@ -479,7 +1409,46 @@
       "mustResetPassword": true,
       "permanentPinSet": false,
       "reportsTo": "PBD-019",
-      "reportsToName": "Shafket Hossan Pranto"
+      "reportsToName": "Shafket Hossan Pranto",
+      "xp": 0,
+      "badge": "Recruit",
+      "onboardingComplete": false,
+      "onboardingStarted": false,
+      "onboardingTasks": [
+        {
+          "id": "email",
+          "label": "📧 Add Your Work Email",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "webLogin",
+          "label": "🌐 Activate Web Portal (First Login)",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstClockIn",
+          "label": "📍 Submit Your First GPS Clock-In",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstEod",
+          "label": "📋 Submit Your First EOD Report",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstLeave",
+          "label": "🌴 Submit a Test Leave Request",
+          "completed": false,
+          "completedAt": null
+        }
+      ],
+      "workEmail": "lamisa@purplebot.digital",
+      "deskNumber": "",
+      "joinDate": ""
     },
     {
       "id": "PBD-023",
@@ -497,7 +1466,46 @@
       "mustResetPassword": true,
       "permanentPinSet": false,
       "reportsTo": "PBD-019",
-      "reportsToName": "Shafket Hossan Pranto"
+      "reportsToName": "Shafket Hossan Pranto",
+      "xp": 0,
+      "badge": "Recruit",
+      "onboardingComplete": false,
+      "onboardingStarted": false,
+      "onboardingTasks": [
+        {
+          "id": "email",
+          "label": "📧 Add Your Work Email",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "webLogin",
+          "label": "🌐 Activate Web Portal (First Login)",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstClockIn",
+          "label": "📍 Submit Your First GPS Clock-In",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstEod",
+          "label": "📋 Submit Your First EOD Report",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstLeave",
+          "label": "🌴 Submit a Test Leave Request",
+          "completed": false,
+          "completedAt": null
+        }
+      ],
+      "workEmail": "zaima.zahin@purplebot.digital",
+      "deskNumber": "",
+      "joinDate": ""
     },
     {
       "id": "PBD-024",
@@ -515,7 +1523,46 @@
       "mustResetPassword": true,
       "permanentPinSet": false,
       "reportsTo": "PBD-019",
-      "reportsToName": "Shafket Hossan Pranto"
+      "reportsToName": "Shafket Hossan Pranto",
+      "xp": 0,
+      "badge": "Recruit",
+      "onboardingComplete": false,
+      "onboardingStarted": false,
+      "onboardingTasks": [
+        {
+          "id": "email",
+          "label": "📧 Add Your Work Email",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "webLogin",
+          "label": "🌐 Activate Web Portal (First Login)",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstClockIn",
+          "label": "📍 Submit Your First GPS Clock-In",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstEod",
+          "label": "📋 Submit Your First EOD Report",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstLeave",
+          "label": "🌴 Submit a Test Leave Request",
+          "completed": false,
+          "completedAt": null
+        }
+      ],
+      "workEmail": "arib@purplebot.digital",
+      "deskNumber": "",
+      "joinDate": ""
     },
     {
       "id": "PBD-025",
@@ -533,7 +1580,46 @@
       "mustResetPassword": true,
       "permanentPinSet": false,
       "reportsTo": "PBD-019",
-      "reportsToName": "Shafket Hossan Pranto"
+      "reportsToName": "Shafket Hossan Pranto",
+      "xp": 0,
+      "badge": "Recruit",
+      "onboardingComplete": false,
+      "onboardingStarted": false,
+      "onboardingTasks": [
+        {
+          "id": "email",
+          "label": "📧 Add Your Work Email",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "webLogin",
+          "label": "🌐 Activate Web Portal (First Login)",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstClockIn",
+          "label": "📍 Submit Your First GPS Clock-In",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstEod",
+          "label": "📋 Submit Your First EOD Report",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstLeave",
+          "label": "🌴 Submit a Test Leave Request",
+          "completed": false,
+          "completedAt": null
+        }
+      ],
+      "workEmail": "rafin@purplebot.digital",
+      "deskNumber": "",
+      "joinDate": ""
     },
     {
       "id": "PBD-026",
@@ -551,7 +1637,46 @@
       "mustResetPassword": true,
       "permanentPinSet": false,
       "reportsTo": "PBD-019",
-      "reportsToName": "Shafket Hossan Pranto"
+      "reportsToName": "Shafket Hossan Pranto",
+      "xp": 0,
+      "badge": "Recruit",
+      "onboardingComplete": false,
+      "onboardingStarted": false,
+      "onboardingTasks": [
+        {
+          "id": "email",
+          "label": "📧 Add Your Work Email",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "webLogin",
+          "label": "🌐 Activate Web Portal (First Login)",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstClockIn",
+          "label": "📍 Submit Your First GPS Clock-In",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstEod",
+          "label": "📋 Submit Your First EOD Report",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstLeave",
+          "label": "🌴 Submit a Test Leave Request",
+          "completed": false,
+          "completedAt": null
+        }
+      ],
+      "workEmail": "mahin@purplebot.digital",
+      "deskNumber": "",
+      "joinDate": ""
     },
     {
       "id": "PBD-027",
@@ -569,7 +1694,46 @@
       "mustResetPassword": true,
       "permanentPinSet": false,
       "reportsTo": "PBD-004",
-      "reportsToName": "Kafil Uddin Mahmud"
+      "reportsToName": "Kafil Uddin Mahmud",
+      "xp": 0,
+      "badge": "Recruit",
+      "onboardingComplete": false,
+      "onboardingStarted": false,
+      "onboardingTasks": [
+        {
+          "id": "email",
+          "label": "📧 Add Your Work Email",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "webLogin",
+          "label": "🌐 Activate Web Portal (First Login)",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstClockIn",
+          "label": "📍 Submit Your First GPS Clock-In",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstEod",
+          "label": "📋 Submit Your First EOD Report",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstLeave",
+          "label": "🌴 Submit a Test Leave Request",
+          "completed": false,
+          "completedAt": null
+        }
+      ],
+      "workEmail": "arefin@purplebot.digital",
+      "deskNumber": "",
+      "joinDate": ""
     },
     {
       "id": "PBD-028",
@@ -587,7 +1751,46 @@
       "mustResetPassword": true,
       "permanentPinSet": false,
       "reportsTo": "PBD-016",
-      "reportsToName": "Tasin Kabir"
+      "reportsToName": "Tasin Kabir",
+      "xp": 0,
+      "badge": "Recruit",
+      "onboardingComplete": false,
+      "onboardingStarted": false,
+      "onboardingTasks": [
+        {
+          "id": "email",
+          "label": "📧 Add Your Work Email",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "webLogin",
+          "label": "🌐 Activate Web Portal (First Login)",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstClockIn",
+          "label": "📍 Submit Your First GPS Clock-In",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstEod",
+          "label": "📋 Submit Your First EOD Report",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstLeave",
+          "label": "🌴 Submit a Test Leave Request",
+          "completed": false,
+          "completedAt": null
+        }
+      ],
+      "workEmail": "rythm@purplebot.digital",
+      "deskNumber": "",
+      "joinDate": ""
     },
     {
       "id": "PBD-029",
@@ -605,7 +1808,46 @@
       "mustResetPassword": true,
       "permanentPinSet": false,
       "reportsTo": "PBD-002",
-      "reportsToName": "S M Tariful Islam"
+      "reportsToName": "S M Tariful Islam",
+      "xp": 0,
+      "badge": "Recruit",
+      "onboardingComplete": false,
+      "onboardingStarted": false,
+      "onboardingTasks": [
+        {
+          "id": "email",
+          "label": "📧 Add Your Work Email",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "webLogin",
+          "label": "🌐 Activate Web Portal (First Login)",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstClockIn",
+          "label": "📍 Submit Your First GPS Clock-In",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstEod",
+          "label": "📋 Submit Your First EOD Report",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "submitSalaryData",
+          "label": "💰 Enter Team Salary Details in Finance Portal",
+          "completed": false,
+          "completedAt": null
+        }
+      ],
+      "workEmail": "borhan@purplebot.digital",
+      "deskNumber": "",
+      "joinDate": ""
     },
     {
       "id": "PBD-030",
@@ -623,7 +1865,46 @@
       "mustResetPassword": true,
       "permanentPinSet": false,
       "reportsTo": "PBD-029",
-      "reportsToName": "Md. Borhan Siddique"
+      "reportsToName": "Md. Borhan Siddique",
+      "xp": 0,
+      "badge": "Recruit",
+      "onboardingComplete": false,
+      "onboardingStarted": false,
+      "onboardingTasks": [
+        {
+          "id": "email",
+          "label": "📧 Add Your Work Email",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "webLogin",
+          "label": "🌐 Activate Web Portal (First Login)",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstClockIn",
+          "label": "📍 Submit Your First GPS Clock-In",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstEod",
+          "label": "📋 Submit Your First EOD Report",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstLeave",
+          "label": "🌴 Submit a Test Leave Request",
+          "completed": false,
+          "completedAt": null
+        }
+      ],
+      "workEmail": "skmukit40@gmail.com",
+      "deskNumber": "",
+      "joinDate": ""
     },
     {
       "id": "PBD-031",
@@ -641,7 +1922,40 @@
       "mustResetPassword": true,
       "permanentPinSet": false,
       "reportsTo": "PBD-029",
-      "reportsToName": "Md. Borhan Siddique"
+      "reportsToName": "Md. Borhan Siddique",
+      "xp": 0,
+      "badge": "Recruit",
+      "onboardingComplete": false,
+      "onboardingStarted": false,
+      "onboardingTasks": [
+        {
+          "id": "email",
+          "label": "📧 Add Your Work Email",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "webLogin",
+          "label": "🌐 Activate Web Portal (First Login)",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstClockIn",
+          "label": "📍 Submit Your First GPS Clock-In",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstEod",
+          "label": "📋 Submit Your First EOD Report",
+          "completed": false,
+          "completedAt": null
+        }
+      ],
+      "workEmail": "",
+      "deskNumber": "",
+      "joinDate": ""
     },
     {
       "id": "PBD-032",
@@ -659,7 +1973,40 @@
       "mustResetPassword": true,
       "permanentPinSet": false,
       "reportsTo": "PBD-029",
-      "reportsToName": "Md. Borhan Siddique"
+      "reportsToName": "Md. Borhan Siddique",
+      "xp": 0,
+      "badge": "Recruit",
+      "onboardingComplete": false,
+      "onboardingStarted": false,
+      "onboardingTasks": [
+        {
+          "id": "email",
+          "label": "📧 Add Your Work Email",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "webLogin",
+          "label": "🌐 Activate Web Portal (First Login)",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstClockIn",
+          "label": "📍 Submit Your First GPS Clock-In",
+          "completed": false,
+          "completedAt": null
+        },
+        {
+          "id": "firstEod",
+          "label": "📋 Submit Your First EOD Report",
+          "completed": false,
+          "completedAt": null
+        }
+      ],
+      "workEmail": "",
+      "deskNumber": "",
+      "joinDate": ""
     }
   ],
   "botConfig": {
@@ -715,87 +2062,7 @@
       "ownerPhone": "+8801708459008"
     }
   },
-  "clients": [
-    {
-      "id": "CLT-001",
-      "clientCode": "CLT-001",
-      "name": "Chillox Fast Food Chain",
-      "contactPerson": "Tanvir Ahmed (Marketing Lead)",
-      "email": "marketing@chillox.bd",
-      "phone": "+8801711223344",
-      "tier": "Enterprise Retainer",
-      "monthlyRetainer": "$2,500 / month",
-      "status": "Active Retainer",
-      "onboardedDate": "2026-06-15",
-      "socialLinks": {
-        "facebook": "https://facebook.com/chillox.bd",
-        "instagram": "https://instagram.com/chillox_bd",
-        "tiktok": "https://tiktok.com/@chillox.bd"
-      }
-    },
-    {
-      "id": "CLT-002",
-      "clientCode": "CLT-002",
-      "name": "Clear Men (Unilever)",
-      "contactPerson": "Nusrat Jahan (Brand Manager)",
-      "email": "nusrat.jahan@unilever.com",
-      "phone": "+8801812345678",
-      "tier": "Campaign Retainer",
-      "monthlyRetainer": "$3,200 / month",
-      "status": "Active Retainer",
-      "onboardedDate": "2026-05-10",
-      "socialLinks": {
-        "facebook": "https://facebook.com/clearmenbd",
-        "instagram": "https://instagram.com/clearmen_bd",
-        "youtube": "https://youtube.com/clearmenbd"
-      }
-    },
-    {
-      "id": "CLT-003",
-      "clientCode": "CLT-003",
-      "name": "United Commercial Bank (UCB)",
-      "contactPerson": "Kamrul Islam (Communications Head)",
-      "email": "kamrul.islam@ucb.com.bd",
-      "phone": "+8801911998877",
-      "tier": "Enterprise Retainer",
-      "monthlyRetainer": "$4,000 / month",
-      "status": "Active Retainer",
-      "onboardedDate": "2026-04-01",
-      "socialLinks": {
-        "facebook": "https://facebook.com/ucb.bank",
-        "linkedin": "https://linkedin.com/company/ucb-bank"
-      }
-    },
-    {
-      "id": "CLT-009",
-      "clientCode": "CLT-009",
-      "name": "Test Brand Client",
-      "contactPerson": "Client Partner Lead",
-      "email": "clienttest@purplebot.digital",
-      "phone": "+8801889825025",
-      "tier": "Enterprise Retainer",
-      "monthlyRetainer": "$1,500 / month",
-      "status": "Active Retainer",
-      "onboardedDate": "2026-07-28",
-      "socialLinks": {
-        "facebook": "https://facebook.com/purplebotdigital",
-        "instagram": "https://instagram.com/purplebot.digital"
-      }
-    },
-    {
-      "id": "CLI-0005",
-      "name": "Test Brand Phase B",
-      "contactPerson": "Lead Manager",
-      "email": "lead@testbrand.com",
-      "phone": "+8801700000000",
-      "status": "Active Retainer",
-      "category": "General",
-      "totalSpent": "$0",
-      "activeCampaigns": [
-        "AV Production"
-      ]
-    }
-  ],
+  "clients": [],
   "tasks": [],
   "reviews": [
     {
@@ -1245,53 +2512,265 @@
   ],
   "groups": [
     {
-      "id": "GRP-001",
-      "name": "Chillox Production Ops Group",
-      "type": "group",
-      "chatId": "-1009876543210",
+      "id": "GRP-EXEC",
+      "name": "PBD Executive",
+      "type": "executive",
+      "chatId": null,
       "bot": "teamBot",
-      "description": "Active production dispatch group",
-      "linkedClientId": null,
-      "members": [],
-      "createdAt": "2026-07-28T19:01:24.015Z"
+      "registered": false
     },
     {
-      "id": "GRP-002",
-      "name": "Chillox Production Ops Group",
-      "type": "group",
-      "chatId": "-1009876543210",
+      "id": "GRP-LEAD",
+      "name": "PBD Leadership",
+      "type": "leadership",
+      "chatId": null,
       "bot": "teamBot",
-      "description": "Active production dispatch group",
-      "linkedClientId": null,
-      "members": [],
-      "createdAt": "2026-07-28T19:01:35.657Z"
+      "registered": false
     },
     {
-      "id": "GRP-003",
-      "name": "Chillox Production Ops Group",
-      "type": "group",
-      "chatId": "-1009876543210",
+      "id": "GRP-DESIGN",
+      "name": "PBD Design & Post",
+      "type": "design_post",
+      "chatId": null,
       "bot": "teamBot",
-      "description": "Active production dispatch group",
-      "linkedClientId": null,
-      "members": [],
-      "createdAt": "2026-07-28T19:01:47.416Z"
+      "registered": false
     },
     {
-      "id": "GRP-004",
-      "name": "Chillox Production Ops Group",
-      "type": "group",
-      "chatId": "-1009876543210",
+      "id": "GRP-PROD",
+      "name": "PBD Production",
+      "type": "content_production",
+      "chatId": null,
       "bot": "teamBot",
-      "description": "Active production dispatch group",
-      "linkedClientId": null,
-      "members": [],
-      "createdAt": "2026-07-28T19:01:57.419Z"
+      "registered": false
+    },
+    {
+      "id": "GRP-CS",
+      "name": "PBD Client Services",
+      "type": "client_services",
+      "chatId": null,
+      "bot": "teamBot",
+      "registered": false
+    },
+    {
+      "id": "GRP-STRAT",
+      "name": "PBD Strategy",
+      "type": "strategy",
+      "chatId": null,
+      "bot": "teamBot",
+      "registered": false
+    },
+    {
+      "id": "GRP-FIN",
+      "name": "PBD Finance & Admin",
+      "type": "finance_admin",
+      "chatId": null,
+      "bot": "teamBot",
+      "registered": false
+    },
+    {
+      "id": "GRP-TECH",
+      "name": "PBD Tech & AI",
+      "type": "tech_ai",
+      "chatId": null,
+      "bot": "teamBot",
+      "registered": false
+    },
+    {
+      "id": "CH-ANN",
+      "name": "PBD Announcements",
+      "type": "announcements",
+      "chatId": null,
+      "bot": "teamBot",
+      "registered": false
+    },
+    {
+      "id": "CH-BRIEF",
+      "name": "PBD Daily Briefing",
+      "type": "daily_briefing",
+      "chatId": null,
+      "bot": "teamBot",
+      "registered": false
+    },
+    {
+      "id": "CH-FIN",
+      "name": "PBD Finance Alerts",
+      "type": "finance_alerts",
+      "chatId": null,
+      "bot": "teamBot",
+      "registered": false
+    },
+    {
+      "id": "CH-LB",
+      "name": "PBD Leaderboard",
+      "type": "leaderboard",
+      "chatId": null,
+      "bot": "teamBot",
+      "registered": false
+    },
+    {
+      "id": "CH-PROD",
+      "name": "PBD Production Updates",
+      "type": "production_updates",
+      "chatId": null,
+      "bot": "teamBot",
+      "registered": false
     }
   ],
   "authPins": [],
   "leaves": [],
   "eod_reports": [],
   "tickets": [],
-  "pageEvents": []
+  "pageEvents": [],
+  "setupProject": {
+    "id": "PROJ-SETUP-001",
+    "name": "Agency Setup & Data Collection",
+    "status": "In Progress",
+    "createdAt": "2026-07-29T17:48:34.694Z",
+    "tasks": [
+      {
+        "id": "SETUP-001",
+        "title": "Enter base salary & commission for all 33 members",
+        "assignedTo": "PBD-029",
+        "assignedName": "Md. Borhan Siddique",
+        "status": "Pending",
+        "xpReward": 50,
+        "dataField": "team[].baseSalary"
+      },
+      {
+        "id": "SETUP-002",
+        "title": "List all camera & video equipment",
+        "assignedTo": "PBD-013",
+        "assignedName": "Nasir Ullah Khan",
+        "status": "Pending",
+        "xpReward": 30,
+        "dataField": "assets[].camera"
+      },
+      {
+        "id": "SETUP-003",
+        "title": "List all studio equipment (lights, grip, stands)",
+        "assignedTo": "PBD-004",
+        "assignedName": "Kafil Uddin Mahmud",
+        "status": "Pending",
+        "xpReward": 30,
+        "dataField": "assets[].studio"
+      },
+      {
+        "id": "SETUP-004",
+        "title": "List all IT equipment (laptops, monitors, tablets)",
+        "assignedTo": "PBD-005",
+        "assignedName": "Md. Zahin Khandaker",
+        "status": "Pending",
+        "xpReward": 25,
+        "dataField": "assets[].it"
+      },
+      {
+        "id": "SETUP-005",
+        "title": "List office furniture (desks, chairs, tables)",
+        "assignedTo": "PBD-005",
+        "assignedName": "Md. Zahin Khandaker",
+        "status": "Pending",
+        "xpReward": 20,
+        "dataField": "assets[].furniture"
+      },
+      {
+        "id": "SETUP-006",
+        "title": "List kitchen & pantry items",
+        "assignedTo": "PBD-031",
+        "assignedName": "Mohammad Shanto",
+        "status": "Pending",
+        "xpReward": 15,
+        "dataField": "assets[].kitchen"
+      },
+      {
+        "id": "SETUP-007",
+        "title": "List all software subscriptions (tool, cost, renewal)",
+        "assignedTo": "PBD-005",
+        "assignedName": "Md. Zahin Khandaker",
+        "status": "Pending",
+        "xpReward": 25,
+        "dataField": "assets[].software"
+      },
+      {
+        "id": "SETUP-008",
+        "title": "Add all active retainer clients",
+        "assignedTo": "PBD-016",
+        "assignedName": "Tasin Kabir",
+        "status": "Pending",
+        "xpReward": 40,
+        "dataField": "clients[]"
+      },
+      {
+        "id": "SETUP-009",
+        "title": "List all active campaign projects",
+        "assignedTo": "PBD-003",
+        "assignedName": "MD Mehedi Bin Jayed",
+        "status": "Pending",
+        "xpReward": 40,
+        "dataField": "tasks[]"
+      },
+      {
+        "id": "SETUP-010",
+        "title": "Register all Telegram department groups",
+        "assignedTo": "PBD-000",
+        "assignedName": "Firoz Uddin Ahmed",
+        "status": "Pending",
+        "xpReward": 30,
+        "dataField": "groups[]"
+      },
+      {
+        "id": "SETUP-011",
+        "title": "Upload historical invoice records (Excel)",
+        "assignedTo": "PBD-029",
+        "assignedName": "Md. Borhan Siddique",
+        "status": "Pending",
+        "xpReward": 35,
+        "dataField": "invoices[]"
+      }
+    ]
+  },
+  "assetCategories": [
+    {
+      "id": "camera",
+      "label": "📷 Camera & AV Equipment",
+      "icon": "📷",
+      "managedBy": "PBD-013"
+    },
+    {
+      "id": "studio",
+      "label": "💡 Studio Equipment",
+      "icon": "💡",
+      "managedBy": "PBD-004"
+    },
+    {
+      "id": "it",
+      "label": "💻 IT & Computing",
+      "icon": "💻",
+      "managedBy": "PBD-005"
+    },
+    {
+      "id": "furniture",
+      "label": "🪑 Office Furniture",
+      "icon": "🪑",
+      "managedBy": "PBD-005"
+    },
+    {
+      "id": "kitchen",
+      "label": "🍳 Kitchen & Pantry",
+      "icon": "🍳",
+      "managedBy": "PBD-031"
+    },
+    {
+      "id": "software",
+      "label": "🖥️ Software Subscriptions",
+      "icon": "🖥️",
+      "managedBy": "PBD-005"
+    }
+  ],
+  "eodSessions": {},
+  "assetSessions": {},
+  "leaderboard": {
+    "month": "2026-07",
+    "updatedAt": "2026-07-29T17:48:34.699Z",
+    "rankings": []
+  }
 }

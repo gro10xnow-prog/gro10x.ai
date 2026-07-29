@@ -1056,7 +1056,56 @@ router.get('/webhooks/logs', (req, res) => {
   res.json(db.webhookLogs || []);
 });
 
-const eodSessions = {};
+
+// ─── XP & Gamification Utilities ────────────────────────────────────────────
+function addXP(db, empId, amount, reason) {
+  const emp = (db.team || []).find(t => t.id === empId || t.emp_code === empId);
+  if (!emp) return;
+  emp.xp = (emp.xp || 0) + amount;
+  const xp = emp.xp;
+  emp.badge = xp >= 1000 ? '👑 Legend' : xp >= 600 ? '💎 Elite' : xp >= 300 ? '⭐ Star' : xp >= 100 ? '🔥 Active' : '🌱 Recruit';
+}
+
+function completeOnboardingTask(db, empId, taskId, xpReward = 10) {
+  const emp = (db.team || []).find(t => t.id === empId || t.emp_code === empId);
+  if (!emp || !emp.onboardingTasks) return;
+  const task = emp.onboardingTasks.find(t => t.id === taskId);
+  if (task && !task.completed) {
+    task.completed = true;
+    task.completedAt = new Date().toISOString();
+    addXP(db, empId, xpReward, taskId);
+  }
+  const allDone = emp.onboardingTasks.every(t => t.completed);
+  if (allDone && !emp.onboardingComplete) {
+    emp.onboardingComplete = true;
+    addXP(db, empId, 20, 'onboarding_complete_bonus');
+  }
+}
+
+function getOnboardingProgress(emp) {
+  const tasks = emp.onboardingTasks || [];
+  const done = tasks.filter(t => t.completed).length;
+  const total = tasks.length;
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+  const bar = '█'.repeat(Math.floor(pct / 10)) + '░'.repeat(10 - Math.floor(pct / 10));
+  return { done, total, pct, bar };
+}
+
+function buildLeaderboard(db) {
+  const sorted = (db.team || [])
+    .filter(t => t.xp !== undefined)
+    .sort((a, b) => (b.xp || 0) - (a.xp || 0))
+    .slice(0, 10);
+  const medals = ['🥇', '🥈', '🥉'];
+  return sorted.map((emp, i) => {
+    const { done, total } = getOnboardingProgress(emp);
+    const medal = medals[i] || `${i + 1}.`;
+    return `${medal} *${emp.name}* · ${emp.xp || 0} XP · ${emp.badge || '🌱 Recruit'} · Onboarding: ${done}/${total}`;
+  }).join('\n');
+}
+
+// ─── EOD Sessions (DB-persisted, not in-memory) ──────────────────────────────
+// Sessions are now read/written through db.eodSessions[chatId]
 
 router.post('/webhooks/telegram', async (req, res) => {
   // ─── VERCEL SERVERLESS CRITICAL RULE ────────────────────────────────────────
@@ -1364,27 +1413,84 @@ router.post('/webhooks/telegram', async (req, res) => {
 
       if (isTeamBot) {
         const isManager = (db.team || []).some(t => t.telegramId == chatId && ((t.accessLevel || '').includes('Manager') || (t.role || '').toLowerCase().includes('director') || (t.role || '').toLowerCase().includes('owner')));
+        const emp = (db.team || []).find(e => String(e.telegramId) === String(chatId));
 
-        if (msgText.startsWith('/eod') || msgText.toLowerCase().includes('submit eod') || msgText.toLowerCase().includes('write eod')) {
-          eodSessions[chatId] = { step: 1, completed: '', inProgress: '', blockers: '' };
+        // ── /register_group [type] — Firoz registers a Telegram group in the system ──
+        if (msgText.startsWith('/register_group') && isTeamBot) {
+          const groupType = msgText.split(' ')[1] || '';
+          const validTypes = ['executive', 'leadership', 'design_post', 'content_production', 'client_services', 'strategy', 'finance_admin', 'tech_ai', 'announcements', 'daily_briefing', 'finance_alerts', 'leaderboard', 'production_updates'];
+          if (!groupType || !validTypes.includes(groupType)) {
+            replyText = `❌ Invalid group type.\n\nValid types:\n${validTypes.map(t => `• \`${t}\``).join('\n')}\n\nUsage: \`/register_group design_post\``;
+          } else {
+            db.groups = db.groups || [];
+            const existing = db.groups.find(g => g.type === groupType);
+            if (existing) {
+              existing.chatId = String(chatId);
+              existing.registered = true;
+              existing.registeredAt = new Date().toISOString();
+              existing.registeredBy = emp?.name || 'Admin';
+            } else {
+              db.groups.push({ id: `GRP-${Date.now()}`, type: groupType, chatId: String(chatId), registered: true, registeredAt: new Date().toISOString() });
+            }
+            writeDB(db);
+            broadcast('groups_update', db.groups);
+            if (emp) completeOnboardingTask(db, emp.id, 'registerGroups', 10);
+            const registeredCount = db.groups.filter(g => g.registered && g.chatId).length;
+            replyText = `✅ *Group Registered!*\n\n📡 Type: \`${groupType}\`\n🆔 Chat ID: \`${chatId}\`\n\n${registeredCount}/13 groups registered so far.`;
+          }
+
+        // ── /leaderboard — Show XP rankings ──────────────────────────────────────
+        } else if (msgText.startsWith('/leaderboard') || msgText.toLowerCase() === '🏆 leaderboard') {
+          const board = buildLeaderboard(db);
+          const now = new Date();
+          const monthName = now.toLocaleString('default', { month: 'long', year: 'numeric' });
+          replyText = `🏆 *PURPLEOS LEADERBOARD — ${monthName.toUpperCase()}*\n\n${board}\n\n_Updated every time XP is earned. Keep going!_`;
+
+        // ── /setup — Show Agency Setup Project status ─────────────────────────────
+        } else if (msgText.startsWith('/setup') || msgText.toLowerCase().includes('setup status')) {
+          const proj = db.setupProject;
+          if (proj) {
+            const done = proj.tasks.filter(t => t.status === 'Done').length;
+            const total = proj.tasks.length;
+            const pct = Math.round((done / total) * 100);
+            const bar = '█'.repeat(Math.floor(pct / 10)) + '░'.repeat(10 - Math.floor(pct / 10));
+            const pending = proj.tasks.filter(t => t.status !== 'Done');
+            replyText = `🏗️ *AGENCY SETUP PROJECT*\n\n` +
+              `Progress: ${bar} ${pct}% (${done}/${total} tasks)\n\n` +
+              `⏳ *Pending Tasks:*\n${pending.slice(0, 5).map(t => `• ${t.title}\n  👤 Assigned: ${t.assignedName}`).join('\n\n')}` +
+              (pending.length > 5 ? `\n\n_...and ${pending.length - 5} more_` : '');
+          } else {
+            replyText = '⚠️ Setup project not found. Contact Tech Admin.';
+          }
+
+        // ── /eod — 3-step guided EOD (DB-persisted sessions) ─────────────────────
+        } else if (msgText.startsWith('/eod') || msgText.toLowerCase().includes('submit eod') || msgText.toLowerCase().includes('write eod') || msgText === '📋 Submit EOD') {
+          db.eodSessions = db.eodSessions || {};
+          db.eodSessions[String(chatId)] = { step: 1, completed: '', inProgress: '', blockers: '' };
+          writeDB(db);
           replyText = `📋 *PURPLEBOT EOD REPORT — STEP 1 OF 3*\n\nWhat key tasks did you *complete* today?`;
-        } else if (eodSessions[chatId]) {
-          const session = eodSessions[chatId];
+
+        } else if (db.eodSessions && db.eodSessions[String(chatId)]) {
+          const session = db.eodSessions[String(chatId)];
           if (session.step === 1) {
             session.completed = msgText;
             session.step = 2;
+            db.eodSessions[String(chatId)] = session;
+            writeDB(db);
             replyText = `📋 *PURPLEBOT EOD REPORT — STEP 2 OF 3*\n\nWhat tasks are currently *in progress*?`;
           } else if (session.step === 2) {
             session.inProgress = msgText;
             session.step = 3;
+            db.eodSessions[String(chatId)] = session;
+            writeDB(db);
             replyText = `📋 *PURPLEBOT EOD REPORT — STEP 3 OF 3*\n\nAny *blockers or issues* requiring management help? (Type "None" if clear)`;
           } else if (session.step === 3) {
             session.blockers = msgText;
-            const emp = (db.team || []).find(e => String(e.telegramId) === String(chatId)) || { name: senderName, id: 'PBD-000' };
+            const eodEmp = emp || { name: senderName, id: 'PBD-000' };
             const newEod = {
               id: `EOD-${Date.now().toString().slice(-6)}`,
-              staffId: emp.id || 'PBD-000',
-              staffName: emp.name || senderName,
+              staffId: eodEmp.id || 'PBD-000',
+              staffName: eodEmp.name || senderName,
               date: new Date().toISOString().split('T')[0],
               tasksCompleted: session.completed,
               tasksInProgress: session.inProgress,
@@ -1393,21 +1499,29 @@ router.post('/webhooks/telegram', async (req, res) => {
             };
             db.eod_reports = db.eod_reports || [];
             db.eod_reports.unshift(newEod);
+            delete db.eodSessions[String(chatId)];
+
+            // XP + onboarding task completion
+            if (eodEmp.id) {
+              completeOnboardingTask(db, eodEmp.id, 'firstEod', 10);
+              addXP(db, eodEmp.id, 8, 'eod_submitted');
+            }
             writeDB(db);
             broadcast('eod_update', db.eod_reports);
-            delete eodSessions[chatId];
 
-            replyText = `🎉 *EOD Report Submitted Successfully!*\n\n` +
-              `Thank you, *${emp.name}*. Your End-of-Day report has been logged and sent to your Line Manager & MD.\n\n` +
+            const { done, total, pct, bar } = eodEmp.id ? getOnboardingProgress((db.team || []).find(t => t.id === eodEmp.id) || eodEmp) : { done: 0, total: 0, pct: 0, bar: '░░░░░░░░░░' };
+
+            replyText = `🎉 *EOD Report Submitted!* +8 XP earned!\n\n` +
+              `Thank you, *${eodEmp.name}*.\n\n` +
               `• *Completed:* ${newEod.tasksCompleted}\n` +
               `• *In Progress:* ${newEod.tasksInProgress}\n` +
-              `• *Blockers:* ${newEod.blockers}`;
+              `• *Blockers:* ${newEod.blockers}\n\n` +
+              `🏁 Onboarding: ${bar} ${pct}% (${done}/${total})`;
 
             processAutomationEvent('eod_submitted', { eod: newEod }, db, writeDB, broadcast);
           }
-        } else if (msgText.startsWith('/start') || msgText.startsWith('/help')) {
-          const emp = (db.team || []).find(e => String(e.telegramId) === String(chatId));
 
+        } else if (msgText.startsWith('/start') || msgText.startsWith('/help')) {
           if (emp) {
             replyText = `🤖 *Welcome back, ${emp.name}!*\n\n` +
               `Role: *${emp.role}* (${emp.department})\n\n` +

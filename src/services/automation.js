@@ -649,7 +649,8 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
     // TRIGGER: Leave Manager Approved -> Alert Owner for Final Sign-off
     if (eventType === 'leave_manager_approved') {
       const leave = eventData.leave;
-      const owner = (db.team || []).find(t => (t.role || '').toLowerCase().includes('owner')) || (db.team || []).find(t => t.id === 'EMP-007');
+      const iftekhar = (db.team || []).find(t => t.id === 'PBD-001');
+      const firoz = (db.team || []).find(t => t.id === 'PBD-000');
 
       const msgText = `👑 *LEAVE MANAGER APPROVED — AWAITING OWNER FINAL SIGN-OFF*\n\n` +
         `📋 Leave ID: *${leave.id}*\n` +
@@ -659,13 +660,18 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
         `✍️ Manager Approved By: *${leave.managerReviewedBy || 'Line Manager'}*\n\n` +
         `Click below to issue final leave sign-off.`;
 
-      const targetId = owner?.telegramId || '1708459008';
-      sendTelegramNotification(targetId, msgText, [
-        [
-          { text: '👑 Final Leave Sign-off', callback_data: `approve_leave_owner:${leave.id}` }
-        ],
+      const buttons = [
+        [{ text: '👑 Final Leave Sign-off', callback_data: `approve_leave_owner:${leave.id}` }],
+        [{ text: '❌ Decline Leave', callback_data: `reject_leave:${leave.id}` }],
         [{ text: '🔍 Inspect in Admin Portal', url: `https://purpleos-iota.vercel.app/admin` }]
-      ], true);
+      ];
+
+      if (iftekhar && iftekhar.telegramId) {
+        sendTelegramNotification(iftekhar.telegramId, msgText, buttons, true);
+      }
+      if (firoz && firoz.telegramId && firoz.telegramId !== iftekhar?.telegramId) {
+        sendTelegramNotification(firoz.telegramId, msgText, buttons, true);
+      }
 
       logs.unshift({
         id: `LOG-${Date.now()}`,

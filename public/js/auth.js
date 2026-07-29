@@ -101,6 +101,8 @@ function saveSessionAndRedirect(user, linkedType, email) {
   if (email) localStorage.setItem('purple_user_email', email);
   if (user?.name) localStorage.setItem('purple_user_name', user.name);
   if (user?.role) localStorage.setItem('purple_user_role', user.role);
+  if (user?.accessLevel) localStorage.setItem('purple_user_access', user.accessLevel);
+  if (user?.id) localStorage.setItem('purple_user_id', user.id);
 
   const token = `pin-token-${Date.now()}`;
   localStorage.setItem('sb-access-token', token);
@@ -111,11 +113,22 @@ function saveSessionAndRedirect(user, linkedType, email) {
   setTimeout(() => {
     const role = (user?.role || '').toLowerCase();
     const access = (user?.accessLevel || '').toLowerCase();
-    const isOwner = cleanPhone.includes('1708459008') || cleanPhone.includes('1612309290') || cleanPhone.includes('1708455081') || access.includes('owner') || role.includes('owner') || role.includes('admin') || role.includes('md') || role.includes('chairman');
-    const isManager = access.includes('director') || access.includes('manager') || role.includes('director') || role.includes('manager') || role.includes('head');
+    const empId = user?.id || '';
 
-    if (isOwner) {
+    const isOwnerAdmin = ['PBD-000', 'PBD-001', 'PBD-002'].includes(empId) ||
+      access.includes('owner') || role.includes('owner') ||
+      role.includes('managing director') || role.includes('chairman') ||
+      role.includes('technology admin') ||
+      cleanPhone.includes('1708459008') || cleanPhone.includes('1612309290') || cleanPhone.includes('1708455081');
+
+    const isFinance = access.includes('finance') || role.includes('finance');
+    const isManager = access.includes('director') || access.includes('manager') ||
+      role.includes('director') || role.includes('manager') || role.includes('head');
+
+    if (isOwnerAdmin) {
       window.location.href = '/admin';
+    } else if (isFinance) {
+      window.location.href = '/admin#financials';
     } else if (isManager) {
       window.location.href = '/manager';
     } else if (linkedType === 'client' || role.includes('client')) {
