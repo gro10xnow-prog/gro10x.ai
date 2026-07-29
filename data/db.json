@@ -81,7 +81,9 @@
       "commissionRate": 0,
       "earnedCommissions": 0,
       "mustResetPassword": true,
-      "permanentPinSet": false
+      "permanentPinSet": false,
+      "reportsTo": "PBD-001",
+      "reportsToName": "H. M. Ifteker Mahmud"
     },
     {
       "id": "PBD-001",
@@ -97,7 +99,9 @@
       "commissionRate": 0,
       "earnedCommissions": 0,
       "mustResetPassword": true,
-      "permanentPinSet": false
+      "permanentPinSet": false,
+      "reportsTo": "PBD-001",
+      "reportsToName": "H. M. Ifteker Mahmud"
     },
     {
       "id": "PBD-002",
@@ -113,7 +117,9 @@
       "commissionRate": 0,
       "earnedCommissions": 0,
       "mustResetPassword": true,
-      "permanentPinSet": false
+      "permanentPinSet": false,
+      "reportsTo": "PBD-001",
+      "reportsToName": "H. M. Ifteker Mahmud"
     },
     {
       "id": "PBD-003",
@@ -129,7 +135,9 @@
       "commissionRate": 0,
       "earnedCommissions": 0,
       "mustResetPassword": true,
-      "permanentPinSet": false
+      "permanentPinSet": false,
+      "reportsTo": "PBD-001",
+      "reportsToName": "H. M. Ifteker Mahmud"
     },
     {
       "id": "PBD-004",
@@ -145,7 +153,9 @@
       "commissionRate": 0,
       "earnedCommissions": 0,
       "mustResetPassword": true,
-      "permanentPinSet": false
+      "permanentPinSet": false,
+      "reportsTo": "PBD-001",
+      "reportsToName": "H. M. Ifteker Mahmud"
     },
     {
       "id": "PBD-005",
@@ -161,7 +171,9 @@
       "commissionRate": 0,
       "earnedCommissions": 0,
       "mustResetPassword": true,
-      "permanentPinSet": false
+      "permanentPinSet": false,
+      "reportsTo": "PBD-001",
+      "reportsToName": "H. M. Ifteker Mahmud"
     },
     {
       "id": "PBD-006",
@@ -177,7 +189,9 @@
       "commissionRate": 0,
       "earnedCommissions": 0,
       "mustResetPassword": true,
-      "permanentPinSet": false
+      "permanentPinSet": false,
+      "reportsTo": "PBD-004",
+      "reportsToName": "Kafil Uddin Mahmud"
     },
     {
       "id": "PBD-007",
@@ -193,7 +207,9 @@
       "commissionRate": 0,
       "earnedCommissions": 0,
       "mustResetPassword": true,
-      "permanentPinSet": false
+      "permanentPinSet": false,
+      "reportsTo": "PBD-006",
+      "reportsToName": "Ruhul Amin Rupom"
     },
     {
       "id": "PBD-008",
@@ -209,7 +225,9 @@
       "commissionRate": 0,
       "earnedCommissions": 0,
       "mustResetPassword": true,
-      "permanentPinSet": false
+      "permanentPinSet": false,
+      "reportsTo": "PBD-006",
+      "reportsToName": "Ruhul Amin Rupom"
     },
     {
       "id": "PBD-009",
@@ -225,7 +243,9 @@
       "commissionRate": 0,
       "earnedCommissions": 0,
       "mustResetPassword": true,
-      "permanentPinSet": false
+      "permanentPinSet": false,
+      "reportsTo": "PBD-006",
+      "reportsToName": "Ruhul Amin Rupom"
     },
     {
       "id": "PBD-010",
@@ -241,7 +261,9 @@
       "commissionRate": 0,
       "earnedCommissions": 0,
       "mustResetPassword": true,
-      "permanentPinSet": false
+      "permanentPinSet": false,
+      "reportsTo": "PBD-006",
+      "reportsToName": "Ruhul Amin Rupom"
     },
     {
       "id": "PBD-011",
@@ -257,7 +279,9 @@
       "commissionRate": 0,
       "earnedCommissions": 0,
       "mustResetPassword": true,
-      "permanentPinSet": false
+      "permanentPinSet": false,
+      "reportsTo": "PBD-006",
+      "reportsToName": "Ruhul Amin Rupom"
     },
     {
       "id": "PBD-012",
@@ -273,7 +297,9 @@
       "commissionRate": 0,
       "earnedCommissions": 0,
       "mustResetPassword": true,
-      "permanentPinSet": false
+      "permanentPinSet": false,
+      "reportsTo": "PBD-006",
+      "reportsToName": "Ruhul Amin Rupom"
     },
     {
       "id": "PBD-013",
@@ -289,7 +315,9 @@
       "commissionRate": 0,
       "earnedCommissions": 0,
       "mustResetPassword": true,
-      "permanentPinSet": false
+      "permanentPinSet": false,
+      "reportsTo": "PBD-004",
+      "reportsToName": "Kafil Uddin Mahmud"
     },
     {
       "id": "PBD-014",
@@ -305,7 +333,9 @@
       "commissionRate": 0,
       "earnedCommissions": 0,
       "mustResetPassword": true,
-      "permanentPinSet": false
+      "permanentPinSet": false,
+      "reportsTo": "PBD-013",
+      "reportsToName": "Nasir Ullah Khan Al Nahian"
     },
     {
       "id": "PBD-015",
@@ -321,7 +351,9 @@
       "commissionRate": 0,
       "earnedCommissions": 0,
       "mustResetPassword": true,
-      "permanentPinSet": false
+      "permanentPinSet": false,
+      "reportsTo": "PBD-013",
+      "reportsToName": "Nasir Ullah Khan Al Nahian"
     },
     {
       "id": "PBD-016",
@@ -337,7 +369,9 @@
       "commissionRate": 0,
       "earnedCommissions": 0,
       "mustResetPassword": true,
-      "permanentPinSet": false
+      "permanentPinSet": false,
+      "reportsTo": "PBD-003",
+      "reportsToName": "MD Mehedi Bin Jayed"
     },
     {
       "id": "PBD-017",
@@ -353,7 +387,9 @@
       "commissionRate": 0,
       "earnedCommissions": 0,
       "mustResetPassword": true,
-      "permanentPinSet": false
+      "permanentPinSet": false,
+      "reportsTo": "PBD-016",
+      "reportsToName": "Tasin Kabir"
     },
     {
       "id": "PBD-018",
@@ -369,7 +405,9 @@
       "commissionRate": 0,
       "earnedCommissions": 0,
       "mustResetPassword": true,
-      "permanentPinSet": false
+      "permanentPinSet": false,
+      "reportsTo": "PBD-016",
+      "reportsToName": "Tasin Kabir"
     },
     {
       "id": "PBD-019",
@@ -385,7 +423,9 @@
       "commissionRate": 0,
       "earnedCommissions": 0,
       "mustResetPassword": true,
-      "permanentPinSet": false
+      "permanentPinSet": false,
+      "reportsTo": "PBD-003",
+      "reportsToName": "MD Mehedi Bin Jayed"
     },
     {
       "id": "PBD-020",
@@ -401,7 +441,9 @@
       "commissionRate": 0,
       "earnedCommissions": 0,
       "mustResetPassword": true,
-      "permanentPinSet": false
+      "permanentPinSet": false,
+      "reportsTo": "PBD-019",
+      "reportsToName": "Shafket Hossan Pranto"
     },
     {
       "id": "PBD-021",
@@ -417,7 +459,9 @@
       "commissionRate": 0,
       "earnedCommissions": 0,
       "mustResetPassword": true,
-      "permanentPinSet": false
+      "permanentPinSet": false,
+      "reportsTo": "PBD-019",
+      "reportsToName": "Shafket Hossan Pranto"
     },
     {
       "id": "PBD-022",
@@ -433,7 +477,9 @@
       "commissionRate": 0,
       "earnedCommissions": 0,
       "mustResetPassword": true,
-      "permanentPinSet": false
+      "permanentPinSet": false,
+      "reportsTo": "PBD-019",
+      "reportsToName": "Shafket Hossan Pranto"
     },
     {
       "id": "PBD-023",
@@ -449,7 +495,9 @@
       "commissionRate": 0,
       "earnedCommissions": 0,
       "mustResetPassword": true,
-      "permanentPinSet": false
+      "permanentPinSet": false,
+      "reportsTo": "PBD-019",
+      "reportsToName": "Shafket Hossan Pranto"
     },
     {
       "id": "PBD-024",
@@ -465,7 +513,9 @@
       "commissionRate": 0,
       "earnedCommissions": 0,
       "mustResetPassword": true,
-      "permanentPinSet": false
+      "permanentPinSet": false,
+      "reportsTo": "PBD-019",
+      "reportsToName": "Shafket Hossan Pranto"
     },
     {
       "id": "PBD-025",
@@ -481,7 +531,9 @@
       "commissionRate": 0,
       "earnedCommissions": 0,
       "mustResetPassword": true,
-      "permanentPinSet": false
+      "permanentPinSet": false,
+      "reportsTo": "PBD-019",
+      "reportsToName": "Shafket Hossan Pranto"
     },
     {
       "id": "PBD-026",
@@ -497,7 +549,9 @@
       "commissionRate": 0,
       "earnedCommissions": 0,
       "mustResetPassword": true,
-      "permanentPinSet": false
+      "permanentPinSet": false,
+      "reportsTo": "PBD-019",
+      "reportsToName": "Shafket Hossan Pranto"
     },
     {
       "id": "PBD-027",
@@ -513,7 +567,9 @@
       "commissionRate": 0,
       "earnedCommissions": 0,
       "mustResetPassword": true,
-      "permanentPinSet": false
+      "permanentPinSet": false,
+      "reportsTo": "PBD-004",
+      "reportsToName": "Kafil Uddin Mahmud"
     },
     {
       "id": "PBD-028",
@@ -529,7 +585,9 @@
       "commissionRate": 0,
       "earnedCommissions": 0,
       "mustResetPassword": true,
-      "permanentPinSet": false
+      "permanentPinSet": false,
+      "reportsTo": "PBD-016",
+      "reportsToName": "Tasin Kabir"
     },
     {
       "id": "PBD-029",
@@ -545,7 +603,9 @@
       "commissionRate": 0,
       "earnedCommissions": 0,
       "mustResetPassword": true,
-      "permanentPinSet": false
+      "permanentPinSet": false,
+      "reportsTo": "PBD-002",
+      "reportsToName": "S M Tariful Islam"
     },
     {
       "id": "PBD-030",
@@ -561,7 +621,9 @@
       "commissionRate": 0,
       "earnedCommissions": 0,
       "mustResetPassword": true,
-      "permanentPinSet": false
+      "permanentPinSet": false,
+      "reportsTo": "PBD-029",
+      "reportsToName": "Md. Borhan Siddique"
     },
     {
       "id": "PBD-031",
@@ -577,7 +639,9 @@
       "commissionRate": 0,
       "earnedCommissions": 0,
       "mustResetPassword": true,
-      "permanentPinSet": false
+      "permanentPinSet": false,
+      "reportsTo": "PBD-029",
+      "reportsToName": "Md. Borhan Siddique"
     },
     {
       "id": "PBD-032",
@@ -593,7 +657,9 @@
       "commissionRate": 0,
       "earnedCommissions": 0,
       "mustResetPassword": true,
-      "permanentPinSet": false
+      "permanentPinSet": false,
+      "reportsTo": "PBD-029",
+      "reportsToName": "Md. Borhan Siddique"
     }
   ],
   "botConfig": {

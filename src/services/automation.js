@@ -517,10 +517,10 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
       const expense = eventData.expense;
       const staffName = (expense.submittedBy || '').split(' ')[0].toLowerCase();
       const staffObj = (db.team || []).find(t => (t.name || '').toLowerCase().includes(staffName));
-      const dept = staffObj?.department || 'Operations';
-
-      const lineManager = (db.team || []).find(t => (t.department || '').toLowerCase() === dept.toLowerCase() && (t.accessLevel || '').includes('Manager'));
-      const targetManager = lineManager || (db.team || []).find(t => (t.role || '').toLowerCase().includes('operations'));
+      
+      const targetManager = (staffObj && staffObj.reportsTo)
+        ? (db.team || []).find(t => t.id === staffObj.reportsTo)
+        : (db.team || []).find(t => (t.role || '').toLowerCase().includes('managing director') || t.id === 'PBD-001');
 
       const msgText = `💰 *NEW EXPENSE CLAIM SUBMITTED (TIER 1 PENDING)*\n\n` +
         `📋 Claim ID: *${expense.id}*\n` +
@@ -528,10 +528,11 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
         `📂 Category: *${expense.category}*\n` +
         `💵 Amount: *BDT ${(Number(expense.amount) || 0).toLocaleString()}*\n` +
         `📝 Note: *${expense.description || 'Field operational expense'}*\n\n` +
-        `Reply /approve ${expense.id} or inspect in Manager Portal.`;
+        `Click below to approve Tier 1 or inspect in Manager Portal.`;
 
       if (targetManager && targetManager.telegramId) {
         sendTelegramNotification(targetManager.telegramId, msgText, [
+          [{ text: '✅ Approve T1 (Manager)', callback_data: `approve_expense_t1:${expense.id}` }],
           [{ text: '🔍 Inspect in Manager Portal', url: `https://purpleos-iota.vercel.app/manager` }]
         ], true);
       }
@@ -551,10 +552,10 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
       const leave = eventData.leave;
       const staffName = (leave.staffName || '').split(' ')[0].toLowerCase();
       const staffObj = (db.team || []).find(t => (t.name || '').toLowerCase().includes(staffName));
-      const dept = staffObj?.department || 'Operations';
 
-      const lineManager = (db.team || []).find(t => (t.department || '').toLowerCase() === dept.toLowerCase() && (t.accessLevel || '').includes('Manager'));
-      const targetManager = lineManager || (db.team || []).find(t => (t.role || '').toLowerCase().includes('operations')) || (db.team || []).find(t => t.id === 'EMP-007');
+      const targetManager = (staffObj && staffObj.reportsTo)
+        ? (db.team || []).find(t => t.id === staffObj.reportsTo)
+        : (db.team || []).find(t => (t.role || '').toLowerCase().includes('managing director') || t.id === 'PBD-001');
 
       const msgText = `🌴 *NEW LEAVE REQUEST SUBMITTED (PENDING MANAGER REVIEW)*\n\n` +
         `📋 Leave ID: *${leave.id}*\n` +
@@ -562,7 +563,7 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
         `🌴 Type: *${leave.type}*\n` +
         `📅 Dates: *${leave.startDate} to ${leave.endDate}* (${leave.totalDays || 1} Days)\n` +
         `📝 Reason: *${leave.reason}*\n\n` +
-        `Reply /approveleave ${leave.id} or inspect in Manager Portal.`;
+        `Click below to review leave request.`;
 
       const targetId = targetManager?.telegramId || '1708459008';
       sendTelegramNotification(targetId, msgText, [
