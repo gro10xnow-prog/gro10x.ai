@@ -683,7 +683,7 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
       });
     }
 
-    // TRIGGER: Individual EOD Report Submitted -> Notify Manager & MD
+    // TRIGGER: Individual EOD Report Submitted -> Notify Manager, MD & Department Group
     if (eventType === 'eod_submitted') {
       const eod = eventData.eod;
       const staffObj = (db.team || []).find(t => t.name === eod.staffName) || (db.team || [])[0];
@@ -704,6 +704,23 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
       }
       if (owner && owner.telegramId && owner.telegramId !== lineManager?.telegramId) {
         sendTelegramNotification(owner.telegramId, msgText, null, true);
+      }
+
+      // Phase 7: Broadcast to Department Group if registered
+      const deptGroupKeyMap = {
+        'Design & Post-Production': 'design_post',
+        'Content Production': 'content_production',
+        'Client Services': 'client_services',
+        'Strategy & Planning': 'strategy',
+        'Finance & Admin': 'finance_admin',
+        'Tech & AI': 'tech_ai'
+      };
+      const groupKey = deptGroupKeyMap[dept];
+      if (groupKey) {
+        const group = (db.groups || []).find(g => g.type === groupKey && g.registered && g.chatId);
+        if (group && group.chatId) {
+          sendTelegramNotification(group.chatId, msgText, null, true);
+        }
       }
 
       logs.unshift({

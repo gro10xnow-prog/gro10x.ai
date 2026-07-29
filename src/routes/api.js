@@ -1713,45 +1713,31 @@ router.post('/webhooks/telegram', async (req, res) => {
               `Type \`/add_asset\` to add another item!`;
           }
 
-        // ── /setup_groups — Interactive Group Guide for Firoz ──────────────────
-        } else if (msgText.startsWith('/setup_groups')) {
-          const groupTypes = ['executive', 'leadership', 'design_post', 'content_production', 'client_services', 'strategy', 'finance_admin', 'tech_ai', 'announcements', 'daily_briefing', 'finance_alerts', 'leaderboard', 'production_updates'];
-          db.groupWizardSessions = db.groupWizardSessions || {};
-          db.groupWizardSessions[String(chatId)] = { index: 0 };
-          writeDB(db);
+        // ── /setup_groups — 1-Tap Deep-Link Group Setup Wizard for Firoz ───────
+        } else if (msgText.startsWith('/setup_groups') || msgText.toLowerCase() === '📡 setup groups') {
+          const groupTypes = [
+            { type: 'executive', name: 'PBD Executive' },
+            { type: 'leadership', name: 'PBD Leadership' },
+            { type: 'design_post', name: 'PBD Design & Post' },
+            { type: 'content_production', name: 'PBD Production' },
+            { type: 'client_services', name: 'PBD Client Services' },
+            { type: 'strategy', name: 'PBD Strategy' },
+            { type: 'finance_admin', name: 'PBD Finance & Admin' },
+            { type: 'tech_ai', name: 'PBD Tech & AI' },
+            { type: 'announcements', name: 'PBD Announcements Channel' },
+            { type: 'daily_briefing', name: 'PBD Daily Briefing Channel' },
+            { type: 'finance_alerts', name: 'PBD Finance Alerts Channel' },
+            { type: 'leaderboard', name: 'PBD Leaderboard Channel' },
+            { type: 'production_updates', name: 'PBD Production Updates Channel' }
+          ];
 
-          const currentType = groupTypes[0];
-          replyText = `📡 *TELEGRAM GROUP SETUP WIZARD (1/${groupTypes.length})*\n\n` +
-            `1️⃣ Create Telegram group/channel named: *PBD Executive*\n` +
-            `2️⃣ Add @PurpleManBot as Administrator (full rights).\n` +
-            `3️⃣ Send this exact command inside that new group:\n` +
-            `\`/register_group ${currentType}\`\n\n` +
-            `The bot will capture the group ID automatically!\n\n` +
-            `Type \`/next_group\` when ready for the next group!`;
+          const registeredCount = (db.groups || []).filter(g => g.registered && g.chatId).length;
 
-        } else if (msgText.startsWith('/next_group')) {
-          const groupTypes = ['executive', 'leadership', 'design_post', 'content_production', 'client_services', 'strategy', 'finance_admin', 'tech_ai', 'announcements', 'daily_briefing', 'finance_alerts', 'leaderboard', 'production_updates'];
-          db.groupWizardSessions = db.groupWizardSessions || {};
-          const session = db.groupWizardSessions[String(chatId)] || { index: 0 };
-          session.index = (session.index + 1) % groupTypes.length;
-          db.groupWizardSessions[String(chatId)] = session;
-          writeDB(db);
+          replyText = `📡 *1-TAP TELEGRAM GROUP SETUP WIZARD*\n\n` +
+            `Progress: *${registeredCount}/13 Groups Registered*\n\n` +
+            `Tap any button below! Telegram will open the group creation screen with @PurpleManBot pre-selected as Admin. Just tap **Create**!`;
 
-          const currentType = groupTypes[session.index];
-          const groupNames = {
-            executive: 'PBD Executive', leadership: 'PBD Leadership', design_post: 'PBD Design & Post', content_production: 'PBD Production',
-            client_services: 'PBD Client Services', strategy: 'PBD Strategy', finance_admin: 'PBD Finance & Admin', tech_ai: 'PBD Tech & AI',
-            announcements: 'PBD Announcements Channel', daily_briefing: 'PBD Daily Briefing Channel', finance_alerts: 'PBD Finance Alerts Channel',
-            leaderboard: 'PBD Leaderboard Channel', production_updates: 'PBD Production Updates Channel'
-          };
-
-          replyText = `📡 *TELEGRAM GROUP SETUP WIZARD (${session.index + 1}/${groupTypes.length})*\n\n` +
-            `1️⃣ Create group/channel named: *${groupNames[currentType]}*\n` +
-            `2️⃣ Add @PurpleManBot as Administrator.\n` +
-            `3️⃣ Send this exact command inside that group:\n` +
-            `\`/register_group ${currentType}\`\n\n` +
-            `Type \`/next_group\` to continue to next group guide!`;
-
+          replyMarkup = { inline_keyboard: inlineButtons };
         } else if (msgText.startsWith('/start') || msgText.startsWith('/help')) {
           if (emp) {
             const progress = getOnboardingProgress(emp);
