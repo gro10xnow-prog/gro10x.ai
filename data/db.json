@@ -85,7 +85,7 @@
       "reportsTo": "PBD-001",
       "reportsToName": "H. M. Ifteker Mahmud",
       "xp": 0,
-      "badge": "Recruit",
+      "badge": "🌱 Recruit",
       "onboardingComplete": false,
       "onboardingStarted": false,
       "onboardingTasks": [
@@ -128,7 +128,8 @@
       ],
       "workEmail": "claycoinbank@gmail.com",
       "deskNumber": "",
-      "joinDate": ""
+      "joinDate": "",
+      "telegramId": null
     },
     {
       "id": "PBD-001",

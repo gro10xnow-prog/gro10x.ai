@@ -1816,31 +1816,87 @@ router.post('/webhooks/telegram', async (req, res) => {
               `Type \`/add_asset\` to add another item!`;
           }
 
-        // ── /setup_groups — 1-Tap Deep-Link Group Setup Wizard for Firoz ───────
-        } else if (msgText.startsWith('/setup_groups') || msgText.toLowerCase() === '📡 setup groups') {
-          const groupTypes = [
-            { type: 'executive', name: 'PBD Executive' },
-            { type: 'leadership', name: 'PBD Leadership' },
-            { type: 'design_post', name: 'PBD Design & Post' },
-            { type: 'content_production', name: 'PBD Production' },
-            { type: 'client_services', name: 'PBD Client Services' },
-            { type: 'strategy', name: 'PBD Strategy' },
-            { type: 'finance_admin', name: 'PBD Finance & Admin' },
-            { type: 'tech_ai', name: 'PBD Tech & AI' },
-            { type: 'announcements', name: 'PBD Announcements Channel' },
-            { type: 'daily_briefing', name: 'PBD Daily Briefing Channel' },
-            { type: 'finance_alerts', name: 'PBD Finance Alerts Channel' },
-            { type: 'leaderboard', name: 'PBD Leaderboard Channel' },
-            { type: 'production_updates', name: 'PBD Production Updates Channel' }
-          ];
+        // ── /report_bug — System Bug & Tech Improvement Reporter ──────────────────
+        } else if (msgText.startsWith('/report_bug') || msgText.toLowerCase().includes('report bug') || msgText.toLowerCase() === '🐞 report bug / idea') {
+          db.bugSessions = db.bugSessions || {};
+          db.bugSessions[String(chatId)] = { step: 1, type: '', description: '', priority: '' };
+          writeDB(db);
 
-          const registeredCount = (db.groups || []).filter(g => g.registered && g.chatId).length;
+          replyText = `🐞 *PURPLEOS BUG & TECH IMPROVEMENT REPORTER (Step 1/3)*\n\n` +
+            `Select report type:\n` +
+            `1️⃣ 🐛 Bug / System Defect\n` +
+            `2️⃣ 💡 Tech Improvement Idea\n` +
+            `3️⃣ 🎨 UI/UX Request\n\n` +
+            `Reply with a number (1-3):`;
 
-          replyText = `📡 *1-TAP TELEGRAM GROUP SETUP WIZARD*\n\n` +
-            `Progress: *${registeredCount}/13 Groups Registered*\n\n` +
-            `Tap any button below! Telegram will open the group creation screen with @PurpleManBot pre-selected as Admin. Just tap **Create**!`;
+        } else if (db.bugSessions && db.bugSessions[String(chatId)]) {
+          const session = db.bugSessions[String(chatId)];
+          if (session.step === 1) {
+            const typeMap = { '1': '🐛 Bug / Defect', '2': '💡 Tech Improvement', '3': '🎨 UI/UX Request' };
+            session.type = typeMap[msgText] || msgText;
+            session.step = 2;
+            db.bugSessions[String(chatId)] = session;
+            writeDB(db);
+            replyText = `🐞 *Step 2/3: Description*\n\nType: *${session.type}*\n\nPlease describe the issue, improvement idea, or behavior desired:`;
 
-          replyMarkup = { inline_keyboard: inlineButtons };
+          } else if (session.step === 2) {
+            session.description = msgText;
+            session.step = 3;
+            db.bugSessions[String(chatId)] = session;
+            writeDB(db);
+            replyText = `🐞 *Step 3/3: Priority Level*\n\nSelect priority (\`High\`, \`Medium\`, \`Low\`):`;
+
+          } else if (session.step === 3) {
+            session.priority = msgText;
+            const newTicket = {
+              id: `TKT-${Date.now().toString().slice(-6)}`,
+              type: session.type,
+              description: session.description,
+              priority: session.priority,
+              reportedBy: emp?.name || senderName,
+              reportedByPhone: emp?.phone || '',
+              reportedAt: new Date().toISOString(),
+              status: 'Open'
+            };
+            db.tickets = db.tickets || [];
+            db.tickets.unshift(newTicket);
+            delete db.bugSessions[String(chatId)];
+
+            if (emp) addXP(db, emp.id, 15, 'ticket_reported');
+            writeDB(db);
+            broadcast('tickets_update', db.tickets);
+
+            const alertMsg = `🐞 *NEW TECH REPORT SUBMITTED!* +15 XP Awarded!\n\n` +
+              `📋 Ticket: *${newTicket.id}*\n` +
+              `👤 Reported By: *${newTicket.reportedBy}*\n` +
+              `🏷️ Category: *${newTicket.type}*\n` +
+              `⚡ Priority: *${newTicket.priority}*\n` +
+              `📝 Details: ${newTicket.description}\n\n` +
+              `Status set to *Open*. Firoz has been notified for resolution!`;
+
+            broadcastToGroup(db, 'tech_ai', alertMsg);
+            broadcastToGroup(db, 'executive', alertMsg);
+
+            replyText = `🎉 *Ticket Logged Successfully!* +15 XP Earned!\n\n` +
+              `Ticket ID: *${newTicket.id}*\n` +
+              `Category: *${newTicket.type}*\n` +
+              `Priority: *${newTicket.priority}*\n\n` +
+              `Thank you for helping improve PurpleOS!`;
+          }
+
+        // ── /challenge — Visual 1-Tap Company Challenge Launcher ─────────────────
+        } else if (msgText.startsWith('/challenge') || msgText.toLowerCase() === '🏆 launch challenge') {
+          replyText = `🏆 *PURPLEOS COMPANY-WIDE CHALLENGE LAUNCHER*\n\n` +
+            `Select a challenge preset below to launch across the agency:`;
+
+          replyMarkup = {
+            inline_keyboard: [
+              [{ text: '🎯 100% On-Time EOD Streak (+100 XP)', callback_data: 'launch_chal:eod_streak' }],
+              [{ text: '📍 Zero Late Clock-Ins Week (+50 XP)', callback_data: 'launch_chal:clockin_streak' }],
+              [{ text: '⚡ Fast Client Deliverables (+150 XP)', callback_data: 'launch_chal:fast_deliv' }]
+            ]
+          };
+
         } else if (msgText.startsWith('/start') || msgText.startsWith('/help')) {
           if (emp) {
             const progress = getOnboardingProgress(emp);
@@ -1870,6 +1926,7 @@ router.post('/webhooks/telegram', async (req, res) => {
                 replyMarkup = {
                   keyboard: [
                     [{ text: '🌅 Morning Briefing' }, { text: '📊 Business Snapshot' }],
+                    [{ text: '🏆 Launch Challenge' }, { text: '🐞 Report Bug / Idea' }],
                     [{ text: '👥 Full Team Status' }, { text: '💰 Finance Summary' }],
                     [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
                   ],
@@ -1879,7 +1936,7 @@ router.post('/webhooks/telegram', async (req, res) => {
                 replyMarkup = {
                   keyboard: [
                     [{ text: '👥 My Team Roster' }, { text: '📊 Department Report' }],
-                    [{ text: '🌅 Morning Briefing' }, { text: '📋 My Tasks' }],
+                    [{ text: '🌅 Morning Briefing' }, { text: '🐞 Report Bug / Idea' }],
                     [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
                   ],
                   resize_keyboard: true
@@ -1888,14 +1945,16 @@ router.post('/webhooks/telegram', async (req, res) => {
                 replyMarkup = {
                   keyboard: [
                     [{ text: '💰 Expense Queue' }, { text: '🧾 Invoice Status' }],
-                    [{ text: '📊 Payroll Summary' }, { text: '📍 Clock-In GPS', request_location: true }]
+                    [{ text: '📊 Payroll Summary' }, { text: '🐞 Report Bug / Idea' }],
+                    [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
                   ],
                   resize_keyboard: true
                 };
               } else if (emp.accessLevel === 'Office Staff') {
                 replyMarkup = {
                   keyboard: [
-                    [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
+                    [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }],
+                    [{ text: '🐞 Report Bug / Idea' }]
                   ],
                   resize_keyboard: true
                 };
@@ -1903,6 +1962,7 @@ router.post('/webhooks/telegram', async (req, res) => {
                 replyMarkup = {
                   keyboard: [
                     [{ text: '📋 My Tasks' }, { text: '💰 My Earnings' }],
+                    [{ text: '🏆 Leaderboard' }, { text: '🐞 Report Bug / Idea' }],
                     [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
                   ],
                   resize_keyboard: true
