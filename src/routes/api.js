@@ -1056,6 +1056,8 @@ router.get('/webhooks/logs', (req, res) => {
   res.json(db.webhookLogs || []);
 });
 
+const eodSessions = {};
+
 router.post('/webhooks/telegram', async (req, res) => {
   // ─── VERCEL SERVERLESS CRITICAL RULE ────────────────────────────────────────
   // DO NOT call res.json() early. On Vercel, res.json() freezes the Lambda
@@ -1142,6 +1144,17 @@ router.post('/webhooks/telegram', async (req, res) => {
         broadcast('leave_update', db.leaves);
         processAutomationEvent('leave_decision', { leave }, db, writeDB, broadcast);
         callbackAnswerText = `👑 Leave ${leaveId} Owner Approved & Calendar Updated!`;
+      }
+    } else if (data.startsWith('approve_expense_t1:')) {
+      const expId = data.split(':')[1];
+      const exp = (db.expenses || []).find(e => e.id === expId);
+      if (exp) {
+        exp.tier1 = { approved: true, approvedBy: 'Line Manager (Telegram 1-Tap)', date: new Date().toISOString() };
+        exp.status = 'Tier 2 Pending';
+        writeDB(db);
+        broadcast('expense_update', db.expenses);
+        processAutomationEvent('expense_tier1_approved', { expense: exp }, db, writeDB, broadcast);
+        callbackAnswerText = `✅ Expense ${expId} Tier 1 Approved! Forwarded to Finance Manager.`;
       }
     } else if (data.startsWith('approve_expense_t2:')) {
       const expId = data.split(':')[1];
@@ -1342,7 +1355,47 @@ router.post('/webhooks/telegram', async (req, res) => {
       if (isTeamBot) {
         const isManager = (db.team || []).some(t => t.telegramId == chatId && ((t.accessLevel || '').includes('Manager') || (t.role || '').toLowerCase().includes('director') || (t.role || '').toLowerCase().includes('owner')));
 
-        if (msgText.startsWith('/start') || msgText.startsWith('/help')) {
+        if (msgText.startsWith('/eod') || msgText.toLowerCase().includes('submit eod') || msgText.toLowerCase().includes('write eod')) {
+          eodSessions[chatId] = { step: 1, completed: '', inProgress: '', blockers: '' };
+          replyText = `📋 *PURPLEBOT EOD REPORT — STEP 1 OF 3*\n\nWhat key tasks did you *complete* today?`;
+        } else if (eodSessions[chatId]) {
+          const session = eodSessions[chatId];
+          if (session.step === 1) {
+            session.completed = msgText;
+            session.step = 2;
+            replyText = `📋 *PURPLEBOT EOD REPORT — STEP 2 OF 3*\n\nWhat tasks are currently *in progress*?`;
+          } else if (session.step === 2) {
+            session.inProgress = msgText;
+            session.step = 3;
+            replyText = `📋 *PURPLEBOT EOD REPORT — STEP 3 OF 3*\n\nAny *blockers or issues* requiring management help? (Type "None" if clear)`;
+          } else if (session.step === 3) {
+            session.blockers = msgText;
+            const emp = (db.team || []).find(e => String(e.telegramId) === String(chatId)) || { name: senderName, id: 'PBD-000' };
+            const newEod = {
+              id: `EOD-${Date.now().toString().slice(-6)}`,
+              staffId: emp.id || 'PBD-000',
+              staffName: emp.name || senderName,
+              date: new Date().toISOString().split('T')[0],
+              tasksCompleted: session.completed,
+              tasksInProgress: session.inProgress,
+              blockers: session.blockers,
+              submittedAt: new Date().toISOString()
+            };
+            db.eod_reports = db.eod_reports || [];
+            db.eod_reports.unshift(newEod);
+            writeDB(db);
+            broadcast('eod_update', db.eod_reports);
+            delete eodSessions[chatId];
+
+            replyText = `🎉 *EOD Report Submitted Successfully!*\n\n` +
+              `Thank you, *${emp.name}*. Your End-of-Day report has been logged and sent to your Line Manager & MD.\n\n` +
+              `• *Completed:* ${newEod.tasksCompleted}\n` +
+              `• *In Progress:* ${newEod.tasksInProgress}\n` +
+              `• *Blockers:* ${newEod.blockers}`;
+
+            processAutomationEvent('eod_submitted', { eod: newEod }, db, writeDB, broadcast);
+          }
+        } else if (msgText.startsWith('/start') || msgText.startsWith('/help')) {
           const emp = (db.team || []).find(e => String(e.telegramId) === String(chatId));
 
           if (emp) {

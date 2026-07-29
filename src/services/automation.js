@@ -614,6 +614,39 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
       });
     }
 
+    // TRIGGER: Individual EOD Report Submitted -> Notify Manager & MD
+    if (eventType === 'eod_submitted') {
+      const eod = eventData.eod;
+      const staffObj = (db.team || []).find(t => t.name === eod.staffName) || (db.team || [])[0];
+      const dept = staffObj?.department || 'Operations';
+
+      const lineManager = (db.team || []).find(t => (t.department || '').toLowerCase() === dept.toLowerCase() && (t.accessLevel || '').includes('Manager'));
+      const owner = (db.team || []).find(t => (t.role || '').toLowerCase().includes('managing director') || t.id === 'PBD-001') || (db.team || [])[0];
+
+      const msgText = `📋 *NEW EOD REPORT LOGGED*\n\n` +
+        `👤 Staff: *${eod.staffName}* (${dept})\n` +
+        `✅ *Completed:* ${eod.tasksCompleted}\n` +
+        `⏳ *In Progress:* ${eod.tasksInProgress}\n` +
+        `🚧 *Blockers:* ${eod.blockers}\n\n` +
+        `Submitted at ${new Date(eod.submittedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+
+      if (lineManager && lineManager.telegramId) {
+        sendTelegramNotification(lineManager.telegramId, msgText, null, true);
+      }
+      if (owner && owner.telegramId && owner.telegramId !== lineManager?.telegramId) {
+        sendTelegramNotification(owner.telegramId, msgText, null, true);
+      }
+
+      logs.unshift({
+        id: `LOG-${Date.now()}`,
+        rule: 'EOD Submitted Alert',
+        event: eventType,
+        target: `${eod.staffName}`,
+        status: 'Executed',
+        timestamp: new Date().toISOString()
+      });
+    }
+
     // TRIGGER 21: Daily 7:30 PM Manager EOD Digest (AUT-021)
     if (eventType === 'eod_evening_digest') {
       const todayStr = new Date().toISOString().split('T')[0];
