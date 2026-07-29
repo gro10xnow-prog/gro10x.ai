@@ -2520,7 +2520,7 @@ router.get('/team', async (req, res) => {
           ...localEmp,
           ...t,
           id: t.emp_code,
-          telegramId: t.telegram_id !== undefined ? t.telegram_id : localEmp.telegramId,
+          telegramId: localEmp.telegramId !== undefined ? localEmp.telegramId : (t.telegram_id || null),
           baseSalary: t.base_salary || localEmp.baseSalary || 0,
           commissionRate: t.commission_rate || localEmp.commissionRate || 0,
           earnedCommissions: t.earned_commissions || localEmp.earnedCommissions || 0,
