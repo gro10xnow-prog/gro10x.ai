@@ -104,7 +104,7 @@ function updateManagerHeader(user) {
 function applyManagerTabScoping(user) {
   const accessLevel = (user.accessLevel || '').trim();
   const department = (user.department || '').trim();
-  const isOpsDirector = (user.role || '').toLowerCase().includes('operations') || department === 'Management';
+  const isOpsDirector = ['PBD-003', 'PBD-004', 'PBD-005'].includes(user.id) || (user.role || '').toLowerCase().includes('operations') || (user.role || '').toLowerCase().includes('head') || department === 'Management';
 
   const allNavItems = document.querySelectorAll('.sidebar-nav .nav-item');
 
@@ -123,20 +123,20 @@ function applyManagerTabScoping(user) {
       isAllowed = opsAllowedTabs.includes(tabId);
     } else {
       switch (department) {
-        case 'AV Production':
-          isAllowed = ['dashboard', 'kanban', 'hrops', 'financials', 'reviewroom', 'assets'].includes(tabId);
+        case 'Design & Post-Production':
+          isAllowed = ['dashboard', 'kanban', 'hrops', 'reviewroom', 'assets'].includes(tabId);
           break;
-        case 'Post Production':
-          isAllowed = ['dashboard', 'kanban', 'hrops', 'financials', 'reviewroom', 'social'].includes(tabId);
+        case 'Content Production':
+          isAllowed = ['dashboard', 'kanban', 'hrops', 'reviewroom', 'assets'].includes(tabId);
           break;
-        case 'Graphic Design':
-          isAllowed = ['dashboard', 'kanban', 'hrops', 'financials', 'reviewroom'].includes(tabId);
+        case 'Client Services':
+          isAllowed = ['dashboard', 'crm', 'kanban', 'hrops', 'reviewroom', 'social', 'chat'].includes(tabId);
           break;
-        case 'Client Management':
-          isAllowed = ['dashboard', 'crm', 'kanban', 'hrops', 'financials', 'reviewroom', 'chat'].includes(tabId);
+        case 'Strategy & Planning':
+          isAllowed = ['dashboard', 'crm', 'kanban', 'hrops', 'social'].includes(tabId);
           break;
-        case 'Digital Marketing':
-          isAllowed = ['dashboard', 'kanban', 'hrops', 'financials', 'reviewroom', 'social', 'chat'].includes(tabId);
+        case 'Finance & Admin':
+          isAllowed = ['dashboard', 'financials', 'hrops'].includes(tabId);
           break;
         default:
           isAllowed = ['dashboard', 'kanban', 'hrops', 'financials'].includes(tabId);
