@@ -1024,6 +1024,33 @@ router.delete('/bot-config/kb/:id', (req, res) => {
 });
 
 // TELEGRAM WEBHOOK ENGINE & NOTIFICATION GATEWAY API
+router.get('/webhooks/setup', async (req, res) => {
+  const db = readDB();
+  const teamToken = process.env.TEAM_BOT_TOKEN || db.botConfig?.teamBot?.token || '8874232130:AAEs5JDOEEX9kIN9Z_V_k0UQp2lBao5MHLQ';
+  const clientToken = process.env.CLIENT_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN || db.botConfig?.clientBot?.token || '8964646505:AAEBVLDRqG0JdiTSSl6uK08UCQk0ZNsmYMU';
+  const baseUrl = process.env.PUBLIC_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL.replace(/^https?:\/\//, '')}` : 'https://purpleos-iota.vercel.app');
+
+  let teamResult = null;
+  let clientResult = null;
+
+  try {
+    const tRes = await fetch(`https://api.telegram.org/bot${teamToken}/setWebhook?url=${encodeURIComponent(baseUrl + '/api/webhooks/telegram?bot=team')}`);
+    teamResult = await tRes.json();
+  } catch (e) { teamResult = { error: e.message }; }
+
+  try {
+    const cRes = await fetch(`https://api.telegram.org/bot${clientToken}/setWebhook?url=${encodeURIComponent(baseUrl + '/api/webhooks/telegram?bot=client')}`);
+    clientResult = await cRes.json();
+  } catch (e) { clientResult = { error: e.message }; }
+
+  res.json({
+    success: true,
+    baseUrl,
+    teamBotWebhook: teamResult,
+    clientBotWebhook: clientResult
+  });
+});
+
 router.get('/webhooks/logs', (req, res) => {
   const db = readDB();
   res.json(db.webhookLogs || []);

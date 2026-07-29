@@ -18,9 +18,10 @@ function initBot() {
   // 1. Initialize Team Bot (Purple Man)
   if (teamToken && teamToken.trim() !== '' && !teamToken.includes('your_token')) {
     try {
-      teamBot = new TelegramBot(teamToken, { polling: !isVercel });
+      const usePolling = Boolean(process.env.USE_POLLING);
+      teamBot = new TelegramBot(teamToken, { polling: usePolling });
 
-      if (isVercel) {
+      if (!usePolling) {
         fetch(`https://api.telegram.org/bot${teamToken}/setWebhook`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -389,9 +390,10 @@ function initBot() {
   // 2. Initialize Client Bot (Purple Bot)
   if (clientToken && clientToken.trim() !== '' && !clientToken.includes('your_token')) {
     try {
-      clientBot = new TelegramBot(clientToken, { polling: !isVercel });
+      const usePolling = Boolean(process.env.USE_POLLING);
+      clientBot = new TelegramBot(clientToken, { polling: usePolling });
 
-      if (isVercel) {
+      if (!usePolling) {
         fetch(`https://api.telegram.org/bot${clientToken}/setWebhook`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
