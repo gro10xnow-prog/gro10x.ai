@@ -274,6 +274,30 @@ router.post('/auth/pin/verify', (req, res) => {
     return res.status(401).json(result);
   }
 
+  try {
+    const db = readDB();
+    const norm = String(phone).replace(/[^0-9]/g, '').slice(-10);
+    const emp = (db.team || []).find(t => (t.id === result.user?.id || (t.phone || '').replace(/[^0-9]/g, '').slice(-10) === norm));
+    if (emp) {
+      emp.permanentPinSet = true;
+      if (emp.onboardingTasks && Array.isArray(emp.onboardingTasks)) {
+        const t2 = emp.onboardingTasks.find(t => t.id === 'webLogin');
+        if (t2 && !t2.completed) {
+          t2.completed = true;
+          t2.completedAt = new Date().toISOString();
+          emp.xp = (emp.xp || 0) + 25;
+        }
+      }
+      writeDB(db);
+      if (emp.telegramId) {
+        const { sendTelegramNotification } = require('../services/bot');
+        sendTelegramNotification(emp.telegramId, `🎉 *Task 2/6 Completed: Web Workspace Activated!* (+25 XP)\n\nHello *${emp.name}*! Your Desktop Web Workspace has been successfully activated.\n\nTap *👤 Complete Personal Profile* below to continue your setup.`, null, true);
+      }
+    }
+  } catch (err) {
+    console.warn('Web login notify error:', err.message);
+  }
+
   res.json({
     success: true,
     isTemp: result.isTemp,

@@ -60,14 +60,18 @@ function updateUserProfileUI() {
   const nameEl = document.getElementById('userName');
   const roleEl = document.getElementById('userRoleTag');
 
-  if (window.currentUser && window.currentUser.profile) {
-    const p = window.currentUser.profile;
-    if (nameEl) nameEl.innerText = p.name || 'Mahmudul Hasan';
-    if (roleEl) roleEl.innerText = p.role || 'Agency Director';
-    if (avatarEl) {
-      const initials = (p.name || 'MH').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
-      avatarEl.innerText = initials;
-    }
+  const storedName = localStorage.getItem('purple_user_name');
+  const storedRole = localStorage.getItem('purple_user_role');
+  const storedAccess = localStorage.getItem('purple_user_access');
+
+  const name = storedName || (window.currentUser && window.currentUser.profile ? window.currentUser.profile.name : null) || 'Firoz Uddin Ahmed';
+  const role = storedRole || (window.currentUser && window.currentUser.profile ? window.currentUser.profile.role : null) || 'Technology Admin';
+
+  if (nameEl) nameEl.innerText = name;
+  if (roleEl) roleEl.innerText = `${role} • ${storedAccess || 'Owner / Admin'}`;
+  if (avatarEl) {
+    const initials = name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+    avatarEl.innerText = initials;
   }
 }
 
