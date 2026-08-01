@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const { readDB, writeDB } = require('../services/db');
 const { broadcast } = require('../services/sse');
-const { sendTelegramNotification } = require('../services/bot');
 const { supabase, isSupabaseConfigured } = require('../services/supabase');
 const { processAutomationEvent, checkScheduledSocialDispatches } = require('../services/automation');
 

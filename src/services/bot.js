@@ -7,6 +7,13 @@ const { createTempPin } = require('./auth-pins');
 let teamBot = null;
 let clientBot = null;
 
+module.exports = {
+  initBot,
+  sendTelegramNotification,
+  sendToGroup,
+  getRoleKeyboard
+};
+
 function normalizePhone(p) {
   if (!p) return '';
   const digits = String(p).replace(/[^0-9]/g, '');
