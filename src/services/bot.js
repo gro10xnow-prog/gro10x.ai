@@ -900,11 +900,11 @@ function sendTelegramNotification(chatId, text, inlineKeyboard = null, isTeam = 
 
   const targetChatId = (chatId === '1708459008' || chatId === '+8801708459008') ? '7754769807' : chatId;
 
-  const options = { parse_mode: 'Markdown' };
-  if (inlineKeyboard) {
-    options.reply_markup = { inline_keyboard: inlineKeyboard };
-  }
-  targetBot.sendMessage(targetChatId, text, options).catch(err => console.warn('Telegram send error:', err.message));
+  targetBot.sendMessage(targetChatId, text, options).catch(err => {
+    console.warn('Telegram send error with Markdown, retrying plain text:', err.message);
+    delete options.parse_mode;
+    targetBot.sendMessage(targetChatId, text, options).catch(e2 => console.error('Telegram fallback error:', e2.message));
+  });
   return true;
 }
 

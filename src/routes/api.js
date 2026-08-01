@@ -2615,16 +2615,27 @@ Contact us for a full package quote:
           payload.reply_markup = { inline_keyboard: inlineKeyboard };
         }
 
-        const tgRes = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+        let tgRes = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
-        const tgBody = await tgRes.json();
+        let tgBody = await tgRes.json();
         if (!tgBody.ok) {
-          console.error('Telegram sendMessage failed:', JSON.stringify(tgBody));
-        } else {
+          console.warn('Telegram sendMessage Markdown failed, retrying plain text:', JSON.stringify(tgBody));
+          delete payload.parse_mode;
+          tgRes = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          tgBody = await tgRes.json();
+        }
+
+        if (tgBody.ok) {
           console.log(`✅ Bot replied to ${senderName} (chat ${chatId}): ${replyText.substring(0, 60)}...`);
+        } else {
+          console.error('Telegram sendMessage plain text also failed:', JSON.stringify(tgBody));
         }
       } catch (sendErr) {
         console.error('Error sending Telegram webhook response:', sendErr);
