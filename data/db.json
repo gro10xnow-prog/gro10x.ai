@@ -86,6 +86,7 @@
       "reportsToName": "H. M. Ifteker Mahmud",
       "xp": 0,
       "badge": "🌱 Recruit",
+      "onboarding_step": 1,
       "onboardingComplete": false,
       "onboardingStarted": false,
       "onboardingTasks": [
