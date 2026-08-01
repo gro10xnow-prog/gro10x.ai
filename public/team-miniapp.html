@@ -173,6 +173,75 @@
       <button class="btn btn-purple" onclick="submitPart1()">💾 Save Part 1 Profile & Claim XP</button>
     </div>
 
+    <!-- Tab 0.2: Part 2 National Verification & Education -->
+    <div id="tabPart2" class="card" style="display: none;">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.08);">
+        <div>
+          <div style="font-size: 0.75rem; color: var(--purple); font-weight: 800;">PART 2 OF 4</div>
+          <div style="font-size: 1.05rem; font-weight: 800; color: #fff;">National Verification & Education</div>
+        </div>
+        <span class="badge" style="background: rgba(168,85,247,0.2); color: #c084fc; border: 1px solid rgba(168,85,247,0.4);" id="part2XpBadge">🏆 Points: +0 XP</span>
+      </div>
+
+      <!-- Identity & Government Verification -->
+      <div style="font-size: 0.82rem; font-weight: 800; color: var(--purple); margin-bottom: 0.6rem;">🪪 GOVERNMENT IDENTIFICATION (5 XP / Field)</div>
+
+      <div style="margin-bottom: 0.75rem;">
+        <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">NID / Smart Card / Passport Number *</label>
+        <input type="text" id="inpNid" oninput="calcPart2XP()" placeholder="e.g. 199426925100001" style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+      </div>
+
+      <div style="margin-bottom: 0.75rem;">
+        <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Permanent Address (District, Thana, Village) *</label>
+        <input type="text" id="inpPermAddress" oninput="calcPart2XP()" placeholder="e.g. Vill: Monohorpur, Thana: Kotwali, Dist: Cumilla" style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+      </div>
+
+      <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+        <div style="flex: 1;">
+          <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">e-TIN Number (+5 XP)</label>
+          <input type="text" id="inpTin" oninput="calcPart2XP()" placeholder="TIN Number" style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+        </div>
+        <div style="flex: 1;">
+          <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Driving License (+5 XP)</label>
+          <input type="text" id="inpLicense" oninput="calcPart2XP()" placeholder="License No." style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+        </div>
+      </div>
+
+      <!-- Educational Background -->
+      <div style="font-size: 0.82rem; font-weight: 800; color: var(--purple); margin-bottom: 0.6rem;">🎓 EDUCATIONAL BACKGROUND (5 XP / Field)</div>
+
+      <div style="margin-bottom: 0.75rem;">
+        <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Highest Degree Attained (+5 XP)</label>
+        <input type="text" id="inpDegree" oninput="calcPart2XP()" placeholder="e.g. B.Sc in CSE, BBA, HSC" style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+      </div>
+
+      <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+        <div style="flex: 2;">
+          <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">University / College Name (+5 XP)</label>
+          <input type="text" id="inpInstitution" oninput="calcPart2XP()" placeholder="e.g. North South University" style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+        </div>
+        <div style="flex: 1;">
+          <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Passing Year (+5 XP)</label>
+          <input type="text" id="inpPassingYear" oninput="calcPart2XP()" placeholder="2020" style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+        </div>
+      </div>
+
+      <!-- Attachments Section -->
+      <div style="font-size: 0.82rem; font-weight: 800; color: var(--purple); margin-bottom: 0.6rem;">📸 DOCUMENT ATTACHMENTS (10 XP / FILE)</div>
+
+      <div style="margin-bottom: 0.75rem;">
+        <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">NID / Passport Document Scan (+10 XP)</label>
+        <input type="file" id="fileNidDoc" onchange="calcPart2XP()" accept="image/*,.pdf" style="width: 100%; font-size: 0.8rem; color: var(--muted);">
+      </div>
+
+      <div style="margin-bottom: 1.2rem;">
+        <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Educational Certificate Copy Scan (+10 XP)</label>
+        <input type="file" id="fileCertDoc" onchange="calcPart2XP()" accept="image/*,.pdf" style="width: 100%; font-size: 0.8rem; color: var(--muted);">
+      </div>
+
+      <button class="btn btn-purple" onclick="submitPart2()">💾 Save Part 2 & Claim XP</button>
+    </div>
+
     <!-- Tab 1: Tasks -->
     <div id="tabTasks" class="card" style="display: none;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem;">
@@ -331,12 +400,71 @@
         });
         const data = await res.json();
         if (data.success) {
-          if (tg?.showAlert) tg.showAlert(`🎉 Part 1 Profile Saved! +${data.earnedXP || 35} XP Claimed!`);
-          else alert(`🎉 Part 1 Profile Saved! +${data.earnedXP || 35} XP Claimed!`);
+          if (tg?.showAlert) tg.showAlert(`🎉 Part 1 Profile Saved! +${data.earnedXP || 35} XP Claimed!\n\nNext: Part 2 National Verification`);
+          else alert(`🎉 Part 1 Profile Saved! +${data.earnedXP || 35} XP Claimed!\n\nNext: Part 2 National Verification`);
+          document.getElementById('tabSurvey').style.display = 'none';
+          document.getElementById('tabPart2').style.display = 'block';
         }
       } catch (err) {
         console.error(err);
         alert('Part 1 saved locally!');
+      }
+    }
+
+    function calcPart2XP() {
+      const textIds = ['inpNid', 'inpPermAddress', 'inpTin', 'inpLicense', 'inpDegree', 'inpInstitution', 'inpPassingYear'];
+      let count = 0;
+      textIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el && el.value && el.value.trim() !== '') count++;
+      });
+      let points = count * 5;
+      if (document.getElementById('fileNidDoc')?.files?.length > 0) points += 10;
+      if (document.getElementById('fileCertDoc')?.files?.length > 0) points += 10;
+
+      const badge = document.getElementById('part2XpBadge');
+      if (badge) badge.innerText = `🏆 Points: +${points} XP`;
+      return points;
+    }
+
+    async function submitPart2() {
+      if (!currentUser) return;
+      const nid = document.getElementById('inpNid').value.trim();
+      const permAddress = document.getElementById('inpPermAddress').value.trim();
+
+      if (!nid || !permAddress) {
+        if (tg?.showAlert) tg.showAlert('⚠️ Please fill in required NID Number and Permanent Address fields!');
+        else alert('⚠️ Please fill in required NID Number and Permanent Address fields!');
+        return;
+      }
+
+      const payload = {
+        phone: currentUser.phone || '+8801708459008',
+        nid,
+        permanentAddress: permAddress,
+        tin: document.getElementById('inpTin').value.trim(),
+        license: document.getElementById('inpLicense').value.trim(),
+        degree: document.getElementById('inpDegree').value.trim(),
+        institution: document.getElementById('inpInstitution').value.trim(),
+        passingYear: document.getElementById('inpPassingYear').value.trim(),
+        hasNidDoc: document.getElementById('fileNidDoc')?.files?.length > 0,
+        hasCertDoc: document.getElementById('fileCertDoc')?.files?.length > 0
+      };
+
+      try {
+        const res = await fetch('/api/team/survey/part2', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.success) {
+          if (tg?.showAlert) tg.showAlert(`🎉 Part 2 Verified! +${data.earnedXP || 45} XP Claimed!`);
+          else alert(`🎉 Part 2 Verified! +${data.earnedXP || 45} XP Claimed!`);
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Part 2 saved locally!');
       }
     }
 

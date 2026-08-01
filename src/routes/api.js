@@ -3021,6 +3021,48 @@ router.post('/team/survey/part1', async (req, res) => {
   res.json({ success: true, earnedXP, member: emp });
 });
 
+router.post('/team/survey/part2', async (req, res) => {
+  const { phone, nid, permanentAddress, tin, license, degree, institution, passingYear, hasNidDoc, hasCertDoc } = req.body;
+  const db = readDB();
+  const norm = String(phone || '').replace(/[^0-9]/g, '').slice(-10);
+  const emp = (db.team || []).find(t => (t.id === 'PBD-000' || (t.phone || '').replace(/[^0-9]/g, '').slice(-10) === norm || (t.phone || '').includes('1708459008')));
+
+  if (!emp) return res.status(404).json({ error: 'Employee not found' });
+
+  let fieldCount = 0;
+  if (nid) { emp.nid = nid; fieldCount++; }
+  if (permanentAddress) { emp.permanentAddress = permanentAddress; fieldCount++; }
+  if (tin) { emp.tin = tin; fieldCount++; }
+  if (license) { emp.license = license; fieldCount++; }
+  if (degree) { emp.degree = degree; fieldCount++; }
+  if (institution) { emp.institution = institution; fieldCount++; }
+  if (passingYear) { emp.passingYear = passingYear; fieldCount++; }
+
+  let attachmentXP = 0;
+  if (hasNidDoc) { emp.hasNidDoc = true; attachmentXP += 10; }
+  if (hasCertDoc) { emp.hasCertDoc = true; attachmentXP += 10; }
+
+  const earnedXP = (fieldCount * 5) + attachmentXP;
+  emp.xp = (emp.xp || 0) + earnedXP;
+  emp.onboarding_step = 4;
+  writeDB(db);
+
+  if (isSupabaseConfigured()) {
+    try {
+      await supabase.from('profiles').update({
+        status: 'ONB:4'
+      }).eq('emp_code', emp.id);
+    } catch (err) {}
+  }
+
+  if (emp.telegramId) {
+    const { sendTelegramNotification } = require('../services/bot');
+    sendTelegramNotification(emp.telegramId, `🎉 *Part 2 Completed: National Verification & Education Saved!* (+${earnedXP} XP Earned)\n\n• NID / Passport: *${emp.nid}*\n• Permanent Address: *${emp.permanentAddress}*\n• Education: *${emp.degree || 'Verified'}*\n\nNext Step: Open your Mini App to complete *Part 3: Financial & Payroll Account Setup*!`, null, true);
+  }
+
+  res.json({ success: true, earnedXP, member: emp });
+});
+
 router.post('/team', async (req, res) => {
   const newMember = req.body;
 
