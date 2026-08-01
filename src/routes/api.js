@@ -2027,6 +2027,141 @@ router.post('/webhooks/telegram', async (req, res) => {
             ]
           };
 
+        } else if (msgText === '🌐 I Completed Web Account Setup') {
+          if (emp) {
+            emp.permanentPinSet = true;
+            if (emp.onboardingTasks && Array.isArray(emp.onboardingTasks)) {
+              const t2 = emp.onboardingTasks.find(t => t.id === 'webLogin');
+              if (t2 && !t2.completed) {
+                t2.completed = true;
+                t2.completedAt = new Date().toISOString();
+                emp.xp = (emp.xp || 0) + 25;
+              }
+            }
+            writeDB(db);
+
+            replyText = `🎉 *Task 2/6 Completed: Web Workspace Activated!* (+25 XP)\n\nGreat job ${emp.name}! Your desktop web access is verified.\n\nNext Step: Please set your Emergency Contact.`;
+            replyMarkup = {
+              keyboard: [
+                [{ text: '👤 Set Emergency Contact' }]
+              ],
+              resize_keyboard: true
+            };
+          }
+
+        } else if (msgText === '🔑 View My Web Login PIN' || msgText === '/pin' || msgText === '/resetpin') {
+          if (emp) {
+            const pinRecord = createTempPin(emp.phone, emp.id, 'team', emp.email);
+            replyText = `🔑 *Desktop Web Login PIN:* \`${pinRecord.pin}\`\n\nSign into https://purpleos-iota.vercel.app/auth on your laptop.`;
+            replyMarkup = {
+              keyboard: [
+                [{ text: '🌐 I Completed Web Account Setup' }],
+                [{ text: '🔑 View My Web Login PIN' }]
+              ],
+              resize_keyboard: true
+            };
+          }
+
+        } else if (msgText === '👤 Set Emergency Contact') {
+          db.onboardingSessions = db.onboardingSessions || {};
+          db.onboardingSessions[String(chatId)] = { action: 'await_emergency_contact' };
+          writeDB(db);
+          replyText = `📱 *Please reply with your Emergency Contact Phone Number:*`;
+
+        } else if (msgText === '🏠 Set Home Address') {
+          db.onboardingSessions = db.onboardingSessions || {};
+          db.onboardingSessions[String(chatId)] = { action: 'await_address' };
+          writeDB(db);
+          replyText = `🏠 *Please reply with your Home Address:*`;
+
+        } else if (msgText === '💳 Setup Bank & bKash Payouts') {
+          db.onboardingSessions = db.onboardingSessions || {};
+          db.onboardingSessions[String(chatId)] = { action: 'await_bank_info' };
+          writeDB(db);
+          replyText = `💳 *Please reply with Bank details*\n\nFormat: \`Bank Name, Account Number, Branch Name, bKash Number\``;
+
+        } else if (msgText === '📡 Register Group Channel' || msgText.startsWith('/registergroup')) {
+          if (chatId < 0) {
+            db.groups = db.groups || [];
+            let grp = db.groups.find(g => String(g.chatId) === String(chatId));
+            if (!grp) {
+              grp = { id: `GRP-${Date.now()}`, name: message.chat.title || 'Production Group', chatId: String(chatId), registered: true, registeredAt: new Date().toISOString() };
+              db.groups.push(grp);
+            }
+            if (emp && emp.onboardingTasks) {
+              const tg = emp.onboardingTasks.find(t => t.id === 'registerGroups');
+              if (tg && !tg.completed) {
+                tg.completed = true;
+                tg.completedAt = new Date().toISOString();
+                emp.xp = (emp.xp || 0) + 50;
+              }
+            }
+            writeDB(db);
+            replyText = `📡 *Group Registered Successfully!* (+50 XP)\n\nLinked group *${message.chat.title || 'Channel'}* to PurpleOS automation.`;
+          } else {
+            replyText = `📡 To register a group channel, add @PurpleMan_bot to your department Telegram group and send \`/registergroup\` inside that group!`;
+          }
+
+        } else if (db.onboardingSessions && db.onboardingSessions[String(chatId)]) {
+          const session = db.onboardingSessions[String(chatId)];
+          if (session.action === 'await_emergency_contact') {
+            if (emp) {
+              emp.emergencyContact = msgText;
+              delete db.onboardingSessions[String(chatId)];
+              writeDB(db);
+              replyText = `🎉 *Task 3/6 Completed: Emergency Contact Saved!* (+25 XP)\n\nSet to: *${msgText}*\n\nNext Step: Please set your Home Address.`;
+              replyMarkup = {
+                keyboard: [
+                  [{ text: '🏠 Set Home Address' }]
+                ],
+                resize_keyboard: true
+              };
+            }
+          } else if (session.action === 'await_address') {
+            if (emp) {
+              emp.address = msgText;
+              delete db.onboardingSessions[String(chatId)];
+              writeDB(db);
+              replyText = `🎉 *Task 4/6 Completed: Home Address Saved!* (+25 XP)\n\nSet to: *${msgText}*\n\nNext Step: Setup Bank & bKash Payouts.`;
+              replyMarkup = {
+                keyboard: [
+                  [{ text: '💳 Setup Bank & bKash Payouts' }]
+                ],
+                resize_keyboard: true
+              };
+            }
+          } else if (session.action === 'await_bank_info') {
+            if (emp) {
+              emp.bankInfo = emp.bankInfo || {};
+              const parts = msgText.split(',');
+              emp.bankInfo.bankName = parts[0] ? parts[0].trim() : msgText;
+              emp.bankInfo.accNo = parts[1] ? parts[1].trim() : 'Saved';
+              emp.bankInfo.mfsNo = parts[2] ? parts[2].trim() : msgText;
+              delete db.onboardingSessions[String(chatId)];
+              writeDB(db);
+
+              const isTechAdmin = (emp.id === 'PBD-000' || emp.role === 'Technology Admin');
+              if (isTechAdmin) {
+                replyText = `🎉 *Task 5/6 Completed: Financial Payout Setup Done!* (+25 XP)\n\nNext Step: Register Telegram Group Channel or submit First GPS Clock-In.`;
+                replyMarkup = {
+                  keyboard: [
+                    [{ text: '📡 Register Group Channel' }],
+                    [{ text: '📍 Submit First GPS Clock-In', request_location: true }]
+                  ],
+                  resize_keyboard: true
+                };
+              } else {
+                replyText = `🎉 *Task 5/6 Completed: Financial Payout Setup Done!* (+25 XP)\n\nNext Step: Submit your first GPS Clock-In.`;
+                replyMarkup = {
+                  keyboard: [
+                    [{ text: '📍 Submit First GPS Clock-In', request_location: true }]
+                  ],
+                  resize_keyboard: true
+                };
+              }
+            }
+          }
+
         } else if (msgText.startsWith('/start') || msgText.startsWith('/help')) {
           if (emp) {
             const progress = getOnboardingProgress(emp);
