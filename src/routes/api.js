@@ -1321,8 +1321,6 @@ function buildLeaderboard(db) {
 // Sessions are now read/written through db.eodSessions[chatId]
 
 router.post('/webhooks/telegram', async (req, res) => {
-  res.json({ ok: true });
-
   const db = readDB();
   db.webhookLogs = db.webhookLogs || [];
 
