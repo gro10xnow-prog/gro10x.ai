@@ -3156,7 +3156,7 @@ router.post('/team/survey/part4', async (req, res) => {
 });
 
 // ── DIGITAL EMPLOYMENT AGREEMENT 4-STAGE APPROVAL ROUTER ───────────────────
-router.post('/api/agreement/sign', async (req, res) => {
+router.post('/agreement/sign', async (req, res) => {
   const { empId, phone, signatureName, stage } = req.body;
   const db = readDB();
   const norm = String(phone || '').replace(/[^0-9]/g, '').slice(-10);
@@ -3227,7 +3227,7 @@ router.post('/api/agreement/sign', async (req, res) => {
   res.json({ success: true, agreement: emp.agreement });
 });
 
-router.get('/api/agreement/:empId/download', (req, res) => {
+router.get('/agreement/:empId/download', (req, res) => {
   const { empId } = req.params;
   const db = readDB();
   const emp = (db.team || []).find(t => t.id === empId || t.id === 'PBD-000') || { name: 'Firoz Uddin Ahmed', id: 'PBD-000', role: 'Technology Admin', joiningDate: '2026-08-01', baseSalary: 85000 };

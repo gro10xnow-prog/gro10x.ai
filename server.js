@@ -8,7 +8,8 @@ const { sseHandler } = require('./src/services/sse');
 const { initBot } = require('./src/services/bot');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+// Initialize Telegram Bot & Webhooks
+try { initBot(); } catch (e) { console.warn('Bot init note:', e.message); }
 
 // Middleware
 app.use(cors());
