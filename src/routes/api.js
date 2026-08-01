@@ -1727,8 +1727,9 @@ router.post('/webhooks/telegram', async (req, res) => {
           };
         }
         else if (emp && !emp.onboardingComplete && !msgText.startsWith('/')) {
-          if (emp.permanentPinSet && !emp.emergencyContact) {
+          if (!emp.emergencyContact) {
             emp.emergencyContact = msgText;
+            emp.permanentPinSet = true;
             writeDB(db);
             replyText = `🎉 *Task 3/6 Completed: Emergency Contact Saved!* (+25 XP)\n\nSet to: *${msgText}*\n\nNext Step: Please set your Home Address.`;
             replyMarkup = {
@@ -1737,7 +1738,7 @@ router.post('/webhooks/telegram', async (req, res) => {
               ],
               resize_keyboard: true
             };
-          } else if (emp.permanentPinSet && emp.emergencyContact && !emp.address) {
+          } else if (!emp.address) {
             emp.address = msgText;
             writeDB(db);
             replyText = `🎉 *Task 4/6 Completed: Home Address Saved!* (+25 XP)\n\nSet to: *${msgText}*\n\nNext Step: Setup Bank & bKash Payouts.`;
@@ -1747,7 +1748,7 @@ router.post('/webhooks/telegram', async (req, res) => {
               ],
               resize_keyboard: true
             };
-          } else if (emp.permanentPinSet && emp.emergencyContact && emp.address && (!emp.bankInfo || (!emp.bankInfo.bankName && !emp.bankInfo.mfsNo))) {
+          } else if (!emp.bankInfo || (!emp.bankInfo.bankName && !emp.bankInfo.mfsNo)) {
             emp.bankInfo = emp.bankInfo || {};
             const parts = msgText.split(',');
             emp.bankInfo.bankName = parts[0] ? parts[0].trim() : msgText;
