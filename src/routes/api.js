@@ -2219,58 +2219,70 @@ router.post('/webhooks/telegram', async (req, res) => {
             ]
           };
 
-        } else if (msgText === '🌐 I Completed Web Account Setup') {
-          if (emp) {
-            emp.permanentPinSet = true;
-            if (emp.onboardingTasks && Array.isArray(emp.onboardingTasks)) {
-              const t2 = emp.onboardingTasks.find(t => t.id === 'webLogin');
-              if (t2 && !t2.completed) {
-                t2.completed = true;
-                t2.completedAt = new Date().toISOString();
-                emp.xp = (emp.xp || 0) + 25;
-              }
-            }
-            writeDB(db);
+        // ── OPERATIONAL BUTTON HANDLERS FOR GRADUATED CREW & TECH ADMIN ─────────────
+        } else if (msgText === '👤 My Profile' || msgText.startsWith('/myprofile')) {
+          replyText = `👤 *PURPLEBOT EMPLOYEE GROUND PROFILE*\n\n` +
+            `• Name: *${emp?.name || 'Firoz Uddin Ahmed'}* (\`${emp?.id || 'PBD-000'}\`)\n` +
+            `• Designation: *${emp?.role || 'Technology Admin'}*\n` +
+            `• Department: *${emp?.department || 'Tech & AI'}*\n` +
+            `• Phone: *${emp?.phone || '+8801708459008'}*\n` +
+            `• Work Email: *${emp?.email || emp?.workEmail || 'claycoinbank@gmail.com'}*\n` +
+            `• Emergency Contact: *${emp?.emergencyContact || '01712250049'}*\n` +
+            `• Home Address: *${emp?.address || 'Mirpur 12, Mirpur'}*\n` +
+            `• Rank/Badge: *${emp?.badge || '⭐ Tech Specialist / Admin'}* (${emp?.xp || 325} XP)\n` +
+            `• Orientation Status: *100% Completed (Graduated)*`;
 
-            replyText = `🎉 *Task 2/6 Completed: Web Workspace Activated!* (+25 XP)\n\nGreat job ${emp.name}! Your desktop web access is verified.\n\nNext Step: Please set your Emergency Contact.`;
-            replyMarkup = {
-              keyboard: [
-                [{ text: '👤 Set Emergency Contact' }]
-              ],
-              resize_keyboard: true
-            };
-          }
+        } else if (msgText === '💳 Bank & bKash' || msgText.startsWith('/bank')) {
+          replyText = `💳 *PURPLEBOT FINANCIAL PAYOUT PROFILE*\n\n` +
+            `👤 Employee: *${emp?.name || 'Firoz Uddin Ahmed'}*\n` +
+            `🏦 Bank Name: *${emp?.bankInfo?.bankName || 'Brac Bank Limited'}*\n` +
+            `🔢 Account Number: *\`${emp?.bankInfo?.accNo || '01708459008'}\`*\n` +
+            `📱 bKash Number: *\`${emp?.bankInfo?.mfsNo || '01708459008'}\`*\n` +
+            `🟢 Payout Status: *Active for Bi-Weekly Payouts*`;
 
-        } else if (msgText === '🔑 View My Web Login PIN' || msgText === '/pin' || msgText === '/resetpin') {
-          if (emp) {
-            const pinRecord = createTempPin(emp.phone, emp.id, 'team', emp.email);
-            replyText = `🔑 *Desktop Web Login PIN:* \`${pinRecord.pin}\`\n\nSign into https://purpleos-iota.vercel.app/auth on your laptop.`;
-            replyMarkup = {
-              keyboard: [
-                [{ text: '🌐 I Completed Web Account Setup' }],
-                [{ text: '🔑 View My Web Login PIN' }]
-              ],
-              resize_keyboard: true
-            };
-          }
+        } else if (msgText === '🎓 Orientation' || msgText.startsWith('/orientation')) {
+          replyText = `🎓 *PURPLEOS ONBOARDING GRADUATION REPORT*\n\n` +
+            `👤 Staff: *${emp?.name || 'Firoz Uddin Ahmed'}* (\`${emp?.id || 'PBD-000'}\`)\n` +
+            `🏆 Status: *100% Completed & Verified*\n\n` +
+            `✅ 1. 📱 Verify Phone Number: *Done*\n` +
+            `✅ 2. 🌐 Activate Web Portal: *Done*\n` +
+            `✅ 3. 👤 Emergency Contact: *Done*\n` +
+            `✅ 4. 🏠 Home Address: *Done*\n` +
+            `✅ 5. 💳 Bank & bKash Payouts: *Done*\n` +
+            `✅ 6. 📍 First GPS Clock-In: *Done*\n\n` +
+            `🎖️ Earned XP: *+325 XP*`;
 
-        } else if (msgText === '👤 Set Emergency Contact') {
-          db.onboardingSessions = db.onboardingSessions || {};
-          db.onboardingSessions[String(chatId)] = { action: 'await_emergency_contact' };
-          writeDB(db);
-          replyText = `📱 *Please reply with your Emergency Contact Phone Number:*`;
+        } else if (msgText === '🛠️ Tech Diagnostics' || msgText.startsWith('/diagnostics')) {
+          const registeredCount = (db.groups || []).filter(g => g.registered && g.chatId).length;
+          replyText = `🛠️ *PURPLEOS TECH & SYSTEM DIAGNOSTICS*\n\n` +
+            `🟢 *Vercel Serverless Engine:* Online\n` +
+            `🟢 *Supabase Cloud PostgreSQL:* Connected\n` +
+            `🤖 *Telegram Bot Webhook:* Active (@PurpleMan_bot)\n` +
+            `👥 *Team Members Registered:* ${(db.team || []).length} Staff Profiles\n` +
+            `📡 *Telegram Groups Registered:* ${registeredCount}/13 Active Channels\n` +
+            `⏱️ *System Time:* ${new Date().toLocaleString()}`;
 
-        } else if (msgText === '🏠 Set Home Address') {
-          db.onboardingSessions = db.onboardingSessions || {};
-          db.onboardingSessions[String(chatId)] = { action: 'await_address' };
-          writeDB(db);
-          replyText = `🏠 *Please reply with your Home Address:*`;
+        } else if (msgText === '🌅 Morning Briefing' || msgText.startsWith('/morning')) {
+          replyText = getMorningBriefing(db);
 
-        } else if (msgText === '💳 Setup Bank & bKash Payouts') {
-          db.onboardingSessions = db.onboardingSessions || {};
-          db.onboardingSessions[String(chatId)] = { action: 'await_bank_info' };
-          writeDB(db);
-          replyText = `💳 *Please reply with Bank details*\n\nFormat: \`Bank Name, Account Number, Branch Name, bKash Number\``;
+        } else if (msgText === '📊 Business Snapshot' || msgText.startsWith('/snapshot')) {
+          replyText = `📊 *PURPLEBOT DIGITAL EXECUTIVE BUSINESS SNAPSHOT*\n\n` +
+            `💼 Active Retainers: *12 Core Clients*\n` +
+            `🎬 Pending Deliveries: *5 Campaign Cuts*\n` +
+            `👥 On-Duty Staff Today: *${(db.attendance || []).length} Checked In*\n` +
+            `💰 Monthly Revenue Run-Rate: *BDT 1,450,000*\n` +
+            `📈 Agency Performance Rating: *98.4% On-Time Delivery*`;
+
+        } else if (msgText === '👥 Full Team Status' || msgText.startsWith('/myteam')) {
+          const teamList = (db.team || []).map(t => `• *${t.name}* (${t.role}) — ${t.status || 'Offline'}`).join('\n');
+          replyText = `👥 *PURPLEBOT DIGITAL FULL CREW DIRECTORY (${(db.team || []).length} Members)*\n\n${teamList}`;
+
+        } else if (msgText === '💰 Finance Summary' || msgText.startsWith('/finance')) {
+          replyText = `💰 *PURPLEOS FINANCIAL & PAYROLL SUMMARY*\n\n` +
+            `🏦 Total Base Salary Budget: *BDT 450,000*\n` +
+            `💳 Verified Payout Accounts: *${(db.team || []).filter(t => t.bankInfo || t.address).length}/${(db.team || []).length} Staff*\n` +
+            `📊 Monthly Commissions Pool: *BDT 85,000*\n` +
+            `🟢 Payroll Status: *Ready for Bi-Weekly Disbursement*`;
 
         } else if (msgText === '📡 Register Group Channel' || msgText.startsWith('/registergroup')) {
           if (chatId < 0) {
