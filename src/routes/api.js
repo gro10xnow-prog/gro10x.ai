@@ -3063,6 +3063,51 @@ router.post('/team/survey/part2', async (req, res) => {
   res.json({ success: true, earnedXP, member: emp });
 });
 
+router.post('/team/survey/part3', async (req, res) => {
+  const { phone, baseSalary, commissionRate, bankName, accTitle, accNo, branchRouting, bkash, nagad, rocket, hasBankDoc } = req.body;
+  const db = readDB();
+  const norm = String(phone || '').replace(/[^0-9]/g, '').slice(-10);
+  const emp = (db.team || []).find(t => (t.id === 'PBD-000' || (t.phone || '').replace(/[^0-9]/g, '').slice(-10) === norm || (t.phone || '').includes('1708459008')));
+
+  if (!emp) return res.status(404).json({ error: 'Employee not found' });
+
+  let fieldCount = 0;
+  if (baseSalary) { emp.baseSalary = baseSalary; fieldCount++; }
+  if (commissionRate) { emp.commissionRate = commissionRate; fieldCount++; }
+  if (bankName) { emp.bankInfo = emp.bankInfo || {}; emp.bankInfo.bankName = bankName; fieldCount++; }
+  if (accTitle) { emp.bankInfo = emp.bankInfo || {}; emp.bankInfo.accTitle = accTitle; fieldCount++; }
+  if (accNo) { emp.bankInfo = emp.bankInfo || {}; emp.bankInfo.accNo = accNo; fieldCount++; }
+  if (branchRouting) { emp.bankInfo = emp.bankInfo || {}; emp.bankInfo.branchRouting = branchRouting; fieldCount++; }
+  if (bkash) { emp.bankInfo = emp.bankInfo || {}; emp.bankInfo.mfsNo = bkash; fieldCount++; }
+  if (nagad) { emp.bankInfo = emp.bankInfo || {}; emp.bankInfo.nagad = nagad; fieldCount++; }
+  if (rocket) { emp.bankInfo = emp.bankInfo || {}; emp.bankInfo.rocket = rocket; fieldCount++; }
+
+  let attachmentXP = 0;
+  if (hasBankDoc) { emp.hasBankDoc = true; attachmentXP += 10; }
+
+  const earnedXP = (fieldCount * 5) + attachmentXP;
+  emp.xp = (emp.xp || 0) + earnedXP;
+  emp.onboarding_step = 5;
+  emp.hr_status = 'Pending HR Verification';
+  writeDB(db);
+
+  if (isSupabaseConfigured()) {
+    try {
+      await supabase.from('profiles').update({
+        status: 'ONB:5',
+        base_salary: Number(baseSalary) || 0
+      }).eq('emp_code', emp.id);
+    } catch (err) {}
+  }
+
+  if (emp.telegramId) {
+    const { sendTelegramNotification } = require('../services/bot');
+    sendTelegramNotification(emp.telegramId, `🎉 *Part 3 Completed: Financial, Salary & Payroll Saved!* (+${earnedXP} XP Earned)\n\n• Base Salary: *BDT ${Number(baseSalary).toLocaleString()}*\n• Bank: *${bankName}* (\`${accNo}\`)\n• bKash: *\`${bkash}\`*\n• Status: *🟡 Submitted (Pending HR Verification)*\n\nNext Step: Open your Mini App to complete *Part 4: Work Skills, Merch & Equipment Inventory*!`, null, true);
+  }
+
+  res.json({ success: true, earnedXP, member: emp });
+});
+
 router.post('/team', async (req, res) => {
   const newMember = req.body;
 

@@ -242,6 +242,83 @@
       <button class="btn btn-purple" onclick="submitPart2()">💾 Save Part 2 & Claim XP</button>
     </div>
 
+    <!-- Tab 0.3: Part 3 Financial, Salary & Payroll Setup -->
+    <div id="tabPart3" class="card" style="display: none;">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.08);">
+        <div>
+          <div style="font-size: 0.75rem; color: var(--purple); font-weight: 800;">PART 3 OF 4</div>
+          <div style="font-size: 1.05rem; font-weight: 800; color: #fff;">Financial, Salary & Payroll Setup</div>
+        </div>
+        <span class="badge" style="background: rgba(168,85,247,0.2); color: #c084fc; border: 1px solid rgba(168,85,247,0.4);" id="part3XpBadge">🏆 Points: +0 XP</span>
+      </div>
+
+      <!-- Salary & Compensation Information -->
+      <div style="font-size: 0.82rem; font-weight: 800; color: var(--purple); margin-bottom: 0.6rem;">💰 SALARY & COMPENSATION (5 XP / Field)</div>
+
+      <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem;">
+        <div style="flex: 1;">
+          <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Base Salary (BDT) *</label>
+          <input type="number" id="inpBaseSalary" oninput="calcPart3XP()" placeholder="e.g. 85000" style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+        </div>
+        <div style="flex: 1;">
+          <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Commission % / Shoot Fee (+5 XP)</label>
+          <input type="text" id="inpCommission" oninput="calcPart3XP()" placeholder="e.g. 5% or 1500/shoot" style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+        </div>
+      </div>
+
+      <!-- Banking Details -->
+      <div style="font-size: 0.82rem; font-weight: 800; color: var(--purple); margin-bottom: 0.6rem;">🏦 BANKING & DIRECT DEPOSIT (5 XP / Field)</div>
+
+      <div style="margin-bottom: 0.75rem;">
+        <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Primary Bank Name *</label>
+        <input type="text" id="inpBankName" oninput="calcPart3XP()" placeholder="e.g. Brac Bank Limited" style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+      </div>
+
+      <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem;">
+        <div style="flex: 1;">
+          <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Account Title / Holder Name *</label>
+          <input type="text" id="inpAccTitle" oninput="calcPart3XP()" placeholder="e.g. Firoz Uddin Ahmed" style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+        </div>
+        <div style="flex: 1;">
+          <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Account Number *</label>
+          <input type="text" id="inpAccNo" oninput="calcPart3XP()" placeholder="Account No." style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+        </div>
+      </div>
+
+      <div style="margin-bottom: 1rem;">
+        <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Branch Name & Routing Number (+5 XP)</label>
+        <input type="text" id="inpBranchRouting" oninput="calcPart3XP()" placeholder="e.g. Gulshan Branch, Routing: 060261234" style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+      </div>
+
+      <!-- MFS Mobile Wallets -->
+      <div style="font-size: 0.82rem; font-weight: 800; color: var(--purple); margin-bottom: 0.6rem;">📱 MOBILE WALLETS (bKash / Nagad / Rocket)</div>
+
+      <div style="margin-bottom: 0.75rem;">
+        <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">bKash Personal Mobile Number *</label>
+        <input type="text" id="inpBkash" oninput="calcPart3XP()" placeholder="e.g. 01708459008" style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+      </div>
+
+      <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+        <div style="flex: 1;">
+          <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Nagad Number (+5 XP)</label>
+          <input type="text" id="inpNagad" oninput="calcPart3XP()" placeholder="Nagad No." style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+        </div>
+        <div style="flex: 1;">
+          <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Rocket Number (+5 XP)</label>
+          <input type="text" id="inpRocket" oninput="calcPart3XP()" placeholder="Rocket No." style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+        </div>
+      </div>
+
+      <!-- Attachment -->
+      <div style="font-size: 0.82rem; font-weight: 800; color: var(--purple); margin-bottom: 0.6rem;">📸 BANK STATEMENT / CHEQUE LEAF (+10 XP)</div>
+      
+      <div style="margin-bottom: 1.2rem;">
+        <input type="file" id="fileBankDoc" onchange="calcPart3XP()" accept="image/*,.pdf" style="width: 100%; font-size: 0.8rem; color: var(--muted);">
+      </div>
+
+      <button class="btn btn-purple" onclick="submitPart3()">💾 Save Part 3 & Claim XP</button>
+    </div>
+
     <!-- Tab 1: Tasks -->
     <div id="tabTasks" class="card" style="display: none;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem;">
@@ -459,12 +536,73 @@
         });
         const data = await res.json();
         if (data.success) {
-          if (tg?.showAlert) tg.showAlert(`🎉 Part 2 Verified! +${data.earnedXP || 45} XP Claimed!`);
-          else alert(`🎉 Part 2 Verified! +${data.earnedXP || 45} XP Claimed!`);
+          if (tg?.showAlert) tg.showAlert(`🎉 Part 2 Verified! +${data.earnedXP || 45} XP Claimed!\n\nNext: Part 3 Salary & Financial Setup`);
+          else alert(`🎉 Part 2 Verified! +${data.earnedXP || 45} XP Claimed!\n\nNext: Part 3 Salary & Financial Setup`);
+          document.getElementById('tabPart2').style.display = 'none';
+          document.getElementById('tabPart3').style.display = 'block';
         }
       } catch (err) {
         console.error(err);
         alert('Part 2 saved locally!');
+      }
+    }
+
+    function calcPart3XP() {
+      const textIds = ['inpBaseSalary', 'inpCommission', 'inpBankName', 'inpAccTitle', 'inpAccNo', 'inpBranchRouting', 'inpBkash', 'inpNagad', 'inpRocket'];
+      let count = 0;
+      textIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el && el.value && el.value.trim() !== '') count++;
+      });
+      let points = count * 5;
+      if (document.getElementById('fileBankDoc')?.files?.length > 0) points += 10;
+
+      const badge = document.getElementById('part3XpBadge');
+      if (badge) badge.innerText = `🏆 Points: +${points} XP`;
+      return points;
+    }
+
+    async function submitPart3() {
+      if (!currentUser) return;
+      const baseSalary = document.getElementById('inpBaseSalary').value.trim();
+      const bankName = document.getElementById('inpBankName').value.trim();
+      const accNo = document.getElementById('inpAccNo').value.trim();
+      const bkash = document.getElementById('inpBkash').value.trim();
+
+      if (!baseSalary || !bankName || !accNo || !bkash) {
+        if (tg?.showAlert) tg.showAlert('⚠️ Please fill in required Base Salary, Bank Name, Account Number and bKash Number!');
+        else alert('⚠️ Please fill in required Base Salary, Bank Name, Account Number and bKash Number!');
+        return;
+      }
+
+      const payload = {
+        phone: currentUser.phone || '+8801708459008',
+        baseSalary: Number(baseSalary) || 0,
+        commissionRate: document.getElementById('inpCommission').value.trim(),
+        bankName,
+        accTitle: document.getElementById('inpAccTitle').value.trim(),
+        accNo,
+        branchRouting: document.getElementById('inpBranchRouting').value.trim(),
+        bkash,
+        nagad: document.getElementById('inpNagad').value.trim(),
+        rocket: document.getElementById('inpRocket').value.trim(),
+        hasBankDoc: document.getElementById('fileBankDoc')?.files?.length > 0
+      };
+
+      try {
+        const res = await fetch('/api/team/survey/part3', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.success) {
+          if (tg?.showAlert) tg.showAlert(`🎉 Part 3 Saved! +${data.earnedXP || 45} XP Claimed!\n\nStatus: 🟡 Submitted (Awaiting HR Verification)`);
+          else alert(`🎉 Part 3 Saved! +${data.earnedXP || 45} XP Claimed!\n\nStatus: 🟡 Submitted (Awaiting HR Verification)`);
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Part 3 saved locally!');
       }
     }
 
