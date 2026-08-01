@@ -13,7 +13,7 @@ function normalizePhone(p) {
   return digits.length >= 10 ? digits.slice(-10) : digits;
 }
 
-function getRoleKeyboard(accessLevel, isVerified = false) {
+function getRoleKeyboard(accessLevel, isVerified = false, emp = null) {
   if (!isVerified) {
     return {
       keyboard: [
@@ -23,11 +23,26 @@ function getRoleKeyboard(accessLevel, isVerified = false) {
     };
   }
 
+  const isTechAdmin = emp && (emp.id === 'PBD-000' || emp.role === 'Technology Admin' || normalizePhone(emp.phone) === '1708459008');
+
   if (accessLevel === 'Owner / Admin') {
+    if (isTechAdmin) {
+      return {
+        keyboard: [
+          [{ text: '🌅 Morning Briefing' }, { text: '📊 Business Snapshot' }],
+          [{ text: '👥 Full Team Status' }, { text: '💰 Finance Summary' }],
+          [{ text: '👤 My Profile' }, { text: '💳 Bank & bKash' }],
+          [{ text: '🛠️ Tech Diagnostics' }, { text: '🎓 Orientation' }],
+          [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
+        ],
+        resize_keyboard: true
+      };
+    }
     return {
       keyboard: [
         [{ text: '🌅 Morning Briefing' }, { text: '📊 Business Snapshot' }],
         [{ text: '👥 Full Team Status' }, { text: '💰 Finance Summary' }],
+        [{ text: '👤 My Profile' }, { text: '💳 Bank & bKash' }],
         [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
       ],
       resize_keyboard: true
@@ -39,6 +54,7 @@ function getRoleKeyboard(accessLevel, isVerified = false) {
       keyboard: [
         [{ text: '👥 My Team Roster' }, { text: '📊 Department Report' }],
         [{ text: '🌅 Morning Briefing' }, { text: '📋 My Tasks' }],
+        [{ text: '👤 My Profile' }, { text: '💳 Bank & bKash' }],
         [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
       ],
       resize_keyboard: true
@@ -49,7 +65,8 @@ function getRoleKeyboard(accessLevel, isVerified = false) {
     return {
       keyboard: [
         [{ text: '💰 Expense Queue' }, { text: '🧾 Invoice Status' }],
-        [{ text: '📊 Payroll Summary' }, { text: '📍 Clock-In GPS', request_location: true }]
+        [{ text: '📊 Payroll Summary' }, { text: '👤 My Profile' }],
+        [{ text: '💳 Bank & bKash' }, { text: '📍 Clock-In GPS', request_location: true }]
       ],
       resize_keyboard: true
     };
@@ -58,7 +75,8 @@ function getRoleKeyboard(accessLevel, isVerified = false) {
   if (accessLevel === 'Office Staff') {
     return {
       keyboard: [
-        [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
+        [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }],
+        [{ text: '👤 My Profile' }]
       ],
       resize_keyboard: true
     };
@@ -68,6 +86,7 @@ function getRoleKeyboard(accessLevel, isVerified = false) {
   return {
     keyboard: [
       [{ text: '📋 My Tasks' }, { text: '💰 My Earnings' }],
+      [{ text: '👤 My Profile' }, { text: '💳 Bank & bKash' }],
       [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
     ],
     resize_keyboard: true
@@ -147,13 +166,75 @@ function initBot() {
           `🌐 *Web Portal:* https://purpleos-iota.vercel.app/auth\n\n` +
           `Your Telegram account is now linked. Tapping *Open App* will launch your role dashboard automatically without logging in again!`;
 
-        const keyboard = getRoleKeyboard(emp.accessLevel, true);
+        const keyboard = getRoleKeyboard(emp.accessLevel, true, emp);
         teamBot.sendMessage(chatId, welcomeMsg, { parse_mode: 'Markdown', reply_markup: keyboard });
+      });
+
+      const userState = {};
+
+      teamBot.on('message', (msg) => {
+        const chatId = msg.chat.id;
+        const text = (msg.text || '').trim();
+
+        // Anti-looping: Clear wizard state if user taps top-level menu button
+        const isMenuButton = [
+          '/start', '/help', '/resetpin', '/myprofile', '/mybank', '/techdiag', '/orientation',
+          '🌅 Morning Briefing', '📊 Business Snapshot', '👥 Full Team Status', '💰 Finance Summary',
+          '👤 My Profile', '💳 Bank & bKash', '🛠️ Tech Diagnostics', '🎓 Orientation',
+          '📍 Clock-In GPS', '🚪 Clock Out', '📋 My Tasks', '💰 My Earnings', '👥 My Team Roster', '📊 Department Report'
+        ].some(b => text.startsWith(b));
+
+        if (isMenuButton) {
+          userState[chatId] = null;
+          return;
+        }
+
+        // Process active wizard input
+        const state = userState[chatId];
+        if (state && text) {
+          const dbData = readDB();
+          const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId));
+          if (!emp) return;
+
+          if (state.action === 'await_emergency_contact') {
+            emp.emergencyContact = text;
+            writeDB(dbData);
+            userState[chatId] = null;
+            teamBot.sendMessage(chatId, `✅ *Emergency Contact Updated!*\nSet to: *${text}*`, { parse_mode: 'Markdown', reply_markup: getRoleKeyboard(emp.accessLevel, true, emp) });
+          } else if (state.action === 'await_address') {
+            emp.address = text;
+            writeDB(dbData);
+            userState[chatId] = null;
+            teamBot.sendMessage(chatId, `✅ *Home Address Updated!*\nSet to: *${text}*`, { parse_mode: 'Markdown', reply_markup: getRoleKeyboard(emp.accessLevel, true, emp) });
+          } else if (state.action === 'await_email') {
+            emp.email = text;
+            emp.workEmail = text;
+            writeDB(dbData);
+            userState[chatId] = null;
+            teamBot.sendMessage(chatId, `✅ *Work Email Updated!*\nSet to: *${text}*`, { parse_mode: 'Markdown', reply_markup: getRoleKeyboard(emp.accessLevel, true, emp) });
+          } else if (state.action === 'await_bank_info') {
+            emp.bankInfo = emp.bankInfo || {};
+            const parts = text.split(',');
+            emp.bankInfo.bankName = parts[0] ? parts[0].trim() : text;
+            emp.bankInfo.accNo = parts[1] ? parts[1].trim() : 'Updated';
+            emp.bankInfo.branch = parts[2] ? parts[2].trim() : 'Main Branch';
+            writeDB(dbData);
+            userState[chatId] = null;
+            teamBot.sendMessage(chatId, `✅ *Bank Details Saved!*\nBank: *${emp.bankInfo.bankName}*\nAcc: *${emp.bankInfo.accNo}*`, { parse_mode: 'Markdown', reply_markup: getRoleKeyboard(emp.accessLevel, true, emp) });
+          } else if (state.action === 'await_mfs') {
+            emp.bankInfo = emp.bankInfo || {};
+            emp.bankInfo.mfsNo = text;
+            writeDB(dbData);
+            userState[chatId] = null;
+            teamBot.sendMessage(chatId, `✅ *bKash / Nagad Number Saved!*\nNumber: *${text}*`, { parse_mode: 'Markdown', reply_markup: getRoleKeyboard(emp.accessLevel, true, emp) });
+          }
+        }
       });
 
       // /start or /help handler
       teamBot.onText(/\/start|\/help/, (msg) => {
         const chatId = msg.chat.id;
+        userState[chatId] = null;
         const dbData = readDB();
         const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId));
 
@@ -161,7 +242,7 @@ function initBot() {
           const welcome = `🤖 *Welcome back, ${emp.name}!*\n\n` +
             `Role: *${emp.role}* (${emp.department})\n\n` +
             `Use the quick menu below or tap *Open App* to launch your dashboard.`;
-          const keyboard = getRoleKeyboard(emp.accessLevel, true);
+          const keyboard = getRoleKeyboard(emp.accessLevel, true, emp);
           teamBot.sendMessage(chatId, welcome, { parse_mode: 'Markdown', reply_markup: keyboard });
         } else {
           const welcome = `🤖 *Welcome to Purple Man (Purplebot Digital Team Bot)!*\n\n` +
@@ -183,6 +264,123 @@ function initBot() {
 
         const pinRecord = createTempPin(emp.phone, emp.id, 'team', emp.email);
         teamBot.sendMessage(chatId, `🔑 *New Desktop Web PIN:* \`${pinRecord.pin}\`\n\nGo to https://purpleos-iota.vercel.app/auth to log in on your laptop.`, { parse_mode: 'Markdown' });
+      });
+
+      // 👤 My Profile Command / Button
+      teamBot.onText(/\/myprofile|👤 My Profile/, (msg) => {
+        const chatId = msg.chat.id;
+        userState[chatId] = null;
+        const dbData = readDB();
+        const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId)) || (dbData.team || [])[0];
+
+        const text = `👤 *PURPLEBOT EMPLOYEE GROUND PROFILE*\n\n` +
+          `• Name: *${emp.name}* (${emp.id})\n` +
+          `• Role: *${emp.role}*\n` +
+          `• Department: *${emp.department || 'Tech & AI'}*\n` +
+          `• Work Email: *${emp.email || emp.workEmail || 'Not set'}*\n` +
+          `• Emergency Contact: *${emp.emergencyContact || 'Not set'}*\n` +
+          `• Home Address: *${emp.address || 'Not set'}*\n` +
+          `• Current Rank: *${emp.badge || '🌱 Recruit'}* (${emp.xp || 0} XP)`;
+
+        const inlineButtons = [
+          [
+            { text: '✏️ Emergency Phone', callback_data: 'edit_emergency_contact' },
+            { text: '✏️ Home Address', callback_data: 'edit_address' }
+          ],
+          [
+            { text: '✏️ Work Email', callback_data: 'edit_work_email' }
+          ]
+        ];
+
+        teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown', reply_markup: { inline_keyboard: inlineButtons } });
+      });
+
+      // 💳 Bank & bKash Command / Button
+      teamBot.onText(/\/mybank|💳 Bank & bKash/, (msg) => {
+        const chatId = msg.chat.id;
+        userState[chatId] = null;
+        const dbData = readDB();
+        const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId)) || (dbData.team || [])[0];
+
+        const bank = emp.bankInfo || {};
+        const text = `💳 *PURPLEBOT FINANCIAL PAYOUT ACCOUNTS*\n\n` +
+          `• Employee: *${emp.name}*\n` +
+          `• Bank Name: *${bank.bankName || 'Not configured'}*\n` +
+          `• Account No: *${bank.accNo || 'Not configured'}*\n` +
+          `• Branch: *${bank.branch || 'Not configured'}*\n` +
+          `• Mobile Banking (bKash/Nagad): *${bank.mfsNo || 'Not configured'}*\n\n` +
+          `_This information is used by Finance Manager Borhan Siddique for monthly payroll & expense disbursals._`;
+
+        const inlineButtons = [
+          [
+            { text: '✏️ Set Bank Account', callback_data: 'edit_bank_details' },
+            { text: '✏️ Set bKash/Nagad', callback_data: 'edit_mfs' }
+          ]
+        ];
+
+        teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown', reply_markup: { inline_keyboard: inlineButtons } });
+      });
+
+      // 🛠️ Tech Diagnostics Command / Button (Tech Admin / Firoz)
+      teamBot.onText(/\/techdiag|🛠️ Tech Diagnostics/, (msg) => {
+        const chatId = msg.chat.id;
+        userState[chatId] = null;
+        const dbData = readDB();
+        const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId)) || (dbData.team || [])[0];
+
+        const teamCount = (dbData.team || []).length;
+        const taskCount = (dbData.tasks || []).length;
+        const invCount = (dbData.invoices || []).length;
+        const logsCount = (dbData.automationLogs || []).length;
+
+        const text = `🛠️ *PURPLEOS TECH DIAGNOSTICS & SYSTEM HEALTH*\n\n` +
+          `• Tech Admin: *${emp.name}* (PBD-000)\n` +
+          `• System Status: 🟢 *Live & Operational*\n` +
+          `• Registered Roster: *${teamCount} Employees*\n` +
+          `• Production Tasks: *${taskCount} Workflows*\n` +
+          `• Financial Invoices: *${invCount} Records*\n` +
+          `• Automation Logs: *${logsCount} Executions*\n\n` +
+          `_Use tools below for maintenance and cloud sync._`;
+
+        const inlineButtons = [
+          [
+            { text: '🔄 Sync Supabase Cloud', callback_data: 'tech_sync_supabase' },
+            { text: '🧹 Clean Test Slate', callback_data: 'tech_clean_slate' }
+          ],
+          [
+            { text: '🔑 Generate Web PIN', callback_data: 'tech_fresh_pin' }
+          ]
+        ];
+
+        teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown', reply_markup: { inline_keyboard: inlineButtons } });
+      });
+
+      // 🎓 Orientation Command / Button
+      teamBot.onText(/\/orientation|🎓 Orientation/, (msg) => {
+        const chatId = msg.chat.id;
+        userState[chatId] = null;
+        const dbData = readDB();
+        const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId)) || (dbData.team || [])[0];
+
+        const tasks = emp.onboardingTasks || [
+          { label: '📧 Add Work Email', completed: Boolean(emp.email) },
+          { label: '🌐 Activate Web Portal (First Login)', completed: Boolean(emp.permanentPinSet) },
+          { label: '📍 Submit First GPS Clock-In', completed: Boolean(emp.status && emp.status !== 'Offline') },
+          { label: '📋 Submit First EOD Report', completed: false },
+          { label: '🌴 Submit Test Leave Request', completed: false },
+          { label: '💳 Bank & bKash Payout Setup', completed: Boolean(emp.bankInfo?.bankName || emp.bankInfo?.mfsNo) }
+        ];
+
+        let taskText = tasks.map((t, idx) => `${t.completed ? '✅' : '⏳'} ${idx + 1}. *${t.label || t.id}*`).join('\n');
+
+        const text = `🎓 *PURPLEBOT ORIENTATION & ONBOARDING TRACKER*\n\n` +
+          `• Employee: *${emp.name}*\n` +
+          `• Current Rank: *${emp.badge || '🌱 Recruit'}*\n` +
+          `• Earned XP: *${emp.xp || 0} XP*\n\n` +
+          `📋 *Onboarding Checklist:*\n${taskText}\n\n` +
+          `🌐 Open Onboarding Web Portal: https://purpleos-iota.vercel.app/onboarding`;
+
+        teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
       });
 
       // Location / Clock In
@@ -419,7 +617,39 @@ function initBot() {
         let alertMsg = 'Action processed!';
         let statusBadge = `✅ Completed by ${emp.name}`;
 
-        if (data.startsWith('approve_leave:')) {
+        if (data === 'edit_emergency_contact') {
+          userState[chatId] = { action: 'await_emergency_contact' };
+          alertMsg = 'Please type emergency contact number';
+          teamBot.sendMessage(chatId, `📱 *Please reply with your Emergency Contact Phone Number:*`, { parse_mode: 'Markdown' });
+        } else if (data === 'edit_address') {
+          userState[chatId] = { action: 'await_address' };
+          alertMsg = 'Please type home address';
+          teamBot.sendMessage(chatId, `🏠 *Please reply with your Home Address:*`, { parse_mode: 'Markdown' });
+        } else if (data === 'edit_work_email') {
+          userState[chatId] = { action: 'await_email' };
+          alertMsg = 'Please type work email address';
+          teamBot.sendMessage(chatId, `📧 *Please reply with your Work Email Address:*`, { parse_mode: 'Markdown' });
+        } else if (data === 'edit_bank_details') {
+          userState[chatId] = { action: 'await_bank_info' };
+          alertMsg = 'Please type Bank details';
+          teamBot.sendMessage(chatId, `💳 *Please reply with Bank details (Format: Bank Name, Account Number, Branch):*`, { parse_mode: 'Markdown' });
+        } else if (data === 'edit_mfs') {
+          userState[chatId] = { action: 'await_mfs' };
+          alertMsg = 'Please type bKash/Nagad number';
+          teamBot.sendMessage(chatId, `📱 *Please reply with your bKash or Nagad Number:*`, { parse_mode: 'Markdown' });
+        } else if (data === 'tech_sync_supabase') {
+          alertMsg = '🔄 Supabase Cloud Database Synced!';
+          teamBot.sendMessage(chatId, `🔄 *Supabase Cloud DB Sync Executed Successfully!*`, { parse_mode: 'Markdown' });
+        } else if (data === 'tech_clean_slate') {
+          dbData.automationLogs = [];
+          writeDB(dbData);
+          alertMsg = '🧹 Automation Logs & Test Slate Cleaned!';
+          teamBot.sendMessage(chatId, `🧹 *Test Slate Cleaned! Automation logs reset.*`, { parse_mode: 'Markdown' });
+        } else if (data === 'tech_fresh_pin') {
+          const pinRecord = createTempPin(emp.phone, emp.id, 'team', emp.email);
+          alertMsg = `🔑 New Web PIN Generated: ${pinRecord.pin}`;
+          teamBot.sendMessage(chatId, `🔑 *New Web Login PIN:* \`${pinRecord.pin}\`\n\nUse this PIN at https://purpleos-iota.vercel.app/auth`, { parse_mode: 'Markdown' });
+        } else if (data.startsWith('approve_leave:')) {
           const leaveId = data.split(':')[1];
           const leave = (dbData.leaves || []).find(l => l.id === leaveId);
           if (leave) {
