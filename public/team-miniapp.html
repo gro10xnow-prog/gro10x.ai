@@ -142,12 +142,12 @@
 
       <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
         <div style="flex: 1;">
-          <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Date of Birth (+5 XP)</label>
-          <input type="date" id="inpDob" onchange="calcPart1XP()" style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+          <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Official Joining Date * (+5 XP)</label>
+          <input type="date" id="inpJoiningDate" onchange="calcPart1XP()" style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
         </div>
         <div style="flex: 1;">
-          <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Personal Email (+5 XP)</label>
-          <input type="email" id="inpPersonalEmail" oninput="calcPart1XP()" placeholder="name@gmail.com" style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+          <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Date of Birth (+5 XP)</label>
+          <input type="date" id="inpDob" onchange="calcPart1XP()" style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
         </div>
       </div>
 
@@ -388,7 +388,45 @@
         <input type="file" id="fileEquipmentDoc" onchange="calcPart4XP()" accept="image/*" style="width: 100%; font-size: 0.8rem; color: var(--muted);">
       </div>
 
-      <button class="btn btn-green" onclick="submitPart4()">🏆 Complete Onboarding Survey & Claim +50 XP Bonus</button>
+      <button class="btn btn-green" onclick="submitPart4()">🏆 Complete Onboarding Survey & Launch Agreement</button>
+    </div>
+
+    <!-- Tab 0.5: Digital Employment Agreement & 4-Stage Approval Chain -->
+    <div id="tabAgreement" class="card" style="display: none;">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.08);">
+        <div>
+          <div style="font-size: 0.75rem; color: var(--purple); font-weight: 800;">OFFICIAL WORKPLACE CONTRACT</div>
+          <div style="font-size: 1.05rem; font-weight: 800; color: #fff;">Employment Agreement & NDA</div>
+        </div>
+        <span class="badge" style="background: rgba(52,211,153,0.15); color: var(--green); border: 1px solid rgba(52,211,153,0.3);" id="agrStageBadge">Stage 1: Pending Employee E-Sign</span>
+      </div>
+
+      <!-- Contract Document Viewer Container -->
+      <div style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 1rem; margin-bottom: 1.2rem; max-height: 280px; overflow-y: auto; font-size: 0.8rem; color: #cbd5e1; line-height: 1.6;" id="contractTextContainer">
+        <strong style="color: #fff; font-size: 0.9rem;">PURPLEBOT DIGITAL LIMITED — EMPLOYMENT AGREEMENT</strong><br>
+        <span style="font-size: 0.75rem; color: var(--muted);">Standardized under Bangladesh Labour Act 2006 (Amended 2013/2018)</span><br><br>
+        This Employment Agreement is entered into by and between <strong>PURPLEBOT DIGITAL LIMITED</strong> ("Employer") and <strong id="agrEmpName">Firoz Uddin Ahmed</strong> ("Employee", Code: <span id="agrEmpCode">PBD-000</span>).<br><br>
+        <strong>1. APPOINTMENT & JOINING DATE:</strong> Employee is appointed as <strong>Technology Admin</strong> starting on <strong id="agrJoiningDate">2026-08-01</strong>.<br>
+        <strong>2. COMPENSATION & PAYROLL:</strong> Base Salary of <strong>BDT <span id="agrSalary">85,000</span></strong> / month, disbursed bi-weekly.<br>
+        <strong>3. WORKING HOURS:</strong> Standard 48 hours per week per Section 100/102 of Bangladesh Labour Act 2006.<br>
+        <strong>4. PROBATION & NOTICE:</strong> 3-month probation period. Notice period of 30 days by either party per Section 26/27.<br>
+        <strong>5. CONFIDENTIALITY & IP:</strong> All code, designs, video cuts, and assets created belong exclusively to Purplebot Digital Limited.
+      </div>
+
+      <!-- E-Signature Section -->
+      <div style="font-size: 0.82rem; font-weight: 800; color: var(--purple); margin-bottom: 0.6rem;">✍️ STAGE 1: APPLY DIGITAL E-SIGNATURE</div>
+
+      <div style="margin-bottom: 0.75rem;">
+        <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Type Full Legal Name as E-Signature *</label>
+        <input type="text" id="inpSignName" placeholder="e.g. Firoz Uddin Ahmed" style="width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.5); border: 2px dashed var(--purple); border-radius: 8px; color: #fff; font-size: 0.95rem; font-weight: 700; font-family: cursive, sans-serif;">
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.2rem;">
+        <input type="checkbox" id="chkAgrConsent" style="width: 18px; height: 18px; accent-color: var(--purple);">
+        <label for="chkAgrConsent" style="font-size: 0.78rem; color: var(--text);">I accept and agree to all terms under Bangladesh Labour Law.</label>
+      </div>
+
+      <button class="btn btn-green" onclick="submitEmployeeSignature()">✍️ Sign Agreement & Submit to HR (Stage 2)</button>
     </div>
 
     <!-- Tab 1: Tasks -->
@@ -725,15 +763,63 @@
         });
         const data = await res.json();
         if (data.success) {
-          if (tg?.showAlert) tg.showAlert(`👑 CONGRATULATIONS ${currentUser.name.toUpperCase()}!\n\nAll 4 Survey Parts Completed (+${data.earnedXP || 85} XP Earned).\n\nYour profile is 100% verified & saved to PurpleOS!`);
-          else alert(`👑 CONGRATULATIONS ${currentUser.name.toUpperCase()}!\n\nAll 4 Survey Parts Completed (+${data.earnedXP || 85} XP Earned).\n\nYour profile is 100% verified & saved to PurpleOS!`);
+          if (tg?.showAlert) tg.showAlert(`🎉 Part 4 Completed! (+${data.earnedXP || 85} XP Earned).\n\nYour Employment Agreement is now generated and ready for your E-Signature!`);
+          else alert(`🎉 Part 4 Completed! (+${data.earnedXP || 85} XP Earned).\n\nYour Employment Agreement is now generated and ready for your E-Signature!`);
           
+          document.getElementById('agrEmpName').innerText = currentUser.name || 'Firoz Uddin Ahmed';
+          document.getElementById('agrEmpCode').innerText = currentUser.id || 'PBD-000';
+          document.getElementById('agrJoiningDate').innerText = currentUser.joiningDate || new Date().toISOString().split('T')[0];
+          document.getElementById('agrSalary').innerText = Number(currentUser.baseSalary || 85000).toLocaleString();
+
           document.getElementById('tabPart4').style.display = 'none';
-          document.getElementById('tabTasks').style.display = 'block';
+          document.getElementById('tabAgreement').style.display = 'block';
         }
       } catch (err) {
         console.error(err);
         alert('Part 4 saved locally!');
+      }
+    }
+
+    async function submitEmployeeSignature() {
+      if (!currentUser) return;
+      const signName = document.getElementById('inpSignName').value.trim();
+      const isConsent = document.getElementById('chkAgrConsent').checked;
+
+      if (!signName) {
+        if (tg?.showAlert) tg.showAlert('⚠️ Please type your Full Legal Name as your E-Signature!');
+        else alert('⚠️ Please type your Full Legal Name as your E-Signature!');
+        return;
+      }
+
+      if (!isConsent) {
+        if (tg?.showAlert) tg.showAlert('⚠️ Please check the agreement consent box!');
+        else alert('⚠️ Please check the agreement consent box!');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/agreement/sign', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            phone: currentUser.phone || '+8801708459008',
+            empId: currentUser.id || 'PBD-000',
+            signatureName: signName,
+            stage: 1
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          if (tg?.showAlert) tg.showAlert('✍️ Stage 1 Signed! Your Agreement has been submitted to HR Manager (Md. Borhan Siddique) for Stage 2 Audit.');
+          else alert('✍️ Stage 1 Signed! Your Agreement has been submitted to HR Manager (Md. Borhan Siddique) for Stage 2 Audit.');
+
+          document.getElementById('agrStageBadge').innerText = 'Stage 2: Pending HR Audit (Borhan)';
+          document.getElementById('agrStageBadge').style.background = 'rgba(251,191,36,0.15)';
+          document.getElementById('agrStageBadge').style.color = '#fbbf24';
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Signature saved!');
       }
     }
 

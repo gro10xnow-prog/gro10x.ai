@@ -3155,6 +3155,158 @@ router.post('/team/survey/part4', async (req, res) => {
   res.json({ success: true, earnedXP, member: emp });
 });
 
+// ── DIGITAL EMPLOYMENT AGREEMENT 4-STAGE APPROVAL ROUTER ───────────────────
+router.post('/api/agreement/sign', async (req, res) => {
+  const { empId, phone, signatureName, stage } = req.body;
+  const db = readDB();
+  const norm = String(phone || '').replace(/[^0-9]/g, '').slice(-10);
+  const emp = (db.team || []).find(t => (t.id === empId || t.id === 'PBD-000' || (t.phone || '').replace(/[^0-9]/g, '').slice(-10) === norm));
+
+  if (!emp) return res.status(404).json({ error: 'Employee not found' });
+
+  emp.agreement = emp.agreement || { stage: 1, signatures: {} };
+
+  if (stage === 1) {
+    emp.agreement.stage = 2;
+    emp.agreement.signatures.employee = {
+      name: signatureName,
+      signedAt: new Date().toISOString(),
+      status: 'Stage 1 Signed'
+    };
+    writeDB(db);
+
+    if (emp.telegramId) {
+      const { sendTelegramNotification } = require('../services/bot');
+      sendTelegramNotification(emp.telegramId, `✍️ *Agreement Signed by You!* (Stage 1 Cleared)\n\nYour Employment Contract has been submitted to HR Manager (*Md. Borhan Siddique*) for Stage 2 Audit.\n\nYou will be notified automatically as HR & Executive Management review your contract!`, null, true);
+    }
+  } else if (stage === 2) {
+    emp.agreement.stage = 3;
+    emp.agreement.signatures.hr = {
+      name: signatureName || 'Md. Borhan Siddique',
+      signedAt: new Date().toISOString(),
+      status: 'Stage 2 HR Approved'
+    };
+    writeDB(db);
+
+    if (emp.telegramId) {
+      const { sendTelegramNotification } = require('../services/bot');
+      sendTelegramNotification(emp.telegramId, `✅ *Stage 2 Cleared: Approved by HR Manager!*\n\nHR Manager *Md. Borhan Siddique* has audited and signed your agreement.\n\nForwarded to Line Manager for Stage 3 Review!`, null, true);
+    }
+  } else if (stage === 3) {
+    emp.agreement.stage = 4;
+    emp.agreement.signatures.lineManager = {
+      name: signatureName || 'Operations Lead',
+      signedAt: new Date().toISOString(),
+      status: 'Stage 3 Manager Approved'
+    };
+    writeDB(db);
+
+    if (emp.telegramId) {
+      const { sendTelegramNotification } = require('../services/bot');
+      sendTelegramNotification(emp.telegramId, `✅ *Stage 3 Cleared: Approved by Line Manager!*\n\nForwarded to Managing Director *H. M. Ifteker Mahmud* for final executive sign-off!`, null, true);
+    }
+  } else if (stage === 4) {
+    emp.agreement.stage = 5;
+    emp.agreement.executed = true;
+    emp.agreement.executedAt = new Date().toISOString();
+    emp.agreement.signatures.managingDirector = {
+      name: signatureName || 'H. M. Ifteker Mahmud',
+      signedAt: new Date().toISOString(),
+      status: 'Stage 4 Executive Sealed'
+    };
+    emp.onboardingComplete = true;
+    writeDB(db);
+
+    if (emp.telegramId) {
+      const { sendTelegramNotification, getRoleKeyboard } = require('../services/bot');
+      const roleKbd = getRoleKeyboard(emp);
+      sendTelegramNotification(emp.telegramId, `👑 *CONGRATULATIONS ${emp.name.toUpperCase()}!*\n\nYour Employment Agreement is 100% Executed & Sealed by all parties!\n\n📄 *Download Executed Contract:* https://purpleos-iota.vercel.app/api/agreement/${emp.id || 'PBD-000'}/download\n\nYour full operational workspace is active!`, roleKbd, true);
+    }
+  }
+
+  res.json({ success: true, agreement: emp.agreement });
+});
+
+router.get('/api/agreement/:empId/download', (req, res) => {
+  const { empId } = req.params;
+  const db = readDB();
+  const emp = (db.team || []).find(t => t.id === empId || t.id === 'PBD-000') || { name: 'Firoz Uddin Ahmed', id: 'PBD-000', role: 'Technology Admin', joiningDate: '2026-08-01', baseSalary: 85000 };
+
+  const html = `
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <title>Employment Agreement - ${emp.name}</title>
+    <style>
+      body { font-family: 'Helvetica Neue', Arial, sans-serif; padding: 40px; color: #1e293b; line-height: 1.6; }
+      .header { text-align: center; border-bottom: 3px solid #a855f7; padding-bottom: 20px; margin-bottom: 30px; }
+      .title { font-size: 24px; font-weight: bold; color: #0f172a; }
+      .subtitle { font-size: 14px; color: #64748b; margin-top: 5px; }
+      .section { margin-bottom: 20px; }
+      .sec-title { font-size: 16px; font-weight: bold; color: #7c3aed; margin-bottom: 8px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; }
+      .sig-box { display: flex; justify-content: space-between; margin-top: 40px; border-top: 2px dashed #cbd5e1; padding-top: 20px; }
+      .sig-card { border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; width: 22%; background: #f8fafc; font-size: 12px; }
+      .sig-name { font-weight: bold; color: #0f172a; font-family: cursive; font-size: 14px; }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <div class="title">PURPLEBOT DIGITAL LIMITED</div>
+      <div class="subtitle">EMPLOYMENT AGREEMENT & NON-DISCLOSURE CONTRACT</div>
+      <div style="font-size: 11px; color: #94a3b8; margin-top: 4px;">Standardized under Bangladesh Labour Act 2006 (Amended 2013/2018)</div>
+    </div>
+
+    <div class="section">
+      <div class="sec-title">1. PARTIES & APPOINTMENT</div>
+      This Agreement is made on <strong>${emp.joiningDate || '2026-08-01'}</strong> between <strong>PURPLEBOT DIGITAL LIMITED</strong> ("Employer") and <strong>${emp.name}</strong> ("Employee", Code: <code>${emp.id || 'PBD-000'}</code>).<br>
+      Employee is appointed as <strong>${emp.role || 'Technology Admin'}</strong> in the <strong>${emp.department || 'Tech & AI'}</strong> Department.
+    </div>
+
+    <div class="section">
+      <div class="sec-title">2. COMPENSATION & PAYROLL</div>
+      Employee shall receive a Base Salary of <strong>BDT ${(emp.baseSalary || 85000).toLocaleString()}</strong> per month, paid bi-weekly via bank direct deposit or bKash wallet.
+    </div>
+
+    <div class="section">
+      <div class="sec-title">3. WORKING HOURS & PROBATION</div>
+      Standard working duration is 48 hours per week in accordance with Section 100 & 102 of the Bangladesh Labour Act 2006. Employee is subject to a 3-month probation period.
+    </div>
+
+    <div class="section">
+      <div class="sec-title">4. NON-DISCLOSURE & INTELLECTUAL PROPERTY</div>
+      All code, designs, content, software, and creative materials developed during employment belong exclusively to Purplebot Digital Limited.
+    </div>
+
+    <div class="sig-box">
+      <div class="sig-card">
+        <div style="color: #64748b;">STAGE 1: EMPLOYEE</div>
+        <div class="sig-name">${emp.name}</div>
+        <div>Signed: Verified</div>
+      </div>
+      <div class="sig-card">
+        <div style="color: #64748b;">STAGE 2: HR MANAGER</div>
+        <div class="sig-name">Md. Borhan Siddique</div>
+        <div>Status: Approved</div>
+      </div>
+      <div class="sig-card">
+        <div style="color: #64748b;">STAGE 3: LINE MANAGER</div>
+        <div class="sig-name">Operations Lead</div>
+        <div>Status: Approved</div>
+      </div>
+      <div class="sig-card">
+        <div style="color: #64748b;">STAGE 4: EXECUTIVE</div>
+        <div class="sig-name">H. M. Ifteker Mahmud</div>
+        <div>Status: Sealed</div>
+      </div>
+    </div>
+  </body>
+  </html>
+  `;
+
+  res.setHeader('Content-Type', 'text/html');
+  res.send(html);
+});
+
 router.post('/team', async (req, res) => {
   const newMember = req.body;
 
