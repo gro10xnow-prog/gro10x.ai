@@ -3040,8 +3040,14 @@ router.post('/team/survey/part1', async (req, res) => {
 
   if (emp.telegramId) {
     const { sendTelegramNotification } = require('../services/bot');
-    sendTelegramNotification(emp.telegramId, `🎉 *Part 1 Completed: Personal & Family Profile Saved!* (+${earnedXP} XP Earned)\n\n• Joining Date: *${emp.joiningDate || 'Saved'}*\n• Emergency Contact: *${emp.emergencyContact}*\n• Address: *${emp.address}*\n• Blood Group: *${emp.bloodGroup || 'Saved'}*\n\nNext Step: Open your Mini App to complete *Part 2: National Verification & Official Info*!`, null, true);
+    const firstName = emp.name.split(' ')[0];
+    sendTelegramNotification(emp.telegramId,
+      `✅ *Fantastic, ${firstName}!* 🎉\n\n*Part 1 is done* — you've earned *+${earnedXP} XP!*\n\nYou've just told us about your life, your family, and your roots. That means a lot to us 🟣\n\n• Joining Date: *${emp.joiningDate || 'Saved'}*\n• Emergency Contact: *${emp.emergencyContact}*\n• Address: *${emp.address}*\n\nWhenever you're ready, tap the button below to continue with *Part 2: National Verification & Education Info*. It's quick — we promise!`,
+      { inline_keyboard: [[{ text: '📊 Start Part 2: National Verification →', web_app: { url: 'https://purpleos-iota.vercel.app/team-miniapp?part=2' } }]] },
+      true
+    );
   }
+
 
   res.json({ success: true, earnedXP, member: emp });
 });
@@ -3080,10 +3086,17 @@ router.post('/team/survey/part2', async (req, res) => {
     } catch (err) {}
   }
 
+
   if (emp.telegramId) {
     const { sendTelegramNotification } = require('../services/bot');
-    sendTelegramNotification(emp.telegramId, `🎉 *Part 2 Completed: National Verification & Education Saved!* (+${earnedXP} XP Earned)\n\n• NID / Passport: *${emp.nid}*\n• Permanent Address: *${emp.permanentAddress}*\n• Education: *${emp.degree || 'Verified'}*\n\nNext Step: Open your Mini App to complete *Part 3: Financial & Payroll Account Setup*!`, null, true);
+    const firstName = emp.name.split(' ')[0];
+    sendTelegramNotification(emp.telegramId,
+      `🔒 *Amazing work, ${firstName}!* +${earnedXP} XP earned!\n\nYour national verification details are safely stored 🔐\n\n• NID: *${emp.nid}*\n• Permanent Address: *${emp.permanentAddress}*\n• Education: *${emp.degree || 'Saved'}*\n\nHR will cross-check these and confirm them for you.\n\nReady for Part 3? This one's about the money stuff — your salary expectations, bank account & payroll info!`,
+      { inline_keyboard: [[{ text: '💳 Start Part 3: Financial & Payroll Setup →', web_app: { url: 'https://purpleos-iota.vercel.app/team-miniapp?part=3' } }]] },
+      true
+    );
   }
+
 
   res.json({ success: true, earnedXP, member: emp });
 });
@@ -3127,8 +3140,14 @@ router.post('/team/survey/part3', async (req, res) => {
 
   if (emp.telegramId) {
     const { sendTelegramNotification } = require('../services/bot');
-    sendTelegramNotification(emp.telegramId, `🎉 *Part 3 Completed: Financial, Salary & Payroll Saved!* (+${earnedXP} XP Earned)\n\n• Base Salary: *BDT ${Number(baseSalary).toLocaleString()}*\n• Bank: *${bankName}* (\`${accNo}\`)\n• bKash: *\`${bkash}\`*\n• Status: *🟡 Submitted (Pending HR Verification)*\n\nNext Step: Open your Mini App to complete *Part 4: Work Skills, Merch & Equipment Inventory*!`, null, true);
+    const firstName = emp.name.split(' ')[0];
+    sendTelegramNotification(emp.telegramId,
+      `💰 *Payroll details locked in, ${firstName}!* +${earnedXP} XP!\n\nYour salary and bank info is now securely saved and marked as 🟡 *Pending HR Verification.*\n\n• Salary Expectation: *BDT ${Number(baseSalary).toLocaleString()}*\n• Bank: *${bankName}*\n• bKash Linked ✅\n\nHR Manager *Md. Borhan Siddique* will review and confirm the official figures — you'll be notified when done!\n\nLast one! Part 4 is about your skills, tools & merch 🎽`,
+      { inline_keyboard: [[{ text: '🛠️ Start Part 4: Skills, Merch & Equipment →', web_app: { url: 'https://purpleos-iota.vercel.app/team-miniapp?part=4' } }]] },
+      true
+    );
   }
+
 
   res.json({ success: true, earnedXP, member: emp });
 });
@@ -3172,10 +3191,14 @@ router.post('/team/survey/part4', async (req, res) => {
   }
 
   if (emp.telegramId) {
-    const { sendTelegramNotification, getRoleKeyboard } = require('../services/bot');
-    const roleKbd = getRoleKeyboard(emp.accessLevel || 'Owner / Admin', true, emp);
-    sendTelegramNotification(emp.telegramId, `👑 *CONGRATULATIONS ${emp.name.toUpperCase()}!*\n\nAll 4 Survey Parts Completed (+${earnedXP} XP Earned, including +50 XP Graduation Bonus!).\n\n• Primary Skill: *${emp.skillPrimary}*\n• Merch Size: *${emp.tshirt || 'Saved'}*\n• Overall XP Rank: *${emp.badge || '⭐ Tech Specialist / Admin'}* (${emp.xp} XP)\n• Profile Status: *100% Verified & Saved*\n\nYour operational workspace is now unlocked! Use the menu options below to access crew tools anytime.`, roleKbd, true);
+    const { sendTelegramNotification } = require('../services/bot');
+    sendTelegramNotification(emp.telegramId,
+      `👑 *INCREDIBLE, ${emp.name.toUpperCase()}! ALL 4 PARTS DONE!* 🟣🎉\n\nYou've just completed your full profile and earned *${emp.xp} XP total* — including your 🎓 *+50 XP Graduation Bonus!*\n\n────────────────────────\nHere's a quick summary:\n• Primary Skill: *${emp.skillPrimary}*\n• Merch Size: *${emp.tshirt || 'Saved'}*\n• Bank Account: *Linked ✅*\n• NID: *Submitted for HR Verification*\n────────────────────────\n\nNow for the final step — your *Employment Agreement!* 📄\n\nWith all the information you've shared with us, we've prepared your contract. Please review it carefully and sign off digitally.\n\nOnce you sign, it goes to:\n1️⃣ HR Manager — Md. Borhan Siddique\n2️⃣ Your Line Manager\n3️⃣ Managing Director — H. M. Ifteker Mahmud\n\nYou'll receive a Telegram notification at every stage and finally get a *PDF copy* of your signed contract 📄`,
+      { inline_keyboard: [[{ text: '📜 Review & Sign My Employment Agreement →', web_app: { url: 'https://purpleos-iota.vercel.app/team-miniapp?part=agreement' } }]] },
+      true
+    );
   }
+
 
   res.json({ success: true, earnedXP, member: emp });
 });

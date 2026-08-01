@@ -38,9 +38,32 @@
     .tab.active { background: var(--purple); color: #fff; border-color: var(--purple); }
     .lock-screen { text-align: center; padding: 3rem 1.5rem; }
     .lock-icon { font-size: 3.5rem; margin-bottom: 1rem; }
+    /* Phase-gate success overlay */
+    #successOverlay { display: none; position: fixed; inset: 0; background: var(--bg); z-index: 9999; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 2rem; }
+    #successOverlay.visible { display: flex; }
+    .success-emoji { font-size: 5rem; margin-bottom: 1.2rem; animation: bounce 0.6s ease; }
+    .success-title { font-size: 1.5rem; font-weight: 800; color: #fff; margin-bottom: 0.5rem; }
+    .success-sub { font-size: 0.92rem; color: var(--muted); line-height: 1.6; }
+    .success-xp { font-size: 1.1rem; font-weight: 800; color: var(--green); margin: 0.75rem 0; }
+    .success-bar { width: 100%; max-width: 280px; height: 6px; background: rgba(255,255,255,0.1); border-radius: 99px; overflow: hidden; margin-top: 1.5rem; }
+    .success-bar-fill { height: 100%; background: linear-gradient(90deg, var(--purple), var(--pink)); border-radius: 99px; animation: fillBar 2s linear forwards; }
+    @keyframes bounce { 0%,100%{transform:scale(1)} 40%{transform:scale(1.3)} 70%{transform:scale(0.95)} }
+    @keyframes fillBar { from{width:0} to{width:100%} }
+    /* Progress resume banner */
+    #resumeBanner { display: none; background: rgba(168,85,247,0.15); border: 1px solid rgba(168,85,247,0.4); border-radius: 14px; padding: 1rem; margin-bottom: 1rem; }
   </style>
 </head>
 <body>
+
+  <!-- PHASE-GATE SUCCESS OVERLAY -->
+  <div id="successOverlay">
+    <div class="success-emoji" id="successEmoji">🎉</div>
+    <div class="success-title" id="successTitle">Part Saved!</div>
+    <div class="success-xp" id="successXP">+0 XP Earned</div>
+    <div class="success-sub" id="successSub">Check your Telegram chat for the next step!</div>
+    <div class="success-bar"><div class="success-bar-fill"></div></div>
+    <div style="font-size: 0.78rem; color: var(--muted); margin-top: 1rem;">Returning to Telegram...</div>
+  </div>
 
   <!-- RESTRICTED ACCESS SCREEN (Hidden by default, shown if unauthenticated) -->
   <div id="lockScreen" class="card lock-screen" style="display: none;">
@@ -533,12 +556,73 @@
 
         calcPart1XP();
 
+        // ── PHASE-GATE ROUTING: detect ?part= URL param OR resume from saved onboarding_step ──
+        const urlParams = new URLSearchParams(window.location.search);
+        const partParam = urlParams.get('part');
+        const step = currentUser.onboarding_step || 0;
+
+        // Hide all part sections first
+        const allSections = ['tabSurvey','tabPart2','tabPart3','tabPart4','tabAgreement'];
+        allSections.forEach(id => { const el = document.getElementById(id); if(el) el.style.display = 'none'; });
+
+        // Determine which part to show
+        let targetPart = 'part1';
+        if (partParam === 'agreement' || step >= 6) targetPart = 'agreement';
+        else if (partParam === '4' || step === 5) targetPart = 'part4';
+        else if (partParam === '3' || step === 4) targetPart = 'part3';
+        else if (partParam === '2' || step === 3) targetPart = 'part2';
+
+        // Show resume banner if returning mid-journey
+        if ((step >= 3 && step < 6) && !partParam) {
+          const banner = document.getElementById('resumeBanner');
+          const partNames = { 3: 'Part 2: National Verification', 4: 'Part 3: Financial & Payroll', 5: 'Part 4: Skills & Equipment', 6: 'Employment Agreement' };
+          banner.innerHTML = `<div style="font-size:0.78rem;color:var(--purple);font-weight:800;margin-bottom:0.3rem;">▶️ RESUME YOUR JOURNEY</div><div style="font-size:0.88rem;color:#fff;">Welcome back, ${currentUser.name.split(' ')[0]}! Part ${step - 2} is saved. Continuing with <strong>${partNames[step] || 'next step'}...</strong></div>`;
+          banner.style.display = 'block';
+        }
+
+        // Show correct section
+        const sectionMap = { part1:'tabSurvey', part2:'tabPart2', part3:'tabPart3', part4:'tabPart4', agreement:'tabAgreement' };
+        const sectionEl = document.getElementById(sectionMap[targetPart]);
+        if (sectionEl) sectionEl.style.display = 'block';
+
+        // If going to agreement, prefill agreement data
+        if (targetPart === 'agreement') {
+          try {
+            const agrRes = await fetch(`/api/agreement/${currentUser.id || 'PBD-000'}`);
+            const agrData = await agrRes.json();
+            if (agrData.success) {
+              const agr = agrData.agreement;
+              if (document.getElementById('agrEmpName')) document.getElementById('agrEmpName').innerText = agr.name;
+              if (document.getElementById('agrEmpCode')) document.getElementById('agrEmpCode').innerText = agr.empId;
+              if (document.getElementById('agrJoiningDate')) document.getElementById('agrJoiningDate').innerText = agr.joiningDate;
+              if (document.getElementById('agrSalary')) document.getElementById('agrSalary').innerText = Number(agr.baseSalary || 85000).toLocaleString();
+            }
+          } catch(e) {}
+        }
+
         loadUserTasks();
         loadRoster();
       } catch (err) {
         console.error(err);
         document.getElementById('lockScreen').style.display = 'block';
       }
+    }
+
+    // ── PHASE-GATE: Show 2s success screen then close Mini App back to Telegram ──
+    function showSuccessAndClose(emoji, title, xp, sub, delayMs = 2200) {
+      const overlay = document.getElementById('successOverlay');
+      document.getElementById('successEmoji').innerText = emoji;
+      document.getElementById('successTitle').innerText = title;
+      document.getElementById('successXP').innerText = `+${xp} XP Earned`;
+      document.getElementById('successSub').innerText = sub;
+      // Re-trigger bar animation by replacing the element
+      const bar = overlay.querySelector('.success-bar');
+      bar.innerHTML = '<div class="success-bar-fill"></div>';
+      overlay.classList.add('visible');
+      setTimeout(() => {
+        if (tg && tg.close) tg.close();
+        else window.close(); // fallback for browser testing
+      }, delayMs);
     }
 
     function calcPart1XP() {
@@ -593,10 +677,12 @@
         });
         const data = await res.json();
         if (data.success) {
-          if (tg?.showAlert) tg.showAlert(`🎉 Part 1 Profile Saved! +${data.earnedXP || 35} XP Claimed!\n\nNext: Part 2 National Verification`);
-          else alert(`🎉 Part 1 Profile Saved! +${data.earnedXP || 35} XP Claimed!\n\nNext: Part 2 National Verification`);
-          document.getElementById('tabSurvey').style.display = 'none';
-          document.getElementById('tabPart2').style.display = 'block';
+          showSuccessAndClose(
+            '🎉',
+            'Part 1: Done! Great work!',
+            data.earnedXP || 35,
+            'Your Personal & Family Profile is saved. Check your Telegram chat — we have a message for you!'
+          );
         }
       } catch (err) {
         console.error(err);
@@ -652,10 +738,12 @@
         });
         const data = await res.json();
         if (data.success) {
-          if (tg?.showAlert) tg.showAlert(`🎉 Part 2 Verified! +${data.earnedXP || 45} XP Claimed!\n\nNext: Part 3 Salary & Financial Setup`);
-          else alert(`🎉 Part 2 Verified! +${data.earnedXP || 45} XP Claimed!\n\nNext: Part 3 Salary & Financial Setup`);
-          document.getElementById('tabPart2').style.display = 'none';
-          document.getElementById('tabPart3').style.display = 'block';
+          showSuccessAndClose(
+            '🔒',
+            'Part 2: Verified & Locked!',
+            data.earnedXP || 45,
+            'Your national details are securely saved. Check Telegram for Part 3!'
+          );
         }
       } catch (err) {
         console.error(err);
@@ -713,10 +801,12 @@
         });
         const data = await res.json();
         if (data.success) {
-          if (tg?.showAlert) tg.showAlert(`🎉 Part 3 Saved! +${data.earnedXP || 45} XP Claimed!\n\nNext: Part 4 Work Skills & Assets`);
-          else alert(`🎉 Part 3 Saved! +${data.earnedXP || 45} XP Claimed!\n\nNext: Part 4 Work Skills & Assets`);
-          document.getElementById('tabPart3').style.display = 'none';
-          document.getElementById('tabPart4').style.display = 'block';
+          showSuccessAndClose(
+            '💰',
+            'Part 3: Payroll Locked In!',
+            data.earnedXP || 45,
+            'Salary & bank details saved. HR will verify these. Check Telegram for Part 4!'
+          );
         }
       } catch (err) {
         console.error(err);
@@ -769,23 +859,13 @@
         });
         const data = await res.json();
         if (data.success) {
-          if (tg?.showAlert) tg.showAlert(`🎉 Part 4 Completed! (+${data.earnedXP || 85} XP Earned).\n\nYour Employment Agreement is now generated and ready for your E-Signature!`);
-          else alert(`🎉 Part 4 Completed! (+${data.earnedXP || 85} XP Earned).\n\nYour Employment Agreement is now generated and ready for your E-Signature!`);
-          
-          try {
-            const agrRes = await fetch(`/api/agreement/${currentUser.id || 'PBD-000'}`);
-            const agrData = await agrRes.json();
-            if (agrData.success) {
-              const agr = agrData.agreement;
-              document.getElementById('agrEmpName').innerText = agr.name;
-              document.getElementById('agrEmpCode').innerText = agr.empId;
-              document.getElementById('agrJoiningDate').innerText = agr.joiningDate;
-              document.getElementById('agrSalary').innerText = Number(agr.baseSalary || 85000).toLocaleString();
-            }
-          } catch(e) {}
-
-          document.getElementById('tabPart4').style.display = 'none';
-          document.getElementById('tabAgreement').style.display = 'block';
+          showSuccessAndClose(
+            '👑',
+            'All 4 Parts Complete!',
+            data.earnedXP || 85,
+            'Your profile is 100% done! Check Telegram — your Employment Agreement is ready to sign!',
+            3000
+          );
         }
       } catch (err) {
         console.error(err);
