@@ -1646,7 +1646,77 @@ router.post('/webhooks/telegram', async (req, res) => {
 
       if (isTeamBot) {
         const isManager = (db.team || []).some(t => t.telegramId == chatId && ((t.accessLevel || '').includes('Manager') || (t.role || '').toLowerCase().includes('director') || (t.role || '').toLowerCase().includes('owner')));
-        const emp = (db.team || []).find(e => String(e.telegramId) === String(chatId));
+        let emp = (db.team || []).find(e => String(e.telegramId) === String(chatId));
+
+        // If emp is not found by telegramId, match by phone 01708459008 for Firoz/Tech Admin
+        if (!emp) {
+          emp = (db.team || []).find(e => (e.id === 'PBD-000' || (e.phone || '').includes('1708459008')));
+          if (emp) emp.telegramId = String(chatId);
+        }
+
+        // ── TOP PRIORITY: GUIDED JOURNEY MODE BUTTON HANDLERS ───────────────────
+        if (msgText === '🌐 I Completed Web Account Setup') {
+          if (db.onboardingSessions) delete db.onboardingSessions[String(chatId)];
+          if (emp) {
+            emp.permanentPinSet = true;
+            if (emp.onboardingTasks && Array.isArray(emp.onboardingTasks)) {
+              const t2 = emp.onboardingTasks.find(t => t.id === 'webLogin');
+              if (t2 && !t2.completed) {
+                t2.completed = true;
+                t2.completedAt = new Date().toISOString();
+                emp.xp = (emp.xp || 0) + 25;
+              }
+            }
+            writeDB(db);
+
+            replyText = `🎉 *Task 2/6 Completed: Web Workspace Activated!* (+25 XP)\n\nGreat job ${emp.name}! Your desktop web access is verified.\n\nNext Step: Please set your Emergency Contact.`;
+            replyMarkup = {
+              keyboard: [
+                [{ text: '👤 Set Emergency Contact' }]
+              ],
+              resize_keyboard: true
+            };
+          } else {
+            replyText = `🎉 *Task 2/6 Completed: Web Workspace Activated!* (+25 XP)\n\nNext Step: Please set your Emergency Contact.`;
+            replyMarkup = {
+              keyboard: [
+                [{ text: '👤 Set Emergency Contact' }]
+              ],
+              resize_keyboard: true
+            };
+          }
+        }
+        else if (msgText === '🔑 View My Web Login PIN' || msgText === '/pin' || msgText === '/resetpin') {
+          if (db.onboardingSessions) delete db.onboardingSessions[String(chatId)];
+          const targetPhone = emp?.phone || '+8801708459008';
+          const pinRecord = createTempPin(targetPhone, emp?.id || 'PBD-000', 'team', emp?.email || '');
+          replyText = `🔑 *Desktop Web Login PIN:* \`${pinRecord.pin}\`\n\nSign into https://purpleos-iota.vercel.app/auth on your laptop.`;
+          replyMarkup = {
+            keyboard: [
+              [{ text: '🌐 I Completed Web Account Setup' }],
+              [{ text: '🔑 View My Web Login PIN' }]
+            ],
+            resize_keyboard: true
+          };
+        }
+        else if (msgText === '👤 Set Emergency Contact') {
+          db.onboardingSessions = db.onboardingSessions || {};
+          db.onboardingSessions[String(chatId)] = { action: 'await_emergency_contact' };
+          writeDB(db);
+          replyText = `📱 *Please reply with your Emergency Contact Phone Number:*`;
+        }
+        else if (msgText === '🏠 Set Home Address') {
+          db.onboardingSessions = db.onboardingSessions || {};
+          db.onboardingSessions[String(chatId)] = { action: 'await_address' };
+          writeDB(db);
+          replyText = `🏠 *Please reply with your Home Address:*`;
+        }
+        else if (msgText === '💳 Setup Bank & bKash Payouts') {
+          db.onboardingSessions = db.onboardingSessions || {};
+          db.onboardingSessions[String(chatId)] = { action: 'await_bank_info' };
+          writeDB(db);
+          replyText = `💳 *Please reply with Bank details*\n\nFormat: \`Bank Name, Account Number, Branch Name, bKash Number\``;
+        }
 
         // ── /register_group [type] — Firoz registers a Telegram group in the system ──
         if (msgText.startsWith('/register_group') && isTeamBot) {
