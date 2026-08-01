@@ -10,7 +10,20 @@ function initAuth() {
   }
 }
 
+function togglePinVisibility(inputId, btn) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  if (input.type === 'password') {
+    input.type = 'text';
+    btn.innerText = '🙈';
+  } else {
+    input.type = 'password';
+    btn.innerText = '👁️';
+  }
+}
+
 function showAlert(text, type) {
+
   const box = document.getElementById('alert-box');
   if (!text) {
     box.style.display = 'none';

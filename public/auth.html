@@ -227,6 +227,10 @@
 <body>
 
   <div class="auth-container">
+    <a href="/" style="display:inline-flex; align-items:center; gap:0.4rem; color:var(--text-muted); font-size:0.8rem; font-weight:600; text-decoration:none; margin-bottom:1.25rem; transition:color 0.2s;" onmouseover="this.style.color='#c084fc'" onmouseout="this.style.color='var(--text-muted)'">
+      ← Back to purplebot.digital
+    </a>
+
     <div class="auth-brand">
       <div class="auth-badge">
         <span>🔑 Phone + PIN Security</span>
@@ -247,25 +251,20 @@
 
       <div class="form-group">
         <label for="pin">4-Digit Access PIN</label>
-        <input type="password" id="pin" class="form-input" placeholder="••••" maxlength="6" required style="letter-spacing: 0.3em; font-size: 1.2rem; text-align: center;">
-      </div>
-
-      <div class="form-group">
-        <label for="email" style="display: flex; justify-content: space-between;">
-          <span>Work Email</span>
-          <span style="color: var(--text-muted); font-weight: 400;">(Optional for communication)</span>
-        </label>
-        <input type="email" id="email" class="form-input" placeholder="e.g. name@purplebot.digital">
+        <div style="position:relative;">
+          <input type="password" id="pin" class="form-input" placeholder="••••" maxlength="4" required style="letter-spacing: 0.3em; font-size: 1.2rem; text-align: center; padding-right: 2.8rem;">
+          <button type="button" onclick="togglePinVisibility('pin', this)" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:1.1rem;" title="Toggle PIN visibility">👁️</button>
+        </div>
       </div>
 
       <button type="submit" id="btn-pin-submit" class="btn-submit">
-        <span>Sign In to Workspace</span>
-        <span>→</span>
+        <span id="btn-text">Sign In to Workspace</span>
+        <span id="btn-arrow">→</span>
       </button>
     </form>
 
     <div class="bot-help-box">
-      🤖 Don't have a PIN? Open Telegram Bot:<br>
+      🤖 Don't have a PIN or forgot it?<br>
       • Crew: <a href="https://t.me/PurpleManBot?start=join_crew" target="_blank">@PurpleManBot</a><br>
       • Client: <a href="https://t.me/PurpleBotAgencyBot?start=join_client" target="_blank">@PurpleBotAgencyBot</a>
     </div>
@@ -285,11 +284,11 @@
       <form onsubmit="submitPermanentPinSetup(event)">
         <div class="form-group">
           <label>New 4-Digit PIN</label>
-          <input type="password" id="new-perm-pin" class="form-input" placeholder="••••" maxlength="6" required style="letter-spacing: 0.3em; font-size: 1.2rem; text-align: center;">
+          <input type="password" id="new-perm-pin" class="form-input" placeholder="••••" maxlength="4" required style="letter-spacing: 0.3em; font-size: 1.2rem; text-align: center;">
         </div>
         <div class="form-group">
           <label>Confirm 4-Digit PIN</label>
-          <input type="password" id="confirm-perm-pin" class="form-input" placeholder="••••" maxlength="6" required style="letter-spacing: 0.3em; font-size: 1.2rem; text-align: center;">
+          <input type="password" id="confirm-perm-pin" class="form-input" placeholder="••••" maxlength="4" required style="letter-spacing: 0.3em; font-size: 1.2rem; text-align: center;">
         </div>
         <div class="form-group">
           <label>Work Email Address</label>
@@ -301,6 +300,7 @@
       </form>
     </div>
   </div>
+
 
   <script src="/js/auth.js"></script>
 </body>

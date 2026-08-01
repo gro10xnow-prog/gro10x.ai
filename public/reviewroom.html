@@ -3,129 +3,504 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PurpleOS - Creative Review Room</title>
-  <link rel="stylesheet" href="/css/styles.css">
+  <title>Creative Review Room — Purplebot Digital</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg-dark: #09090b;
-      --card-bg: rgba(24, 24, 27, 0.9);
-      --purple-accent: #a855f7;
-      --border-purple: rgba(168, 85, 247, 0.3);
-      --text-main: #f4f4f5;
-      --text-muted: #a1a1aa;
-    }
-    body { background: var(--bg-dark); color: var(--text-main); font-family: 'Plus Jakarta Sans', sans-serif; padding: 2rem; }
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
-    .title { font-size: 1.6rem; font-weight: 800; background: linear-gradient(135deg, #fff, var(--purple-accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .grid { display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; }
-    .card { background: var(--card-bg); border: 1px solid var(--border-purple); border-radius: 18px; padding: 1.5rem; }
-    .media-player { width: 100%; height: 360px; background: #000; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-weight: 600; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 1rem; position: relative; overflow: hidden; }
-    .btn { padding: 0.65rem 1.2rem; border-radius: 12px; font-weight: 700; border: none; cursor: pointer; transition: all 0.2s; }
-    .btn-green { background: linear-gradient(135deg, #10b981, #059669); color: #fff; width: 100%; font-size: 1rem; margin-top: 1rem; }
-    .btn-secondary { background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.15); }
-    .comment-box { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 0.75rem; margin-bottom: 0.75rem; font-size: 0.85rem; }
-    .input { width: 100%; padding: 0.6rem 0.8rem; border-radius: 10px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15); color: #fff; font-size: 0.88rem; margin-bottom: 0.6rem; }
-  </style>
-</head>
-<body>
+  <link rel="stylesheet" href="/css/styles.css">
 
-  <div class="header">
-    <div>
-      <div style="font-size: 0.8rem; font-weight: 800; color: var(--purple-accent); letter-spacing: 1px;">PURPLEBOT DIGITAL LIMITED</div>
-      <h1 class="title">Interactive Creative Review Room</h1>
-    </div>
-    <div>
-      <a href="/admin" class="btn btn-secondary" style="text-decoration: none;">👑 Back to Dashboard</a>
+  <script>
+    // 🔒 AUTH GUARD: Enforce authentication before rendering Review Room UI
+    (function checkReviewRoomAuth() {
+      const token = localStorage.getItem('sb-access-token') || 
+                    localStorage.getItem('sb_access_token') || 
+                    localStorage.getItem('purple_token');
+      const user = localStorage.getItem('purple_user');
+
+      if (!token && !user) {
+        console.warn('⚠️ Unauthorized access attempt to Review Room. Redirecting to auth portal...');
+        window.location.href = '/auth?redirect=' + encodeURIComponent(window.location.pathname);
+      }
+    })();
+  </script>
+</head>
+<body class="rr-page-body">
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="rrToastContainer"></div>
+
+  <!-- APPROVAL CONFIRMATION MODAL -->
+  <div class="rr-modal-overlay" id="rrApproveModal">
+    <div class="rr-modal-box">
+      <h3 style="font-size: 1.25rem; font-weight: 800; margin-top: 0; color: #ffffff;">🎉 Approve Final Video Cut?</h3>
+      <p style="font-size: 0.88rem; color: #a1a1aa; line-height: 1.5; margin-bottom: 1.5rem;">
+        Approving this master cut will mark the creative review as complete, dispatch automated notifications to the production team, and release the client invoice.
+      </p>
+      <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+        <button class="rr-btn rr-btn-secondary" onclick="closeApproveModal()">Cancel</button>
+        <button class="rr-btn rr-btn-approve" onclick="executeCutApproval()">✅ Confirm & Release Invoice</button>
+      </div>
     </div>
   </div>
 
-  <div class="grid">
-    <!-- LEFT: MEDIA PLAYER & ASSET PREVIEW -->
-    <div class="card">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-        <h3 style="font-size: 1.2rem; font-weight: 800;" id="assetTitle">Chillox TVC Master Commercial Cut (v2.4)</h3>
-        <span class="badge" style="background: rgba(168,85,247,0.2); color: #c084fc; padding: 0.4rem 0.8rem; border-radius: 999px; font-size: 0.78rem; font-weight: 700;">AV Production</span>
+  <!-- HEADER NAVBAR -->
+  <div class="rr-header">
+    <div>
+      <div class="rr-brand-sub">PURPLEBOT DIGITAL LIMITED</div>
+      <h1 class="rr-title">Interactive Creative Review Room</h1>
+    </div>
+    
+    <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+      <!-- Active Project Selector -->
+      <select id="reviewProjectSelector" class="rr-input" style="width: auto; min-width: 220px;" onchange="loadSelectedReview(this.value)">
+        <option value="">Loading Review Cuts...</option>
+      </select>
+
+      <!-- Back to Dashboard / Portal Link -->
+      <a href="/admin" id="rrBackLink" class="rr-btn rr-btn-secondary" style="text-decoration: none;">👑 Back to Dashboard</a>
+    </div>
+  </div>
+
+  <!-- MAIN GRID -->
+  <div class="rr-grid">
+    <!-- LEFT COLUMN: VIDEO PLAYER & METADATA -->
+    <div class="rr-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+        <h3 style="font-size: 1.2rem; font-weight: 800; margin: 0;" id="assetTitle">Chillox TVC Master Commercial Cut (v2.4)</h3>
+        <span class="badge" id="assetCategoryBadge" style="background: rgba(168,85,247,0.2); color: #c084fc; padding: 0.4rem 0.85rem; border-radius: 999px; font-size: 0.78rem; font-weight: 700;">AV Production</span>
       </div>
 
-      <div class="media-player">
-        <video controls style="width: 100%; height: 100%; object-fit: cover;" id="videoPlayer">
-          <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" type="video/mp4">
-          Your browser does not support video playback.
+      <!-- Version Selector Pills -->
+      <div class="rr-version-pills" id="rrVersionPills">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- Media Player Container -->
+      <div class="rr-player-wrap">
+        <video controls id="videoPlayer" poster="">
+          <source id="videoSource" src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" type="video/mp4">
+          Your browser does not support HTML5 video playback.
         </video>
       </div>
 
-      <div style="display: flex; justify-content: space-between; align-items: center;">
-        <div style="font-size: 0.85rem; color: var(--text-muted);">
-          Client: <strong>Chillox Fast Food Chain</strong> | Lead Editor: <strong>Ruhul Amin Rupom</strong>
+      <!-- Client & Action Footer -->
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+        <div style="font-size: 0.85rem; color: #a1a1aa;">
+          Client: <strong style="color: #fff;" id="clientNameLabel">Chillox Fast Food Chain</strong> | Lead Editor: <strong style="color: #fff;" id="editorNameLabel">Ruhul Amin Rupom</strong>
         </div>
-        <button class="btn btn-green" style="width: auto;" onclick="approveCut()">✅ Approve Final Cut & Release Invoice</button>
+        <div id="approveBtnContainer">
+          <button class="rr-btn rr-btn-approve" id="btnApproveCut" onclick="openApproveModal()">
+            ✅ Approve Final Cut & Release Invoice
+          </button>
+        </div>
       </div>
     </div>
 
-    <!-- RIGHT: TIMESTAMPED FEEDBACK -->
-    <div class="card">
-      <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 1rem;">Timestamped Feedback</h3>
-
-      <div id="commentsList">
-        <div class="comment-box">
-          <div style="display: flex; justify-content: space-between; font-weight: 700; color: var(--purple-accent); font-size: 0.78rem;">
-            <span>⏱️ 00:14</span><span>Chillox Brand Mgr</span>
-          </div>
-          <div style="margin-top: 0.3rem;">Make the product logo color slightly brighter.</div>
-        </div>
-        <div class="comment-box">
-          <div style="display: flex; justify-content: space-between; font-weight: 700; color: #34d399; font-size: 0.78rem;">
-            <span>⏱️ 00:42</span><span>Ruhul (Editor)</span>
-          </div>
-          <div style="margin-top: 0.3rem;">Updated color grade applied in v2.4 master render!</div>
-        </div>
+    <!-- RIGHT COLUMN: TIMESTAMPED COMMENTS -->
+    <div class="rr-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h3 style="font-size: 1.1rem; font-weight: 800; margin: 0;">Timestamped Feedback</h3>
+        <span id="commentStatsBadge" style="font-size: 0.75rem; color: #a1a1aa; background: rgba(255,255,255,0.06); padding: 0.25rem 0.6rem; border-radius: 8px; font-weight: 600;">
+          Total: 0 | Open: 0
+        </span>
       </div>
 
-      <div style="margin-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">
-        <h4 style="font-size: 0.88rem; font-weight: 700; margin-bottom: 0.5rem;">Add Timestamp Note</h4>
-        <input type="text" class="input" id="noteTime" placeholder="Timestamp (e.g. 01:15)">
-        <input type="text" class="input" id="noteText" placeholder="Feedback comment...">
-        <button class="btn btn-secondary" style="width: 100%;" onclick="addComment()">💬 Post Timestamp Note</button>
+      <!-- Comment Feed -->
+      <div id="commentsList" style="max-height: 380px; overflow-y: auto; padding-right: 0.3rem;">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- Add Timestamp Form -->
+      <div style="margin-top: 1.25rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+          <h4 style="font-size: 0.88rem; font-weight: 700; margin: 0;">Add Timestamp Note</h4>
+          <button type="button" class="rr-btn rr-btn-secondary" style="padding: 0.2rem 0.55rem; font-size: 0.75rem;" onclick="captureCurrentTime()">
+            📌 Current Time
+          </button>
+        </div>
+
+        <form onsubmit="handleAddCommentSubmit(event)">
+          <input type="text" class="rr-input" id="noteTime" placeholder="Timestamp (e.g. 00:15)" required style="margin-bottom: 0.6rem;">
+          <input type="text" class="rr-input" id="noteText" placeholder="Feedback comment..." required style="margin-bottom: 0.6rem;">
+          <button type="submit" class="rr-btn rr-btn-secondary" style="width: 100%;">💬 Post Timestamp Note</button>
+        </form>
       </div>
     </div>
   </div>
 
+  <!-- SCRIPT CONTROLLER -->
   <script>
-    function addComment() {
-      const time = document.getElementById('noteTime').value || '00:00';
-      const text = document.getElementById('noteText').value;
-      if (!text) return alert('Please enter comment text.');
+    let activeReviewData = null;
+    let reviewsList = [];
 
-      const list = document.getElementById('commentsList');
-      const box = document.createElement('div');
-      box.className = 'comment-box';
-      box.innerHTML = `
-        <div style="display: flex; justify-content: space-between; font-weight: 700; color: var(--purple-accent); font-size: 0.78rem;">
-          <span>⏱️ ${time}</span><span>Client POC</span>
-        </div>
-        <div style="margin-top: 0.3rem;">${text}</div>
-      `;
-      list.prepend(box);
-      document.getElementById('noteTime').value = '';
-      document.getElementById('noteText').value = '';
+    document.addEventListener('DOMContentLoaded', () => {
+      configureRoleBackLink();
+      fetchReviewsCatalog();
+    });
+
+    // Configure role-based navigation link
+    function configureRoleBackLink() {
+      try {
+        const userRaw = localStorage.getItem('purple_user');
+        const link = document.getElementById('rrBackLink');
+        if (userRaw && link) {
+          const user = JSON.parse(userRaw);
+          if (user.linkedType === 'client' || (user.role && user.role.toLowerCase().includes('client'))) {
+            link.href = '/partners';
+            link.innerText = '💼 Back to Partner Portal';
+          }
+        }
+      } catch (e) {}
     }
 
-    async function approveCut() {
-      if (!confirm('Are you sure you want to approve this final cut? This will notify the production team and release the client invoice.')) return;
+    // Fetch review projects list from API
+    async function fetchReviewsCatalog() {
       try {
+        const token = localStorage.getItem('sb-access-token') || localStorage.getItem('purple_token');
+        const res = await fetch('/api/reviews', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          reviewsList = Array.isArray(data) ? data : [];
+          populateProjectSelector(reviewsList);
+
+          if (reviewsList.length > 0) {
+            loadReviewDetails(reviewsList[0].id);
+          } else {
+            loadFallbackData();
+          }
+        } else {
+          loadFallbackData();
+        }
+      } catch (err) {
+        console.warn('Reviews catalog fetch error, loading default dataset:', err);
+        loadFallbackData();
+      }
+    }
+
+    function populateProjectSelector(list) {
+      const select = document.getElementById('reviewProjectSelector');
+      if (!select) return;
+
+      if (list.length === 0) {
+        select.innerHTML = '<option value="">No Active Cuts</option>';
+        return;
+      }
+
+      select.innerHTML = list.map(r => `
+        <option value="${r.id}">${r.projectName || r.assetTitle} (${r.client || 'Client'})</option>
+      `).join('');
+    }
+
+    async function loadSelectedReview(id) {
+      if (!id) return;
+      await loadReviewDetails(id);
+    }
+
+    async function loadReviewDetails(id) {
+      try {
+        const token = localStorage.getItem('sb-access-token') || localStorage.getItem('purple_token');
+        const res = await fetch(`/api/reviews/${id}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (res.ok) {
+          const review = await res.json();
+          activeReviewData = review;
+          renderReviewUI(review);
+        } else {
+          loadFallbackData();
+        }
+      } catch (err) {
+        console.error('Review detail fetch error:', err);
+        loadFallbackData();
+      }
+    }
+
+    function renderReviewUI(data) {
+      // Asset Title & Client
+      document.getElementById('assetTitle').innerText = data.projectName || data.assetTitle || 'Creative Video Cut';
+      document.getElementById('clientNameLabel').innerText = data.client || data.clientName || 'Agency Client';
+      document.getElementById('editorNameLabel').innerText = data.editor || 'Ruhul Amin Rupom';
+
+      // Video Source
+      const player = document.getElementById('videoPlayer');
+      const source = document.getElementById('videoSource');
+      const mediaUrl = data.mediaUrl || 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4';
+
+      if (source.src !== mediaUrl) {
+        source.src = mediaUrl;
+        player.load();
+      }
+
+      // Versions Pills
+      const versionsContainer = document.getElementById('rrVersionPills');
+      const versions = data.versions || ['v1', 'v2', data.activeVersion || 'v2.4'];
+      const activeVer = data.activeVersion || versions[versions.length - 1];
+
+      versionsContainer.innerHTML = versions.map(v => `
+        <button class="rr-version-btn ${v === activeVer ? 'is-active' : ''}" onclick="switchVersion('${v}')">
+          ${v} ${v === activeVer ? '⭐ (Active Master)' : ''}
+        </button>
+      `).join('');
+
+      // Status & Approve Button
+      const approveContainer = document.getElementById('approveBtnContainer');
+      if (data.status === 'approved' || data.isApproved) {
+        approveContainer.innerHTML = `
+          <span style="background: rgba(16, 185, 129, 0.2); color: #34d399; padding: 0.5rem 1rem; border-radius: 12px; font-weight: 700; font-size: 0.88rem; border: 1px solid rgba(16, 185, 129, 0.3);">
+            ✅ Cut Approved — Invoice Released
+          </span>
+        `;
+      } else {
+        approveContainer.innerHTML = `
+          <button class="rr-btn rr-btn-approve" id="btnApproveCut" onclick="openApproveModal()">
+            ✅ Approve Final Cut & Release Invoice
+          </button>
+        `;
+      }
+
+      // Render Comments
+      renderCommentsList(data.comments || []);
+    }
+
+    function renderCommentsList(comments) {
+      const feed = document.getElementById('commentsList');
+      const stats = document.getElementById('commentStatsBadge');
+      if (!feed) return;
+
+      const total = comments.length;
+      const resolved = comments.filter(c => c.resolved).length;
+      const open = total - resolved;
+
+      if (stats) {
+        stats.innerText = `Total: ${total} | Open: ${open} | Resolved: ${resolved}`;
+      }
+
+      if (comments.length === 0) {
+        feed.innerHTML = `
+          <div style="text-align: center; padding: 2.5rem 1rem; color: #a1a1aa;">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">💬</div>
+            <div style="font-weight: 700; font-size: 0.92rem; color: #fff;">No Feedback Notes Yet</div>
+            <div style="font-size: 0.8rem; margin-top: 0.2rem;">Be the first to pause and add a timestamped comment below!</div>
+          </div>
+        `;
+        return;
+      }
+
+      feed.innerHTML = comments.map(c => {
+        const seconds = parseTimeToSeconds(c.timestamp);
+        return `
+          <div class="rr-comment-box ${c.resolved ? 'is-resolved' : ''}">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem;">
+              <span class="rr-time-badge" onclick="seekVideoTo(${seconds})">⏱️ ${c.timestamp}</span>
+              <span style="font-weight: 700; font-size: 0.78rem; color: ${c.authorRole === 'Editor' ? '#34d399' : '#c084fc'};">
+                ${c.author || 'Reviewer'} (${c.authorRole || 'Client'})
+              </span>
+            </div>
+            <div style="font-size: 0.88rem; color: #f4f4f5; line-height: 1.4; margin-top: 0.25rem;">
+              ${c.text}
+            </div>
+            <div style="display: flex; justify-content: flex-end; margin-top: 0.4rem;">
+              <button class="rr-btn-secondary" style="padding: 0.15rem 0.5rem; font-size: 0.72rem; border-radius: 6px; cursor: pointer;" onclick="toggleResolveComment('${c.id}', ${!c.resolved})">
+                ${c.resolved ? '↩️ Mark Open' : '✅ Resolve'}
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function loadFallbackData() {
+      const fallback = {
+        id: 'REV-001',
+        projectName: 'Chillox TVC Master Commercial Cut (v2.4)',
+        client: 'Chillox Fast Food Chain',
+        editor: 'Ruhul Amin Rupom',
+        mediaUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+        activeVersion: 'v2.4',
+        versions: ['v1.0', 'v2.0', 'v2.4'],
+        comments: [
+          { id: 'c1', timestamp: '00:14', author: 'Chillox Brand Mgr', authorRole: 'Client', text: 'Make the product logo color slightly brighter.', resolved: true },
+          { id: 'c2', timestamp: '00:42', author: 'Ruhul (Editor)', authorRole: 'Editor', text: 'Updated color grade applied in v2.4 master render!', resolved: true }
+        ]
+      };
+      activeReviewData = fallback;
+      renderReviewUI(fallback);
+    }
+
+    function captureCurrentTime() {
+      const video = document.getElementById('videoPlayer');
+      const input = document.getElementById('noteTime');
+      if (!video || !input) return;
+
+      const current = Math.floor(video.currentTime);
+      const mins = String(Math.floor(current / 60)).padStart(2, '0');
+      const secs = String(current % 60).padStart(2, '0');
+      input.value = `${mins}:${secs}`;
+      showToast(`📌 Captured time ${mins}:${secs}`, 'info');
+    }
+
+    function seekVideoTo(seconds) {
+      const video = document.getElementById('videoPlayer');
+      if (!video) return;
+
+      video.currentTime = seconds;
+      video.play();
+      showToast(`▶ Seeking to timestamp ${formatSecondsToMMSS(seconds)}`, 'info');
+    }
+
+    function parseTimeToSeconds(timeStr) {
+      if (!timeStr) return 0;
+      const parts = timeStr.split(':').map(Number);
+      if (parts.length === 2) return (parts[0] * 60) + parts[1];
+      if (parts.length === 1) return parts[0];
+      return 0;
+    }
+
+    function formatSecondsToMMSS(sec) {
+      const mins = String(Math.floor(sec / 60)).padStart(2, '0');
+      const secs = String(Math.floor(sec % 60)).padStart(2, '0');
+      return `${mins}:${secs}`;
+    }
+
+    function switchVersion(ver) {
+      showToast(`Switching preview to cut version ${ver}`, 'info');
+      if (activeReviewData) {
+        activeReviewData.activeVersion = ver;
+        renderReviewUI(activeReviewData);
+      }
+    }
+
+    async function handleAddCommentSubmit(e) {
+      e.preventDefault();
+      const timeInput = document.getElementById('noteTime');
+      const textInput = document.getElementById('noteText');
+
+      const time = timeInput.value.trim() || '00:00';
+      const text = textInput.value.trim();
+
+      if (!text) {
+        showToast('Please enter a feedback comment', 'error');
+        return;
+      }
+
+      // Read logged-in user profile
+      let author = 'Client POC';
+      let role = 'Client Reviewer';
+      try {
+        const userRaw = localStorage.getItem('purple_user');
+        if (userRaw) {
+          const u = JSON.parse(userRaw);
+          author = u.name || author;
+          role = u.role || role;
+        }
+      } catch (err) {}
+
+      const newComment = {
+        id: 'cmt-' + Date.now(),
+        timestamp: time,
+        author: author,
+        authorRole: role,
+        text: text,
+        resolved: false
+      };
+
+      if (!activeReviewData.comments) activeReviewData.comments = [];
+      activeReviewData.comments.unshift(newComment);
+      renderCommentsList(activeReviewData.comments);
+
+      timeInput.value = '';
+      textInput.value = '';
+      showToast('💬 Timestamp note posted successfully!', 'success');
+
+      // Post to API if backend review ID exists
+      if (activeReviewData && activeReviewData.id) {
+        try {
+          const token = localStorage.getItem('sb-access-token') || localStorage.getItem('purple_token');
+          fetch(`/api/reviews/${activeReviewData.id}/comments`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ timestamp: time, text: text, author: author, authorRole: role })
+          }).catch(e => {});
+        } catch (err) {}
+      }
+    }
+
+    function toggleResolveComment(commentId, resolvedState) {
+      if (!activeReviewData || !activeReviewData.comments) return;
+
+      const c = activeReviewData.comments.find(item => item.id === commentId);
+      if (c) {
+        c.resolved = resolvedState;
+        renderCommentsList(activeReviewData.comments);
+        showToast(resolvedState ? '✅ Comment marked resolved' : '↩️ Comment reopened', 'info');
+
+        // Optional API sync
+        try {
+          const token = localStorage.getItem('sb-access-token') || localStorage.getItem('purple_token');
+          fetch(`/api/reviews/comments/${commentId}/resolve`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ resolved: resolvedState })
+          }).catch(e => {});
+        } catch (err) {}
+      }
+    }
+
+    function openApproveModal() {
+      const modal = document.getElementById('rrApproveModal');
+      if (modal) modal.style.display = 'flex';
+    }
+
+    function closeApproveModal() {
+      const modal = document.getElementById('rrApproveModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    async function executeCutApproval() {
+      closeApproveModal();
+      try {
+        const token = localStorage.getItem('sb-access-token') || localStorage.getItem('purple_token');
         const res = await fetch('/api/reviews/approve', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ assetTitle: 'Chillox TVC Master Commercial Cut (v2.4)', clientName: 'Chillox Fast Food Chain' })
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({
+            assetTitle: activeReviewData?.projectName || 'Chillox TVC Master Commercial Cut (v2.4)',
+            clientName: activeReviewData?.client || 'Chillox Fast Food Chain'
+          })
         });
+
         const data = await res.json();
-        alert('🎉 Final Cut Approved! Telegram alerts sent to Production & Finance teams, and invoice INV-' + data.invoiceId + ' released!');
+        showToast(`🎉 Master Cut Approved! Invoice INV-${data.invoiceId || '1042'} released and Telegram alerts sent.`, 'success');
+
+        if (activeReviewData) {
+          activeReviewData.status = 'approved';
+          renderReviewUI(activeReviewData);
+        }
       } catch (err) {
-        alert('Error: ' + err.message);
+        showToast('Error approving cut: ' + err.message, 'error');
       }
+    }
+
+    // TOAST NOTIFICATION UTILITY
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('rrToastContainer');
+      if (!container) return;
+
+      const toast = document.createElement('div');
+      toast.className = `rr-toast rr-toast-${type}`;
+      toast.innerHTML = message;
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-10px)';
+        toast.style.transition = 'all 0.25s ease';
+        setTimeout(() => toast.remove(), 250);
+      }, 3500);
     }
   </script>
 </body>

@@ -11,9 +11,7 @@
   <link rel="stylesheet" href="/css/styles.css">
   <link rel="stylesheet" href="/css/landing.css">
 </head>
-<body class="pb-landing-body">
-
-  <!-- TOP NAVBAR -->
+<body class="pb-landing-body">  <!-- TOP NAVBAR -->
   <header class="pb-nav" id="topNav">
     <div class="pb-nav-container">
       <a href="/" class="pb-brand-logo">
@@ -26,7 +24,7 @@
         </div>
       </a>
 
-      <nav class="pb-nav-links">
+      <nav class="pb-nav-links" id="desktopNavLinks">
         <a href="#about" class="pb-nav-link">About</a>
         <div class="pb-nav-dropdown">
           <a href="#services" class="pb-nav-link pb-dropdown-trigger">Services <span class="chevron">▾</span></a>
@@ -38,6 +36,7 @@
           </div>
         </div>
         <a href="#portfolio" class="pb-nav-link">Our Work</a>
+        <a href="#testimonials" class="pb-nav-link">Testimonials</a>
         <a href="#pricing" class="pb-nav-link">Plans & Pricing</a>
       </nav>
 
@@ -45,6 +44,28 @@
         <button onclick="openPurpleBot('General Inquiry')" class="pb-btn-quote">
           💬 Talk to Purple Bot
         </button>
+        <button class="pb-hamburger" id="mobileMenuBtn" aria-label="Toggle navigation menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- MOBILE NAVIGATION MENU DRAWER -->
+    <div class="pb-mobile-menu" id="mobileMenu">
+      <div class="pb-mobile-menu-inner">
+        <a href="#about" class="pb-mobile-link" onclick="closeMobileMenu()">About Agency</a>
+        <a href="#services" class="pb-mobile-link" onclick="closeMobileMenu()">Services</a>
+        <a href="#portfolio" class="pb-mobile-link" onclick="closeMobileMenu()">Our Work</a>
+        <a href="#testimonials" class="pb-mobile-link" onclick="closeMobileMenu()">Testimonials</a>
+        <a href="#pricing" class="pb-mobile-link" onclick="closeMobileMenu()">Plans & Pricing</a>
+        <a href="#contact" class="pb-mobile-link" onclick="closeMobileMenu()">Contact Us</a>
+        <div class="pb-mobile-actions">
+          <button onclick="openPurpleBot('Get Started'); closeMobileMenu();" class="pb-btn-primary" style="width:100%;">
+            🚀 Get Started Now
+          </button>
+        </div>
       </div>
     </div>
   </header>
@@ -58,16 +79,16 @@
         <div class="pb-hero-content">
           <div class="pb-hero-badge">
             <span class="pb-pulse-dot"></span>
-            <span>INNOVATIVE DIGITAL AGENCY</span>
+            <span>AWARD-WINNING DIGITAL & TECH AGENCY</span>
           </div>
 
           <h1 class="pb-hero-title">
-            Digital. <br>
-            <span class="pb-gradient-text">Design. Tech.</span>
+            Scale Your Brand With <br>
+            <span class="pb-gradient-text">Data, Content & Tech</span>
           </h1>
 
           <p class="pb-hero-subtitle">
-            Expert solutions tailored to your brand. We combine data-driven marketing, viral short-form content, and cutting-edge tech to deliver measurable business growth.
+            We combine high-ROI digital marketing, viral short-form video reels, bespoke branding, and custom web engineering to deliver proven, exponential business growth.
           </p>
 
           <div class="pb-hero-cta-group">
@@ -75,7 +96,7 @@
               🚀 Get Started
             </button>
             <a href="#portfolio" class="pb-btn-secondary">
-              Explore Our Work
+              Explore Our Work ↓
             </a>
           </div>
         </div>
@@ -94,7 +115,7 @@
               <span class="card-icon">🎯</span>
               <div>
                 <strong>100+ Clients</strong>
-                <span>Multi-National & Brands</span>
+                <span>Global Brands & Multinationals</span>
               </div>
             </div>
           </div>
@@ -126,7 +147,7 @@
   <!-- TRUSTED CLIENTS LOGO MARQUEE -->
   <section class="pb-clients-section">
     <div class="pb-section-container">
-      <p class="pb-clients-header">Trusted by renowned multi-nationals, startups, and SMEs</p>
+      <p class="pb-clients-header">Trusted by leading multinationals, fast-growing startups & enterprise brands</p>
       
       <div class="pb-marquee-wrapper">
         <div class="pb-marquee-content" id="clientMarquee">
@@ -267,6 +288,55 @@
     </div>
   </section>
 
+  <!-- TESTIMONIALS & SOCIAL PROOF SECTION -->
+  <section class="pb-testimonials-section" id="testimonials">
+    <div class="pb-section-container">
+      <div class="pb-section-header">
+        <span class="pb-section-badge">CLIENT TESTIMONIALS</span>
+        <h2 class="pb-section-title">What Our Partners Say</h2>
+        <p class="pb-section-desc">Real feedback from brand directors and business leaders who scaled with Purplebot Digital.</p>
+      </div>
+
+      <div class="pb-testimonials-grid">
+        <div class="pb-testimonial-card">
+          <div class="pb-stars">⭐⭐⭐⭐⭐</div>
+          <p class="pb-testimonial-quote">"Purplebot turned our social media presence into our primary customer acquisition engine. Their video reels achieved over 2.4M organic reach in 60 days."</p>
+          <div class="pb-testimonial-author">
+            <div class="pb-avatar-circle">🍔</div>
+            <div>
+              <strong>Brand Marketing Lead</strong>
+              <span>Chillox Burgers</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="pb-testimonial-card">
+          <div class="pb-stars">⭐⭐⭐⭐⭐</div>
+          <p class="pb-testimonial-quote">"The speed of execution and high production quality of their motion design team was exceptional. Zero friction delivery on tight commercial deadlines."</p>
+          <div class="pb-testimonial-author">
+            <div class="pb-avatar-circle">📺</div>
+            <div>
+              <strong>Digital Strategy Director</strong>
+              <span>LG Electronics</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="pb-testimonial-card">
+          <div class="pb-stars">⭐⭐⭐⭐⭐</div>
+          <p class="pb-testimonial-quote">"From custom web development to overall campaign branding, Purplebot delivered an enterprise-grade solution that impressed our board."</p>
+          <div class="pb-testimonial-author">
+            <div class="pb-avatar-circle">🏢</div>
+            <div>
+              <strong>Communications Lead</strong>
+              <span>UCB Bank</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- PLANS & PRICING SECTION -->
   <section class="pb-pricing-section" id="pricing">
     <div class="pb-section-container">
@@ -354,7 +424,7 @@
   </section>
 
   <!-- LET'S TALK & NEWSLETTER FOOTER SECTION -->
-  <section class="pb-contact-section">
+  <section class="pb-contact-section" id="contact">
     <div class="pb-section-container">
       <div class="pb-contact-grid">
         <div class="pb-contact-info">
@@ -371,11 +441,18 @@
           </div>
 
           <div class="pb-social-links">
-            <a href="https://facebook.com" target="_blank" aria-label="Facebook">🌐</a>
-            <a href="https://instagram.com" target="_blank" aria-label="Instagram">📷</a>
-            <a href="https://linkedin.com" target="_blank" aria-label="LinkedIn">💼</a>
-            <a href="https://youtube.com" target="_blank" aria-label="YouTube">▶️</a>
-            <a href="https://behance.net" target="_blank" aria-label="Behance">🎨</a>
+            <a href="https://facebook.com/purplebotdigital" target="_blank" aria-label="Facebook">
+              <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+            </a>
+            <a href="https://instagram.com/purplebotdigital" target="_blank" aria-label="Instagram">
+              <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+            </a>
+            <a href="https://linkedin.com/company/purplebotdigital" target="_blank" aria-label="LinkedIn">
+              <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+            </a>
+            <a href="https://youtube.com/@purplebotdigital" target="_blank" aria-label="YouTube">
+              <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+            </a>
           </div>
         </div>
 
@@ -400,13 +477,13 @@
           <div class="pb-logo-badge">🦉</div>
           <div class="pb-logo-text">
             <span class="pb-brand-title" style="color:#fff;">PURPLEBOT</span>
-            <span class="pb-brand-sub" style="color:var(--purple-light);">DIGITAL</span>
+            <span class="pb-brand-sub" style="color:var(--pb-purple-light);">DIGITAL</span>
           </div>
         </div>
         <p class="pb-legal-note">
           Purplebot Digital Limited is a private limited company incorporated under the Companies Act XVIII of 1994 at the Joint Stock Companies and Firms of Bangladesh.
         </p>
-        <p class="pb-copy-note">© 2024–2026 Purplebot Digital Limited. All rights reserved.</p>
+        <p class="pb-copy-note">© 2024–<span id="currentYear">2026</span> Purplebot Digital Limited. All rights reserved.</p>
       </div>
 
       <div class="pb-footer-addresses">
@@ -426,7 +503,24 @@
         <a href="#about">About Agency</a>
         <a href="#services">Core Services</a>
         <a href="#portfolio">Our Work</a>
+        <a href="#testimonials">Testimonials</a>
         <a href="#pricing">Plans & Pricing</a>
+        <a href="/auth">Client & Team Login</a>
+        <a href="javascript:void(0)" onclick="openPurpleBot('FAQ')">FAQ & Support</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- SCROLL TO TOP BUTTON -->
+  <button id="scrollTopBtn" class="pb-scroll-top" aria-label="Scroll back to top" onclick="scrollToTop()">
+    ↑
+  </button>
+
+  <script src="/js/landing.js"></script>
+  <script src="/js/chat-widget.js"></script>
+</body>
+</html>
+icing</a>
         <a href="javascript:void(0)" onclick="openPurpleBot('FAQ')">FAQ & Support</a>
       </div>
     </div>

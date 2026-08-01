@@ -11,6 +11,18 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
   <script>
+    // 🔒 PHASE 8A — IIFE AUTH GUARD: Must run FIRST in <head> before any HTML renders
+    (function adminIIFEAuthGuard() {
+      const token = localStorage.getItem('sb-access-token') ||
+                    localStorage.getItem('purpleos_pin_token') ||
+                    localStorage.getItem('purple_token');
+      if (!token) {
+        console.warn('[PurpleOS] ⛔ No session token found. Blocking admin access.');
+        window.location.replace('/auth?redirect=/admin');
+      }
+    })();
+  </script>
+  <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('/service-worker.js').catch(err => console.log('SW reg error:', err));
@@ -20,13 +32,25 @@
 </head>
 <body>
 
+  <!-- 🔒 PHASE 8A: ADMIN LOADING OVERLAY (shown during async auth check) -->
+  <div id="adminLoadingOverlay">
+    <div class="admin-loader-content">
+      <div class="admin-loader-spinner"></div>
+      <div class="admin-loader-brand">PurpleOS</div>
+      <div class="admin-loader-msg">Verifying session & loading workspace...</div>
+    </div>
+  </div>
+
   <!-- Top Header Navigation -->
   <header class="top-header">
-    <div class="brand-container">
-      <div class="brand-logo">PB</div>
-      <div>
-        <div class="brand-title">PurpleOS</div>
-        <div style="font-size: 0.72rem; color: var(--purple-light); font-weight: 500;">Digital Agency Operating System v0.6</div>
+    <div style="display: flex; align-items: center; gap: 0.8rem;">
+      <button id="adminMobileNavToggle" onclick="toggleMobileSidebar()" style="display: none; background: transparent; border: none; color: #fff; font-size: 1.4rem; cursor: pointer; padding: 0.2rem 0.5rem;" aria-label="Toggle Navigation Menu">☰</button>
+      <div class="brand-container">
+        <div class="brand-logo">PB</div>
+        <div>
+          <div class="brand-title">PurpleOS</div>
+          <div style="font-size: 0.72rem; color: var(--purple-light); font-weight: 500;">Digital Agency Operating System v0.6</div>
+        </div>
       </div>
     </div>
 
@@ -37,16 +61,16 @@
     </div>
 
     <div style="display: flex; align-items: center; gap: 1.25rem;">
-      <div class="system-status">
+      <div class="system-status" id="systemStatusBar">
         <div class="status-dot"></div>
-        <span>Supabase & Telegram Active</span>
+        <span id="systemStatusText">PurpleOS Active</span>
       </div>
 
       <div class="user-profile-badge">
-        <div class="user-avatar" id="userAvatar">MH</div>
+        <div class="user-avatar" id="userAvatar">—</div>
         <div class="user-info">
-          <span class="user-name" id="userName">Mahmudul Hasan</span>
-          <span class="user-role-tag" id="userRoleTag">Agency Director</span>
+          <span class="user-name" id="userName">Loading...</span>
+          <span class="user-role-tag" id="userRoleTag">Authenticating...</span>
         </div>
       </div>
 
@@ -61,9 +85,12 @@
         </div>
       </div>
 
-      <a href="/auth" style="color: #c084fc; text-decoration: none; font-size: 0.825rem; font-weight: 600; padding: 0.4rem 0.75rem; background: rgba(139,92,246,0.15); border-radius: 10px;">Portal Sign-In</a>
+      <button id="adminAuthBtn" onclick="adminSignOut()" style="color: #f87171; background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3); border-radius: 10px; font-size: 0.825rem; font-weight: 600; padding: 0.4rem 0.75rem; cursor: pointer; transition: all 0.2s;">🔓 Sign Out</button>
     </div>
   </header>
+
+  <!-- Navigation Mobile Backdrop Overlay -->
+  <div id="adminNavBackdrop" onclick="closeMobileSidebar()" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 99980;"></div>
 
   <div class="main-wrapper">
     <!-- Sidebar Navigation -->
@@ -149,22 +176,30 @@
           <div class="page-subtitle">Real-time performance matrix for Purplebot Digital (Bangladesh & USA)</div>
         </div>
 
+        <!-- U3: Quick Actions Row -->
+        <div id="dashboardQuickActions" style="display: flex; gap: 0.75rem; margin-bottom: 1.25rem; flex-wrap: wrap;">
+          <button class="btn-purple" style="font-size: 0.8rem; padding: 0.45rem 0.9rem;" onclick="openAddTaskModal()">+ New Task</button>
+          <button class="btn-secondary" style="font-size: 0.8rem; padding: 0.45rem 0.9rem;" onclick="switchTab('financials')">+ New Invoice</button>
+          <button class="btn-secondary" style="font-size: 0.8rem; padding: 0.45rem 0.9rem;" onclick="switchTab('leads')">📥 View Leads</button>
+          <button class="btn-secondary" style="font-size: 0.8rem; padding: 0.45rem 0.9rem;" onclick="switchTab('team')">👥 Team Status</button>
+        </div>
+
         <div class="metrics-grid">
           <div class="metric-card">
             <div class="metric-header">
               <span>ACTIVE MONTHLY RETAINERS</span>
-              <span>📈 +18%</span>
+              <span id="kpiRetainersTrend">📈 Active Roster</span>
             </div>
-            <div class="metric-value" id="kpiActiveRetainers">7 Retainers</div>
-            <div class="metric-subtitle" id="kpiRetainersSubtitle">UCB, Clear Men, bKash, Chillox, Pran-RFL...</div>
+            <div class="metric-value" id="kpiActiveRetainers">0 Retainers</div>
+            <div class="metric-subtitle" id="kpiRetainersSubtitle">Loading active client roster...</div>
           </div>
           <div class="metric-card">
             <div class="metric-header">
               <span>MONTHLY CONTENT VOLUME</span>
-              <span>⚡ High Capacity</span>
+              <span id="kpiContentTrend">⚡ Capacity</span>
             </div>
-            <div class="metric-value">150+ Deliverables</div>
-            <div class="metric-subtitle">60 Statics, 40 Motion, 50 Reels/Videos</div>
+            <div class="metric-value" id="kpiContentVolume">0 Deliverables</div>
+            <div class="metric-subtitle" id="kpiContentSubtitle">Loading content pipeline...</div>
           </div>
           <div class="metric-card">
             <div class="metric-header">
@@ -179,14 +214,15 @@
               <span>CREW ATTENDANCE STATUS</span>
               <span>📍 Studio & Field</span>
             </div>
-            <div class="metric-value" id="attendanceSummary">4 In Studio</div>
-            <div class="metric-subtitle" id="kpiAttendanceSubtitle">1 On Field Shoot</div>
+            <div class="metric-value" id="attendanceSummary">0 In Studio</div>
+            <div class="metric-subtitle" id="kpiAttendanceSubtitle">0 On Field Shoot</div>
           </div>
         </div>
 
         <div class="glass-panel">
-          <div class="panel-header">
+          <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center;">
             <h2 class="panel-title">Active Retainer Production Pipelines</h2>
+            <button class="btn-secondary" style="font-size: 0.78rem; padding: 0.3rem 0.7rem;" onclick="switchTab('crm')">View All Clients →</button>
           </div>
           <table class="data-table">
             <thead>
@@ -199,7 +235,11 @@
               </tr>
             </thead>
             <tbody id="dashboardTableBody">
-              <!-- Dynamically rendered via renderDashboard() -->
+              <tr>
+                <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">
+                  ⏳ Loading active retainer pipelines...
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -234,12 +274,6 @@
           </div>
           <select id="crmCategoryFilter" class="form-input" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; background: rgba(9,9,11,0.8); width: auto;" onchange="filterCRM()">
             <option value="">All Categories</option>
-            <option value="FMCG">FMCG</option>
-            <option value="Banking & Finance">Banking & Finance</option>
-            <option value="Fintech & Remittance">Fintech & Remittance</option>
-            <option value="Food & Beverage">Food & Beverage</option>
-            <option value="Industrial">Industrial</option>
-            <option value="Defense">Defense</option>
           </select>
           <span id="crmCountBadge" class="badge badge-purple" style="margin-left: auto;">0 Clients</span>
         </div>
@@ -369,7 +403,7 @@
               <option value="AV Production">AV Production</option>
               <option value="Branding & Graphic Design">Branding & Graphic Design</option>
             </select>
-            <button class="btn-purple" onclick="generateAISpec()">✨ Generate</button>
+            <button class="btn-purple" id="btnGenerateAISpec" onclick="generateAISpec()">✨ Generate</button>
           </div>
           <div id="aiResultBox" style="display: none; background: var(--bg-input); padding: 1rem; border-radius: 10px; border: 1px dashed var(--purple-light);">
             <div style="font-weight: 600; color: #fff; margin-bottom: 0.4rem;" id="aiResultTitle">Generated Specification:</div>
@@ -780,7 +814,7 @@
             <h1 class="page-title">📈 Executive BI Analytics & Intelligence</h1>
             <div class="page-subtitle">MRR growth trends, lead pipeline conversion funnels, and agency profitability matrices</div>
           </div>
-          <button class="btn-purple" onclick="alert('Exporting Executive Performance Summary PDF Report...')">📄 Export Executive PDF Report</button>
+          <button class="btn-purple" onclick="exportExecutiveReport()">📄 Export Executive PDF Report</button>
         </div>
 
         <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.25rem; margin-bottom: 1.5rem;" id="analyticsMetricCards">
@@ -1176,7 +1210,7 @@
         </div>
 
         <!-- 2-Column Messaging Container -->
-        <div style="display: grid; grid-template-columns: 320px 1fr; gap: 1rem; height: calc(100vh - 210px); min-height: 520px;">
+        <div class="chat-hub-grid">
           <!-- Left Column: Conversation List -->
           <div class="glass-panel" style="display: flex; flex-direction: column; padding: 0.8rem; gap: 0.8rem;">
             <input type="text" id="chatSearchInput" class="form-input" style="padding: 0.45rem 0.75rem; font-size: 0.82rem;" placeholder="🔍 Search client thread..." oninput="renderChatHub()">
@@ -1235,7 +1269,6 @@
             <div class="page-subtitle">Configure system personas, train knowledge base FAQs, manage video tutorials, and monitor bot analytics</div>
           </div>
           <div style="display: flex; gap: 0.8rem; align-items: center;">
-            <button class="btn-secondary" onclick="toggleTelegramSimulator()">⚡ Test Simulator</button>
             <button class="btn-purple" onclick="saveBotConfig()">💾 Save Bot Config</button>
           </div>
         </div>
@@ -1574,47 +1607,8 @@
     </main>
   </div>
 
-  <!-- Telegram Bot Simulator Floating Widget -->
-  <button class="telegram-sim-toggle" onclick="toggleTelegramSimulator()">
-    <span>📱</span> Telegram Bot Operations
-  </button>
-
-  <div class="telegram-sim-modal hidden" id="telegramSimModal">
-    <div class="tg-header">
-      <div class="tg-title">
-        <div class="tg-avatar">🤖</div>
-        <div>
-          <div>Purplebot Bot</div>
-          <div style="font-size: 0.7rem; color: #40a7e3;">online simulator</div>
-        </div>
-      </div>
-      <button class="tg-close" onclick="toggleTelegramSimulator()">✕</button>
-    </div>
-
-    <div class="tg-chat-body" id="tgChatBody">
-      <div class="tg-msg bot">
-        🤖 <strong>Purplebot Operations Bot</strong><br>
-        Welcome! Click command chips below or type commands to test real-time operational flows.
-      </div>
-    </div>
-
-    <div class="tg-quick-commands">
-      <span class="tg-cmd-chip" onclick="sendSimCommand('/pair EMP-002')">/pair EMP-002</span>
-      <span class="tg-cmd-chip" onclick="sendSimCommand('/myearnings')">/myearnings</span>
-      <span class="tg-cmd-chip" onclick="sendSimCommand('/mybookings')">/mybookings</span>
-      <span class="tg-cmd-chip" onclick="sendSimCommand('/clockin')">/clockin</span>
-      <span class="tg-cmd-chip" onclick="sendSimCommand('/clockout')">/clockout</span>
-      <span class="tg-cmd-chip" onclick="sendSimCommand('/report')">📊 /report</span>
-      <span class="tg-cmd-chip" onclick="sendSimCommand('/services')">/services</span>
-    </div>
-
-    <div class="tg-input-box">
-      <input type="text" id="tgInput" class="tg-input" placeholder="Type a command..." onkeydown="if(event.key==='Enter') sendSimInput()">
-      <button class="tg-send-btn" onclick="sendSimInput()">Send</button>
-    </div>
-  </div>
-
   <!-- New Review Session Modal -->
+
   <div class="modal-overlay hidden" id="newReviewModal">
     <div class="modal-card" style="max-width: 560px;">
       <div class="modal-header">
@@ -1729,6 +1723,56 @@
           <button type="submit" class="btn-purple" id="assetFormSubmitBtn">💾 Save Asset Record</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- Check Out Asset Modal -->
+  <div class="modal-overlay hidden" id="checkoutAssetModal">
+    <div class="modal-card" style="max-width: 480px;">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title" id="checkoutModalTitle">📤 Check Out Equipment</h2>
+          <div style="font-size: 0.8rem; color: var(--text-muted);" id="checkoutModalSubtitle">Assign equipment to a crew member for shoot / field work</div>
+        </div>
+        <button class="tg-close" onclick="closeCheckoutAssetModal()">✕</button>
+      </div>
+
+      <form onsubmit="confirmCheckOutAsset(event)">
+        <input type="hidden" id="checkoutAssetId">
+        <div class="form-group" style="margin-bottom: 1.2rem;">
+          <label style="font-size: 0.8rem; font-weight: 600; color: #d4d4d8;">Select Borrower / Crew Member *</label>
+          <select id="checkoutTeamSelect" class="role-select" style="width: 100%;" required>
+            <!-- Dynamic crew options -->
+          </select>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.8rem;">
+          <button type="button" class="btn-secondary" onclick="closeCheckoutAssetModal()">Cancel</button>
+          <button type="submit" class="btn-purple">📤 Confirm Check-Out</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Check In Asset Modal -->
+  <div class="modal-overlay hidden" id="checkInAssetModal">
+    <div class="modal-card" style="max-width: 460px;">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title">📥 Confirm Check-In</h2>
+          <div style="font-size: 0.8rem; color: var(--text-muted);" id="checkInModalSubtitle">Return equipment to studio vault inventory</div>
+        </div>
+        <button class="tg-close" onclick="closeCheckInAssetModal()">✕</button>
+      </div>
+
+      <div style="margin-bottom: 1.5rem;" id="checkInModalBodyText">
+        Are you sure you want to check in this item?
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 0.8rem;">
+        <button type="button" class="btn-secondary" onclick="closeCheckInAssetModal()">Cancel</button>
+        <button type="button" class="btn-purple" id="confirmCheckInBtn">📥 Confirm Return</button>
+      </div>
     </div>
   </div>
 
@@ -1852,7 +1896,7 @@
           <input type="email" id="clientFormEmail" class="form-input" placeholder="e.g. contact@client.com">
         </div>
 
-        <div class="form-group" style="margin-bottom: 1.2rem;">
+        <div class="form-group" style="margin-bottom: 1rem;">
           <label style="font-size: 0.8rem; font-weight: 600; color: #d4d4d8;">Account Status</label>
           <select id="clientFormStatus" class="role-select" style="width: 100%;">
             <option value="Active Retainer">Active Retainer</option>
@@ -1860,6 +1904,11 @@
             <option value="Past Client">Past Client</option>
             <option value="On Hold">On Hold</option>
           </select>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 1.2rem;">
+          <label style="font-size: 0.8rem; font-weight: 600; color: #d4d4d8;">Retainer & Operational Notes</label>
+          <textarea id="clientFormNotes" class="form-input" rows="2" placeholder="e.g. Client prefers WhatsApp updates, NDA signed..."></textarea>
         </div>
 
         <div style="display: flex; justify-content: flex-end; gap: 0.8rem;">
@@ -2429,6 +2478,85 @@
     </div>
   </div>
 
+  <!-- Add Studio Expense Modal -->
+  <div class="modal-overlay hidden" id="addExpenseModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title">💰 Log Studio Expense</h2>
+          <div style="font-size: 0.8rem; color: var(--text-muted);">Record operational overhead, software subscriptions, or gear expenses</div>
+        </div>
+        <button class="tg-close" onclick="closeAddExpenseModal()">✕</button>
+      </div>
+
+      <form onsubmit="submitAddExpenseForm(event)">
+        <div class="form-group" style="margin-bottom: 1rem;">
+          <label style="font-size: 0.8rem; font-weight: 600; color: #d4d4d8;">Expense Description *</label>
+          <input type="text" id="expenseFormTitle" class="form-input" placeholder="e.g., Studio Internet Bill, Adobe CC License" required>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.2rem;">
+          <div class="form-group">
+            <label style="font-size: 0.8rem; font-weight: 600; color: #d4d4d8;">Category</label>
+            <select id="expenseFormCategory" class="role-select" style="width: 100%;">
+              <option value="Utilities">Utilities</option>
+              <option value="Internet">Internet</option>
+              <option value="Software">Software</option>
+              <option value="Gear & Equipment">Gear & Equipment</option>
+              <option value="Studio Rent">Studio Rent</option>
+              <option value="Operations">Operations</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label style="font-size: 0.8rem; font-weight: 600; color: #d4d4d8;">Amount ($ USD) *</label>
+            <input type="number" step="0.01" id="expenseFormAmount" class="form-input" placeholder="150.00" required>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.8rem;">
+          <button type="button" class="btn-secondary" onclick="closeAddExpenseModal()">Cancel</button>
+          <button type="submit" class="btn-purple">💾 Log Expense</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Verify Payment Modal -->
+  <div class="modal-overlay hidden" id="verifyPaymentModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title">💳 Verify Payment</h2>
+          <div style="font-size: 0.8rem; color: var(--text-muted);">Record transaction reference and mark invoice as paid</div>
+        </div>
+        <button class="tg-close" onclick="closeVerifyPaymentModal()">✕</button>
+      </div>
+
+      <form onsubmit="submitVerifyPaymentForm(event)">
+        <input type="hidden" id="verifyPaymentInvoiceId">
+        <div class="form-group" style="margin-bottom: 1rem;">
+          <label style="font-size: 0.8rem; font-weight: 600; color: #d4d4d8;">Payment Method *</label>
+          <select id="verifyPaymentMethod" class="role-select" style="width: 100%;">
+            <option value="Bkash / Nagad Direct">Bkash / Nagad Direct</option>
+            <option value="Bank Wire Transfer">Bank Wire Transfer</option>
+            <option value="Credit Card">Credit Card</option>
+            <option value="Cash / Cheque">Cash / Cheque</option>
+          </select>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 1.2rem;">
+          <label style="font-size: 0.8rem; font-weight: 600; color: #d4d4d8;">Transaction Ref / TRX ID *</label>
+          <input type="text" id="verifyPaymentTrxId" class="form-input" placeholder="e.g. TRX-982341 or Bank Ref #10293" required>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.8rem;">
+          <button type="button" class="btn-secondary" onclick="closeVerifyPaymentModal()">Cancel</button>
+          <button type="submit" class="btn-purple">✅ Confirm Payment</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Add Task Modal -->
   <div class="modal-overlay hidden" id="addTaskModal">
     <div class="modal-card">
@@ -2464,10 +2592,7 @@
           <div class="form-group" style="flex: 1;">
             <label style="font-size: 0.8rem; font-weight: 600; color: #d4d4d8;">Lead Assignee</label>
             <select id="newTaskAssignee" class="role-select" style="width: 100%;">
-              <option value="Farhan Ahmed">Farhan Ahmed (Lead Shooter)</option>
-              <option value="Sabrin Akhtar">Sabrin Akhtar (Motion Editor)</option>
-              <option value="Raihan Kabir">Raihan Kabir (Graphic Designer)</option>
-              <option value="Naimur Rahman">Naimur Rahman (Account Lead)</option>
+              <!-- Populated dynamically via openAddTaskModal() -->
             </select>
           </div>
         </div>
@@ -3064,6 +3189,9 @@
       </form>
     </div>
   </div>
+
+  <!-- Global Admin Notification Toast Container -->
+  <div class="admin-toast-container" id="adminToastContainer"></div>
 
   <script src="/js/command-center.js"></script>
   <script src="/js/app.js"></script>

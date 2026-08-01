@@ -10,6 +10,18 @@ document.addEventListener('DOMContentLoaded', () => {
   initPartnerPortal();
 });
 
+function handlePartnerLogout() {
+  localStorage.removeItem('purple_user_phone');
+  localStorage.removeItem('purple_user_email');
+  localStorage.removeItem('purple_user_name');
+  localStorage.removeItem('purple_user_role');
+  localStorage.removeItem('purple_user_access');
+  localStorage.removeItem('sb-access-token');
+  document.cookie = "sb-access-token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+  window.location.href = '/auth';
+}
+
+
 async function initPartnerPortal() {
   try {
     // Fetch authenticated user profile

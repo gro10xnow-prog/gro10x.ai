@@ -7,7 +7,85 @@ document.addEventListener('DOMContentLoaded', () => {
   fetchCMSContent();
   initNavbarScroll();
   initStatCounters();
+  initMobileMenu();
+  initScrollTop();
+  initScrollSpy();
+  setDynamicYear();
 });
+
+// DYNAMIC YEAR
+function setDynamicYear() {
+  const el = document.getElementById('currentYear');
+  if (el) {
+    el.innerText = new Date().getFullYear();
+  }
+}
+
+// MOBILE MENU TOGGLE
+function initMobileMenu() {
+  const btn = document.getElementById('mobileMenuBtn');
+  const menu = document.getElementById('mobileMenu');
+  if (!btn || !menu) return;
+
+  btn.addEventListener('click', () => {
+    btn.classList.toggle('is-active');
+    menu.classList.toggle('is-active');
+    document.body.style.overflow = menu.classList.contains('is-active') ? 'hidden' : '';
+  });
+}
+
+function closeMobileMenu() {
+  const btn = document.getElementById('mobileMenuBtn');
+  const menu = document.getElementById('mobileMenu');
+  if (btn) btn.classList.remove('is-active');
+  if (menu) menu.classList.remove('is-active');
+  document.body.style.overflow = '';
+}
+
+// SCROLL TO TOP & SCROLLSPY
+function initScrollTop() {
+  const btn = document.getElementById('scrollTopBtn');
+  if (!btn) return;
+
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 400) {
+      btn.classList.add('is-visible');
+    } else {
+      btn.classList.remove('is-visible');
+    }
+  });
+}
+
+function scrollToTop() {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function initScrollSpy() {
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('.pb-nav-link[href^="#"]');
+  if (!sections.length || !navLinks.length) return;
+
+  window.addEventListener('scroll', () => {
+    let current = '';
+    const scrollPos = window.scrollY + 100;
+
+    sections.forEach(section => {
+      const top = section.offsetTop;
+      const height = section.offsetHeight;
+      if (scrollPos >= top && scrollPos < top + height) {
+        current = '#' + section.getAttribute('id');
+      }
+    });
+
+    navLinks.forEach(link => {
+      link.classList.remove('active');
+      if (link.getAttribute('href') === current) {
+        link.classList.add('active');
+      }
+    });
+  });
+}
+
 
 // UTM CAPTURE & SESSION STORAGE
 function captureUTM() {

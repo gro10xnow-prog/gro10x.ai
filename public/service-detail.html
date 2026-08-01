@@ -4,7 +4,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Service Details — Purplebot Digital Agency</title>
-  <meta name="description" content="Explore Purplebot Digital's specialized services in Digital Marketing, Video Production, Branding, Web Development, and Custom Tech Solutions.">
+  <meta name="description" id="metaDescription" content="Explore Purplebot Digital's specialized services in Digital Marketing, Video Production, Branding, Web Development, and Custom Tech Solutions.">
+  
+  <!-- Open Graph & Social Media Metadata -->
+  <meta property="og:title" id="ogTitle" content="Service Details — Purplebot Digital Agency">
+  <meta property="og:description" id="ogDescription" content="Explore Purplebot Digital's specialized services.">
+  <meta property="og:image" id="ogImage" content="https://purplebot.digital/images/mascot.png">
+  <meta property="og:url" id="ogUrl" content="https://purplebot.digital/services">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" id="twitterTitle" content="Service Details — Purplebot Digital Agency">
+  <meta name="twitter:description" id="twitterDescription" content="Explore Purplebot Digital's specialized services.">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -46,9 +57,32 @@
         <button onclick="openPurpleBot('Service Consultation')" class="pb-btn-quote">
           💬 Talk to Purple Bot
         </button>
+        <button class="pb-hamburger" id="mobileMenuBtn" aria-label="Toggle navigation menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- MOBILE NAVIGATION MENU DRAWER -->
+    <div class="pb-mobile-menu" id="mobileMenu">
+      <div class="pb-mobile-menu-inner">
+        <a href="/" class="pb-mobile-link" onclick="closeMobileMenu()">Home</a>
+        <a href="#capabilities" class="pb-mobile-link" onclick="closeMobileMenu()">Capabilities</a>
+        <a href="/#portfolio" class="pb-mobile-link" onclick="closeMobileMenu()">Our Work</a>
+        <a href="/#pricing" class="pb-mobile-link" onclick="closeMobileMenu()">Plans & Pricing</a>
+        <div class="pb-mobile-actions">
+          <button onclick="openPurpleBot('Service Consultation'); closeMobileMenu();" class="pb-btn-primary" style="width:100%;">
+            💬 Talk to Purple Bot
+          </button>
+        </div>
       </div>
     </div>
   </header>
+
+  <!-- BREADCRUMB STRIP -->
+  <div id="svcBreadcrumb"></div>
 
   <!-- SERVICE HERO SECTION -->
   <section class="pb-hero-section">
@@ -91,6 +125,7 @@
                 <span>Guaranteed SLA & Delivery</span>
               </div>
             </div>
+            <div id="svcMascotCard2"></div>
           </div>
         </div>
       </div>
@@ -114,6 +149,11 @@
         <!-- Rendered dynamically -->
       </div>
     </div>
+  </section>
+
+  <!-- HOW WE WORK / PROCESS SECTION -->
+  <section class="pb-process-section" id="svcProcessSection">
+    <!-- Rendered dynamically -->
   </section>
 
   <!-- RELATED WORK SHOWCASE -->
@@ -154,7 +194,7 @@
           <div class="pb-logo-badge">🦉</div>
           <div class="pb-logo-text">
             <span class="pb-brand-title" style="color:#fff;">PURPLEBOT</span>
-            <span class="pb-brand-sub" style="color:var(--purple-light);">DIGITAL</span>
+            <span class="pb-brand-sub" style="color:#c084fc;">DIGITAL</span>
           </div>
         </div>
         <p class="pb-legal-note">

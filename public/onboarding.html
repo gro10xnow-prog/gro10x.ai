@@ -37,6 +37,19 @@
     .btn-secondary { background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.15); }
     .input-sm { width: 110px; padding: 0.35rem 0.6rem; border-radius: 8px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); color: #fff; font-size: 0.82rem; }
   </style>
+  <script>
+    (function() {
+      const savedPhone = localStorage.getItem('purple_user_phone');
+      const token = localStorage.getItem('sb-access-token');
+      const access = (localStorage.getItem('purple_user_access') || '').toLowerCase();
+      const role = (localStorage.getItem('purple_user_role') || '').toLowerCase();
+      const isOwnerAdmin = access.includes('owner') || access.includes('admin') || role.includes('owner') || role.includes('admin') || role.includes('technology');
+
+      if (!savedPhone || !token || !isOwnerAdmin) {
+        window.location.href = '/auth';
+      }
+    })();
+  </script>
 </head>
 <body>
 
@@ -69,6 +82,8 @@
       <div class="stat-label">SALARIES CONFIGURED</div>
       <div class="stat-val" style="color: #fbbf24;" id="statSalaries">0</div>
     </div>
+  </div>
+
   <!-- HISTORICAL DATA IMPORT PANEL -->
   <div class="table-container" style="margin-bottom: 2rem; background: rgba(168, 85, 247, 0.05); border: 1px dashed var(--purple-accent);">
     <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 0.5rem; color: #c084fc;">📁 Phase 8: Historical Excel / CSV Data Import Hub</h3>

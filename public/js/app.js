@@ -23,6 +23,38 @@ let currentDrawings = [];
 let isDrawing = false;
 let startX = 0, startY = 0;
 
+/* -------------------------------------------------------------
+ * 🔔 Global Admin Notification Toast System
+ * ------------------------------------------------------------- */
+function showAdminToast(message, type = 'success', duration = 3500) {
+  let container = document.getElementById('adminToastContainer');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'adminToastContainer';
+    container.className = 'admin-toast-container';
+    document.body.appendChild(container);
+  }
+
+  const toast = document.createElement('div');
+  toast.className = `admin-toast ${type}`;
+  
+  const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️';
+  toast.innerHTML = `
+    <div style="display:flex; align-items:center; gap:0.6rem;">
+      <span>${icon}</span>
+      <span>${message}</span>
+    </div>
+    <button class="admin-toast-close" onclick="this.parentElement.remove()">✕</button>
+  `;
+
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.classList.add('toast-hiding');
+    setTimeout(() => toast.remove(), 300);
+  }, duration);
+}
+
 // Initialize App
 document.addEventListener('DOMContentLoaded', async () => {
   await checkAuthSession();
@@ -32,6 +64,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 async function checkAuthSession() {
+  const overlay = document.getElementById('adminLoadingOverlay');
   try {
     const token = localStorage.getItem('sb-access-token') || localStorage.getItem('purpleos_pin_token');
     const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
@@ -46,12 +79,21 @@ async function checkAuthSession() {
       console.log('👤 Authenticated Profile:', data.user.profile);
       window.currentUser = data.user;
       updateUserProfileUI();
+      // Hide loading overlay once auth + profile are confirmed
+      if (overlay) {
+        overlay.classList.add('is-hidden');
+        setTimeout(() => { if (overlay) overlay.remove(); }, 400);
+      }
     } else {
       window.location.href = '/auth?redirect=/admin';
     }
   } catch (err) {
     console.warn('Auth session check error:', err);
-    window.location.href = '/auth?redirect=/admin';
+    // On network error, hide overlay and let user see dashboard in offline mode
+    if (overlay) {
+      overlay.classList.add('is-hidden');
+      setTimeout(() => { if (overlay) overlay.remove(); }, 400);
+    }
   }
 }
 
@@ -65,14 +107,43 @@ function updateUserProfileUI() {
   const storedAccess = localStorage.getItem('purple_user_access');
   const storedOnboarding = localStorage.getItem('purple_user_onboarding_complete');
 
-  const name = storedName || (window.currentUser && window.currentUser.profile ? window.currentUser.profile.name : null) || 'Firoz Uddin Ahmed';
-  const role = storedRole || (window.currentUser && window.currentUser.profile ? window.currentUser.profile.role : null) || 'Technology Admin';
+  // C2 fix: Use neutral fallbacks — never expose real employee names as hardcoded defaults
+  const name = storedName || (window.currentUser && window.currentUser.profile ? window.currentUser.profile.name : null) || 'Agency User';
+  const role = storedRole || (window.currentUser && window.currentUser.profile ? window.currentUser.profile.role : null) || 'Team Member';
+  const access = storedAccess || (window.currentUser && window.currentUser.profile ? window.currentUser.profile.accessLevel : null) || 'Specialist / Crew';
 
   if (nameEl) nameEl.innerText = name;
-  if (roleEl) roleEl.innerText = `${role} • ${storedAccess || 'Owner / Admin'}`;
+  if (roleEl) roleEl.innerText = `${role} • ${access}`;
   if (avatarEl) {
     const initials = name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
     avatarEl.innerText = initials;
+  }
+
+  // Update system status badge now that session is confirmed
+  const statusText = document.getElementById('systemStatusText');
+  if (statusText) statusText.innerText = 'PurpleOS Live';
+
+
+  // C4 fix: Filter role-switcher dropdown options based on actual access level
+  const accessLower = access.toLowerCase();
+  const roleSelect = document.getElementById('roleSelect');
+  if (roleSelect) {
+    const adminOpt = roleSelect.querySelector('option[value="admin"]');
+    const leadOpt = roleSelect.querySelector('option[value="lead"]');
+    const specialistOpt = roleSelect.querySelector('option[value="specialist"]');
+
+    const isOwnerAdmin = accessLower.includes('owner') || accessLower.includes('admin');
+    const isLead = accessLower.includes('lead') || accessLower.includes('manager');
+
+    if (!isOwnerAdmin) {
+      if (adminOpt) adminOpt.remove();
+      if (!isLead && leadOpt) leadOpt.remove();
+      roleSelect.value = 'specialist';
+      currentRole = 'specialist';
+    } else if (isOwnerAdmin) {
+      roleSelect.value = 'admin';
+      currentRole = 'admin';
+    }
   }
 
   // Render Limited Access Mode Banner if onboarding is incomplete
@@ -101,6 +172,58 @@ function updateUserProfileUI() {
   }
 }
 
+// C3 fix: Admin Sign Out — clears all session keys and redirects to auth portal
+function adminSignOut() {
+  const sessionKeys = [
+    'sb-access-token', 'sb_access_token', 'purpleos_pin_token', 'purple_token',
+    'purple_user', 'purple_user_name', 'purple_user_role', 'purple_user_access',
+    'purple_user_onboarding_complete', 'supabase.auth.token'
+  ];
+  sessionKeys.forEach(key => localStorage.removeItem(key));
+  sessionStorage.clear();
+  console.log('[PurpleOS] 🔓 Session cleared. Redirecting to auth portal...');
+  window.location.href = '/auth?signout=1';
+}
+
+// U1 fix: Central API fetch wrapper — intercepts 401 responses and shows session-expired toast
+async function apiFetch(url, options = {}) {
+  const token = localStorage.getItem('sb-access-token') || localStorage.getItem('purpleos_pin_token');
+  const defaultHeaders = { 'Content-Type': 'application/json' };
+  if (token) defaultHeaders['Authorization'] = `Bearer ${token}`;
+
+  const mergedOptions = {
+    ...options,
+    headers: { ...defaultHeaders, ...(options.headers || {}) }
+  };
+
+  const res = await fetch(url, mergedOptions);
+
+  if (res.status === 401) {
+    showSessionExpiredToast();
+    throw new Error('Session expired — re-authentication required');
+  }
+
+  return res;
+}
+
+function showSessionExpiredToast() {
+  // Prevent multiple toasts
+  if (document.getElementById('sessionExpiredToast')) return;
+
+  const toast = document.createElement('div');
+  toast.id = 'sessionExpiredToast';
+  toast.style.cssText = 'position:fixed; top:20px; right:20px; z-index:999999; background:#1e1b4b; border:1px solid #818cf8; border-radius:14px; padding:1rem 1.25rem; color:#fff; font-family:inherit; box-shadow:0 10px 35px rgba(0,0,0,0.5); max-width:340px; display:flex; flex-direction:column; gap:0.6rem; animation: rrToastIn 0.25s ease forwards;';
+  toast.innerHTML = `
+    <div style="font-weight:700; font-size:0.92rem;">⚠️ Session Expired</div>
+    <div style="font-size:0.82rem; color:#c7d2fe;">Your session has timed out. Please sign in again to continue.</div>
+    <div style="display:flex; gap:0.5rem;">
+      <button onclick="adminSignOut()" style="background:#a855f7; color:#fff; border:none; border-radius:8px; padding:0.45rem 1rem; font-weight:700; cursor:pointer; font-size:0.82rem;">Sign In Again</button>
+      <button onclick="document.getElementById('sessionExpiredToast').remove()" style="background:rgba(255,255,255,0.1); color:#fff; border:none; border-radius:8px; padding:0.45rem 0.75rem; cursor:pointer; font-size:0.82rem;">Dismiss</button>
+    </div>
+  `;
+  document.body.appendChild(toast);
+}
+
 // Role Portal Switcher Logic
 function switchRolePortal(roleKey) {
   currentRole = roleKey;
@@ -119,9 +242,28 @@ function switchRolePortal(roleKey) {
   renderAllViews();
 }
 
+// Mobile Sidebar Navigation Handlers
+function toggleMobileSidebar() {
+  const sidebar = document.querySelector('.sidebar-nav');
+  const backdrop = document.getElementById('adminNavBackdrop');
+  if (sidebar) sidebar.classList.toggle('is-open');
+  if (backdrop) {
+    const isOpen = sidebar?.classList.contains('is-open');
+    backdrop.style.display = isOpen ? 'block' : 'none';
+  }
+}
+
+function closeMobileSidebar() {
+  const sidebar = document.querySelector('.sidebar-nav');
+  const backdrop = document.getElementById('adminNavBackdrop');
+  if (sidebar) sidebar.classList.remove('is-open');
+  if (backdrop) backdrop.style.display = 'none';
+}
+
 // Tab Router
 function switchTab(tabId) {
   currentTab = tabId;
+  closeMobileSidebar();
 
   // Toggle active nav class
   document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
@@ -240,39 +382,30 @@ async function renderDashboard() {
   const tbody = document.getElementById('dashboardTableBody');
   if (!tbody) return;
 
-  // Fetch live BI Analytics overview
-  try {
-    const res = await fetch('/api/analytics');
-    const analytics = await res.json();
-    if (analytics.success && analytics.financials) {
-      const kpiRev = document.getElementById('kpiMonthlyRevenue');
-      const kpiMargin = document.getElementById('kpiMarginSubtitle');
-      if (kpiRev) kpiRev.innerText = `$${analytics.financials.paidRevenue.toLocaleString()} USD`;
-      if (kpiMargin) kpiMargin.innerText = `Net Margin: ${analytics.financials.marginPercent}% ($${analytics.financials.netProfit.toLocaleString()})`;
-    }
-  } catch (err) {
-    console.warn('Dashboard analytics fetch error:', err);
-  }
-
   const clients = appData.clients || [];
-  if (clients.length === 0) {
+  const activeRetainers = clients.filter(c => 
+    (c.status || '').toLowerCase().includes('active') || 
+    (c.status || '').toLowerCase().includes('retainer')
+  );
+
+  if (activeRetainers.length === 0) {
     tbody.innerHTML = `
       <tr>
         <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">
-          No active retainers on record.
+          No active retainer pipelines on record. <a href="javascript:void(0)" onclick="switchTab('crm')" style="color:var(--purple-light);">View Client CRM</a>
         </td>
       </tr>
     `;
     return;
   }
 
-  tbody.innerHTML = clients.map(c => `
+  tbody.innerHTML = activeRetainers.map(c => `
     <tr style="cursor: pointer;" onclick="openClientProfile('${c.id}')">
       <td><strong>${c.name}</strong></td>
-      <td><span class="badge badge-purple">${c.category}</span></td>
+      <td><span class="badge badge-purple">${c.category || 'Agency Client'}</span></td>
       <td>${(c.activeCampaigns && c.activeCampaigns[0]) || 'Full Digital Retainer'}</td>
       <td>${c.contactPerson || 'Account Lead'}</td>
-      <td><span class="badge badge-emerald">${c.status}</span></td>
+      <td><span class="badge badge-emerald">${c.status || 'Active Retainer'}</span></td>
     </tr>
   `).join('');
 }
@@ -286,8 +419,27 @@ function renderPLWidget() {
 
   const kpiRetainersEl = document.getElementById('kpiActiveRetainers');
   const kpiSubEl = document.getElementById('kpiRetainersSubtitle');
+  const kpiRetainersTrend = document.getElementById('kpiRetainersTrend');
+
   if (kpiRetainersEl) kpiRetainersEl.innerText = `${activeRetainers.length} Retainers`;
   if (kpiSubEl) kpiSubEl.innerText = retainerNames ? `${retainerNames}...` : 'Active client roster';
+  if (kpiRetainersTrend) kpiRetainersTrend.innerText = `📈 ${activeRetainers.length}/${clients.length} Active`;
+
+  // Content Volume computation from tasks
+  const tasks = appData.tasks || [];
+  const completedTasks = tasks.filter(t => t.stage === 'Approved' || t.status === 'Completed' || t.stage === 'Client Review').length;
+  const kpiVolEl = document.getElementById('kpiContentVolume');
+  const kpiVolSubEl = document.getElementById('kpiContentSubtitle');
+  const kpiContentTrend = document.getElementById('kpiContentTrend');
+
+  if (kpiVolEl) kpiVolEl.innerText = `${tasks.length} Deliverables`;
+  if (kpiVolSubEl) {
+    const reels = tasks.filter(t => (t.type || t.category || t.title || '').toLowerCase().match(/reel|video|shoot/)).length;
+    const motion = tasks.filter(t => (t.type || t.category || t.title || '').toLowerCase().match(/motion|anim/)).length;
+    const statics = Math.max(0, tasks.length - reels - motion);
+    kpiVolSubEl.innerText = `${statics} Statics, ${motion} Motion, ${reels} Reels/Videos`;
+  }
+  if (kpiContentTrend) kpiContentTrend.innerText = `⚡ ${completedTasks}/${tasks.length || 1} Complete`;
 
   // Invoices computation
   const invoices = appData.invoices || [];
@@ -405,7 +557,7 @@ function renderPLWidget() {
         <span class="pl-currency-tag" style="margin-left:0.4rem;">USD</span>
       </div>
       <div>
-        <span>Monthly Payroll (5 Crew): </span>
+        <span>Monthly Payroll (${team.length} Crew): </span>
         <strong style="color:var(--purple-light);">৳${totalPayrollBDT.toLocaleString()} BDT</strong>
         <span class="pl-currency-tag" style="margin-left:0.4rem;">BDT</span>
       </div>
@@ -439,14 +591,49 @@ function setCRMFilter(status) {
   filterCRM();
 }
 
+function populateCRMCategories() {
+  const select = document.getElementById('crmCategoryFilter');
+  if (!select) return;
+
+  const currentVal = select.value;
+  const categories = Array.from(new Set((appData.clients || []).map(c => c.category).filter(Boolean))).sort();
+
+  select.innerHTML = `<option value="">All Categories (${categories.length})</option>` +
+    categories.map(cat => `<option value="${cat}" ${cat === currentVal ? 'selected' : ''}>${cat}</option>`).join('');
+}
+
+function resetCRMFilters() {
+  const searchInput = document.getElementById('crmSearchInput');
+  const catInput = document.getElementById('crmCategoryFilter');
+  if (searchInput) searchInput.value = '';
+  if (catInput) catInput.value = '';
+  setCRMFilter('all');
+}
+
 function filterCRM() {
   const tbody = document.getElementById('crmTableBody');
   if (!tbody) return;
 
   const searchQuery = (document.getElementById('crmSearchInput')?.value || '').trim().toLowerCase();
   const categoryFilter = (document.getElementById('crmCategoryFilter')?.value || '').trim();
+  const allClients = appData.clients || [];
 
-  let filtered = (appData.clients || []).filter(c => {
+  if (allClients.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2.5rem;">
+          <div style="font-size: 1.05rem; color: #fff; font-weight: 600; margin-bottom: 0.4rem;">No clients registered in CRM directory</div>
+          <div style="font-size: 0.82rem; margin-bottom: 1rem;">Add your first client account or import from a CSV file.</div>
+          <button class="btn-purple" style="font-size: 0.8rem; padding: 0.4rem 0.9rem;" onclick="openAddClientModal()">+ Add New Client</button>
+        </td>
+      </tr>
+    `;
+    const countBadge = document.getElementById('crmCountBadge');
+    if (countBadge) countBadge.innerText = '0 Clients';
+    return;
+  }
+
+  let filtered = allClients.filter(c => {
     // 1. Status Filter
     if (crmFilter !== 'all') {
       const cStatus = (c.status || '').toLowerCase();
@@ -478,7 +665,8 @@ function filterCRM() {
     tbody.innerHTML = `
       <tr>
         <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">
-          🔍 No clients match your search filter criteria.
+          <div style="margin-bottom: 0.6rem;">🔍 No clients match your search & category filters.</div>
+          <button class="btn-secondary" style="font-size: 0.78rem; padding: 0.25rem 0.65rem;" onclick="resetCRMFilters()">Reset Search & Filters</button>
         </td>
       </tr>
     `;
@@ -557,7 +745,7 @@ function mockImportCSV() {
           added++;
         }
       }
-      alert(`✅ CSV Import Successful: Imported ${added} client record(s).`);
+      showAdminToast(`✅ CSV Import Successful: Imported ${added} client record(s).`, 'success');
       fetchInitialData();
     };
     reader.readAsText(file);
@@ -566,6 +754,7 @@ function mockImportCSV() {
 }
 
 function renderCRM() {
+  populateCRMCategories();
   filterCRM();
 }
 
@@ -642,11 +831,11 @@ function renderClientDrawer() {
     <!-- Mini KPI Stat Bar -->
     <div class="drawer-kpi-row">
       <div class="drawer-kpi-box">
-        <div class="drawer-kpi-val" style="color:var(--purple-light);">৳${totalInvoiced.toLocaleString()}</div>
+        <div class="drawer-kpi-val" style="color:var(--purple-light);">$${totalInvoiced.toLocaleString()}</div>
         <div class="drawer-kpi-lbl">Invoiced</div>
       </div>
       <div class="drawer-kpi-box">
-        <div class="drawer-kpi-val" style="color:var(--emerald-accent);">৳${totalPaid.toLocaleString()}</div>
+        <div class="drawer-kpi-val" style="color:var(--emerald-accent);">$${totalPaid.toLocaleString()}</div>
         <div class="drawer-kpi-lbl">Paid</div>
       </div>
       <div class="drawer-kpi-box">
@@ -678,6 +867,7 @@ function renderClientDrawer() {
           <div><strong style="color:#fff;">Account Category:</strong> ${client.category}</div>
           <div><strong style="color:#fff;">Account Status:</strong> <span class="badge badge-emerald">${client.status}</span></div>
           <div><strong style="color:#fff;">Total Lifetime Spent:</strong> <span style="color:var(--emerald-accent); font-weight:700;">${client.totalSpent}</span></div>
+          ${client.notes ? `<div><strong style="color:#fff;">Notes & Preferences:</strong> <span style="color:var(--text-main);">${client.notes}</span></div>` : ''}
         </div>
       </div>
 
@@ -824,6 +1014,8 @@ function openAddClientModal() {
   document.getElementById('clientFormPhone').value = '';
   document.getElementById('clientFormEmail').value = '';
   document.getElementById('clientFormStatus').value = 'Active Retainer';
+  const notesEl = document.getElementById('clientFormNotes');
+  if (notesEl) notesEl.value = '';
   document.getElementById('clientFormSubmitBtn').innerText = '💾 Save Client Account';
   document.getElementById('clientFormModal')?.classList.remove('hidden');
 }
@@ -841,6 +1033,8 @@ function openEditClientModal(clientId) {
   document.getElementById('clientFormPhone').value = client.phone || '';
   document.getElementById('clientFormEmail').value = client.email || '';
   document.getElementById('clientFormStatus').value = client.status || 'Active Retainer';
+  const notesEl = document.getElementById('clientFormNotes');
+  if (notesEl) notesEl.value = client.notes || '';
   document.getElementById('clientFormSubmitBtn').innerText = '💾 Save Changes';
   document.getElementById('clientFormModal')?.classList.remove('hidden');
 }
@@ -859,7 +1053,8 @@ async function submitClientForm(event) {
     contactPerson: document.getElementById('clientFormContact').value,
     phone: document.getElementById('clientFormPhone').value,
     email: document.getElementById('clientFormEmail').value,
-    status: document.getElementById('clientFormStatus').value
+    status: document.getElementById('clientFormStatus').value,
+    notes: document.getElementById('clientFormNotes')?.value || ''
   };
 
   const isEdit = !!_editingClientId;
@@ -877,16 +1072,17 @@ async function submitClientForm(event) {
     if (data.success) {
       closeClientFormModal();
       await fetchInitialData();
+      showAdminToast(isEdit ? `✅ Client "${payload.name}" updated successfully!` : `✅ Client "${payload.name}" registered in CRM!`, 'success');
       if (isEdit && currentDrawerClient && currentDrawerClient.id === _editingClientId) {
         currentDrawerClient = (appData.clients || []).find(c => c.id === _editingClientId);
         renderClientDrawer();
       }
     } else {
-      alert('Failed to save client: ' + (data.error || 'Unknown error'));
+      showAdminToast('Failed to save client: ' + (data.error || 'Unknown error'), 'error');
     }
   } catch (err) {
     console.error('Error saving client:', err);
-    alert('Network error while saving client.');
+    showAdminToast('Network error while saving client account.', 'error');
   }
 }
 
@@ -896,6 +1092,7 @@ function toggleDeleteConfirm(show) {
 }
 
 async function executeDeleteClient(clientId) {
+  const clientName = currentDrawerClient?.name || clientId;
   try {
     const res = await fetch(`/api/clients/${clientId}`, { method: 'DELETE' });
     const data = await res.json();
@@ -903,12 +1100,13 @@ async function executeDeleteClient(clientId) {
       showDeleteConfirm = false;
       closeClientDrawer();
       fetchInitialData();
+      showAdminToast(`✅ Client "${clientName}" removed from directory.`, 'success');
     } else {
-      alert('Failed to delete client: ' + (data.error || 'Unknown error'));
+      showAdminToast('Failed to delete client: ' + (data.error || 'Unknown error'), 'error');
     }
   } catch (err) {
     console.error('Error deleting client:', err);
-    alert('Network error while deleting client.');
+    showAdminToast('Network error while deleting client account.', 'error');
   }
 }
 
@@ -943,6 +1141,12 @@ function renderServices() {
 async function generateAISpec() {
   const title = document.getElementById('aiServiceTitle').value || 'Corporate AV Production';
   const category = document.getElementById('aiServiceCategory').value;
+  const btn = document.getElementById('btnGenerateAISpec');
+
+  if (btn) {
+    btn.disabled = true;
+    btn.innerText = '⏳ Generating...';
+  }
 
   try {
     const res = await fetch('/api/services/aispec', {
@@ -952,12 +1156,23 @@ async function generateAISpec() {
     });
     const data = await res.json();
 
-    document.getElementById('aiResultBox').style.display = 'block';
-    document.getElementById('aiResultTitle').innerText = `✨ AI Specification: ${data.title} (${data.category})`;
-    document.getElementById('aiResultDesc').innerText = data.generatedDescription;
-    document.getElementById('aiResultBadges').innerHTML = data.generatedFeatures.map(f => `<span class="badge badge-purple">✓ ${f}</span>`).join('');
+    if (data.success || data.generatedDescription) {
+      document.getElementById('aiResultBox').style.display = 'block';
+      document.getElementById('aiResultTitle').innerText = `✨ AI Specification: ${data.title || title} (${data.category || category})`;
+      document.getElementById('aiResultDesc').innerText = data.generatedDescription || 'No description generated.';
+      document.getElementById('aiResultBadges').innerHTML = (data.generatedFeatures || []).map(f => `<span class="badge badge-purple">✓ ${f}</span>`).join('');
+      showAdminToast('✨ AI Specification generated successfully!', 'success');
+    } else {
+      showAdminToast('Failed to generate AI spec: ' + (data.error || 'Unknown error'), 'error');
+    }
   } catch (err) {
     console.error('Error generating AI spec:', err);
+    showAdminToast('Network error while generating AI spec.', 'error');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerText = '✨ Generate';
+    }
   }
 }
 
@@ -1029,6 +1244,7 @@ function renderKanban() {
               <div style="margin-top: 0.6rem; display:flex; gap:0.4rem;">
                 <button class="btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.725rem; flex:1;" onclick="advanceTaskStage('${t.id}', '${stage}')">▶️ Next Stage</button>
                 <button class="btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.725rem;" onclick="toggleTaskTimer('${t.id}')" id="timerBtn-${t.id}">⏱️ Log Time</button>
+                <button class="btn-secondary" style="padding: 0.25rem 0.4rem; font-size: 0.725rem; color: var(--pink-accent);" onclick="deleteTask('${t.id}', event)" title="Delete Task">🗑️</button>
               </div>
             </div>
           `;
@@ -1086,7 +1302,7 @@ async function submitAssignCrewForm(event) {
   const selectedCrew = Array.from(checkboxes).map(cb => cb.value);
 
   if (selectedCrew.length === 0) {
-    alert('Please select at least one crew member.');
+    showAdminToast('Please select at least one crew member.', 'info');
     return;
   }
 
@@ -1100,10 +1316,13 @@ async function submitAssignCrewForm(event) {
     if (data.success) {
       closeAssignCrewModal();
       await fetchInitialData();
-      alert(`👥 Task crew assigned: ${selectedCrew.join(', ')}`);
+      showAdminToast(`👥 Task crew assigned: ${selectedCrew.join(', ')}`, 'success');
+    } else {
+      showAdminToast('Failed to assign crew: ' + (data.error || 'Unknown error'), 'error');
     }
   } catch (err) {
     console.error('Error assigning crew to task:', err);
+    showAdminToast('Network error while assigning crew.', 'error');
   }
 }
 
@@ -1233,7 +1452,11 @@ function renderWorkloadMeter() {
   if (!container || !appData.team) return;
 
   const html = appData.team.map(emp => {
-    const assignedTasks = appData.tasks.filter(t => t.assignee && t.assignee.toLowerCase().includes(emp.name.split(' ')[0].toLowerCase()));
+    const empFirstName = emp.name.split(' ')[0].toLowerCase();
+    const assignedTasks = (appData.tasks || []).filter(t => {
+      const allAssignees = [...(t.assignees || []), t.assignee].filter(Boolean);
+      return allAssignees.some(a => a.toLowerCase().includes(empFirstName));
+    });
     const capacityPct = Math.min(100, Math.round((assignedTasks.length / 5) * 100));
     const meterColor = capacityPct > 80 ? '#ec4899' : (capacityPct > 50 ? '#a855f7' : '#22c55e');
 
@@ -1259,18 +1482,64 @@ let activeTimers = {};
 function toggleTaskTimer(taskId) {
   const btn = document.getElementById(`timerBtn-${taskId}`);
   if (activeTimers[taskId]) {
+    const elapsedSeconds = activeTimers[taskId].seconds || 0;
     clearInterval(activeTimers[taskId].interval);
     delete activeTimers[taskId];
     if (btn) btn.innerText = '⏱️ Log Time';
-    alert(`⏱️ Time logging completed for task ${taskId}.`);
+    
+    // Save logged time to API
+    fetch(`/api/tasks/${taskId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ timeLogged: elapsedSeconds })
+    }).then(() => fetchInitialData()).catch(err => console.error('Error logging task time:', err));
+
+    const mins = Math.floor(elapsedSeconds / 60);
+    const secs = elapsedSeconds % 60;
+    showAdminToast(`⏱️ ${mins}m ${secs}s logged for task.`, 'success');
   } else {
-    let seconds = 0;
     activeTimers[taskId] = {
+      seconds: 0,
       interval: setInterval(() => {
-        seconds++;
-        if (btn) btn.innerText = `⏱️ ${Math.floor(seconds / 60)}m ${seconds % 60}s`;
+        if (activeTimers[taskId]) {
+          activeTimers[taskId].seconds++;
+          const sec = activeTimers[taskId].seconds;
+          if (btn) btn.innerText = `⏱️ ${Math.floor(sec / 60)}m ${sec % 60}s`;
+        }
       }, 1000)
     };
+  }
+}
+
+async function deleteTask(taskId, event) {
+  if (event) event.stopPropagation();
+  const task = (appData.tasks || []).find(t => t.id === taskId);
+  const title = task?.title || taskId;
+  const btn = event?.currentTarget;
+  if (btn && !btn.dataset.confirming) {
+    btn.dataset.confirming = 'true';
+    btn.innerText = '❓ Confirm';
+    setTimeout(() => {
+      if (btn) {
+        delete btn.dataset.confirming;
+        btn.innerText = '🗑️';
+      }
+    }, 3000);
+    return;
+  }
+
+  try {
+    const res = await fetch(`/api/tasks/${taskId}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (data.success) {
+      await fetchInitialData();
+      showAdminToast(`🗑️ Task "${title}" deleted.`, 'success');
+    } else {
+      showAdminToast('Failed to delete task: ' + (data.error || 'Unknown error'), 'error');
+    }
+  } catch (err) {
+    console.error('Error deleting task:', err);
+    showAdminToast('Network error while deleting task.', 'error');
   }
 }
 
@@ -1307,10 +1576,11 @@ async function generateTaskAIBrief() {
     const data = await res.json();
     if (data.success) {
       document.getElementById('newTaskDescription').value = data.generatedBrief;
-      alert(`✨ AI Creative Brief generated for "${title}"!\nShot list, concept hook, and timeline auto-built.`);
+      showAdminToast(`✨ AI Creative Brief generated for "${title}"!`, 'info');
     }
   } catch (err) {
     console.error('Error generating AI brief:', err);
+    showAdminToast('Network error generating AI brief.', 'error');
   }
 }
 
@@ -1324,10 +1594,11 @@ async function triggerLeadOnboardingEmail(leadId) {
     const data = await res.json();
     if (data.success) {
       navigator.clipboard.writeText(data.magicLink);
-      alert(`✉️ Client Portal Magic Link Generated for ${data.clientName}!\n\nMagic URL:\n${data.magicLink}\n\nCopied to clipboard!`);
+      showAdminToast(`✉️ Magic Link copied to clipboard for ${data.clientName}!`, 'success');
     }
   } catch (err) {
     console.error('Error generating onboarding email:', err);
+    showAdminToast('Error generating magic link.', 'error');
   }
 }
 
@@ -1348,17 +1619,20 @@ async function submitNewTask(event) {
     const data = await res.json();
     if (data.success) {
       closeAddTaskModal();
-      fetchInitialData();
-      alert(`📌 Task "${title}" created successfully and notified crew member on Telegram!`);
+      await fetchInitialData();
+      showAdminToast(`📌 Task "${title}" created and crew notified!`, 'success');
+    } else {
+      showAdminToast('Failed to create task: ' + (data.error || 'Unknown error'), 'error');
     }
   } catch (err) {
     console.error('Error creating task:', err);
+    showAdminToast('Network error while creating task.', 'error');
   }
 }
 
 async function advanceTaskStage(taskId, currentStage) {
   if (currentStage === 'Approved') {
-    alert('✅ Task is already in "Approved" final stage!');
+    showAdminToast('✅ Task is already in "Approved" final stage!', 'info');
     return;
   }
   const stages = ['Strategy', 'Scripting', 'Shooting', 'Editing', 'Client Review', 'Approved'];
@@ -1375,24 +1649,36 @@ async function advanceTaskStage(taskId, currentStage) {
     const data = await res.json();
     if (data.success) {
       if (nextStage === 'Editing') {
-        alert(`🎬 Task advanced to "Editing"!\nAssigned editor notified via Telegram (AUT-001).`);
+        showAdminToast('🎬 Task advanced to "Editing"! Assigned editor notified via Telegram.', 'success');
       } else if (nextStage === 'Client Review') {
-        alert(`📩 Task advanced to "Client Review"!\nClient representative sent Review Room link via Telegram (AUT-004).`);
+        showAdminToast('📩 Task advanced to "Client Review"! Review Room link sent via Telegram.', 'success');
+      } else {
+        showAdminToast(`▶️ Task advanced to "${nextStage}".`, 'success');
       }
       fetchInitialData();
     }
   } catch (err) {
     console.error('Error advancing task:', err);
+    showAdminToast('Network error while advancing task stage.', 'error');
   }
 }
 
 async function openAddExpenseModal() {
-  const title = prompt('Enter Expense Description (e.g., Studio Internet Bill):');
-  if (!title) return;
-  const category = prompt('Enter Category (e.g., Internet, Software, Utilities, Gear):', 'Utilities') || 'Utilities';
-  const amountStr = prompt('Enter Amount in USD ($):', '150');
-  if (!amountStr) return;
-  const amount = Number(amountStr) || 0;
+  document.getElementById('expenseFormTitle').value = '';
+  document.getElementById('expenseFormCategory').value = 'Utilities';
+  document.getElementById('expenseFormAmount').value = '';
+  document.getElementById('addExpenseModal')?.classList.remove('hidden');
+}
+
+function closeAddExpenseModal() {
+  document.getElementById('addExpenseModal')?.classList.add('hidden');
+}
+
+async function submitAddExpenseForm(event) {
+  event.preventDefault();
+  const title = document.getElementById('expenseFormTitle').value.trim();
+  const category = document.getElementById('expenseFormCategory').value;
+  const amount = Number(document.getElementById('expenseFormAmount').value) || 0;
 
   try {
     const res = await fetch('/api/expenses', {
@@ -1407,11 +1693,15 @@ async function openAddExpenseModal() {
     });
     const data = await res.json();
     if (data.success) {
-      alert(`✅ Expense logged: ${title} (-$${amount})`);
-      fetchInitialData();
+      closeAddExpenseModal();
+      await fetchInitialData();
+      showAdminToast(`✅ Expense logged: ${title} (-$${amount})`, 'success');
+    } else {
+      showAdminToast('Failed to log expense: ' + (data.error || 'Unknown error'), 'error');
     }
   } catch (err) {
     console.error('Error logging expense:', err);
+    showAdminToast('Network error while logging expense.', 'error');
   }
 }
 
@@ -1441,7 +1731,7 @@ function renderTeam() {
           <div style="display: flex; justify-content: flex-end; gap: 0.4rem;">
             <button class="btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.78rem; color: #38bdf8;" onclick="generateUserAccessCard('${t.phone}', '${t.id}', 'team', '${t.email}')">🔑 Access Card</button>
             <button class="btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.78rem;" onclick="openEditEmployeeModal('${t.id}')">✏️ Edit</button>
-            <button class="btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.78rem; color: var(--pink-accent); border-color: rgba(239, 68, 68, 0.3);" onclick="executeDeleteEmployee('${t.id}')">🗑️ Delete</button>
+            <button class="btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.78rem; color: var(--pink-accent); border-color: rgba(239, 68, 68, 0.3);" onclick="executeDeleteEmployee('${t.id}', event)">🗑️ Delete</button>
           </div>
         </td>
       </tr>
@@ -1589,7 +1879,7 @@ function renderPayrollCalculator() {
 
 function exportPayrollReport() {
   if (!appData.team || appData.team.length === 0) {
-    alert('No crew members on record to export.');
+    showAdminToast('No crew members on record to export.', 'info');
     return;
   }
 
@@ -1614,10 +1904,10 @@ function exportPayrollReport() {
   text += `\nGRAND TOTAL PAYROLL: BDT ${grandTotal.toLocaleString()} (~ $${Math.round(grandTotal / 110).toLocaleString()} USD)\n`;
 
   navigator.clipboard.writeText(text).then(() => {
-    alert('📄 Monthly Payroll Summary copied to clipboard!');
+    showAdminToast('📄 Monthly Payroll Summary copied to clipboard!', 'success');
   }).catch(err => {
     console.error('Failed to copy payroll report:', err);
-    alert(text);
+    showAdminToast('Failed to copy report to clipboard. Check browser permissions.', 'error');
   });
 }
 
@@ -1690,18 +1980,30 @@ async function submitEmployeeForm(event) {
     if (data.success) {
       closeEmployeeFormModal();
       await fetchInitialData();
+      showAdminToast(`✅ Crew member profile ${isEdit ? 'updated' : 'created'} successfully.`, 'success');
     } else {
-      alert('Failed to save team member: ' + (data.error || 'Unknown error'));
+      showAdminToast('Failed to save team member: ' + (data.error || 'Unknown error'), 'error');
     }
   } catch (err) {
     console.error('Error saving team member:', err);
-    alert('Network error while saving team member.');
+    showAdminToast('Network error while saving team member.', 'error');
   }
 }
 
-async function executeDeleteEmployee(empId) {
+async function executeDeleteEmployee(empId, event) {
+  if (event) event.stopPropagation();
   const member = (appData.team || []).find(t => t.id === empId);
-  if (!confirm(`Are you sure you want to remove "${member?.name || empId}" from the crew directory?`)) {
+  const btn = event?.currentTarget;
+
+  if (btn && !btn.dataset.confirming) {
+    btn.dataset.confirming = 'true';
+    btn.innerText = '❓ Confirm';
+    setTimeout(() => {
+      if (btn) {
+        delete btn.dataset.confirming;
+        btn.innerText = '🗑️ Delete';
+      }
+    }, 3000);
     return;
   }
 
@@ -1709,13 +2011,14 @@ async function executeDeleteEmployee(empId) {
     const res = await fetch(`/api/team/${empId}`, { method: 'DELETE' });
     const data = await res.json();
     if (data.success) {
-      fetchInitialData();
+      await fetchInitialData();
+      showAdminToast(`🗑️ Team member "${member?.name || empId}" removed.`, 'success');
     } else {
-      alert('Failed to delete team member: ' + (data.error || 'Unknown error'));
+      showAdminToast('Failed to delete team member: ' + (data.error || 'Unknown error'), 'error');
     }
   } catch (err) {
     console.error('Error deleting team member:', err);
-    alert('Network error while deleting team member.');
+    showAdminToast('Network error while deleting team member.', 'error');
   }
 }
 
@@ -1776,36 +2079,73 @@ function renderPaymentLogs() {
   `).join('');
 }
 
+function openVerifyPaymentModal(invoiceId) {
+  document.getElementById('verifyPaymentInvoiceId').value = invoiceId;
+  document.getElementById('verifyPaymentTrxId').value = `TRX-${Date.now().toString().slice(-6)}`;
+  document.getElementById('verifyPaymentModal')?.classList.remove('hidden');
+}
+
+function closeVerifyPaymentModal() {
+  document.getElementById('verifyPaymentModal')?.classList.add('hidden');
+}
+
+async function submitVerifyPaymentForm(event) {
+  event.preventDefault();
+  const invoiceId = document.getElementById('verifyPaymentInvoiceId').value;
+  const method = document.getElementById('verifyPaymentMethod').value;
+  const trxId = document.getElementById('verifyPaymentTrxId').value.trim();
+  const inv = (appData.invoices || []).find(i => i.id === invoiceId);
+
+  try {
+    const res = await fetch(`/api/invoices/${invoiceId}/pay`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        method,
+        trxId,
+        payerName: inv?.clientName || 'Client'
+      })
+    });
+    const data = await res.json();
+    if (data.success) {
+      closeVerifyPaymentModal();
+      await fetchInitialData();
+      showAdminToast(`✅ Payment of $${inv?.amount || 0} USD verified for invoice ${invoiceId}! Client notified via Telegram.`, 'success');
+    } else {
+      showAdminToast('Failed to verify payment: ' + (data.error || 'Unknown error'), 'error');
+    }
+  } catch (err) {
+    console.error('Error processing payment verification:', err);
+    showAdminToast('Network error while verifying payment.', 'error');
+  }
+}
+
 async function updateInvoiceStatus(invoiceId, newStatus) {
   openInvoiceActionId = null;
 
   if (newStatus === 'Paid') {
-    const inv = (appData.invoices || []).find(i => i.id === invoiceId);
-    const method = prompt(`💳 Payment Verification for Invoice ${invoiceId}\nEnter Payment Method (e.g. Bkash, Nagad, Bank Wire, Credit Card):`, 'Bkash / Nagad Direct');
-    if (!method) return;
-    const trxId = prompt(`Enter Transaction Reference / TRX ID / Bank Ref:`, `TRX-${Date.now().toString().slice(-6)}`);
-    if (!trxId) return;
-
-    try {
-      const res = await fetch(`/api/invoices/${invoiceId}/pay`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          method,
-          trxId,
-          payerName: inv?.clientName || 'Client'
-        })
-      });
-      const data = await res.json();
-      if (data.success) {
-        alert(`✅ Payment of $${inv?.amount || 0} USD verified for invoice ${invoiceId}!\nClient notified via Telegram (AUT-005).`);
-        await fetchInitialData();
-        return;
-      }
-    } catch (err) {
-      console.error('Error processing payment verification:', err);
-    }
+    openVerifyPaymentModal(invoiceId);
+    return;
   }
+
+  try {
+    const res = await fetch(`/api/invoices/${invoiceId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: newStatus })
+    });
+    const data = await res.json();
+    if (data.success) {
+      await fetchInitialData();
+      showAdminToast(`📄 Invoice status updated to ${newStatus}.`, 'success');
+    } else {
+      showAdminToast('Failed to update status: ' + (data.error || 'Unknown error'), 'error');
+    }
+  } catch (err) {
+    console.error('Error updating invoice status:', err);
+    showAdminToast('Network error updating invoice status.', 'error');
+  }
+}
 
   try {
     const res = await fetch(`/api/invoices/${invoiceId}`, {
@@ -2098,20 +2438,22 @@ async function approveExpenseTier(tier) {
     });
     const data = await res.json();
     if (data.success) {
-      alert(`✅ Tier ${tier} approval registered for claim ${_inspectorExpId}!\nNew Status: ${data.expense.status}`);
+      showAdminToast(`✅ Tier ${tier} approval registered for claim ${_inspectorExpId}!`, 'success');
       closeReceiptInspectorModal();
       await fetchInitialData();
+    } else {
+      showAdminToast('Failed to register approval: ' + (data.error || 'Unknown error'), 'error');
     }
   } catch (err) {
     console.error(`Error approving Tier ${tier} expense:`, err);
+    showAdminToast(`Network error approving Tier ${tier} expense.`, 'error');
   }
 }
 
 async function rejectExpenseClaim() {
   if (!_inspectorExpId) return;
 
-  const note = prompt('Enter rejection reason for this expense claim:', 'Receipt illegible / unapproved budget category.');
-  if (!note) return;
+  const note = 'Receipt unapproved or illegible';
 
   try {
     const res = await fetch(`/api/expenses/${_inspectorExpId}/reject`, {
@@ -2121,18 +2463,15 @@ async function rejectExpenseClaim() {
     });
     const data = await res.json();
     if (data.success) {
-      alert(`❌ Expense claim ${_inspectorExpId} has been REJECTED.`);
+      showAdminToast(`❌ Expense claim ${_inspectorExpId} has been rejected.`, 'info');
       closeReceiptInspectorModal();
       await fetchInitialData();
+    } else {
+      showAdminToast('Failed to reject claim: ' + (data.error || 'Unknown error'), 'error');
     }
   } catch (err) {
     console.error('Error rejecting expense claim:', err);
-  }
-}
-      fetchInitialData();
-    }
-  } catch (err) {
-    console.error('Error approving expense:', err);
+    showAdminToast('Network error rejecting expense claim.', 'error');
   }
 }
 
@@ -2220,7 +2559,7 @@ function generateInvoicePDF(invoiceId) {
 
   const invoice = (appData.invoices || []).find(i => i.id === invoiceId);
   if (!invoice) {
-    alert('Invoice record not found.');
+    showAdminToast('Invoice record not found.', 'error');
     return;
   }
 
@@ -2228,7 +2567,7 @@ function generateInvoicePDF(invoiceId) {
 
   const { jsPDF } = window.jspdf || {};
   if (!jsPDF) {
-    alert('PDF generator library is initializing... Please try again in a moment.');
+    showAdminToast('PDF generator library is initializing... Please try again in a moment.', 'info');
     return;
   }
 
@@ -2505,7 +2844,7 @@ function addInvoiceLineItem() {
 
 function removeInvoiceLineItem(index) {
   if (invoiceLineItems.length <= 1) {
-    alert('An invoice must have at least one line item.');
+    showAdminToast('An invoice must have at least one line item.', 'info');
     return;
   }
   invoiceLineItems.splice(index, 1);
@@ -2583,7 +2922,7 @@ async function submitCreateInvoice(event, forceStatus) {
   const validItems = invoiceLineItems.filter(i => i.description.trim() !== '');
 
   if (validItems.length === 0) {
-    alert('Please enter at least one item description.');
+    showAdminToast('Please enter at least one item description.', 'info');
     return;
   }
 
@@ -2606,11 +2945,14 @@ async function submitCreateInvoice(event, forceStatus) {
     const data = await res.json();
     if (data.success) {
       closeCreateInvoiceModal();
-      fetchInitialData();
-      alert(`📄 Invoice "${data.invoice.id}" created successfully for ${clientName}!`);
+      await fetchInitialData();
+      showAdminToast(`📄 Invoice "${data.invoice.id}" created successfully for ${clientName}!`, 'success');
+    } else {
+      showAdminToast('Failed to create invoice: ' + (data.error || 'Unknown error'), 'error');
     }
   } catch (err) {
     console.error('Error creating invoice:', err);
+    showAdminToast('Network error while creating invoice.', 'error');
   }
 }
 
@@ -2642,7 +2984,7 @@ function renderAssets() {
               <button class="btn-secondary" style="padding:0.2rem 0.5rem; font-size:0.75rem; color:var(--cyan-accent);" onclick="checkOutAsset('${a.id}')">📤 Check Out</button>
             `}
             <button class="btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.78rem;" onclick="openEditAssetModal('${a.id}')">✏️ Edit</button>
-            <button class="btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.78rem; color: var(--pink-accent); border-color: rgba(239, 68, 68, 0.3);" onclick="executeDeleteAsset('${a.id}')">🗑️ Delete</button>
+            <button class="btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.78rem; color: var(--pink-accent); border-color: rgba(239, 68, 68, 0.3);" onclick="promptDeleteAsset(this, '${a.id}')">🗑️ Delete</button>
           </div>
         </td>
       </tr>
@@ -2653,21 +2995,37 @@ function renderAssets() {
 }
 
 // BC-9: Equipment Check-Out & Check-In Workflow Logic
-async function checkOutAsset(assetId) {
+let _activeCheckInAssetId = null;
+
+function checkOutAsset(assetId) {
   const asset = (appData.assets || []).find(a => a.id === assetId);
   if (!asset) return;
 
-  const teamList = (appData.team || []).map((t, idx) => `${idx + 1}. ${t.name} (${t.role})`).join('\n');
-  const teamPrompt = `📤 Check Out "${asset.name}"\nSelect crew member number or enter name:\n\n${teamList || '1. Farhan Ahmed (Video Director)'}`;
-  
-  const selected = prompt(teamPrompt, '1');
-  if (!selected) return;
+  document.getElementById('checkoutAssetId').value = assetId;
+  document.getElementById('checkoutModalTitle').innerText = `📤 Check Out: ${asset.name}`;
+  document.getElementById('checkoutModalSubtitle').innerText = `Select crew member to borrow item (${asset.id})`;
 
-  let borrower = selected.trim();
-  const numIndex = parseInt(selected) - 1;
-  if (!isNaN(numIndex) && appData.team && appData.team[numIndex]) {
-    borrower = appData.team[numIndex].name;
+  const select = document.getElementById('checkoutTeamSelect');
+  if (select) {
+    select.innerHTML = (appData.team || []).map(t => `<option value="${t.name}">${t.name} (${t.role})</option>`).join('');
+    if (!appData.team || appData.team.length === 0) {
+      select.innerHTML = '<option value="Farhan Ahmed">Farhan Ahmed (Video Director)</option>';
+    }
   }
+
+  document.getElementById('checkoutAssetModal')?.classList.remove('hidden');
+}
+
+function closeCheckoutAssetModal() {
+  document.getElementById('checkoutAssetModal')?.classList.add('hidden');
+}
+
+async function confirmCheckOutAsset(event) {
+  event.preventDefault();
+
+  const assetId = document.getElementById('checkoutAssetId').value;
+  const borrower = document.getElementById('checkoutTeamSelect').value;
+  const asset = (appData.assets || []).find(a => a.id === assetId);
 
   try {
     const res = await fetch(`/api/assets/${assetId}/checkout`, {
@@ -2677,19 +3035,43 @@ async function checkOutAsset(assetId) {
     });
     const data = await res.json();
     if (data.success) {
-      alert(`📤 ${asset.name} checked out to ${borrower}! Status set to "In Use".`);
+      closeCheckoutAssetModal();
+      showAdminToast(`📤 ${asset?.name || 'Equipment'} checked out to ${borrower}! Status set to "In Use".`, 'success');
       fetchInitialData();
+    } else {
+      showAdminToast('Failed to check out asset: ' + (data.error || 'Unknown error'), 'error');
     }
   } catch (err) {
     console.error('Error checking out asset:', err);
+    showAdminToast('Network error while checking out asset.', 'error');
   }
 }
 
-async function checkInAsset(assetId) {
+function checkInAsset(assetId) {
   const asset = (appData.assets || []).find(a => a.id === assetId);
   if (!asset) return;
 
-  if (!confirm(`📥 Confirm return / check-in of "${asset.name}" to studio vault?`)) return;
+  _activeCheckInAssetId = assetId;
+  const bodyText = document.getElementById('checkInModalBodyText');
+  if (bodyText) {
+    bodyText.innerHTML = `Confirm return / check-in of <strong>${asset.name}</strong> to the studio vault?`;
+  }
+
+  const confirmBtn = document.getElementById('confirmCheckInBtn');
+  if (confirmBtn) {
+    confirmBtn.onclick = () => confirmCheckInAsset(assetId);
+  }
+
+  document.getElementById('checkInAssetModal')?.classList.remove('hidden');
+}
+
+function closeCheckInAssetModal() {
+  document.getElementById('checkInAssetModal')?.classList.add('hidden');
+  _activeCheckInAssetId = null;
+}
+
+async function confirmCheckInAsset(assetId) {
+  const asset = (appData.assets || []).find(a => a.id === assetId);
 
   try {
     const res = await fetch(`/api/assets/${assetId}/checkin`, {
@@ -2698,11 +3080,15 @@ async function checkInAsset(assetId) {
     });
     const data = await res.json();
     if (data.success) {
-      alert(`📥 ${asset.name} returned to studio inventory! Status reset to "Good".`);
+      closeCheckInAssetModal();
+      showAdminToast(`📥 ${asset?.name || 'Equipment'} returned to studio inventory! Status reset to "Good".`, 'success');
       fetchInitialData();
+    } else {
+      showAdminToast('Failed to check in asset: ' + (data.error || 'Unknown error'), 'error');
     }
   } catch (err) {
     console.error('Error checking in asset:', err);
+    showAdminToast('Network error while checking in asset.', 'error');
   }
 }
 
@@ -2847,53 +3233,70 @@ async function submitAssetForm(event) {
     const data = await res.json();
     if (data.success) {
       closeAssetFormModal();
+      showAdminToast(isEdit ? `✅ Asset "${name}" updated successfully.` : `✅ Asset "${name}" registered!`, 'success');
       await fetchInitialData();
 
-      // Check if maintenance ticket should be generated
-      if (condition === 'Needs Repair' || condition === 'Damaged') {
-        if (confirm(`⚠️ Asset "${name}" marked as "${condition}". Log a support repair ticket in HR Ops?`)) {
-          await fetch('/api/tickets', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              category: 'Equipment Repair',
-              title: `Repair Request: ${name}`,
-              description: `Equipment marked as ${condition}. Requires inspection / maintenance.`,
-              urgency: 'High',
-              loggedBy: window.currentUser?.profile?.name || 'Mahmudul Hasan',
-              assignedTo: 'Maintenance Lead'
-            })
-          });
-          alert('🔧 Support repair ticket logged in HR Ops!');
-          await fetchInitialData();
-        }
+      // Auto-generate maintenance ticket if condition is Needs Repair / Damaged
+      if (condition === 'Needs Maintenance' || condition === 'Needs Repair' || condition === 'Damaged') {
+        await fetch('/api/tickets', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            category: 'Equipment Repair',
+            title: `Repair Request: ${name}`,
+            description: `Equipment marked as ${condition}. Requires inspection / maintenance.`,
+            urgency: 'High',
+            loggedBy: window.currentUser?.profile?.name || 'Mahmudul Hasan',
+            assignedTo: 'Maintenance Lead'
+          })
+        });
+        showAdminToast(`🔧 Asset marked as "${condition}". Support repair ticket logged automatically in HR Ops.`, 'info');
+        await fetchInitialData();
       }
     } else {
-      alert('Failed to save asset: ' + (data.error || 'Unknown error'));
+      showAdminToast('Failed to save asset: ' + (data.error || 'Unknown error'), 'error');
     }
   } catch (err) {
     console.error('Error saving asset:', err);
-    alert('Network error while saving asset.');
+    showAdminToast('Network error while saving asset.', 'error');
   }
+}
+
+function promptDeleteAsset(btn, assetId) {
+  if (btn.dataset.confirming === 'true') {
+    executeDeleteAsset(assetId);
+    return;
+  }
+  btn.dataset.confirming = 'true';
+  btn.innerText = '⚠️ Confirm Delete?';
+  btn.style.backgroundColor = 'rgba(239, 68, 68, 0.2)';
+  btn.style.color = '#ef4444';
+
+  setTimeout(() => {
+    if (btn && btn.dataset) {
+      btn.dataset.confirming = 'false';
+      btn.innerText = '🗑️ Delete';
+      btn.style.backgroundColor = '';
+      btn.style.color = 'var(--pink-accent)';
+    }
+  }, 4000);
 }
 
 async function executeDeleteAsset(assetId) {
   const asset = (appData.assets || []).find(a => a.id === assetId);
-  if (!confirm(`Are you sure you want to remove "${asset?.name || assetId}" from the equipment tracker?`)) {
-    return;
-  }
 
   try {
     const res = await fetch(`/api/assets/${assetId}`, { method: 'DELETE' });
     const data = await res.json();
     if (data.success) {
+      showAdminToast(`🗑️ Asset "${asset?.name || assetId}" removed from equipment tracker.`, 'success');
       fetchInitialData();
     } else {
-      alert('Failed to delete asset: ' + (data.error || 'Unknown error'));
+      showAdminToast('Failed to delete asset: ' + (data.error || 'Unknown error'), 'error');
     }
   } catch (err) {
     console.error('Error deleting asset:', err);
-    alert('Network error while deleting asset.');
+    showAdminToast('Network error while deleting asset.', 'error');
   }
 }
 
@@ -2911,16 +3314,19 @@ async function approveDeliverableCut() {
     });
     const data = await res.json();
     if (data.success) {
-      const invMsg = data.invoice ? `\n📄 Draft Invoice "${data.invoice.id}" has been auto-created in Financials.` : '';
-      alert(`🎉 Deliverable cut for "${rev?.projectName || 'Project'}" approved!${invMsg}\nTask auto-advanced to "Approved".`);
+      const invMsg = data.invoice ? ` Draft Invoice "${data.invoice.id}" auto-created.` : '';
+      showAdminToast(`🎉 Deliverable cut for "${rev?.projectName || 'Project'}" approved!${invMsg}`, 'success');
       await fetchInitialData();
       if (data.invoice) {
         switchTab('financials');
         switchFinancialsTab('invoices');
       }
+    } else {
+      showAdminToast('Failed to approve deliverable cut: ' + (data.error || 'Unknown error'), 'error');
     }
   } catch (err) {
     console.error('Error approving deliverable cut:', err);
+    showAdminToast('Network error while approving deliverable cut.', 'error');
   }
 }
 
@@ -2930,18 +3336,9 @@ function generateShareLink(reviewId) {
   const shareUrl = `${window.location.origin}/api/review-share/${rev.id}`;
   
   navigator.clipboard.writeText(shareUrl).then(() => {
-    let toast = document.getElementById('shareToast');
-    if (!toast) {
-      toast = document.createElement('div');
-      toast.id = 'shareToast';
-      toast.className = 'share-toast';
-      document.body.appendChild(toast);
-    }
-    toast.innerHTML = `🔗 Public Client Share Link Copied to Clipboard!<br><small style="font-weight:400; opacity:0.9;">${shareUrl}</small>`;
-    toast.style.display = 'flex';
-    setTimeout(() => { toast.style.display = 'none'; }, 4000);
+    showAdminToast(`🔗 Public Client Share Link copied to clipboard!`, 'success');
   }).catch(err => {
-    alert(`Public Client Share Link: ${shareUrl}`);
+    showAdminToast(`🔗 Share Link: ${shareUrl}`, 'info');
   });
 }
 
@@ -3084,9 +3481,12 @@ async function submitCommentReply(commentId, event) {
     if (data.success) {
       if (input) input.value = '';
       fetchInitialData();
+    } else {
+      showAdminToast('Failed to post reply: ' + (data.error || 'Unknown error'), 'error');
     }
   } catch (err) {
     console.error('Error submitting comment reply:', err);
+    showAdminToast('Network error while posting reply.', 'error');
   }
 }
 
@@ -3101,10 +3501,16 @@ async function toggleResolveComment(commentId) {
   if (!rev) return;
 
   try {
-    await fetch(`/api/reviews/${rev.id}/comments/${commentId}/resolve`, { method: 'POST' });
-    fetchInitialData();
+    const res = await fetch(`/api/reviews/${rev.id}/comments/${commentId}/resolve`, { method: 'POST' });
+    const data = await res.json();
+    if (data.success) {
+      fetchInitialData();
+    } else {
+      showAdminToast('Failed to update resolution status.', 'error');
+    }
   } catch (err) {
     console.error('Error resolving comment:', err);
+    showAdminToast('Network error while updating comment status.', 'error');
   }
 }
 
@@ -3132,7 +3538,7 @@ async function submitNewComment() {
   const timestamp = `${mins}:${secs}`;
 
   try {
-    await fetch(`/api/reviews/${rev.id}/comments`, {
+    const res = await fetch(`/api/reviews/${rev.id}/comments`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -3144,12 +3550,19 @@ async function submitNewComment() {
         drawings: currentDrawings
       })
     });
-    if (input) input.value = '';
-    currentDrawings = [];
-    if (typeof clearCanvas === 'function') clearCanvas();
-    fetchInitialData();
+    const data = await res.json();
+    if (data.success) {
+      if (input) input.value = '';
+      currentDrawings = [];
+      if (typeof clearCanvas === 'function') clearCanvas();
+      showAdminToast('💬 Timestamped feedback logged!', 'success');
+      fetchInitialData();
+    } else {
+      showAdminToast('Failed to add comment: ' + (data.error || 'Unknown error'), 'error');
+    }
   } catch (err) {
     console.error('Error submitting comment:', err);
+    showAdminToast('Network error while submitting comment.', 'error');
   }
 }
 
@@ -3189,13 +3602,14 @@ async function submitNewReview(event) {
     if (data.success && data.review) {
       closeNewReviewModal();
       currentReviewId = data.review.id;
+      showAdminToast(`🎬 Review session launched for "${payload.projectName}"!`, 'success');
       await fetchInitialData();
     } else {
-      alert('Failed to launch review session.');
+      showAdminToast('Failed to launch review session: ' + (data.error || 'Unknown error'), 'error');
     }
   } catch (err) {
     console.error('Error launching new review session:', err);
-    alert('Network error while launching review session.');
+    showAdminToast('Network error while launching review session.', 'error');
   }
 }
 
@@ -3317,134 +3731,11 @@ function drawMarkupForCurrentTime() {
   }
 }
 
-/* -------------------------------------------------------------
- * 📱 Telegram Bot Mobile Simulator Engine
- * ------------------------------------------------------------- */
-function toggleTelegramSimulator() {
-  const modal = document.getElementById('telegramSimModal');
-  if (modal) modal.classList.toggle('hidden');
-}
-
-async function sendSimCommand(cmdText) {
-  addTgMsg(cmdText, 'user');
-
-  try {
-    const res = await fetch('/api/telegram-simulator', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ command: cmdText })
-    });
-    const data = await res.json();
-    addTgMsg(data.responseText, 'bot', data.inlineButtons);
-  } catch (err) {
-    console.error('Telegram sim error:', err);
-  }
-}
-
-function sendSimInput() {
-  const input = document.getElementById('tgInput');
-  const val = input.value.trim();
-  if (!val) return;
-  input.value = '';
-  sendSimCommand(val);
-}
-
-function getNextKanbanStage(currentStage) {
-  const stages = ['Strategy', 'Scripting', 'Shooting', 'Editing', 'Client Review', 'Approved'];
-  const idx = stages.indexOf(currentStage);
-  if (idx === -1 || idx === stages.length - 1) return currentStage || 'Shooting';
-  return stages[idx + 1];
-}
-
-function replaceTgBtnWithStatus(btnEl, statusHtml) {
-  if (!btnEl) return;
-  const btnGroup = btnEl.closest('.tg-btn-group');
-  if (btnGroup) {
-    btnGroup.innerHTML = `<span class="tg-status-badge">${statusHtml}</span>`;
-  }
-}
-
-function addTgMsg(text, sender, inlineButtons = null) {
-  const body = document.getElementById('tgChatBody');
-  if (!body) return;
-
-  const msgDiv = document.createElement('div');
-  msgDiv.className = `tg-msg ${sender}`;
-  msgDiv.innerHTML = text.replace(/\n/g, '<br>').replace(/\*(.*?)\*/g, '<strong>$1</strong>');
-
-  if (inlineButtons) {
-    const btnGroup = document.createElement('div');
-    btnGroup.className = 'tg-btn-group';
-    inlineButtons.forEach(row => {
-      row.forEach(b => {
-        const btn = document.createElement('button');
-        btn.className = 'tg-inline-btn';
-        btn.innerText = b.text;
-        btn.onclick = (e) => handleSimCallback(b.callback_data, e.target);
-        btnGroup.appendChild(btn);
-      });
-    });
-    msgDiv.appendChild(btnGroup);
-  }
-
-  body.appendChild(msgDiv);
-  body.scrollTop = body.scrollHeight;
-}
-
-async function handleSimCallback(callbackData, btnEl = null) {
-  if (callbackData.startsWith('accept_task:')) {
-    const taskId = callbackData.split(':')[1];
-    const task = (appData.tasks || []).find(t => t.id === taskId);
-    const nextStage = getNextKanbanStage(task?.stage || 'Strategy');
-
-    await advanceTaskStage(taskId, nextStage);
-    replaceTgBtnWithStatus(btnEl, `✅ Accepted — Advanced to ${nextStage}`);
-    addTgMsg(`✅ <strong>Task Assignment ${taskId} Accepted!</strong><br>Stage advanced to <strong>${nextStage}</strong> on Kanban board.`, 'bot');
-
-  } else if (callbackData.startsWith('reject_task:')) {
-    const taskId = callbackData.split(':')[1];
-    replaceTgBtnWithStatus(btnEl, `⚠️ Select Decline Reason Below`);
-    addTgMsg(`⚠️ Please select a reason for declining task <strong>${taskId}</strong>:`, 'bot', [
-      [
-        { text: '📅 Schedule Conflict', callback_data: `reject_reason:${taskId}:Schedule Conflict` },
-        { text: '🔧 Equipment Deficit', callback_data: `reject_reason:${taskId}:Equipment Deficit` }
-      ],
-      [
-        { text: '💊 Personal / Medical Leave', callback_data: `reject_reason:${taskId}:Personal Leave` }
-      ]
-    ]);
-
-  } else if (callbackData.startsWith('reject_reason:')) {
-    const parts = callbackData.split(':');
-    const taskId = parts[1];
-    const reason = parts[2] || 'Reason Unspecified';
-
-    try {
-      await fetch(`/api/tasks/${taskId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ priority: `Decline Note: ${reason}` })
-      });
-    } catch (err) {
-      console.error('Error logging decline note:', err);
-    }
-
-    replaceTgBtnWithStatus(btnEl, `❌ Declined — ${reason}`);
-    addTgMsg(`❌ <strong>Task ${taskId} Declined by Crew Member.</strong><br>Reason: <em>${reason}</em>.<br>Agency Owner has been notified to reassign task.`, 'bot');
-    fetchInitialData();
-
-  } else if (callbackData.startsWith('resolve_comment:')) {
-    const commentId = callbackData.split(':')[1];
-    await toggleResolveComment(commentId);
-    replaceTgBtnWithStatus(btnEl, `✅ Comment Resolved`);
-    addTgMsg(`✅ <strong>Review Comment Resolved!</strong><br>Status updated in Review Room V2.`, 'bot');
-  }
-}
-
 // Mock CSV Importer
 function mockImportCSV() {
-  alert('📥 CSV Import Mockup: Successfully imported 12 client records from clients_export_2026.csv!');
+  showAdminToast('📥 CSV Import Mockup: Successfully imported 12 client records from clients_export_2026.csv!', 'success');
 }
+
 
 // B1: LEADS PIPELINE CRM LOGIC
 let _editingLeadId = null;
@@ -3517,7 +3808,7 @@ function renderLeads() {
                     <button class="btn-secondary" style="padding:0.2rem 0.5rem; font-size:0.72rem;" onclick="advanceLeadStage('${l.id}', '${l.stage}')" title="Advance Stage">
                       ▶
                     </button>
-                    <button class="btn-purple" style="padding:0.2rem 0.5rem; font-size:0.72rem;" onclick="convertLeadToClient('${l.id}')" title="Convert to Active Client Account">
+                    <button class="btn-purple" style="padding:0.2rem 0.5rem; font-size:0.72rem;" onclick="promptConvertLead(this, '${l.id}')" title="Convert to Active Client Account">
                       🏆 Client
                     </button>
                   ` : `<span class="badge badge-emerald" style="font-size:0.7rem;">Won</span>`}
@@ -3597,8 +3888,9 @@ async function submitLeadForm(event) {
     notes: document.getElementById('leadFormNotes').value.trim()
   };
 
-  const url = _editingLeadId ? `/api/leads/${_editingLeadId}` : '/api/leads';
-  const method = _editingLeadId ? 'PUT' : 'POST';
+  const isEdit = !!_editingLeadId;
+  const url = isEdit ? `/api/leads/${_editingLeadId}` : '/api/leads';
+  const method = isEdit ? 'PUT' : 'POST';
 
   try {
     const res = await fetch(url, {
@@ -3609,11 +3901,14 @@ async function submitLeadForm(event) {
     const data = await res.json();
     if (data.success) {
       closeLeadFormModal();
+      showAdminToast(isEdit ? `✅ Lead "${payload.company}" updated successfully!` : `✅ Lead "${payload.company}" saved successfully!`, 'success');
       fetchInitialData();
-      alert(`✅ Lead "${payload.company}" saved successfully!`);
+    } else {
+      showAdminToast('Failed to save lead: ' + (data.error || 'Unknown error'), 'error');
     }
   } catch (err) {
     console.error('Error saving lead:', err);
+    showAdminToast('Network error saving lead.', 'error');
   }
 }
 
@@ -3632,14 +3927,33 @@ async function advanceLeadStage(leadId, currentStage) {
     fetchInitialData();
   } catch (err) {
     console.error('Error advancing lead stage:', err);
+    showAdminToast('Network error advancing lead stage.', 'error');
   }
+}
+
+function promptConvertLead(btn, leadId) {
+  if (btn.dataset.confirming === 'true') {
+    convertLeadToClient(leadId);
+    return;
+  }
+  btn.dataset.confirming = 'true';
+  btn.innerText = '🏆?';
+  btn.style.backgroundColor = 'rgba(234, 179, 8, 0.2)';
+  btn.style.color = '#eab308';
+
+  setTimeout(() => {
+    if (btn && btn.dataset) {
+      btn.dataset.confirming = 'false';
+      btn.innerText = '🏆 Client';
+      btn.style.backgroundColor = '';
+      btn.style.color = '';
+    }
+  }, 4000);
 }
 
 async function convertLeadToClient(leadId) {
   const lead = (appData.leads || []).find(l => l.id === leadId);
   if (!lead) return;
-
-  if (!confirm(`🏆 Convert "${lead.company}" into an active agency client account?`)) return;
 
   try {
     const res = await fetch(`/api/leads/${leadId}/convert`, {
@@ -3648,13 +3962,16 @@ async function convertLeadToClient(leadId) {
     });
     const data = await res.json();
     if (data.success && data.client) {
+      showAdminToast(`🎉 Lead "${lead.company}" successfully converted to active Client (${data.client.id})!`, 'success');
       await fetchInitialData();
-      alert(`🎉 Lead "${lead.company}" successfully converted to active Client (${data.client.id})!`);
       switchTab('crm');
       setTimeout(() => openClientProfile(data.client.id), 200);
+    } else {
+      showAdminToast('Failed to convert lead: ' + (data.error || 'Unknown error'), 'error');
     }
   } catch (err) {
     console.error('Error converting lead to client:', err);
+    showAdminToast('Network error converting lead to client.', 'error');
   }
 }
 
@@ -3717,7 +4034,7 @@ function renderQuotations() {
               📄 PDF
             </button>
             ${!isConverted ? `
-              <button class="btn-purple" style="padding:0.25rem 0.65rem; font-size:0.78rem;" onclick="convertQuoteToInvoice('${q.id}')" title="Convert to Active Client Invoice">
+              <button class="btn-purple" style="padding:0.25rem 0.65rem; font-size:0.78rem;" onclick="convertQuoteToInvoice('${q.id}', event)" title="Convert to Active Client Invoice">
                 ⚡ Convert
               </button>
             ` : `<span class="badge badge-cyan" style="font-size:0.72rem;">Converted</span>`}
@@ -3820,7 +4137,7 @@ async function submitCreateQuote(event, status) {
   const discount = Number(document.getElementById('quoteDiscountValue').value) || 0;
 
   if (!clientName) {
-    alert('Please enter Client or Lead Name.');
+    showAdminToast('Please enter Client or Lead Name.', 'info');
     return;
   }
 
@@ -3846,19 +4163,34 @@ async function submitCreateQuote(event, status) {
     const data = await res.json();
     if (data.success) {
       closeCreateQuoteModal();
-      fetchInitialData();
-      alert(`✅ Quotation "${data.quote.id}" saved successfully!`);
+      await fetchInitialData();
+      showAdminToast(`✅ Quotation "${data.quote.id}" saved successfully!`, 'success');
+    } else {
+      showAdminToast('Failed to create quote: ' + (data.error || 'Unknown error'), 'error');
     }
   } catch (err) {
     console.error('Error creating quote:', err);
+    showAdminToast('Network error while creating quote.', 'error');
   }
 }
 
-async function convertQuoteToInvoice(quoteId) {
+async function convertQuoteToInvoice(quoteId, event) {
+  if (event) event.stopPropagation();
   const quote = (appData.quotes || []).find(q => q.id === quoteId);
   if (!quote) return;
 
-  if (!confirm(`⚡ Convert quotation "${quote.id}" for ${quote.clientName} into an active client Invoice?`)) return;
+  const btn = event?.currentTarget;
+  if (btn && !btn.dataset.confirming) {
+    btn.dataset.confirming = 'true';
+    btn.innerText = '⚡ Confirm Convert';
+    setTimeout(() => {
+      if (btn) {
+        delete btn.dataset.confirming;
+        btn.innerText = '⚡ Convert';
+      }
+    }, 3000);
+    return;
+  }
 
   try {
     const res = await fetch(`/api/quotes/${quoteId}/convert`, {
@@ -3868,20 +4200,22 @@ async function convertQuoteToInvoice(quoteId) {
     const data = await res.json();
     if (data.success && data.invoice) {
       await fetchInitialData();
-      alert(`🎉 Quotation "${quote.id}" converted to Invoice ${data.invoice.id}!`);
-      // Switch to Financials -> Invoices subtab
+      showAdminToast(`🎉 Quotation "${quote.id}" converted to Invoice ${data.invoice.id}!`, 'success');
       switchTab('financials');
       switchFinancialsTab('invoices');
+    } else {
+      showAdminToast('Failed to convert quotation: ' + (data.error || 'Unknown error'), 'error');
     }
   } catch (err) {
     console.error('Error converting quote:', err);
+    showAdminToast('Network error while converting quote.', 'error');
   }
 }
 
 function generateQuotePDF(quoteId) {
   const quote = (appData.quotes || []).find(q => q.id === quoteId);
   if (!quote) {
-    alert('Quotation not found!');
+    showAdminToast('Quotation not found!', 'error');
     return;
   }
 
@@ -4108,7 +4442,7 @@ function renderSocialCalendar() {
               <div style="display:flex; justify-content:flex-end; gap:0.3rem;">
                 <button class="btn-purple" style="padding:0.2rem 0.6rem; font-size:0.75rem;" onclick="openDispatchHubModal('${p.id}')">🚀 1-Click Dispatch</button>
                 <button class="btn-secondary" style="padding:0.2rem 0.5rem; font-size:0.75rem;" onclick="openEditPostModal('${p.id}')">✏️ Edit</button>
-                <button class="btn-secondary" style="padding:0.2rem 0.5rem; font-size:0.75rem; color:var(--pink-accent);" onclick="executeDeletePost('${p.id}')">🗑️</button>
+                <button class="btn-secondary" style="padding:0.2rem 0.5rem; font-size:0.75rem; color:var(--pink-accent);" onclick="promptDeletePost(this, '${p.id}')">🗑️</button>
               </div>
             </td>
           </tr>
@@ -4217,8 +4551,9 @@ async function submitSocialPost(event) {
     status: document.getElementById('postStatusSelect').value
   };
 
-  const url = _editingPostId ? `/api/posts/${_editingPostId}` : '/api/posts';
-  const method = _editingPostId ? 'PUT' : 'POST';
+  const isEdit = !!_editingPostId;
+  const url = isEdit ? `/api/posts/${_editingPostId}` : '/api/posts';
+  const method = isEdit ? 'PUT' : 'POST';
 
   try {
     const res = await fetch(url, {
@@ -4229,11 +4564,14 @@ async function submitSocialPost(event) {
     const data = await res.json();
     if (data.success) {
       closeCreatePostModal();
+      showAdminToast(isEdit ? `✅ Social post "${payload.title}" updated successfully!` : `✅ Social post "${payload.title}" scheduled!`, 'success');
       await fetchInitialData();
-      alert(`✅ Social post "${payload.title}" saved successfully!\nStatus: ${payload.status}`);
+    } else {
+      showAdminToast('Failed to save social post: ' + (data.error || 'Unknown error'), 'error');
     }
   } catch (err) {
     console.error('Error saving social post:', err);
+    showAdminToast('Network error while saving social post.', 'error');
   }
 }
 
@@ -4307,9 +4645,10 @@ function copyDispatchCaption() {
   if (!captionText) return;
 
   navigator.clipboard.writeText(captionText).then(() => {
-    alert('📋 Caption copied to clipboard! You can now paste it directly on the social media page.');
+    showAdminToast('📋 Caption copied to clipboard! Ready to paste.', 'success');
   }).catch(err => {
     console.error('Failed to copy text:', err);
+    showAdminToast('Failed to copy caption to clipboard.', 'error');
   });
 }
 
@@ -4324,12 +4663,15 @@ async function markPostAsPublished() {
     });
     const data = await res.json();
     if (data.success) {
-      alert('✅ Post status updated to PUBLISHED!');
+      showAdminToast('✅ Post status updated to PUBLISHED!', 'success');
       closeDispatchHubModal();
       await fetchInitialData();
+    } else {
+      showAdminToast('Failed to update post status: ' + (data.error || 'Unknown error'), 'error');
     }
   } catch (err) {
     console.error('Error marking post as published:', err);
+    showAdminToast('Network error updating post status.', 'error');
   }
 }
 
@@ -4342,24 +4684,49 @@ async function triggerDispatchTelegramAlert() {
     });
     const data = await res.json();
     if (data.success) {
-      alert('⚡ 1-Click Dispatch alert re-pushed via Telegram!');
+      showAdminToast('⚡ 1-Click Dispatch alert re-pushed via Telegram!', 'success');
+    } else {
+      showAdminToast('Failed to push Telegram alert: ' + (data.error || 'Unknown error'), 'error');
     }
   } catch (err) {
     console.error('Error pushing dispatch alert:', err);
+    showAdminToast('Network error pushing Telegram alert.', 'error');
   }
 }
 
-async function executeDeletePost(postId) {
-  if (!confirm(`Are you sure you want to delete post "${postId}"?`)) return;
+function promptDeletePost(btn, postId) {
+  if (btn.dataset.confirming === 'true') {
+    executeDeletePost(postId);
+    return;
+  }
+  btn.dataset.confirming = 'true';
+  btn.innerText = '⚠️?';
+  btn.style.backgroundColor = 'rgba(239, 68, 68, 0.2)';
+  btn.style.color = '#ef4444';
 
+  setTimeout(() => {
+    if (btn && btn.dataset) {
+      btn.dataset.confirming = 'false';
+      btn.innerText = '🗑️';
+      btn.style.backgroundColor = '';
+      btn.style.color = 'var(--pink-accent)';
+    }
+  }, 4000);
+}
+
+async function executeDeletePost(postId) {
   try {
     const res = await fetch(`/api/posts/${postId}`, { method: 'DELETE' });
     const data = await res.json();
     if (data.success) {
+      showAdminToast(`🗑️ Social post "${postId}" deleted.`, 'success');
       fetchInitialData();
+    } else {
+      showAdminToast('Failed to delete post: ' + (data.error || 'Unknown error'), 'error');
     }
   } catch (err) {
     console.error('Error deleting post:', err);
+    showAdminToast('Network error deleting post.', 'error');
   }
 }
 
@@ -4410,12 +4777,17 @@ async function submitServiceBooking(event) {
     if (data.success) {
       closeServiceBookingModal();
       await fetchInitialData();
-      if (confirm(`🎉 Service booking inquiry for "${payload.company}" received!\nLead ID: ${data.lead.id} created in Lead Pipeline.\n\nWould you like to view this lead in the Leads Pipeline now?`)) {
-        switchTab('leads');
-      }
+      showAdminToast(
+        `🎉 Booking received for "${payload.company}". <a href="#" onclick="switchTab('leads'); event.preventDefault();" style="color:#38bdf8; text-decoration:underline;">View Lead →</a>`,
+        'success',
+        6000
+      );
+    } else {
+      showAdminToast('Failed to submit booking: ' + (data.error || 'Unknown error'), 'error');
     }
   } catch (err) {
     console.error('Error submitting service booking:', err);
+    showAdminToast('Network error while submitting service booking.', 'error');
   }
 }
 
@@ -4424,7 +4796,12 @@ let activeChatClientId = 'CLI-0004';
 
 function selectChatThread(clientId) {
   activeChatClientId = clientId;
-  fetch(`/api/chats/${clientId}/read`, { method: 'PUT' }).then(() => fetchInitialData());
+  fetch(`/api/chats/${clientId}/read`, { method: 'PUT' })
+    .then(() => fetchInitialData())
+    .catch(err => {
+      console.error('Error marking chat thread as read:', err);
+      showAdminToast('Failed to sync thread state.', 'error');
+    });
 }
 
 function renderChatHub() {
@@ -4547,9 +4924,12 @@ async function sendChatMessage(event) {
     if (data.success) {
       if (input) input.value = '';
       fetchInitialData();
+    } else {
+      showAdminToast('Failed to send message: ' + (data.error || 'Unknown error'), 'error');
     }
   } catch (err) {
     console.error('Error sending chat message:', err);
+    showAdminToast('Network error sending message.', 'error');
   }
 }
 
@@ -4622,7 +5002,7 @@ function renderBotConfig() {
           <td><strong>${k.question}</strong></td>
           <td><small style="color:var(--text-muted);">${k.answer}</small></td>
           <td style="text-align:right;">
-            <button class="btn-secondary" style="padding:0.2rem 0.5rem; font-size:0.75rem; color:var(--pink-accent);" onclick="deleteKBItem('${k.id}')">🗑️ Delete</button>
+            <button class="btn-secondary" style="padding:0.2rem 0.5rem; font-size:0.75rem; color:var(--pink-accent);" onclick="promptDeleteKBItem(this, '${k.id}')">🗑️ Delete</button>
           </td>
         </tr>
       `).join('');
@@ -4699,7 +5079,7 @@ function renderBotConfig() {
               <td>${g.linkedClientId || 'Internal Agency'}</td>
               <td style="text-align:right; display:flex; gap:0.4rem; justify-content:flex-end;">
                 <button class="btn-secondary" style="padding:0.2rem 0.5rem; font-size:0.75rem;" onclick="testPostGroup('${g.id}')">⚡ Test Post</button>
-                <button class="btn-secondary" style="padding:0.2rem 0.5rem; font-size:0.75rem; color:var(--pink-accent);" onclick="deleteGroup('${g.id}')">🗑️ Remove</button>
+                <button class="btn-secondary" style="padding:0.2rem 0.5rem; font-size:0.75rem; color:var(--pink-accent);" onclick="promptDeleteGroup(this, '${g.id}')">🗑️ Remove</button>
               </td>
             </tr>
           `).join('');
@@ -4741,22 +5121,45 @@ async function submitAddGroup(e) {
     if (data.success) {
       closeAddGroupModal();
       renderBotConfig();
-      alert(`✅ Telegram group [${name}] registered successfully!`);
+      showAdminToast(`✅ Telegram group [${name}] registered successfully!`, 'success');
     } else {
-      alert('Error adding group: ' + (data.error || 'Failed'));
+      showAdminToast('Error adding group: ' + (data.error || 'Failed'), 'error');
     }
   } catch (err) {
-    alert('Failed to register group: ' + err.message);
+    console.error('Error adding group:', err);
+    showAdminToast('Failed to register group: ' + err.message, 'error');
   }
 }
 
+function promptDeleteGroup(btn, id) {
+  if (btn.dataset.confirming === 'true') {
+    deleteGroup(id);
+    return;
+  }
+  btn.dataset.confirming = 'true';
+  btn.innerText = '⚠️?';
+  btn.style.backgroundColor = 'rgba(239, 68, 68, 0.2)';
+  btn.style.color = '#ef4444';
+
+  setTimeout(() => {
+    if (btn && btn.dataset) {
+      btn.dataset.confirming = 'false';
+      btn.innerText = '🗑️ Remove';
+      btn.style.backgroundColor = '';
+      btn.style.color = 'var(--pink-accent)';
+    }
+  }, 4000);
+}
+
 async function deleteGroup(id) {
-  if (!confirm('Are you sure you want to remove this Telegram Group record?')) return;
   try {
-    await fetch(`/api/groups/${id}`, { method: 'DELETE' });
+    const res = await fetch(`/api/groups/${id}`, { method: 'DELETE' });
+    const data = await res.json().catch(() => ({ success: true }));
+    showAdminToast(`🗑️ Telegram Group "${id}" removed.`, 'success');
     renderBotConfig();
   } catch (err) {
     console.error('Delete group error:', err);
+    showAdminToast('Failed to delete group: ' + err.message, 'error');
   }
 }
 
@@ -4768,9 +5171,14 @@ async function testPostGroup(id) {
       body: JSON.stringify({ text: '🤖 *PurpleOS Bot Test Broadcast*\nConnection active & verified!' })
     });
     const data = await res.json();
-    alert(data.message || 'Test post sent!');
+    if (data.success || data.message) {
+      showAdminToast(data.message || '⚡ Test post sent successfully!', 'success');
+    } else {
+      showAdminToast('Test post failed: ' + (data.error || 'Unknown error'), 'error');
+    }
   } catch (err) {
-    alert('Test post error: ' + err.message);
+    console.error('Test post error:', err);
+    showAdminToast('Test post error: ' + err.message, 'error');
   }
 }
 
@@ -4786,7 +5194,7 @@ async function generateUserAccessCard(phone, linkedId, linkedType = 'team', emai
     });
     const data = await res.json();
     if (!data.success) {
-      alert('Error generating access PIN: ' + (data.error || 'Failed'));
+      showAdminToast('Error generating access PIN: ' + (data.error || 'Failed'), 'error');
       return;
     }
 
@@ -4801,7 +5209,7 @@ async function generateUserAccessCard(phone, linkedId, linkedType = 'team', emai
     document.getElementById('accessCardModal')?.classList.remove('hidden');
 
   } catch (err) {
-    alert('Generate PIN error: ' + err.message);
+    showAdminToast('Generate PIN error: ' + err.message, 'error');
   }
 }
 
@@ -4812,7 +5220,7 @@ function closeAccessCardModal() {
 function copyAccessCard() {
   if (currentAccessCardData?.inviteCardText) {
     navigator.clipboard.writeText(currentAccessCardData.inviteCardText);
-    alert('📋 Workspace Access Card copied to clipboard!');
+    showAdminToast('📋 Workspace Access Card copied to clipboard!', 'success');
   }
 }
 
@@ -4831,13 +5239,14 @@ async function pushAccessCardTelegram() {
     });
     const data = await res.json();
     if (data.telegramPushed) {
-      alert('🚀 Access PIN pushed directly to user via Telegram!');
+      showAdminToast('🚀 Access PIN pushed directly to user via Telegram!', 'success');
     } else {
-      alert('⚠️ Could not push to Telegram. User may not have paired their Telegram chat ID yet.');
+      showAdminToast('⚠️ Could not push to Telegram. User may not have paired their Telegram chat ID yet.', 'info');
     }
   } catch (err) {
-    alert('Telegram push error: ' + err.message);
+    showAdminToast('Telegram push error: ' + err.message, 'error');
   }
+}
 }
 
 async function saveBotConfig() {
@@ -4875,10 +5284,13 @@ async function saveBotConfig() {
     const data = await res.json();
     if (data.success) {
       fetchInitialData();
-      alert(`✅ Bot configuration for "${activeBotTarget === 'clientBot' ? 'Client Assistant Bot' : 'Team Crew Operations Bot'}" saved!`);
+      showAdminToast(`✅ Bot configuration for "${activeBotTarget === 'clientBot' ? 'Client Assistant Bot' : 'Team Crew Operations Bot'}" saved!`, 'success');
+    } else {
+      showAdminToast('Failed to save bot config: ' + (data.error || 'Unknown error'), 'error');
     }
   } catch (err) {
     console.error('Error saving bot config:', err);
+    showAdminToast('Network error saving bot config.', 'error');
   }
 }
 
@@ -4911,26 +5323,48 @@ async function submitAddKBItem(event) {
     if (data.success) {
       closeAddKBModal();
       fetchInitialData();
-      alert('✅ Knowledge Base item added!');
+      showAdminToast('✅ Knowledge Base item added!', 'success');
+    } else {
+      showAdminToast('Failed to add KB item: ' + (data.error || 'Unknown error'), 'error');
     }
   } catch (err) {
     console.error('Error adding KB item:', err);
+    showAdminToast('Network error adding KB item.', 'error');
   }
+}
+
+function promptDeleteKBItem(btn, kbId) {
+  if (btn.dataset.confirming === 'true') {
+    deleteKBItem(kbId);
+    return;
+  }
+  btn.dataset.confirming = 'true';
+  btn.innerText = '⚠️?';
+  btn.style.backgroundColor = 'rgba(239, 68, 68, 0.2)';
+  btn.style.color = '#ef4444';
+
+  setTimeout(() => {
+    if (btn && btn.dataset) {
+      btn.dataset.confirming = 'false';
+      btn.innerText = '🗑️ Delete';
+      btn.style.backgroundColor = '';
+      btn.style.color = 'var(--pink-accent)';
+    }
+  }, 4000);
 }
 
 async function deleteKBItem(kbId) {
-  if (!confirm(`Delete Knowledge Base item "${kbId}"?`)) return;
-
   try {
     const res = await fetch(`/api/bot-config/kb/${kbId}`, { method: 'DELETE' });
-    const data = await res.json();
-    if (data.success) {
-      fetchInitialData();
-    }
+    const data = await res.json().catch(() => ({ success: true }));
+    showAdminToast(`🗑️ Knowledge Base item "${kbId}" deleted.`, 'success');
+    fetchInitialData();
   } catch (err) {
     console.error('Error deleting KB item:', err);
+    showAdminToast('Network error deleting KB item.', 'error');
   }
 }
+
 
 // B7: CLIENT ONBOARDING AUTOMATION LOGIC
 async function toggleOnboardingStep(clientId, stepKey) {
@@ -5023,9 +5457,10 @@ function closeWelcomeEmailModal() {
 function copyWelcomeEmailText() {
   const bodyText = document.getElementById('welcomeEmailBody')?.value || '';
   navigator.clipboard.writeText(bodyText).then(() => {
-    alert('📋 Welcome Pack Email text copied to clipboard!');
+    showAdminToast('📋 Welcome Pack Email text copied to clipboard!', 'success');
   }).catch(err => {
     console.error('Failed to copy text:', err);
+    showAdminToast('Failed to copy text to clipboard.', 'error');
   });
 }
 
@@ -5107,10 +5542,13 @@ async function sendTelegramPushAlert() {
     if (data.success) {
       if (appData.webhookLogs) appData.webhookLogs.unshift(data.log);
       renderWebhookLogs();
-      alert('🚀 Telegram Push Notification dispatched!');
+      showAdminToast('🚀 Telegram Push Notification dispatched!', 'success');
+    } else {
+      showAdminToast('Failed to dispatch alert: ' + (data.error || 'Unknown error'), 'error');
     }
   } catch (err) {
     console.error('Error sending Telegram alert:', err);
+    showAdminToast('Network error sending Telegram alert.', 'error');
   }
 }
 
@@ -5124,6 +5562,71 @@ function openSampleWhatsAppLink() {
   const sampleMsg = "Hi Arman! This is Naimur from Purplebot Digital. Your 8-Year Anniversary Vlog cut is ready in Review Room V2: https://portal.purplebot.digital/review";
   const waUrl = generateWhatsAppLink('+8801911998877', sampleMsg);
   window.open(waUrl, '_blank');
+}
+
+function exportExecutiveReport() {
+  const { jsPDF } = window.jspdf || {};
+  if (!jsPDF) {
+    showAdminToast('PDF generator library is initializing... Please try again in a moment.', 'info');
+    return;
+  }
+
+  const analyticsData = window.appData || {};
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+  // Header Banner
+  doc.setFillColor(147, 51, 234);
+  doc.rect(0, 0, 210, 30, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(22);
+  doc.text('PURPLEBOT DIGITAL AGENCY', 14, 18);
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.text('EXECUTIVE BI PERFORMANCE & FINANCIAL SUMMARY', 14, 25);
+
+  let y = 42;
+  doc.setTextColor(24, 18, 43);
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Key Agency Performance Indicators', 14, y);
+
+  y += 8;
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Report Date: ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`, 14, y);
+
+  y += 10;
+  doc.setFillColor(245, 245, 250);
+  doc.rect(14, y, 182, 35, 'F');
+
+  const totalClients = (analyticsData.clients || []).length;
+  const activeTasks = (analyticsData.tasks || []).length;
+  const totalInvoices = (analyticsData.invoices || []).length;
+
+  doc.setFont('helvetica', 'bold');
+  doc.text(`Active Clients: ${totalClients}`, 20, y + 12);
+  doc.text(`Production Tasks: ${activeTasks}`, 20, y + 22);
+  doc.text(`Total Invoices: ${totalInvoices}`, 110, y + 12);
+  doc.text(`Agency Status: PURPLEOS LIVE`, 110, y + 22);
+
+  y += 45;
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Client Retainer Roster Overview', 14, y);
+
+  y += 10;
+  doc.setFontSize(10);
+  (analyticsData.clients || []).slice(0, 8).forEach(c => {
+    doc.setFont('helvetica', 'bold');
+    doc.text(`• ${c.name}`, 16, y);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`${c.category || 'Retainer'} — ${c.status || 'Active'}`, 70, y);
+    y += 7;
+  });
+
+  doc.save(`PurpleOS_Executive_Report_${Date.now()}.pdf`);
+  showAdminToast('📄 Executive Performance Summary PDF downloaded!', 'success');
 }
 
 // Module C10: BI Dashboard & Aggregated Intelligence Rendering
@@ -5279,14 +5782,15 @@ async function submitStaffInvite(event) {
     const data = await res.json();
     if (data.success) {
       closeInviteStaffModal();
-      fetchInitialData();
+      await fetchInitialData();
       navigator.clipboard.writeText(data.inviteCardText);
-      alert(`🎉 Staff Invite & Temp Password Created for ${name}!\n\nEmp Code: ${data.empCode}\nTemporary Password: ${data.tempPassword}\n\nInvite card copied to clipboard!`);
+      showAdminToast(`🎉 Staff Invite created for ${name}! Details copied to clipboard.`, 'success', 6000);
     } else {
-      alert('Error creating staff invite: ' + (data.error || 'Please try again.'));
+      showAdminToast('Error creating staff invite: ' + (data.error || 'Please try again.'), 'error');
     }
   } catch (err) {
     console.error('Error creating staff invite:', err);
+    showAdminToast('Network error while creating staff invite.', 'error');
   }
 }
 
@@ -5492,11 +5996,14 @@ async function approveLeave(leaveId) {
     });
     const data = await res.json();
     if (data.success) {
-      alert(`✅ Leave request ${leaveId} for ${leave?.staffName || 'Staff'} APPROVED!\nStaff attendance status set to "On Leave" and Telegram notification dispatched (AUT-011).`);
+      showAdminToast(`✅ Leave request ${leaveId} for ${leave?.staffName || 'Staff'} APPROVED!`, 'success');
       await fetchInitialData();
+    } else {
+      showAdminToast('Failed to approve leave: ' + (data.error || 'Unknown error'), 'error');
     }
   } catch (err) {
     console.error('Error approving leave:', err);
+    showAdminToast('Network error approving leave.', 'error');
   }
 }
 
@@ -5512,11 +6019,14 @@ async function rejectLeave(leaveId) {
     });
     const data = await res.json();
     if (data.success) {
-      alert(`❌ Leave request ${leaveId} for ${leave?.staffName || 'Staff'} DECLINED.`);
+      showAdminToast(`❌ Leave request ${leaveId} for ${leave?.staffName || 'Staff'} DECLINED.`, 'info');
       await fetchInitialData();
+    } else {
+      showAdminToast('Failed to decline leave: ' + (data.error || 'Unknown error'), 'error');
     }
   } catch (err) {
     console.error('Error rejecting leave:', err);
+    showAdminToast('Network error declining leave.', 'error');
   }
 }
 
@@ -5526,39 +6036,14 @@ async function triggerManualEodPrompt() {
     const res = await fetch('/api/eod/trigger-prompt', { method: 'POST' });
     const data = await res.json();
     if (data.success) {
-      alert(`✅ 7PM EOD prompt pushed to ${activeCount} active crew member(s) via Telegram (AUT-012)!`);
+      showAdminToast(`✅ 7PM EOD prompt pushed to ${activeCount} active crew member(s) via Telegram!`, 'success');
       fetchInitialData();
+    } else {
+      showAdminToast('Failed to trigger EOD prompt: ' + (data.error || 'Unknown error'), 'error');
     }
   } catch (err) {
     console.error('Error triggering manual EOD prompt:', err);
-  }
-}
-
-async function updateTicketStatus(ticketId, newStatus) {
-  const ticket = (appData.tickets || []).find(t => t.id === ticketId);
-  const reviewer = window.currentUser?.profile?.name || 'Maintenance Lead';
-
-  try {
-    const res = await fetch(`/api/tickets/${ticketId}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: newStatus, resolvedBy: reviewer })
-    });
-    const data = await res.json();
-    if (data.success) {
-      if (newStatus === 'Resolved') {
-        alert(`✅ Support Ticket ${ticketId} marked RESOLVED!\n${ticket?.loggedBy || 'Staff'} notified via Telegram (AUT-013).`);
-      }
-      fetchInitialData();
-    }
-  } catch (err) {
-    console.error('Error updating ticket status:', err);
-  }
-}
-      alert('⚡ 7:00 PM Daily EOD Telegram prompt pushed to all active team members!');
-    }
-  } catch (err) {
-    console.error('Error pushing EOD prompt:', err);
+    showAdminToast('Network error triggering EOD prompt.', 'error');
   }
 }
 
@@ -5592,12 +6077,15 @@ async function submitNewTicket(event) {
     });
     const data = await res.json();
     if (data.success) {
-      alert(`✅ Support Ticket ${data.ticket.id} logged successfully!`);
+      showAdminToast(`✅ Support Ticket ${data.ticket.id} logged successfully!`, 'success');
       closeCreateTicketModal();
       await fetchInitialData();
+    } else {
+      showAdminToast('Failed to log ticket: ' + (data.error || 'Unknown error'), 'error');
     }
   } catch (err) {
     console.error('Error logging ticket:', err);
+    showAdminToast('Network error logging support ticket.', 'error');
   }
 }
 
@@ -5610,11 +6098,18 @@ async function updateTicketStatus(ticketId, newStatus) {
     });
     const data = await res.json();
     if (data.success) {
-      if (newStatus === 'Resolved') alert(`✅ Ticket ${ticketId} resolved! Staff notified via Telegram.`);
+      if (newStatus === 'Resolved') {
+        showAdminToast(`✅ Ticket ${ticketId} resolved! Staff notified via Telegram.`, 'success');
+      } else {
+        showAdminToast(`Ticket ${ticketId} status updated to ${newStatus}.`, 'info');
+      }
       await fetchInitialData();
+    } else {
+      showAdminToast('Failed to update ticket status: ' + (data.error || 'Unknown error'), 'error');
     }
   } catch (err) {
     console.error('Error updating ticket status:', err);
+    showAdminToast('Network error updating ticket status.', 'error');
   }
 }
 
@@ -5689,10 +6184,13 @@ async function triggerMorningBriefing() {
     const res = await fetch('/api/reports/morning', { method: 'POST' });
     const data = await res.json();
     if (data.success) {
-      alert('⚡ 9:00 AM Morning Executive Briefing pushed to Telegram!');
+      showAdminToast('⚡ 9:00 AM Morning Executive Briefing pushed to Telegram!', 'success');
+    } else {
+      showAdminToast('Failed to push morning briefing: ' + (data.error || 'Unknown error'), 'error');
     }
   } catch (err) {
     console.error('Error triggering morning briefing:', err);
+    showAdminToast('Network error pushing morning briefing.', 'error');
   }
 }
 
@@ -5701,10 +6199,13 @@ async function triggerEveningDigest() {
     const res = await fetch('/api/reports/evening', { method: 'POST' });
     const data = await res.json();
     if (data.success) {
-      alert('⚡ 8:30 PM Evening Executive Digest pushed to Telegram!');
+      showAdminToast('⚡ 8:30 PM Evening Executive Digest pushed to Telegram!', 'success');
+    } else {
+      showAdminToast('Failed to push evening digest: ' + (data.error || 'Unknown error'), 'error');
     }
   } catch (err) {
     console.error('Error triggering evening digest:', err);
+    showAdminToast('Network error pushing evening digest.', 'error');
   }
 }
 
@@ -5713,10 +6214,13 @@ async function triggerWeeklyReport() {
     const res = await fetch('/api/reports/weekly', { method: 'POST' });
     const data = await res.json();
     if (data.success) {
-      alert('⚡ Weekly Executive KPI Summary pushed to Telegram!');
+      showAdminToast('⚡ Weekly Executive KPI Summary pushed to Telegram!', 'success');
+    } else {
+      showAdminToast('Failed to push weekly report: ' + (data.error || 'Unknown error'), 'error');
     }
   } catch (err) {
     console.error('Error triggering weekly report:', err);
+    showAdminToast('Network error pushing weekly report.', 'error');
   }
 }
 
@@ -5725,10 +6229,13 @@ async function triggerSpecialistBriefings() {
     const res = await fetch('/api/reports/specialist-briefing', { method: 'POST' });
     const data = await res.json();
     if (data.success) {
-      alert('⚡ 9:00 AM Personal Daily Task Briefings pushed to all team specialists via Telegram!');
+      showAdminToast('⚡ 9:00 AM Personal Daily Task Briefings pushed to all team specialists via Telegram!', 'success');
+    } else {
+      showAdminToast('Failed to push specialist briefings: ' + (data.error || 'Unknown error'), 'error');
     }
   } catch (err) {
     console.error('Error triggering specialist briefings:', err);
+    showAdminToast('Network error pushing specialist briefings.', 'error');
   }
 }
 
@@ -5761,11 +6268,14 @@ async function submitBroadcastNotice(event) {
     });
     const data = await res.json();
     if (data.success) {
-      alert('📢 Team Broadcast Notice dispatched instantly to all staff & Telegram groups!');
+      showAdminToast('📢 Team Broadcast Notice dispatched instantly to all staff & Telegram groups!', 'success');
       closeBroadcastModal();
+    } else {
+      showAdminToast('Failed to dispatch broadcast: ' + (data.error || 'Unknown error'), 'error');
     }
   } catch (err) {
     console.error('Error sending broadcast:', err);
+    showAdminToast('Network error sending broadcast notice.', 'error');
   }
 }
 
@@ -5790,6 +6300,7 @@ async function openCMSManagerModal() {
     }
   } catch (err) {
     console.error('Error opening CMS modal:', err);
+    showAdminToast('Error loading CMS content.', 'error');
   }
 
   modal.style.display = 'flex';
@@ -5828,11 +6339,14 @@ async function saveCMSContent(e) {
 
     const data = await res.json();
     if (data.success) {
-      alert('🎉 Landing Page CMS updated! Changes are now live on purplebot.digital.');
       closeCMSManagerModal();
+      showAdminToast('🎉 Landing Page CMS updated! Changes are live.', 'success');
+    } else {
+      showAdminToast('Failed to save CMS content: ' + (data.error || 'Unknown error'), 'error');
     }
   } catch (err) {
     console.error('Error saving CMS content:', err);
+    showAdminToast('Network error while saving CMS content.', 'error');
   }
 }
 
