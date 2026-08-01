@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { requireAuth } = require('../middleware/auth');
+const { requireAdmin } = require('../middleware/rbac');
 const { createTempPin, verifyPin, setPermanentPin } = require('../services/auth-pins');
 const { signToken } = require('../services/jwt');
 const { readDB, writeDB } = require('../services/db');
@@ -33,8 +34,8 @@ router.get('/auth/me', requireAuth, (req, res) => {
   });
 });
 
-// 🔑 Generate Temp PIN
-router.post('/auth/pin/generate', async (req, res) => {
+// 🔑 Generate Temp PIN (Admin only — prevents OTP spam abuse)
+router.post('/auth/pin/generate', requireAuth, requireAdmin, async (req, res) => {
   const { phone, linkedId, linkedType, email, sendTelegram } = req.body;
   if (!phone) {
     return res.status(400).json({ error: 'Phone number is required' });
@@ -165,8 +166,8 @@ router.post('/auth/pin/verify', async (req, res) => {
   });
 });
 
-// Set Permanent PIN
-router.post('/auth/pin/set', async (req, res) => {
+// Set Permanent PIN (requires valid session — user must be logged in to change their own PIN)
+router.post('/auth/pin/set', requireAuth, async (req, res) => {
   const { phone, newPin, email } = req.body;
   if (!phone || !newPin || String(newPin).length < 4) {
     return res.status(400).json({ error: 'Valid phone number and 4-digit PIN are required' });
