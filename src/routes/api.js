@@ -2936,7 +2936,7 @@ router.get('/team', async (req, res) => {
   if (isSupabaseConfigured()) {
     const { data, error } = await supabase.from('profiles').select('*');
     if (!error && data && data.length > 0) {
-      return res.json(data.map(t => {
+      const merged = data.map(t => {
         const localEmp = jsonTeam.find(m => m.id === t.emp_code || m.emp_code === t.emp_code) || {};
         return {
           ...localEmp,
@@ -2949,15 +2949,43 @@ router.get('/team', async (req, res) => {
           activeBookings: t.active_bookings || localEmp.activeBookings || 0,
           xp: localEmp.xp !== undefined ? localEmp.xp : 0,
           badge: localEmp.badge || '🌱 Recruit',
+          onboarding_step: localEmp.onboarding_step || 0,
           onboardingComplete: localEmp.onboardingComplete || false,
           onboardingStarted: localEmp.onboardingStarted || false,
           onboardingTasks: localEmp.onboardingTasks || []
         };
-      }));
+      });
+      // Sort: put local db.json order first (preserves PBD-000 at top)
+      merged.sort((a, b) => {
+        const ai = jsonTeam.findIndex(m => m.id === a.id);
+        const bi = jsonTeam.findIndex(m => m.id === b.id);
+        return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
+      });
+      return res.json(merged);
     }
   }
   res.json(jsonTeam);
 });
+
+// Lookup current user by Telegram ID (used by Mini App to identify correct employee)
+router.get('/team/me', (req, res) => {
+  const { telegramId, phone } = req.query;
+  const db = readDB();
+  let emp = null;
+
+  if (telegramId) {
+    emp = (db.team || []).find(t => String(t.telegramId) === String(telegramId));
+  }
+  if (!emp && phone) {
+    const norm = String(phone).replace(/[^0-9]/g, '').slice(-10);
+    emp = (db.team || []).find(t => (t.phone || '').replace(/[^0-9]/g, '').slice(-10) === norm);
+  }
+
+  if (!emp) return res.status(404).json({ error: 'Employee not found. Please verify your identity via the Telegram bot first.' });
+  res.json({ success: true, employee: emp });
+});
+
+
 
 router.post('/team/profile-setup', async (req, res) => {
   const { phone, emergencyContact, address, bankName, accNo, mfsNo } = req.body;

@@ -510,19 +510,27 @@
       const paramTgId = urlParams.get('telegramId') || urlParams.get('tgId') || tgUser?.id;
 
       try {
-        const res = await fetch('/api/team');
-        allTeam = await res.json();
-
-        // Match user by telegramId
+        // ── PRIMARY: Look up by Telegram ID via /api/team/me (exact match) ──
         if (paramTgId) {
+          try {
+            const meRes = await fetch(`/api/team/me?telegramId=${paramTgId}`);
+            const meData = await meRes.json();
+            if (meData.success && meData.employee) {
+              currentUser = meData.employee;
+            }
+          } catch(e) {}
+        }
+
+        // ── SECONDARY: Full team list for roster display ──
+        const teamRes = await fetch('/api/team');
+        allTeam = await teamRes.json();
+
+        // ── FALLBACK: Only if /team/me failed, try matching in allTeam ──
+        if (!currentUser && paramTgId) {
           currentUser = allTeam.find(t => String(t.telegramId) === String(paramTgId));
         }
 
-        // Fallback for local testing / default fallback
-        if (!currentUser && allTeam.length > 0) {
-          currentUser = allTeam[0]; // Firoz Admin fallback for direct web testing
-        }
-
+        // ── FINAL FALLBACK: If still no match, show lock screen ──
         if (!currentUser) {
           document.getElementById('lockScreen').style.display = 'block';
           return;
