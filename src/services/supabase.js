@@ -5,18 +5,33 @@ const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-let supabase = null;
-let supabaseAdmin = null;
+let supabase = null;       // Service-role client — used for ALL server-side DB operations (bypasses RLS)
+let supabaseAnon = null;   // Anon client — used ONLY for verifying user session tokens
+let supabaseAdmin = null;  // Alias for supabase (service-role), kept for backward compat
 
-if (supabaseUrl && supabaseAnonKey && !supabaseUrl.includes('your-project-id')) {
-  supabase = createClient(supabaseUrl, supabaseAnonKey);
-  console.log('✅ Supabase Client initialized with URL:', supabaseUrl);
+if (supabaseUrl && !supabaseUrl.includes('your-project-id')) {
 
-  if (supabaseServiceKey) {
-    supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+  // Prefer service-role for server-side queries (bypasses RLS — safe since this runs server-side only)
+  if (supabaseServiceKey && !supabaseServiceKey.includes('your_supabase')) {
+    supabase = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: { autoRefreshToken: false, persistSession: false }
+    });
+    supabaseAdmin = supabase;
+    console.log('✅ Supabase Service-Role Client initialized (server-side, bypasses RLS)');
+  } else if (supabaseAnonKey && !supabaseAnonKey.includes('your_supabase')) {
+    // Fallback to anon key if service role not available (dev mode)
+    supabase = createClient(supabaseUrl, supabaseAnonKey);
+    supabaseAdmin = supabase;
+    console.warn('⚠️  Supabase using ANON key for server queries. Set SUPABASE_SERVICE_ROLE_KEY for production.');
   }
+
+  // Always create a separate anon client for user token verification
+  if (supabaseAnonKey && !supabaseAnonKey.includes('your_supabase')) {
+    supabaseAnon = createClient(supabaseUrl, supabaseAnonKey);
+  }
+
 } else {
-  console.warn('⚠️ Supabase credentials missing or unconfigured. System will use local JSON fallback.');
+  console.warn('⚠️  Supabase credentials missing or unconfigured. System will use local JSON fallback.');
 }
 
 function isSupabaseConfigured() {
@@ -26,5 +41,6 @@ function isSupabaseConfigured() {
 module.exports = {
   supabase,
   supabaseAdmin,
+  supabaseAnon,
   isSupabaseConfigured
 };

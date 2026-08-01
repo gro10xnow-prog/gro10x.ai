@@ -6,13 +6,49 @@ const apiRoutes = require('./src/routes/api');
 const subdomainRouter = require('./src/middleware/subdomain');
 const { sseHandler } = require('./src/services/sse');
 const { initBot } = require('./src/services/bot');
+const { startScheduledJobs } = require('./src/services/automation');
+const { readDB, writeDB } = require('./src/services/db');
+const { broadcast } = require('./src/services/sse');
+
+const PORT = process.env.PORT || 3000;
+
+// Allowed origins — restrict to known production & preview domains
+const ALLOWED_ORIGINS = [
+  'https://purpleos-iota.vercel.app',
+  'https://purplebot.digital',
+  'https://www.purplebot.digital',
+  'http://localhost:3000',
+  'http://localhost:3001'
+];
 
 const app = express();
+
+// Sentry Error Tracking Initialization (if DSN provided)
+if (process.env.SENTRY_DSN) {
+  try {
+    const Sentry = require('@sentry/node');
+    Sentry.init({ dsn: process.env.SENTRY_DSN, environment: process.env.NODE_ENV || 'production' });
+    console.log('✅ Sentry Error Monitoring initialized');
+  } catch (e) {
+    console.warn('Sentry init warning:', e.message);
+  }
+}
+
 // Initialize Telegram Bot & Webhooks
 try { initBot(); } catch (e) { console.warn('Bot init note:', e.message); }
+// Start scheduled jobs (morning briefing 9:15 AM, EOD summary 8 PM — Bangladesh time)
+try { startScheduledJobs(readDB, writeDB, broadcast); } catch (e) { console.warn('Scheduler note:', e.message); }
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (Telegram Mini App, mobile apps, curl)
+    if (!origin) return callback(null, true);
+    if (ALLOWED_ORIGINS.includes(origin)) return callback(null, true);
+    callback(new Error(`CORS policy: origin ${origin} not allowed`));
+  },
+  credentials: true
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -100,9 +136,6 @@ if (require.main === module) {
     console.log(`\n==================================================`);
     console.log(`🚀 PurpleOS Platform running at: http://localhost:${PORT}`);
     console.log(`==================================================\n`);
-
-    // Initialize Telegram Bot (if Bot Token is present)
-    initBot();
   });
 }
 

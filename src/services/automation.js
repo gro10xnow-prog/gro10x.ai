@@ -1,13 +1,34 @@
-const { sendTelegramNotification } = require('./bot');
+// Lazy require to break the circular dependency:
+// bot.js → automation.js → bot.js (sendTelegramNotification)
+// By deferring the require to call-time, both modules finish initialising first.
+function getSendTelegram() {
+  return require('./bot').sendTelegramNotification;
+}
+
+function recordAutomationLog(db, logEntry) {
+  db.automationLogs = db.automationLogs || [];
+  db.automationLogs.unshift(logEntry);
+
+  try {
+    const { supabase, isSupabaseConfigured } = require('./supabase');
+    if (isSupabaseConfigured()) {
+      supabase.from('automation_logs').insert([{
+        id: logEntry.id,
+        rule: logEntry.rule,
+        event: logEntry.event,
+        target: logEntry.target,
+        status: logEntry.status
+      }]).then(() => {}).catch(() => {});
+    }
+  } catch (e) {}
+}
 
 /**
  * ⚡ PURPLEOS WORKFLOW AUTOMATION ENGINE (Module C8)
  */
 function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
+  const sendTelegramNotification = getSendTelegram();
   if (!db) return;
-
-  db.automationLogs = db.automationLogs || [];
-  const logs = db.automationLogs;
 
   try {
     // TRIGGER 1: Task Stage Changed to Editing -> Notify Editor via Telegram
@@ -22,7 +43,7 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
         sendTelegramNotification(editor.telegramId, message, null, true);
       }
 
-      logs.unshift({
+      recordAutomationLog(db, {
         id: `LOG-${Date.now()}`,
         rule: 'AUT-001 (Editing Telegram Alert)',
         event: eventType,
@@ -229,6 +250,24 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
           ],
           [{ text: '🔍 Inspect in Admin Portal', url: portalUrl }]
         ], true);
+      }
+
+      // Large expense threshold — BDT 25,000+ triggers Chairman notification
+      const LARGE_EXP_THRESHOLD = 25000;
+      if (Number(expense.amount) >= LARGE_EXP_THRESHOLD) {
+        const chairman = (db.team || []).find(t => t.id === 'PBD-002');
+        if (chairman?.telegramId) {
+          sendTelegramNotification(chairman.telegramId,
+            `⚠️ *Large Expense — Chairman Oversight*\n\n` +
+            `• Claim ID: *${expense.id}*\n` +
+            `• By: *${expense.submittedBy}*\n` +
+            `• Category: *${expense.category}*\n` +
+            `• Amount: *BDT ${Number(expense.amount).toLocaleString()}* _(above BDT 25,000 threshold)_\n` +
+            `• Tier 1 ✅  Tier 2 ✅  Awaiting Owner disbursement\n\n` +
+            `This has been flagged to you as Chairman per the financial oversight policy.`,
+            null, true
+          );
+        }
       }
 
       logs.unshift({
@@ -792,7 +831,238 @@ function checkScheduledSocialDispatches(db, writeDB, broadcast) {
   }
 }
 
+// ══════════════════════════════════════════════════════
+// SCHEDULED JOBS — Morning Briefing & EOD Summary
+// Runs inside the server process via setInterval (no cron lib needed)
+// ══════════════════════════════════════════════════════
+
+let _schedulerDb = null;
+let _schedulerWriteDB = null;
+let _schedulerBroadcast = null;
+let _schedulerStarted = false;
+
+function getBDTime() {
+  // Bangladesh Standard Time = UTC+6
+  const now = new Date();
+  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+  const bd = new Date(utc + 6 * 3600000);
+  return { h: bd.getHours(), m: bd.getMinutes(), day: bd.getDay(), bd };
+}
+
+function buildMorningBriefing(db) {
+  const team = db.team || [];
+  const inStudio = team.filter(t => t.status === 'In Studio').length;
+  const onShoot = team.filter(t => t.status === 'On Field Shoot').length;
+  const onLeave = team.filter(t => t.status === 'On Leave').length;
+  const offline = team.length - inStudio - onShoot - onLeave;
+
+  const pendingAgreements = team.filter(t => t.agreementStage === 1 || (t.agreementStage === 2 && true)).length;
+  const pendingExpenses = (db.expenses || []).filter(e => e.status === 'Tier 3 Pending').length;
+  const pendingExpAmt = (db.expenses || [])
+    .filter(e => e.status === 'Tier 3 Pending')
+    .reduce((s, e) => s + (e.amount || 0), 0);
+
+  const pendingInvoices = (db.invoices || []).filter(i => i.status !== 'Paid' && i.status !== 'Draft');
+  const pendingInvAmt = pendingInvoices.reduce((s, i) => s + (i.amount || 0), 0);
+
+  const clientsInReview = (db.tasks || []).filter(t => t.stage === 'Client Review').length;
+  const clientsInEdit = (db.tasks || []).filter(t => t.stage === 'Editing' || t.stage === 'Post Production').length;
+
+  const now = getBDTime().bd;
+  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+  let msg = `☀️ *Good morning, this is your ${dayNames[now.getDay()]} briefing!*\n`;
+  msg += `━━━━━━━━━━━━━━━━━━━━\n\n`;
+
+  msg += `📍 *Team Live (${now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })} BD)*\n`;
+  msg += `  🟢 ${inStudio} In Studio  `;
+  msg += `🎬 ${onShoot} On Shoot  `;
+  msg += `🌴 ${onLeave} Leave  `;
+  msg += `⬛ ${offline} Offline\n\n`;
+
+  if (pendingAgreements > 0 || pendingExpenses > 0) {
+    msg += `✍️ *Pending Your Approval*\n`;
+    if (pendingAgreements > 0) msg += `  • ${pendingAgreements} Employment Agreement(s) awaiting final seal\n`;
+    if (pendingExpenses > 0) msg += `  • ${pendingExpenses} Expense(s) — BDT ${pendingExpAmt.toLocaleString()} to disburse\n`;
+    msg += `\n`;
+  }
+
+  msg += `💰 *Finance Snapshot*\n`;
+  msg += `  • Outstanding Invoices: ${pendingInvoices.length} (BDT ${pendingInvAmt.toLocaleString()})\n\n`;
+
+  msg += `🎬 *Campaign Pipeline*\n`;
+  msg += `  • ${clientsInReview} deliverable(s) in Client Review\n`;
+  msg += `  • ${clientsInEdit} in Editing / Post Production\n`;
+  msg += `━━━━━━━━━━━━━━━━━━━━`;
+
+  return msg;
+}
+
+function buildEODSummary(db) {
+  const team = db.team || [];
+  const todayStr = new Date().toLocaleDateString('en-CA');
+
+  // Who clocked in today
+  const clockedToday = (db.attendance || []).filter(a =>
+    a.clockInTime && (a.date === todayStr || !a.date)
+  );
+
+  // EOD reports submitted today
+  const eodToday = (db.eodReports || []).filter(r =>
+    r.date === todayStr || r.submittedAt?.startsWith(todayStr)
+  );
+
+  // Expenses submitted today
+  const expToday = (db.expenses || []).filter(e =>
+    e.date === todayStr || e.createdAt?.startsWith(todayStr)
+  );
+
+  let msg = `🌙 *Evening Summary — End of Day*\n`;
+  msg += `━━━━━━━━━━━━━━━━━━━━\n\n`;
+
+  msg += `📍 *Attendance Today*\n`;
+  msg += `  • ${clockedToday.length} team member(s) clocked in\n`;
+  if (team.length - clockedToday.length > 0) {
+    msg += `  • ${team.length - clockedToday.length} did not log attendance\n`;
+  }
+  msg += `\n`;
+
+  msg += `📝 *EOD Reports*\n`;
+  if (eodToday.length > 0) {
+    msg += `  • ${eodToday.length} report(s) submitted today\n`;
+    eodToday.slice(0, 3).forEach(r => {
+      msg += `  — ${r.employeeName || 'Team Member'}: ${(r.summary || r.tasks || '').slice(0, 60)}...\n`;
+    });
+  } else {
+    msg += `  • No EOD reports received today\n`;
+  }
+  msg += `\n`;
+
+  if (expToday.length > 0) {
+    const expTotal = expToday.reduce((s, e) => s + (e.amount || 0), 0);
+    msg += `🧾 *Expenses Filed Today*\n`;
+    msg += `  • ${expToday.length} claim(s) — BDT ${expTotal.toLocaleString()} total\n\n`;
+  }
+
+  msg += `━━━━━━━━━━━━━━━━━━━━\n`;
+  msg += `_Have a great evening! See you tomorrow._ 💜`;
+
+  return msg;
+}
+
+// ─── Chairman's Strategic Briefing (board-level, different from MD's operational view) ───
+function buildChairmanBriefing(db) {
+  const team = db.team || [];
+  const now = getBDTime().bd;
+  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+  // Finance
+  const invoices = db.invoices || [];
+  const monthStr = now.toISOString().slice(0, 7);
+  const paidThisMonth = invoices.filter(i => i.status === 'Paid' && (i.paidAt || i.issueDate || '').startsWith(monthStr));
+  const revThisMonth = paidThisMonth.reduce((s, i) => s + (i.amount || 0), 0);
+  const pendingInvoices = invoices.filter(i => i.status !== 'Paid' && i.status !== 'Draft');
+  const pendingInvAmt = pendingInvoices.reduce((s, i) => s + (i.amount || 0), 0);
+  const salaryTotal = team.reduce((s, t) => s + (t.baseSalary || 0), 0);
+
+  // HR
+  const activeEmployees = team.filter(t => t.id !== 'PBD-000').length;
+  const pendingAgreements = team.filter(t => t.agreementStage && t.agreementStage < 3 && !t.agreementComplete).length;
+  const onLeave = team.filter(t => t.status === 'On Leave').length;
+  const pendingLeaves = (db.leaveRequests || []).filter(l => l.status === 'Pending Manager Approval').length;
+
+  // BD Pipeline
+  const leads = db.leads || [];
+  const activeLeads = leads.filter(l => l.status !== 'Won' && l.status !== 'Lost').length;
+  const pipelineValue = leads.filter(l => l.status !== 'Won' && l.status !== 'Lost').reduce((s, l) => s + (l.value || 0), 0);
+  const wonThisMonth = leads.filter(l => l.status === 'Won' && (l.wonAt || '').startsWith(monthStr)).length;
+
+  // Clients
+  const clients = db.clients || [];
+  const activeClients = clients.filter(c => c.status === 'Active Retainer').length;
+  const inReview = (db.tasks || []).filter(t => t.stage === 'Client Review').length;
+
+  let msg = `🏛️ *Chairman's ${dayNames[now.getDay()]} Board Briefing*\n`;
+  msg += `━━━━━━━━━━━━━━━━━━━━\n\n`;
+
+  msg += `💰 *Financial Health*\n`;
+  msg += `  • Revenue (this month): BDT ${revThisMonth.toLocaleString()}\n`;
+  msg += `  • Outstanding invoices: ${pendingInvoices.length} — BDT ${pendingInvAmt.toLocaleString()}\n`;
+  msg += `  • Monthly payroll commitment: BDT ${salaryTotal.toLocaleString()}\n\n`;
+
+  msg += `👥 *HR Status*\n`;
+  msg += `  • Active employees: ${activeEmployees}\n`;
+  if (pendingAgreements > 0) msg += `  • ⚠️ ${pendingAgreements} agreement(s) pending completion\n`;
+  if (pendingLeaves > 0) msg += `  • 🌴 ${pendingLeaves} leave request(s) pending approval\n`;
+  msg += `  • ${onLeave} on leave today\n\n`;
+
+  msg += `📊 *Business Development*\n`;
+  msg += `  • Active leads in pipeline: ${activeLeads}\n`;
+  if (pipelineValue > 0) msg += `  • Estimated pipeline value: BDT ${pipelineValue.toLocaleString()}\n`;
+  if (wonThisMonth > 0) msg += `  • Deals won this month: ${wonThisMonth}\n\n`;
+
+  msg += `🎬 *Client Health*\n`;
+  msg += `  • Active retainers: ${activeClients}\n`;
+  msg += `  • Deliverables in client review: ${inReview}\n`;
+  msg += `━━━━━━━━━━━━━━━━━━━━`;
+
+  return msg;
+}
+
+let _lastMorningFired = null;
+let _lastEODFired = null;
+
+function startScheduledJobs(readDB, writeDB, broadcast) {
+  if (_schedulerStarted) return;
+  _schedulerStarted = true;
+  _schedulerWriteDB = writeDB;
+  _schedulerBroadcast = broadcast;
+
+  // Check every 60 seconds
+  setInterval(() => {
+    try {
+      const { h, m, bd } = getBDTime();
+      const todayKey = bd.toLocaleDateString('en-CA');
+
+      const db = readDB();
+      const owners = (db.team || []).filter(t =>
+        t.accessLevel === 'Owner / Admin' && t.telegramId
+      );
+      if (!owners.length) return;
+
+      // ── Morning Briefing: 9:15 AM BD (Mon–Sat, skip Friday)
+      if (h === 9 && m === 15 && bd.getDay() !== 5 && _lastMorningFired !== todayKey) {
+        _lastMorningFired = todayKey;
+        const { sendTelegramNotification } = require('./bot');
+        owners.forEach(owner => {
+          // Chairman (PBD-002) gets strategic board briefing; everyone else gets operational briefing
+          const msg = owner.id === 'PBD-002'
+            ? buildChairmanBriefing(db)
+            : buildMorningBriefing(db);
+          sendTelegramNotification(owner.telegramId, msg, null, true);
+        });
+      }
+
+      // ── EOD Summary: 8:00 PM BD (Mon–Sat, skip Friday)
+      if (h === 20 && m === 0 && bd.getDay() !== 5 && _lastEODFired !== todayKey) {
+        _lastEODFired = todayKey;
+        const { sendTelegramNotification } = require('./bot');
+        const eodMsg = buildEODSummary(db);
+        owners.forEach(owner => {
+          sendTelegramNotification(owner.telegramId, eodMsg, null, true);
+        });
+      }
+    } catch (e) {
+      // Silent fail — scheduler must never crash the server
+    }
+  }, 60 * 1000);
+}
+
 module.exports = {
   processAutomationEvent,
-  checkScheduledSocialDispatches
+  checkScheduledSocialDispatches,
+  startScheduledJobs,
+  buildMorningBriefing,
+  buildEODSummary,
+  buildChairmanBriefing
 };

@@ -4,11 +4,15 @@ const path = require('path');
 const apiRoutes = require('../src/routes/api');
 const { sseHandler } = require('../src/services/sse');
 const { initBot } = require('../src/services/bot');
+const { startScheduledJobs } = require('../src/services/automation');
+const { readDB, writeDB } = require('../src/services/db');
+const { broadcast } = require('../src/services/sse');
 
 const app = express();
 
 // Initialize Telegram Bot & Webhooks for Vercel deployment
-initBot();
+try { initBot(); } catch (e) {}
+try { startScheduledJobs(readDB, writeDB, broadcast); } catch (e) {}
 
 app.use(cors());
 app.use(express.json());

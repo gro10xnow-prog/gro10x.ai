@@ -3,1010 +3,2265 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Purple Man - Team Ops Dashboard</title>
+  <title>Purple Man — Team Ops</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #09090b;
-      --card: rgba(24, 24, 27, 0.9);
-      --border: rgba(168, 85, 247, 0.3);
-      --purple: #a855f7;
+      --hero-a: #4c1d95;
+      --hero-b: #7c3aed;
+      --hero-c: #a855f7;
+      --hero-d: #ec4899;
+      --purple: #7c3aed;
+      --purple-2: #a855f7;
       --pink: #ec4899;
-      --green: #34d399;
-      --text: #f4f4f5;
-      --muted: #a1a1aa;
+      --surface: #ffffff;
+      --bg: #f0ebff;
+      --text: #1e1b4b;
+      --text-2: #4b5563;
+      --muted: #9ca3af;
+      --border: #e9e3ff;
+      --green: #059669;
+      --green-bg: #d1fae5;
+      --amber: #d97706;
+      --amber-bg: #fef3c7;
+      --red: #dc2626;
+      --red-bg: #fee2e2;
+      --nav-bg: #1e1b4b;
+      --nav-active: #a855f7;
+      --card-shadow: 0 2px 16px rgba(124,58,237,0.10);
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
-    body { background: var(--bg); color: var(--text); padding: 1rem; min-height: 100vh; }
-    .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
-    .title { font-size: 1.25rem; font-weight: 800; background: linear-gradient(135deg, #fff, var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .subtitle { font-size: 0.78rem; color: var(--muted); margin-top: 0.2rem; }
-    .card { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 1.2rem; margin-bottom: 1rem; }
-    .btn { width: 100%; padding: 0.85rem; border: none; border-radius: 12px; font-weight: 700; font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.2s; }
-    .btn-green { background: linear-gradient(135deg, #10b981, #059669); color: #fff; }
-    .btn-purple { background: linear-gradient(135deg, var(--purple), var(--pink)); color: #fff; }
-    .btn-secondary { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #fff; }
-    .task-item { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 0.85rem; margin-bottom: 0.75rem; }
-    .task-title { font-weight: 700; font-size: 0.95rem; margin-bottom: 0.3rem; }
-    .task-meta { font-size: 0.78rem; color: var(--muted); display: flex; justify-content: space-between; margin-bottom: 0.6rem; }
-    .badge { padding: 0.25rem 0.6rem; border-radius: 999px; font-size: 0.72rem; font-weight: 700; }
-    .tab-bar { display: flex; gap: 0.5rem; margin-bottom: 1rem; overflow-x: auto; padding-bottom: 0.25rem; }
-    .tab { padding: 0.5rem 1rem; border-radius: 999px; font-size: 0.78rem; font-weight: 700; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: var(--muted); cursor: pointer; white-space: nowrap; }
-    .tab.active { background: var(--purple); color: #fff; border-color: var(--purple); }
-    .lock-screen { text-align: center; padding: 3rem 1.5rem; }
-    .lock-icon { font-size: 3.5rem; margin-bottom: 1rem; }
-    /* Phase-gate success overlay */
-    #successOverlay { display: none; position: fixed; inset: 0; background: var(--bg); z-index: 9999; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 2rem; }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    html, body { height: 100%; overflow-x: hidden; }
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding-bottom: 76px;
+    }
+
+    /* ───── HERO ───── */
+    .hero {
+      background: linear-gradient(155deg, var(--hero-a) 0%, var(--hero-b) 40%, var(--hero-c) 70%, var(--hero-d) 100%);
+      padding: 1rem 1rem 1.6rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -40px; right: -40px;
+      width: 180px; height: 180px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.06);
+    }
+    .hero::after {
+      content: '';
+      position: absolute;
+      bottom: -20px; left: 30px;
+      width: 120px; height: 120px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.04);
+    }
+    .hero-topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.1rem;
+      position: relative;
+      z-index: 1;
+    }
+    .hero-brand {
+      font-size: 0.7rem;
+      font-weight: 900;
+      color: rgba(255,255,255,0.75);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+    .hero-notif {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.95rem;
+      cursor: pointer;
+    }
+    .hero-card {
+      background: rgba(255,255,255,0.14);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.22);
+      border-radius: 22px;
+      padding: 1rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      position: relative;
+      z-index: 1;
+    }
+    .avatar {
+      width: 54px; height: 54px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(255,255,255,0.35), rgba(255,255,255,0.15));
+      border: 2px solid rgba(255,255,255,0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      font-weight: 900;
+      color: #fff;
+      flex-shrink: 0;
+      letter-spacing: -0.5px;
+    }
+    .hero-info { flex: 1; min-width: 0; }
+    .hero-name {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .hero-role {
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.75);
+      margin-top: 0.15rem;
+      font-weight: 500;
+    }
+    .hero-pills {
+      display: flex;
+      gap: 0.35rem;
+      margin-top: 0.45rem;
+      flex-wrap: wrap;
+    }
+    .pill {
+      padding: 0.18rem 0.55rem;
+      border-radius: 999px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+    }
+    .pill-green { background: rgba(52,211,153,0.28); color: #6ee7b7; border: 1px solid rgba(52,211,153,0.4); }
+    .pill-gold { background: rgba(251,191,36,0.22); color: #fde68a; border: 1px solid rgba(251,191,36,0.35); }
+    .pill-white { background: rgba(255,255,255,0.18); color: rgba(255,255,255,0.9); border: 1px solid rgba(255,255,255,0.28); }
+    .pill-red { background: rgba(248,113,113,0.25); color: #fca5a5; border: 1px solid rgba(248,113,113,0.4); }
+
+    /* ───── ONBOARDING BANNER ───── */
+    .onboarding-banner {
+      background: linear-gradient(135deg, var(--purple), var(--pink));
+      margin: -0.75rem 0.85rem 0.85rem;
+      border-radius: 20px;
+      padding: 1rem 1.1rem;
+      box-shadow: 0 4px 20px rgba(124,58,237,0.3);
+      position: relative;
+      z-index: 2;
+    }
+    .ob-title {
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: rgba(255,255,255,0.8);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .ob-sub {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: #fff;
+      margin-top: 0.2rem;
+      margin-bottom: 0.75rem;
+    }
+    .ob-steps {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      margin-bottom: 0.85rem;
+    }
+    .ob-dot {
+      height: 6px;
+      border-radius: 3px;
+      background: rgba(255,255,255,0.3);
+      transition: all 0.3s ease;
+      flex: 1;
+    }
+    .ob-dot.done { background: rgba(255,255,255,0.9); }
+    .ob-dot.active { background: #fff; flex: 2; }
+    .ob-label {
+      font-size: 0.7rem;
+      color: rgba(255,255,255,0.75);
+      margin-bottom: 0.75rem;
+    }
+    .ob-btn {
+      width: 100%;
+      padding: 0.8rem;
+      border: none;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.22);
+      border: 1px solid rgba(255,255,255,0.35);
+      color: #fff;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: all 0.15s;
+    }
+    .ob-btn:active { transform: scale(0.98); background: rgba(255,255,255,0.3); }
+
+    /* ───── SECTION CARD ───── */
+    .card {
+      background: var(--surface);
+      border-radius: 20px;
+      padding: 1.1rem;
+      margin: 0 0.85rem 0.85rem;
+      box-shadow: var(--card-shadow);
+    }
+    .card-title {
+      font-size: 0.7rem;
+      font-weight: 800;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 0.9rem;
+    }
+
+    /* ───── QUICK ACTIONS ───── */
+    .qa-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.6rem;
+    }
+    .qa-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.8rem 0.25rem 0.7rem;
+      background: #f5f0ff;
+      border: 1.5px solid #ede9fe;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: 'Outfit', sans-serif;
+    }
+    .qa-btn:active { transform: scale(0.94); background: #ede9fe; }
+    .qa-icon { font-size: 1.35rem; line-height: 1; }
+    .qa-label { font-size: 0.62rem; font-weight: 700; color: var(--purple); text-align: center; line-height: 1.2; }
+
+    /* ───── STATUS ROW ───── */
+    .status-row {
+      display: flex;
+      gap: 0.6rem;
+    }
+    .stat-tile {
+      flex: 1;
+      background: #f9f7ff;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 0.75rem;
+      text-align: center;
+    }
+    .stat-val {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1;
+    }
+    .stat-lbl {
+      font-size: 0.62rem;
+      font-weight: 600;
+      color: var(--muted);
+      margin-top: 0.25rem;
+    }
+
+    /* ───── TASK ITEMS ───── */
+    .task-item {
+      padding: 0.85rem;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      margin-bottom: 0.6rem;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .task-item:last-child { margin-bottom: 0; }
+    .task-item:active { border-color: var(--purple-2); background: #faf8ff; }
+    .task-title { font-size: 0.9rem; font-weight: 700; color: var(--text); margin-bottom: 0.3rem; }
+    .task-meta { font-size: 0.72rem; color: var(--muted); display: flex; justify-content: space-between; align-items: center; }
+    .stage-badge {
+      padding: 0.2rem 0.55rem;
+      border-radius: 999px;
+      font-size: 0.64rem;
+      font-weight: 700;
+    }
+    .stage-shoot { background: #fef3c7; color: #92400e; }
+    .stage-edit { background: #ede9fe; color: #4c1d95; }
+    .stage-review { background: #d1fae5; color: #064e3b; }
+    .stage-brief { background: #e0f2fe; color: #0c4a6e; }
+
+    /* ───── PAY CARD ───── */
+    .pay-hero {
+      background: linear-gradient(135deg, var(--purple), var(--pink));
+      border-radius: 18px;
+      padding: 1.2rem;
+      margin-bottom: 0.85rem;
+      text-align: center;
+    }
+    .pay-label { font-size: 0.7rem; font-weight: 700; color: rgba(255,255,255,0.75); text-transform: uppercase; letter-spacing: 0.5px; }
+    .pay-amount { font-size: 2rem; font-weight: 900; color: #fff; margin: 0.3rem 0; letter-spacing: -0.5px; }
+    .pay-sub { font-size: 0.75rem; color: rgba(255,255,255,0.7); }
+    .pay-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.7rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .pay-row:last-child { border-bottom: none; }
+    .pay-row-label { font-size: 0.82rem; color: var(--text-2); font-weight: 500; }
+    .pay-row-val { font-size: 0.9rem; font-weight: 700; color: var(--text); }
+
+    /* ───── PROFILE ───── */
+    .profile-avatar-lg {
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--purple), var(--pink));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: #fff;
+      margin: 0 auto 1rem;
+    }
+    .profile-field {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.7rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .profile-field:last-child { border-bottom: none; }
+    .profile-field-label { font-size: 0.72rem; color: var(--muted); font-weight: 600; }
+    .profile-field-val { font-size: 0.85rem; color: var(--text); font-weight: 600; text-align: right; max-width: 60%; }
+
+    /* ───── ATTENDANCE ───── */
+    .att-clock {
+      text-align: center;
+      padding: 1.5rem 0 1rem;
+    }
+    .att-time {
+      font-size: 2.5rem;
+      font-weight: 900;
+      color: var(--text);
+      letter-spacing: -1px;
+    }
+    .att-date { font-size: 0.8rem; color: var(--muted); margin-top: 0.2rem; }
+    .att-status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.4rem 1rem;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      margin-top: 0.75rem;
+    }
+    .att-pill-offline { background: #f3f4f6; color: #6b7280; border: 1px solid #e5e7eb; }
+    .att-pill-online { background: var(--green-bg); color: var(--green); border: 1px solid rgba(5,150,105,0.25); }
+    .btn-clock-in {
+      width: 100%;
+      padding: 0.95rem;
+      background: linear-gradient(135deg, var(--green), #10b981);
+      border: none;
+      border-radius: 16px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 1rem;
+      font-weight: 800;
+      color: #fff;
+      cursor: pointer;
+      margin-bottom: 0.6rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: all 0.15s;
+    }
+    .btn-clock-out {
+      width: 100%;
+      padding: 0.95rem;
+      background: #f3f4f6;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 16px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--text-2);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: all 0.15s;
+    }
+    .btn-clock-in:active { transform: scale(0.98); }
+    .btn-clock-out:active { transform: scale(0.98); background: #e5e7eb; }
+
+    /* ───── ROSTER ───── */
+    .roster-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .roster-item:last-child { border-bottom: none; }
+    .roster-avatar {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      background: var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: var(--purple);
+      flex-shrink: 0;
+    }
+    .roster-name { font-size: 0.88rem; font-weight: 700; color: var(--text); }
+    .roster-role { font-size: 0.68rem; color: var(--muted); margin-top: 0.1rem; }
+    .roster-status { margin-left: auto; flex-shrink: 0; }
+    .status-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 0.3rem;
+    }
+    .dot-green { background: var(--green); }
+    .dot-amber { background: var(--amber); }
+    .dot-gray { background: #d1d5db; }
+    .dot-blue { background: #3b82f6; }
+
+    /* ───── ONBOARDING FORM MODAL ───── */
+    #surveyModal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      z-index: 200;
+      overflow-y: auto;
+      padding-bottom: 2rem;
+    }
+    #surveyModal.open { display: block; }
+    .survey-header {
+      background: linear-gradient(155deg, var(--hero-a), var(--hero-c));
+      padding: 1rem 1rem 1.5rem;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .survey-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.8rem;
+    }
+    .btn-close-survey {
+      background: rgba(255,255,255,0.18);
+      border: 1px solid rgba(255,255,255,0.28);
+      border-radius: 10px;
+      padding: 0.35rem 0.7rem;
+      color: #fff;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .survey-step-label {
+      font-size: 0.7rem;
+      font-weight: 800;
+      color: rgba(255,255,255,0.75);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .survey-title {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #fff;
+      margin-top: 0.15rem;
+    }
+    .xp-badge {
+      padding: 0.25rem 0.65rem;
+      background: rgba(255,255,255,0.18);
+      border: 1px solid rgba(255,255,255,0.28);
+      border-radius: 999px;
+      font-size: 0.68rem;
+      font-weight: 800;
+      color: #fde68a;
+    }
+    .survey-steps-row {
+      display: flex;
+      gap: 0.3rem;
+      margin-top: 0.85rem;
+    }
+    .survey-body {
+      padding: 1rem 0.85rem 0;
+    }
+    .form-section-title {
+      font-size: 0.68rem;
+      font-weight: 800;
+      color: var(--purple);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 0.75rem;
+      padding-top: 1rem;
+    }
+    .form-group { margin-bottom: 0.85rem; }
+    .form-label {
+      display: block;
+      font-size: 0.72rem;
+      color: var(--text-2);
+      font-weight: 600;
+      margin-bottom: 0.35rem;
+    }
+    .form-input {
+      width: 100%;
+      padding: 0.75rem 0.9rem;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.88rem;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .form-input:focus { border-color: var(--purple-2); }
+    .form-input::placeholder { color: var(--muted); }
+    select.form-input { appearance: none; -webkit-appearance: none; cursor: pointer; }
+    .form-row { display: flex; gap: 0.6rem; }
+    .form-row .form-group { flex: 1; }
+    .form-verified {
+      background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+      border: 1px solid rgba(5,150,105,0.2);
+      border-radius: 14px;
+      padding: 0.85rem;
+      margin-bottom: 1rem;
+    }
+    .form-verified-label {
+      font-size: 0.68rem;
+      font-weight: 800;
+      color: var(--green);
+      letter-spacing: 0.5px;
+      margin-bottom: 0.5rem;
+    }
+    .form-verified-row {
+      font-size: 0.82rem;
+      color: var(--text-2);
+      line-height: 1.7;
+    }
+    .form-verified-row strong { color: var(--text); font-weight: 700; }
+    .btn-primary {
+      width: 100%;
+      padding: 0.95rem;
+      background: linear-gradient(135deg, var(--purple), var(--pink));
+      border: none;
+      border-radius: 16px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 1rem;
+      font-weight: 800;
+      color: #fff;
+      cursor: pointer;
+      margin-top: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: all 0.15s;
+    }
+    .btn-primary:active { transform: scale(0.98); opacity: 0.9; }
+    .btn-secondary {
+      width: 100%;
+      padding: 0.85rem;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 16px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text-2);
+      cursor: pointer;
+      margin-top: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: all 0.15s;
+    }
+
+    /* Agreement */
+    .contract-scroll {
+      background: #faf8ff;
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 1rem;
+      max-height: 250px;
+      overflow-y: auto;
+      font-size: 0.78rem;
+      color: var(--text-2);
+      line-height: 1.7;
+      margin-bottom: 1rem;
+    }
+    .contract-scroll strong { color: var(--text); }
+    .sign-input {
+      width: 100%;
+      padding: 0.9rem;
+      background: var(--surface);
+      border: 2px dashed var(--purple-2);
+      border-radius: 12px;
+      font-family: cursive, 'Outfit', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text);
+      outline: none;
+      text-align: center;
+      margin-bottom: 0.75rem;
+    }
+    .consent-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      padding: 0.75rem;
+      background: #f5f0ff;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+    .consent-row input[type="checkbox"] {
+      width: 18px; height: 18px;
+      accent-color: var(--purple);
+      flex-shrink: 0;
+      margin-top: 0.1rem;
+    }
+    .consent-row label { font-size: 0.78rem; color: var(--text-2); line-height: 1.5; }
+    .agr-stage-tracker {
+      display: flex;
+      gap: 0.4rem;
+      margin-bottom: 1rem;
+    }
+    .agr-stage {
+      flex: 1;
+      text-align: center;
+      padding: 0.5rem 0.25rem;
+      background: var(--border);
+      border-radius: 10px;
+      font-size: 0.6rem;
+      font-weight: 700;
+      color: var(--muted);
+    }
+    .agr-stage.done { background: var(--green-bg); color: var(--green); }
+    .agr-stage.active { background: linear-gradient(135deg, var(--purple), var(--pink)); color: #fff; }
+
+    /* ───── SUCCESS OVERLAY ───── */
+    #successOverlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      z-index: 999;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 2rem;
+    }
     #successOverlay.visible { display: flex; }
-    .success-emoji { font-size: 5rem; margin-bottom: 1.2rem; animation: bounce 0.6s ease; }
-    .success-title { font-size: 1.5rem; font-weight: 800; color: #fff; margin-bottom: 0.5rem; }
-    .success-sub { font-size: 0.92rem; color: var(--muted); line-height: 1.6; }
-    .success-xp { font-size: 1.1rem; font-weight: 800; color: var(--green); margin: 0.75rem 0; }
-    .success-bar { width: 100%; max-width: 280px; height: 6px; background: rgba(255,255,255,0.1); border-radius: 99px; overflow: hidden; margin-top: 1.5rem; }
-    .success-bar-fill { height: 100%; background: linear-gradient(90deg, var(--purple), var(--pink)); border-radius: 99px; animation: fillBar 2s linear forwards; }
-    @keyframes bounce { 0%,100%{transform:scale(1)} 40%{transform:scale(1.3)} 70%{transform:scale(0.95)} }
-    @keyframes fillBar { from{width:0} to{width:100%} }
-    /* Progress resume banner */
-    #resumeBanner { display: none; background: rgba(168,85,247,0.15); border: 1px solid rgba(168,85,247,0.4); border-radius: 14px; padding: 1rem; margin-bottom: 1rem; }
+    .success-emoji { font-size: 5rem; margin-bottom: 1rem; animation: popIn 0.5s cubic-bezier(0.34,1.56,0.64,1); }
+    .success-title { font-size: 1.6rem; font-weight: 900; color: var(--text); margin-bottom: 0.4rem; }
+    .success-xp { font-size: 1.1rem; font-weight: 800; color: var(--purple); margin: 0.5rem 0; }
+    .success-sub { font-size: 0.88rem; color: var(--text-2); line-height: 1.6; max-width: 280px; }
+    .success-bar { width: 240px; height: 6px; background: var(--border); border-radius: 999px; overflow: hidden; margin-top: 1.5rem; }
+    .success-bar-fill { height: 100%; background: linear-gradient(90deg, var(--purple), var(--pink)); border-radius: 999px; animation: fillBar 2.2s ease forwards; }
+    @keyframes popIn { 0% { transform: scale(0.4); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+    @keyframes fillBar { from { width: 0; } to { width: 100%; } }
+
+    /* ───── LOCK SCREEN ───── */
+    #lockScreen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 2rem;
+      text-align: center;
+    }
+    #lockScreen.visible { display: flex; }
+
+    /* ───── BOTTOM NAV ───── */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--nav-bg);
+      display: flex;
+      padding: 0.55rem 0 0.5rem;
+      z-index: 100;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+    .nav-btn {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.22rem;
+      background: none;
+      border: none;
+      color: rgba(255,255,255,0.35);
+      cursor: pointer;
+      padding: 0;
+      font-family: 'Outfit', sans-serif;
+      transition: color 0.15s;
+    }
+    .nav-btn.active { color: var(--nav-active); }
+    .nav-icon { font-size: 1.18rem; line-height: 1; }
+    .nav-label { font-size: 0.58rem; font-weight: 700; letter-spacing: 0.2px; }
+    .nav-dot {
+      width: 4px; height: 4px;
+      border-radius: 50%;
+      background: var(--nav-active);
+      margin: -0.1rem auto 0;
+      display: none;
+    }
+    .nav-btn.active .nav-dot { display: block; }
+
+    /* ───── PAGES ───── */
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* ───── ADMIN SECTION ───── */
+    .admin-tile {
+      background: #f5f0ff;
+      border: 1.5px solid #ede9fe;
+      border-radius: 14px;
+      padding: 0.9rem;
+      margin-bottom: 0.6rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .admin-tile:active { background: #ede9fe; transform: scale(0.98); }
+    .admin-tile-icon {
+      width: 40px; height: 40px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.15rem;
+      flex-shrink: 0;
+    }
+    .admin-tile-info { flex: 1; }
+    .admin-tile-title { font-size: 0.88rem; font-weight: 700; color: var(--text); }
+    .admin-tile-sub { font-size: 0.7rem; color: var(--muted); margin-top: 0.1rem; }
+
+    /* ───── MISC ───── */
+    .empty-state {
+      text-align: center;
+      padding: 2rem 1rem;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+    .empty-icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+    .divider { height: 1px; background: var(--border); margin: 0.5rem 0; }
+
+    /* Activity feed */
+    .activity-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.65rem;
+      padding: 0.6rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .activity-item:last-child { border-bottom: none; }
+    .activity-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      margin-top: 0.35rem;
+      flex-shrink: 0;
+    }
+    .activity-text { font-size: 0.8rem; color: var(--text-2); line-height: 1.5; }
+    .activity-time { font-size: 0.68rem; color: var(--muted); margin-top: 0.15rem; }
+
+    /* Bank card */
+    .bank-card {
+      background: linear-gradient(135deg, #1e1b4b, #4c1d95);
+      border-radius: 18px;
+      padding: 1.2rem;
+      margin-bottom: 0.85rem;
+      color: #fff;
+    }
+    .bank-card-label { font-size: 0.65rem; color: rgba(255,255,255,0.6); font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; }
+    .bank-card-val { font-size: 1rem; font-weight: 700; color: #fff; margin-top: 0.2rem; }
+    .bank-row { display: flex; gap: 1rem; margin-top: 0.75rem; }
+    .bank-row > div { flex: 1; }
+    .mfs-row {
+      display: flex;
+      gap: 0.6rem;
+      margin-top: 0.75rem;
+    }
+    .mfs-chip {
+      flex: 1;
+      padding: 0.65rem;
+      border-radius: 12px;
+      text-align: center;
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+    .mfs-bkash { background: #fce7f3; color: #be185d; border: 1px solid #fbcfe8; }
+    .mfs-nagad { background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; }
   </style>
 </head>
 <body>
 
-  <!-- PHASE-GATE SUCCESS OVERLAY -->
-  <div id="successOverlay">
-    <div class="success-emoji" id="successEmoji">🎉</div>
-    <div class="success-title" id="successTitle">Part Saved!</div>
-    <div class="success-xp" id="successXP">+0 XP Earned</div>
-    <div class="success-sub" id="successSub">Check your Telegram chat for the next step!</div>
-    <div class="success-bar"><div class="success-bar-fill"></div></div>
-    <div style="font-size: 0.78rem; color: var(--muted); margin-top: 1rem;">Returning to Telegram...</div>
-  </div>
+<!-- ════════════════════════════════════════════
+     SUCCESS PHASE-GATE OVERLAY
+════════════════════════════════════════════ -->
+<div id="successOverlay">
+  <div class="success-emoji" id="successEmoji">🎉</div>
+  <div class="success-title" id="successTitle">Saved!</div>
+  <div class="success-xp" id="successXP">+0 XP Earned</div>
+  <div class="success-sub" id="successSub">Check your Telegram for the next step!</div>
+  <div class="success-bar"><div class="success-bar-fill"></div></div>
+  <div style="font-size:0.72rem;color:var(--muted);margin-top:1rem;">Returning in a moment...</div>
+</div>
 
-  <!-- RESTRICTED ACCESS SCREEN (Hidden by default, shown if unauthenticated) -->
-  <div id="lockScreen" class="card lock-screen" style="display: none;">
-    <div class="lock-icon">🔒</div>
-    <div style="font-size: 1.2rem; font-weight: 800; margin-bottom: 0.5rem; color: #fff;">Access Restricted</div>
-    <div style="font-size: 0.85rem; color: var(--muted); line-height: 1.5; margin-bottom: 1.5rem;">
-      This portal is restricted to authorized <strong style="color: var(--purple);">Purplebot Digital Limited</strong> team members.<br><br>
-      Please open the bot in Telegram and tap <strong>"📱 Verify My Phone Number"</strong> to verify your account.
-    </div>
-    <div style="font-size: 0.78rem; color: var(--muted); background: rgba(255,255,255,0.04); padding: 0.8rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08);">
-      Technology Admin Support: <strong>Firoz Uddin Ahmed</strong> (+8801708459008)
-    </div>
+<!-- ════════════════════════════════════════════
+     LOCK SCREEN
+════════════════════════════════════════════ -->
+<div id="lockScreen">
+  <div style="font-size:3.5rem;margin-bottom:1rem;">🔒</div>
+  <div style="font-size:1.2rem;font-weight:800;color:var(--text);margin-bottom:0.5rem;">Access Restricted</div>
+  <div style="font-size:0.85rem;color:var(--text-2);line-height:1.6;margin-bottom:1.5rem;max-width:280px;">
+    This portal is restricted to authorized <strong style="color:var(--purple)">Purplebot Digital Limited</strong> team members.<br><br>
+    Open the bot in Telegram and tap <strong>📱 Verify My Phone Number</strong> to link your account.
   </div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:0.85rem;font-size:0.78rem;color:var(--text-2);max-width:260px;">
+    Tech Admin Support:<br>
+    <strong style="color:var(--text)">Firoz Uddin Ahmed</strong><br>
+    <span style="color:var(--purple)">+8801708459008</span>
+  </div>
+</div>
 
-  <!-- MAIN AUTHORIZED DASHBOARD -->
-  <div id="mainDashboard" style="display: none;">
-    <div class="header">
+<!-- ════════════════════════════════════════════
+     SURVEY / ONBOARDING MODAL
+════════════════════════════════════════════ -->
+<div id="surveyModal">
+  <!-- Sticky header -->
+  <div class="survey-header">
+    <div class="survey-topbar">
       <div>
-        <div style="font-size: 0.72rem; color: var(--purple); font-weight: 800; letter-spacing: 0.5px;" id="userDept">PURPLEBOT DIGITAL</div>
-        <div class="title" id="userName">Team Dashboard</div>
-        <div class="subtitle" id="userRole">Specialist</div>
+        <div class="survey-step-label" id="surveyStepLabel">PART 1 OF 4</div>
+        <div class="survey-title" id="surveyStepTitle">Personal & Family Profile</div>
       </div>
-      <span class="badge" style="background: rgba(52,211,153,0.15); color: var(--green); border: 1px solid rgba(52,211,153,0.3);" id="attStatus">Offline</span>
-    </div>
-
-    <!-- Navigation Tabs -->
-    <div class="tab-bar">
-      <button class="tab active" onclick="switchTab('survey')">🎓 Survey Profile</button>
-      <button class="tab" onclick="switchTab('tasks')">📋 My Tasks</button>
-      <button class="tab" onclick="switchTab('attendance')">⏱️ Attendance</button>
-      <button class="tab" onclick="switchTab('earnings')">💰 My Earnings</button>
-      <button class="tab" onclick="switchTab('roster')">👥 Team Roster</button>
-    </div>
-
-    <!-- Tab 0: Survey Profile (Part 1: Personal & Family Profile) -->
-    <div id="tabSurvey" class="card">
-      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.08);">
-        <div>
-          <div style="font-size: 0.75rem; color: var(--purple); font-weight: 800;">PART 1 OF 4</div>
-          <div style="font-size: 1.05rem; font-weight: 800; color: #fff;">Personal & Family Profile</div>
-        </div>
-        <span class="badge" style="background: rgba(168,85,247,0.2); color: #c084fc; border: 1px solid rgba(168,85,247,0.4);" id="part1XpBadge">🏆 Points: +0 XP</span>
+      <div style="display:flex;align-items:center;gap:0.5rem;">
+        <span class="xp-badge" id="surveyXpBadge">🏆 +0 XP</span>
+        <button class="btn-close-survey" onclick="closeSurvey()">✕ Close</button>
       </div>
+    </div>
+    <div class="survey-steps-row">
+      <div class="ob-dot" id="sdot1"></div>
+      <div class="ob-dot" id="sdot2"></div>
+      <div class="ob-dot" id="sdot3"></div>
+      <div class="ob-dot" id="sdot4"></div>
+      <div class="ob-dot" id="sdot5"></div>
+    </div>
+  </div>
 
-      <!-- Pre-Filled Verified System Data -->
-      <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 0.85rem; margin-bottom: 1rem;">
-        <div style="font-size: 0.72rem; color: var(--green); font-weight: 800; margin-bottom: 0.5rem;">✅ VERIFIED SYSTEM IDENTITY</div>
-        <div style="font-size: 0.85rem; color: #fff; line-height: 1.6;">
-          • Name: <strong id="prefName">Firoz Uddin Ahmed</strong><br>
-          • Phone: <strong id="prefPhone">+8801708459008</strong><br>
-          • Role: <strong id="prefRole">Technology Admin</strong> • <span id="prefDept">Tech & AI</span><br>
-          • Email: <strong id="prefEmail">claycoinbank@gmail.com</strong>
+  <div class="survey-body">
+
+    <!-- ─── PART 1: Personal & Family ─── -->
+    <div id="surveyPart1">
+      <div class="form-verified" id="verifiedBadge">
+        <div class="form-verified-label">✅ VERIFIED SYSTEM IDENTITY</div>
+        <div class="form-verified-row">
+          • Name: <strong id="prefName">—</strong><br>
+          • Phone: <strong id="prefPhone">—</strong><br>
+          • Role: <strong id="prefRole">—</strong> · <span id="prefDept">—</span><br>
+          • Email: <strong id="prefEmail">—</strong>
         </div>
       </div>
 
-      <!-- Contact & Residence Info -->
-      <div style="font-size: 0.82rem; font-weight: 800; color: var(--purple); margin-bottom: 0.6rem;">📱 CONTACT & RESIDENCE DETAILS (5 XP / Field)</div>
-      
-      <div style="margin-bottom: 0.75rem;">
-        <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Emergency Contact Phone Number *</label>
-        <input type="text" id="inpEmergency" oninput="calcPart1XP()" placeholder="e.g. 01712250049" style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+      <div class="form-section-title">📱 Contact & Residence Details (5 XP / Field)</div>
+      <div class="form-group">
+        <label class="form-label">Emergency Contact Phone Number *</label>
+        <input type="tel" id="inpEmergency" class="form-input" oninput="calcPart1XP()" placeholder="e.g. 01712250049">
       </div>
-
-      <div style="margin-bottom: 0.75rem;">
-        <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Emergency Contact Relationship *</label>
-        <input type="text" id="inpRelation" oninput="calcPart1XP()" placeholder="e.g. Spouse, Father, Brother" style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+      <div class="form-group">
+        <label class="form-label">Emergency Contact Relationship *</label>
+        <input type="text" id="inpRelation" class="form-input" oninput="calcPart1XP()" placeholder="e.g. Spouse, Father, Brother">
       </div>
-
-      <div style="margin-bottom: 0.75rem;">
-        <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Current Residence / Home Address *</label>
-        <input type="text" id="inpAddress" oninput="calcPart1XP()" placeholder="e.g. Mirpur 12, Dhaka" style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+      <div class="form-group">
+        <label class="form-label">Current Residence / Home Address *</label>
+        <input type="text" id="inpAddress" class="form-input" oninput="calcPart1XP()" placeholder="e.g. Mirpur 12, Dhaka">
       </div>
-
-      <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem;">
-        <div style="flex: 1;">
-          <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Blood Group (+5 XP)</label>
-          <select id="inpBlood" onchange="calcPart1XP()" style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Blood Group (+5 XP)</label>
+          <select id="inpBlood" class="form-input" onchange="calcPart1XP()">
             <option value="">Select...</option>
-            <option value="A+">A+</option>
-            <option value="A-">A-</option>
-            <option value="B+">B+</option>
-            <option value="B-">B-</option>
-            <option value="O+">O+</option>
-            <option value="O-">O-</option>
-            <option value="AB+">AB+</option>
-            <option value="AB-">AB-</option>
+            <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+            <option>O+</option><option>O-</option><option>AB+</option><option>AB-</option>
           </select>
         </div>
-        <div style="flex: 1;">
-          <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Marital Status (+5 XP)</label>
-          <select id="inpMarital" onchange="calcPart1XP()" style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+        <div class="form-group">
+          <label class="form-label">Marital Status (+5 XP)</label>
+          <select id="inpMarital" class="form-input" onchange="calcPart1XP()">
             <option value="">Select...</option>
-            <option value="Single">Single</option>
-            <option value="Married">Married</option>
-            <option value="Other">Other</option>
+            <option>Single</option><option>Married</option><option>Other</option>
           </select>
         </div>
       </div>
-
-      <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
-        <div style="flex: 1;">
-          <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Official Joining Date * (+5 XP)</label>
-          <input type="date" id="inpJoiningDate" onchange="calcPart1XP()" style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Official Joining Date * (+5 XP)</label>
+          <input type="date" id="inpJoiningDate" class="form-input" onchange="calcPart1XP()">
         </div>
-        <div style="flex: 1;">
-          <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Date of Birth (+5 XP)</label>
-          <input type="date" id="inpDob" onchange="calcPart1XP()" style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+        <div class="form-group">
+          <label class="form-label">Date of Birth (+5 XP)</label>
+          <input type="date" id="inpDob" class="form-input" onchange="calcPart1XP()">
         </div>
       </div>
-
-      <div style="margin-bottom: 1rem;">
-        <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Personal Email (+5 XP)</label>
-        <input type="email" id="inpPersonalEmail" oninput="calcPart1XP()" placeholder="name@gmail.com" style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+      <div class="form-group">
+        <label class="form-label">Personal Email (+5 XP)</label>
+        <input type="email" id="inpPersonalEmail" class="form-input" oninput="calcPart1XP()" placeholder="name@gmail.com">
       </div>
 
-      <!-- Dependents Section -->
-      <div style="font-size: 0.82rem; font-weight: 800; color: var(--purple); margin-bottom: 0.6rem;">👨‍👩‍👧‍👦 FAMILY DEPENDENTS (5 SLOTS · +5 XP EACH)</div>
-      
-      <div style="margin-bottom: 0.6rem;">
-        <input type="text" id="depFather" oninput="calcPart1XP()" placeholder="1. Father's Full Name (+5 XP)" style="width: 100%; padding: 0.6rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; color: #fff; font-size: 0.82rem;">
-      </div>
-      <div style="margin-bottom: 0.6rem;">
-        <input type="text" id="depMother" oninput="calcPart1XP()" placeholder="2. Mother's Full Name (+5 XP)" style="width: 100%; padding: 0.6rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; color: #fff; font-size: 0.82rem;">
-      </div>
-      <div style="margin-bottom: 0.6rem;">
-        <input type="text" id="depSpouse" oninput="calcPart1XP()" placeholder="3. Spouse Full Name (If married) (+5 XP)" style="width: 100%; padding: 0.6rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; color: #fff; font-size: 0.82rem;">
-      </div>
-      <div style="margin-bottom: 0.6rem;">
-        <input type="text" id="depChild1" oninput="calcPart1XP()" placeholder="4. Child 1 Name (+5 XP)" style="width: 100%; padding: 0.6rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; color: #fff; font-size: 0.82rem;">
-      </div>
-      <div style="margin-bottom: 1rem;">
-        <input type="text" id="depChild2" oninput="calcPart1XP()" placeholder="5. Child 2 Name (+5 XP)" style="width: 100%; padding: 0.6rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; color: #fff; font-size: 0.82rem;">
-      </div>
+      <div class="form-section-title">👨‍👩‍👧‍👦 Family Dependents (5 XP Each)</div>
+      <div class="form-group"><input type="text" id="depFather" class="form-input" oninput="calcPart1XP()" placeholder="1. Father's Full Name (+5 XP)"></div>
+      <div class="form-group"><input type="text" id="depMother" class="form-input" oninput="calcPart1XP()" placeholder="2. Mother's Full Name (+5 XP)"></div>
+      <div class="form-group"><input type="text" id="depSpouse" class="form-input" oninput="calcPart1XP()" placeholder="3. Spouse Full Name (if married) (+5 XP)"></div>
+      <div class="form-group"><input type="text" id="depChild1" class="form-input" oninput="calcPart1XP()" placeholder="4. Child 1 Name (+5 XP)"></div>
+      <div class="form-group"><input type="text" id="depChild2" class="form-input" oninput="calcPart1XP()" placeholder="5. Child 2 Name (+5 XP)"></div>
 
-      <button class="btn btn-purple" onclick="submitPart1()">💾 Save Part 1 Profile & Claim XP</button>
+      <button class="btn-primary" onclick="submitPart1()">💾 Save Part 1 & Claim XP →</button>
     </div>
 
-    <!-- Tab 0.2: Part 2 National Verification & Education -->
-    <div id="tabPart2" class="card" style="display: none;">
-      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.08);">
-        <div>
-          <div style="font-size: 0.75rem; color: var(--purple); font-weight: 800;">PART 2 OF 4</div>
-          <div style="font-size: 1.05rem; font-weight: 800; color: #fff;">National Verification & Education</div>
+    <!-- ─── PART 2: National Verification ─── -->
+    <div id="surveyPart2" style="display:none;">
+      <div class="form-section-title">🪪 Government Identification (5 XP / Field)</div>
+      <div class="form-group">
+        <label class="form-label">NID / Smart Card / Passport Number *</label>
+        <input type="text" id="inpNid" class="form-input" oninput="calcPart2XP()" placeholder="e.g. 199426925100001">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Permanent Address (District, Thana, Village) *</label>
+        <input type="text" id="inpPermAddress" class="form-input" oninput="calcPart2XP()" placeholder="e.g. Vill: Monohorpur, Thana: Kotwali, Dist: Cumilla">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">e-TIN Number (+5 XP)</label>
+          <input type="text" id="inpTin" class="form-input" oninput="calcPart2XP()" placeholder="TIN Number">
         </div>
-        <span class="badge" style="background: rgba(168,85,247,0.2); color: #c084fc; border: 1px solid rgba(168,85,247,0.4);" id="part2XpBadge">🏆 Points: +0 XP</span>
-      </div>
-
-      <!-- Identity & Government Verification -->
-      <div style="font-size: 0.82rem; font-weight: 800; color: var(--purple); margin-bottom: 0.6rem;">🪪 GOVERNMENT IDENTIFICATION (5 XP / Field)</div>
-
-      <div style="margin-bottom: 0.75rem;">
-        <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">NID / Smart Card / Passport Number *</label>
-        <input type="text" id="inpNid" oninput="calcPart2XP()" placeholder="e.g. 199426925100001" style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
-      </div>
-
-      <div style="margin-bottom: 0.75rem;">
-        <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Permanent Address (District, Thana, Village) *</label>
-        <input type="text" id="inpPermAddress" oninput="calcPart2XP()" placeholder="e.g. Vill: Monohorpur, Thana: Kotwali, Dist: Cumilla" style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
-      </div>
-
-      <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
-        <div style="flex: 1;">
-          <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">e-TIN Number (+5 XP)</label>
-          <input type="text" id="inpTin" oninput="calcPart2XP()" placeholder="TIN Number" style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
-        </div>
-        <div style="flex: 1;">
-          <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Driving License (+5 XP)</label>
-          <input type="text" id="inpLicense" oninput="calcPart2XP()" placeholder="License No." style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+        <div class="form-group">
+          <label class="form-label">Driving License (+5 XP)</label>
+          <input type="text" id="inpLicense" class="form-input" oninput="calcPart2XP()" placeholder="License No.">
         </div>
       </div>
 
-      <!-- Educational Background -->
-      <div style="font-size: 0.82rem; font-weight: 800; color: var(--purple); margin-bottom: 0.6rem;">🎓 EDUCATIONAL BACKGROUND (5 XP / Field)</div>
-
-      <div style="margin-bottom: 0.75rem;">
-        <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Highest Degree Attained (+5 XP)</label>
-        <input type="text" id="inpDegree" oninput="calcPart2XP()" placeholder="e.g. B.Sc in CSE, BBA, HSC" style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+      <div class="form-section-title">🎓 Educational Background (5 XP / Field)</div>
+      <div class="form-group">
+        <label class="form-label">Highest Degree Attained (+5 XP)</label>
+        <input type="text" id="inpDegree" class="form-input" oninput="calcPart2XP()" placeholder="e.g. B.Sc in CSE, BBA, HSC">
       </div>
-
-      <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
-        <div style="flex: 2;">
-          <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">University / College Name (+5 XP)</label>
-          <input type="text" id="inpInstitution" oninput="calcPart2XP()" placeholder="e.g. North South University" style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+      <div class="form-row">
+        <div class="form-group" style="flex:2;">
+          <label class="form-label">University / College Name (+5 XP)</label>
+          <input type="text" id="inpInstitution" class="form-input" oninput="calcPart2XP()" placeholder="e.g. North South University">
         </div>
-        <div style="flex: 1;">
-          <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Passing Year (+5 XP)</label>
-          <input type="text" id="inpPassingYear" oninput="calcPart2XP()" placeholder="2020" style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+        <div class="form-group" style="flex:1;">
+          <label class="form-label">Passing Year (+5 XP)</label>
+          <input type="text" id="inpPassingYear" class="form-input" oninput="calcPart2XP()" placeholder="2020">
         </div>
       </div>
 
-      <!-- Attachments Section -->
-      <div style="font-size: 0.82rem; font-weight: 800; color: var(--purple); margin-bottom: 0.6rem;">📸 DOCUMENT ATTACHMENTS (10 XP / FILE)</div>
-
-      <div style="margin-bottom: 0.75rem;">
-        <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">NID / Passport Document Scan (+10 XP)</label>
-        <input type="file" id="fileNidDoc" onchange="calcPart2XP()" accept="image/*,.pdf" style="width: 100%; font-size: 0.8rem; color: var(--muted);">
+      <div class="form-section-title">📸 Document Attachments (10 XP / File)</div>
+      <div class="form-group">
+        <label class="form-label">NID / Passport Scan (+10 XP)</label>
+        <input type="file" id="fileNidDoc" class="form-input" onchange="calcPart2XP()" accept="image/*,.pdf" style="padding:0.55rem;">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Educational Certificate Scan (+10 XP)</label>
+        <input type="file" id="fileCertDoc" class="form-input" onchange="calcPart2XP()" accept="image/*,.pdf" style="padding:0.55rem;">
       </div>
 
-      <div style="margin-bottom: 1.2rem;">
-        <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Educational Certificate Copy Scan (+10 XP)</label>
-        <input type="file" id="fileCertDoc" onchange="calcPart2XP()" accept="image/*,.pdf" style="width: 100%; font-size: 0.8rem; color: var(--muted);">
-      </div>
-
-      <button class="btn btn-purple" onclick="submitPart2()">💾 Save Part 2 & Claim XP</button>
+      <button class="btn-primary" onclick="submitPart2()">💾 Save Part 2 & Claim XP →</button>
+      <button class="btn-secondary" onclick="goToSurveyPart(1)">← Back to Part 1</button>
     </div>
 
-    <!-- Tab 0.3: Part 3 Financial, Salary & Payroll Setup -->
-    <div id="tabPart3" class="card" style="display: none;">
-      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.08);">
-        <div>
-          <div style="font-size: 0.75rem; color: var(--purple); font-weight: 800;">PART 3 OF 4</div>
-          <div style="font-size: 1.05rem; font-weight: 800; color: #fff;">Financial, Salary & Payroll Setup</div>
+    <!-- ─── PART 3: Financial / Payroll ─── -->
+    <div id="surveyPart3" style="display:none;">
+      <div class="form-section-title">💰 Salary & Compensation (5 XP / Field)</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Base Salary (BDT) *</label>
+          <input type="number" id="inpBaseSalary" class="form-input" oninput="calcPart3XP()" placeholder="e.g. 85000">
         </div>
-        <span class="badge" style="background: rgba(168,85,247,0.2); color: #c084fc; border: 1px solid rgba(168,85,247,0.4);" id="part3XpBadge">🏆 Points: +0 XP</span>
-      </div>
-
-      <!-- Salary & Compensation Information -->
-      <div style="font-size: 0.82rem; font-weight: 800; color: var(--purple); margin-bottom: 0.6rem;">💰 SALARY & COMPENSATION (5 XP / Field)</div>
-
-      <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem;">
-        <div style="flex: 1;">
-          <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Base Salary (BDT) *</label>
-          <input type="number" id="inpBaseSalary" oninput="calcPart3XP()" placeholder="e.g. 85000" style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
-        </div>
-        <div style="flex: 1;">
-          <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Commission % / Shoot Fee (+5 XP)</label>
-          <input type="text" id="inpCommission" oninput="calcPart3XP()" placeholder="e.g. 5% or 1500/shoot" style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+        <div class="form-group">
+          <label class="form-label">Commission % / Shoot Fee (+5 XP)</label>
+          <input type="text" id="inpCommission" class="form-input" oninput="calcPart3XP()" placeholder="e.g. 5% or 1500/shoot">
         </div>
       </div>
 
-      <!-- Banking Details -->
-      <div style="font-size: 0.82rem; font-weight: 800; color: var(--purple); margin-bottom: 0.6rem;">🏦 BANKING & DIRECT DEPOSIT (5 XP / Field)</div>
-
-      <div style="margin-bottom: 0.75rem;">
-        <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Primary Bank Name *</label>
-        <input type="text" id="inpBankName" oninput="calcPart3XP()" placeholder="e.g. Brac Bank Limited" style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+      <div class="form-section-title">🏦 Banking & Direct Deposit (5 XP / Field)</div>
+      <div class="form-group">
+        <label class="form-label">Primary Bank Name *</label>
+        <input type="text" id="inpBankName" class="form-input" oninput="calcPart3XP()" placeholder="e.g. BRAC Bank Limited">
       </div>
-
-      <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem;">
-        <div style="flex: 1;">
-          <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Account Title / Holder Name *</label>
-          <input type="text" id="inpAccTitle" oninput="calcPart3XP()" placeholder="e.g. Firoz Uddin Ahmed" style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Account Holder Name *</label>
+          <input type="text" id="inpAccTitle" class="form-input" oninput="calcPart3XP()" placeholder="Full Name">
         </div>
-        <div style="flex: 1;">
-          <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Account Number *</label>
-          <input type="text" id="inpAccNo" oninput="calcPart3XP()" placeholder="Account No." style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+        <div class="form-group">
+          <label class="form-label">Account Number *</label>
+          <input type="text" id="inpAccNo" class="form-input" oninput="calcPart3XP()" placeholder="Account No.">
         </div>
       </div>
-
-      <div style="margin-bottom: 1rem;">
-        <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Branch Name & Routing Number (+5 XP)</label>
-        <input type="text" id="inpBranchRouting" oninput="calcPart3XP()" placeholder="e.g. Gulshan Branch, Routing: 060261234" style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+      <div class="form-group">
+        <label class="form-label">Branch & Routing Number (+5 XP)</label>
+        <input type="text" id="inpBranchRouting" class="form-input" oninput="calcPart3XP()" placeholder="e.g. Gulshan Branch, Routing: 060261234">
       </div>
 
-      <!-- MFS Mobile Wallets -->
-      <div style="font-size: 0.82rem; font-weight: 800; color: var(--purple); margin-bottom: 0.6rem;">📱 MOBILE WALLETS (bKash / Nagad / Rocket)</div>
-
-      <div style="margin-bottom: 0.75rem;">
-        <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">bKash Personal Mobile Number *</label>
-        <input type="text" id="inpBkash" oninput="calcPart3XP()" placeholder="e.g. 01708459008" style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+      <div class="form-section-title">📱 Mobile Wallets (bKash / Nagad / Rocket)</div>
+      <div class="form-group">
+        <label class="form-label">bKash Personal Number *</label>
+        <input type="tel" id="inpBkash" class="form-input" oninput="calcPart3XP()" placeholder="e.g. 01708459008">
       </div>
-
-      <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
-        <div style="flex: 1;">
-          <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Nagad Number (+5 XP)</label>
-          <input type="text" id="inpNagad" oninput="calcPart3XP()" placeholder="Nagad No." style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Nagad Number (+5 XP)</label>
+          <input type="tel" id="inpNagad" class="form-input" oninput="calcPart3XP()" placeholder="Nagad No.">
         </div>
-        <div style="flex: 1;">
-          <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Rocket Number (+5 XP)</label>
-          <input type="text" id="inpRocket" oninput="calcPart3XP()" placeholder="Rocket No." style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+        <div class="form-group">
+          <label class="form-label">Rocket Number (+5 XP)</label>
+          <input type="tel" id="inpRocket" class="form-input" oninput="calcPart3XP()" placeholder="Rocket No.">
         </div>
       </div>
-
-      <!-- Attachment -->
-      <div style="font-size: 0.82rem; font-weight: 800; color: var(--purple); margin-bottom: 0.6rem;">📸 BANK STATEMENT / CHEQUE LEAF (+10 XP)</div>
-      
-      <div style="margin-bottom: 1.2rem;">
-        <input type="file" id="fileBankDoc" onchange="calcPart3XP()" accept="image/*,.pdf" style="width: 100%; font-size: 0.8rem; color: var(--muted);">
+      <div class="form-group">
+        <label class="form-label">📸 Bank Statement / Cheque Leaf (+10 XP)</label>
+        <input type="file" id="fileBankDoc" class="form-input" onchange="calcPart3XP()" accept="image/*,.pdf" style="padding:0.55rem;">
       </div>
 
-      <button class="btn btn-purple" onclick="submitPart3()">💾 Save Part 3 & Claim XP</button>
+      <button class="btn-primary" onclick="submitPart3()">💾 Save Part 3 & Claim XP →</button>
+      <button class="btn-secondary" onclick="goToSurveyPart(2)">← Back to Part 2</button>
     </div>
 
-    <!-- Tab 0.4: Part 4 Work Skills, Merch & Equipment Inventory -->
-    <div id="tabPart4" class="card" style="display: none;">
-      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.08);">
-        <div>
-          <div style="font-size: 0.75rem; color: var(--purple); font-weight: 800;">PART 4 OF 4</div>
-          <div style="font-size: 1.05rem; font-weight: 800; color: #fff;">Work Skills, Merch & Equipment</div>
-        </div>
-        <span class="badge" style="background: rgba(168,85,247,0.2); color: #c084fc; border: 1px solid rgba(168,85,247,0.4);" id="part4XpBadge">🏆 Points: +0 XP</span>
+    <!-- ─── PART 4: Skills & Equipment ─── -->
+    <div id="surveyPart4" style="display:none;">
+      <div class="form-section-title">🛠️ Skills & Specialization (5 XP / Field)</div>
+      <div class="form-group">
+        <label class="form-label">Primary Skillset / Core Competency *</label>
+        <input type="text" id="inpSkillPrimary" class="form-input" oninput="calcPart4XP()" placeholder="e.g. Full Stack AI Dev, Video Editing, Motion Design">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Secondary Skills & Tools (+5 XP)</label>
+        <input type="text" id="inpSkillSecondary" class="form-input" oninput="calcPart4XP()" placeholder="e.g. Premiere Pro, Node.js, Figma, After Effects">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Portfolio / GitHub / LinkedIn (+5 XP)</label>
+        <input type="url" id="inpPortfolio" class="form-input" oninput="calcPart4XP()" placeholder="https://...">
       </div>
 
-      <!-- Skills & Competency -->
-      <div style="font-size: 0.82rem; font-weight: 800; color: var(--purple); margin-bottom: 0.6rem;">🛠️ SKILLS & SPECIALIZATION (5 XP / Field)</div>
-
-      <div style="margin-bottom: 0.75rem;">
-        <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Primary Skillset / Core Competency *</label>
-        <input type="text" id="inpSkillPrimary" oninput="calcPart4XP()" placeholder="e.g. Full Stack AI Dev, Video Editing, Motion Design" style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+      <div class="form-section-title">💻 Company Assets & Equipment (5 XP / Field)</div>
+      <div class="form-group">
+        <label class="form-label">Laptop / Work Computer Serial No. (+5 XP)</label>
+        <input type="text" id="inpLaptopSerial" class="form-input" oninput="calcPart4XP()" placeholder="e.g. MacBook Pro M3 Max #C02G12345">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Assigned Studio Gear / AV Assets (+5 XP)</label>
+        <input type="text" id="inpStudioGear" class="form-input" oninput="calcPart4XP()" placeholder="e.g. Sony FX3 Camera, Rode Mic">
       </div>
 
-      <div style="margin-bottom: 0.75rem;">
-        <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Secondary Skills & Tools (+5 XP)</label>
-        <input type="text" id="inpSkillSecondary" oninput="calcPart4XP()" placeholder="e.g. Premiere Pro, Node.js, Figma, After Effects" style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
-      </div>
-
-      <div style="margin-bottom: 1rem;">
-        <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Portfolio / GitHub / LinkedIn Link (+5 XP)</label>
-        <input type="text" id="inpPortfolio" oninput="calcPart4XP()" placeholder="https://..." style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
-      </div>
-
-      <!-- Asset Inventory -->
-      <div style="font-size: 0.82rem; font-weight: 800; color: var(--purple); margin-bottom: 0.6rem;">💻 COMPANY ASSETS & EQUIPMENT (5 XP / Field)</div>
-
-      <div style="margin-bottom: 0.75rem;">
-        <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Laptop / Work Computer Serial No. (+5 XP)</label>
-        <input type="text" id="inpLaptopSerial" oninput="calcPart4XP()" placeholder="e.g. MacBook Pro M3 Max #C02G12345" style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
-      </div>
-
-      <div style="margin-bottom: 1rem;">
-        <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Assigned Studio Gear / AV Assets (+5 XP)</label>
-        <input type="text" id="inpStudioGear" oninput="calcPart4XP()" placeholder="e.g. Sony FX3 Camera, Rode Mic" style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
-      </div>
-
-      <!-- Merch & Perks -->
-      <div style="font-size: 0.82rem; font-weight: 800; color: var(--purple); margin-bottom: 0.6rem;">👕 MERCH & PERKS (5 XP / Field)</div>
-
-      <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
-        <div style="flex: 1;">
-          <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">T-Shirt / Merch Size (+5 XP)</label>
-          <select id="inpTshirt" onchange="calcPart4XP()" style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+      <div class="form-section-title">👕 Merch & Perks</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">T-Shirt / Merch Size (+5 XP)</label>
+          <select id="inpTshirt" class="form-input" onchange="calcPart4XP()">
             <option value="">Select...</option>
-            <option value="S">S</option>
-            <option value="M">M</option>
-            <option value="L">L</option>
-            <option value="XL">XL</option>
-            <option value="XXL">XXL</option>
+            <option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option>
           </select>
         </div>
-        <div style="flex: 1;">
-          <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Dietary / Medical Notes (+5 XP)</label>
-          <input type="text" id="inpDietary" oninput="calcPart4XP()" placeholder="None / Allergies" style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+        <div class="form-group">
+          <label class="form-label">Dietary / Medical Notes (+5 XP)</label>
+          <input type="text" id="inpDietary" class="form-input" oninput="calcPart4XP()" placeholder="None / Allergies">
         </div>
       </div>
-
-      <!-- Attachment -->
-      <div style="font-size: 0.82rem; font-weight: 800; color: var(--purple); margin-bottom: 0.6rem;">📸 EQUIPMENT VERIFICATION PHOTO (+10 XP)</div>
-      
-      <div style="margin-bottom: 1.2rem;">
-        <input type="file" id="fileEquipmentDoc" onchange="calcPart4XP()" accept="image/*" style="width: 100%; font-size: 0.8rem; color: var(--muted);">
+      <div class="form-group">
+        <label class="form-label">📸 Equipment Verification Photo (+10 XP)</label>
+        <input type="file" id="fileEquipmentDoc" class="form-input" onchange="calcPart4XP()" accept="image/*" style="padding:0.55rem;">
       </div>
 
-      <button class="btn btn-green" onclick="submitPart4()">🏆 Complete Onboarding Survey & Launch Agreement</button>
+      <button class="btn-primary" onclick="submitPart4()">🏆 Complete Survey & Launch Agreement →</button>
+      <button class="btn-secondary" onclick="goToSurveyPart(3)">← Back to Part 3</button>
     </div>
 
-    <!-- Tab 0.5: Digital Employment Agreement & 4-Stage Approval Chain -->
-    <div id="tabAgreement" class="card" style="display: none;">
-      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.08);">
-        <div>
-          <div style="font-size: 0.75rem; color: var(--purple); font-weight: 800;">OFFICIAL WORKPLACE CONTRACT</div>
-          <div style="font-size: 1.05rem; font-weight: 800; color: #fff;">Employment Agreement & NDA</div>
-        </div>
-        <span class="badge" style="background: rgba(52,211,153,0.15); color: var(--green); border: 1px solid rgba(52,211,153,0.3);" id="agrStageBadge">Stage 1: Pending Employee E-Sign</span>
+    <!-- ─── AGREEMENT ─── -->
+    <div id="surveyAgreement" style="display:none;">
+      <div class="agr-stage-tracker">
+        <div class="agr-stage active" id="agrStage1">✍️ Employee<br>Sign</div>
+        <div class="agr-stage" id="agrStage2">💼 Finance<br>Counter</div>
+        <div class="agr-stage" id="agrStage3">👑 Owner<br>Seal</div>
       </div>
 
-      <!-- Contract Document Viewer Container -->
-      <div style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 1rem; margin-bottom: 1.2rem; max-height: 280px; overflow-y: auto; font-size: 0.8rem; color: #cbd5e1; line-height: 1.6;" id="contractTextContainer">
-        <strong style="color: #fff; font-size: 0.9rem;">PURPLEBOT DIGITAL LIMITED — EMPLOYMENT AGREEMENT</strong><br>
-        <span style="font-size: 0.75rem; color: var(--muted);">Standardized under Bangladesh Labour Act 2006 (Amended 2013/2018)</span><br><br>
-        This Employment Agreement is entered into by and between <strong>PURPLEBOT DIGITAL LIMITED</strong> ("Employer") and <strong id="agrEmpName">Firoz Uddin Ahmed</strong> ("Employee", Code: <span id="agrEmpCode">PBD-000</span>).<br><br>
-        <strong>1. APPOINTMENT & JOINING DATE:</strong> Employee is appointed as <strong>Technology Admin</strong> starting on <strong id="agrJoiningDate">2026-08-01</strong>.<br>
-        <strong>2. COMPENSATION & PAYROLL:</strong> Base Salary of <strong>BDT <span id="agrSalary">85,000</span></strong> / month, disbursed bi-weekly.<br>
+      <div class="contract-scroll" id="contractTextContainer">
+        <strong>PURPLEBOT DIGITAL LIMITED — EMPLOYMENT AGREEMENT</strong><br>
+        <span style="font-size:0.72rem;color:var(--muted)">Standardized under Bangladesh Labour Act 2006 (Amended 2013/2018)</span><br><br>
+        This Employment Agreement is entered into by and between <strong>PURPLEBOT DIGITAL LIMITED</strong> ("Employer") and <strong id="agrEmpName">—</strong> ("Employee", Code: <span id="agrEmpCode">—</span>).<br><br>
+        <strong>1. APPOINTMENT & JOINING DATE:</strong> Employee is appointed as <strong id="agrRole">—</strong> starting on <strong id="agrJoiningDate">—</strong>.<br>
+        <strong>2. COMPENSATION & PAYROLL:</strong> Base Salary of <strong>BDT <span id="agrSalary">—</span></strong> / month, disbursed bi-weekly via bank or bKash/Nagad.<br>
         <strong>3. WORKING HOURS:</strong> Standard 48 hours per week per Section 100/102 of Bangladesh Labour Act 2006.<br>
-        <strong>4. PROBATION & NOTICE:</strong> 3-month probation period. Notice period of 30 days by either party per Section 26/27.<br>
-        <strong>5. CONFIDENTIALITY & IP:</strong> All code, designs, video cuts, and assets created belong exclusively to Purplebot Digital Limited.
+        <strong>4. PROBATION & NOTICE:</strong> 3-month probation period. 30-day notice period by either party per Section 26/27.<br>
+        <strong>5. CONFIDENTIALITY & IP:</strong> All code, designs, video cuts, and creative assets produced during employment belong exclusively to Purplebot Digital Limited.<br>
+        <strong>6. CODE OF CONDUCT:</strong> Employee agrees to uphold PBD's professional standards, attend studio when scheduled, and use Purplebot systems for all work tracking.<br>
+        <strong>7. TERMINATION:</strong> Either party may terminate with 30 days notice. Immediate termination may apply for gross misconduct.
       </div>
 
-      <!-- E-Signature Section -->
-      <div style="font-size: 0.82rem; font-weight: 800; color: var(--purple); margin-bottom: 0.6rem;">✍️ STAGE 1: APPLY DIGITAL E-SIGNATURE</div>
-
-      <div style="margin-bottom: 0.75rem;">
-        <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Type Full Legal Name as E-Signature *</label>
-        <input type="text" id="inpSignName" placeholder="e.g. Firoz Uddin Ahmed" style="width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.5); border: 2px dashed var(--purple); border-radius: 8px; color: #fff; font-size: 0.95rem; font-weight: 700; font-family: cursive, sans-serif;">
+      <div class="form-section-title">✍️ Apply Your Digital E-Signature</div>
+      <input type="text" id="inpSignName" class="sign-input" placeholder="Type your full legal name here...">
+      <div class="consent-row">
+        <input type="checkbox" id="chkAgrConsent">
+        <label for="chkAgrConsent">I have read and agree to all terms under Bangladesh Labour Law. I understand this constitutes a legally binding digital signature.</label>
       </div>
-
-      <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.2rem;">
-        <input type="checkbox" id="chkAgrConsent" style="width: 18px; height: 18px; accent-color: var(--purple);">
-        <label for="chkAgrConsent" style="font-size: 0.78rem; color: var(--text);">I accept and agree to all terms under Bangladesh Labour Law.</label>
-      </div>
-
-      <button class="btn btn-green" onclick="submitEmployeeSignature()">✍️ Sign Agreement & Submit to HR (Stage 2)</button>
+      <button class="btn-primary" onclick="submitEmployeeSignature()">✍️ Sign Agreement & Submit to Finance →</button>
     </div>
 
-    <!-- Tab 1: Tasks -->
-    <div id="tabTasks" class="card" style="display: none;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem;">
-        <div style="font-size: 0.82rem; font-weight: 700; color: var(--muted);">ASSIGNED SHOOTS & PROJECTS</div>
-        <button onclick="loadUserTasks()" style="background: none; border: none; color: var(--purple); font-size: 0.8rem; font-weight: 700; cursor: pointer;">🔄 Refresh</button>
+    <div style="height:1rem;"></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     MAIN AUTHORIZED DASHBOARD
+════════════════════════════════════════════ -->
+<div id="mainDashboard" style="display:none;">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-topbar">
+      <div class="hero-brand">Purplebot Digital</div>
+      <div class="hero-notif" onclick="showPage('pageHome')">🔔</div>
+    </div>
+    <div class="hero-card">
+      <div class="avatar" id="heroAvatar">PB</div>
+      <div class="hero-info">
+        <div class="hero-name" id="heroName">Team Member</div>
+        <div class="hero-role" id="heroRole">Loading...</div>
+        <div class="hero-pills">
+          <span class="pill pill-green" id="heroStatus">⬛ Offline</span>
+          <span class="pill pill-gold" id="heroXP">🏆 0 XP</span>
+          <span class="pill pill-white" id="heroBadge">🌱 Recruit</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ONBOARDING BANNER (hidden after complete) -->
+  <div id="onboardingBanner" class="onboarding-banner">
+    <div class="ob-title">Setup Progress</div>
+    <div class="ob-sub" id="obSubText">Complete your profile to unlock all features</div>
+    <div class="ob-steps">
+      <div class="ob-dot" id="obDot1"></div>
+      <div class="ob-dot" id="obDot2"></div>
+      <div class="ob-dot" id="obDot3"></div>
+      <div class="ob-dot" id="obDot4"></div>
+      <div class="ob-dot" id="obDot5"></div>
+    </div>
+    <div class="ob-label" id="obLabel">Step 1 of 5 — Personal Profile</div>
+    <button class="ob-btn" onclick="openSurvey()" id="obContinueBtn">▶ Continue Setup</button>
+  </div>
+
+  <!-- PAGES -->
+  <!-- HOME PAGE -->
+  <div id="pageHome" class="page active">
+    <!-- Quick Actions -->
+    <div class="card" style="margin-top:0.85rem;">
+      <div class="card-title">Quick Actions</div>
+      <div class="qa-grid" id="quickActionsGrid">
+        <!-- rendered by JS based on role -->
+      </div>
+    </div>
+
+    <!-- Status Snapshot -->
+    <div class="card">
+      <div class="card-title">Today's Status</div>
+      <div class="status-row" id="statusRow">
+        <div class="stat-tile">
+          <div class="stat-val" id="statClockedIn">0</div>
+          <div class="stat-lbl">In Studio</div>
+        </div>
+        <div class="stat-tile">
+          <div class="stat-val" id="statOnShoot">0</div>
+          <div class="stat-lbl">On Shoot</div>
+        </div>
+        <div class="stat-tile">
+          <div class="stat-val" id="statOnLeave">0</div>
+          <div class="stat-lbl">On Leave</div>
+        </div>
+        <div class="stat-tile">
+          <div class="stat-val" id="statOffline">0</div>
+          <div class="stat-lbl">Offline</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Activity Feed -->
+    <div class="card">
+      <div class="card-title">Recent Activity</div>
+      <div id="activityFeed">
+        <div class="empty-state"><div class="empty-icon">📭</div>No recent activity</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TASKS PAGE -->
+  <div id="pageTasks" class="page">
+    <div style="height:0.85rem;"></div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.9rem;">
+        <div class="card-title" style="margin:0;">Assigned Tasks</div>
+        <button onclick="loadUserTasks()" style="background:none;border:none;color:var(--purple);font-family:'Outfit',sans-serif;font-size:0.78rem;font-weight:700;cursor:pointer;">🔄 Refresh</button>
       </div>
       <div id="userTaskList">
-        <div style="font-size: 0.85rem; color: var(--muted); text-align: center; padding: 1rem;">Loading your tasks...</div>
-      </div>
-    </div>
-
-    <!-- Tab 2: Attendance -->
-    <div id="tabAttendance" class="card" style="display: none;">
-      <div style="font-size: 0.82rem; font-weight: 700; color: var(--muted); margin-bottom: 0.75rem;">⏱️ STUDIO ATTENDANCE CHECK-IN</div>
-      <div style="font-size: 0.82rem; color: var(--muted); margin-bottom: 1rem;" id="clockSummary">Status: Offline</div>
-      <div style="display: flex; gap: 0.75rem;">
-        <button class="btn btn-green" style="flex: 1;" onclick="handleClockIn()">🟢 Clock In</button>
-        <button class="btn btn-secondary" style="flex: 1;" onclick="handleClockOut()">🚪 Clock Out</button>
-      </div>
-    </div>
-
-    <!-- Tab 3: Earnings -->
-    <div id="tabEarnings" class="card" style="display: none; background: rgba(168,85,247,0.08); border-color: rgba(168,85,247,0.3);">
-      <div style="font-size: 0.78rem; font-weight: 700; color: var(--purple);">💰 ESTIMATED MONTHLY PAYROLL SUMMARY</div>
-      <div style="font-size: 1.8rem; font-weight: 800; color: #fff; margin: 0.4rem 0;" id="userTotalPay">BDT 0</div>
-      <div style="font-size: 0.78rem; color: var(--muted);" id="userPaySub">Base Pay: BDT 0 • Commissions: BDT 0</div>
-      <div style="margin-top: 1rem; font-size: 0.75rem; color: rgba(255,255,255,0.5);">
-        * Salaries and commissions are configured by Finance & Technology Admin.
-      </div>
-    </div>
-
-    <!-- Tab 4: Team Roster -->
-    <div id="tabRoster" class="card" style="display: none;">
-      <div style="font-size: 0.82rem; font-weight: 700; color: var(--muted); margin-bottom: 0.85rem;">👥 DEPARTMENT TEAM STATUS</div>
-      <div id="rosterList">
-        <div style="font-size: 0.85rem; color: var(--muted); text-align: center; padding: 1rem;">Loading roster...</div>
+        <div class="empty-state"><div class="empty-icon">📋</div>Loading tasks...</div>
       </div>
     </div>
   </div>
 
-  <script>
-    const tg = window.Telegram?.WebApp;
-    if (tg) { tg.expand(); tg.ready(); }
+  <!-- ATTENDANCE PAGE -->
+  <div id="pageAttendance" class="page">
+    <div style="height:0.85rem;"></div>
+    <div class="card">
+      <div class="att-clock">
+        <div class="att-time" id="attClock">--:--</div>
+        <div class="att-date" id="attDate">Saturday, 1 Aug 2026</div>
+        <div id="attStatusPill" class="att-status-pill att-pill-offline">⬛ Offline</div>
+      </div>
+      <div class="divider" style="margin:0 0 0.85rem;"></div>
+      <button class="btn-clock-in" onclick="handleClockIn()">🟢 Clock In — Share GPS Location</button>
+      <button class="btn-clock-out" onclick="handleClockOut()">🚪 Clock Out</button>
+    </div>
+    <div class="card">
+      <div class="card-title">This Week</div>
+      <div id="attHistory">
+        <div class="empty-state"><div class="empty-icon">⏱️</div>No attendance records yet</div>
+      </div>
+    </div>
+  </div>
 
-    let currentUser = null;
-    let allTeam = [];
+  <!-- PAY PAGE -->
+  <div id="pagePay" class="page">
+    <div style="height:0.85rem;"></div>
+    <div class="pay-hero">
+      <div class="pay-label">Estimated Monthly Pay</div>
+      <div class="pay-amount" id="payTotal">BDT 0</div>
+      <div class="pay-sub" id="paySub">Base + Commissions</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Breakdown</div>
+      <div class="pay-row">
+        <div class="pay-row-label">💼 Base Salary</div>
+        <div class="pay-row-val" id="payBase">BDT 0</div>
+      </div>
+      <div class="pay-row">
+        <div class="pay-row-label">🎯 Earned Commissions</div>
+        <div class="pay-row-val" id="payComm">BDT 0</div>
+      </div>
+      <div class="pay-row">
+        <div class="pay-row-label">📅 Pay Cycle</div>
+        <div class="pay-row-val">Bi-Weekly</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Payout Accounts</div>
+      <div class="bank-card">
+        <div class="bank-card-label">Primary Bank</div>
+        <div class="bank-card-val" id="bankName">Not configured</div>
+        <div class="bank-row">
+          <div>
+            <div class="bank-card-label">Account No.</div>
+            <div class="bank-card-val" id="bankAccNo">—</div>
+          </div>
+          <div>
+            <div class="bank-card-label">Branch</div>
+            <div class="bank-card-val" id="bankBranch">—</div>
+          </div>
+        </div>
+      </div>
+      <div class="mfs-row">
+        <div class="mfs-chip mfs-bkash">
+          <div style="font-size:1rem;margin-bottom:0.2rem;">🩷 bKash</div>
+          <div id="mfsBkash">Not set</div>
+        </div>
+        <div class="mfs-chip mfs-nagad">
+          <div style="font-size:1rem;margin-bottom:0.2rem;">🟠 Nagad</div>
+          <div id="mfsNagad">Not set</div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-    async function initApp() {
-      const urlParams = new URLSearchParams(window.location.search);
+  <!-- PROFILE PAGE -->
+  <div id="pageProfile" class="page">
+    <div style="height:0.85rem;"></div>
+    <div class="card">
+      <div class="profile-avatar-lg" id="profileAvatarLg">PB</div>
+      <div style="text-align:center;margin-bottom:1rem;">
+        <div style="font-size:1.1rem;font-weight:800;color:var(--text);" id="profileName">Team Member</div>
+        <div style="font-size:0.78rem;color:var(--muted);margin-top:0.2rem;" id="profileRole">—</div>
+        <div style="margin-top:0.5rem;display:flex;justify-content:center;gap:0.4rem;" id="profileBadgesRow"></div>
+      </div>
+      <div class="profile-field">
+        <div class="profile-field-label">Employee ID</div>
+        <div class="profile-field-val" id="profileId">—</div>
+      </div>
+      <div class="profile-field">
+        <div class="profile-field-label">Department</div>
+        <div class="profile-field-val" id="profileDept">—</div>
+      </div>
+      <div class="profile-field">
+        <div class="profile-field-label">Work Email</div>
+        <div class="profile-field-val" id="profileEmail">—</div>
+      </div>
+      <div class="profile-field">
+        <div class="profile-field-label">Emergency Contact</div>
+        <div class="profile-field-val" id="profileEmergency">Not set</div>
+      </div>
+      <div class="profile-field">
+        <div class="profile-field-label">Home Address</div>
+        <div class="profile-field-val" id="profileAddress">Not set</div>
+      </div>
+      <div class="profile-field">
+        <div class="profile-field-label">XP / Rank</div>
+        <div class="profile-field-val" id="profileXP">0 XP · 🌱 Recruit</div>
+      </div>
+    </div>
+
+    <!-- Admin tools (shown only for Tech Admin) -->
+    <div id="adminSection" style="display:none;">
+      <div class="card">
+        <div class="card-title">🛠️ Admin Tools</div>
+        <div class="admin-tile" onclick="runTechDiag()">
+          <div class="admin-tile-icon" style="background:#ede9fe;">🛠️</div>
+          <div class="admin-tile-info">
+            <div class="admin-tile-title">Tech Diagnostics</div>
+            <div class="admin-tile-sub">System health, DB counts, logs</div>
+          </div>
+        </div>
+        <div class="admin-tile" onclick="openSupabaseSync()">
+          <div class="admin-tile-icon" style="background:#d1fae5;">🔄</div>
+          <div class="admin-tile-info">
+            <div class="admin-tile-title">Sync Supabase Cloud</div>
+            <div class="admin-tile-sub">Push DB to cloud backup</div>
+          </div>
+        </div>
+        <div class="admin-tile" onclick="generatePin()">
+          <div class="admin-tile-icon" style="background:#fef3c7;">🔑</div>
+          <div class="admin-tile-info">
+            <div class="admin-tile-title">Generate Web PIN</div>
+            <div class="admin-tile-sub">Create fresh login PIN</div>
+          </div>
+        </div>
+        <div class="admin-tile" onclick="cleanSlate()">
+          <div class="admin-tile-icon" style="background:#fee2e2;">🧹</div>
+          <div class="admin-tile-info">
+            <div class="admin-tile-title">Clean Test Slate</div>
+            <div class="admin-tile-sub">Reset automation logs</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav">
+    <button class="nav-btn active" id="navHome" onclick="showPage('pageHome')">
+      <div class="nav-icon">🏠</div>
+      <div class="nav-label">Home</div>
+      <div class="nav-dot"></div>
+    </button>
+    <button class="nav-btn" id="navTasks" onclick="showPage('pageTasks');loadUserTasks();">
+      <div class="nav-icon">📋</div>
+      <div class="nav-label">Tasks</div>
+      <div class="nav-dot"></div>
+    </button>
+    <button class="nav-btn" id="navAttendance" onclick="showPage('pageAttendance');startClock();">
+      <div class="nav-icon">📍</div>
+      <div class="nav-label">Attend</div>
+      <div class="nav-dot"></div>
+    </button>
+    <button class="nav-btn" id="navPay" onclick="showPage('pagePay');loadPayData();">
+      <div class="nav-icon">💰</div>
+      <div class="nav-label">Pay</div>
+      <div class="nav-dot"></div>
+    </button>
+    <button class="nav-btn" id="navProfile" onclick="showPage('pageProfile');">
+      <div class="nav-icon">👤</div>
+      <div class="nav-label">Profile</div>
+      <div class="nav-dot"></div>
+    </button>
+  </div>
+</div>
+
+<script>
+  // ══════════════════════════════════════════
+  // TELEGRAM WEBAPP INIT
+  // ══════════════════════════════════════════
+  const tg = window.Telegram?.WebApp;
+  if (tg) { tg.expand(); tg.ready(); }
+
+  let currentUser = null;
+  let currentPart = 1;
+  let clockTimer = null;
+
+  // ══════════════════════════════════════════
+  // INIT
+  // ══════════════════════════════════════════
+  async function init() {
+    const tgUser = tg?.initDataUnsafe?.user;
+    if (!tgUser && !window.location.search.includes('debug')) {
+      showLock();
+      return;
+    }
+    const telegramId = tgUser?.id || 'debug';
+    try {
+      const res = await fetch(`/api/team/me?telegramId=${telegramId}`);
+      if (!res.ok) { showLock(); return; }
+      const emp = await res.json();
+      if (!emp || !emp.id) { showLock(); return; }
+      currentUser = emp;
+      renderDashboard(emp);
+    } catch (e) {
+      // Fallback: show dashboard with basic info for debug
+      currentUser = { name: tgUser?.first_name || 'Team Member', role: 'Specialist', department: 'Production', accessLevel: 'Specialist / Crew', xp: 0, badge: '🌱 Recruit', status: 'Offline', onboardingComplete: false, bankInfo: {} };
+      renderDashboard(currentUser);
+    }
+  }
+
+  function showLock() {
+    document.getElementById('lockScreen').classList.add('visible');
+  }
+
+  // ══════════════════════════════════════════
+  // RENDER DASHBOARD
+  // ══════════════════════════════════════════
+  function renderDashboard(emp) {
+    document.getElementById('mainDashboard').style.display = 'block';
+
+    // Hero
+    const initials = (emp.name || 'PB').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+    document.getElementById('heroAvatar').textContent = initials;
+    document.getElementById('heroName').textContent = emp.name || 'Team Member';
+    document.getElementById('heroRole').textContent = `${emp.role || 'Specialist'} · ${emp.department || 'Production'}`;
+    setStatusPill(emp.status || 'Offline');
+    document.getElementById('heroXP').textContent = `🏆 ${emp.xp || 0} XP`;
+    document.getElementById('heroBadge').textContent = emp.badge || '🌱 Recruit';
+
+    // Profile
+    document.getElementById('profileAvatarLg').textContent = initials;
+    document.getElementById('profileName').textContent = emp.name;
+    document.getElementById('profileRole').textContent = `${emp.role} · ${emp.department}`;
+    document.getElementById('profileId').textContent = emp.id || '—';
+    document.getElementById('profileDept').textContent = emp.department || '—';
+    document.getElementById('profileEmail').textContent = emp.email || emp.workEmail || 'Not set';
+    document.getElementById('profileEmergency').textContent = emp.emergencyContact || 'Not set';
+    document.getElementById('profileAddress').textContent = emp.address || 'Not set';
+    document.getElementById('profileXP').textContent = `${emp.xp || 0} XP · ${emp.badge || '🌱 Recruit'}`;
+
+    // Pre-fill survey verified identity
+    document.getElementById('prefName').textContent = emp.name || '—';
+    document.getElementById('prefPhone').textContent = emp.phone ? `+88${emp.phone}` : '—';
+    document.getElementById('prefRole').textContent = emp.role || '—';
+    document.getElementById('prefDept').textContent = emp.department || '—';
+    document.getElementById('prefEmail').textContent = emp.email || '—';
+
+    // Tech Admin panel
+    const isTechAdmin = emp.id === 'PBD-000' || emp.role === 'Technology Admin';
+    if (isTechAdmin) document.getElementById('adminSection').style.display = 'block';
+
+    // Onboarding banner
+    if (emp.onboardingComplete) {
+      document.getElementById('onboardingBanner').style.display = 'none';
+    } else {
+      renderOnboardingBanner(emp);
+    }
+
+    // Quick actions
+    renderQuickActions(emp);
+
+    // Load team snapshot
+    loadTeamSnapshot();
+  }
+
+  function setStatusPill(status) {
+    const pill = document.getElementById('heroStatus');
+    const iconMap = { 'In Studio': '🟢', 'On Field Shoot': '🎬', 'On Leave': '🌴', 'Offline': '⬛' };
+    pill.textContent = `${iconMap[status] || '⬛'} ${status}`;
+    pill.className = 'pill ' + (status === 'In Studio' ? 'pill-green' : status === 'On Leave' ? 'pill-white' : 'pill-white');
+  }
+
+  // ══════════════════════════════════════════
+  // ONBOARDING BANNER
+  // ══════════════════════════════════════════
+  const ONBOARDING_STEPS = [
+    'Personal & Family Profile',
+    'National Verification & Education',
+    'Financial, Salary & Payroll Setup',
+    'Work Skills & Equipment',
+    'Employment Agreement & E-Sign'
+  ];
+
+  function renderOnboardingBanner(emp) {
+    const p = emp.surveyProgress || 0; // 0-4 (parts completed), 5 = agreement done
+    const stepIdx = Math.min(p, 4);
+    document.getElementById('obLabel').textContent = `Step ${stepIdx + 1} of 5 — ${ONBOARDING_STEPS[stepIdx]}`;
+    document.getElementById('obSubText').textContent = stepIdx === 4 ? '🎉 Survey done! Sign your agreement.' : `${stepIdx} of 4 profile parts complete`;
+    document.getElementById('obContinueBtn').textContent = stepIdx === 0 ? '▶ Start Setup' : stepIdx === 4 ? '✍️ Review & Sign Agreement' : `▶ Continue — Part ${stepIdx + 1}`;
+
+    for (let i = 1; i <= 5; i++) {
+      const dot = document.getElementById(`obDot${i}`);
+      dot.className = 'ob-dot' + (i - 1 < p ? ' done' : i - 1 === p ? ' active' : '');
+    }
+  }
+
+  // ══════════════════════════════════════════
+  // QUICK ACTIONS (role-adaptive)
+  // ══════════════════════════════════════════
+  function renderQuickActions(emp) {
+    const grid = document.getElementById('quickActionsGrid');
+    const level = emp.accessLevel || 'Specialist / Crew';
+
+    const allActions = {
+      // ── Standard employee (everyone gets these)
+      clockIn:    { icon: '📍', label: 'Clock In',       fn: "handleClockIn()" },
+      clockOut:   { icon: '🚪', label: 'Clock Out',      fn: "handleClockOut()" },
+      tasks:      { icon: '📋', label: 'My Tasks',       fn: "showPage('pageTasks');loadUserTasks();" },
+      pay:        { icon: '💰', label: 'My Earnings',    fn: "showPage('pagePay');loadPayData();" },
+      bank:       { icon: '🏦', label: 'Bank/bKash',     fn: "showPage('pagePay');loadPayData();" },
+      profile:    { icon: '👤', label: 'Profile',        fn: "showPage('pageProfile');" },
+      expense:    { icon: '🧾', label: 'Expense',        fn: "openExpenseForm();" },
+      leave:      { icon: '🌴', label: 'Leave Req',      fn: "openLeaveForm();" },
+      eod:        { icon: '📝', label: 'EOD Report',     fn: "openEODForm();" },
+      // ── Executive / Director layer
+      briefing:   { icon: '🌅', label: 'Briefing',       fn: "loadMorningBriefing();" },
+      team:       { icon: '👥', label: 'Team Live',      fn: "loadRosterPage();" },
+      finance:    { icon: '💳', label: 'Finance',        fn: "loadFinanceSummary();" },
+      approvals:  { icon: '✍️', label: 'Approvals',      fn: "loadPendingApprovals();" },
+      expQueue:   { icon: '💸', label: 'Exp Queue',      fn: "loadExpenseQueue();" },
+      clients:    { icon: '🎬', label: 'Clients',        fn: "loadClientStatus();" },
+      payroll:    { icon: '📊', label: 'Payroll',        fn: "loadPayrollSummary();" },
+      // ── Tech Admin only
+      admin:      { icon: '🛠️', label: 'Admin',          fn: "showPage('pageProfile');document.getElementById('adminSection').scrollIntoView({behavior:'smooth'});" },
+    };
+
+    let keys = [];
+    const isTech = emp.id === 'PBD-000' || emp.role === 'Technology Admin';
+
+    if (level === 'Owner / Admin') {
+      keys = isTech
+        // Tech Admin: executive + employee + tech tools
+        ? ['clockIn', 'briefing', 'team', 'approvals', 'tasks', 'expense', 'leave', 'eod', 'pay', 'bank', 'clients', 'admin']
+        // MD / Owner: executive overview + every employee action
+        : ['clockIn', 'briefing', 'team', 'approvals', 'expQueue', 'clients', 'tasks', 'expense', 'leave', 'eod', 'pay', 'bank'];
+    } else if (level === 'Director / Manager') {
+      keys = ['clockIn', 'team', 'tasks', 'briefing', 'expense', 'leave', 'eod', 'pay', 'bank', 'profile', 'clockOut'];
+    } else if (level === 'Finance Manager') {
+      keys = ['clockIn', 'expQueue', 'payroll', 'finance', 'expense', 'leave', 'eod', 'pay', 'bank', 'profile', 'clockOut'];
+    } else {
+      // Specialist / Crew — standard set
+      keys = ['clockIn', 'tasks', 'expense', 'leave', 'eod', 'pay', 'bank', 'profile', 'clockOut'];
+    }
+
+    grid.innerHTML = keys.map(k => {
+      const a = allActions[k];
+      if (!a) return '';
+      return `<button class="qa-btn" onclick="${a.fn}">
+        <div class="qa-icon">${a.icon}</div>
+        <div class="qa-label">${a.label}</div>
+      </button>`;
+    }).join('');
+  }
+
+  // ══════════════════════════════════════════
+  // PAGE NAVIGATION
+  // ══════════════════════════════════════════
+  function showPage(pageId) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(pageId).classList.add('active');
+    const map = { pageHome: 'navHome', pageTasks: 'navTasks', pageAttendance: 'navAttendance', pagePay: 'navPay', pageProfile: 'navProfile' };
+    if (map[pageId]) document.getElementById(map[pageId]).classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ══════════════════════════════════════════
+  // SURVEY MODAL
+  // ══════════════════════════════════════════
+  const STEP_INFO = [
+    { label: 'PART 1 OF 4', title: 'Personal & Family Profile' },
+    { label: 'PART 2 OF 4', title: 'National Verification & Education' },
+    { label: 'PART 3 OF 4', title: 'Financial, Salary & Payroll Setup' },
+    { label: 'PART 4 OF 4', title: 'Skills, Merch & Equipment' },
+    { label: 'FINAL STEP', title: 'Employment Agreement & E-Sign' },
+  ];
+
+  function openSurvey() {
+    const progress = currentUser?.surveyProgress || 0;
+    goToSurveyPart(Math.min(progress + 1, 5));
+    document.getElementById('surveyModal').classList.add('open');
+  }
+
+  function closeSurvey() {
+    document.getElementById('surveyModal').classList.remove('open');
+  }
+
+  function goToSurveyPart(part) {
+    currentPart = part;
+    ['surveyPart1','surveyPart2','surveyPart3','surveyPart4','surveyAgreement'].forEach((id, i) => {
+      document.getElementById(id).style.display = (i + 1 === part) ? 'block' : 'none';
+    });
+    const info = STEP_INFO[part - 1];
+    document.getElementById('surveyStepLabel').textContent = info.label;
+    document.getElementById('surveyStepTitle').textContent = info.title;
+
+    // Dots
+    for (let i = 1; i <= 5; i++) {
+      const dot = document.getElementById(`sdot${i}`);
+      dot.className = 'ob-dot' + (i < part ? ' done' : i === part ? ' active' : '');
+    }
+
+    // Fill agreement fields
+    if (part === 5 && currentUser) {
+      document.getElementById('agrEmpName').textContent = currentUser.name || '—';
+      document.getElementById('agrEmpCode').textContent = currentUser.id || '—';
+      document.getElementById('agrRole').textContent = currentUser.role || '—';
+      document.getElementById('agrJoiningDate').textContent = currentUser.joiningDate || new Date().toLocaleDateString('en-CA');
+      document.getElementById('agrSalary').textContent = (currentUser.baseSalary || 0).toLocaleString();
+    }
+
+    document.getElementById('surveyModal').scrollTop = 0;
+  }
+
+  // ══════════════════════════════════════════
+  // XP CALCULATORS
+  // ══════════════════════════════════════════
+  function calcXP(fields) {
+    let xp = 0;
+    fields.forEach(f => {
+      const el = document.getElementById(f.id);
+      if (el && el.value && el.value.trim()) xp += f.xp;
+    });
+    return xp;
+  }
+
+  const part1Fields = [
+    { id: 'inpEmergency', xp: 5 }, { id: 'inpRelation', xp: 5 }, { id: 'inpAddress', xp: 5 },
+    { id: 'inpBlood', xp: 5 }, { id: 'inpMarital', xp: 5 }, { id: 'inpJoiningDate', xp: 5 },
+    { id: 'inpDob', xp: 5 }, { id: 'inpPersonalEmail', xp: 5 },
+    { id: 'depFather', xp: 5 }, { id: 'depMother', xp: 5 }, { id: 'depSpouse', xp: 5 },
+    { id: 'depChild1', xp: 5 }, { id: 'depChild2', xp: 5 }
+  ];
+  function calcPart1XP() { const x = calcXP(part1Fields); document.getElementById('surveyXpBadge').textContent = `🏆 +${x} XP`; }
+
+  const part2Fields = [
+    { id: 'inpNid', xp: 5 }, { id: 'inpPermAddress', xp: 5 }, { id: 'inpTin', xp: 5 },
+    { id: 'inpLicense', xp: 5 }, { id: 'inpDegree', xp: 5 }, { id: 'inpInstitution', xp: 5 },
+    { id: 'inpPassingYear', xp: 5 }, { id: 'fileNidDoc', xp: 10 }, { id: 'fileCertDoc', xp: 10 }
+  ];
+  function calcPart2XP() { const x = calcXP(part2Fields); document.getElementById('surveyXpBadge').textContent = `🏆 +${x} XP`; }
+
+  const part3Fields = [
+    { id: 'inpBaseSalary', xp: 5 }, { id: 'inpCommission', xp: 5 }, { id: 'inpBankName', xp: 5 },
+    { id: 'inpAccTitle', xp: 5 }, { id: 'inpAccNo', xp: 5 }, { id: 'inpBranchRouting', xp: 5 },
+    { id: 'inpBkash', xp: 5 }, { id: 'inpNagad', xp: 5 }, { id: 'inpRocket', xp: 5 },
+    { id: 'fileBankDoc', xp: 10 }
+  ];
+  function calcPart3XP() { const x = calcXP(part3Fields); document.getElementById('surveyXpBadge').textContent = `🏆 +${x} XP`; }
+
+  const part4Fields = [
+    { id: 'inpSkillPrimary', xp: 5 }, { id: 'inpSkillSecondary', xp: 5 }, { id: 'inpPortfolio', xp: 5 },
+    { id: 'inpLaptopSerial', xp: 5 }, { id: 'inpStudioGear', xp: 5 }, { id: 'inpTshirt', xp: 5 },
+    { id: 'inpDietary', xp: 5 }, { id: 'fileEquipmentDoc', xp: 10 }
+  ];
+  function calcPart4XP() { const x = calcXP(part4Fields); document.getElementById('surveyXpBadge').textContent = `🏆 +${x} XP`; }
+
+  // ══════════════════════════════════════════
+  // SUBMIT SURVEY PARTS
+  // ══════════════════════════════════════════
+  async function submitPart(partNum, payload, xp, emoji, title, sub, nextPart) {
+    try {
       const tgUser = tg?.initDataUnsafe?.user;
-      const paramTgId = urlParams.get('telegramId') || urlParams.get('tgId') || tgUser?.id;
-
-      try {
-        // ── PRIMARY: Look up by Telegram ID via /api/team/me (exact match) ──
-        if (paramTgId) {
-          try {
-            const meRes = await fetch(`/api/team/me?telegramId=${paramTgId}`);
-            const meData = await meRes.json();
-            if (meData.success && meData.employee) {
-              currentUser = meData.employee;
-            }
-          } catch(e) {}
-        }
-
-        // ── SECONDARY: Full team list for roster display ──
-        const teamRes = await fetch('/api/team');
-        allTeam = await teamRes.json();
-
-        // ── FALLBACK: Only if /team/me failed, try matching in allTeam ──
-        if (!currentUser && paramTgId) {
-          currentUser = allTeam.find(t => String(t.telegramId) === String(paramTgId));
-        }
-
-        // ── FINAL FALLBACK: If still no match, show lock screen ──
-        if (!currentUser) {
-          document.getElementById('lockScreen').style.display = 'block';
-          return;
-        }
-
-        // Render Dashboard for authenticated employee
-        document.getElementById('mainDashboard').style.display = 'block';
-        document.getElementById('userName').innerText = currentUser.name;
-        document.getElementById('userRole').innerText = `${currentUser.role} • ${currentUser.accessLevel}`;
-        document.getElementById('userDept').innerText = (currentUser.department || 'PURPLEBOT DIGITAL').toUpperCase();
-        document.getElementById('attStatus').innerText = currentUser.status || 'Offline';
-
-        const totalPay = (currentUser.baseSalary || 0) + (currentUser.earnedCommissions || 0);
-        document.getElementById('userTotalPay').innerText = `BDT ${totalPay.toLocaleString()}`;
-        document.getElementById('userPaySub').innerText = `Base Pay: BDT ${(currentUser.baseSalary || 0).toLocaleString()} • Commissions: BDT ${(currentUser.earnedCommissions || 0).toLocaleString()}`;
-        document.getElementById('clockSummary').innerText = `Current Status: ${currentUser.status || 'Offline'}`;
-
-        // Pre-fill user profile fields
-        document.getElementById('prefName').innerText = currentUser.name || 'Firoz Uddin Ahmed';
-        document.getElementById('prefPhone').innerText = currentUser.phone || '+8801708459008';
-        document.getElementById('prefRole').innerText = currentUser.role || 'Technology Admin';
-        document.getElementById('prefDept').innerText = currentUser.department || 'Tech & AI';
-        document.getElementById('prefEmail').innerText = currentUser.email || currentUser.workEmail || 'claycoinbank@gmail.com';
-
-        if (currentUser.emergencyContact) document.getElementById('inpEmergency').value = currentUser.emergencyContact;
-        if (currentUser.address) document.getElementById('inpAddress').value = currentUser.address;
-        if (currentUser.bloodGroup) document.getElementById('inpBlood').value = currentUser.bloodGroup;
-        if (currentUser.maritalStatus) document.getElementById('inpMarital').value = currentUser.maritalStatus;
-        if (currentUser.dob) document.getElementById('inpDob').value = currentUser.dob;
-        if (currentUser.personalEmail) document.getElementById('inpPersonalEmail').value = currentUser.personalEmail;
-
-        calcPart1XP();
-
-        // ── PHASE-GATE ROUTING: detect ?part= URL param OR resume from saved onboarding_step ──
-        const urlParams = new URLSearchParams(window.location.search);
-        const partParam = urlParams.get('part');
-        const step = currentUser.onboarding_step || 0;
-
-        // Hide all part sections first
-        const allSections = ['tabSurvey','tabPart2','tabPart3','tabPart4','tabAgreement'];
-        allSections.forEach(id => { const el = document.getElementById(id); if(el) el.style.display = 'none'; });
-
-        // Determine which part to show
-        let targetPart = 'part1';
-        if (partParam === 'agreement' || step >= 6) targetPart = 'agreement';
-        else if (partParam === '4' || step === 5) targetPart = 'part4';
-        else if (partParam === '3' || step === 4) targetPart = 'part3';
-        else if (partParam === '2' || step === 3) targetPart = 'part2';
-
-        // Show resume banner if returning mid-journey
-        if ((step >= 3 && step < 6) && !partParam) {
-          const banner = document.getElementById('resumeBanner');
-          const partNames = { 3: 'Part 2: National Verification', 4: 'Part 3: Financial & Payroll', 5: 'Part 4: Skills & Equipment', 6: 'Employment Agreement' };
-          banner.innerHTML = `<div style="font-size:0.78rem;color:var(--purple);font-weight:800;margin-bottom:0.3rem;">▶️ RESUME YOUR JOURNEY</div><div style="font-size:0.88rem;color:#fff;">Welcome back, ${currentUser.name.split(' ')[0]}! Part ${step - 2} is saved. Continuing with <strong>${partNames[step] || 'next step'}...</strong></div>`;
-          banner.style.display = 'block';
-        }
-
-        // Show correct section
-        const sectionMap = { part1:'tabSurvey', part2:'tabPart2', part3:'tabPart3', part4:'tabPart4', agreement:'tabAgreement' };
-        const sectionEl = document.getElementById(sectionMap[targetPart]);
-        if (sectionEl) sectionEl.style.display = 'block';
-
-        // If going to agreement, prefill agreement data
-        if (targetPart === 'agreement') {
-          try {
-            const agrRes = await fetch(`/api/agreement/${currentUser.id || 'PBD-000'}`);
-            const agrData = await agrRes.json();
-            if (agrData.success) {
-              const agr = agrData.agreement;
-              if (document.getElementById('agrEmpName')) document.getElementById('agrEmpName').innerText = agr.name;
-              if (document.getElementById('agrEmpCode')) document.getElementById('agrEmpCode').innerText = agr.empId;
-              if (document.getElementById('agrJoiningDate')) document.getElementById('agrJoiningDate').innerText = agr.joiningDate;
-              if (document.getElementById('agrSalary')) document.getElementById('agrSalary').innerText = Number(agr.baseSalary || 85000).toLocaleString();
-            }
-          } catch(e) {}
-        }
-
-        loadUserTasks();
-        loadRoster();
-      } catch (err) {
-        console.error(err);
-        document.getElementById('lockScreen').style.display = 'block';
-      }
-    }
-
-    // ── PHASE-GATE: Show 2s success screen then close Mini App back to Telegram ──
-    function showSuccessAndClose(emoji, title, xp, sub, delayMs = 2200) {
-      const overlay = document.getElementById('successOverlay');
-      document.getElementById('successEmoji').innerText = emoji;
-      document.getElementById('successTitle').innerText = title;
-      document.getElementById('successXP').innerText = `+${xp} XP Earned`;
-      document.getElementById('successSub').innerText = sub;
-      // Re-trigger bar animation by replacing the element
-      const bar = overlay.querySelector('.success-bar');
-      bar.innerHTML = '<div class="success-bar-fill"></div>';
-      overlay.classList.add('visible');
-      setTimeout(() => {
-        if (tg && tg.close) tg.close();
-        else window.close(); // fallback for browser testing
-      }, delayMs);
-    }
-
-    function calcPart1XP() {
-      const fieldIds = ['inpJoiningDate', 'inpEmergency', 'inpRelation', 'inpAddress', 'inpBlood', 'inpMarital', 'inpDob', 'inpPersonalEmail', 'depFather', 'depMother', 'depSpouse', 'depChild1', 'depChild2'];
-      let count = 0;
-      fieldIds.forEach(id => {
-        const el = document.getElementById(id);
-        if (el && el.value && el.value.trim() !== '') count++;
+      const telegramId = tgUser?.id || currentUser?.telegramId || 'debug';
+      await fetch('/api/team/survey', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ telegramId, part: partNum, data: payload })
       });
-      const points = count * 5;
-      const badge = document.getElementById('part1XpBadge');
-      if (badge) badge.innerText = `🏆 Points: +${points} XP`;
-      return points;
-    }
+    } catch (e) {}
 
-    async function submitPart1() {
-      if (!currentUser) return;
-      const emergencyContact = document.getElementById('inpEmergency').value.trim();
-      const relation = document.getElementById('inpRelation').value.trim();
-      const address = document.getElementById('inpAddress').value.trim();
+    if (currentUser) currentUser.surveyProgress = Math.max(currentUser.surveyProgress || 0, partNum);
+    showPhaseGate(emoji, title, xp, sub, () => {
+      closeSurvey();
+      renderOnboardingBanner(currentUser);
+      setTimeout(() => openSurveyPart(nextPart), 200);
+    });
+  }
 
-      if (!emergencyContact || !address) {
-        if (tg?.showAlert) tg.showAlert('⚠️ Please fill in required Emergency Contact and Home Address fields!');
-        else alert('⚠️ Please fill in required Emergency Contact and Home Address fields!');
-        return;
+  function openSurveyPart(part) {
+    goToSurveyPart(part);
+    document.getElementById('surveyModal').classList.add('open');
+  }
+
+  function submitPart1() {
+    const emerg = document.getElementById('inpEmergency').value.trim();
+    if (!emerg) { alert('Please enter emergency contact number.'); return; }
+    const xp = calcXP(part1Fields);
+    submitPart(1, {
+      emergencyContact: emerg,
+      emergencyRelation: document.getElementById('inpRelation').value,
+      address: document.getElementById('inpAddress').value,
+      bloodGroup: document.getElementById('inpBlood').value,
+      maritalStatus: document.getElementById('inpMarital').value,
+      joiningDate: document.getElementById('inpJoiningDate').value,
+      dob: document.getElementById('inpDob').value,
+      personalEmail: document.getElementById('inpPersonalEmail').value,
+      dependents: {
+        father: document.getElementById('depFather').value,
+        mother: document.getElementById('depMother').value,
+        spouse: document.getElementById('depSpouse').value,
+        child1: document.getElementById('depChild1').value,
+        child2: document.getElementById('depChild2').value
       }
+    }, xp, '🙌', 'Part 1 Saved!', `+${xp} XP earned • Next: National Verification`, 2);
+  }
 
-      const payload = {
-        phone: currentUser.phone || '+8801708459008',
-        joiningDate: document.getElementById('inpJoiningDate').value,
-        emergencyContact,
-        emergencyRelation: relation,
-        address,
-        bloodGroup: document.getElementById('inpBlood').value,
-        maritalStatus: document.getElementById('inpMarital').value,
-        dob: document.getElementById('inpDob').value,
-        personalEmail: document.getElementById('inpPersonalEmail').value.trim(),
-        dependents: {
-          father: document.getElementById('depFather').value.trim(),
-          mother: document.getElementById('depMother').value.trim(),
-          spouse: document.getElementById('depSpouse').value.trim(),
-          child1: document.getElementById('depChild1').value.trim(),
-          child2: document.getElementById('depChild2').value.trim()
-        }
+  function submitPart2() {
+    const nid = document.getElementById('inpNid').value.trim();
+    if (!nid) { alert('Please enter NID / Passport number.'); return; }
+    const xp = calcXP(part2Fields);
+    submitPart(2, {
+      nid, permAddress: document.getElementById('inpPermAddress').value,
+      tin: document.getElementById('inpTin').value,
+      license: document.getElementById('inpLicense').value,
+      degree: document.getElementById('inpDegree').value,
+      institution: document.getElementById('inpInstitution').value,
+      passingYear: document.getElementById('inpPassingYear').value
+    }, xp, '🎓', 'Part 2 Saved!', `+${xp} XP • Next: Financial Setup`, 3);
+  }
+
+  function submitPart3() {
+    const bkash = document.getElementById('inpBkash').value.trim();
+    if (!bkash) { alert('Please enter your bKash number.'); return; }
+    const xp = calcXP(part3Fields);
+    if (currentUser) {
+      currentUser.bankInfo = {
+        bankName: document.getElementById('inpBankName').value,
+        accTitle: document.getElementById('inpAccTitle').value,
+        accNo: document.getElementById('inpAccNo').value,
+        branch: document.getElementById('inpBranchRouting').value,
+        mfsNo: bkash
       };
+    }
+    submitPart(3, {
+      baseSalary: Number(document.getElementById('inpBaseSalary').value) || 0,
+      commission: document.getElementById('inpCommission').value,
+      bankName: document.getElementById('inpBankName').value,
+      accTitle: document.getElementById('inpAccTitle').value,
+      accNo: document.getElementById('inpAccNo').value,
+      branch: document.getElementById('inpBranchRouting').value,
+      bkash, nagad: document.getElementById('inpNagad').value,
+      rocket: document.getElementById('inpRocket').value
+    }, xp, '💳', 'Part 3 Saved!', `+${xp} XP • Next: Skills & Equipment`, 4);
+  }
 
-      try {
-        const res = await fetch('/api/team/survey/part1', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        const data = await res.json();
-        if (data.success) {
-          showSuccessAndClose(
-            '🎉',
-            'Part 1: Done! Great work!',
-            data.earnedXP || 35,
-            'Your Personal & Family Profile is saved. Check your Telegram chat — we have a message for you!'
-          );
-        }
-      } catch (err) {
-        console.error(err);
-        alert('Part 1 saved locally!');
-      }
+  function submitPart4() {
+    const skill = document.getElementById('inpSkillPrimary').value.trim();
+    if (!skill) { alert('Please enter your primary skillset.'); return; }
+    const xp = calcXP(part4Fields);
+    submitPart(4, {
+      skillPrimary: skill,
+      skillSecondary: document.getElementById('inpSkillSecondary').value,
+      portfolio: document.getElementById('inpPortfolio').value,
+      laptopSerial: document.getElementById('inpLaptopSerial').value,
+      studioGear: document.getElementById('inpStudioGear').value,
+      tshirtSize: document.getElementById('inpTshirt').value,
+      dietary: document.getElementById('inpDietary').value
+    }, xp, '🏆', 'Survey Complete!', `+${xp} XP • Now sign your employment agreement`, 5);
+  }
+
+  async function submitEmployeeSignature() {
+    const sig = document.getElementById('inpSignName').value.trim();
+    const consented = document.getElementById('chkAgrConsent').checked;
+    if (!sig) { alert('Please type your full legal name as e-signature.'); return; }
+    if (!consented) { alert('Please read and accept the agreement terms.'); return; }
+    if (sig.toLowerCase() !== (currentUser?.name || '').toLowerCase()) {
+      if (!confirm(`Name "${sig}" doesn't exactly match your registered name. Continue anyway?`)) return;
     }
 
-    function calcPart2XP() {
-      const textIds = ['inpNid', 'inpPermAddress', 'inpTin', 'inpLicense', 'inpDegree', 'inpInstitution', 'inpPassingYear'];
-      let count = 0;
-      textIds.forEach(id => {
-        const el = document.getElementById(id);
-        if (el && el.value && el.value.trim() !== '') count++;
+    try {
+      const tgUser = tg?.initDataUnsafe?.user;
+      const telegramId = tgUser?.id || currentUser?.telegramId || 'debug';
+      await fetch('/api/team/agreement', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ telegramId, stage: 1, signature: sig, timestamp: new Date().toISOString() })
       });
-      let points = count * 5;
-      if (document.getElementById('fileNidDoc')?.files?.length > 0) points += 10;
-      if (document.getElementById('fileCertDoc')?.files?.length > 0) points += 10;
+    } catch (e) {}
 
-      const badge = document.getElementById('part2XpBadge');
-      if (badge) badge.innerText = `🏆 Points: +${points} XP`;
-      return points;
+    // Update stage tracker UI
+    document.getElementById('agrStage1').className = 'agr-stage done';
+    document.getElementById('agrStage1').textContent = '✅ Employee\nSigned';
+    document.getElementById('agrStage2').className = 'agr-stage active';
+
+    showPhaseGate('✍️', 'Agreement Signed!', 0,
+      'Finance Manager (Borhan Siddique) will countersign within 24h. You\'ll get a Telegram notification when it\'s done.',
+      () => { closeSurvey(); }
+    );
+  }
+
+  // ══════════════════════════════════════════
+  // PHASE GATE SUCCESS OVERLAY
+  // ══════════════════════════════════════════
+  function showPhaseGate(emoji, title, xp, sub, callback) {
+    document.getElementById('successEmoji').textContent = emoji;
+    document.getElementById('successTitle').textContent = title;
+    document.getElementById('successXP').textContent = xp > 0 ? `+${xp} XP Earned` : '';
+    document.getElementById('successSub').textContent = sub;
+    document.getElementById('successOverlay').classList.add('visible');
+    const bar = document.querySelector('.success-bar-fill');
+    bar.style.animation = 'none'; bar.offsetHeight;
+    bar.style.animation = 'fillBar 2.2s ease forwards';
+    setTimeout(() => {
+      document.getElementById('successOverlay').classList.remove('visible');
+      if (callback) callback();
+    }, 2800);
+  }
+
+  // ══════════════════════════════════════════
+  // CLOCK & ATTENDANCE
+  // ══════════════════════════════════════════
+  function startClock() {
+    if (clockTimer) clearInterval(clockTimer);
+    updateClock();
+    clockTimer = setInterval(updateClock, 1000);
+  }
+
+  function updateClock() {
+    const now = new Date();
+    document.getElementById('attClock').textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    document.getElementById('attDate').textContent = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  }
+
+  async function handleClockIn() {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(async (pos) => {
+        await doClockIn(pos.coords.latitude, pos.coords.longitude, true);
+      }, async () => { await doClockIn(null, null, false); });
+    } else {
+      await doClockIn(null, null, false);
     }
+  }
 
-    async function submitPart2() {
-      if (!currentUser) return;
-      const nid = document.getElementById('inpNid').value.trim();
-      const permAddress = document.getElementById('inpPermAddress').value.trim();
-
-      if (!nid || !permAddress) {
-        if (tg?.showAlert) tg.showAlert('⚠️ Please fill in required NID Number and Permanent Address fields!');
-        else alert('⚠️ Please fill in required NID Number and Permanent Address fields!');
-        return;
-      }
-
-      const payload = {
-        phone: currentUser.phone || '+8801708459008',
-        nid,
-        permanentAddress: permAddress,
-        tin: document.getElementById('inpTin').value.trim(),
-        license: document.getElementById('inpLicense').value.trim(),
-        degree: document.getElementById('inpDegree').value.trim(),
-        institution: document.getElementById('inpInstitution').value.trim(),
-        passingYear: document.getElementById('inpPassingYear').value.trim(),
-        hasNidDoc: document.getElementById('fileNidDoc')?.files?.length > 0,
-        hasCertDoc: document.getElementById('fileCertDoc')?.files?.length > 0
-      };
-
-      try {
-        const res = await fetch('/api/team/survey/part2', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        const data = await res.json();
-        if (data.success) {
-          showSuccessAndClose(
-            '🔒',
-            'Part 2: Verified & Locked!',
-            data.earnedXP || 45,
-            'Your national details are securely saved. Check Telegram for Part 3!'
-          );
-        }
-      } catch (err) {
-        console.error(err);
-        alert('Part 2 saved locally!');
-      }
-    }
-
-    function calcPart3XP() {
-      const textIds = ['inpBaseSalary', 'inpCommission', 'inpBankName', 'inpAccTitle', 'inpAccNo', 'inpBranchRouting', 'inpBkash', 'inpNagad', 'inpRocket'];
-      let count = 0;
-      textIds.forEach(id => {
-        const el = document.getElementById(id);
-        if (el && el.value && el.value.trim() !== '') count++;
+  async function doClockIn(lat, lng, gps) {
+    try {
+      const tgUser = tg?.initDataUnsafe?.user;
+      const telegramId = tgUser?.id || currentUser?.telegramId || 'debug';
+      await fetch('/api/team/clockin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ telegramId, lat, lng, gps })
       });
-      let points = count * 5;
-      if (document.getElementById('fileBankDoc')?.files?.length > 0) points += 10;
+    } catch (e) {}
+    if (currentUser) currentUser.status = 'In Studio';
+    setStatusPill('In Studio');
+    const pill = document.getElementById('attStatusPill');
+    pill.textContent = '🟢 Clocked In';
+    pill.className = 'att-status-pill att-pill-online';
+    tg?.showAlert ? tg.showAlert('✅ Clocked in successfully!') : alert('✅ Clocked in!');
+  }
 
-      const badge = document.getElementById('part3XpBadge');
-      if (badge) badge.innerText = `🏆 Points: +${points} XP`;
-      return points;
-    }
-
-    async function submitPart3() {
-      if (!currentUser) return;
-      const baseSalary = document.getElementById('inpBaseSalary').value.trim();
-      const bankName = document.getElementById('inpBankName').value.trim();
-      const accNo = document.getElementById('inpAccNo').value.trim();
-      const bkash = document.getElementById('inpBkash').value.trim();
-
-      if (!baseSalary || !bankName || !accNo || !bkash) {
-        if (tg?.showAlert) tg.showAlert('⚠️ Please fill in required Base Salary, Bank Name, Account Number and bKash Number!');
-        else alert('⚠️ Please fill in required Base Salary, Bank Name, Account Number and bKash Number!');
-        return;
-      }
-
-      const payload = {
-        phone: currentUser.phone || '+8801708459008',
-        baseSalary: Number(baseSalary) || 0,
-        commissionRate: document.getElementById('inpCommission').value.trim(),
-        bankName,
-        accTitle: document.getElementById('inpAccTitle').value.trim(),
-        accNo,
-        branchRouting: document.getElementById('inpBranchRouting').value.trim(),
-        bkash,
-        nagad: document.getElementById('inpNagad').value.trim(),
-        rocket: document.getElementById('inpRocket').value.trim(),
-        hasBankDoc: document.getElementById('fileBankDoc')?.files?.length > 0
-      };
-
-      try {
-        const res = await fetch('/api/team/survey/part3', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        const data = await res.json();
-        if (data.success) {
-          showSuccessAndClose(
-            '💰',
-            'Part 3: Payroll Locked In!',
-            data.earnedXP || 45,
-            'Salary & bank details saved. HR will verify these. Check Telegram for Part 4!'
-          );
-        }
-      } catch (err) {
-        console.error(err);
-        alert('Part 3 saved locally!');
-      }
-    }
-
-    function calcPart4XP() {
-      const textIds = ['inpSkillPrimary', 'inpSkillSecondary', 'inpPortfolio', 'inpLaptopSerial', 'inpStudioGear', 'inpTshirt', 'inpDietary'];
-      let count = 0;
-      textIds.forEach(id => {
-        const el = document.getElementById(id);
-        if (el && el.value && el.value.trim() !== '') count++;
+  async function handleClockOut() {
+    try {
+      const tgUser = tg?.initDataUnsafe?.user;
+      const telegramId = tgUser?.id || currentUser?.telegramId || 'debug';
+      await fetch('/api/team/clockout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ telegramId })
       });
-      let points = count * 5;
-      if (document.getElementById('fileEquipmentDoc')?.files?.length > 0) points += 10;
+    } catch (e) {}
+    if (currentUser) currentUser.status = 'Offline';
+    setStatusPill('Offline');
+    const pill = document.getElementById('attStatusPill');
+    pill.textContent = '⬛ Offline';
+    pill.className = 'att-status-pill att-pill-offline';
+    tg?.showAlert ? tg.showAlert('🚪 Clocked out. Have a great evening!') : alert('🚪 Clocked out!');
+  }
 
-      const badge = document.getElementById('part4XpBadge');
-      if (badge) badge.innerText = `🏆 Points: +${points} XP`;
-      return points;
-    }
+  // ══════════════════════════════════════════
+  // TASKS
+  // ══════════════════════════════════════════
+  const stageClass = { 'Brief': 'stage-brief', 'Production': 'stage-shoot', 'Shoot': 'stage-shoot', 'Editing': 'stage-edit', 'Post Production': 'stage-edit', 'Client Review': 'stage-review', 'Review': 'stage-review', 'Delivered': 'stage-review' };
 
-    async function submitPart4() {
-      if (!currentUser) return;
-      const skillPrimary = document.getElementById('inpSkillPrimary').value.trim();
-
-      if (!skillPrimary) {
-        if (tg?.showAlert) tg.showAlert('⚠️ Please fill in your Primary Skillset / Core Competency!');
-        else alert('⚠️ Please fill in your Primary Skillset / Core Competency!');
+  async function loadUserTasks() {
+    const list = document.getElementById('userTaskList');
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon">⏳</div>Loading...</div>';
+    try {
+      const tgUser = tg?.initDataUnsafe?.user;
+      const telegramId = tgUser?.id || currentUser?.telegramId || 'debug';
+      const res = await fetch(`/api/team/tasks?telegramId=${telegramId}`);
+      const tasks = await res.json();
+      if (!tasks.length) {
+        list.innerHTML = '<div class="empty-state"><div class="empty-icon">✅</div>No active tasks right now</div>';
         return;
       }
-
-      const payload = {
-        phone: currentUser.phone || '+8801708459008',
-        skillPrimary,
-        skillSecondary: document.getElementById('inpSkillSecondary').value.trim(),
-        portfolio: document.getElementById('inpPortfolio').value.trim(),
-        laptopSerial: document.getElementById('inpLaptopSerial').value.trim(),
-        studioGear: document.getElementById('inpStudioGear').value.trim(),
-        tshirt: document.getElementById('inpTshirt').value,
-        dietary: document.getElementById('inpDietary').value.trim(),
-        hasEquipmentDoc: document.getElementById('fileEquipmentDoc')?.files?.length > 0
-      };
-
-      try {
-        const res = await fetch('/api/team/survey/part4', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        const data = await res.json();
-        if (data.success) {
-          showSuccessAndClose(
-            '👑',
-            'All 4 Parts Complete!',
-            data.earnedXP || 85,
-            'Your profile is 100% done! Check Telegram — your Employment Agreement is ready to sign!',
-            3000
-          );
-        }
-      } catch (err) {
-        console.error(err);
-        alert('Part 4 saved locally!');
-      }
+      list.innerHTML = tasks.map(t => `
+        <div class="task-item">
+          <div class="task-title">${t.title}</div>
+          <div class="task-meta">
+            <span>${t.client}</span>
+            <span class="stage-badge ${stageClass[t.stage] || 'stage-brief'}">${t.stage}</span>
+          </div>
+          <div style="font-size:0.68rem;color:var(--muted);margin-top:0.3rem;">Due: ${t.dueDate || 'ASAP'} · Assignee: ${t.assignee}</div>
+        </div>
+      `).join('');
+    } catch (e) {
+      list.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div>Couldn\'t load tasks</div>';
     }
+  }
 
-    async function submitEmployeeSignature() {
-      if (!currentUser) return;
-      const signName = document.getElementById('inpSignName').value.trim();
-      const isConsent = document.getElementById('chkAgrConsent').checked;
+  // ══════════════════════════════════════════
+  // PAY DATA
+  // ══════════════════════════════════════════
+  function loadPayData() {
+    const emp = currentUser;
+    if (!emp) return;
+    const base = emp.baseSalary || 0;
+    const comm = emp.earnedCommissions || 0;
+    const total = base + comm;
+    document.getElementById('payTotal').textContent = `BDT ${total.toLocaleString()}`;
+    document.getElementById('paySub').textContent = `Base: BDT ${base.toLocaleString()} + Commissions: BDT ${comm.toLocaleString()}`;
+    document.getElementById('payBase').textContent = `BDT ${base.toLocaleString()}`;
+    document.getElementById('payComm').textContent = `BDT ${comm.toLocaleString()}`;
+    const bank = emp.bankInfo || {};
+    document.getElementById('bankName').textContent = bank.bankName || 'Not configured';
+    document.getElementById('bankAccNo').textContent = bank.accNo || '—';
+    document.getElementById('bankBranch').textContent = bank.branch || '—';
+    document.getElementById('mfsBkash').textContent = bank.mfsNo || bank.bkash || 'Not set';
+    document.getElementById('mfsNagad').textContent = bank.nagad || 'Not set';
+  }
 
-      if (!signName) {
-        if (tg?.showAlert) tg.showAlert('⚠️ Please type your Full Legal Name as your E-Signature!');
-        else alert('⚠️ Please type your Full Legal Name as your E-Signature!');
-        return;
-      }
+  // ══════════════════════════════════════════
+  // TEAM SNAPSHOT
+  // ══════════════════════════════════════════
+  async function loadTeamSnapshot() {
+    try {
+      const res = await fetch('/api/team/snapshot');
+      const data = await res.json();
+      document.getElementById('statClockedIn').textContent = data.inStudio || 0;
+      document.getElementById('statOnShoot').textContent = data.onShoot || 0;
+      document.getElementById('statOnLeave').textContent = data.onLeave || 0;
+      document.getElementById('statOffline').textContent = data.offline || 0;
 
-      if (!isConsent) {
-        if (tg?.showAlert) tg.showAlert('⚠️ Please check the agreement consent box!');
-        else alert('⚠️ Please check the agreement consent box!');
-        return;
-      }
-
-      try {
-        const res = await fetch('/api/agreement/sign', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            phone: currentUser.phone || '+8801708459008',
-            empId: currentUser.id || 'PBD-000',
-            signatureName: signName,
-            stage: 1
-          })
-        });
-        const data = await res.json();
-        if (data.success) {
-          if (tg?.showAlert) tg.showAlert('✍️ Stage 1 Signed! Your Agreement has been submitted to HR Manager (Md. Borhan Siddique) for Stage 2 Audit.');
-          else alert('✍️ Stage 1 Signed! Your Agreement has been submitted to HR Manager (Md. Borhan Siddique) for Stage 2 Audit.');
-
-          document.getElementById('agrStageBadge').innerText = 'Stage 2: Pending HR Audit (Borhan)';
-          document.getElementById('agrStageBadge').style.background = 'rgba(251,191,36,0.15)';
-          document.getElementById('agrStageBadge').style.color = '#fbbf24';
-        }
-      } catch (err) {
-        console.error(err);
-        alert('Signature saved!');
-      }
-    }
-
-    function switchTab(tabName) {
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      event.target.classList.add('active');
-
-      document.getElementById('tabSurvey').style.display = tabName === 'survey' ? 'block' : 'none';
-      document.getElementById('tabTasks').style.display = tabName === 'tasks' ? 'block' : 'none';
-      document.getElementById('tabAttendance').style.display = tabName === 'attendance' ? 'block' : 'none';
-      document.getElementById('tabEarnings').style.display = tabName === 'earnings' ? 'block' : 'none';
-      document.getElementById('tabRoster').style.display = tabName === 'roster' ? 'block' : 'none';
-    }
-
-    async function handleClockIn() {
-      if (!currentUser) return;
-      try {
-        currentUser.status = 'In Studio';
-        document.getElementById('attStatus').innerText = 'In Studio';
-        document.getElementById('clockSummary').innerText = 'Current Status: In Studio';
-        if (tg?.showAlert) tg.showAlert('🟢 Clocked In at Studio!');
-        else alert('🟢 Clocked In at Studio!');
-      } catch (err) { console.error(err); }
-    }
-
-    async function handleClockOut() {
-      if (!currentUser) return;
-      try {
-        currentUser.status = 'Offline';
-        document.getElementById('attStatus').innerText = 'Offline';
-        document.getElementById('clockSummary').innerText = 'Current Status: Offline';
-        if (tg?.showAlert) tg.showAlert('🚪 Clocked Out!');
-        else alert('🚪 Clocked Out!');
-      } catch (err) { console.error(err); }
-    }
-
-    async function loadUserTasks() {
-      const container = document.getElementById('userTaskList');
-      try {
-        const res = await fetch('/api/tasks');
-        const tasks = await res.json();
-        
-        const firstName = (currentUser?.name || '').split(' ')[0].toLowerCase();
-        const userTasks = (tasks || []).filter(t => (t.assignee || '').toLowerCase().includes(firstName) || currentUser?.accessLevel === 'Owner / Admin');
-
-        if (!userTasks || userTasks.length === 0) {
-          container.innerHTML = '<div style="font-size: 0.85rem; color: var(--muted); text-align: center; padding: 1rem;">No active assigned tasks.</div>';
-          return;
-        }
-
-        container.innerHTML = userTasks.slice(0, 5).map(t => `
-          <div class="task-item">
-            <div class="task-title">${t.title}</div>
-            <div class="task-meta">
-              <span>Client: ${t.client}</span>
-              <span class="badge" style="background: rgba(168,85,247,0.2); color: #c084fc;">${t.stage}</span>
+      const feed = document.getElementById('activityFeed');
+      if (data.recentActivity && data.recentActivity.length) {
+        feed.innerHTML = data.recentActivity.slice(0, 5).map(a => `
+          <div class="activity-item">
+            <div class="activity-dot" style="background:${a.color || 'var(--purple)'}"></div>
+            <div>
+              <div class="activity-text">${a.text}</div>
+              <div class="activity-time">${a.time}</div>
             </div>
           </div>
         `).join('');
-      } catch (err) {
-        container.innerHTML = '<div style="font-size: 0.85rem; color: var(--muted);">Unable to load tasks.</div>';
       }
-    }
+    } catch (e) {}
+  }
 
-    function loadRoster() {
-      const container = document.getElementById('rosterList');
-      if (!allTeam || allTeam.length === 0) {
-        container.innerHTML = '<div style="font-size: 0.85rem; color: var(--muted);">No team members found.</div>';
-        return;
-      }
-
-      container.innerHTML = allTeam.slice(0, 10).map((m, idx) => {
-        const icon = m.status === 'In Studio' ? '🟢' : (m.status === 'On Field Shoot' ? '🎬' : '⬛');
-        return `
-          <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.6rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
-            <div>
-              <div style="font-size: 0.88rem; font-weight: 700; color: #fff;">${m.name}</div>
-              <div style="font-size: 0.75rem; color: var(--muted);">${m.role}</div>
-            </div>
-            <span class="badge" style="background: rgba(255,255,255,0.08); color: var(--muted);">${icon} ${m.status || 'Offline'}</span>
+  async function loadRosterPage() {
+    showPage('pageTasks');
+    const list = document.getElementById('userTaskList');
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon">⏳</div>Loading roster...</div>';
+    try {
+      const res = await fetch('/api/team/roster');
+      const team = await res.json();
+      const statusIconMap = { 'In Studio': '<span class="status-dot dot-green"></span>', 'On Field Shoot': '<span class="status-dot dot-blue"></span>', 'On Leave': '<span class="status-dot dot-amber"></span>' };
+      list.innerHTML = `
+        <div style="font-size:0.7rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:0.75rem;">Team Roster (${team.length})</div>
+        ${team.map(m => `
+          <div class="roster-item">
+            <div class="roster-avatar">${(m.name||'?').split(' ').map(n=>n[0]).join('').slice(0,2)}</div>
+            <div><div class="roster-name">${m.name}</div><div class="roster-role">${m.role} · ${m.department}</div></div>
+            <div class="roster-status" style="font-size:0.72rem;color:var(--text-2);font-weight:600;">${statusIconMap[m.status] || '<span class="status-dot dot-gray"></span>'}${m.status || 'Offline'}</div>
           </div>
-        `;
-      }).join('');
+        `).join('')}
+      `;
+    } catch(e) {
+      list.innerHTML = '<div class="empty-state">Couldn\'t load roster</div>';
     }
+  }
 
-    document.addEventListener('DOMContentLoaded', initApp);
-  </script>
+  // ══════════════════════════════════════════
+  // ADMIN TOOLS
+  // ══════════════════════════════════════════
+  async function runTechDiag() {
+    try {
+      const res = await fetch('/api/admin/diagnostics');
+      const d = await res.json();
+      tg?.showAlert
+        ? tg.showAlert(`🛠️ System Health\n\n✅ Live & Operational\n👥 Team: ${d.teamCount}\n📋 Tasks: ${d.taskCount}\n🧾 Invoices: ${d.invoiceCount}\n🤖 Logs: ${d.logsCount}`)
+        : alert(`System: ${JSON.stringify(d)}`);
+    } catch(e) { tg?.showAlert ? tg.showAlert('⚠️ Could not fetch diagnostics') : alert('Error'); }
+  }
+  async function openSupabaseSync() {
+    await fetch('/api/admin/sync', { method: 'POST' });
+    tg?.showAlert ? tg.showAlert('✅ Supabase cloud sync executed!') : alert('Synced!');
+  }
+  async function generatePin() {
+    const res = await fetch('/api/admin/pin', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ telegramId: tg?.initDataUnsafe?.user?.id || 'debug' }) });
+    const d = await res.json();
+    tg?.showAlert ? tg.showAlert(`🔑 New Web PIN: ${d.pin}`) : alert(`PIN: ${d.pin}`);
+  }
+  async function cleanSlate() {
+    if (!confirm('Reset automation logs?')) return;
+    await fetch('/api/admin/clean', { method: 'POST' });
+    tg?.showAlert ? tg.showAlert('🧹 Automation logs cleared!') : alert('Done!');
+  }
+  function loadMorningBriefing() { showPage('pageHome'); loadTeamSnapshot(); }
+  function loadFinanceSummary() { showPage('pagePay'); loadPayData(); }
+  async function loadExpenseQueue() {
+    try {
+      const res = await fetch('/api/expenses?status=pending');
+      const exp = await res.json();
+      tg?.showAlert ? tg.showAlert(`💰 Expense Queue\n\n${exp.length} pending claim(s) await your Tier-2 approval.\n\nOpen the web portal for details.`) : alert(`${exp.length} pending`);
+    } catch(e) {}
+  }
+  async function loadPayrollSummary() {
+    try {
+      const res = await fetch('/api/payroll/summary');
+      const d = await res.json();
+      tg?.showAlert ? tg.showAlert(`📊 Payroll Summary\n\nTotal Monthly: BDT ${(d.totalPayroll||0).toLocaleString()}\nEmployees: ${d.count}`) : alert('See web portal');
+    } catch(e) {}
+  }
+
+  // ══════════════════════════════════════════
+  // FORMS — Expense / Leave / EOD (bottom sheet style)
+  // ══════════════════════════════════════════
+  function openExpenseForm() {
+    const sheet = document.createElement('div');
+    sheet.id = 'expenseSheet';
+    sheet.style.cssText = 'position:fixed;inset:0;background:var(--bg);z-index:300;overflow-y:auto;padding:1rem 0.85rem 2rem;';
+    sheet.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+        <div style="font-size:1rem;font-weight:800;color:var(--text);">🧾 Submit Expense Claim</div>
+        <button onclick="document.getElementById('expenseSheet').remove()" style="background:var(--border);border:none;border-radius:10px;padding:0.35rem 0.7rem;font-family:'Outfit',sans-serif;font-size:0.78rem;font-weight:700;cursor:pointer;">✕ Close</button>
+      </div>
+      <div class="card" style="margin:0 0 0.75rem;">
+        <div class="form-group"><label class="form-label">Category *</label>
+          <select id="expCat" class="form-input"><option value="">Select...</option><option>Field Shoot Transport</option><option>Studio Supplies</option><option>Client Entertainment</option><option>Food & Meals</option><option>Equipment Rental</option><option>Other</option></select></div>
+        <div class="form-group"><label class="form-label">Amount (BDT) *</label>
+          <input type="number" id="expAmt" class="form-input" placeholder="e.g. 1500"></div>
+        <div class="form-group"><label class="form-label">Date *</label>
+          <input type="date" id="expDate" class="form-input"></div>
+        <div class="form-group"><label class="form-label">Description / Notes</label>
+          <input type="text" id="expDesc" class="form-input" placeholder="e.g. Rickshaw to Gulshan shoot location"></div>
+        <div class="form-group"><label class="form-label">Receipt / Photo (+10 XP)</label>
+          <input type="file" id="expFile" class="form-input" accept="image/*,.pdf" style="padding:0.55rem;"></div>
+        <button class="btn-primary" onclick="submitExpense()" style="margin-top:0.25rem;">📤 Submit Expense Claim</button>
+      </div>`;
+    document.getElementById('expDate') && (document.getElementById('expDate').valueAsDate = new Date());
+    document.body.appendChild(sheet);
+    setTimeout(() => { const el = document.getElementById('expDate'); if (el) el.valueAsDate = new Date(); }, 50);
+  }
+
+  async function submitExpense() {
+    const cat = document.getElementById('expCat')?.value;
+    const amt = document.getElementById('expAmt')?.value;
+    const date = document.getElementById('expDate')?.value;
+    const desc = document.getElementById('expDesc')?.value;
+    if (!cat || !amt || !date) { tg?.showAlert ? tg.showAlert('Please fill in Category, Amount & Date.') : alert('Fill required fields'); return; }
+    try {
+      const tgUser = tg?.initDataUnsafe?.user;
+      const telegramId = tgUser?.id || currentUser?.telegramId || 'debug';
+      await fetch('/api/expenses', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ telegramId, employeeId: currentUser?.id, employeeName: currentUser?.name, category: cat, amount: Number(amt), date, description: desc })
+      });
+    } catch(e) {}
+    document.getElementById('expenseSheet')?.remove();
+    showPhaseGate('🧾', 'Expense Submitted!', 5, `BDT ${Number(document.getElementById('expAmt')?.value || 0).toLocaleString()} claim forwarded to your Line Manager for Tier-1 approval.`, () => {});
+  }
+
+  function openLeaveForm() {
+    const sheet = document.createElement('div');
+    sheet.id = 'leaveSheet';
+    sheet.style.cssText = 'position:fixed;inset:0;background:var(--bg);z-index:300;overflow-y:auto;padding:1rem 0.85rem 2rem;';
+    sheet.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+        <div style="font-size:1rem;font-weight:800;color:var(--text);">🌴 Leave Request</div>
+        <button onclick="document.getElementById('leaveSheet').remove()" style="background:var(--border);border:none;border-radius:10px;padding:0.35rem 0.7rem;font-family:'Outfit',sans-serif;font-size:0.78rem;font-weight:700;cursor:pointer;">✕ Close</button>
+      </div>
+      <div class="card" style="margin:0 0 0.75rem;">
+        <div class="form-group"><label class="form-label">Leave Type *</label>
+          <select id="leaveType" class="form-input"><option value="">Select...</option><option>Casual Leave</option><option>Sick Leave</option><option>Annual Leave</option><option>Emergency Leave</option><option>Unpaid Leave</option></select></div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">From Date *</label><input type="date" id="leaveFrom" class="form-input"></div>
+          <div class="form-group"><label class="form-label">To Date *</label><input type="date" id="leaveTo" class="form-input"></div>
+        </div>
+        <div class="form-group"><label class="form-label">Reason *</label>
+          <textarea id="leaveReason" class="form-input" rows="3" placeholder="Brief reason for leave..."></textarea></div>
+        <div class="form-group"><label class="form-label">Coverage Plan (optional)</label>
+          <input type="text" id="leaveCover" class="form-input" placeholder="Who will handle your responsibilities?"></div>
+        <button class="btn-primary" onclick="submitLeave()" style="margin-top:0.25rem;">📤 Submit Leave Request</button>
+      </div>`;
+    document.body.appendChild(sheet);
+    setTimeout(() => {
+      const today = new Date().toLocaleDateString('en-CA');
+      const f = document.getElementById('leaveFrom'); if (f) f.value = today;
+      const t = document.getElementById('leaveTo'); if (t) t.value = today;
+    }, 50);
+  }
+
+  async function submitLeave() {
+    const type = document.getElementById('leaveType')?.value;
+    const from = document.getElementById('leaveFrom')?.value;
+    const to = document.getElementById('leaveTo')?.value;
+    const reason = document.getElementById('leaveReason')?.value?.trim();
+    if (!type || !from || !to || !reason) { tg?.showAlert ? tg.showAlert('Please fill all required fields.') : alert('Fill required fields'); return; }
+    try {
+      const tgUser = tg?.initDataUnsafe?.user;
+      await fetch('/api/team/leave', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ telegramId: tgUser?.id || 'debug', employeeId: currentUser?.id, employeeName: currentUser?.name, leaveType: type, fromDate: from, toDate: to, reason, coverage: document.getElementById('leaveCover')?.value })
+      });
+    } catch(e) {}
+    document.getElementById('leaveSheet')?.remove();
+    showPhaseGate('🌴', 'Leave Requested!', 0, `Your ${type} request has been sent to your Line Manager for approval. You'll get a Telegram notification on the decision.`, () => {});
+  }
+
+  function openEODForm() {
+    const now = new Date();
+    const sheet = document.createElement('div');
+    sheet.id = 'eodSheet';
+    sheet.style.cssText = 'position:fixed;inset:0;background:var(--bg);z-index:300;overflow-y:auto;padding:1rem 0.85rem 2rem;';
+    sheet.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+        <div style="font-size:1rem;font-weight:800;color:var(--text);">📝 End of Day Report</div>
+        <button onclick="document.getElementById('eodSheet').remove()" style="background:var(--border);border:none;border-radius:10px;padding:0.35rem 0.7rem;font-family:'Outfit',sans-serif;font-size:0.78rem;font-weight:700;cursor:pointer;">✕ Close</button>
+      </div>
+      <div style="background:linear-gradient(135deg,var(--purple),var(--pink));border-radius:14px;padding:0.85rem;margin-bottom:0.85rem;color:#fff;">
+        <div style="font-size:0.7rem;font-weight:800;opacity:0.75;text-transform:uppercase;letter-spacing:0.5px;">Submitting for</div>
+        <div style="font-size:1rem;font-weight:800;margin-top:0.2rem;">${now.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'})}</div>
+        <div style="font-size:0.72rem;opacity:0.75;margin-top:0.15rem;">${currentUser?.name || 'Team Member'} · ${currentUser?.role || ''}</div>
+      </div>
+      <div class="card" style="margin:0 0 0.75rem;">
+        <div class="form-group"><label class="form-label">Today's Completed Tasks *</label>
+          <textarea id="eodTasks" class="form-input" rows="4" placeholder="• Edited Chillox Eid TVC (v3)&#10;• Attended morning briefing&#10;• Delivered 5 social posts for Apex"></textarea></div>
+        <div class="form-group"><label class="form-label">Blockers / Challenges (if any)</label>
+          <textarea id="eodBlockers" class="form-input" rows="2" placeholder="e.g. Waiting for client feedback on Chillox cut"></textarea></div>
+        <div class="form-group"><label class="form-label">Plan for Tomorrow</label>
+          <textarea id="eodTomorrow" class="form-input" rows="2" placeholder="e.g. Start color grading for Apex product shoot"></textarea></div>
+        <div class="form-group"><label class="form-label">Mood / Energy Today</label>
+          <select id="eodMood" class="form-input">
+            <option value="">Select...</option><option value="5">🔥 Excellent — peaked today</option><option value="4">😊 Good — productive</option><option value="3">😐 Okay — average day</option><option value="2">😓 Tough — needed support</option><option value="1">🆘 Burnout — need a break</option>
+          </select></div>
+        <button class="btn-primary" onclick="submitEOD()" style="margin-top:0.25rem;">📤 Submit EOD Report</button>
+      </div>`;
+    document.body.appendChild(sheet);
+  }
+
+  async function submitEOD() {
+    const tasks = document.getElementById('eodTasks')?.value?.trim();
+    if (!tasks) { tg?.showAlert ? tg.showAlert('Please enter your completed tasks.') : alert('Enter tasks'); return; }
+    const today = new Date().toLocaleDateString('en-CA');
+    try {
+      const tgUser = tg?.initDataUnsafe?.user;
+      await fetch('/api/team/eod', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          telegramId: tgUser?.id || 'debug',
+          employeeId: currentUser?.id,
+          employeeName: currentUser?.name,
+          date: today,
+          tasks, blockers: document.getElementById('eodBlockers')?.value,
+          tomorrow: document.getElementById('eodTomorrow')?.value,
+          mood: document.getElementById('eodMood')?.value
+        })
+      });
+    } catch(e) {}
+    document.getElementById('eodSheet')?.remove();
+    showPhaseGate('📝', 'EOD Submitted!', 10, `Your end-of-day report has been logged. Your manager will see it in tonight's summary. +10 XP earned!`, () => {});
+  }
+
+  // ══════════════════════════════════════════
+  // EXECUTIVE FUNCTIONS (Owner / MD)
+  // ══════════════════════════════════════════
+  async function loadPendingApprovals() {
+    try {
+      const res = await fetch('/api/team/pending-approvals');
+      const data = await res.json();
+      const totalAgreements = data.agreements?.length || 0;
+      const totalExpenses = data.expenses?.length || 0;
+      const totalLeaves = data.leaves?.length || 0;
+      const msg = `✍️ Pending Your Approval\n\n` +
+        `📄 ${totalAgreements} Agreement(s) awaiting final seal\n` +
+        `💸 ${totalExpenses} Expense(s) awaiting disbursement\n` +
+        `🌴 ${totalLeaves} Leave request(s) pending\n\n` +
+        `Open the web portal to action each item.`;
+      tg?.showAlert ? tg.showAlert(msg) : alert(msg);
+    } catch(e) {
+      tg?.showAlert ? tg.showAlert('Open the web portal to see pending approvals.') : alert('See web portal');
+    }
+  }
+
+  async function loadClientStatus() {
+    try {
+      const res = await fetch('/api/tasks?stage=Client+Review');
+      const tasks = await res.json();
+      const inReview = tasks.filter(t => t.stage === 'Client Review');
+      const inEdit = tasks.filter(t => t.stage === 'Editing' || t.stage === 'Post Production');
+      let msg = `🎬 Campaign Pipeline\n\n`;
+      if (inReview.length) {
+        msg += `⏳ In Client Review (${inReview.length}):\n`;
+        inReview.slice(0,5).forEach(t => { msg += `  • ${t.title} — ${t.client}\n`; });
+        msg += '\n';
+      }
+      if (inEdit.length) {
+        msg += `✂️ In Editing (${inEdit.length}):\n`;
+        inEdit.slice(0,5).forEach(t => { msg += `  • ${t.title} — ${t.client}\n`; });
+      }
+      if (!inReview.length && !inEdit.length) msg += `All campaigns on track ✅`;
+      tg?.showAlert ? tg.showAlert(msg) : alert(msg);
+    } catch(e) {
+      tg?.showAlert ? tg.showAlert('Open the web portal for campaign status.') : alert('See web portal');
+    }
+  }
+
+  // ══════════════════════════════════════════
+  // START
+  // ══════════════════════════════════════════
+  init();
+  startClock();
+</script>
 </body>
 </html>

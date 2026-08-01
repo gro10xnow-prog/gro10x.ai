@@ -12,37 +12,42 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function initPartnerPortal() {
   try {
-    const res = await fetch('/api/db');
-    const db = await res.json();
+    // Fetch authenticated user profile
+    const authRes = await fetch('/api/auth/me');
+    let userClientName = 'Chillox Fast Food Chain';
+    let userClientId = 'CLI-0001';
 
-    partnerReviews = db.reviews || [];
-    partnerInvoices = db.invoices || [];
-    partnerPosts = db.posts || [];
-
-    // Module C6: Check URL Search Params for Magic Link Access (?client=... & ?token=...)
-    const urlParams = new URLSearchParams(window.location.search);
-    const magicClient = urlParams.get('client');
-    const magicToken = urlParams.get('token');
-
-    // Populate Client Selector
-    const clientSelect = document.getElementById('partnerClientSelect');
-    if (clientSelect) {
-      const clients = db.clients && db.clients.length > 0 ? db.clients : [
-        { name: 'Chillox Fast Food Chain' },
-        { name: 'Clear Men (Unilever)' },
-        { name: 'United Commercial Bank (UCB)' }
-      ];
-      clientSelect.innerHTML = clients.map(c => `
-        <option value="${c.name}">${c.name}</option>
-      `).join('');
-
-      if (magicClient) {
-        currentPartnerClient = decodeURIComponent(magicClient);
-        clientSelect.value = currentPartnerClient;
-      } else if (clients[0]) {
-        currentPartnerClient = clients[0].name;
+    if (authRes.ok) {
+      const authData = await authRes.json();
+      if (authData.user) {
+        userClientName = authData.user.name || authData.user.profile?.name || userClientName;
+        userClientId = authData.user.linkedId || userClientId;
       }
     }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const magicClient = urlParams.get('client');
+    if (magicClient) {
+      userClientName = decodeURIComponent(magicClient);
+    }
+
+    currentPartnerClient = userClientName;
+
+    const headerNameEl = document.getElementById('partnerHeaderName');
+    if (headerNameEl) {
+      headerNameEl.innerText = `🏢 Workspace: ${currentPartnerClient}`;
+    }
+
+    // Fetch Isolated Client Data
+    const [revRes, invRes, postRes] = await Promise.all([
+      fetch('/api/reviews'),
+      fetch('/api/invoices'),
+      fetch('/api/posts')
+    ]);
+
+    if (revRes.ok) partnerReviews = await revRes.json();
+    if (invRes.ok) partnerInvoices = await invRes.json();
+    if (postRes.ok) partnerPosts = await postRes.json();
 
     renderPartnerView();
   } catch (err) {

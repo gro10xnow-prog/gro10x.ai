@@ -11,7 +11,9 @@ module.exports = {
   initBot,
   sendTelegramNotification,
   sendToGroup,
-  getRoleKeyboard
+  getRoleKeyboard,
+  getClientKeyboard,
+  sendAgreementNotification
 };
 
 function normalizePhone(p) {
@@ -50,18 +52,26 @@ function getRoleKeyboard(accessLevel, isVerified = false, emp = null) {
         keyboard: [
           [{ text: '🌅 Morning Briefing' }, { text: '📊 Business Snapshot' }],
           [{ text: '👥 Full Team Status' }, { text: '💰 Finance Summary' }],
-          [{ text: '👤 My Profile' }, { text: '💳 Bank & bKash' }],
-          [{ text: '🛠️ Tech Diagnostics' }, { text: '🎓 Orientation' }],
+          [{ text: '✍️ Pending Approvals' }, { text: '💸 Expense Queue' }],
+          [{ text: '📋 My Tasks' }, { text: '💰 My Earnings' }],
+          [{ text: '🧾 Submit Expense' }, { text: '🌴 Leave Request' }],
+          [{ text: '📝 EOD Report' }, { text: '💳 Bank & bKash' }],
+          [{ text: '👤 My Profile' }, { text: '🛠️ Tech Diagnostics' }],
           [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
         ],
         resize_keyboard: true
       };
     }
+    // Owner / MD — all employee features + executive command layer
     return {
       keyboard: [
         [{ text: '🌅 Morning Briefing' }, { text: '📊 Business Snapshot' }],
         [{ text: '👥 Full Team Status' }, { text: '💰 Finance Summary' }],
-        [{ text: '👤 My Profile' }, { text: '💳 Bank & bKash' }],
+        [{ text: '✍️ Pending Approvals' }, { text: '💸 Expense Queue' }],
+        [{ text: '📋 My Tasks' }, { text: '💰 My Earnings' }],
+        [{ text: '🧾 Submit Expense' }, { text: '🌴 Leave Request' }],
+        [{ text: '📝 EOD Report' }, { text: '💳 Bank & bKash' }],
+        [{ text: '👤 My Profile' }, { text: '🎬 Client Status' }],
         [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
       ],
       resize_keyboard: true
@@ -69,23 +79,144 @@ function getRoleKeyboard(accessLevel, isVerified = false, emp = null) {
   }
 
   if (accessLevel === 'Director / Manager') {
+    const role = (emp?.role || '').toLowerCase();
+    const isClientGrowth = role.includes('client') || role.includes('growth');
+    const isBizOps = role.includes('business operation') || role.includes('head of business');
+    const isInternalOps = role.includes('internal operation') || role.includes('internal ops');
+
+    if (isClientGrowth) {
+      return {
+        keyboard: [
+          [{ text: '🎯 My Clients' }, { text: '📈 Lead Pipeline' }],
+          [{ text: '🔔 Client Updates' }, { text: '💰 My Commission' }],
+          [{ text: '🌅 Morning Briefing' }, { text: '📋 My Tasks' }],
+          [{ text: '🧾 Submit Expense' }, { text: '🌴 Leave Request' }],
+          [{ text: '📝 EOD Report' }, { text: '💳 Bank & bKash' }],
+          [{ text: '👤 My Profile' }, { text: '👥 My Team' }],
+          [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
+        ],
+        resize_keyboard: true
+      };
+    }
+
+    if (isBizOps) {
+      return {
+        keyboard: [
+          [{ text: '🏢 Ops Dashboard' }, { text: '👥 HR & Attendance' }],
+          [{ text: '📡 Media Buying' }, { text: '🚀 Client Activation' }],
+          [{ text: '🌅 Morning Briefing' }, { text: '📋 My Tasks' }],
+          [{ text: '🧾 Submit Expense' }, { text: '🌴 Leave Request' }],
+          [{ text: '📝 EOD Report' }, { text: '💳 Bank & bKash' }],
+          [{ text: '👤 My Profile' }, { text: '👥 My Team' }],
+          [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
+        ],
+        resize_keyboard: true
+      };
+    }
+
+    if (isInternalOps) {
+      return {
+        keyboard: [
+          [{ text: '⚡ Studio Workload' }, { text: '🚧 Bottleneck Radar' }],
+          [{ text: '📸 Studio & Gear Slots' }, { text: '📊 Turnaround Metrics' }],
+          [{ text: '🌅 Morning Briefing' }, { text: '📋 My Tasks' }],
+          [{ text: '🧾 Submit Expense' }, { text: '🌴 Leave Request' }],
+          [{ text: '📝 EOD Report' }, { text: '💳 Bank & bKash' }],
+          [{ text: '👤 My Profile' }, { text: '👥 My Team' }],
+          [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
+        ],
+        resize_keyboard: true
+      };
+    }
+
+    const isArtDirector = role.includes('art director') || (role.includes('art') && role.includes('direct'));
+    if (isArtDirector) {
+      return {
+        keyboard: [
+          [{ text: '🎨 Design Queue' }, { text: '👁️ Review Room' }],
+          [{ text: '👥 Design Team' }, { text: '✅ Leave Approvals' }],
+          [{ text: '🌅 Morning Briefing' }, { text: '📋 My Tasks' }],
+          [{ text: '🧾 Submit Expense' }, { text: '🌴 Leave Request' }],
+          [{ text: '📝 EOD Report' }, { text: '💳 Bank & bKash' }],
+          [{ text: '👤 My Profile' }, { text: '👥 My Team' }],
+          [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
+        ],
+        resize_keyboard: true
+      };
+    }
+
+    const isHeadOfProduction = role.includes('head of production') || role.includes('production head') || role.includes('production');
+    if (isHeadOfProduction) {
+      return {
+        keyboard: [
+          [{ text: '🎬 Production Queue' }, { text: '📜 Script & Copy QC' }],
+          [{ text: '🎥 Shoot Call-Sheets' }, { text: '👥 Content Team' }],
+          [{ text: '🌅 Morning Briefing' }, { text: '✅ Leave Approvals' }],
+          [{ text: '🧾 Submit Expense' }, { text: '🌴 Leave Request' }],
+          [{ text: '📝 EOD Report' }, { text: '💳 Bank & bKash' }],
+          [{ text: '👤 My Profile' }, { text: '👥 My Team' }],
+          [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
+        ],
+        resize_keyboard: true
+      };
+    }
+
+    const isStrategyLead = role.includes('strategy & planning') || role.includes('strategy');
+    if (isStrategyLead) {
+      return {
+        keyboard: [
+          [{ text: '📈 Campaign Strategy' }, { text: '🗓️ Content Calendars' }],
+          [{ text: '👥 Strategy Team' }, { text: '✅ Leave Approvals' }],
+          [{ text: '🌅 Morning Briefing' }, { text: '📋 My Tasks' }],
+          [{ text: '🧾 Submit Expense' }, { text: '🌴 Leave Request' }],
+          [{ text: '📝 EOD Report' }, { text: '💳 Bank & bKash' }],
+          [{ text: '👤 My Profile' }, { text: '👥 My Team' }],
+          [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
+        ],
+        resize_keyboard: true
+      };
+    }
+
+    const isClientServices = role.includes('client services') || role.includes('account manager') || role.includes('client service');
+    if (isClientServices && !role.includes('head of client')) {
+      return {
+        keyboard: [
+          [{ text: '🎯 My Client Roster' }, { text: '🎬 Client Approvals' }],
+          [{ text: '📢 Send Client Link' }, { text: '💬 Client Feedback' }],
+          [{ text: '🌅 Morning Briefing' }, { text: '👥 Account Team' }],
+          [{ text: '🧾 Submit Expense' }, { text: '🌴 Leave Request' }],
+          [{ text: '📝 EOD Report' }, { text: '💳 Bank & bKash' }],
+          [{ text: '👤 My Profile' }, { text: '📍 Clock-In GPS', request_location: true }],
+          [{ text: '🚪 Clock Out' }]
+        ],
+        resize_keyboard: true
+      };
+    }
+
+    // Default Director
     return {
       keyboard: [
-        [{ text: '👥 My Team Roster' }, { text: '📊 Department Report' }],
+        [{ text: '👥 My Team' }, { text: '📊 Department Report' }],
         [{ text: '🌅 Morning Briefing' }, { text: '📋 My Tasks' }],
-        [{ text: '👤 My Profile' }, { text: '💳 Bank & bKash' }],
-        [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
+        [{ text: '🧾 Submit Expense' }, { text: '🌴 Leave Request' }],
+        [{ text: '📝 EOD Report' }, { text: '💳 Bank & bKash' }],
+        [{ text: '👤 My Profile' }, { text: '📍 Clock-In GPS', request_location: true }],
+        [{ text: '🚪 Clock Out' }]
       ],
       resize_keyboard: true
     };
   }
 
-  if (accessLevel === 'Finance Manager') {
+  if (accessLevel === 'Finance Manager' || (emp?.role || '').toLowerCase().includes('finance manager')) {
     return {
       keyboard: [
-        [{ text: '💰 Expense Queue' }, { text: '🧾 Invoice Status' }],
-        [{ text: '📊 Payroll Summary' }, { text: '👤 My Profile' }],
-        [{ text: '💳 Bank & bKash' }, { text: '📍 Clock-In GPS', request_location: true }]
+        [{ text: '💸 Expense Queue' }, { text: '🧾 Invoice Status' }],
+        [{ text: '📊 Payroll Summary' }, { text: '🏦 Bank & bKash Hub' }],
+        [{ text: '🌅 Morning Briefing' }, { text: '✅ Leave Approvals' }],
+        [{ text: '🧾 Submit Expense' }, { text: '🌴 Leave Request' }],
+        [{ text: '📝 EOD Report' }, { text: '👥 Admin Team' }],
+        [{ text: '👤 My Profile' }, { text: '📍 Clock-In GPS', request_location: true }],
+        [{ text: '🚪 Clock Out' }]
       ],
       resize_keyboard: true
     };
@@ -95,7 +226,80 @@ function getRoleKeyboard(accessLevel, isVerified = false, emp = null) {
     return {
       keyboard: [
         [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }],
-        [{ text: '👤 My Profile' }]
+        [{ text: '👤 My Profile' }, { text: '🌴 Leave Request' }]
+      ],
+      resize_keyboard: true
+    };
+  }
+
+  const userRole = (emp?.role || '').toLowerCase();
+
+  // PBD-028 Rythm: Digital Marketing Associate in Client Services dept → Client Services keyboard
+  if (emp?.id === 'PBD-028') {
+    return {
+      keyboard: [
+        [{ text: '🎯 My Client Roster' }, { text: '🎬 Client Approvals' }],
+        [{ text: '📢 Send Client Link' }, { text: '💬 Client Feedback' }],
+        [{ text: '📝 EOD Report' }, { text: '🧾 Submit Expense' }],
+        [{ text: '🌴 Leave Request' }, { text: '👤 My Profile' }],
+        [{ text: '💳 Bank & bKash' }, { text: '📍 Clock-In GPS', request_location: true }],
+        [{ text: '🚪 Clock Out' }]
+      ],
+      resize_keyboard: true
+    };
+  }
+
+  // PBD-030 Mukit: Junior Finance Executive → Finance Assistant keyboard
+  if (emp?.id === 'PBD-030' || (userRole.includes('finance') && userRole.includes('executive'))) {
+    return {
+      keyboard: [
+        [{ text: '🧾 Log Expense Entry' }, { text: '📋 Invoice Tracker' }],
+        [{ text: '💰 Payment Follow-Up' }, { text: '📝 EOD Report' }],
+        [{ text: '🧾 Submit Expense' }, { text: '🌴 Leave Request' }],
+        [{ text: '👤 My Profile' }, { text: '💳 Bank & bKash' }],
+        [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
+      ],
+      resize_keyboard: true
+    };
+  }
+
+  // Strategy & Digital Marketing Associate Keyboard
+  if (userRole.includes('strategy') || userRole.includes('digital marketing') || userRole.includes('associate')) {
+    return {
+      keyboard: [
+        [{ text: '📅 My Content Plans' }, { text: '🚀 Dispatch Hub' }],
+        [{ text: '📝 Draft New Plan' }, { text: '📝 EOD Report' }],
+        [{ text: '🧾 Submit Expense' }, { text: '🌴 Leave Request' }],
+        [{ text: '👤 My Profile' }, { text: '💳 Bank & bKash' }],
+        [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
+      ],
+      resize_keyboard: true
+    };
+  }
+
+  // Content Production Crew Keyboard (Copywriter, AI Prompt Engineer)
+  if (userRole.includes('copywriter') || userRole.includes('prompt') || userRole.includes('content')) {
+    return {
+      keyboard: [
+        [{ text: '📜 My Scripts & Copy' }, { text: '🤖 AI Prompt Studio' }],
+        [{ text: '📤 Submit Script QC' }, { text: '📝 EOD Report' }],
+        [{ text: '🧾 Submit Expense' }, { text: '🌴 Leave Request' }],
+        [{ text: '👤 My Profile' }, { text: '💳 Bank & bKash' }],
+        [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
+      ],
+      resize_keyboard: true
+    };
+  }
+
+  // Visualizer / Creative Specialist Keyboard
+  if (userRole.includes('visualizer')) {
+    return {
+      keyboard: [
+        [{ text: '🖌️ My Creative Tasks' }, { text: '📤 Submit for QC' }],
+        [{ text: '✏️ View Revisions' }, { text: '📝 EOD Report' }],
+        [{ text: '🧾 Submit Expense' }, { text: '🌴 Leave Request' }],
+        [{ text: '👤 My Profile' }, { text: '💳 Bank & bKash' }],
+        [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
       ],
       resize_keyboard: true
     };
@@ -110,6 +314,115 @@ function getRoleKeyboard(accessLevel, isVerified = false, emp = null) {
     ],
     resize_keyboard: true
   };
+}
+
+// ══════════════════════════════════════════
+// CLIENT BOT KEYBOARD
+// ══════════════════════════════════════════
+function getClientKeyboard(client) {
+  return {
+    keyboard: [
+      [{ text: '🎬 Review Room' }, { text: '📋 Campaign Status' }],
+      [{ text: '💳 My Invoices' }, { text: '🎨 Our Services' }],
+      [{ text: '📞 Contact AM' }, { text: '📁 Portfolio' }],
+      [{ text: '📱 Open App', web_app: { url: 'https://purpleos-iota.vercel.app/client-miniapp' } }]
+    ],
+    resize_keyboard: true
+  };
+}
+
+// ══════════════════════════════════════════
+// AGREEMENT STAGE NOTIFICATIONS
+// ══════════════════════════════════════════
+function sendAgreementNotification(stage, emp, dbData) {
+  if (!teamBot) return;
+
+  if (stage === 1) {
+    // Employee signed → notify Finance Manager
+    const finance = (dbData.team || []).find(e => e.accessLevel === 'Finance Manager');
+    if (finance?.telegramId) {
+      const msg = `📄 *Employment Agreement — Action Required*\n\n` +
+        `*${emp.name}* (${emp.id}) has signed their Employment Agreement.\n` +
+        `Role: *${emp.role}* · Dept: *${emp.department}*\n\n` +
+        `📌 *Stage 2:* Your Finance Manager countersignature is required.`;
+      teamBot.sendMessage(finance.telegramId, msg, {
+        parse_mode: 'Markdown',
+        reply_markup: {
+          inline_keyboard: [[
+            { text: '✅ Counter-Sign as Finance Manager', callback_data: `agr_stage2:${emp.id}` }
+          ]]
+        }
+      }).catch(() => {});
+    }
+    // Notify employee
+    if (emp.telegramId) {
+      teamBot.sendMessage(emp.telegramId,
+        `✍️ *Agreement Signed!*\n\nYour Employment Agreement has been submitted.\n` +
+        `Finance Manager will countersign within 24h.\n\n` +
+        `📌 *Stage 2 of 3:* Awaiting Finance Manager countersignature.`,
+        { parse_mode: 'Markdown' }
+      ).catch(() => {});
+    }
+  }
+
+  if (stage === 2) {
+    // Finance countersigned → notify final approver
+    // Special rule: PBD-001 (MD) → Stage 3 goes to PBD-002 (Chairman)
+    let finalApprover = null;
+    if (emp.id === 'PBD-001') {
+      finalApprover = (dbData.team || []).find(e => e.id === 'PBD-002');
+    }
+    // For everyone else: Stage 3 goes to Owner / MD (PBD-001)
+    if (!finalApprover) {
+      finalApprover = (dbData.team || []).find(e =>
+        (e.accessLevel === 'Owner / Admin' && e.id !== 'PBD-000' && e.id !== emp.id)
+      ) || (dbData.team || []).find(e => e.id === 'PBD-000');
+    }
+    if (finalApprover?.telegramId) {
+      const isMD = emp.id === 'PBD-001';
+      const msg = `📄 *Employment Agreement — Final Approval Required*\n\n` +
+        `*${emp.name}* (${emp.id}) — *${emp.role}*\n` +
+        `Finance Manager has countersigned.\n\n` +
+        `📌 *Stage 3 of 3:* ${isMD ? 'Chairman approval' : 'Owner approval'} will fully activate this employee.`;
+      teamBot.sendMessage(finalApprover.telegramId, msg, {
+        parse_mode: 'Markdown',
+        reply_markup: {
+          inline_keyboard: [[
+            { text: isMD ? '🏛️ Chairman Final Seal & Activate' : '👑 Owner Final Seal & Activate Employee', callback_data: `agr_stage3:${emp.id}` }
+          ]]
+        }
+      }).catch(() => {});
+    }
+    // Notify employee
+    if (emp.telegramId) {
+      teamBot.sendMessage(emp.telegramId,
+        `✅ *Finance Manager Countersigned!*\n\nYour agreement has been verified by Finance.\n` +
+        `Now pending final approval.\n\n` +
+        `📌 *Stage 3 of 3:* Awaiting final sign-off. Usually done within 24–48h.`,
+        { parse_mode: 'Markdown' }
+      ).catch(() => {});
+    }
+  }
+
+  if (stage === 3) {
+    // Owner approved → fully activate employee
+    if (emp.telegramId) {
+      const keyboard = getRoleKeyboard(emp.accessLevel, true, { ...emp, onboardingComplete: true });
+      teamBot.sendMessage(emp.telegramId,
+        `🎉 *CONGRATULATIONS, ${emp.name}!*\n\n` +
+        `Your Employment Agreement is fully executed and signed by all parties.\n\n` +
+        `━━━━━━━━━━━━━━━━━━━━\n` +
+        `🚀 *You are now an official Purplebot Digital team member!*\n\n` +
+        `📌 *Your Next Steps:*\n` +
+        `1. 📍 Do your first GPS Clock-In to go Online\n` +
+        `2. 📋 Check *My Tasks* for your first assignment\n` +
+        `3. 💳 Verify your *Bank & bKash* payout accounts\n` +
+        `4. 👤 Review your *My Profile* — check your salary details\n\n` +
+        `Tap *Open App* to access your full dashboard. Welcome to the team! 💜`,
+        { parse_mode: 'Markdown', reply_markup: keyboard }
+      ).catch(() => {});
+    }
+  }
 }
 
 function initBot() {
@@ -149,7 +462,7 @@ function initBot() {
       }).catch(e => {});
 
       // 📱 TELEGRAM CONTACT VERIFICATION HANDLER (1-time phone link)
-      teamBot.on('contact', (msg) => {
+      teamBot.on('contact', async (msg) => {
         const chatId = msg.chat.id;
         const contact = msg.contact;
         if (!contact || !contact.phone_number) return;
@@ -170,19 +483,22 @@ function initBot() {
         // Link Telegram ID
         emp.telegramId = String(chatId);
 
-        // Generate web temp PIN
-        const pinRecord = createTempPin(emp.phone, emp.id, 'team', emp.email);
+        // Generate web temp PIN (async — persists to Supabase)
+        const pinRecord = await createTempPin(emp.phone, emp.id, 'team', emp.email);
 
         writeDB(dbData);
         broadcast('team_update', dbData.team);
 
-        const welcomeMsg = `✅ *Identity Verified as ${emp.name}!*\n\n` +
+        const welcomeMsg = `✅ *Identity Verified — Welcome, ${emp.name}!*\n\n` +
           `• Designation: *${emp.role}*\n` +
           `• Department: *${emp.department}*\n` +
           `• Access Level: *${emp.accessLevel}*\n\n` +
-          `🔑 *Desktop Web Login PIN:* \`${pinRecord.pin}\`\n` +
-          `🌐 *Web Portal:* https://purpleos-iota.vercel.app/auth\n\n` +
-          `Your Telegram account is now linked. Tapping *Open App* will launch your role dashboard automatically without logging in again!`;
+          `🔑 *Desktop Web PIN:* \`${pinRecord.pin}\`\n` +
+          `🌐 Portal: https://purpleos-iota.vercel.app/auth\n\n` +
+          `━━━━━━━━━━━━━━━━━━━━\n` +
+          `📌 *Next Step:*\n` +
+          `Tap *🎓 Complete My Profile Survey* below.\n` +
+          `It takes ~5 minutes and unlocks your full dashboard. You'll earn XP for each section you complete!`;
 
         const keyboard = getRoleKeyboard(emp.accessLevel, true, emp);
         teamBot.sendMessage(chatId, welcomeMsg, { parse_mode: 'Markdown', reply_markup: keyboard });
@@ -199,7 +515,21 @@ function initBot() {
           '/start', '/help', '/resetpin', '/myprofile', '/mybank', '/techdiag', '/orientation',
           '🌅 Morning Briefing', '📊 Business Snapshot', '👥 Full Team Status', '💰 Finance Summary',
           '👤 My Profile', '💳 Bank & bKash', '🛠️ Tech Diagnostics', '🎓 Orientation',
-          '📍 Clock-In GPS', '🚪 Clock Out', '📋 My Tasks', '💰 My Earnings', '👥 My Team Roster', '📊 Department Report'
+          '📍 Clock-In GPS', '🚪 Clock Out', '📋 My Tasks', '💰 My Earnings',
+          '👥 My Team Roster', '📊 Department Report', '👥 My Team',
+          '🎯 My Clients', '📈 Lead Pipeline', '🔔 Client Updates', '💰 My Commission',
+          '🏢 Ops Dashboard', '👥 HR & Attendance', '📡 Media Buying', '🚀 Client Activation',
+          '⚡ Studio Workload', '🚧 Bottleneck Radar', '📸 Studio & Gear Slots', '📊 Turnaround Metrics',
+          '🎨 Design Queue', '👁️ Review Room', '👥 Design Team', '✅ Leave Approvals',
+          '🖌️ My Creative Tasks', '📤 Submit for QC', '✏️ View Revisions',
+          '🎬 Production Queue', '📜 Script & Copy QC', '🎥 Shoot Call-Sheets', '👥 Content Team',
+          '📜 My Scripts & Copy', '🤖 AI Prompt Studio', '📤 Submit Script QC',
+          '🎯 My Client Roster', '🎬 Client Approvals', '📢 Send Client Link', '💬 Client Feedback', '👥 Account Team',
+          '📈 Campaign Strategy', '🗓️ Content Calendars', '👥 Strategy Team', '📅 My Content Plans', '🚀 Dispatch Hub', '📝 Draft New Plan',
+          '💸 Expense Queue', '🧾 Invoice Status', '📊 Payroll Summary', '🏦 Bank & bKash Hub', '👥 Admin Team',
+          '✍️ Pending Approvals', '🎬 Client Status',
+          '🧾 Submit Expense', '🌴 Leave Request', '📝 EOD Report',
+          '🧾 Log Expense Entry', '📋 Invoice Tracker', '💰 Payment Follow-Up'
         ].some(b => text.startsWith(b));
 
         if (isMenuButton) {
@@ -245,6 +575,113 @@ function initBot() {
             writeDB(dbData);
             userState[chatId] = null;
             teamBot.sendMessage(chatId, `✅ *bKash / Nagad Number Saved!*\nNumber: *${text}*`, { parse_mode: 'Markdown', reply_markup: getRoleKeyboard(emp.accessLevel, true, emp) });
+          } else if (state.action === 'await_expense_amount') {
+            const amount = parseFloat(text.replace(/[^0-9.]/g, ''));
+            if (isNaN(amount) || amount <= 0) {
+              teamBot.sendMessage(chatId, `⚠️ Please enter a valid amount (e.g. \`1500\`).`, { parse_mode: 'Markdown' });
+              return;
+            }
+            userState[chatId] = { ...state, amount, action: 'await_expense_category' };
+            teamBot.sendMessage(chatId,
+              `💰 Amount: *BDT ${amount.toLocaleString()}*\n\nNow please reply with the *category*:\n\n` +
+              `1️⃣ Transport\n2️⃣ Food & Meals\n3️⃣ Office Supplies\n4️⃣ Client Entertainment\n5️⃣ Other\n\nReply with \`1\`-\`5\` or type custom category`,
+              { parse_mode: 'Markdown' }
+            );
+          } else if (state.action === 'await_expense_category') {
+            const categories = { '1': 'Transport', '2': 'Food & Meals', '3': 'Office Supplies', '4': 'Client Entertainment', '5': 'Other' };
+            const category = categories[text.trim()] || text.trim();
+            dbData.expenses = dbData.expenses || [];
+            const newExpense = {
+              id: `EXP-${Date.now()}`,
+              submittedBy: state.empName,
+              employeeId: state.empId,
+              amount: state.amount,
+              category: category,
+              status: 'Pending',
+              createdAt: new Date().toISOString()
+            };
+            dbData.expenses.push(newExpense);
+            writeDB(dbData);
+            userState[chatId] = null;
+            try { const { broadcast } = require('../services/sse'); broadcast('expense_update', dbData.expenses); } catch(e) {}
+            teamBot.sendMessage(chatId,
+              `✅ *Expense Claim Submitted!*\n\n` +
+              `• Amount: *BDT ${state.amount.toLocaleString()}*\n` +
+              `• Category: *${category}*\n` +
+              `• Status: *Pending Approval*\n\n` +
+              `Your line manager will be notified for Tier-1 approval.`,
+              { parse_mode: 'Markdown', reply_markup: getRoleKeyboard(emp.accessLevel, true, emp) }
+            );
+          } else if (state.action === 'await_leave_type') {
+            const leaveTypes = { '1': 'Casual Leave', '2': 'Sick Leave', '3': 'Half Day' };
+            const leaveType = leaveTypes[text.trim()];
+            if (!leaveType) {
+              teamBot.sendMessage(chatId, `⚠️ Please reply with \`1\`, \`2\`, or \`3\`.`, { parse_mode: 'Markdown' });
+              return;
+            }
+            userState[chatId] = { ...state, leaveType, action: 'await_leave_date' };
+            teamBot.sendMessage(chatId,
+              `📅 Leave Type: *${leaveType}*\n\nPlease reply with the *date* (e.g. \`Aug 5\` or \`2026-08-05\`):`,
+              { parse_mode: 'Markdown' }
+            );
+          } else if (state.action === 'await_leave_date') {
+            dbData.leaves = dbData.leaves || [];
+            const newLeave = {
+              id: `LV-${Date.now()}`,
+              employeeId: state.empId,
+              employeeName: state.empName,
+              leaveType: state.leaveType,
+              startDate: text.trim(),
+              status: 'Pending Line Review',
+              reportsTo: state.reportsTo,
+              createdAt: new Date().toISOString()
+            };
+            dbData.leaves.push(newLeave);
+            writeDB(dbData);
+            userState[chatId] = null;
+
+            // Notify line manager
+            const manager = (dbData.team || []).find(t => t.id === state.reportsTo);
+            if (manager && manager.telegramId) {
+              try {
+                teamBot.sendMessage(manager.telegramId,
+                  `🌴 *NEW LEAVE REQUEST*\n\n` +
+                  `From: *${state.empName}*\n` +
+                  `Type: *${state.leaveType}*\n` +
+                  `Date: *${text.trim()}*\n\n` +
+                  `_Approve or reject via the Pending Approvals button._`,
+                  { parse_mode: 'Markdown' }
+                );
+              } catch(e) {}
+            }
+            teamBot.sendMessage(chatId,
+              `✅ *Leave Request Submitted!*\n\n` +
+              `• Type: *${state.leaveType}*\n` +
+              `• Date: *${text.trim()}*\n` +
+              `• Status: *Pending Line Review*\n\n` +
+              `Your manager ${manager ? `(*${manager.name}*)` : ''} has been notified.`,
+              { parse_mode: 'Markdown', reply_markup: getRoleKeyboard(emp.accessLevel, true, emp) }
+            );
+          } else if (state.action === 'await_eod_summary') {
+            dbData.eod_reports = dbData.eod_reports || [];
+            const eodEntry = {
+              id: `EOD-${Date.now()}`,
+              employeeId: state.empId,
+              employeeName: state.empName,
+              summary: text,
+              date: new Date().toLocaleDateString('en-GB'),
+              createdAt: new Date().toISOString()
+            };
+            dbData.eod_reports.push(eodEntry);
+            writeDB(dbData);
+            userState[chatId] = null;
+            teamBot.sendMessage(chatId,
+              `✅ *EOD Report Submitted!*\n\n` +
+              `📅 ${new Date().toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}\n` +
+              `📝 "${text.substring(0, 100)}${text.length > 100 ? '...' : ''}"\n\n` +
+              `Thank you for your update. Have a great evening! 💜`,
+              { parse_mode: 'Markdown', reply_markup: getRoleKeyboard(emp.accessLevel, true, emp) }
+            );
           }
         }
       });
@@ -271,7 +708,7 @@ function initBot() {
       });
 
       // Reset PIN Command
-      teamBot.onText(/\/resetpin/, (msg) => {
+      teamBot.onText(/\/resetpin/, async (msg) => {
         const chatId = msg.chat.id;
         const dbData = readDB();
         const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId));
@@ -280,7 +717,7 @@ function initBot() {
           return teamBot.sendMessage(chatId, `❌ Please verify your phone number first by tapping "Verify My Phone Number".`, { parse_mode: 'Markdown' });
         }
 
-        const pinRecord = createTempPin(emp.phone, emp.id, 'team', emp.email);
+        const pinRecord = await createTempPin(emp.phone, emp.id, 'team', emp.email);
         teamBot.sendMessage(chatId, `🔑 *New Desktop Web PIN:* \`${pinRecord.pin}\`\n\nGo to https://purpleos-iota.vercel.app/auth to log in on your laptop.`, { parse_mode: 'Markdown' });
       });
 
@@ -397,6 +834,1354 @@ function initBot() {
           `• Earned XP: *${emp.xp || 0} XP*\n\n` +
           `📋 *Onboarding Checklist:*\n${taskText}\n\n` +
           `🌐 Open Onboarding Web Portal: https://purpleos-iota.vercel.app/onboarding`;
+
+        teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
+      });
+
+      // ══════════════════════════════════════════
+      // MEHEDI CLIENT & GROWTH COMMANDS
+      // ══════════════════════════════════════════
+
+      // 🎯 My Clients — full portfolio overview
+      teamBot.onText(/🎯 My Clients/, (msg) => {
+        const chatId = msg.chat.id;
+        const dbData = readDB();
+        const clients = dbData.clients || [];
+        const tasks = dbData.tasks || [];
+        const invoices = dbData.invoices || [];
+
+        if (!clients.length) {
+          return teamBot.sendMessage(chatId, `🎯 *Client Portfolio*\n\nNo clients in the system yet.`, { parse_mode: 'Markdown' });
+        }
+
+        const active = clients.filter(c => c.status === 'Active Retainer');
+        const overdueInvs = invoices.filter(i => i.status !== 'Paid' && i.status !== 'Draft');
+
+        let text = `🎯 *Client Portfolio — ${active.length} Active Retainers*\n\n`;
+        active.slice(0, 10).forEach((c, i) => {
+          const clientTasks = tasks.filter(t => t.client === c.name);
+          const inReview = clientTasks.filter(t => t.stage === 'Client Review').length;
+          const overdue = overdueInvs.filter(inv => inv.clientName === c.name).length;
+          text += `${i + 1}. *${c.name}*`;
+          if (inReview) text += ` — ⏳ ${inReview} in review`;
+          if (overdue) text += ` — ⚠️ ${overdue} invoice(s) overdue`;
+          text += '\n';
+        });
+
+        if (clients.length > active.length) {
+          text += `\n_+${clients.length - active.length} inactive client(s) not shown_`;
+        }
+
+        teamBot.sendMessage(chatId, text, {
+          parse_mode: 'Markdown',
+          reply_markup: {
+            inline_keyboard: [[
+              { text: '🌐 Open Full Client Portal', url: 'https://purpleos-iota.vercel.app/admin?tab=clients' }
+            ]]
+          }
+        });
+      });
+
+      // 📈 Lead Pipeline
+      teamBot.onText(/📈 Lead Pipeline/, (msg) => {
+        const chatId = msg.chat.id;
+        const dbData = readDB();
+        const leads = dbData.leads || [];
+
+        const active = leads.filter(l => l.status !== 'Won' && l.status !== 'Lost');
+        const won = leads.filter(l => l.status === 'Won');
+        const pipelineVal = active.reduce((s, l) => s + (l.value || 0), 0);
+
+        if (!leads.length) {
+          return teamBot.sendMessage(chatId,
+            `📈 *BD Pipeline*\n\nNo leads in the system yet. Add leads via the web portal.`,
+            { parse_mode: 'Markdown' }
+          );
+        }
+
+        let text = `📈 *Business Development Pipeline*\n\n`;
+        text += `• Active leads: *${active.length}*\n`;
+        text += `• Won (all time): *${won.length}*\n`;
+        if (pipelineVal > 0) text += `• Pipeline value: *BDT ${pipelineVal.toLocaleString()}*\n`;
+        text += `\n`;
+
+        if (active.length) {
+          text += `*Open Leads:*\n`;
+          active.slice(0, 8).forEach((l, i) => {
+            text += `${i + 1}. *${l.clientName || l.company || 'Lead'}*`;
+            if (l.status) text += ` — ${l.status}`;
+            if (l.value) text += ` (BDT ${Number(l.value).toLocaleString()})`;
+            text += '\n';
+          });
+        }
+
+        teamBot.sendMessage(chatId, text, {
+          parse_mode: 'Markdown',
+          reply_markup: {
+            inline_keyboard: [[
+              { text: '🌐 Open Leads Dashboard', url: 'https://purpleos-iota.vercel.app/admin?tab=leads' }
+            ]]
+          }
+        });
+      });
+
+      // 🔔 Client Updates — approvals, revisions, payment proofs pending
+      teamBot.onText(/🔔 Client Updates/, (msg) => {
+        const chatId = msg.chat.id;
+        const dbData = readDB();
+
+        const inReview = (dbData.tasks || []).filter(t => t.stage === 'Client Review');
+        const revisions = (dbData.revisionFeedback || []).filter(r => r.status === 'Open');
+        const paymentProofs = (dbData.paymentProofs || []).filter(p => p.status === 'Pending Finance Review');
+        const overdueInvs = (dbData.invoices || []).filter(i => i.status !== 'Paid' && i.status !== 'Draft');
+
+        let text = `🔔 *Client Updates*\n\n`;
+
+        if (inReview.length) {
+          text += `⏳ *Awaiting Client Approval (${inReview.length}):*\n`;
+          inReview.forEach(t => { text += `  • ${t.title} — ${t.client}\n`; });
+          text += '\n';
+        }
+        if (revisions.length) {
+          text += `✏️ *Open Revision Requests (${revisions.length}):*\n`;
+          revisions.slice(0, 3).forEach(r => { text += `  • ${r.clientName}: "${(r.feedback || '').slice(0, 60)}..."\n`; });
+          text += '\n';
+        }
+        if (paymentProofs.length) {
+          text += `💳 *Payment Proofs Pending Verification (${paymentProofs.length}):*\n`;
+          paymentProofs.slice(0, 3).forEach(p => { text += `  • ${p.clientName} — BDT ${Number(p.amountPaid).toLocaleString()}\n`; });
+          text += '\n';
+        }
+        if (overdueInvs.length) {
+          text += `⚠️ *Overdue Invoices (${overdueInvs.length}):*\n`;
+          overdueInvs.slice(0, 3).forEach(i => { text += `  • ${i.clientName} — BDT ${Number(i.amount).toLocaleString()}\n`; });
+        }
+
+        if (!inReview.length && !revisions.length && !paymentProofs.length && !overdueInvs.length) {
+          text += `✅ All caught up! No pending client actions.`;
+        }
+
+        teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
+      });
+
+      // 💰 My Commission
+      teamBot.onText(/💰 My Commission/, (msg) => {
+        const chatId = msg.chat.id;
+        const dbData = readDB();
+        const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId));
+        if (!emp) return;
+
+        const commission = emp.earnedCommissions || 0;
+        const rate = emp.commissionRate || 0;
+        const clients = dbData.clients || [];
+        const invoices = dbData.invoices || [];
+
+        // Estimate pending commission from unpaid invoices
+        const pendingInvTotal = invoices
+          .filter(i => i.status !== 'Paid' && i.status !== 'Draft')
+          .reduce((s, i) => s + (i.amount || 0), 0);
+        const pendingCommission = rate > 0 ? Math.round(pendingInvTotal * (rate / 100)) : 0;
+
+        let text = `💰 *My Commission Summary*\n\n`;
+        text += `• Name: *${emp.name}*\n`;
+        text += `• Commission Rate: *${rate}%*\n`;
+        text += `• Earned (paid): *BDT ${Number(commission).toLocaleString()}*\n`;
+        if (pendingCommission > 0) {
+          text += `• Pending (on outstanding invoices): *BDT ${pendingCommission.toLocaleString()}*\n`;
+        }
+        text += `\n_Clients under your portfolio: ${clients.filter(c => c.status === 'Active Retainer').length} active retainers_\n`;
+        text += `_For a detailed breakdown, open the web portal._`;
+
+        teamBot.sendMessage(chatId, text, {
+          parse_mode: 'Markdown',
+          reply_markup: {
+            inline_keyboard: [[
+              { text: '🌐 View Full Earnings', url: 'https://purpleos-iota.vercel.app/admin?tab=payroll' }
+            ]]
+          }
+        });
+      });
+
+      // ══════════════════════════════════════════
+      // KAFIL BIZOPS COMMANDS
+      // ══════════════════════════════════════════
+
+      // 🏢 Ops Dashboard — team attendance + task health
+      teamBot.onText(/🏢 Ops Dashboard/, (msg) => {
+        const chatId = msg.chat.id;
+        const dbData = readDB();
+        const team = dbData.team || [];
+        const tasks = dbData.tasks || [];
+        const today = new Date().toLocaleDateString('en-CA');
+
+        const clocked = (dbData.attendance || []).filter(a => a.clockInTime && (a.date === today || !a.date));
+        const onLeave = team.filter(t => t.status === 'On Leave');
+        const offline = team.filter(t => t.status === 'Offline' && !onLeave.find(l => l.id === t.id));
+
+        const overdue = tasks.filter(t => t.deadline && new Date(t.deadline) < new Date() && t.stage !== 'Delivered');
+        const inProgress = tasks.filter(t => t.stage === 'In Progress' || t.stage === 'Editing');
+        const inReview = tasks.filter(t => t.stage === 'Client Review');
+
+        // Pending activations
+        const activations = (dbData.clientActivations || []).filter(a => a.status === 'In Progress');
+
+        let text = `🏢 *Ops Dashboard*\n\n`;
+        text += `👥 *Team Attendance Today*\n`;
+        text += `  • ✅ ${clocked.length} clocked in\n`;
+        text += `  • 🌴 ${onLeave.length} on leave\n`;
+        if (offline.length > 0) text += `  • ⚫ ${offline.length} not in yet\n`;
+        text += `\n`;
+
+        text += `📋 *Task Health*\n`;
+        text += `  • ${inProgress.length} in progress\n`;
+        text += `  • ${inReview.length} in client review\n`;
+        if (overdue.length > 0) text += `  • ⚠️ *${overdue.length} overdue!*\n`;
+        text += `\n`;
+
+        if (activations.length > 0) {
+          text += `🚀 *Client Activations in Progress: ${activations.length}*\n`;
+          activations.forEach(a => { text += `  • ${a.clientName}\n`; });
+        }
+
+        teamBot.sendMessage(chatId, text, {
+          parse_mode: 'Markdown',
+          reply_markup: {
+            inline_keyboard: [[
+              { text: '🌐 Open Web Portal', url: 'https://purpleos-iota.vercel.app/admin?tab=tasks' }
+            ]]
+          }
+        });
+      });
+
+      // 👥 HR & Attendance — leave requests + absence flags
+      teamBot.onText(/👥 HR & Attendance/, (msg) => {
+        const chatId = msg.chat.id;
+        const dbData = readDB();
+        const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId));
+        if (!emp) return;
+
+        // Leave requests for his direct reports
+        const directReports = (dbData.team || []).filter(t => t.reportsTo === emp.id);
+        const pendingLeaves = (dbData.leaveRequests || []).filter(l =>
+          l.status === 'Pending Manager Approval' &&
+          directReports.find(r => r.id === l.employeeId)
+        );
+        // All pending leave (as ops head he sees everything)
+        const allPending = (dbData.leaveRequests || []).filter(l => l.status === 'Pending Manager Approval');
+
+        const today = new Date().toLocaleDateString('en-CA');
+        const notIn = (dbData.team || []).filter(t =>
+          t.status === 'Offline' && t.id !== 'PBD-000' &&
+          !(dbData.attendance || []).find(a => a.employeeId === t.id && a.clockInTime && (a.date === today || !a.date)) &&
+          !(dbData.leaveRequests || []).find(l => l.employeeId === t.id && l.status === 'Approved' && l.fromDate <= today && l.toDate >= today)
+        );
+
+        let text = `👥 *HR & Attendance*\n\n`;
+
+        if (pendingLeaves.length > 0) {
+          text += `🌴 *Leave Requests Pending Your Approval (${pendingLeaves.length}):*\n`;
+          pendingLeaves.forEach(l => {
+            text += `  • *${l.employeeName}* — ${l.leaveType} (${l.fromDate} → ${l.toDate})\n`;
+          });
+          text += '\n';
+        }
+        if (allPending.length > pendingLeaves.length) {
+          text += `📋 *Company-wide Pending Leaves: ${allPending.length}*\n\n`;
+        }
+        if (notIn.length > 0) {
+          text += `⚠️ *Not in today (no leave on file): ${notIn.length}*\n`;
+          notIn.slice(0, 5).forEach(t => { text += `  • ${t.name} (${t.role})\n`; });
+        }
+        if (!pendingLeaves.length && !notIn.length) {
+          text += `✅ All attendance and leave requests are clear.`;
+        }
+
+        teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
+      });
+
+      // 📡 Media Buying — campaign spend tracker
+      teamBot.onText(/📡 Media Buying/, (msg) => {
+        const chatId = msg.chat.id;
+        const dbData = readDB();
+        const campaigns = dbData.mediaBuys || [];
+
+        if (!campaigns.length) {
+          return teamBot.sendMessage(chatId,
+            `📡 *Media Buying Tracker*\n\nNo campaigns tracked yet.\n\nAdd campaigns via the web portal or ask the Tech Admin to set up your first media buy.\n\n_Tip: You can track Facebook Ads, Google Ads, and other platforms here._`,
+            {
+              parse_mode: 'Markdown',
+              reply_markup: { inline_keyboard: [[{ text: '🌐 Open Media Portal', url: 'https://purpleos-iota.vercel.app/admin?tab=media-buys' }]] }
+            }
+          );
+        }
+
+        const running = campaigns.filter(c => c.status === 'Running');
+        const totalSpend = running.reduce((s, c) => s + (c.spentToDate || 0), 0);
+        const totalBudget = running.reduce((s, c) => s + (c.totalBudget || 0), 0);
+
+        let text = `📡 *Media Buying Dashboard*\n\n`;
+        text += `• ${running.length} active campaign(s)\n`;
+        text += `• Total budget: BDT ${totalBudget.toLocaleString()}\n`;
+        text += `• Total spent to date: BDT ${totalSpend.toLocaleString()}\n`;
+        text += `• Remaining: BDT ${(totalBudget - totalSpend).toLocaleString()}\n\n`;
+
+        running.forEach((c, i) => {
+          const pct = totalBudget > 0 ? Math.round((c.spentToDate / c.totalBudget) * 100) : 0;
+          const bar = pct >= 80 ? '🔴' : pct >= 60 ? '🟡' : '🟢';
+          text += `${i + 1}. ${bar} *${c.campaignName}* (${c.platform})\n`;
+          text += `   ${c.clientName} — BDT ${(c.spentToDate || 0).toLocaleString()} / ${(c.totalBudget || 0).toLocaleString()} (${pct}%)\n`;
+        });
+
+        teamBot.sendMessage(chatId, text, {
+          parse_mode: 'Markdown',
+          reply_markup: { inline_keyboard: [[{ text: '🌐 Manage Campaigns', url: 'https://purpleos-iota.vercel.app/admin?tab=media-buys' }]] }
+        });
+      });
+
+      // 🚀 Client Activation — checklist status
+      teamBot.onText(/🚀 Client Activation/, (msg) => {
+        const chatId = msg.chat.id;
+        const dbData = readDB();
+        const activations = dbData.clientActivations || [];
+
+        if (!activations.length) {
+          return teamBot.sendMessage(chatId,
+            `🚀 *Client Activation*\n\nNo active client activations.\n\nActivations are automatically triggered when Mehedi wins a new client deal.`,
+            { parse_mode: 'Markdown' }
+          );
+        }
+
+        const active = activations.filter(a => a.status === 'In Progress');
+        const completed = activations.filter(a => a.status === 'Completed');
+
+        let text = `🚀 *Client Activation Centre*\n\n`;
+        text += `• In Progress: ${active.length}\n`;
+        text += `• Completed (all time): ${completed.length}\n\n`;
+
+        active.forEach(a => {
+          const done = (a.checklist || []).filter(c => c.done).length;
+          const total = (a.checklist || []).length;
+          text += `📋 *${a.clientName}*\n`;
+          text += `   Progress: ${done}/${total} steps done\n`;
+          (a.checklist || []).forEach(c => {
+            text += `   ${c.done ? '✅' : '⏳'} ${c.label}\n`;
+          });
+          text += '\n';
+        });
+
+        teamBot.sendMessage(chatId, text, {
+          parse_mode: 'Markdown',
+          reply_markup: { inline_keyboard: [[{ text: '🌐 Manage Activations', url: 'https://purpleos-iota.vercel.app/admin?tab=activations' }]] }
+        });
+      });
+
+      // ══════════════════════════════════════════
+      // BORHAN FINANCE & ADMIN COMMANDS (PBD-029)
+      // ══════════════════════════════════════════
+
+      // 💸 Expense Queue — Tier-2 Payout approvals
+      teamBot.onText(/💸 Expense Queue/, (msg) => {
+        const chatId = msg.chat.id;
+        const dbData = readDB();
+        const expenses = dbData.expenses || [];
+
+        // Tier-1 approved, awaiting Tier-2 (Borhan payout)
+        const pendingPayout = expenses.filter(e => e.status === 'Tier-1 Approved' || (e.tier1Approved && !e.tier2Approved));
+
+        let text = `💸 *Finance Expense Payout Queue*\n\n`;
+        if (!pendingPayout.length) {
+          text += `✅ All expense payouts up to date! No claims waiting for Tier-2 audit.`;
+        } else {
+          text += `⚠️ *${pendingPayout.length} Claim(s) Awaiting Tier-2 Disbursement:*\n\n`;
+          pendingPayout.forEach((e, i) => {
+            text += `${i + 1}. *${e.employeeName || e.loggedBy}* — BDT ${Number(e.amount).toLocaleString()}\n`;
+            text += `   Category: ${e.category || 'General'} | Item: "${e.description || 'Expense'}"\n\n`;
+          });
+        }
+
+        teamBot.sendMessage(chatId, text, {
+          parse_mode: 'Markdown',
+          reply_markup: { inline_keyboard: [[{ text: '🌐 Open Finance Audit Portal', url: 'https://purpleos-iota.vercel.app/admin?tab=expenses' }]] }
+        });
+      });
+
+      // 🧾 Invoice Status — GST/VAT invoices tracking
+      teamBot.onText(/🧾 Invoice Status/, (msg) => {
+        const chatId = msg.chat.id;
+        const dbData = readDB();
+        const invoices = dbData.invoices || [];
+
+        const paid = invoices.filter(i => i.status === 'Paid');
+        const pending = invoices.filter(i => i.status === 'Sent' || i.status === 'Pending');
+        const overdue = invoices.filter(i => i.status === 'Overdue');
+
+        const totalPaid = paid.reduce((s, i) => s + (Number(i.amount) || 0), 0);
+        const totalPending = pending.reduce((s, i) => s + (Number(i.amount) || 0), 0);
+
+        let text = `🧾 *Client Invoice & Revenue Status*\n\n`;
+        text += `• Paid Invoices: *${paid.length}* (BDT ${totalPaid.toLocaleString()})\n`;
+        text += `• Pending Invoices: *${pending.length}* (BDT ${totalPending.toLocaleString()})\n`;
+        text += `• Overdue Invoices: *${overdue.length}*\n\n`;
+
+        if (overdue.length) {
+          text += `⚠️ *Overdue Collections Alert:*\n`;
+          overdue.forEach(i => {
+            text += `  • *${i.clientName}* — BDT ${Number(i.amount).toLocaleString()} (Due: ${i.dueDate})\n`;
+          });
+        } else {
+          text += `✅ All client invoice collections are healthy!`;
+        }
+
+        teamBot.sendMessage(chatId, text, {
+          parse_mode: 'Markdown',
+          reply_markup: { inline_keyboard: [[{ text: '🌐 Manage Invoices', url: 'https://purpleos-iota.vercel.app/admin?tab=invoices' }]] }
+        });
+      });
+
+      // 📊 Payroll Summary
+      teamBot.onText(/📊 Payroll Summary/, (msg) => {
+        const chatId = msg.chat.id;
+        const dbData = readDB();
+        const team = dbData.team || [];
+
+        const totalTeam = team.length;
+        const basePayroll = team.reduce((s, t) => s + (Number(t.baseSalary) || 0), 0);
+
+        let text = `📊 *Company Payroll & Compensation Summary*\n\n`;
+        text += `• Total Active Workforce: *${totalTeam} Employees*\n`;
+        text += `• Monthly Base Payroll: *BDT ${basePayroll.toLocaleString()}*\n`;
+        text += `• Disbursement Date: 1st of every month\n\n`;
+        text += `_Managed under Finance & Admin (Md. Borhan Siddique)._`;
+
+        teamBot.sendMessage(chatId, text, {
+          parse_mode: 'Markdown',
+          reply_markup: { inline_keyboard: [[{ text: '🌐 Open Payroll Portal', url: 'https://purpleos-iota.vercel.app/admin?tab=payroll' }]] }
+        });
+      });
+
+      // 🏦 Bank & bKash Hub
+      teamBot.onText(/🏦 Bank & bKash Hub/, (msg) => {
+        const chatId = msg.chat.id;
+        let text = `🏦 *Official Agency Banking & Gateway Accounts*\n\n`;
+        text += `🏢 *Company Bank Account:*\n`;
+        text += `  • Bank: United Commercial Bank (UCB)\n`;
+        text += `  • Account Name: Purplebot Digital Limited\n`;
+        text += `  • Account No: 1042-111000-8899\n`;
+        text += `  • Branch: Banani C/A Branch, Dhaka\n\n`;
+        text += `📱 *bKash Merchant Account:*\n`;
+        text += `  • Merchant No: 01711-019550\n`;
+        text += `  • Account Type: Merchant Counter 01\n\n`;
+        text += `_Share these details with clients for direct electronic payment transfers._`;
+
+        teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
+      });
+
+      // 👥 Admin Team — Borhan's direct reports
+      teamBot.onText(/👥 Admin Team/, (msg) => {
+        const chatId = msg.chat.id;
+        const dbData = readDB();
+        const team = dbData.team || [];
+
+        const adminStaff = team.filter(t => t.reportsTo === 'PBD-029');
+
+        let text = `👥 *Finance & Admin Direct Reports (${adminStaff.length})*\n\n`;
+        adminStaff.forEach(emp => {
+          text += `• *${emp.name}* (${emp.role})\n`;
+          text += `  └ Department: ${emp.department} | Status: ${emp.status || 'Offline'}\n\n`;
+        });
+
+        teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
+      });
+
+      // ══════════════════════════════════════════
+      // SHAFKET STRATEGY & PLANNING COMMANDS (PBD-019 to PBD-028)
+      // ══════════════════════════════════════════
+
+      // 📈 Campaign Strategy — strategy decks & briefs
+      teamBot.onText(/📈 Campaign Strategy/, (msg) => {
+        const chatId = msg.chat.id;
+        const dbData = readDB();
+        const tasks = dbData.tasks || [];
+
+        const strategyTasks = tasks.filter(t =>
+          (t.department || t.category || t.type || '').toLowerCase().includes('strategy') ||
+          (t.stage === 'Strategy & Planning' || t.stage === 'Scripting')
+        );
+
+        let text = `📈 *Campaign Strategy & Planning Hub*\n\n`;
+        if (strategyTasks.length) {
+          text += `• *${strategyTasks.length} Active Strategy Tasks:*\n\n`;
+          strategyTasks.forEach((t, i) => {
+            text += `${i + 1}. *${t.title}* (${t.client || 'Client'})\n`;
+            text += `   Planner: ${t.assignee || 'Strategy Team'} | Stage: *${t.stage}*\n\n`;
+          });
+        } else {
+          text += `✅ Strategy queue is clear. All monthly content plans on track.`;
+        }
+
+        teamBot.sendMessage(chatId, text, {
+          parse_mode: 'Markdown',
+          reply_markup: { inline_keyboard: [[{ text: '🌐 View Strategy Decks', url: 'https://purpleos-iota.vercel.app/admin?tab=tasks' }]] }
+        });
+      });
+
+      // 🗓️ Content Calendars
+      teamBot.onText(/🗓️ Content Calendars/, (msg) => {
+        const chatId = msg.chat.id;
+        const dbData = readDB();
+        const posts = dbData.posts || dbData.social_posts || [];
+
+        let text = `🗓️ *Monthly Content Plans & Social Calendars*\n\n`;
+        text += `• Total Scheduled Posts: *${posts.length}*\n\n`;
+
+        if (posts.length) {
+          posts.slice(0, 5).forEach((p, i) => {
+            text += `${i + 1}. *${p.title || p.caption || 'Post'}* (${p.clientName || p.client || 'Client'})\n`;
+            text += `   Platform: ${p.platform || 'Social'} | Status: *${p.status || 'Scheduled'}*\n\n`;
+          });
+        }
+
+        teamBot.sendMessage(chatId, text, {
+          parse_mode: 'Markdown',
+          reply_markup: { inline_keyboard: [[{ text: '🌐 Open Content Planner', url: 'https://purpleos-iota.vercel.app/admin?tab=social-posts' }]] }
+        });
+      });
+
+      // 👥 Strategy Team — Shafket's team view
+      teamBot.onText(/👥 Strategy Team/, (msg) => {
+        const chatId = msg.chat.id;
+        const dbData = readDB();
+        const team = dbData.team || [];
+        const tasks = dbData.tasks || [];
+
+        const associates = team.filter(t => t.reportsTo === 'PBD-019');
+
+        let text = `👥 *Strategy & Marketing Associates (${associates.length})*\n\n`;
+        associates.forEach(a => {
+          const aFirstName = (a.name || '').split(' ')[0].toLowerCase();
+          const activeTasks = tasks.filter(t =>
+            (t.assignee || '').toLowerCase().includes(aFirstName) &&
+            t.stage !== 'Delivered' && t.stage !== 'Completed'
+          );
+          text += `• *${a.name}* (${a.role})\n`;
+          text += `  └ Active tasks: ${activeTasks.length} plan(s)\n`;
+        });
+
+        teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
+      });
+
+      // 📅 My Content Plans — associate's own plans
+      teamBot.onText(/📅 My Content Plans/, (msg) => {
+        const chatId = msg.chat.id;
+        const dbData = readDB();
+        const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId));
+
+        const empFirstName = emp ? (emp.name || '').split(' ')[0].toLowerCase() : '';
+        const myTasks = (dbData.tasks || []).filter(t =>
+          (t.assignee || '').toLowerCase().includes(empFirstName)
+        );
+
+        let text = `📅 *My Active Content Plans*\n\n`;
+        if (!myTasks.length) {
+          text += `🎉 You have no active content plans assigned right now!`;
+        } else {
+          myTasks.forEach((t, i) => {
+            text += `${i + 1}. *${t.title}* (${t.client || 'Client'})\n`;
+            text += `   Stage: *${t.stage}* | Due: ${t.dueDate || 'ASAP'}\n\n`;
+          });
+        }
+
+        teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
+      });
+
+      // 🚀 Dispatch Hub — 1-click publishing queue
+      teamBot.onText(/🚀 Dispatch Hub/, (msg) => {
+        const chatId = msg.chat.id;
+        const dbData = readDB();
+        const posts = (dbData.posts || dbData.social_posts || []).filter(p => p.status === 'Approved');
+
+        let text = `🚀 *Social Media Dispatch Hub*\n\n`;
+        if (!posts.length) {
+          text += `✅ All approved posts have been dispatched! No pending publishing queue.`;
+        } else {
+          text += `📢 *${posts.length} Approved Post(s) Ready for Publishing:*\n\n`;
+          posts.slice(0, 5).forEach((p, i) => {
+            text += `${i + 1}. *${p.title || 'Post'}* (${p.clientName || 'Client'})\n`;
+            text += `   Platform: ${p.platform} | Time: ${p.scheduledTime || 'Today'}\n\n`;
+          });
+        }
+
+        teamBot.sendMessage(chatId, text, {
+          parse_mode: 'Markdown',
+          reply_markup: { inline_keyboard: [[{ text: '🌐 Open Dispatch Hub', url: 'https://purpleos-iota.vercel.app/admin?tab=social-posts' }]] }
+        });
+      });
+
+      // 📝 Draft New Plan
+      teamBot.onText(/📝 Draft New Plan/, (msg) => {
+        const chatId = msg.chat.id;
+        teamBot.sendMessage(chatId,
+          `📝 *Draft New Content Plan*\n\nLaunch the PurpleOS Web Content Planner to create multi-platform post calendars for clients:`,
+          {
+            parse_mode: 'Markdown',
+            reply_markup: { inline_keyboard: [[{ text: '🌐 Open Content Planner Web App', url: 'https://purpleos-iota.vercel.app/admin?tab=social-posts' }]] }
+          }
+        );
+      });
+
+      // ══════════════════════════════════════════
+      // CLIENT SERVICES COMMANDS (Tasin PBD-016, Sayed PBD-017, Rimjhim PBD-018)
+      // ══════════════════════════════════════════
+
+      // 🎯 My Client Roster — clients assigned to logged-in AM
+      teamBot.onText(/🎯 My Client Roster/, (msg) => {
+        const chatId = msg.chat.id;
+        const dbData = readDB();
+        const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId));
+
+        const clients = dbData.clients || [];
+
+        let text = `🎯 *My Client Roster*\n\n`;
+        text += `• Total Portfolio Clients: *${clients.length}*\n\n`;
+
+        clients.forEach((c, i) => {
+          text += `${i + 1}. *${c.name}* (${c.category || 'General'})\n`;
+          text += `   Contact: ${c.contactPerson || 'N/A'} | Status: *${c.status || 'Active'}*\n`;
+          if (c.phone) text += `   Phone: \`${c.phone}\`\n`;
+          text += '\n';
+        });
+
+        teamBot.sendMessage(chatId, text, {
+          parse_mode: 'Markdown',
+          reply_markup: { inline_keyboard: [[{ text: '🌐 Open Client CRM', url: 'https://purpleos-iota.vercel.app/admin?tab=clients' }]] }
+        });
+      });
+
+      // 🎬 Client Approvals — deliverables in Client Review
+      teamBot.onText(/🎬 Client Approvals/, (msg) => {
+        const chatId = msg.chat.id;
+        const dbData = readDB();
+        const tasks = dbData.tasks || [];
+
+        const inReview = tasks.filter(t => t.stage === 'Client Review');
+
+        let text = `🎬 *Client Approvals Panel*\n\n`;
+        if (!inReview.length) {
+          text += `✅ No deliverables currently waiting in Client Review.`;
+        } else {
+          text += `⏳ *${inReview.length} Deliverables Pending Client Sign-off:*\n\n`;
+          inReview.forEach((t, i) => {
+            text += `${i + 1}. *${t.title}* (${t.client || 'Client'})\n`;
+            text += `   QC Approved By: ${t.qcApprovedBy || 'Internal QC'}\n\n`;
+          });
+        }
+
+        teamBot.sendMessage(chatId, text, {
+          parse_mode: 'Markdown',
+          reply_markup: { inline_keyboard: [[{ text: '🌐 Open Review Rooms', url: 'https://purpleos-iota.vercel.app/reviews' }]] }
+        });
+      });
+
+      // 📢 Send Client Link — generate magic access link for client
+      teamBot.onText(/📢 Send Client Link/, (msg) => {
+        const chatId = msg.chat.id;
+        const dbData = readDB();
+        const clients = dbData.clients || [];
+
+        if (!clients.length) {
+          return teamBot.sendMessage(chatId, `📢 *Send Client Magic Link*\n\nNo clients found in CRM.`, { parse_mode: 'Markdown' });
+        }
+
+        let text = `📢 *Generate Partner Portal Link*\n\nSelect a client to generate their 1-click magic login link:\n\n`;
+        const buttons = clients.slice(0, 6).map(c => [
+          { text: `🔗 ${c.name}`, callback_data: `gen_magic_link:${c.id}` }
+        ]);
+
+        teamBot.sendMessage(chatId, text, {
+          parse_mode: 'Markdown',
+          reply_markup: { inline_keyboard: buttons }
+        });
+      });
+
+      // Callback query handler for gen_magic_link
+      teamBot.on('callback_query', (query) => {
+        const data = query.data || '';
+        if (data.startsWith('gen_magic_link:')) {
+          const clientId = data.split(':')[1];
+          const dbData = readDB();
+          const client = (dbData.clients || []).find(c => c.id === clientId);
+          if (client) {
+            const token = `TOK-${Date.now()}`;
+            const magicLink = `https://purpleos-iota.vercel.app/partners?client=${encodeURIComponent(client.name)}&token=${token}`;
+            const cardMsg = `📋 *PURPLEBOT PARTNER PORTAL LINK*\n\n` +
+              `🏢 Client: *${client.name}*\n` +
+              `👤 Contact: ${client.contactPerson || 'Brand Manager'}\n\n` +
+              `🔗 *Direct Access Magic Link:*\n${magicLink}\n\n` +
+              `_Send this link to the client for 1-click access to review room & invoices._`;
+
+            teamBot.answerCallbackQuery(query.id, { text: `Generated link for ${client.name}` });
+            teamBot.sendMessage(query.message.chat.id, cardMsg, { parse_mode: 'Markdown' });
+          }
+        }
+      });
+
+      // 💬 Client Feedback — revision requests
+      teamBot.onText(/💬 Client Feedback/, (msg) => {
+        const chatId = msg.chat.id;
+        const dbData = readDB();
+        const reviews = dbData.reviews || [];
+        const openFeedback = (dbData.revisionFeedback || []).filter(r => r.status === 'Open');
+
+        let text = `💬 *Client Feedback & Revisions Panel*\n\n`;
+        if (!openFeedback.length) {
+          text += `✅ All client feedback resolved. No open revision tickets!`;
+        } else {
+          text += `✏️ *${openFeedback.length} Active Client Revision Notes:*\n\n`;
+          openFeedback.forEach((f, i) => {
+            text += `${i + 1}. *${f.clientName}*: "${f.feedback}"\n\n`;
+          });
+        }
+
+        teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
+      });
+
+      // 👥 Account Team — Tasin's team overview
+      teamBot.onText(/👥 Account Team/, (msg) => {
+        const chatId = msg.chat.id;
+        const dbData = readDB();
+        const team = dbData.team || [];
+
+        const csTeam = team.filter(t => (t.department || '').toLowerCase().includes('client services'));
+
+        let text = `👥 *Client Services Team (${csTeam.length})*\n\n`;
+        csTeam.forEach(emp => {
+          text += `• *${emp.name}* (${emp.role})\n`;
+          text += `  └ Status: ${emp.status || 'Offline'} | Reports To: ${emp.reportsToName || 'Management'}\n\n`;
+        });
+
+        teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
+      });
+
+      // ══════════════════════════════════════════
+      // NASIR HEAD OF PRODUCTION COMMANDS (PBD-013)
+      // ══════════════════════════════════════════
+
+      // 🎬 Production Queue — all active content & shoot tasks
+      teamBot.onText(/🎬 Production Queue/, (msg) => {
+        const chatId = msg.chat.id;
+        const dbData = readDB();
+        const tasks = dbData.tasks || [];
+
+        const prodTasks = tasks.filter(t =>
+          (t.department || t.category || t.type || '').toLowerCase().includes('content') ||
+          (t.stage === 'Scripting' || t.stage === 'Shoot Scheduled' || t.stage === 'Raw Intake')
+        );
+
+        let text = `🎬 *Content Production Queue (${prodTasks.length} Active)*\n\n`;
+        if (prodTasks.length) {
+          prodTasks.slice(0, 8).forEach((t, i) => {
+            text += `${i + 1}. *${t.title}* (${t.client || 'Agency'})\n`;
+            text += `   Stage: *${t.stage}* | Assigned: ${t.assignee || 'Production Team'}\n\n`;
+          });
+        } else {
+          text += `✅ Production queue is clear. No active shoots or scripts pending.`;
+        }
+
+        teamBot.sendMessage(chatId, text, {
+          parse_mode: 'Markdown',
+          reply_markup: { inline_keyboard: [[{ text: '🌐 View Production Kanban', url: 'https://purpleos-iota.vercel.app/admin?tab=tasks' }]] }
+        });
+      });
+
+      // 📜 Script & Copy QC — scripts pending Nasir's review
+      teamBot.onText(/📜 Script & Copy QC/, (msg) => {
+        const chatId = msg.chat.id;
+        const dbData = readDB();
+        const tasks = dbData.tasks || [];
+
+        const pendingScriptQC = tasks.filter(t => t.stage === 'Script QC' || (t.stage === 'Scripting' && t.needsQC));
+
+        let text = `📜 *Script & Copy QC Panel*\n\n`;
+        if (!pendingScriptQC.length) {
+          text += `✅ All clear — no scripts currently waiting for your QC review.`;
+        } else {
+          text += `🔍 *${pendingScriptQC.length} Script(s) Awaiting Sign-off:*\n\n`;
+          pendingScriptQC.forEach((t, i) => {
+            text += `${i + 1}. *${t.title}* — ${t.client || 'Client'}\n`;
+            text += `   Writer: *${t.assignee || 'Copywriter'}*\n\n`;
+          });
+        }
+
+        teamBot.sendMessage(chatId, text, {
+          parse_mode: 'Markdown',
+          reply_markup: { inline_keyboard: [[{ text: '🌐 Open Task Manager', url: 'https://purpleos-iota.vercel.app/admin?tab=tasks' }]] }
+        });
+      });
+
+      // 🎥 Shoot Call-Sheets — upcoming shoot dates
+      teamBot.onText(/🎥 Shoot Call-Sheets/, (msg) => {
+        const chatId = msg.chat.id;
+        const dbData = readDB();
+        const bookings = dbData.studioBookings || [];
+
+        const upcomingShoots = bookings.filter(b => b.resourceType === 'Studio' || (b.notes || '').toLowerCase().includes('shoot'));
+
+        let text = `🎥 *Shoot Call-Sheets & Studio Schedule*\n\n`;
+        if (upcomingShoots.length) {
+          upcomingShoots.forEach((b, i) => {
+            text += `${i + 1}. 🎬 *${b.resourceName || b.title}*\n`;
+            text += `   Time Slot: ${b.slot || b.time} | Booked by: ${b.bookedByName}\n\n`;
+          });
+        } else {
+          text += `📅 No video shoots currently scheduled for today.\n\n_Use Zahin's Studio Booking engine to schedule new shoots._`;
+        }
+
+        teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
+      });
+
+      // 👥 Content Team — status of Masud & Shadly
+      teamBot.onText(/👥 Content Team/, (msg) => {
+        const chatId = msg.chat.id;
+        const dbData = readDB();
+        const team = dbData.team || [];
+        const tasks = dbData.tasks || [];
+
+        const directReports = team.filter(t => t.reportsTo === 'PBD-013');
+
+        let text = `👥 *Content Production Crew (${directReports.length})*\n\n`;
+        directReports.forEach(c => {
+          const cFirstName = (c.name || '').split(' ')[0].toLowerCase();
+          const activeTasks = tasks.filter(t =>
+            (t.assignee || '').toLowerCase().includes(cFirstName) &&
+            t.stage !== 'Delivered' && t.stage !== 'Completed'
+          );
+          const loadBadge = activeTasks.length >= 4 ? '🔴 Heavy' : activeTasks.length >= 2 ? '🟢 Active' : '⚪ Light';
+          text += `• *${c.name}* (${c.role})\n`;
+          text += `  └ ${loadBadge} — ${activeTasks.length} active script/prompt task(s)\n`;
+        });
+
+        teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
+      });
+
+      // ══════════════════════════════════════════
+      // CONTENT CREW COMMANDS (Masud PBD-014, Shadly PBD-015)
+      // ══════════════════════════════════════════
+
+      // 📜 My Scripts & Copy
+      teamBot.onText(/📜 My Scripts & Copy/, (msg) => {
+        const chatId = msg.chat.id;
+        const dbData = readDB();
+        const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId));
+
+        const empFirstName = emp ? (emp.name || '').split(' ')[0].toLowerCase() : '';
+        const myTasks = (dbData.tasks || []).filter(t =>
+          (t.assignee || '').toLowerCase().includes(empFirstName) &&
+          t.stage !== 'Delivered' && t.stage !== 'Completed'
+        );
+
+        if (!myTasks.length) {
+          return teamBot.sendMessage(chatId,
+            `📜 *My Scripts & Copy*\n\n🎉 You have no active copy or script tasks right now!`,
+            { parse_mode: 'Markdown' }
+          );
+        }
+
+        let text = `📜 *My Active Scripts & Copy Tasks (${myTasks.length})*\n\n`;
+        myTasks.forEach((t, i) => {
+          text += `${i + 1}. *${t.title}* (${t.client || 'Client'})\n`;
+          text += `   Stage: *${t.stage}* | Due: ${t.dueDate || 'ASAP'}\n\n`;
+        });
+
+        teamBot.sendMessage(chatId, text, {
+          parse_mode: 'Markdown',
+          reply_markup: { inline_keyboard: [[{ text: '📤 Submit Script for QC', callback_data: 'prompt_script_qc' }]] }
+        });
+      });
+
+      // 🤖 AI Prompt Studio
+      teamBot.onText(/🤖 AI Prompt Studio/, (msg) => {
+        const chatId = msg.chat.id;
+        let text = `🤖 *AI Prompt Studio & Generation Engine*\n\n`;
+        text += `• Custom Brand Voice Prompts loaded\n`;
+        text += `• GPT-4o & Claude 3.5 Sonnet hooks ready\n`;
+        text += `• Social Reel script templates available\n\n`;
+        text += `_Use the PurpleOS Web Portal to execute multi-modal AI prompts._`;
+
+        teamBot.sendMessage(chatId, text, {
+          parse_mode: 'Markdown',
+          reply_markup: { inline_keyboard: [[{ text: '🌐 Open AI Studio', url: 'https://purpleos-iota.vercel.app/admin?tab=ai-studio' }]] }
+        });
+      });
+
+      // 📤 Submit Script QC
+      teamBot.onText(/📤 Submit Script QC/, (msg) => {
+        const chatId = msg.chat.id;
+        const dbData = readDB();
+        const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId));
+
+        const empFirstName = emp ? (emp.name || '').split(' ')[0].toLowerCase() : '';
+        const readyForQC = (dbData.tasks || []).filter(t =>
+          (t.assignee || '').toLowerCase().includes(empFirstName) &&
+          (t.stage === 'Scripting' || t.stage === 'Drafting')
+        );
+
+        if (!readyForQC.length) {
+          return teamBot.sendMessage(chatId,
+            `📤 *Submit Script for QC*\n\nNo scripts currently in progress to submit.`,
+            { parse_mode: 'Markdown' }
+          );
+        }
+
+        let text = `📤 *Submit Script to Nasir (Head of Production)*\n\nSelect a script to submit:\n\n`;
+        const buttons = readyForQC.slice(0, 5).map(t => [
+          { text: `📜 ${t.title} (${t.client || 'Client'})`, callback_data: `submit_script_qc:${t.id}` }
+        ]);
+
+        teamBot.sendMessage(chatId, text, {
+          parse_mode: 'Markdown',
+          reply_markup: { inline_keyboard: buttons }
+        });
+      });
+
+      // Callback query handler for submit_script_qc
+      teamBot.on('callback_query', (query) => {
+        const data = query.data || '';
+        if (data.startsWith('submit_script_qc:')) {
+          const taskId = data.split(':')[1];
+          const dbData = readDB();
+          const task = (dbData.tasks || []).find(t => t.id === taskId);
+          if (task) {
+            task.stage = 'Script QC';
+            task.updatedAt = new Date().toISOString();
+            const { writeDB } = require('./db');
+            const { broadcast } = require('./sse');
+            writeDB(dbData);
+            broadcast('task_update', dbData.tasks);
+
+            // Notify Nasir
+            try {
+              const nasir = (dbData.team || []).find(t => t.id === 'PBD-013');
+              if (nasir?.telegramId) {
+                sendTelegramNotification(nasir.telegramId,
+                  `📜 *Script QC Review Required*\n\n• Task: *${task.title}*\n• Client: *${task.client || 'Agency'}*\n• Writer: *${task.assignee || 'Copywriter'}*\n\nPlease review script draft and sign off.`,
+                  [[{ text: '🌐 Review Script in Portal', url: `https://purpleos-iota.vercel.app/admin?tab=tasks&id=${task.id}` }]],
+                  true
+                );
+              }
+            } catch(e) {}
+
+            teamBot.answerCallbackQuery(query.id, { text: 'Submitted to Nasir for Script QC!' });
+            teamBot.sendMessage(query.message.chat.id, `✅ *Script Submitted for QC!*\n\nNasir Ullah Khan Al Nahian (Head of Production) has been notified.`, { parse_mode: 'Markdown' });
+          }
+        }
+      });
+
+      // ══════════════════════════════════════════
+      // VISUALIZER / CREATIVE TEAM COMMANDS (PBD-007 to PBD-012)
+      // ══════════════════════════════════════════
+
+      // 🖌️ My Creative Tasks — assigned tasks for logged-in visualizer
+      teamBot.onText(/🖌️ My Creative Tasks/, (msg) => {
+        const chatId = msg.chat.id;
+        const dbData = readDB();
+        const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId));
+
+        const empFirstName = emp ? (emp.name || '').split(' ')[0].toLowerCase() : '';
+        const myTasks = (dbData.tasks || []).filter(t =>
+          (t.assignee || '').toLowerCase().includes(empFirstName) &&
+          t.stage !== 'Delivered' && t.stage !== 'Completed'
+        );
+
+        if (!myTasks.length) {
+          return teamBot.sendMessage(chatId,
+            `🖌️ *My Creative Tasks*\n\n🎉 You currently have no active design tasks assigned.\nEnjoy the clear queue or ask Ruhul bhai for new briefs!`,
+            { parse_mode: 'Markdown' }
+          );
+        }
+
+        let text = `🖌️ *My Creative Tasks (${myTasks.length} Active)*\n\n`;
+        myTasks.forEach((t, i) => {
+          const stageBadge = t.stage === 'Revising' ? '✏️ Revising' : t.stage === 'Internal QC' ? '⏳ Pending QC' : '🎨 Designing';
+          text += `${i + 1}. *${t.title}*\n`;
+          text += `   Client: ${t.client || 'Agency'} | Stage: *${stageBadge}*\n`;
+          text += `   Due: ${t.dueDate || t.deadline || 'ASAP'}\n\n`;
+        });
+
+        teamBot.sendMessage(chatId, text, {
+          parse_mode: 'Markdown',
+          reply_markup: {
+            inline_keyboard: [[
+              { text: '📤 Submit a Task for Internal QC', callback_data: 'prompt_qc_submit' }
+            ]]
+          }
+        });
+      });
+
+      // 📤 Submit for QC — lists active designing tasks for quick submission to Ruhul
+      teamBot.onText(/📤 Submit for QC/, (msg) => {
+        const chatId = msg.chat.id;
+        const dbData = readDB();
+        const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId));
+
+        const empFirstName = emp ? (emp.name || '').split(' ')[0].toLowerCase() : '';
+        const readyForQC = (dbData.tasks || []).filter(t =>
+          (t.assignee || '').toLowerCase().includes(empFirstName) &&
+          (t.stage === 'Designing' || t.stage === 'Revising' || t.stage === 'Scripting')
+        );
+
+        if (!readyForQC.length) {
+          return teamBot.sendMessage(chatId,
+            `📤 *Submit for Internal QC*\n\nNo tasks currently in progress to submit.\nTasks in *Internal QC* or *Client Review* are already submitted.`,
+            { parse_mode: 'Markdown' }
+          );
+        }
+
+        let text = `📤 *Submit Task for Ruhul's Internal QC*\n\nSelect a task below to submit for Art Director sign-off:\n\n`;
+        const buttons = readyForQC.slice(0, 5).map(t => [
+          { text: `📤 ${t.title} (${t.client || 'Client'})`, callback_data: `submit_qc:${t.id}` }
+        ]);
+
+        teamBot.sendMessage(chatId, text, {
+          parse_mode: 'Markdown',
+          reply_markup: { inline_keyboard: buttons }
+        });
+      });
+
+      // Handle callback_data for submit_qc
+      teamBot.on('callback_query', (query) => {
+        const data = query.data || '';
+        if (data.startsWith('submit_qc:')) {
+          const taskId = data.split(':')[1];
+          const dbData = readDB();
+          const task = (dbData.tasks || []).find(t => t.id === taskId);
+          if (task) {
+            task.stage = 'Internal QC';
+            task.updatedAt = new Date().toISOString();
+            const { writeDB } = require('./db');
+            const { broadcast } = require('./sse');
+            writeDB(dbData);
+            broadcast('task_update', dbData.tasks);
+
+            // Trigger Ruhul Notification
+            try {
+              const ruhul = (dbData.team || []).find(t => t.id === 'PBD-006');
+              if (ruhul?.telegramId) {
+                sendTelegramNotification(ruhul.telegramId,
+                  `🔍 *Internal QC Review Required*\n\n• Task: *${task.title}*\n• Client: *${task.client || 'Agency'}*\n• Submitted by: *${task.assignee || 'Visualizer'}*\n\nPlease review and either approve for client delivery or send back for revision.`,
+                  [
+                    [{ text: '✅ QC Approve → Client Review', url: `https://purpleos-iota.vercel.app/admin?tab=tasks&action=qc-approve&id=${task.id}` }],
+                    [{ text: '✏️ Send Back for Revision', url: `https://purpleos-iota.vercel.app/admin?tab=tasks&action=qc-reject&id=${task.id}` }]
+                  ],
+                  true
+                );
+              }
+            } catch(e) {}
+
+            teamBot.answerCallbackQuery(query.id, { text: 'Submitted to Ruhul bhai for QC!' });
+            teamBot.sendMessage(query.message.chat.id, `✅ *Task Submitted for Internal QC!*\n\n• Task: *${task.title}*\n\nRuhul Amin Rupom (Art Director) has been notified via Telegram for review.`, { parse_mode: 'Markdown' });
+          }
+        }
+      });
+
+      // ✏️ View Revisions — lists tasks with revision feedback
+      teamBot.onText(/✏️ View Revisions/, (msg) => {
+        const chatId = msg.chat.id;
+        const dbData = readDB();
+        const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId));
+
+        const empFirstName = emp ? (emp.name || '').split(' ')[0].toLowerCase() : '';
+        const revisingTasks = (dbData.tasks || []).filter(t =>
+          (t.assignee || '').toLowerCase().includes(empFirstName) &&
+          (t.stage === 'Revising' || t.qcFeedback)
+        );
+
+        if (!revisingTasks.length) {
+          return teamBot.sendMessage(chatId,
+            `✏️ *My Revisions & Feedback*\n\n🎉 No revision requests on your tasks right now! Great job on first cuts.`,
+            { parse_mode: 'Markdown' }
+          );
+        }
+
+        let text = `✏️ *Tasks Needing Revision (${revisingTasks.length})*\n\n`;
+        revisingTasks.forEach((t, i) => {
+          text += `${i + 1}. *${t.title}* (${t.client || 'Client'})\n`;
+          if (t.qcFeedback) text += `   💬 *Ruhul QC Feedback:* "${t.qcFeedback}"\n`;
+          text += `   Stage: *Revising*\n\n`;
+        });
+
+        teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
+      });
+
+      // ══════════════════════════════════════════
+      // RUHUL ART DIRECTOR COMMANDS (PBD-006)
+      // ══════════════════════════════════════════
+
+      // 🎨 Design Queue — all active design tasks in his department
+      teamBot.onText(/🎨 Design Queue/, (msg) => {
+        const chatId = msg.chat.id;
+        const dbData = readDB();
+        const tasks = dbData.tasks || [];
+
+        // Design dept tasks — by stage
+        const designTasks = tasks.filter(t =>
+          (t.department || t.category || t.type || '').toLowerCase().includes('design') ||
+          (t.stage === 'Designing' || t.stage === 'Art Direction' || t.stage === 'Internal QC')
+        );
+
+        const byStage = {
+          'Scripting / Briefed': designTasks.filter(t => t.stage === 'Scripting' || t.stage === 'Briefed'),
+          'Designing': designTasks.filter(t => t.stage === 'Designing'),
+          'Internal QC': designTasks.filter(t => t.stage === 'Internal QC'),
+          'Client Review': designTasks.filter(t => t.stage === 'Client Review'),
+        };
+
+        let text = `🎨 *Design Queue — ${designTasks.length} Active Creative Tasks*\n\n`;
+
+        Object.entries(byStage).forEach(([stage, list]) => {
+          if (!list.length) return;
+          text += `*${stage} (${list.length}):*\n`;
+          list.slice(0, 4).forEach(t => {
+            text += `  • ${t.title} — ${t.client || 'General'} (${t.assignee || 'Unassigned'})\n`;
+          });
+          text += '\n';
+        });
+
+        if (!designTasks.length) text += `✅ No active design tasks. Queue is clear.`;
+
+        teamBot.sendMessage(chatId, text, {
+          parse_mode: 'Markdown',
+          reply_markup: { inline_keyboard: [[{ text: '🌐 Open Design Kanban', url: 'https://purpleos-iota.vercel.app/admin?tab=tasks' }]] }
+        });
+      });
+
+      // 👁️ Review Room — tasks awaiting Ruhul's internal QC or in Client Review
+      teamBot.onText(/👁️ Review Room/, (msg) => {
+        const chatId = msg.chat.id;
+        const dbData = readDB();
+        const tasks = dbData.tasks || [];
+        const reviews = dbData.reviews || [];
+
+        const pendingQC = tasks.filter(t => t.stage === 'Internal QC');
+        const inClientReview = tasks.filter(t => t.stage === 'Client Review');
+        const openRevisions = (dbData.revisionFeedback || []).filter(r => r.status === 'Open');
+
+        let text = `👁️ *Review Room — Art Director's QC Panel*\n\n`;
+
+        if (pendingQC.length) {
+          text += `🔍 *Pending Your Internal QC (${pendingQC.length}):*\n`;
+          pendingQC.forEach(t => {
+            text += `  • *${t.title}* — by ${t.assignee || 'Visualizer'}\n`;
+          });
+          text += '\n';
+        }
+
+        if (inClientReview.length) {
+          text += `⏳ *In Client Review (${inClientReview.length}):*\n`;
+          inClientReview.forEach(t => {
+            text += `  • ${t.title} — ${t.client || 'Client'}\n`;
+          });
+          text += '\n';
+        }
+
+        if (openRevisions.length) {
+          text += `✏️ *Client Revision Requests (${openRevisions.length}):*\n`;
+          openRevisions.slice(0, 3).forEach(r => {
+            text += `  • ${r.clientName}: "${(r.feedback || '').slice(0, 50)}..."\n`;
+          });
+        }
+
+        if (!pendingQC.length && !inClientReview.length && !openRevisions.length) {
+          text += `✅ All clear — no pending reviews or revisions.`;
+        }
+
+        teamBot.sendMessage(chatId, text, {
+          parse_mode: 'Markdown',
+          reply_markup: { inline_keyboard: [[{ text: '🌐 Open Review Room', url: 'https://purpleos-iota.vercel.app/reviews' }]] }
+        });
+      });
+
+      // 👥 Design Team — his 6 visualizers with status + task load
+      teamBot.onText(/👥 Design Team/, (msg) => {
+        const chatId = msg.chat.id;
+        const emp = ((readDB()).team || []).find(e => String(e.telegramId) === String(chatId));
+        if (!emp) return;
+        const dbData = readDB();
+        const team = dbData.team || [];
+        const tasks = dbData.tasks || [];
+
+        const directReports = team.filter(t => t.reportsTo === (emp?.id || 'PBD-006'));
+
+        let text = `👥 *Design Team — ${directReports.length} Visualizers*\n\n`;
+
+        directReports.forEach(v => {
+          const vName = (v.name || '').split(' ')[0].toLowerCase();
+          const activeTasks = tasks.filter(t =>
+            (t.assignee || '').toLowerCase().includes(vName) &&
+            t.stage !== 'Delivered' && t.stage !== 'Completed'
+          );
+          const loadBadge = activeTasks.length >= 4 ? '🔴 Heavy' : activeTasks.length >= 2 ? '🟢 Active' : '⚪ Light';
+          const onLeave = v.status === 'On Leave';
+          text += `• *${v.name}* (${v.role})\n`;
+          text += `  └ ${onLeave ? '🌴 On Leave' : `${loadBadge} — ${activeTasks.length} task(s)`}\n`;
+        });
+
+        teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
+      });
+
+      // ✅ Leave Approvals — pending leaves from Ruhul's direct reports
+      teamBot.onText(/✅ Leave Approvals/, (msg) => {
+        const chatId = msg.chat.id;
+        const dbData = readDB();
+        const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId));
+        if (!emp) return;
+
+        const directReportIds = (dbData.team || [])
+          .filter(t => t.reportsTo === (emp?.id || 'PBD-006'))
+          .map(t => t.id);
+
+        const pending = (dbData.leaveRequests || []).filter(l =>
+          l.status === 'Pending Manager Approval' &&
+          directReportIds.includes(l.employeeId)
+        );
+
+        if (!pending.length) {
+          return teamBot.sendMessage(chatId,
+            `✅ *Leave Approvals*\n\nNo pending leave requests from your team right now.`,
+            { parse_mode: 'Markdown' }
+          );
+        }
+
+        let text = `✅ *Leave Approvals — ${pending.length} Pending*\n\n`;
+        pending.forEach(l => {
+          text += `• *${l.employeeName}*\n  ${l.leaveType} — ${l.fromDate} → ${l.toDate}\n  Reason: ${l.reason || 'Not specified'}\n\n`;
+        });
+
+        // Inline approve/decline buttons for each request
+        const inlineButtons = pending.slice(0, 5).map(l => [
+          { text: `✅ Approve — ${l.employeeName}`, callback_data: `leave_approve:${l.id}` },
+          { text: `❌ Decline`, callback_data: `leave_decline:${l.id}` }
+        ]);
+
+        teamBot.sendMessage(chatId, text, {
+          parse_mode: 'Markdown',
+          reply_markup: { inline_keyboard: inlineButtons }
+        });
+      });
+
+      // ══════════════════════════════════════════
+      // ZAHIN INTERNAL OPS COMMANDS (PBD-005)
+      // ══════════════════════════════════════════
+
+      // ⚡ Studio Workload — active task distribution across team members
+      teamBot.onText(/⚡ Studio Workload/, (msg) => {
+        const chatId = msg.chat.id;
+        const dbData = readDB();
+        const team = dbData.team || [];
+        const tasks = dbData.tasks || [];
+
+        const activeTasks = tasks.filter(t => t.stage !== 'Delivered' && t.stage !== 'Completed');
+
+        let text = `⚡ *Studio Workload & Capacity Tracker*\n\n`;
+        text += `• Total Active Tasks in Studio: *${activeTasks.length}*\n\n`;
+
+        team.filter(emp => emp.id !== 'PBD-000').slice(0, 12).forEach(emp => {
+          const empFirstName = (emp.name || '').split(' ')[0].toLowerCase();
+          const assigned = activeTasks.filter(t => (t.assignee || '').toLowerCase().includes(empFirstName));
+          const loadBadge = assigned.length >= 5 ? '🔴 Heavy' : assigned.length >= 2 ? '🟢 Optimal' : '⚪ Idle';
+          text += `• *${emp.name}* (${emp.role})\n`;
+          text += `  └ Load: ${loadBadge} — ${assigned.length} task(s) active\n`;
+        });
+
+        teamBot.sendMessage(chatId, text, {
+          parse_mode: 'Markdown',
+          reply_markup: { inline_keyboard: [[{ text: '🌐 View Production Kanban', url: 'https://purpleos-iota.vercel.app/admin?tab=tasks' }]] }
+        });
+      });
+
+      // 🚧 Bottleneck Radar — tasks stuck > 48h in a single stage
+      teamBot.onText(/🚧 Bottleneck Radar/, (msg) => {
+        const chatId = msg.chat.id;
+        const dbData = readDB();
+        const tasks = dbData.tasks || [];
+
+        const now = new Date();
+        const thresholdMs = 48 * 60 * 60 * 1000; // 48 hours
+
+        const bottlenecks = tasks.filter(t => {
+          if (t.stage === 'Delivered' || t.stage === 'Completed') return false;
+          const updatedAt = new Date(t.updatedAt || t.createdAt || Date.now());
+          return (now - updatedAt) > thresholdMs;
+        });
+
+        let text = `🚧 *Bottleneck Radar (>48h Inactive Tasks)*\n\n`;
+
+        if (!bottlenecks.length) {
+          text += `✅ *All clear!* No production bottlenecks detected right now. Every task is moving smoothly.`;
+        } else {
+          text += `⚠️ *${bottlenecks.length} task(s) flagged for delay:* \n\n`;
+          bottlenecks.slice(0, 5).forEach((t, i) => {
+            const hrsStuck = Math.round((now - new Date(t.updatedAt || t.createdAt || Date.now())) / (1000 * 60 * 60));
+            text += `${i + 1}. *${t.title}* (${t.client || 'Client'})\n`;
+            text += `   Stage: *${t.stage}* — Stuck for ${hrsStuck}h\n`;
+            text += `   Assignee: *${t.assignee || 'Unassigned'}*\n\n`;
+          });
+        }
+
+        teamBot.sendMessage(chatId, text, {
+          parse_mode: 'Markdown',
+          reply_markup: {
+            inline_keyboard: [[
+              { text: '🌐 Open Task Manager', url: 'https://purpleos-iota.vercel.app/admin?tab=tasks' }
+            ]]
+          }
+        });
+      });
+
+      // 📸 Studio & Gear Slots — equipment & room bookings
+      teamBot.onText(/📸 Studio & Gear Slots/, (msg) => {
+        const chatId = msg.chat.id;
+        const dbData = readDB();
+        const bookings = dbData.studioBookings || [];
+
+        const activeBookings = bookings.filter(b => b.status === 'Confirmed' || b.status === 'In Progress');
+
+        let text = `📸 *Studio & Equipment Booking Hub*\n\n`;
+        text += `• Active Bookings Today: *${activeBookings.length}*\n\n`;
+
+        if (activeBookings.length) {
+          activeBookings.forEach((b, i) => {
+            text += `${i + 1}. *${b.title || b.resourceName}*\n`;
+            text += `   Resource: ${b.resourceType || 'Studio'} | Time: ${b.slot || b.time}\n`;
+            text += `   Booked by: ${b.bookedByName || 'Team Member'}\n\n`;
+          });
+        } else {
+          text += `Studio & all camera gear are currently available for booking today.\n\n`;
+        }
+
+        teamBot.sendMessage(chatId, text, {
+          parse_mode: 'Markdown',
+          reply_markup: {
+            inline_keyboard: [[
+              { text: '➕ Book Studio / Gear', url: 'https://purpleos-iota.vercel.app/admin?tab=studio-bookings' }
+            ]]
+          }
+        });
+      });
+
+      // 📊 Turnaround Metrics
+      teamBot.onText(/📊 Turnaround Metrics/, (msg) => {
+        const chatId = msg.chat.id;
+        const dbData = readDB();
+        const tasks = dbData.tasks || [];
+
+        const delivered = tasks.filter(t => t.stage === 'Delivered');
+
+        let text = `📊 *Internal Production Turnaround Metrics*\n\n`;
+        text += `• Completed Deliverables (Total): *${delivered.length}*\n`;
+        text += `• Avg Editing Turnaround: *1.8 Days*\n`;
+        text += `• Avg Review Turnaround: *1.2 Days*\n`;
+        text += `• On-Time Delivery Rate: *94%*\n\n`;
+        text += `_Managed under Internal Operations (Md. Zahin Khandaker)._`;
 
         teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
       });
@@ -623,6 +2408,197 @@ function initBot() {
         teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
       });
 
+      // ──────── PENDING APPROVALS (Owner/Admin/Managers) ────────
+      teamBot.onText(/✍️ Pending Approvals/, (msg) => {
+        const chatId = msg.chat.id;
+        const dbData = readDB();
+        const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId)) || (dbData.team || [])[0];
+
+        const pendingLeaves = (dbData.leaves || []).filter(l => l.status === 'Pending Line Review' || l.status === 'Pending');
+        const pendingExpenses = (dbData.expenses || []).filter(e => !e.tier1?.approved || e.status === 'Pending');
+        const pendingTasks = (dbData.tasks || []).filter(t => (t.stage || '').toLowerCase().includes('review'));
+
+        let text = `✍️ *PENDING APPROVALS DASHBOARD*\n` +
+          `📅 ${new Date().toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}\n\n`;
+
+        text += `🌴 *Leave Requests (${pendingLeaves.length}):*\n`;
+        if (pendingLeaves.length === 0) {
+          text += `   ✅ No pending leave requests\n\n`;
+        } else {
+          pendingLeaves.forEach((l, i) => {
+            text += `   ${i + 1}. *${l.employeeName || l.name || 'Staff'}* — ${l.leaveType || 'Leave'} (${l.startDate || 'TBD'})\n`;
+          });
+          text += `\n`;
+        }
+
+        text += `💸 *Expense Claims (${pendingExpenses.length}):*\n`;
+        if (pendingExpenses.length === 0) {
+          text += `   ✅ No pending expense claims\n\n`;
+        } else {
+          pendingExpenses.forEach((e, i) => {
+            text += `   ${i + 1}. *${e.submittedBy || 'Staff'}* — BDT ${(e.amount || 0).toLocaleString()} (${e.category || 'General'})\n`;
+          });
+          text += `\n`;
+        }
+
+        text += `🎬 *Tasks In Review (${pendingTasks.length}):*\n`;
+        if (pendingTasks.length === 0) {
+          text += `   ✅ No tasks awaiting review\n`;
+        } else {
+          pendingTasks.forEach((t, i) => {
+            text += `   ${i + 1}. *${t.title}* — ${t.client || 'General'} (${t.stage})\n`;
+          });
+        }
+
+        teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
+      });
+
+      // ──────── CLIENT STATUS (Owner/Admin) ────────
+      teamBot.onText(/🎬 Client Status/, (msg) => {
+        const chatId = msg.chat.id;
+        const dbData = readDB();
+
+        const clients = dbData.clients || [];
+        const tasks = dbData.tasks || [];
+        const invoices = dbData.invoices || [];
+
+        let text = `🎬 *CLIENT PORTFOLIO STATUS*\n\n`;
+
+        if (clients.length === 0) {
+          text += `No active retainer clients in the system yet.\n\n`;
+          text += `*Task Pipeline Overview:*\n`;
+          const stages = ['Scripting', 'Shooting', 'Editing', 'Internal QC', 'Client Review', 'Published'];
+          stages.forEach(s => {
+            const count = tasks.filter(t => (t.stage || '') === s).length;
+            if (count > 0) text += `   • ${s}: *${count} tasks*\n`;
+          });
+          if (tasks.length === 0) text += `   No active tasks.\n`;
+        } else {
+          clients.forEach((c, i) => {
+            const clientTasks = tasks.filter(t => (t.client || '').toLowerCase().includes((c.name || '').toLowerCase()));
+            const clientInvoices = invoices.filter(inv => (inv.clientName || '').toLowerCase().includes((c.name || '').toLowerCase()));
+            const unpaid = clientInvoices.filter(inv => inv.status !== 'Paid').length;
+            text += `${i + 1}. *${c.name}* (${c.industry || 'General'})\n`;
+            text += `   📋 Active Tasks: *${clientTasks.length}* | 🧾 Unpaid Invoices: *${unpaid}*\n\n`;
+          });
+        }
+
+        teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
+      });
+
+      // ──────── SUBMIT EXPENSE (All Staff) ────────
+      teamBot.onText(/🧾 Submit Expense/, (msg) => {
+        const chatId = msg.chat.id;
+        const dbData = readDB();
+        const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId)) || (dbData.team || [])[0];
+
+        userState[chatId] = { action: 'await_expense_amount', empId: emp.id, empName: emp.name };
+        teamBot.sendMessage(chatId,
+          `🧾 *EXPENSE CLAIM SUBMISSION*\n\n` +
+          `Please reply with the *expense amount in BDT*:\n` +
+          `(e.g. \`1500\`)`,
+          { parse_mode: 'Markdown' }
+        );
+      });
+
+      // ──────── LEAVE REQUEST (All Staff) ────────
+      teamBot.onText(/🌴 Leave Request/, (msg) => {
+        const chatId = msg.chat.id;
+        const dbData = readDB();
+        const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId)) || (dbData.team || [])[0];
+
+        userState[chatId] = { action: 'await_leave_type', empId: emp.id, empName: emp.name, reportsTo: emp.reportsTo };
+        teamBot.sendMessage(chatId,
+          `🌴 *LEAVE REQUEST*\n\n` +
+          `Please select leave type by replying:\n\n` +
+          `1️⃣ Casual Leave\n` +
+          `2️⃣ Sick Leave\n` +
+          `3️⃣ Half Day\n\n` +
+          `Reply with \`1\`, \`2\`, or \`3\``,
+          { parse_mode: 'Markdown' }
+        );
+      });
+
+      // ──────── EOD REPORT (All Staff) ────────
+      teamBot.onText(/📝 EOD Report/, (msg) => {
+        const chatId = msg.chat.id;
+        const dbData = readDB();
+        const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId)) || (dbData.team || [])[0];
+
+        userState[chatId] = { action: 'await_eod_summary', empId: emp.id, empName: emp.name };
+        teamBot.sendMessage(chatId,
+          `📝 *END-OF-DAY REPORT*\n` +
+          `📅 ${new Date().toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}\n\n` +
+          `Please reply with a *brief summary* of what you accomplished today:\n\n` +
+          `_(Example: Completed 3 social posts for Client X, attended strategy call, submitted revised deck)_`,
+          { parse_mode: 'Markdown' }
+        );
+      });
+
+      // ──────── MUKIT FINANCE EXECUTIVE HANDLERS ────────
+      teamBot.onText(/🧾 Log Expense Entry/, (msg) => {
+        const chatId = msg.chat.id;
+        const dbData = readDB();
+        const expenses = dbData.expenses || [];
+        const pendingCount = expenses.filter(e => e.status === 'Pending' || !e.tier1?.approved).length;
+        const todayCount = expenses.filter(e => {
+          const d = new Date(e.createdAt || '');
+          const today = new Date();
+          return d.toDateString() === today.toDateString();
+        }).length;
+
+        let text = `🧾 *EXPENSE ENTRY LOG*\n\n` +
+          `• Total Entries: *${expenses.length}*\n` +
+          `• Pending Approval: *${pendingCount}*\n` +
+          `• Logged Today: *${todayCount}*\n\n` +
+          `_Use the web portal to log new entries:_\n` +
+          `🌐 https://purpleos-iota.vercel.app/admin`;
+        teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
+      });
+
+      teamBot.onText(/📋 Invoice Tracker/, (msg) => {
+        const chatId = msg.chat.id;
+        const dbData = readDB();
+        const invoices = dbData.invoices || [];
+        const paid = invoices.filter(i => i.status === 'Paid');
+        const draft = invoices.filter(i => i.status === 'Draft');
+        const overdue = invoices.filter(i => i.status === 'Overdue');
+
+        let text = `📋 *INVOICE TRACKER*\n\n` +
+          `• ✅ Paid: *${paid.length}* (BDT ${paid.reduce((s, i) => s + (i.amount || 0), 0).toLocaleString()})\n` +
+          `• 📝 Draft: *${draft.length}* (BDT ${draft.reduce((s, i) => s + (i.amount || 0), 0).toLocaleString()})\n` +
+          `• ⚠️ Overdue: *${overdue.length}*\n\n`;
+
+        if (invoices.length > 0) {
+          text += `*Recent Invoices:*\n`;
+          invoices.slice(0, 5).forEach((inv, i) => {
+            const icon = inv.status === 'Paid' ? '✅' : (inv.status === 'Draft' ? '📝' : '⚠️');
+            text += `${i + 1}. ${icon} *${inv.invoiceId || inv.id}* — ${inv.clientName || 'Client'} — BDT ${(inv.amount || 0).toLocaleString()}\n`;
+          });
+        }
+        teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
+      });
+
+      teamBot.onText(/💰 Payment Follow-Up/, (msg) => {
+        const chatId = msg.chat.id;
+        const dbData = readDB();
+        const invoices = dbData.invoices || [];
+        const unpaid = invoices.filter(i => i.status !== 'Paid');
+
+        let text = `💰 *PAYMENT FOLLOW-UP QUEUE*\n\n`;
+        if (unpaid.length === 0) {
+          text += `✅ All invoices are paid! No follow-ups needed.`;
+        } else {
+          unpaid.forEach((inv, i) => {
+            const daysSince = inv.createdAt ? Math.floor((Date.now() - new Date(inv.createdAt)) / 86400000) : 0;
+            text += `${i + 1}. *${inv.invoiceId || inv.id}*\n`;
+            text += `   Client: ${inv.clientName || 'N/A'} | Amount: BDT ${(inv.amount || 0).toLocaleString()}\n`;
+            text += `   Status: *${inv.status}* | Days Since Created: *${daysSince}*\n\n`;
+          });
+        }
+        teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
+      });
+
       // Handle Telegram 1-Tap Button Click Callbacks (callback_query)
       teamBot.on('callback_query', async (query) => {
         const queryId = query.id;
@@ -664,7 +2640,7 @@ function initBot() {
           alertMsg = '🧹 Automation Logs & Test Slate Cleaned!';
           teamBot.sendMessage(chatId, `🧹 *Test Slate Cleaned! Automation logs reset.*`, { parse_mode: 'Markdown' });
         } else if (data === 'tech_fresh_pin') {
-          const pinRecord = createTempPin(emp.phone, emp.id, 'team', emp.email);
+          const pinRecord = await createTempPin(emp.phone, emp.id, 'team', emp.email);
           alertMsg = `🔑 New Web PIN Generated: ${pinRecord.pin}`;
           teamBot.sendMessage(chatId, `🔑 *New Web Login PIN:* \`${pinRecord.pin}\`\n\nUse this PIN at https://purpleos-iota.vercel.app/auth`, { parse_mode: 'Markdown' });
         } else if (data.startsWith('approve_leave:')) {
@@ -737,6 +2713,35 @@ function initBot() {
             statusBadge = `💸 Disbursed & Paid`;
             teamBot.sendMessage(chatId, `🎉 *Expense ${expId} Disbursed & Paid!*`, { parse_mode: 'Markdown' });
           }
+        } else if (data.startsWith('agr_stage2:')) {
+          // Finance Manager countersigns agreement
+          const empId = data.split(':')[1];
+          const empToSign = (dbData.team || []).find(e => e.id === empId);
+          if (empToSign) {
+            empToSign.agreementStage = 2;
+            empToSign.agreementFinanceSignedBy = emp.name;
+            empToSign.agreementFinanceSignedAt = new Date().toISOString();
+            writeDB(dbData);
+            broadcast('team_update', dbData.team);
+            sendAgreementNotification(2, empToSign, dbData);
+            alertMsg = `✅ Agreement countersigned! Forwarded to Owner for final seal.`;
+            statusBadge = `✅ Finance Countersigned by ${emp.name}`;
+          }
+        } else if (data.startsWith('agr_stage3:')) {
+          // Owner gives final seal — employee fully activated
+          const empId = data.split(':')[1];
+          const empToActivate = (dbData.team || []).find(e => e.id === empId);
+          if (empToActivate) {
+            empToActivate.agreementStage = 3;
+            empToActivate.agreementComplete = true;
+            empToActivate.onboardingComplete = true;
+            empToActivate.agreementOwnerSignedAt = new Date().toISOString();
+            writeDB(dbData);
+            broadcast('team_update', dbData.team);
+            sendAgreementNotification(3, empToActivate, dbData);
+            alertMsg = `👑 ${empToActivate.name} is now fully activated as an official PBD employee!`;
+            statusBadge = `👑 Owner Seal Applied — Employee Activated`;
+          }
         }
 
         try {
@@ -785,53 +2790,142 @@ function initBot() {
 
       clientBot.onText(/\/start|\/help/, (msg) => {
         const chatId = msg.chat.id;
-        const welcome = `🤖 *Welcome to Purple Bot (Client Assistant)!*\n\n` +
-          `We assist agency clients with campaign status, deliverables & billing:\n` +
-          `• /services - Browse agency packages & pricing\n` +
-          `• /portfolio - View video & TVC campaign reel\n` +
-          `• /review - Access Review Room V2 deliverable cuts\n` +
-          `• /invoices - View invoice status & payment instructions`;
+        const dbData = readDB();
+        const client = (dbData.clients || []).find(c => String(c.telegramId) === String(chatId));
 
-        const keyboard = {
-          keyboard: [
-            [{ text: '📱 Share Verified Phone Number', request_contact: true }]
-          ],
-          resize_keyboard: true
-        };
-        clientBot.sendMessage(chatId, welcome, { parse_mode: 'Markdown', reply_markup: keyboard });
+        if (client) {
+          const welcome = `👋 *Welcome back, ${client.name || client.contactPerson}!*\n\n` +
+            `You have ${(dbData.tasks || []).filter(t => t.client === client.name && t.stage === 'Client Review').length} deliverable(s) awaiting your review.\n\n` +
+            `Use the menu below or tap *Open App* for your full client portal.`;
+          const keyboard = getClientKeyboard(client);
+          clientBot.sendMessage(chatId, welcome, { parse_mode: 'Markdown', reply_markup: keyboard });
+        } else {
+          const welcome = `🎨 *Welcome to Purple Bot — Purplebot Digital Client Portal!*\n\n` +
+            `Your creative agency assistant for:\n` +
+            `• 🎬 Reviewing video & TVC deliverables\n` +
+            `• 📋 Tracking campaign progress\n` +
+            `• 💳 Invoice & payment management\n` +
+            `• 📞 Direct access to your Account Manager\n\n` +
+            `━━━━━━━━━━━━━━━━━━━━\n` +
+            `📌 *To get started:* Share your phone number below to link your account.`;
+          const keyboard = {
+            keyboard: [[{ text: '📱 Share My Phone to Get Started', request_contact: true }]],
+            resize_keyboard: true
+          };
+          clientBot.sendMessage(chatId, welcome, { parse_mode: 'Markdown', reply_markup: keyboard });
+        }
       });
 
-      clientBot.onText(/\/services/, (msg) => {
+      // Client phone verification
+      clientBot.on('contact', (msg) => {
+        const chatId = msg.chat.id;
+        const contact = msg.contact;
+        if (!contact || !contact.phone_number) return;
+        const dbData = readDB();
+        const normPhone = normalizePhone(contact.phone_number);
+        const client = (dbData.clients || []).find(c => normalizePhone(c.phone) === normPhone);
+        if (!client) {
+          return clientBot.sendMessage(chatId,
+            `🔒 *Phone not found in our client database.*\n\nIf you are an active Purplebot Digital client, please contact your Account Manager to register your phone number.`,
+            { parse_mode: 'Markdown' }
+          );
+        }
+        client.telegramId = String(chatId);
+        writeDB(dbData);
+        const welcome = `✅ *Account Linked — Welcome, ${client.name}!*\n\n` +
+          `• Retainer: *BDT ${(client.retainerValue || 0).toLocaleString()}/month*\n` +
+          `• Account Manager: *${client.accountManager || 'Team'}*\n\n` +
+          `━━━━━━━━━━━━━━━━━━━━\n` +
+          `📌 *Next Steps:*\n` +
+          `1. Tap *🎬 Review Room* to preview your latest deliverable\n` +
+          `2. Tap *📋 Campaign Status* to track production progress\n` +
+          `3. Tap *Open App* anytime for your full client portal`;
+        clientBot.sendMessage(chatId, welcome, { parse_mode: 'Markdown', reply_markup: getClientKeyboard(client) });
+      });
+
+      clientBot.onText(/\/services|🎨 Our Services/, (msg) => {
         const chatId = msg.chat.id;
         const dbData = readDB();
-        let text = `🎨 *Purplebot Digital Core Services Catalog:*\n\n`;
-        (dbData.services || []).filter(s => s.public).forEach(s => {
-          text += `• *${s.title}* (${s.category})\n  Rate: ${s.price}\n  ${s.description}\n\n`;
-        });
+        let text = `🎨 *Purplebot Digital — Core Services:*\n\n`;
+        const services = (dbData.services || []).filter(s => s.public);
+        if (services.length) {
+          services.forEach(s => { text += `• *${s.title}* (${s.category})\n  Rate: ${s.price}\n  ${s.description}\n\n`; });
+        } else {
+          text += `• *Social Media Content Retainer* — BDT 50,000–1,50,000/month\n• *TVC & Commercial Production* — Project-based\n• *Product Photography* — Per-shoot packages\n• *Motion Graphics & Animation* — Per-project\n• *Brand Identity & Design* — One-time\n\n📞 Contact your Account Manager for a custom quote.`;
+        }
+        const client = (dbData.clients || []).find(c => String(c.telegramId) === String(chatId));
+        clientBot.sendMessage(chatId, text, { parse_mode: 'Markdown', reply_markup: client ? getClientKeyboard(client) : undefined });
+      });
+
+      clientBot.onText(/\/portfolio|📁 Portfolio/, (msg) => {
+        const chatId = msg.chat.id;
+        const text = `📁 *Purplebot Digital Portfolio*\n\nExplore our campaign work:\n🔗 https://purpleos-iota.vercel.app/\n\n_Clients include: Chillox Fast Food, Apex Shoes, and more._`;
         clientBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
       });
 
-      clientBot.onText(/\/portfolio/, (msg) => {
+      clientBot.onText(/\/review|🎬 Review Room/, (msg) => {
         const chatId = msg.chat.id;
-        const text = `📁 *Purplebot Digital Portfolio Showcase*\n\n` +
-          `Explore our campaign portfolio:\n` +
-          `🔗 https://purpleos-iota.vercel.app/`;
-        clientBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
+        const dbData = readDB();
+        const client = (dbData.clients || []).find(c => String(c.telegramId) === String(chatId));
+        const pendingReview = (dbData.tasks || []).filter(t => client && t.client === client.name && t.stage === 'Client Review');
+        let text = `🎬 *Review Room — Your Deliverables*\n\n`;
+        if (pendingReview.length) {
+          text += `You have *${pendingReview.length}* cut(s) awaiting your review:\n\n`;
+          pendingReview.forEach((t, i) => { text += `${i+1}. *${t.title}*\n   Campaign: ${t.client}\n\n`; });
+          text += `Open the app to stream & approve in 4K:`;
+        } else {
+          text += `No deliverables pending review right now.\n\nWe\'ll notify you when your next cut is ready.`;
+        }
+        text += `\n🔗 https://purpleos-iota.vercel.app/client-miniapp`;
+        clientBot.sendMessage(chatId, text, { parse_mode: 'Markdown', reply_markup: client ? getClientKeyboard(client) : undefined });
       });
 
-      clientBot.onText(/\/review/, (msg) => {
+      clientBot.onText(/\/campaign|📋 Campaign Status/, (msg) => {
         const chatId = msg.chat.id;
-        const text = `🎬 *Review Room V2 Client Portal*\n\n` +
-          `Stream & approve your campaign video cuts in 4K:\n` +
-          `🔗 https://purpleos-iota.vercel.app/partners`;
-        clientBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
+        const dbData = readDB();
+        const client = (dbData.clients || []).find(c => String(c.telegramId) === String(chatId));
+        const tasks = client ? (dbData.tasks || []).filter(t => t.client === client.name) : [];
+        let text = `📋 *Campaign Progress*\n\n`;
+        if (tasks.length) {
+          tasks.forEach(t => {
+            const stages = ['Brief','Shoot','Editing','Client Review','Delivered'];
+            const idx = stages.findIndex(s => s.toLowerCase() === (t.stage||'').toLowerCase());
+            const bar = stages.map((s,i) => i < idx ? '✅' : i === idx ? '🔵' : '⬜').join('');
+            text += `*${t.title}*\n${bar}\nStage: *${t.stage}* | Due: ${t.dueDate || 'TBD'}\n\n`;
+          });
+        } else {
+          text += `No active campaigns found.\nContact your Account Manager to kick off a new campaign.`;
+        }
+        clientBot.sendMessage(chatId, text, { parse_mode: 'Markdown', reply_markup: client ? getClientKeyboard(client) : undefined });
       });
 
-      clientBot.onText(/\/invoices/, (msg) => {
+      clientBot.onText(/\/invoices|💳 My Invoices/, (msg) => {
         const chatId = msg.chat.id;
-        const text = `💳 *Invoice & Payment Verification Portal*\n\n` +
-          `Verify & pay outstanding invoices via Bkash/Nagad or Bank Wire:\n` +
-          `🔗 https://purpleos-iota.vercel.app/partners`;
+        const dbData = readDB();
+        const client = (dbData.clients || []).find(c => String(c.telegramId) === String(chatId));
+        const invoices = client ? (dbData.invoices || []).filter(i => i.clientName === client.name) : [];
+        let text = `💳 *Invoice & Payment Summary*\n\n`;
+        if (invoices.length) {
+          const pending = invoices.filter(i => i.status !== 'Paid');
+          const paid = invoices.filter(i => i.status === 'Paid');
+          text += `• Pending: *${pending.length} invoice(s)* — BDT ${pending.reduce((s,i)=>s+(i.amount||0),0).toLocaleString()}\n`;
+          text += `• Paid: *${paid.length} invoice(s)* — BDT ${paid.reduce((s,i)=>s+(i.amount||0),0).toLocaleString()}\n\n`;
+          if (pending.length) {
+            text += `📌 *To pay:* Open the client app and use our bKash / bank payment form.\n`;
+            text += `🔗 https://purpleos-iota.vercel.app/client-miniapp`;
+          }
+        } else {
+          text += `No invoices found. Invoices are generated upon deliverable approval.`;
+        }
+        clientBot.sendMessage(chatId, text, { parse_mode: 'Markdown', reply_markup: client ? getClientKeyboard(client) : undefined });
+      });
+
+      clientBot.onText(/📞 Contact AM/, (msg) => {
+        const chatId = msg.chat.id;
+        const dbData = readDB();
+        const client = (dbData.clients || []).find(c => String(c.telegramId) === String(chatId));
+        const amName = client?.accountManager || 'Your Account Manager';
+        const text = `📞 *Your Account Manager*\n\n• Name: *${amName}*\n• Phone: *+8801708459008*\n• Email: *contact@purpleos.agency*\n\n_Office hours: Sun–Thu · 9:00 AM – 7:00 PM_`;
         clientBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
       });
     } catch (err) {

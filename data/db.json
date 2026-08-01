@@ -2445,7 +2445,7 @@
       "scheduledDate": "2026-07-29",
       "scheduledTime": "18:00",
       "assignedPublisher": "Sabrin Akhtar",
-      "status": "Approved",
+      "status": "Due Today",
       "createdAt": "2026-07-28T20:59:50.490Z"
     }
   ],
@@ -2480,6 +2480,14 @@
     }
   ],
   "automationLogs": [
+    {
+      "id": "LOG-1785610900288",
+      "rule": "AUT-007 (Post Day-Of Dispatch Alert)",
+      "event": "social_post_dispatch_alert",
+      "target": "Chillox (PST-102)",
+      "status": "Executed",
+      "timestamp": "2026-08-01T19:01:40.288Z"
+    },
     {
       "id": "LOG-1785272447265",
       "rule": "AUT-013 (Ticket Resolution Alert)",
@@ -2625,6 +2633,17 @@
       "linkedType": "team",
       "email": "",
       "createdAt": "2026-08-01T12:15:56.998Z",
+      "attempts": 0
+    },
+    {
+      "phone": "+8801712345678",
+      "normPhone": "1712345678",
+      "pin": "9988",
+      "isTemp": false,
+      "linkedId": "EMP-002",
+      "linkedType": "team",
+      "email": "farhan@purplebot.digital",
+      "createdAt": "2026-08-01T20:57:20.515Z",
       "attempts": 0
     }
   ],
@@ -2784,5 +2803,17 @@
     "updatedAt": "2026-07-29T17:48:34.699Z",
     "rankings": []
   },
-  "lastUpdated": "2026-07-29T18:36:48.626Z"
+  "lastUpdated": "2026-07-29T18:36:48.626Z",
+  "telegramGroups": [
+    {
+      "id": "GRP-001",
+      "name": "Chillox Production Ops Group",
+      "type": "group",
+      "chatId": "-1009876543210",
+      "bot": "teamBot",
+      "description": "Active production dispatch group",
+      "active": true,
+      "registeredAt": "2026-08-01T20:15:04.810Z"
+    }
+  ]
 }

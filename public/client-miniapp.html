@@ -3,92 +3,1080 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Purple Bot - Client Review Room Mini App</title>
+  <title>Purple Bot — Client Portal</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #09090b;
-      --card: rgba(24, 24, 27, 0.9);
-      --border: rgba(168, 85, 247, 0.3);
-      --purple: #a855f7;
+      --hero-a: #831843;
+      --hero-b: #be185d;
+      --hero-c: #ec4899;
+      --hero-d: #fb923c;
       --pink: #ec4899;
-      --green: #34d399;
-      --text: #f4f4f5;
-      --muted: #a1a1aa;
+      --rose: #be185d;
+      --orange: #f97316;
+      --surface: #ffffff;
+      --bg: #fff0f7;
+      --text: #1e1030;
+      --text-2: #4b5563;
+      --muted: #9ca3af;
+      --border: #fce7f3;
+      --green: #059669;
+      --green-bg: #d1fae5;
+      --amber: #d97706;
+      --amber-bg: #fef3c7;
+      --red: #dc2626;
+      --red-bg: #fee2e2;
+      --nav-bg: #1e0a18;
+      --nav-active: #ec4899;
+      --card-shadow: 0 2px 16px rgba(236,72,153,0.10);
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
-    body { background: var(--bg); color: var(--text); padding: 1rem; min-height: 100vh; }
-    .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
-    .title { font-size: 1.2rem; font-weight: 800; background: linear-gradient(135deg, #fff, var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .card { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 1.2rem; margin-bottom: 1rem; }
-    .btn { width: 100%; padding: 0.85rem; border: none; border-radius: 12px; font-weight: 700; font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.2s; }
-    .btn-green { background: linear-gradient(135deg, #10b981, #059669); color: #fff; }
-    .btn-purple { background: linear-gradient(135deg, var(--purple), var(--pink)); color: #fff; }
-    .video-box { width: 100%; border-radius: 14px; overflow: hidden; background: #000; margin-bottom: 1rem; position: relative; }
-    video { width: 100%; display: block; border-radius: 14px; }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    html, body { height: 100%; overflow-x: hidden; }
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding-bottom: 76px;
+    }
+
+    /* ───── HERO ───── */
+    .hero {
+      background: linear-gradient(155deg, var(--hero-a) 0%, var(--hero-b) 35%, var(--hero-c) 70%, var(--hero-d) 100%);
+      padding: 1rem 1rem 1.6rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -50px; right: -30px;
+      width: 160px; height: 160px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.07);
+    }
+    .hero::after {
+      content: '';
+      position: absolute;
+      bottom: -15px; left: 20px;
+      width: 100px; height: 100px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.05);
+    }
+    .hero-topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.1rem;
+      position: relative;
+      z-index: 1;
+    }
+    .hero-brand {
+      font-size: 0.7rem;
+      font-weight: 900;
+      color: rgba(255,255,255,0.75);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+    .hero-notif {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.95rem;
+      cursor: pointer;
+    }
+    .hero-card {
+      background: rgba(255,255,255,0.14);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.22);
+      border-radius: 22px;
+      padding: 1rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      position: relative;
+      z-index: 1;
+    }
+    .client-logo {
+      width: 54px; height: 54px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, rgba(255,255,255,0.35), rgba(255,255,255,0.15));
+      border: 2px solid rgba(255,255,255,0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      flex-shrink: 0;
+    }
+    .hero-info { flex: 1; min-width: 0; }
+    .hero-name {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .hero-sub {
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.75);
+      margin-top: 0.15rem;
+    }
+    .hero-pills {
+      display: flex;
+      gap: 0.35rem;
+      margin-top: 0.45rem;
+    }
+    .pill {
+      padding: 0.18rem 0.55rem;
+      border-radius: 999px;
+      font-size: 0.65rem;
+      font-weight: 700;
+    }
+    .pill-green { background: rgba(52,211,153,0.28); color: #6ee7b7; border: 1px solid rgba(52,211,153,0.4); }
+    .pill-amber { background: rgba(251,191,36,0.22); color: #fde68a; border: 1px solid rgba(251,191,36,0.35); }
+    .pill-white { background: rgba(255,255,255,0.18); color: rgba(255,255,255,0.9); border: 1px solid rgba(255,255,255,0.28); }
+
+    /* ───── CARD ───── */
+    .card {
+      background: var(--surface);
+      border-radius: 20px;
+      padding: 1.1rem;
+      margin: 0 0.85rem 0.85rem;
+      box-shadow: var(--card-shadow);
+    }
+    .card-title {
+      font-size: 0.7rem;
+      font-weight: 800;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 0.9rem;
+    }
+
+    /* ───── QUICK ACTIONS ───── */
+    .qa-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.6rem;
+    }
+    .qa-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.8rem 0.25rem 0.7rem;
+      background: #fff0f7;
+      border: 1.5px solid #fce7f3;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: 'Outfit', sans-serif;
+    }
+    .qa-btn:active { transform: scale(0.94); background: #fce7f3; }
+    .qa-icon { font-size: 1.35rem; line-height: 1; }
+    .qa-label { font-size: 0.62rem; font-weight: 700; color: var(--rose); text-align: center; line-height: 1.2; }
+
+    /* ───── CAMPAIGN STAGE ───── */
+    .campaign-stages {
+      display: flex;
+      gap: 0;
+      margin: 0.5rem 0 0.75rem;
+      overflow: hidden;
+      border-radius: 12px;
+    }
+    .stage-seg {
+      flex: 1;
+      text-align: center;
+      padding: 0.5rem 0.15rem;
+      font-size: 0.58rem;
+      font-weight: 700;
+      border-right: 1px solid rgba(255,255,255,0.4);
+      background: #f3f4f6;
+      color: var(--muted);
+    }
+    .stage-seg:last-child { border-right: none; }
+    .stage-seg.done { background: var(--green-bg); color: var(--green); }
+    .stage-seg.active { background: linear-gradient(135deg, var(--rose), var(--pink)); color: #fff; }
+    .stage-seg .stage-icon { font-size: 0.9rem; display: block; margin-bottom: 0.2rem; }
+
+    /* ───── VIDEO PLAYER ───── */
+    .video-container {
+      width: 100%;
+      border-radius: 14px;
+      overflow: hidden;
+      background: #000;
+      margin-bottom: 0.85rem;
+      position: relative;
+    }
+    video { width: 100%; display: block; max-height: 220px; object-fit: cover; }
+    .video-overlay-label {
+      position: absolute;
+      top: 0.6rem; right: 0.6rem;
+      background: rgba(0,0,0,0.6);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 999px;
+      padding: 0.2rem 0.6rem;
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    /* ───── BUTTONS ───── */
+    .btn-approve {
+      width: 100%;
+      padding: 0.95rem;
+      background: linear-gradient(135deg, var(--green), #10b981);
+      border: none;
+      border-radius: 16px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 1rem;
+      font-weight: 800;
+      color: #fff;
+      cursor: pointer;
+      margin-bottom: 0.6rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: all 0.15s;
+    }
+    .btn-approve:active { transform: scale(0.98); opacity: 0.9; }
+    .btn-primary {
+      width: 100%;
+      padding: 0.95rem;
+      background: linear-gradient(135deg, var(--rose), var(--pink));
+      border: none;
+      border-radius: 16px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 1rem;
+      font-weight: 800;
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: all 0.15s;
+    }
+    .btn-primary:active { transform: scale(0.98); opacity: 0.9; }
+    .btn-secondary {
+      width: 100%;
+      padding: 0.85rem;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 16px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text-2);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: all 0.15s;
+      margin-top: 0.5rem;
+    }
+
+    /* ───── FEEDBACK FORM ───── */
+    .feedback-input {
+      width: 100%;
+      padding: 0.75rem 0.9rem;
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.88rem;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.15s;
+      margin-bottom: 0.5rem;
+    }
+    .feedback-input:focus { border-color: var(--pink); }
+    .feedback-input::placeholder { color: var(--muted); }
+
+    /* ───── PAYMENT FORM ───── */
+    .invoice-amount-card {
+      background: linear-gradient(135deg, var(--rose), var(--pink), var(--orange));
+      border-radius: 18px;
+      padding: 1.2rem;
+      margin-bottom: 0.85rem;
+      color: #fff;
+    }
+    .inv-label { font-size: 0.68rem; font-weight: 700; color: rgba(255,255,255,0.75); letter-spacing: 0.5px; text-transform: uppercase; }
+    .inv-amount { font-size: 2rem; font-weight: 900; color: #fff; margin: 0.25rem 0; letter-spacing: -0.5px; }
+    .inv-id { font-size: 0.75rem; color: rgba(255,255,255,0.7); }
+    .payment-method-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+      margin-bottom: 0.85rem;
+    }
+    .pm-chip {
+      padding: 0.75rem;
+      border-radius: 14px;
+      border: 2px solid var(--border);
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .pm-chip:active { transform: scale(0.97); }
+    .pm-chip.selected { border-color: var(--pink); background: #fff0f7; }
+    .pm-icon { font-size: 1.2rem; margin-bottom: 0.2rem; }
+    .pm-label { font-size: 0.68rem; font-weight: 700; color: var(--text-2); }
+    .pm-detail { font-size: 0.62rem; color: var(--muted); }
+    .form-group { margin-bottom: 0.85rem; }
+    .form-label { display: block; font-size: 0.72rem; color: var(--text-2); font-weight: 600; margin-bottom: 0.35rem; }
+    .form-input {
+      width: 100%;
+      padding: 0.75rem 0.9rem;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.88rem;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .form-input:focus { border-color: var(--pink); }
+    .form-input::placeholder { color: var(--muted); }
+    select.form-input { appearance: none; -webkit-appearance: none; }
+    .upload-box {
+      width: 100%;
+      border: 2px dashed var(--pink);
+      border-radius: 14px;
+      padding: 1.5rem;
+      text-align: center;
+      background: #fff0f7;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .upload-box:active { background: #fce7f3; }
+    .upload-icon { font-size: 2rem; margin-bottom: 0.4rem; }
+    .upload-text { font-size: 0.85rem; font-weight: 700; color: var(--rose); }
+    .upload-sub { font-size: 0.7rem; color: var(--muted); margin-top: 0.2rem; }
+    #filePayment { display: none; }
+
+    /* ───── INVOICE LIST ───── */
+    .invoice-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.8rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .invoice-item:last-child { border-bottom: none; }
+    .invoice-no { font-size: 0.82rem; font-weight: 700; color: var(--text); }
+    .invoice-client { font-size: 0.68rem; color: var(--muted); margin-top: 0.1rem; }
+    .invoice-amt { font-size: 0.92rem; font-weight: 800; color: var(--text); }
+    .inv-status {
+      padding: 0.2rem 0.55rem;
+      border-radius: 999px;
+      font-size: 0.62rem;
+      font-weight: 700;
+      margin-top: 0.25rem;
+      text-align: center;
+    }
+    .inv-paid { background: var(--green-bg); color: var(--green); }
+    .inv-pending { background: var(--amber-bg); color: var(--amber); }
+    .inv-draft { background: #f3f4f6; color: var(--muted); }
+
+    /* ───── CONTACT CARD ───── */
+    .contact-card {
+      background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+      border: 1px solid #bae6fd;
+      border-radius: 16px;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+    }
+    .contact-avatar {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #0284c7, #38bdf8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      font-weight: 900;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .contact-name { font-size: 0.9rem; font-weight: 800; color: var(--text); }
+    .contact-role { font-size: 0.7rem; color: var(--text-2); margin-top: 0.1rem; }
+    .contact-phone { font-size: 0.78rem; color: #0284c7; font-weight: 600; margin-top: 0.3rem; }
+
+    /* ───── SUCCESS OVERLAY ───── */
+    #successOverlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      z-index: 999;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 2rem;
+    }
+    #successOverlay.visible { display: flex; }
+    .success-emoji { font-size: 5rem; margin-bottom: 1rem; animation: popIn 0.5s cubic-bezier(0.34,1.56,0.64,1); }
+    .success-title { font-size: 1.5rem; font-weight: 900; color: var(--text); margin-bottom: 0.4rem; }
+    .success-sub { font-size: 0.88rem; color: var(--text-2); line-height: 1.6; max-width: 280px; margin-top: 0.5rem; }
+    .success-bar { width: 240px; height: 6px; background: var(--border); border-radius: 999px; overflow: hidden; margin-top: 1.5rem; }
+    .success-bar-fill { height: 100%; background: linear-gradient(90deg, var(--rose), var(--pink)); border-radius: 999px; animation: fillBar 2s ease forwards; }
+    @keyframes popIn { 0% { transform: scale(0.4); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+    @keyframes fillBar { from { width: 0; } to { width: 100%; } }
+
+    /* ───── BOTTOM NAV ───── */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--nav-bg);
+      display: flex;
+      padding: 0.55rem 0 0.5rem;
+      z-index: 100;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+    .nav-btn {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.22rem;
+      background: none;
+      border: none;
+      color: rgba(255,255,255,0.35);
+      cursor: pointer;
+      padding: 0;
+      font-family: 'Outfit', sans-serif;
+      transition: color 0.15s;
+    }
+    .nav-btn.active { color: var(--nav-active); }
+    .nav-icon { font-size: 1.18rem; line-height: 1; }
+    .nav-label { font-size: 0.58rem; font-weight: 700; letter-spacing: 0.2px; }
+    .nav-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--nav-active); margin: -0.1rem auto 0; display: none; }
+    .nav-btn.active .nav-dot { display: block; }
+
+    /* ───── PAGES ───── */
+    .page { display: none; }
+    .page.active { display: block; }
+    .page-top { height: 0.85rem; }
+
+    .empty-state { text-align: center; padding: 2rem 1rem; color: var(--muted); font-size: 0.88rem; }
+    .empty-icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+    .divider { height: 1px; background: var(--border); margin: 0.5rem 0; }
+    .section-title { font-size: 0.7rem; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.75rem; }
+
+    /* Pending badge */
+    .pending-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      background: var(--amber-bg);
+      color: var(--amber);
+      border: 1px solid rgba(217,119,6,0.3);
+      border-radius: 999px;
+      padding: 0.3rem 0.7rem;
+      font-size: 0.7rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+    }
   </style>
 </head>
 <body>
 
-  <div class="header">
-    <div>
-      <div style="font-size: 0.75rem; color: var(--purple); font-weight: 700;">PURPLE BOT MINI APP</div>
-      <div class="title">Review Room V2 Player</div>
+<!-- SUCCESS OVERLAY -->
+<div id="successOverlay">
+  <div class="success-emoji" id="successEmoji">✅</div>
+  <div class="success-title" id="successTitle">Done!</div>
+  <div class="success-sub" id="successSub">Your request has been submitted.</div>
+  <div class="success-bar"><div class="success-bar-fill"></div></div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     MAIN PORTAL
+════════════════════════════════════════════ -->
+<div id="mainPortal">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-topbar">
+      <div class="hero-brand">Purple Bot · Client Portal</div>
+      <div class="hero-notif">🔔</div>
     </div>
-    <span style="padding: 0.25rem 0.6rem; background: rgba(168,85,247,0.15); color: #c084fc; border: 1px solid var(--border); border-radius: 999px; font-size: 0.72rem; font-weight: 700;">4K Stream</span>
+    <div class="hero-card">
+      <div class="client-logo" id="heroLogo">🏢</div>
+      <div class="hero-info">
+        <div class="hero-name" id="heroClientName">Valued Client</div>
+        <div class="hero-sub" id="heroAccountMgr">Account Manager: —</div>
+        <div class="hero-pills">
+          <span class="pill pill-white" id="heroCampaignCount">📋 — Campaigns</span>
+          <span class="pill pill-green" id="heroInvStatus">✅ Active</span>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <!-- Video Streamer Card -->
-  <div class="card" style="padding: 0.8rem;">
-    <div style="font-size: 0.88rem; font-weight: 700; color: #fff; margin-bottom: 0.6rem;" id="videoTitle">Chillox Eid Special Reel Cut V2</div>
-    <div class="video-box">
-      <video id="revVideoPlayer" controls poster="https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=800">
-        <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" type="video/mp4">
-      </video>
+  <!-- PAGES -->
+
+  <!-- ─── HOME ─── -->
+  <div id="pageHome" class="page active">
+    <div class="page-top"></div>
+
+    <!-- Quick Actions -->
+    <div class="card">
+      <div class="card-title">Quick Actions</div>
+      <div class="qa-grid">
+        <button class="qa-btn" onclick="showPage('pageReview')">
+          <div class="qa-icon">🎬</div><div class="qa-label">Review Cut</div>
+        </button>
+        <button class="qa-btn" onclick="showPage('pageCampaign')">
+          <div class="qa-icon">📋</div><div class="qa-label">Campaign</div>
+        </button>
+        <button class="qa-btn" onclick="showPage('pagePayment')">
+          <div class="qa-icon">💳</div><div class="qa-label">Pay Invoice</div>
+        </button>
+        <button class="qa-btn" onclick="showPage('pageContact')">
+          <div class="qa-icon">📞</div><div class="qa-label">Contact AM</div>
+        </button>
+      </div>
     </div>
 
-    <!-- 1-Tap Cut Approval Button -->
-    <button class="btn btn-green" onclick="handleApproveCut()" style="margin-bottom: 0.6rem;">
-      <span>✅ Approve Cut & Request Commercial Invoice</span>
+    <!-- Active campaign summary -->
+    <div class="card">
+      <div class="card-title">Active Campaign</div>
+      <div id="homeActiveCampaign">
+        <div style="font-size:0.92rem;font-weight:800;color:var(--text);margin-bottom:0.5rem;" id="homeCampaignTitle">Loading...</div>
+        <div class="campaign-stages" id="homeCampaignStages"></div>
+        <div style="font-size:0.75rem;color:var(--text-2);" id="homeCampaignMeta">—</div>
+      </div>
+    </div>
+
+    <!-- Latest invoice -->
+    <div class="card">
+      <div class="card-title">Latest Invoice</div>
+      <div id="homeLatestInvoice">
+        <div class="empty-state"><div class="empty-icon">🧾</div>No invoices yet</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── REVIEW ROOM ─── -->
+  <div id="pageReview" class="page">
+    <div class="page-top"></div>
+    <div class="card">
+      <div class="card-title">🎬 Deliverable Review Room</div>
+      <div style="font-size:0.92rem;font-weight:800;color:var(--text);margin-bottom:0.65rem;" id="reviewVideoTitle">Current Cut Preview</div>
+      <div class="video-container">
+        <video id="revVideoPlayer" controls poster="https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=800">
+          <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" type="video/mp4">
+        </video>
+        <div class="video-overlay-label">4K Preview</div>
+      </div>
+
+      <div id="revApproveSection">
+        <button class="btn-approve" onclick="handleApproveCut()">
+          ✅ Approve This Cut
+        </button>
+        <div style="font-size:0.72rem;color:var(--muted);text-align:center;margin-top:0.3rem;">
+          Approval triggers invoice generation automatically
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">💬 Send Revision Feedback</div>
+      <div style="font-size:0.75rem;color:var(--text-2);margin-bottom:0.75rem;">
+        Add timestamped notes — e.g. <em>"00:12 — adjust background color to brand red"</em>
+      </div>
+      <textarea id="fbInput" class="feedback-input" rows="3" placeholder="e.g. 00:12 – Adjust background color to match brand red. 00:45 – Music cut feels abrupt."></textarea>
+      <button class="btn-primary" onclick="handleSendFeedback()">💬 Send Feedback to Production Team</button>
+    </div>
+  </div>
+
+  <!-- ─── CAMPAIGN STATUS ─── -->
+  <div id="pageCampaign" class="page">
+    <div class="page-top"></div>
+    <div class="card">
+      <div class="card-title">📋 Campaign Progress</div>
+      <div id="campaignList">
+        <div class="empty-state"><div class="empty-icon">📋</div>Loading campaigns...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── PAYMENT / INVOICES ─── -->
+  <div id="pagePayment" class="page">
+    <div class="page-top"></div>
+
+    <!-- Active invoice to pay -->
+    <div id="activeInvoiceSection" style="display:none;">
+      <div class="invoice-amount-card">
+        <div class="inv-label">Amount Due</div>
+        <div class="inv-amount" id="invAmount">BDT 0</div>
+        <div class="inv-id" id="invId">Invoice #—</div>
+      </div>
+
+      <!-- Payment method selector -->
+      <div class="card">
+        <div class="card-title">Select Payment Method</div>
+        <div class="payment-method-grid">
+          <div class="pm-chip selected" id="pmBkash" onclick="selectPayMethod('bkash')">
+            <div class="pm-icon">🩷</div>
+            <div class="pm-label">bKash</div>
+            <div class="pm-detail" id="pmBkashNo">01708-459008</div>
+          </div>
+          <div class="pm-chip" id="pmNagad" onclick="selectPayMethod('nagad')">
+            <div class="pm-icon">🟠</div>
+            <div class="pm-label">Nagad</div>
+            <div class="pm-detail" id="pmNagadNo">01708-459008</div>
+          </div>
+          <div class="pm-chip" id="pmBank" onclick="selectPayMethod('bank')">
+            <div class="pm-icon">🏦</div>
+            <div class="pm-label">Bank Transfer</div>
+            <div class="pm-detail">BRAC Bank</div>
+          </div>
+          <div class="pm-chip" id="pmRocket" onclick="selectPayMethod('rocket')">
+            <div class="pm-icon">🚀</div>
+            <div class="pm-label">Rocket / DBBL</div>
+            <div class="pm-detail">01708-459008</div>
+          </div>
+        </div>
+
+        <!-- Payment instructions -->
+        <div id="paymentInstructions" style="background:#f9fafb;border:1px solid var(--border);border-radius:14px;padding:0.9rem;margin-bottom:0.85rem;">
+          <div class="section-title" style="margin-bottom:0.5rem;">Payment Instructions</div>
+          <div id="payInstrText" style="font-size:0.82rem;color:var(--text-2);line-height:1.6;">
+            Send to bKash Personal: <strong>01708-459008</strong><br>
+            Reference: Invoice number as payment reference.<br>
+            After payment, upload screenshot below.
+          </div>
+        </div>
+
+        <!-- Upload payment proof -->
+        <div class="form-group">
+          <label class="form-label">Transaction ID / Reference Number *</label>
+          <input type="text" id="inpTxnId" class="form-input" placeholder="e.g. 8CB5A1234567">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Amount Paid (BDT) *</label>
+          <input type="number" id="inpAmtPaid" class="form-input" placeholder="e.g. 150000">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Payment Date *</label>
+          <input type="date" id="inpPayDate" class="form-input">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Upload Payment Screenshot / Receipt *</label>
+          <div class="upload-box" onclick="document.getElementById('filePayment').click()" id="uploadBox">
+            <div class="upload-icon">📸</div>
+            <div class="upload-text">Tap to upload screenshot</div>
+            <div class="upload-sub">PNG, JPG, or PDF · Max 10MB</div>
+          </div>
+          <input type="file" id="filePayment" accept="image/*,.pdf" onchange="handleFileSelect(this)">
+        </div>
+        <button class="btn-primary" onclick="submitPaymentProof()">📤 Submit Payment Proof for Approval</button>
+      </div>
+    </div>
+
+    <!-- Invoice history -->
+    <div class="card">
+      <div class="card-title">Invoice History</div>
+      <div id="invoiceList">
+        <div class="empty-state"><div class="empty-icon">🧾</div>No invoices found</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── CONTACT / ACCOUNT MANAGER ─── -->
+  <div id="pageContact" class="page">
+    <div class="page-top"></div>
+    <div class="card">
+      <div class="card-title">Your Account Team</div>
+      <div id="contactList">
+        <div class="contact-card">
+          <div class="contact-avatar">AM</div>
+          <div>
+            <div class="contact-name" id="amName">Account Manager</div>
+            <div class="contact-role">Your Primary Contact</div>
+            <div class="contact-phone" id="amPhone">Loading...</div>
+          </div>
+        </div>
+      </div>
+      <button class="btn-primary" onclick="openTelegramContact()" style="margin-top:0.5rem;">
+        💬 Message on Telegram
+      </button>
+      <button class="btn-secondary" onclick="callAM()">
+        📞 Call Account Manager
+      </button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Support</div>
+      <div style="font-size:0.85rem;color:var(--text-2);line-height:1.7;">
+        🏢 <strong>Purplebot Digital Limited</strong><br>
+        📍 Gulshan, Dhaka, Bangladesh<br>
+        📧 contact@purpleos.agency<br>
+        🕐 Sun–Thu · 9:00 AM – 7:00 PM
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav">
+    <button class="nav-btn active" id="navHome" onclick="showPage('pageHome')">
+      <div class="nav-icon">🏠</div><div class="nav-label">Home</div><div class="nav-dot"></div>
+    </button>
+    <button class="nav-btn" id="navReview" onclick="showPage('pageReview')">
+      <div class="nav-icon">🎬</div><div class="nav-label">Review</div><div class="nav-dot"></div>
+    </button>
+    <button class="nav-btn" id="navCampaign" onclick="showPage('pageCampaign');loadCampaigns();">
+      <div class="nav-icon">📋</div><div class="nav-label">Campaign</div><div class="nav-dot"></div>
+    </button>
+    <button class="nav-btn" id="navPayment" onclick="showPage('pagePayment');loadInvoices();">
+      <div class="nav-icon">💳</div><div class="nav-label">Pay</div><div class="nav-dot"></div>
+    </button>
+    <button class="nav-btn" id="navContact" onclick="showPage('pageContact');loadContact();">
+      <div class="nav-icon">📞</div><div class="nav-label">Contact</div><div class="nav-dot"></div>
     </button>
   </div>
+</div>
 
-  <!-- Revision Notes Form -->
-  <div class="card">
-    <div style="font-size: 0.82rem; font-weight: 700; color: var(--muted); margin-bottom: 0.6rem;">💬 SUBMIT REVISION FEEDBACK</div>
-    <form onsubmit="handleSendFeedback(event)" style="display: flex; flex-direction: column; gap: 0.6rem;">
-      <input type="text" id="fbInput" class="form-input" style="width:100%; padding:0.75rem; background:rgba(9,9,11,0.6); border:1px solid rgba(255,255,255,0.15); border-radius:10px; color:#fff; font-size:0.85rem;" placeholder="e.g. 00:12 - Adjust background color..." required>
-      <button type="submit" class="btn btn-purple" style="padding: 0.65rem;">💬 Send Feedback Note</button>
-    </form>
-  </div>
+<script>
+  const tg = window.Telegram?.WebApp;
+  if (tg) { tg.expand(); tg.ready(); }
 
-  <script>
-    const tg = window.Telegram.WebApp;
-    if (tg) { tg.expand(); tg.ready(); }
+  let clientData = null;
+  let selectedPayMethod = 'bkash';
+  let selectedInvoiceId = null;
 
-    async function handleApproveCut() {
-      try {
-        const res = await fetch('/api/reviews/approve', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ reviewId: 'REV-001', clientName: 'Chillox Fast Food' })
-        });
-        if (tg.showAlert) tg.showAlert('🎉 Cut Approved! Commercial Invoice generated.');
-        else alert('🎉 Cut Approved! Commercial Invoice generated.');
-      } catch (err) { console.error(err); }
+  // ══════════════════════════════════════════
+  // INIT
+  // ══════════════════════════════════════════
+  async function init() {
+    const tgUser = tg?.initDataUnsafe?.user;
+    const telegramId = tgUser?.id || 'debug';
+    try {
+      const res = await fetch(`/api/clients/me?telegramId=${telegramId}`);
+      if (res.ok) {
+        clientData = await res.json();
+        renderHero(clientData);
+        loadHomeData();
+      } else {
+        renderHero({ name: 'Client Portal', accountManager: 'Team', campaigns: [] });
+      }
+    } catch(e) {
+      renderHero({ name: 'Client Portal', accountManager: 'Team', campaigns: [] });
     }
+  }
 
-    async function handleSendFeedback(e) {
-      e.preventDefault();
-      const val = document.getElementById('fbInput').value;
-      if (!val) return;
-      document.getElementById('fbInput').value = '';
-      if (tg.showAlert) tg.showAlert('💬 Revision feedback submitted to production team!');
-      else alert('💬 Revision feedback submitted to production team!');
+  function renderHero(client) {
+    document.getElementById('heroClientName').textContent = client.name || 'Valued Client';
+    document.getElementById('heroAccountMgr').textContent = `Account Manager: ${client.accountManager || '—'}`;
+    document.getElementById('heroCampaignCount').textContent = `📋 ${(client.campaigns || []).length} Campaigns`;
+    const logo = (client.name || 'C').charAt(0).toUpperCase();
+    document.getElementById('heroLogo').textContent = client.emoji || '🏢';
+  }
+
+  // ══════════════════════════════════════════
+  // PAGE NAV
+  // ══════════════════════════════════════════
+  function showPage(pageId) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(pageId).classList.add('active');
+    const map = { pageHome: 'navHome', pageReview: 'navReview', pageCampaign: 'navCampaign', pagePayment: 'navPayment', pageContact: 'navContact' };
+    if (map[pageId]) document.getElementById(map[pageId]).classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ══════════════════════════════════════════
+  // HOME DATA
+  // ══════════════════════════════════════════
+  const STAGES = [
+    { key: 'brief', label: 'Brief', icon: '📝' },
+    { key: 'shoot', label: 'Shoot', icon: '🎬' },
+    { key: 'edit', label: 'Edit', icon: '✂️' },
+    { key: 'review', label: 'Review', icon: '👁️' },
+    { key: 'delivered', label: 'Done', icon: '✅' }
+  ];
+
+  function renderCampaignStages(currentStage) {
+    const stageOrder = ['brief', 'shoot', 'edit', 'review', 'delivered'];
+    const currentIdx = stageOrder.indexOf((currentStage || '').toLowerCase());
+    return STAGES.map((s, i) => {
+      const cls = i < currentIdx ? 'done' : i === currentIdx ? 'active' : '';
+      return `<div class="stage-seg ${cls}"><span class="stage-icon">${s.icon}</span>${s.label}</div>`;
+    }).join('');
+  }
+
+  async function loadHomeData() {
+    try {
+      const tgUser = tg?.initDataUnsafe?.user;
+      const telegramId = tgUser?.id || 'debug';
+      const res = await fetch(`/api/clients/dashboard?telegramId=${telegramId}`);
+      const data = await res.json();
+
+      if (data.activeCampaign) {
+        document.getElementById('homeCampaignTitle').textContent = data.activeCampaign.title || 'Active Campaign';
+        document.getElementById('homeCampaignStages').innerHTML = renderCampaignStages(data.activeCampaign.stage);
+        document.getElementById('homeCampaignMeta').textContent = `Stage: ${data.activeCampaign.stage || '—'} · Due: ${data.activeCampaign.dueDate || 'TBD'}`;
+        if (data.activeCampaign.videoUrl) {
+          document.getElementById('revVideoPlayer').src = data.activeCampaign.videoUrl;
+          document.getElementById('reviewVideoTitle').textContent = data.activeCampaign.title;
+        }
+      } else {
+        document.getElementById('homeCampaignTitle').textContent = 'No active campaign';
+        document.getElementById('homeCampaignStages').innerHTML = renderCampaignStages('');
+      }
+
+      if (data.latestInvoice) {
+        const inv = data.latestInvoice;
+        document.getElementById('homeLatestInvoice').innerHTML = `
+          <div class="invoice-item">
+            <div>
+              <div class="invoice-no">${inv.id || 'INV-000'}</div>
+              <div class="invoice-client">${inv.description || 'Agency Services'}</div>
+            </div>
+            <div style="text-align:right;">
+              <div class="invoice-amt">BDT ${(inv.amount || 0).toLocaleString()}</div>
+              <div class="inv-status ${inv.status === 'Paid' ? 'inv-paid' : inv.status === 'Draft' ? 'inv-draft' : 'inv-pending'}">${inv.status || 'Pending'}</div>
+            </div>
+          </div>
+          ${inv.status !== 'Paid' ? `<button class="btn-primary" style="margin-top:0.5rem;" onclick="showPage('pagePayment');loadInvoices();">💳 Pay This Invoice</button>` : ''}
+        `;
+      }
+    } catch(e) {
+      document.getElementById('homeCampaignTitle').textContent = 'Purplebot Digital';
+      document.getElementById('homeCampaignStages').innerHTML = renderCampaignStages('edit');
+      document.getElementById('homeCampaignMeta').textContent = 'Campaign in progress — check back for updates';
     }
-  </script>
+  }
+
+  // ══════════════════════════════════════════
+  // REVIEW ROOM
+  // ══════════════════════════════════════════
+  async function handleApproveCut() {
+    const confirmed = tg?.showConfirm
+      ? await new Promise(r => tg.showConfirm('Approve this cut? This will trigger invoice generation.', r))
+      : confirm('Approve this cut? This will trigger invoice generation.');
+    if (!confirmed) return;
+
+    try {
+      const tgUser = tg?.initDataUnsafe?.user;
+      await fetch('/api/reviews/approve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ telegramId: tgUser?.id || 'debug', reviewId: 'REV-001' })
+      });
+    } catch(e) {}
+
+    document.getElementById('revApproveSection').innerHTML = `
+      <div style="text-align:center;padding:1rem;background:var(--green-bg);border-radius:14px;border:1px solid rgba(5,150,105,0.2);">
+        <div style="font-size:1.5rem;margin-bottom:0.3rem;">✅</div>
+        <div style="font-size:0.9rem;font-weight:800;color:var(--green);">Cut Approved!</div>
+        <div style="font-size:0.75rem;color:var(--text-2);margin-top:0.25rem;">Invoice will be sent within 1 hour.</div>
+      </div>
+    `;
+    showSuccess('🎉', 'Cut Approved!', 'Your invoice will be ready within 1 hour. Final files delivered within 24h.');
+  }
+
+  async function handleSendFeedback() {
+    const val = document.getElementById('fbInput').value.trim();
+    if (!val) { tg?.showAlert ? tg.showAlert('Please enter your feedback.') : alert('Enter feedback'); return; }
+    try {
+      const tgUser = tg?.initDataUnsafe?.user;
+      await fetch('/api/reviews/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ telegramId: tgUser?.id || 'debug', feedback: val })
+      });
+    } catch(e) {}
+    document.getElementById('fbInput').value = '';
+    showSuccess('💬', 'Feedback Sent!', 'Your revision notes have been shared with the production team. Expect an update within 24–48 hours.');
+  }
+
+  // ══════════════════════════════════════════
+  // CAMPAIGNS
+  // ══════════════════════════════════════════
+  async function loadCampaigns() {
+    const list = document.getElementById('campaignList');
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon">⏳</div>Loading...</div>';
+    try {
+      const tgUser = tg?.initDataUnsafe?.user;
+      const res = await fetch(`/api/clients/campaigns?telegramId=${tgUser?.id || 'debug'}`);
+      const campaigns = await res.json();
+      if (!campaigns.length) {
+        list.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div>No campaigns found</div>';
+        return;
+      }
+      list.innerHTML = campaigns.map(c => `
+        <div style="border:1px solid var(--border);border-radius:16px;padding:0.9rem;margin-bottom:0.75rem;">
+          <div style="font-size:0.92rem;font-weight:800;color:var(--text);margin-bottom:0.35rem;">${c.title}</div>
+          <div class="campaign-stages">${renderCampaignStages(c.stage)}</div>
+          <div style="font-size:0.72rem;color:var(--muted);">Due: ${c.dueDate || 'TBD'} · Team: ${c.assignee || 'Production'}</div>
+        </div>
+      `).join('');
+    } catch(e) {
+      list.innerHTML = `
+        <div style="border:1px solid var(--border);border-radius:16px;padding:0.9rem;">
+          <div style="font-size:0.92rem;font-weight:800;color:var(--text);margin-bottom:0.35rem;">Current Campaign</div>
+          <div class="campaign-stages">${renderCampaignStages('edit')}</div>
+          <div style="font-size:0.72rem;color:var(--muted);">In post-production · Est. delivery: TBD</div>
+        </div>
+      `;
+    }
+  }
+
+  // ══════════════════════════════════════════
+  // INVOICES & PAYMENT
+  // ══════════════════════════════════════════
+  async function loadInvoices() {
+    try {
+      const tgUser = tg?.initDataUnsafe?.user;
+      const res = await fetch(`/api/clients/invoices?telegramId=${tgUser?.id || 'debug'}`);
+      const invoices = await res.json();
+
+      const pending = invoices.filter(i => i.status !== 'Paid');
+      const list = document.getElementById('invoiceList');
+
+      if (pending.length > 0) {
+        const inv = pending[0];
+        selectedInvoiceId = inv.id;
+        document.getElementById('activeInvoiceSection').style.display = 'block';
+        document.getElementById('invAmount').textContent = `BDT ${(inv.amount||0).toLocaleString()}`;
+        document.getElementById('invId').textContent = `Invoice ${inv.id}`;
+        document.getElementById('inpAmtPaid').value = inv.amount || '';
+      }
+
+      list.innerHTML = invoices.map(inv => `
+        <div class="invoice-item">
+          <div>
+            <div class="invoice-no">${inv.id}</div>
+            <div class="invoice-client">${inv.description || 'Agency Services'} · ${inv.issueDate || '—'}</div>
+          </div>
+          <div style="text-align:right;">
+            <div class="invoice-amt">BDT ${(inv.amount||0).toLocaleString()}</div>
+            <div class="inv-status ${inv.status === 'Paid' ? 'inv-paid' : inv.status === 'Draft' ? 'inv-draft' : 'inv-pending'}">${inv.status}</div>
+          </div>
+        </div>
+      `).join('') || '<div class="empty-state"><div class="empty-icon">🧾</div>No invoices yet</div>';
+    } catch(e) {
+      // Fallback demo
+      document.getElementById('activeInvoiceSection').style.display = 'block';
+      document.getElementById('invAmount').textContent = 'BDT 1,50,000';
+      document.getElementById('invId').textContent = 'Invoice INV-2026-001';
+    }
+  }
+
+  const payInstructions = {
+    bkash: 'Send to bKash Personal: <strong>01708-459008</strong><br>Use invoice number as the reference. Screenshot the confirmation.',
+    nagad: 'Send to Nagad Personal: <strong>01708-459008</strong><br>Use invoice number as the reference. Screenshot the confirmation.',
+    bank: 'Bank: <strong>BRAC Bank Ltd</strong><br>Account: <strong>1501203748390</strong><br>Routing: <strong>060261234</strong><br>Branch: Gulshan',
+    rocket: 'Send to Rocket / DBBL: <strong>01708-459008</strong><br>Use invoice number as the reference.'
+  };
+
+  function selectPayMethod(method) {
+    selectedPayMethod = method;
+    ['bkash','nagad','bank','rocket'].forEach(m => {
+      document.getElementById(`pm${m.charAt(0).toUpperCase()+m.slice(1)}`).classList.toggle('selected', m === method);
+    });
+    document.getElementById('payInstrText').innerHTML = payInstructions[method] || '';
+  }
+
+  function handleFileSelect(input) {
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      document.getElementById('uploadBox').innerHTML = `
+        <div class="upload-icon">✅</div>
+        <div class="upload-text">${file.name}</div>
+        <div class="upload-sub">${(file.size / 1024).toFixed(0)} KB · Tap to change</div>
+      `;
+    }
+  }
+
+  async function submitPaymentProof() {
+    const txn = document.getElementById('inpTxnId').value.trim();
+    const amt = document.getElementById('inpAmtPaid').value;
+    const date = document.getElementById('inpPayDate').value;
+    const file = document.getElementById('filePayment').files[0];
+
+    if (!txn) { tg?.showAlert ? tg.showAlert('Please enter the transaction ID.') : alert('Enter transaction ID'); return; }
+    if (!amt) { tg?.showAlert ? tg.showAlert('Please enter the amount paid.') : alert('Enter amount'); return; }
+    if (!date) { tg?.showAlert ? tg.showAlert('Please select the payment date.') : alert('Select date'); return; }
+    if (!file) { tg?.showAlert ? tg.showAlert('Please upload your payment screenshot.') : alert('Upload screenshot'); return; }
+
+    const formData = new FormData();
+    formData.append('invoiceId', selectedInvoiceId || 'INV-001');
+    formData.append('paymentMethod', selectedPayMethod);
+    formData.append('transactionId', txn);
+    formData.append('amountPaid', amt);
+    formData.append('paymentDate', date);
+    formData.append('proof', file);
+    const tgUser = tg?.initDataUnsafe?.user;
+    formData.append('telegramId', tgUser?.id || 'debug');
+
+    try {
+      await fetch('/api/clients/payment-proof', { method: 'POST', body: formData });
+    } catch(e) {}
+
+    showSuccess('✅', 'Payment Submitted!', 'Your payment proof is under review. Finance team will confirm within 2–4 hours. You\'ll get a Telegram notification.');
+  }
+
+  // ══════════════════════════════════════════
+  // CONTACT
+  // ══════════════════════════════════════════
+  async function loadContact() {
+    if (clientData?.accountManagerPhone) {
+      document.getElementById('amPhone').textContent = clientData.accountManagerPhone;
+      document.getElementById('amName').textContent = clientData.accountManager || 'Account Manager';
+    }
+  }
+  function openTelegramContact() {
+    const username = clientData?.accountManagerTelegram || 'purplebotdigital';
+    window.open(`https://t.me/${username}`, '_blank');
+  }
+  function callAM() {
+    const phone = clientData?.accountManagerPhone || '+8801708459008';
+    window.location.href = `tel:${phone}`;
+  }
+
+  // ══════════════════════════════════════════
+  // SUCCESS OVERLAY
+  // ══════════════════════════════════════════
+  function showSuccess(emoji, title, sub) {
+    document.getElementById('successEmoji').textContent = emoji;
+    document.getElementById('successTitle').textContent = title;
+    document.getElementById('successSub').textContent = sub;
+    const overlay = document.getElementById('successOverlay');
+    overlay.classList.add('visible');
+    const bar = overlay.querySelector('.success-bar-fill');
+    bar.style.animation = 'none'; bar.offsetHeight;
+    bar.style.animation = 'fillBar 2s ease forwards';
+    setTimeout(() => overlay.classList.remove('visible'), 3000);
+  }
+
+  // ══════════════════════════════════════════
+  // START
+  // ══════════════════════════════════════════
+  init();
+  // Set today's date as default
+  document.getElementById('inpPayDate').valueAsDate = new Date();
+</script>
 </body>
 </html>
