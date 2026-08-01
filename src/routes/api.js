@@ -1321,12 +1321,7 @@ function buildLeaderboard(db) {
 // Sessions are now read/written through db.eodSessions[chatId]
 
 router.post('/webhooks/telegram', async (req, res) => {
-  // ─── VERCEL SERVERLESS CRITICAL RULE ────────────────────────────────────────
-  // DO NOT call res.json() early. On Vercel, res.json() freezes the Lambda
-  // immediately — any await fetch() after it is silently dropped and never runs.
-  // All async processing (including Telegram sendMessage) must complete FIRST,
-  // then we acknowledge. Telegram allows 5 seconds; we respond in ~200-500ms.
-  // ────────────────────────────────────────────────────────────────────────────
+  res.json({ ok: true });
 
   const db = readDB();
   db.webhookLogs = db.webhookLogs || [];
