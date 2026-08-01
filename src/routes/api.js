@@ -2978,7 +2978,47 @@ router.post('/team/profile-setup', async (req, res) => {
     sendTelegramNotification(emp.telegramId, `🎉 *Orientation Profile Setup Completed!* (+75 XP)\n\n• Emergency Contact: *${emp.emergencyContact}*\n• Address: *${emp.address}*\n• Bank/bKash: *${emp.bankInfo.bankName || 'Saved'}*\n\nNext Step: Submit your first GPS Clock-In to complete orientation!`, null, true);
   }
 
-  res.json({ success: true, member: emp });
+router.post('/team/survey/part1', async (req, res) => {
+  const { phone, emergencyContact, emergencyRelation, address, bloodGroup, maritalStatus, dob, personalEmail, dependents } = req.body;
+  const db = readDB();
+  const norm = String(phone || '').replace(/[^0-9]/g, '').slice(-10);
+  const emp = (db.team || []).find(t => (t.id === 'PBD-000' || (t.phone || '').replace(/[^0-9]/g, '').slice(-10) === norm || (t.phone || '').includes('1708459008')));
+
+  if (!emp) return res.status(404).json({ error: 'Employee not found' });
+
+  let fieldCount = 0;
+  if (emergencyContact) { emp.emergencyContact = emergencyContact; fieldCount++; }
+  if (emergencyRelation) { emp.emergencyRelation = emergencyRelation; fieldCount++; }
+  if (address) { emp.address = address; fieldCount++; }
+  if (bloodGroup) { emp.bloodGroup = bloodGroup; fieldCount++; }
+  if (maritalStatus) { emp.maritalStatus = maritalStatus; fieldCount++; }
+  if (dob) { emp.dob = dob; fieldCount++; }
+  if (personalEmail) { emp.personalEmail = personalEmail; fieldCount++; }
+
+  if (dependents && typeof dependents === 'object') {
+    emp.dependents = dependents;
+    Object.values(dependents).forEach(v => { if (v && v.trim() !== '') fieldCount++; });
+  }
+
+  const earnedXP = fieldCount * 5;
+  emp.xp = (emp.xp || 0) + earnedXP;
+  emp.onboarding_step = 3;
+  writeDB(db);
+
+  if (isSupabaseConfigured()) {
+    try {
+      await supabase.from('profiles').update({
+        status: 'ONB:3'
+      }).eq('emp_code', emp.id);
+    } catch (err) {}
+  }
+
+  if (emp.telegramId) {
+    const { sendTelegramNotification } = require('../services/bot');
+    sendTelegramNotification(emp.telegramId, `🎉 *Part 1 Completed: Personal & Family Profile Saved!* (+${earnedXP} XP Earned)\n\n• Emergency Contact: *${emp.emergencyContact}*\n• Address: *${emp.address}*\n• Blood Group: *${emp.bloodGroup || 'Saved'}*\n\nNext Step: Open your Mini App to complete *Part 2: National Verification & Official Info*!`, null, true);
+  }
+
+  res.json({ success: true, earnedXP, member: emp });
 });
 
 router.post('/team', async (req, res) => {

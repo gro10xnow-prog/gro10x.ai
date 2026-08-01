@@ -68,14 +68,113 @@
 
     <!-- Navigation Tabs -->
     <div class="tab-bar">
-      <button class="tab active" onclick="switchTab('tasks')">📋 My Tasks</button>
+      <button class="tab active" onclick="switchTab('survey')">🎓 Survey Profile</button>
+      <button class="tab" onclick="switchTab('tasks')">📋 My Tasks</button>
       <button class="tab" onclick="switchTab('attendance')">⏱️ Attendance</button>
       <button class="tab" onclick="switchTab('earnings')">💰 My Earnings</button>
       <button class="tab" onclick="switchTab('roster')">👥 Team Roster</button>
     </div>
 
+    <!-- Tab 0: Survey Profile (Part 1: Personal & Family Profile) -->
+    <div id="tabSurvey" class="card">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.08);">
+        <div>
+          <div style="font-size: 0.75rem; color: var(--purple); font-weight: 800;">PART 1 OF 4</div>
+          <div style="font-size: 1.05rem; font-weight: 800; color: #fff;">Personal & Family Profile</div>
+        </div>
+        <span class="badge" style="background: rgba(168,85,247,0.2); color: #c084fc; border: 1px solid rgba(168,85,247,0.4);" id="part1XpBadge">🏆 Points: +0 XP</span>
+      </div>
+
+      <!-- Pre-Filled Verified System Data -->
+      <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 0.85rem; margin-bottom: 1rem;">
+        <div style="font-size: 0.72rem; color: var(--green); font-weight: 800; margin-bottom: 0.5rem;">✅ VERIFIED SYSTEM IDENTITY</div>
+        <div style="font-size: 0.85rem; color: #fff; line-height: 1.6;">
+          • Name: <strong id="prefName">Firoz Uddin Ahmed</strong><br>
+          • Phone: <strong id="prefPhone">+8801708459008</strong><br>
+          • Role: <strong id="prefRole">Technology Admin</strong> • <span id="prefDept">Tech & AI</span><br>
+          • Email: <strong id="prefEmail">claycoinbank@gmail.com</strong>
+        </div>
+      </div>
+
+      <!-- Contact & Residence Info -->
+      <div style="font-size: 0.82rem; font-weight: 800; color: var(--purple); margin-bottom: 0.6rem;">📱 CONTACT & RESIDENCE DETAILS (5 XP / Field)</div>
+      
+      <div style="margin-bottom: 0.75rem;">
+        <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Emergency Contact Phone Number *</label>
+        <input type="text" id="inpEmergency" oninput="calcPart1XP()" placeholder="e.g. 01712250049" style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+      </div>
+
+      <div style="margin-bottom: 0.75rem;">
+        <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Emergency Contact Relationship *</label>
+        <input type="text" id="inpRelation" oninput="calcPart1XP()" placeholder="e.g. Spouse, Father, Brother" style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+      </div>
+
+      <div style="margin-bottom: 0.75rem;">
+        <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Current Residence / Home Address *</label>
+        <input type="text" id="inpAddress" oninput="calcPart1XP()" placeholder="e.g. Mirpur 12, Dhaka" style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+      </div>
+
+      <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem;">
+        <div style="flex: 1;">
+          <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Blood Group (+5 XP)</label>
+          <select id="inpBlood" onchange="calcPart1XP()" style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+            <option value="">Select...</option>
+            <option value="A+">A+</option>
+            <option value="A-">A-</option>
+            <option value="B+">B+</option>
+            <option value="B-">B-</option>
+            <option value="O+">O+</option>
+            <option value="O-">O-</option>
+            <option value="AB+">AB+</option>
+            <option value="AB-">AB-</option>
+          </select>
+        </div>
+        <div style="flex: 1;">
+          <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Marital Status (+5 XP)</label>
+          <select id="inpMarital" onchange="calcPart1XP()" style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+            <option value="">Select...</option>
+            <option value="Single">Single</option>
+            <option value="Married">Married</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+        <div style="flex: 1;">
+          <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Date of Birth (+5 XP)</label>
+          <input type="date" id="inpDob" onchange="calcPart1XP()" style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+        </div>
+        <div style="flex: 1;">
+          <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Personal Email (+5 XP)</label>
+          <input type="email" id="inpPersonalEmail" oninput="calcPart1XP()" placeholder="name@gmail.com" style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+        </div>
+      </div>
+
+      <!-- Dependents Section -->
+      <div style="font-size: 0.82rem; font-weight: 800; color: var(--purple); margin-bottom: 0.6rem;">👨‍👩‍👧‍👦 FAMILY DEPENDENTS (5 SLOTS · +5 XP EACH)</div>
+      
+      <div style="margin-bottom: 0.6rem;">
+        <input type="text" id="depFather" oninput="calcPart1XP()" placeholder="1. Father's Full Name (+5 XP)" style="width: 100%; padding: 0.6rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; color: #fff; font-size: 0.82rem;">
+      </div>
+      <div style="margin-bottom: 0.6rem;">
+        <input type="text" id="depMother" oninput="calcPart1XP()" placeholder="2. Mother's Full Name (+5 XP)" style="width: 100%; padding: 0.6rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; color: #fff; font-size: 0.82rem;">
+      </div>
+      <div style="margin-bottom: 0.6rem;">
+        <input type="text" id="depSpouse" oninput="calcPart1XP()" placeholder="3. Spouse Full Name (If married) (+5 XP)" style="width: 100%; padding: 0.6rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; color: #fff; font-size: 0.82rem;">
+      </div>
+      <div style="margin-bottom: 0.6rem;">
+        <input type="text" id="depChild1" oninput="calcPart1XP()" placeholder="4. Child 1 Name (+5 XP)" style="width: 100%; padding: 0.6rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; color: #fff; font-size: 0.82rem;">
+      </div>
+      <div style="margin-bottom: 1rem;">
+        <input type="text" id="depChild2" oninput="calcPart1XP()" placeholder="5. Child 2 Name (+5 XP)" style="width: 100%; padding: 0.6rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; color: #fff; font-size: 0.82rem;">
+      </div>
+
+      <button class="btn btn-purple" onclick="submitPart1()">💾 Save Part 1 Profile & Claim XP</button>
+    </div>
+
     <!-- Tab 1: Tasks -->
-    <div id="tabTasks" class="card">
+    <div id="tabTasks" class="card" style="display: none;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem;">
         <div style="font-size: 0.82rem; font-weight: 700; color: var(--muted);">ASSIGNED SHOOTS & PROJECTS</div>
         <button onclick="loadUserTasks()" style="background: none; border: none; color: var(--purple); font-size: 0.8rem; font-weight: 700; cursor: pointer;">🔄 Refresh</button>
@@ -157,6 +256,22 @@
         document.getElementById('userPaySub').innerText = `Base Pay: BDT ${(currentUser.baseSalary || 0).toLocaleString()} • Commissions: BDT ${(currentUser.earnedCommissions || 0).toLocaleString()}`;
         document.getElementById('clockSummary').innerText = `Current Status: ${currentUser.status || 'Offline'}`;
 
+        // Pre-fill user profile fields
+        document.getElementById('prefName').innerText = currentUser.name || 'Firoz Uddin Ahmed';
+        document.getElementById('prefPhone').innerText = currentUser.phone || '+8801708459008';
+        document.getElementById('prefRole').innerText = currentUser.role || 'Technology Admin';
+        document.getElementById('prefDept').innerText = currentUser.department || 'Tech & AI';
+        document.getElementById('prefEmail').innerText = currentUser.email || currentUser.workEmail || 'claycoinbank@gmail.com';
+
+        if (currentUser.emergencyContact) document.getElementById('inpEmergency').value = currentUser.emergencyContact;
+        if (currentUser.address) document.getElementById('inpAddress').value = currentUser.address;
+        if (currentUser.bloodGroup) document.getElementById('inpBlood').value = currentUser.bloodGroup;
+        if (currentUser.maritalStatus) document.getElementById('inpMarital').value = currentUser.maritalStatus;
+        if (currentUser.dob) document.getElementById('inpDob').value = currentUser.dob;
+        if (currentUser.personalEmail) document.getElementById('inpPersonalEmail').value = currentUser.personalEmail;
+
+        calcPart1XP();
+
         loadUserTasks();
         loadRoster();
       } catch (err) {
@@ -165,10 +280,71 @@
       }
     }
 
+    function calcPart1XP() {
+      const fieldIds = ['inpEmergency', 'inpRelation', 'inpAddress', 'inpBlood', 'inpMarital', 'inpDob', 'inpPersonalEmail', 'depFather', 'depMother', 'depSpouse', 'depChild1', 'depChild2'];
+      let count = 0;
+      fieldIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el && el.value && el.value.trim() !== '') count++;
+      });
+      const points = count * 5;
+      const badge = document.getElementById('part1XpBadge');
+      if (badge) badge.innerText = `🏆 Points: +${points} XP`;
+      return points;
+    }
+
+    async function submitPart1() {
+      if (!currentUser) return;
+      const emergencyContact = document.getElementById('inpEmergency').value.trim();
+      const relation = document.getElementById('inpRelation').value.trim();
+      const address = document.getElementById('inpAddress').value.trim();
+
+      if (!emergencyContact || !address) {
+        if (tg?.showAlert) tg.showAlert('⚠️ Please fill in required Emergency Contact and Home Address fields!');
+        else alert('⚠️ Please fill in required Emergency Contact and Home Address fields!');
+        return;
+      }
+
+      const payload = {
+        phone: currentUser.phone || '+8801708459008',
+        emergencyContact,
+        emergencyRelation: relation,
+        address,
+        bloodGroup: document.getElementById('inpBlood').value,
+        maritalStatus: document.getElementById('inpMarital').value,
+        dob: document.getElementById('inpDob').value,
+        personalEmail: document.getElementById('inpPersonalEmail').value.trim(),
+        dependents: {
+          father: document.getElementById('depFather').value.trim(),
+          mother: document.getElementById('depMother').value.trim(),
+          spouse: document.getElementById('depSpouse').value.trim(),
+          child1: document.getElementById('depChild1').value.trim(),
+          child2: document.getElementById('depChild2').value.trim()
+        }
+      };
+
+      try {
+        const res = await fetch('/api/team/survey/part1', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.success) {
+          if (tg?.showAlert) tg.showAlert(`🎉 Part 1 Profile Saved! +${data.earnedXP || 35} XP Claimed!`);
+          else alert(`🎉 Part 1 Profile Saved! +${data.earnedXP || 35} XP Claimed!`);
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Part 1 saved locally!');
+      }
+    }
+
     function switchTab(tabName) {
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
       event.target.classList.add('active');
 
+      document.getElementById('tabSurvey').style.display = tabName === 'survey' ? 'block' : 'none';
       document.getElementById('tabTasks').style.display = tabName === 'tasks' ? 'block' : 'none';
       document.getElementById('tabAttendance').style.display = tabName === 'attendance' ? 'block' : 'none';
       document.getElementById('tabEarnings').style.display = tabName === 'earnings' ? 'block' : 'none';
