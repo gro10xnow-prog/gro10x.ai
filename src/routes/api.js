@@ -1644,30 +1644,23 @@ router.post('/webhooks/telegram', async (req, res) => {
           if (emp) emp.telegramId = String(chatId);
         }
 
-        // ── SUPABASE CLOUD DB STATE SYNC (Serverless Persistent Memory) ───────────
+        // ── SUPABASE CLOUD DB STATE SYNC (Non-blocking) ───────────
         if (emp && isSupabaseConfigured()) {
-          try {
-            const { data: profile } = await supabase.from('profiles').select('status').eq('emp_code', emp.id || 'PBD-000').single();
+          supabase.from('profiles').select('status').eq('emp_code', emp.id || 'PBD-000').single().then(({ data: profile }) => {
             if (profile && profile.status && profile.status.startsWith('ONB:')) {
               const stepNum = parseInt(profile.status.replace('ONB:', ''), 10);
               if (!isNaN(stepNum)) emp.onboarding_step = stepNum;
             }
-          } catch (err) {
-            console.warn('Cloud DB sync error:', err.message);
-          }
+          }).catch(() => {});
         }
 
-        const syncToCloudDB = async () => {
+        const syncToCloudDB = () => {
           if (emp && isSupabaseConfigured()) {
-            try {
-              const stepNum = Number(emp.onboarding_step || 1);
-              await supabase.from('profiles').update({
-                status: 'ONB:' + stepNum,
-                telegram_id: String(chatId)
-              }).eq('emp_code', emp.id || 'PBD-000');
-            } catch (err) {
-              console.warn('Cloud DB update error:', err.message);
-            }
+            const stepNum = Number(emp.onboarding_step || 1);
+            supabase.from('profiles').update({
+              status: 'ONB:' + stepNum,
+              telegram_id: String(chatId)
+            }).eq('emp_code', emp.id || 'PBD-000').then(() => {}).catch(() => {});
           }
         };
 
