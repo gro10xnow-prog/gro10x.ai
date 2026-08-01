@@ -1066,7 +1066,7 @@ router.get('/webhooks/setup', async (req, res) => {
   const db = readDB();
   const teamToken = process.env.TEAM_BOT_TOKEN || db.botConfig?.teamBot?.token || '8874232130:AAEs5JDOEEX9kIN9Z_V_k0UQp2lBao5MHLQ';
   const clientToken = process.env.CLIENT_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN || db.botConfig?.clientBot?.token || '8964646505:AAEBVLDRqG0JdiTSSl6uK08UCQk0ZNsmYMU';
-  const baseUrl = process.env.PUBLIC_URL || 'https://purpleos-iota.vercel.app';
+  const baseUrl = 'https://purpleos-iota.vercel.app';
 
   let teamResult = null;
   let clientResult = null;
