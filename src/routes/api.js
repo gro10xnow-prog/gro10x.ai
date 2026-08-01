@@ -1654,6 +1654,43 @@ router.post('/webhooks/telegram', async (req, res) => {
           if (emp) emp.telegramId = String(chatId);
         }
 
+        // ── SUPABASE CLOUD DB STATE SYNC (Serverless Persistent Memory) ───────────
+        if (emp && isSupabaseConfigured()) {
+          try {
+            const { data: profile } = await supabase.from('profiles').select('status').eq('emp_code', emp.id || 'PBD-000').single();
+            if (profile && profile.status && profile.status.startsWith('ONB:')) {
+              const cloudState = JSON.parse(profile.status.replace('ONB:', ''));
+              if (cloudState.emergencyContact) emp.emergencyContact = cloudState.emergencyContact;
+              if (cloudState.address) emp.address = cloudState.address;
+              if (cloudState.bankInfo) emp.bankInfo = cloudState.bankInfo;
+              if (cloudState.onboardingComplete) emp.onboardingComplete = cloudState.onboardingComplete;
+              if (cloudState.permanentPinSet) emp.permanentPinSet = cloudState.permanentPinSet;
+            }
+          } catch (err) {
+            console.warn('Cloud DB sync error:', err.message);
+          }
+        }
+
+        const syncToCloudDB = async () => {
+          if (emp && isSupabaseConfigured()) {
+            try {
+              const cloudState = {
+                emergencyContact: emp.emergencyContact || null,
+                address: emp.address || null,
+                bankInfo: emp.bankInfo || null,
+                onboardingComplete: Boolean(emp.onboardingComplete),
+                permanentPinSet: Boolean(emp.permanentPinSet)
+              };
+              await supabase.from('profiles').update({
+                status: 'ONB:' + JSON.stringify(cloudState),
+                telegram_id: String(chatId)
+              }).eq('emp_code', emp.id || 'PBD-000');
+            } catch (err) {
+              console.warn('Cloud DB update error:', err.message);
+            }
+          }
+        };
+
         // ── TOP PRIORITY: GUIDED JOURNEY MODE BUTTON HANDLERS ───────────────────
         if (msgText === '🌐 I Completed Web Account Setup') {
           if (db.onboardingSessions) delete db.onboardingSessions[String(chatId)];
@@ -1668,6 +1705,7 @@ router.post('/webhooks/telegram', async (req, res) => {
               }
             }
             writeDB(db);
+            syncToCloudDB();
 
             replyText = `🎉 *Task 2/6 Completed: Web Workspace Activated!* (+25 XP)\n\nGreat job ${emp.name}! Your desktop web access is verified.\n\nNext Step: Please set your Emergency Contact.`;
             replyMarkup = {
@@ -1731,6 +1769,8 @@ router.post('/webhooks/telegram', async (req, res) => {
             emp.emergencyContact = msgText;
             emp.permanentPinSet = true;
             writeDB(db);
+            syncToCloudDB();
+
             replyText = `🎉 *Task 3/6 Completed: Emergency Contact Saved!* (+25 XP)\n\nSet to: *${msgText}*\n\nNext Step: Please set your Home Address.`;
             replyMarkup = {
               keyboard: [
@@ -1741,6 +1781,8 @@ router.post('/webhooks/telegram', async (req, res) => {
           } else if (!emp.address) {
             emp.address = msgText;
             writeDB(db);
+            syncToCloudDB();
+
             replyText = `🎉 *Task 4/6 Completed: Home Address Saved!* (+25 XP)\n\nSet to: *${msgText}*\n\nNext Step: Setup Bank & bKash Payouts.`;
             replyMarkup = {
               keyboard: [
@@ -1755,6 +1797,7 @@ router.post('/webhooks/telegram', async (req, res) => {
             emp.bankInfo.accNo = parts[1] ? parts[1].trim() : 'Saved';
             emp.bankInfo.mfsNo = parts[2] ? parts[2].trim() : msgText;
             writeDB(db);
+            syncToCloudDB();
 
             const isTechAdmin = (emp.id === 'PBD-000' || emp.role === 'Technology Admin');
             if (isTechAdmin) {
