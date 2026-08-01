@@ -2367,7 +2367,18 @@ router.post('/webhooks/telegram', async (req, res) => {
           }
 
         } else if (msgText.startsWith('/start') || msgText.startsWith('/help')) {
-          if (emp) {
+          if (!emp || !emp.phoneVerified) {
+            replyText = `👋 *Hi! I am Purple Man*, the AI Organizational Coordinator for *Purplebot Digital*.\n\n` +
+              `If you are one of my colleagues, please verify your phone number using the button below.\n\n` +
+              `If you are not a team member, please connect with our Client Service Desk (@purpleosbot) to learn more about our services and agency solutions.`;
+
+            replyMarkup = {
+              keyboard: [
+                [{ text: '📱 Verify My Phone Number', request_contact: true }]
+              ],
+              resize_keyboard: true
+            };
+          } else if (emp) {
             const progress = getOnboardingProgress(emp);
 
             if (!emp.onboardingComplete) {
