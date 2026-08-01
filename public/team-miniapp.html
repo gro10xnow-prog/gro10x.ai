@@ -319,6 +319,78 @@
       <button class="btn btn-purple" onclick="submitPart3()">💾 Save Part 3 & Claim XP</button>
     </div>
 
+    <!-- Tab 0.4: Part 4 Work Skills, Merch & Equipment Inventory -->
+    <div id="tabPart4" class="card" style="display: none;">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.08);">
+        <div>
+          <div style="font-size: 0.75rem; color: var(--purple); font-weight: 800;">PART 4 OF 4</div>
+          <div style="font-size: 1.05rem; font-weight: 800; color: #fff;">Work Skills, Merch & Equipment</div>
+        </div>
+        <span class="badge" style="background: rgba(168,85,247,0.2); color: #c084fc; border: 1px solid rgba(168,85,247,0.4);" id="part4XpBadge">🏆 Points: +0 XP</span>
+      </div>
+
+      <!-- Skills & Competency -->
+      <div style="font-size: 0.82rem; font-weight: 800; color: var(--purple); margin-bottom: 0.6rem;">🛠️ SKILLS & SPECIALIZATION (5 XP / Field)</div>
+
+      <div style="margin-bottom: 0.75rem;">
+        <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Primary Skillset / Core Competency *</label>
+        <input type="text" id="inpSkillPrimary" oninput="calcPart4XP()" placeholder="e.g. Full Stack AI Dev, Video Editing, Motion Design" style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+      </div>
+
+      <div style="margin-bottom: 0.75rem;">
+        <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Secondary Skills & Tools (+5 XP)</label>
+        <input type="text" id="inpSkillSecondary" oninput="calcPart4XP()" placeholder="e.g. Premiere Pro, Node.js, Figma, After Effects" style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+      </div>
+
+      <div style="margin-bottom: 1rem;">
+        <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Portfolio / GitHub / LinkedIn Link (+5 XP)</label>
+        <input type="text" id="inpPortfolio" oninput="calcPart4XP()" placeholder="https://..." style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+      </div>
+
+      <!-- Asset Inventory -->
+      <div style="font-size: 0.82rem; font-weight: 800; color: var(--purple); margin-bottom: 0.6rem;">💻 COMPANY ASSETS & EQUIPMENT (5 XP / Field)</div>
+
+      <div style="margin-bottom: 0.75rem;">
+        <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Laptop / Work Computer Serial No. (+5 XP)</label>
+        <input type="text" id="inpLaptopSerial" oninput="calcPart4XP()" placeholder="e.g. MacBook Pro M3 Max #C02G12345" style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+      </div>
+
+      <div style="margin-bottom: 1rem;">
+        <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Assigned Studio Gear / AV Assets (+5 XP)</label>
+        <input type="text" id="inpStudioGear" oninput="calcPart4XP()" placeholder="e.g. Sony FX3 Camera, Rode Mic" style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+      </div>
+
+      <!-- Merch & Perks -->
+      <div style="font-size: 0.82rem; font-weight: 800; color: var(--purple); margin-bottom: 0.6rem;">👕 MERCH & PERKS (5 XP / Field)</div>
+
+      <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+        <div style="flex: 1;">
+          <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">T-Shirt / Merch Size (+5 XP)</label>
+          <select id="inpTshirt" onchange="calcPart4XP()" style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+            <option value="">Select...</option>
+            <option value="S">S</option>
+            <option value="M">M</option>
+            <option value="L">L</option>
+            <option value="XL">XL</option>
+            <option value="XXL">XXL</option>
+          </select>
+        </div>
+        <div style="flex: 1;">
+          <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Dietary / Medical Notes (+5 XP)</label>
+          <input type="text" id="inpDietary" oninput="calcPart4XP()" placeholder="None / Allergies" style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+        </div>
+      </div>
+
+      <!-- Attachment -->
+      <div style="font-size: 0.82rem; font-weight: 800; color: var(--purple); margin-bottom: 0.6rem;">📸 EQUIPMENT VERIFICATION PHOTO (+10 XP)</div>
+      
+      <div style="margin-bottom: 1.2rem;">
+        <input type="file" id="fileEquipmentDoc" onchange="calcPart4XP()" accept="image/*" style="width: 100%; font-size: 0.8rem; color: var(--muted);">
+      </div>
+
+      <button class="btn btn-green" onclick="submitPart4()">🏆 Complete Onboarding Survey & Claim +50 XP Bonus</button>
+    </div>
+
     <!-- Tab 1: Tasks -->
     <div id="tabTasks" class="card" style="display: none;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem;">
@@ -597,12 +669,71 @@
         });
         const data = await res.json();
         if (data.success) {
-          if (tg?.showAlert) tg.showAlert(`🎉 Part 3 Saved! +${data.earnedXP || 45} XP Claimed!\n\nStatus: 🟡 Submitted (Awaiting HR Verification)`);
-          else alert(`🎉 Part 3 Saved! +${data.earnedXP || 45} XP Claimed!\n\nStatus: 🟡 Submitted (Awaiting HR Verification)`);
+          if (tg?.showAlert) tg.showAlert(`🎉 Part 3 Saved! +${data.earnedXP || 45} XP Claimed!\n\nNext: Part 4 Work Skills & Assets`);
+          else alert(`🎉 Part 3 Saved! +${data.earnedXP || 45} XP Claimed!\n\nNext: Part 4 Work Skills & Assets`);
+          document.getElementById('tabPart3').style.display = 'none';
+          document.getElementById('tabPart4').style.display = 'block';
         }
       } catch (err) {
         console.error(err);
         alert('Part 3 saved locally!');
+      }
+    }
+
+    function calcPart4XP() {
+      const textIds = ['inpSkillPrimary', 'inpSkillSecondary', 'inpPortfolio', 'inpLaptopSerial', 'inpStudioGear', 'inpTshirt', 'inpDietary'];
+      let count = 0;
+      textIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el && el.value && el.value.trim() !== '') count++;
+      });
+      let points = count * 5;
+      if (document.getElementById('fileEquipmentDoc')?.files?.length > 0) points += 10;
+
+      const badge = document.getElementById('part4XpBadge');
+      if (badge) badge.innerText = `🏆 Points: +${points} XP`;
+      return points;
+    }
+
+    async function submitPart4() {
+      if (!currentUser) return;
+      const skillPrimary = document.getElementById('inpSkillPrimary').value.trim();
+
+      if (!skillPrimary) {
+        if (tg?.showAlert) tg.showAlert('⚠️ Please fill in your Primary Skillset / Core Competency!');
+        else alert('⚠️ Please fill in your Primary Skillset / Core Competency!');
+        return;
+      }
+
+      const payload = {
+        phone: currentUser.phone || '+8801708459008',
+        skillPrimary,
+        skillSecondary: document.getElementById('inpSkillSecondary').value.trim(),
+        portfolio: document.getElementById('inpPortfolio').value.trim(),
+        laptopSerial: document.getElementById('inpLaptopSerial').value.trim(),
+        studioGear: document.getElementById('inpStudioGear').value.trim(),
+        tshirt: document.getElementById('inpTshirt').value,
+        dietary: document.getElementById('inpDietary').value.trim(),
+        hasEquipmentDoc: document.getElementById('fileEquipmentDoc')?.files?.length > 0
+      };
+
+      try {
+        const res = await fetch('/api/team/survey/part4', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.success) {
+          if (tg?.showAlert) tg.showAlert(`👑 CONGRATULATIONS ${currentUser.name.toUpperCase()}!\n\nAll 4 Survey Parts Completed (+${data.earnedXP || 85} XP Earned).\n\nYour profile is 100% verified & saved to PurpleOS!`);
+          else alert(`👑 CONGRATULATIONS ${currentUser.name.toUpperCase()}!\n\nAll 4 Survey Parts Completed (+${data.earnedXP || 85} XP Earned).\n\nYour profile is 100% verified & saved to PurpleOS!`);
+          
+          document.getElementById('tabPart4').style.display = 'none';
+          document.getElementById('tabTasks').style.display = 'block';
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Part 4 saved locally!');
       }
     }
 

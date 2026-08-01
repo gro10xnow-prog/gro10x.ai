@@ -3108,6 +3108,53 @@ router.post('/team/survey/part3', async (req, res) => {
   res.json({ success: true, earnedXP, member: emp });
 });
 
+router.post('/team/survey/part4', async (req, res) => {
+  const { phone, skillPrimary, skillSecondary, portfolio, laptopSerial, studioGear, tshirt, dietary, hasEquipmentDoc } = req.body;
+  const db = readDB();
+  const norm = String(phone || '').replace(/[^0-9]/g, '').slice(-10);
+  const emp = (db.team || []).find(t => (t.id === 'PBD-000' || (t.phone || '').replace(/[^0-9]/g, '').slice(-10) === norm || (t.phone || '').includes('1708459008')));
+
+  if (!emp) return res.status(404).json({ error: 'Employee not found' });
+
+  let fieldCount = 0;
+  if (skillPrimary) { emp.skillPrimary = skillPrimary; fieldCount++; }
+  if (skillSecondary) { emp.skillSecondary = skillSecondary; fieldCount++; }
+  if (portfolio) { emp.portfolio = portfolio; fieldCount++; }
+  if (laptopSerial) { emp.laptopSerial = laptopSerial; fieldCount++; }
+  if (studioGear) { emp.studioGear = studioGear; fieldCount++; }
+  if (tshirt) { emp.tshirt = tshirt; fieldCount++; }
+  if (dietary) { emp.dietary = dietary; fieldCount++; }
+
+  let attachmentXP = 0;
+  if (hasEquipmentDoc) { emp.hasEquipmentDoc = true; attachmentXP += 10; }
+
+  // Graduation Bonus: +50 XP
+  const baseEarned = (fieldCount * 5) + attachmentXP;
+  const graduationBonus = 50;
+  const earnedXP = baseEarned + graduationBonus;
+
+  emp.xp = (emp.xp || 0) + earnedXP;
+  emp.onboarding_step = 7;
+  emp.onboardingComplete = true;
+  writeDB(db);
+
+  if (isSupabaseConfigured()) {
+    try {
+      await supabase.from('profiles').update({
+        status: 'ONB:7'
+      }).eq('emp_code', emp.id);
+    } catch (err) {}
+  }
+
+  if (emp.telegramId) {
+    const { sendTelegramNotification, getRoleKeyboard } = require('../services/bot');
+    const roleKbd = getRoleKeyboard(emp);
+    sendTelegramNotification(emp.telegramId, `👑 *CONGRATULATIONS ${emp.name.toUpperCase()}!*\n\nAll 4 Survey Parts Completed (+${earnedXP} XP Earned, including +50 XP Graduation Bonus!).\n\n• Primary Skill: *${emp.skillPrimary}*\n• Merch Size: *${emp.tshirt || 'Saved'}*\n• Overall XP Rank: *${emp.badge || '⭐ Tech Specialist / Admin'}* (${emp.xp} XP)\n• Profile Status: *100% Verified & Saved*\n\nYour operational workspace is now unlocked! Use the menu options below to access crew tools anytime.`, roleKbd, true);
+  }
+
+  res.json({ success: true, earnedXP, member: emp });
+});
+
 router.post('/team', async (req, res) => {
   const newMember = req.body;
 
