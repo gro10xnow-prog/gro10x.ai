@@ -117,8 +117,7 @@ function initBot() {
 
   const teamToken = process.env.TEAM_BOT_TOKEN || db.botConfig?.teamBot?.token;
   const clientToken = process.env.CLIENT_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN || db.botConfig?.clientBot?.token;
-  const rawUrl = process.env.PUBLIC_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL.replace(/^https?:\/\//, '')}` : 'https://purpleos-iota.vercel.app');
-  const baseUrl = rawUrl.endsWith('/') ? rawUrl.slice(0, -1) : rawUrl;
+  const baseUrl = process.env.PUBLIC_URL || 'https://purpleos-iota.vercel.app';
 
   // 1. Initialize Team Bot (Purple Man)
   if (teamToken && teamToken.trim() !== '' && !teamToken.includes('your_token')) {
