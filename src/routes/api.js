@@ -1634,11 +1634,42 @@ router.post('/webhooks/telegram', async (req, res) => {
       writeDB(db);
       broadcast('attendance_update', db.attendance);
 
-      replyText = `📍 *GPS Location Verified by Purple Man!*\n\n` +
-        `👤 Staff: *${emp.name}*\n` +
-        `🌐 Geofence: *Gulshan Studio* (${distMeters}m away)\n` +
-        `⏱️ Clock-In Time: *${nowTime}*\n` +
-        `🟢 Status set to *In Studio*.`;
+      if (emp) {
+        emp.onboarding_step = 7;
+        emp.onboardingComplete = true;
+        emp.xp = (emp.xp || 0) + 200;
+        emp.badge = (emp.id === 'PBD-000' || emp.role === 'Technology Admin') ? '⭐ Tech Specialist / Admin' : '🛡️ Verified Crew';
+        writeDB(db);
+
+        if (isSupabaseConfigured()) {
+          try {
+            await supabase.from('profiles').update({
+              status: 'ONB:7',
+              telegram_id: String(chatId)
+            }).eq('emp_code', emp.id || 'PBD-000');
+          } catch (err) {}
+        }
+
+        const { getRoleKeyboard } = require('../services/bot');
+        const roleKb = getRoleKeyboard(emp.accessLevel || 'Owner / Admin', true, emp);
+
+        replyText = `📍 *GPS Location Verified by Purple Man!*\n\n` +
+          `👤 Staff: *${emp.name}*\n` +
+          `🌐 Geofence: *Gulshan Studio* (${distMeters}m away)\n` +
+          `⏱️ Clock-In Time: *${nowTime}*\n` +
+          `🟢 Status set to *In Studio*.\n\n` +
+          `👑 *CONGRATULATIONS ${emp.name.toUpperCase()}!*\n` +
+          `Orientation Completed 100%! All 6 Tasks Verified (+200 XP).\n` +
+          `Unlocked Full Operational Access!`;
+
+        replyMarkup = roleKb;
+      } else {
+        replyText = `📍 *GPS Location Verified by Purple Man!*\n\n` +
+          `👤 Staff: *${senderName}*\n` +
+          `🌐 Geofence: *Gulshan Studio* (${distMeters}m away)\n` +
+          `⏱️ Clock-In Time: *${nowTime}*\n` +
+          `🟢 Status set to *In Studio*.`;
+      }
     }
     // Text Commands
     else if (message.text) {
