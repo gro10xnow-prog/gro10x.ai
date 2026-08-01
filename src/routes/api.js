@@ -1660,6 +1660,7 @@ router.post('/webhooks/telegram', async (req, res) => {
             const { data: profile } = await supabase.from('profiles').select('status').eq('emp_code', emp.id || 'PBD-000').single();
             if (profile && profile.status && profile.status.startsWith('ONB:')) {
               const cloudState = JSON.parse(profile.status.replace('ONB:', ''));
+              if (cloudState.step !== undefined) emp.onboarding_step = Number(cloudState.step);
               if (cloudState.emergencyContact) emp.emergencyContact = cloudState.emergencyContact;
               if (cloudState.address) emp.address = cloudState.address;
               if (cloudState.bankInfo) emp.bankInfo = cloudState.bankInfo;
@@ -1675,6 +1676,7 @@ router.post('/webhooks/telegram', async (req, res) => {
           if (emp && isSupabaseConfigured()) {
             try {
               const cloudState = {
+                step: Number(emp.onboarding_step || 1),
                 emergencyContact: emp.emergencyContact || null,
                 address: emp.address || null,
                 bankInfo: emp.bankInfo || null,
@@ -1691,11 +1693,23 @@ router.post('/webhooks/telegram', async (req, res) => {
           }
         };
 
-        // ── TOP PRIORITY: GUIDED JOURNEY MODE BUTTON HANDLERS ───────────────────
+        // Initialize onboarding step if not present
+        if (emp && !emp.onboarding_step) {
+          if (emp.onboardingComplete) emp.onboarding_step = 7;
+          else if (emp.bankInfo && (emp.bankInfo.bankName || emp.bankInfo.mfsNo)) emp.onboarding_step = 6;
+          else if (emp.address) emp.onboarding_step = 5;
+          else if (emp.emergencyContact) emp.onboarding_step = 4;
+          else if (emp.permanentPinSet) emp.onboarding_step = 3;
+          else emp.onboarding_step = 2;
+        }
+
+        // ── EXPLICIT NUMERIC STATE MACHINE ONBOARDING ROUTER (Steps 1 to 7) ─────────
+        const currentStep = emp ? Number(emp.onboarding_step || 2) : 1;
+
         if (msgText === '🌐 I Completed Web Account Setup') {
-          if (db.onboardingSessions) delete db.onboardingSessions[String(chatId)];
           if (emp) {
             emp.permanentPinSet = true;
+            emp.onboarding_step = 3;
             if (emp.onboardingTasks && Array.isArray(emp.onboardingTasks)) {
               const t2 = emp.onboardingTasks.find(t => t.id === 'webLogin');
               if (t2 && !t2.completed) {
@@ -1707,15 +1721,7 @@ router.post('/webhooks/telegram', async (req, res) => {
             writeDB(db);
             syncToCloudDB();
 
-            replyText = `🎉 *Task 2/6 Completed: Web Workspace Activated!* (+25 XP)\n\nGreat job ${emp.name}! Your desktop web access is verified.\n\nNext Step: Please set your Emergency Contact.`;
-            replyMarkup = {
-              keyboard: [
-                [{ text: '👤 Set Emergency Contact' }]
-              ],
-              resize_keyboard: true
-            };
-          } else {
-            replyText = `🎉 *Task 2/6 Completed: Web Workspace Activated!* (+25 XP)\n\nNext Step: Please set your Emergency Contact.`;
+            replyText = `🎉 *Task 2/6 Completed: Web Workspace Activated!* (+25 XP)\n\nGreat job ${emp.name}! Your desktop web access is verified.\n\nNext Step: Please send your Emergency Contact Phone Number.`;
             replyMarkup = {
               keyboard: [
                 [{ text: '👤 Set Emergency Contact' }]
@@ -1725,7 +1731,6 @@ router.post('/webhooks/telegram', async (req, res) => {
           }
         }
         else if (msgText === '🔑 View My Web Login PIN' || msgText === '/pin' || msgText === '/resetpin') {
-          if (db.onboardingSessions) delete db.onboardingSessions[String(chatId)];
           const targetPhone = emp?.phone || '+8801708459008';
           const pinRecord = createTempPin(targetPhone, emp?.id || 'PBD-000', 'team', emp?.email || '');
           replyText = `🔑 *Desktop Web Login PIN:* \`${pinRecord.pin}\`\n\nSign into https://purpleos-iota.vercel.app/auth on your laptop.`;
@@ -1737,80 +1742,75 @@ router.post('/webhooks/telegram', async (req, res) => {
             resize_keyboard: true
           };
         }
-        else if (msgText === '👤 Set Emergency Contact') {
-          replyText = `📱 *Please reply with your Emergency Contact Phone Number:*`;
-          replyMarkup = {
-            keyboard: [
-              [{ text: '👤 Set Emergency Contact' }]
-            ],
-            resize_keyboard: true
-          };
-        }
-        else if (msgText === '🏠 Set Home Address') {
-          replyText = `🏠 *Please reply with your Home Address:*`;
-          replyMarkup = {
-            keyboard: [
-              [{ text: '🏠 Set Home Address' }]
-            ],
-            resize_keyboard: true
-          };
-        }
-        else if (msgText === '💳 Setup Bank & bKash Payouts') {
-          replyText = `💳 *Please reply with Bank details*\n\nFormat: \`Bank Name, Account Number, Branch Name, bKash Number\``;
-          replyMarkup = {
-            keyboard: [
-              [{ text: '💳 Setup Bank & bKash Payouts' }]
-            ],
-            resize_keyboard: true
-          };
-        }
-        else if (emp && !emp.onboardingComplete && !msgText.startsWith('/')) {
-          if (!emp.emergencyContact) {
-            emp.emergencyContact = msgText;
-            emp.permanentPinSet = true;
-            writeDB(db);
-            syncToCloudDB();
-
-            replyText = `🎉 *Task 3/6 Completed: Emergency Contact Saved!* (+25 XP)\n\nSet to: *${msgText}*\n\nNext Step: Please set your Home Address.`;
-            replyMarkup = {
-              keyboard: [
-                [{ text: '🏠 Set Home Address' }]
-              ],
-              resize_keyboard: true
-            };
-          } else if (!emp.address) {
-            emp.address = msgText;
-            writeDB(db);
-            syncToCloudDB();
-
-            replyText = `🎉 *Task 4/6 Completed: Home Address Saved!* (+25 XP)\n\nSet to: *${msgText}*\n\nNext Step: Setup Bank & bKash Payouts.`;
-            replyMarkup = {
-              keyboard: [
-                [{ text: '💳 Setup Bank & bKash Payouts' }]
-              ],
-              resize_keyboard: true
-            };
-          } else if (!emp.bankInfo || (!emp.bankInfo.bankName && !emp.bankInfo.mfsNo)) {
-            emp.bankInfo = emp.bankInfo || {};
-            const parts = msgText.split(',');
-            emp.bankInfo.bankName = parts[0] ? parts[0].trim() : msgText;
-            emp.bankInfo.accNo = parts[1] ? parts[1].trim() : 'Saved';
-            emp.bankInfo.mfsNo = parts[2] ? parts[2].trim() : msgText;
-            writeDB(db);
-            syncToCloudDB();
-
-            const isTechAdmin = (emp.id === 'PBD-000' || emp.role === 'Technology Admin');
-            if (isTechAdmin) {
-              replyText = `🎉 *Task 5/6 Completed: Financial Payout Setup Done!* (+25 XP)\n\nNext Step: Register Telegram Group Channel or submit First GPS Clock-In.`;
+        else if (emp && !emp.onboardingComplete && currentStep < 6 && !msgText.startsWith('/')) {
+          if (currentStep === 3) {
+            if (msgText === '👤 Set Emergency Contact') {
+              replyText = `📱 *Please reply with your Emergency Contact Phone Number:*`;
               replyMarkup = {
                 keyboard: [
-                  [{ text: '📡 Register Group Channel' }],
-                  [{ text: '📍 Submit First GPS Clock-In', request_location: true }]
+                  [{ text: '👤 Set Emergency Contact' }]
                 ],
                 resize_keyboard: true
               };
             } else {
-              replyText = `🎉 *Task 5/6 Completed: Financial Payout Setup Done!* (+25 XP)\n\nNext Step: Submit your first GPS Clock-In.`;
+              emp.emergencyContact = msgText;
+              emp.onboarding_step = 4;
+              writeDB(db);
+              syncToCloudDB();
+
+              replyText = `🎉 *Task 3/6 Completed: Emergency Contact Saved!* (+25 XP)\n\nSet to: *${msgText}*\n\nNext Step: Please send your Home Address.`;
+              replyMarkup = {
+                keyboard: [
+                  [{ text: '🏠 Set Home Address' }]
+                ],
+                resize_keyboard: true
+              };
+            }
+          }
+          else if (currentStep === 4) {
+            if (msgText === '🏠 Set Home Address') {
+              replyText = `🏠 *Please reply with your Home Address:*`;
+              replyMarkup = {
+                keyboard: [
+                  [{ text: '🏠 Set Home Address' }]
+                ],
+                resize_keyboard: true
+              };
+            } else {
+              emp.address = msgText;
+              emp.onboarding_step = 5;
+              writeDB(db);
+              syncToCloudDB();
+
+              replyText = `🎉 *Task 4/6 Completed: Home Address Saved!* (+25 XP)\n\nSet to: *${msgText}*\n\nNext Step: Send Bank & bKash Payout Details.`;
+              replyMarkup = {
+                keyboard: [
+                  [{ text: '💳 Setup Bank & bKash Payouts' }]
+                ],
+                resize_keyboard: true
+              };
+            }
+          }
+          else if (currentStep === 5) {
+            if (msgText === '💳 Setup Bank & bKash Payouts') {
+              replyText = `💳 *Please reply with Bank details (Bank Name, Acc No, bKash No):*`;
+              replyMarkup = {
+                keyboard: [
+                  [{ text: '💳 Setup Bank & bKash Payouts' }]
+                ],
+                resize_keyboard: true
+              };
+            } else {
+              emp.bankInfo = emp.bankInfo || {};
+              const parts = msgText.split(',');
+              emp.bankInfo.bankName = parts[0] ? parts[0].trim() : msgText;
+              emp.bankInfo.accNo = parts[1] ? parts[1].trim() : 'Saved';
+              emp.bankInfo.mfsNo = parts[2] ? parts[2].trim() : msgText;
+              emp.onboarding_step = 6;
+              writeDB(db);
+              syncToCloudDB();
+
+              replyText = `🎉 *Task 5/6 Completed: Financial Payout Setup Done!* (+25 XP)\n\nNext Step: Submit your first GPS Clock-In to complete orientation!`;
               replyMarkup = {
                 keyboard: [
                   [{ text: '📍 Submit First GPS Clock-In', request_location: true }]
@@ -2959,6 +2959,49 @@ router.get('/team', async (req, res) => {
     }
   }
   res.json(jsonTeam);
+});
+
+router.post('/team/profile-setup', async (req, res) => {
+  const { phone, emergencyContact, address, bankName, accNo, mfsNo } = req.body;
+  const db = readDB();
+  const norm = String(phone || '').replace(/[^0-9]/g, '').slice(-10);
+  const emp = (db.team || []).find(t => (t.id === 'PBD-000' || (t.phone || '').replace(/[^0-9]/g, '').slice(-10) === norm || (t.phone || '').includes('1708459008')));
+
+  if (!emp) return res.status(404).json({ error: 'Employee not found' });
+
+  if (emergencyContact) emp.emergencyContact = emergencyContact;
+  if (address) emp.address = address;
+  emp.bankInfo = emp.bankInfo || {};
+  if (bankName) emp.bankInfo.bankName = bankName;
+  if (accNo) emp.bankInfo.accNo = accNo;
+  if (mfsNo) emp.bankInfo.mfsNo = mfsNo;
+  emp.onboarding_step = 6;
+  emp.permanentPinSet = true;
+  emp.xp = (emp.xp || 0) + 75;
+  writeDB(db);
+
+  if (isSupabaseConfigured()) {
+    try {
+      const cloudState = {
+        step: 6,
+        emergencyContact: emp.emergencyContact,
+        address: emp.address,
+        bankInfo: emp.bankInfo,
+        onboardingComplete: false,
+        permanentPinSet: true
+      };
+      await supabase.from('profiles').update({
+        status: 'ONB:' + JSON.stringify(cloudState)
+      }).eq('emp_code', emp.id);
+    } catch (err) {}
+  }
+
+  if (emp.telegramId) {
+    const { sendTelegramNotification } = require('../services/bot');
+    sendTelegramNotification(emp.telegramId, `🎉 *Orientation Profile Setup Completed!* (+75 XP)\n\n• Emergency Contact: *${emp.emergencyContact}*\n• Address: *${emp.address}*\n• Bank/bKash: *${emp.bankInfo.bankName || 'Saved'}*\n\nNext Step: Submit your first GPS Clock-In to complete orientation!`, null, true);
+  }
+
+  res.json({ success: true, member: emp });
 });
 
 router.post('/team', async (req, res) => {
