@@ -1700,22 +1700,81 @@ router.post('/webhooks/telegram', async (req, res) => {
           };
         }
         else if (msgText === '👤 Set Emergency Contact') {
-          db.onboardingSessions = db.onboardingSessions || {};
-          db.onboardingSessions[String(chatId)] = { action: 'await_emergency_contact' };
-          writeDB(db);
           replyText = `📱 *Please reply with your Emergency Contact Phone Number:*`;
+          replyMarkup = {
+            keyboard: [
+              [{ text: '👤 Set Emergency Contact' }]
+            ],
+            resize_keyboard: true
+          };
         }
         else if (msgText === '🏠 Set Home Address') {
-          db.onboardingSessions = db.onboardingSessions || {};
-          db.onboardingSessions[String(chatId)] = { action: 'await_address' };
-          writeDB(db);
           replyText = `🏠 *Please reply with your Home Address:*`;
+          replyMarkup = {
+            keyboard: [
+              [{ text: '🏠 Set Home Address' }]
+            ],
+            resize_keyboard: true
+          };
         }
         else if (msgText === '💳 Setup Bank & bKash Payouts') {
-          db.onboardingSessions = db.onboardingSessions || {};
-          db.onboardingSessions[String(chatId)] = { action: 'await_bank_info' };
-          writeDB(db);
           replyText = `💳 *Please reply with Bank details*\n\nFormat: \`Bank Name, Account Number, Branch Name, bKash Number\``;
+          replyMarkup = {
+            keyboard: [
+              [{ text: '💳 Setup Bank & bKash Payouts' }]
+            ],
+            resize_keyboard: true
+          };
+        }
+        else if (emp && !emp.onboardingComplete && !msgText.startsWith('/')) {
+          if (emp.permanentPinSet && !emp.emergencyContact) {
+            emp.emergencyContact = msgText;
+            writeDB(db);
+            replyText = `🎉 *Task 3/6 Completed: Emergency Contact Saved!* (+25 XP)\n\nSet to: *${msgText}*\n\nNext Step: Please set your Home Address.`;
+            replyMarkup = {
+              keyboard: [
+                [{ text: '🏠 Set Home Address' }]
+              ],
+              resize_keyboard: true
+            };
+          } else if (emp.permanentPinSet && emp.emergencyContact && !emp.address) {
+            emp.address = msgText;
+            writeDB(db);
+            replyText = `🎉 *Task 4/6 Completed: Home Address Saved!* (+25 XP)\n\nSet to: *${msgText}*\n\nNext Step: Setup Bank & bKash Payouts.`;
+            replyMarkup = {
+              keyboard: [
+                [{ text: '💳 Setup Bank & bKash Payouts' }]
+              ],
+              resize_keyboard: true
+            };
+          } else if (emp.permanentPinSet && emp.emergencyContact && emp.address && (!emp.bankInfo || (!emp.bankInfo.bankName && !emp.bankInfo.mfsNo))) {
+            emp.bankInfo = emp.bankInfo || {};
+            const parts = msgText.split(',');
+            emp.bankInfo.bankName = parts[0] ? parts[0].trim() : msgText;
+            emp.bankInfo.accNo = parts[1] ? parts[1].trim() : 'Saved';
+            emp.bankInfo.mfsNo = parts[2] ? parts[2].trim() : msgText;
+            writeDB(db);
+
+            const isTechAdmin = (emp.id === 'PBD-000' || emp.role === 'Technology Admin');
+            if (isTechAdmin) {
+              replyText = `🎉 *Task 5/6 Completed: Financial Payout Setup Done!* (+25 XP)\n\nNext Step: Register Telegram Group Channel or submit First GPS Clock-In.`;
+              replyMarkup = {
+                keyboard: [
+                  [{ text: '📡 Register Group Channel' }],
+                  [{ text: '📍 Submit First GPS Clock-In', request_location: true }]
+                ],
+                resize_keyboard: true
+              };
+            } else {
+              replyText = `🎉 *Task 5/6 Completed: Financial Payout Setup Done!* (+25 XP)\n\nNext Step: Submit your first GPS Clock-In.`;
+              replyMarkup = {
+                keyboard: [
+                  [{ text: '📍 Submit First GPS Clock-In', request_location: true }]
+                ],
+                resize_keyboard: true
+              };
+            }
+          }
         }
 
         // ── /register_group [type] — Firoz registers a Telegram group in the system ──
