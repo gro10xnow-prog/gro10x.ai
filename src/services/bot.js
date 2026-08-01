@@ -915,5 +915,6 @@ function sendToGroup(chatId, text, isTeam = true) {
 module.exports = {
   initBot,
   sendTelegramNotification,
-  sendToGroup
+  sendToGroup,
+  getRoleKeyboard
 };
