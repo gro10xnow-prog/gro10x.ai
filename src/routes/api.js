@@ -3014,6 +3014,9 @@ router.post('/team/profile-setup', async (req, res) => {
     sendTelegramNotification(emp.telegramId, `🎉 *Orientation Profile Setup Completed!* (+75 XP)\n\n• Emergency Contact: *${emp.emergencyContact}*\n• Address: *${emp.address}*\n• Bank/bKash: *${emp.bankInfo.bankName || 'Saved'}*\n\nNext Step: Submit your first GPS Clock-In to complete orientation!`, null, true);
   }
 
+  res.json({ success: true, member: emp });
+});
+
 router.post('/team/survey/part1', async (req, res) => {
   const { phone, joiningDate, emergencyContact, emergencyRelation, address, bloodGroup, maritalStatus, dob, personalEmail, dependents } = req.body;
   const db = readDB();
