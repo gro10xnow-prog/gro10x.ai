@@ -63,6 +63,7 @@ function updateUserProfileUI() {
   const storedName = localStorage.getItem('purple_user_name');
   const storedRole = localStorage.getItem('purple_user_role');
   const storedAccess = localStorage.getItem('purple_user_access');
+  const storedOnboarding = localStorage.getItem('purple_user_onboarding_complete');
 
   const name = storedName || (window.currentUser && window.currentUser.profile ? window.currentUser.profile.name : null) || 'Firoz Uddin Ahmed';
   const role = storedRole || (window.currentUser && window.currentUser.profile ? window.currentUser.profile.role : null) || 'Technology Admin';
@@ -72,6 +73,31 @@ function updateUserProfileUI() {
   if (avatarEl) {
     const initials = name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
     avatarEl.innerText = initials;
+  }
+
+  // Render Limited Access Mode Banner if onboarding is incomplete
+  let banner = document.getElementById('onboardingLimitedBanner');
+  if (storedOnboarding === 'false' || storedOnboarding === null) {
+    if (!banner) {
+      banner = document.createElement('div');
+      banner.id = 'onboardingLimitedBanner';
+      banner.style.cssText = 'background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(168, 85, 247, 0.2)); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 12px; padding: 12px 20px; margin: 15px 24px 0 24px; display: flex; align-items: center; justify-content: space-between; font-size: 13.5px; color: #f8fafc; box-shadow: 0 4px 20px rgba(0,0,0,0.3); backdrop-filter: blur(10px);';
+      banner.innerHTML = `
+        <div style="display:flex; align-items:center; gap:12px;">
+          <span style="font-size:20px;">🔒</span>
+          <div>
+            <strong style="color: #fbbf24;">LIMITED ACCESS MODE:</strong> Complete your Telegram Onboarding Journey to unlock all web features, team analytics, and project controls!
+          </div>
+        </div>
+        <a href="https://t.me/PurpleMan_bot" target="_blank" style="background: #a855f7; color: #fff; padding: 6px 14px; border-radius: 8px; font-weight: 600; text-decoration: none; font-size: 12px; white-space: nowrap;">Open @PurpleMan_bot ➔</a>
+      `;
+      const mainHeader = document.querySelector('header') || document.querySelector('.top-bar') || document.body.firstChild;
+      if (mainHeader && mainHeader.parentNode) {
+        mainHeader.parentNode.insertBefore(banner, mainHeader.nextSibling);
+      }
+    }
+  } else if (banner) {
+    banner.remove();
   }
 }
 

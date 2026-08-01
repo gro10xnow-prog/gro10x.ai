@@ -280,6 +280,7 @@ router.post('/auth/pin/verify', (req, res) => {
     const emp = (db.team || []).find(t => (t.id === result.user?.id || (t.phone || '').replace(/[^0-9]/g, '').slice(-10) === norm));
     if (emp) {
       emp.permanentPinSet = true;
+      emp.onboarding_step = 3;
       if (emp.onboardingTasks && Array.isArray(emp.onboardingTasks)) {
         const t2 = emp.onboardingTasks.find(t => t.id === 'webLogin');
         if (t2 && !t2.completed) {
@@ -289,9 +290,23 @@ router.post('/auth/pin/verify', (req, res) => {
         }
       }
       writeDB(db);
+
+      if (isSupabaseConfigured()) {
+        try {
+          supabase.from('profiles').update({
+            status: 'ONB:3'
+          }).eq('emp_code', emp.id).then(() => {}).catch(() => {});
+        } catch (err) {}
+      }
+
       if (emp.telegramId) {
         const { sendTelegramNotification } = require('../services/bot');
-        sendTelegramNotification(emp.telegramId, `🎉 *Task 2/6 Completed: Web Workspace Activated!* (+25 XP)\n\nHello *${emp.name}*! Your Desktop Web Workspace has been successfully activated.\n\nTap *👤 Complete Personal Profile* below to continue your setup.`, null, true);
+        sendTelegramNotification(emp.telegramId, `🎉 *Web Workspace Activated!*\n\nGreat job *${emp.name}*! Your desktop web access is verified.\n\nNow, let's complete your profile creation process...\n\nPlease reply with your Emergency Contact Phone Number using the button below:`, {
+          keyboard: [
+            [{ text: '👤 Set Emergency Contact' }]
+          ],
+          resize_keyboard: true
+        }, true);
       }
     }
   } catch (err) {
@@ -1467,123 +1482,33 @@ router.post('/webhooks/telegram', async (req, res) => {
       if (matchingStaff) {
         matchingStaff.telegramId = String(chatId);
         matchingStaff.phoneVerified = true;
+        matchingStaff.onboarding_step = matchingStaff.onboarding_step || 2;
         const pinRecord = createTempPin(matchingStaff.phone, matchingStaff.id || matchingStaff.emp_code, 'team', matchingStaff.email || '');
         writeDB(db);
         broadcast('team_update', db.team);
 
         if (isSupabaseConfigured()) {
-          supabase.from('profiles').update({ telegram_id: String(chatId) }).eq('emp_code', matchingStaff.id).then(() => {}).catch(() => {});
+          supabase.from('profiles').update({
+            telegram_id: String(chatId),
+            status: 'ONB:' + Number(matchingStaff.onboarding_step || 2)
+          }).eq('emp_code', matchingStaff.id).then(() => {}).catch(() => {});
         }
 
-        const progress = getOnboardingProgress(matchingStaff);
+        replyText = `🎉 *Hi ${matchingStaff.name}! Great to see your initial data has been registered in the system already!*\n\n` +
+          `To complete your profile creation process, you can access *PurpleOS* directly from your desktop web browser or right here in Telegram.\n\n` +
+          `🌐 *Web Portal:* https://purpleos-iota.vercel.app/auth\n` +
+          `🔑 *Temporary PIN:* \`${pinRecord.pin}\`\n\n` +
+          `Please visit the web link above and use your Temporary PIN to sign in and set your permanent password.\n\n` +
+          `Once you sign in on the web, you will automatically receive a confirmation message right here on Telegram to move to our next onboarding step!\n\n` +
+          `💡 _Keep your PIN safe. You can always change or request a PIN reset with me anytime._`;
 
-        if (!matchingStaff.onboardingComplete) {
-          if (!matchingStaff.permanentPinSet) {
-            replyText = `✅ *Identity Verified as ${matchingStaff.name}!*\n\n` +
-              `• Designation: *${matchingStaff.role}*\n` +
-              `• Department: *${matchingStaff.department}*\n` +
-              `• Access Level: *${matchingStaff.accessLevel}*\n\n` +
-              `🔑 *Desktop Web Login PIN:* \`${pinRecord.pin}\`\n` +
-              `🌐 *Web Portal:* https://purpleos-iota.vercel.app/auth\n\n` +
-              `🚀 *STEP 2 OF 6 PENDING:* Activate Desktop Web Workspace\n\n` +
-              `Please log into https://purpleos-iota.vercel.app/auth with PIN \`${pinRecord.pin}\` to activate your account.`;
-
-            replyMarkup = {
-              keyboard: [
-                [{ text: '🌐 I Completed Web Account Setup' }],
-                [{ text: '🔑 View My Web Login PIN' }]
-              ],
-              resize_keyboard: true
-            };
-          } else if (!matchingStaff.emergencyContact) {
-            replyText = `🎉 *Task 2 Completed: Web Workspace Activated!* (+25 XP)\n\nNext Step: Please set your Emergency Contact.`;
-            replyMarkup = {
-              keyboard: [
-                [{ text: '👤 Set Emergency Contact' }]
-              ],
-              resize_keyboard: true
-            };
-          } else if (!matchingStaff.address) {
-            replyText = `🎉 *Task 3 Completed: Emergency Contact Saved!* (+25 XP)\n\nNext Step: Please set your Home Address.`;
-            replyMarkup = {
-              keyboard: [
-                [{ text: '🏠 Set Home Address' }]
-              ],
-              resize_keyboard: true
-            };
-          } else if (!matchingStaff.bankInfo || (!matchingStaff.bankInfo.bankName && !matchingStaff.bankInfo.mfsNo)) {
-            replyText = `🎉 *Task 4 Completed: Address Saved!* (+25 XP)\n\nNext Step: Setup Bank & bKash Payouts.`;
-            replyMarkup = {
-              keyboard: [
-                [{ text: '💳 Setup Bank & bKash Payouts' }]
-              ],
-              resize_keyboard: true
-            };
-          } else {
-            replyText = `🎉 *Task 5 Completed: Financial Payout Setup Done!* (+25 XP)\n\nNext Step: Submit your first GPS Clock-In.`;
-            replyMarkup = {
-              keyboard: [
-                [{ text: '📍 Submit First GPS Clock-In', request_location: true }]
-              ],
-              resize_keyboard: true
-            };
-          }
-        } else {
-          replyText = `✅ *Identity Verified as ${matchingStaff.name}!*\n\n` +
-            `• Designation: *${matchingStaff.role}*\n` +
-            `• Department: *${matchingStaff.department}*\n` +
-            `• Access Level: *${matchingStaff.accessLevel}*\n\n` +
-            `🔑 *Desktop Web Login PIN:* \`${pinRecord.pin}\`\n` +
-            `🌐 *Web Portal:* https://purpleos-iota.vercel.app/auth\n\n` +
-            `Your Telegram account is now linked. You can tap *Open App* to launch your dashboard anytime without logging in again!`;
-
-          if (matchingStaff.accessLevel === 'Owner / Admin') {
-            replyMarkup = {
-              keyboard: [
-                [{ text: '🌅 Morning Briefing' }, { text: '📊 Business Snapshot' }],
-                [{ text: '🏆 Launch Challenge' }, { text: '🐞 Report Bug / Idea' }],
-                [{ text: '👥 Full Team Status' }, { text: '💰 Finance Summary' }],
-                [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
-              ],
-              resize_keyboard: true
-            };
-          } else if (matchingStaff.accessLevel === 'Director / Manager') {
-            replyMarkup = {
-              keyboard: [
-                [{ text: '👥 My Team Roster' }, { text: '📊 Department Report' }],
-                [{ text: '🌅 Morning Briefing' }, { text: '🐞 Report Bug / Idea' }],
-                [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
-              ],
-              resize_keyboard: true
-            };
-          } else if (matchingStaff.accessLevel === 'Finance Manager') {
-            replyMarkup = {
-              keyboard: [
-                [{ text: '💰 Expense Queue' }, { text: '🧾 Invoice Status' }],
-                [{ text: '📊 Payroll Summary' }, { text: '🐞 Report Bug / Idea' }],
-                [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
-              ],
-              resize_keyboard: true
-            };
-          } else if (matchingStaff.accessLevel === 'Office Staff') {
-            replyMarkup = {
-              keyboard: [
-                [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }],
-                [{ text: '🐞 Report Bug / Idea' }]
-              ],
-              resize_keyboard: true
-            };
-          } else {
-            replyMarkup = {
-              keyboard: [
-                [{ text: '📋 My Tasks' }, { text: '💰 My Earnings' }],
-                [{ text: '🏆 Leaderboard' }, { text: '🐞 Report Bug / Idea' }],
-                [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
-              ],
-              resize_keyboard: true
-            };
-          }
-        }
+        replyMarkup = {
+          keyboard: [
+            [{ text: '🌐 I Completed Web Account Setup' }],
+            [{ text: '🔑 View My Web Login PIN' }]
+          ],
+          resize_keyboard: true
+        };
       } else if (matchingClient) {
         matchingClient.telegramId = String(chatId);
         const pinRecord = createTempPin(matchingClient.phone, matchingClient.id || matchingClient.clientCode, 'client', matchingClient.email || '');
@@ -1602,7 +1527,17 @@ router.post('/webhooks/telegram', async (req, res) => {
           inline_keyboard: [[{ text: '🌐 Open Client Portal Web', url: portalUrl }]]
         };
       } else {
-        replyText = `⚠️ Phone number \`${rawContactPhone}\` is not registered in the PBD employee database.\n\nPlease contact Technology Admin *Firoz Uddin Ahmed* (01708-459008) to authorize your account.`;
+        replyText = `⚠️ *Account Not Found in Team Roster*\n\n` +
+          `Sorry, your phone number (\`${rawContactPhone}\`) is not currently registered in the Purplebot Digital employee database.\n\n` +
+          `If you are a new team member, please contact Technology Admin *Firoz Uddin Ahmed* (01708-459008) or Managing Director *Iftekhar Mahmud* (01612309290) to authorize your profile.\n\n` +
+          `If you are a client or external visitor, please connect with our Client Service Desk (@purpleosbot) to explore our agency solutions!`;
+
+        replyMarkup = {
+          keyboard: [
+            [{ text: '📱 Verify My Phone Number', request_contact: true }]
+          ],
+          resize_keyboard: true
+        };
       }
     }
     // Module B3.2: 1-Tap Native GPS Location Handler
