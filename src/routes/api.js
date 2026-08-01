@@ -1659,13 +1659,8 @@ router.post('/webhooks/telegram', async (req, res) => {
           try {
             const { data: profile } = await supabase.from('profiles').select('status').eq('emp_code', emp.id || 'PBD-000').single();
             if (profile && profile.status && profile.status.startsWith('ONB:')) {
-              const cloudState = JSON.parse(profile.status.replace('ONB:', ''));
-              if (cloudState.step !== undefined) emp.onboarding_step = Number(cloudState.step);
-              if (cloudState.emergencyContact) emp.emergencyContact = cloudState.emergencyContact;
-              if (cloudState.address) emp.address = cloudState.address;
-              if (cloudState.bankInfo) emp.bankInfo = cloudState.bankInfo;
-              if (cloudState.onboardingComplete) emp.onboardingComplete = cloudState.onboardingComplete;
-              if (cloudState.permanentPinSet) emp.permanentPinSet = cloudState.permanentPinSet;
+              const stepNum = parseInt(profile.status.replace('ONB:', ''), 10);
+              if (!isNaN(stepNum)) emp.onboarding_step = stepNum;
             }
           } catch (err) {
             console.warn('Cloud DB sync error:', err.message);
@@ -1675,16 +1670,9 @@ router.post('/webhooks/telegram', async (req, res) => {
         const syncToCloudDB = async () => {
           if (emp && isSupabaseConfigured()) {
             try {
-              const cloudState = {
-                step: Number(emp.onboarding_step || 1),
-                emergencyContact: emp.emergencyContact || null,
-                address: emp.address || null,
-                bankInfo: emp.bankInfo || null,
-                onboardingComplete: Boolean(emp.onboardingComplete),
-                permanentPinSet: Boolean(emp.permanentPinSet)
-              };
+              const stepNum = Number(emp.onboarding_step || 1);
               await supabase.from('profiles').update({
-                status: 'ONB:' + JSON.stringify(cloudState),
+                status: 'ONB:' + stepNum,
                 telegram_id: String(chatId)
               }).eq('emp_code', emp.id || 'PBD-000');
             } catch (err) {
