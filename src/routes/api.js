@@ -1779,7 +1779,7 @@ router.post('/webhooks/telegram', async (req, res) => {
         }
 
         // ── /register_group [type] — Firoz registers a Telegram group in the system ──
-        if (msgText.startsWith('/register_group') && isTeamBot) {
+        else if (msgText.startsWith('/register_group') && isTeamBot) {
           const groupType = msgText.split(' ')[1] || '';
           const validTypes = ['executive', 'leadership', 'design_post', 'content_production', 'client_services', 'strategy', 'finance_admin', 'tech_ai', 'announcements', 'daily_briefing', 'finance_alerts', 'leaderboard', 'production_updates'];
           if (!groupType || !validTypes.includes(groupType)) {
