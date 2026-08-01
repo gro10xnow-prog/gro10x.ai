@@ -1719,7 +1719,7 @@ router.post('/webhooks/telegram', async (req, res) => {
               }
             }
             writeDB(db);
-            syncToCloudDB();
+            await syncToCloudDB();
 
             replyText = `🎉 *Task 2/6 Completed: Web Workspace Activated!* (+25 XP)\n\nGreat job ${emp.name}! Your desktop web access is verified.\n\nNext Step: Please send your Emergency Contact Phone Number.`;
             replyMarkup = {
@@ -1756,7 +1756,7 @@ router.post('/webhooks/telegram', async (req, res) => {
               emp.emergencyContact = msgText;
               emp.onboarding_step = 4;
               writeDB(db);
-              syncToCloudDB();
+              await syncToCloudDB();
 
               replyText = `🎉 *Task 3/6 Completed: Emergency Contact Saved!* (+25 XP)\n\nSet to: *${msgText}*\n\nNext Step: Please send your Home Address.`;
               replyMarkup = {
@@ -1780,7 +1780,7 @@ router.post('/webhooks/telegram', async (req, res) => {
               emp.address = msgText;
               emp.onboarding_step = 5;
               writeDB(db);
-              syncToCloudDB();
+              await syncToCloudDB();
 
               replyText = `🎉 *Task 4/6 Completed: Home Address Saved!* (+25 XP)\n\nSet to: *${msgText}*\n\nNext Step: Send Bank & bKash Payout Details.`;
               replyMarkup = {
@@ -1808,7 +1808,7 @@ router.post('/webhooks/telegram', async (req, res) => {
               emp.bankInfo.mfsNo = parts[2] ? parts[2].trim() : msgText;
               emp.onboarding_step = 6;
               writeDB(db);
-              syncToCloudDB();
+              await syncToCloudDB();
 
               replyText = `🎉 *Task 5/6 Completed: Financial Payout Setup Done!* (+25 XP)\n\nNext Step: Submit your first GPS Clock-In to complete orientation!`;
               replyMarkup = {
