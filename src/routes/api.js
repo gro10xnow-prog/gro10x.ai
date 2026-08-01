@@ -3181,6 +3181,37 @@ router.post('/team/survey/part4', async (req, res) => {
 });
 
 // ── DIGITAL EMPLOYMENT AGREEMENT 4-STAGE APPROVAL ROUTER ───────────────────
+router.get('/agreement/:empId', (req, res) => {
+  const { empId } = req.params;
+  const db = readDB();
+  const emp = (db.team || []).find(t => t.id === empId || t.id === 'PBD-000') || (db.team || [])[0];
+
+  if (!emp) return res.status(404).json({ error: 'Employee profile not found' });
+
+  res.json({
+    success: true,
+    agreement: {
+      empId: emp.id,
+      name: emp.name,
+      phone: emp.phone,
+      email: emp.email || emp.workEmail,
+      role: emp.role,
+      department: emp.department,
+      joiningDate: emp.joiningDate || emp.joinDate || '2026-08-01',
+      nid: emp.nid || 'Pending Verification',
+      address: emp.address || 'Gulshan, Dhaka',
+      emergencyContact: emp.emergencyContact || 'N/A',
+      baseSalary: emp.baseSalary || 85000,
+      commissionRate: emp.commissionRate || 0,
+      bankName: emp.bankInfo?.bankName || 'BRAC Bank',
+      accNo: emp.bankInfo?.accNo || 'N/A',
+      bkash: emp.bankInfo?.mfsNo || 'N/A',
+      stage: emp.agreement?.stage || 1,
+      signatures: emp.agreement?.signatures || {}
+    }
+  });
+});
+
 router.post('/agreement/sign', async (req, res) => {
   const { empId, phone, signatureName, stage } = req.body;
   const db = readDB();
@@ -3193,6 +3224,7 @@ router.post('/agreement/sign', async (req, res) => {
 
   if (stage === 1) {
     emp.agreement.stage = 2;
+    emp.onboarding_step = 6;
     emp.agreement.signatures.employee = {
       name: signatureName,
       signedAt: new Date().toISOString(),
@@ -3200,9 +3232,22 @@ router.post('/agreement/sign', async (req, res) => {
     };
     writeDB(db);
 
+    if (isSupabaseConfigured()) {
+      try {
+        await supabase.from('profiles').update({ status: 'ONB:6' }).eq('emp_code', emp.id);
+      } catch (err) {}
+    }
+
     if (emp.telegramId) {
       const { sendTelegramNotification } = require('../services/bot');
-      sendTelegramNotification(emp.telegramId, `✍️ *Agreement Signed by You!* (Stage 1 Cleared)\n\nYour Employment Contract has been submitted to HR Manager (*Md. Borhan Siddique*) for Stage 2 Audit.\n\nYou will be notified automatically as HR & Executive Management review your contract!`, null, true);
+      sendTelegramNotification(emp.telegramId, `✍️ *Stage 1 Cleared: Agreement Signed by You!*\n\nYour Employment Contract has been submitted to HR Manager (*Md. Borhan Siddique*) for Stage 2 Audit.\n\nYou will be notified automatically as HR & Executive Management review your contract!`, null, true);
+    }
+
+    // Notify HR Manager (Md. Borhan Siddique)
+    const hrManager = (db.team || []).find(t => t.role && t.role.includes('Finance') || t.name.includes('Borhan'));
+    if (hrManager && hrManager.telegramId) {
+      const { sendTelegramNotification } = require('../services/bot');
+      sendTelegramNotification(hrManager.telegramId, `📋 *New Employment Agreement Pending Review!*\n\nEmployee: *${emp.name}* (\`${emp.id}\`)\nRole: *${emp.role}*\nJoining Date: *${emp.joiningDate || '2026-08-01'}*\n\nPlease open your HR Verification Panel on the Web Portal to review survey data & confirm official work terms!\n\n🌐 https://purpleos-iota.vercel.app/admin`, null, true);
     }
   } else if (stage === 2) {
     emp.agreement.stage = 3;

@@ -772,10 +772,17 @@
           if (tg?.showAlert) tg.showAlert(`🎉 Part 4 Completed! (+${data.earnedXP || 85} XP Earned).\n\nYour Employment Agreement is now generated and ready for your E-Signature!`);
           else alert(`🎉 Part 4 Completed! (+${data.earnedXP || 85} XP Earned).\n\nYour Employment Agreement is now generated and ready for your E-Signature!`);
           
-          document.getElementById('agrEmpName').innerText = currentUser.name || 'Firoz Uddin Ahmed';
-          document.getElementById('agrEmpCode').innerText = currentUser.id || 'PBD-000';
-          document.getElementById('agrJoiningDate').innerText = currentUser.joiningDate || new Date().toISOString().split('T')[0];
-          document.getElementById('agrSalary').innerText = Number(currentUser.baseSalary || 85000).toLocaleString();
+          try {
+            const agrRes = await fetch(`/api/agreement/${currentUser.id || 'PBD-000'}`);
+            const agrData = await agrRes.json();
+            if (agrData.success) {
+              const agr = agrData.agreement;
+              document.getElementById('agrEmpName').innerText = agr.name;
+              document.getElementById('agrEmpCode').innerText = agr.empId;
+              document.getElementById('agrJoiningDate').innerText = agr.joiningDate;
+              document.getElementById('agrSalary').innerText = Number(agr.baseSalary || 85000).toLocaleString();
+            }
+          } catch(e) {}
 
           document.getElementById('tabPart4').style.display = 'none';
           document.getElementById('tabAgreement').style.display = 'block';
