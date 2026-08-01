@@ -27,61 +27,13 @@ function getRoleKeyboard(accessLevel, isVerified = false, emp = null) {
 
   // Progressive Disclosure: Guided Journey Mode during onboarding
   if (!emp.onboardingComplete) {
-    if (!emp.permanentPinSet) {
-      return {
-        keyboard: [
-          [{ text: '🌐 I Completed Web Account Setup' }],
-          [{ text: '🔑 View My Web Login PIN' }]
-        ],
-        resize_keyboard: true
-      };
-    }
-
-    if (!emp.emergencyContact) {
-      return {
-        keyboard: [
-          [{ text: '👤 Set Emergency Contact' }]
-        ],
-        resize_keyboard: true
-      };
-    }
-
-    if (!emp.address) {
-      return {
-        keyboard: [
-          [{ text: '🏠 Set Home Address' }]
-        ],
-        resize_keyboard: true
-      };
-    }
-
-    if (!emp.bankInfo || (!emp.bankInfo.bankName && !emp.bankInfo.mfsNo)) {
-      return {
-        keyboard: [
-          [{ text: '💳 Setup Bank & bKash Payouts' }]
-        ],
-        resize_keyboard: true
-      };
-    }
-
-    if (isTechAdmin && !emp.onboardingTasks?.find(t => t.id === 'registerGroups')?.completed) {
-      return {
-        keyboard: [
-          [{ text: '📡 Register Group Channel' }],
-          [{ text: '📍 Submit First GPS Clock-In', request_location: true }]
-        ],
-        resize_keyboard: true
-      };
-    }
-
-    if (!emp.status || emp.status === 'Offline') {
-      return {
-        keyboard: [
-          [{ text: '📍 Submit First GPS Clock-In', request_location: true }]
-        ],
-        resize_keyboard: true
-      };
-    }
+    return {
+      keyboard: [
+        [{ text: '🎓 Complete My Profile Survey', web_app: { url: 'https://purpleos-iota.vercel.app/team-miniapp' } }],
+        [{ text: '🔑 View My Web Login PIN' }]
+      ],
+      resize_keyboard: true
+    };
   }
 
   // All onboarding tasks complete -> Unlock Full Operational Menu!

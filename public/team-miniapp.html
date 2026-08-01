@@ -151,6 +151,11 @@
         </div>
       </div>
 
+      <div style="margin-bottom: 1rem;">
+        <label style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem;">Personal Email (+5 XP)</label>
+        <input type="email" id="inpPersonalEmail" oninput="calcPart1XP()" placeholder="name@gmail.com" style="width: 100%; padding: 0.65rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+      </div>
+
       <!-- Dependents Section -->
       <div style="font-size: 0.82rem; font-weight: 800; color: var(--purple); margin-bottom: 0.6rem;">👨‍👩‍👧‍👦 FAMILY DEPENDENTS (5 SLOTS · +5 XP EACH)</div>
       
@@ -537,7 +542,7 @@
     }
 
     function calcPart1XP() {
-      const fieldIds = ['inpEmergency', 'inpRelation', 'inpAddress', 'inpBlood', 'inpMarital', 'inpDob', 'inpPersonalEmail', 'depFather', 'depMother', 'depSpouse', 'depChild1', 'depChild2'];
+      const fieldIds = ['inpJoiningDate', 'inpEmergency', 'inpRelation', 'inpAddress', 'inpBlood', 'inpMarital', 'inpDob', 'inpPersonalEmail', 'depFather', 'depMother', 'depSpouse', 'depChild1', 'depChild2'];
       let count = 0;
       fieldIds.forEach(id => {
         const el = document.getElementById(id);
@@ -563,6 +568,7 @@
 
       const payload = {
         phone: currentUser.phone || '+8801708459008',
+        joiningDate: document.getElementById('inpJoiningDate').value,
         emergencyContact,
         emergencyRelation: relation,
         address,

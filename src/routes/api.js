@@ -1090,6 +1090,31 @@ router.get('/webhooks/setup', async (req, res) => {
   });
 });
 
+router.get('/webhooks/status', async (req, res) => {
+  const db = readDB();
+  const teamToken = process.env.TEAM_BOT_TOKEN || db.botConfig?.teamBot?.token || '8874232130:AAEs5JDOEEX9kIN9Z_V_k0UQp2lBao5MHLQ';
+  const clientToken = process.env.CLIENT_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN || db.botConfig?.clientBot?.token || '8964646505:AAEBVLDRqG0JdiTSSl6uK08UCQk0ZNsmYMU';
+
+  let teamInfo = null;
+  let clientInfo = null;
+
+  try {
+    const tRes = await fetch(`https://api.telegram.org/bot${teamToken}/getWebhookInfo`);
+    teamInfo = await tRes.json();
+  } catch (e) { teamInfo = { error: e.message }; }
+
+  try {
+    const cRes = await fetch(`https://api.telegram.org/bot${clientToken}/getWebhookInfo`);
+    clientInfo = await cRes.json();
+  } catch (e) { clientInfo = { error: e.message }; }
+
+  res.json({
+    success: true,
+    teamBot: teamInfo,
+    clientBot: clientInfo
+  });
+});
+
 router.get('/webhooks/logs', (req, res) => {
   const db = readDB();
   res.json(db.webhookLogs || []);
@@ -1494,17 +1519,17 @@ router.post('/webhooks/telegram', async (req, res) => {
           }).eq('emp_code', matchingStaff.id).then(() => {}).catch(() => {});
         }
 
-        replyText = `🎉 *Hi ${matchingStaff.name}! Great to see your initial data has been registered in the system already!*\n\n` +
-          `To complete your profile creation process, you can access *PurpleOS* directly from your desktop web browser or right here in Telegram.\n\n` +
-          `🌐 *Web Portal:* https://purpleos-iota.vercel.app/auth\n` +
-          `🔑 *Temporary PIN:* \`${pinRecord.pin}\`\n\n` +
-          `Please visit the web link above and use your Temporary PIN to sign in and set your permanent password.\n\n` +
-          `Once you sign in on the web, you will automatically receive a confirmation message right here on Telegram to move to our next onboarding step!\n\n` +
-          `💡 _Keep your PIN safe. You can always change or request a PIN reset with me anytime._`;
+        replyText = `🎉 *Identity Verified as ${matchingStaff.name}!*\n\n` +
+          `• Designation: *${matchingStaff.role || 'Crew Member'}*\n` +
+          `• Department: *${matchingStaff.department || 'AV Production'}*\n` +
+          `• Access Level: *${matchingStaff.accessLevel || 'Specialist'}*\n\n` +
+          `🔑 *Desktop Web Login PIN:* \`${pinRecord.pin}\`\n` +
+          `🌐 *Web Portal:* https://purpleos-iota.vercel.app/auth\n\n` +
+          `Please tap *🎓 Complete My Profile Survey* below to launch your 4-Part Survey Profile & generate your official Employment Agreement!`;
 
         replyMarkup = {
           keyboard: [
-            [{ text: '🌐 I Completed Web Account Setup' }],
+            [{ text: '🎓 Complete My Profile Survey', web_app: { url: 'https://purpleos-iota.vercel.app/team-miniapp' } }],
             [{ text: '🔑 View My Web Login PIN' }]
           ],
           resize_keyboard: true
@@ -2990,7 +3015,7 @@ router.post('/team/profile-setup', async (req, res) => {
   }
 
 router.post('/team/survey/part1', async (req, res) => {
-  const { phone, emergencyContact, emergencyRelation, address, bloodGroup, maritalStatus, dob, personalEmail, dependents } = req.body;
+  const { phone, joiningDate, emergencyContact, emergencyRelation, address, bloodGroup, maritalStatus, dob, personalEmail, dependents } = req.body;
   const db = readDB();
   const norm = String(phone || '').replace(/[^0-9]/g, '').slice(-10);
   const emp = (db.team || []).find(t => (t.id === 'PBD-000' || (t.phone || '').replace(/[^0-9]/g, '').slice(-10) === norm || (t.phone || '').includes('1708459008')));
@@ -2998,6 +3023,7 @@ router.post('/team/survey/part1', async (req, res) => {
   if (!emp) return res.status(404).json({ error: 'Employee not found' });
 
   let fieldCount = 0;
+  if (joiningDate) { emp.joiningDate = joiningDate; emp.joinDate = joiningDate; fieldCount++; }
   if (emergencyContact) { emp.emergencyContact = emergencyContact; fieldCount++; }
   if (emergencyRelation) { emp.emergencyRelation = emergencyRelation; fieldCount++; }
   if (address) { emp.address = address; fieldCount++; }
@@ -3026,7 +3052,7 @@ router.post('/team/survey/part1', async (req, res) => {
 
   if (emp.telegramId) {
     const { sendTelegramNotification } = require('../services/bot');
-    sendTelegramNotification(emp.telegramId, `🎉 *Part 1 Completed: Personal & Family Profile Saved!* (+${earnedXP} XP Earned)\n\n• Emergency Contact: *${emp.emergencyContact}*\n• Address: *${emp.address}*\n• Blood Group: *${emp.bloodGroup || 'Saved'}*\n\nNext Step: Open your Mini App to complete *Part 2: National Verification & Official Info*!`, null, true);
+    sendTelegramNotification(emp.telegramId, `🎉 *Part 1 Completed: Personal & Family Profile Saved!* (+${earnedXP} XP Earned)\n\n• Joining Date: *${emp.joiningDate || 'Saved'}*\n• Emergency Contact: *${emp.emergencyContact}*\n• Address: *${emp.address}*\n• Blood Group: *${emp.bloodGroup || 'Saved'}*\n\nNext Step: Open your Mini App to complete *Part 2: National Verification & Official Info*!`, null, true);
   }
 
   res.json({ success: true, earnedXP, member: emp });
@@ -3159,7 +3185,7 @@ router.post('/team/survey/part4', async (req, res) => {
 
   if (emp.telegramId) {
     const { sendTelegramNotification, getRoleKeyboard } = require('../services/bot');
-    const roleKbd = getRoleKeyboard(emp);
+    const roleKbd = getRoleKeyboard(emp.accessLevel || 'Owner / Admin', true, emp);
     sendTelegramNotification(emp.telegramId, `👑 *CONGRATULATIONS ${emp.name.toUpperCase()}!*\n\nAll 4 Survey Parts Completed (+${earnedXP} XP Earned, including +50 XP Graduation Bonus!).\n\n• Primary Skill: *${emp.skillPrimary}*\n• Merch Size: *${emp.tshirt || 'Saved'}*\n• Overall XP Rank: *${emp.badge || '⭐ Tech Specialist / Admin'}* (${emp.xp} XP)\n• Profile Status: *100% Verified & Saved*\n\nYour operational workspace is now unlocked! Use the menu options below to access crew tools anytime.`, roleKbd, true);
   }
 
