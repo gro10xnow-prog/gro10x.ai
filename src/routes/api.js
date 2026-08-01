@@ -3212,8 +3212,14 @@ router.get('/agreement/:empId', (req, res) => {
   });
 });
 
+router.get('/admin/pending-agreements', (req, res) => {
+  const db = readDB();
+  const pending = (db.team || []).filter(t => t.agreement && t.agreement.stage >= 1 && t.agreement.stage < 5);
+  res.json({ success: true, count: pending.length, pending });
+});
+
 router.post('/agreement/sign', async (req, res) => {
-  const { empId, phone, signatureName, stage } = req.body;
+  const { empId, phone, signatureName, stage, baseSalary, commissionRate, workArrangement, weeklyHours, noticePeriod, contractType } = req.body;
   const db = readDB();
   const norm = String(phone || '').replace(/[^0-9]/g, '').slice(-10);
   const emp = (db.team || []).find(t => (t.id === empId || t.id === 'PBD-000' || (t.phone || '').replace(/[^0-9]/g, '').slice(-10) === norm));
@@ -3244,13 +3250,23 @@ router.post('/agreement/sign', async (req, res) => {
     }
 
     // Notify HR Manager (Md. Borhan Siddique)
-    const hrManager = (db.team || []).find(t => t.role && t.role.includes('Finance') || t.name.includes('Borhan'));
+    const hrManager = (db.team || []).find(t => (t.role && t.role.includes('Finance')) || (t.name && t.name.includes('Borhan')));
     if (hrManager && hrManager.telegramId) {
       const { sendTelegramNotification } = require('../services/bot');
       sendTelegramNotification(hrManager.telegramId, `📋 *New Employment Agreement Pending Review!*\n\nEmployee: *${emp.name}* (\`${emp.id}\`)\nRole: *${emp.role}*\nJoining Date: *${emp.joiningDate || '2026-08-01'}*\n\nPlease open your HR Verification Panel on the Web Portal to review survey data & confirm official work terms!\n\n🌐 https://purpleos-iota.vercel.app/admin`, null, true);
     }
   } else if (stage === 2) {
     emp.agreement.stage = 3;
+    if (baseSalary) emp.baseSalary = Number(baseSalary);
+    if (commissionRate !== undefined) emp.commissionRate = Number(commissionRate);
+    if (workArrangement) emp.workArrangement = workArrangement;
+    if (weeklyHours) emp.weeklyHours = Number(weeklyHours);
+    if (noticePeriod) emp.noticePeriod = noticePeriod;
+    if (contractType) emp.contractType = contractType;
+
+    const joinTs = emp.joiningDate ? new Date(emp.joiningDate).getTime() : Date.now();
+    emp.probationEnd = new Date(joinTs + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
     emp.agreement.signatures.hr = {
       name: signatureName || 'Md. Borhan Siddique',
       signedAt: new Date().toISOString(),
@@ -3260,20 +3276,33 @@ router.post('/agreement/sign', async (req, res) => {
 
     if (emp.telegramId) {
       const { sendTelegramNotification } = require('../services/bot');
-      sendTelegramNotification(emp.telegramId, `✅ *Stage 2 Cleared: Approved by HR Manager!*\n\nHR Manager *Md. Borhan Siddique* has audited and signed your agreement.\n\nForwarded to Line Manager for Stage 3 Review!`, null, true);
+      sendTelegramNotification(emp.telegramId, `✅ *Stage 2 Cleared: Approved by HR Manager!*\n\nHR Manager *Md. Borhan Siddique* has audited your survey details and confirmed your terms:\n• Official Base Salary: *BDT ${(emp.baseSalary || 85000).toLocaleString()}*\n• Work Arrangement: *${emp.workArrangement || 'Office (In-Studio)'}*\n• Probation Period: *90 Days (Ends ${emp.probationEnd})*\n\nForwarded to Line Manager for Stage 3 Review!`, null, true);
+    }
+
+    // Notify Line Manager / Managing Director
+    const md = (db.team || []).find(t => t.id === 'PBD-001' || t.name.includes('Ifteker'));
+    if (md && md.telegramId) {
+      const { sendTelegramNotification } = require('../services/bot');
+      sendTelegramNotification(md.telegramId, `📋 *Agreement Stage 3 Pending Line Review!*\n\nEmployee: *${emp.name}* (\`${emp.id}\`)\nSalary Confirmed: *BDT ${(emp.baseSalary || 85000).toLocaleString()}*\nWork Terms: *${emp.workArrangement || 'Office'}*\n\nPlease review and apply your Stage 3 sign-off!\n\n🌐 https://purpleos-iota.vercel.app/admin`, null, true);
     }
   } else if (stage === 3) {
     emp.agreement.stage = 4;
     emp.agreement.signatures.lineManager = {
-      name: signatureName || 'Operations Lead',
+      name: signatureName || 'H. M. Ifteker Mahmud',
       signedAt: new Date().toISOString(),
-      status: 'Stage 3 Manager Approved'
+      status: 'Stage 3 Line Approved'
     };
     writeDB(db);
 
     if (emp.telegramId) {
       const { sendTelegramNotification } = require('../services/bot');
-      sendTelegramNotification(emp.telegramId, `✅ *Stage 3 Cleared: Approved by Line Manager!*\n\nForwarded to Managing Director *H. M. Ifteker Mahmud* for final executive sign-off!`, null, true);
+      sendTelegramNotification(emp.telegramId, `✅ *Stage 3 Cleared: Approved by Line Manager!*\n\nForwarded to Managing Director *H. M. Ifteker Mahmud* for final executive sign-off & seal!`, null, true);
+    }
+
+    const md = (db.team || []).find(t => t.id === 'PBD-001' || t.name.includes('Ifteker'));
+    if (md && md.telegramId) {
+      const { sendTelegramNotification } = require('../services/bot');
+      sendTelegramNotification(md.telegramId, `👑 *Final Executive Sign-Off Pending!*\n\nEmployee: *${emp.name}* (\`${emp.id}\`)\nStages 1, 2 & 3 are fully cleared.\n\nAwaiting your executive seal to welcome them to the Purple Gang!\n\n🌐 https://purpleos-iota.vercel.app/admin`, null, true);
     }
   } else if (stage === 4) {
     emp.agreement.stage = 5;
@@ -3281,20 +3310,28 @@ router.post('/agreement/sign', async (req, res) => {
     emp.agreement.executedAt = new Date().toISOString();
     emp.agreement.signatures.managingDirector = {
       name: signatureName || 'H. M. Ifteker Mahmud',
+      title: 'Managing Director',
       signedAt: new Date().toISOString(),
       status: 'Stage 4 Executive Sealed'
     };
     emp.onboardingComplete = true;
+    emp.onboarding_step = 7;
     writeDB(db);
+
+    if (isSupabaseConfigured()) {
+      try {
+        await supabase.from('profiles').update({ status: 'ACTIVE' }).eq('emp_code', emp.id);
+      } catch (err) {}
+    }
 
     if (emp.telegramId) {
       const { sendTelegramNotification, getRoleKeyboard } = require('../services/bot');
-      const roleKbd = getRoleKeyboard(emp);
-      sendTelegramNotification(emp.telegramId, `👑 *CONGRATULATIONS ${emp.name.toUpperCase()}!*\n\nYour Employment Agreement is 100% Executed & Sealed by all parties!\n\n📄 *Download Executed Contract:* https://purpleos-iota.vercel.app/api/agreement/${emp.id || 'PBD-000'}/download\n\nYour full operational workspace is active!`, roleKbd, true);
+      const roleKbd = getRoleKeyboard(emp.accessLevel || 'Owner / Admin', true, emp);
+      sendTelegramNotification(emp.telegramId, `👑 *CONGRATULATIONS ${emp.name.toUpperCase()}! WELCOME TO THE PURPLE GANG! 🟣*\n\nYour Employment Agreement is 100% Executed & Sealed by HR Manager Md. Borhan Siddique, your Line Manager, and Managing Director H. M. Ifteker Mahmud!\n\n📄 *Download Executed Contract PDF:* https://purpleos-iota.vercel.app/api/agreement/${emp.id || 'PBD-000'}/download\n\nYour operational workspace is now FULLY UNLOCKED! Use the crew tools below anytime!`, roleKbd, true);
     }
   }
 
-  res.json({ success: true, agreement: emp.agreement });
+  res.json({ success: true, agreement: emp.agreement, member: emp });
 });
 
 router.get('/agreement/:empId/download', (req, res) => {
