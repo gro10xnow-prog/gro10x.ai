@@ -1478,24 +1478,56 @@ router.post('/webhooks/telegram', async (req, res) => {
         const progress = getOnboardingProgress(matchingStaff);
 
         if (!matchingStaff.onboardingComplete) {
-          replyText = `✅ *Identity Verified as ${matchingStaff.name}!*\n\n` +
-            `• Designation: *${matchingStaff.role}*\n` +
-            `• Department: *${matchingStaff.department}*\n` +
-            `• Access Level: *${matchingStaff.accessLevel}*\n\n` +
-            `🔑 *Desktop Web Login PIN:* \`${pinRecord.pin}\`\n` +
-            `🌐 *Web Portal:* https://purpleos-iota.vercel.app/auth\n\n` +
-            `🚀 *ONBOARDING PROGRESS:* ${progress.bar} ${progress.pct}%\n` +
-            `Tasks Completed: *${progress.done} / ${progress.total}*\n\n` +
-            `Tap *▶️ Start Onboarding Wizard* below to activate your account!`;
+          if (!matchingStaff.permanentPinSet) {
+            replyText = `✅ *Identity Verified as ${matchingStaff.name}!*\n\n` +
+              `• Designation: *${matchingStaff.role}*\n` +
+              `• Department: *${matchingStaff.department}*\n` +
+              `• Access Level: *${matchingStaff.accessLevel}*\n\n` +
+              `🔑 *Desktop Web Login PIN:* \`${pinRecord.pin}\`\n` +
+              `🌐 *Web Portal:* https://purpleos-iota.vercel.app/auth\n\n` +
+              `🚀 *STEP 2 OF 6 PENDING:* Activate Desktop Web Workspace\n\n` +
+              `Please log into https://purpleos-iota.vercel.app/auth with PIN \`${pinRecord.pin}\` to activate your account.`;
 
-          replyMarkup = {
-            keyboard: [
-              [{ text: '▶️ Start Onboarding Wizard' }],
-              [{ text: '🏆 Leaderboard' }, { text: '📋 Submit EOD' }],
-              [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
-            ],
-            resize_keyboard: true
-          };
+            replyMarkup = {
+              keyboard: [
+                [{ text: '🌐 I Completed Web Account Setup' }],
+                [{ text: '🔑 View My Web Login PIN' }]
+              ],
+              resize_keyboard: true
+            };
+          } else if (!matchingStaff.emergencyContact) {
+            replyText = `🎉 *Task 2 Completed: Web Workspace Activated!* (+25 XP)\n\nNext Step: Please set your Emergency Contact.`;
+            replyMarkup = {
+              keyboard: [
+                [{ text: '👤 Set Emergency Contact' }]
+              ],
+              resize_keyboard: true
+            };
+          } else if (!matchingStaff.address) {
+            replyText = `🎉 *Task 3 Completed: Emergency Contact Saved!* (+25 XP)\n\nNext Step: Please set your Home Address.`;
+            replyMarkup = {
+              keyboard: [
+                [{ text: '🏠 Set Home Address' }]
+              ],
+              resize_keyboard: true
+            };
+          } else if (!matchingStaff.bankInfo || (!matchingStaff.bankInfo.bankName && !matchingStaff.bankInfo.mfsNo)) {
+            replyText = `🎉 *Task 4 Completed: Address Saved!* (+25 XP)\n\nNext Step: Setup Bank & bKash Payouts.`;
+            replyMarkup = {
+              keyboard: [
+                [{ text: '💳 Setup Bank & bKash Payouts' }]
+              ],
+              resize_keyboard: true
+            };
+          } else {
+            replyText = `🎉 *Task 5 Completed: Financial Payout Setup Done!* (+25 XP)\n\nNext Step: Submit your first GPS Clock-In.`;
+            replyMarkup = {
+              keyboard: [
+                [{ text: '📍 Submit First GPS Clock-In', request_location: true }]
+              ],
+              resize_keyboard: true
+            };
+          }
         } else {
           replyText = `✅ *Identity Verified as ${matchingStaff.name}!*\n\n` +
             `• Designation: *${matchingStaff.role}*\n` +
@@ -2000,20 +2032,53 @@ router.post('/webhooks/telegram', async (req, res) => {
             const progress = getOnboardingProgress(emp);
 
             if (!emp.onboardingComplete) {
-              replyText = `🤖 *Welcome to PurpleOS, ${emp.name}!*\n\n` +
-                `Role: *${emp.role}* (${emp.department})\n\n` +
-                `🚀 *ONBOARDING PROGRESS:* ${progress.bar} ${progress.pct}%\n` +
-                `Tasks Completed: *${progress.done} / ${progress.total}*\n\n` +
-                `Tap *▶️ Start Onboarding Wizard* below to activate your account!`;
+              if (!emp.permanentPinSet) {
+                replyText = `🤖 *Welcome to PurpleOS, ${emp.name}!*\n\n` +
+                  `• Designation: *${emp.role}*\n` +
+                  `• Department: *${emp.department}*\n\n` +
+                  `🚀 *STEP 2 OF 6 PENDING:* Activate Desktop Web Workspace\n\n` +
+                  `Please log into https://purpleos-iota.vercel.app/auth to activate your account.`;
 
-              replyMarkup = {
-                keyboard: [
-                  [{ text: '▶️ Start Onboarding Wizard' }],
-                  [{ text: '🏆 Leaderboard' }, { text: '📋 Submit EOD' }],
-                  [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
-                ],
-                resize_keyboard: true
-              };
+                replyMarkup = {
+                  keyboard: [
+                    [{ text: '🌐 I Completed Web Account Setup' }],
+                    [{ text: '🔑 View My Web Login PIN' }]
+                  ],
+                  resize_keyboard: true
+                };
+              } else if (!emp.emergencyContact) {
+                replyText = `🎉 *Task 2 Completed: Web Workspace Activated!* (+25 XP)\n\nNext Step: Please set your Emergency Contact.`;
+                replyMarkup = {
+                  keyboard: [
+                    [{ text: '👤 Set Emergency Contact' }]
+                  ],
+                  resize_keyboard: true
+                };
+              } else if (!emp.address) {
+                replyText = `🎉 *Task 3 Completed: Emergency Contact Saved!* (+25 XP)\n\nNext Step: Please set your Home Address.`;
+                replyMarkup = {
+                  keyboard: [
+                    [{ text: '🏠 Set Home Address' }]
+                  ],
+                  resize_keyboard: true
+                };
+              } else if (!emp.bankInfo || (!emp.bankInfo.bankName && !emp.bankInfo.mfsNo)) {
+                replyText = `🎉 *Task 4 Completed: Address Saved!* (+25 XP)\n\nNext Step: Setup Bank & bKash Payouts.`;
+                replyMarkup = {
+                  keyboard: [
+                    [{ text: '💳 Setup Bank & bKash Payouts' }]
+                  ],
+                  resize_keyboard: true
+                };
+              } else {
+                replyText = `🎉 *Task 5 Completed: Financial Payout Setup Done!* (+25 XP)\n\nNext Step: Submit your first GPS Clock-In.`;
+                replyMarkup = {
+                  keyboard: [
+                    [{ text: '📍 Submit First GPS Clock-In', request_location: true }]
+                  ],
+                  resize_keyboard: true
+                };
+              }
             } else {
               replyText = `🤖 *Welcome back, ${emp.name}!*\n\n` +
                 `Role: *${emp.role}* (${emp.department})\n` +
