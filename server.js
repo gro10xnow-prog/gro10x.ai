@@ -58,6 +58,20 @@ app.use(subdomainRouter);
 // SSE Endpoint for real-time synchronization
 app.get('/api/sync', sseHandler);
 
+// Bot Status Health Check
+app.get('/api/bot-status', (req, res) => {
+  let team = getTeamBot();
+  let client = getClientBot();
+  if (!team || !client) {
+    try { initBot(); team = getTeamBot(); client = getClientBot(); } catch (e) {}
+  }
+  res.json({
+    teamBot: team ? 'active' : 'null',
+    clientBot: client ? 'active' : 'null',
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Telegram Webhook Endpoint for Production Updates
 app.post('/api/webhooks/telegram', (req, res) => {
   const secretHeader = req.headers['x-telegram-bot-api-secret-token'];
@@ -67,7 +81,17 @@ app.post('/api/webhooks/telegram', (req, res) => {
   }
 
   const botType = req.query.bot || 'team';
-  const targetBot = botType === 'client' ? getClientBot() : getTeamBot();
+  let targetBot = botType === 'client' ? getClientBot() : getTeamBot();
+
+  // Cold start fallback: Ensure bot instance is ready
+  if (!targetBot) {
+    try {
+      initBot();
+      targetBot = botType === 'client' ? getClientBot() : getTeamBot();
+    } catch (e) {
+      console.error(`Error initializing bot on cold start (${botType}):`, e.message);
+    }
+  }
 
   if (targetBot && req.body) {
     try {
@@ -75,6 +99,8 @@ app.post('/api/webhooks/telegram', (req, res) => {
     } catch (err) {
       console.error(`Telegram webhook update processing error (${botType}):`, err.message);
     }
+  } else if (!targetBot) {
+    console.warn(`⚠️ Target bot (${botType}) is null during webhook processing`);
   }
   return res.status(200).json({ ok: true });
 });

@@ -38,7 +38,8 @@ async function handlePinLogin(event) {
   event.preventDefault();
   const phone = document.getElementById('phone').value.trim();
   const pin = document.getElementById('pin').value.trim();
-  const email = document.getElementById('email').value.trim();
+  const emailElem = document.getElementById('email');
+  const email = emailElem ? emailElem.value.trim() : '';
   const btn = document.getElementById('btn-pin-submit');
 
   showAlert('Verifying credentials...', 'success');

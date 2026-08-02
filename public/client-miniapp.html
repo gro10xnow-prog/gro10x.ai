@@ -542,6 +542,9 @@
     <div class="card">
       <div class="card-title">Quick Actions</div>
       <div class="qa-grid">
+        <button class="qa-btn" onclick="openBriefModal()">
+          <div class="qa-icon">📝</div><div class="qa-label">New Brief</div>
+        </button>
         <button class="qa-btn" onclick="showPage('pageReview')">
           <div class="qa-icon">🎬</div><div class="qa-label">Review Cut</div>
         </button>
@@ -550,9 +553,6 @@
         </button>
         <button class="qa-btn" onclick="showPage('pagePayment')">
           <div class="qa-icon">💳</div><div class="qa-label">Pay Invoice</div>
-        </button>
-        <button class="qa-btn" onclick="showPage('pageContact')">
-          <div class="qa-icon">📞</div><div class="qa-label">Contact AM</div>
         </button>
       </div>
     </div>
@@ -1094,11 +1094,91 @@
   }
 
   // ══════════════════════════════════════════
+  // CAMPAIGN BRIEF MODAL
+  // ══════════════════════════════════════════
+  function openBriefModal() {
+    triggerHaptic('medium');
+    document.getElementById('miniBriefOverlay').style.display = 'flex';
+  }
+
+  function closeBriefModal() {
+    triggerHaptic('light');
+    document.getElementById('miniBriefOverlay').style.display = 'none';
+  }
+
+  async function submitMiniBrief(event) {
+    if (event) event.preventDefault();
+    triggerHaptic('heavy');
+
+    const title = document.getElementById('briefTitle').value.trim();
+    const service = document.getElementById('briefService').value;
+    const notes = document.getElementById('briefNotes').value.trim();
+
+    if (!title) {
+      showSuccess('⚠️', 'Title Required', 'Please enter a campaign name.');
+      return;
+    }
+
+    try {
+      const tgUser = tg?.initDataUnsafe?.user;
+      await fetch('/api/tasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: `[Brief] ${title}`,
+          client: clientData?.name || 'Brand Partner',
+          stage: 'Briefing',
+          priority: 'High',
+          assignee: 'Account Manager',
+          description: `Category: ${service}. Notes: ${notes}`,
+          telegramId: tgUser?.id || 'debug'
+        })
+      });
+    } catch(e) {}
+
+    closeBriefModal();
+    document.getElementById('briefTitle').value = '';
+    document.getElementById('briefNotes').value = '';
+    showSuccess('🚀', 'Brief Submitted!', 'Your Account Manager has been notified and will prepare the production roadmap within 24 hours.');
+  }
+
+  // ══════════════════════════════════════════
   // START
   // ══════════════════════════════════════════
   init();
   // Set today's date as default
   document.getElementById('inpPayDate').valueAsDate = new Date();
 </script>
+
+<!-- CAMPAIGN BRIEF MODAL OVERLAY -->
+<div id="miniBriefOverlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); backdrop-filter:blur(8px); z-index:999; align-items:flex-end; justify-content:center;">
+  <div style="background:var(--surface); width:100%; max-width:480px; border-radius:24px 24px 0 0; padding:1.5rem; border-top:1px solid var(--border); box-shadow:0 -10px 40px rgba(0,0,0,0.2);">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.2rem;">
+      <div style="font-size:1.1rem; font-weight:800; color:var(--text);">📝 Submit Campaign Brief</div>
+      <button onclick="closeBriefModal()" style="background:none; border:none; font-size:1.4rem; cursor:pointer; color:var(--muted);">✕</button>
+    </div>
+    <form onsubmit="submitMiniBrief(event)">
+      <div style="margin-bottom:1rem;">
+        <label style="display:block; font-size:0.75rem; font-weight:700; color:var(--text-2); margin-bottom:0.4rem; text-transform:uppercase;">Campaign Title</label>
+        <input type="text" id="briefTitle" placeholder="e.g. Summer Commercial shoot" required style="width:100%; padding:0.75rem 1rem; border-radius:12px; border:1px solid var(--border); font-family:inherit; font-size:0.9rem; background:var(--bg);">
+      </div>
+      <div style="margin-bottom:1rem;">
+        <label style="display:block; font-size:0.75rem; font-weight:700; color:var(--text-2); margin-bottom:0.4rem; text-transform:uppercase;">Service Category</label>
+        <select id="briefService" style="width:100%; padding:0.75rem 1rem; border-radius:12px; border:1px solid var(--border); font-family:inherit; font-size:0.9rem; background:var(--bg);">
+          <option value="Social Media Retainer">Social Media Retainer</option>
+          <option value="TVC Commercial Production">TVC Commercial Production</option>
+          <option value="Product Photography">Product Photography</option>
+          <option value="Motion Graphics">Motion Graphics & Animation</option>
+          <option value="Brand Identity & Design">Brand Identity & Design</option>
+        </select>
+      </div>
+      <div style="margin-bottom:1.2rem;">
+        <label style="display:block; font-size:0.75rem; font-weight:700; color:var(--text-2); margin-bottom:0.4rem; text-transform:uppercase;">Notes & Requirements</label>
+        <textarea id="briefNotes" rows="3" placeholder="Describe key deliverables, timeline, or objectives..." style="width:100%; padding:0.75rem 1rem; border-radius:12px; border:1px solid var(--border); font-family:inherit; font-size:0.9rem; background:var(--bg); resize:none;"></textarea>
+      </div>
+      <button type="submit" class="btn-primary" style="width:100%;">🚀 Submit Brief to Production Team</button>
+    </form>
+  </div>
+</div>
 </body>
 </html>
