@@ -9,6 +9,31 @@
   <link rel="stylesheet" href="/css/pwa.css">
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#0b0f19">
+  <style>
+    .tab-pane.active {
+      animation: tabFadeIn 0.25s ease-out forwards;
+    }
+    @keyframes tabFadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .glass-panel, .glass-card {
+      background: rgba(15, 23, 42, 0.75) !important;
+      backdrop-filter: blur(16px) !important;
+      border: 1px solid rgba(255, 255, 255, 0.08) !important;
+      border-radius: 14px !important;
+      transition: all 0.25s ease !important;
+    }
+    .glass-panel:hover, .glass-card:hover {
+      border-color: rgba(192, 132, 252, 0.3) !important;
+      box-shadow: 0 8px 24px rgba(168, 85, 247, 0.1) !important;
+    }
+    .kanban-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(96, 165, 250, 0.4) !important;
+      box-shadow: 0 6px 16px rgba(59, 130, 246, 0.15) !important;
+    }
+  </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 </head>

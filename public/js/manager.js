@@ -39,8 +39,39 @@ function showManagerToast(message, type = 'success', duration = 3500) {
 
 document.addEventListener('DOMContentLoaded', async () => {
   await checkManagerAuth();
+  await loadManagerMetadata();
   initManagerNavigation();
 });
+
+let managerClients = [];
+let managerTeamMembers = [];
+
+async function loadManagerMetadata() {
+  try {
+    const [clientRes, teamRes] = await Promise.all([
+      fetch('/api/clients').catch(() => null),
+      fetch('/api/team').catch(() => null)
+    ]);
+    if (clientRes && clientRes.ok) managerClients = await clientRes.json();
+    if (teamRes && teamRes.ok) managerTeamMembers = await teamRes.json();
+
+    populateManagerClientDropdowns();
+  } catch (err) {
+    console.warn('Metadata fetch error:', err.message);
+  }
+}
+
+function populateManagerClientDropdowns() {
+  const clientSelects = ['postClientSelect', 'cutClientSelect', 'taskClientSelect'];
+  if (!managerClients || !managerClients.length) return;
+
+  clientSelects.forEach(selectId => {
+    const el = document.getElementById(selectId);
+    if (el) {
+      el.innerHTML = managerClients.map(c => `<option value="${c.name}">${c.name} (${c.tier || 'Retainer'})</option>`).join('');
+    }
+  });
+}
 
 /**
  * 1. Authentication & Role Gate Check for /manager
@@ -350,10 +381,20 @@ function renderManagerKanbanBoard() {
     }
   });
 
-  // Update counts
+  // Update counts & render empty state placeholders
   Object.keys(counts).forEach(k => {
     const badge = document.getElementById(`count-${k}`);
     if (badge) badge.textContent = counts[k];
+
+    const colEl = columns[k];
+    if (colEl && counts[k] === 0) {
+      colEl.innerHTML = `
+        <div class="kanban-empty-card" style="padding: 1.25rem 0.75rem; text-align: center; color: #64748b; font-size: 0.78rem; background: rgba(15,23,42,0.4); border: 1px dashed rgba(255,255,255,0.06); border-radius: 10px;">
+          <div style="font-size: 1.1rem; margin-bottom: 0.25rem;">📋</div>
+          <div>No tasks in this stage</div>
+        </div>
+      `;
+    }
   });
 }
 
