@@ -459,17 +459,17 @@ function initBot() {
 
       // Register native command menu
       teamBot.setMyCommands([
-        { command: 'start', description: 'Start & verify account' },
-        { command: 'help', description: 'Show available commands' },
-        { command: 'myprofile', description: 'View & update profile' },
-        { command: 'mybank', description: 'View bank & bKash details' },
-        { command: 'mytasks', description: 'View assigned tasks' },
-        { command: 'myearnings', description: 'View salary & commissions' },
-        { command: 'resetpin', description: 'Get new web portal PIN' },
-        { command: 'clockin', description: 'Clock-in to studio' },
-        { command: 'clockout', description: 'Clock-out of studio' },
-        { command: 'orientation', description: 'Employee onboarding survey' },
-        { command: 'techdiag', description: 'System diagnostics' }
+        { command: 'start', description: '🚀 Verify identity & launch menu' },
+        { command: 'help', description: '📖 Show all available commands' },
+        { command: 'myprofile', description: '👤 View & edit employee profile' },
+        { command: 'mybank', description: '💳 Bank & bKash payout details' },
+        { command: 'mytasks', description: '📋 See assigned tasks' },
+        { command: 'myearnings', description: '💰 Salary & commission summary' },
+        { command: 'resetpin', description: '🔑 Get new web portal login PIN' },
+        { command: 'clockin', description: '📍 GPS clock-in to studio' },
+        { command: 'clockout', description: '🚪 Clock-out & log hours' },
+        { command: 'orientation', description: '🎓 Employee onboarding survey' },
+        { command: 'techdiag', description: '🛠️ System diagnostics (Admin)' }
       ]).catch(e => {});
 
       // Register persistent Chat Menu Button (Open App)
@@ -760,25 +760,48 @@ function initBot() {
         }
       });
 
-      // /start or /help handler
-      teamBot.onText(/\/start|\/help/, (msg) => {
+      // /start handler
+      teamBot.onText(/\/start/, (msg) => {
         const chatId = msg.chat.id;
         userState[chatId] = null;
         const dbData = readDB();
         const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId));
 
         if (emp) {
-          const welcome = `🤖 *Welcome back, ${emp.name}!*\n\n` +
-            `Role: *${emp.role}* (${emp.department})\n\n` +
-            `Use the quick menu below or tap *Open App* to launch your dashboard.`;
+          const welcome = `💜 *Welcome back, ${emp.name}!*\n\n` +
+            `🏢 *${emp.role}* · ${emp.department}\n` +
+            `⭐ Rank: *${emp.badge || '🌱 Recruit'}* (${emp.xp || 0} XP)\n\n` +
+            `Your dashboard is ready. Tap any menu button below or hit *Open App* for full access.`;
           const keyboard = getRoleKeyboard(emp.accessLevel, true, emp);
           teamBot.sendMessage(chatId, welcome, { parse_mode: 'Markdown', reply_markup: keyboard });
         } else {
-          const welcome = `🤖 *Welcome to Purple Man (Purplebot Digital Team Bot)!*\n\n` +
-            `Please tap the button below to verify your phone number and link your PBD account.`;
+          const welcome = `🟣 *PURPLEBOT DIGITAL — Team Assistant*\n\n` +
+            `Welcome to the internal team bot.\n\n` +
+            `📌 *Getting Started:*\n` +
+            `Tap *📱 Verify My Phone Number* below to link your account. It takes 5 seconds!`;
           const keyboard = getRoleKeyboard('Specialist / Crew', false);
           teamBot.sendMessage(chatId, welcome, { parse_mode: 'Markdown', reply_markup: keyboard });
         }
+      });
+
+      // /help handler
+      teamBot.onText(/\/help/, (msg) => {
+        const chatId = msg.chat.id;
+        userState[chatId] = null;
+        const helpText = `📖 *PURPLEOS TEAM BOT — COMMAND GUIDE*\n\n` +
+          `• \`/start\` — Verify identity & launch menu\n` +
+          `• \`/help\` — Show all available commands\n` +
+          `• \`/myprofile\` — View & update employee profile\n` +
+          `• \`/mybank\` — Manage salary bank & bKash payout details\n` +
+          `• \`/mytasks\` — See your assigned active tasks\n` +
+          `• \`/myearnings\` — Salary + commission breakdown\n` +
+          `• \`/resetpin\` — Get a fresh web portal login PIN\n` +
+          `• \`/clockin\` — GPS studio clock-in\n` +
+          `• \`/clockout\` — Clock-out & log daily hours\n` +
+          `• \`/orientation\` — Complete onboarding survey\n` +
+          `• \`/techdiag\` — System diagnostics (Admin only)\n\n` +
+          `💡 *Tip:* You can also search tasks inline anywhere in Telegram by typing \`@teamBot <search_term>\`!`;
+        teamBot.sendMessage(chatId, helpText, { parse_mode: 'Markdown' });
       });
 
       // Reset PIN Command
@@ -2854,13 +2877,13 @@ function initBot() {
 
       // Register native command menu
       clientBot.setMyCommands([
-        { command: 'start', description: 'Start client assistant' },
-        { command: 'help', description: 'Show available client options' },
-        { command: 'services', description: 'View agency services & pricing' },
-        { command: 'portfolio', description: 'Explore agency portfolio' },
-        { command: 'review', description: 'Access Video Review Room' },
-        { command: 'campaign', description: 'Check active campaign status' },
-        { command: 'invoices', description: 'View billing & pay invoices' }
+        { command: 'start', description: '🚀 Open client portal & verify' },
+        { command: 'help', description: '📖 Show all available client options' },
+        { command: 'services', description: '🎨 View agency services & packages' },
+        { command: 'portfolio', description: '📁 Explore agency portfolio' },
+        { command: 'review', description: '🎬 Access Video Review Room' },
+        { command: 'campaign', description: '📋 Track active campaign status' },
+        { command: 'invoices', description: '💳 View billing & pay invoices' }
       ]).catch(e => {});
 
       // Register persistent Chat Menu Button (Open App)
@@ -2904,13 +2927,13 @@ function initBot() {
             type: 'article',
             id: `inv-${inv.id || Math.random()}`,
             title: `💳 ${inv.id || 'INV'}: ${inv.project_name || inv.projectName || 'Invoice'}`,
-            description: `Client: ${inv.client_name || inv.clientName || 'Client'} | Amount: $${(Number(inv.amount) || 0).toLocaleString()} | Status: ${inv.status || 'Pending'}`,
+            description: `Client: ${inv.client_name || inv.clientName || 'Client'} | Amount: BDT ${(Number(inv.amount) || 0).toLocaleString()} | Status: ${inv.status || 'Pending'}`,
             input_message_content: {
               message_text: `💳 *PURPLEOS COMMERCIAL INVOICE CARD*\n\n` +
                 `*Invoice ID:* \`${inv.id || 'N/A'}\`\n` +
                 `*Client:* ${inv.client_name || inv.clientName || 'Brand Partner'}\n` +
                 `*Project:* ${inv.project_name || inv.projectName || 'Campaign Work'}\n` +
-                `*Amount:* $${(Number(inv.amount) || 0).toLocaleString()}\n` +
+                `*Amount:* BDT ${(Number(inv.amount) || 0).toLocaleString()}\n` +
                 `*Status:* ${inv.status || 'Pending'}\n` +
                 `*Due Date:* ${inv.due_date || inv.dueDate || 'N/A'}\n\n` +
                 `🌐 [Open Partner Portal](https://purpleos-iota.vercel.app/partners)`,
@@ -2924,32 +2947,50 @@ function initBot() {
         }
       });
 
-      clientBot.onText(/\/start|\/help/, (msg) => {
+      // /start handler
+      clientBot.onText(/\/start/, (msg) => {
         const chatId = msg.chat.id;
         const dbData = readDB();
         const client = (dbData.clients || []).find(c => String(c.telegramId) === String(chatId));
 
         if (client) {
+          const pendingCount = (dbData.tasks || []).filter(t => t.client === client.name && t.stage === 'Client Review').length;
           const welcome = `👋 *Welcome back, ${client.name || client.contactPerson}!*\n\n` +
-            `You have ${(dbData.tasks || []).filter(t => t.client === client.name && t.stage === 'Client Review').length} deliverable(s) awaiting your review.\n\n` +
-            `Use the menu below or tap *Open App* for your full client portal.`;
+            `📋 *${pendingCount} deliverable(s)* awaiting your review.\n` +
+            `💳 Monthly Retainer: *BDT ${(client.retainerValue || 0).toLocaleString()}*\n\n` +
+            `Tap any menu button below or hit *Open App* for your client portal.`;
           const keyboard = getClientKeyboard(client);
           clientBot.sendMessage(chatId, welcome, { parse_mode: 'Markdown', reply_markup: keyboard });
         } else {
-          const welcome = `🎨 *Welcome to Purple Bot — Purplebot Digital Client Portal!*\n\n` +
+          const welcome = `🎨 *Purplebot Digital — Brand Partner Portal*\n\n` +
             `Your creative agency assistant for:\n` +
             `• 🎬 Reviewing video & TVC deliverables\n` +
-            `• 📋 Tracking campaign progress\n` +
-            `• 💳 Invoice & payment management\n` +
-            `• 📞 Direct access to your Account Manager\n\n` +
+            `• 📋 Live campaign progress tracking\n` +
+            `• 💳 Invoice & bKash payment verification\n` +
+            `• 📞 Direct line to your Account Manager\n\n` +
             `━━━━━━━━━━━━━━━━━━━━\n` +
-            `📌 *To get started:* Share your phone number below to link your account.`;
+            `📌 *To get started:* Tap *📱 Share My Phone to Get Started* below.`;
           const keyboard = {
             keyboard: [[{ text: '📱 Share My Phone to Get Started', request_contact: true }]],
             resize_keyboard: true
           };
           clientBot.sendMessage(chatId, welcome, { parse_mode: 'Markdown', reply_markup: keyboard });
         }
+      });
+
+      // /help handler
+      clientBot.onText(/\/help/, (msg) => {
+        const chatId = msg.chat.id;
+        const helpText = `📖 *PURPLEOS CLIENT BOT — QUICK GUIDE*\n\n` +
+          `• \`/start\` — Open portal & link account\n` +
+          `• \`/help\` — Show available options & commands\n` +
+          `• \`/review\` — Access Video Review Room for active cuts\n` +
+          `• \`/campaign\` — Track live campaign production progress\n` +
+          `• \`/invoices\` — View billing & payment history\n` +
+          `• \`/services\` — Explore agency services & pricing\n` +
+          `• \`/portfolio\` — View agency creative portfolio\n\n` +
+          `💡 *Tip:* Tap the persistent *Open App* button at any time for full web portal access!`;
+        clientBot.sendMessage(chatId, helpText, { parse_mode: 'Markdown' });
       });
 
       // Client phone verification
