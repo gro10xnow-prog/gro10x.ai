@@ -1,6 +1,6 @@
 const TelegramBot = require('node-telegram-bot-api');
 const { supabase } = require('./supabase');
-const { readDB, writeDB } = require('./db');
+const { readDB } = require('./db');
 const { broadcast } = require('./sse');
 const { processAutomationEvent } = require('./automation');
 const { createTempPin } = require('./auth-pins');
@@ -726,24 +726,23 @@ function initBot() {
               `Your manager ${manager ? `(*${manager.name}*)` : ''} has been notified.`,
               { parse_mode: 'Markdown', reply_markup: getRoleKeyboard(emp.accessLevel, true, emp) }
             );
-          } else if (state.action === 'await_eod_summary') {
-            dbData.eod_reports = dbData.eod_reports || [];
-            const eodEntry = {
-              id: `EOD-${Date.now()}`,
-              employeeId: state.empId,
-              employeeName: state.empName,
-              summary: text,
-              date: new Date().toLocaleDateString('en-GB'),
-              createdAt: new Date().toISOString()
-            };
-            dbData.eod_reports.push(eodEntry);
-            writeDB(dbData);
+          } else if (wizardState.action === 'await_eod_summary') {
+            const summaryText = text.trim();
+            await state.submitEOD(emp.emp_code, emp.name, {
+              done: summaryText,
+              tomorrow: 'Standard daily tasks',
+              blockers: 'None',
+              mood: '😊 Energized',
+              hours: 8
+            });
+
+            await state.clearSession(chatId);
             userState[chatId] = null;
             teamBot.sendMessage(chatId,
               `✅ *EOD Report Submitted!*\n\n` +
               `📅 ${new Date().toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}\n` +
-              `📝 "${text.substring(0, 100)}${text.length > 100 ? '...' : ''}"\n\n` +
-              `Thank you for your update. Have a great evening! 💜`,
+              `📝 "${summaryText.substring(0, 100)}${summaryText.length > 100 ? '...' : ''}"\n\n` +
+              `Thank you for your update. Saved to Supabase! 💜`,
               { parse_mode: 'Markdown', reply_markup: getRoleKeyboard(emp.accessLevel, true, emp) }
             );
           }
@@ -1831,36 +1830,52 @@ function initBot() {
         });
       });
 
-      // Callback query handler for submit_script_qc
-      teamBot.on('callback_query', (query) => {
+      // Callback query handler for submit_script_qc & submit_qc
+      teamBot.on('callback_query', async (query) => {
         const data = query.data || '';
         if (data.startsWith('submit_script_qc:')) {
           const taskId = data.split(':')[1];
-          const dbData = readDB();
-          const task = (dbData.tasks || []).find(t => t.id === taskId);
-          if (task) {
-            task.stage = 'Script QC';
-            task.updatedAt = new Date().toISOString();
-            const { writeDB } = require('./db');
-            const { broadcast } = require('./sse');
-            writeDB(dbData);
-            broadcast('task_update', dbData.tasks);
-
-            // Notify Nasir
-            try {
-              const nasir = (dbData.team || []).find(t => t.id === 'PBD-013');
-              if (nasir?.telegramId) {
-                sendTelegramNotification(nasir.telegramId,
-                  `📜 *Script QC Review Required*\n\n• Task: *${task.title}*\n• Client: *${task.client || 'Agency'}*\n• Writer: *${task.assignee || 'Copywriter'}*\n\nPlease review script draft and sign off.`,
-                  [[{ text: '🌐 Review Script in Portal', url: `https://purpleos-iota.vercel.app/admin?tab=tasks&id=${task.id}` }]],
-                  true
-                );
-              }
-            } catch(e) {}
-
-            teamBot.answerCallbackQuery(query.id, { text: 'Submitted to Nasir for Script QC!' });
-            teamBot.sendMessage(query.message.chat.id, `✅ *Script Submitted for QC!*\n\nNasir Ullah Khan Al Nahian (Head of Production) has been notified.`, { parse_mode: 'Markdown' });
+          if (supabase) {
+            await supabase.from('tasks').update({ stage: 'Script QC', updated_at: new Date().toISOString() }).eq('id', taskId);
           }
+          broadcast('task_update', [{ id: taskId, stage: 'Script QC' }]);
+
+          try {
+            const nasir = await state.getEmployeeByTelegramId('PBD-013');
+            if (nasir?.telegramId) {
+              sendTelegramNotification(nasir.telegramId,
+                `📜 *Script QC Review Required*\n\n• Task: *${taskId}*\n\nPlease review script draft and sign off.`,
+                [[{ text: '🌐 Review Script in Portal', url: `https://purpleos-iota.vercel.app/admin?tab=tasks&id=${taskId}` }]],
+                true
+              );
+            }
+          } catch(e) {}
+
+          teamBot.answerCallbackQuery(query.id, { text: 'Submitted to Nasir for Script QC!' });
+        }
+
+        if (data.startsWith('submit_qc:')) {
+          const taskId = data.split(':')[1];
+          if (supabase) {
+            await supabase.from('tasks').update({ stage: 'Internal QC', updated_at: new Date().toISOString() }).eq('id', taskId);
+          }
+          broadcast('task_update', [{ id: taskId, stage: 'Internal QC' }]);
+
+          try {
+            const ruhul = await state.getEmployeeByTelegramId('PBD-006');
+            if (ruhul?.telegramId) {
+              sendTelegramNotification(ruhul.telegramId,
+                `🔍 *Internal QC Review Required*\n\n• Task: *${taskId}*\n\nPlease review and either approve for client delivery or send back for revision.`,
+                [
+                  [{ text: '✅ QC Approve → Client Review', url: `https://purpleos-iota.vercel.app/admin?tab=tasks&action=qc-approve&id=${taskId}` }],
+                  [{ text: '✏️ Send Back for Revision', url: `https://purpleos-iota.vercel.app/admin?tab=tasks&action=qc-reject&id=${taskId}` }]
+                ],
+                true
+              );
+            }
+          } catch(e) {}
+
+          teamBot.answerCallbackQuery(query.id, { text: 'Submitted to Ruhul for Internal QC!' });
         }
       });
 
@@ -1935,41 +1950,7 @@ function initBot() {
         });
       });
 
-      // Handle callback_data for submit_qc
-      teamBot.on('callback_query', (query) => {
-        const data = query.data || '';
-        if (data.startsWith('submit_qc:')) {
-          const taskId = data.split(':')[1];
-          const dbData = readDB();
-          const task = (dbData.tasks || []).find(t => t.id === taskId);
-          if (task) {
-            task.stage = 'Internal QC';
-            task.updatedAt = new Date().toISOString();
-            const { writeDB } = require('./db');
-            const { broadcast } = require('./sse');
-            writeDB(dbData);
-            broadcast('task_update', dbData.tasks);
 
-            // Trigger Ruhul Notification
-            try {
-              const ruhul = (dbData.team || []).find(t => t.id === 'PBD-006');
-              if (ruhul?.telegramId) {
-                sendTelegramNotification(ruhul.telegramId,
-                  `🔍 *Internal QC Review Required*\n\n• Task: *${task.title}*\n• Client: *${task.client || 'Agency'}*\n• Submitted by: *${task.assignee || 'Visualizer'}*\n\nPlease review and either approve for client delivery or send back for revision.`,
-                  [
-                    [{ text: '✅ QC Approve → Client Review', url: `https://purpleos-iota.vercel.app/admin?tab=tasks&action=qc-approve&id=${task.id}` }],
-                    [{ text: '✏️ Send Back for Revision', url: `https://purpleos-iota.vercel.app/admin?tab=tasks&action=qc-reject&id=${task.id}` }]
-                  ],
-                  true
-                );
-              }
-            } catch(e) {}
-
-            teamBot.answerCallbackQuery(query.id, { text: 'Submitted to Ruhul bhai for QC!' });
-            teamBot.sendMessage(query.message.chat.id, `✅ *Task Submitted for Internal QC!*\n\n• Task: *${task.title}*\n\nRuhul Amin Rupom (Art Director) has been notified via Telegram for review.`, { parse_mode: 'Markdown' });
-          }
-        }
-      });
 
       // ✏️ View Revisions — lists tasks with revision feedback
       teamBot.onText(/✏️ View Revisions/, (msg) => {
@@ -2275,33 +2256,15 @@ function initBot() {
       });
 
       // Location / Clock In
-      teamBot.on('location', (msg) => {
+      teamBot.on('location', async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
-        const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId)) || (dbData.team || [])[0];
-
-        const now = new Date();
-        const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-        let record = dbData.attendance.find(a => a.employeeId === emp.id || a.name === emp.name);
-        if (record) {
-          record.status = 'In Studio';
-          record.clockInTime = timeStr;
-          record.location = 'GPS Verified';
-        } else {
-          dbData.attendance.push({
-            employeeId: emp.id,
-            name: emp.name,
-            status: 'In Studio',
-            clockInTime: timeStr,
-            location: 'GPS Verified'
-          });
+        const emp = await state.getEmployeeByTelegramId(chatId);
+        if (!emp) {
+          return teamBot.sendMessage(chatId, `⚠️ Account not verified. Please tap *📱 Verify My Phone Number* first.`);
         }
-        emp.status = 'In Studio';
-        writeDB(dbData);
-        broadcast('attendance_update', dbData.attendance);
 
-        teamBot.sendMessage(chatId, `✅ *GPS Clock-In Verified for ${emp.name}!*\nStatus set to *In Studio* at ${timeStr}.`, { parse_mode: 'Markdown' });
+        const clockResult = await state.clockIn(emp.emp_code, emp.name, 'GPS Verified Location');
+        teamBot.sendMessage(chatId, `✅ *GPS Clock-In Verified for ${emp.name}!*\nStatus set to *In Studio* at ${clockResult.time}.`, { parse_mode: 'Markdown' });
       });
 
       teamBot.onText(/\/clockin|📍 Clock-In GPS/, async (msg) => {
