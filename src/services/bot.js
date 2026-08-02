@@ -556,8 +556,8 @@ function initBot() {
 
         // Link Telegram ID in local db
         emp.telegramId = String(chatId);
-        // For demo: fully activate employee on first verification
-        emp.onboardingComplete = true;
+        // NOTE: onboardingComplete stays as-is — employees unlock their full
+        // menu by completing the profile survey in the Mini App, not just by verifying.
 
         // ✅ CRITICAL: Persist telegramId to Supabase profiles so the Mini App can authenticate
         if (supabase) {
@@ -569,12 +569,10 @@ function initBot() {
               department: emp.department || '',
               phone: emp.phone,
               telegram_id: String(chatId),
-              access_level: emp.accessLevel || 'Specialist / Crew',
               base_salary: emp.baseSalary || 0,
               commission_rate: emp.commissionRate || 0,
               earned_commissions: emp.earnedCommissions || 0,
               status: 'In Studio',
-              onboarding_complete: true
             }, { onConflict: 'emp_code' });
           } catch (e) { console.error('Supabase profile upsert error:', e.message); }
         }
