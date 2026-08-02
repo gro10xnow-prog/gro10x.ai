@@ -162,11 +162,16 @@ function renderCrewView() {
   const comm = Number(staff.earnedCommissions || staff.earned_commissions || 10000);
   const total = base + comm;
 
-  document.getElementById('crewTotalPay').innerText = `BDT ${total.toLocaleString()}`;
-  document.getElementById('crewPayBreakdown').innerHTML = `
-    • Base Salary: BDT ${base.toLocaleString()}<br>
-    • Shoot Commissions: BDT ${comm.toLocaleString()}
-  `;
+  const totalEl = document.getElementById('crewTotalPay');
+  if (totalEl) totalEl.innerText = `BDT ${total.toLocaleString()}`;
+
+  const breakdownEl = document.getElementById('crewPayBreakdown');
+  if (breakdownEl) {
+    breakdownEl.innerHTML = `
+      • Base Salary: <strong>BDT ${base.toLocaleString()}</strong><br>
+      • Shoot Commissions: <strong>BDT ${comm.toLocaleString()}</strong>
+    `;
+  }
 
   // Gear Checked Out
   const checkedOutAsset = crewAssets.find(a => a.assignedTo === staff.name || (a.condition === 'In Use' && a.assignedTo && a.assignedTo.includes(staff.name.split(' ')[0])));
@@ -188,17 +193,20 @@ function renderCrewView() {
     if (t.assignees && Array.isArray(t.assignees)) {
       return t.assignees.some(a => a.toLowerCase().includes(firstName));
     }
-    return (t.assignee || '').toLowerCase().includes(firstName);
+    return (t.assignee || '').toLowerCase().includes(firstName) || (t.assignedTo || '').toLowerCase().includes(firstName);
   });
 
   const taskListEl = document.getElementById('crewTaskList');
-  document.getElementById('crewTaskBadge').innerText = `${assigned.length} Active Tasks`;
+  const taskBadge = document.getElementById('crewTaskBadge');
+  if (taskBadge) taskBadge.innerText = `${assigned.length} Active Tasks`;
 
   if (taskListEl) {
     if (assigned.length === 0) {
       taskListEl.innerHTML = `
-        <div style="text-align:center; padding:2rem; color:var(--text-muted);">
-          No active shoots or edit tasks assigned to your profile right now.
+        <div class="team-empty-state" style="text-align: center; padding: 2.2rem 1.5rem; background: rgba(15,23,42,0.4); border: 1px dashed rgba(255,255,255,0.08); border-radius: 12px; color: var(--text-muted);">
+          <div style="font-size: 2rem; margin-bottom: 0.5rem;">🎬</div>
+          <h3 style="font-size: 0.95rem; color: #f1f5f9; font-weight: 700; margin-bottom: 0.25rem;">No Active Shoots or Edit Tasks</h3>
+          <p style="font-size: 0.8rem; color: #94a3b8; max-width: 380px; margin: 0 auto;">You have no pending production tasks assigned right now. Enjoy your downtime or check the studio schedule!</p>
         </div>
       `;
     } else {
@@ -207,14 +215,14 @@ function renderCrewView() {
           <div>
             <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.2rem;">
               <strong style="color:#fff; font-size:1rem;">${t.title}</strong>
-              <span class="badge ${t.priority === 'Urgent' ? 'badge-pink' : 'badge-purple'}">${t.priority}</span>
+              <span class="badge ${t.priority === 'Urgent' || t.priority === 'High' ? 'badge-pink' : 'badge-purple'}">${t.priority || 'Normal'}</span>
             </div>
-            <div style="font-size:0.8rem; color:var(--text-muted);">🏢 Client: ${t.client} • 📅 Due: ${t.dueDate || '2026-07-30'}</div>
+            <div style="font-size:0.8rem; color:var(--text-muted);">🏢 Client: ${t.client || 'Agency Project'} • 📅 Due: ${t.dueDate || t.due_date || 'Soon'}</div>
           </div>
 
           <div style="display:flex; align-items:center; gap:0.6rem;">
-            <span class="badge badge-amber">Stage: ${t.stage}</span>
-            <button class="btn-purple" style="font-size:0.78rem; padding:0.35rem 0.7rem;" onclick="advanceCrewTask('${t.id}', '${t.stage}')">
+            <span class="badge badge-amber">Stage: ${t.stage || 'Production'}</span>
+            <button class="btn-purple" style="font-size:0.78rem; padding:0.35rem 0.7rem;" onclick="advanceCrewTask('${t.id}', '${t.stage || 'Production'}')">
               ▶️ Advance Stage
             </button>
           </div>

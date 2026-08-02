@@ -9,6 +9,30 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/styles.css">
   <link rel="stylesheet" href="/css/landing.css">
+  <style>
+    .glass-panel, .glass-card {
+      background: rgba(15, 23, 42, 0.75) !important;
+      backdrop-filter: blur(16px) !important;
+      border: 1px solid rgba(255, 255, 255, 0.08) !important;
+      border-radius: 14px !important;
+      transition: all 0.25s ease !important;
+    }
+    .glass-panel:hover, .glass-card:hover {
+      border-color: rgba(192, 132, 252, 0.3) !important;
+      box-shadow: 0 8px 24px rgba(168, 85, 247, 0.1) !important;
+    }
+    @media (max-width: 768px) {
+      .team-grid-2col {
+        grid-template-columns: 1fr !important;
+      }
+      .team-exp-form {
+        grid-template-columns: 1fr !important;
+      }
+      .team-exp-form > div {
+        grid-column: span 1 !important;
+      }
+    }
+  </style>
   <script>
     (function() {
       const urlParams = new URLSearchParams(window.location.search);
@@ -74,7 +98,7 @@
     </div>
 
     <!-- 2-COLUMN STATS & EARNINGS ROW -->
-    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.25rem; margin-bottom:1.5rem;">
+    <div class="team-grid-2col" style="display:grid; grid-template-columns: 1fr 1fr; gap:1.25rem; margin-bottom:1.5rem;">
       <!-- EARNINGS SUMMARY CARD -->
       <div class="glass-panel" style="display:flex; flex-direction:column; justify-content:space-between;">
         <div>
@@ -117,7 +141,7 @@
         <div style="font-size:0.8rem; color:var(--text-muted);">Log transport, refreshments, or gear expenses with receipt photo for 3-tier manager approval</div>
       </div>
 
-      <form onsubmit="submitCrewExpense(event)" style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:1rem; margin-top:0.8rem;">
+      <form class="team-exp-form" onsubmit="submitCrewExpense(event)" style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:1rem; margin-top:0.8rem;">
         <div>
           <label style="font-size:0.78rem; color:var(--text-muted); font-weight:700;">Expense Category *</label>
           <select id="crewExpCategory" class="form-input" style="width:100%; margin-top:0.3rem;" required>
@@ -168,7 +192,7 @@
     </section>
 
     <!-- CREW HR & DAILY OPERATIONS SECTION (Phase C) -->
-    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.25rem; margin-top:1.5rem;">
+    <div class="team-grid-2col" style="display:grid; grid-template-columns: 1fr 1fr; gap:1.25rem; margin-top:1.5rem;">
       <!-- LEAVE REQUEST FORM CARD -->
       <div class="glass-panel">
         <div class="panel-header">
