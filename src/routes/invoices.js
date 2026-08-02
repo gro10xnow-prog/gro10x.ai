@@ -48,8 +48,11 @@ router.get('/invoices', requireAuth, async (req, res) => {
   try {
     let query = supabase.from('invoices').select('*').order('created_at', { ascending: false });
 
-    if (req.user.linkedType === 'client' && req.user.linkedId) {
-      query = query.or(`client_id.eq.${req.user.linkedId},client_name.ilike.%${req.user.name}%`);
+    const isClientUser = req.user.role === 'Client' || req.user.linkedType === 'client' || req.user.accessLevel === 'Client Partner';
+    const clientName = req.user.profile?.name || req.user.name;
+
+    if (isClientUser && clientName) {
+      query = query.or(`client_id.eq.${req.user.linkedId || req.user.id},client_name.ilike.%${clientName}%`);
     }
 
     const { data, error } = await query;

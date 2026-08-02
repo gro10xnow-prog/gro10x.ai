@@ -43,8 +43,11 @@ router.get('/', requireAuth, async (req, res) => {
   try {
     let query = supabase.from('reviews').select('*').order('created_at', { ascending: false });
 
-    if (req.user.linkedType === 'client' && req.user.linkedId) {
-      query = query.ilike('client', `%${req.user.name}%`);
+    const isClientUser = req.user.role === 'Client' || req.user.linkedType === 'client' || req.user.accessLevel === 'Client Partner';
+    const clientName = req.user.profile?.name || req.user.name;
+
+    if (isClientUser && clientName) {
+      query = query.or(`client.ilike.%${clientName}%,client_id.eq.${req.user.linkedId || req.user.id}`);
     }
 
     const { data, error } = await query;

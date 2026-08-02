@@ -52,25 +52,43 @@ function handlePartnerLogout() {
 }
 
 
+let partnerAuthUser = null;
+
 async function initPartnerPortal() {
   try {
     // Fetch authenticated user profile
     const authRes = await fetch('/api/auth/me');
     let userClientName = 'Chillox Fast Food Chain';
     let userClientId = 'CLI-0001';
+    let isAdminUser = false;
 
     if (authRes.ok) {
       const authData = await authRes.json();
       if (authData.user) {
-        userClientName = authData.user.name || authData.user.profile?.name || userClientName;
-        userClientId = authData.user.linkedId || userClientId;
+        partnerAuthUser = authData.user;
+        userClientName = partnerAuthUser.profile?.name || partnerAuthUser.name || userClientName;
+        userClientId = partnerAuthUser.linkedId || userClientId;
+
+        isAdminUser = (
+          partnerAuthUser.accessLevel === 'Owner / Admin' ||
+          partnerAuthUser.accessLevel === 'Manager / Director' ||
+          partnerAuthUser.role === 'Agency Owner' ||
+          partnerAuthUser.role === 'Admin' ||
+          partnerAuthUser.role === 'Manager'
+        );
       }
     }
 
     const urlParams = new URLSearchParams(window.location.search);
     const magicClient = urlParams.get('client');
+
+    // Security Hardening: Only allow ?client= URL override for Admin/Manager accounts
     if (magicClient) {
-      userClientName = decodeURIComponent(magicClient);
+      if (isAdminUser) {
+        userClientName = decodeURIComponent(magicClient);
+      } else if (partnerAuthUser) {
+        showPartnerToast('🔒 Client workspace is locked to your authenticated account', 'info');
+      }
     }
 
     currentPartnerClient = userClientName;

@@ -40,21 +40,63 @@ document.addEventListener('DOMContentLoaded', () => {
   initCrewPortal();
 });
 
+let authUser = null;
+
 async function initCrewPortal() {
   try {
-    const res = await fetch('/api/db');
-    const db = await res.json();
+    // 1. Fetch Authenticated User Session
+    try {
+      const authRes = await fetch('/api/auth/me');
+      if (authRes.ok) {
+        const authData = await authRes.json();
+        authUser = authData.user;
+      }
+    } catch (e) {
+      console.warn('Auth check fallback:', e.message);
+    }
 
-    crewStaffList = db.team || [
-      { id: 'EMP-001', emp_code: 'EMP-001', name: 'Mahmudul Hasan', role: 'Agency Founder & Director', baseSalary: 120000, earnedCommissions: 25000 },
-      { id: 'EMP-002', emp_code: 'EMP-002', name: 'Farhan Ahmed', role: 'Lead Director & Cinematographer', baseSalary: 65000, earnedCommissions: 12500 },
-      { id: 'EMP-003', emp_code: 'EMP-003', name: 'Raihan Kabir', role: 'Senior Video Editor & Colorist', baseSalary: 55000, earnedCommissions: 8000 },
-      { id: 'EMP-004', emp_code: 'EMP-004', name: 'Nusrat Jahan', role: 'Social Media & Motion Designer', baseSalary: 48000, earnedCommissions: 5000 }
-    ];
+    const [dbRes, teamRes, taskRes, attRes, assetRes] = await Promise.all([
+      fetch('/api/db').catch(() => null),
+      fetch('/api/team').catch(() => null),
+      fetch('/api/tasks').catch(() => null),
+      fetch('/api/team/attendance').catch(() => null),
+      fetch('/api/assets').catch(() => null)
+    ]);
 
-    crewTasks = db.tasks || [];
-    crewAttendance = db.attendance || [];
-    crewAssets = db.assets || [];
+    if (teamRes && teamRes.ok) crewStaffList = await teamRes.json();
+    if (taskRes && taskRes.ok) crewTasks = await taskRes.json();
+    if (attRes && attRes.ok) crewAttendance = await attRes.json();
+    if (assetRes && assetRes.ok) crewAssets = await assetRes.json();
+
+    if (!crewStaffList || !crewStaffList.length) {
+      const db = dbRes && dbRes.ok ? await dbRes.json() : {};
+      crewStaffList = db.team || [
+        { id: 'EMP-001', emp_code: 'EMP-001', name: 'Mahmudul Hasan', role: 'Agency Founder & Director', baseSalary: 120000, earnedCommissions: 25000 },
+        { id: 'EMP-002', emp_code: 'EMP-002', name: 'Farhan Ahmed', role: 'Lead Director & Cinematographer', baseSalary: 65000, earnedCommissions: 12500 },
+        { id: 'EMP-003', emp_code: 'EMP-003', name: 'Raihan Kabir', role: 'Senior Video Editor & Colorist', baseSalary: 55000, earnedCommissions: 8000 },
+        { id: 'EMP-004', emp_code: 'EMP-004', name: 'Nusrat Jahan', role: 'Social Media & Motion Designer', baseSalary: 48000, earnedCommissions: 5000 }
+      ];
+    }
+
+    // 2. Lock profile to authenticated user if not Admin/Owner/Manager
+    const isAdminUser = authUser && (
+      authUser.accessLevel === 'Owner / Admin' ||
+      authUser.accessLevel === 'Manager / Director' ||
+      authUser.role === 'Agency Owner' ||
+      authUser.role === 'Admin'
+    );
+
+    if (authUser) {
+      const matchedEmp = crewStaffList.find(e =>
+        e.id === authUser.linkedId ||
+        e.emp_code === authUser.linkedId ||
+        e.id === authUser.id ||
+        (e.email && authUser.email && e.email.toLowerCase() === authUser.email.toLowerCase())
+      );
+      if (matchedEmp) {
+        currentCrewEmpCode = matchedEmp.emp_code || matchedEmp.id;
+      }
+    }
 
     // Populate Staff Selector
     const select = document.getElementById('teamStaffSelect');
@@ -64,6 +106,13 @@ async function initCrewPortal() {
           👤 ${e.name} (${e.emp_code || e.id})
         </option>
       `).join('');
+
+      if (!isAdminUser) {
+        select.disabled = true;
+        select.title = '🔒 Profile switching is locked to your authenticated identity';
+        select.style.opacity = '0.75';
+        select.style.cursor = 'not-allowed';
+      }
     }
 
     renderCrewView();
@@ -73,6 +122,20 @@ async function initCrewPortal() {
 }
 
 function switchTeamProfile(empCode) {
+  const isAdminUser = authUser && (
+    authUser.accessLevel === 'Owner / Admin' ||
+    authUser.accessLevel === 'Manager / Director' ||
+    authUser.role === 'Agency Owner' ||
+    authUser.role === 'Admin'
+  );
+
+  if (!isAdminUser && authUser) {
+    showTeamToast('🔒 Profile switching is restricted to Administrators', 'error');
+    const select = document.getElementById('teamStaffSelect');
+    if (select) select.value = currentCrewEmpCode;
+    return;
+  }
+
   currentCrewEmpCode = empCode;
   renderCrewView();
 }

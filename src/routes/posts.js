@@ -32,8 +32,11 @@ router.get('/', requireAuth, async (req, res) => {
   try {
     let query = supabase.from('social_posts').select('*').order('created_at', { ascending: false });
 
-    if (req.user.linkedType === 'client' && req.user.linkedId) {
-      query = query.or(`client_id.eq.${req.user.linkedId},client_name.ilike.%${req.user.name}%`);
+    const isClientUser = req.user.role === 'Client' || req.user.linkedType === 'client' || req.user.accessLevel === 'Client Partner';
+    const clientName = req.user.profile?.name || req.user.name;
+
+    if (isClientUser && clientName) {
+      query = query.or(`client_id.eq.${req.user.linkedId || req.user.id},client_name.ilike.%${clientName}%`);
     }
 
     const { data, error } = await query;
@@ -49,8 +52,16 @@ router.get('/', requireAuth, async (req, res) => {
 // GET Client Posts
 router.get('/client/:clientName', requireAuth, async (req, res) => {
   try {
-    const { clientName } = req.params;
-    const decoded = decodeURIComponent(clientName);
+    let { clientName } = req.params;
+    let decoded = decodeURIComponent(clientName);
+
+    const isClientUser = req.user.role === 'Client' || req.user.linkedType === 'client' || req.user.accessLevel === 'Client Partner';
+    const userClientName = req.user.profile?.name || req.user.name;
+
+    // Hardening: If client role, enforce their own client context
+    if (isClientUser && userClientName) {
+      decoded = userClientName;
+    }
 
     const { data, error } = await supabase.from('social_posts')
       .select('*')
