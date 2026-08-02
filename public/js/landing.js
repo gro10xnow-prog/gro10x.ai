@@ -267,14 +267,29 @@ async function handleNewsletterSubmit(e) {
 
     const data = await res.json();
     if (data.success) {
-      alert(`🎉 Thank you! ${email} has been subscribed to the Purplebot Digital Newsletter.`);
+      showLandingToast(`🎉 Thank you! ${email} has been subscribed to the Purplebot Digital Newsletter.`, 'success');
       input.value = '';
       trackClick('Newsletter Subscribed');
     }
   } catch (err) {
-    alert('Thank you for subscribing!');
+    showLandingToast('🎉 Thank you for subscribing to Purplebot Digital!', 'success');
     input.value = '';
   }
+}
+
+function showLandingToast(message, type = 'success') {
+  let container = document.getElementById('landingToastContainer');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'landingToastContainer';
+    container.style.cssText = 'position: fixed; bottom: 2rem; right: 2rem; z-index: 99999; display: flex; flex-direction: column; gap: 0.5rem;';
+    document.body.appendChild(container);
+  }
+  const toast = document.createElement('div');
+  toast.style.cssText = 'background: #0f172a; border: 1px solid #3b82f6; color: #fff; padding: 0.85rem 1.25rem; border-radius: 12px; font-size: 0.9rem; box-shadow: 0 10px 25px rgba(0,0,0,0.5); font-family: sans-serif;';
+  toast.innerText = message;
+  container.appendChild(toast);
+  setTimeout(() => toast.remove(), 4000);
 }
 
 // FETCH & RENDER PUBLIC CMS CONTENT

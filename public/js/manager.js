@@ -7,6 +7,36 @@ let currentManagerUser = null;
 let currentKanbanTasks = [];
 let kanbanDeptFilterMode = 'my'; // 'my' vs 'all'
 
+/* -------------------------------------------------------------
+ * 🔔 Manager Portal Toast Notification System
+ * ------------------------------------------------------------- */
+function showManagerToast(message, type = 'success', duration = 3500) {
+  let container = document.getElementById('managerToastContainer');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'managerToastContainer';
+    container.className = 'admin-toast-container';
+    document.body.appendChild(container);
+  }
+
+  const toast = document.createElement('div');
+  toast.className = `admin-toast ${type}`;
+  const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️';
+  toast.innerHTML = `
+    <div style="display:flex; align-items:center; gap:0.6rem;">
+      <span>${icon}</span>
+      <span>${message}</span>
+    </div>
+  `;
+
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.style.animation = 'toastSlideOut 0.3s forwards';
+    setTimeout(() => toast.remove(), 300);
+  }, duration);
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   await checkManagerAuth();
   initManagerNavigation();
@@ -157,10 +187,31 @@ function applyManagerTabScoping(user) {
   }
 }
 
+/* -------------------------------------------------------------
+ * 📱 Mobile Sidebar Navigation Drawer Handlers
+ * ------------------------------------------------------------- */
+function toggleMobileSidebar() {
+  const sidebar = document.querySelector('.sidebar-nav');
+  const backdrop = document.getElementById('adminNavBackdrop');
+  if (sidebar) sidebar.classList.toggle('is-open');
+  if (backdrop) {
+    backdrop.style.display = sidebar && sidebar.classList.contains('is-open') ? 'block' : 'none';
+  }
+}
+
+function closeMobileSidebar() {
+  const sidebar = document.querySelector('.sidebar-nav');
+  const backdrop = document.getElementById('adminNavBackdrop');
+  if (sidebar) sidebar.classList.remove('is-open');
+  if (backdrop) backdrop.style.display = 'none';
+}
+
 /**
  * 4. Tab Switcher Function
  */
 function switchTab(tabId) {
+  closeMobileSidebar();
+
   document.querySelectorAll('.sidebar-nav .nav-item').forEach(item => {
     const onclickAttr = item.getAttribute('onclick') || '';
     if (onclickAttr.includes(`'${tabId}'`)) {
@@ -336,14 +387,16 @@ async function advanceTaskStage(taskId, newStage) {
     const data = await res.json();
     if (data.success) {
       if (newStage === 'Editing') {
-        alert('🎬 Task advanced to Editing — Telegram notification sent to assigned editor (AUT-001)!');
+        showManagerToast('🎬 Task advanced to Editing — Telegram notification sent to assigned editor (AUT-001)!', 'success');
       } else if (newStage === 'Client Review') {
-        alert('👁️ Task advanced to Client Review — Telegram push sent to client with Review Room link (AUT-004)!');
+        showManagerToast('👁️ Task advanced to Client Review — Telegram push sent to client with Review Room link (AUT-004)!', 'success');
+      } else {
+        showManagerToast(`▶️ Task stage updated to ${newStage}`, 'success');
       }
       await loadManagerKanban();
     }
   } catch (err) {
-    alert('Error updating task stage: ' + err.message);
+    showManagerToast('Error updating task stage: ' + err.message, 'error');
   }
 }
 
@@ -399,14 +452,14 @@ async function submitManagerTask(event) {
     });
     const data = await res.json();
     if (data.success) {
-      alert(`✅ Production task "${title}" created successfully!`);
+      showManagerToast(`✅ Production task "${title}" created successfully!`, 'success');
       closeManagerTaskModal();
       await loadManagerKanban();
     } else {
-      alert('Error creating task: ' + (data.error || 'Check fields'));
+      showManagerToast('Error creating task: ' + (data.error || 'Check fields'), 'error');
     }
   } catch (err) {
-    alert('Error submitting task: ' + err.message);
+    showManagerToast('Error submitting task: ' + err.message, 'error');
   }
 }
 
@@ -484,11 +537,11 @@ async function approveExpenseT1(expId) {
     });
     const data = await res.json();
     if (data.success) {
-      alert(`✅ Tier 1 Approved for ${expId}! Status updated to Tier 2 Pending — Finance Lead Roksana notified via Telegram (AUT-008).`);
+      showManagerToast(`✅ Tier 1 Approved for ${expId}! Status updated to Tier 2 Pending — Finance Lead Roksana notified via Telegram (AUT-008).`, 'success');
       await loadManagerExpenses();
     }
   } catch (err) {
-    alert('Error approving Tier 1: ' + err.message);
+    showManagerToast('Error approving Tier 1: ' + err.message, 'error');
   }
 }
 
@@ -501,11 +554,11 @@ async function approveExpenseT2(expId) {
     });
     const data = await res.json();
     if (data.success) {
-      alert(`💰 Tier 2 Verified for ${expId}! Status updated to Tier 3 Pending — Owner notified for final disbursement (AUT-009).`);
+      showManagerToast(`💰 Tier 2 Verified for ${expId}! Status updated to Tier 3 Pending — Owner notified for final disbursement (AUT-009).`, 'success');
       await loadManagerExpenses();
     }
   } catch (err) {
-    alert('Error verifying Tier 2: ' + err.message);
+    showManagerToast('Error verifying Tier 2: ' + err.message, 'error');
   }
 }
 
@@ -634,17 +687,16 @@ async function approveLeaveManager(leaveId) {
     });
     const data = await res.json();
     if (data.success) {
-      alert(`🌴 Leave Request ${leaveId} Manager Approved! Status set to Manager Approved — Forwarded to Owner for final sign-off.`);
+      showManagerToast(`🌴 Leave Request ${leaveId} Manager Approved! Forwarded to Owner for final sign-off.`, 'success');
       await loadManagerHROps();
     }
   } catch (err) {
-    alert('Error approving leave: ' + err.message);
+    showManagerToast('Error approving leave: ' + err.message, 'error');
   }
 }
 
-async function rejectLeaveManager(leaveId) {
-  const reason = prompt('Enter rejection reason note for staff:', 'Operational schedule conflict');
-  if (!reason) return;
+async function rejectLeaveManager(leaveId, customReason) {
+  const reason = customReason || 'Operational schedule conflict';
 
   try {
     const res = await fetch(`/api/leaves/${leaveId}/reject`, {
@@ -654,11 +706,11 @@ async function rejectLeaveManager(leaveId) {
     });
     const data = await res.json();
     if (data.success) {
-      alert(`❌ Leave Request ${leaveId} Rejected — Staff member notified.`);
+      showManagerToast(`❌ Leave Request ${leaveId} Rejected — Staff member notified.`, 'info');
       await loadManagerHROps();
     }
   } catch (err) {
-    alert('Error rejecting leave: ' + err.message);
+    showManagerToast('Error rejecting leave: ' + err.message, 'error');
   }
 }
 
@@ -745,14 +797,14 @@ async function submitManagerReviewCut(event) {
     });
     const data = await res.json();
     if (data.success) {
-      alert(`🎬 Video cut deliverable "${title}" (${version}) uploaded successfully! Client notified via Telegram (AUT-004).`);
+      showManagerToast(`🎬 Video cut deliverable "${title}" (${version}) uploaded successfully! Client notified via Telegram (AUT-004).`, 'success');
       closeUploadCutModal();
       await loadManagerReviewRoom();
     } else {
-      alert('Error uploading cut: ' + (data.error || 'Check fields'));
+      showManagerToast('Error uploading cut: ' + (data.error || 'Check fields'), 'error');
     }
   } catch (err) {
-    alert('Error submitting review cut: ' + err.message);
+    showManagerToast('Error submitting review cut: ' + err.message, 'error');
   }
 }
 
@@ -858,14 +910,14 @@ async function submitManagerSocialPost(event) {
     });
     const data = await res.json();
     if (data.success) {
-      alert(`📱 Social media post "${title}" scheduled on ${platform}! Client notified for approval (AUT-016).`);
+      showManagerToast(`📱 Social media post "${title}" scheduled on ${platform}! Client notified for approval (AUT-016).`, 'success');
       closeSocialPostModal();
       await loadManagerSocialPlanner();
     } else {
-      alert('Error scheduling post: ' + (data.error || 'Check fields'));
+      showManagerToast('Error scheduling post: ' + (data.error || 'Check fields'), 'error');
     }
   } catch (err) {
-    alert('Error submitting post: ' + err.message);
+    showManagerToast('Error submitting post: ' + err.message, 'error');
   }
 }
 
@@ -878,11 +930,11 @@ async function approveSocialPost(postId) {
     });
     const data = await res.json();
     if (data.success) {
-      alert(`✅ Social post ${postId} approved & scheduled for dispatch!`);
+      showManagerToast(`✅ Social post ${postId} approved & scheduled for dispatch!`, 'success');
       await loadManagerSocialPlanner();
     }
   } catch (err) {
-    alert('Error approving post: ' + err.message);
+    showManagerToast('Error approving post: ' + err.message, 'error');
   }
 }
 

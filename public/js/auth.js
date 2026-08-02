@@ -86,7 +86,7 @@ async function submitPermanentPinSetup(event) {
   const email = document.getElementById('perm-email').value.trim();
 
   if (newPin !== confirmPin) {
-    alert('PIN codes do not match. Please re-enter.');
+    showAlert('PIN codes do not match. Please re-enter.', 'danger');
     return;
   }
 
@@ -101,7 +101,7 @@ async function submitPermanentPinSetup(event) {
       document.getElementById('setup-pin-modal').style.display = 'none';
       saveSessionAndRedirect({ phone: currentPhone }, 'team', email);
     } else {
-      alert('Error setting permanent PIN: ' + (data.error || 'Please try again.'));
+      showAlert('Error setting permanent PIN: ' + (data.error || 'Please try again.'), 'danger');
     }
   } catch (err) {
     console.error('Permanent PIN setup error:', err);

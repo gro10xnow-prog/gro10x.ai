@@ -871,11 +871,17 @@
   // ══════════════════════════════════════════
   // REVIEW ROOM
   // ══════════════════════════════════════════
-  async function handleApproveCut() {
-    const confirmed = tg?.showConfirm
-      ? await new Promise(r => tg.showConfirm('Approve this cut? This will trigger invoice generation.', r))
-      : confirm('Approve this cut? This will trigger invoice generation.');
-    if (!confirmed) return;
+  async function handleApproveCut(btnElement) {
+    if (btnElement && !btnElement.dataset.confirming) {
+      btnElement.dataset.confirming = 'true';
+      const origText = btnElement.innerHTML;
+      btnElement.innerHTML = '⚠️ Confirm Cut Approval?';
+      setTimeout(() => {
+        delete btnElement.dataset.confirming;
+        btnElement.innerHTML = origText;
+      }, 3000);
+      return;
+    }
 
     try {
       const tgUser = tg?.initDataUnsafe?.user;
@@ -898,7 +904,7 @@
 
   async function handleSendFeedback() {
     const val = document.getElementById('fbInput').value.trim();
-    if (!val) { tg?.showAlert ? tg.showAlert('Please enter your feedback.') : alert('Enter feedback'); return; }
+    if (!val) { showSuccess('⚠️', 'Validation Required', 'Please enter your feedback note before submitting.'); return; }
     try {
       const tgUser = tg?.initDataUnsafe?.user;
       await fetch('/api/reviews/feedback', {
@@ -1016,10 +1022,10 @@
     const date = document.getElementById('inpPayDate').value;
     const file = document.getElementById('filePayment').files[0];
 
-    if (!txn) { tg?.showAlert ? tg.showAlert('Please enter the transaction ID.') : alert('Enter transaction ID'); return; }
-    if (!amt) { tg?.showAlert ? tg.showAlert('Please enter the amount paid.') : alert('Enter amount'); return; }
-    if (!date) { tg?.showAlert ? tg.showAlert('Please select the payment date.') : alert('Select date'); return; }
-    if (!file) { tg?.showAlert ? tg.showAlert('Please upload your payment screenshot.') : alert('Upload screenshot'); return; }
+    if (!txn) { showSuccess('⚠️', 'Missing Txn ID', 'Please enter the transaction reference ID.'); return; }
+    if (!amt) { showSuccess('⚠️', 'Missing Amount', 'Please enter the payment amount.'); return; }
+    if (!date) { showSuccess('⚠️', 'Missing Date', 'Please select the payment date.'); return; }
+    if (!file) { showSuccess('⚠️', 'Missing Screenshot', 'Please upload your payment screenshot proof.'); return; }
 
     const formData = new FormData();
     formData.append('invoiceId', selectedInvoiceId || 'INV-001');

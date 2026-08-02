@@ -6,6 +6,36 @@ let crewTasks = [];
 let crewAttendance = [];
 let crewAssets = [];
 
+/* -------------------------------------------------------------
+ * 🔔 Team Portal Toast Notification System
+ * ------------------------------------------------------------- */
+function showTeamToast(message, type = 'success', duration = 3500) {
+  let container = document.getElementById('teamToastContainer');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'teamToastContainer';
+    container.className = 'admin-toast-container';
+    document.body.appendChild(container);
+  }
+
+  const toast = document.createElement('div');
+  toast.className = `admin-toast ${type}`;
+  const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️';
+  toast.innerHTML = `
+    <div style="display:flex; align-items:center; gap:0.6rem;">
+      <span>${icon}</span>
+      <span>${message}</span>
+    </div>
+  `;
+
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.style.animation = 'toastSlideOut 0.3s forwards';
+    setTimeout(() => toast.remove(), 300);
+  }, duration);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   initCrewPortal();
 });
@@ -140,10 +170,10 @@ async function crewClockIn() {
       body: JSON.stringify({ command: '/clockin', text: `/clockin ${staff.emp_code}` })
     });
     const data = await res.json();
-    alert(`🟢 Clock In Recorded for ${staff.name}! Studio attendance updated.`);
+    showTeamToast(`🟢 Clock In Recorded for ${staff.name}! Studio attendance updated.`, 'success');
     initCrewPortal();
   } catch (err) {
-    console.error('Clock-in error:', err);
+    showTeamToast('Clock-in error: ' + err.message, 'error');
   }
 }
 
@@ -156,10 +186,10 @@ async function crewClockOut() {
       body: JSON.stringify({ command: '/clockout', text: `/clockout ${staff.emp_code}` })
     });
     const data = await res.json();
-    alert(`🔴 Clock Out Recorded for ${staff.name}. Have a great rest of your day!`);
+    showTeamToast(`🔴 Clock Out Recorded for ${staff.name}. Have a great rest of your day!`, 'info');
     initCrewPortal();
   } catch (err) {
-    console.error('Clock-out error:', err);
+    showTeamToast('Clock-out error: ' + err.message, 'error');
   }
 }
 
@@ -176,18 +206,17 @@ async function advanceCrewTask(taskId, currentStage) {
     });
     const data = await res.json();
     if (data.success) {
-      alert(`▶️ Task stage advanced to "${nextStage}"!`);
+      showTeamToast(`▶️ Task stage advanced to "${nextStage}"!`, 'success');
       initCrewPortal();
     }
   } catch (err) {
-    console.error('Error advancing task stage:', err);
+    showTeamToast('Error advancing task stage: ' + err.message, 'error');
   }
 }
 
-async function quickGearCheckout() {
+async function quickGearCheckout(gearIdInput) {
   const staff = crewStaffList.find(e => (e.emp_code || e.id) === currentCrewEmpCode) || crewStaffList[0];
-  const gearId = prompt('Enter Equipment Asset ID to check out (e.g. AST-001 for Sony FX3):', 'AST-001');
-  if (!gearId) return;
+  const gearId = gearIdInput || 'AST-001';
 
   try {
     const res = await fetch(`/api/assets/${gearId}/checkout`, {
@@ -197,11 +226,11 @@ async function quickGearCheckout() {
     });
     const data = await res.json();
     if (data.success) {
-      alert(`📤 Equipment checked out to ${staff.name}`);
+      showTeamToast(`📤 Equipment ${gearId} checked out to ${staff.name}`, 'success');
       initCrewPortal();
     }
   } catch (err) {
-    console.error('Error checking out gear:', err);
+    showTeamToast('Error checking out gear: ' + err.message, 'error');
   }
 }
 
@@ -217,11 +246,11 @@ async function quickGearReturn() {
     });
     const data = await res.json();
     if (data.success) {
-      alert(`📥 Equipment returned to studio vault!`);
+      showTeamToast(`📥 Equipment returned to studio vault!`, 'success');
       initCrewPortal();
     }
   } catch (err) {
-    console.error('Error returning gear:', err);
+    showTeamToast('Error returning gear: ' + err.message, 'error');
   }
 }
 
@@ -247,14 +276,14 @@ async function submitCrewExpense(event) {
     });
     const data = await res.json();
     if (data.success) {
-      alert(`✅ Field Expense claim ${data.expense.id} (BDT ${payload.amount.toLocaleString()}) submitted!\nStatus: Pending Line Manager (Tier 1) approval.`);
+      showTeamToast(`✅ Field Expense claim ${data.expense.id} (BDT ${payload.amount.toLocaleString()}) submitted! Status: Tier 1 Pending.`, 'success');
       document.getElementById('crewExpAmount').value = '';
       document.getElementById('crewExpReceipt').value = '';
       document.getElementById('crewExpDesc').value = '';
       initCrewPortal();
     }
   } catch (err) {
-    console.error('Error submitting crew expense:', err);
+    showTeamToast('Error submitting crew expense: ' + err.message, 'error');
   }
 }
 
@@ -280,12 +309,12 @@ async function submitCrewLeave(event) {
     });
     const data = await res.json();
     if (data.success) {
-      alert(`🌴 Leave request ${data.leave.id} (${payload.type}) submitted!\nPending Line Manager review.`);
+      showTeamToast(`🌴 Leave request ${data.leave.id} (${payload.type}) submitted! Pending Line Manager review.`, 'success');
       document.getElementById('crewLeaveReason').value = '';
       initCrewPortal();
     }
   } catch (err) {
-    console.error('Error submitting leave:', err);
+    showTeamToast('Error submitting leave: ' + err.message, 'error');
   }
 }
 
@@ -310,13 +339,13 @@ async function submitCrewEod(event) {
     });
     const data = await res.json();
     if (data.success) {
-      alert(`📋 Daily EOD report logged for ${payload.staffName}!`);
+      showTeamToast(`📋 Daily EOD report logged for ${payload.staffName}!`, 'success');
       document.getElementById('crewEodCompleted').value = '';
       document.getElementById('crewEodInProgress').value = '';
       document.getElementById('crewEodBlockers').value = '';
       initCrewPortal();
     }
   } catch (err) {
-    console.error('Error submitting EOD report:', err);
+    showTeamToast('Error submitting EOD report: ' + err.message, 'error');
   }
 }

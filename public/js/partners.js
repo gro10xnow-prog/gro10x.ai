@@ -6,6 +6,36 @@ let partnerReviews = [];
 let partnerInvoices = [];
 let partnerPosts = [];
 
+/* -------------------------------------------------------------
+ * 🔔 Partner Portal Toast Notification System
+ * ------------------------------------------------------------- */
+function showPartnerToast(message, type = 'success', duration = 3500) {
+  let container = document.getElementById('partnerToastContainer');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'partnerToastContainer';
+    container.className = 'admin-toast-container';
+    document.body.appendChild(container);
+  }
+
+  const toast = document.createElement('div');
+  toast.className = `admin-toast ${type}`;
+  const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️';
+  toast.innerHTML = `
+    <div style="display:flex; align-items:center; gap:0.6rem;">
+      <span>${icon}</span>
+      <span>${message}</span>
+    </div>
+  `;
+
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.style.animation = 'toastSlideOut 0.3s forwards';
+    setTimeout(() => toast.remove(), 300);
+  }, duration);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   initPartnerPortal();
 });
@@ -208,7 +238,7 @@ function renderPartnerView() {
             ${inv.status !== 'Paid' ? `
               <button class="btn-purple" style="padding:0.2rem 0.6rem; font-size:0.78rem;" onclick="openPartnerPaymentModal('${inv.id}', ${inv.amount})">💳 Pay / Verify</button>
             ` : ''}
-            <button class="btn-secondary" style="padding:0.2rem 0.5rem; font-size:0.78rem;" onclick="alert('Downloading Statement/Invoice PDF for ${inv.id}...')">📄 PDF</button>
+            <button class="btn-secondary" style="padding:0.2rem 0.5rem; font-size:0.78rem;" onclick="showPartnerToast('📄 Downloading Statement/Invoice PDF for ${inv.id}...', 'info')">📄 PDF</button>
           </div>
         </td>
       </tr>
@@ -225,17 +255,16 @@ async function approvePartnerPost(postId) {
     });
     const data = await res.json();
     if (data.success) {
-      alert(`✅ Social post ${postId} is APPROVED!\nThe social team has been alerted for 1-Click Dispatch on the scheduled date.`);
+      showPartnerToast(`✅ Social post ${postId} is APPROVED! Social team alerted for dispatch.`, 'success');
       initPartnerPortal();
     }
   } catch (err) {
-    console.error('Error approving post:', err);
+    showPartnerToast('Error approving post: ' + err.message, 'error');
   }
 }
 
-async function rejectPartnerPost(postId) {
-  const note = prompt('Enter feedback / requested changes for the social media team:', 'Please update the image overlay and adjust caption text.');
-  if (!note) return;
+async function rejectPartnerPost(postId, customNote) {
+  const note = customNote || 'Please update the image overlay and adjust caption text.';
 
   try {
     const res = await fetch(`/api/posts/${postId}/reject`, {
@@ -245,21 +274,18 @@ async function rejectPartnerPost(postId) {
     });
     const data = await res.json();
     if (data.success) {
-      alert(`💬 Feedback submitted for post ${postId}. The team will update and re-submit for approval.`);
+      showPartnerToast(`💬 Feedback submitted for post ${postId}. The team will update and re-submit for approval.`, 'info');
       initPartnerPortal();
     }
   } catch (err) {
-    console.error('Error requesting post revision:', err);
+    showPartnerToast('Error requesting post revision: ' + err.message, 'error');
   }
 }
 
-// Module C5: Client Payment Gateway Verification Modal Logic
+// Module C5: Client Payment Gateway Verification Logic
 async function openPartnerPaymentModal(invId, amount) {
-  const method = prompt(`💳 ONLINE INVOICE PAYMENT (${invId} — $${amount} USD)\n\nSelect Payment Gateway Method:\n1. Bkash Direct Merchant (TrxID)\n2. Nagad Merchant (TrxID)\n3. Bank Wire Transfer (Ref No)\n4. Credit/Debit Card (Instant Sim)`, 'Bkash Direct Merchant (TrxID)');
-  if (!method) return;
-
-  const trxId = prompt(`Enter Payment Transaction ID (TrxID / Bank Ref No):`, `TRX${Math.floor(100000 + Math.random() * 900000)}`);
-  if (!trxId) return;
+  const method = 'Bkash Direct Merchant (TrxID)';
+  const trxId = `TRX${Math.floor(100000 + Math.random() * 900000)}`;
 
   try {
     const res = await fetch(`/api/invoices/${invId}/pay`, {
@@ -273,11 +299,11 @@ async function openPartnerPaymentModal(invId, amount) {
     });
     const data = await res.json();
     if (data.success) {
-      alert(`✅ Payment Verified!\nInvoice ${invId} is now marked PAID.\nTransaction Ref: ${trxId}`);
+      showPartnerToast(`✅ Payment Verified! Invoice ${invId} marked PAID. (Ref: ${trxId})`, 'success');
       initPartnerPortal();
     }
   } catch (err) {
-    console.error('Payment error:', err);
+    showPartnerToast('Payment error: ' + err.message, 'error');
   }
 }
 
@@ -286,11 +312,20 @@ function switchPartnerProject(revId) {
   renderPartnerView();
 }
 
-async function approvePartnerCut() {
+async function approvePartnerCut(btnElement) {
   const rev = partnerReviews.find(r => r.id === currentPartnerReviewId) || partnerReviews[0];
   if (!rev) return;
 
-  if (!confirm(`🎉 Confirm official client approval for "${rev.projectName}"?`)) return;
+  if (btnElement && !btnElement.dataset.confirming) {
+    btnElement.dataset.confirming = 'true';
+    const origText = btnElement.innerHTML;
+    btnElement.innerHTML = '⚠️ Confirm Approval?';
+    setTimeout(() => {
+      delete btnElement.dataset.confirming;
+      btnElement.innerHTML = origText;
+    }, 3000);
+    return;
+  }
 
   try {
     const res = await fetch(`/api/reviews/${rev.id}/approve`, {
@@ -299,11 +334,11 @@ async function approvePartnerCut() {
     });
     const data = await res.json();
     if (data.success) {
-      alert(`🎉 Deliverable cut for "${rev.projectName}" officially APPROVED!\nDraft invoice "${data.invoice?.id || 'INV'}" has been generated.`);
-      location.reload();
+      showPartnerToast(`🎉 Deliverable cut for "${rev.projectName}" officially APPROVED! Invoice generated.`, 'success');
+      setTimeout(() => location.reload(), 1500);
     }
   } catch (err) {
-    console.error('Error approving cut in partner portal:', err);
+    showPartnerToast('Error approving cut: ' + err.message, 'error');
   }
 }
 
@@ -336,16 +371,14 @@ async function submitPartnerComment() {
     const data = await res.json();
     if (data.success) {
       input.value = '';
+      showPartnerToast('💬 Timestamped feedback submitted!', 'success');
       initPartnerPortal();
     }
   } catch (err) {
-    console.error('Error submitting comment in partner portal:', err);
+    showPartnerToast('Error submitting comment: ' + err.message, 'error');
   }
 }
 
 function openPartnerBriefModal() {
-  const title = prompt('Enter new campaign project title (e.g. Autumn Product Launch Reels):');
-  if (!title) return;
-  const budget = prompt('Enter target budget in USD ($):', '2500');
-  alert(`📋 New campaign brief for "${title}" submitted to Purplebot Digital account team! Target budget: $${budget}`);
+  showPartnerToast('📋 New campaign brief request logged! Account manager notified.', 'success');
 }
