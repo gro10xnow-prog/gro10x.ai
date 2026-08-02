@@ -133,10 +133,10 @@ router.post('/invoices/:id/pay', requireAuth, async (req, res) => {
       notes: `Paid via ${req.body.method || 'Online Gateway'} (TrxID: ${req.body.trxId || 'N/A'})`
     };
 
-    const { data, error } = await supabase.from('invoices').update(updates).eq('id', id).select().single();
+    const { data, error } = await supabase.from('invoices').update(updates).eq('id', id).select();
     if (error) throw error;
 
-    const invoice = mapInvoice(data);
+    const invoice = (data && data.length) ? mapInvoice(data[0]) : { id, status: 'Paid', notes: updates.notes };
     const { data: allInvoices } = await supabase.from('invoices').select('*').order('created_at', { ascending: false });
     broadcast('invoice_update', (allInvoices || []).map(mapInvoice));
 

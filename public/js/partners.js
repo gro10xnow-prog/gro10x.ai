@@ -301,9 +301,31 @@ async function rejectPartnerPost(postId, customNote) {
 }
 
 // Module C5: Client Payment Gateway Verification Logic
-async function openPartnerPaymentModal(invId, amount) {
-  const method = 'Bkash Direct Merchant (TrxID)';
-  const trxId = `TRX${Math.floor(100000 + Math.random() * 900000)}`;
+function openPartnerPaymentModal(invId, amount) {
+  const modal = document.getElementById('partnerPaymentModal');
+  const invInput = document.getElementById('payModalInvoiceId');
+  const invLabel = document.getElementById('payModalInvLabel');
+  const amtLabel = document.getElementById('payModalAmountLabel');
+  const trxInput = document.getElementById('payModalTrxInput');
+
+  if (invInput) invInput.value = invId;
+  if (invLabel) invLabel.innerText = invId;
+  if (amtLabel) amtLabel.innerText = `$${(Number(amount) || 0).toLocaleString()}`;
+  if (trxInput) trxInput.value = '';
+
+  if (modal) modal.style.display = 'flex';
+}
+
+function closePartnerPaymentModal() {
+  const modal = document.getElementById('partnerPaymentModal');
+  if (modal) modal.style.display = 'none';
+}
+
+async function submitPartnerPayment(event) {
+  event.preventDefault();
+  const invId = document.getElementById('payModalInvoiceId').value;
+  const method = document.getElementById('payModalMethodSelect').value;
+  const trxId = document.getElementById('payModalTrxInput').value.trim();
 
   try {
     const res = await fetch(`/api/invoices/${invId}/pay`, {
@@ -318,7 +340,10 @@ async function openPartnerPaymentModal(invId, amount) {
     const data = await res.json();
     if (data.success) {
       showPartnerToast(`✅ Payment Verified! Invoice ${invId} marked PAID. (Ref: ${trxId})`, 'success');
+      closePartnerPaymentModal();
       initPartnerPortal();
+    } else {
+      showPartnerToast('Payment error: ' + (data.error || 'Verification failed'), 'error');
     }
   } catch (err) {
     showPartnerToast('Payment error: ' + err.message, 'error');
@@ -398,7 +423,50 @@ async function submitPartnerComment() {
 }
 
 function openPartnerBriefModal() {
-  showPartnerToast('📋 New campaign brief request logged! Account manager notified.', 'success');
+  const modal = document.getElementById('partnerBriefModal');
+  if (modal) modal.style.display = 'flex';
+}
+
+function closePartnerBriefModal() {
+  const modal = document.getElementById('partnerBriefModal');
+  if (modal) modal.style.display = 'none';
+}
+
+async function submitPartnerCampaignBrief(event) {
+  event.preventDefault();
+  const title = document.getElementById('briefTitleInput').value.trim();
+  const category = document.getElementById('briefCategorySelect').value;
+  const targetDate = document.getElementById('briefDateInput').value;
+  const budget = document.getElementById('briefBudgetInput').value.trim();
+  const desc = document.getElementById('briefDescInput').value.trim();
+
+  const payload = {
+    title: `[Brief] ${title}`,
+    client: currentPartnerClient,
+    stage: 'Briefing',
+    priority: 'High',
+    department: 'Client Services',
+    dueDate: targetDate || new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0],
+    description: `Category: ${category}\nBudget: ${budget}\nNotes: ${desc}`
+  };
+
+  try {
+    const res = await fetch('/api/tasks', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (data.success) {
+      showPartnerToast(`🚀 New Campaign Brief "${title}" submitted! Account Manager notified.`, 'success');
+      closePartnerBriefModal();
+      initPartnerPortal();
+    } else {
+      showPartnerToast('Error submitting brief: ' + (data.error || 'Check fields'), 'error');
+    }
+  } catch (err) {
+    showPartnerToast('Error submitting campaign brief: ' + err.message, 'error');
+  }
 }
 
 function setupPartnerSSE() {
