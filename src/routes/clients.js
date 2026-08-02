@@ -151,26 +151,69 @@ router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
 });
 
 // Client Portal Workspace Dashboard Data (Isolated for authenticated client)
-router.get('/:id/dashboard', requireAuth, requireClientOwnership, (req, res) => {
+router.get('/:id/dashboard', requireAuth, requireClientOwnership, async (req, res) => {
   const { id } = req.params;
-  const db = readDB();
 
-  const client = (db.clients || []).find(c => c.id === id || (c.name || '').toLowerCase() === (req.user.name || '').toLowerCase());
-  if (!client) return res.status(404).json({ error: 'Client account workspace not found' });
+  let client, reviews, posts, invoices;
 
-  const clientNameLower = (client.name || '').toLowerCase();
+  if (isSupabaseConfigured()) {
+    // Fetch client record from Supabase
+    const { data: clientData } = await supabase
+      .from('clients')
+      .select('*')
+      .or(`id.eq.${id},name.ilike.${req.user.name || '_'}`)
+      .maybeSingle();
 
-  const reviews = (db.reviews || []).filter(r => (r.client || '').toLowerCase().includes(clientNameLower) || r.clientId === id);
-  const posts = (db.posts || []).filter(p => (p.clientName || '').toLowerCase().includes(clientNameLower) || p.clientId === id);
-  const invoices = (db.invoices || []).filter(i => (i.clientName || '').toLowerCase().includes(clientNameLower) || i.clientId === id);
+    if (!clientData) return res.status(404).json({ error: 'Client account workspace not found' });
+
+    client = {
+      ...clientData,
+      contactPerson: clientData.contact_person,
+      totalSpent: clientData.total_spent,
+      activeCampaigns: clientData.active_campaigns || []
+    };
+
+    const clientName = client.name || '';
+
+    // Fetch reviews from Supabase
+    const { data: reviewData } = await supabase
+      .from('reviews')
+      .select('*')
+      .or(`client_id.eq.${id},client.ilike.%${clientName}%`);
+    reviews = reviewData || [];
+
+    // Fetch social posts from Supabase
+    const { data: postData } = await supabase
+      .from('social_posts')
+      .select('*')
+      .or(`client_id.eq.${id},client_name.ilike.%${clientName}%`);
+    posts = postData || [];
+
+    // Fetch invoices from Supabase
+    const { data: invoiceData } = await supabase
+      .from('invoices')
+      .select('*')
+      .or(`client_id.eq.${id},client_name.ilike.%${clientName}%`);
+    invoices = invoiceData || [];
+
+  } else {
+    // db.json fallback (local dev only)
+    const db = readDB();
+    client = (db.clients || []).find(c => c.id === id || (c.name || '').toLowerCase() === (req.user.name || '').toLowerCase());
+    if (!client) return res.status(404).json({ error: 'Client account workspace not found' });
+    const clientNameLower = (client.name || '').toLowerCase();
+    reviews  = (db.reviews || []).filter(r => (r.client || '').toLowerCase().includes(clientNameLower) || r.clientId === id);
+    posts    = (db.posts   || []).filter(p => (p.clientName || '').toLowerCase().includes(clientNameLower) || p.clientId === id);
+    invoices = (db.invoices|| []).filter(i => (i.clientName || '').toLowerCase().includes(clientNameLower) || i.clientId === id);
+  }
 
   res.json({
     client,
     stats: {
-      activeCampaignsCount: (client.activeCampaigns || []).length,
-      pendingReviewsCount: reviews.filter(r => r.resolvedCount < r.totalCount).length,
-      pendingPostsApprovalCount: posts.filter(p => p.status === 'Pending Client Approval').length,
-      unpaidInvoicesCount: invoices.filter(i => i.status === 'Pending' || i.status === 'Overdue').length
+      activeCampaignsCount:       (client.activeCampaigns || []).length,
+      pendingReviewsCount:        reviews.filter(r => (r.resolved_count ?? r.resolvedCount ?? 0) < (r.total_count ?? r.totalCount ?? 1)).length,
+      pendingPostsApprovalCount:  posts.filter(p => (p.status || p.approval_status) === 'Pending Client Approval').length,
+      unpaidInvoicesCount:        invoices.filter(i => i.status === 'Pending' || i.status === 'Overdue').length
     },
     reviews,
     posts,

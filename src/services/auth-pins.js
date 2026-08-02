@@ -120,30 +120,69 @@ async function createTempPin(phone, linkedId = null, linkedType = 'team', email 
 
 async function verifyPin(phone, inputPin) {
   const norm = normalizePhone(phone);
-  const db = readDB();
 
-  // Find user in team or client roster
-  let userObj = (db.team || []).find(t =>
-    normalizePhone(t.phone) === norm || t.id === phone
-  );
+  // ── 1. Look up user in Supabase first (survives cold starts) ──
+  let userObj = null;
   let linkedType = 'team';
 
-  if (!userObj) {
-    userObj = (db.clients || []).find(c =>
-      normalizePhone(c.phone) === norm || c.id === phone
-    );
-    linkedType = 'client';
+  if (isSupabaseConfigured()) {
+    try {
+      // Check Supabase profiles (team members)
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('emp_code,name,role,phone,email,access_level,onboarding_complete,telegram_id')
+        .ilike('phone', `%${norm}`)
+        .maybeSingle();
+
+      if (profile) {
+        userObj = {
+          id: profile.emp_code,
+          emp_code: profile.emp_code,
+          name: profile.name,
+          role: profile.role,
+          phone: profile.phone,
+          email: profile.email,
+          accessLevel: profile.access_level
+        };
+        linkedType = 'team';
+      }
+
+      // If not found in profiles, check clients table
+      if (!userObj) {
+        const { data: clientRec } = await supabase
+          .from('clients')
+          .select('id,name,phone,email,contact_person')
+          .ilike('phone', `%${norm}`)
+          .maybeSingle();
+
+        if (clientRec) {
+          userObj = { id: clientRec.id, name: clientRec.name, phone: clientRec.phone, email: clientRec.email };
+          linkedType = 'client';
+        }
+      }
+    } catch (e) { /* Supabase lookup failed — fall through to db.json */ }
   }
 
-  // ── Try Supabase first (persistent across cold starts) ──
+  // ── 2. db.json fallback (local dev / Supabase unavailable) ──
+  if (!userObj) {
+    const db = readDB();
+    userObj = (db.team || []).find(t => normalizePhone(t.phone) === norm || t.id === phone);
+    linkedType = 'team';
+    if (!userObj) {
+      userObj = (db.clients || []).find(c => normalizePhone(c.phone) === norm || c.id === phone);
+      if (userObj) linkedType = 'client';
+    }
+  }
+
+  // ── 3. Find PIN record (Supabase first, then local) ──
   let record = await findPinRecordSupabase(norm);
 
-  // ── Fall back to local db.json ──
   if (!record) {
-    const localRecord = (db.authPins || []).find(p =>
-      normalizePhone(p.phone) === norm || p.normPhone === norm
-    );
-    if (localRecord) record = localRecord;
+    try {
+      const db = readDB();
+      const localRecord = (db.authPins || []).find(p => normalizePhone(p.phone) === norm || p.normPhone === norm);
+      if (localRecord) record = localRecord;
+    } catch (e) {}
   }
 
   if (!record && !userObj) {
@@ -160,7 +199,7 @@ async function verifyPin(phone, inputPin) {
     );
   }
 
-  // ── Brute Force Lockout Guard (5 attempts -> 15 min lock) ──
+  // ── Brute Force Lockout Guard (5 attempts → 15 min lock) ──
   const MAX_ATTEMPTS = 5;
   const LOCKOUT_MINUTES = 15;
 

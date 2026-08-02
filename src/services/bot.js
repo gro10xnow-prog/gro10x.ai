@@ -2976,24 +2976,50 @@ function initBot() {
       });
 
       // Client phone verification
-      clientBot.on('contact', (msg) => {
+      clientBot.on('contact', async (msg) => {
         const chatId = msg.chat.id;
         const contact = msg.contact;
         if (!contact || !contact.phone_number) return;
-        const dbData = readDB();
         const normPhone = normalizePhone(contact.phone_number);
-        const client = (dbData.clients || []).find(c => normalizePhone(c.phone) === normPhone);
+
+        let client = null;
+
+        // Try Supabase first
+        if (supabase) {
+          try {
+            const { data } = await supabase
+              .from('clients')
+              .select('*')
+              .ilike('phone', `%${normPhone}`)
+              .maybeSingle();
+            if (data) {
+              client = { ...data, activeCampaigns: data.active_campaigns || [] };
+              // Link telegram ID in Supabase
+              await supabase.from('clients').update({ telegram_id: String(chatId) }).eq('id', data.id);
+            }
+          } catch (e) {}
+        }
+
+        // db.json fallback (local dev)
+        if (!client) {
+          const dbData = readDB();
+          const localClient = (dbData.clients || []).find(c => normalizePhone(c.phone) === normPhone);
+          if (localClient) {
+            client = localClient;
+            client.telegramId = String(chatId);
+          }
+        }
+
         if (!client) {
           return clientBot.sendMessage(chatId,
             `🔒 *Phone not found in our client database.*\n\nIf you are an active Purplebot Digital client, please contact your Account Manager to register your phone number.`,
             { parse_mode: 'Markdown' }
           );
         }
-        client.telegramId = String(chatId);
-        writeDB(dbData);
+
         const welcome = `✅ *Account Linked — Welcome, ${client.name}!*\n\n` +
-          `• Retainer: *BDT ${(client.retainerValue || 0).toLocaleString()}/month*\n` +
-          `• Account Manager: *${client.accountManager || 'Team'}*\n\n` +
+          `• Retainer: *BDT ${(client.retainer_value || client.retainerValue || 0).toLocaleString()}/month*\n` +
+          `• Account Manager: *${client.account_manager || client.accountManager || 'Team'}*\n\n` +
           `━━━━━━━━━━━━━━━━━━━━\n` +
           `📌 *Next Steps:*\n` +
           `1. Tap *🎬 Review Room* to preview your latest deliverable\n` +
@@ -3022,35 +3048,63 @@ function initBot() {
         clientBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
       });
 
-      clientBot.onText(/\/review|🎬 Review Room/, (msg) => {
+      clientBot.onText(/\/review|🎬 Review Room/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
-        const client = (dbData.clients || []).find(c => String(c.telegramId) === String(chatId));
-        const pendingReview = (dbData.tasks || []).filter(t => client && t.client === client.name && t.stage === 'Client Review');
+        let client = null;
+        let pendingReview = [];
+
+        if (supabase) {
+          const { data: cData } = await supabase.from('clients').select('*').eq('telegram_id', String(chatId)).maybeSingle();
+          if (cData) {
+            client = { ...cData, activeCampaigns: cData.active_campaigns || [] };
+            const { data: tasks } = await supabase.from('tasks').select('*').ilike('client', `%${cData.name}%`).eq('stage', 'Client Review');
+            pendingReview = tasks || [];
+          }
+        }
+        if (!client) {
+          const dbData = readDB();
+          client = (dbData.clients || []).find(c => String(c.telegramId) === String(chatId));
+          pendingReview = (dbData.tasks || []).filter(t => client && t.client === client.name && t.stage === 'Client Review');
+        }
+
         let text = `🎬 *Review Room — Your Deliverables*\n\n`;
         if (pendingReview.length) {
           text += `You have *${pendingReview.length}* cut(s) awaiting your review:\n\n`;
           pendingReview.forEach((t, i) => { text += `${i+1}. *${t.title}*\n   Campaign: ${t.client}\n\n`; });
           text += `Open the app to stream & approve in 4K:`;
         } else {
-          text += `No deliverables pending review right now.\n\nWe\'ll notify you when your next cut is ready.`;
+          text += `No deliverables pending review right now.\n\nWe'll notify you when your next cut is ready.`;
         }
         text += `\n🔗 https://purpleos-iota.vercel.app/client-miniapp`;
         clientBot.sendMessage(chatId, text, { parse_mode: 'Markdown', reply_markup: client ? getClientKeyboard(client) : undefined });
       });
 
-      clientBot.onText(/\/campaign|📋 Campaign Status/, (msg) => {
+      clientBot.onText(/\/campaign|📋 Campaign Status/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
-        const client = (dbData.clients || []).find(c => String(c.telegramId) === String(chatId));
-        const tasks = client ? (dbData.tasks || []).filter(t => t.client === client.name) : [];
+        let client = null;
+        let tasks = [];
+
+        if (supabase) {
+          const { data: cData } = await supabase.from('clients').select('*').eq('telegram_id', String(chatId)).maybeSingle();
+          if (cData) {
+            client = { ...cData, activeCampaigns: cData.active_campaigns || [] };
+            const { data: tData } = await supabase.from('tasks').select('*').ilike('client', `%${cData.name}%`);
+            tasks = tData || [];
+          }
+        }
+        if (!client) {
+          const dbData = readDB();
+          client = (dbData.clients || []).find(c => String(c.telegramId) === String(chatId));
+          tasks = client ? (dbData.tasks || []).filter(t => t.client === client.name) : [];
+        }
+
         let text = `📋 *Campaign Progress*\n\n`;
         if (tasks.length) {
           tasks.forEach(t => {
             const stages = ['Brief','Shoot','Editing','Client Review','Delivered'];
             const idx = stages.findIndex(s => s.toLowerCase() === (t.stage||'').toLowerCase());
             const bar = stages.map((s,i) => i < idx ? '✅' : i === idx ? '🔵' : '⬜').join('');
-            text += `*${t.title}*\n${bar}\nStage: *${t.stage}* | Due: ${t.dueDate || 'TBD'}\n\n`;
+            text += `*${t.title}*\n${bar}\nStage: *${t.stage}* | Due: ${t.due_date || t.dueDate || 'TBD'}\n\n`;
           });
         } else {
           text += `No active campaigns found.\nContact your Account Manager to kick off a new campaign.`;
@@ -3058,11 +3112,25 @@ function initBot() {
         clientBot.sendMessage(chatId, text, { parse_mode: 'Markdown', reply_markup: client ? getClientKeyboard(client) : undefined });
       });
 
-      clientBot.onText(/\/invoices|💳 My Invoices/, (msg) => {
+      clientBot.onText(/\/invoices|💳 My Invoices/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
-        const client = (dbData.clients || []).find(c => String(c.telegramId) === String(chatId));
-        const invoices = client ? (dbData.invoices || []).filter(i => i.clientName === client.name) : [];
+        let client = null;
+        let invoices = [];
+
+        if (supabase) {
+          const { data: cData } = await supabase.from('clients').select('*').eq('telegram_id', String(chatId)).maybeSingle();
+          if (cData) {
+            client = { ...cData, activeCampaigns: cData.active_campaigns || [] };
+            const { data: iData } = await supabase.from('invoices').select('*').ilike('client_name', `%${cData.name}%`);
+            invoices = iData || [];
+          }
+        }
+        if (!client) {
+          const dbData = readDB();
+          client = (dbData.clients || []).find(c => String(c.telegramId) === String(chatId));
+          invoices = client ? (dbData.invoices || []).filter(i => i.clientName === client.name) : [];
+        }
+
         let text = `💳 *Invoice & Payment Summary*\n\n`;
         if (invoices.length) {
           const pending = invoices.filter(i => i.status !== 'Paid');
