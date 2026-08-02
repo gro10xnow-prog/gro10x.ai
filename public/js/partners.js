@@ -382,3 +382,22 @@ async function submitPartnerComment() {
 function openPartnerBriefModal() {
   showPartnerToast('📋 New campaign brief request logged! Account manager notified.', 'success');
 }
+
+function setupPartnerSSE() {
+  try {
+    const es = new EventSource('/api/events');
+    es.onmessage = (e) => {
+      try {
+        const msg = JSON.parse(e.data);
+        if (['review_update', 'comment_update', 'invoice_update', 'post_update'].includes(msg.type)) {
+          if (typeof initPartnerPortal === 'function') initPartnerPortal();
+        }
+      } catch (err) {}
+    };
+    es.onerror = () => es.close();
+  } catch (err) {}
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  setupPartnerSSE();
+});

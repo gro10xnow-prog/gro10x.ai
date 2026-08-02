@@ -164,6 +164,64 @@ async function seed() {
     else console.log(`✅ Assets seeded: ${assetsPayload.length} records.`);
   }
 
+  // 9. Seed Attendance
+  if (dbData.attendance && dbData.attendance.length > 0) {
+    const attendancePayload = dbData.attendance.map((a, idx) => ({
+      employee_id: a.employeeId || a.id || `EMP-${idx}`,
+      name: a.name || 'Team Member',
+      status: a.status || 'In Studio',
+      clock_in_time: a.clockInTime || '09:00 AM',
+      location: a.location || 'Niketon Studio',
+      date: a.date || new Date().toISOString().split('T')[0]
+    }));
+
+    const { data, error } = await supabase.from('attendance').upsert(attendancePayload, { onConflict: 'employee_id,date' });
+    if (error) {
+      // Fallback insert if onConflict fail
+      const { error: insErr } = await supabase.from('attendance').insert(attendancePayload);
+      if (insErr) console.error('❌ Attendance seed notice:', insErr.message);
+      else console.log(`✅ Attendance seeded: ${attendancePayload.length} records.`);
+    } else {
+      console.log(`✅ Attendance seeded: ${attendancePayload.length} records.`);
+    }
+  }
+
+  // 10. Seed Social Posts
+  if (dbData.posts && dbData.posts.length > 0) {
+    const postsPayload = dbData.posts.map(p => ({
+      id: p.id,
+      client_id: p.clientId || '',
+      client_name: p.clientName || 'General Client',
+      platform: p.platform || 'Facebook',
+      title: p.title || 'Untitled Post',
+      caption: p.caption || '',
+      scheduled_date: p.scheduledDate || new Date().toISOString().split('T')[0],
+      scheduled_time: p.scheduledTime || '18:00',
+      assigned_publisher: p.assignedPublisher || 'Sabrin Akhtar',
+      status: p.status || 'Pending Client Approval'
+    }));
+
+    const { data, error } = await supabase.from('social_posts').upsert(postsPayload, { onConflict: 'id' });
+    if (error) console.error('❌ Social Posts seed error:', error.message);
+    else console.log(`✅ Social Posts seeded: ${postsPayload.length} records.`);
+  }
+
+  // 11. Seed Quotes
+  if (dbData.quotes && dbData.quotes.length > 0) {
+    const quotesPayload = dbData.quotes.map(q => ({
+      id: q.id,
+      client_name: q.clientName || 'Client Proposal',
+      amount: q.amount || 0,
+      status: q.status || 'Draft',
+      date: q.date || new Date().toISOString().split('T')[0],
+      items: q.items || []
+    }));
+
+    const { data, error } = await supabase.from('quotes').upsert(quotesPayload, { onConflict: 'id' });
+    if (error) console.error('❌ Quotes seed error:', error.message);
+    else console.log(`✅ Quotes seeded: ${quotesPayload.length} records.`);
+  }
+
   console.log('\n🎉 Seeding completed!');
 }
 

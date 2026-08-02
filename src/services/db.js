@@ -37,6 +37,10 @@ function readDB() {
 }
 
 function writeDB(data) {
+  if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
+    console.error('🚨 writeDB() blocked in production environment — all operations must use Supabase.');
+    return false;
+  }
   try {
     const targetPath = getDbPath();
     fs.writeFileSync(targetPath, JSON.stringify(data, null, 2), 'utf8');

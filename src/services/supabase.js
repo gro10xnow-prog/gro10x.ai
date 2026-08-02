@@ -31,7 +31,14 @@ if (supabaseUrl && !supabaseUrl.includes('your-project-id')) {
   }
 
 } else {
-  console.warn('⚠️  Supabase credentials missing or unconfigured. System will use local JSON fallback.');
+  console.warn('⚠️  Supabase credentials missing or unconfigured.');
+}
+
+// PRODUCTION ENFORCEMENT GUARD
+if ((process.env.NODE_ENV === 'production' || process.env.VERCEL) && supabase === null) {
+  const msg = '🚨 FATAL: Supabase is not configured in production environment. Set SUPABASE_URL and SUPABASE_ANON_KEY / SUPABASE_SERVICE_ROLE_KEY. Refusing to start.';
+  console.error(msg);
+  process.exit(1);
 }
 
 function isSupabaseConfigured() {

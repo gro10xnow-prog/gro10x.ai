@@ -1,106 +1,180 @@
 const express = require('express');
 const router = express.Router();
 const { requireAuth } = require('../middleware/auth');
-const { readDB, writeDB } = require('../services/db');
+const { supabase } = require('../services/supabase');
 const { broadcast } = require('../services/sse');
-const { processAutomationEvent, checkScheduledSocialDispatches } = require('../services/automation');
 
-// GET All Social Posts (Filtered for clients if client user)
-router.get('/', requireAuth, (req, res) => {
-  const db = readDB();
-  checkScheduledSocialDispatches(db, writeDB, broadcast);
-  let posts = db.posts || [];
+function mapPost(p) {
+  if (!p) return null;
+  return {
+    id: p.id,
+    clientId: p.client_id,
+    clientName: p.client_name,
+    platform: p.platform,
+    targetUrl: p.target_url,
+    title: p.title,
+    caption: p.caption,
+    mediaUrls: p.media_urls || [],
+    scheduledDate: p.scheduled_date,
+    scheduledTime: p.scheduled_time,
+    assignedPublisher: p.assigned_publisher,
+    status: p.status,
+    clientFeedback: p.client_feedback,
+    approvedBy: p.approved_by,
+    approvedAt: p.approved_at,
+    createdAt: p.created_at,
+    updatedAt: p.updated_at
+  };
+}
 
-  if (req.user.linkedType === 'client' && req.user.linkedId) {
-    const clientNameLower = (req.user.name || '').toLowerCase();
-    posts = posts.filter(p => p.clientId === req.user.linkedId || (p.clientName || '').toLowerCase().includes(clientNameLower));
+// GET All Social Posts
+router.get('/', requireAuth, async (req, res) => {
+  try {
+    let query = supabase.from('social_posts').select('*').order('created_at', { ascending: false });
+
+    if (req.user.linkedType === 'client' && req.user.linkedId) {
+      query = query.or(`client_id.eq.${req.user.linkedId},client_name.ilike.%${req.user.name}%`);
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+
+    res.json((data || []).map(mapPost));
+  } catch (err) {
+    console.error('Social Posts GET error:', err.message);
+    res.status(500).json({ error: err.message });
   }
-
-  res.json(posts);
 });
 
 // GET Client Posts
-router.get('/client/:clientName', requireAuth, (req, res) => {
-  const { clientName } = req.params;
-  const db = readDB();
-  const decoded = decodeURIComponent(clientName).toLowerCase();
-  const clientPosts = (db.posts || []).filter(p => 
-    (p.clientName || '').toLowerCase().includes(decoded) || 
-    (p.clientId || '').toLowerCase() === decoded
-  );
-  res.json(clientPosts);
+router.get('/client/:clientName', requireAuth, async (req, res) => {
+  try {
+    const { clientName } = req.params;
+    const decoded = decodeURIComponent(clientName);
+
+    const { data, error } = await supabase.from('social_posts')
+      .select('*')
+      .or(`client_name.ilike.%${decoded}%,client_id.eq.${decoded}`)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    res.json((data || []).map(mapPost));
+  } catch (err) {
+    console.error('Client Posts GET error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // POST Schedule Social Post
-router.post('/', requireAuth, (req, res) => {
-  const db = readDB();
-  db.posts = db.posts || [];
-  const count = db.posts.length + 101;
+router.post('/', requireAuth, async (req, res) => {
+  try {
+    const { count } = await supabase.from('social_posts').select('*', { count: 'exact', head: true });
+    const newId = `PST-${(count || 0) + 101}`;
 
-  let targetUrl = req.body.targetUrl || '';
-  if (!targetUrl && (req.body.clientId || req.body.clientName) && req.body.platform) {
-    const client = (db.clients || []).find(c => c.id === req.body.clientId || (c.name || '').toLowerCase() === (req.body.clientName || '').toLowerCase());
-    if (client && client.socialLinks) {
-      const platKey = req.body.platform.toLowerCase();
-      targetUrl = client.socialLinks[platKey] || '';
-    }
+    const payload = {
+      id: newId,
+      client_id: req.body.clientId || '',
+      client_name: req.body.clientName || 'General Client',
+      platform: req.body.platform || 'Facebook',
+      target_url: req.body.targetUrl || '',
+      title: req.body.title || 'Untitled Post',
+      caption: req.body.caption || '',
+      media_urls: req.body.mediaUrls || (req.body.mediaUrl ? [req.body.mediaUrl] : []),
+      scheduled_date: req.body.scheduledDate || new Date().toISOString().split('T')[0],
+      scheduled_time: req.body.scheduledTime || '18:00',
+      assigned_publisher: req.body.assignedPublisher || 'Sabrin Akhtar',
+      status: req.body.status || 'Pending Client Approval'
+    };
+
+    const { data, error } = await supabase.from('social_posts').insert([payload]).select().single();
+    if (error) throw error;
+
+    const post = mapPost(data);
+    const { data: allPosts } = await supabase.from('social_posts').select('*').order('created_at', { ascending: false });
+    broadcast('post_update', (allPosts || []).map(mapPost));
+
+    res.json({ success: true, post });
+  } catch (err) {
+    console.error('Social Post POST error:', err.message);
+    res.status(500).json({ error: err.message });
   }
-
-  const newPost = {
-    id: `PST-${count}`,
-    clientId: req.body.clientId || '',
-    clientName: req.body.clientName || 'General Client',
-    platform: req.body.platform || 'Facebook',
-    targetUrl: targetUrl,
-    title: req.body.title || 'Untitled Post',
-    caption: req.body.caption || '',
-    mediaUrls: req.body.mediaUrls || (req.body.mediaUrl ? [req.body.mediaUrl] : []),
-    scheduledDate: req.body.scheduledDate || new Date().toISOString().split('T')[0],
-    scheduledTime: req.body.scheduledTime || '18:00',
-    assignedPublisher: req.body.assignedPublisher || 'Sabrin Akhtar',
-    status: req.body.status || 'Pending Client Approval',
-    createdAt: new Date().toISOString()
-  };
-
-  db.posts.push(newPost);
-  writeDB(db);
-  broadcast('post_update', db.posts);
-
-  res.json({ success: true, post: newPost });
 });
 
 // PUT Update Post
-router.put('/:id', requireAuth, (req, res) => {
-  const { id } = req.params;
-  const db = readDB();
-  const idx = (db.posts || []).findIndex(p => p.id === id);
-  if (idx === -1) return res.status(404).json({ error: 'Post not found' });
+router.put('/:id', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = { updated_at: new Date().toISOString() };
 
-  db.posts[idx] = { ...db.posts[idx], ...req.body, updatedAt: new Date().toISOString() };
-  writeDB(db);
-  broadcast('post_update', db.posts);
+    if (req.body.title) updates.title = req.body.title;
+    if (req.body.caption !== undefined) updates.caption = req.body.caption;
+    if (req.body.status) updates.status = req.body.status;
+    if (req.body.platform) updates.platform = req.body.platform;
+    if (req.body.scheduledDate) updates.scheduled_date = req.body.scheduledDate;
+    if (req.body.scheduledTime) updates.scheduled_time = req.body.scheduledTime;
 
-  res.json({ success: true, post: db.posts[idx] });
+    const { data, error } = await supabase.from('social_posts').update(updates).eq('id', id).select().single();
+    if (error) throw error;
+
+    const post = mapPost(data);
+    const { data: allPosts } = await supabase.from('social_posts').select('*').order('created_at', { ascending: false });
+    broadcast('post_update', (allPosts || []).map(mapPost));
+
+    res.json({ success: true, post });
+  } catch (err) {
+    console.error('Social Post PUT error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // POST Approve Post (Client 1-Click Approval)
-router.post('/:id/approve', requireAuth, (req, res) => {
-  const { id } = req.params;
-  const db = readDB();
-  const idx = (db.posts || []).findIndex(p => p.id === id);
-  if (idx === -1) return res.status(404).json({ error: 'Post not found' });
+router.post('/:id/approve', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = {
+      status: 'Approved',
+      approved_at: new Date().toISOString(),
+      approved_by: req.body.approvedBy || req.user.name || 'Client Reviewer',
+      client_feedback: null,
+      updated_at: new Date().toISOString()
+    };
 
-  db.posts[idx].status = 'Approved';
-  db.posts[idx].approvedAt = new Date().toISOString();
-  db.posts[idx].approvedBy = req.body.approvedBy || req.user.name || db.posts[idx].clientName;
-  delete db.posts[idx].clientFeedback;
+    const { data, error } = await supabase.from('social_posts').update(updates).eq('id', id).select().single();
+    if (error) throw error;
 
-  processAutomationEvent('social_post_approved', { post: db.posts[idx] }, db, writeDB, broadcast);
+    const post = mapPost(data);
+    const { data: allPosts } = await supabase.from('social_posts').select('*').order('created_at', { ascending: false });
+    broadcast('post_update', (allPosts || []).map(mapPost));
 
-  writeDB(db);
-  broadcast('post_update', db.posts);
+    res.json({ success: true, post });
+  } catch (err) {
+    console.error('Social Post Approve error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
 
-  res.json({ success: true, post: db.posts[idx] });
+// POST Reject Post (Client Feedback)
+router.post('/:id/reject', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = {
+      status: 'Revision Requested',
+      client_feedback: req.body.feedback || 'Revision requested',
+      updated_at: new Date().toISOString()
+    };
+
+    const { data, error } = await supabase.from('social_posts').update(updates).eq('id', id).select().single();
+    if (error) throw error;
+
+    const post = mapPost(data);
+    const { data: allPosts } = await supabase.from('social_posts').select('*').order('created_at', { ascending: false });
+    broadcast('post_update', (allPosts || []).map(mapPost));
+
+    res.json({ success: true, post });
+  } catch (err) {
+    console.error('Social Post Reject error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 module.exports = router;

@@ -347,15 +347,38 @@ function setupSSE() {
         if (msg.type === 'db_updated') {
           fetchInitialData();
         } else if (msg.type === 'task_update' && msg.data) {
-          const idx = appData.tasks.findIndex(t => t.id === msg.data.id);
-          if (idx !== -1) appData.tasks[idx] = { ...appData.tasks[idx], ...msg.data };
-          else appData.tasks.push(msg.data);
-          renderKanban();
+          appData.tasks = Array.isArray(msg.data) ? msg.data : appData.tasks;
+          if (typeof renderKanban === 'function') renderKanban();
         } else if (msg.type === 'attendance_update' && msg.data) {
-          const idx = appData.attendance.findIndex(a => a.name === msg.data.name);
-          if (idx !== -1) appData.attendance[idx] = msg.data;
-          else appData.attendance.push(msg.data);
-          renderTeam();
+          appData.attendance = Array.isArray(msg.data) ? msg.data : appData.attendance;
+          if (typeof renderTeam === 'function') renderTeam();
+        } else if (msg.type === 'client_update' && msg.data) {
+          appData.clients = Array.isArray(msg.data) ? msg.data : appData.clients;
+          if (typeof renderCRMTab === 'function') renderCRMTab();
+        } else if (msg.type === 'lead_update' && msg.data) {
+          appData.leads = Array.isArray(msg.data) ? msg.data : appData.leads;
+          if (typeof renderLeadsTab === 'function') renderLeadsTab();
+        } else if (msg.type === 'review_update' && msg.data) {
+          appData.reviews = Array.isArray(msg.data) ? msg.data : appData.reviews;
+          if (typeof renderReviewRoomTab === 'function') renderReviewRoomTab();
+        } else if (msg.type === 'invoice_update' && msg.data) {
+          appData.invoices = Array.isArray(msg.data) ? msg.data : appData.invoices;
+          if (typeof renderFinancialTab === 'function') renderFinancialTab();
+        } else if (msg.type === 'expense_update' && msg.data) {
+          appData.expenses = Array.isArray(msg.data) ? msg.data : appData.expenses;
+          if (typeof renderFinancialTab === 'function') renderFinancialTab();
+        } else if (msg.type === 'leave_update' && msg.data) {
+          appData.leaves = Array.isArray(msg.data) ? msg.data : appData.leaves;
+          if (typeof renderHROpsTab === 'function') renderHROpsTab();
+        } else if (msg.type === 'asset_update' && msg.data) {
+          appData.assets = Array.isArray(msg.data) ? msg.data : appData.assets;
+          if (typeof renderAssetsTab === 'function') renderAssetsTab();
+        } else if (msg.type === 'post_update' && msg.data) {
+          appData.posts = Array.isArray(msg.data) ? msg.data : appData.posts;
+          if (typeof renderSocialTab === 'function') renderSocialTab();
+        } else if (msg.type === 'quote_update' && msg.data) {
+          appData.quotes = Array.isArray(msg.data) ? msg.data : appData.quotes;
+          if (typeof renderFinancialTab === 'function') renderFinancialTab();
         } else if (msg.type === 'telegram_inbound' && msg.data) {
           if (appData.webhookLogs) appData.webhookLogs.unshift(msg.data.log);
           renderWebhookLogs();

@@ -2647,7 +2647,30 @@
       "attempts": 0
     }
   ],
-  "leaves": [],
+  "leaves": [
+    {
+      "id": "LEV-1785643936449",
+      "employeeId": "PBD-000",
+      "employeeName": "Firoz Uddin Ahmed",
+      "leaveType": "Casual Leave",
+      "startDate": "2026-08-05",
+      "endDate": "2026-08-06",
+      "reason": "Automated test leave request",
+      "status": "Pending",
+      "createdAt": "2026-08-02T04:12:16.449Z"
+    },
+    {
+      "id": "LEV-1785643923193",
+      "employeeId": "PBD-000",
+      "employeeName": "Firoz Uddin Ahmed",
+      "leaveType": "Casual Leave",
+      "startDate": "2026-08-05",
+      "endDate": "2026-08-06",
+      "reason": "Automated test leave request",
+      "status": "Pending",
+      "createdAt": "2026-08-02T04:12:03.193Z"
+    }
+  ],
   "eod_reports": [],
   "tickets": [],
   "pageEvents": [],

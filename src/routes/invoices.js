@@ -2,147 +2,256 @@ const express = require('express');
 const router = express.Router();
 const { requireAuth } = require('../middleware/auth');
 const { requireAdmin } = require('../middleware/rbac');
-const { readDB, writeDB } = require('../services/db');
+const { supabase } = require('../services/supabase');
 const { broadcast } = require('../services/sse');
-const { processAutomationEvent } = require('../services/automation');
 
-// GET Invoices (Client sees only their own invoices)
-router.get('/invoices', requireAuth, (req, res) => {
-  const db = readDB();
-  let invoices = db.invoices || [];
+function mapInvoice(i) {
+  if (!i) return null;
+  return {
+    id: i.id,
+    clientId: i.client_id,
+    clientName: i.client_name,
+    projectName: i.project_name,
+    projectRef: i.project_ref,
+    date: i.date,
+    dueDate: i.due_date,
+    paidDate: i.paid_date,
+    amount: Number(i.amount) || 0,
+    taxRate: Number(i.tax_rate) || 15,
+    discount: Number(i.discount) || 0,
+    status: i.status || 'Pending',
+    items: i.items || [],
+    notes: i.notes,
+    createdAt: i.created_at
+  };
+}
 
-  if (req.user.linkedType === 'client' && req.user.linkedId) {
-    const clientNameLower = (req.user.name || '').toLowerCase();
-    invoices = invoices.filter(i => i.clientId === req.user.linkedId || (i.clientName || '').toLowerCase().includes(clientNameLower));
+function mapQuote(q) {
+  if (!q) return null;
+  return {
+    id: q.id,
+    clientName: q.client_name,
+    amount: Number(q.amount) || 0,
+    taxRate: Number(q.tax_rate) || 15,
+    discount: Number(q.discount) || 0,
+    status: q.status || 'Draft',
+    date: q.date,
+    validUntil: q.valid_until,
+    items: q.items || [],
+    terms: q.terms,
+    createdAt: q.created_at
+  };
+}
+
+// GET Invoices
+router.get('/invoices', requireAuth, async (req, res) => {
+  try {
+    let query = supabase.from('invoices').select('*').order('created_at', { ascending: false });
+
+    if (req.user.linkedType === 'client' && req.user.linkedId) {
+      query = query.or(`client_id.eq.${req.user.linkedId},client_name.ilike.%${req.user.name}%`);
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+    res.json((data || []).map(mapInvoice));
+  } catch (err) {
+    console.error('Invoices GET error:', err.message);
+    res.status(500).json({ error: err.message });
   }
-
-  res.json(invoices);
 });
 
 // POST Create Invoice
-router.post('/invoices', requireAuth, requireAdmin, (req, res) => {
-  const db = readDB();
-  db.invoices = db.invoices || [];
-  const count = db.invoices.length + 1;
+router.post('/invoices', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const { count } = await supabase.from('invoices').select('*', { count: 'exact', head: true });
+    const countNum = (count || 0) + 1;
+    const newId = `INV-2026-${String(countNum).padStart(3, '0')}`;
 
-  const newInvoice = {
-    id: `INV-2026-${String(count).padStart(3, '0')}`,
-    clientId: req.body.clientId || 'CLI-0001',
-    clientName: req.body.clientName || 'General Client',
-    date: req.body.date || new Date().toISOString().split('T')[0],
-    dueDate: req.body.dueDate || new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0],
-    amount: Number(req.body.amount) || 0,
-    taxRate: Number(req.body.taxRate) || 15,
-    discount: Number(req.body.discount) || 0,
-    status: req.body.status || 'Pending',
-    items: req.body.items || [],
-    createdAt: new Date().toISOString()
-  };
+    const payload = {
+      id: newId,
+      client_id: req.body.clientId || 'CLI-0001',
+      client_name: req.body.clientName || 'General Client',
+      project_name: req.body.projectName || '',
+      date: req.body.date || new Date().toISOString().split('T')[0],
+      due_date: req.body.dueDate || new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0],
+      amount: Number(req.body.amount) || 0,
+      tax_rate: Number(req.body.taxRate) || 15,
+      discount: Number(req.body.discount) || 0,
+      status: req.body.status || 'Pending',
+      items: req.body.items || []
+    };
 
-  db.invoices.push(newInvoice);
-  writeDB(db);
-  broadcast('invoice_update', db.invoices);
+    const { data, error } = await supabase.from('invoices').insert([payload]).select().single();
+    if (error) throw error;
 
-  res.json({ success: true, invoice: newInvoice });
+    const invoice = mapInvoice(data);
+    const { data: allInvoices } = await supabase.from('invoices').select('*').order('created_at', { ascending: false });
+    broadcast('invoice_update', (allInvoices || []).map(mapInvoice));
+
+    res.json({ success: true, invoice });
+  } catch (err) {
+    console.error('Invoice POST error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // PUT Update Invoice / Mark Paid
-router.put('/invoices/:id', requireAuth, (req, res) => {
-  const { id } = req.params;
-  const db = readDB();
-  const idx = (db.invoices || []).findIndex(i => i.id === id);
-  if (idx === -1) return res.status(404).json({ error: 'Invoice not found' });
+router.put('/invoices/:id', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = {};
+    if (req.body.status) updates.status = req.body.status;
+    if (req.body.amount !== undefined) updates.amount = Number(req.body.amount);
+    if (req.body.dueDate) updates.due_date = req.body.dueDate;
+    if (req.body.status === 'Paid') updates.paid_date = new Date().toISOString().split('T')[0];
 
-  const oldStatus = db.invoices[idx].status;
-  const updated = { ...db.invoices[idx], ...req.body };
-  db.invoices[idx] = updated;
+    const { data, error } = await supabase.from('invoices').update(updates).eq('id', id).select().single();
+    if (error) throw error;
 
-  if (updated.status === 'Paid' && oldStatus !== 'Paid') {
-    updated.paidDate = new Date().toISOString().split('T')[0];
-    processAutomationEvent('invoice_paid', { invoice: updated }, db, writeDB, broadcast);
+    const invoice = mapInvoice(data);
+    const { data: allInvoices } = await supabase.from('invoices').select('*').order('created_at', { ascending: false });
+    broadcast('invoice_update', (allInvoices || []).map(mapInvoice));
+
+    res.json({ success: true, invoice });
+  } catch (err) {
+    console.error('Invoice PUT error:', err.message);
+    res.status(500).json({ error: err.message });
   }
+});
 
-  writeDB(db);
-  broadcast('invoice_update', db.invoices);
+// POST /invoices/:id/pay (Partner Portal Online Payment Verification)
+router.post('/invoices/:id/pay', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = {
+      status: 'Paid',
+      paid_date: new Date().toISOString().split('T')[0],
+      notes: `Paid via ${req.body.method || 'Online Gateway'} (TrxID: ${req.body.trxId || 'N/A'})`
+    };
 
-  res.json({ success: true, invoice: db.invoices[idx] });
+    const { data, error } = await supabase.from('invoices').update(updates).eq('id', id).select().single();
+    if (error) throw error;
+
+    const invoice = mapInvoice(data);
+    const { data: allInvoices } = await supabase.from('invoices').select('*').order('created_at', { ascending: false });
+    broadcast('invoice_update', (allInvoices || []).map(mapInvoice));
+
+    res.json({ success: true, invoice });
+  } catch (err) {
+    console.error('Invoice Pay error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // QUOTATIONS API
-router.get('/quotes', requireAuth, (req, res) => {
-  const db = readDB();
-  res.json(db.quotes || []);
+router.get('/quotes', requireAuth, async (req, res) => {
+  try {
+    const { data, error } = await supabase.from('quotes').select('*').order('created_at', { ascending: false });
+    if (error) throw error;
+    res.json((data || []).map(mapQuote));
+  } catch (err) {
+    console.error('Quotes GET error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
 });
 
-router.post('/quotes', requireAuth, (req, res) => {
-  const db = readDB();
-  db.quotes = db.quotes || [];
-  const count = db.quotes.length + 1;
+router.post('/quotes', requireAuth, async (req, res) => {
+  try {
+    const { count } = await supabase.from('quotes').select('*', { count: 'exact', head: true });
+    const countNum = (count || 0) + 1;
+    const newId = `QTE-2026-${String(countNum).padStart(3, '0')}`;
 
-  const newQuote = {
-    id: `QTE-2026-${String(count).padStart(3, '0')}`,
-    date: new Date().toISOString().split('T')[0],
-    status: 'Draft',
-    ...req.body
-  };
+    const payload = {
+      id: newId,
+      client_name: req.body.clientName || 'Client Proposal',
+      amount: Number(req.body.amount) || 0,
+      tax_rate: Number(req.body.taxRate) || 15,
+      discount: Number(req.body.discount) || 0,
+      status: 'Draft',
+      date: req.body.date || new Date().toISOString().split('T')[0],
+      valid_until: req.body.validUntil || null,
+      items: req.body.items || [],
+      terms: req.body.terms || ''
+    };
 
-  db.quotes.push(newQuote);
-  writeDB(db);
-  broadcast('quote_update', db.quotes);
+    const { data, error } = await supabase.from('quotes').insert([payload]).select().single();
+    if (error) throw error;
 
-  res.json({ success: true, quote: newQuote });
+    const quote = mapQuote(data);
+    const { data: allQuotes } = await supabase.from('quotes').select('*').order('created_at', { ascending: false });
+    broadcast('quote_update', (allQuotes || []).map(mapQuote));
+
+    res.json({ success: true, quote });
+  } catch (err) {
+    console.error('Quote POST error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
 });
 
-router.put('/quotes/:id', requireAuth, (req, res) => {
-  const { id } = req.params;
-  const db = readDB();
-  const idx = (db.quotes || []).findIndex(q => q.id === id);
-  if (idx === -1) return res.status(404).json({ error: 'Quotation not found' });
+router.put('/quotes/:id', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = {};
+    if (req.body.status) updates.status = req.body.status;
+    if (req.body.amount !== undefined) updates.amount = Number(req.body.amount);
 
-  db.quotes[idx] = { ...db.quotes[idx], ...req.body };
-  writeDB(db);
-  broadcast('quote_update', db.quotes);
+    const { data, error } = await supabase.from('quotes').update(updates).eq('id', id).select().single();
+    if (error) throw error;
 
-  res.json({ success: true, quote: db.quotes[idx] });
+    const quote = mapQuote(data);
+    const { data: allQuotes } = await supabase.from('quotes').select('*').order('created_at', { ascending: false });
+    broadcast('quote_update', (allQuotes || []).map(mapQuote));
+
+    res.json({ success: true, quote });
+  } catch (err) {
+    console.error('Quote PUT error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
 });
 
-router.post('/quotes/:id/convert', requireAuth, (req, res) => {
-  const { id } = req.params;
-  const db = readDB();
-  const quote = (db.quotes || []).find(q => q.id === id);
-  if (!quote) return res.status(404).json({ error: 'Quotation not found' });
+router.post('/quotes/:id/convert', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
 
-  quote.status = 'Converted';
+    const { data: quoteData, error: qErr } = await supabase.from('quotes').select('*').eq('id', id).single();
+    if (qErr || !quoteData) return res.status(404).json({ error: 'Quotation not found' });
 
-  db.clients = db.clients || [];
-  const clientObj = db.clients.find(c => c.name.toLowerCase().trim() === (quote.clientName || '').toLowerCase().trim());
-  const clientId = clientObj ? clientObj.id : (db.clients[0]?.id || 'CLI-0001');
+    await supabase.from('quotes').update({ status: 'Converted' }).eq('id', id);
 
-  db.invoices = db.invoices || [];
-  const invCount = db.invoices.length + 1;
-  const newInvoice = {
-    id: `INV-2026-${String(invCount).padStart(3, '0')}`,
-    clientId: clientId,
-    clientName: quote.clientName,
-    date: new Date().toISOString().split('T')[0],
-    dueDate: quote.validUntil || new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0],
-    amount: Number(quote.amount) || 0,
-    taxRate: Number(quote.taxRate) || 15,
-    discount: Number(quote.discount) || 0,
-    status: 'Draft',
-    items: quote.items || [
-      { description: `Proposal Services for ${quote.clientName}`, qty: 1, rate: Number(quote.amount) || 0 }
-    ],
-    notes: quote.terms || ''
-  };
+    const { count } = await supabase.from('invoices').select('*', { count: 'exact', head: true });
+    const invCount = (count || 0) + 1;
+    const newInvoice = {
+      id: `INV-2026-${String(invCount).padStart(3, '0')}`,
+      client_id: 'CLI-0001',
+      client_name: quoteData.client_name,
+      date: new Date().toISOString().split('T')[0],
+      due_date: quoteData.valid_until || new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0],
+      amount: Number(quoteData.amount) || 0,
+      tax_rate: Number(quoteData.tax_rate) || 15,
+      discount: Number(quoteData.discount) || 0,
+      status: 'Draft',
+      items: quoteData.items || [{ description: `Proposal Services for ${quoteData.client_name}`, qty: 1, rate: Number(quoteData.amount) || 0 }],
+      notes: quoteData.terms || ''
+    };
 
-  db.invoices.push(newInvoice);
-  writeDB(db);
+    const { data: insertedInv, error: iErr } = await supabase.from('invoices').insert([newInvoice]).select().single();
+    if (iErr) throw iErr;
 
-  broadcast('quote_update', db.quotes);
-  broadcast('invoice_update', db.invoices);
+    const invoice = mapInvoice(insertedInv);
+    const quote = mapQuote({ ...quoteData, status: 'Converted' });
 
-  res.json({ success: true, invoice: newInvoice, quote });
+    const { data: allQuotes } = await supabase.from('quotes').select('*');
+    const { data: allInvoices } = await supabase.from('invoices').select('*');
+
+    broadcast('quote_update', (allQuotes || []).map(mapQuote));
+    broadcast('invoice_update', (allInvoices || []).map(mapInvoice));
+
+    res.json({ success: true, invoice, quote });
+  } catch (err) {
+    console.error('Quote Convert error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 module.exports = router;

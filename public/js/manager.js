@@ -971,6 +971,24 @@ function logoutManager() {
   window.location.href = '/auth';
 }
 
+function setupManagerSSE() {
+  try {
+    const es = new EventSource('/api/events');
+    es.onmessage = (e) => {
+      try {
+        const msg = JSON.parse(e.data);
+        if (msg.type === 'task_update' && typeof loadManagerKanban === 'function') loadManagerKanban();
+        if (msg.type === 'expense_update' && typeof loadManagerExpenses === 'function') loadManagerExpenses();
+        if (msg.type === 'leave_update' && typeof loadManagerHROps === 'function') loadManagerHROps();
+        if (msg.type === 'post_update' && typeof loadManagerSocialPlanner === 'function') loadManagerSocialPlanner();
+        if (msg.type === 'attendance_update' && typeof loadManagerOverviewKPIs === 'function') loadManagerOverviewKPIs();
+      } catch (err) {}
+    };
+    es.onerror = () => es.close();
+  } catch (err) {}
+}
+
 function initManagerNavigation() {
   console.log('🚀 PurpleOS Manager Portal JS Initialized');
+  setupManagerSSE();
 }

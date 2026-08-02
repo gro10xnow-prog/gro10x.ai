@@ -2,52 +2,135 @@ const express = require('express');
 const router = express.Router();
 const { requireAuth } = require('../middleware/auth');
 const { requireAdmin } = require('../middleware/rbac');
-const { readDB, writeDB } = require('../services/db');
+const { supabase, isSupabaseConfigured } = require('../services/supabase');
 const { broadcast } = require('../services/sse');
 
+// Helper to map DB columns to camelCase JS properties
+function mapAsset(a) {
+  if (!a) return null;
+  return {
+    id: a.id,
+    name: a.name,
+    serial: a.serial,
+    category: a.category,
+    purchasePrice: Number(a.purchase_price) || 0,
+    monthlyDepreciation: Number(a.monthly_depreciation) || 0,
+    condition: a.condition,
+    assignedTo: a.assigned_to,
+    createdAt: a.created_at,
+    updatedAt: a.updated_at
+  };
+}
+
 // GET Assets
-router.get('/', requireAuth, (req, res) => {
-  const db = readDB();
-  res.json(db.assets || []);
+router.get('/', requireAuth, async (req, res) => {
+  try {
+    const { data, error } = await supabase.from('assets').select('*').order('id', { ascending: true });
+    if (error) throw error;
+    res.json((data || []).map(mapAsset));
+  } catch (err) {
+    console.error('Assets GET error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // POST Add Asset (Admin only)
-router.post('/', requireAuth, requireAdmin, (req, res) => {
-  const db = readDB();
-  db.assets = db.assets || [];
-  const count = db.assets.length + 1;
+router.post('/', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const { count } = await supabase.from('assets').select('*', { count: 'exact', head: true });
+    const newId = `AST-${String((count || 0) + 1).padStart(3, '0')}`;
 
-  const newAsset = {
-    id: `AST-${String(count).padStart(3, '0')}`,
-    name: req.body.name || 'Studio Camera',
-    serial: req.body.serial || 'SN-0000',
-    category: req.body.category || 'Camera Gear',
-    purchasePrice: Number(req.body.purchasePrice) || 0,
-    monthlyDepreciation: Number(req.body.monthlyDepreciation) || 0,
-    condition: req.body.condition || 'Good',
-    assignedTo: req.body.assignedTo || 'Niketon Studio Vault',
-    createdAt: new Date().toISOString()
-  };
+    const payload = {
+      id: newId,
+      name: req.body.name || 'Studio Camera',
+      serial: req.body.serial || 'SN-0000',
+      category: req.body.category || 'Camera Gear',
+      purchase_price: Number(req.body.purchasePrice) || 0,
+      monthly_depreciation: Number(req.body.monthlyDepreciation) || 0,
+      condition: req.body.condition || 'Good',
+      assigned_to: req.body.assignedTo || 'Niketon Studio Vault'
+    };
 
-  db.assets.push(newAsset);
-  writeDB(db);
-  broadcast('asset_update', db.assets);
+    const { data, error } = await supabase.from('assets').insert([payload]).select().single();
+    if (error) throw error;
 
-  res.json({ success: true, asset: newAsset });
+    const asset = mapAsset(data);
+    const { data: allAssets } = await supabase.from('assets').select('*');
+    broadcast('asset_update', (allAssets || []).map(mapAsset));
+
+    res.json({ success: true, asset });
+  } catch (err) {
+    console.error('Asset POST error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // PUT Update Asset Assignment / Condition
-router.put('/:id', requireAuth, requireAdmin, (req, res) => {
-  const { id } = req.params;
-  const db = readDB();
-  const idx = (db.assets || []).findIndex(a => a.id === id);
-  if (idx === -1) return res.status(404).json({ error: 'Asset not found' });
+router.put('/:id', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = {};
+    if (req.body.name) updates.name = req.body.name;
+    if (req.body.condition) updates.condition = req.body.condition;
+    if (req.body.assignedTo !== undefined) updates.assigned_to = req.body.assignedTo;
 
-  db.assets[idx] = { ...db.assets[idx], ...req.body, updatedAt: new Date().toISOString() };
-  writeDB(db);
-  broadcast('asset_update', db.assets);
+    const { data, error } = await supabase.from('assets').update(updates).eq('id', id).select().single();
+    if (error) throw error;
 
-  res.json({ success: true, asset: db.assets[idx] });
+    const asset = mapAsset(data);
+    const { data: allAssets } = await supabase.from('assets').select('*');
+    broadcast('asset_update', (allAssets || []).map(mapAsset));
+
+    res.json({ success: true, asset });
+  } catch (err) {
+    console.error('Asset PUT error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST Checkout Asset
+router.post('/:id/checkout', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const borrower = req.body.borrower || req.user.name || 'Crew Member';
+
+    const { data, error } = await supabase.from('assets')
+      .update({ assigned_to: borrower, condition: 'In Use' })
+      .eq('id', id)
+      .select().single();
+    if (error) throw error;
+
+    const asset = mapAsset(data);
+    const { data: allAssets } = await supabase.from('assets').select('*');
+    broadcast('asset_update', (allAssets || []).map(mapAsset));
+
+    res.json({ success: true, asset });
+  } catch (err) {
+    console.error('Asset Checkout error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST Checkin Asset
+router.post('/:id/checkin', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const { data, error } = await supabase.from('assets')
+      .update({ assigned_to: 'Niketon Studio Vault', condition: 'Good' })
+      .eq('id', id)
+      .select().single();
+    if (error) throw error;
+
+    const asset = mapAsset(data);
+    const { data: allAssets } = await supabase.from('assets').select('*');
+    broadcast('asset_update', (allAssets || []).map(mapAsset));
+
+    res.json({ success: true, asset });
+  } catch (err) {
+    console.error('Asset Checkin error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 module.exports = router;

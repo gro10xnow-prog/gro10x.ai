@@ -349,3 +349,22 @@ async function submitCrewEod(event) {
     showTeamToast('Error submitting EOD report: ' + err.message, 'error');
   }
 }
+
+function setupTeamSSE() {
+  try {
+    const es = new EventSource('/api/events');
+    es.onmessage = (e) => {
+      try {
+        const msg = JSON.parse(e.data);
+        if (['task_update', 'attendance_update', 'leave_update'].includes(msg.type)) {
+          if (typeof initCrewPortal === 'function') initCrewPortal();
+        }
+      } catch (err) {}
+    };
+    es.onerror = () => es.close();
+  } catch (err) {}
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  setupTeamSSE();
+});
