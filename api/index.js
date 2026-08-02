@@ -3,7 +3,7 @@ const cors = require('cors');
 const path = require('path');
 const apiRoutes = require('../src/routes/api');
 const { sseHandler } = require('../src/services/sse');
-const { initBot } = require('../src/services/bot');
+const { initBot, getTeamBot, getClientBot } = require('../src/services/bot');
 const { startScheduledJobs } = require('../src/services/automation');
 const { readDB, writeDB } = require('../src/services/db');
 const { broadcast } = require('../src/services/sse');
@@ -20,6 +20,27 @@ app.use(express.urlencoded({ extended: true }));
 
 // SSE Route
 app.get('/api/sync', sseHandler);
+
+// Telegram Webhook Endpoint for Production Updates
+app.post('/api/webhooks/telegram', (req, res) => {
+  const secretHeader = req.headers['x-telegram-bot-api-secret-token'];
+  if (process.env.WEBHOOK_SECRET && secretHeader !== process.env.WEBHOOK_SECRET) {
+    console.warn('⚠️ Webhook request rejected: Invalid secret token');
+    return res.status(403).json({ error: 'Forbidden' });
+  }
+
+  const botType = req.query.bot || 'team';
+  const targetBot = botType === 'client' ? getClientBot() : getTeamBot();
+
+  if (targetBot && req.body) {
+    try {
+      targetBot.processUpdate(req.body);
+    } catch (err) {
+      console.error(`Telegram webhook update processing error (${botType}):`, err.message);
+    }
+  }
+  return res.status(200).json({ ok: true });
+});
 
 // API Router (prioritized before static assets)
 app.use('/api', apiRoutes);

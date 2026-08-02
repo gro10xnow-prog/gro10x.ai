@@ -7,8 +7,13 @@ const { createTempPin } = require('./auth-pins');
 let teamBot = null;
 let clientBot = null;
 
+function getTeamBot() { return teamBot; }
+function getClientBot() { return clientBot; }
+
 module.exports = {
   initBot,
+  getTeamBot,
+  getClientBot,
   sendTelegramNotification,
   sendToGroup,
   getRoleKeyboard,
@@ -439,14 +444,32 @@ function initBot() {
       teamBot = new TelegramBot(teamToken, { polling: usePolling });
 
       if (!usePolling) {
+        const webhookBody = { url: `${baseUrl}/api/webhooks/telegram?bot=team` };
+        if (process.env.WEBHOOK_SECRET) webhookBody.secret_token = process.env.WEBHOOK_SECRET;
+
         fetch(`https://api.telegram.org/bot${teamToken}/setWebhook`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ url: `${baseUrl}/api/webhooks/telegram?bot=team` })
+          body: JSON.stringify(webhookBody)
         }).then(res => res.json()).then(data => {
           console.log(`📡 Team Bot Webhook status (${baseUrl}):`, data);
         }).catch(e => console.error('Error setting team webhook:', e));
       }
+
+      // Register native command menu
+      teamBot.setMyCommands([
+        { command: 'start', description: 'Start & verify account' },
+        { command: 'help', description: 'Show available commands' },
+        { command: 'myprofile', description: 'View & update profile' },
+        { command: 'mybank', description: 'View bank & bKash details' },
+        { command: 'mytasks', description: 'View assigned tasks' },
+        { command: 'myearnings', description: 'View salary & commissions' },
+        { command: 'resetpin', description: 'Get new web portal PIN' },
+        { command: 'clockin', description: 'Clock-in to studio' },
+        { command: 'clockout', description: 'Clock-out of studio' },
+        { command: 'orientation', description: 'Employee onboarding survey' },
+        { command: 'techdiag', description: 'System diagnostics' }
+      ]).catch(e => {});
 
       // Register persistent Chat Menu Button (Open App)
       fetch(`https://api.telegram.org/bot${teamToken}/setChatMenuButton`, {
@@ -2766,14 +2789,28 @@ function initBot() {
       clientBot = new TelegramBot(clientToken, { polling: usePolling });
 
       if (!usePolling) {
+        const webhookBody = { url: `${baseUrl}/api/webhooks/telegram?bot=client` };
+        if (process.env.WEBHOOK_SECRET) webhookBody.secret_token = process.env.WEBHOOK_SECRET;
+
         fetch(`https://api.telegram.org/bot${clientToken}/setWebhook`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ url: `${baseUrl}/api/webhooks/telegram?bot=client` })
+          body: JSON.stringify(webhookBody)
         }).then(res => res.json()).then(data => {
           console.log(`📡 Client Bot Webhook status (${baseUrl}):`, data);
         }).catch(e => console.error('Error setting client webhook:', e));
       }
+
+      // Register native command menu
+      clientBot.setMyCommands([
+        { command: 'start', description: 'Start client assistant' },
+        { command: 'help', description: 'Show available client options' },
+        { command: 'services', description: 'View agency services & pricing' },
+        { command: 'portfolio', description: 'Explore agency portfolio' },
+        { command: 'review', description: 'Access Video Review Room' },
+        { command: 'campaign', description: 'Check active campaign status' },
+        { command: 'invoices', description: 'View billing & pay invoices' }
+      ]).catch(e => {});
 
       // Register persistent Chat Menu Button (Open App)
       fetch(`https://api.telegram.org/bot${clientToken}/setChatMenuButton`, {
@@ -2966,6 +3003,8 @@ function sendToGroup(chatId, text, isTeam = true) {
 
 module.exports = {
   initBot,
+  getTeamBot,
+  getClientBot,
   sendTelegramNotification,
   sendToGroup,
   getRoleKeyboard
