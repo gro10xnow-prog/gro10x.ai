@@ -19,10 +19,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // SSE Route
-app.get('/api/sync', sseHandler);
+app.get(['/api/sync', '/sync'], sseHandler);
 
 // Bot Status Health Check
-app.get('/api/bot-status', (req, res) => {
+app.get(['/api/bot-status', '/bot-status'], (req, res) => {
   let team = getTeamBot();
   let client = getClientBot();
   if (!team || !client) {
@@ -36,7 +36,7 @@ app.get('/api/bot-status', (req, res) => {
 });
 
 // Telegram Webhook Endpoint for Production Updates
-app.post('/api/webhooks/telegram', (req, res) => {
+app.post(['/api/webhooks/telegram', '/webhooks/telegram'], (req, res) => {
   const secretHeader = req.headers['x-telegram-bot-api-secret-token'];
   if (process.env.WEBHOOK_SECRET && secretHeader !== process.env.WEBHOOK_SECRET) {
     console.warn('⚠️ Webhook request rejected: Invalid secret token');
