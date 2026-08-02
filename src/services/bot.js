@@ -1,4 +1,5 @@
 const TelegramBot = require('node-telegram-bot-api');
+const { supabase } = require('./supabase');
 const { readDB, writeDB } = require('./db');
 const { broadcast } = require('./sse');
 const { processAutomationEvent } = require('./automation');
@@ -483,6 +484,56 @@ function initBot() {
           }
         })
       }).catch(e => {});
+
+      // 🔍 TELEGRAM INLINE QUERY HANDLER (@teamBot task search)
+      teamBot.on('inline_query', async (query) => {
+        const queryId = query.id;
+        const qText = (query.query || '').trim().toLowerCase();
+
+        try {
+          let allTasks = [];
+          try {
+            const { data: tasks } = await supabase.from('tasks').select('*').order('created_at', { ascending: false });
+            if (tasks && tasks.length) allTasks = tasks;
+          } catch (e) {}
+
+          if (!allTasks.length) {
+            const dbData = readDB();
+            allTasks = dbData.tasks || [];
+          }
+
+          const matches = allTasks.filter(t => 
+            !qText || 
+            (t.title || '').toLowerCase().includes(qText) || 
+            (t.client || '').toLowerCase().includes(qText) ||
+            (t.assignee || '').toLowerCase().includes(qText) ||
+            (t.id || '').toLowerCase().includes(qText)
+          ).slice(0, 10);
+
+          const results = matches.map(t => ({
+            type: 'article',
+            id: `task-${t.id || Math.random()}`,
+            title: `📋 ${t.id || 'TSK'}: ${t.title || 'Task'}`,
+            description: `Client: ${t.client || 'PBD'} | Stage: ${t.stage || 'General'} | Priority: ${t.priority || 'Normal'}`,
+            input_message_content: {
+              message_text: `📋 *PURPLEOS TASK CARD*\n\n` +
+                `*Task ID:* \`${t.id || 'N/A'}\`\n` +
+                `*Title:* ${t.title || 'Untitled'}\n` +
+                `*Client:* ${t.client || 'PBD Client'}\n` +
+                `*Stage:* ${t.stage || 'Active'}\n` +
+                `*Priority:* ${t.priority || 'Normal'}\n` +
+                `*Assignee:* ${t.assignee || 'Unassigned'}\n` +
+                `*Due Date:* ${t.due_date || t.dueDate || 'N/A'}\n\n` +
+                `🌐 [Open Team Portal](https://purpleos-iota.vercel.app/team)`,
+              parse_mode: 'Markdown'
+            }
+          }));
+
+          teamBot.answerInlineQuery(queryId, results).catch(e => console.error('Inline query error:', e.message));
+        } catch (err) {
+          console.error('teamBot inline_query error:', err.message);
+        }
+      });
 
       // 📱 TELEGRAM CONTACT VERIFICATION HANDLER (1-time phone link)
       teamBot.on('contact', async (msg) => {
@@ -2824,6 +2875,54 @@ function initBot() {
           }
         })
       }).catch(e => {});
+
+      // 🔍 TELEGRAM INLINE QUERY HANDLER (@clientBot invoice & service search)
+      clientBot.on('inline_query', async (query) => {
+        const queryId = query.id;
+        const qText = (query.query || '').trim().toLowerCase();
+
+        try {
+          let allInvoices = [];
+          try {
+            const { data: invoices } = await supabase.from('invoices').select('*').order('created_at', { ascending: false });
+            if (invoices && invoices.length) allInvoices = invoices;
+          } catch (e) {}
+
+          if (!allInvoices.length) {
+            const dbData = readDB();
+            allInvoices = dbData.invoices || [];
+          }
+
+          const matches = allInvoices.filter(i => 
+            !qText || 
+            (i.id || '').toLowerCase().includes(qText) || 
+            (i.client_name || i.clientName || '').toLowerCase().includes(qText) ||
+            (i.project_name || i.projectName || '').toLowerCase().includes(qText)
+          ).slice(0, 10);
+
+          const results = matches.map(inv => ({
+            type: 'article',
+            id: `inv-${inv.id || Math.random()}`,
+            title: `💳 ${inv.id || 'INV'}: ${inv.project_name || inv.projectName || 'Invoice'}`,
+            description: `Client: ${inv.client_name || inv.clientName || 'Client'} | Amount: $${(Number(inv.amount) || 0).toLocaleString()} | Status: ${inv.status || 'Pending'}`,
+            input_message_content: {
+              message_text: `💳 *PURPLEOS COMMERCIAL INVOICE CARD*\n\n` +
+                `*Invoice ID:* \`${inv.id || 'N/A'}\`\n` +
+                `*Client:* ${inv.client_name || inv.clientName || 'Brand Partner'}\n` +
+                `*Project:* ${inv.project_name || inv.projectName || 'Campaign Work'}\n` +
+                `*Amount:* $${(Number(inv.amount) || 0).toLocaleString()}\n` +
+                `*Status:* ${inv.status || 'Pending'}\n` +
+                `*Due Date:* ${inv.due_date || inv.dueDate || 'N/A'}\n\n` +
+                `🌐 [Open Partner Portal](https://purpleos-iota.vercel.app/partners)`,
+              parse_mode: 'Markdown'
+            }
+          }));
+
+          clientBot.answerInlineQuery(queryId, results).catch(e => console.error('Inline query error:', e.message));
+        } catch (err) {
+          console.error('clientBot inline_query error:', err.message);
+        }
+      });
 
       clientBot.onText(/\/start|\/help/, (msg) => {
         const chatId = msg.chat.id;
