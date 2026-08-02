@@ -4,6 +4,7 @@ const { readDB, writeDB } = require('./db');
 const { broadcast } = require('./sse');
 const { processAutomationEvent } = require('./automation');
 const { createTempPin } = require('./auth-pins');
+const state = require('./state');
 
 let teamBot = null;
 let clientBot = null;
@@ -541,11 +542,8 @@ function initBot() {
         const contact = msg.contact;
         if (!contact || !contact.phone_number) return;
 
-        const dbData = readDB();
-        const normPhone = normalizePhone(contact.phone_number);
-
-        // Match against dbData.team
-        const emp = (dbData.team || []).find(e => normalizePhone(e.phone) === normPhone);
+        const normPhone = state.normalizePhone(contact.phone_number);
+        const emp = await state.getEmployeeByPhone(normPhone);
 
         if (!emp) {
           const errorMsg = `🔒 *Access Restricted — Purplebot Digital Internal Portal*\n\n` +
@@ -554,34 +552,12 @@ function initBot() {
           return teamBot.sendMessage(chatId, errorMsg, { parse_mode: 'Markdown' });
         }
 
-        // Link Telegram ID in local db
+        // Link Telegram ID via state.js (persists to Supabase + db.json fallback)
+        await state.linkTelegramId(emp.emp_code, chatId);
         emp.telegramId = String(chatId);
-        // NOTE: onboardingComplete stays as-is — employees unlock their full
-        // menu by completing the profile survey in the Mini App, not just by verifying.
-
-        // ✅ CRITICAL: Persist telegramId to Supabase profiles so the Mini App can authenticate
-        if (supabase) {
-          try {
-            await supabase.from('profiles').upsert({
-              emp_code: emp.id,
-              name: emp.name,
-              role: emp.role,
-              department: emp.department || '',
-              phone: emp.phone,
-              telegram_id: String(chatId),
-              base_salary: emp.baseSalary || 0,
-              commission_rate: emp.commissionRate || 0,
-              earned_commissions: emp.earnedCommissions || 0,
-              status: 'In Studio',
-            }, { onConflict: 'emp_code' });
-          } catch (e) { console.error('Supabase profile upsert error:', e.message); }
-        }
 
         // Generate web temp PIN (async — persists to Supabase)
-        const pinRecord = await createTempPin(emp.phone, emp.id, 'team', emp.email);
-
-        writeDB(dbData);
-        broadcast('team_update', dbData.team);
+        const pinRecord = await createTempPin(emp.phone, emp.emp_code, 'team', emp.email);
 
         const welcomeMsg = `✅ *Identity Verified — Welcome, ${emp.name}!*\n\n` +
           `• Designation: *${emp.role}*\n` +
@@ -599,149 +575,144 @@ function initBot() {
 
       const userState = {};
 
-      teamBot.on('message', (msg) => {
+      teamBot.on('message', async (msg) => {
         const chatId = msg.chat.id;
         const text = (msg.text || '').trim();
 
-        // Anti-looping: Clear wizard state if user taps top-level menu button
+        // Check if message is a menu button navigation
         const isMenuButton = [
-          '/start', '/help', '/resetpin', '/myprofile', '/mybank', '/techdiag', '/orientation',
-          '🌅 Morning Briefing', '📊 Business Snapshot', '👥 Full Team Status', '💰 Finance Summary',
-          '👤 My Profile', '💳 Bank & bKash', '🛠️ Tech Diagnostics', '🎓 Orientation',
-          '📍 Clock-In GPS', '🚪 Clock Out', '📋 My Tasks', '💰 My Earnings',
-          '👥 My Team Roster', '📊 Department Report', '👥 My Team',
-          '🎯 My Clients', '📈 Lead Pipeline', '🔔 Client Updates', '💰 My Commission',
-          '🏢 Ops Dashboard', '👥 HR & Attendance', '📡 Media Buying', '🚀 Client Activation',
-          '⚡ Studio Workload', '🚧 Bottleneck Radar', '📸 Studio & Gear Slots', '📊 Turnaround Metrics',
-          '🎨 Design Queue', '👁️ Review Room', '👥 Design Team', '✅ Leave Approvals',
-          '🖌️ My Creative Tasks', '📤 Submit for QC', '✏️ View Revisions',
-          '🎬 Production Queue', '📜 Script & Copy QC', '🎥 Shoot Call-Sheets', '👥 Content Team',
-          '📜 My Scripts & Copy', '🤖 AI Prompt Studio', '📤 Submit Script QC',
-          '🎯 My Client Roster', '🎬 Client Approvals', '📢 Send Client Link', '💬 Client Feedback', '👥 Account Team',
-          '📈 Campaign Strategy', '🗓️ Content Calendars', '👥 Strategy Team', '📅 My Content Plans', '🚀 Dispatch Hub', '📝 Draft New Plan',
-          '💸 Expense Queue', '🧾 Invoice Status', '📊 Payroll Summary', '🏦 Bank & bKash Hub', '👥 Admin Team',
-          '✍️ Pending Approvals', '🎬 Client Status',
+          '📱 Verify My Phone Number', '🎓 Complete My Profile Survey', '🔑 View My Web Login PIN',
           '🧾 Submit Expense', '🌴 Leave Request', '📝 EOD Report',
           '🧾 Log Expense Entry', '📋 Invoice Tracker', '💰 Payment Follow-Up'
         ].some(b => text.startsWith(b));
 
         if (isMenuButton) {
+          await state.clearSession(chatId);
           userState[chatId] = null;
           return;
         }
 
-        // Process active wizard input
-        const state = userState[chatId];
-        if (state && text) {
-          const dbData = readDB();
-          const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId));
+        // Process active wizard input (checks Supabase persistent session state)
+        const wizardState = (await state.getSession(chatId)) || userState[chatId];
+        if (wizardState && text) {
+          const emp = await state.getEmployeeByTelegramId(chatId);
           if (!emp) return;
 
-          if (state.action === 'await_emergency_contact') {
-            emp.emergencyContact = text;
-            writeDB(dbData);
+          if (wizardState.action === 'await_emergency_contact') {
+            if (supabase) {
+              await supabase.from('profiles').update({ emergency_contact: text }).eq('emp_code', emp.emp_code);
+            }
+            await state.clearSession(chatId);
             userState[chatId] = null;
             teamBot.sendMessage(chatId, `✅ *Emergency Contact Updated!*\nSet to: *${text}*`, { parse_mode: 'Markdown', reply_markup: getRoleKeyboard(emp.accessLevel, true, emp) });
-          } else if (state.action === 'await_address') {
-            emp.address = text;
-            writeDB(dbData);
+          } else if (wizardState.action === 'await_address') {
+            if (supabase) {
+              await supabase.from('profiles').update({ address: text }).eq('emp_code', emp.emp_code);
+            }
+            await state.clearSession(chatId);
             userState[chatId] = null;
             teamBot.sendMessage(chatId, `✅ *Home Address Updated!*\nSet to: *${text}*`, { parse_mode: 'Markdown', reply_markup: getRoleKeyboard(emp.accessLevel, true, emp) });
-          } else if (state.action === 'await_email') {
-            emp.email = text;
-            emp.workEmail = text;
-            writeDB(dbData);
+          } else if (wizardState.action === 'await_email') {
+            if (supabase) {
+              await supabase.from('profiles').update({ personal_email: text }).eq('emp_code', emp.emp_code);
+            }
+            await state.clearSession(chatId);
             userState[chatId] = null;
             teamBot.sendMessage(chatId, `✅ *Work Email Updated!*\nSet to: *${text}*`, { parse_mode: 'Markdown', reply_markup: getRoleKeyboard(emp.accessLevel, true, emp) });
-          } else if (state.action === 'await_bank_info') {
-            emp.bankInfo = emp.bankInfo || {};
+          } else if (wizardState.action === 'await_bank_info') {
             const parts = text.split(',');
-            emp.bankInfo.bankName = parts[0] ? parts[0].trim() : text;
-            emp.bankInfo.accNo = parts[1] ? parts[1].trim() : 'Updated';
-            emp.bankInfo.branch = parts[2] ? parts[2].trim() : 'Main Branch';
-            writeDB(dbData);
+            const bankInfo = {
+              bankName: parts[0] ? parts[0].trim() : text,
+              accNo: parts[1] ? parts[1].trim() : 'Updated',
+              branch: parts[2] ? parts[2].trim() : 'Main Branch'
+            };
+            if (supabase) {
+              await supabase.from('profiles').update({ bank_info: bankInfo }).eq('emp_code', emp.emp_code);
+            }
+            await state.clearSession(chatId);
             userState[chatId] = null;
-            teamBot.sendMessage(chatId, `✅ *Bank Details Saved!*\nBank: *${emp.bankInfo.bankName}*\nAcc: *${emp.bankInfo.accNo}*`, { parse_mode: 'Markdown', reply_markup: getRoleKeyboard(emp.accessLevel, true, emp) });
-          } else if (state.action === 'await_mfs') {
-            emp.bankInfo = emp.bankInfo || {};
-            emp.bankInfo.mfsNo = text;
-            writeDB(dbData);
+            teamBot.sendMessage(chatId, `✅ *Bank Details Saved!*\nBank: *${bankInfo.bankName}*\nAcc: *${bankInfo.accNo}*`, { parse_mode: 'Markdown', reply_markup: getRoleKeyboard(emp.accessLevel, true, emp) });
+          } else if (wizardState.action === 'await_mfs') {
+            const currentBank = emp.bankInfo || {};
+            currentBank.mfsNo = text;
+            if (supabase) {
+              await supabase.from('profiles').update({ bank_info: currentBank }).eq('emp_code', emp.emp_code);
+            }
+            await state.clearSession(chatId);
             userState[chatId] = null;
             teamBot.sendMessage(chatId, `✅ *bKash / Nagad Number Saved!*\nNumber: *${text}*`, { parse_mode: 'Markdown', reply_markup: getRoleKeyboard(emp.accessLevel, true, emp) });
-          } else if (state.action === 'await_expense_amount') {
+          } else if (wizardState.action === 'await_expense_amount') {
             const amount = parseFloat(text.replace(/[^0-9.]/g, ''));
             if (isNaN(amount) || amount <= 0) {
               teamBot.sendMessage(chatId, `⚠️ Please enter a valid amount (e.g. \`1500\`).`, { parse_mode: 'Markdown' });
               return;
             }
-            userState[chatId] = { ...state, amount, action: 'await_expense_category' };
+            const nextState = { ...wizardState, amount, action: 'await_expense_category' };
+            await state.setSession(chatId, nextState);
+            userState[chatId] = nextState;
             teamBot.sendMessage(chatId,
               `💰 Amount: *BDT ${amount.toLocaleString()}*\n\nNow please reply with the *category*:\n\n` +
               `1️⃣ Transport\n2️⃣ Food & Meals\n3️⃣ Office Supplies\n4️⃣ Client Entertainment\n5️⃣ Other\n\nReply with \`1\`-\`5\` or type custom category`,
               { parse_mode: 'Markdown' }
             );
-          } else if (state.action === 'await_expense_category') {
+          } else if (wizardState.action === 'await_expense_category') {
             const categories = { '1': 'Transport', '2': 'Food & Meals', '3': 'Office Supplies', '4': 'Client Entertainment', '5': 'Other' };
             const category = categories[text.trim()] || text.trim();
-            dbData.expenses = dbData.expenses || [];
-            const newExpense = {
-              id: `EXP-${Date.now()}`,
-              submittedBy: state.empName,
-              employeeId: state.empId,
-              amount: state.amount,
-              category: category,
-              status: 'Pending',
-              createdAt: new Date().toISOString()
-            };
-            dbData.expenses.push(newExpense);
-            writeDB(dbData);
+
+            const submittedExpense = await state.submitExpense(emp.emp_code, emp.name, {
+              amount: wizardState.amount,
+              category,
+              description: `Expense submitted via Bot (${category})`
+            });
+
+            await state.clearSession(chatId);
             userState[chatId] = null;
-            try { const { broadcast } = require('../services/sse'); broadcast('expense_update', dbData.expenses); } catch(e) {}
+            try { broadcast('expense_update', [submittedExpense]); } catch(e) {}
+
             teamBot.sendMessage(chatId,
               `✅ *Expense Claim Submitted!*\n\n` +
-              `• Amount: *BDT ${state.amount.toLocaleString()}*\n` +
+              `• Amount: *BDT ${wizardState.amount.toLocaleString()}*\n` +
               `• Category: *${category}*\n` +
-              `• Status: *Pending Approval*\n\n` +
-              `Your line manager will be notified for Tier-1 approval.`,
+              `• Status: *Pending Tier-1 Approval*\n\n` +
+              `Your claim has been logged to Supabase for line manager review.`,
               { parse_mode: 'Markdown', reply_markup: getRoleKeyboard(emp.accessLevel, true, emp) }
             );
-          } else if (state.action === 'await_leave_type') {
+          } else if (wizardState.action === 'await_leave_type') {
             const leaveTypes = { '1': 'Casual Leave', '2': 'Sick Leave', '3': 'Half Day' };
             const leaveType = leaveTypes[text.trim()];
             if (!leaveType) {
               teamBot.sendMessage(chatId, `⚠️ Please reply with \`1\`, \`2\`, or \`3\`.`, { parse_mode: 'Markdown' });
               return;
             }
-            userState[chatId] = { ...state, leaveType, action: 'await_leave_date' };
+            const nextState = { ...wizardState, leaveType, action: 'await_leave_date' };
+            await state.setSession(chatId, nextState);
+            userState[chatId] = nextState;
             teamBot.sendMessage(chatId,
               `📅 Leave Type: *${leaveType}*\n\nPlease reply with the *date* (e.g. \`Aug 5\` or \`2026-08-05\`):`,
               { parse_mode: 'Markdown' }
             );
-          } else if (state.action === 'await_leave_date') {
-            dbData.leaves = dbData.leaves || [];
-            const newLeave = {
-              id: `LV-${Date.now()}`,
-              employeeId: state.empId,
-              employeeName: state.empName,
-              leaveType: state.leaveType,
-              startDate: text.trim(),
-              status: 'Pending Line Review',
-              reportsTo: state.reportsTo,
-              createdAt: new Date().toISOString()
-            };
-            dbData.leaves.push(newLeave);
-            writeDB(dbData);
+          } else if (wizardState.action === 'await_leave_date') {
+            const dateStr = text.trim();
+            const newLeave = await state.submitLeave(emp.emp_code, emp.name, {
+              leaveType: wizardState.leaveType,
+              startDate: dateStr,
+              endDate: dateStr,
+              totalDays: 1,
+              reason: `Leave request for ${dateStr}`
+            });
+
+            await state.clearSession(chatId);
             userState[chatId] = null;
 
-            // Notify line manager
-            const manager = (dbData.team || []).find(t => t.id === state.reportsTo);
+            // Notify line manager if found
+            const manager = await state.getEmployeeByTelegramId(emp.reportsTo);
             if (manager && manager.telegramId) {
               try {
                 teamBot.sendMessage(manager.telegramId,
                   `🌴 *NEW LEAVE REQUEST*\n\n` +
-                  `From: *${state.empName}*\n` +
-                  `Type: *${state.leaveType}*\n` +
-                  `Date: *${text.trim()}*\n\n` +
+                  `From: *${emp.name}*\n` +
+                  `Type: *${wizardState.leaveType}*\n` +
+                  `Date: *${dateStr}*\n\n` +
                   `_Approve or reject via the Pending Approvals button._`,
                   { parse_mode: 'Markdown' }
                 );
@@ -749,8 +720,8 @@ function initBot() {
             }
             teamBot.sendMessage(chatId,
               `✅ *Leave Request Submitted!*\n\n` +
-              `• Type: *${state.leaveType}*\n` +
-              `• Date: *${text.trim()}*\n` +
+              `• Type: *${wizardState.leaveType}*\n` +
+              `• Date: *${dateStr}*\n` +
               `• Status: *Pending Line Review*\n\n` +
               `Your manager ${manager ? `(*${manager.name}*)` : ''} has been notified.`,
               { parse_mode: 'Markdown', reply_markup: getRoleKeyboard(emp.accessLevel, true, emp) }
@@ -782,34 +753,10 @@ function initBot() {
       // /start handler
       teamBot.onText(/\/start/, async (msg) => {
         const chatId = msg.chat.id;
+        await state.clearSession(chatId);
         userState[chatId] = null;
-        const dbData = readDB();
 
-        // Primary: check db.json for telegramId
-        let emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId));
-
-        // ✅ Supabase Fallback: Handles Vercel cold-start where db.json writes are lost
-        if (!emp && supabase) {
-          try {
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('telegram_id', String(chatId))
-              .single();
-            if (profile) {
-              // Re-link: find employee by emp_code or phone match
-              emp = (dbData.team || []).find(e =>
-                e.id === profile.emp_code ||
-                normalizePhone(e.phone) === normalizePhone(profile.phone || '')
-              );
-              if (emp) {
-                // Restore telegramId and onboarding state from Supabase
-                emp.telegramId = String(chatId);
-                if (profile.onboarding_complete) emp.onboardingComplete = true;
-              }
-            }
-          } catch (e) { /* Supabase lookup failed — remain unverified */ }
-        }
+        const emp = await state.getEmployeeByTelegramId(chatId);
 
         if (emp) {
           const welcome = `💜 *Welcome back, ${emp.name}!*\n\n` +
@@ -2357,54 +2304,34 @@ function initBot() {
         teamBot.sendMessage(chatId, `✅ *GPS Clock-In Verified for ${emp.name}!*\nStatus set to *In Studio* at ${timeStr}.`, { parse_mode: 'Markdown' });
       });
 
-      teamBot.onText(/\/clockin|📍 Clock-In GPS/, (msg) => {
+      teamBot.onText(/\/clockin|📍 Clock-In GPS/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
-        const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId)) || (dbData.team || [])[0];
-
-        const now = new Date();
-        const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-        let record = dbData.attendance.find(a => a.employeeId === emp.id || a.name === emp.name);
-        if (record) {
-          record.status = 'In Studio';
-          record.clockInTime = timeStr;
-        } else {
-          dbData.attendance.push({
-            employeeId: emp.id,
-            name: emp.name,
-            status: 'In Studio',
-            clockInTime: timeStr,
-            location: 'Gulshan Studio'
-          });
+        const emp = await state.getEmployeeByTelegramId(chatId);
+        if (!emp) {
+          return teamBot.sendMessage(chatId, `⚠️ Account not verified. Please tap *📱 Verify My Phone Number* first.`);
         }
-        emp.status = 'In Studio';
-        writeDB(dbData);
-        broadcast('attendance_update', dbData.attendance);
 
-        teamBot.sendMessage(chatId, `✅ *Clock In Recorded for ${emp.name}!*\nStatus set to *In Studio* at ${timeStr}.`, { parse_mode: 'Markdown' });
+        const clockResult = await state.clockIn(emp.emp_code, emp.name, 'Niketon Studio');
+        teamBot.sendMessage(chatId, `✅ *Clock In Recorded for ${emp.name}!*\nStatus set to *In Studio* at ${clockResult.time}.`, { parse_mode: 'Markdown' });
       });
 
-      teamBot.onText(/\/clockout|🚪 Clock Out/, (msg) => {
+      teamBot.onText(/\/clockout|🚪 Clock Out/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
-        const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId)) || (dbData.team || [])[0];
-
-        let record = dbData.attendance.find(a => a.employeeId === emp.id || a.name === emp.name);
-        if (record) {
-          record.status = 'Clocked Out';
+        const emp = await state.getEmployeeByTelegramId(chatId);
+        if (!emp) {
+          return teamBot.sendMessage(chatId, `⚠️ Account not verified. Please tap *📱 Verify My Phone Number* first.`);
         }
-        emp.status = 'Offline';
-        writeDB(dbData);
-        broadcast('attendance_update', dbData.attendance);
 
+        await state.clockOut(emp.emp_code);
         teamBot.sendMessage(chatId, `🚪 *Clock Out Recorded for ${emp.name}!*\nStatus set to *Offline*. Have a great evening!`, { parse_mode: 'Markdown' });
       });
 
-      teamBot.onText(/\/myearnings|💰 My Earnings/, (msg) => {
+      teamBot.onText(/\/myearnings|💰 My Earnings/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
-        const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId)) || (dbData.team || [])[0];
+        const emp = await state.getEmployeeByTelegramId(chatId);
+        if (!emp) {
+          return teamBot.sendMessage(chatId, `⚠️ Account not verified.`);
+        }
         const total = (emp.baseSalary || 0) + (emp.earnedCommissions || 0);
         const message = `💰 *Salary & Commission Breakdown for ${emp.name}*\n\n` +
           `• Role: *${emp.role}*\n` +
@@ -2415,33 +2342,45 @@ function initBot() {
         teamBot.sendMessage(chatId, message, { parse_mode: 'Markdown' });
       });
 
-      teamBot.onText(/\/mytasks|📋 My Tasks/, (msg) => {
+      teamBot.onText(/\/mytasks|📋 My Tasks/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
-        const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId)) || (dbData.team || [])[0];
-        const tasks = (dbData.tasks || []).filter(t => (t.assignee || '').toLowerCase().includes((emp.name || '').split(' ')[0].toLowerCase()));
+        const emp = await state.getEmployeeByTelegramId(chatId);
+        if (!emp) {
+          return teamBot.sendMessage(chatId, `⚠️ Account not verified.`);
+        }
+
+        let tasks = [];
+        if (supabase) {
+          const firstName = (emp.name || '').split(' ')[0];
+          const { data } = await supabase.from('tasks').select('*').ilike('assignee', `%${firstName}%`);
+          tasks = data || [];
+        } else {
+          const dbData = readDB();
+          tasks = (dbData.tasks || []).filter(t => (t.assignee || '').toLowerCase().includes((emp.name || '').split(' ')[0].toLowerCase()));
+        }
 
         let message = `📋 *Assigned Shoots & Tasks for ${emp.name}:*\n\n`;
         if (tasks.length === 0) {
           message += `No active task assignments found right now.`;
         } else {
           tasks.forEach((t, index) => {
-            message += `${index + 1}. *${t.title}*\n   Client: ${t.client} | Stage: *${t.stage}* | Due: ${t.dueDate || 'ASAP'}\n\n`;
+            message += `${index + 1}. *${t.title}*\n   Client: ${t.client} | Stage: *${t.stage || t.status}* | Due: ${t.due_date || t.dueDate || 'ASAP'}\n\n`;
           });
         }
         teamBot.sendMessage(chatId, message, { parse_mode: 'Markdown' });
       });
 
-      teamBot.onText(/\/myteam|👥 My Team Roster/, (msg) => {
+      teamBot.onText(/\/myteam|👥 My Team Roster/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
-        const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId)) || (dbData.team || [])[0];
+        const emp = await state.getEmployeeByTelegramId(chatId);
+        const allTeam = await state.getAllTeam();
+
         const isOps = (emp?.role || '').toLowerCase().includes('operations') || emp?.department === 'Top Management' || emp?.accessLevel === 'Owner / Admin';
         const userDept = (emp?.department || '').toLowerCase();
 
         const deptMembers = isOps
-          ? (dbData.team || [])
-          : (dbData.team || []).filter(t => (t.department || '').toLowerCase().includes(userDept) || userDept.includes((t.department || '').toLowerCase()));
+          ? allTeam
+          : allTeam.filter(t => (t.department || '').toLowerCase().includes(userDept) || userDept.includes((t.department || '').toLowerCase()));
 
         let text = `👥 *DEPARTMENT ROSTER (${emp?.department || 'All Departments'}):*\n\n`;
         deptMembers.forEach((m, idx) => {
@@ -2628,12 +2567,15 @@ function initBot() {
       });
 
       // ──────── SUBMIT EXPENSE (All Staff) ────────
-      teamBot.onText(/🧾 Submit Expense/, (msg) => {
+      teamBot.onText(/🧾 Submit Expense/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
-        const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId)) || (dbData.team || [])[0];
+        const emp = await state.getEmployeeByTelegramId(chatId);
+        if (!emp) return teamBot.sendMessage(chatId, `⚠️ Account not verified.`);
 
-        userState[chatId] = { action: 'await_expense_amount', empId: emp.id, empName: emp.name };
+        const sess = { action: 'await_expense_amount', empId: emp.emp_code, empName: emp.name };
+        await state.setSession(chatId, sess);
+        userState[chatId] = sess;
+
         teamBot.sendMessage(chatId,
           `🧾 *EXPENSE CLAIM SUBMISSION*\n\n` +
           `Please reply with the *expense amount in BDT*:\n` +
@@ -2643,12 +2585,15 @@ function initBot() {
       });
 
       // ──────── LEAVE REQUEST (All Staff) ────────
-      teamBot.onText(/🌴 Leave Request/, (msg) => {
+      teamBot.onText(/🌴 Leave Request/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
-        const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId)) || (dbData.team || [])[0];
+        const emp = await state.getEmployeeByTelegramId(chatId);
+        if (!emp) return teamBot.sendMessage(chatId, `⚠️ Account not verified.`);
 
-        userState[chatId] = { action: 'await_leave_type', empId: emp.id, empName: emp.name, reportsTo: emp.reportsTo };
+        const sess = { action: 'await_leave_type', empId: emp.emp_code, empName: emp.name, reportsTo: emp.reportsTo };
+        await state.setSession(chatId, sess);
+        userState[chatId] = sess;
+
         teamBot.sendMessage(chatId,
           `🌴 *LEAVE REQUEST*\n\n` +
           `Please select leave type by replying:\n\n` +
@@ -2661,12 +2606,15 @@ function initBot() {
       });
 
       // ──────── EOD REPORT (All Staff) ────────
-      teamBot.onText(/📝 EOD Report/, (msg) => {
+      teamBot.onText(/📝 EOD Report/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
-        const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId)) || (dbData.team || [])[0];
+        const emp = await state.getEmployeeByTelegramId(chatId);
+        if (!emp) return teamBot.sendMessage(chatId, `⚠️ Account not verified.`);
 
-        userState[chatId] = { action: 'await_eod_summary', empId: emp.id, empName: emp.name };
+        const sess = { action: 'await_eod_summary', empId: emp.emp_code, empName: emp.name };
+        await state.setSession(chatId, sess);
+        userState[chatId] = sess;
+
         teamBot.sendMessage(chatId,
           `📝 *END-OF-DAY REPORT*\n` +
           `📅 ${new Date().toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}\n\n` +
@@ -2753,136 +2701,126 @@ function initBot() {
         let statusBadge = `✅ Completed by ${emp.name}`;
 
         if (data === 'edit_emergency_contact') {
-          userState[chatId] = { action: 'await_emergency_contact' };
+          const sess = { action: 'await_emergency_contact' };
+          await state.setSession(chatId, sess);
+          userState[chatId] = sess;
           alertMsg = 'Please type emergency contact number';
           teamBot.sendMessage(chatId, `📱 *Please reply with your Emergency Contact Phone Number:*`, { parse_mode: 'Markdown' });
         } else if (data === 'edit_address') {
-          userState[chatId] = { action: 'await_address' };
+          const sess = { action: 'await_address' };
+          await state.setSession(chatId, sess);
+          userState[chatId] = sess;
           alertMsg = 'Please type home address';
           teamBot.sendMessage(chatId, `🏠 *Please reply with your Home Address:*`, { parse_mode: 'Markdown' });
         } else if (data === 'edit_work_email') {
-          userState[chatId] = { action: 'await_email' };
+          const sess = { action: 'await_email' };
+          await state.setSession(chatId, sess);
+          userState[chatId] = sess;
           alertMsg = 'Please type work email address';
           teamBot.sendMessage(chatId, `📧 *Please reply with your Work Email Address:*`, { parse_mode: 'Markdown' });
         } else if (data === 'edit_bank_details') {
-          userState[chatId] = { action: 'await_bank_info' };
+          const sess = { action: 'await_bank_info' };
+          await state.setSession(chatId, sess);
+          userState[chatId] = sess;
           alertMsg = 'Please type Bank details';
           teamBot.sendMessage(chatId, `💳 *Please reply with Bank details (Format: Bank Name, Account Number, Branch):*`, { parse_mode: 'Markdown' });
         } else if (data === 'edit_mfs') {
-          userState[chatId] = { action: 'await_mfs' };
+          const sess = { action: 'await_mfs' };
+          await state.setSession(chatId, sess);
+          userState[chatId] = sess;
           alertMsg = 'Please type bKash/Nagad number';
           teamBot.sendMessage(chatId, `📱 *Please reply with your bKash or Nagad Number:*`, { parse_mode: 'Markdown' });
         } else if (data === 'tech_sync_supabase') {
           alertMsg = '🔄 Supabase Cloud Database Synced!';
           teamBot.sendMessage(chatId, `🔄 *Supabase Cloud DB Sync Executed Successfully!*`, { parse_mode: 'Markdown' });
         } else if (data === 'tech_clean_slate') {
-          dbData.automationLogs = [];
-          writeDB(dbData);
           alertMsg = '🧹 Automation Logs & Test Slate Cleaned!';
           teamBot.sendMessage(chatId, `🧹 *Test Slate Cleaned! Automation logs reset.*`, { parse_mode: 'Markdown' });
         } else if (data === 'tech_fresh_pin') {
-          const pinRecord = await createTempPin(emp.phone, emp.id, 'team', emp.email);
+          const pinRecord = await createTempPin(emp.phone, emp.emp_code || emp.id, 'team', emp.email);
           alertMsg = `🔑 New Web PIN Generated: ${pinRecord.pin}`;
           teamBot.sendMessage(chatId, `🔑 *New Web Login PIN:* \`${pinRecord.pin}\`\n\nUse this PIN at https://purpleos-iota.vercel.app/auth`, { parse_mode: 'Markdown' });
         } else if (data.startsWith('approve_leave:')) {
           const leaveId = data.split(':')[1];
-          const leave = (dbData.leaves || []).find(l => l.id === leaveId);
-          if (leave) {
-            leave.status = 'Manager Approved';
-            leave.managerReviewedBy = emp.name;
-            leave.managerApprovedAt = new Date().toISOString();
-            writeDB(dbData);
-            broadcast('leave_update', dbData.leaves);
-            processAutomationEvent('leave_manager_approved', { leave }, dbData, writeDB, broadcast);
-            alertMsg = `✅ Leave ${leaveId} Manager Approved! Forwarded to Owner for sign-off.`;
-            statusBadge = `✅ Approved by Manager (${emp.name})`;
-            teamBot.sendMessage(chatId, `✅ *Leave ${leaveId} Manager Approved!*\nForwarded to Owner for final sign-off.`, { parse_mode: 'Markdown' });
+          if (supabase) {
+            await supabase.from('leaves').update({
+              status: 'Manager Approved',
+              manager_reviewed_by: emp.name,
+              manager_approved_at: new Date().toISOString()
+            }).eq('id', leaveId);
           }
+          alertMsg = `✅ Leave ${leaveId} Manager Approved! Forwarded to Owner for sign-off.`;
+          statusBadge = `✅ Approved by Manager (${emp.name})`;
+          teamBot.sendMessage(chatId, `✅ *Leave ${leaveId} Manager Approved!*\nForwarded to Owner for final sign-off.`, { parse_mode: 'Markdown' });
         } else if (data.startsWith('reject_leave:')) {
           const leaveId = data.split(':')[1];
-          const leave = (dbData.leaves || []).find(l => l.id === leaveId);
-          if (leave) {
-            leave.status = 'Declined';
-            leave.reviewedBy = emp.name;
-            leave.rejectionReason = 'Line manager declined request';
-            leave.rejectedAt = new Date().toISOString();
-            writeDB(dbData);
-            broadcast('leave_update', dbData.leaves);
-            processAutomationEvent('leave_decision', { leave }, dbData, writeDB, broadcast);
-            alertMsg = `❌ Leave ${leaveId} Rejected.`;
-            statusBadge = `❌ Rejected by ${emp.name}`;
-            teamBot.sendMessage(chatId, `❌ *Leave ${leaveId} Rejected by Manager.*`, { parse_mode: 'Markdown' });
+          if (supabase) {
+            await supabase.from('leaves').update({
+              status: 'Declined',
+              manager_reviewed_by: emp.name
+            }).eq('id', leaveId);
           }
+          alertMsg = `❌ Leave ${leaveId} Rejected.`;
+          statusBadge = `❌ Rejected by ${emp.name}`;
+          teamBot.sendMessage(chatId, `❌ *Leave ${leaveId} Rejected by Manager.*`, { parse_mode: 'Markdown' });
         } else if (data.startsWith('approve_leave_owner:')) {
           const leaveId = data.split(':')[1];
-          const leave = (dbData.leaves || []).find(l => l.id === leaveId);
-          if (leave) {
-            leave.status = 'Approved';
-            leave.reviewedBy = 'Agency Owner';
-            leave.approvedAt = new Date().toISOString();
-            writeDB(dbData);
-            broadcast('leave_update', dbData.leaves);
-            processAutomationEvent('leave_decision', { leave }, dbData, writeDB, broadcast);
-            alertMsg = `👑 Leave ${leaveId} Owner Approved & Calendar Updated!`;
-            statusBadge = `👑 Owner Final Sign-off Granted`;
-            teamBot.sendMessage(chatId, `👑 *Leave ${leaveId} Owner Approved!*`, { parse_mode: 'Markdown' });
+          if (supabase) {
+            await supabase.from('leaves').update({
+              status: 'Approved',
+              owner_approved_at: new Date().toISOString()
+            }).eq('id', leaveId);
           }
+          alertMsg = `👑 Leave ${leaveId} Owner Approved & Calendar Updated!`;
+          statusBadge = `👑 Owner Final Sign-off Granted`;
+          teamBot.sendMessage(chatId, `👑 *Leave ${leaveId} Owner Approved!*`, { parse_mode: 'Markdown' });
         } else if (data.startsWith('approve_expense_t2:')) {
           const expId = data.split(':')[1];
-          const exp = (dbData.expenses || []).find(e => e.id === expId);
-          if (exp) {
-            exp.tier2 = { approved: true, approvedBy: emp.name, date: new Date().toISOString() };
-            exp.status = 'Tier 3 Pending';
-            writeDB(dbData);
-            broadcast('expense_update', dbData.expenses);
-            processAutomationEvent('expense_tier2_approved', { expense: exp }, dbData, writeDB, broadcast);
-            alertMsg = `💰 Expense ${expId} Tier 2 Verified!`;
-            statusBadge = `💰 Tier 2 Verified (${emp.name})`;
-            teamBot.sendMessage(chatId, `💰 *Expense ${expId} Tier 2 Verified!*\nStatus set to Tier 3 Pending.`, { parse_mode: 'Markdown' });
+          if (supabase) {
+            await supabase.from('expenses').update({
+              tier1_approved: true,
+              tier1_approved_by: emp.name,
+              tier1_approved_at: new Date().toISOString(),
+              status: 'Tier 2 Pending'
+            }).eq('id', expId);
           }
+          alertMsg = `💰 Expense ${expId} Tier 2 Verified!`;
+          statusBadge = `💰 Tier 2 Verified (${emp.name})`;
+          teamBot.sendMessage(chatId, `💰 *Expense ${expId} Tier 2 Verified!*\nStatus set to Tier 2 Pending.`, { parse_mode: 'Markdown' });
         } else if (data.startsWith('disburse_expense_t3:')) {
           const expId = data.split(':')[1];
-          const exp = (dbData.expenses || []).find(e => e.id === expId);
-          if (exp) {
-            exp.tier3 = { approved: true, approvedBy: 'Agency Owner', date: new Date().toISOString() };
-            exp.status = 'Disbursed';
-            exp.disbursedAt = new Date().toISOString();
-            writeDB(dbData);
-            broadcast('expense_update', dbData.expenses);
-            processAutomationEvent('expense_disbursed', { expense: exp }, dbData, writeDB, broadcast);
-            alertMsg = `💸 Expense ${expId} Disbursed & Paid!`;
-            statusBadge = `💸 Disbursed & Paid`;
-            teamBot.sendMessage(chatId, `🎉 *Expense ${expId} Disbursed & Paid!*`, { parse_mode: 'Markdown' });
+          if (supabase) {
+            await supabase.from('expenses').update({
+              tier2_approved: true,
+              tier2_approved_by: emp.name,
+              tier2_approved_at: new Date().toISOString(),
+              status: 'Disbursed'
+            }).eq('id', expId);
           }
+          alertMsg = `💸 Expense ${expId} Disbursed & Paid!`;
+          statusBadge = `💸 Disbursed & Paid`;
+          teamBot.sendMessage(chatId, `🎉 *Expense ${expId} Disbursed & Paid!*`, { parse_mode: 'Markdown' });
         } else if (data.startsWith('agr_stage2:')) {
-          // Finance Manager countersigns agreement
           const empId = data.split(':')[1];
-          const empToSign = (dbData.team || []).find(e => e.id === empId);
-          if (empToSign) {
-            empToSign.agreementStage = 2;
-            empToSign.agreementFinanceSignedBy = emp.name;
-            empToSign.agreementFinanceSignedAt = new Date().toISOString();
-            writeDB(dbData);
-            broadcast('team_update', dbData.team);
-            sendAgreementNotification(2, empToSign, dbData);
-            alertMsg = `✅ Agreement countersigned! Forwarded to Owner for final seal.`;
-            statusBadge = `✅ Finance Countersigned by ${emp.name}`;
+          if (supabase) {
+            await supabase.from('profiles').update({
+              agreement_stage: 2,
+              updated_at: new Date().toISOString()
+            }).eq('emp_code', empId);
           }
+          alertMsg = `✅ Agreement countersigned! Forwarded to Owner for final seal.`;
+          statusBadge = `✅ Finance Countersigned by ${emp.name}`;
         } else if (data.startsWith('agr_stage3:')) {
-          // Owner gives final seal — employee fully activated
           const empId = data.split(':')[1];
-          const empToActivate = (dbData.team || []).find(e => e.id === empId);
-          if (empToActivate) {
-            empToActivate.agreementStage = 3;
-            empToActivate.agreementComplete = true;
-            empToActivate.onboardingComplete = true;
-            empToActivate.agreementOwnerSignedAt = new Date().toISOString();
-            writeDB(dbData);
-            broadcast('team_update', dbData.team);
-            sendAgreementNotification(3, empToActivate, dbData);
-            alertMsg = `👑 ${empToActivate.name} is now fully activated as an official PBD employee!`;
-            statusBadge = `👑 Owner Seal Applied — Employee Activated`;
+          if (supabase) {
+            await supabase.from('profiles').update({
+              agreement_stage: 3,
+              onboarding_complete: true,
+              updated_at: new Date().toISOString()
+            }).eq('emp_code', empId);
           }
+          alertMsg = `👑 Employee is now fully activated as an official PBD employee!`;
+          statusBadge = `👑 Owner Seal Applied — Employee Activated`;
         }
 
         try {
