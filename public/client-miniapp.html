@@ -759,7 +759,20 @@
 
 <script>
   const tg = window.Telegram?.WebApp;
-  if (tg) { tg.expand(); tg.ready(); }
+  if (tg) {
+    tg.expand();
+    tg.ready();
+    if (tg.colorScheme === 'dark') {
+      document.body.classList.add('tg-dark-theme');
+    }
+    if (tg.setHeaderColor) tg.setHeaderColor('secondary_bg_color');
+  }
+
+  function triggerHaptic(type = 'medium') {
+    if (tg && tg.HapticFeedback) {
+      try { tg.HapticFeedback.impactOccurred(type); } catch(e) {}
+    }
+  }
 
   let clientData = null;
   let selectedPayMethod = 'bkash';
@@ -872,6 +885,7 @@
   // REVIEW ROOM
   // ══════════════════════════════════════════
   async function handleApproveCut(btnElement) {
+    triggerHaptic('medium');
     if (btnElement && !btnElement.dataset.confirming) {
       btnElement.dataset.confirming = 'true';
       const origText = btnElement.innerHTML;
@@ -883,6 +897,7 @@
       return;
     }
 
+    triggerHaptic('heavy');
     try {
       const tgUser = tg?.initDataUnsafe?.user;
       await fetch('/api/reviews/approve', {
@@ -903,6 +918,7 @@
   }
 
   async function handleSendFeedback() {
+    triggerHaptic('medium');
     const val = document.getElementById('fbInput').value.trim();
     if (!val) { showSuccess('⚠️', 'Validation Required', 'Please enter your feedback note before submitting.'); return; }
     try {
