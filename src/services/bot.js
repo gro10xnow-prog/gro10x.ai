@@ -554,8 +554,30 @@ function initBot() {
           return teamBot.sendMessage(chatId, errorMsg, { parse_mode: 'Markdown' });
         }
 
-        // Link Telegram ID
+        // Link Telegram ID in local db
         emp.telegramId = String(chatId);
+        // For demo: fully activate employee on first verification
+        emp.onboardingComplete = true;
+
+        // ✅ CRITICAL: Persist telegramId to Supabase profiles so the Mini App can authenticate
+        if (supabase) {
+          try {
+            await supabase.from('profiles').upsert({
+              emp_code: emp.id,
+              name: emp.name,
+              role: emp.role,
+              department: emp.department || '',
+              phone: emp.phone,
+              telegram_id: String(chatId),
+              access_level: emp.accessLevel || 'Specialist / Crew',
+              base_salary: emp.baseSalary || 0,
+              commission_rate: emp.commissionRate || 0,
+              earned_commissions: emp.earnedCommissions || 0,
+              status: 'In Studio',
+              onboarding_complete: true
+            }, { onConflict: 'emp_code' });
+          } catch (e) { console.error('Supabase profile upsert error:', e.message); }
+        }
 
         // Generate web temp PIN (async — persists to Supabase)
         const pinRecord = await createTempPin(emp.phone, emp.id, 'team', emp.email);
@@ -570,9 +592,8 @@ function initBot() {
           `🔑 *Desktop Web PIN:* \`${pinRecord.pin}\`\n` +
           `🌐 Portal: https://purpleos-iota.vercel.app/auth\n\n` +
           `━━━━━━━━━━━━━━━━━━━━\n` +
-          `📌 *Next Step:*\n` +
-          `Tap *🎓 Complete My Profile Survey* below.\n` +
-          `It takes ~5 minutes and unlocks your full dashboard. You'll earn XP for each section you complete!`;
+          `🚀 *Your full dashboard is now unlocked!*\n` +
+          `Use the menu below or tap *Open App* for the full portal.`;
 
         const keyboard = getRoleKeyboard(emp.accessLevel, true, emp);
         teamBot.sendMessage(chatId, welcomeMsg, { parse_mode: 'Markdown', reply_markup: keyboard });
@@ -761,11 +782,36 @@ function initBot() {
       });
 
       // /start handler
-      teamBot.onText(/\/start/, (msg) => {
+      teamBot.onText(/\/start/, async (msg) => {
         const chatId = msg.chat.id;
         userState[chatId] = null;
         const dbData = readDB();
-        const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId));
+
+        // Primary: check db.json for telegramId
+        let emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId));
+
+        // ✅ Supabase Fallback: Handles Vercel cold-start where db.json writes are lost
+        if (!emp && supabase) {
+          try {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('telegram_id', String(chatId))
+              .single();
+            if (profile) {
+              // Re-link: find employee by emp_code or phone match
+              emp = (dbData.team || []).find(e =>
+                e.id === profile.emp_code ||
+                normalizePhone(e.phone) === normalizePhone(profile.phone || '')
+              );
+              if (emp) {
+                // Restore telegramId and onboarding state from Supabase
+                emp.telegramId = String(chatId);
+                if (profile.onboarding_complete) emp.onboardingComplete = true;
+              }
+            }
+          } catch (e) { /* Supabase lookup failed — remain unverified */ }
+        }
 
         if (emp) {
           const welcome = `💜 *Welcome back, ${emp.name}!*\n\n` +
