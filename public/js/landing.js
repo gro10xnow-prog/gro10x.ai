@@ -166,16 +166,16 @@ async function fetchLandingServices() {
       <div class="pb-service-card">
         <div>
           <div class="pb-svc-icon">${categoryIcons[s.category] || '⚡'}</div>
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
-            <span style="font-size:0.75rem; font-weight:800; color:#7c3aed; text-transform:uppercase; letter-spacing:0.05em;">${s.category}</span>
-            <strong style="color:#059669; font-size:1.05rem;">${s.price}</strong>
+          <div class="pb-svc-badge-row">
+            <span class="pb-svc-category">${s.category}</span>
+            <span class="pb-svc-price">${s.price}</span>
           </div>
           <h3>${s.title}</h3>
           <p>${s.description}</p>
         </div>
 
         <button onclick="openPurpleBot('${s.title}')" class="pb-btn-svc">
-          Get Quote for ${s.title.split(' ')[0]} →
+          Get Custom Quote →
         </button>
       </div>
     `).join('');
