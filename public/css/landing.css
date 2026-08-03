@@ -514,19 +514,37 @@
 }
 
 .pb-client-pill {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  padding: 0.65rem 1.5rem;
+  background: var(--surface-1);
+  border: 1px solid var(--surface-border);
+  padding: 0.5rem 1.25rem;
   border-radius: 30px;
   font-weight: 700;
   font-size: 0.9rem;
-  color: #334155;
+  color: var(--text-heading);
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.pb-client-logo-img {
+  height: 24px;
+  width: auto;
+  max-width: 80px;
+  object-fit: contain;
+  filter: grayscale(0.2);
   transition: all 0.2s ease;
 }
 
 .pb-client-pill:hover {
-  border-color: var(--pb-purple-main);
-  color: var(--pb-purple-main);
+  border-color: var(--brand-purple);
+  color: var(--brand-purple);
+  box-shadow: var(--shadow-card);
+}
+
+.pb-client-pill:hover .pb-client-logo-img {
+  filter: grayscale(0);
 }
 
 /* WHY CHOOSE PURPLEBOT */
