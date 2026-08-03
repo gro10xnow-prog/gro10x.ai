@@ -179,18 +179,52 @@ function renderMobileBottomNav() {
 
 function hydrateUserInfo() {
   try {
+    let name = '';
+    let role = '';
+    let phone = localStorage.getItem('purple_user_phone') || '';
+
+    // 1. Try parsed purple_user object
     const rawUser = localStorage.getItem('purple_user');
     if (rawUser) {
-      const user = JSON.parse(rawUser);
-      const nameEl = document.getElementById('userName');
-      const roleEl = document.getElementById('userRoleTag');
-      const avatarEl = document.getElementById('userAvatar');
-
-      if (nameEl) nameEl.textContent = user.name || 'Staff User';
-      if (roleEl) roleEl.textContent = user.role || user.accessLevel || 'Specialist';
-      if (avatarEl) avatarEl.textContent = (user.name || 'PB').substring(0, 2).toUpperCase();
+      try {
+        const u = JSON.parse(rawUser);
+        name = u.name;
+        role = u.role || u.accessLevel;
+        if (u.phone) phone = u.phone;
+      } catch (e) {}
     }
-  } catch (e) {}
+
+    // 2. Fall back to individual keys
+    if (!name) name = localStorage.getItem('purple_user_name');
+    if (!role) role = localStorage.getItem('purple_user_role') || localStorage.getItem('purple_user_access');
+
+    // 3. Fall back for Executive / Owner phone numbers (e.g. 01708459008)
+    const cleanPhone = phone.replace(/[^0-9]/g, '');
+    if (cleanPhone.includes('1708459008') || cleanPhone.includes('1612309290')) {
+      if (!name || name === 'Staff User') name = 'Managing Director';
+      if (!role || role === 'Team Member') role = 'Executive / Owner';
+    }
+
+    // Default fallbacks
+    if (!name) name = 'Staff User';
+    if (!role) role = 'Team Member';
+
+    // Store normalized user object back to localStorage
+    const userObj = { name, role, phone: cleanPhone, email: localStorage.getItem('purple_user_email') || 'contact@purpleos.agency' };
+    localStorage.setItem('purple_user', JSON.stringify(userObj));
+
+    // Hydrate UI elements
+    const nameEl = document.getElementById('userName');
+    const roleEl = document.getElementById('userRoleTag');
+    const avatarEl = document.getElementById('userAvatar');
+
+    if (nameEl) nameEl.textContent = name;
+    if (roleEl) roleEl.textContent = role;
+    if (avatarEl) avatarEl.textContent = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'PB';
+
+  } catch (e) {
+    console.warn('[PurpleOS Shell] User hydration error:', e);
+  }
 }
 
 function adminSignOut() {

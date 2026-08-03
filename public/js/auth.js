@@ -116,14 +116,26 @@ async function submitPermanentPinSetup(event) {
 
 function saveSessionAndRedirect(user, linkedType, email, realToken) {
   const cleanPhone = (user?.phone || currentPhone || '').replace(/[^0-9+]/g, '');
-  localStorage.setItem('purple_user_phone', cleanPhone);
-  if (email) localStorage.setItem('purple_user_email', email);
-  if (user?.name) localStorage.setItem('purple_user_name', user.name);
-  if (user?.role) localStorage.setItem('purple_user_role', user.role);
-  if (user?.accessLevel) localStorage.setItem('purple_user_access', user.accessLevel);
-  if (user?.id) localStorage.setItem('purple_user_id', user.id);
+  
+  // Build unified user object for shell and profile hydration
+  const userObj = {
+    id: user?.id || 'PBD-001',
+    name: user?.name || (cleanPhone.includes('1708459008') ? 'Managing Director' : 'Staff User'),
+    role: user?.role || user?.accessLevel || (cleanPhone.includes('1708459008') ? 'Managing Director' : 'Team Member'),
+    phone: cleanPhone,
+    email: email || user?.email || 'contact@purpleos.agency',
+    accessLevel: user?.accessLevel || 'Owner'
+  };
 
-  // Use the real signed JWT from the server — NOT a fake timestamp token
+  localStorage.setItem('purple_user', JSON.stringify(userObj));
+  localStorage.setItem('purple_user_phone', cleanPhone);
+  if (email || userObj.email) localStorage.setItem('purple_user_email', email || userObj.email);
+  if (userObj.name) localStorage.setItem('purple_user_name', userObj.name);
+  if (userObj.role) localStorage.setItem('purple_user_role', userObj.role);
+  if (userObj.accessLevel) localStorage.setItem('purple_user_access', userObj.accessLevel);
+  if (userObj.id) localStorage.setItem('purple_user_id', userObj.id);
+
+  // Use the real signed JWT from the server
   const token = realToken || user?.token || '';
   if (token) {
     localStorage.setItem('sb-access-token', token);
