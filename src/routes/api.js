@@ -67,6 +67,13 @@ router.get('/public/client-check', async (req, res) => {
 });
 
 // Public Services Catalog Endpoint
+const defaultServicesList = [
+  { id: "SVC-001", title: "Digital Marketing & Growth Retainer", category: "Digital Marketing", price: "৳75,000 / month", description: "Full end-to-end strategy, content calendar, graphic post design, copy, community management, and monthly performance reporting.", includedFeatures: ["Paid Meta & Google Ads", "Social Media Strategy", "Audience Retargeting", "Monthly Growth Analytics"], public: true },
+  { id: "SVC-002", title: "Short-Form Video & Reels Production", category: "Video Production", price: "৳45,000 / package (10 Reels)", description: "Trend-driven short video creation tailored for TikTok, IG Reels, and FB Shorts including script, shoot, and motion edit.", includedFeatures: ["Commercial TVC Shoots", "Short-Form Reels & TikToks", "Color Grading & Sound FX", "Frame.io Review Workflows"], public: true },
+  { id: "SVC-003", title: "TVC & OVC Commercial Production", category: "Video Production", price: "৳180,000 / project", description: "High-production video commercial with creative storyboard, director, cinema crew, talent casting, and master edit.", includedFeatures: ["4K Cinema Camera Crew", "Professional Lighting & Sound", "Talent & Location Scouting", "Color Grading & Master Cut"], public: true },
+  { id: "SVC-004", title: "360-Degree Brand Identity System", category: "Branding & Graphics", price: "৳65,000 / project", description: "Complete corporate identity system including logo design, color palette, brand guidelines book, merchandise, and POSM templates.", includedFeatures: ["Logo Vector & Variants", "Brand Guidelines Book", "Social Media Templates", "Print & Packaging Assets"], public: true }
+];
+
 router.get('/services', async (req, res) => {
   if (isSupabaseConfigured()) {
     try {
@@ -77,7 +84,10 @@ router.get('/services', async (req, res) => {
     } catch (err) {}
   }
   const db = await readDB();
-  res.json(db.services || []);
+  if (db.services && db.services.length > 0) {
+    return res.json(db.services);
+  }
+  res.json(defaultServicesList);
 });
 
 // Full DB State Snapshot (Admin only)

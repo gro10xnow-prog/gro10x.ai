@@ -770,6 +770,39 @@
   box-shadow: var(--shadow-cta);
 }
 
+.pb-svc-title-link {
+  color: #0f172a;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.pb-svc-title-link:hover {
+  color: var(--brand-purple);
+}
+
+.pb-svc-details-link {
+  display: block;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.86rem;
+  text-decoration: none;
+  text-align: center;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.pb-svc-details-link:hover {
+  background: #ffffff;
+  color: var(--brand-purple);
+  border-color: var(--brand-purple);
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.15);
+}
+
 /* PORTFOLIO SECTION */
 .pb-portfolio-section {
   padding: 100px 1.5rem;

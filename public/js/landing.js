@@ -170,13 +170,18 @@ async function fetchLandingServices() {
             <span class="pb-svc-category">${s.category}</span>
             <span class="pb-svc-price">${s.price}</span>
           </div>
-          <h3>${s.title}</h3>
+          <h3><a href="/service-detail.html?id=${s.id}" class="pb-svc-title-link">${s.title}</a></h3>
           <p>${s.description}</p>
         </div>
 
-        <button onclick="openPurpleBot('${s.title}')" class="pb-btn-svc">
-          Get Custom Quote →
-        </button>
+        <div style="display:flex; flex-direction:column; gap:0.6rem; margin-top:1.25rem; width:100%;">
+          <a href="/service-detail.html?id=${s.id}" class="pb-svc-details-link">
+            🔍 View Full Details & Features →
+          </a>
+          <button onclick="openPurpleBot('${s.title}')" class="pb-btn-svc">
+            Get Custom Quote →
+          </button>
+        </div>
       </div>
     `).join('');
   } catch (err) {
