@@ -391,16 +391,20 @@ function openPurpleBot(serviceTitle) {
 
   if (serviceTitle && botState.step !== 'FINISHED') {
     botState.service = serviceTitle;
-    appendBotMsg(`I noticed you're interested in <strong>${serviceTitle}</strong>! Excellent choice.`);
+    showTypingIndicator();
+    setTimeout(() => {
+      removeTypingIndicator();
+      appendBotMsg(`🎯 Great choice! You selected <strong>${serviceTitle}</strong>.`);
 
-    if (botState.step === 'ASK_NAME') {
-      appendBotMsg(`What is your name?`);
-    } else if (botState.step === 'ASK_SERVICE') {
-      botState.step = 'ASK_PHONE';
-      updateInputPlaceholder();
-      appendBotMsg(`Great! What is your <strong>WhatsApp / Phone Number</strong> so our account director can reach out with details?`);
-    }
-    saveBotSession();
+      if (botState.step === 'ASK_NAME') {
+        appendBotMsg(`May I have your <strong>Name</strong> to get started with your custom proposal?`);
+      } else if (botState.step === 'ASK_SERVICE') {
+        botState.step = 'ASK_PHONE';
+        updateInputPlaceholder();
+        appendBotMsg(`Great! What is your <strong>WhatsApp / Phone Number</strong> so our account director can reach out with details?`);
+      }
+      saveBotSession();
+    }, 250);
   }
 }
 
