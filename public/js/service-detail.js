@@ -75,6 +75,40 @@ const SERVICE_DATABASE = {
       { title: 'Foodpanda Viral Reel Series', client: 'Foodpanda BD', category: 'Short-Form Video Reels', metric: '1.2M Total Retention', bg: '#27272a' }
     ]
   },
+  'tvc-production': {
+    title: 'TVC & OVC Commercial Production',
+    category: 'COMMERCIAL TVC & FILM',
+    heroTitle: 'TVC & OVC Commercial <br><span class="pb-gradient-text">Video Production</span>',
+    subtitle: 'High-production video commercials with creative storyboarding, cinema director, 4K camera crew, talent casting, and broadcast master edit.',
+    metaDesc: 'Broadcast commercial TVCs and online video commercials (OVC) produced by Purplebot Digital.',
+    statCard1: { icon: '🎬', title: '4K Cinema Cut', desc: 'Broadcast color grading & FX' },
+    statCard2: { icon: '🏆', title: '100% SLA Record', desc: 'On-time TVC delivery' },
+    pills: [
+      '🎬 Creative Storyboarding',
+      '🎥 4K Cinema Camera Crew',
+      '🎭 Professional Talent Casting',
+      '🔊 Custom Music & Sound Design',
+      '🎨 DaVinci Color Grading',
+      '📺 TVC Broadcast Master Cuts'
+    ],
+    features: [
+      { icon: '🎬', title: 'Commercial TVC & OVC Shoots', desc: 'End-to-end commercial video production featuring 4K cinema cameras, professional lighting setups, and experienced directors.' },
+      { icon: '🎭', title: 'Talent Casting & Location Scouting', desc: 'Casting professional actors, models, and voiceover artists alongside scouting premium filming locations.' },
+      { icon: '🎨', title: 'Broadcast Color Grading & Mastering', desc: 'DaVinci Resolve color grading, audio mastering, and broadcast-ready delivery cuts for TV and digital media.' },
+      { icon: '🔊', title: 'Original Jingle & Sound Composition', desc: 'Custom background scores, jingles, sound effects, and multi-lingual voiceover recording.' }
+    ],
+    process: [
+      { num: '01', icon: '📜', title: 'Concept & Scripting', desc: 'We draft the creative concept, TVC script, and visual storyboard for your brand.' },
+      { num: '02', icon: '🎥', title: 'Production Shoot', desc: 'Our cinema crew handles multi-camera filming, lighting, and sound on set.' },
+      { num: '03', icon: '✂️', title: 'Post-Production & Grading', desc: 'Editors refine the cut, apply color grading, visual effects, and custom sound design.' },
+      { num: '04', icon: '📺', title: 'Broadcast Handover', desc: 'Final 4K master files delivered for TV broadcast and digital ad campaigns.' }
+    ],
+    portfolio: [
+      { title: 'Chillox TVC Commercial Master Cut', client: 'Chillox BD', category: 'Broadcast TVC', metric: '2.4M Organic Reach', bg: '#09090b' },
+      { title: 'UCB Financial Report Launch Video', client: 'UCB Bank', category: 'Corporate TVC', metric: '100% On-Time Delivery', bg: '#18181b' },
+      { title: 'InterContinental Luxury Promo OVC', client: 'InterContinental', category: 'Hotel Promo Film', metric: '+1.8M Impressions', bg: '#27272a' }
+    ]
+  },
   'branding-graphics': {
     title: 'Branding & Graphics Design',
     category: 'BRAND IDENTITY & CREATIVE',
@@ -189,13 +223,31 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function renderServiceDetailPage() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const paramId = (urlParams.get('id') || urlParams.get('service') || '').toLowerCase();
   const path = window.location.pathname.toLowerCase();
+
   let key = 'digital-marketing';
 
-  if (path.includes('video')) key = 'video-editing';
-  else if (path.includes('branding')) key = 'branding-graphics';
-  else if (path.includes('website')) key = 'website-development';
-  else if (path.includes('custom-tech') || path.includes('tech')) key = 'custom-tech';
+  if (paramId === 'svc-001' || paramId.includes('digital')) {
+    key = 'digital-marketing';
+  } else if (paramId === 'svc-002' || paramId.includes('reels') || paramId.includes('editing')) {
+    key = 'video-editing';
+  } else if (paramId === 'svc-003' || paramId.includes('tvc') || paramId.includes('commercial')) {
+    key = 'tvc-production';
+  } else if (paramId === 'svc-004' || paramId.includes('branding') || paramId.includes('graphics')) {
+    key = 'branding-graphics';
+  } else if (paramId === 'svc-005' || paramId.includes('website')) {
+    key = 'website-development';
+  } else if (paramId === 'svc-006' || paramId.includes('tech')) {
+    key = 'custom-tech';
+  } else {
+    if (path.includes('video-editing') || path.includes('reels')) key = 'video-editing';
+    else if (path.includes('tvc') || path.includes('commercial')) key = 'tvc-production';
+    else if (path.includes('branding')) key = 'branding-graphics';
+    else if (path.includes('website')) key = 'website-development';
+    else if (path.includes('custom-tech') || path.includes('tech')) key = 'custom-tech';
+  }
 
   const data = SERVICE_DATABASE[key] || SERVICE_DATABASE['digital-marketing'];
 

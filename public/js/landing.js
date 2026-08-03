@@ -138,6 +138,21 @@ function trackClick(label) {
   } catch (err) {}
 }
 
+function formatPriceToBDT(priceStr) {
+  if (!priceStr) return '৳75,000 / month';
+  if (priceStr.includes('৳')) return priceStr;
+  
+  if (priceStr.includes('1,500') || priceStr.includes('1500')) return '৳75,000 / month';
+  if (priceStr.includes('800')) return '৳45,000 / 10 Reels';
+  if (priceStr.includes('3,500') || priceStr.includes('3500')) return '৳180,000 / project';
+  if (priceStr.includes('1,200') || priceStr.includes('1200')) return '৳65,000 / project';
+  if (priceStr.includes('750')) return '৳45,000 / month';
+  if (priceStr.includes('1,000') || priceStr.includes('1000')) return '৳75,000 / month';
+  if (priceStr.includes('1,250') || priceStr.includes('1250')) return '৳120,000 / month';
+
+  return priceStr.replace(/\$/g, '৳');
+}
+
 // FETCH & RENDER PUBLIC SERVICES
 async function fetchLandingServices() {
   const container = document.getElementById('landingServicesGrid');
@@ -168,7 +183,7 @@ async function fetchLandingServices() {
           <div class="pb-svc-icon">${categoryIcons[s.category] || '⚡'}</div>
           <div class="pb-svc-badge-row">
             <span class="pb-svc-category">${s.category}</span>
-            <span class="pb-svc-price">${s.price}</span>
+            <span class="pb-svc-price">${formatPriceToBDT(s.price)}</span>
           </div>
           <h3><a href="/service-detail.html?id=${s.id}" class="pb-svc-title-link">${s.title}</a></h3>
           <p>${s.description}</p>
