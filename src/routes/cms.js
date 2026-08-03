@@ -34,7 +34,13 @@ const defaultCMSContent = {
   portfolioShowcase: [
     { id: "PORT-001", title: "LG Electronics Bangladesh", subtitle: "3+ Years Retainer • Digital Branding & 500k+ Audience Growth", category: "Electronics & Tech", metric: "📱 500,000+ Social Community", image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=800&q=80" },
     { id: "PORT-002", title: "InterContinental Dhaka", subtitle: "Official Digital Marketing & 360° Creative Support Agency", category: "Hospitality & Luxury", metric: "🏨 2+ Years Full Content Support", image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80" },
-    { id: "PORT-003", title: "United Commercial Bank (UCB)", subtitle: "Annual Financial Report Video & Digital Launch Campaign", category: "Corporate Financial", metric: "💼 100% On-Time Delivery", image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80" }
+    { id: "PORT-003", title: "United Commercial Bank (UCB)", subtitle: "Annual Financial Report Video & Digital Launch Campaign", category: "Corporate Financial", metric: "💼 100% On-Time Delivery", image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80" },
+    { id: "PORT-004", title: "Chillox Burger Chain", subtitle: "Full Social Media Retainer & Viral Short-Form Video Reels", category: "FMCG & Food", metric: "🍔 2.4M+ Organic Reel Views", image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=800&q=80" },
+    { id: "PORT-005", title: "Mortein Protection (Reckitt)", subtitle: "Digital TVC Commercial & Social Protection Awareness Campaign", category: "Health & FMCG", metric: "🛡️ 1.8M Campaign Reach", image: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=800&q=80" },
+    { id: "PORT-006", title: "Harpik Hygiene (Reckitt)", subtitle: "National Sanitation Awareness Video Series & Motion Graphics", category: "Home Care & FMCG", metric: "✨ 3.2M Impressions", image: "https://images.unsplash.com/photo-1585421514284-efb74c2b69ba?auto=format&fit=crop&w=800&q=80" },
+    { id: "PORT-007", title: "BAT Global (British American Tobacco)", subtitle: "Corporate Event Digital Motion & Video Retainer", category: "Corporate Enterprise", metric: "⚡ Executive Asset Delivery", image: "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80" },
+    { id: "PORT-008", title: "Taptap Send Remittance App", subtitle: "Bangladesh Market Launch & User Acquisition Campaign", category: "Fintech & Mobile", metric: "💸 +45% App Installs", image: "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=800&q=80" },
+    { id: "PORT-009", title: "Yatai Japanese Dining", subtitle: "Restaurant Launch & Authentic Japanese Food Social Reels", category: "Restaurant & Dining", metric: "🍣 850k Local Reach", image: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=800&q=80" }
   ],
   pricingPackages: [
     { id: "PKG-001", name: "Lite Plan", tier: "STARTUP", price: "৳45,000", period: "/ month", featured: false, features: ["10 Total Content Items", "8 Image Based Content", "2 Motion or Carousel Content", "Monthly Content Plan & Captions", "Monthly Analytics Reporting", "Shared Account Manager"] },
@@ -56,7 +62,16 @@ router.get(['/', '/content', '/public/content'], async (req, res) => {
     }
   }
 
-  res.json({ success: true, content });
+  const portfolioList = content.portfolioShowcase || content.portfolio || defaultCMSContent.portfolioShowcase;
+
+  res.json({
+    success: true,
+    content: {
+      ...content,
+      portfolio: portfolioList,
+      portfolioShowcase: portfolioList
+    }
+  });
 });
 
 // PUT Update CMS Content (Admin only) — upserts into Supabase settings
