@@ -17,13 +17,13 @@ const defaultCMSContent = {
     stats: { years: "8+", clients: "100+", creatives: "20,000+", reach: "10M+" }
   },
   clientMarquee: [
-    "Aarong Earth", "LG Electronics", "Chillox Burgers", "BAT Global",
-    "Taptap Send", "Mortein", "Harpic", "Yatai Japanese", "Fortress Build", "UCB Bank"
+    "LG Electronics", "Chillox", "BAT Global",
+    "Taptap Send", "Mortein", "Harpic", "Yatai Japanese", "UCB Bank"
   ],
   whyUs: [
-    { icon: "🎯", title: "Data-Driven Strategy", description: "We don't guess. We analyze market trends, audience behavior, and performance metrics to craft winning campaigns." },
-    { icon: "🎬", title: "In-House Production", description: "From 4K commercial TVCs to viral short-form reels, our studio handles end-to-end creative execution." },
-    { icon: "🤖", title: "Automated Workflows", description: "Custom bot integrations, real-time client portals, and streamlined review rooms ensure 100% transparency." }
+    { icon: "🎯", title: "Seth Godin 'Purple Cow' Ethos", description: "Founded by IBA graduates Ayman Rahman & Ifteker Mahmud. We build remarkable, impossible-to-ignore brand content." },
+    { icon: "🎬", title: "Full-Scale In-House Studio", description: "From 4K commercial TVCs to viral TikToks and reels, our dedicated production crew handles end-to-end execution." },
+    { icon: "🤖", title: "PurpleOS Bot Workflows", description: "Proprietary AI task dispatching, real-time client review portals, and frame-accurate feedback rooms." }
   ],
   services: [
     { id: "SVC-001", icon: "📢", title: "Digital Marketing & Growth", category: "Growth & Ads", description: "Data-driven social media management, paid advertising, and conversion rate optimization.", features: ["Paid Meta & Google Ads", "Social Media Strategy", "Audience Retargeting", "Monthly Growth Analytics"] },
@@ -32,14 +32,14 @@ const defaultCMSContent = {
     { id: "SVC-004", icon: "💻", title: "Website & Tech Development", category: "Development", description: "Custom web applications, responsive landing pages, e-commerce, and bot integrations.", features: ["Custom React / Next.js Apps", "High-Converting Landing Pages", "Telegram & WhatsApp Bots", "API & CRM Integration"] }
   ],
   portfolioShowcase: [
-    { id: "PORT-001", title: "Chillox Burgers", subtitle: "360° Monthly Content Production & Viral Reels", category: "Commercial Food TVC", metric: "📈 2.4M Reach • 18% Order Spike", image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=800&q=80" },
-    { id: "PORT-002", title: "Clear Men (Unilever)", subtitle: "MasterBrand Cinema Spot & Digital Launch Reels", category: "Grooming & Lifestyle", metric: "🎬 Cinema 4K Cut • Approved Frame 1", image: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=800&q=80" },
-    { id: "PORT-003", title: "United Commercial Bank (UCB)", subtitle: "Annual Financial Report Video & Digital Campaign", category: "Corporate Financial", metric: "💼 100% On-Time Delivery", image: "https://images.unsplash.com/photo-1556742049-0a67d57a3e6f?auto=format&fit=crop&w=800&q=80" }
+    { id: "PORT-001", title: "LG Electronics Bangladesh", subtitle: "3+ Years Retainer • Digital Branding & 500k+ Audience Growth", category: "Electronics & Tech", metric: "📱 500,000+ Social Community", image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=800&q=80" },
+    { id: "PORT-002", title: "InterContinental Dhaka", subtitle: "Official Digital Marketing & 360° Creative Support Agency", category: "Hospitality & Luxury", metric: "🏨 2+ Years Full Content Support", image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80" },
+    { id: "PORT-003", title: "United Commercial Bank (UCB)", subtitle: "Annual Financial Report Video & Digital Launch Campaign", category: "Corporate Financial", metric: "💼 100% On-Time Delivery", image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80" }
   ],
   pricingPackages: [
-    { id: "PKG-001", name: "Lite Plan", tier: "STARTUP", price: "$750", period: "/ month", featured: false, features: ["10 Total Content Items", "8 Image Based Content", "2 Motion or Carousel Content", "Monthly Content Plan & Captions", "Monthly Analytics Reporting", "Shared Account Manager"] },
-    { id: "PKG-002", name: "Essential Plan", tier: "GROWTH", price: "$1,000", period: "/ month", featured: true, features: ["16 Total Content Items", "12 Image Based Content", "4 Short-Form Video Reels", "Dedicated Copywriter & Designer", "Bi-Weekly Performance Meetings", "Dedicated Account Manager"] },
-    { id: "PKG-003", name: "Advanced Plan", tier: "ENTERPRISE", price: "$1,250", period: "/ month", featured: false, features: ["24 Total Content Items", "16 Image Based Content", "8 Short-Form Video Reels / TVCs", "Paid Ad Campaign Management", "Weekly Strategy & Shoot Dispatch", "Senior Lead Account Director"] }
+    { id: "PKG-001", name: "Lite Plan", tier: "STARTUP", price: "৳45,000", period: "/ month", featured: false, features: ["10 Total Content Items", "8 Image Based Content", "2 Motion or Carousel Content", "Monthly Content Plan & Captions", "Monthly Analytics Reporting", "Shared Account Manager"] },
+    { id: "PKG-002", name: "Essential Plan", tier: "GROWTH", price: "৳75,000", period: "/ month", featured: true, features: ["16 Total Content Items", "12 Image Based Content", "4 Short-Form Video Reels", "Dedicated Copywriter & Designer", "Bi-Weekly Performance Meetings", "Dedicated Account Manager"] },
+    { id: "PKG-003", name: "Advanced Plan", tier: "ENTERPRISE", price: "৳120,000", period: "/ month", featured: false, features: ["24 Total Content Items", "16 Image Based Content", "8 Short-Form Video Reels / TVCs", "Paid Ad Campaign Management", "Weekly Strategy & Shoot Dispatch", "Senior Lead Account Director"] }
   ]
 };
 

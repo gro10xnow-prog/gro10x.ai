@@ -305,9 +305,27 @@ async function fetchCMSContent() {
     if (cms.clientMarquee && cms.clientMarquee.length > 0) {
       const marqueeContainer = document.getElementById('clientMarquee');
       if (marqueeContainer) {
-        marqueeContainer.innerHTML = cms.clientMarquee.map(brand => `
-          <div class="pb-client-pill"><span>${brand}</span></div>
+        const clientLogosMap = {
+          'UCB Bank': '/images/clients/ucb.png',
+          'Chillox': '/images/clients/chillox.png',
+          'Chillox Burgers': '/images/clients/chillox.png',
+          'BAT Global': '/images/clients/bat.png',
+          'LG Electronics': '/images/clients/lg.png',
+          'Taptap Send': '/images/clients/taptap.png',
+          'Mortein': '/images/clients/mortein.png',
+          'Harpic': '/images/clients/harpic.png',
+          'Yatai Japanese': '/images/clients/yatai.png'
+        };
+
+        const activeBrands = cms.clientMarquee.filter(b => !b.toLowerCase().includes('fortress'));
+        const pillsHtml = activeBrands.map(brand => `
+          <div class="pb-client-pill">
+            ${clientLogosMap[brand] ? `<img src="${clientLogosMap[brand]}" alt="${brand}" class="pb-client-logo-img">` : ''}
+            <span>${brand}</span>
+          </div>
         `).join('');
+
+        marqueeContainer.innerHTML = pillsHtml + pillsHtml;
       }
     }
 
