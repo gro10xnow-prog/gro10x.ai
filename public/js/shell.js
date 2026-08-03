@@ -1,13 +1,17 @@
 /**
  * public/js/shell.js
  * ─────────────────────────────────────────────────────────────────────────────
- * PurpleOS Shared Navigation & Page Shell Manager.
- * Injects top header bar, sidebar navigation, and performs Auth Guard checks.
+ * PurpleOS Shared Navigation & Page Shell Manager v2.0
+ * Injects top header bar, sidebar navigation, mobile bottom nav, theme engine.
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
 (function initPurpleShell() {
-  // 1. IIFE Auth Guard
+  // 1. Theme Engine Initialization
+  const savedTheme = localStorage.getItem('purple_theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+
+  // 2. IIFE Auth Guard
   const token = localStorage.getItem('sb-access-token') ||
                 localStorage.getItem('purpleos_pin_token') ||
                 localStorage.getItem('purple_token');
@@ -17,7 +21,7 @@
     return;
   }
 
-  // 2. Inject CSS if not already present
+  // 3. Inject CSS if not already present
   if (!document.querySelector('link[href*="shell.css"]')) {
     const link = document.createElement('link');
     link.rel = 'stylesheet';
@@ -25,51 +29,68 @@
     document.head.appendChild(link);
   }
 
-  // 3. Render Header & Sidebar when DOM is ready
+  // 4. Render Header, Sidebar, Mobile Nav when DOM is ready
   document.addEventListener('DOMContentLoaded', () => {
     renderHeader();
     renderSidebar();
+    renderMobileBottomNav();
     hydrateUserInfo();
   });
 })();
+
+function toggleTheme() {
+  const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+  const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', newTheme);
+  localStorage.setItem('purple_theme', newTheme);
+  
+  const themeBtn = document.getElementById('themeToggleBtn');
+  if (themeBtn) {
+    themeBtn.textContent = newTheme === 'dark' ? '🌙' : '☀️';
+    themeBtn.title = `Switch to ${newTheme === 'dark' ? 'Light' : 'Dark'} Theme`;
+  }
+}
 
 function renderHeader() {
   const headerContainer = document.getElementById('app-header');
   if (!headerContainer) return;
 
+  const currentTheme = localStorage.getItem('purple_theme') || 'dark';
+
   headerContainer.className = 'top-header';
   headerContainer.innerHTML = `
     <div style="display: flex; align-items: center; gap: 0.8rem;">
-      <div class="brand-container">
+      <a href="/pages/dashboard.html" class="brand-container">
         <div class="brand-logo">PB</div>
         <div>
           <div class="brand-title">PurpleOS</div>
-          <div style="font-size: 0.72rem; color: var(--purple-light); font-weight: 500;">Digital Agency Operating System v1.1</div>
+          <div style="font-size: 0.68rem; color: var(--pink-accent); font-weight: 700; letter-spacing: 0.05em;">DIGITAL OPERATING SYSTEM</div>
         </div>
-      </div>
+      </a>
     </div>
 
     <!-- Quick Search Command Trigger -->
-    <div class="cmd-trigger-btn" onclick="toggleCommandCenter()" style="display: flex; align-items: center; gap: 0.6rem; padding: 0.45rem 1rem; background: rgba(9,9,11,0.6); border: 1px solid rgba(168,85,247,0.3); border-radius: 12px; cursor: pointer; color: #a1a1aa; font-size: 0.85rem;">
+    <div class="cmd-trigger-btn" onclick="toggleCommandCenter()" style="display: flex; align-items: center; gap: 0.6rem; padding: 0.45rem 1rem; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 12px; cursor: pointer; color: var(--text-muted); font-size: 0.82rem; font-weight: 500;">
       <span>🔍 Quick Search or Command...</span>
-      <span style="padding: 0.15rem 0.45rem; background: rgba(255,255,255,0.08); border-radius: 6px; font-size: 0.75rem; font-weight: 700; color: #c084fc;">Ctrl + K</span>
+      <span style="padding: 0.15rem 0.45rem; background: var(--border-glow); border-radius: 6px; font-size: 0.72rem; font-weight: 800; color: var(--text-main);">Ctrl + K</span>
     </div>
 
-    <div style="display: flex; align-items: center; gap: 1.25rem;">
-      <div class="system-status" id="systemStatusBar">
-        <div class="status-dot"></div>
-        <span id="systemStatusText" style="font-size: 0.8rem; color: #34d399; font-weight: 600;">🟢 PurpleOS Active</span>
-      </div>
+    <div style="display: flex; align-items: center; gap: 0.85rem;">
+      <!-- Theme Toggle Button -->
+      <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()" title="Toggle Light/Dark Theme">
+        ${currentTheme === 'dark' ? '🌙' : '☀️'}
+      </button>
 
-      <div class="user-profile-badge">
+      <!-- User Profile Badge (Clickable link to profile page) -->
+      <a href="/pages/profile.html" class="user-profile-badge" title="Manage Profile & PIN">
         <div class="user-avatar" id="userAvatar">PB</div>
         <div class="user-info">
           <span class="user-name" id="userName">Staff User</span>
           <span class="user-role-tag" id="userRoleTag">Team Member</span>
         </div>
-      </div>
+      </a>
 
-      <button onclick="adminSignOut()" style="color: #f87171; background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3); border-radius: 10px; font-size: 0.825rem; font-weight: 600; padding: 0.4rem 0.75rem; cursor: pointer; transition: all 0.2s;">🔓 Sign Out</button>
+      <button onclick="adminSignOut()" style="color: #f87171; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 10px; font-size: 0.8rem; font-weight: 700; padding: 0.45rem 0.75rem; cursor: pointer; transition: all 0.2s;">🔓</button>
     </div>
   `;
 }
@@ -98,9 +119,10 @@ function renderSidebar() {
       ]
     },
     {
-      category: 'Finance & Admin',
+      category: 'Finance & User Account',
       items: [
         { label: 'Financials & Expenses', icon: '💰', path: '/pages/finance.html' },
+        { label: 'My Profile & PIN', icon: '🪪', path: '/pages/profile.html' },
         { label: 'System Settings', icon: '⚙️', path: '/pages/settings.html' }
       ]
     }
@@ -125,6 +147,36 @@ function renderSidebar() {
   sidebarContainer.innerHTML = html;
 }
 
+function renderMobileBottomNav() {
+  let navEl = document.getElementById('mobile-bottom-nav-bar');
+  if (!navEl) {
+    navEl = document.createElement('div');
+    navEl.id = 'mobile-bottom-nav-bar';
+    navEl.className = 'mobile-bottom-nav';
+    document.body.appendChild(navEl);
+  }
+
+  const currentPath = window.location.pathname;
+
+  const mobileTabs = [
+    { label: 'Home', icon: '📊', path: '/pages/dashboard.html' },
+    { label: 'Projects', icon: '📋', path: '/pages/projects.html' },
+    { label: 'Social', icon: '📱', path: '/pages/social.html' },
+    { label: 'Finance', icon: '💰', path: '/pages/finance.html' },
+    { label: 'Profile', icon: '🪪', path: '/pages/profile.html' }
+  ];
+
+  navEl.innerHTML = mobileTabs.map(tab => {
+    const isActive = currentPath.includes(tab.path) || (tab.path.includes('dashboard') && currentPath === '/admin');
+    return `
+      <a href="${tab.path}" class="mobile-nav-btn ${isActive ? 'active' : ''}">
+        <span class="nav-icon">${tab.icon}</span>
+        <span>${tab.label}</span>
+      </a>
+    `;
+  }).join('');
+}
+
 function hydrateUserInfo() {
   try {
     const rawUser = localStorage.getItem('purple_user');
@@ -134,7 +186,7 @@ function hydrateUserInfo() {
       const roleEl = document.getElementById('userRoleTag');
       const avatarEl = document.getElementById('userAvatar');
 
-      if (nameEl) nameEl.textContent = user.name || 'Team Member';
+      if (nameEl) nameEl.textContent = user.name || 'Staff User';
       if (roleEl) roleEl.textContent = user.role || user.accessLevel || 'Specialist';
       if (avatarEl) avatarEl.textContent = (user.name || 'PB').substring(0, 2).toUpperCase();
     }
@@ -149,19 +201,20 @@ function adminSignOut() {
   window.location.href = '/auth';
 }
 
-// Global Toast Notification System (available across all shell pages)
+// Global Toast Notification System
 window.showShellToast = function(message, type = 'info') {
   let container = document.getElementById('shell-toast-container');
   if (!container) {
     container = document.createElement('div');
     container.id = 'shell-toast-container';
-    container.style.cssText = 'position:fixed;bottom:1.5rem;right:1.5rem;z-index:99999;display:flex;flex-direction:column;gap:0.5rem;';
+    container.style.cssText = 'position:fixed;bottom:5rem;right:1.5rem;z-index:99999;display:flex;flex-direction:column;gap:0.5rem;';
     document.body.appendChild(container);
   }
-  const colors = { success: '#34d399', error: '#f87171', info: '#c084fc' };
+  const colors = { success: '#10b981', error: '#ef4444', info: '#ec4899' };
   const toast = document.createElement('div');
-  toast.style.cssText = `background:rgba(18,18,22,0.96);border:1px solid ${colors[type]||colors.info};color:#fff;padding:0.75rem 1.1rem;border-radius:12px;font-size:0.85rem;font-weight:600;font-family:inherit;max-width:340px;backdrop-filter:blur(8px);box-shadow:0 4px 20px rgba(0,0,0,0.5);transition:all 0.25s ease;`;
+  toast.style.cssText = `background:var(--bg-panel);border:1px solid ${colors[type]||colors.info};color:var(--text-main);padding:0.75rem 1.1rem;border-radius:14px;font-size:0.85rem;font-weight:700;font-family:inherit;max-width:340px;backdrop-filter:blur(12px);box-shadow:var(--card-shadow);transition:all 0.25s ease;`;
   toast.textContent = message;
   container.appendChild(toast);
   setTimeout(() => { toast.style.opacity='0'; toast.style.transform='translateY(8px)'; setTimeout(()=>toast.remove(),250); }, 4000);
 };
+

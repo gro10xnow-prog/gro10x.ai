@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PurpleOS — My Profile & Security</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/shell.css">
+  <link rel="stylesheet" href="/css/styles.css">
+  <style>
+    .profile-hero-card {
+      background: linear-gradient(135deg, rgba(190, 24, 93, 0.18), rgba(147, 51, 234, 0.12));
+      border: 1px solid var(--border-glow);
+      border-radius: 20px;
+      padding: 1.75rem;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      margin-bottom: 1.75rem;
+      box-shadow: var(--card-shadow);
+      position: relative;
+      overflow: hidden;
+    }
+    .profile-hero-avatar {
+      width: 76px;
+      height: 76px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--rose-accent), var(--pink-accent));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      font-weight: 900;
+      color: #fff;
+      font-family: 'Outfit', sans-serif;
+      box-shadow: 0 0 20px rgba(236, 72, 153, 0.4);
+      border: 3px solid rgba(255, 255, 255, 0.2);
+    }
+    .profile-hero-details h1 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      font-family: 'Outfit', sans-serif;
+      margin: 0 0 0.3rem;
+      color: var(--text-main);
+    }
+    .profile-hero-role {
+      font-size: 0.85rem;
+      color: var(--pink-accent);
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .pin-input-group {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .pin-toggle-btn {
+      position: absolute;
+      right: 0.75rem;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 1.1rem;
+      padding: 0.25rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- App Header Injected by shell.js -->
+  <div id="app-header"></div>
+
+  <div class="main-wrapper">
+    <!-- App Sidebar Injected by shell.js -->
+    <div id="app-sidebar"></div>
+
+    <!-- Main Content Area -->
+    <div class="content-area">
+      <!-- Breadcrumb -->
+      <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem; font-weight: 600;">
+        Account &nbsp;&rsaquo;&nbsp; <span style="color: var(--pink-accent);">My Profile & PIN</span>
+      </div>
+
+      <!-- Hero Identity Card -->
+      <div class="profile-hero-card">
+        <div class="profile-hero-avatar" id="heroAvatar">PB</div>
+        <div class="profile-hero-details">
+          <h1 id="heroName">Loading Profile...</h1>
+          <div class="profile-hero-role">
+            <span id="heroRole">Team Member</span>
+            <span>&bull;</span>
+            <span style="color: #10b981; font-weight: 700;">🟢 Online & Active</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Grid Layout -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem;">
+        
+        <!-- Personal Information Card -->
+        <div class="card" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 18px; padding: 1.5rem;">
+          <h3 style="font-size: 1.1rem; font-family: 'Outfit', sans-serif; margin-top: 0; margin-bottom: 1.25rem; color: var(--text-main); display: flex; align-items: center; gap: 0.5rem;">
+            👤 Personal Information
+          </h3>
+
+          <form id="profileForm" onsubmit="saveProfile(event)">
+            <div style="margin-bottom: 1rem;">
+              <label style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.35rem;">Full Name</label>
+              <input type="text" id="inpFullName" class="form-input" style="width: 100%; padding: 0.75rem; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 12px; color: var(--text-main); font-family: inherit; font-size: 0.9rem;" required>
+            </div>
+
+            <div style="margin-bottom: 1rem;">
+              <label style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.35rem;">Department / Title</label>
+              <input type="text" id="inpDept" class="form-input" style="width: 100%; padding: 0.75rem; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 12px; color: var(--text-main); font-family: inherit; font-size: 0.9rem;">
+            </div>
+
+            <div style="margin-bottom: 1rem;">
+              <label style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.35rem;">Email Address</label>
+              <input type="email" id="inpEmail" class="form-input" style="width: 100%; padding: 0.75rem; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 12px; color: var(--text-main); font-family: inherit; font-size: 0.9rem;">
+            </div>
+
+            <button type="submit" style="width: 100%; padding: 0.85rem; background: linear-gradient(135deg, var(--rose-accent), var(--pink-accent)); border: none; border-radius: 14px; color: #fff; font-weight: 800; font-family: 'Outfit', sans-serif; cursor: pointer; font-size: 0.95rem; margin-top: 0.5rem; transition: opacity 0.2s;">
+              💾 Save Profile Details
+            </button>
+          </form>
+        </div>
+
+        <!-- Security & PIN Management Card -->
+        <div class="card" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 18px; padding: 1.5rem;">
+          <h3 style="font-size: 1.1rem; font-family: 'Outfit', sans-serif; margin-top: 0; margin-bottom: 1.25rem; color: var(--text-main); display: flex; align-items: center; gap: 0.5rem;">
+            🔒 PIN Security & Passcode
+          </h3>
+
+          <form id="pinForm" onsubmit="updatePin(event)">
+            <div style="margin-bottom: 1.1rem;">
+              <label style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.35rem;">Current 4-Digit PIN</label>
+              <div class="pin-input-group">
+                <input type="password" id="inpCurrentPin" maxlength="4" placeholder="••••" style="width: 100%; padding: 0.75rem; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 12px; color: var(--text-main); font-family: inherit; font-size: 1.1rem; letter-spacing: 0.2em;" required>
+                <button type="button" class="pin-toggle-btn" onclick="togglePinVisibility('inpCurrentPin', this)">👁️</button>
+              </div>
+            </div>
+
+            <div style="margin-bottom: 1.1rem;">
+              <label style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.35rem;">New 4-Digit PIN</label>
+              <div class="pin-input-group">
+                <input type="password" id="inpNewPin" maxlength="4" placeholder="••••" style="width: 100%; padding: 0.75rem; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 12px; color: var(--text-main); font-family: inherit; font-size: 1.1rem; letter-spacing: 0.2em;" required>
+                <button type="button" class="pin-toggle-btn" onclick="togglePinVisibility('inpNewPin', this)">👁️</button>
+              </div>
+            </div>
+
+            <div style="margin-bottom: 1.25rem;">
+              <label style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.35rem;">Confirm New PIN</label>
+              <div class="pin-input-group">
+                <input type="password" id="inpConfirmPin" maxlength="4" placeholder="••••" style="width: 100%; padding: 0.75rem; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 12px; color: var(--text-main); font-family: inherit; font-size: 1.1rem; letter-spacing: 0.2em;" required>
+                <button type="button" class="pin-toggle-btn" onclick="togglePinVisibility('inpConfirmPin', this)">👁️</button>
+              </div>
+            </div>
+
+            <button type="submit" style="width: 100%; padding: 0.85rem; background: rgba(236, 72, 153, 0.15); border: 1px solid var(--pink-accent); border-radius: 14px; color: var(--pink-accent); font-weight: 800; font-family: 'Outfit', sans-serif; cursor: pointer; font-size: 0.95rem; transition: all 0.2s;">
+              🔑 Update Security PIN
+            </button>
+          </form>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/shell.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      loadProfileData();
+    });
+
+    function loadProfileData() {
+      try {
+        const rawUser = localStorage.getItem('purple_user');
+        if (rawUser) {
+          const user = JSON.parse(rawUser);
+          document.getElementById('heroName').textContent = user.name || 'Staff User';
+          document.getElementById('heroRole').textContent = user.role || user.accessLevel || 'Specialist';
+          document.getElementById('heroAvatar').textContent = (user.name || 'PB').substring(0, 2).toUpperCase();
+
+          document.getElementById('inpFullName').value = user.name || '';
+          document.getElementById('inpDept').value = user.role || '';
+          document.getElementById('inpEmail').value = user.email || '';
+        }
+      } catch(e) {}
+    }
+
+    function saveProfile(e) {
+      e.preventDefault();
+      const name = document.getElementById('inpFullName').value.trim();
+      const dept = document.getElementById('inpDept').value.trim();
+      const email = document.getElementById('inpEmail').value.trim();
+
+      try {
+        const rawUser = localStorage.getItem('purple_user');
+        const user = rawUser ? JSON.parse(rawUser) : {};
+        user.name = name;
+        user.role = dept;
+        user.email = email;
+        localStorage.setItem('purple_user', JSON.stringify(user));
+
+        if (window.showShellToast) window.showShellToast('Profile updated successfully!', 'success');
+        loadProfileData();
+        if (typeof hydrateUserInfo === 'function') hydrateUserInfo();
+      } catch (err) {
+        if (window.showShellToast) window.showShellToast('Failed to save profile', 'error');
+      }
+    }
+
+    function togglePinVisibility(inputId, btn) {
+      const input = document.getElementById(inputId);
+      if (!input) return;
+      if (input.type === 'password') {
+        input.type = 'text';
+        btn.textContent = '🙈';
+      } else {
+        input.type = 'password';
+        btn.textContent = '👁️';
+      }
+    }
+
+    function updatePin(e) {
+      e.preventDefault();
+      const currentPin = document.getElementById('inpCurrentPin').value.trim();
+      const newPin = document.getElementById('inpNewPin').value.trim();
+      const confirmPin = document.getElementById('inpConfirmPin').value.trim();
+
+      if (newPin.length !== 4 || isNaN(newPin)) {
+        if (window.showShellToast) window.showShellToast('New PIN must be exactly 4 digits!', 'error');
+        return;
+      }
+      if (newPin !== confirmPin) {
+        if (window.showShellToast) window.showShellToast('New PIN and Confirm PIN do not match!', 'error');
+        return;
+      }
+
+      // Save PIN token update
+      localStorage.setItem('purpleos_pin_token', 'pin_active_' + Date.now());
+      if (window.showShellToast) window.showShellToast('Security PIN updated successfully! 🔒', 'success');
+      document.getElementById('pinForm').reset();
+    }
+  </script>
+</body>
+</html>
