@@ -265,11 +265,16 @@
       if (box && box.style.display === 'flex') {
         closePurpleWidget();
       }
+    }
+  });
+
   const form = document.getElementById('purple-widget-input-form');
   if (form) {
     form.addEventListener('submit', (e) => {
       e.preventDefault();
-      handlePurpleWidgetSubmit(e);
+      if (typeof window.handlePurpleWidgetSubmit === 'function') {
+        window.handlePurpleWidgetSubmit(e);
+      }
     });
   }
 
