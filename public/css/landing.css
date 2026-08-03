@@ -65,6 +65,13 @@
   text-decoration: none;
 }
 
+.pb-nav-logo-img {
+  height: 38px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+
 .pb-logo-badge {
   width: 44px;
   height: 44px;
