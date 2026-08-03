@@ -224,29 +224,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function renderServiceDetailPage() {
   const urlParams = new URLSearchParams(window.location.search);
-  const paramId = (urlParams.get('id') || urlParams.get('service') || '').toLowerCase();
+  const rawId = (urlParams.get('id') || '').toLowerCase();
+  const rawSlug = (urlParams.get('slug') || urlParams.get('category') || urlParams.get('title') || urlParams.get('service') || '').toLowerCase();
   const path = window.location.pathname.toLowerCase();
+
+  const queryStr = `${rawId} ${rawSlug} ${path}`.toLowerCase();
 
   let key = 'digital-marketing';
 
-  if (paramId === 'svc-001' || paramId.includes('digital')) {
-    key = 'digital-marketing';
-  } else if (paramId === 'svc-002' || paramId.includes('reels') || paramId.includes('editing')) {
+  if (queryStr.includes('svc-002') || queryStr.includes('reels') || queryStr.includes('short-form') || queryStr.includes('video editing') || queryStr.includes('content & film') || rawId === '2') {
     key = 'video-editing';
-  } else if (paramId === 'svc-003' || paramId.includes('tvc') || paramId.includes('commercial')) {
+  } else if (queryStr.includes('svc-003') || queryStr.includes('tvc') || queryStr.includes('ovc') || queryStr.includes('commercial') || rawId === '3') {
     key = 'tvc-production';
-  } else if (paramId === 'svc-004' || paramId.includes('branding') || paramId.includes('graphics')) {
+  } else if (queryStr.includes('svc-004') || queryStr.includes('branding') || queryStr.includes('design & brand') || queryStr.includes('graphics') || queryStr.includes('identity') || rawId === '4') {
     key = 'branding-graphics';
-  } else if (paramId === 'svc-005' || paramId.includes('website')) {
+  } else if (queryStr.includes('svc-005') || queryStr.includes('website') || queryStr.includes('web engine') || rawId === '5') {
     key = 'website-development';
-  } else if (paramId === 'svc-006' || paramId.includes('tech')) {
+  } else if (queryStr.includes('svc-006') || queryStr.includes('custom-tech') || queryStr.includes('enterprise tech') || queryStr.includes('software') || rawId === '6') {
     key = 'custom-tech';
-  } else {
-    if (path.includes('video-editing') || path.includes('reels')) key = 'video-editing';
-    else if (path.includes('tvc') || path.includes('commercial')) key = 'tvc-production';
-    else if (path.includes('branding')) key = 'branding-graphics';
-    else if (path.includes('website')) key = 'website-development';
-    else if (path.includes('custom-tech') || path.includes('tech')) key = 'custom-tech';
+  } else if (queryStr.includes('svc-001') || queryStr.includes('digital') || queryStr.includes('marketing') || queryStr.includes('growth') || rawId === '1') {
+    key = 'digital-marketing';
   }
 
   const data = SERVICE_DATABASE[key] || SERVICE_DATABASE['digital-marketing'];

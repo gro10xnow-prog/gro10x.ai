@@ -185,12 +185,12 @@ async function fetchLandingServices() {
             <span class="pb-svc-category">${s.category}</span>
             <span class="pb-svc-price">${formatPriceToBDT(s.price)}</span>
           </div>
-          <h3><a href="/service-detail.html?id=${s.id}" class="pb-svc-title-link">${s.title}</a></h3>
+          <h3><a href="/service-detail.html?id=${s.id}&category=${encodeURIComponent(s.category || '')}&title=${encodeURIComponent(s.title || '')}" class="pb-svc-title-link">${s.title}</a></h3>
           <p>${s.description}</p>
         </div>
 
         <div style="display:flex; flex-direction:column; gap:0.6rem; margin-top:1.25rem; width:100%;">
-          <a href="/service-detail.html?id=${s.id}" class="pb-svc-details-link">
+          <a href="/service-detail.html?id=${s.id}&category=${encodeURIComponent(s.category || '')}&title=${encodeURIComponent(s.title || '')}" class="pb-svc-details-link">
             🔍 View Full Details & Features →
           </a>
           <button onclick="openPurpleBot('${s.title}')" class="pb-btn-svc">
