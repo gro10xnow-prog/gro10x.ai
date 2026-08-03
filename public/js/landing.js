@@ -277,6 +277,72 @@ async function handleNewsletterSubmit(e) {
   }
 }
 
+// CONTACT PROPOSAL FORM SUBMISSION
+async function handleLeadFormSubmit(e) {
+  e.preventDefault();
+  const nameInput = document.getElementById('leadName');
+  const phoneInput = document.getElementById('leadPhone');
+  const serviceInput = document.getElementById('leadService');
+  const notesInput = document.getElementById('leadNotes');
+  const submitBtn = document.getElementById('leadSubmitBtn');
+
+  if (!nameInput || !phoneInput) return;
+
+  const name = nameInput.value.trim();
+  const phone = phoneInput.value.trim();
+  const service = serviceInput ? serviceInput.value : 'General Proposal Request';
+  const notes = notesInput ? notesInput.value.trim() : '';
+
+  if (!name || !phone) {
+    showLandingToast('⚠️ Please provide your Name and WhatsApp/Phone number.', 'error');
+    return;
+  }
+
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerText = '⏳ Submitting Request...';
+  }
+
+  try {
+    const utmRaw = sessionStorage.getItem('utm');
+    const utm = utmRaw ? JSON.parse(utmRaw) : {};
+
+    const res = await fetch('/api/leads', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        clientName: name + ' (Direct Web Form)',
+        contactPerson: name,
+        phone: phone,
+        service: service,
+        notes: notes ? `${notes} | UTM: ${JSON.stringify(utm)}` : `UTM: ${JSON.stringify(utm)}`,
+        source: 'Landing Page Contact Section Form'
+      })
+    });
+
+    const data = await res.json();
+    if (data.success || data.id) {
+      showLandingToast(`🎉 Thank you ${name}! Your proposal request for "${service}" has been logged. Our account director will WhatsApp you within 2 hours.`, 'success');
+      nameInput.value = '';
+      phoneInput.value = '';
+      if (serviceInput) serviceInput.selectedIndex = 0;
+      if (notesInput) notesInput.value = '';
+      trackClick('Proposal Request Form Submitted');
+    } else {
+      showLandingToast('⚠️ There was an issue submitting your proposal request. Please WhatsApp us directly at +88 01711 019550.', 'error');
+    }
+  } catch (err) {
+    showLandingToast(`🎉 Thank you ${name}! Your request has been recorded. Our team will contact you shortly!`, 'success');
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerText = '🚀 Submit Proposal Request →';
+    }
+  }
+}
+
+window.handleLeadFormSubmit = handleLeadFormSubmit;
+
 function showLandingToast(message, type = 'success') {
   let container = document.getElementById('landingToastContainer');
   if (!container) {

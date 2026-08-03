@@ -617,12 +617,29 @@
         </div>
 
         <div class="pb-newsletter-card">
-          <h3>Join the Newsletter</h3>
-          <p>Drop your email address and we'll send you a monthly update of the cool stuff we made for our clients. We'll keep it fun and short — we promise!</p>
-
-          <form id="newsletterForm" onsubmit="handleNewsletterSubmit(event)" class="pb-newsletter-form">
-            <input type="email" id="newsEmail" placeholder="Your Email Address *" required class="pb-input">
-            <button type="submit" class="pb-btn-primary">Subscribe Now</button>
+          <h3>Request a Custom Proposal</h3>
+          <p>Tell us about your brand goals & requirements. Our campaign directors will prepare a custom strategy and get back to you within 2 hours.</p>
+          <form class="pb-contact-lead-form" id="contactLeadForm" onsubmit="handleLeadFormSubmit(event)">
+            <div class="pb-form-row">
+              <input type="text" id="leadName" placeholder="Your Full Name *" required class="pb-input">
+              <input type="tel" id="leadPhone" placeholder="WhatsApp / Phone Number *" required class="pb-input">
+            </div>
+            <div class="pb-form-group">
+              <select id="leadService" class="pb-input pb-select" required>
+                <option value="" disabled selected>Select Required Service *</option>
+                <option value="Digital Marketing & Growth">📱 Digital Marketing & Growth</option>
+                <option value="Video Reels & Commercial TVC">🎬 Video Reels & Commercial TVC</option>
+                <option value="Branding & Motion Design">🎨 Branding & Motion Design</option>
+                <option value="Website & Tech Development">💻 Website & Tech Development</option>
+                <option value="Custom 360 Campaign">⚡ Custom 360 Campaign</option>
+              </select>
+            </div>
+            <div class="pb-form-group">
+              <textarea id="leadNotes" placeholder="Tell us about your project goals or timeline..." rows="3" class="pb-input pb-textarea"></textarea>
+            </div>
+            <button type="submit" class="pb-btn-primary pb-btn-full" id="leadSubmitBtn">
+              🚀 Submit Proposal Request →
+            </button>
           </form>
         </div>
       </div>
