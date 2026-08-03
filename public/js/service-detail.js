@@ -223,20 +223,49 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function renderServiceDetailPage() {
-  // Direct ID lookup — the only reliable approach
   const ID_TO_KEY = {
+    // SVC-001 / Digital Marketing
     'svc-001': 'digital-marketing',
+    '1': 'digital-marketing',
+    'srv_001': 'digital-marketing',
+    'digital-marketing': 'digital-marketing',
+
+    // SVC-002 / Reels
     'svc-002': 'video-editing',
+    '2': 'video-editing',
+    'srv_002': 'video-editing',
+    'video-editing': 'video-editing',
+    'video-production': 'video-editing',
+
+    // SVC-003 / TVC Commercial
     'svc-003': 'tvc-production',
+    '3': 'tvc-production',
+    'srv_003': 'tvc-production',
+    'tvc-production': 'tvc-production',
+
+    // SVC-004 / Brand Identity
     'svc-004': 'branding-graphics',
+    '4': 'branding-graphics',
+    'srv_004': 'branding-graphics',
+    'branding-graphics': 'branding-graphics',
+    'branding': 'branding-graphics',
+
+    // SVC-005 / Website Development
     'svc-005': 'website-development',
-    'svc-006': 'custom-tech'
+    '5': 'website-development',
+    'srv_005': 'website-development',
+    'website-development': 'website-development',
+
+    // SVC-006 / Custom Tech
+    'svc-006': 'custom-tech',
+    '6': 'custom-tech',
+    'srv_006': 'custom-tech',
+    'custom-tech': 'custom-tech'
   };
 
   const urlParams = new URLSearchParams(window.location.search);
-  const rawId = (urlParams.get('id') || '').trim().toLowerCase();
+  const rawId = (urlParams.get('id') || urlParams.get('service') || '').trim().toLowerCase();
 
-  // Lookup key by id param first, then fallback to digital-marketing
   const key = ID_TO_KEY[rawId] || 'digital-marketing';
 
   const data = SERVICE_DATABASE[key] || SERVICE_DATABASE['digital-marketing'];

@@ -153,6 +153,23 @@ function formatPriceToBDT(priceStr) {
   return priceStr.replace(/\$/g, '৳');
 }
 
+function getCanonicalServiceId(s, idx) {
+  if (s && s.id && String(s.id).toUpperCase().startsWith('SVC-')) {
+    return String(s.id).toUpperCase();
+  }
+  const cat = (s.category || '').toLowerCase();
+  const title = (s.title || '').toLowerCase();
+  if (title.includes('digital') || cat.includes('growth') || cat.includes('marketing')) return 'SVC-001';
+  if (title.includes('short-form') || title.includes('reels')) return 'SVC-002';
+  if (title.includes('tvc') || title.includes('commercial') || title.includes('film')) return 'SVC-003';
+  if (cat.includes('brand') || title.includes('brand') || title.includes('graphics')) return 'SVC-004';
+  if (cat.includes('dev') || cat.includes('web') || title.includes('website')) return 'SVC-005';
+  if (cat.includes('tech') || title.includes('tech') || title.includes('software')) return 'SVC-006';
+  
+  const fallback = ['SVC-001', 'SVC-002', 'SVC-003', 'SVC-004', 'SVC-005', 'SVC-006'];
+  return fallback[idx % fallback.length];
+}
+
 // FETCH & RENDER PUBLIC SERVICES
 async function fetchLandingServices() {
   const container = document.getElementById('landingServicesGrid');
@@ -177,28 +194,31 @@ async function fetchLandingServices() {
       'Tech & Web': '💻'
     };
 
-    container.innerHTML = publicServices.map(s => `
-      <div class="pb-service-card">
-        <div>
-          <div class="pb-svc-icon">${categoryIcons[s.category] || '⚡'}</div>
-          <div class="pb-svc-badge-row">
-            <span class="pb-svc-category">${s.category}</span>
-            <span class="pb-svc-price">${formatPriceToBDT(s.price)}</span>
+    container.innerHTML = publicServices.map((s, index) => {
+      const canonicalId = getCanonicalServiceId(s, index);
+      return `
+        <div class="pb-service-card">
+          <div>
+            <div class="pb-svc-icon">${categoryIcons[s.category] || '⚡'}</div>
+            <div class="pb-svc-badge-row">
+              <span class="pb-svc-category">${s.category}</span>
+              <span class="pb-svc-price">${formatPriceToBDT(s.price)}</span>
+            </div>
+            <h3><a href="/service-detail.html?id=${canonicalId}" class="pb-svc-title-link">${s.title}</a></h3>
+            <p>${s.description}</p>
           </div>
-          <h3><a href="/service-detail.html?id=${s.id}&category=${encodeURIComponent(s.category || '')}&title=${encodeURIComponent(s.title || '')}" class="pb-svc-title-link">${s.title}</a></h3>
-          <p>${s.description}</p>
-        </div>
 
-        <div style="display:flex; flex-direction:column; gap:0.6rem; margin-top:1.25rem; width:100%;">
-          <a href="/service-detail.html?id=${s.id}&category=${encodeURIComponent(s.category || '')}&title=${encodeURIComponent(s.title || '')}" class="pb-svc-details-link">
-            🔍 View Full Details & Features →
-          </a>
-          <button onclick="openPurpleBot('${s.title}')" class="pb-btn-svc">
-            Get Custom Quote →
-          </button>
+          <div style="display:flex; flex-direction:column; gap:0.6rem; margin-top:1.25rem; width:100%;">
+            <a href="/service-detail.html?id=${canonicalId}" class="pb-svc-details-link">
+              🔍 View Full Details & Features →
+            </a>
+            <button onclick="openPurpleBot('${s.title}')" class="pb-btn-svc">
+              Get Custom Quote →
+            </button>
+          </div>
         </div>
-      </div>
-    `).join('');
+      `;
+    }).join('');
   } catch (err) {
     console.error('Error fetching services:', err);
   }
