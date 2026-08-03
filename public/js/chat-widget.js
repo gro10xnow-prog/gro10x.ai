@@ -265,8 +265,13 @@
       if (box && box.style.display === 'flex') {
         closePurpleWidget();
       }
-    }
-  });
+  const form = document.getElementById('purple-widget-input-form');
+  if (form) {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      handlePurpleWidgetSubmit(e);
+    });
+  }
 
   initBotState();
 })();
@@ -684,3 +689,10 @@ function trackEvent(eventType, label) {
     }).catch(e => {});
   } catch (err) {}
 }
+
+// EXPOSE TO GLOBAL WINDOW SCOPE FOR HTML INLINE EVENT HANDLERS
+window.handlePurpleWidgetSubmit = handlePurpleWidgetSubmit;
+window.openPurpleBot = openPurpleBot;
+window.closePurpleWidget = closePurpleWidget;
+window.togglePurpleWidget = togglePurpleWidget;
+window.selectChip = selectChip;
