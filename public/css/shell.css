@@ -1,0 +1,183 @@
+/**
+ * public/css/shell.css
+ * ─────────────────────────────────────────────────────────────────────────────
+ * PurpleOS Shared Navigation & Page Layout System.
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+
+:root {
+  --bg-dark: #09090b;
+  --panel-bg: rgba(24, 24, 27, 0.85);
+  --border-glow: rgba(168, 85, 247, 0.3);
+  --purple-main: #a855f7;
+  --purple-light: #c084fc;
+  --pink-accent: #ec4899;
+  --text-main: #f4f4f5;
+  --text-muted: #a1a1aa;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+}
+
+/* App Header */
+.top-header {
+  height: 64px;
+  background: rgba(9, 9, 11, 0.95);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.5rem;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  backdrop-filter: blur(12px);
+}
+
+.brand-container {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.brand-logo {
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, var(--purple-main), var(--pink-accent));
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1rem;
+  color: #fff;
+  box-shadow: 0 0 15px rgba(168, 85, 247, 0.4);
+}
+
+.brand-title {
+  font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, #fff, #e2e8f0);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.user-profile-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+}
+
+.user-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--purple-main);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.78rem;
+  color: #fff;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-name {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.user-role-tag {
+  font-size: 0.68rem;
+  color: var(--purple-light);
+}
+
+/* App Main Wrapper */
+.main-wrapper {
+  display: flex;
+  min-height: calc(100vh - 64px);
+}
+
+/* Sidebar Nav */
+.sidebar-nav {
+  width: 250px;
+  background: rgba(9, 9, 11, 0.8);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 1.25rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.nav-category {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin: 1.2rem 0.5rem 0.4rem;
+}
+
+.nav-category:first-child {
+  margin-top: 0.2rem;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 12px;
+  color: #a1a1aa;
+  text-decoration: none;
+  font-size: 0.88rem;
+  font-weight: 500;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+}
+
+.nav-item:hover {
+  background: rgba(168, 85, 247, 0.12);
+  color: #fff;
+  transform: translateX(3px);
+}
+
+.nav-item.active {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.25), rgba(236, 72, 153, 0.15));
+  border: 1px solid var(--border-glow);
+  color: #fff;
+  font-weight: 700;
+}
+
+.nav-item .icon {
+  font-size: 1.1rem;
+}
+
+/* Content Area */
+.content-area {
+  flex: 1;
+  padding: 1.75rem;
+  overflow-y: auto;
+}
+
+@media (max-width: 768px) {
+  .sidebar-nav {
+    display: none;
+  }
+}

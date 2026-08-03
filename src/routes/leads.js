@@ -2,42 +2,67 @@ const express = require('express');
 const router = express.Router();
 const { requireAuth } = require('../middleware/auth');
 const { requireAdmin } = require('../middleware/rbac');
-const { readDB, writeDB } = require('../services/db');
+const { supabase, isSupabaseConfigured } = require('../services/supabase');
 const { broadcast } = require('../services/sse');
 const { processAutomationEvent } = require('../services/automation');
 const { sendTelegramNotification } = require('../services/bot');
 const { sendClientOnboardingEmail } = require('../services/resend');
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Helper: generate next lead ID from Supabase count
+// ─────────────────────────────────────────────────────────────────────────────
+async function nextLeadId() {
+  if (isSupabaseConfigured()) {
+    const { count } = await supabase.from('leads').select('id', { count: 'exact', head: true });
+    return `LED-${String((count || 0) + 1).padStart(3, '0')}`;
+  }
+  return `LED-${Date.now()}`;
+}
+
 // GET all leads (Internal Team/Admin)
-router.get('/', requireAuth, (req, res) => {
-  const db = readDB();
-  res.json(db.leads || []);
+router.get('/', requireAuth, async (req, res) => {
+  if (isSupabaseConfigured()) {
+    const { data, error } = await supabase.from('leads').select('*').order('created_at', { ascending: false });
+    if (!error) return res.json(data || []);
+  }
+  res.json([]);
 });
 
 // POST Public Lead Capture (Chat widget, newsletter, landing page form)
-router.post('/', (req, res) => {
-  const db = readDB();
-  db.leads = db.leads || [];
+router.post('/', async (req, res) => {
   const newLead = {
-    id: `LED-${String(db.leads.length + 1).padStart(3, '0')}`,
+    id: await nextLeadId(),
     stage: 'New Inquiry',
-    createdAt: new Date().toISOString().split('T')[0],
-    ...req.body
+    created_at: new Date().toISOString(),
+    company: req.body.clientName || req.body.company || '',
+    contact_person: req.body.contactPerson || '',
+    email: req.body.contactEmail || req.body.email || '',
+    phone: req.body.phone || '',
+    whatsapp: req.body.whatsapp || req.body.phone || '',
+    source: req.body.source || 'Website Widget',
+    category: req.body.category || 'General',
+    service: req.body.service || req.body.serviceTitle || 'General',
+    value: req.body.value || '',
+    notes: req.body.notes || ''
   };
-  db.leads.push(newLead);
-  writeDB(db);
-  broadcast('lead_update', db.leads);
+
+  if (isSupabaseConfigured()) {
+    const { error } = await supabase.from('leads').insert([newLead]);
+    if (error) console.warn('Lead insert error:', error.message);
+  }
+
+  broadcast('lead_update', [newLead]);
 
   // Telegram alert to agency owner
   try {
-    const ownerChatId = db.settings?.ownerTelegramId || process.env.OWNER_TELEGRAM_ID;
+    const ownerChatId = process.env.OWNER_TELEGRAM_ID;
     if (ownerChatId) {
       sendTelegramNotification(ownerChatId,
         `🔔 *New Lead from Purple Bot Website!*\n\n` +
-        `👤 *${newLead.contactPerson || newLead.clientName}* — ${newLead.clientName || 'Brand'}\n` +
+        `👤 *${newLead.contact_person || newLead.company}* — ${newLead.company || 'Brand'}\n` +
         `📞 Phone: \`${newLead.phone || newLead.whatsapp || 'N/A'}\`\n` +
-        `🎯 Interested Service: *${newLead.service || newLead.serviceTitle || 'General'}*\n` +
-        `📍 Source: ${newLead.source || 'Website Widget'}`, null, false
+        `🎯 Interested Service: *${newLead.service}*\n` +
+        `📍 Source: ${newLead.source}`, null, false
       );
     }
   } catch (err) {
@@ -47,107 +72,112 @@ router.post('/', (req, res) => {
   res.json({ success: true, lead: newLead });
 });
 
-// PUT Update Lead Stage / Notes
-router.put('/:id', requireAuth, (req, res) => {
+// PUT Update Lead Stage / Notes (Admin)
+router.put('/:id', requireAuth, async (req, res) => {
   const { id } = req.params;
-  const db = readDB();
-  const idx = (db.leads || []).findIndex(l => l.id === id);
-  if (idx === -1) return res.status(404).json({ error: 'Lead not found' });
 
-  const updatedLead = { ...db.leads[idx], ...req.body };
-  db.leads[idx] = updatedLead;
+  if (isSupabaseConfigured()) {
+    const { data: existing } = await supabase.from('leads').select('*').eq('id', id).maybeSingle();
+    if (!existing) return res.status(404).json({ error: 'Lead not found' });
 
-  if (updatedLead.stage === 'Won / Closed' || updatedLead.stage === 'Won') {
-    processAutomationEvent('lead_won', { lead: updatedLead }, db, writeDB, broadcast);
+    const updatedLead = { ...existing, ...req.body, updated_at: new Date().toISOString() };
+    await supabase.from('leads').update(updatedLead).eq('id', id);
+    broadcast('lead_update', [updatedLead]);
+    return res.json({ success: true, lead: updatedLead });
   }
 
-  writeDB(db);
-  broadcast('lead_update', db.leads);
-  res.json({ success: true, lead: db.leads[idx] });
+  res.status(503).json({ error: 'Database unavailable' });
 });
 
 // DELETE Lead (Admin only)
-router.delete('/:id', requireAuth, requireAdmin, (req, res) => {
+router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
   const { id } = req.params;
-  const db = readDB();
-  db.leads = (db.leads || []).filter(l => l.id !== id);
-  writeDB(db);
-  broadcast('lead_update', db.leads);
-  res.json({ success: true });
+
+  if (isSupabaseConfigured()) {
+    await supabase.from('leads').delete().eq('id', id);
+    broadcast('lead_update', [{ id, deleted: true }]);
+    return res.json({ success: true });
+  }
+
+  res.status(503).json({ error: 'Database unavailable' });
 });
 
 // POST Magic Link Onboarding & Resend Email Trigger
 router.post('/:id/onboard', requireAuth, async (req, res) => {
   const { id } = req.params;
-  const db = readDB();
-  const lead = (db.leads || []).find(l => l.id === id) || (db.clients || []).find(c => c.id === id);
+  let lead = null;
 
-  const clientName = lead ? (lead.clientName || lead.company || lead.name || 'Client') : 'Client';
-  const email = lead ? (lead.contactEmail || lead.email || 'client@agency.com') : 'client@agency.com';
+  if (isSupabaseConfigured()) {
+    const { data: l } = await supabase.from('leads').select('*').eq('id', id).maybeSingle();
+    if (!l) {
+      const { data: c } = await supabase.from('clients').select('*').eq('id', id).maybeSingle();
+      lead = c;
+    } else {
+      lead = l;
+    }
+  }
+
+  const clientName = lead ? (lead.company || lead.contact_person || lead.name || 'Client') : 'Client';
+  const email = lead ? (lead.email || 'client@agency.com') : 'client@agency.com';
   const token = `TOK-${Date.now()}`;
   const magicLink = `https://purpleos-iota.vercel.app/partners?client=${encodeURIComponent(clientName)}&token=${token}`;
 
-  // Send real email via Resend
   let emailResult = { success: false };
   if (email && email.includes('@') && !email.includes('lead.com')) {
     emailResult = await sendClientOnboardingEmail({ clientName, email, magicLink });
   }
 
-  res.json({
-    success: true,
-    clientName,
-    email,
-    magicLink,
-    emailSent: emailResult.success
-  });
+  res.json({ success: true, clientName, email, magicLink, emailSent: emailResult.success });
 });
 
 // POST Convert Lead to Active Client CRM
-router.post('/:id/convert', requireAuth, (req, res) => {
+router.post('/:id/convert', requireAuth, async (req, res) => {
   const { id } = req.params;
-  const db = readDB();
-  const lead = (db.leads || []).find(l => l.id === id);
+
+  if (!isSupabaseConfigured()) return res.status(503).json({ error: 'Database unavailable' });
+
+  const { data: lead } = await supabase.from('leads').select('*').eq('id', id).maybeSingle();
   if (!lead) return res.status(404).json({ error: 'Lead not found' });
 
-  lead.stage = 'Won / Closed';
-  processAutomationEvent('lead_won', { lead }, db, writeDB, broadcast);
+  // Mark lead as won
+  await supabase.from('leads').update({ stage: 'Won / Closed', updated_at: new Date().toISOString() }).eq('id', id);
 
-  db.clients = db.clients || [];
-  const existingClient = db.clients.find(c => c.name.toLowerCase().trim() === (lead.company || lead.contactPerson || '').toLowerCase().trim());
+  // Check if client already exists
+  const clientName = lead.company || lead.contact_person || 'New Client';
+  const { data: existingClient } = await supabase.from('clients').select('id').ilike('name', clientName).maybeSingle();
+
   let clientRecord = existingClient;
 
   if (!existingClient) {
-    clientRecord = {
-      id: `CLI-${String(db.clients.length + 1).padStart(4, '0')}`,
-      name: lead.company || lead.contactPerson || 'New Client',
-      contactPerson: lead.contactPerson || 'Brand Lead',
-      email: lead.email || lead.contactEmail || '',
+    const { count } = await supabase.from('clients').select('id', { count: 'exact', head: true });
+    const newClientId = `CLI-${String((count || 0) + 1).padStart(4, '0')}`;
+    const clientPayload = {
+      id: newClientId,
+      name: clientName,
+      contact_person: lead.contact_person || 'Brand Lead',
+      email: lead.email || '',
       phone: lead.phone || '',
       whatsapp: lead.whatsapp || lead.phone || '',
       status: 'Active Retainer',
       category: lead.category || 'General',
-      totalSpent: '$0',
-      activeCampaigns: [lead.service || 'New Campaign']
+      total_spent: '$0',
+      active_campaigns: [lead.service || 'New Campaign']
     };
-    db.clients.push(clientRecord);
+    await supabase.from('clients').insert([clientPayload]);
+    clientRecord = clientPayload;
+    broadcast('client_update', [clientPayload]);
   }
 
-  writeDB(db);
-  broadcast('lead_update', db.leads);
-  broadcast('client_update', db.clients);
-
+  broadcast('lead_update', [{ id, stage: 'Won / Closed' }]);
   res.json({ success: true, client: clientRecord, lead });
 });
 
 // POST Public Web Consultation Booking
-router.post('/book', (req, res) => {
-  const db = readDB();
-  db.leads = db.leads || [];
-  const count = db.leads.length + 1;
+router.post('/book', async (req, res) => {
   const newLead = {
-    id: `LED-${String(count).padStart(3, '0')}`,
+    id: await nextLeadId(),
     company: req.body.company || req.body.contactPerson || 'Web Lead',
-    contactPerson: req.body.contactPerson || 'Prospective Client',
+    contact_person: req.body.contactPerson || 'Prospective Client',
     email: req.body.email || '',
     phone: req.body.phone || '',
     whatsapp: req.body.whatsapp || req.body.phone || '',
@@ -157,11 +187,32 @@ router.post('/book', (req, res) => {
     value: req.body.value || '$1,000 - $3,000',
     stage: 'New Inquiry',
     notes: `Timeline: ${req.body.timeline || 'Flexible'}. Notes: ${req.body.notes || 'No extra notes.'}`,
-    createdAt: new Date().toISOString().split('T')[0]
+    created_at: new Date().toISOString()
   };
-  db.leads.push(newLead);
-  writeDB(db);
-  broadcast('lead_update', db.leads);
+
+  if (isSupabaseConfigured()) {
+    await supabase.from('leads').insert([newLead]);
+  }
+
+  broadcast('lead_update', [newLead]);
+
+  // Telegram alert to agency owner
+  try {
+    const ownerChatId = process.env.OWNER_TELEGRAM_ID;
+    if (ownerChatId) {
+      sendTelegramNotification(ownerChatId,
+        `📅 *New Campaign Consultation Booked!*\n\n` +
+        `👤 *${newLead.contact_person}* — ${newLead.company}\n` +
+        `📞 Phone: \`${newLead.phone || newLead.whatsapp || 'N/A'}\`\n` +
+        `🎯 Service: *${newLead.service}*\n` +
+        `⏱️ Timeline: ${req.body.timeline || 'Flexible'}\n` +
+        `📝 Notes: ${req.body.notes || 'N/A'}`, null, false
+      );
+    }
+  } catch (err) {
+    console.warn('Telegram booking alert failed:', err.message);
+  }
+
   res.json({ success: true, lead: newLead });
 });
 

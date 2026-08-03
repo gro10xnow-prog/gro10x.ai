@@ -727,7 +727,43 @@
     </div>
 
     <div class="card">
-      <div class="card-title">Support</div>
+      <div class="card-title">🎟️ Raise Support Ticket</div>
+      <form onsubmit="submitClientTicket(event)">
+        <div style="display:flex;flex-direction:column;gap:0.75rem;">
+          <div>
+            <label style="font-size:0.78rem;font-weight:600;color:var(--text-2);">Issue Title *</label>
+            <input type="text" id="tckTitle" class="form-input" required placeholder="e.g. Website banner text adjustment" style="width:100%;padding:0.5rem;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:8px;color:#fff;">
+          </div>
+          <div>
+            <label style="font-size:0.78rem;font-weight:600;color:var(--text-2);">Category</label>
+            <select id="tckCategory" class="form-input" style="width:100%;padding:0.5rem;background:#1e293b;border:1px solid var(--border);border-radius:8px;color:#fff;">
+              <option value="Creative Revision">Creative Revision</option>
+              <option value="Website Bug">Website Bug</option>
+              <option value="Social Media Issue">Social Media Issue</option>
+              <option value="Billing & Invoice">Billing & Invoice</option>
+              <option value="General Support">General Support</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:0.78rem;font-weight:600;color:var(--text-2);">Priority</label>
+            <select id="tckPriority" class="form-input" style="width:100%;padding:0.5rem;background:#1e293b;border:1px solid var(--border);border-radius:8px;color:#fff;">
+              <option value="Medium">Medium</option>
+              <option value="High">High</option>
+              <option value="Urgent">Urgent</option>
+              <option value="Low">Low</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:0.78rem;font-weight:600;color:var(--text-2);">Details & Requirements</label>
+            <textarea id="tckDesc" class="form-input" style="width:100%;height:70px;padding:0.5rem;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:8px;color:#fff;" placeholder="Describe what you need fixed or adjusted..."></textarea>
+          </div>
+          <button type="submit" class="btn-primary" style="margin-top:0.25rem;">🚀 Submit Ticket</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Support Desk Info</div>
       <div style="font-size:0.85rem;color:var(--text-2);line-height:1.7;">
         🏢 <strong>Purplebot Digital Limited</strong><br>
         📍 Gulshan, Dhaka, Bangladesh<br>
@@ -1043,18 +1079,18 @@
     if (!date) { showSuccess('⚠️', 'Missing Date', 'Please select the payment date.'); return; }
     if (!file) { showSuccess('⚠️', 'Missing Screenshot', 'Please upload your payment screenshot proof.'); return; }
 
-    const formData = new FormData();
-    formData.append('invoiceId', selectedInvoiceId || 'INV-001');
-    formData.append('paymentMethod', selectedPayMethod);
-    formData.append('transactionId', txn);
-    formData.append('amountPaid', amt);
-    formData.append('paymentDate', date);
-    formData.append('proof', file);
-    const tgUser = tg?.initDataUnsafe?.user;
-    formData.append('telegramId', tgUser?.id || 'debug');
-
     try {
-      await fetch('/api/clients/payment-proof', { method: 'POST', body: formData });
+      await fetch('/api/payments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          invoiceId: selectedInvoiceId || 'INV-2026-001',
+          paymentMethod: selectedPayMethod,
+          trxId: txn,
+          amount: amt,
+          notes: `Submitted via Client Telegram Mini App (Date: ${date})`
+        })
+      });
     } catch(e) {}
 
     showSuccess('✅', 'Payment Submitted!', 'Your payment proof is under review. Finance team will confirm within 2–4 hours. You\'ll get a Telegram notification.');
@@ -1076,6 +1112,32 @@
   function callAM() {
     const phone = clientData?.accountManagerPhone || '+8801708459008';
     window.location.href = `tel:${phone}`;
+  }
+
+  async function submitClientTicket(event) {
+    event.preventDefault();
+    const title = document.getElementById('tckTitle').value.trim();
+    const category = document.getElementById('tckCategory').value;
+    const priority = document.getElementById('tckPriority').value;
+    const description = document.getElementById('tckDesc').value.trim();
+
+    try {
+      const res = await fetch('/api/tickets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, category, priority, description })
+      });
+      const data = await res.json();
+      if (data.success) {
+        showSuccess('🎟️', 'Ticket Created!', `Support ticket ${data.ticket.id} opened. Our support desk has been alerted.`);
+        document.getElementById('tckTitle').value = '';
+        document.getElementById('tckDesc').value = '';
+      } else {
+        showSuccess('⚠️', 'Error', data.error || 'Failed to submit ticket');
+      }
+    } catch (e) {
+      showSuccess('⚠️', 'Error', e.message);
+    }
   }
 
   // ══════════════════════════════════════════

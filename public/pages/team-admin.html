@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PurpleOS — Team Roster & HR Ops</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/css/shell.css">
+  <style>
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+    .kpi-card {
+      background: var(--panel-bg);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 1.25rem;
+    }
+    .kpi-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+    .kpi-val {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: #fff;
+      margin-top: 0.3rem;
+    }
+    .team-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.25rem;
+    }
+    .team-card {
+      background: rgba(9, 9, 11, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+      transition: all 0.2s;
+    }
+    .team-card:hover {
+      border-color: var(--purple-main);
+      box-shadow: 0 8px 25px rgba(168, 85, 247, 0.2);
+    }
+    .member-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--purple-main), #c084fc);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      color: #fff;
+      font-size: 1.1rem;
+    }
+
+    /* Modal Overlay */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(8px);
+      z-index: 99990;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-box {
+      background: rgba(18, 18, 22, 0.98);
+      border: 1px solid rgba(168, 85, 247, 0.3);
+      border-radius: 20px;
+      padding: 2rem;
+      width: 480px;
+      max-width: 90vw;
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    .form-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+    .form-input {
+      background: rgba(9, 9, 11, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #fff;
+      padding: 0.6rem 0.85rem;
+      border-radius: 10px;
+      font-size: 0.88rem;
+    }
+  </style>
+</head>
+<body>
+  <!-- App Header -->
+  <div id="app-header"></div>
+
+  <div class="main-wrapper">
+    <!-- App Sidebar -->
+    <div id="app-sidebar"></div>
+
+    <!-- Main Content Area -->
+    <main class="content-area">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <div>
+          <h1 style="font-size: 1.6rem; font-weight: 800; color: #fff; margin: 0;">👨‍💼 Team Roster, HR Ops & XP Badges</h1>
+          <div style="font-size: 0.88rem; color: var(--text-muted);">Employee Profiles ➔ Attendance ➔ Onboarding Progress ➔ XP Leaderboards</div>
+        </div>
+        <button class="btn-purple" onclick="openTeamModal()">+ Onboard Team Member</button>
+      </div>
+
+      <!-- KPI Summary Cards -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-label">Total Headcount</div>
+          <div class="kpi-val" id="kpiHeadcount">0</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Currently In Studio</div>
+          <div class="kpi-val" id="kpiInStudio" style="color: #34d399;">0</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Completed Onboarding</div>
+          <div class="kpi-val" id="kpiOnboarded" style="color: #c084fc;">0</div>
+        </div>
+      </div>
+
+      <!-- Team Roster Grid -->
+      <div style="background: var(--panel-bg); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; padding: 1.5rem;">
+        <div id="teamContent">
+          <div style="color: var(--text-muted); padding: 2rem; text-align: center;">Loading team roster database...</div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Onboard Team Member Modal -->
+  <div class="modal-overlay" id="teamModal">
+    <div class="modal-box">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h2 style="color: #fff; font-size: 1.2rem; margin: 0;">👨‍💼 Onboard Team Member</h2>
+        <button onclick="closeTeamModal()" style="background: transparent; border: none; color: #a1a1aa; font-size: 1.4rem; cursor: pointer;">✕</button>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Employee Code</label>
+        <input type="text" id="tmCode" class="form-input" placeholder="e.g. EMP-109">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Full Name</label>
+        <input type="text" id="tmName" class="form-input" placeholder="e.g. Firoz Uddin Ahmed">
+      </div>
+
+      <div style="display: flex; gap: 1rem;">
+        <div class="form-group" style="flex: 1;">
+          <label class="form-label">Role</label>
+          <input type="text" id="tmRole" class="form-input" placeholder="Senior Editor">
+        </div>
+        <div class="form-group" style="flex: 1;">
+          <label class="form-label">Department</label>
+          <input type="text" id="tmDept" class="form-input" placeholder="Post Production">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Phone Number</label>
+        <input type="text" id="tmPhone" class="form-input" placeholder="+8801700000000">
+      </div>
+
+      <button class="btn-purple" style="width: 100%; margin-top: 0.5rem;" onclick="submitNewMember()">🚀 Onboard Member & Create Profile</button>
+    </div>
+  </div>
+
+  <script src="/js/shell.js"></script>
+  <script>
+    window._allTeam = [];
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadTeamData();
+    });
+
+    async function loadTeamData() {
+      try {
+        const team = await fetch('/api/team').then(r => r.json()).catch(() => []);
+        window._allTeam = team;
+
+        const total = team.length;
+        const inStudio = team.filter(m => m.status === 'In Studio').length;
+        const onboarded = team.filter(m => m.onboardingComplete).length;
+
+        document.getElementById('kpiHeadcount').textContent = total;
+        document.getElementById('kpiInStudio').textContent = inStudio;
+        document.getElementById('kpiOnboarded').textContent = onboarded;
+
+        renderTeamGrid();
+      } catch(e) {
+        console.error('Team load err:', e);
+      }
+    }
+
+    function renderTeamGrid() {
+      const box = document.getElementById('teamContent');
+      const team = window._allTeam || [];
+
+      if (team.length === 0) {
+        box.innerHTML = `<div style="color: var(--text-muted); padding: 2rem; text-align: center;">No team members found.</div>`;
+        return;
+      }
+
+      box.innerHTML = `
+        <div class="team-cards-grid">
+          ${team.map(m => {
+            const name = m.name || 'Employee';
+            const initials = (name.substring(0, 2)).toUpperCase();
+            const statusColor = m.status === 'In Studio' ? '#34d399' : '#a1a1aa';
+            return `
+              <div class="team-card">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <div class="member-avatar">${initials}</div>
+                  <span class="badge" style="background: rgba(255,255,255,0.08); color: #c084fc; font-weight: 700;">${m.id || m.emp_code}</span>
+                </div>
+                <div>
+                  <div style="font-weight: 800; color: #fff; font-size: 1.05rem;">${name}</div>
+                  <div style="font-size: 0.78rem; color: var(--purple-light); font-weight: 600;">${m.role || 'Team Member'}</div>
+                </div>
+                <div style="font-size: 0.78rem; color: var(--text-muted);">Dept: ${m.department || 'General'}</div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.78rem; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 0.6rem;">
+                  <span>Badge: <strong>${m.badge || '🌱 Recruit'}</strong></span>
+                  <span style="color: ${statusColor}; font-weight: 700;">● ${m.status || 'Offline'}</span>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }
+
+    function openTeamModal() {
+      document.getElementById('teamModal').style.display = 'flex';
+    }
+
+    function closeTeamModal() {
+      document.getElementById('teamModal').style.display = 'none';
+    }
+
+    async function submitNewMember() {
+      const emp_code = document.getElementById('tmCode').value.trim() || `EMP-${Date.now().toString().slice(-3)}`;
+      const name = document.getElementById('tmName').value.trim();
+      const role = document.getElementById('tmRole').value.trim() || 'Specialist';
+      const department = document.getElementById('tmDept').value.trim() || 'Post Production';
+      const phone = document.getElementById('tmPhone').value.trim();
+
+      if (!name) return alert('Please enter employee name.');
+
+      try {
+        const res = await fetch('/api/team', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ emp_code, name, role, department, phone })
+        });
+        const data = await res.json();
+        if (data.success || data.id || data.name) {
+          closeTeamModal();
+          loadTeamData();
+        } else {
+          alert(data.error || 'Failed to onboard member');
+        }
+      } catch(e) {
+        console.error('Team submit err:', e);
+      }
+    }
+  </script>
+</body>
+</html>

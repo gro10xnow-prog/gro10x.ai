@@ -101,6 +101,10 @@
         <span class="icon">🏥</span>
         <span>HR Ops & Leaves</span>
       </a>
+      <a class="nav-item" onclick="switchTab('tickets')">
+        <span class="icon">🎟️</span>
+        <span>Support Tickets</span>
+      </a>
       <a class="nav-item" onclick="switchTab('financials')">
         <span class="icon">💰</span>
         <span>Financials & Expenses</span>
@@ -566,6 +570,36 @@
         </div>
         <div style="padding: 2rem; background: rgba(17,24,39,0.7); border-radius: 14px; border: 1px solid rgba(255,255,255,0.08); color: #9ca3af;">
           Client Chat Hub view: reply to client queries from Telegram.
+        </div>
+      </section>
+
+      <!-- 10. SUPPORT TICKETS HUB -->
+      <section id="tab-tickets" class="tab-pane" style="display: none;">
+        <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+          <div>
+            <h1 class="page-title">🎟️ Support Desk & Client Tickets</h1>
+            <p class="page-subtitle">Manage, assign, and resolve ad-hoc client issues & creative revision requests.</p>
+          </div>
+          <button class="btn-primary" onclick="loadManagerTickets()" style="padding: 0.5rem 1rem; border-radius: 8px;">🔄 Refresh Tickets</button>
+        </div>
+
+        <div style="background: rgba(15,23,42,0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 1.5rem; overflow-x: auto;">
+          <table class="data-table" style="width: 100%; border-collapse: collapse;">
+            <thead>
+              <tr style="border-bottom: 1px solid rgba(255,255,255,0.1); text-align: left; font-size: 0.82rem; color: #94a3b8;">
+                <th style="padding: 0.75rem;">Ticket ID</th>
+                <th style="padding: 0.75rem;">Title / Subject</th>
+                <th style="padding: 0.75rem;">Submitted By</th>
+                <th style="padding: 0.75rem;">Category</th>
+                <th style="padding: 0.75rem;">Priority</th>
+                <th style="padding: 0.75rem;">Status</th>
+                <th style="padding: 0.75rem; text-align: right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="managerTicketsTbody">
+              <tr><td colspan="7" style="text-align: center; padding: 2rem; color: #94a3b8;">Loading support tickets...</td></tr>
+            </tbody>
+          </table>
         </div>
       </section>
     </main>

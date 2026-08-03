@@ -27,7 +27,7 @@ router.get('/', requireAuth, async (req, res) => {
     }
   }
 
-  const db = readDB();
+  const db = await readDB();
   let clientsList = db.clients || [];
 
   if (isClient && clientLimitId) {
@@ -53,7 +53,7 @@ router.get('/:id', requireAuth, requireClientOwnership, async (req, res) => {
     }
   }
 
-  const db = readDB();
+  const db = await readDB();
   const client = (db.clients || []).find(c => c.id === id);
   if (!client) return res.status(404).json({ error: 'Client not found' });
   res.json(client);
@@ -88,11 +88,11 @@ router.post('/', requireAuth, requireAdmin, async (req, res) => {
     }
   }
 
-  const db = readDB();
+  const db = await readDB();
   newClient.id = `CLI-${String((db.clients.length || 0) + 1).padStart(4, '0')}`;
   newClient.totalSpent = '$0';
   db.clients.push(newClient);
-  writeDB(db);
+  try { writeDB(db); } catch (e) { console.warn('Local writeDB skipped:', e.message); }
   broadcast('client_update', db.clients);
   res.json({ success: true, client: newClient });
 });
@@ -121,12 +121,12 @@ router.put('/:id', requireAuth, requireClientOwnership, async (req, res) => {
     }
   }
 
-  const db = readDB();
+  const db = await readDB();
   const idx = (db.clients || []).findIndex(c => c.id === id);
   if (idx === -1) return res.status(404).json({ error: 'Client not found' });
 
   db.clients[idx] = { ...db.clients[idx], ...updates };
-  writeDB(db);
+  try { writeDB(db); } catch (e) { console.warn('Local writeDB skipped:', e.message); }
   broadcast('client_update', db.clients);
   res.json({ success: true, client: db.clients[idx] });
 });
@@ -143,9 +143,9 @@ router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
     }
   }
 
-  const db = readDB();
+  const db = await readDB();
   db.clients = (db.clients || []).filter(c => c.id !== id);
-  writeDB(db);
+  try { writeDB(db); } catch (e) { console.warn('Local writeDB skipped:', e.message); }
   broadcast('client_update', db.clients);
   res.json({ success: true });
 });
@@ -198,7 +198,7 @@ router.get('/:id/dashboard', requireAuth, requireClientOwnership, async (req, re
 
   } else {
     // db.json fallback (local dev only)
-    const db = readDB();
+    const db = await readDB();
     client = (db.clients || []).find(c => c.id === id || (c.name || '').toLowerCase() === (req.user.name || '').toLowerCase());
     if (!client) return res.status(404).json({ error: 'Client account workspace not found' });
     const clientNameLower = (client.name || '').toLowerCase();

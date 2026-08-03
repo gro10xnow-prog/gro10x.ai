@@ -276,6 +276,8 @@ function switchTab(tabId) {
     loadManagerReviewRoom();
   } else if (tabId === 'social') {
     loadManagerSocialPlanner();
+  } else if (tabId === 'tickets') {
+    loadManagerTickets();
   }
 
   console.log(`📌 Manager Portal: Switched to tab '${tabId}'`);
@@ -999,6 +1001,71 @@ async function loadManagerOverviewKPIs() {
 
   } catch (err) {
     console.error('Error loading manager overview KPIs:', err);
+  }
+}
+
+/**
+ * Support Tickets Manager Logic
+ */
+async function loadManagerTickets() {
+  const tbody = document.getElementById('managerTicketsTbody');
+  if (!tbody) return;
+
+  try {
+    const res = await fetch('/api/tickets');
+    const tickets = await res.json();
+
+    if (!Array.isArray(tickets) || tickets.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 2rem; color: #94a3b8;">No support tickets found.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = tickets.map(t => {
+      let priorityClass = 'badge-cyan';
+      if (t.priority === 'High' || t.priority === 'Urgent') priorityClass = 'badge-pink';
+      else if (t.priority === 'Low') priorityClass = 'badge-purple';
+
+      let statusClass = 'badge-amber';
+      if (t.status === 'Resolved' || t.status === 'Closed') statusClass = 'badge-emerald';
+      else if (t.status === 'In Progress') statusClass = 'badge-cyan';
+
+      return `
+        <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.85rem;">
+          <td style="padding: 0.75rem;"><code>${t.id}</code></td>
+          <td style="padding: 0.75rem; font-weight: 600; color: #fff;">${t.title}</td>
+          <td style="padding: 0.75rem; color: #cbd5e1;">${t.submittedBy}</td>
+          <td style="padding: 0.75rem; color: #94a3b8;">${t.category}</td>
+          <td style="padding: 0.75rem;"><span class="badge ${priorityClass}">${t.priority}</span></td>
+          <td style="padding: 0.75rem;"><span class="badge ${statusClass}">${t.status}</span></td>
+          <td style="padding: 0.75rem; text-align: right;">
+            ${t.status !== 'Resolved' ? `
+              <button class="btn-purple" style="padding: 0.25rem 0.65rem; font-size: 0.75rem; background: #10b981;" onclick="updateTicketStatus('${t.id}', 'Resolved')">✅ Mark Resolved</button>
+            ` : `<span style="font-size: 0.75rem; color: #10b981; font-weight: 700;">✅ Resolved</span>`}
+          </td>
+        </tr>
+      `;
+    }).join('');
+  } catch (err) {
+    console.error('Error loading manager tickets:', err);
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 2rem; color: #ef4444;">Failed to load tickets: ${err.message}</td></tr>`;
+  }
+}
+
+async function updateTicketStatus(ticketId, newStatus) {
+  try {
+    const res = await fetch(`/api/tickets/${ticketId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: newStatus })
+    });
+    const data = await res.json();
+    if (data.success) {
+      loadManagerTickets();
+    } else {
+      alert('Error updating ticket: ' + (data.error || 'Failed'));
+    }
+  } catch (err) {
+    alert('Error updating ticket: ' + err.message);
   }
 }
 

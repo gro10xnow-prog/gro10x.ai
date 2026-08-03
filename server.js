@@ -6,7 +6,6 @@ const apiRoutes = require('./src/routes/api');
 const subdomainRouter = require('./src/middleware/subdomain');
 const { sseHandler } = require('./src/services/sse');
 const { initBot, getTeamBot, getClientBot } = require('./src/services/bot');
-const { startScheduledJobs } = require('./src/services/automation');
 const { readDB, writeDB } = require('./src/services/db');
 const { broadcast } = require('./src/services/sse');
 
@@ -36,8 +35,6 @@ if (process.env.SENTRY_DSN) {
 
 // Initialize Telegram Bot & Webhooks
 try { initBot(); } catch (e) { console.warn('Bot init note:', e.message); }
-// Start scheduled jobs (morning briefing 9:15 AM, EOD summary 8 PM — Bangladesh time)
-try { startScheduledJobs(readDB, writeDB, broadcast); } catch (e) { console.warn('Scheduler note:', e.message); }
 
 // Middleware
 app.use(cors({
@@ -142,6 +139,10 @@ app.get(['/team-miniapp', '/crew-app'], (req, res) => {
 
 app.get(['/client-miniapp', '/review-app'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public/client-miniapp.html'));
+});
+
+app.get(['/onboarding', '/team-onboarding'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/onboarding.html'));
 });
 
 // Dedicated Public Service Pages Routes

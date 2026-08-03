@@ -21,14 +21,22 @@ const managerRoutes = require('./manager');
 const expensesRoutes = require('./expenses');
 const assetsRoutes = require('./assets');
 const leavesRoutes = require('./leaves');
+const cronRoutes = require('./cron');
+const paymentsRoutes = require('./payments');
+const ticketsRoutes = require('./tickets');
+const projectsRoutes = require('./projects');
 
 // Mount Domain Sub-Routers
 router.use('/', authRoutes);
 router.use('/clients', clientsRoutes);
 router.use('/leads', leadsRoutes);
 router.use('/tasks', tasksRoutes);
+router.use('/projects', projectsRoutes);
+router.use('/workflows', projectsRoutes);
 router.use('/reviews', reviewsRoutes);
 router.use('/', invoicesRoutes);
+router.use('/payments', paymentsRoutes);
+router.use('/tickets', ticketsRoutes);
 router.use('/team', teamRoutes);
 router.use('/posts', postsRoutes);
 router.use('/social-posts', postsRoutes);
@@ -38,10 +46,25 @@ router.use('/', analyticsRoutes);
 router.use('/analytics', analyticsRoutes);
 router.use('/automation', automationRoutes);
 router.use('/', automationRoutes);  // Exposes /api/groups, /api/logs at root level
+router.use('/cron', cronRoutes);
 router.use('/manager', managerRoutes);
 router.use('/expenses', expensesRoutes);
 router.use('/assets', assetsRoutes);
 router.use('/', leavesRoutes);
+
+// Public Client Phone Check (used by public chat widget — no auth required)
+router.get('/public/client-check', async (req, res) => {
+  const { phone } = req.query;
+  if (!phone) return res.json({ found: false });
+  const norm = String(phone).replace(/[^0-9]/g, '').slice(-10);
+  if (isSupabaseConfigured()) {
+    try {
+      const { data } = await supabase.from('clients').select('id,name,phone').ilike('phone', `%${norm}%`).maybeSingle();
+      if (data) return res.json({ found: true, name: data.name });
+    } catch (e) {}
+  }
+  return res.json({ found: false });
+});
 
 // Public Services Catalog Endpoint
 router.get('/services', async (req, res) => {
@@ -53,7 +76,7 @@ router.get('/services', async (req, res) => {
       }
     } catch (err) {}
   }
-  const db = readDB();
+  const db = await readDB();
   res.json(db.services || []);
 });
 
@@ -91,7 +114,7 @@ router.get('/db', requireAuth, requireAdmin, async (req, res) => {
     }
   }
 
-  const db = readDB();
+  const db = await readDB();
   res.json(db);
 });
 

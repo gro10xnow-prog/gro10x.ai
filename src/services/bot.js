@@ -1,10 +1,11 @@
 const TelegramBot = require('node-telegram-bot-api');
 const { supabase } = require('./supabase');
-const { readDB } = require('./db');
+
 const { broadcast } = require('./sse');
 const { processAutomationEvent } = require('./automation');
 const { createTempPin } = require('./auth-pins');
 const state = require('./state');
+const { readDB } = require('./db');
 
 let teamBot = null;
 let clientBot = null;
@@ -341,7 +342,7 @@ function getClientKeyboard(client) {
 // ══════════════════════════════════════════
 // AGREEMENT STAGE NOTIFICATIONS
 // ══════════════════════════════════════════
-function sendAgreementNotification(stage, emp, dbData) {
+async function sendAgreementNotification(stage, emp, dbData) {
   if (!teamBot) return;
 
   if (stage === 1) {
@@ -433,19 +434,21 @@ function sendAgreementNotification(stage, emp, dbData) {
 }
 
 function initBot() {
-  const db = readDB();
 
-  const teamToken = process.env.TEAM_BOT_TOKEN || db.botConfig?.teamBot?.token;
-  const clientToken = process.env.CLIENT_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN || db.botConfig?.clientBot?.token;
-  const baseUrl = 'https://purpleos-iota.vercel.app';
+  const teamToken = process.env.TEAM_BOT_TOKEN || null?.teamBot?.token;
+  const clientToken = process.env.CLIENT_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN || null?.clientBot?.token;
+  const baseUrl = process.env.BASE_URL || 'https://purpleos-iota.vercel.app';
 
   // 1. Initialize Team Bot (Purple Man)
   if (teamToken && teamToken.trim() !== '' && !teamToken.includes('your_token')) {
     try {
-      const usePolling = Boolean(process.env.USE_POLLING);
+      const usePolling = process.env.USE_POLLING === 'true';
       teamBot = new TelegramBot(teamToken, { polling: usePolling });
 
-      if (!usePolling) {
+      if (usePolling) {
+        teamBot.deleteWebHook().catch(e => console.error('Error deleting webhook:', e));
+        console.log('✅ Local polling enabled for teamBot (Webhook deleted)');
+      } else {
         const webhookBody = { url: `${baseUrl}/api/webhooks/telegram?bot=team` };
         if (process.env.WEBHOOK_SECRET) webhookBody.secret_token = process.env.WEBHOOK_SECRET;
 
@@ -499,7 +502,7 @@ function initBot() {
           } catch (e) {}
 
           if (!allTasks.length) {
-            const dbData = readDB();
+            const dbData = await readDB();
             allTasks = dbData.tasks || [];
           }
 
@@ -552,12 +555,12 @@ function initBot() {
           return teamBot.sendMessage(chatId, errorMsg, { parse_mode: 'Markdown' });
         }
 
-        // Link Telegram ID via state.js (persists to Supabase + db.json fallback)
-        await state.linkTelegramId(emp.emp_code, chatId);
+        // Link Telegram ID and generate temp PIN in parallel for max performance
+        const [, pinRecord] = await Promise.all([
+          state.linkTelegramId(emp.emp_code, chatId),
+          createTempPin(emp.phone, emp.emp_code, 'team', emp.email)
+        ]);
         emp.telegramId = String(chatId);
-
-        // Generate web temp PIN (async — persists to Supabase)
-        const pinRecord = await createTempPin(emp.phone, emp.emp_code, 'team', emp.email);
 
         const welcomeMsg = `✅ *Identity Verified — Welcome, ${emp.name}!*\n\n` +
           `• Designation: *${emp.role}*\n` +
@@ -573,8 +576,7 @@ function initBot() {
         teamBot.sendMessage(chatId, welcomeMsg, { parse_mode: 'Markdown', reply_markup: keyboard });
       });
 
-      const userState = {};
-
+      
       teamBot.on('message', async (msg) => {
         const chatId = msg.chat.id;
         const text = (msg.text || '').trim();
@@ -588,163 +590,24 @@ function initBot() {
 
         if (isMenuButton) {
           await state.clearSession(chatId);
-          userState[chatId] = null;
-          return;
+                    return;
         }
 
         // Process active wizard input (checks Supabase persistent session state)
-        const wizardState = (await state.getSession(chatId)) || userState[chatId];
+        const wizardState = await state.getSession(chatId);
         if (wizardState && text) {
           const emp = await state.getEmployeeByTelegramId(chatId);
           if (!emp) return;
 
-          if (wizardState.action === 'await_emergency_contact') {
-            if (supabase) {
-              await supabase.from('profiles').update({ emergency_contact: text }).eq('emp_code', emp.emp_code);
-            }
-            await state.clearSession(chatId);
-            userState[chatId] = null;
-            teamBot.sendMessage(chatId, `✅ *Emergency Contact Updated!*\nSet to: *${text}*`, { parse_mode: 'Markdown', reply_markup: getRoleKeyboard(emp.accessLevel, true, emp) });
-          } else if (wizardState.action === 'await_address') {
-            if (supabase) {
-              await supabase.from('profiles').update({ address: text }).eq('emp_code', emp.emp_code);
-            }
-            await state.clearSession(chatId);
-            userState[chatId] = null;
-            teamBot.sendMessage(chatId, `✅ *Home Address Updated!*\nSet to: *${text}*`, { parse_mode: 'Markdown', reply_markup: getRoleKeyboard(emp.accessLevel, true, emp) });
-          } else if (wizardState.action === 'await_email') {
-            if (supabase) {
-              await supabase.from('profiles').update({ personal_email: text }).eq('emp_code', emp.emp_code);
-            }
-            await state.clearSession(chatId);
-            userState[chatId] = null;
-            teamBot.sendMessage(chatId, `✅ *Work Email Updated!*\nSet to: *${text}*`, { parse_mode: 'Markdown', reply_markup: getRoleKeyboard(emp.accessLevel, true, emp) });
-          } else if (wizardState.action === 'await_bank_info') {
-            const parts = text.split(',');
-            const bankInfo = {
-              bankName: parts[0] ? parts[0].trim() : text,
-              accNo: parts[1] ? parts[1].trim() : 'Updated',
-              branch: parts[2] ? parts[2].trim() : 'Main Branch'
-            };
-            if (supabase) {
-              await supabase.from('profiles').update({ bank_info: bankInfo }).eq('emp_code', emp.emp_code);
-            }
-            await state.clearSession(chatId);
-            userState[chatId] = null;
-            teamBot.sendMessage(chatId, `✅ *Bank Details Saved!*\nBank: *${bankInfo.bankName}*\nAcc: *${bankInfo.accNo}*`, { parse_mode: 'Markdown', reply_markup: getRoleKeyboard(emp.accessLevel, true, emp) });
-          } else if (wizardState.action === 'await_mfs') {
-            const currentBank = emp.bankInfo || {};
-            currentBank.mfsNo = text;
-            if (supabase) {
-              await supabase.from('profiles').update({ bank_info: currentBank }).eq('emp_code', emp.emp_code);
-            }
-            await state.clearSession(chatId);
-            userState[chatId] = null;
-            teamBot.sendMessage(chatId, `✅ *bKash / Nagad Number Saved!*\nNumber: *${text}*`, { parse_mode: 'Markdown', reply_markup: getRoleKeyboard(emp.accessLevel, true, emp) });
-          } else if (wizardState.action === 'await_expense_amount') {
-            const amount = parseFloat(text.replace(/[^0-9.]/g, ''));
-            if (isNaN(amount) || amount <= 0) {
-              teamBot.sendMessage(chatId, `⚠️ Please enter a valid amount (e.g. \`1500\`).`, { parse_mode: 'Markdown' });
-              return;
-            }
-            const nextState = { ...wizardState, amount, action: 'await_expense_category' };
-            await state.setSession(chatId, nextState);
-            userState[chatId] = nextState;
-            teamBot.sendMessage(chatId,
-              `💰 Amount: *BDT ${amount.toLocaleString()}*\n\nNow please reply with the *category*:\n\n` +
-              `1️⃣ Transport\n2️⃣ Food & Meals\n3️⃣ Office Supplies\n4️⃣ Client Entertainment\n5️⃣ Other\n\nReply with \`1\`-\`5\` or type custom category`,
-              { parse_mode: 'Markdown' }
-            );
-          } else if (wizardState.action === 'await_expense_category') {
-            const categories = { '1': 'Transport', '2': 'Food & Meals', '3': 'Office Supplies', '4': 'Client Entertainment', '5': 'Other' };
-            const category = categories[text.trim()] || text.trim();
-
-            const submittedExpense = await state.submitExpense(emp.emp_code, emp.name, {
-              amount: wizardState.amount,
-              category,
-              description: `Expense submitted via Bot (${category})`
-            });
-
-            await state.clearSession(chatId);
-            userState[chatId] = null;
-            try { broadcast('expense_update', [submittedExpense]); } catch(e) {}
-
-            teamBot.sendMessage(chatId,
-              `✅ *Expense Claim Submitted!*\n\n` +
-              `• Amount: *BDT ${wizardState.amount.toLocaleString()}*\n` +
-              `• Category: *${category}*\n` +
-              `• Status: *Pending Tier-1 Approval*\n\n` +
-              `Your claim has been logged to Supabase for line manager review.`,
-              { parse_mode: 'Markdown', reply_markup: getRoleKeyboard(emp.accessLevel, true, emp) }
-            );
-          } else if (wizardState.action === 'await_leave_type') {
-            const leaveTypes = { '1': 'Casual Leave', '2': 'Sick Leave', '3': 'Half Day' };
-            const leaveType = leaveTypes[text.trim()];
-            if (!leaveType) {
-              teamBot.sendMessage(chatId, `⚠️ Please reply with \`1\`, \`2\`, or \`3\`.`, { parse_mode: 'Markdown' });
-              return;
-            }
-            const nextState = { ...wizardState, leaveType, action: 'await_leave_date' };
-            await state.setSession(chatId, nextState);
-            userState[chatId] = nextState;
-            teamBot.sendMessage(chatId,
-              `📅 Leave Type: *${leaveType}*\n\nPlease reply with the *date* (e.g. \`Aug 5\` or \`2026-08-05\`):`,
-              { parse_mode: 'Markdown' }
-            );
-          } else if (wizardState.action === 'await_leave_date') {
-            const dateStr = text.trim();
-            const newLeave = await state.submitLeave(emp.emp_code, emp.name, {
-              leaveType: wizardState.leaveType,
-              startDate: dateStr,
-              endDate: dateStr,
-              totalDays: 1,
-              reason: `Leave request for ${dateStr}`
-            });
-
-            await state.clearSession(chatId);
-            userState[chatId] = null;
-
-            // Notify line manager if found
-            const manager = await state.getEmployeeByTelegramId(emp.reportsTo);
-            if (manager && manager.telegramId) {
-              try {
-                teamBot.sendMessage(manager.telegramId,
-                  `🌴 *NEW LEAVE REQUEST*\n\n` +
-                  `From: *${emp.name}*\n` +
-                  `Type: *${wizardState.leaveType}*\n` +
-                  `Date: *${dateStr}*\n\n` +
-                  `_Approve or reject via the Pending Approvals button._`,
-                  { parse_mode: 'Markdown' }
-                );
-              } catch(e) {}
-            }
-            teamBot.sendMessage(chatId,
-              `✅ *Leave Request Submitted!*\n\n` +
-              `• Type: *${wizardState.leaveType}*\n` +
-              `• Date: *${dateStr}*\n` +
-              `• Status: *Pending Line Review*\n\n` +
-              `Your manager ${manager ? `(*${manager.name}*)` : ''} has been notified.`,
-              { parse_mode: 'Markdown', reply_markup: getRoleKeyboard(emp.accessLevel, true, emp) }
-            );
-          } else if (wizardState.action === 'await_eod_summary') {
-            const summaryText = text.trim();
-            await state.submitEOD(emp.emp_code, emp.name, {
-              done: summaryText,
-              tomorrow: 'Standard daily tasks',
-              blockers: 'None',
-              mood: '😊 Energized',
-              hours: 8
-            });
-
-            await state.clearSession(chatId);
-            userState[chatId] = null;
-            teamBot.sendMessage(chatId,
-              `✅ *EOD Report Submitted!*\n\n` +
-              `📅 ${new Date().toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}\n` +
-              `📝 "${summaryText.substring(0, 100)}${summaryText.length > 100 ? '...' : ''}"\n\n` +
-              `Thank you for your update. Saved to Supabase! 💜`,
-              { parse_mode: 'Markdown', reply_markup: getRoleKeyboard(emp.accessLevel, true, emp) }
-            );
+          if (wizardState.action.startsWith('await_expense')) {
+            const expensesHandler = require('./bot/handlers/expenses');
+            await expensesHandler.handleExpenseWizardStep(teamBot, msg, wizardState, emp);
+          } else if (wizardState.action.startsWith('await_leave')) {
+            const leavesHandler = require('./bot/handlers/leaves');
+            await leavesHandler.handleLeaveWizardStep(teamBot, msg, wizardState, emp);
+          } else if (wizardState.action.startsWith('await_eod')) {
+            const eodHandler = require('./bot/handlers/eod');
+            await eodHandler.handleEODWizardStep(teamBot, msg, wizardState, emp);
           }
         }
       });
@@ -753,8 +616,7 @@ function initBot() {
       teamBot.onText(/\/start/, async (msg) => {
         const chatId = msg.chat.id;
         await state.clearSession(chatId);
-        userState[chatId] = null;
-
+        
         const emp = await state.getEmployeeByTelegramId(chatId);
 
         if (emp) {
@@ -775,9 +637,9 @@ function initBot() {
       });
 
       // /help handler
-      teamBot.onText(/\/help/, (msg) => {
+      teamBot.onText(/\/help/, async (msg) => {
         const chatId = msg.chat.id;
-        userState[chatId] = null;
+        await state.clearSession(chatId);
         const helpText = `📖 *PURPLEOS TEAM BOT — COMMAND GUIDE*\n\n` +
           `• \`/start\` — Verify identity & launch menu\n` +
           `• \`/help\` — Show all available commands\n` +
@@ -794,11 +656,23 @@ function initBot() {
         teamBot.sendMessage(chatId, helpText, { parse_mode: 'Markdown' });
       });
 
+      // ──────── BATCH 3 MODULAR HANDLERS ────────
+      const attendanceHandler = require('./bot/handlers/attendance');
+      const profileHandler = require('./bot/handlers/profile');
+      const adminHandler = require('./bot/handlers/admin');
+
+      teamBot.onText(/\/myprofile|👤 My Profile/, (msg) => profileHandler.handleMyProfile(teamBot, msg));
+      teamBot.onText(/\/mybank|💳 Bank & bKash/, (msg) => profileHandler.handleMyBank(teamBot, msg));
+      teamBot.onText(/\/techdiag|🛠️ Tech Diagnostics/, (msg) => adminHandler.handleTechDiagnostics(teamBot, msg));
+      teamBot.onText(/\/myearnings|💰 My Earnings/, (msg) => profileHandler.handleMyEarnings(teamBot, msg));
+      teamBot.onText(/\/clockin|📍 Clock-In GPS/, (msg) => attendanceHandler.handleTextClockIn(teamBot, msg));
+      teamBot.onText(/\/clockout|🚪 Clock Out/, (msg) => attendanceHandler.handleClockOut(teamBot, msg));
+      teamBot.on('location', (msg) => attendanceHandler.handleLocationClockIn(teamBot, msg));
+
       // Reset PIN Command
-      teamBot.onText(/\/resetpin/, async (msg) => {
+      teamBot.onText(/\/resetpin|🔑 View My Web Login PIN/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
-        const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId));
+        const emp = await state.getEmployeeByTelegramId(chatId);
 
         if (!emp) {
           return teamBot.sendMessage(chatId, `❌ Please verify your phone number first by tapping "Verify My Phone Number".`, { parse_mode: 'Markdown' });
@@ -808,100 +682,14 @@ function initBot() {
         teamBot.sendMessage(chatId, `🔑 *New Desktop Web PIN:* \`${pinRecord.pin}\`\n\nGo to https://purpleos-iota.vercel.app/auth to log in on your laptop.`, { parse_mode: 'Markdown' });
       });
 
-      // 👤 My Profile Command / Button
-      teamBot.onText(/\/myprofile|👤 My Profile/, (msg) => {
-        const chatId = msg.chat.id;
-        userState[chatId] = null;
-        const dbData = readDB();
-        const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId)) || (dbData.team || [])[0];
 
-        const text = `👤 *PURPLEBOT EMPLOYEE GROUND PROFILE*\n\n` +
-          `• Name: *${emp.name}* (${emp.id})\n` +
-          `• Role: *${emp.role}*\n` +
-          `• Department: *${emp.department || 'Tech & AI'}*\n` +
-          `• Work Email: *${emp.email || emp.workEmail || 'Not set'}*\n` +
-          `• Emergency Contact: *${emp.emergencyContact || 'Not set'}*\n` +
-          `• Home Address: *${emp.address || 'Not set'}*\n` +
-          `• Current Rank: *${emp.badge || '🌱 Recruit'}* (${emp.xp || 0} XP)`;
 
-        const inlineButtons = [
-          [
-            { text: '✏️ Emergency Phone', callback_data: 'edit_emergency_contact' },
-            { text: '✏️ Home Address', callback_data: 'edit_address' }
-          ],
-          [
-            { text: '✏️ Work Email', callback_data: 'edit_work_email' }
-          ]
-        ];
-
-        teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown', reply_markup: { inline_keyboard: inlineButtons } });
-      });
-
-      // 💳 Bank & bKash Command / Button
-      teamBot.onText(/\/mybank|💳 Bank & bKash/, (msg) => {
-        const chatId = msg.chat.id;
-        userState[chatId] = null;
-        const dbData = readDB();
-        const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId)) || (dbData.team || [])[0];
-
-        const bank = emp.bankInfo || {};
-        const text = `💳 *PURPLEBOT FINANCIAL PAYOUT ACCOUNTS*\n\n` +
-          `• Employee: *${emp.name}*\n` +
-          `• Bank Name: *${bank.bankName || 'Not configured'}*\n` +
-          `• Account No: *${bank.accNo || 'Not configured'}*\n` +
-          `• Branch: *${bank.branch || 'Not configured'}*\n` +
-          `• Mobile Banking (bKash/Nagad): *${bank.mfsNo || 'Not configured'}*\n\n` +
-          `_This information is used by Finance Manager Borhan Siddique for monthly payroll & expense disbursals._`;
-
-        const inlineButtons = [
-          [
-            { text: '✏️ Set Bank Account', callback_data: 'edit_bank_details' },
-            { text: '✏️ Set bKash/Nagad', callback_data: 'edit_mfs' }
-          ]
-        ];
-
-        teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown', reply_markup: { inline_keyboard: inlineButtons } });
-      });
-
-      // 🛠️ Tech Diagnostics Command / Button (Tech Admin / Firoz)
-      teamBot.onText(/\/techdiag|🛠️ Tech Diagnostics/, (msg) => {
-        const chatId = msg.chat.id;
-        userState[chatId] = null;
-        const dbData = readDB();
-        const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId)) || (dbData.team || [])[0];
-
-        const teamCount = (dbData.team || []).length;
-        const taskCount = (dbData.tasks || []).length;
-        const invCount = (dbData.invoices || []).length;
-        const logsCount = (dbData.automationLogs || []).length;
-
-        const text = `🛠️ *PURPLEOS TECH DIAGNOSTICS & SYSTEM HEALTH*\n\n` +
-          `• Tech Admin: *${emp.name}* (PBD-000)\n` +
-          `• System Status: 🟢 *Live & Operational*\n` +
-          `• Registered Roster: *${teamCount} Employees*\n` +
-          `• Production Tasks: *${taskCount} Workflows*\n` +
-          `• Financial Invoices: *${invCount} Records*\n` +
-          `• Automation Logs: *${logsCount} Executions*\n\n` +
-          `_Use tools below for maintenance and cloud sync._`;
-
-        const inlineButtons = [
-          [
-            { text: '🔄 Sync Supabase Cloud', callback_data: 'tech_sync_supabase' },
-            { text: '🧹 Clean Test Slate', callback_data: 'tech_clean_slate' }
-          ],
-          [
-            { text: '🔑 Generate Web PIN', callback_data: 'tech_fresh_pin' }
-          ]
-        ];
-
-        teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown', reply_markup: { inline_keyboard: inlineButtons } });
-      });
 
       // 🎓 Orientation Command / Button
-      teamBot.onText(/\/orientation|🎓 Orientation/, (msg) => {
+      teamBot.onText(/\/orientation|🎓 Orientation/, async (msg) => {
         const chatId = msg.chat.id;
-        userState[chatId] = null;
-        const dbData = readDB();
+        await state.clearSession(chatId);
+        const dbData = await readDB();
         const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId)) || (dbData.team || [])[0];
 
         const tasks = emp.onboardingTasks || [
@@ -930,9 +718,9 @@ function initBot() {
       // ══════════════════════════════════════════
 
       // 🎯 My Clients — full portfolio overview
-      teamBot.onText(/🎯 My Clients/, (msg) => {
+      teamBot.onText(/🎯 My Clients/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
+        const dbData = await readDB();
         const clients = dbData.clients || [];
         const tasks = dbData.tasks || [];
         const invoices = dbData.invoices || [];
@@ -970,9 +758,9 @@ function initBot() {
       });
 
       // 📈 Lead Pipeline
-      teamBot.onText(/📈 Lead Pipeline/, (msg) => {
+      teamBot.onText(/📈 Lead Pipeline/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
+        const dbData = await readDB();
         const leads = dbData.leads || [];
 
         const active = leads.filter(l => l.status !== 'Won' && l.status !== 'Lost');
@@ -1013,9 +801,9 @@ function initBot() {
       });
 
       // 🔔 Client Updates — approvals, revisions, payment proofs pending
-      teamBot.onText(/🔔 Client Updates/, (msg) => {
+      teamBot.onText(/🔔 Client Updates/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
+        const dbData = await readDB();
 
         const inReview = (dbData.tasks || []).filter(t => t.stage === 'Client Review');
         const revisions = (dbData.revisionFeedback || []).filter(r => r.status === 'Open');
@@ -1052,9 +840,9 @@ function initBot() {
       });
 
       // 💰 My Commission
-      teamBot.onText(/💰 My Commission/, (msg) => {
+      teamBot.onText(/💰 My Commission/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
+        const dbData = await readDB();
         const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId));
         if (!emp) return;
 
@@ -1094,10 +882,10 @@ function initBot() {
       // ══════════════════════════════════════════
 
       // 🏢 Ops Dashboard — team attendance + task health
-      teamBot.onText(/🏢 Ops Dashboard/, (msg) => {
+      teamBot.onText(/🏢 Ops Dashboard/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
-        const team = dbData.team || [];
+        const dbData = await readDB();
+        const team = (dbData.team || []);
         const tasks = dbData.tasks || [];
         const today = new Date().toLocaleDateString('en-CA');
 
@@ -1141,9 +929,9 @@ function initBot() {
       });
 
       // 👥 HR & Attendance — leave requests + absence flags
-      teamBot.onText(/👥 HR & Attendance/, (msg) => {
+      teamBot.onText(/👥 HR & Attendance/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
+        const dbData = await readDB();
         const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId));
         if (!emp) return;
 
@@ -1187,9 +975,9 @@ function initBot() {
       });
 
       // 📡 Media Buying — campaign spend tracker
-      teamBot.onText(/📡 Media Buying/, (msg) => {
+      teamBot.onText(/📡 Media Buying/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
+        const dbData = await readDB();
         const campaigns = dbData.mediaBuys || [];
 
         if (!campaigns.length) {
@@ -1226,9 +1014,9 @@ function initBot() {
       });
 
       // 🚀 Client Activation — checklist status
-      teamBot.onText(/🚀 Client Activation/, (msg) => {
+      teamBot.onText(/🚀 Client Activation/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
+        const dbData = await readDB();
         const activations = dbData.clientActivations || [];
 
         if (!activations.length) {
@@ -1267,9 +1055,9 @@ function initBot() {
       // ══════════════════════════════════════════
 
       // 💸 Expense Queue — Tier-2 Payout approvals
-      teamBot.onText(/💸 Expense Queue/, (msg) => {
+      teamBot.onText(/💸 Expense Queue/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
+        const dbData = await readDB();
         const expenses = dbData.expenses || [];
 
         // Tier-1 approved, awaiting Tier-2 (Borhan payout)
@@ -1293,9 +1081,9 @@ function initBot() {
       });
 
       // 🧾 Invoice Status — GST/VAT invoices tracking
-      teamBot.onText(/🧾 Invoice Status/, (msg) => {
+      teamBot.onText(/🧾 Invoice Status/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
+        const dbData = await readDB();
         const invoices = dbData.invoices || [];
 
         const paid = invoices.filter(i => i.status === 'Paid');
@@ -1326,10 +1114,10 @@ function initBot() {
       });
 
       // 📊 Payroll Summary
-      teamBot.onText(/📊 Payroll Summary/, (msg) => {
+      teamBot.onText(/📊 Payroll Summary/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
-        const team = dbData.team || [];
+        const dbData = await readDB();
+        const team = (dbData.team || []);
 
         const totalTeam = team.length;
         const basePayroll = team.reduce((s, t) => s + (Number(t.baseSalary) || 0), 0);
@@ -1347,7 +1135,7 @@ function initBot() {
       });
 
       // 🏦 Bank & bKash Hub
-      teamBot.onText(/🏦 Bank & bKash Hub/, (msg) => {
+      teamBot.onText(/🏦 Bank & bKash Hub/, async (msg) => {
         const chatId = msg.chat.id;
         let text = `🏦 *Official Agency Banking & Gateway Accounts*\n\n`;
         text += `🏢 *Company Bank Account:*\n`;
@@ -1364,10 +1152,10 @@ function initBot() {
       });
 
       // 👥 Admin Team — Borhan's direct reports
-      teamBot.onText(/👥 Admin Team/, (msg) => {
+      teamBot.onText(/👥 Admin Team/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
-        const team = dbData.team || [];
+        const dbData = await readDB();
+        const team = (dbData.team || []);
 
         const adminStaff = team.filter(t => t.reportsTo === 'PBD-029');
 
@@ -1385,9 +1173,9 @@ function initBot() {
       // ══════════════════════════════════════════
 
       // 📈 Campaign Strategy — strategy decks & briefs
-      teamBot.onText(/📈 Campaign Strategy/, (msg) => {
+      teamBot.onText(/📈 Campaign Strategy/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
+        const dbData = await readDB();
         const tasks = dbData.tasks || [];
 
         const strategyTasks = tasks.filter(t =>
@@ -1413,9 +1201,9 @@ function initBot() {
       });
 
       // 🗓️ Content Calendars
-      teamBot.onText(/🗓️ Content Calendars/, (msg) => {
+      teamBot.onText(/🗓️ Content Calendars/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
+        const dbData = await readDB();
         const posts = dbData.posts || dbData.social_posts || [];
 
         let text = `🗓️ *Monthly Content Plans & Social Calendars*\n\n`;
@@ -1435,10 +1223,10 @@ function initBot() {
       });
 
       // 👥 Strategy Team — Shafket's team view
-      teamBot.onText(/👥 Strategy Team/, (msg) => {
+      teamBot.onText(/👥 Strategy Team/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
-        const team = dbData.team || [];
+        const dbData = await readDB();
+        const team = (dbData.team || []);
         const tasks = dbData.tasks || [];
 
         const associates = team.filter(t => t.reportsTo === 'PBD-019');
@@ -1458,9 +1246,9 @@ function initBot() {
       });
 
       // 📅 My Content Plans — associate's own plans
-      teamBot.onText(/📅 My Content Plans/, (msg) => {
+      teamBot.onText(/📅 My Content Plans/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
+        const dbData = await readDB();
         const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId));
 
         const empFirstName = emp ? (emp.name || '').split(' ')[0].toLowerCase() : '';
@@ -1482,9 +1270,9 @@ function initBot() {
       });
 
       // 🚀 Dispatch Hub — 1-click publishing queue
-      teamBot.onText(/🚀 Dispatch Hub/, (msg) => {
+      teamBot.onText(/🚀 Dispatch Hub/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
+        const dbData = await readDB();
         const posts = (dbData.posts || dbData.social_posts || []).filter(p => p.status === 'Approved');
 
         let text = `🚀 *Social Media Dispatch Hub*\n\n`;
@@ -1505,7 +1293,7 @@ function initBot() {
       });
 
       // 📝 Draft New Plan
-      teamBot.onText(/📝 Draft New Plan/, (msg) => {
+      teamBot.onText(/📝 Draft New Plan/, async (msg) => {
         const chatId = msg.chat.id;
         teamBot.sendMessage(chatId,
           `📝 *Draft New Content Plan*\n\nLaunch the PurpleOS Web Content Planner to create multi-platform post calendars for clients:`,
@@ -1521,9 +1309,9 @@ function initBot() {
       // ══════════════════════════════════════════
 
       // 🎯 My Client Roster — clients assigned to logged-in AM
-      teamBot.onText(/🎯 My Client Roster/, (msg) => {
+      teamBot.onText(/🎯 My Client Roster/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
+        const dbData = await readDB();
         const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId));
 
         const clients = dbData.clients || [];
@@ -1545,9 +1333,9 @@ function initBot() {
       });
 
       // 🎬 Client Approvals — deliverables in Client Review
-      teamBot.onText(/🎬 Client Approvals/, (msg) => {
+      teamBot.onText(/🎬 Client Approvals/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
+        const dbData = await readDB();
         const tasks = dbData.tasks || [];
 
         const inReview = tasks.filter(t => t.stage === 'Client Review');
@@ -1570,9 +1358,9 @@ function initBot() {
       });
 
       // 📢 Send Client Link — generate magic access link for client
-      teamBot.onText(/📢 Send Client Link/, (msg) => {
+      teamBot.onText(/📢 Send Client Link/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
+        const dbData = await readDB();
         const clients = dbData.clients || [];
 
         if (!clients.length) {
@@ -1591,11 +1379,11 @@ function initBot() {
       });
 
       // Callback query handler for gen_magic_link
-      teamBot.on('callback_query', (query) => {
+      teamBot.on('callback_query', async (query) => {
         const data = query.data || '';
         if (data.startsWith('gen_magic_link:')) {
           const clientId = data.split(':')[1];
-          const dbData = readDB();
+          const dbData = await readDB();
           const client = (dbData.clients || []).find(c => c.id === clientId);
           if (client) {
             const token = `TOK-${Date.now()}`;
@@ -1613,9 +1401,9 @@ function initBot() {
       });
 
       // 💬 Client Feedback — revision requests
-      teamBot.onText(/💬 Client Feedback/, (msg) => {
+      teamBot.onText(/💬 Client Feedback/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
+        const dbData = await readDB();
         const reviews = dbData.reviews || [];
         const openFeedback = (dbData.revisionFeedback || []).filter(r => r.status === 'Open');
 
@@ -1633,10 +1421,10 @@ function initBot() {
       });
 
       // 👥 Account Team — Tasin's team overview
-      teamBot.onText(/👥 Account Team/, (msg) => {
+      teamBot.onText(/👥 Account Team/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
-        const team = dbData.team || [];
+        const dbData = await readDB();
+        const team = (dbData.team || []);
 
         const csTeam = team.filter(t => (t.department || '').toLowerCase().includes('client services'));
 
@@ -1654,9 +1442,9 @@ function initBot() {
       // ══════════════════════════════════════════
 
       // 🎬 Production Queue — all active content & shoot tasks
-      teamBot.onText(/🎬 Production Queue/, (msg) => {
+      teamBot.onText(/🎬 Production Queue/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
+        const dbData = await readDB();
         const tasks = dbData.tasks || [];
 
         const prodTasks = tasks.filter(t =>
@@ -1681,9 +1469,9 @@ function initBot() {
       });
 
       // 📜 Script & Copy QC — scripts pending Nasir's review
-      teamBot.onText(/📜 Script & Copy QC/, (msg) => {
+      teamBot.onText(/📜 Script & Copy QC/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
+        const dbData = await readDB();
         const tasks = dbData.tasks || [];
 
         const pendingScriptQC = tasks.filter(t => t.stage === 'Script QC' || (t.stage === 'Scripting' && t.needsQC));
@@ -1706,9 +1494,9 @@ function initBot() {
       });
 
       // 🎥 Shoot Call-Sheets — upcoming shoot dates
-      teamBot.onText(/🎥 Shoot Call-Sheets/, (msg) => {
+      teamBot.onText(/🎥 Shoot Call-Sheets/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
+        const dbData = await readDB();
         const bookings = dbData.studioBookings || [];
 
         const upcomingShoots = bookings.filter(b => b.resourceType === 'Studio' || (b.notes || '').toLowerCase().includes('shoot'));
@@ -1727,10 +1515,10 @@ function initBot() {
       });
 
       // 👥 Content Team — status of Masud & Shadly
-      teamBot.onText(/👥 Content Team/, (msg) => {
+      teamBot.onText(/👥 Content Team/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
-        const team = dbData.team || [];
+        const dbData = await readDB();
+        const team = (dbData.team || []);
         const tasks = dbData.tasks || [];
 
         const directReports = team.filter(t => t.reportsTo === 'PBD-013');
@@ -1755,9 +1543,9 @@ function initBot() {
       // ══════════════════════════════════════════
 
       // 📜 My Scripts & Copy
-      teamBot.onText(/📜 My Scripts & Copy/, (msg) => {
+      teamBot.onText(/📜 My Scripts & Copy/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
+        const dbData = await readDB();
         const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId));
 
         const empFirstName = emp ? (emp.name || '').split(' ')[0].toLowerCase() : '';
@@ -1786,7 +1574,7 @@ function initBot() {
       });
 
       // 🤖 AI Prompt Studio
-      teamBot.onText(/🤖 AI Prompt Studio/, (msg) => {
+      teamBot.onText(/🤖 AI Prompt Studio/, async (msg) => {
         const chatId = msg.chat.id;
         let text = `🤖 *AI Prompt Studio & Generation Engine*\n\n`;
         text += `• Custom Brand Voice Prompts loaded\n`;
@@ -1801,9 +1589,9 @@ function initBot() {
       });
 
       // 📤 Submit Script QC
-      teamBot.onText(/📤 Submit Script QC/, (msg) => {
+      teamBot.onText(/📤 Submit Script QC/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
+        const dbData = await readDB();
         const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId));
 
         const empFirstName = emp ? (emp.name || '').split(' ')[0].toLowerCase() : '';
@@ -1884,9 +1672,9 @@ function initBot() {
       // ══════════════════════════════════════════
 
       // 🖌️ My Creative Tasks — assigned tasks for logged-in visualizer
-      teamBot.onText(/🖌️ My Creative Tasks/, (msg) => {
+      teamBot.onText(/🖌️ My Creative Tasks/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
+        const dbData = await readDB();
         const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId));
 
         const empFirstName = emp ? (emp.name || '').split(' ')[0].toLowerCase() : '';
@@ -1921,9 +1709,9 @@ function initBot() {
       });
 
       // 📤 Submit for QC — lists active designing tasks for quick submission to Ruhul
-      teamBot.onText(/📤 Submit for QC/, (msg) => {
+      teamBot.onText(/📤 Submit for QC/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
+        const dbData = await readDB();
         const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId));
 
         const empFirstName = emp ? (emp.name || '').split(' ')[0].toLowerCase() : '';
@@ -1953,9 +1741,9 @@ function initBot() {
 
 
       // ✏️ View Revisions — lists tasks with revision feedback
-      teamBot.onText(/✏️ View Revisions/, (msg) => {
+      teamBot.onText(/✏️ View Revisions/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
+        const dbData = await readDB();
         const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId));
 
         const empFirstName = emp ? (emp.name || '').split(' ')[0].toLowerCase() : '';
@@ -1986,9 +1774,9 @@ function initBot() {
       // ══════════════════════════════════════════
 
       // 🎨 Design Queue — all active design tasks in his department
-      teamBot.onText(/🎨 Design Queue/, (msg) => {
+      teamBot.onText(/🎨 Design Queue/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
+        const dbData = await readDB();
         const tasks = dbData.tasks || [];
 
         // Design dept tasks — by stage
@@ -2024,9 +1812,9 @@ function initBot() {
       });
 
       // 👁️ Review Room — tasks awaiting Ruhul's internal QC or in Client Review
-      teamBot.onText(/👁️ Review Room/, (msg) => {
+      teamBot.onText(/👁️ Review Room/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
+        const dbData = await readDB();
         const tasks = dbData.tasks || [];
         const reviews = dbData.reviews || [];
 
@@ -2070,12 +1858,12 @@ function initBot() {
       });
 
       // 👥 Design Team — his 6 visualizers with status + task load
-      teamBot.onText(/👥 Design Team/, (msg) => {
+      teamBot.onText(/👥 Design Team/, async (msg) => {
         const chatId = msg.chat.id;
-        const emp = ((readDB()).team || []).find(e => String(e.telegramId) === String(chatId));
+        const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId));
         if (!emp) return;
-        const dbData = readDB();
-        const team = dbData.team || [];
+        const dbData = await readDB();
+        const team = (dbData.team || []);
         const tasks = dbData.tasks || [];
 
         const directReports = team.filter(t => t.reportsTo === (emp?.id || 'PBD-006'));
@@ -2098,9 +1886,9 @@ function initBot() {
       });
 
       // ✅ Leave Approvals — pending leaves from Ruhul's direct reports
-      teamBot.onText(/✅ Leave Approvals/, (msg) => {
+      teamBot.onText(/✅ Leave Approvals/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
+        const dbData = await readDB();
         const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId));
         if (!emp) return;
 
@@ -2127,8 +1915,8 @@ function initBot() {
 
         // Inline approve/decline buttons for each request
         const inlineButtons = pending.slice(0, 5).map(l => [
-          { text: `✅ Approve — ${l.employeeName}`, callback_data: `leave_approve:${l.id}` },
-          { text: `❌ Decline`, callback_data: `leave_decline:${l.id}` }
+          { text: `✅ Approve — ${l.employeeName}`, callback_data: `approve_leave:${l.id}` },
+          { text: `❌ Decline`, callback_data: `reject_leave:${l.id}` }
         ]);
 
         teamBot.sendMessage(chatId, text, {
@@ -2142,10 +1930,10 @@ function initBot() {
       // ══════════════════════════════════════════
 
       // ⚡ Studio Workload — active task distribution across team members
-      teamBot.onText(/⚡ Studio Workload/, (msg) => {
+      teamBot.onText(/⚡ Studio Workload/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
-        const team = dbData.team || [];
+        const dbData = await readDB();
+        const team = (dbData.team || []);
         const tasks = dbData.tasks || [];
 
         const activeTasks = tasks.filter(t => t.stage !== 'Delivered' && t.stage !== 'Completed');
@@ -2168,9 +1956,9 @@ function initBot() {
       });
 
       // 🚧 Bottleneck Radar — tasks stuck > 48h in a single stage
-      teamBot.onText(/🚧 Bottleneck Radar/, (msg) => {
+      teamBot.onText(/🚧 Bottleneck Radar/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
+        const dbData = await readDB();
         const tasks = dbData.tasks || [];
 
         const now = new Date();
@@ -2207,9 +1995,9 @@ function initBot() {
       });
 
       // 📸 Studio & Gear Slots — equipment & room bookings
-      teamBot.onText(/📸 Studio & Gear Slots/, (msg) => {
+      teamBot.onText(/📸 Studio & Gear Slots/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
+        const dbData = await readDB();
         const bookings = dbData.studioBookings || [];
 
         const activeBookings = bookings.filter(b => b.status === 'Confirmed' || b.status === 'In Progress');
@@ -2238,9 +2026,9 @@ function initBot() {
       });
 
       // 📊 Turnaround Metrics
-      teamBot.onText(/📊 Turnaround Metrics/, (msg) => {
+      teamBot.onText(/📊 Turnaround Metrics/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
+        const dbData = await readDB();
         const tasks = dbData.tasks || [];
 
         const delivered = tasks.filter(t => t.stage === 'Delivered');
@@ -2305,35 +2093,9 @@ function initBot() {
         teamBot.sendMessage(chatId, message, { parse_mode: 'Markdown' });
       });
 
-      teamBot.onText(/\/mytasks|📋 My Tasks/, async (msg) => {
-        const chatId = msg.chat.id;
-        const emp = await state.getEmployeeByTelegramId(chatId);
-        if (!emp) {
-          return teamBot.sendMessage(chatId, `⚠️ Account not verified.`);
-        }
+      teamBot.onText(/\/mytasks|📋 My Tasks/, (msg) => tasksHandler.handleMyTasks(teamBot, msg));
 
-        let tasks = [];
-        if (supabase) {
-          const firstName = (emp.name || '').split(' ')[0];
-          const { data } = await supabase.from('tasks').select('*').ilike('assignee', `%${firstName}%`);
-          tasks = data || [];
-        } else {
-          const dbData = readDB();
-          tasks = (dbData.tasks || []).filter(t => (t.assignee || '').toLowerCase().includes((emp.name || '').split(' ')[0].toLowerCase()));
-        }
-
-        let message = `📋 *Assigned Shoots & Tasks for ${emp.name}:*\n\n`;
-        if (tasks.length === 0) {
-          message += `No active task assignments found right now.`;
-        } else {
-          tasks.forEach((t, index) => {
-            message += `${index + 1}. *${t.title}*\n   Client: ${t.client} | Stage: *${t.stage || t.status}* | Due: ${t.due_date || t.dueDate || 'ASAP'}\n\n`;
-          });
-        }
-        teamBot.sendMessage(chatId, message, { parse_mode: 'Markdown' });
-      });
-
-      teamBot.onText(/\/myteam|👥 My Team Roster/, async (msg) => {
+      teamBot.onText(/\/myteam|👥 My Team Roster|👥 My Team/, async (msg) => {
         const chatId = msg.chat.id;
         const emp = await state.getEmployeeByTelegramId(chatId);
         const allTeam = await state.getAllTeam();
@@ -2353,9 +2115,9 @@ function initBot() {
         teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
       });
 
-      teamBot.onText(/\/deptreport|📊 Department Report/, (msg) => {
+      teamBot.onText(/\/deptreport|📊 Department Report/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
+        const dbData = await readDB();
         const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId)) || (dbData.team || [])[0];
 
         const tasks = dbData.tasks || [];
@@ -2376,130 +2138,21 @@ function initBot() {
         teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
       });
 
-      teamBot.onText(/\/morning|🌅 Morning Briefing/, (msg) => {
-        const chatId = msg.chat.id;
-        const dbData = readDB();
-        const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId)) || (dbData.team || [])[0];
+      // ──────── BATCH 1 MODULAR HANDLERS ────────
+      const briefingHandler = require('./bot/handlers/briefing');
+      const tasksHandler = require('./bot/handlers/tasks');
+      const approvalsHandler = require('./bot/handlers/approvals');
 
-        const totalStaff = (dbData.team || []).length;
-        const inStudio = (dbData.team || []).filter(t => t.status === 'In Studio').length;
-        const onShoot = (dbData.team || []).filter(t => t.status === 'On Field Shoot').length;
-        const onLeave = (dbData.team || []).filter(t => t.status === 'On Leave').length;
-        const offline = totalStaff - (inStudio + onShoot + onLeave);
-
-        let text = `🌅 *PURPLEBOT MORNING BRIEFING*\n` +
-          `📅 ${new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })}\n\n` +
-          `👥 *Team Status (${totalStaff} Members):*\n` +
-          `• 🟢 In Studio: *${inStudio}*\n` +
-          `• 🎬 On Shoot: *${onShoot}*\n` +
-          `• 🌴 On Leave: *${onLeave}*\n` +
-          `• ⬛ Offline: *${offline}*\n\n` +
-          `📋 *Today's Production Focus:*\n`;
-
-        const topTasks = (dbData.tasks || []).slice(0, 3);
-        if (topTasks.length === 0) {
-          text += `No urgent production tasks flagged for today.\n`;
-        } else {
-          topTasks.forEach((t, idx) => {
-            text += `${idx + 1}. *${t.title}* (${t.client})\n   👤 Assignee: ${t.assignee}\n`;
-          });
-        }
-
-        text += `\nHave a productive day! 💜`;
-        teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
-      });
-
-      teamBot.onText(/👥 Full Team Status/, (msg) => {
-        const chatId = msg.chat.id;
-        const dbData = readDB();
-        let text = `👥 *PURPLEBOT DIGITAL FULL TEAM STATUS (${(dbData.team || []).length} Members):*\n\n`;
-        (dbData.team || []).forEach((m, idx) => {
-          const statusIcon = m.status === 'In Studio' ? '🟢' : (m.status === 'On Field Shoot' ? '🎬' : (m.status === 'On Leave' ? '🌴' : '⬛'));
-          text += `${idx + 1}. *${m.name}*\n   Role: ${m.role} (${m.department})\n   ${statusIcon} Status: *${m.status || 'Offline'}*\n\n`;
-        });
-        teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
-      });
-
-      teamBot.onText(/💰 Finance Summary/, (msg) => {
-        const chatId = msg.chat.id;
-        const dbData = readDB();
-        const invoices = dbData.invoices || [];
-        const paid = invoices.filter(i => i.status === 'Paid').reduce((sum, i) => sum + (i.amount || 0), 0);
-        const draft = invoices.filter(i => i.status === 'Draft').reduce((sum, i) => sum + (i.amount || 0), 0);
-        const pendingExpenses = (dbData.expenses || []).filter(e => e.status !== 'Disbursed').length;
-
-        let text = `💰 *PURPLEBOT FINANCE SNAPSHOT*\n\n` +
-          `• Paid Invoices: *$${paid.toLocaleString()} USD*\n` +
-          `• Draft/Pending Invoices: *$${draft.toLocaleString()} USD*\n` +
-          `• Pending Expense Claims: *${pendingExpenses} claims*\n\n` +
-          `🌐 Open Web Finance Portal: https://purpleos-iota.vercel.app/admin`;
-        teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
-      });
-
-      teamBot.onText(/📊 Business Snapshot/, (msg) => {
-        const chatId = msg.chat.id;
-        const dbData = readDB();
-        const teamCount = (dbData.team || []).length;
-        const clientCount = (dbData.clients || []).length;
-        const taskCount = (dbData.tasks || []).length;
-
-        let text = `📊 *PURPLEBOT DIGITAL BUSINESS SNAPSHOT*\n\n` +
-          `• Total Team Roster: *${teamCount} Members*\n` +
-          `• Active Retainer Clients: *${clientCount} Clients*\n` +
-          `• Active Production Tasks: *${taskCount} Tasks*\n\n` +
-          `System Status: 🟢 Operational & Live`;
-        teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
-      });
-
-      // ──────── PENDING APPROVALS (Owner/Admin/Managers) ────────
-      teamBot.onText(/✍️ Pending Approvals/, (msg) => {
-        const chatId = msg.chat.id;
-        const dbData = readDB();
-        const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId)) || (dbData.team || [])[0];
-
-        const pendingLeaves = (dbData.leaves || []).filter(l => l.status === 'Pending Line Review' || l.status === 'Pending');
-        const pendingExpenses = (dbData.expenses || []).filter(e => !e.tier1?.approved || e.status === 'Pending');
-        const pendingTasks = (dbData.tasks || []).filter(t => (t.stage || '').toLowerCase().includes('review'));
-
-        let text = `✍️ *PENDING APPROVALS DASHBOARD*\n` +
-          `📅 ${new Date().toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}\n\n`;
-
-        text += `🌴 *Leave Requests (${pendingLeaves.length}):*\n`;
-        if (pendingLeaves.length === 0) {
-          text += `   ✅ No pending leave requests\n\n`;
-        } else {
-          pendingLeaves.forEach((l, i) => {
-            text += `   ${i + 1}. *${l.employeeName || l.name || 'Staff'}* — ${l.leaveType || 'Leave'} (${l.startDate || 'TBD'})\n`;
-          });
-          text += `\n`;
-        }
-
-        text += `💸 *Expense Claims (${pendingExpenses.length}):*\n`;
-        if (pendingExpenses.length === 0) {
-          text += `   ✅ No pending expense claims\n\n`;
-        } else {
-          pendingExpenses.forEach((e, i) => {
-            text += `   ${i + 1}. *${e.submittedBy || 'Staff'}* — BDT ${(e.amount || 0).toLocaleString()} (${e.category || 'General'})\n`;
-          });
-          text += `\n`;
-        }
-
-        text += `🎬 *Tasks In Review (${pendingTasks.length}):*\n`;
-        if (pendingTasks.length === 0) {
-          text += `   ✅ No tasks awaiting review\n`;
-        } else {
-          pendingTasks.forEach((t, i) => {
-            text += `   ${i + 1}. *${t.title}* — ${t.client || 'General'} (${t.stage})\n`;
-          });
-        }
-
-        teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
-      });
+      teamBot.onText(/\/morning|🌅 Morning Briefing/, (msg) => briefingHandler.handleMorningBriefing(teamBot, msg));
+      teamBot.onText(/📊 Business Snapshot/, (msg) => briefingHandler.handleBusinessSnapshot(teamBot, msg));
+      teamBot.onText(/💰 Finance Summary/, (msg) => briefingHandler.handleFinanceSummary(teamBot, msg));
+      teamBot.onText(/\/mytasks|📋 My Tasks/, (msg) => tasksHandler.handleMyTasks(teamBot, msg));
+      teamBot.onText(/✍️ Pending Approvals/, (msg) => approvalsHandler.handlePendingApprovals(teamBot, msg));
 
       // ──────── CLIENT STATUS (Owner/Admin) ────────
-      teamBot.onText(/🎬 Client Status/, (msg) => {
+      teamBot.onText(/🎬 Client Status/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
+        const dbData = await readDB();
 
         const clients = dbData.clients || [];
         const tasks = dbData.tasks || [];
@@ -2529,68 +2182,19 @@ function initBot() {
         teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
       });
 
-      // ──────── SUBMIT EXPENSE (All Staff) ────────
-      teamBot.onText(/🧾 Submit Expense/, async (msg) => {
-        const chatId = msg.chat.id;
-        const emp = await state.getEmployeeByTelegramId(chatId);
-        if (!emp) return teamBot.sendMessage(chatId, `⚠️ Account not verified.`);
+      // ──────── BATCH 2 MODULAR HANDLERS (Wizards) ────────
+      const expensesHandler = require('./bot/handlers/expenses');
+      const leavesHandler = require('./bot/handlers/leaves');
+      const eodHandler = require('./bot/handlers/eod');
 
-        const sess = { action: 'await_expense_amount', empId: emp.emp_code, empName: emp.name };
-        await state.setSession(chatId, sess);
-        userState[chatId] = sess;
-
-        teamBot.sendMessage(chatId,
-          `🧾 *EXPENSE CLAIM SUBMISSION*\n\n` +
-          `Please reply with the *expense amount in BDT*:\n` +
-          `(e.g. \`1500\`)`,
-          { parse_mode: 'Markdown' }
-        );
-      });
-
-      // ──────── LEAVE REQUEST (All Staff) ────────
-      teamBot.onText(/🌴 Leave Request/, async (msg) => {
-        const chatId = msg.chat.id;
-        const emp = await state.getEmployeeByTelegramId(chatId);
-        if (!emp) return teamBot.sendMessage(chatId, `⚠️ Account not verified.`);
-
-        const sess = { action: 'await_leave_type', empId: emp.emp_code, empName: emp.name, reportsTo: emp.reportsTo };
-        await state.setSession(chatId, sess);
-        userState[chatId] = sess;
-
-        teamBot.sendMessage(chatId,
-          `🌴 *LEAVE REQUEST*\n\n` +
-          `Please select leave type by replying:\n\n` +
-          `1️⃣ Casual Leave\n` +
-          `2️⃣ Sick Leave\n` +
-          `3️⃣ Half Day\n\n` +
-          `Reply with \`1\`, \`2\`, or \`3\``,
-          { parse_mode: 'Markdown' }
-        );
-      });
-
-      // ──────── EOD REPORT (All Staff) ────────
-      teamBot.onText(/📝 EOD Report/, async (msg) => {
-        const chatId = msg.chat.id;
-        const emp = await state.getEmployeeByTelegramId(chatId);
-        if (!emp) return teamBot.sendMessage(chatId, `⚠️ Account not verified.`);
-
-        const sess = { action: 'await_eod_summary', empId: emp.emp_code, empName: emp.name };
-        await state.setSession(chatId, sess);
-        userState[chatId] = sess;
-
-        teamBot.sendMessage(chatId,
-          `📝 *END-OF-DAY REPORT*\n` +
-          `📅 ${new Date().toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}\n\n` +
-          `Please reply with a *brief summary* of what you accomplished today:\n\n` +
-          `_(Example: Completed 3 social posts for Client X, attended strategy call, submitted revised deck)_`,
-          { parse_mode: 'Markdown' }
-        );
-      });
+      teamBot.onText(/🧾 Submit Expense/, (msg) => expensesHandler.handleInitExpense(teamBot, msg));
+      teamBot.onText(/🌴 Leave Request/, (msg) => leavesHandler.handleInitLeave(teamBot, msg));
+      teamBot.onText(/📝 EOD Report/, (msg) => eodHandler.handleInitEOD(teamBot, msg));
 
       // ──────── MUKIT FINANCE EXECUTIVE HANDLERS ────────
-      teamBot.onText(/🧾 Log Expense Entry/, (msg) => {
+      teamBot.onText(/🧾 Log Expense Entry/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
+        const dbData = await readDB();
         const expenses = dbData.expenses || [];
         const pendingCount = expenses.filter(e => e.status === 'Pending' || !e.tier1?.approved).length;
         const todayCount = expenses.filter(e => {
@@ -2608,9 +2212,9 @@ function initBot() {
         teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
       });
 
-      teamBot.onText(/📋 Invoice Tracker/, (msg) => {
+      teamBot.onText(/📋 Invoice Tracker/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
+        const dbData = await readDB();
         const invoices = dbData.invoices || [];
         const paid = invoices.filter(i => i.status === 'Paid');
         const draft = invoices.filter(i => i.status === 'Draft');
@@ -2631,9 +2235,9 @@ function initBot() {
         teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
       });
 
-      teamBot.onText(/💰 Payment Follow-Up/, (msg) => {
+      teamBot.onText(/💰 Payment Follow-Up/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
+        const dbData = await readDB();
         const invoices = dbData.invoices || [];
         const unpaid = invoices.filter(i => i.status !== 'Paid');
 
@@ -2657,43 +2261,13 @@ function initBot() {
         const data = query.data || '';
         const chatId = query.message.chat.id;
         const messageId = query.message.message_id;
-        const dbData = readDB();
+        const dbData = await readDB();
         const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId)) || { name: 'Line Manager' };
 
         let alertMsg = 'Action processed!';
         let statusBadge = `✅ Completed by ${emp.name}`;
 
-        if (data === 'edit_emergency_contact') {
-          const sess = { action: 'await_emergency_contact' };
-          await state.setSession(chatId, sess);
-          userState[chatId] = sess;
-          alertMsg = 'Please type emergency contact number';
-          teamBot.sendMessage(chatId, `📱 *Please reply with your Emergency Contact Phone Number:*`, { parse_mode: 'Markdown' });
-        } else if (data === 'edit_address') {
-          const sess = { action: 'await_address' };
-          await state.setSession(chatId, sess);
-          userState[chatId] = sess;
-          alertMsg = 'Please type home address';
-          teamBot.sendMessage(chatId, `🏠 *Please reply with your Home Address:*`, { parse_mode: 'Markdown' });
-        } else if (data === 'edit_work_email') {
-          const sess = { action: 'await_email' };
-          await state.setSession(chatId, sess);
-          userState[chatId] = sess;
-          alertMsg = 'Please type work email address';
-          teamBot.sendMessage(chatId, `📧 *Please reply with your Work Email Address:*`, { parse_mode: 'Markdown' });
-        } else if (data === 'edit_bank_details') {
-          const sess = { action: 'await_bank_info' };
-          await state.setSession(chatId, sess);
-          userState[chatId] = sess;
-          alertMsg = 'Please type Bank details';
-          teamBot.sendMessage(chatId, `💳 *Please reply with Bank details (Format: Bank Name, Account Number, Branch):*`, { parse_mode: 'Markdown' });
-        } else if (data === 'edit_mfs') {
-          const sess = { action: 'await_mfs' };
-          await state.setSession(chatId, sess);
-          userState[chatId] = sess;
-          alertMsg = 'Please type bKash/Nagad number';
-          teamBot.sendMessage(chatId, `📱 *Please reply with your bKash or Nagad Number:*`, { parse_mode: 'Markdown' });
-        } else if (data === 'tech_sync_supabase') {
+        if (data === 'tech_sync_supabase') {
           alertMsg = '🔄 Supabase Cloud Database Synced!';
           teamBot.sendMessage(chatId, `🔄 *Supabase Cloud DB Sync Executed Successfully!*`, { parse_mode: 'Markdown' });
         } else if (data === 'tech_clean_slate') {
@@ -2771,6 +2345,10 @@ function initBot() {
               updated_at: new Date().toISOString()
             }).eq('emp_code', empId);
           }
+          const targetEmp = await state.getEmployeeByTelegramId(empId) || await state.getEmployeeByPhone(empId) || (dbData.team || []).find(e => e.id === empId);
+          if (targetEmp) {
+            sendAgreementNotification(2, targetEmp, dbData);
+          }
           alertMsg = `✅ Agreement countersigned! Forwarded to Owner for final seal.`;
           statusBadge = `✅ Finance Countersigned by ${emp.name}`;
         } else if (data.startsWith('agr_stage3:')) {
@@ -2782,8 +2360,51 @@ function initBot() {
               updated_at: new Date().toISOString()
             }).eq('emp_code', empId);
           }
+          const targetEmp = await state.getEmployeeByTelegramId(empId) || await state.getEmployeeByPhone(empId) || (dbData.team || []).find(e => e.id === empId);
+          if (targetEmp) {
+            sendAgreementNotification(3, targetEmp, dbData);
+          }
           alertMsg = `👑 Employee is now fully activated as an official PBD employee!`;
           statusBadge = `👑 Owner Seal Applied — Employee Activated`;
+        } else if (data.startsWith('pay_approve:')) {
+          const payId = data.split(':')[1];
+          if (supabase) {
+            const { data: payLog } = await supabase.from('payment_logs').select('*').eq('id', payId).maybeSingle();
+            await supabase.from('payment_logs').update({
+              verified: true,
+              verified_by: emp.name || 'Finance Manager',
+              verified_at: new Date().toISOString()
+            }).eq('id', payId);
+
+            if (payLog?.invoice_id) {
+              await supabase.from('invoices').update({
+                status: 'Paid',
+                paid_date: new Date().toISOString().split('T')[0],
+                notes: `Verified bKash Payment (TrxID: ${payLog.trx_id}) by ${emp.name}`
+              }).eq('id', payLog.invoice_id);
+            }
+          }
+          alertMsg = `💳 Payment ${payId} Verified & Invoice Marked Paid!`;
+          statusBadge = `💳 Approved & Verified by ${emp.name}`;
+          teamBot.sendMessage(chatId, `💳 *Payment ${payId} Approved!* Invoice marked as Paid.`, { parse_mode: 'Markdown' });
+        } else if (data.startsWith('pay_reject:')) {
+          const payId = data.split(':')[1];
+          if (supabase) {
+            const { data: payLog } = await supabase.from('payment_logs').select('*').eq('id', payId).maybeSingle();
+            await supabase.from('payment_logs').update({
+              notes: `REJECTED via Telegram by ${emp.name}`
+            }).eq('id', payId);
+
+            if (payLog?.invoice_id) {
+              await supabase.from('invoices').update({
+                status: 'Pending',
+                notes: `Payment rejected — invalid TrxID`
+              }).eq('id', payLog.invoice_id);
+            }
+          }
+          alertMsg = `❌ Payment ${payId} Proof Rejected!`;
+          statusBadge = `❌ Payment Rejected by ${emp.name}`;
+          teamBot.sendMessage(chatId, `❌ *Payment ${payId} Rejected.* Invoice reverted to Pending.`, { parse_mode: 'Markdown' });
         }
 
         try {
@@ -2804,10 +2425,13 @@ function initBot() {
   // 2. Initialize Client Bot (Purple Bot)
   if (clientToken && clientToken.trim() !== '' && !clientToken.includes('your_token')) {
     try {
-      const usePolling = Boolean(process.env.USE_POLLING);
+      const usePolling = process.env.USE_POLLING === 'true';
       clientBot = new TelegramBot(clientToken, { polling: usePolling });
 
-      if (!usePolling) {
+      if (usePolling) {
+        clientBot.deleteWebHook().catch(e => console.error('Error deleting client webhook:', e));
+        console.log('✅ Local polling enabled for clientBot (Webhook deleted)');
+      } else {
         const webhookBody = { url: `${baseUrl}/api/webhooks/telegram?bot=client` };
         if (process.env.WEBHOOK_SECRET) webhookBody.secret_token = process.env.WEBHOOK_SECRET;
 
@@ -2857,7 +2481,7 @@ function initBot() {
           } catch (e) {}
 
           if (!allInvoices.length) {
-            const dbData = readDB();
+            const dbData = await readDB();
             allInvoices = dbData.invoices || [];
           }
 
@@ -2893,9 +2517,9 @@ function initBot() {
       });
 
       // /start handler
-      clientBot.onText(/\/start/, (msg) => {
+      clientBot.onText(/\/start/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
+        const dbData = await readDB();
         const client = (dbData.clients || []).find(c => String(c.telegramId) === String(chatId));
 
         if (client) {
@@ -2924,7 +2548,7 @@ function initBot() {
       });
 
       // /help handler
-      clientBot.onText(/\/help/, (msg) => {
+      clientBot.onText(/\/help/, async (msg) => {
         const chatId = msg.chat.id;
         const helpText = `📖 *PURPLEOS CLIENT BOT — QUICK GUIDE*\n\n` +
           `• \`/start\` — Open portal & link account\n` +
@@ -2965,7 +2589,7 @@ function initBot() {
 
         // db.json fallback (local dev)
         if (!client) {
-          const dbData = readDB();
+          const dbData = await readDB();
           const localClient = (dbData.clients || []).find(c => normalizePhone(c.phone) === normPhone);
           if (localClient) {
             client = localClient;
@@ -2991,9 +2615,9 @@ function initBot() {
         clientBot.sendMessage(chatId, welcome, { parse_mode: 'Markdown', reply_markup: getClientKeyboard(client) });
       });
 
-      clientBot.onText(/\/services|🎨 Our Services/, (msg) => {
+      clientBot.onText(/\/services|🎨 Our Services/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
+        const dbData = await readDB();
         let text = `🎨 *Purplebot Digital — Core Services:*\n\n`;
         const services = (dbData.services || []).filter(s => s.public);
         if (services.length) {
@@ -3005,7 +2629,7 @@ function initBot() {
         clientBot.sendMessage(chatId, text, { parse_mode: 'Markdown', reply_markup: client ? getClientKeyboard(client) : undefined });
       });
 
-      clientBot.onText(/\/portfolio|📁 Portfolio/, (msg) => {
+      clientBot.onText(/\/portfolio|📁 Portfolio/, async (msg) => {
         const chatId = msg.chat.id;
         const text = `📁 *Purplebot Digital Portfolio*\n\nExplore our campaign work:\n🔗 https://purpleos-iota.vercel.app/\n\n_Clients include: Chillox Fast Food, Apex Shoes, and more._`;
         clientBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
@@ -3025,7 +2649,7 @@ function initBot() {
           }
         }
         if (!client) {
-          const dbData = readDB();
+          const dbData = await readDB();
           client = (dbData.clients || []).find(c => String(c.telegramId) === String(chatId));
           pendingReview = (dbData.tasks || []).filter(t => client && t.client === client.name && t.stage === 'Client Review');
         }
@@ -3056,7 +2680,7 @@ function initBot() {
           }
         }
         if (!client) {
-          const dbData = readDB();
+          const dbData = await readDB();
           client = (dbData.clients || []).find(c => String(c.telegramId) === String(chatId));
           tasks = client ? (dbData.tasks || []).filter(t => t.client === client.name) : [];
         }
@@ -3089,7 +2713,7 @@ function initBot() {
           }
         }
         if (!client) {
-          const dbData = readDB();
+          const dbData = await readDB();
           client = (dbData.clients || []).find(c => String(c.telegramId) === String(chatId));
           invoices = client ? (dbData.invoices || []).filter(i => i.clientName === client.name) : [];
         }
@@ -3110,9 +2734,9 @@ function initBot() {
         clientBot.sendMessage(chatId, text, { parse_mode: 'Markdown', reply_markup: client ? getClientKeyboard(client) : undefined });
       });
 
-      clientBot.onText(/📞 Contact AM/, (msg) => {
+      clientBot.onText(/📞 Contact AM/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = readDB();
+        const dbData = await readDB();
         const client = (dbData.clients || []).find(c => String(c.telegramId) === String(chatId));
         const amName = client?.accountManager || 'Your Account Manager';
         const text = `📞 *Your Account Manager*\n\n• Name: *${amName}*\n• Phone: *+8801708459008*\n• Email: *contact@purpleos.agency*\n\n_Office hours: Sun–Thu · 9:00 AM – 7:00 PM_`;
@@ -3128,8 +2752,7 @@ function sendTelegramNotification(chatId, text, inlineKeyboard = null, isTeam = 
   let targetBot = isTeam ? (teamBot || clientBot) : (clientBot || teamBot);
 
   if (!targetBot) {
-    const db = readDB();
-    const token = process.env.TEAM_BOT_TOKEN || process.env.CLIENT_BOT_TOKEN || db.botConfig?.teamBot?.token;
+    const token = process.env.TEAM_BOT_TOKEN || process.env.CLIENT_BOT_TOKEN || null?.teamBot?.token;
     if (token && token.trim() !== '' && !token.includes('your_token')) {
       try {
         teamBot = new TelegramBot(token, { polling: false });
@@ -3141,6 +2764,11 @@ function sendTelegramNotification(chatId, text, inlineKeyboard = null, isTeam = 
   if (!targetBot) return false;
 
   const targetChatId = (chatId === '1708459008' || chatId === '+8801708459008') ? '7754769807' : chatId;
+
+  const options = { parse_mode: 'Markdown' };
+  if (inlineKeyboard && inlineKeyboard.length > 0) {
+    options.reply_markup = { inline_keyboard: inlineKeyboard };
+  }
 
   targetBot.sendMessage(targetChatId, text, options).catch(err => {
     console.warn('Telegram send error with Markdown, retrying plain text:', err.message);

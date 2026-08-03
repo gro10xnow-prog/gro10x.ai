@@ -2,139 +2,115 @@ const express = require('express');
 const router = express.Router();
 const { requireAuth } = require('../middleware/auth');
 const { requireAdmin } = require('../middleware/rbac');
-const { readDB, writeDB } = require('../services/db');
+const { supabase, isSupabaseConfigured } = require('../services/supabase');
 const { processAutomationEvent } = require('../services/automation');
 const { broadcast } = require('../services/sse');
 
-const { supabase, isSupabaseConfigured } = require('../services/supabase');
-
-// GET Automation Logs
+// GET Automation Logs — Supabase first
 router.get('/logs', requireAuth, requireAdmin, async (req, res) => {
   if (isSupabaseConfigured()) {
     const { data, error } = await supabase.from('automation_logs').select('*').order('created_at', { ascending: false });
     if (!error && data) return res.json(data);
   }
-  const db = readDB();
-  res.json(db.automationLogs || []);
+  res.json([]);
 });
 
-// GET Automation Active Rules
+// GET Automation Active Rules (static definition list)
 router.get('/rules', requireAuth, (req, res) => {
   res.json([
-    { id: 'AUT-001', name: 'Task Stage Editing -> Telegram Alert to Editor', active: true },
-    { id: 'AUT-003', name: 'Lead Won -> Auto Create Client CRM Account', active: true },
-    { id: 'AUT-004', name: 'Task Stage Client Review -> Telegram Push & Review Room Link', active: true },
-    { id: 'AUT-005', name: 'Invoice Paid -> Payment Verification Telegram Push', active: true },
-    { id: 'AUT-006', name: 'Social Post Approved by Client -> Publisher Notification', active: true }
+    { id: 'AUT-001', name: 'Task Stage Editing → Telegram Alert to Editor', active: true },
+    { id: 'AUT-003', name: 'Lead Won → Auto Create Client CRM Account', active: true },
+    { id: 'AUT-004', name: 'Task Stage Client Review → Telegram Push & Review Room Link', active: true },
+    { id: 'AUT-005', name: 'Invoice Paid → Payment Verification Telegram Push', active: true },
+    { id: 'AUT-006', name: 'Social Post Approved by Client → Publisher Notification', active: true }
   ]);
 });
 
-// POST Manual Trigger Simulation (Admin test)
-router.post('/trigger', requireAuth, requireAdmin, (req, res) => {
+// POST Manual Trigger Simulation (Admin test) — Supabase only, no db.json write
+router.post('/trigger', requireAuth, requireAdmin, async (req, res) => {
   const { eventType, eventData } = req.body;
-  const db = readDB();
-
-  processAutomationEvent(eventType || 'task_stage_change', eventData || {}, db, writeDB, broadcast);
-  writeDB(db);
-
-  res.json({ success: true, message: `Automation event ${eventType} executed successfully.` });
+  if (!isSupabaseConfigured()) {
+    return res.status(503).json({ error: 'Supabase not configured — trigger unavailable in this environment.' });
+  }
+  // Pass null for db/writeDB — automation.js logs directly to Supabase
+  await processAutomationEvent(eventType || 'task_stage_change', eventData || {}, { clients: [], team: [] }, null, broadcast);
+  res.json({ success: true, message: `Automation event '${eventType}' triggered.` });
 });
 
 // ──────── TELEGRAM GROUPS REGISTRY ────────
-// Manage registered Telegram group/channel chats for bot broadcasts
 
-// GET all registered Telegram groups
+// GET all registered Telegram groups — Supabase first
 router.get('/groups', requireAuth, async (req, res) => {
   if (isSupabaseConfigured()) {
     const { data, error } = await supabase.from('telegram_groups').select('*');
     if (!error && data) {
-      return res.json(data.map(g => ({
-        ...g,
-        chatId: g.chat_id,
-        registeredAt: g.registered_at
-      })));
+      return res.json(data.map(g => ({ ...g, chatId: g.chat_id, registeredAt: g.registered_at })));
     }
   }
-  const db = readDB();
-  res.json(db.telegramGroups || []);
+  res.json([]);
 });
 
-// POST Register a new Telegram group/channel
+// POST Register a new Telegram group/channel — Supabase only
 router.post('/groups', requireAuth, requireAdmin, async (req, res) => {
   const { name, type, chatId, bot, description } = req.body;
   if (!chatId) return res.status(400).json({ error: 'chatId is required' });
 
-  if (isSupabaseConfigured()) {
-    const { data: existing } = await supabase.from('telegram_groups').select('*').eq('chat_id', String(chatId)).maybeSingle();
-    if (existing) {
-      return res.json({ success: true, group: { ...existing, chatId: existing.chat_id, registeredAt: existing.registered_at }, duplicate: true });
-    }
-    const { data: countData } = await supabase.from('telegram_groups').select('id');
-    const newId = `GRP-${String((countData?.length || 0) + 1).padStart(3, '0')}`;
-    const payload = {
-      id: newId,
-      name: name || 'Unnamed Group',
-      type: type || 'group',
-      chat_id: String(chatId),
-      bot: bot || 'teamBot',
-      description: description || '',
-      active: true
-    };
-    const { error } = await supabase.from('telegram_groups').insert([payload]);
-    if (!error) {
-      broadcast('group_update', [payload]);
-      return res.json({ success: true, group: { ...payload, chatId: payload.chat_id, registeredAt: new Date().toISOString() } });
-    }
-  }
+  if (!isSupabaseConfigured()) return res.status(503).json({ error: 'Database unavailable' });
 
-  const db = readDB();
-  db.telegramGroups = db.telegramGroups || [];
-
-  const existing = db.telegramGroups.find(g => String(g.chatId) === String(chatId));
+  const { data: existing } = await supabase.from('telegram_groups').select('*').eq('chat_id', String(chatId)).maybeSingle();
   if (existing) {
-    return res.json({ success: true, group: existing, duplicate: true });
+    return res.json({ success: true, group: { ...existing, chatId: existing.chat_id, registeredAt: existing.registered_at }, duplicate: true });
   }
 
-  const newGroup = {
-    id: `GRP-${String(db.telegramGroups.length + 1).padStart(3, '0')}`,
+  const { count } = await supabase.from('telegram_groups').select('id', { count: 'exact', head: true });
+  const newId = `GRP-${String((count || 0) + 1).padStart(3, '0')}`;
+  const payload = {
+    id: newId,
     name: name || 'Unnamed Group',
     type: type || 'group',
-    chatId: String(chatId),
+    chat_id: String(chatId),
     bot: bot || 'teamBot',
     description: description || '',
-    active: true,
-    registeredAt: new Date().toISOString()
+    active: true
   };
 
-  db.telegramGroups.push(newGroup);
-  writeDB(db);
-  broadcast('group_update', db.telegramGroups);
+  const { error } = await supabase.from('telegram_groups').insert([payload]);
+  if (error) return res.status(500).json({ error: error.message });
 
-  res.json({ success: true, group: newGroup });
+  broadcast('group_update', [payload]);
+  res.json({ success: true, group: { ...payload, chatId: payload.chat_id, registeredAt: new Date().toISOString() } });
 });
 
-// PUT Update a group (rename, toggle active, etc.)
-router.put('/groups/:id', requireAuth, requireAdmin, (req, res) => {
+// PUT Update a group (rename, toggle active, etc.) — Supabase only
+router.put('/groups/:id', requireAuth, requireAdmin, async (req, res) => {
   const { id } = req.params;
-  const db = readDB();
-  const idx = (db.telegramGroups || []).findIndex(g => g.id === id || g.chatId === id);
-  if (idx === -1) return res.status(404).json({ error: 'Group not found' });
+  if (!isSupabaseConfigured()) return res.status(503).json({ error: 'Database unavailable' });
 
-  db.telegramGroups[idx] = { ...db.telegramGroups[idx], ...req.body };
-  writeDB(db);
-  broadcast('group_update', db.telegramGroups);
-  res.json({ success: true, group: db.telegramGroups[idx] });
+  const updates = { ...req.body };
+  // Normalise camelCase → snake_case for Supabase
+  if (updates.chatId) { updates.chat_id = updates.chatId; delete updates.chatId; }
+
+  const { data, error } = await supabase.from('telegram_groups')
+    .update(updates)
+    .or(`id.eq.${id},chat_id.eq.${id}`)
+    .select()
+    .maybeSingle();
+
+  if (error) return res.status(500).json({ error: error.message });
+  if (!data) return res.status(404).json({ error: 'Group not found' });
+
+  broadcast('group_update', [data]);
+  res.json({ success: true, group: { ...data, chatId: data.chat_id } });
 });
 
-// DELETE Remove a group from registry
-router.delete('/groups/:id', requireAuth, requireAdmin, (req, res) => {
+// DELETE Remove a group from registry — Supabase only
+router.delete('/groups/:id', requireAuth, requireAdmin, async (req, res) => {
   const { id } = req.params;
-  const db = readDB();
-  db.telegramGroups = (db.telegramGroups || []).filter(g => g.id !== id && g.chatId !== id);
-  writeDB(db);
-  broadcast('group_update', db.telegramGroups);
+  if (!isSupabaseConfigured()) return res.status(503).json({ error: 'Database unavailable' });
+
+  await supabase.from('telegram_groups').delete().or(`id.eq.${id},chat_id.eq.${id}`);
+  broadcast('group_update', [{ id, deleted: true }]);
   res.json({ success: true });
 });
 
 module.exports = router;
-

@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PurpleOS — Financials & Expense Queue</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/css/shell.css">
+  <style>
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+    .kpi-card {
+      background: var(--panel-bg);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 1.25rem;
+    }
+    .kpi-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+    .kpi-val {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: #fff;
+      margin-top: 0.3rem;
+    }
+    .tab-switcher {
+      display: flex;
+      gap: 0.5rem;
+      background: rgba(9, 9, 11, 0.6);
+      padding: 0.3rem;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      width: fit-content;
+      margin-bottom: 1.5rem;
+    }
+    .tab-btn {
+      padding: 0.4rem 0.85rem;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      border: none;
+      background: transparent;
+    }
+    .tab-btn.active {
+      background: var(--purple-main);
+      color: #fff;
+    }
+
+    /* Modal Overlay */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(8px);
+      z-index: 99990;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-box {
+      background: rgba(18, 18, 22, 0.98);
+      border: 1px solid rgba(168, 85, 247, 0.3);
+      border-radius: 20px;
+      padding: 2rem;
+      width: 480px;
+      max-width: 90vw;
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    .form-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+    .form-input, .form-select {
+      background: rgba(9, 9, 11, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #fff;
+      padding: 0.6rem 0.85rem;
+      border-radius: 10px;
+      font-size: 0.88rem;
+    }
+  </style>
+</head>
+<body>
+  <!-- App Header -->
+  <div id="app-header"></div>
+
+  <div class="main-wrapper">
+    <!-- App Sidebar -->
+    <div id="app-sidebar"></div>
+
+    <!-- Main Content Area -->
+    <main class="content-area">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <div>
+          <h1 style="font-size: 1.6rem; font-weight: 800; color: #fff; margin: 0;">💰 Financials & Expense Hub</h1>
+          <div style="font-size: 0.88rem; color: var(--text-muted);">Retainer Invoicing ➔ 2-Tier Expense Approvals ➔ Payout Disbursements</div>
+        </div>
+        <button class="btn-purple" onclick="openExpenseModal()">+ Log Expense Claim</button>
+      </div>
+
+      <!-- KPI Summary Cards -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-label">Total Invoiced</div>
+          <div class="kpi-val" id="kpiInvoiced">৳0</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Collected Revenue</div>
+          <div class="kpi-val" id="kpiCollected" style="color: #34d399;">৳0</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Pending Expense Claims</div>
+          <div class="kpi-val" id="kpiPendingExp" style="color: #fbbf24;">0</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Approved Expenses</div>
+          <div class="kpi-val" id="kpiApprovedExp" style="color: #c084fc;">৳0</div>
+        </div>
+      </div>
+
+      <!-- Tab Switcher -->
+      <div class="tab-switcher">
+        <button class="tab-btn active" id="tabInvoices" onclick="switchTab('invoices')">📄 Client Invoices</button>
+        <button class="tab-btn" id="tabExpenses" onclick="switchTab('expenses')">💸 Expense Claims Queue</button>
+      </div>
+
+      <div style="background: var(--panel-bg); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; padding: 1.5rem;">
+        <div id="financeContent">
+          <div style="color: var(--text-muted); padding: 2rem; text-align: center;">Loading financial records...</div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Log Expense Modal -->
+  <div class="modal-overlay" id="expModal">
+    <div class="modal-box">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h2 style="color: #fff; font-size: 1.2rem; margin: 0;">💸 Log Expense Claim</h2>
+        <button onclick="closeExpenseModal()" style="background: transparent; border: none; color: #a1a1aa; font-size: 1.4rem; cursor: pointer;">✕</button>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Expense Title / Description</label>
+        <input type="text" id="expTitle" class="form-input" placeholder="e.g. Uber Transport for Shooting">
+      </div>
+
+      <div style="display: flex; gap: 1rem;">
+        <div class="form-group" style="flex: 1;">
+          <label class="form-label">Category</label>
+          <select id="expCategory" class="form-select">
+            <option value="Transport">🚕 Transport</option>
+            <option value="Food & Refreshments">🍱 Food & Catering</option>
+            <option value="Equipment">🎥 Equipment & Gear</option>
+            <option value="Software / SaaS">💻 Software / SaaS</option>
+            <option value="Miscellaneous">📦 Miscellaneous</option>
+          </select>
+        </div>
+        <div class="form-group" style="flex: 1;">
+          <label class="form-label">Amount (BDT ৳)</label>
+          <input type="number" id="expAmount" class="form-input" placeholder="1500">
+        </div>
+      </div>
+
+      <button class="btn-purple" style="width: 100%; margin-top: 0.5rem;" onclick="submitExpenseClaim()">🚀 Submit Expense for Tier-1 Approval</button>
+    </div>
+  </div>
+
+  <script src="/js/shell.js"></script>
+  <script>
+    let activeTab = 'invoices';
+    window._allInvoices = [];
+    window._allExpenses = [];
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadFinanceData();
+    });
+
+    function switchTab(t) {
+      activeTab = t;
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      if (t === 'invoices') document.getElementById('tabInvoices').classList.add('active');
+      if (t === 'expenses') document.getElementById('tabExpenses').classList.add('active');
+      renderTab();
+    }
+
+    async function loadFinanceData() {
+      try {
+        const [invoices, expenses] = await Promise.all([
+          fetch('/api/invoices').then(r => r.json()).catch(() => []),
+          fetch('/api/expenses').then(r => r.json()).catch(() => [])
+        ]);
+
+        window._allInvoices = invoices;
+        window._allExpenses = expenses;
+
+        const totInvoiced = invoices.reduce((acc, i) => acc + (Number(i.amount) || 0), 0);
+        const totCollected = invoices.filter(i => (i.status || '').toLowerCase() === 'paid').reduce((acc, i) => acc + (Number(i.amount) || 0), 0);
+        const pendingExpCount = expenses.filter(e => !(e.tier1?.approved && e.tier2?.approved)).length;
+        const totApprovedExp = expenses.filter(e => e.tier1?.approved || e.tier2?.approved).reduce((acc, e) => acc + (Number(e.amount) || 0), 0);
+
+        document.getElementById('kpiInvoiced').textContent = `৳${totInvoiced.toLocaleString()}`;
+        document.getElementById('kpiCollected').textContent = `৳${totCollected.toLocaleString()}`;
+        document.getElementById('kpiPendingExp').textContent = pendingExpCount;
+        document.getElementById('kpiApprovedExp').textContent = `৳${totApprovedExp.toLocaleString()}`;
+
+        renderTab();
+      } catch(e) {
+        console.error('Finance load err:', e);
+      }
+    }
+
+    function renderTab() {
+      const box = document.getElementById('financeContent');
+
+      if (activeTab === 'invoices') {
+        const list = window._allInvoices || [];
+        if (list.length === 0) {
+          box.innerHTML = `<div style="color: var(--text-muted); padding: 2rem; text-align: center;">No invoices found.</div>`;
+          return;
+        }
+
+        box.innerHTML = `
+          <table style="width: 100%; border-collapse: collapse; text-align: left;">
+            <thead>
+              <tr style="border-bottom: 1px solid rgba(255,255,255,0.08); color: var(--text-muted); font-size: 0.78rem; text-transform: uppercase;">
+                <th style="padding: 0.75rem;">Invoice No</th>
+                <th style="padding: 0.75rem;">Client Name</th>
+                <th style="padding: 0.75rem;">Amount</th>
+                <th style="padding: 0.75rem;">Due Date</th>
+                <th style="padding: 0.75rem;">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${list.map(i => `
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.88rem; color: #fff;">
+                  <td style="padding: 0.85rem; font-weight: 700; color: var(--purple-light);">${i.id || 'INV-101'}</td>
+                  <td style="padding: 0.85rem; font-weight: 700;">${i.clientName || i.client || 'Agency Client'}</td>
+                  <td style="padding: 0.85rem; font-weight: 800; color: #34d399;">৳${(Number(i.amount) || 0).toLocaleString()}</td>
+                  <td style="padding: 0.85rem; color: var(--text-muted);">${i.dueDate || 'ASAP'}</td>
+                  <td style="padding: 0.85rem;"><span class="badge badge-purple">${i.status || 'Pending'}</span></td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+      } else {
+        const list = window._allExpenses || [];
+        if (list.length === 0) {
+          box.innerHTML = `<div style="color: var(--text-muted); padding: 2rem; text-align: center;">No expense claims logged.</div>`;
+          return;
+        }
+
+        box.innerHTML = `
+          <table style="width: 100%; border-collapse: collapse; text-align: left;">
+            <thead>
+              <tr style="border-bottom: 1px solid rgba(255,255,255,0.08); color: var(--text-muted); font-size: 0.78rem; text-transform: uppercase;">
+                <th style="padding: 0.75rem;">Expense Title</th>
+                <th style="padding: 0.75rem;">Category</th>
+                <th style="padding: 0.75rem;">Submitted By</th>
+                <th style="padding: 0.75rem;">Amount</th>
+                <th style="padding: 0.75rem;">Approvals</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${list.map(e => `
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.88rem; color: #fff;">
+                  <td style="padding: 0.85rem; font-weight: 700;">${e.title}</td>
+                  <td style="padding: 0.85rem; color: var(--text-muted);">${e.category || 'General'}</td>
+                  <td style="padding: 0.85rem;">👤 ${e.submittedBy || e.loggedBy || 'Staff'}</td>
+                  <td style="padding: 0.85rem; font-weight: 800; color: #f87171;">৳${(Number(e.amount) || 0).toLocaleString()}</td>
+                  <td style="padding: 0.85rem;">
+                    <span class="badge" style="background: ${e.tier1?.approved ? 'rgba(52,211,153,0.15)' : 'rgba(245,158,11,0.15)'}; color: ${e.tier1?.approved ? '#34d399' : '#fbbf24'};">
+                      Tier 1: ${e.tier1?.approved ? '✅ Approved' : '⏳ Pending'}
+                    </span>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+      }
+    }
+
+    function openExpenseModal() {
+      document.getElementById('expModal').style.display = 'flex';
+    }
+
+    function closeExpenseModal() {
+      document.getElementById('expModal').style.display = 'none';
+    }
+
+    async function submitExpenseClaim() {
+      const title = document.getElementById('expTitle').value.trim();
+      const category = document.getElementById('expCategory').value;
+      const amount = parseFloat(document.getElementById('expAmount').value);
+
+      if (!title || !amount) return alert('Please fill title and amount.');
+
+      try {
+        const res = await fetch('/api/expenses', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title, category, amount })
+        });
+        const data = await res.json();
+        if (data.success) {
+          closeExpenseModal();
+          loadFinanceData();
+        } else {
+          alert(data.error || 'Failed to submit expense claim');
+        }
+      } catch(e) {
+        console.error('Expense submit err:', e);
+      }
+    }
+  </script>
+</body>
+</html>

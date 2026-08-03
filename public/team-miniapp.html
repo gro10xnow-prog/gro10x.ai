@@ -1457,14 +1457,15 @@
     try {
       const res = await fetch(`/api/team/me?telegramId=${telegramId}`);
       if (!res.ok) { showLock(); return; }
-      const emp = await res.json();
+      const data = await res.json();
+      const emp = data.profile || data; // fallback in case API changes back
       if (!emp || !emp.id) { showLock(); return; }
       currentUser = emp;
-      renderDashboard(emp);
+      renderDashboard(emp, data.myTasks || [], data.attendanceToday || null);
     } catch (e) {
       // Fallback: show dashboard with basic info for debug
       currentUser = { name: tgUser?.first_name || 'Team Member', role: 'Specialist', department: 'Production', accessLevel: 'Specialist / Crew', xp: 0, badge: '🌱 Recruit', status: 'Offline', onboardingComplete: false, bankInfo: {} };
-      renderDashboard(currentUser);
+      renderDashboard(currentUser, [], null);
     }
   }
 
@@ -1475,7 +1476,7 @@
   // ══════════════════════════════════════════
   // RENDER DASHBOARD
   // ══════════════════════════════════════════
-  function renderDashboard(emp) {
+  function renderDashboard(emp, myTasks = [], attendanceToday = null) {
     document.getElementById('mainDashboard').style.display = 'block';
 
     // Hero
@@ -1660,13 +1661,41 @@
       dot.className = 'ob-dot' + (i < part ? ' done' : i === part ? ' active' : '');
     }
 
-    // Fill agreement fields
-    if (part === 5 && currentUser) {
-      document.getElementById('agrEmpName').textContent = currentUser.name || '—';
-      document.getElementById('agrEmpCode').textContent = currentUser.id || '—';
-      document.getElementById('agrRole').textContent = currentUser.role || '—';
-      document.getElementById('agrJoiningDate').textContent = currentUser.joiningDate || new Date().toLocaleDateString('en-CA');
-      document.getElementById('agrSalary').textContent = (currentUser.baseSalary || 0).toLocaleString();
+    // ── Pre-fill saved data from Supabase (via currentUser) ──
+    if (currentUser) {
+      const setVal = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
+      const setTxt = (id, val) => { const el = document.getElementById(id); if (el && val) el.textContent = val; };
+
+      if (part === 1) {
+        setVal('inpEmergency', currentUser.emergencyContact);
+        setVal('inpAddress', currentUser.address);
+        setVal('inpPersonalEmail', currentUser.personalEmail);
+        setVal('inpBlood', currentUser.bloodGroup);
+        // Relation is not stored separately — leave blank
+      }
+      if (part === 2) {
+        setVal('inpNID', currentUser.nidNo);
+        setVal('inpPermAddress', currentUser.permanentAddress);
+      }
+      if (part === 3 && currentUser.bankInfo) {
+        const b = currentUser.bankInfo;
+        setVal('inpBankName', b.bankName);
+        setVal('inpAccountTitle', b.accountTitle);
+        setVal('inpAccountNo', b.accNo);
+        setVal('inpBranch', b.branch);
+        setVal('inpBkash', b.mfsNo);
+      }
+      if (part === 4) {
+        setVal('inpPrimarySkill', currentUser.primarySkill);
+      }
+      // Fill agreement fields
+      if (part === 5) {
+        setTxt('agrEmpName', currentUser.name || '—');
+        setTxt('agrEmpCode', currentUser.id || '—');
+        setTxt('agrRole', currentUser.role || '—');
+        setTxt('agrJoiningDate', currentUser.joiningDate || new Date().toLocaleDateString('en-CA'));
+        setTxt('agrSalary', (currentUser.baseSalary || 0).toLocaleString());
+      }
     }
 
     document.getElementById('surveyModal').scrollTop = 0;
@@ -1933,9 +1962,46 @@
   // ══════════════════════════════════════════
   const stageClass = { 'Brief': 'stage-brief', 'Production': 'stage-shoot', 'Shoot': 'stage-shoot', 'Editing': 'stage-edit', 'Post Production': 'stage-edit', 'Client Review': 'stage-review', 'Review': 'stage-review', 'Delivered': 'stage-review' };
 
+  async function toggleMiniappSubtask(subtaskId, completed) {
+    try {
+      await fetch(`/api/tasks/subtasks/${subtaskId}/toggle`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ completed, user: currentUser?.name || 'Crew Member' })
+      });
+      if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+    } catch (e) {
+      console.error('Error toggling subtask in miniapp:', e);
+    }
+  }
+
+  async function advanceMiniappStage(taskId, newStage) {
+    if (!newStage) return;
+    if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+    try {
+      const res = await fetch(`/api/tasks/${taskId}/stage`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ stage: newStage })
+      });
+      if (res.ok) {
+        tg.showAlert(`Task moved to ${newStage}!`);
+        loadUserTasks();
+      }
+    } catch (e) {
+      console.error('Error advancing task stage:', e);
+    }
+  }
+
+  function logMiniappTime(taskId) {
+    if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+    // For now, this is a placeholder UI action to show time log modal or just increment.
+    tg.showAlert('Time logging module opening... (Phase 2 feature)');
+  }
+
   async function loadUserTasks() {
     const list = document.getElementById('userTaskList');
-    list.innerHTML = '<div class="empty-state"><div class="empty-icon">⏳</div>Loading...</div>';
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon">⏳</div>Loading tasks...</div>';
     try {
       const tgUser = tg?.initDataUnsafe?.user;
       const telegramId = tgUser?.id || currentUser?.telegramId || 'debug';
@@ -1945,16 +2011,55 @@
         list.innerHTML = '<div class="empty-state"><div class="empty-icon">✅</div>No active tasks right now</div>';
         return;
       }
-      list.innerHTML = tasks.map(t => `
-        <div class="task-item">
-          <div class="task-title">${t.title}</div>
-          <div class="task-meta">
-            <span>${t.client}</span>
-            <span class="stage-badge ${stageClass[t.stage] || 'stage-brief'}">${t.stage}</span>
+
+      // Fetch subtasks for rendering
+      let allSubtasks = [];
+      try {
+        const dbRes = await fetch('/api/db');
+        const dbData = await dbRes.json();
+        allSubtasks = dbData.subtasks || [];
+      } catch (e) {}
+
+      list.innerHTML = tasks.map(t => {
+        const subtasks = allSubtasks.filter(st => st.task_id === t.id || st.taskId === t.id);
+        const subHtml = subtasks.map(st => `
+          <div style="display:flex; align-items:center; gap:0.4rem; margin-top:0.3rem; font-size:0.75rem; color:${st.completed ? 'var(--muted)' : 'var(--text)'}; text-decoration:${st.completed ? 'line-through' : 'none'};">
+            <input type="checkbox" ${st.completed ? 'checked' : ''} onchange="toggleMiniappSubtask('${st.id}', this.checked)" style="accent-color:var(--purple); cursor:pointer; transform:scale(1.1);">
+            <span>${st.title}</span>
           </div>
-          <div style="font-size:0.68rem;color:var(--muted);margin-top:0.3rem;">Due: ${t.dueDate || 'ASAP'} · Assignee: ${t.assignee}</div>
-        </div>
-      `).join('');
+        `).join('');
+
+        return `
+          <div class="task-item">
+            <div class="task-title">${t.title}</div>
+            <div class="task-meta">
+              <span>🏢 ${t.client}</span>
+              <span class="stage-badge ${stageClass[t.stage] || 'stage-brief'}">${t.stage}</span>
+            </div>
+            ${subtasks.length > 0 ? `
+              <div style="margin-top:0.5rem; padding:0.4rem; background:rgba(0,0,0,0.03); border-radius:6px;">
+                <div style="font-size:0.68rem; font-weight:700; color:var(--purple); margin-bottom:0.2rem;">☑️ Subtasks Checklist:</div>
+                ${subHtml}
+              </div>
+            ` : ''}
+            <div style="font-size:0.68rem;color:var(--muted);margin-top:0.4rem;margin-bottom:0.6rem;">Due: ${t.dueDate || 'ASAP'} · Assignee: ${t.assignee}</div>
+            
+            <!-- Phase 2: Interactive Parent Actions -->
+            <div style="display:flex; gap:0.4rem; margin-top:0.4rem;">
+              <select class="role-select" style="font-size:0.7rem; padding:0.3rem 0.5rem; flex:1; background:var(--surface);" onchange="advanceMiniappStage('${t.id}', this.value)">
+                <option value="" disabled selected>Advance Stage...</option>
+                <option value="Strategy">Strategy</option>
+                <option value="Scripting">Scripting</option>
+                <option value="Shooting">Shooting</option>
+                <option value="Editing">Editing</option>
+                <option value="Client Review">Client Review</option>
+                <option value="Approved">Approved (Done)</option>
+              </select>
+              <button class="btn" style="padding:0.3rem 0.6rem; font-size:0.7rem; background:rgba(168, 85, 247, 0.1); color:var(--purple); border:1px solid rgba(168,85,247,0.2);" onclick="logMiniappTime('${t.id}')">⏱️ Log Time</button>
+            </div>
+          </div>
+        `;
+      }).join('');
     } catch (e) {
       list.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div>Couldn\'t load tasks</div>';
     }

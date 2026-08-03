@@ -123,22 +123,72 @@ router.put('/invoices/:id', requireAuth, async (req, res) => {
   }
 });
 
-// POST /invoices/:id/pay (Partner Portal Online Payment Verification)
+// POST /invoices/:id/pay (Partner Portal Online Payment Submission)
 router.post('/invoices/:id/pay', requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
+    const { trxId, method, amount } = req.body;
+
+    const { data: invData } = await supabase.from('invoices').select('*').eq('id', id).maybeSingle();
+    const invoiceAmount = amount || (invData ? invData.amount : 0);
+
+    const paymentId = `PAY-${Date.now().toString().slice(-6)}`;
+    const paymentPayload = {
+      id: paymentId,
+      invoice_id: id,
+      client_id: invData?.client_id || req.user.linkedId || null,
+      client_name: invData?.client_name || req.user.name || 'Client',
+      amount: Number(invoiceAmount) || 0,
+      currency: 'BDT',
+      payment_method: method || 'bKash',
+      trx_id: trxId || 'N/A',
+      verified: false,
+      notes: `Submitted via Partner Portal`
+    };
+
+    await supabase.from('payment_logs').insert([paymentPayload]);
+
     const updates = {
-      status: 'Paid',
-      paid_date: new Date().toISOString().split('T')[0],
-      notes: `Paid via ${req.body.method || 'Online Gateway'} (TrxID: ${req.body.trxId || 'N/A'})`
+      status: 'Verification Pending',
+      notes: `Paid via ${method || 'bKash'} (TrxID: ${trxId || 'N/A'}) — Verification Pending`
     };
 
     const { data, error } = await supabase.from('invoices').update(updates).eq('id', id).select();
     if (error) throw error;
 
-    const invoice = (data && data.length) ? mapInvoice(data[0]) : { id, status: 'Paid', notes: updates.notes };
+    const invoice = (data && data.length) ? mapInvoice(data[0]) : { id, status: 'Verification Pending', notes: updates.notes };
     const { data: allInvoices } = await supabase.from('invoices').select('*').order('created_at', { ascending: false });
     broadcast('invoice_update', (allInvoices || []).map(mapInvoice));
+
+    // Send Telegram alert to Finance Manager / Owner
+    try {
+      const { sendTelegramNotification } = require('../services/bot');
+      let targetTgId = process.env.OWNER_TELEGRAM_ID;
+      const { data: borhan } = await supabase.from('profiles').select('telegram_id').eq('emp_code', 'PBD-029').maybeSingle();
+      if (borhan?.telegram_id) targetTgId = borhan.telegram_id;
+
+      if (targetTgId) {
+        const msg =
+          `💳 *New Payment Proof Received — Verification Required*\n\n` +
+          `• Invoice: *${id}*\n` +
+          `• Client: *${paymentPayload.client_name}*\n` +
+          `• Amount: *BDT ${Number(paymentPayload.amount).toLocaleString()}*\n` +
+          `• Method: *${paymentPayload.payment_method}*\n` +
+          `• TrxID: \`${paymentPayload.trx_id}\`\n\n` +
+          `Please verify in bKash merchant account statement.`;
+
+        const keyboard = [
+          [
+            { text: '✅ Approve & Mark Paid', callback_data: `pay_approve:${paymentId}` },
+            { text: '❌ Reject Payment', callback_data: `pay_reject:${paymentId}` }
+          ]
+        ];
+
+        await sendTelegramNotification(targetTgId, msg, keyboard, true);
+      }
+    } catch (e) {
+      console.warn('Payment verification Telegram alert warning:', e.message);
+    }
 
     res.json({ success: true, invoice });
   } catch (err) {

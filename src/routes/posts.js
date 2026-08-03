@@ -93,7 +93,7 @@ router.post('/', requireAuth, async (req, res) => {
       media_urls: req.body.mediaUrls || (req.body.mediaUrl ? [req.body.mediaUrl] : []),
       scheduled_date: req.body.scheduledDate || new Date().toISOString().split('T')[0],
       scheduled_time: req.body.scheduledTime || '18:00',
-      assigned_publisher: req.body.assignedPublisher || 'Sabrin Akhtar',
+      assigned_publisher: req.body.assignedPublisher || req.user?.name || 'Unassigned',
       status: req.body.status || 'Pending Client Approval'
     };
 
@@ -138,8 +138,8 @@ router.put('/:id', requireAuth, async (req, res) => {
   }
 });
 
-// POST Approve Post (Client 1-Click Approval)
-router.post('/:id/approve', requireAuth, async (req, res) => {
+// POST/PATCH Approve Post (Client 1-Click Approval)
+const handleApprovePost = async (req, res) => {
   try {
     const { id } = req.params;
     const updates = {
@@ -157,15 +157,33 @@ router.post('/:id/approve', requireAuth, async (req, res) => {
     const { data: allPosts } = await supabase.from('social_posts').select('*').order('created_at', { ascending: false });
     broadcast('post_update', (allPosts || []).map(mapPost));
 
+    // Dispatch Telegram alert to publisher
+    try {
+      const { sendTelegramNotification } = require('../services/bot/notifications');
+      sendTelegramNotification('7754769807',
+        `🎉 *SOCIAL POST APPROVED BY CLIENT!*\n\n` +
+        `• Post: *${post.title}*\n` +
+        `• Client: *${post.clientName}*\n` +
+        `• Platform: *${post.platform}*\n` +
+        `• Scheduled: *${post.scheduledDate} @ ${post.scheduledTime}*\n\n` +
+        `Post has been cleared for automated publishing! 🚀`,
+        null,
+        true
+      );
+    } catch(e) {}
+
     res.json({ success: true, post });
   } catch (err) {
     console.error('Social Post Approve error:', err.message);
     res.status(500).json({ error: err.message });
   }
-});
+};
 
-// POST Reject Post (Client Feedback)
-router.post('/:id/reject', requireAuth, async (req, res) => {
+router.post('/:id/approve', requireAuth, handleApprovePost);
+router.patch('/:id/approve', requireAuth, handleApprovePost);
+
+// POST/PATCH Reject Post (Client Feedback)
+const handleRejectPost = async (req, res) => {
   try {
     const { id } = req.params;
     const updates = {
@@ -181,11 +199,28 @@ router.post('/:id/reject', requireAuth, async (req, res) => {
     const { data: allPosts } = await supabase.from('social_posts').select('*').order('created_at', { ascending: false });
     broadcast('post_update', (allPosts || []).map(mapPost));
 
+    // Dispatch Telegram alert
+    try {
+      const { sendTelegramNotification } = require('../services/bot/notifications');
+      sendTelegramNotification('7754769807',
+        `✏️ *REVISION REQUESTED ON SOCIAL POST*\n\n` +
+        `• Post: *${post.title}*\n` +
+        `• Client: *${post.clientName}*\n` +
+        `• Feedback: "${req.body.feedback || 'Revision requested'}"\n\n` +
+        `Please update post copy and resubmit for review.`,
+        null,
+        true
+      );
+    } catch(e) {}
+
     res.json({ success: true, post });
   } catch (err) {
     console.error('Social Post Reject error:', err.message);
     res.status(500).json({ error: err.message });
   }
-});
+};
+
+router.post('/:id/reject', requireAuth, handleRejectPost);
+router.patch('/:id/reject', requireAuth, handleRejectPost);
 
 module.exports = router;

@@ -6,20 +6,21 @@
   <title>Purplebot Client & Partner Portal — Deliverables & Review Room</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/design-tokens.css">
   <link rel="stylesheet" href="/css/styles.css">
   <link rel="stylesheet" href="/css/landing.css">
   <style>
     .glass-panel, .glass-card {
-      background: rgba(15, 23, 42, 0.75) !important;
-      backdrop-filter: blur(16px) !important;
-      border: 1px solid rgba(255, 255, 255, 0.08) !important;
-      border-radius: 14px !important;
+      background: var(--surface-1, #ffffff) !important;
+      border: 1px solid var(--surface-border, rgba(124, 58, 237, 0.15)) !important;
+      border-radius: 16px !important;
+      box-shadow: var(--shadow-card, 0 8px 25px rgba(0, 0, 0, 0.03)) !important;
       transition: all 0.25s ease !important;
     }
     .glass-panel:hover, .glass-card:hover {
-      border-color: rgba(192, 132, 252, 0.3) !important;
-      box-shadow: 0 8px 24px rgba(168, 85, 247, 0.1) !important;
+      border-color: var(--brand-purple, #7c3aed) !important;
+      box-shadow: var(--shadow-elevated, 0 16px 40px rgba(124, 58, 237, 0.12)) !important;
     }
     @media (max-width: 900px) {
       #partnerPlayerGrid {
@@ -87,7 +88,7 @@
           <select id="partnerProjectSelect" class="form-input" style="width:auto; padding:0.4rem 0.8rem;" onchange="switchPartnerProject(this.value)">
             <!-- Loaded dynamically -->
           </select>
-          <button class="btn-purple" onclick="approvePartnerCut()">✅ Approve Cut for Production</button>
+          <button class="btn-purple" onclick="approvePartnerCut(this)">✅ Approve Cut for Production</button>
         </div>
       </div>
 

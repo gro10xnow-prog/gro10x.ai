@@ -78,7 +78,7 @@ async function requireAuth(req, res, next) {
 
   // 3. Fallback PIN user lookup (if token matched raw phone/pin for legacy session compatibility)
   if (token) {
-    const dbData = readDB();
+    const dbData = await readDB();
     const pinUser = (dbData.authPins || []).find(p => p.pin === token || p.phone === token);
     if (pinUser) {
       const emp = (dbData.team || []).find(t => t.id === pinUser.linkedId || t.phone === pinUser.phone) || dbData.team[0];
@@ -104,7 +104,7 @@ async function requireAuth(req, res, next) {
 
   // 4. Development Fallback ONLY when NODE_ENV is not production and FORCE_SUPABASE is false
   if (process.env.NODE_ENV !== 'production' && !process.env.FORCE_SUPABASE) {
-    const db = readDB();
+    const db = await readDB();
     const defaultEmp = (db.team && db.team[0]) || { name: 'Mahmudul Hasan', role: 'Agency Director' };
 
     req.user = {

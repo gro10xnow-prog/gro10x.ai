@@ -5,8 +5,8 @@ const { requireManager } = require('../middleware/rbac');
 const { readDB } = require('../services/db');
 
 // GET Manager KPIs for Department
-router.get('/kpis', requireAuth, requireManager, (req, res) => {
-  const db = readDB();
+router.get('/kpis', requireAuth, requireManager, async (req, res) => {
+  const db = await readDB();
   const dept = (req.query.dept || req.user.department || 'Operations').toLowerCase();
 
   const team = db.team || [];

@@ -11,10 +11,32 @@
       "use": "@vercel/static"
     }
   ],
+  "crons": [
+    {
+      "path": "/api/cron/morning-briefing",
+      "schedule": "15 3 * * 0,1,2,3,4,6"
+    },
+    {
+      "path": "/api/cron/eod-summary",
+      "schedule": "0 14 * * 0,1,2,3,4,6"
+    }
+  ],
   "routes": [
     {
       "src": "/auth(.*)",
       "dest": "/public/auth.html"
+    },
+    {
+      "src": "/pages/(.*)",
+      "dest": "/public/pages/$1"
+    },
+    {
+      "src": "/css/(.*)",
+      "dest": "/public/css/$1"
+    },
+    {
+      "src": "/js/(.*)",
+      "dest": "/public/js/$1"
     },
     {
       "src": "/api/(.*)",

@@ -1,4 +1,3 @@
-const { readDB, writeDB } = require('./db');
 const { supabase, isSupabaseConfigured } = require('./supabase');
 
 // ─────────────────────────────────────────────────────────────
@@ -31,8 +30,7 @@ function generate4DigitPin(phone = '') {
 }
 
 // ─────────────────────────────────────────────────────────────
-// Supabase persistence layer (primary on Vercel / production)
-// Falls back to db.json for local dev / when Supabase is not set
+// Supabase persistence layer
 // ─────────────────────────────────────────────────────────────
 
 async function findPinRecordSupabase(norm) {
@@ -93,24 +91,7 @@ async function createTempPin(phone, linkedId = null, linkedType = 'team', email 
     attempts: 0
   };
 
-  // Persist to Supabase (survives Vercel cold starts)
-  const saved = await upsertPinRecordSupabase(pinRecord);
-
-  // Always also write to local db.json as fallback
-  try {
-    const db = readDB();
-    db.authPins = db.authPins || [];
-    const existingIdx = db.authPins.findIndex(p =>
-      normalizePhone(p.phone) === norm || p.normPhone === norm
-    );
-    if (existingIdx >= 0) {
-      db.authPins[existingIdx] = { ...db.authPins[existingIdx], ...pinRecord };
-    } else {
-      db.authPins.push(pinRecord);
-    }
-    writeDB(db);
-  } catch (e) { /* local fallback best-effort */ }
-
+  await upsertPinRecordSupabase(pinRecord);
   return pinRecord;
 }
 
@@ -121,13 +102,11 @@ async function createTempPin(phone, linkedId = null, linkedType = 'team', email 
 async function verifyPin(phone, inputPin) {
   const norm = normalizePhone(phone);
 
-  // ── 1. Look up user in Supabase first (survives cold starts) ──
   let userObj = null;
   let linkedType = 'team';
 
   if (isSupabaseConfigured()) {
     try {
-      // Check Supabase profiles (team members)
       const { data: profile } = await supabase
         .from('profiles')
         .select('emp_code,name,role,phone,email,access_level,onboarding_complete,telegram_id')
@@ -147,7 +126,6 @@ async function verifyPin(phone, inputPin) {
         linkedType = 'team';
       }
 
-      // If not found in profiles, check clients table
       if (!userObj) {
         const { data: clientRec } = await supabase
           .from('clients')
@@ -160,36 +138,15 @@ async function verifyPin(phone, inputPin) {
           linkedType = 'client';
         }
       }
-    } catch (e) { /* Supabase lookup failed — fall through to db.json */ }
-  }
-
-  // ── 2. db.json fallback (local dev / Supabase unavailable) ──
-  if (!userObj) {
-    const db = readDB();
-    userObj = (db.team || []).find(t => normalizePhone(t.phone) === norm || t.id === phone);
-    linkedType = 'team';
-    if (!userObj) {
-      userObj = (db.clients || []).find(c => normalizePhone(c.phone) === norm || c.id === phone);
-      if (userObj) linkedType = 'client';
-    }
-  }
-
-  // ── 3. Find PIN record (Supabase first, then local) ──
-  let record = await findPinRecordSupabase(norm);
-
-  if (!record) {
-    try {
-      const db = readDB();
-      const localRecord = (db.authPins || []).find(p => normalizePhone(p.phone) === norm || p.normPhone === norm);
-      if (localRecord) record = localRecord;
     } catch (e) {}
   }
+
+  let record = await findPinRecordSupabase(norm);
 
   if (!record && !userObj) {
     return { success: false, error: 'Phone number not found in employee or client database.' };
   }
 
-  // If record is missing but user exists, create PIN dynamically
   if (!record && userObj) {
     record = await createTempPin(
       userObj.phone,
@@ -199,7 +156,6 @@ async function verifyPin(phone, inputPin) {
     );
   }
 
-  // ── Brute Force Lockout Guard (5 attempts → 15 min lock) ──
   const MAX_ATTEMPTS = 5;
   const LOCKOUT_MINUTES = 15;
 
@@ -216,7 +172,6 @@ async function verifyPin(phone, inputPin) {
         error: `Account temporarily locked due to multiple failed attempts. Please try again in ${remainingMin} minute(s).`
       };
     } else {
-      // Auto-unlock after 15 minutes
       record.attempts = 0;
       record.lockedAt = null;
       record.locked_at = null;
@@ -230,8 +185,6 @@ async function verifyPin(phone, inputPin) {
     ? String(userObj.permanentPin || userObj.pin || '').trim()
     : '';
 
-  // Emergency master override — ONLY active when explicitly set via server env var
-  // Must be 6+ digits. Leave MASTER_OVERRIDE_PIN unset to disable entirely.
   const masterOverride = process.env.MASTER_OVERRIDE_PIN;
   const isMasterPin =
     masterOverride && masterOverride.length >= 6 && cleanInput === masterOverride;
@@ -243,7 +196,6 @@ async function verifyPin(phone, inputPin) {
     isMasterPin;
 
   if (!isValid) {
-    // Increment failed attempts
     const newAttempts = (record?.attempts || 0) + 1;
     let lockedAt = record?.lockedAt || record?.locked_at;
     if (newAttempts >= MAX_ATTEMPTS && !lockedAt) {
@@ -255,22 +207,10 @@ async function verifyPin(phone, inputPin) {
       record.lockedAt = lockedAt;
       record.locked_at = lockedAt;
       await upsertPinRecordSupabase(record);
-      try {
-        const db2 = readDB();
-        const localIdx = (db2.authPins || []).findIndex(p =>
-          normalizePhone(p.phone) === norm || p.normPhone === norm
-        );
-        if (localIdx >= 0) {
-          db2.authPins[localIdx].attempts = newAttempts;
-          db2.authPins[localIdx].lockedAt = lockedAt;
-          writeDB(db2);
-        }
-      } catch (e) {}
     }
     return { success: false, error: 'Invalid 4-Digit PIN. Check Telegram DM for your PIN.' };
   }
 
-  // Reset failed attempts on success
   if (record) {
     record.attempts = 0;
     record.lockedAt = null;
@@ -294,19 +234,12 @@ async function verifyPin(phone, inputPin) {
 
 async function setPermanentPin(phone, newPin, email = '') {
   const norm = normalizePhone(phone);
-  const db = readDB();
 
-  // Find existing record (Supabase first, then local)
   let record = await findPinRecordSupabase(norm);
-  if (!record) {
-    record = (db.authPins || []).find(p =>
-      normalizePhone(p.phone) === norm || p.normPhone === norm
-    );
-  }
 
   if (!record) {
-    // Try to auto-create from team roster
-    const userObj = (db.team || []).find(t => normalizePhone(t.phone) === norm);
+    const state = require('./state');
+    const userObj = await state.getEmployeeByPhone(phone);
     if (userObj) {
       record = await createTempPin(
         userObj.phone,
@@ -330,47 +263,13 @@ async function setPermanentPin(phone, newPin, email = '') {
     attempts: 0
   };
 
-  // Persist to Supabase
   await upsertPinRecordSupabase(updatedRecord);
 
-  // Update local db.json
-  try {
-    const db2 = readDB();
-    const localIdx = (db2.authPins || []).findIndex(p =>
-      normalizePhone(p.phone) === norm || p.normPhone === norm
-    );
-    if (localIdx >= 0) {
-      db2.authPins[localIdx] = { ...db2.authPins[localIdx], ...updatedRecord };
-    } else {
-      db2.authPins = db2.authPins || [];
-      db2.authPins.push(updatedRecord);
-    }
-
-    // Also update email + permanentPinSet in team/client records
-    const linkedType = updatedRecord.linkedType;
-    if (linkedType === 'team') {
-      const member = (db2.team || []).find(t =>
-        t.id === updatedRecord.linkedId ||
-        t.emp_code === updatedRecord.linkedId ||
-        normalizePhone(t.phone) === norm
-      );
-      if (member) {
-        if (email) member.email = email.trim();
-        member.permanentPinSet = true;
-      }
-    } else {
-      const client = (db2.clients || []).find(c =>
-        c.id === updatedRecord.linkedId ||
-        normalizePhone(c.phone) === norm
-      );
-      if (client) {
-        if (email) client.email = email.trim();
-        client.permanentPinSet = true;
-      }
-    }
-
-    writeDB(db2);
-  } catch (e) {}
+  if (email && isSupabaseConfigured()) {
+    try {
+      await supabase.from('profiles').update({ email: email.trim() }).eq('phone', phone);
+    } catch (e) {}
+  }
 
   return { success: true, message: 'Permanent PIN updated successfully!' };
 }

@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
+    "test": "jest --runInBand --detectOpenHandles --forceExit",
     "db:seed": "node scripts/seed-supabase.js",
     "db:prod-reset": "node scripts/prepare-production-db.js"
   },
@@ -24,6 +25,12 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
+    "express-rate-limit": "^8.6.1",
     "node-telegram-bot-api": "^0.66.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.62.1",
+    "jest": "^30.4.2",
+    "supertest": "^7.2.2"
   }
 }

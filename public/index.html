@@ -9,15 +9,17 @@
   <meta property="og:type" content="website">
   <meta property="og:title" content="Purplebot Digital — Award-Winning Digital Marketing & Tech Agency">
   <meta property="og:description" content="Driving high-impact commercial brand growth through video production, social media, branding, and custom tech.">
-  <meta property="og:image" content="https://purpleos-iota.vercel.app/og-cover.jpg">
-  <meta property="og:url" content="https://purplebot.digital">
+  <meta property="og:image" content="https://purpleos-iota.vercel.app/images/mascot.png">
+  <meta property="og:url" content="https://purpleos-iota.vercel.app">
+  <link rel="canonical" href="https://purpleos-iota.vercel.app">
   <meta property="og:site_name" content="Purplebot Digital">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Purplebot Digital — Digital Marketing Agency">
   <meta name="twitter:description" content="Award-winning digital marketing, video production, and commercial brand growth agency.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/design-tokens.css">
   <link rel="stylesheet" href="/css/styles.css">
   <link rel="stylesheet" href="/css/landing.css">
 </head>
@@ -35,24 +37,15 @@
       </a>
 
       <nav class="pb-nav-links" id="desktopNavLinks">
-        <a href="#about" class="pb-nav-link">About</a>
-        <div class="pb-nav-dropdown">
-          <a href="#services" class="pb-nav-link pb-dropdown-trigger">Services <span class="chevron">▾</span></a>
-          <div class="pb-dropdown-menu">
-            <a href="#services" onclick="selectServiceCategory('Digital Marketing')">Digital Marketing</a>
-            <a href="#services" onclick="selectServiceCategory('Video Editing & Animation')">Video Production & Reels</a>
-            <a href="#services" onclick="selectServiceCategory('Branding & Graphics')">Branding & Identity</a>
-            <a href="#services" onclick="selectServiceCategory('Website & Tech')">Web Development & Apps</a>
-          </div>
-        </div>
+        <a href="#services" class="pb-nav-link">Services</a>
         <a href="#portfolio" class="pb-nav-link">Our Work</a>
-        <a href="#testimonials" class="pb-nav-link">Testimonials</a>
-        <a href="#pricing" class="pb-nav-link">Plans & Pricing</a>
+        <a href="#how" class="pb-nav-link">How We Work</a>
+        <a href="#pricing" class="pb-nav-link">Pricing</a>
       </nav>
 
       <div class="pb-nav-actions">
-        <button onclick="openPurpleBot('General Inquiry')" class="pb-btn-quote">
-          💬 Talk to Purple Bot
+        <button onclick="openPurpleBot('Get Started')" class="pb-btn-primary" style="padding:0.6rem 1.25rem; font-size:0.9rem;">
+          💜 Get Started
         </button>
         <button class="pb-hamburger" id="mobileMenuBtn" aria-label="Toggle navigation menu">
           <span></span>
@@ -65,11 +58,10 @@
     <!-- MOBILE NAVIGATION MENU DRAWER -->
     <div class="pb-mobile-menu" id="mobileMenu">
       <div class="pb-mobile-menu-inner">
-        <a href="#about" class="pb-mobile-link" onclick="closeMobileMenu()">About Agency</a>
         <a href="#services" class="pb-mobile-link" onclick="closeMobileMenu()">Services</a>
         <a href="#portfolio" class="pb-mobile-link" onclick="closeMobileMenu()">Our Work</a>
-        <a href="#testimonials" class="pb-mobile-link" onclick="closeMobileMenu()">Testimonials</a>
-        <a href="#pricing" class="pb-mobile-link" onclick="closeMobileMenu()">Plans & Pricing</a>
+        <a href="#how" class="pb-mobile-link" onclick="closeMobileMenu()">How We Work</a>
+        <a href="#pricing" class="pb-mobile-link" onclick="closeMobileMenu()">Pricing</a>
         <a href="#contact" class="pb-mobile-link" onclick="closeMobileMenu()">Contact Us</a>
         <div class="pb-mobile-actions">
           <button onclick="openPurpleBot('Get Started'); closeMobileMenu();" class="pb-btn-primary" style="width:100%;">
@@ -102,8 +94,8 @@
           </p>
 
           <div class="pb-hero-cta-group">
-            <button onclick="openPurpleBot('Get Started')" class="pb-btn-primary">
-              🚀 Get Started
+            <button onclick="openPurpleBot('Start Your Campaign')" class="pb-btn-primary">
+              🚀 Start Your Campaign
             </button>
             <a href="#portfolio" class="pb-btn-secondary">
               Explore Our Work ↓
@@ -112,20 +104,28 @@
         </div>
 
         <div class="pb-hero-visual">
-          <div class="pb-mascot-wrapper">
-            <img src="/images/mascot.png" alt="Purple Bot AI Mascot" class="pb-hero-mascot-img">
-            <div class="pb-mascot-card pb-mascot-card-1">
-              <span class="card-icon">⚡</span>
-              <div>
-                <strong>8+ Years</strong>
-                <span>Industry Leadership</span>
-              </div>
+          <div class="pb-hero-mockup-frame">
+            <div class="pb-browser-bar">
+              <span class="dot red"></span>
+              <span class="dot yellow"></span>
+              <span class="dot green"></span>
+              <span class="url-bar">⚡ purpleos.digital/live-campaigns</span>
             </div>
-            <div class="pb-mascot-card pb-mascot-card-2">
-              <span class="card-icon">🎯</span>
-              <div>
-                <strong>100+ Clients</strong>
-                <span>Global Brands & Multinationals</span>
+            <div class="pb-mascot-wrapper">
+              <img src="/images/mascot.png" alt="Purple Bot AI Mascot" class="pb-hero-mascot-img">
+              <div class="pb-mascot-card pb-mascot-card-1">
+                <span class="card-icon">⚡</span>
+                <div>
+                  <strong>8+ Years</strong>
+                  <span>Industry Leadership</span>
+                </div>
+              </div>
+              <div class="pb-mascot-card pb-mascot-card-2">
+                <span class="card-icon">🎯</span>
+                <div>
+                  <strong>100+ Clients</strong>
+                  <span>Global Brands & Multinationals</span>
+                </div>
               </div>
             </div>
           </div>
@@ -252,6 +252,172 @@
     </div>
   </section>
 
+  <!-- HOW WE WORK — PURPLEOS TECH WORKFLOW SECTION -->
+  <section class="pb-how-section" id="how">
+    <div class="pb-section-container">
+      <div class="pb-section-header">
+        <span class="pb-section-badge">🔮 POWERED BY PURPLEOS</span>
+        <h2 class="pb-section-title">How Your Campaign Comes to Life</h2>
+        <p class="pb-section-desc">Experience a connected, AI-driven workflow that turns campaign briefs into viral, high-converting assets in record time.</p>
+      </div>
+
+      <!-- WORKFLOW STEP TABS -->
+      <div class="pb-work-tabs" id="workTabs">
+        <button class="pb-work-tab active" onclick="switchWorkStep(1)">
+          <span class="step-num">01</span>
+          <span class="step-label">Brief</span>
+        </button>
+        <button class="pb-work-tab" onclick="switchWorkStep(2)">
+          <span class="step-num">02</span>
+          <span class="step-label">Strategy</span>
+        </button>
+        <button class="pb-work-tab" onclick="switchWorkStep(3)">
+          <span class="step-num">03</span>
+          <span class="step-label">Shoot Dispatch</span>
+        </button>
+        <button class="pb-work-tab" onclick="switchWorkStep(4)">
+          <span class="step-num">04</span>
+          <span class="step-label">Review Room</span>
+        </button>
+        <button class="pb-work-tab" onclick="switchWorkStep(5)">
+          <span class="step-num">05</span>
+          <span class="step-label">48h Delivery</span>
+        </button>
+      </div>
+
+      <!-- WORKFLOW STEP CARDS -->
+      <div class="pb-work-cards-container">
+        <!-- Step 1 -->
+        <div class="pb-work-card active" id="workCard1">
+          <div class="pb-work-card-content">
+            <span class="pb-work-step-badge">STEP 01 • INGESTION</span>
+            <h3>4-Hour Quote & Brief Ingestion</h3>
+            <p>Submit your campaign goals, target budget, or shoot timeline via our web portal or chat assistant. PurpleOS parses your requirements and generates a custom commercial proposal within 4 hours.</p>
+            <ul class="pb-work-list">
+              <li>✓ Instant automated brief intake & category matching</li>
+              <li>✓ Dedicated Account Director assignment</li>
+              <li>✓ Transparent commercial quotation & SLA timeline</li>
+            </ul>
+            <button onclick="openPurpleBot('Campaign Brief')" class="pb-btn-primary" style="margin-top:1.25rem;">
+              🚀 Submit Brief & Get Quote →
+            </button>
+          </div>
+          <div class="pb-work-card-visual">
+            <div class="pb-work-visual-box">
+              <span class="visual-icon">📋</span>
+              <div class="visual-meta">
+                <strong>Campaign Briefing Engine</strong>
+                <span>Instant SLA Processing</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="pb-work-card" id="workCard2">
+          <div class="pb-work-card-content">
+            <span class="pb-work-step-badge">STEP 02 • PLANNING</span>
+            <h3>AI-Powered Content Strategy & Shot List</h3>
+            <p>Our creative strategists and content AI engine craft a data-backed content calendar, script concepts, viral reel hooks, and camera shot lists tailored to your audience demographic.</p>
+            <ul class="pb-work-list">
+              <li>✓ Trend-driven script writing & audience hook analysis</li>
+              <li>✓ Complete moodboard & talent casting selection</li>
+              <li>✓ Integrated Meta & TikTok ad campaign structure</li>
+            </ul>
+            <button onclick="openPurpleBot('Content Strategy')" class="pb-btn-primary" style="margin-top:1.25rem;">
+              🧠 Explore Strategy Process →
+            </button>
+          </div>
+          <div class="pb-work-card-visual">
+            <div class="pb-work-visual-box">
+              <span class="visual-icon">🧠</span>
+              <div class="visual-meta">
+                <strong>AI Content Engine</strong>
+                <span>Scripting & Moodboards</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="pb-work-card" id="workCard3">
+          <div class="pb-work-card-content">
+            <span class="pb-work-step-badge">STEP 03 • PRODUCTION <span class="pb-tech-pill">⚡ PurpleOS</span></span>
+            <h3>Studio Shoot & Telegram Crew Dispatch</h3>
+            <p>Directors, cinema crews (Sony FX3/4K gear), and talent are dispatched with real-time shoot schedule tracking. Studio ops and daily logs are managed directly via Telegram Bot integration.</p>
+            <ul class="pb-work-list">
+              <li>✓ Real-time crew dispatch & equipment logistics</li>
+              <li>✓ 4K cinema master footage capture</li>
+              <li>✓ Instant daily shoot log reporting via Telegram</li>
+            </ul>
+          </div>
+          <div class="pb-work-card-visual">
+            <div class="pb-work-visual-box">
+              <span class="visual-icon">🎬</span>
+              <div class="visual-meta">
+                <strong>Telegram Crew Bot</strong>
+                <span>Live Studio Dispatch</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="pb-work-card" id="workCard4">
+          <div class="pb-work-card-content">
+            <span class="pb-work-step-badge">STEP 04 • REVIEW <span class="pb-tech-pill">⚡ PurpleOS</span></span>
+            <h3>Real-Time Video Review Room</h3>
+            <p>Stream master video cuts directly in your browser or phone. Draw visual notes on specific frames, leave timecoded feedback, and approve final cuts with zero back-and-forth friction.</p>
+            <ul class="pb-work-list">
+              <li>✓ Frame-precise video playback & canvas annotations</li>
+              <li>✓ Version-controlled video cut revisions (V1, V2, Final)</li>
+              <li>✓ One-click cut approval & instant invoice release</li>
+            </ul>
+            <a href="/auth" class="pb-btn-secondary" style="margin-top:1.25rem; display:inline-flex;">
+              🔐 Client Portal & Review Room Access →
+            </a>
+          </div>
+          <div class="pb-work-card-visual">
+            <div class="pb-work-visual-box">
+              <span class="visual-icon">🎥</span>
+              <div class="visual-meta">
+                <strong>Frame.io Style Review Engine</strong>
+                <span>Timecoded Client Approval</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 5 -->
+        <div class="pb-work-card" id="workCard5">
+          <div class="pb-work-card-content">
+            <span class="pb-work-step-badge">STEP 05 • DEPLOYMENT <span class="pb-tech-pill">⚡ PurpleOS</span></span>
+            <h3>48h Turnaround & Performance Tracking</h3>
+            <p>Approved visual assets go live across Meta, Instagram Reels, TikTok, and YouTube. Real-time performance dashboards track organic reach, engagement rates, and ROI metrics.</p>
+            <ul class="pb-work-list">
+              <li>✓ Guaranteed 48-hour master cut turnaround SLA</li>
+              <li>✓ Multi-platform social media dispatch</li>
+              <li>✓ Live campaign reach & conversion analytics</li>
+            </ul>
+            <button onclick="openPurpleBot('Start Your Campaign')" class="pb-btn-primary" style="margin-top:1.25rem;">
+              🚀 Launch Your Campaign Now →
+            </button>
+          </div>
+          <div class="pb-work-card-visual">
+            <div class="pb-work-visual-box">
+              <span class="visual-icon">🚀</span>
+              <div class="visual-meta">
+                <strong>Performance Engine</strong>
+                <span>48h Delivery SLA</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
   <!-- PORTFOLIO SHOWCASE SECTION -->
   <section class="pb-portfolio-section" id="portfolio">
     <div class="pb-section-container">
@@ -285,7 +451,7 @@
         </div>
 
         <div class="pb-portfolio-card">
-          <div class="pb-portfolio-thumb" style="background-image: url('https://images.unsplash.com/photo-1556742049-0a67d57a3e6f?auto=format&fit=crop&w=800&q=80');">
+          <div class="pb-portfolio-thumb" style="background-image: url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80');">
             <span class="pb-category-tag">Corporate Financial</span>
           </div>
           <div class="pb-portfolio-info">
@@ -526,17 +692,7 @@
     ↑
   </button>
 
-  <script src="/js/landing.js"></script>
-  <script src="/js/chat-widget.js"></script>
-</body>
-</html>
-icing</a>
-        <a href="javascript:void(0)" onclick="openPurpleBot('FAQ')">FAQ & Support</a>
-      </div>
-    </div>
-  </footer>
-
-  <script src="/js/landing.js"></script>
-  <script src="/js/chat-widget.js"></script>
+  <script src="/js/landing.js" defer></script>
+  <script src="/js/chat-widget.js" defer></script>
 </body>
 </html>

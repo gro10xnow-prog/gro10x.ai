@@ -62,6 +62,7 @@ async function handlePinLogin(event) {
     }
 
     if (data.isTemp) {
+      tempAuthToken = data.token;
       if (email && !data.email) {
         document.getElementById('perm-email').value = email;
       } else if (data.email) {
@@ -72,7 +73,7 @@ async function handlePinLogin(event) {
       return;
     }
 
-    saveSessionAndRedirect(data.user, data.linkedType, email || data.email);
+    saveSessionAndRedirect(data.user, data.linkedType, email || data.email, data.token);
 
   } catch (err) {
     showAlert(`Authentication error: ${err.message}`, 'error');
@@ -94,13 +95,17 @@ async function submitPermanentPinSetup(event) {
   try {
     const res = await fetch('/api/auth/pin/set', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${tempAuthToken}` 
+      },
       body: JSON.stringify({ phone: currentPhone, newPin, email })
     });
     const data = await res.json();
     if (data.success) {
       document.getElementById('setup-pin-modal').style.display = 'none';
-      saveSessionAndRedirect({ phone: currentPhone }, 'team', email);
+      // Use the temp token that was already verified to get through auth
+      saveSessionAndRedirect({ phone: currentPhone }, 'team', email, tempAuthToken);
     } else {
       showAlert('Error setting permanent PIN: ' + (data.error || 'Please try again.'), 'danger');
     }
@@ -109,7 +114,7 @@ async function submitPermanentPinSetup(event) {
   }
 }
 
-function saveSessionAndRedirect(user, linkedType, email) {
+function saveSessionAndRedirect(user, linkedType, email, realToken) {
   const cleanPhone = (user?.phone || currentPhone || '').replace(/[^0-9+]/g, '');
   localStorage.setItem('purple_user_phone', cleanPhone);
   if (email) localStorage.setItem('purple_user_email', email);
@@ -118,9 +123,12 @@ function saveSessionAndRedirect(user, linkedType, email) {
   if (user?.accessLevel) localStorage.setItem('purple_user_access', user.accessLevel);
   if (user?.id) localStorage.setItem('purple_user_id', user.id);
 
-  const token = `pin-token-${Date.now()}`;
-  localStorage.setItem('sb-access-token', token);
-  document.cookie = `sb-access-token=${token}; Path=/; SameSite=Lax; max-age=604800`;
+  // Use the real signed JWT from the server — NOT a fake timestamp token
+  const token = realToken || user?.token || '';
+  if (token) {
+    localStorage.setItem('sb-access-token', token);
+    document.cookie = `sb-access-token=${token}; Path=/; SameSite=Lax; max-age=604800`;
+  }
 
   showAlert('✅ Authentication successful! Launching workspace...', 'success');
 

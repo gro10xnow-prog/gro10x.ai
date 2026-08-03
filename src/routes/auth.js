@@ -4,12 +4,21 @@ const { requireAuth } = require('../middleware/auth');
 const { requireAdmin } = require('../middleware/rbac');
 const { createTempPin, verifyPin, setPermanentPin } = require('../services/auth-pins');
 const { signToken } = require('../services/jwt');
-const { readDB, writeDB } = require('../services/db');
+
+const rateLimit = require('express-rate-limit');
 const { sendTelegramNotification } = require('../services/bot');
 const { supabase, isSupabaseConfigured } = require('../services/supabase');
 
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many auth attempts. Please wait 15 minutes before trying again.' }
+});
+
 // Health Check
-router.get('/health', (req, res) => {
+router.get('/health',  async (req, res) => {
   res.json({
     status: 'ok',
     app: 'PurpleOS',
@@ -19,7 +28,7 @@ router.get('/health', (req, res) => {
 });
 
 // Auth Config
-router.get('/auth/config', (req, res) => {
+router.get('/auth/config',  async (req, res) => {
   res.json({
     supabaseUrl: process.env.SUPABASE_URL || '',
     supabaseAnonKey: process.env.SUPABASE_ANON_KEY || ''
@@ -27,7 +36,7 @@ router.get('/auth/config', (req, res) => {
 });
 
 // User Profile Me
-router.get('/auth/me', requireAuth, (req, res) => {
+router.get('/auth/me', requireAuth, async (req, res) => {
   res.json({
     success: true,
     user: req.user
@@ -41,7 +50,7 @@ router.post('/auth/pin/generate', requireAuth, requireAdmin, async (req, res) =>
     return res.status(400).json({ error: 'Phone number is required' });
   }
 
-  const db = readDB();
+  const db = await readDB();
   const cleanPhone = phone.replace(/[^0-9+]/g, '');
 
   let userObj = null;
@@ -104,7 +113,7 @@ router.post('/auth/pin/generate', requireAuth, requireAdmin, async (req, res) =>
 });
 
 // 🔐 Verify PIN & Issue Signed JWT
-router.post('/auth/pin/verify', async (req, res) => {
+router.post('/auth/pin/verify', authLimiter, async (req, res) => {
   const { phone, pin } = req.body;
   if (!phone || !pin) {
     return res.status(400).json({ error: 'Phone number and PIN are required' });
@@ -117,13 +126,10 @@ router.post('/auth/pin/verify', async (req, res) => {
   }
 
   try {
-    const db = readDB();
     const norm = String(phone).replace(/[^0-9]/g, '').slice(-10);
-    const emp = (db.team || []).find(t => (t.id === result.user?.id || (t.phone || '').replace(/[^0-9]/g, '').slice(-10) === norm));
-    if (emp) {
-      emp.permanentPinSet = true;
-      emp.onboarding_step = 3;
-      writeDB(db);
+    if (isSupabaseConfigured()) {
+      // Mark permanent PIN set in Supabase profiles table
+      await supabase.from('profiles').update({ permanent_pin_set: true }).ilike('phone', `%${norm}`);
     }
   } catch (err) {
     console.warn('Web login update error:', err.message);
@@ -174,6 +180,32 @@ router.post('/auth/pin/set', requireAuth, async (req, res) => {
   }
 
   const result = await setPermanentPin(phone, newPin, email);
+  if (result.success) {
+    try {
+      const state = require('../services/state');
+      const member = await state.getEmployeeByPhone(phone);
+      
+      if (member && member.telegramId) {
+        const msg = `🎉 *Authentication Complete!*\n\n` +
+          `Your permanent 4-digit PIN is now securely configured.\n\n` +
+          `*Next Step:* Please complete your profile survey to finish setting up your account.`;
+          
+        const inlineKeyboard = [
+          [
+            { 
+              text: '🎓 Open Profile Survey', 
+              web_app: { url: 'https://purpleos-iota.vercel.app/team-miniapp' } 
+            }
+          ]
+        ];
+
+        // sendTelegramNotification is already imported at the top of the file
+        sendTelegramNotification(member.telegramId, msg, inlineKeyboard, true);
+      }
+    } catch (e) {
+      console.error('Failed to send profile completion nudge:', e.message);
+    }
+  }
   res.json(result);
 });
 

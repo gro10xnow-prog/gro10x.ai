@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PurpleOS — Project Management Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/css/shell.css">
+  <style>
+    .project-hub-container {
+      display: flex;
+      gap: 1.5rem;
+      min-height: calc(100vh - 120px);
+    }
+    .space-sidebar {
+      width: 260px;
+      background: var(--panel-bg);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      flex-shrink: 0;
+    }
+    .space-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .space-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.65rem 0.85rem;
+      border-radius: 12px;
+      color: #a1a1aa;
+      cursor: pointer;
+      font-size: 0.88rem;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .space-item:hover, .space-item.active {
+      background: rgba(168, 85, 247, 0.15);
+      color: #fff;
+      border: 1px solid var(--border-glow);
+    }
+    .project-main {
+      flex: 1;
+      background: var(--panel-bg);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      overflow-x: auto;
+    }
+    .view-switcher {
+      display: flex;
+      gap: 0.5rem;
+      background: rgba(9, 9, 11, 0.6);
+      padding: 0.3rem;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      width: fit-content;
+      margin-bottom: 1.5rem;
+    }
+    .view-btn {
+      padding: 0.4rem 0.85rem;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      transition: all 0.2s;
+    }
+    .view-btn.active {
+      background: var(--purple-main);
+      color: #fff;
+    }
+    .prio-badge {
+      padding: 0.2rem 0.55rem;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .prio-high { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+    .prio-medium { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .prio-low { background: rgba(52, 211, 153, 0.15); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.3); }
+
+    /* Kanban Columns */
+    .kanban-grid {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(240px, 1fr));
+      gap: 1rem;
+      align-items: start;
+    }
+    .kanban-col {
+      background: rgba(9, 9, 11, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 1rem;
+      min-height: 480px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+    .kanban-col-header {
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: var(--purple-light);
+      text-transform: uppercase;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .kanban-card {
+      background: rgba(24, 24, 27, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 1rem;
+      cursor: grab;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      transition: all 0.2s;
+    }
+    .kanban-card:hover {
+      border-color: var(--purple-main);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(168, 85, 247, 0.2);
+    }
+
+    /* Task Detail Drawer */
+    .drawer-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px);
+      z-index: 99980;
+    }
+    .drawer-panel {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 440px;
+      max-width: 90vw;
+      background: rgba(18, 18, 22, 0.98);
+      backdrop-filter: blur(20px);
+      border-left: 1px solid rgba(168, 85, 247, 0.3);
+      z-index: 99990;
+      transform: translateX(100%);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      padding: 1.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      overflow-y: auto;
+      box-shadow: -10px 0 40px rgba(0, 0, 0, 0.6);
+    }
+    .drawer-panel.open {
+      transform: translateX(0);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- App Header -->
+  <div id="app-header"></div>
+
+  <div class="main-wrapper">
+    <!-- App Sidebar -->
+    <div id="app-sidebar"></div>
+
+    <!-- Main Content Area -->
+    <main class="content-area">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <div>
+          <h1 style="font-size: 1.6rem; font-weight: 800; color: #fff; margin: 0;">📋 ClickUp-Grade Project Management Hub</h1>
+          <div style="font-size: 0.88rem; color: var(--text-muted);">Spaces ➔ Projects ➔ Lists ➔ Tasks ➔ Subtasks</div>
+        </div>
+        <button class="btn-purple" onclick="openNewProjectModal()">+ New Project</button>
+      </div>
+
+      <div class="project-hub-container">
+        <!-- Spaces Sidebar -->
+        <div class="space-sidebar">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div class="space-title">Clients & Spaces</div>
+            <button style="background: transparent; border: none; color: var(--purple-light); font-size: 0.8rem; cursor: pointer;" onclick="createNewSpace()">+ Add</button>
+          </div>
+          <div id="spacesList">
+            <div class="space-item active" id="space-item-all" onclick="filterSpace('all')">
+              <span>🌐 All Spaces</span>
+              <span class="badge badge-purple" id="allSpaceCount">0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Project Main Area -->
+        <div class="project-main">
+          <!-- View Switcher -->
+          <div class="view-switcher">
+            <button class="view-btn active" id="btnViewList" onclick="switchProjectView('list')">📋 List View</button>
+            <button class="view-btn" id="btnViewKanban" onclick="switchProjectView('kanban')">🗂️ Kanban Board</button>
+            <button class="view-btn" id="btnViewCalendar" onclick="switchProjectView('calendar')">📅 Calendar View</button>
+          </div>
+
+          <!-- Active View Container -->
+          <div id="projectViewContainer">
+            <div style="color: var(--text-muted); padding: 2rem; text-align: center;">Loading project workflows & task hierarchy...</div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Task Detail Drawer Backdrop & Panel -->
+  <div class="drawer-backdrop" id="drawerBackdrop" onclick="closeTaskDrawer()"></div>
+  <div class="drawer-panel" id="drawerPanel">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <span class="badge badge-purple" id="drawerStageBadge">Briefing</span>
+      <button onclick="closeTaskDrawer()" style="background: transparent; border: none; color: #a1a1aa; font-size: 1.4rem; cursor: pointer;">✕</button>
+    </div>
+
+    <div>
+      <h2 id="drawerTaskTitle" style="color: #fff; font-size: 1.25rem; margin: 0 0 0.4rem 0;">Task Title</h2>
+      <div id="drawerClientName" style="color: var(--text-muted); font-size: 0.82rem;">Client: Agency Client</div>
+    </div>
+
+    <!-- Hours Logged Bar -->
+    <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); padding: 1rem; border-radius: 14px;">
+      <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+        <span>Logged Time</span>
+        <span id="drawerTimeText" style="color: #34d399; font-weight: 700;">0h / 8h</span>
+      </div>
+      <button class="btn-secondary" style="font-size: 0.78rem; width: 100%; padding: 0.4rem;" onclick="logTaskTime()">⏱️ Log Worked Hours</button>
+    </div>
+
+    <!-- Subtasks Checklist -->
+    <div>
+      <div style="font-size: 0.82rem; font-weight: 700; color: #fff; text-transform: uppercase; margin-bottom: 0.6rem;">Checklist & Subtasks</div>
+      <div id="drawerSubtasksList">
+        <div style="color: var(--text-muted); font-size: 0.8rem;">No subtasks created for this task yet.</div>
+      </div>
+      <button class="btn-secondary" style="font-size: 0.78rem; width: 100%; margin-top: 0.6rem; padding: 0.4rem;" onclick="addSubtask()">+ Add Subtask Item</button>
+    </div>
+  </div>
+
+  <script src="/js/shell.js"></script>
+  <script>
+    let currentView = 'list';
+    let activeSpaceFilter = 'all';
+    window._allTasks = [];
+    window._allSpaces = [];
+    window._activeTaskId = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadProjectsData();
+      loadSpacesData();
+    });
+
+    function switchProjectView(viewName) {
+      currentView = viewName;
+      document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
+      if (viewName === 'list') document.getElementById('btnViewList').classList.add('active');
+      if (viewName === 'kanban') document.getElementById('btnViewKanban').classList.add('active');
+      if (viewName === 'calendar') document.getElementById('btnViewCalendar').classList.add('active');
+      renderActiveView();
+    }
+
+    async function loadSpacesData() {
+      try {
+        const spaces = await fetch('/api/projects/spaces').then(r => r.json()).catch(() => []);
+        window._allSpaces = spaces;
+        const box = document.getElementById('spacesList');
+
+        let html = `
+          <div class="space-item ${activeSpaceFilter === 'all' ? 'active' : ''}" id="space-item-all" onclick="filterSpace('all')">
+            <span>🌐 All Spaces</span>
+            <span class="badge badge-purple" id="allSpaceCount">${(window._allTasks || []).length}</span>
+          </div>
+        `;
+
+        spaces.forEach(s => {
+          const count = (window._allTasks || []).filter(t => (t.client || '').toLowerCase().includes((s.name || '').toLowerCase())).length;
+          html += `
+            <div class="space-item ${activeSpaceFilter === s.id ? 'active' : ''}" onclick="filterSpace('${s.id}', '${s.name}')">
+              <span>${s.icon || '📁'} ${s.name}</span>
+              <span class="badge" style="background: rgba(255,255,255,0.08); color: #fff;">${count}</span>
+            </div>
+          `;
+        });
+
+        box.innerHTML = html;
+      } catch(e) {
+        console.error('Spaces load err:', e);
+      }
+    }
+
+    function filterSpace(spaceId, spaceName = '') {
+      activeSpaceFilter = spaceId;
+      window._activeSpaceName = spaceName;
+      document.querySelectorAll('.space-item').forEach(el => el.classList.remove('active'));
+      renderActiveView();
+    }
+
+    async function loadProjectsData() {
+      try {
+        const tasks = await fetch('/api/tasks').then(r => r.json()).catch(() => []);
+        window._allTasks = tasks;
+        document.getElementById('allSpaceCount').textContent = tasks.length;
+        renderActiveView();
+      } catch(e) {
+        console.error('Projects load err:', e);
+      }
+    }
+
+    function getFilteredTasks() {
+      let tasks = window._allTasks || [];
+      if (activeSpaceFilter !== 'all' && window._activeSpaceName) {
+        tasks = tasks.filter(t => (t.client || '').toLowerCase().includes(window._activeSpaceName.toLowerCase()));
+      }
+      return tasks;
+    }
+
+    function renderActiveView() {
+      const container = document.getElementById('projectViewContainer');
+      const tasks = getFilteredTasks();
+
+      if (currentView === 'list') {
+        if (tasks.length === 0) {
+          container.innerHTML = `<div style="color: var(--text-muted); padding: 2rem; text-align: center;">No tasks found for this space.</div>`;
+          return;
+        }
+
+        container.innerHTML = `
+          <table style="width: 100%; border-collapse: collapse; text-align: left;">
+            <thead>
+              <tr style="border-bottom: 1px solid rgba(255,255,255,0.08); color: var(--text-muted); font-size: 0.78rem; text-transform: uppercase;">
+                <th style="padding: 0.75rem;">Priority</th>
+                <th style="padding: 0.75rem;">Task Title</th>
+                <th style="padding: 0.75rem;">Client Space</th>
+                <th style="padding: 0.75rem;">Workflow Stage</th>
+                <th style="padding: 0.75rem;">Assignee</th>
+                <th style="padding: 0.75rem;">Hours Logged</th>
+                <th style="padding: 0.75rem;">Due Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${tasks.map(t => {
+                const prio = (t.priority || 'Medium').toLowerCase();
+                const prioClass = prio === 'high' ? 'prio-high' : (prio === 'low' ? 'prio-low' : 'prio-medium');
+                const logged = t.loggedHours || 0;
+                const est = t.estimatedHours || 8;
+                return `
+                  <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.88rem; color: #fff; cursor: pointer;" onclick="openTaskDrawer('${t.id}')">
+                    <td style="padding: 0.85rem;"><span class="prio-badge ${prioClass}">${t.priority || 'Medium'}</span></td>
+                    <td style="padding: 0.85rem; font-weight: 700;">${t.title}</td>
+                    <td style="padding: 0.85rem; color: var(--text-muted);">${t.client || 'Agency'}</td>
+                    <td style="padding: 0.85rem;" onclick="event.stopPropagation()">
+                      <select class="stage-select" onchange="updateTaskStage('${t.id}', this.value)">
+                        <option value="Briefing" ${t.stage === 'Briefing' ? 'selected' : ''}>Scripting / Brief</option>
+                        <option value="Shooting" ${t.stage === 'Shooting' ? 'selected' : ''}>Shooting / Prod</option>
+                        <option value="Editing" ${t.stage === 'Editing' ? 'selected' : ''}>Editing / Motion</option>
+                        <option value="Internal QC" ${t.stage === 'Internal QC' ? 'selected' : ''}>Internal QC</option>
+                        <option value="Client Review" ${t.stage === 'Client Review' ? 'selected' : ''}>Client Review</option>
+                        <option value="Approved" ${t.stage === 'Approved' ? 'selected' : ''}>Approved / Done</option>
+                      </select>
+                    </td>
+                    <td style="padding: 0.85rem;">👤 ${t.assignee || 'Unassigned'}</td>
+                    <td style="padding: 0.85rem; color: var(--text-muted);">${logged}h / ${est}h</td>
+                    <td style="padding: 0.85rem; color: var(--text-muted);">${t.dueDate || 'ASAP'}</td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        `;
+      } else if (currentView === 'kanban') {
+        const stages = ['Briefing', 'Shooting', 'Editing', 'Internal QC', 'Client Review', 'Approved'];
+        container.innerHTML = `
+          <div class="kanban-grid">
+            ${stages.map(stg => {
+              const stageTasks = tasks.filter(t => (t.stage || 'Briefing') === stg);
+              return `
+                <div class="kanban-col" ondragover="event.preventDefault()" ondrop="dropTask(event, '${stg}')">
+                  <div class="kanban-col-header">
+                    <span>${stg}</span>
+                    <span class="badge" style="background: rgba(255,255,255,0.08); color: #fff;">${stageTasks.length}</span>
+                  </div>
+                  ${stageTasks.map(t => `
+                    <div class="kanban-card" draggable="true" ondragstart="dragTask(event, '${t.id}')" onclick="openTaskDrawer('${t.id}')">
+                      <div style="font-size: 0.72rem; color: var(--purple-light); font-weight: 700;">${t.client || 'Agency Client'}</div>
+                      <div style="font-weight: 700; color: #fff; font-size: 0.9rem;">${t.title}</div>
+                      <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-top: 0.3rem;">
+                        <span>👤 ${t.assignee || 'Staff'}</span>
+                        <span>📅 ${t.dueDate || 'ASAP'}</span>
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>
+              `;
+            }).join('')}
+          </div>
+        `;
+      } else {
+        container.innerHTML = `<div style="color: var(--text-muted); padding: 2rem; text-align: center;">📅 Calendar View — Showing ${tasks.length} active tasks scheduled on due dates.</div>`;
+      }
+    }
+
+    /* Drag & Drop Handlers */
+    function dragTask(evt, taskId) {
+      evt.dataTransfer.setData('text/plain', taskId);
+    }
+
+    function dropTask(evt, targetStage) {
+      evt.preventDefault();
+      const taskId = evt.dataTransfer.getData('text/plain');
+      if (taskId) {
+        updateTaskStage(taskId, targetStage);
+      }
+    }
+
+    async function updateTaskStage(taskId, newStage) {
+      try {
+        const res = await fetch(`/api/tasks/${taskId}/stage`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ stage: newStage })
+        });
+        const data = await res.json();
+        if (data.success) {
+          loadProjectsData();
+        } else {
+          alert(data.error || 'Failed to update task stage');
+        }
+      } catch(e) {
+        console.error('Task stage update err:', e);
+      }
+    }
+
+    /* Task Detail Drawer */
+    function openTaskDrawer(taskId) {
+      window._activeTaskId = taskId;
+      const task = (window._allTasks || []).find(t => t.id === taskId);
+      if (!task) return;
+
+      document.getElementById('drawerStageBadge').textContent = task.stage || 'Briefing';
+      document.getElementById('drawerTaskTitle').textContent = task.title;
+      document.getElementById('drawerClientName').textContent = `Client: ${task.client || 'Agency Client'} · Assignee: ${task.assignee || 'Staff'}`;
+      document.getElementById('drawerTimeText').textContent = `${task.loggedHours || 0}h / ${task.estimatedHours || 8}h`;
+
+      document.getElementById('drawerBackdrop').style.display = 'block';
+      document.getElementById('drawerPanel').classList.add('open');
+    }
+
+    function closeTaskDrawer() {
+      document.getElementById('drawerPanel').classList.remove('open');
+      document.getElementById('drawerBackdrop').style.display = 'none';
+      window._activeTaskId = null;
+    }
+
+    async function logTaskTime() {
+      if (!window._activeTaskId) return;
+      const hoursStr = prompt('Enter worked hours to log (e.g. 2):');
+      const hours = parseFloat(hoursStr);
+      if (hours && hours > 0) {
+        await fetch(`/api/tasks/${window._activeTaskId}/log-time`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ hours })
+        });
+        loadProjectsData();
+        closeTaskDrawer();
+      }
+    }
+
+    function addSubtask() {
+      const title = prompt('Enter subtask title:');
+      if (title && title.trim()) {
+        alert(`Subtask "${title.trim()}" added.`);
+      }
+    }
+
+    function createNewSpace() {
+      const name = prompt('Enter new Space / Client name:');
+      if (name && name.trim()) {
+        fetch('/api/projects/spaces', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: name.trim(), type: 'client' })
+        }).then(() => loadSpacesData());
+      }
+    }
+
+    function openNewProjectModal() {
+      const title = prompt('Enter new Task / Project title:');
+      if (title && title.trim()) {
+        fetch('/api/tasks', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title: title.trim(), client: window._activeSpaceName || 'Agency', stage: 'Briefing' })
+        }).then(() => loadProjectsData());
+      }
+    }
+  </script>
+</body>
+</html>

@@ -137,3 +137,12 @@ function executeCmdAction(action) {
     navigateTab('reviewroom');
   }
 }
+
+function navigateTab(tabId) {
+  let mapped = tabId;
+  if (tabId === 'tasks') mapped = 'kanban';
+  if (tabId === 'clients') mapped = 'crm';
+  if (typeof switchTab === 'function') {
+    switchTab(mapped);
+  }
+}

@@ -286,7 +286,7 @@ function showLandingToast(message, type = 'success') {
     document.body.appendChild(container);
   }
   const toast = document.createElement('div');
-  toast.style.cssText = 'background: #0f172a; border: 1px solid #3b82f6; color: #fff; padding: 0.85rem 1.25rem; border-radius: 12px; font-size: 0.9rem; box-shadow: 0 10px 25px rgba(0,0,0,0.5); font-family: sans-serif;';
+  toast.style.cssText = 'background: #0f172a; border: 1px solid #7c3aed; color: #fff; padding: 0.85rem 1.25rem; border-radius: 12px; font-size: 0.9rem; box-shadow: 0 10px 25px rgba(124, 58, 237, 0.3); font-family: var(--font-family);';
   toast.innerText = message;
   container.appendChild(toast);
   setTimeout(() => toast.remove(), 4000);
@@ -355,4 +355,26 @@ async function fetchCMSContent() {
   } catch (err) {
     console.error('Error loading public CMS content:', err);
   }
+}
+
+// INTERACTIVE WORKFLOW STEP SWITCHER (HOW WE WORK SECTION)
+function switchWorkStep(stepNum) {
+  const tabs = document.querySelectorAll('.pb-work-tab');
+  const cards = document.querySelectorAll('.pb-work-card');
+
+  tabs.forEach((tab, index) => {
+    if (index + 1 === stepNum) {
+      tab.classList.add('active');
+    } else {
+      tab.classList.remove('active');
+    }
+  });
+
+  cards.forEach((card, index) => {
+    if (index + 1 === stepNum) {
+      card.classList.add('active');
+    } else {
+      card.classList.remove('active');
+    }
+  });
 }

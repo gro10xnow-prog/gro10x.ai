@@ -8,7 +8,6 @@
  */
 
 const { supabase } = require('./supabase');
-const { readDB } = require('./db');
 
 function normalizePhone(p) {
   if (!p) return '';
@@ -48,6 +47,31 @@ function mapProfile(p) {
   };
 }
 
+const _cache = new Map();
+
+function getCached(key, fetchFn, ttlMs = 60000) {
+  const hit = _cache.get(key);
+  if (hit && Date.now() - hit.ts < ttlMs) {
+    return Promise.resolve(hit.data);
+  }
+  return fetchFn().then(data => {
+    if (data !== null && data !== undefined) {
+      _cache.set(key, { data, ts: Date.now() });
+    }
+    return data;
+  });
+}
+
+function invalidateCache(keyPrefix) {
+  if (!keyPrefix) {
+    _cache.clear();
+    return;
+  }
+  for (const k of _cache.keys()) {
+    if (k.startsWith(keyPrefix)) _cache.delete(k);
+  }
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // EMPLOYEE LOOKUPS & MUTATIONS
 // ─────────────────────────────────────────────────────────────────────────────
@@ -55,59 +79,59 @@ function mapProfile(p) {
 async function getEmployeeByTelegramId(chatId) {
   if (!chatId) return null;
   const strId = String(chatId);
-
-  if (supabase) {
-    try {
-      const { data } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('telegram_id', strId)
-        .maybeSingle();
-      if (data) return mapProfile(data);
-    } catch (e) {
-      console.warn('state.getEmployeeByTelegramId Supabase err:', e.message);
+  return getCached(`emp_tg_${strId}`, async () => {
+    if (supabase) {
+      try {
+        const { data } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('telegram_id', strId)
+          .maybeSingle();
+        if (data) return mapProfile(data);
+      } catch (e) {
+        console.warn('state.getEmployeeByTelegramId Supabase err:', e.message);
+      }
     }
-  }
-
-  // Fallback to db.json
-  const db = readDB();
-  const found = (db.team || []).find(e => String(e.telegramId) === strId);
-  return found ? mapProfile({ ...found, emp_code: found.id, telegram_id: found.telegramId }) : null;
+    return null;
+  }, 60000);
 }
 
 async function getEmployeeByPhone(phone) {
   if (!phone) return null;
   const norm = normalizePhone(phone);
+  const last10 = norm.slice(-10);
 
-  if (supabase) {
-    try {
-      const { data } = await supabase.from('profiles').select('*');
-      if (data && data.length > 0) {
-        const found = data.find(p => normalizePhone(p.phone) === norm);
-        if (found) return mapProfile(found);
+  return getCached(`emp_phone_${last10}`, async () => {
+    if (supabase) {
+      try {
+        const { data } = await supabase
+          .from('profiles')
+          .select('*')
+          .or(`phone.ilike.%${last10}`);
+        if (data && data.length > 0) {
+          const found = data.find(p => normalizePhone(p.phone) === norm);
+          if (found) return mapProfile(found);
+        }
+      } catch (e) {
+        console.warn('state.getEmployeeByPhone Supabase err:', e.message);
       }
-    } catch (e) {
-      console.warn('state.getEmployeeByPhone Supabase err:', e.message);
     }
-  }
-
-  // Fallback to db.json
-  const db = readDB();
-  const found = (db.team || []).find(e => normalizePhone(e.phone) === norm);
-  return found ? mapProfile({ ...found, emp_code: found.id, telegram_id: found.telegramId }) : null;
+    return null;
+  }, 60000);
 }
 
 async function getAllTeam() {
-  if (supabase) {
-    try {
-      const { data } = await supabase.from('profiles').select('*').order('emp_code', { ascending: true });
-      if (data) return data.map(mapProfile);
-    } catch (e) {
-      console.warn('state.getAllTeam Supabase err:', e.message);
+  return getCached('all_team', async () => {
+    if (supabase) {
+      try {
+        const { data } = await supabase.from('profiles').select('*').order('emp_code', { ascending: true });
+        if (data) return data.map(mapProfile);
+      } catch (e) {
+        console.warn('state.getAllTeam Supabase err:', e.message);
+      }
     }
-  }
-  const db = readDB();
-  return (db.team || []).map(e => mapProfile({ ...e, emp_code: e.id, telegram_id: e.telegramId }));
+    return [];
+  }, 60000);
 }
 
 async function linkTelegramId(empCode, chatId) {
@@ -115,6 +139,7 @@ async function linkTelegramId(empCode, chatId) {
   if (supabase) {
     try {
       await supabase.from('profiles').update({ telegram_id: strId, updated_at: new Date().toISOString() }).eq('emp_code', empCode);
+      invalidateCache('all_team');
     } catch (e) {
       console.warn('state.linkTelegramId Supabase err:', e.message);
     }
@@ -125,6 +150,7 @@ async function setOnboardingComplete(empCode) {
   if (supabase) {
     try {
       await supabase.from('profiles').update({ onboarding_complete: true, updated_at: new Date().toISOString() }).eq('emp_code', empCode);
+      invalidateCache('all_team');
     } catch (e) {
       console.warn('state.setOnboardingComplete Supabase err:', e.message);
     }
@@ -141,6 +167,7 @@ async function awardXP(empCode, xpAmount) {
   if (supabase) {
     try {
       await supabase.from('profiles').update({ xp: newXP, badge, updated_at: new Date().toISOString() }).eq('emp_code', emp.emp_code);
+      invalidateCache('all_team');
     } catch (e) {
       console.warn('state.awardXP Supabase err:', e.message);
     }

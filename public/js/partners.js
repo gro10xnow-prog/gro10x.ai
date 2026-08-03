@@ -41,6 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function handlePartnerLogout() {
+  localStorage.removeItem('purple_user');
   localStorage.removeItem('purple_user_phone');
   localStorage.removeItem('purple_user_email');
   localStorage.removeItem('purple_user_name');
@@ -129,7 +130,7 @@ function renderPartnerView() {
 
   const projectSelect = document.getElementById('partnerProjectSelect');
   if (projectSelect) {
-    projectSelect.innerHTML = (clientReviews.length > 0 ? clientReviews : partnerReviews).map(r => `
+    projectSelect.innerHTML = clientReviews.map(r => `
       <option value="${r.id}" ${activeRev && r.id === activeRev.id ? 'selected' : ''}>🎥 ${r.projectName || r.id}</option>
     `).join('');
   }
@@ -162,6 +163,7 @@ function renderPartnerView() {
           <div style="font-size:0.85rem; color:#cbd5e1;">${c.text}</div>
         </div>
       `).join('');
+    }
   }
 
   // Filter Social Posts for this Client (Phase A)
@@ -181,69 +183,78 @@ function renderPartnerView() {
   }
 
   if (socialGrid) {
-    const listToRender = clientPosts.length > 0 ? clientPosts : partnerPosts;
-    socialGrid.innerHTML = listToRender.map(post => {
-      let badgeClass = 'badge-purple';
-      if (post.platform === 'Instagram') badgeClass = 'badge-pink';
-      else if (post.platform === 'LinkedIn') badgeClass = 'badge-cyan';
-      else if (post.platform === 'Facebook') badgeClass = 'badge-purple';
-
-      let statusBadge = 'badge-purple';
-      if (post.status === 'Approved') statusBadge = 'badge-emerald';
-      else if (post.status === 'Published') statusBadge = 'badge-emerald';
-      else if (post.status === 'Due Today') statusBadge = 'badge-pink';
-      else if (post.status === 'Pending Client Approval') statusBadge = 'badge-amber';
-      else if (post.status === 'Changes Requested') statusBadge = 'badge-pink';
-
-      const mediaUrl = (post.mediaUrls && post.mediaUrls[0]) || 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=800&q=80';
-
-      return `
-        <div class="glass-panel" style="padding:1.2rem; display:flex; flex-direction:column; justify-content:space-between; gap:1rem; border:1px solid rgba(255,255,255,0.08); background:rgba(15,23,42,0.6);">
-          <div>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem;">
-              <span class="badge ${badgeClass}">${post.platform}</span>
-              <span class="badge ${statusBadge}">${post.status}</span>
-            </div>
-
-            <h3 style="color:#fff; font-size:1rem; margin:0.2rem 0 0.4rem;">${post.title}</h3>
-            <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:0.8rem;">
-              📅 Scheduled: <strong>${post.scheduledDate} ${post.scheduledTime || ''}</strong>
-            </div>
-
-            <div style="position:relative; background:#000; border-radius:8px; overflow:hidden; margin-bottom:0.8rem; height:140px;">
-              <img src="${mediaUrl}" style="width:100%; height:100%; object-fit:cover;" alt="Asset Preview">
-            </div>
-
-            <div style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.06); padding:0.8rem; border-radius:8px; max-height:100px; overflow-y:auto; font-size:0.82rem; color:#cbd5e1; white-space:pre-wrap;">${post.caption}</div>
-
-            ${post.clientFeedback ? `
-              <div style="margin-top:0.6rem; padding:0.5rem; background:rgba(244,63,94,0.1); border:1px solid rgba(244,63,94,0.3); border-radius:6px; font-size:0.78rem; color:#f43f5e;">
-                💬 Revision Note: ${post.clientFeedback}
-              </div>
-            ` : ''}
-          </div>
-
-          <div style="display:flex; gap:0.6rem; margin-top:0.5rem;">
-            ${post.status !== 'Approved' && post.status !== 'Published' ? `
-              <button class="btn-purple" style="flex:1; justify-content:center; padding:0.4rem 0.8rem; font-size:0.82rem; background:#10b981;" onclick="approvePartnerPost('${post.id}')">✅ Approve Post</button>
-              <button class="btn-secondary" style="flex:1; justify-content:center; padding:0.4rem 0.8rem; font-size:0.82rem; color:#f43f5e;" onclick="rejectPartnerPost('${post.id}')">💬 Request Changes</button>
-            ` : `
-              <div style="width:100%; text-align:center; padding:0.4rem; background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.2); border-radius:8px; font-size:0.82rem; color:#10b981; font-weight:700;">
-                ✅ Approved for Dispatch (${post.approvedBy || 'Client Lead'})
-              </div>
-            `}
-          </div>
+    if (clientPosts.length === 0) {
+      socialGrid.innerHTML = `
+        <div style="grid-column:1/-1; text-align:center; padding:2.5rem; color:var(--text-muted); font-size:0.9rem; background:rgba(15,23,42,0.4); border-radius:12px; border:1px dashed rgba(255,255,255,0.1);">
+          📭 No scheduled social posts pending review for ${currentPartnerClient}.
         </div>
       `;
-    }).join('');
+    } else {
+      socialGrid.innerHTML = clientPosts.map(post => {
+        let badgeClass = 'badge-purple';
+        if (post.platform === 'Instagram') badgeClass = 'badge-pink';
+        else if (post.platform === 'LinkedIn') badgeClass = 'badge-cyan';
+        else if (post.platform === 'Facebook') badgeClass = 'badge-purple';
+
+        let statusBadge = 'badge-purple';
+        if (post.status === 'Approved') statusBadge = 'badge-emerald';
+        else if (post.status === 'Published') statusBadge = 'badge-emerald';
+        else if (post.status === 'Due Today') statusBadge = 'badge-pink';
+        else if (post.status === 'Pending Client Approval') statusBadge = 'badge-amber';
+        else if (post.status === 'Changes Requested') statusBadge = 'badge-pink';
+
+        const mediaUrl = (post.mediaUrls && post.mediaUrls[0]) || 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=800&q=80';
+
+        return `
+          <div class="glass-panel" style="padding:1.2rem; display:flex; flex-direction:column; justify-content:space-between; gap:1rem; border:1px solid rgba(255,255,255,0.08); background:rgba(15,23,42,0.6);">
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem;">
+                <span class="badge ${badgeClass}">${post.platform}</span>
+                <span class="badge ${statusBadge}">${post.status}</span>
+              </div>
+
+              <h3 style="color:#fff; font-size:1rem; margin:0.2rem 0 0.4rem;">${post.title}</h3>
+              <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:0.8rem;">
+                📅 Scheduled: <strong>${post.scheduledDate} ${post.scheduledTime || ''}</strong>
+              </div>
+
+              <div style="position:relative; background:#000; border-radius:8px; overflow:hidden; margin-bottom:0.8rem; height:140px;">
+                <img src="${mediaUrl}" style="width:100%; height:100%; object-fit:cover;" alt="Asset Preview">
+              </div>
+
+              <div style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.06); padding:0.8rem; border-radius:8px; max-height:100px; overflow-y:auto; font-size:0.82rem; color:#cbd5e1; white-space:pre-wrap;">${post.caption}</div>
+
+              ${post.clientFeedback ? `
+                <div style="margin-top:0.6rem; padding:0.5rem; background:rgba(244,63,94,0.1); border:1px solid rgba(244,63,94,0.3); border-radius:6px; font-size:0.78rem; color:#f43f5e;">
+                  💬 Revision Note: ${post.clientFeedback}
+                </div>
+              ` : ''}
+            </div>
+
+            <div style="display:flex; gap:0.6rem; margin-top:0.5rem;">
+              ${post.status !== 'Approved' && post.status !== 'Published' ? `
+                <button class="btn-purple" style="flex:1; justify-content:center; padding:0.4rem 0.8rem; font-size:0.82rem; background:#10b981;" onclick="approvePartnerPost('${post.id}')">✅ Approve Post</button>
+                <button class="btn-secondary" style="flex:1; justify-content:center; padding:0.4rem 0.8rem; font-size:0.82rem; color:#f43f5e;" onclick="rejectPartnerPost('${post.id}')">💬 Request Changes</button>
+              ` : `
+                <div style="width:100%; text-align:center; padding:0.4rem; background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.2); border-radius:8px; font-size:0.82rem; color:#10b981; font-weight:700;">
+                  ✅ Approved for Dispatch (${post.approvedBy || 'Client Lead'})
+                </div>
+              `}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
   }
 
   // Filter Invoices for this Client
   const clientInvoices = partnerInvoices.filter(i => (i.clientName || '').toLowerCase().includes(currentPartnerClient.toLowerCase()) || currentPartnerClient.toLowerCase().includes((i.clientName || '').toLowerCase()));
   const invoicesTbody = document.getElementById('partnerInvoicesTbody');
   if (invoicesTbody) {
-    const listToRender = clientInvoices.length > 0 ? clientInvoices : partnerInvoices;
-    invoicesTbody.innerHTML = listToRender.map(inv => `
+    if (clientInvoices.length === 0) {
+      invoicesTbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:1.5rem;">No invoices generated for ${currentPartnerClient} yet.</td></tr>`;
+    } else {
+      invoicesTbody.innerHTML = clientInvoices.map(inv => `
       <tr>
         <td><code>${inv.id}</code></td>
         <td>${inv.projectName || inv.projectRef || 'Campaign Handover'}</td>
@@ -339,7 +350,7 @@ async function submitPartnerPayment(event) {
     });
     const data = await res.json();
     if (data.success) {
-      showPartnerToast(`✅ Payment Verified! Invoice ${invId} marked PAID. (Ref: ${trxId})`, 'success');
+      showPartnerToast(`💳 Payment Proof Submitted! Invoice ${invId} set to Verification Pending. Finance team notified for verification.`, 'success');
       closePartnerPaymentModal();
       initPartnerPortal();
     } else {

@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PurpleOS — System Settings & Automation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/css/shell.css">
+  <style>
+    .settings-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+    }
+    .settings-card {
+      background: var(--panel-bg);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #fff;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    .form-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+    .form-input {
+      background: rgba(9, 9, 11, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #fff;
+      padding: 0.65rem 0.85rem;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      font-family: inherit;
+    }
+    .toggle-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .toggle-switch {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .toggle-switch.active {
+      background: var(--purple-main);
+    }
+    .toggle-knob {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 18px;
+      height: 18px;
+      background: #fff;
+      border-radius: 50%;
+      transition: transform 0.2s;
+    }
+    .toggle-switch.active .toggle-knob {
+      transform: translateX(20px);
+    }
+  </style>
+</head>
+<body>
+  <!-- App Header -->
+  <div id="app-header"></div>
+
+  <div class="main-wrapper">
+    <!-- App Sidebar -->
+    <div id="app-sidebar"></div>
+
+    <!-- Main Content Area -->
+    <main class="content-area">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <h1 style="font-size: 1.6rem; font-weight: 800; color: #fff; margin: 0;">⚙️ System Settings & Preferences</h1>
+          <div style="font-size: 0.88rem; color: var(--text-muted);">User Profile ➔ Bot Gateway Health ➔ Notification Preferences</div>
+        </div>
+      </div>
+
+      <div class="settings-grid">
+        <!-- 1. User Profile -->
+        <div class="settings-card">
+          <h3 class="card-title">👤 My Account Profile</h3>
+          
+          <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
+            <div id="avatarCircle" style="width: 52px; height: 52px; border-radius: 50%; background: linear-gradient(135deg, var(--purple-main), #818cf8); display: flex; align-items: center; justify-content: center; font-weight: 800; color: #fff; font-size: 1.3rem;">
+              US
+            </div>
+            <div>
+              <div id="userNameDisplay" style="font-weight: 800; color: #fff; font-size: 1.05rem;">User Account</div>
+              <div id="userRoleBadge" class="badge badge-purple" style="margin-top: 0.2rem;">Administrator</div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Full Name</label>
+            <input type="text" id="profName" class="form-input" placeholder="Your Name">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Phone Number</label>
+            <input type="text" id="profPhone" class="form-input" placeholder="+8801700000000">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Work Email</label>
+            <input type="email" id="profEmail" class="form-input" placeholder="user@purplebot.digital">
+          </div>
+
+          <button class="btn-purple" style="width: 100%; margin-top: 0.5rem;" onclick="saveProfileSettings()">💾 Save Profile Updates</button>
+        </div>
+
+        <!-- 2. Bot Gateway Health -->
+        <div class="settings-card">
+          <h3 class="card-title">🤖 Bot Gateway Health</h3>
+          <div style="font-size: 0.8rem; color: var(--text-muted);">Live real-time connection status with Telegram API endpoints.</div>
+
+          <div style="display: flex; flex-direction: column; gap: 1rem; margin-top: 0.5rem;">
+            <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); padding: 1rem; border-radius: 12px;">
+              <div style="font-size: 0.78rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Team Bot (Purple Man)</div>
+              <div id="teamBotStatus" style="font-size: 1.05rem; font-weight: 800; color: #34d399; margin-top: 0.3rem;">Checking...</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem;">Polling / Webhook Fallback Active</div>
+            </div>
+
+            <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); padding: 1rem; border-radius: 12px;">
+              <div style="font-size: 0.78rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Client Bot (Purple Bot)</div>
+              <div id="clientBotStatus" style="font-size: 1.05rem; font-weight: 800; color: #34d399; margin-top: 0.3rem;">Checking...</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem;">Polling / Webhook Fallback Active</div>
+            </div>
+          </div>
+
+          <button class="btn-secondary" style="width: 100%; font-size: 0.8rem;" onclick="checkBotHealth()">🔄 Refresh Gateway Status</button>
+        </div>
+
+        <!-- 3. Preferences & Security -->
+        <div class="settings-card">
+          <h3 class="card-title">🔔 Preferences & Security</h3>
+
+          <div class="toggle-row">
+            <div>
+              <div style="font-size: 0.88rem; font-weight: 700; color: #fff;">Telegram Briefings</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Receive daily morning team briefings via Telegram bot</div>
+            </div>
+            <div class="toggle-switch active" id="toggleBriefing" onclick="togglePref('toggleBriefing', 'pref_briefing')">
+              <div class="toggle-knob"></div>
+            </div>
+          </div>
+
+          <div class="toggle-row">
+            <div>
+              <div style="font-size: 0.88rem; font-weight: 700; color: #fff;">EOD Summary Alerts</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Receive automatic evening EOD submission summaries</div>
+            </div>
+            <div class="toggle-switch active" id="toggleEod" onclick="togglePref('toggleEod', 'pref_eod')">
+              <div class="toggle-knob"></div>
+            </div>
+          </div>
+
+          <div class="toggle-row">
+            <div>
+              <div style="font-size: 0.88rem; font-weight: 700; color: #fff;">Sound Notifications</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Play audio ping on task stage change</div>
+            </div>
+            <div class="toggle-switch active" id="toggleSound" onclick="togglePref('toggleSound', 'pref_sound')">
+              <div class="toggle-knob"></div>
+            </div>
+          </div>
+
+          <div style="margin-top: 0.5rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.08);">
+            <div style="font-size: 0.82rem; font-weight: 700; color: #fff; margin-bottom: 0.4rem;">🔑 Security PIN Reset</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.8rem;">Current Security PIN: <strong style="color: #fff;">••••</strong></div>
+            <button class="btn-secondary" style="width: 100%; font-size: 0.8rem; color: var(--purple-light);" onclick="resetPinPrompt()">🔒 Reset Security PIN via Telegram</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/js/shell.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      loadProfileData();
+      checkBotHealth();
+      loadPreferences();
+    });
+
+    function loadProfileData() {
+      try {
+        const uRaw = localStorage.getItem('purple_user');
+        if (uRaw) {
+          const u = JSON.parse(uRaw);
+          document.getElementById('userNameDisplay').textContent = u.name || 'User Account';
+          document.getElementById('userRoleBadge').textContent = u.role || 'Administrator';
+          document.getElementById('profName').value = u.name || '';
+          document.getElementById('profPhone').value = u.phone || '';
+          document.getElementById('profEmail').value = u.email || '';
+
+          const nameParts = (u.name || 'US').split(' ');
+          const initials = (nameParts[0][0] + (nameParts[1] ? nameParts[1][0] : '')).toUpperCase();
+          document.getElementById('avatarCircle').textContent = initials;
+        }
+      } catch(e) {
+        console.error('Profile load err:', e);
+      }
+    }
+
+    async function checkBotHealth() {
+      try {
+        const res = await fetch('/api/bot-status').then(r => r.json()).catch(() => null);
+        const teamEl = document.getElementById('teamBotStatus');
+        const clientEl = document.getElementById('clientBotStatus');
+
+        if (res && res.teamBot === 'active') {
+          teamEl.textContent = '🟢 Active & Connected';
+          teamEl.style.color = '#34d399';
+        } else {
+          teamEl.textContent = '🟡 Polling Active';
+          teamEl.style.color = '#fbbf24';
+        }
+
+        if (res && res.clientBot === 'active') {
+          clientEl.textContent = '🟢 Active & Connected';
+          clientEl.style.color = '#34d399';
+        } else {
+          clientEl.textContent = '🟡 Polling Active';
+          clientEl.style.color = '#fbbf24';
+        }
+      } catch(e) {
+        console.error('Bot status check err:', e);
+      }
+    }
+
+    function loadPreferences() {
+      ['toggleBriefing:pref_briefing', 'toggleEod:pref_eod', 'toggleSound:pref_sound'].forEach(pair => {
+        const [elId, key] = pair.split(':');
+        const val = localStorage.getItem(key);
+        const el = document.getElementById(elId);
+        if (val === 'false' && el) el.classList.remove('active');
+      });
+    }
+
+    function togglePref(elId, key) {
+      const el = document.getElementById(elId);
+      if (!el) return;
+      el.classList.toggle('active');
+      const isActive = el.classList.contains('active');
+      localStorage.setItem(key, isActive ? 'true' : 'false');
+    }
+
+    function saveProfileSettings() {
+      const name = document.getElementById('profName').value.trim();
+      const phone = document.getElementById('profPhone').value.trim();
+      const email = document.getElementById('profEmail').value.trim();
+
+      const uRaw = localStorage.getItem('purple_user');
+      let u = uRaw ? JSON.parse(uRaw) : {};
+      u.name = name;
+      u.phone = phone;
+      u.email = email;
+      localStorage.setItem('purple_user', JSON.stringify(u));
+
+      alert('🎉 Profile settings updated successfully!');
+      loadProfileData();
+    }
+
+    function resetPinPrompt() {
+      alert('🔒 To reset your PIN, open your Telegram App and send command /setpin to @Purplemanbot.');
+    }
+  </script>
+</body>
+</html>

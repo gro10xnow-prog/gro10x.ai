@@ -615,16 +615,20 @@ async function checkClientAndSubmitLead() {
   const cleanPhone = botState.phone.replace(/[^0-9+]/g, '');
 
   try {
-    const clientRes = await fetch('/api/clients');
-    const clients = await clientRes.json();
-    const existingClient = (clients || []).find(c => (c.phone || '').includes(cleanPhone));
-
-    if (existingClient) {
-      appendBotMsg(`🎉 Welcome back, <strong>${existingClient.name}</strong>! You're registered as an active client partner.<br><br>You can access your Workspace directly at <a href="/partners" style="color:#7c3aed; font-weight:700;">purplebot.digital/partners</a>.`);
-      botState.step = 'FINISHED';
-      updateInputPlaceholder();
-      return;
-    }
+    // Try a lightweight public phone check (won't break if endpoint doesn't exist)
+    let isExistingClient = false;
+    try {
+      const checkRes = await fetch(`/api/public/client-check?phone=${encodeURIComponent(cleanPhone)}`);
+      if (checkRes.ok) {
+        const checkData = await checkRes.json();
+        if (checkData.found) {
+          appendBotMsg(`🎉 Welcome back, <strong>${checkData.name || 'valued partner'}</strong>! You're registered as an active client partner.<br><br>You can access your Workspace directly at <a href="/partners" style="color:#7c3aed; font-weight:700;">purplebot.digital/partners</a>.`);
+          botState.step = 'FINISHED';
+          updateInputPlaceholder();
+          return;
+        }
+      }
+    } catch (e) { /* non-critical — proceed to lead submit */ }
 
     const utmRaw = sessionStorage.getItem('utm');
     const utm = utmRaw ? JSON.parse(utmRaw) : {};
@@ -635,7 +639,7 @@ async function checkClientAndSubmitLead() {
       body: JSON.stringify({
         clientName: botState.company,
         contactPerson: botState.name,
-        contactEmail: `${botState.name.toLowerCase().replace(/\s+/g, '')}@lead.com`,
+        contactEmail: botState.email || '',
         phone: botState.phone,
         service: botState.service || 'General Inquiry',
         notes: `Submitted via Purple Bot AI Chat Widget. UTM: ${JSON.stringify(utm)}`,
@@ -644,7 +648,7 @@ async function checkClientAndSubmitLead() {
     });
 
     const data = await leadRes.json();
-    if (data.success) {
+    if (data.success || data.id) {
       appendBotMsg(`✅ <strong>Thank you ${botState.name}!</strong><br><br>Your campaign brief for <strong>${botState.company}</strong> has been logged.<br><br>Our lead director will contact you via WhatsApp at <strong>${botState.phone}</strong> within 2 hours.`);
       botState.step = 'FINISHED';
       updateInputPlaceholder();

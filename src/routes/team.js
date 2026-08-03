@@ -5,7 +5,7 @@ const { requireManager } = require('../middleware/rbac');
 const { supabase } = require('../services/supabase');
 const { broadcast } = require('../services/sse');
 const { sendTelegramNotification, getTeamBot } = require('../services/bot');
-const { readDB, writeDB } = require('../services/db');
+const { readDB } = require('../services/db');
 
 function normalizePhone(p) {
   if (!p) return '';
@@ -15,6 +15,15 @@ function normalizePhone(p) {
 
 function mapProfile(p) {
   if (!p) return null;
+
+  // Calculate surveyProgress from what fields are filled
+  let surveyProgress = 0;
+  if (p.blood_group || p.personal_email || p.address) surveyProgress = Math.max(surveyProgress, 1);
+  if (p.nid_no || p.permanent_address) surveyProgress = Math.max(surveyProgress, 2);
+  if (p.bank_info && (p.bank_info.accNo || p.bank_info.mfsNo)) surveyProgress = Math.max(surveyProgress, 3);
+  if (p.primary_skill || p.survey_complete) surveyProgress = Math.max(surveyProgress, 4);
+  if (p.onboarding_complete) surveyProgress = 5;
+
   return {
     id: p.emp_code || p.id,
     emp_code: p.emp_code,
@@ -31,11 +40,20 @@ function mapProfile(p) {
     xp: p.xp || 0,
     badge: p.badge || '🌱 Recruit',
     onboardingComplete: p.onboarding_complete || false,
+    surveyComplete: p.survey_complete || false,
+    surveyProgress,
     accessLevel: p.access_level || 'Specialist / Crew',
     bankInfo: p.bank_info || {},
     email: p.email || p.work_email || '',
+    personalEmail: p.personal_email || '',
     emergencyContact: p.emergency_contact || '',
     address: p.address || '',
+    permanentAddress: p.permanent_address || '',
+    bloodGroup: p.blood_group || '',
+    nidNo: p.nid_no || '',
+    primarySkill: p.primary_skill || '',
+    joiningDate: p.joining_date || '',
+    reportsTo: p.reports_to || ''
   };
 }
 
@@ -53,21 +71,11 @@ function mapAttendance(a) {
   };
 }
 
-// Helper: lookup employee by telegramId — checks Supabase first, falls back to db.json
+// Helper: lookup employee by telegramId — strictly via Supabase
 async function findEmpByTelegramId(telegramId) {
-  // 1. Supabase lookup
-  if (supabase) {
-    const { data } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('telegram_id', String(telegramId))
-      .maybeSingle();
-    if (data) return { source: 'supabase', profile: data };
-  }
-  // 2. db.json fallback (handles cold-start / unseeded Supabase)
-  const db = readDB();
-  const emp = (db.team || []).find(e => String(e.telegramId) === String(telegramId));
-  if (emp) return { source: 'db', profile: emp, db };
+  const state = require('../services/state');
+  const emp = await state.getEmployeeByTelegramId(telegramId);
+  if (emp) return { source: 'supabase', profile: emp };
   return null;
 }
 
@@ -86,13 +94,25 @@ router.get('/me', async (req, res) => {
     const empCode = emp.emp_code || emp.id;
     const empName = emp.name;
 
+    // Refetch the full profile with all survey columns to ensure surveyProgress is accurate
+    if (supabase) {
+      const { data: fullProfile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('emp_code', empCode)
+        .maybeSingle();
+      if (fullProfile) {
+        Object.assign(found.profile, mapProfile(fullProfile));
+      }
+    }
+
     // Fetch tasks assigned to this employee
     let myTasks = [];
     if (supabase) {
       const { data: tasks } = await supabase.from('tasks').select('*').ilike('assignee', `%${empName.split(' ')[0]}%`);
       myTasks = tasks || [];
     } else {
-      const db = found.db || readDB();
+      const db = found.db || (await readDB());
       myTasks = (db.tasks || []).filter(t => (t.assignee || '').toLowerCase().includes(empName.split(' ')[0].toLowerCase()));
     }
 
@@ -126,7 +146,7 @@ router.get('/snapshot', async (req, res) => {
       const { data } = await supabase.from('profiles').select('name, status, role, department');
       team = data || [];
     } else {
-      const db = readDB();
+      const db = await readDB();
       team = db.team || [];
     }
 
@@ -154,7 +174,7 @@ router.get('/roster', async (req, res) => {
       if (error) throw error;
       return res.json((data || []).map(mapProfile));
     }
-    const db = readDB();
+    const db = await readDB();
     res.json((db.team || []).map(emp => mapProfile({ ...emp, emp_code: emp.id, telegram_id: emp.telegramId })));
   } catch (err) {
     console.error('GET /team/roster error:', err.message);
@@ -180,13 +200,63 @@ router.get('/tasks', async (req, res) => {
       const { data } = await supabase.from('tasks').select('*').ilike('assignee', `%${firstName}%`);
       tasks = data || [];
     } else {
-      const db = found.db || readDB();
+      const db = found.db || (await readDB());
       tasks = (db.tasks || []).filter(t => (t.assignee || '').toLowerCase().includes(firstName.toLowerCase()));
     }
 
     res.json(tasks);
   } catch (err) {
     console.error('GET /team/tasks error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GET /api/team/daily-activity   ← Phase 2: Mini App EOD Auto-fill
+// ─────────────────────────────────────────────────────────────────────────────
+router.get('/daily-activity', async (req, res) => {
+  try {
+    const { telegramId } = req.query;
+    if (!telegramId) return res.status(400).json({ error: 'telegramId required' });
+
+    const found = await findEmpByTelegramId(telegramId);
+    if (!found) return res.status(404).json({ error: 'Employee not found' });
+    
+    const empName = found.profile.name || 'Crew Member';
+    
+    let subtasksCompleted = [];
+    if (supabase) {
+      // Get today's start date
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      const { data, error } = await supabase
+        .from('subtasks')
+        .select('title, task_id')
+        .eq('completed', true)
+        .eq('completed_by', empName)
+        .gte('completed_at', today.toISOString());
+        
+      if (!error && data) {
+        subtasksCompleted = data;
+      }
+    }
+
+    // Build markdown string
+    let autoFillText = "Today's Activity:\n";
+    if (subtasksCompleted.length > 0) {
+      subtasksCompleted.forEach(st => {
+        autoFillText += `- ✅ Completed subtask: ${st.title}\n`;
+      });
+    } else {
+      autoFillText += "- Worked on assigned tasks\n";
+    }
+    
+    autoFillText += "\nBlockers:\n- None";
+
+    res.json({ text: autoFillText });
+  } catch (err) {
+    console.error('GET /team/daily-activity error:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
@@ -223,18 +293,7 @@ router.post('/clockin', async (req, res) => {
       await supabase.from('profiles').update({ status: 'In Studio' }).eq('emp_code', empCode);
     }
 
-    // Also sync to db.json so bot reads correctly
-    const db = readDB();
-    const dbEmp = (db.team || []).find(e => e.id === empCode || String(e.telegramId) === String(telegramId));
-    if (dbEmp) {
-      dbEmp.status = 'In Studio';
-      let record = (db.attendance || []).find(a => a.employeeId === empCode || a.name === empName);
-      if (record) { record.status = 'In Studio'; record.clockInTime = nowTime; record.location = locationStr; }
-      else { (db.attendance = db.attendance || []).push({ employeeId: empCode, name: empName, status: 'In Studio', clockInTime: nowTime, location: locationStr }); }
-      writeDB(db);
-    }
-
-    broadcast('attendance_update', db.attendance || []);
+    broadcast('attendance_update', [{ employee_id: empCode, status: 'In Studio', clock_in_time: nowTime }]);
     res.json({ success: true, time: nowTime, status: 'In Studio' });
   } catch (err) {
     console.error('POST /team/clockin error:', err.message);
@@ -263,16 +322,7 @@ router.post('/clockout', async (req, res) => {
       await supabase.from('profiles').update({ status: 'Offline' }).eq('emp_code', empCode);
     }
 
-    const db = readDB();
-    const dbEmp = (db.team || []).find(e => e.id === empCode || String(e.telegramId) === String(telegramId));
-    if (dbEmp) {
-      dbEmp.status = 'Offline';
-      const rec = (db.attendance || []).find(a => a.employeeId === empCode || a.name === emp.name);
-      if (rec) rec.status = 'Clocked Out';
-      writeDB(db);
-    }
-
-    broadcast('attendance_update', db.attendance || []);
+    broadcast('attendance_update', [{ employee_id: empCode, status: 'Clocked Out', clock_out_time: nowTime }]);
     res.json({ success: true, time: nowTime, status: 'Offline' });
   } catch (err) {
     console.error('POST /team/clockout error:', err.message);
@@ -340,23 +390,7 @@ router.post('/survey', async (req, res) => {
       await supabase.from('profiles').update(profileUpdate).eq('emp_code', empCode);
     }
 
-    // Also sync to db.json
-    const db = found.db || readDB();
-    const dbEmp = (db.team || []).find(e => e.id === empCode || String(e.telegramId) === String(telegramId));
-    if (dbEmp) {
-      dbEmp.xp = currentXP;
-      dbEmp.badge = badge;
-      if (part === 1 && partData) {
-        if (partData.emergencyPhone) dbEmp.emergencyContact = partData.emergencyPhone;
-        if (partData.address) dbEmp.address = partData.address;
-      }
-      if (part === 3 && partData) {
-        dbEmp.bankInfo = profileUpdate.bank_info;
-      }
-      writeDB(db);
-    }
-
-    broadcast('team_update', db.team || []);
+    broadcast('team_update', [{ emp_code: empCode, xp: currentXP, badge }]);
 
     // Send bot notification for XP milestone
     try {
@@ -409,16 +443,7 @@ router.post('/agreement', async (req, res) => {
         await supabase.from('profiles').update(profileUpdate).eq('emp_code', empCode);
       }
 
-      // Sync to db.json — this is what the bot reads for menu rendering
-      const db = found.db || readDB();
-      const dbEmp = (db.team || []).find(e => e.id === empCode || String(e.telegramId) === String(telegramId));
-      if (dbEmp) {
-        dbEmp.onboardingComplete = true;
-        dbEmp.agreementStage = 1;
-        dbEmp.agreementSignedAt = profileUpdate.agreement_signed_at;
-        writeDB(db);
-      }
-      broadcast('team_update', db.team || []);
+      broadcast('team_update', [{ emp_code: empCode, onboarding_complete: true, agreement_stage: 1 }]);
 
       // Send bot congrats + unlock notification
       try {
@@ -437,11 +462,18 @@ router.post('/agreement', async (req, res) => {
 
       // Notify Finance Manager (Borhan - PBD-029) via Telegram
       try {
-        const db2 = readDB();
-        const borhan = (db2.team || []).find(t => t.id === 'PBD-029');
-        if (borhan?.telegramId) {
+        let borhanTgId = null;
+        if (supabase) {
+          const { data: borhan } = await supabase.from('profiles').select('telegram_id').eq('emp_code', 'PBD-029').maybeSingle();
+          borhanTgId = borhan?.telegram_id;
+        }
+        if (!borhanTgId) {
+          const db2 = await readDB();
+          borhanTgId = (db2.team || []).find(t => t.id === 'PBD-029')?.telegramId;
+        }
+        if (borhanTgId) {
           await sendTelegramNotification(
-            borhan.telegramId,
+            borhanTgId,
             `📝 *Employment Agreement — Stage 2 Countersign Required*\n\n` +
             `• Employee: *${empName}* (${empCode})\n` +
             `• Role: *${emp.role}*\n` +

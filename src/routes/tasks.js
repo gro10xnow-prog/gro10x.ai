@@ -12,13 +12,21 @@ function mapTask(t) {
     title: t.title,
     client: t.client,
     clientId: t.client_id,
+    projectId: t.project_id,
+    parentTaskId: t.parent_task_id,
+    blockedBy: t.blocked_by,
     stage: t.stage,
+    customStatus: t.custom_status || t.stage || 'To Do',
+    statusCategory: t.status_category || 'open',
     priority: t.priority,
     assignee: t.assignee,
     assigneeId: t.assignee_id,
     dueDate: t.due_date,
     department: t.department,
     category: t.category,
+    estimatedHours: Number(t.estimated_hours) || 0,
+    loggedHours: Number(t.logged_hours) || 0,
+    sortOrder: Number(t.sort_order) || 0,
     qcApprovedBy: t.qc_approved_by,
     qcApprovedAt: t.qc_approved_at,
     qcFeedback: t.qc_feedback,
@@ -118,7 +126,7 @@ router.put('/:id', requireAuth, async (req, res) => {
     // QC Gate Notification if moved to Internal QC
     if (req.body.stage === 'Internal QC') {
       try {
-        const { sendTelegramNotification } = require('../services/bot');
+        const { sendTelegramNotification } = require('../services/bot/notifications');
         const { data: ruhul } = await supabase.from('profiles').select('*').eq('emp_code', 'PBD-006').maybeSingle();
         if (ruhul?.telegram_id) {
           sendTelegramNotification(ruhul.telegram_id,
@@ -136,6 +144,59 @@ router.put('/:id', requireAuth, async (req, res) => {
     res.json({ success: true, task });
   } catch (err) {
     console.error('Task PUT error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PATCH Update Task Stage (Mini App & Board Handoffs)
+router.patch('/:id/stage', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { stage } = req.body;
+    if (!stage) return res.status(400).json({ error: 'stage is required' });
+
+    // Fetch existing task to check blockers
+    const { data: existing } = await supabase.from('tasks').select('*').eq('id', id).single();
+    if (existing && existing.blocked_by) {
+      // Check if blocking task is approved
+      const { data: blocker } = await supabase.from('tasks').select('stage').eq('id', existing.blocked_by).single();
+      if (blocker && blocker.stage !== 'Approved') {
+        return res.status(400).json({ error: `Cannot advance task. Blocked by task ${existing.blocked_by}` });
+      }
+    }
+
+    const updates = { stage, updated_at: new Date().toISOString() };
+    const { data, error } = await supabase.from('tasks').update(updates).eq('id', id).select().single();
+    if (error) throw error;
+
+    const task = mapTask(data);
+    const { data: allTasks } = await supabase.from('tasks').select('*').order('created_at', { ascending: false });
+    broadcast('task_update', (allTasks || []).map(mapTask));
+
+    res.json({ success: true, task });
+  } catch (err) {
+    console.error('Task PATCH stage error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PATCH Set Task Dependency (Blocker)
+router.patch('/:id/dependency', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { blockedBy } = req.body;
+
+    const updates = { blocked_by: blockedBy || null, updated_at: new Date().toISOString() };
+    const { data, error } = await supabase.from('tasks').update(updates).eq('id', id).select().single();
+    if (error) throw error;
+
+    const task = mapTask(data);
+    const { data: allTasks } = await supabase.from('tasks').select('*').order('created_at', { ascending: false });
+    broadcast('task_update', (allTasks || []).map(mapTask));
+
+    res.json({ success: true, task });
+  } catch (err) {
+    console.error('Task dependency error:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
@@ -288,6 +349,120 @@ router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
     res.json({ success: true });
   } catch (err) {
     console.error('Task DELETE error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─────────────────────────────────────────────
+// SUBTASKS APIs (ClickUp Hierarchy Phase 1)
+// ─────────────────────────────────────────────
+
+// GET Subtasks for a task
+router.get('/:id/subtasks', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { data, error } = await supabase.from('subtasks').select('*').eq('task_id', id).order('created_at', { ascending: true });
+    if (error) throw error;
+    res.json(data || []);
+  } catch (err) {
+    console.error('Subtasks GET error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST Create subtask
+router.post('/:id/subtasks', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title, assignee } = req.body;
+
+    if (!title || !title.trim()) {
+      return res.status(400).json({ error: 'Subtask title is required' });
+    }
+
+    const payload = {
+      task_id: id,
+      title: title.trim(),
+      assignee: assignee || null,
+      completed: false
+    };
+
+    const { data, error } = await supabase.from('subtasks').insert([payload]).select().single();
+    if (error) throw error;
+
+    broadcast('subtask_update', { taskId: id, action: 'create', subtask: data });
+    res.json({ success: true, subtask: data });
+  } catch (err) {
+    console.error('Subtask POST error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PATCH Toggle subtask completion
+router.patch('/subtasks/:subtaskId/toggle', requireAuth, async (req, res) => {
+  try {
+    const { subtaskId } = req.params;
+    const { completed, user } = req.body;
+
+    const updatePayload = {
+      completed: Boolean(completed),
+      completed_at: completed ? new Date().toISOString() : null,
+      completed_by: user || req.user?.name || 'User'
+    };
+
+    const { data, error } = await supabase.from('subtasks').update(updatePayload).eq('id', subtaskId).select().single();
+    if (error) throw error;
+
+    broadcast('subtask_update', { taskId: data.task_id, action: 'toggle', subtask: data });
+    res.json({ success: true, subtask: data });
+  } catch (err) {
+    console.error('Subtask TOGGLE error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+// PATCH /api/tasks/:id/stage — Update workflow stage (List View & Kanban drag-and-drop)
+router.patch('/:id/stage', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { stage } = req.body;
+    if (!stage) return res.status(400).json({ error: 'stage is required' });
+
+    const { data, error } = await supabase
+      .from('tasks')
+      .update({ stage, custom_status: stage, updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    broadcast('task_update', { action: 'stage_change', task: mapTask(data) });
+    res.json({ success: true, task: mapTask(data) });
+  } catch (err) {
+    console.error('Task STAGE update error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.patch('/:id/log-time', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { hours } = req.body;
+
+    const logged = Number(hours) || 0;
+    if (logged <= 0) return res.status(400).json({ error: 'Hours must be greater than 0' });
+
+    const { data: existing } = await supabase.from('tasks').select('logged_hours').eq('id', id).single();
+    const newLogged = (Number(existing?.logged_hours) || 0) + logged;
+
+    const { data, error } = await supabase.from('tasks').update({
+      logged_hours: newLogged,
+      updated_at: new Date().toISOString()
+    }).eq('id', id).select().single();
+
+    if (error) throw error;
+    res.json({ success: true, task: mapTask(data) });
+  } catch (err) {
+    console.error('Task log-time error:', err.message);
     res.status(500).json({ error: err.message });
   }
 });

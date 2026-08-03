@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PurpleOS — Client CRM & Pipeline</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/css/shell.css">
+  <style>
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+    .kpi-card {
+      background: var(--panel-bg);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 1.25rem;
+    }
+    .kpi-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+    .kpi-val {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: #fff;
+      margin-top: 0.3rem;
+    }
+    .client-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.25rem;
+    }
+    .client-card {
+      background: rgba(9, 9, 11, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+      transition: all 0.2s;
+    }
+    .client-card:hover {
+      border-color: var(--purple-main);
+      box-shadow: 0 8px 25px rgba(168, 85, 247, 0.2);
+    }
+    .client-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--purple-main), #818cf8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      color: #fff;
+      font-size: 1.1rem;
+    }
+
+    /* Modal Overlay */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(8px);
+      z-index: 99990;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-box {
+      background: rgba(18, 18, 22, 0.98);
+      border: 1px solid rgba(168, 85, 247, 0.3);
+      border-radius: 20px;
+      padding: 2rem;
+      width: 480px;
+      max-width: 90vw;
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    .form-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+    .form-input {
+      background: rgba(9, 9, 11, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #fff;
+      padding: 0.6rem 0.85rem;
+      border-radius: 10px;
+      font-size: 0.88rem;
+    }
+  </style>
+</head>
+<body>
+  <!-- App Header -->
+  <div id="app-header"></div>
+
+  <div class="main-wrapper">
+    <!-- App Sidebar -->
+    <div id="app-sidebar"></div>
+
+    <!-- Main Content Area -->
+    <main class="content-area">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <div>
+          <h1 style="font-size: 1.6rem; font-weight: 800; color: #fff; margin: 0;">👥 Client CRM & Pipeline</h1>
+          <div style="font-size: 0.88rem; color: var(--text-muted);">Client Accounts ➔ Contacts ➔ Retainer Agreements ➔ BD Leads</div>
+        </div>
+        <button class="btn-purple" onclick="openClientModal()">+ Add New Client</button>
+      </div>
+
+      <!-- KPI Summary Cards -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-label">Active Clients</div>
+          <div class="kpi-val" id="kpiActiveClients">0</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Total Retainer Spend</div>
+          <div class="kpi-val" id="kpiRetainerSpend" style="color: #34d399;">৳0</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Active Campaigns</div>
+          <div class="kpi-val" id="kpiCampaigns" style="color: #c084fc;">0</div>
+        </div>
+      </div>
+
+      <!-- Client Cards Container -->
+      <div style="background: var(--panel-bg); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; padding: 1.5rem;">
+        <div id="clientsContent">
+          <div style="color: var(--text-muted); padding: 2rem; text-align: center;">Loading client CRM database...</div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Add Client Modal -->
+  <div class="modal-overlay" id="clientModal">
+    <div class="modal-box">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h2 style="color: #fff; font-size: 1.2rem; margin: 0;">👥 Add New Client Account</h2>
+        <button onclick="closeClientModal()" style="background: transparent; border: none; color: #a1a1aa; font-size: 1.4rem; cursor: pointer;">✕</button>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Client / Brand Name</label>
+        <input type="text" id="cliName" class="form-input" placeholder="e.g. Chillox Bangladesh">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Industry</label>
+        <input type="text" id="cliIndustry" class="form-input" placeholder="e.g. Fast Food & QSR">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Contact Person & Title</label>
+        <input type="text" id="cliContact" class="form-input" placeholder="e.g. Sabrin Akhtar (Marketing Lead)">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Contact Phone</label>
+        <input type="text" id="cliPhone" class="form-input" placeholder="+8801700000000">
+      </div>
+
+      <button class="btn-purple" style="width: 100%; margin-top: 0.5rem;" onclick="submitNewClient()">🚀 Create Client Account</button>
+    </div>
+  </div>
+
+  <script src="/js/shell.js"></script>
+  <script>
+    window._allClients = [];
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadClientsData();
+    });
+
+    async function loadClientsData() {
+      try {
+        const clients = await fetch('/api/clients').then(r => r.json()).catch(() => []);
+        window._allClients = clients;
+
+        const activeCount = clients.filter(c => (c.status || '').toLowerCase() !== 'churned').length;
+        const totSpent = clients.reduce((acc, c) => acc + (Number(c.totalSpent || c.total_spent) || 0), 0);
+        const totCampaigns = clients.reduce((acc, c) => acc + (Number(c.activeCampaigns || c.active_campaigns) || 1), 0);
+
+        document.getElementById('kpiActiveClients').textContent = activeCount;
+        document.getElementById('kpiRetainerSpend').textContent = `৳${totSpent.toLocaleString()}`;
+        document.getElementById('kpiCampaigns').textContent = totCampaigns;
+
+        renderClientGrid();
+      } catch(e) {
+        console.error('Clients load err:', e);
+      }
+    }
+
+    function renderClientGrid() {
+      const box = document.getElementById('clientsContent');
+      const clients = window._allClients || [];
+
+      if (clients.length === 0) {
+        box.innerHTML = `<div style="color: var(--text-muted); padding: 2rem; text-align: center;">No client accounts found.</div>`;
+        return;
+      }
+
+      box.innerHTML = `
+        <div class="client-cards-grid">
+          ${clients.map(c => {
+            const name = c.name || 'Client';
+            const initials = (name.substring(0, 2)).toUpperCase();
+            return `
+              <div class="client-card">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <div class="client-avatar">${initials}</div>
+                  <span class="badge badge-purple">${c.status || 'Active Retainer'}</span>
+                </div>
+                <div>
+                  <div style="font-weight: 800; color: #fff; font-size: 1.1rem;">${name}</div>
+                  <div style="font-size: 0.78rem; color: var(--text-muted);">${c.industry || 'General Industry'}</div>
+                </div>
+                <div style="font-size: 0.82rem; color: #fff;">👤 ${c.contactPerson || c.contact_person || 'Lead Contact'}</div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.78rem; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 0.6rem;">
+                  <span style="color: var(--text-muted);">Total Spend: <strong style="color: #34d399;">৳${(Number(c.totalSpent || c.total_spent) || 0).toLocaleString()}</strong></span>
+                  <span style="color: var(--purple-light); font-weight: 700;">${c.activeCampaigns || c.active_campaigns || 1} Active</span>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }
+
+    function openClientModal() {
+      document.getElementById('clientModal').style.display = 'flex';
+    }
+
+    function closeClientModal() {
+      document.getElementById('clientModal').style.display = 'none';
+    }
+
+    async function submitNewClient() {
+      const name = document.getElementById('cliName').value.trim();
+      const industry = document.getElementById('cliIndustry').value.trim() || 'General';
+      const contactPerson = document.getElementById('cliContact').value.trim() || 'Primary Lead';
+      const phone = document.getElementById('cliPhone').value.trim();
+
+      if (!name) return alert('Please enter client name.');
+
+      try {
+        const res = await fetch('/api/clients', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, industry, contactPerson, phone, status: 'Active' })
+        });
+        const data = await res.json();
+        if (data.success || data.id || data.name) {
+          closeClientModal();
+          loadClientsData();
+        } else {
+          alert(data.error || 'Failed to create client');
+        }
+      } catch(e) {
+        console.error('Client submit err:', e);
+      }
+    }
+  </script>
+</body>
+</html>

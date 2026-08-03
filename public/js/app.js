@@ -4,6 +4,9 @@ let appData = {
   services: [],
   team: [],
   tasks: [],
+  projects: [],
+  subtasks: [],
+  workflows: [],
   reviews: [],
   invoices: [],
   expenses: [],
@@ -57,6 +60,12 @@ function showAdminToast(message, type = 'success', duration = 3500) {
 
 // Initialize App
 document.addEventListener('DOMContentLoaded', async () => {
+  // Guaranteed failsafe: always remove overlay after 3s no matter what
+  setTimeout(() => {
+    const ol = document.getElementById('adminLoadingOverlay');
+    if (ol) { ol.classList.add('is-hidden'); ol.remove(); }
+  }, 3000);
+
   await checkAuthSession();
   fetchInitialData();
   setupSSE();
@@ -65,35 +74,50 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function checkAuthSession() {
   const overlay = document.getElementById('adminLoadingOverlay');
+
+  const hideOverlay = () => {
+    if (overlay) { overlay.classList.add('is-hidden'); overlay.remove(); }
+  };
+
   try {
     const token = localStorage.getItem('sb-access-token') || localStorage.getItem('purpleos_pin_token');
-    const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-    const res = await fetch('/api/auth/me', { headers });
-    if (res.status === 401) {
-      console.warn('⚠️ Unauthenticated access attempt. Redirecting to login...');
+
+    // No token at all — go straight to login without waiting for API
+    if (!token || token.startsWith('pin-token-')) {
+      hideOverlay();
       window.location.href = '/auth?redirect=/admin';
       return;
     }
+
+    // Set a 5-second timeout so the fetch never hangs forever
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+
+    const res = await fetch('/api/auth/me', {
+      headers: { 'Authorization': `Bearer ${token}` },
+      signal: controller.signal
+    });
+    clearTimeout(timeout);
+
+    if (res.status === 401) {
+      hideOverlay();
+      window.location.href = '/auth?redirect=/admin';
+      return;
+    }
+
     const data = await res.json();
     if (data.success && data.user) {
-      console.log('👤 Authenticated Profile:', data.user.profile);
       window.currentUser = data.user;
       updateUserProfileUI();
-      // Hide loading overlay once auth + profile are confirmed
-      if (overlay) {
-        overlay.classList.add('is-hidden');
-        setTimeout(() => { if (overlay) overlay.remove(); }, 400);
-      }
+      hideOverlay();
     } else {
+      hideOverlay();
       window.location.href = '/auth?redirect=/admin';
     }
   } catch (err) {
-    console.warn('Auth session check error:', err);
-    // On network error, hide overlay and let user see dashboard in offline mode
-    if (overlay) {
-      overlay.classList.add('is-hidden');
-      setTimeout(() => { if (overlay) overlay.remove(); }, 400);
-    }
+    // Network error or timeout — hide overlay and let user see dashboard
+    console.warn('Auth check failed, proceeding in offline mode:', err.message);
+    hideOverlay();
   }
 }
 
@@ -306,13 +330,18 @@ function renderAllViews() {
 // ──────────────────────────────────────────────────────────────
 async function fetchInitialData() {
   try {
-    const res = await fetch('/api/db');
+    const token = localStorage.getItem('sb-access-token') || '';
+    const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+    const res = await fetch('/api/db', { headers });
     const db = await res.json();
 
     appData.clients    = db.clients    || [];
     appData.services   = db.services   || [];
     appData.team       = db.team       || [];
     appData.tasks      = db.tasks      || [];
+    appData.projects   = db.projects   || [];
+    appData.subtasks   = db.subtasks   || [];
+    appData.workflows  = db.workflows  || [];
     appData.reviews    = db.reviews    || [];
     appData.invoices   = db.invoices   || [];
     appData.expenses   = db.expenses   || [];
@@ -1206,20 +1235,59 @@ function switchKanbanView(mode) {
   activeKanbanView = mode;
   const boardEl = document.getElementById('kanbanBoard');
   const calEl = document.getElementById('kanbanCalendar');
+  const listEl = document.getElementById('kanbanListContainer');
   const btnBoard = document.getElementById('btnKanbanViewBoard');
   const btnCal = document.getElementById('btnKanbanViewCalendar');
+  const btnList = document.getElementById('btnKanbanViewList');
+
+  // Hide all
+  if (boardEl) boardEl.style.display = 'none';
+  if (calEl) calEl.style.display = 'none';
+  if (listEl) listEl.style.display = 'none';
+  if (btnBoard) btnBoard.classList.remove('active');
+  if (btnCal) btnCal.classList.remove('active');
+  if (btnList) btnList.classList.remove('active');
 
   if (mode === 'calendar') {
-    if (boardEl) boardEl.style.display = 'none';
     if (calEl) calEl.style.display = 'block';
-    if (btnBoard) btnBoard.classList.remove('active');
     if (btnCal) btnCal.classList.add('active');
     renderKanbanCalendar();
+  } else if (mode === 'list') {
+    if (listEl) listEl.style.display = 'block';
+    if (btnList) btnList.classList.add('active');
+    renderListView('stage'); // Default grouping
   } else {
     if (boardEl) boardEl.style.display = 'grid';
-    if (calEl) calEl.style.display = 'none';
     if (btnBoard) btnBoard.classList.add('active');
-    if (btnCal) btnCal.classList.remove('active');
+    renderKanban();
+  }
+}
+
+let selectedProjectFilter = 'ALL';
+
+function filterKanbanByProject(projectId) {
+  selectedProjectFilter = projectId;
+  renderKanban();
+}
+
+function populateProjectFilter() {
+  const filterSelect = document.getElementById('kanbanProjectFilter');
+  if (!filterSelect) return;
+  const projects = appData.projects || [];
+  let html = '<option value="ALL">📁 All Projects</option>';
+  projects.forEach(p => {
+    html += `<option value="${p.id}" ${selectedProjectFilter === p.id ? 'selected' : ''}>📁 ${p.name} (${p.clientName || 'Agency'})</option>`;
+  });
+  filterSelect.innerHTML = html;
+
+  // Also populate new task / new project client selects
+  const projClientSelect = document.getElementById('newProjectClient');
+  if (projClientSelect) {
+    let cHtml = '<option value="">Internal / Agency General</option>';
+    (appData.clients || []).forEach(c => {
+      cHtml += `<option value="${c.id || c.name}">${c.name}</option>`;
+    });
+    projClientSelect.innerHTML = cHtml;
   }
 }
 
@@ -1228,12 +1296,19 @@ function renderKanban() {
   const board = document.getElementById('kanbanBoard');
   if (!board) return;
 
+  populateProjectFilter();
   renderWorkloadMeter();
 
   const stages = ['Strategy', 'Scripting', 'Shooting', 'Editing', 'Client Review', 'Approved'];
+  let tasks = appData.tasks || [];
+
+  // Filter by selected project if set
+  if (selectedProjectFilter !== 'ALL') {
+    tasks = tasks.filter(t => t.projectId === selectedProjectFilter || t.project_id === selectedProjectFilter);
+  }
 
   board.innerHTML = stages.map(stage => {
-    const stageTasks = appData.tasks.filter(t => t.stage === stage);
+    const stageTasks = tasks.filter(t => t.stage === stage);
     return `
       <div class="kanban-col" data-stage="${stage}">
         <div class="kanban-col-header">
@@ -1244,18 +1319,52 @@ function renderKanban() {
           const priorityClass = t.priority === 'Urgent' ? 'badge-pink' : (t.priority === 'High' ? 'badge-amber' : 'badge-purple');
           const assignees = t.assignees || (t.assignee ? [t.assignee] : ['Unassigned']);
 
-          // Render stacked avatar circles
+          // Stacked avatars
           const avatarsHtml = assignees.map(name => {
             const initials = name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
             return `<span class="crew-avatar" title="${name}">${initials}</span>`;
           }).join('');
 
+          // ClickUp Hierarchy: Subtask checklist calculations
+          const taskSubtasks = (appData.subtasks || []).filter(st => st.task_id === t.id || st.taskId === t.id);
+          const completedCount = taskSubtasks.filter(st => st.completed).length;
+          const totalCount = taskSubtasks.length;
+          const progressPct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+
+          const subtasksListHtml = taskSubtasks.map(st => `
+            <div style="display:flex; align-items:center; gap:0.5rem; margin-top:0.3rem; font-size:0.75rem; color:${st.completed ? '#64748b' : '#e2e8f0'}; text-decoration:${st.completed ? 'line-through' : 'none'};">
+              <input type="checkbox" ${st.completed ? 'checked' : ''} onchange="toggleSubtaskStatus('${st.id}', this.checked)" style="accent-color:var(--purple-accent); cursor:pointer;">
+              <span style="flex:1;">${st.title}</span>
+            </div>
+          `).join('');
+
           return `
             <div class="kanban-card" draggable="true" data-task-id="${t.id}">
               <div class="kanban-card-title">${t.title}</div>
-              <div class="kanban-card-client">🏢 ${t.client}</div>
+              <div class="kanban-card-client">🏢 ${t.client || 'Agency'}</div>
               <div style="font-size:0.75rem; color:#94a3b8; margin: 0.3rem 0;">📅 Due: ${t.dueDate || '2026-07-30'}</div>
               
+              <!-- Subtask Progress Badge & Accordion -->
+              <div style="margin: 0.5rem 0; padding: 0.4rem 0.6rem; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.72rem; color:var(--text-muted);">
+                  <span>☑️ Subtasks (${completedCount}/${totalCount})</span>
+                  <span style="color:var(--purple-light); font-weight:600;">${progressPct}%</span>
+                </div>
+                ${totalCount > 0 ? `
+                  <div style="width:100%; background:rgba(255,255,255,0.1); height:4px; border-radius:2px; margin-top:0.3rem; overflow:hidden;">
+                    <div style="width:${progressPct}%; background:linear-gradient(90deg, #a855f7, #3b82f6); height:100%;"></div>
+                  </div>
+                ` : ''}
+                
+                ${subtasksListHtml}
+
+                <!-- Quick Add Subtask Input -->
+                <form onsubmit="submitQuickSubtask('${t.id}', event)" style="margin-top:0.4rem; display:flex; gap:0.3rem;">
+                  <input type="text" id="subtaskInput-${t.id}" class="form-input" placeholder="+ Add checklist item..." style="font-size:0.7rem; padding:0.2rem 0.4rem; height:24px; border-radius:4px; flex:1;" required>
+                  <button type="submit" class="btn-secondary" style="padding:0 0.4rem; font-size:0.7rem; height:24px;">+</button>
+                </form>
+              </div>
+
               <div class="kanban-card-footer" style="margin-top: 0.5rem; display:flex; justify-content:space-between; align-items:center;">
                 <div style="display:flex; align-items:center; gap:0.4rem;">
                   <div class="crew-avatar-stack">${avatarsHtml}</div>
@@ -1408,9 +1517,99 @@ async function advanceTaskToStage(taskId, targetStage) {
   } catch (err) {
     console.error('Error moving task via drag-and-drop:', err);
   }
+// ─────────────────────────────────────────────
+// Phase 2: ClickUp Dense List View
+// ─────────────────────────────────────────────
+function renderListView(groupBy = 'stage') {
+  const listBody = document.getElementById('kanbanListBody');
+  if (!listBody) return;
+
+  populateProjectFilter();
+  let tasks = appData.tasks || [];
+  
+  if (selectedProjectFilter !== 'ALL') {
+    tasks = tasks.filter(t => t.projectId === selectedProjectFilter || t.project_id === selectedProjectFilter);
+  }
+
+  // Grouping logic
+  const groups = {};
+  tasks.forEach(t => {
+    let key = 'Other';
+    if (groupBy === 'stage') key = t.stage || 'To Do';
+    if (groupBy === 'project') {
+      const proj = (appData.projects || []).find(p => p.id === t.projectId || p.id === t.project_id);
+      key = proj ? proj.name : 'No Project';
+    }
+    if (groupBy === 'assignee') {
+      key = t.assignee || 'Unassigned';
+    }
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(t);
+  });
+
+  let html = '';
+  for (const [groupName, groupTasks] of Object.entries(groups)) {
+    html += `
+      <tr style="background: rgba(255,255,255,0.02);">
+        <td colspan="7" style="padding: 0.8rem; font-weight: 700; color: var(--purple-light);">
+          ${groupName === 'stage' ? '🔄' : (groupBy === 'project' ? '📁' : '👤')} ${groupName} 
+          <span style="font-size:0.75rem; color:var(--text-muted); font-weight:normal; margin-left:0.5rem;">(${groupTasks.length} tasks)</span>
+        </td>
+      </tr>
+    `;
+
+    groupTasks.forEach(t => {
+      const priorityColor = t.priority === 'Urgent' ? '#ec4899' : (t.priority === 'High' ? '#fbbf24' : '#a855f7');
+      const taskSubtasks = (appData.subtasks || []).filter(st => st.task_id === t.id || st.taskId === t.id);
+      const completedCount = taskSubtasks.filter(st => st.completed).length;
+      
+      const proj = (appData.projects || []).find(p => p.id === t.projectId || p.id === t.project_id);
+      const projectName = proj ? proj.name : (t.client || 'Agency');
+
+      const isBlocked = Boolean(t.blockedBy);
+      const blockerHtml = isBlocked ? `<span style="font-size:0.68rem; background:rgba(239,68,68,0.2); color:#ef4444; border:1px solid rgba(239,68,68,0.4); padding:0.1rem 0.35rem; border-radius:4px; margin-left:0.4rem;" title="Blocked by ${t.blockedBy}">🚫 Blocked</span>` : '';
+
+      html += `
+        <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); hover:background:rgba(255,255,255,0.02);">
+          <td style="padding: 0.8rem; font-weight: 500;">
+            <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+              <span style="width:8px; height:8px; border-radius:50%; background:${priorityColor}; display:inline-block;"></span>
+              ${t.title}
+              ${blockerHtml}
+            </div>
+          </td>
+          <td style="padding: 0.8rem; font-size:0.85rem; color:var(--text-muted);">${projectName}</td>
+          <td style="padding: 0.8rem; font-size:0.85rem;">${t.assignee || 'Unassigned'}</td>
+          <td style="padding: 0.8rem;">
+            <select class="role-select" style="font-size:0.75rem; padding:0.2rem 0.5rem;" onchange="advanceTaskStage('${t.id}', this.value)">
+              <option value="Strategy" ${t.stage === 'Strategy' ? 'selected' : ''}>Strategy</option>
+              <option value="Scripting" ${t.stage === 'Scripting' ? 'selected' : ''}>Scripting</option>
+              <option value="Shooting" ${t.stage === 'Shooting' ? 'selected' : ''}>Shooting</option>
+              <option value="Editing" ${t.stage === 'Editing' ? 'selected' : ''}>Editing</option>
+              <option value="Client Review" ${t.stage === 'Client Review' ? 'selected' : ''}>Client Review</option>
+              <option value="Approved" ${t.stage === 'Approved' ? 'selected' : ''}>Approved</option>
+            </select>
+          </td>
+          <td style="padding: 0.8rem; font-size:0.85rem; color:${priorityColor};">${t.priority}</td>
+          <td style="padding: 0.8rem; font-size:0.85rem;">${t.dueDate || 'N/A'}</td>
+          <td style="padding: 0.8rem; font-size:0.85rem;">
+            <div style="display:flex; align-items:center; gap:0.5rem;">
+              <span>${completedCount}/${taskSubtasks.length}</span>
+              ${taskSubtasks.length > 0 ? `
+                <div style="width:40px; background:rgba(255,255,255,0.1); height:4px; border-radius:2px; overflow:hidden;">
+                  <div style="width:${Math.round((completedCount/taskSubtasks.length)*100)}%; background:var(--purple-accent); height:100%;"></div>
+                </div>
+              ` : ''}
+            </div>
+          </td>
+        </tr>
+      `;
+    });
+  }
+
+  listBody.innerHTML = html;
 }
 
-// BC-2: Shoot & Deliverables 31-Day Calendar Renderer
 function renderKanbanCalendar() {
   const grid = document.getElementById('kanbanCalendarGrid');
   if (!grid) return;
@@ -1469,7 +1668,7 @@ function renderKanbanCalendar() {
   grid.innerHTML = headersHtml + daysHtml;
 }
 
-// Workload Capacity Meter Rendering
+// Workload Capacity Meter Rendering (Phase 3 ClickUp Resource Planning)
 function renderWorkloadMeter() {
   const container = document.getElementById('workloadMeterContainer');
   if (!container || !appData.team) return;
@@ -1480,16 +1679,19 @@ function renderWorkloadMeter() {
       const allAssignees = [...(t.assignees || []), t.assignee].filter(Boolean);
       return allAssignees.some(a => a.toLowerCase().includes(empFirstName));
     });
-    const capacityPct = Math.min(100, Math.round((assignedTasks.length / 5) * 100));
-    const meterColor = capacityPct > 80 ? '#ec4899' : (capacityPct > 50 ? '#a855f7' : '#22c55e');
+    
+    // Sum estimated hours (default 8h per task if not specified)
+    const totalEstHours = assignedTasks.reduce((sum, t) => sum + (t.estimatedHours || 8), 0);
+    const capacityPct = Math.min(100, Math.round((totalEstHours / 40) * 100));
+    const meterColor = capacityPct > 90 ? '#ec4899' : (capacityPct > 65 ? '#fbbf24' : '#22c55e');
 
     return `
       <div style="flex:1; min-width:180px; padding:0.75rem; background:rgba(9,9,11,0.6); border:1px solid rgba(255,255,255,0.08); border-radius:12px;">
         <div style="display:flex; justify-content:space-between; font-size:0.8rem; font-weight:700; margin-bottom:0.3rem;">
           <span>${emp.name}</span>
-          <span style="color:${meterColor};">${assignedTasks.length} / 5 Tasks</span>
+          <span style="color:${meterColor};">${totalEstHours}h / 40h</span>
         </div>
-        <div style="font-size:0.72rem; color:#94a3b8; margin-bottom:0.4rem;">${emp.role}</div>
+        <div style="font-size:0.72rem; color:#94a3b8; margin-bottom:0.4rem;">${emp.role} (${assignedTasks.length} active tasks)</div>
         <div style="width:100%; height:6px; background:rgba(255,255,255,0.1); border-radius:4px; overflow:hidden;">
           <div style="width:${capacityPct}%; height:100%; background:${meterColor}; transition:width 0.3s ease;"></div>
         </div>
@@ -1563,6 +1765,101 @@ async function deleteTask(taskId, event) {
   } catch (err) {
     console.error('Error deleting task:', err);
     showAdminToast('Network error while deleting task.', 'error');
+  }
+}
+
+// Subtask & Project Handlers (ClickUp Hierarchy Phase 1)
+async function toggleSubtaskStatus(subtaskId, completed) {
+  try {
+    const token = localStorage.getItem('sb-access-token') || '';
+    const res = await fetch(`/api/tasks/subtasks/${subtaskId}/toggle`, {
+      method: 'PATCH',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ completed })
+    });
+    const data = await res.json();
+    if (data.success) {
+      const idx = (appData.subtasks || []).findIndex(st => st.id === subtaskId);
+      if (idx > -1) {
+        appData.subtasks[idx] = data.subtask;
+      }
+      renderKanban();
+    }
+  } catch (err) {
+    console.error('Error toggling subtask:', err);
+  }
+}
+
+async function submitQuickSubtask(taskId, event) {
+  event.preventDefault();
+  const input = document.getElementById(`subtaskInput-${taskId}`);
+  const title = input ? input.value.trim() : '';
+  if (!title) return;
+
+  try {
+    const token = localStorage.getItem('sb-access-token') || '';
+    const res = await fetch(`/api/tasks/${taskId}/subtasks`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ title })
+    });
+    const data = await res.json();
+    if (data.success) {
+      if (!appData.subtasks) appData.subtasks = [];
+      appData.subtasks.push(data.subtask);
+      if (input) input.value = '';
+      renderKanban();
+      showAdminToast('☑️ Subtask added!', 'success');
+    }
+  } catch (err) {
+    console.error('Error adding subtask:', err);
+  }
+}
+
+function openAddProjectModal() {
+  const modal = document.getElementById('addProjectModal');
+  if (modal) modal.classList.remove('hidden');
+}
+
+function closeAddProjectModal() {
+  const modal = document.getElementById('addProjectModal');
+  if (modal) modal.classList.add('hidden');
+}
+
+async function submitNewProject(event) {
+  event.preventDefault();
+  const name = document.getElementById('newProjectName').value.trim();
+  const clientName = document.getElementById('newProjectClient').value;
+  const department = document.getElementById('newProjectDept').value;
+  const description = document.getElementById('newProjectDescription').value.trim();
+
+  try {
+    const token = localStorage.getItem('sb-access-token') || '';
+    const res = await fetch('/api/projects', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ name, clientName, department, description })
+    });
+    const data = await res.json();
+    if (data.success) {
+      if (!appData.projects) appData.projects = [];
+      appData.projects.unshift(data.project);
+      closeAddProjectModal();
+      renderKanban();
+      showAdminToast(`📁 Project "${name}" created successfully!`, 'success');
+    }
+  } catch (err) {
+    console.error('Error creating project:', err);
+    showAdminToast('Error creating project: ' + err.message, 'error');
   }
 }
 
@@ -2170,21 +2467,6 @@ async function updateInvoiceStatus(invoiceId, newStatus) {
   }
 }
 
-  try {
-    const res = await fetch(`/api/invoices/${invoiceId}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: newStatus })
-    });
-    const data = await res.json();
-    if (data.success) {
-      fetchInitialData();
-    }
-  } catch (err) {
-    console.error('Error updating invoice status:', err);
-  }
-}
-
 // BC-5: Financial Revenue / Expense / Salary Bar Chart Renderer
 function renderFinancialChart() {
   const container = document.getElementById('financialChartPanel');
@@ -2251,7 +2533,7 @@ function renderFinancialChart() {
 // 💰 3-TIER EXPENSE APPROVAL CHAIN (Phase B)
 // ==========================================
 
-let expenseStatusFilter = 'ALL';
+expenseStatusFilter = 'ALL';
 let _inspectorExpId = null;
 
 function setExpenseFilter(status) {
@@ -4336,7 +4618,7 @@ function switchSocialView(mode) {
   }
 }
 
-let _editingPostId = null;
+_editingPostId = null;
 let _dispatchPostId = null;
 
 function renderSocialCalendar() {
@@ -5269,7 +5551,6 @@ async function pushAccessCardTelegram() {
   } catch (err) {
     showAdminToast('Telegram push error: ' + err.message, 'error');
   }
-}
 }
 
 async function saveBotConfig() {
