@@ -223,28 +223,21 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function renderServiceDetailPage() {
+  // Direct ID lookup — the only reliable approach
+  const ID_TO_KEY = {
+    'svc-001': 'digital-marketing',
+    'svc-002': 'video-editing',
+    'svc-003': 'tvc-production',
+    'svc-004': 'branding-graphics',
+    'svc-005': 'website-development',
+    'svc-006': 'custom-tech'
+  };
+
   const urlParams = new URLSearchParams(window.location.search);
-  const rawId = (urlParams.get('id') || '').toLowerCase();
-  const rawSlug = (urlParams.get('slug') || urlParams.get('category') || urlParams.get('title') || urlParams.get('service') || '').toLowerCase();
-  const path = window.location.pathname.toLowerCase();
+  const rawId = (urlParams.get('id') || '').trim().toLowerCase();
 
-  const queryStr = `${rawId} ${rawSlug} ${path}`.toLowerCase();
-
-  let key = 'digital-marketing';
-
-  if (queryStr.includes('svc-002') || queryStr.includes('reels') || queryStr.includes('short-form') || queryStr.includes('video editing') || queryStr.includes('content & film') || rawId === '2') {
-    key = 'video-editing';
-  } else if (queryStr.includes('svc-003') || queryStr.includes('tvc') || queryStr.includes('ovc') || queryStr.includes('commercial') || rawId === '3') {
-    key = 'tvc-production';
-  } else if (queryStr.includes('svc-004') || queryStr.includes('branding') || queryStr.includes('design & brand') || queryStr.includes('graphics') || queryStr.includes('identity') || rawId === '4') {
-    key = 'branding-graphics';
-  } else if (queryStr.includes('svc-005') || queryStr.includes('website') || queryStr.includes('web engine') || rawId === '5') {
-    key = 'website-development';
-  } else if (queryStr.includes('svc-006') || queryStr.includes('custom-tech') || queryStr.includes('enterprise tech') || queryStr.includes('software') || rawId === '6') {
-    key = 'custom-tech';
-  } else if (queryStr.includes('svc-001') || queryStr.includes('digital') || queryStr.includes('marketing') || queryStr.includes('growth') || rawId === '1') {
-    key = 'digital-marketing';
-  }
+  // Lookup key by id param first, then fallback to digital-marketing
+  const key = ID_TO_KEY[rawId] || 'digital-marketing';
 
   const data = SERVICE_DATABASE[key] || SERVICE_DATABASE['digital-marketing'];
 
