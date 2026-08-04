@@ -17,7 +17,7 @@
       var token = localStorage.getItem('sb-access-token') ||
                   localStorage.getItem('purpleos_pin_token') ||
                   localStorage.getItem('purple_token');
-      window.location.replace(token ? '/pages/dashboard.html' : '/auth?redirect=/pages/dashboard.html');
+      window.location.replace(token ? '/app' : '/auth?redirect=/app');
     })();
   </script>
 </head>

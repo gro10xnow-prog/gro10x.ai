@@ -26,10 +26,17 @@ function mapLeave(l) {
   };
 }
 
-// GET all leaves
-router.get('/leaves', requireAuth, async (req, res) => {
+// GET leaves (mounted at /api/leaves or /api)
+router.get(['/', '/leaves'], requireAuth, async (req, res) => {
   try {
-    const { data, error } = await supabase.from('leaves').select('*').order('created_at', { ascending: false });
+    const empFilter = req.query.empId || req.query.employeeId;
+    let query = supabase.from('leaves').select('*').order('created_at', { ascending: false });
+
+    if (empFilter) {
+      query = query.eq('employee_id', empFilter);
+    }
+
+    const { data, error } = await query;
     if (error) throw error;
     res.json((data || []).map(mapLeave));
   } catch (err) {
@@ -67,8 +74,8 @@ router.post('/leaves', requireAuth, async (req, res) => {
   }
 });
 
-// POST /leaves/:id/approve (Verification Test & API endpoint)
-router.post('/leaves/:id/approve', requireAuth, async (req, res) => {
+// POST /leaves/:id/approve & /manager-approve
+router.post(['/leaves/:id/approve', '/leaves/:id/manager-approve'], requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
     const updates = {
@@ -87,6 +94,30 @@ router.post('/leaves/:id/approve', requireAuth, async (req, res) => {
     res.json({ success: true, leave });
   } catch (err) {
     console.error('Leave approve error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /leaves/:id/reject
+router.post('/leaves/:id/reject', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = {
+      status: 'Rejected',
+      reviewed_by: req.body.reviewedBy || req.user.name || 'Manager',
+      updated_at: new Date().toISOString()
+    };
+
+    const { data, error } = await supabase.from('leaves').update(updates).eq('id', id).select().single();
+    if (error) throw error;
+
+    const leave = mapLeave(data);
+    const { data: allLeaves } = await supabase.from('leaves').select('*').order('created_at', { ascending: false });
+    broadcast('leave_update', (allLeaves || []).map(mapLeave));
+
+    res.json({ success: true, leave });
+  } catch (err) {
+    console.error('Leave reject error:', err.message);
     res.status(500).json({ error: err.message });
   }
 });

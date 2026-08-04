@@ -144,4 +144,31 @@ router.put('/:id', requireAuth, async (req, res) => {
   }
 });
 
+// PATCH /api/tickets/:id/status — Quick status update
+router.patch('/:id/status', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    if (!status) return res.status(400).json({ error: 'Status is required' });
+
+    const updates = {
+      status,
+      updated_at: new Date().toISOString()
+    };
+    if (status === 'Resolved' || status === 'Closed') {
+      updates.resolved_at = new Date().toISOString();
+    }
+
+    const { data, error } = await supabase.from('tickets').update(updates).eq('id', id).select().single();
+    if (error) throw error;
+
+    const formatted = mapTicket(data);
+    broadcast('ticket_update', [formatted]);
+    res.json({ success: true, ticket: formatted });
+  } catch (err) {
+    console.error('PATCH /api/tickets/:id/status error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;

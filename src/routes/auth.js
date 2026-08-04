@@ -73,7 +73,7 @@ router.post('/auth/pin/generate', requireAuth, requireAdmin, async (req, res) =>
 
   const pinRecord = await createTempPin(cleanPhone, userObj?.id || linkedId, targetType, email || userObj?.email || '');
 
-  const portalPath = targetType === 'team' ? '/team' : '/partners';
+  const portalPath = targetType === 'team' ? '/crew' : '/client';
   const botUsername = targetType === 'team' ? 'PurpleManBot' : 'PurpleBotAgencyBot';
   const portalUrl = `https://purpleos-iota.vercel.app${portalPath}?phone=${encodeURIComponent(cleanPhone)}`;
 

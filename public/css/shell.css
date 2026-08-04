@@ -1,69 +1,29 @@
 /**
  * public/css/shell.css
  * ─────────────────────────────────────────────────────────────────────────────
- * PurpleOS Shared Navigation & Page Layout System v2.0
- * Includes: Dual Theme Support (Light/Dark), Mobile Bottom Nav, Glassmorphism
+ * PurpleOS Shared Navigation & Page Layout System v3.0
+ * Pure layout structure (Top Header, Left Sidebar, Content Area, Mobile Nav).
+ * Imports tokens.css for variables and components.css for UI styling.
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
-:root, :root[data-theme="dark"] {
-  --bg-dark: #09090d;
-  --bg-panel: rgba(18, 14, 28, 0.82);
-  --bg-card: rgba(26, 20, 40, 0.7);
-  --bg-input: rgba(255, 255, 255, 0.05);
-  --border-color: rgba(255, 255, 255, 0.09);
-  --border-glow: rgba(236, 72, 153, 0.35);
-  --purple-main: #9333ea;
-  --purple-light: #c084fc;
-  --pink-accent: #ec4899;
-  --rose-accent: #be185d;
-  --orange-accent: #f97316;
-  --text-main: #f8fafc;
-  --text-muted: #94a3b8;
-  --text-dim: #64748b;
-  --nav-bg: rgba(15, 10, 24, 0.95);
-  --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-  --header-bg: rgba(9, 9, 13, 0.9);
-}
-
-:root[data-theme="light"] {
-  --bg-dark: #fcf8fa;
-  --bg-panel: rgba(255, 255, 255, 0.9);
-  --bg-card: #ffffff;
-  --bg-input: #f8fafc;
-  --border-color: #f1f5f9;
-  --border-glow: rgba(236, 72, 153, 0.25);
-  --purple-main: #7e22ce;
-  --purple-light: #9333ea;
-  --pink-accent: #be185d;
-  --rose-accent: #9d174d;
-  --orange-accent: #ea580c;
-  --text-main: #1e1030;
-  --text-muted: #64748b;
-  --text-dim: #94a3b8;
-  --nav-bg: #1e0a18;
-  --card-shadow: 0 4px 20px rgba(236, 72, 153, 0.08);
-  --header-bg: rgba(255, 255, 255, 0.92);
-}
-
-* {
-  box-sizing: border-box;
-}
+@import url('./tokens.css');
+@import url('./components.css');
 
 body {
   margin: 0;
   padding: 0;
-  background-color: var(--bg-dark);
-  color: var(--text-main);
-  font-family: 'Plus Jakarta Sans', 'Outfit', system-ui, -apple-system, sans-serif;
-  transition: background-color 0.25s ease, color 0.25s ease;
+  background-color: var(--surface-0);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  transition: background-color var(--transition-normal), color var(--transition-normal);
 }
 
-/* App Header */
+/* ───── TOP HEADER BAR ───── */
 .top-header {
-  height: 64px;
-  background: var(--header-bg);
-  border-bottom: 1px solid var(--border-color);
+  height: var(--header-height);
+  background: var(--surface-1);
+  border-bottom: 1px solid var(--border-subtle);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -86,7 +46,7 @@ body {
 .brand-logo {
   width: 36px;
   height: 36px;
-  background: linear-gradient(135deg, var(--rose-accent), var(--pink-accent), var(--orange-accent));
+  background: var(--gradient-rose);
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -95,21 +55,21 @@ body {
   font-size: 1rem;
   color: #fff;
   box-shadow: 0 0 16px rgba(236, 72, 153, 0.35);
-  font-family: 'Outfit', sans-serif;
+  font-family: var(--font-heading);
 }
 
 .brand-title {
   font-size: 1.1rem;
   font-weight: 800;
   letter-spacing: -0.02em;
-  font-family: 'Outfit', sans-serif;
-  color: var(--text-main);
+  font-family: var(--font-heading);
+  color: var(--text-primary);
 }
 
 .theme-toggle-btn {
-  background: var(--bg-input);
-  border: 1px solid var(--border-color);
-  color: var(--text-main);
+  background: var(--surface-3);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
   width: 36px;
   height: 36px;
   border-radius: 10px;
@@ -118,11 +78,11 @@ body {
   justify-content: center;
   cursor: pointer;
   font-size: 1.1rem;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: var(--transition-fast);
 }
 
 .theme-toggle-btn:hover {
-  border-color: var(--pink-accent);
+  border-color: var(--pink-brand);
   transform: scale(1.05);
 }
 
@@ -130,33 +90,33 @@ body {
   display: flex;
   align-items: center;
   gap: 0.65rem;
-  background: var(--bg-input);
-  border: 1px solid var(--border-color);
+  background: var(--surface-3);
+  border: 1px solid var(--border-subtle);
   padding: 0.35rem 0.85rem;
   border-radius: 999px;
   text-decoration: none;
   color: inherit;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: var(--transition-fast);
   cursor: pointer;
 }
 
 .user-profile-badge:hover {
-  border-color: var(--pink-accent);
-  background: var(--bg-card);
+  border-color: var(--pink-brand);
+  background: var(--surface-2);
 }
 
 .user-avatar {
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--rose-accent), var(--pink-accent));
+  background: var(--gradient-rose);
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 800;
   font-size: 0.8rem;
   color: #fff;
-  font-family: 'Outfit', sans-serif;
+  font-family: var(--font-heading);
 }
 
 .user-info {
@@ -167,33 +127,33 @@ body {
 .user-name {
   font-size: 0.82rem;
   font-weight: 700;
-  color: var(--text-main);
+  color: var(--text-primary);
   line-height: 1.2;
 }
 
 .user-role-tag {
   font-size: 0.65rem;
-  color: var(--pink-accent);
+  color: var(--pink-brand);
   font-weight: 600;
 }
 
-/* App Main Wrapper */
+
+/* ───── MAIN WRAPPER & SIDEBAR ───── */
 .main-wrapper {
   display: flex;
-  min-height: calc(100vh - 64px);
+  min-height: calc(100vh - var(--header-height));
 }
 
-/* Sidebar Nav */
 .sidebar-nav {
-  width: 250px;
-  background: var(--bg-panel);
-  border-right: 1px solid var(--border-color);
+  width: var(--sidebar-width);
+  background: var(--surface-1);
+  border-right: 1px solid var(--border-subtle);
   padding: 1.25rem 0.85rem;
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
   flex-shrink: 0;
-  transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: var(--transition-normal);
 }
 
 .nav-category {
@@ -219,20 +179,20 @@ body {
   text-decoration: none;
   font-size: 0.88rem;
   font-weight: 600;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: var(--transition-fast);
   cursor: pointer;
 }
 
 .nav-item:hover {
-  background: var(--bg-input);
-  color: var(--text-main);
+  background: var(--surface-3);
+  color: var(--text-primary);
   transform: translateX(3px);
 }
 
 .nav-item.active {
   background: linear-gradient(135deg, rgba(236, 72, 153, 0.18), rgba(147, 51, 234, 0.12));
   border: 1px solid var(--border-glow);
-  color: var(--text-main);
+  color: var(--text-primary);
   font-weight: 800;
 }
 
@@ -240,7 +200,8 @@ body {
   font-size: 1.15rem;
 }
 
-/* Content Area */
+
+/* ───── CONTENT AREA ───── */
 .content-area {
   flex: 1;
   padding: 1.75rem;
@@ -248,18 +209,19 @@ body {
   padding-bottom: 90px;
 }
 
-/* Mobile Bottom Navigation Bar (< 768px) */
+
+/* ───── MOBILE BOTTOM NAV BAR (< 768px) ───── */
 .mobile-bottom-nav {
   display: none;
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  height: 66px;
-  background: var(--nav-bg);
+  height: var(--mobile-nav-height);
+  background: var(--surface-1);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border-top: 1px solid var(--border-color);
+  border-top: 1px solid var(--border-subtle);
   z-index: 1000;
   padding: 0.4rem 0.5rem;
   justify-content: space-around;
@@ -275,14 +237,14 @@ body {
   text-decoration: none;
   font-size: 0.62rem;
   font-weight: 700;
-  font-family: 'Outfit', sans-serif;
-  transition: color 0.15s;
+  font-family: var(--font-heading);
+  transition: color var(--transition-fast);
   padding: 0.3rem 0.6rem;
   border-radius: 10px;
 }
 
 .mobile-nav-btn.active {
-  color: var(--pink-accent);
+  color: var(--pink-brand);
 }
 
 .mobile-nav-btn .nav-icon {
@@ -305,4 +267,3 @@ body {
     display: none !important;
   }
 }
-

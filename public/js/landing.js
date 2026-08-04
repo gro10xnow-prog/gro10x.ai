@@ -176,8 +176,9 @@ async function fetchLandingServices() {
   if (!container) return;
 
   try {
-    const res = await fetch('/api/services');
-    const services = await res.json();
+    const res = await fetch('/api/cms');
+    const cmsData = await res.json();
+    const services = cmsData.services;
 
     if (!services || services.length === 0) return;
 
@@ -401,11 +402,9 @@ function showLandingToast(message, type = 'success') {
 // FETCH & RENDER PUBLIC CMS CONTENT
 async function fetchCMSContent() {
   try {
-    const res = await fetch('/api/public/content');
-    const data = await res.json();
-    if (!data.success || !data.content) return;
-
-    const cms = data.content;
+    const res = await fetch('/api/cms');
+    const cms = await res.json();
+    if (!cms) return;
 
     // 1. Client Marquee
     if (cms.clientMarquee && cms.clientMarquee.length > 0) {
@@ -436,10 +435,10 @@ async function fetchCMSContent() {
     }
 
     // 2. Portfolio Showcase
-    if (cms.portfolio && cms.portfolio.length > 0) {
+    if (cms.portfolioShowcase && cms.portfolioShowcase.length > 0) {
       const portGrid = document.querySelector('.pb-portfolio-grid');
       if (portGrid) {
-        portGrid.innerHTML = cms.portfolio.map(p => `
+        portGrid.innerHTML = cms.portfolioShowcase.map(p => `
           <div class="pb-portfolio-card">
             <div class="pb-portfolio-thumb" style="background-image: url('${p.image}');">
               <span class="pb-category-tag">${p.category}</span>

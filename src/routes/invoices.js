@@ -9,20 +9,20 @@ function mapInvoice(i) {
   if (!i) return null;
   return {
     id: i.id,
-    clientId: i.client_id,
-    clientName: i.client_name,
-    projectName: i.project_name,
-    projectRef: i.project_ref,
-    date: i.date,
-    dueDate: i.due_date,
-    paidDate: i.paid_date,
+    clientId: i.client_id || i.clientId,
+    clientName: i.client_name || i.clientName || i.client || 'Agency Client',
+    projectName: i.project_name || i.projectName,
+    projectRef: i.project_ref || i.projectRef,
+    date: i.date || i.created_at,
+    dueDate: i.due_date || i.dueDate,
+    paidDate: i.paid_date || i.paidDate,
     amount: Number(i.amount) || 0,
-    taxRate: Number(i.tax_rate) || 15,
+    taxRate: Number(i.tax_rate || i.taxRate) || 15,
     discount: Number(i.discount) || 0,
     status: i.status || 'Pending',
     items: i.items || [],
-    notes: i.notes,
-    createdAt: i.created_at
+    notes: i.notes || '',
+    createdAt: i.created_at || i.createdAt
   };
 }
 
@@ -30,16 +30,16 @@ function mapQuote(q) {
   if (!q) return null;
   return {
     id: q.id,
-    clientName: q.client_name,
+    clientName: q.client_name || q.clientName || 'General Client',
     amount: Number(q.amount) || 0,
-    taxRate: Number(q.tax_rate) || 15,
+    taxRate: Number(q.tax_rate || q.taxRate) || 15,
     discount: Number(q.discount) || 0,
     status: q.status || 'Draft',
-    date: q.date,
-    validUntil: q.valid_until,
+    date: q.date || q.created_at,
+    validUntil: q.valid_until || q.validUntil,
     items: q.items || [],
-    terms: q.terms,
-    createdAt: q.created_at
+    terms: q.terms || '',
+    createdAt: q.created_at || q.createdAt
   };
 }
 

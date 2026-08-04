@@ -6,6 +6,7 @@ const { supabase } = require('../services/supabase');
 const { broadcast } = require('../services/sse');
 const { sendTelegramNotification, getTeamBot } = require('../services/bot');
 const { readDB } = require('../services/db');
+const { createTempPin } = require('../services/auth-pins');
 
 function normalizePhone(p) {
   if (!p) return '';
@@ -652,6 +653,68 @@ router.put('/leaves/:id', requireAuth, requireManager, async (req, res) => {
     res.json({ success: true, leave });
   } catch (err) {
     console.error('Leave PUT error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/team — Add New Team Member & Generate Portal Access
+router.post('/', requireAuth, requireManager, async (req, res) => {
+  try {
+    const { name, role, department, phone, pin, baseSalary, bkashNo } = req.body;
+    if (!name || !phone) {
+      return res.status(400).json({ error: 'Name and phone are required' });
+    }
+
+    const normalizedPhone = normalizePhone(phone);
+    const { data: countData } = await supabase.from('team_members').select('id');
+    const newEmpCode = `PBD-${String((countData?.length || 0) + 1).padStart(3, '0')}`;
+
+    const payload = {
+      emp_code: newEmpCode,
+      name,
+      role: role || 'Production Specialist',
+      department: department || 'Production',
+      phone: normalizedPhone,
+      base_salary: Number(baseSalary) || 0,
+      status: 'Active',
+      access_level: 'Specialist / Crew',
+      bank_info: { mfsType: 'bKash', mfsNo: bkashNo || normalizedPhone },
+      created_at: new Date().toISOString()
+    };
+
+    const { data, error } = await supabase.from('team_members').insert([payload]).select().single();
+    if (error) throw error;
+
+    // Register login credentials immediately (phone + PIN) for /crew portal access
+    let pinRecord = null;
+    try {
+      const providedPin = pin && pin.length === 4 ? pin : null;
+      pinRecord = await createTempPin(normalizedPhone, newEmpCode, 'team', '');
+      // If a specific PIN was provided, update it immediately
+      if (providedPin && pinRecord) {
+        await supabase.from('pins').update({ pin: providedPin, is_permanent: true })
+          .eq('phone', normalizedPhone);
+        pinRecord.pin = providedPin;
+      }
+    } catch (pinErr) {
+      console.warn('PIN registration warning (non-critical):', pinErr.message);
+    }
+
+    const member = mapProfile(data);
+    const { data: allTeam } = await supabase.from('team_members').select('*').order('created_at', { ascending: false });
+    broadcast('team_update', (allTeam || []).map(mapProfile));
+
+    res.json({
+      success: true,
+      member,
+      credentials: pinRecord ? {
+        phone: normalizedPhone,
+        pin: pinRecord.pin,
+        portalUrl: '/crew'
+      } : null
+    });
+  } catch (err) {
+    console.error('Team Member POST error:', err.message);
     res.status(500).json({ error: err.message });
   }
 });

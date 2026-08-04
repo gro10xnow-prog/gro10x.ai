@@ -223,4 +223,35 @@ const handleRejectPost = async (req, res) => {
 router.post('/:id/reject', requireAuth, handleRejectPost);
 router.patch('/:id/reject', requireAuth, handleRejectPost);
 
+// PATCH Update Post Status (used by Client Review Room)
+router.patch('/:id/status', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status, feedback } = req.body;
+    const updates = {
+      status: status || 'Approved',
+      updated_at: new Date().toISOString()
+    };
+    if (feedback) {
+      updates.client_feedback = feedback;
+    }
+    if (status === 'Approved') {
+      updates.approved_by = req.user.name || 'Client';
+      updates.approved_at = new Date().toISOString();
+    }
+
+    const { data, error } = await supabase.from('social_posts').update(updates).eq('id', id).select().single();
+    if (error) throw error;
+
+    const post = mapPost(data);
+    const { data: allPosts } = await supabase.from('social_posts').select('*').order('created_at', { ascending: false });
+    broadcast('post_update', (allPosts || []).map(mapPost));
+
+    res.json({ success: true, post });
+  } catch (err) {
+    console.error('Social Post status update error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;

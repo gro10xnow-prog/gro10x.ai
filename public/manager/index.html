@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PurpleOS — Department Manager Portal</title>
+  <script>
+    (function() {
+      var token = localStorage.getItem('sb-access-token') ||
+                  localStorage.getItem('purpleos_pin_token') ||
+                  localStorage.getItem('purple_token');
+      if (!token) {
+        window.location.replace('/auth?redirect=' + encodeURIComponent(window.location.pathname + window.location.hash));
+      }
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/shell.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+  <!-- Top Header Navigation -->
+  <header class="top-header">
+    <div style="display: flex; align-items: center; gap: 0.75rem;">
+      <div class="brand-logo" style="background: linear-gradient(135deg, #3b82f6, #8b5cf6);">MP</div>
+      <div>
+        <div class="brand-title" id="mgrHeaderName">Department Manager</div>
+        <div style="font-size: 0.65rem; color: #60a5fa; font-weight: 800; letter-spacing: 0.06em;">DEPARTMENT MANAGER PORTAL</div>
+      </div>
+    </div>
+
+    <button onclick="mgrSignOut()" style="color: #f87171; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 10px; font-size: 0.8rem; font-weight: 700; padding: 0.4rem 0.75rem; cursor: pointer;">Sign Out</button>
+  </header>
+
+  <!-- Main Wrapper -->
+  <div class="main-wrapper">
+    <!-- Left Navigation Sidebar -->
+    <nav class="sidebar-nav">
+      <div class="nav-category">Department Operations</div>
+      <a href="#overview" class="nav-item active">
+        <span class="icon">📊</span>
+        <span>Overview</span>
+      </a>
+      <a href="#tasks" class="nav-item">
+        <span class="icon">📋</span>
+        <span>Task Pipeline</span>
+      </a>
+
+      <div class="nav-category">Team & HR</div>
+      <a href="#team" class="nav-item">
+        <span class="icon">👥</span>
+        <span>Team Roster</span>
+      </a>
+      <a href="#leaves" class="nav-item">
+        <span class="icon">🌴</span>
+        <span>Leave Approvals</span>
+      </a>
+      <a href="#tickets" class="nav-item">
+        <span class="icon">🎟️</span>
+        <span>Ticket Triage</span>
+      </a>
+    </nav>
+
+    <!-- Main View Content -->
+    <main id="manager-view" class="content-area">
+      <!-- Rendered dynamically -->
+    </main>
+  </div>
+
+  <script src="/manager/api.js"></script>
+  <script src="/manager/manager.js"></script>
+  <script>
+    function mgrSignOut() {
+      localStorage.removeItem('sb-access-token');
+      localStorage.removeItem('purple_user');
+      window.location.href = '/auth';
+    }
+  </script>
+</body>
+</html>

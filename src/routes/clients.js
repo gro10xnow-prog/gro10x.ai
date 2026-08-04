@@ -6,6 +6,25 @@ const { readDB, writeDB } = require('../services/db');
 const { broadcast } = require('../services/sse');
 const { supabase, isSupabaseConfigured } = require('../services/supabase');
 
+function mapClient(c) {
+  if (!c) return null;
+  return {
+    id: c.id,
+    name: c.name || '',
+    category: c.category || c.industry || 'General',
+    industry: c.industry || c.category || 'General',
+    contactPerson: c.contact_person || c.contactPerson || '',
+    email: c.email || '',
+    phone: c.phone || '',
+    whatsapp: c.whatsapp || c.phone || '',
+    status: c.status || 'Active Retainer',
+    totalSpent: Number(c.total_spent || c.totalSpent) || 0,
+    activeCampaigns: Number(c.active_campaigns || c.activeCampaigns) || 1,
+    pocs: c.pocs && Array.isArray(c.pocs) ? c.pocs : [],
+    createdAt: c.created_at || c.createdAt
+  };
+}
+
 // GET all clients (Admin sees all; Client sees ONLY their own client record)
 router.get('/', requireAuth, async (req, res) => {
   const isClient = req.user.linkedType === 'client';
@@ -18,12 +37,7 @@ router.get('/', requireAuth, async (req, res) => {
     }
     const { data, error } = await query;
     if (!error && data) {
-      return res.json(data.map(c => ({
-        ...c,
-        contactPerson: c.contact_person,
-        totalSpent: c.total_spent,
-        activeCampaigns: c.active_campaigns
-      })));
+      return res.json(data.map(mapClient));
     }
   }
 
@@ -34,7 +48,7 @@ router.get('/', requireAuth, async (req, res) => {
     clientsList = clientsList.filter(c => c.id === clientLimitId || (c.name || '').toLowerCase() === (req.user.name || '').toLowerCase());
   }
 
-  res.json(clientsList);
+  res.json(clientsList.map(mapClient));
 });
 
 // GET single client profile (Enforces Client Ownership)
@@ -44,19 +58,14 @@ router.get('/:id', requireAuth, requireClientOwnership, async (req, res) => {
   if (isSupabaseConfigured()) {
     const { data, error } = await supabase.from('clients').select('*').eq('id', id).single();
     if (!error && data) {
-      return res.json({
-        ...data,
-        contactPerson: data.contact_person,
-        totalSpent: data.total_spent,
-        activeCampaigns: data.active_campaigns
-      });
+      return res.json(mapClient(data));
     }
   }
 
   const db = await readDB();
   const client = (db.clients || []).find(c => c.id === id);
   if (!client) return res.status(404).json({ error: 'Client not found' });
-  res.json(client);
+  res.json(mapClient(client));
 });
 
 // POST Create new client (Admin only)
@@ -78,7 +87,8 @@ router.post('/', requireAuth, requireAdmin, async (req, res) => {
       status: newClient.status || 'Active Retainer',
       category: newClient.category || 'General',
       total_spent: '$0',
-      active_campaigns: newClient.activeCampaigns || []
+      active_campaigns: newClient.activeCampaigns || [],
+      pocs: newClient.pocs || []
     };
 
     const { error } = await supabase.from('clients').insert([payload]);
@@ -111,7 +121,8 @@ router.put('/:id', requireAuth, requireClientOwnership, async (req, res) => {
       phone: updates.phone,
       whatsapp: updates.whatsapp || updates.phone,
       email: updates.email,
-      status: updates.status
+      status: updates.status,
+      pocs: updates.pocs
     };
 
     const { error } = await supabase.from('clients').update(payload).eq('id', id);
@@ -170,7 +181,8 @@ router.get('/:id/dashboard', requireAuth, requireClientOwnership, async (req, re
       ...clientData,
       contactPerson: clientData.contact_person,
       totalSpent: clientData.total_spent,
-      activeCampaigns: clientData.active_campaigns || []
+      activeCampaigns: clientData.active_campaigns || [],
+      pocs: clientData.pocs || []
     };
 
     const clientName = client.name || '';

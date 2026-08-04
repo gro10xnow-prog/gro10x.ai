@@ -119,12 +119,12 @@ function saveSessionAndRedirect(user, linkedType, email, realToken) {
   
   // Build unified user object for shell and profile hydration
   const userObj = {
-    id: user?.id || 'PBD-001',
-    name: user?.name || (cleanPhone.includes('1708459008') ? 'Managing Director' : 'Staff User'),
-    role: user?.role || user?.accessLevel || (cleanPhone.includes('1708459008') ? 'Managing Director' : 'Team Member'),
+    id: user?.id || 'USR-001',
+    name: user?.name || 'PurpleOS User',
+    role: user?.role || user?.accessLevel || (linkedType === 'client' ? 'Client Representative' : 'Specialist'),
     phone: cleanPhone,
-    email: email || user?.email || 'contact@purpleos.agency',
-    accessLevel: user?.accessLevel || 'Owner'
+    email: email || user?.email || '',
+    accessLevel: user?.accessLevel || (linkedType === 'client' ? 'Client' : 'Specialist / Crew')
   };
 
   localStorage.setItem('purple_user', JSON.stringify(userObj));
@@ -147,28 +147,22 @@ function saveSessionAndRedirect(user, linkedType, email, realToken) {
   setTimeout(() => {
     const role = (user?.role || '').toLowerCase();
     const access = (user?.accessLevel || '').toLowerCase();
-    const empId = user?.id || '';
 
-    const isOwnerAdmin = ['PBD-000', 'PBD-001', 'PBD-002'].includes(empId) ||
-      access.includes('owner') || role.includes('owner') ||
-      role.includes('managing director') || role.includes('chairman') ||
-      role.includes('technology admin') ||
-      cleanPhone.includes('1708459008') || cleanPhone.includes('1612309290') || cleanPhone.includes('1708455081');
+    const isOwnerAdmin = access.includes('owner') || access.includes('admin') || 
+      role.includes('owner') || role.includes('managing director') || 
+      role.includes('chairman') || role.includes('admin') || role.includes('head');
 
-    const isFinance = access.includes('finance') || role.includes('finance');
     const isManager = access.includes('director') || access.includes('manager') ||
-      role.includes('director') || role.includes('manager') || role.includes('head');
+      role.includes('director') || role.includes('manager');
 
     if (isOwnerAdmin) {
-      window.location.href = '/admin';
-    } else if (isFinance) {
-      window.location.href = '/admin#financials';
+      window.location.href = '/app';
     } else if (isManager) {
       window.location.href = '/manager';
     } else if (linkedType === 'client' || role.includes('client')) {
-      window.location.href = '/partners';
+      window.location.href = '/client';
     } else {
-      window.location.href = '/team-miniapp';
+      window.location.href = '/crew';
     }
   }, 1000);
 }

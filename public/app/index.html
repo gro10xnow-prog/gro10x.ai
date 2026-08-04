@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PurpleOS — Admin Portal & Command Center</title>
+  <script>
+    (function() {
+      var token = localStorage.getItem('sb-access-token') ||
+                  localStorage.getItem('purpleos_pin_token') ||
+                  localStorage.getItem('purple_token');
+      if (!token) {
+        window.location.replace('/auth?redirect=' + encodeURIComponent(window.location.pathname + window.location.hash));
+      }
+      var theme = localStorage.getItem('purple_theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/shell.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+  <!-- Top App Header -->
+  <header class="top-header">
+    <div style="display: flex; align-items: center; gap: 1rem;">
+      <a href="#dashboard" class="brand-container">
+        <div class="brand-logo">PB</div>
+        <div>
+          <div class="brand-title">PurpleOS</div>
+          <div style="font-size: 0.65rem; color: var(--pink-brand); font-weight: 800; letter-spacing: 0.06em;">ADMIN COMMAND CENTER</div>
+        </div>
+      </a>
+      <span style="color: var(--border-subtle);">|</span>
+      <span id="headerPageTitle" style="font-size: 0.9rem; font-weight: 800; color: var(--text-secondary); font-family: var(--font-heading);">
+        📊 Executive Overview
+      </span>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 0.85rem;">
+      <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()" title="Toggle Light/Dark Theme">🌙</button>
+
+      <a href="#settings" class="user-profile-badge" title="Account Settings">
+        <div class="user-avatar" id="userAvatar">PB</div>
+        <div class="user-info">
+          <span class="user-name" id="userName">Admin User</span>
+          <span class="user-role-tag" id="userRoleTag">Owner</span>
+        </div>
+      </a>
+
+      <button onclick="adminSignOut()" style="color: #f87171; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 10px; font-size: 0.8rem; font-weight: 700; padding: 0.45rem 0.75rem; cursor: pointer;" title="Sign Out">🔓 Sign Out</button>
+    </div>
+  </header>
+
+  <!-- Main App Layout Wrapper -->
+  <div class="main-wrapper">
+    
+    <!-- Left Navigation Sidebar -->
+    <nav class="sidebar-nav">
+      <div class="nav-category">Command Center</div>
+      <a href="#dashboard" class="nav-item active">
+        <span class="icon">📊</span>
+        <span>Executive Overview</span>
+      </a>
+
+      <div class="nav-category">Client Intelligence</div>
+      <a href="#leads" class="nav-item">
+        <span class="icon">🎯</span>
+        <span>Leads Pipeline</span>
+      </a>
+      <a href="#crm" class="nav-item">
+        <span class="icon">👥</span>
+        <span>Client CRM</span>
+      </a>
+
+      <div class="nav-category">Production Hub</div>
+      <a href="#kanban" class="nav-item">
+        <span class="icon">📋</span>
+        <span>Project Pipeline</span>
+      </a>
+      <a href="#social" class="nav-item">
+        <span class="icon">📱</span>
+        <span>Social Planner</span>
+      </a>
+
+      <div class="nav-category">Finance & HR</div>
+      <a href="#finance" class="nav-item">
+        <span class="icon">💰</span>
+        <span>Financials & Expenses</span>
+      </a>
+      <a href="#hr" class="nav-item">
+        <span class="icon">👨‍💼</span>
+        <span>HR & Leave Requests</span>
+      </a>
+      <a href="#assets" class="nav-item">
+        <span class="icon">📷</span>
+        <span>Physical Assets</span>
+      </a>
+
+      <div class="nav-category">Support & System</div>
+      <a href="#tickets" class="nav-item">
+        <span class="icon">🎟️</span>
+        <span>Support Desk</span>
+      </a>
+      <a href="#settings" class="nav-item">
+        <span class="icon">⚙️</span>
+        <span>Settings</span>
+      </a>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main id="app-view" class="content-area">
+      <!-- Dynamic Views Rendered Here -->
+    </main>
+
+  </div>
+
+  <script src="/app/api.js"></script>
+  <script src="/app/app.js"></script>
+  <script>
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme') || 'dark';
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('purple_theme', next);
+      document.getElementById('themeToggleBtn').textContent = next === 'dark' ? '🌙' : '☀️';
+    }
+
+    (function syncThemeUI() {
+      const theme = localStorage.getItem('purple_theme') || 'dark';
+      const btn = document.getElementById('themeToggleBtn');
+      if (btn) btn.textContent = theme === 'dark' ? '🌙' : '☀️';
+    })();
+
+    function adminSignOut() {
+      localStorage.removeItem('sb-access-token');
+      localStorage.removeItem('purple_user');
+      window.location.href = '/auth';
+    }
+  </script>
+</body>
+</html>

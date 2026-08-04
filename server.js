@@ -113,20 +113,20 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public/index.html'));
 });
 
-app.get(['/admin', '/dashboard', '/os'], (req, res) => {
-  res.sendFile(path.join(__dirname, 'public/admin.html'));
+app.get(['/app', '/admin', '/dashboard', '/os'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/app/index.html'));
 });
 
 app.get(['/manager', '/manager-portal'], (req, res) => {
-  res.sendFile(path.join(__dirname, 'public/manager.html'));
+  res.sendFile(path.join(__dirname, 'public/manager/index.html'));
 });
 
 app.get(['/team', '/crew', '/staff'], (req, res) => {
-  res.sendFile(path.join(__dirname, 'public/team.html'));
+  res.sendFile(path.join(__dirname, 'public/crew/index.html'));
 });
 
 app.get(['/partners', '/client', '/portal'], (req, res) => {
-  res.sendFile(path.join(__dirname, 'public/partners.html'));
+  res.sendFile(path.join(__dirname, 'public/client/index.html'));
 });
 
 app.get(['/chat', '/bot-chat'], (req, res) => {

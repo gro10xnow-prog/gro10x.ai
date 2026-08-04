@@ -7,26 +7,31 @@ const { broadcast } = require('../services/sse');
 
 function mapTask(t) {
   if (!t) return null;
+  const assigneesArr = Array.isArray(t.assignees) && t.assignees.length > 0 
+    ? t.assignees 
+    : (t.assignee ? [t.assignee] : ['Unassigned']);
+
   return {
     id: t.id,
     title: t.title,
     client: t.client,
-    clientId: t.client_id,
-    projectId: t.project_id,
-    parentTaskId: t.parent_task_id,
-    blockedBy: t.blocked_by,
+    clientId: t.client_id || t.clientId,
+    projectId: t.project_id || t.projectId,
+    parentTaskId: t.parent_task_id || t.parentTaskId,
+    blockedBy: t.blocked_by || t.blockedBy,
     stage: t.stage,
     customStatus: t.custom_status || t.stage || 'To Do',
     statusCategory: t.status_category || 'open',
     priority: t.priority,
-    assignee: t.assignee,
-    assigneeId: t.assignee_id,
-    dueDate: t.due_date,
+    assignee: t.assignee || assigneesArr[0],
+    assignees: assigneesArr,
+    assigneeId: t.assignee_id || t.assigneeId,
+    dueDate: t.due_date || t.dueDate,
     department: t.department,
     category: t.category,
-    estimatedHours: Number(t.estimated_hours) || 0,
-    loggedHours: Number(t.logged_hours) || 0,
-    sortOrder: Number(t.sort_order) || 0,
+    estimatedHours: Number(t.estimated_hours || t.estimatedHours) || 0,
+    loggedHours: Number(t.logged_hours || t.loggedHours) || 0,
+    sortOrder: Number(t.sort_order || t.sortOrder) || 0,
     qcApprovedBy: t.qc_approved_by,
     qcApprovedAt: t.qc_approved_at,
     qcFeedback: t.qc_feedback,
@@ -34,8 +39,8 @@ function mapTask(t) {
     qcRejectedAt: t.qc_rejected_at,
     reassignedBy: t.reassigned_by,
     reassignReason: t.reassign_reason,
-    createdAt: t.created_at,
-    updatedAt: t.updated_at
+    createdAt: t.created_at || t.createdAt,
+    updatedAt: t.updated_at || t.updatedAt
   };
 }
 

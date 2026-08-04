@@ -55,7 +55,11 @@ async function readDB() {
       { data: authPins },
       { data: projects },
       { data: subtasks },
-      { data: workflows }
+      { data: workflows },
+      { data: tickets },
+      { data: posts },
+      { data: quotes },
+      { data: leaves }
     ] = await Promise.all([
       supabase.from('profiles').select('*'),
       supabase.from('clients').select('*'),
@@ -70,7 +74,11 @@ async function readDB() {
       supabase.from('auth_pins').select('*'),
       supabase.from('projects').select('*').catch ? supabase.from('projects').select('*') : Promise.resolve({ data: [] }),
       supabase.from('subtasks').select('*').catch ? supabase.from('subtasks').select('*') : Promise.resolve({ data: [] }),
-      supabase.from('project_workflows').select('*').catch ? supabase.from('project_workflows').select('*') : Promise.resolve({ data: [] })
+      supabase.from('project_workflows').select('*').catch ? supabase.from('project_workflows').select('*') : Promise.resolve({ data: [] }),
+      supabase.from('tickets').select('*').catch ? supabase.from('tickets').select('*') : Promise.resolve({ data: [] }),
+      supabase.from('social_posts').select('*').catch ? supabase.from('social_posts').select('*') : Promise.resolve({ data: [] }),
+      supabase.from('quotes').select('*').catch ? supabase.from('quotes').select('*') : Promise.resolve({ data: [] }),
+      supabase.from('leaves').select('*').catch ? supabase.from('leaves').select('*') : Promise.resolve({ data: [] })
     ]);
 
     return {
@@ -87,6 +95,10 @@ async function readDB() {
       projects: projects || [],
       subtasks: subtasks || [],
       workflows: workflows || [],
+      tickets: tickets || [],
+      posts: posts || [],
+      quotes: quotes || [],
+      leaves: leaves || [],
       authPins: (authPins || []).map(ap => ({
         phone: ap.phone,
         normPhone: ap.norm_phone,
@@ -99,7 +111,7 @@ async function readDB() {
     };
   } catch (e) {
     console.error('❌ Supabase readDB error:', e.message);
-    return { team: [], clients: [], tasks: [], invoices: [], services: [], reviews: [], expenses: [], assets: [], attendance: [], eod_reports: [], projects: [], subtasks: [], workflows: [], authPins: [] };
+    return { team: [], clients: [], tasks: [], invoices: [], services: [], reviews: [], expenses: [], assets: [], attendance: [], eod_reports: [], projects: [], subtasks: [], workflows: [], tickets: [], posts: [], quotes: [], leaves: [], authPins: [] };
   }
 }
 

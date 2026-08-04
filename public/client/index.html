@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PurpleOS — Client Partner Portal</title>
+  <script>
+    (function() {
+      var token = localStorage.getItem('sb-access-token') ||
+                  localStorage.getItem('purpleos_pin_token') ||
+                  localStorage.getItem('purple_token');
+      if (!token) {
+        window.location.replace('/auth?redirect=' + encodeURIComponent(window.location.pathname + window.location.hash));
+      }
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/shell.css">
+  <style>
+    .client-nav-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 64px;
+      background: var(--surface-1);
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      z-index: 1000;
+      backdrop-filter: blur(14px);
+    }
+    .bottom-nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.2rem;
+      color: var(--text-dim);
+      text-decoration: none;
+      font-size: 0.68rem;
+      font-weight: 700;
+      font-family: var(--font-heading);
+      padding: 0.4rem 0.6rem;
+      border-radius: 10px;
+      transition: var(--transition-fast);
+    }
+    .bottom-nav-item.active {
+      color: var(--pink-brand);
+    }
+    .bottom-nav-item .icon {
+      font-size: 1.2rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top App Header -->
+  <header class="top-header">
+    <div style="display: flex; align-items: center; gap: 0.75rem;">
+      <div class="brand-logo">PB</div>
+      <div>
+        <div class="brand-title" id="clientHeaderName">Client Partner</div>
+        <div style="font-size: 0.65rem; color: var(--pink-brand); font-weight: 800; letter-spacing: 0.06em;">PURPLEOS CLIENT PORTAL</div>
+      </div>
+    </div>
+
+    <button onclick="clientSignOut()" style="color: #f87171; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 10px; font-size: 0.8rem; font-weight: 700; padding: 0.4rem 0.75rem; cursor: pointer;">Sign Out</button>
+  </header>
+
+  <!-- Main View Area -->
+  <main id="client-view" class="content-area" style="max-width: 1100px; margin: 0 auto; padding-bottom: 80px;">
+    <!-- Rendered dynamically -->
+  </main>
+
+  <!-- Mobile Bottom Nav -->
+  <nav class="client-nav-bar">
+    <a href="#home" class="bottom-nav-item active">
+      <span class="icon">🏠</span>
+      <span>Home</span>
+    </a>
+    <a href="#review" class="bottom-nav-item">
+      <span class="icon">🎬</span>
+      <span>Review</span>
+    </a>
+    <a href="#campaign" class="bottom-nav-item">
+      <span class="icon">📋</span>
+      <span>Campaign</span>
+    </a>
+    <a href="#invoices" class="bottom-nav-item">
+      <span class="icon">💳</span>
+      <span>Billing</span>
+    </a>
+    <a href="#tickets" class="bottom-nav-item">
+      <span class="icon">🎟️</span>
+      <span>Support</span>
+    </a>
+    <a href="#account" class="bottom-nav-item">
+      <span class="icon">👤</span>
+      <span>Account</span>
+    </a>
+  </nav>
+
+  <script src="/client/api.js"></script>
+  <script src="/client/client.js"></script>
+  <script src="/client/sse.js"></script>
+  <script>
+    function clientSignOut() {
+      localStorage.removeItem('sb-access-token');
+      localStorage.removeItem('purple_user');
+      window.location.href = '/auth';
+    }
+  </script>
+</body>
+</html>
