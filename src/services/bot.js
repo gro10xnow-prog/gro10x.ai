@@ -577,16 +577,17 @@ function initBot() {
         const chatId = msg.chat.id;
         const text = (msg.text || '').trim();
 
-        // Check if message is a menu button navigation
-        const isMenuButton = [
-          '📱 Verify My Phone Number', '🎓 Complete My Profile Survey', '🔑 View My Web Login PIN',
-          '🧾 Submit Expense', '🌴 Leave Request', '📝 EOD Report',
-          '🧾 Log Expense Entry', '📋 Invoice Tracker', '💰 Payment Follow-Up'
+        // Check if message is a static menu button navigation
+        const isStaticMenuButton = [
+          '👤 My Profile', '💳 Bank & bKash', '🛠️ Tech Diagnostics',
+          '💰 My Earnings', '📍 Clock-In GPS', '🚪 Clock Out',
+          '📋 My Tasks', '✍️ Pending Approvals', '🎬 Client Status',
+          '👥 Full Team Status', '📊 Department Report'
         ].some(b => text.startsWith(b));
 
-        if (isMenuButton) {
+        if (isStaticMenuButton) {
           await state.clearSession(chatId);
-                    return;
+          return;
         }
 
         // Process active wizard input (checks Supabase persistent session state)
