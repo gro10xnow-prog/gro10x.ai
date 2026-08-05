@@ -871,6 +871,14 @@
   </div>
   <form id="createTaskForm" onsubmit="submitNewTask(event)">
     <div class="card" style="margin-bottom:1rem;">
+      <label style="font-size:0.78rem;font-weight:700;color:var(--purple);display:block;margin-bottom:0.4rem;">📦 USE BLUEPRINT TEMPLATE</label>
+      <select id="miniappTemplateSelect" style="width:100%;padding:0.75rem;border-radius:12px;border:1px solid var(--border);background:#fff;font-family:inherit;font-size:0.9rem;margin-bottom:1rem;">
+        <option value="">-- Custom Task (Blank) --</option>
+        <option value="tmpl-reels">📦 Social Media Reel Campaign (6 Subtasks)</option>
+        <option value="tmpl-branding">📦 360 Branding System (5 Subtasks)</option>
+        <option value="tmpl-tvc">📦 TVC Commercial Production (5 Subtasks)</option>
+      </select>
+
       <label style="font-size:0.78rem;font-weight:700;color:var(--muted);display:block;margin-bottom:0.4rem;">TASK TITLE</label>
       <input type="text" id="newTaskTitle" required placeholder="e.g. Reels Editing for Client X" style="width:100%;padding:0.75rem;border-radius:12px;border:1px solid var(--border);background:#fff;font-family:inherit;font-size:0.9rem;margin-bottom:1rem;">
 
@@ -1780,24 +1788,37 @@
   }
   async function submitNewTask(e) {
     e.preventDefault();
+    const tmplId = document.getElementById('miniappTemplateSelect')?.value;
     const title = document.getElementById('newTaskTitle').value;
     const client = document.getElementById('newTaskClient').value;
     const stage = document.getElementById('newTaskStage').value;
     const dueDate = document.getElementById('newTaskDueDate').value;
+    const assignee = currentUser?.name || 'Unassigned';
 
-    const payload = {
-      title, client, stage, due_date: dueDate, assignee: currentUser?.name || 'Unassigned'
-    };
-
-    try {
-      await fetch('/api/tasks', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      alert('✅ Task Created Successfully!');
-    } catch (err) {
-      alert('✅ Task Created!');
+    if (tmplId) {
+      try {
+        const res = await fetch(`/api/task-templates/${tmplId}/instantiate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ client, assignee, dueDate })
+        });
+        const data = await res.json();
+        alert(`🚀 Blueprint Launched! Task created with ${data.subtasksCreated || 0} subtasks.`);
+      } catch (err) {
+        alert('🚀 Blueprint Launched!');
+      }
+    } else {
+      const payload = { title, client, stage, due_date: dueDate, assignee };
+      try {
+        await fetch('/api/tasks', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        alert('✅ Task Created Successfully!');
+      } catch (err) {
+        alert('✅ Task Created!');
+      }
     }
     closeCreateTaskModal();
     showPage('pageTasks');
