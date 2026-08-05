@@ -74,6 +74,13 @@
       }
     } catch (err) {
       console.error(`[Client Router] Error loading ${hash}:`, err);
+      viewContainer.innerHTML = `
+        <div class="card-glass" style="text-align:center; padding:3rem;">
+          <div style="font-size:2rem; margin-bottom:0.5rem;">❌ Failed to load view</div>
+          <div style="color:var(--text-muted);">${err.message || 'Network error'}</div>
+        </div>
+      `;
+      if (window.showClientToast) window.showClientToast(`Failed to load ${hash}: ${err.message}`, 'error');
     }
   }
 
@@ -99,5 +106,16 @@
     t.innerHTML = `<span>${type === 'success' ? '✅' : 'ℹ️'}</span><span>${msg}</span>`;
     box.appendChild(t);
     setTimeout(() => t.remove(), 3500);
+  };
+
+  // Global HTML Sanitizer to prevent XSS in client modules
+  window.escapeHTML = function(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   };
 })();

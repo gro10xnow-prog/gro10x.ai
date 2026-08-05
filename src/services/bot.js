@@ -492,27 +492,20 @@ function initBot() {
       // 🔍 TELEGRAM INLINE QUERY HANDLER (@teamBot task search)
       teamBot.on('inline_query', async (query) => {
         const queryId = query.id;
-        const qText = (query.query || '').trim().toLowerCase();
+        const qText = (query.query || '').trim();
 
         try {
-          let allTasks = [];
-          try {
-            const { data: tasks } = await supabase.from('tasks').select('*').order('created_at', { ascending: false });
-            if (tasks && tasks.length) allTasks = tasks;
-          } catch (e) {}
-
-          if (!allTasks.length) {
-            const dbData = await readDB();
-            allTasks = dbData.tasks || [];
+          let req = supabase.from('tasks').select('*');
+          
+          if (qText) {
+            const ilikeQuery = `%${qText}%`;
+            req = req.or(`title.ilike.${ilikeQuery},client.ilike.${ilikeQuery},assignee.ilike.${ilikeQuery},id.ilike.${ilikeQuery}`);
           }
-
-          const matches = allTasks.filter(t => 
-            !qText || 
-            (t.title || '').toLowerCase().includes(qText) || 
-            (t.client || '').toLowerCase().includes(qText) ||
-            (t.assignee || '').toLowerCase().includes(qText) ||
-            (t.id || '').toLowerCase().includes(qText)
-          ).slice(0, 10);
+          
+          const { data: matches, error } = await req.order('created_at', { ascending: false }).limit(10);
+          if (error) throw error;
+          
+          if (!matches) return;
 
           const results = matches.map(t => ({
             type: 'article',
@@ -2150,37 +2143,8 @@ function initBot() {
       teamBot.onText(/✍️ Pending Approvals/, (msg) => approvalsHandler.handlePendingApprovals(teamBot, msg));
 
       // ──────── CLIENT STATUS (Owner/Admin) ────────
-      teamBot.onText(/🎬 Client Status/, async (msg) => {
-        const chatId = msg.chat.id;
-        const dbData = await readDB();
-
-        const clients = dbData.clients || [];
-        const tasks = dbData.tasks || [];
-        const invoices = dbData.invoices || [];
-
-        let text = `🎬 *CLIENT PORTFOLIO STATUS*\n\n`;
-
-        if (clients.length === 0) {
-          text += `No active retainer clients in the system yet.\n\n`;
-          text += `*Task Pipeline Overview:*\n`;
-          const stages = ['Scripting', 'Shooting', 'Editing', 'Internal QC', 'Client Review', 'Published'];
-          stages.forEach(s => {
-            const count = tasks.filter(t => (t.stage || '') === s).length;
-            if (count > 0) text += `   • ${s}: *${count} tasks*\n`;
-          });
-          if (tasks.length === 0) text += `   No active tasks.\n`;
-        } else {
-          clients.forEach((c, i) => {
-            const clientTasks = tasks.filter(t => (t.client || '').toLowerCase().includes((c.name || '').toLowerCase()));
-            const clientInvoices = invoices.filter(inv => (inv.clientName || '').toLowerCase().includes((c.name || '').toLowerCase()));
-            const unpaid = clientInvoices.filter(inv => inv.status !== 'Paid').length;
-            text += `${i + 1}. *${c.name}* (${c.industry || 'General'})\n`;
-            text += `   📋 Active Tasks: *${clientTasks.length}* | 🧾 Unpaid Invoices: *${unpaid}*\n\n`;
-          });
-        }
-
-        teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
-      });
+      const reportsHandler = require('./bot/handlers/reports');
+      teamBot.onText(/🎬 Client Status/, (msg) => reportsHandler.handleClientStatus(teamBot, msg));
 
       // ──────── BATCH 2 MODULAR HANDLERS (Wizards) ────────
       const expensesHandler = require('./bot/handlers/expenses');
@@ -2192,68 +2156,10 @@ function initBot() {
       teamBot.onText(/📝 EOD Report/, (msg) => eodHandler.handleInitEOD(teamBot, msg));
 
       // ──────── MUKIT FINANCE EXECUTIVE HANDLERS ────────
-      teamBot.onText(/🧾 Log Expense Entry/, async (msg) => {
-        const chatId = msg.chat.id;
-        const dbData = await readDB();
-        const expenses = dbData.expenses || [];
-        const pendingCount = expenses.filter(e => e.status === 'Pending' || !e.tier1?.approved).length;
-        const todayCount = expenses.filter(e => {
-          const d = new Date(e.createdAt || '');
-          const today = new Date();
-          return d.toDateString() === today.toDateString();
-        }).length;
-
-        let text = `🧾 *EXPENSE ENTRY LOG*\n\n` +
-          `• Total Entries: *${expenses.length}*\n` +
-          `• Pending Approval: *${pendingCount}*\n` +
-          `• Logged Today: *${todayCount}*\n\n` +
-          `_Use the web portal to log new entries:_\n` +
-          `🌐 https://purpleos-iota.vercel.app/admin`;
-        teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
-      });
-
-      teamBot.onText(/📋 Invoice Tracker/, async (msg) => {
-        const chatId = msg.chat.id;
-        const dbData = await readDB();
-        const invoices = dbData.invoices || [];
-        const paid = invoices.filter(i => i.status === 'Paid');
-        const draft = invoices.filter(i => i.status === 'Draft');
-        const overdue = invoices.filter(i => i.status === 'Overdue');
-
-        let text = `📋 *INVOICE TRACKER*\n\n` +
-          `• ✅ Paid: *${paid.length}* (BDT ${paid.reduce((s, i) => s + (i.amount || 0), 0).toLocaleString()})\n` +
-          `• 📝 Draft: *${draft.length}* (BDT ${draft.reduce((s, i) => s + (i.amount || 0), 0).toLocaleString()})\n` +
-          `• ⚠️ Overdue: *${overdue.length}*\n\n`;
-
-        if (invoices.length > 0) {
-          text += `*Recent Invoices:*\n`;
-          invoices.slice(0, 5).forEach((inv, i) => {
-            const icon = inv.status === 'Paid' ? '✅' : (inv.status === 'Draft' ? '📝' : '⚠️');
-            text += `${i + 1}. ${icon} *${inv.invoiceId || inv.id}* — ${inv.clientName || 'Client'} — BDT ${(inv.amount || 0).toLocaleString()}\n`;
-          });
-        }
-        teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
-      });
-
-      teamBot.onText(/💰 Payment Follow-Up/, async (msg) => {
-        const chatId = msg.chat.id;
-        const dbData = await readDB();
-        const invoices = dbData.invoices || [];
-        const unpaid = invoices.filter(i => i.status !== 'Paid');
-
-        let text = `💰 *PAYMENT FOLLOW-UP QUEUE*\n\n`;
-        if (unpaid.length === 0) {
-          text += `✅ All invoices are paid! No follow-ups needed.`;
-        } else {
-          unpaid.forEach((inv, i) => {
-            const daysSince = inv.createdAt ? Math.floor((Date.now() - new Date(inv.createdAt)) / 86400000) : 0;
-            text += `${i + 1}. *${inv.invoiceId || inv.id}*\n`;
-            text += `   Client: ${inv.clientName || 'N/A'} | Amount: BDT ${(inv.amount || 0).toLocaleString()}\n`;
-            text += `   Status: *${inv.status}* | Days Since Created: *${daysSince}*\n\n`;
-          });
-        }
-        teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
-      });
+      const financeHandler = require('./bot/handlers/finance');
+      teamBot.onText(/🧾 Log Expense Entry/, (msg) => financeHandler.handleLogExpenseEntry(teamBot, msg));
+      teamBot.onText(/📋 Invoice Tracker/, (msg) => financeHandler.handleInvoiceTracker(teamBot, msg));
+      teamBot.onText(/💰 Payment Follow-Up/, (msg) => financeHandler.handlePaymentFollowUp(teamBot, msg));
 
       // Handle Telegram 1-Tap Button Click Callbacks (callback_query)
       teamBot.on('callback_query', async (query) => {
@@ -2471,26 +2377,20 @@ function initBot() {
       // 🔍 TELEGRAM INLINE QUERY HANDLER (@clientBot invoice & service search)
       clientBot.on('inline_query', async (query) => {
         const queryId = query.id;
-        const qText = (query.query || '').trim().toLowerCase();
+        const qText = (query.query || '').trim();
 
         try {
-          let allInvoices = [];
-          try {
-            const { data: invoices } = await supabase.from('invoices').select('*').order('created_at', { ascending: false });
-            if (invoices && invoices.length) allInvoices = invoices;
-          } catch (e) {}
-
-          if (!allInvoices.length) {
-            const dbData = await readDB();
-            allInvoices = dbData.invoices || [];
+          let req = supabase.from('invoices').select('*');
+          
+          if (qText) {
+            const ilikeQuery = `%${qText}%`;
+            req = req.or(`id.ilike.${ilikeQuery},client_name.ilike.${ilikeQuery},clientName.ilike.${ilikeQuery},project_name.ilike.${ilikeQuery},projectName.ilike.${ilikeQuery}`);
           }
-
-          const matches = allInvoices.filter(i => 
-            !qText || 
-            (i.id || '').toLowerCase().includes(qText) || 
-            (i.client_name || i.clientName || '').toLowerCase().includes(qText) ||
-            (i.project_name || i.projectName || '').toLowerCase().includes(qText)
-          ).slice(0, 10);
+          
+          const { data: matches, error } = await req.order('created_at', { ascending: false }).limit(10);
+          if (error) throw error;
+          
+          if (!matches) return;
 
           const results = matches.map(inv => ({
             type: 'article',
@@ -2615,133 +2515,13 @@ function initBot() {
         clientBot.sendMessage(chatId, welcome, { parse_mode: 'Markdown', reply_markup: getClientKeyboard(client) });
       });
 
-      clientBot.onText(/\/services|🎨 Our Services/, async (msg) => {
-        const chatId = msg.chat.id;
-        const dbData = await readDB();
-        let text = `🎨 *Purplebot Digital — Core Services:*\n\n`;
-        const services = (dbData.services || []).filter(s => s.public);
-        if (services.length) {
-          services.forEach(s => { text += `• *${s.title}* (${s.category})\n  Rate: ${s.price}\n  ${s.description}\n\n`; });
-        } else {
-          text += `• *Social Media Content Retainer* — BDT 50,000–1,50,000/month\n• *TVC & Commercial Production* — Project-based\n• *Product Photography* — Per-shoot packages\n• *Motion Graphics & Animation* — Per-project\n• *Brand Identity & Design* — One-time\n\n📞 Contact your Account Manager for a custom quote.`;
-        }
-        const client = (dbData.clients || []).find(c => String(c.telegramId) === String(chatId));
-        clientBot.sendMessage(chatId, text, { parse_mode: 'Markdown', reply_markup: client ? getClientKeyboard(client) : undefined });
-      });
-
-      clientBot.onText(/\/portfolio|📁 Portfolio/, async (msg) => {
-        const chatId = msg.chat.id;
-        const text = `📁 *Purplebot Digital Portfolio*\n\nExplore our campaign work:\n🔗 https://purpleos-iota.vercel.app/\n\n_Clients include: Chillox Fast Food, Apex Shoes, and more._`;
-        clientBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
-      });
-
-      clientBot.onText(/\/review|🎬 Review Room/, async (msg) => {
-        const chatId = msg.chat.id;
-        let client = null;
-        let pendingReview = [];
-
-        if (supabase) {
-          const { data: cData } = await supabase.from('clients').select('*').eq('telegram_id', String(chatId)).maybeSingle();
-          if (cData) {
-            client = { ...cData, activeCampaigns: cData.active_campaigns || [] };
-            const { data: tasks } = await supabase.from('tasks').select('*').ilike('client', `%${cData.name}%`).eq('stage', 'Client Review');
-            pendingReview = tasks || [];
-          }
-        }
-        if (!client) {
-          const dbData = await readDB();
-          client = (dbData.clients || []).find(c => String(c.telegramId) === String(chatId));
-          pendingReview = (dbData.tasks || []).filter(t => client && t.client === client.name && t.stage === 'Client Review');
-        }
-
-        let text = `🎬 *Review Room — Your Deliverables*\n\n`;
-        if (pendingReview.length) {
-          text += `You have *${pendingReview.length}* cut(s) awaiting your review:\n\n`;
-          pendingReview.forEach((t, i) => { text += `${i+1}. *${t.title}*\n   Campaign: ${t.client}\n\n`; });
-          text += `Open the app to stream & approve in 4K:`;
-        } else {
-          text += `No deliverables pending review right now.\n\nWe'll notify you when your next cut is ready.`;
-        }
-        text += `\n🔗 https://purpleos-iota.vercel.app/client-miniapp`;
-        clientBot.sendMessage(chatId, text, { parse_mode: 'Markdown', reply_markup: client ? getClientKeyboard(client) : undefined });
-      });
-
-      clientBot.onText(/\/campaign|📋 Campaign Status/, async (msg) => {
-        const chatId = msg.chat.id;
-        let client = null;
-        let tasks = [];
-
-        if (supabase) {
-          const { data: cData } = await supabase.from('clients').select('*').eq('telegram_id', String(chatId)).maybeSingle();
-          if (cData) {
-            client = { ...cData, activeCampaigns: cData.active_campaigns || [] };
-            const { data: tData } = await supabase.from('tasks').select('*').ilike('client', `%${cData.name}%`);
-            tasks = tData || [];
-          }
-        }
-        if (!client) {
-          const dbData = await readDB();
-          client = (dbData.clients || []).find(c => String(c.telegramId) === String(chatId));
-          tasks = client ? (dbData.tasks || []).filter(t => t.client === client.name) : [];
-        }
-
-        let text = `📋 *Campaign Progress*\n\n`;
-        if (tasks.length) {
-          tasks.forEach(t => {
-            const stages = ['Brief','Shoot','Editing','Client Review','Delivered'];
-            const idx = stages.findIndex(s => s.toLowerCase() === (t.stage||'').toLowerCase());
-            const bar = stages.map((s,i) => i < idx ? '✅' : i === idx ? '🔵' : '⬜').join('');
-            text += `*${t.title}*\n${bar}\nStage: *${t.stage}* | Due: ${t.due_date || t.dueDate || 'TBD'}\n\n`;
-          });
-        } else {
-          text += `No active campaigns found.\nContact your Account Manager to kick off a new campaign.`;
-        }
-        clientBot.sendMessage(chatId, text, { parse_mode: 'Markdown', reply_markup: client ? getClientKeyboard(client) : undefined });
-      });
-
-      clientBot.onText(/\/invoices|💳 My Invoices/, async (msg) => {
-        const chatId = msg.chat.id;
-        let client = null;
-        let invoices = [];
-
-        if (supabase) {
-          const { data: cData } = await supabase.from('clients').select('*').eq('telegram_id', String(chatId)).maybeSingle();
-          if (cData) {
-            client = { ...cData, activeCampaigns: cData.active_campaigns || [] };
-            const { data: iData } = await supabase.from('invoices').select('*').ilike('client_name', `%${cData.name}%`);
-            invoices = iData || [];
-          }
-        }
-        if (!client) {
-          const dbData = await readDB();
-          client = (dbData.clients || []).find(c => String(c.telegramId) === String(chatId));
-          invoices = client ? (dbData.invoices || []).filter(i => i.clientName === client.name) : [];
-        }
-
-        let text = `💳 *Invoice & Payment Summary*\n\n`;
-        if (invoices.length) {
-          const pending = invoices.filter(i => i.status !== 'Paid');
-          const paid = invoices.filter(i => i.status === 'Paid');
-          text += `• Pending: *${pending.length} invoice(s)* — BDT ${pending.reduce((s,i)=>s+(i.amount||0),0).toLocaleString()}\n`;
-          text += `• Paid: *${paid.length} invoice(s)* — BDT ${paid.reduce((s,i)=>s+(i.amount||0),0).toLocaleString()}\n\n`;
-          if (pending.length) {
-            text += `📌 *To pay:* Open the client app and use our bKash / bank payment form.\n`;
-            text += `🔗 https://purpleos-iota.vercel.app/client-miniapp`;
-          }
-        } else {
-          text += `No invoices found. Invoices are generated upon deliverable approval.`;
-        }
-        clientBot.sendMessage(chatId, text, { parse_mode: 'Markdown', reply_markup: client ? getClientKeyboard(client) : undefined });
-      });
-
-      clientBot.onText(/📞 Contact AM/, async (msg) => {
-        const chatId = msg.chat.id;
-        const dbData = await readDB();
-        const client = (dbData.clients || []).find(c => String(c.telegramId) === String(chatId));
-        const amName = client?.accountManager || 'Your Account Manager';
-        const text = `📞 *Your Account Manager*\n\n• Name: *${amName}*\n• Phone: *+8801708459008*\n• Email: *contact@purpleos.agency*\n\n_Office hours: Sun–Thu · 9:00 AM – 7:00 PM_`;
-        clientBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
-      });
+      const clientHandler = require('./bot/handlers/client');
+      clientBot.onText(/\/services|🎨 Our Services/, (msg) => clientHandler.handleServices(clientBot, msg));
+      clientBot.onText(/\/portfolio|📁 Portfolio/, (msg) => clientHandler.handlePortfolio(clientBot, msg));
+      clientBot.onText(/\/review|🎬 Review Room/, (msg) => clientHandler.handleReviewRoom(clientBot, msg));
+      clientBot.onText(/\/campaign|📋 Campaign Status/, (msg) => clientHandler.handleCampaignStatus(clientBot, msg));
+      clientBot.onText(/\/invoices|💳 My Invoices/, (msg) => clientHandler.handleInvoices(clientBot, msg));
+      clientBot.onText(/📞 Contact AM/, (msg) => clientHandler.handleContactAM(clientBot, msg));
     } catch (err) {
       console.warn('⚠️ Client Bot Init Warning:', err.message);
     }

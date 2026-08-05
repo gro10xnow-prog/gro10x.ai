@@ -175,16 +175,20 @@ window.APP_MODULES.kanban = async function(container) {
                   <span class="badge" style="background: rgba(255,255,255,0.08);">${stageTasks.length}</span>
                 </div>
                 <div class="kanban-col-body">
-                  ${stageTasks.map(t => `
+                  ${stageTasks.map(t => {
+                    const safeClient = escapeHTML(t.client || 'Agency');
+                    const safeTitle = escapeHTML(t.title);
+                    const safeAssignee = escapeHTML(t.assignee || 'Staff');
+                    return `
                     <div class="kanban-card" draggable="true" ondragstart="window.KANBAN_MODULE.dragTask(event, '${t.id}')" onclick="window.KANBAN_MODULE.openDrawer('${t.id}')">
-                      <div style="font-size: 0.72rem; color: var(--purple-light); font-weight: 700; margin-bottom: 0.3rem;">${t.client || 'Agency'}</div>
-                      <div style="font-weight: 700; color: #fff; font-size: 0.9rem; line-height: 1.3;">${t.title}</div>
+                      <div style="font-size: 0.72rem; color: var(--purple-light); font-weight: 700; margin-bottom: 0.3rem;">${safeClient}</div>
+                      <div style="font-weight: 700; color: #fff; font-size: 0.9rem; line-height: 1.3;">${safeTitle}</div>
                       <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: var(--text-muted); margin-top: 0.8rem;">
-                        <span>👤 ${t.assignee || 'Staff'}</span>
-                        <span style="display:flex; align-items:center; gap:0.3rem;">⏱️ ${t.loggedHours || 0}h</span>
+                        <span>👤 ${safeAssignee}</span>
+                        <span style="display:flex; align-items:center; gap:0.3rem;">⏱️ ${escapeHTML(t.loggedHours || 0)}h</span>
                       </div>
                     </div>
-                  `).join('')}
+                  `}).join('')}
                 </div>
               </div>
             `;
@@ -209,19 +213,22 @@ window.APP_MODULES.kanban = async function(container) {
             ${displayTasks.map(t => {
               const prio = (t.priority || 'Medium');
               const badgeClass = prio === 'Urgent' || prio === 'High' ? 'badge-pink' : 'badge-purple';
+              const safeTitle = escapeHTML(t.title);
+              const safeClient = escapeHTML(t.client || 'Agency');
+              const safeAssignee = escapeHTML(t.assignee || 'Unassigned');
               return `
                 <tr onclick="window.KANBAN_MODULE.openDrawer('${t.id}')">
-                  <td><span class="badge ${badgeClass}">${prio}</span></td>
-                  <td style="font-weight: 700;">${t.title}</td>
-                  <td style="color: var(--text-muted);">${t.client || 'Agency'}</td>
+                  <td><span class="badge ${badgeClass}">${escapeHTML(prio)}</span></td>
+                  <td style="font-weight: 700;">${safeTitle}</td>
+                  <td style="color: var(--text-muted);">${safeClient}</td>
                   <td>
                     <select style="background:transparent; border:1px solid var(--border-subtle); color:#fff; padding:0.2rem; border-radius:4px; font-size:0.8rem;" onclick="event.stopPropagation()" onchange="window.KANBAN_MODULE.updateStage('${t.id}', this.value)">
-                      ${stages.map(s => `<option value="${s}" ${t.stage === s ? 'selected' : ''}>${s}</option>`).join('')}
+                      ${stages.map(s => `<option value="${s}" ${t.stage === s ? 'selected' : ''}>${escapeHTML(s)}</option>`).join('')}
                     </select>
                   </td>
-                  <td>👤 ${t.assignee || 'Unassigned'}</td>
-                  <td style="color: var(--text-muted);">${t.loggedHours || 0}h / ${t.estimatedHours || 8}h</td>
-                  <td style="color: var(--text-muted);">${t.dueDate || 'ASAP'}</td>
+                  <td>👤 ${safeAssignee}</td>
+                  <td style="color: var(--text-muted);">${escapeHTML(t.loggedHours || 0)}h / ${escapeHTML(t.estimatedHours || 8)}h</td>
+                  <td style="color: var(--text-muted);">${escapeHTML(t.dueDate || 'ASAP')}</td>
                 </tr>
               `;
             }).join('')}
@@ -269,7 +276,8 @@ window.APP_MODULES.kanban = async function(container) {
         }
       } catch (e) {
         console.error(e);
-        alert('Failed to update task stage');
+        if (window.showToast) window.showToast('Failed to update task stage', 'error');
+        else alert('Failed to update task stage');
       }
     },
     openDrawer(taskId) {
@@ -305,7 +313,8 @@ window.APP_MODULES.kanban = async function(container) {
             renderViewArea();
           }
         } catch (e) {
-          alert('Failed to log time');
+          if (window.showToast) window.showToast('Failed to log time', 'error');
+          else alert('Failed to log time');
         }
       }
     },
@@ -327,8 +336,14 @@ window.APP_MODULES.kanban = async function(container) {
       const title = prompt('Enter task title:');
       if (title) {
         APP_API.post('/tasks', { title, client: activeSpace !== 'all' ? activeSpace : 'Agency', stage: 'Briefing' })
-          .then(() => loadData())
-          .catch(() => alert('Failed to create task'));
+          .then(() => {
+            if (window.showToast) window.showToast('Task created successfully!');
+            loadData();
+          })
+          .catch(() => {
+            if (window.showToast) window.showToast('Failed to create task', 'error');
+            else alert('Failed to create task');
+          });
       }
     }
   };

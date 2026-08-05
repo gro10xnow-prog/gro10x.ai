@@ -129,6 +129,7 @@
           <div style="color:var(--text-muted);">${err.message || 'Network error'}</div>
         </div>
       `;
+      if (window.showToast) window.showToast(`Failed to load module: ${err.message}`, 'error');
     }
   }
 
@@ -164,5 +165,16 @@
       toast.style.transition = 'all 0.3s';
       setTimeout(() => toast.remove(), 300);
     }, duration);
+  };
+
+  // Global HTML Sanitizer to prevent XSS in modules
+  window.escapeHTML = function(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   };
 })();

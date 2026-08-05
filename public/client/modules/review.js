@@ -24,34 +24,42 @@ window.CLIENT_MODULES.review = async function(container) {
       </div>
 
       <div style="display:flex; flex-direction:column; gap:1.25rem;">
-        ${posts.map(p => `
+        ${posts.map(p => {
+          const safePlatform = escapeHTML(p.platform || 'Facebook');
+          const safeTitle = escapeHTML(p.title);
+          const safeStatus = escapeHTML(p.status);
+          const safeCaption = escapeHTML(p.caption || 'No caption provided.');
+          const safeVideoUrl = escapeHTML(p.videoUrl || '');
+          const safeId = escapeHTML(p.id);
+          
+          return `
           <div class="card-glass" style="display:flex; flex-direction:column; gap:1rem;">
             <div style="display:flex; justify-content:space-between; align-items:center;">
               <div>
-                <span class="badge badge-purple">${p.platform || 'Facebook'}</span>
-                <h3 style="font-size:1.1rem; margin:0.3rem 0 0; color:var(--text-primary);">${p.title}</h3>
+                <span class="badge badge-purple">${safePlatform}</span>
+                <h3 style="font-size:1.1rem; margin:0.3rem 0 0; color:var(--text-primary);">${safeTitle}</h3>
               </div>
-              <span class="badge ${p.status === 'Approved' ? 'badge-emerald' : 'badge-pink'}">${p.status}</span>
+              <span class="badge ${p.status === 'Approved' ? 'badge-emerald' : 'badge-pink'}">${safeStatus}</span>
             </div>
 
             <div style="background:var(--surface-3); padding:0.85rem; border-radius:12px; font-size:0.88rem; color:var(--text-secondary); line-height:1.5;">
-              ${p.caption || 'No caption provided.'}
+              ${safeCaption}
             </div>
 
             ${p.videoUrl ? `
               <div style="border-radius:12px; overflow:hidden; background:#000; text-align:center; padding:1rem;">
-                <a href="${p.videoUrl}" target="_blank" class="btn-secondary">▶ Preview Media Content</a>
+                <a href="${safeVideoUrl}" target="_blank" class="btn-secondary">▶ Preview Media Content</a>
               </div>
             ` : ''}
 
             ${p.status !== 'Approved' ? `
               <div style="display:flex; gap:0.75rem;">
-                <button class="btn-primary" style="flex:1;" onclick="window.CLIENT_REVIEW.approve('${p.id}')">✅ Approve Post</button>
-                <button class="btn-danger" style="flex:1;" onclick="window.CLIENT_REVIEW.requestChanges('${p.id}')">✏️ Request Adjustment</button>
+                <button class="btn-primary" style="flex:1;" onclick="window.CLIENT_REVIEW.approve('${safeId}')">✅ Approve Post</button>
+                <button class="btn-danger" style="flex:1;" onclick="window.CLIENT_REVIEW.requestChanges('${safeId}')">✏️ Request Adjustment</button>
               </div>
             ` : `<div style="font-size:0.8rem; color:var(--emerald-brand); font-weight:700;">Approved for publishing</div>`}
           </div>
-        `).join('') || `<div class="card-glass" style="padding:3rem; text-align:center; color:var(--text-muted);">No assets currently waiting for review.</div>`}
+        `}).join('') || `<div class="card-glass" style="padding:3rem; text-align:center; color:var(--text-muted);">No assets currently waiting for review.</div>`}
       </div>
     `;
   }

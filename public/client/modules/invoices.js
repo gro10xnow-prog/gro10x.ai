@@ -8,7 +8,7 @@ window.CLIENT_MODULES.invoices = async function(container) {
   let invoices = [];
 
   async function loadInvoicesData() {
-    invoices = await CLIENT_API.get('/invoices/invoices').catch(() => []);
+    invoices = await CLIENT_API.get('/invoices').catch(() => []);
     renderInvoicesView();
   }
 
@@ -37,20 +37,24 @@ window.CLIENT_MODULES.invoices = async function(container) {
             ${(invoices || []).map(i => {
               const isPaid = i.status === 'Paid';
               const isPendingVerif = i.status === 'Verification Pending';
+              const safeId = escapeHTML(i.id || 'INV-101');
+              const safeProjectName = escapeHTML(i.projectName || 'Monthly Retainer');
+              const safeDueDate = escapeHTML(i.dueDate || 'ASAP');
+              const safeStatus = escapeHTML(i.status || 'Pending');
               return `
                 <tr>
-                  <td style="font-weight:700; color:var(--purple-light);">${i.id || 'INV-101'}</td>
-                  <td>${i.projectName || 'Monthly Retainer'}</td>
+                  <td style="font-weight:700; color:var(--purple-light);">${safeId}</td>
+                  <td>${safeProjectName}</td>
                   <td style="font-weight:800; color:var(--emerald-brand);">৳${(Number(i.amount) || 0).toLocaleString()}</td>
-                  <td style="color:var(--text-muted);">${i.dueDate || 'ASAP'}</td>
+                  <td style="color:var(--text-muted);">${safeDueDate}</td>
                   <td>
                     <span class="badge ${isPaid ? 'badge-emerald' : isPendingVerif ? 'badge-amber' : 'badge-pink'}">
-                      ${i.status || 'Pending'}
+                      ${safeStatus}
                     </span>
                   </td>
                   <td>
                     ${!isPaid && !isPendingVerif ? `
-                      <button class="btn-primary btn-sm" onclick="window.CLIENT_INVOICES.openPayModal('${i.id}', ${i.amount || 0})">
+                      <button class="btn-primary btn-sm" onclick="window.CLIENT_INVOICES.openPayModal('${safeId}', ${i.amount || 0})">
                         💳 Pay / Submit Proof
                       </button>
                     ` : isPendingVerif ? `
@@ -122,7 +126,11 @@ window.CLIENT_MODULES.invoices = async function(container) {
       const paymentMethod = document.getElementById('payMethod').value;
       const trxId = document.getElementById('payTrxId').value.trim();
 
-      if (!trxId) return alert('Transaction ID (TrxID) is required.');
+      if (!trxId) {
+        if (window.showClientToast) window.showClientToast('Transaction ID (TrxID) is required.', 'error');
+        else alert('Transaction ID (TrxID) is required.');
+        return;
+      }
 
       try {
         const res = await CLIENT_API.post('/payments', {

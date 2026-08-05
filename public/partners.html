@@ -4,6 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Purplebot Client & Partner Portal — Deliverables & Review Room</title>
+  <meta name="description" content="Purplebot Client & Partner Portal — Stream latest video cuts, approve creative assets, and manage campaign invoices.">
+  
+  <!-- Open Graph & Social Cards -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Purplebot Client & Partner Portal">
+  <meta property="og:description" content="Stream live video cuts, draw visual feedback notes, approve campaign deliverables, and manage invoices.">
+  <meta property="og:image" content="https://purpleos-iota.vercel.app/images/mascot.webp">
+  <meta property="og:url" content="https://purpleos-iota.vercel.app/partners">
+  <meta name="twitter:card" content="summary_large_image">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -12,15 +22,16 @@
   <link rel="stylesheet" href="/css/landing.css">
   <style>
     .glass-panel, .glass-card {
-      background: var(--surface-1, #ffffff) !important;
-      border: 1px solid var(--surface-border, rgba(124, 58, 237, 0.15)) !important;
-      border-radius: 16px !important;
-      box-shadow: var(--shadow-card, 0 8px 25px rgba(0, 0, 0, 0.03)) !important;
-      transition: all 0.25s ease !important;
+      background: var(--surface-1, #ffffff);
+      border: 1px solid var(--surface-border, rgba(124, 58, 237, 0.15));
+      border-radius: 16px;
+      box-shadow: var(--shadow-card, 0 8px 25px rgba(0, 0, 0, 0.03));
+      transition: all 0.25s ease;
+      padding: 1.5rem;
     }
     .glass-panel:hover, .glass-card:hover {
-      border-color: var(--brand-purple, #7c3aed) !important;
-      box-shadow: var(--shadow-elevated, 0 16px 40px rgba(124, 58, 237, 0.12)) !important;
+      border-color: var(--brand-purple, #7c3aed);
+      box-shadow: var(--shadow-elevated, 0 16px 40px rgba(124, 58, 237, 0.12));
     }
     @media (max-width: 900px) {
       #partnerPlayerGrid {

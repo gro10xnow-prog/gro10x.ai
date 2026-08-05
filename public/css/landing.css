@@ -1873,4 +1873,18 @@
   .pb-process-grid { grid-template-columns: 1fr; }
 }
 
+/* SCROLL REVEAL MICRO-ANIMATIONS */
+.reveal-on-scroll {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1), transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.reveal-on-scroll.is-revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+
 

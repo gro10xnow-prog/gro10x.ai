@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initMobileMenu();
   initScrollTop();
   initScrollSpy();
+  initScrollReveal();
   setDynamicYear();
 });
 
@@ -84,6 +85,23 @@ function initScrollSpy() {
       }
     });
   });
+}
+
+// SCROLL REVEAL INTERSECTION OBSERVER
+function initScrollReveal() {
+  const elements = document.querySelectorAll('.reveal-on-scroll');
+  if (!elements.length) return;
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-revealed');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12 });
+
+  elements.forEach(el => observer.observe(el));
 }
 
 
@@ -411,15 +429,15 @@ async function fetchCMSContent() {
       const marqueeContainer = document.getElementById('clientMarquee');
       if (marqueeContainer) {
         const clientLogosMap = {
-          'UCB Bank': '/images/clients/ucb.png',
-          'Chillox': '/images/clients/chillox.png',
-          'Chillox Burgers': '/images/clients/chillox.png',
-          'BAT Global': '/images/clients/bat.png',
-          'LG Electronics': '/images/clients/lg.png',
-          'Taptap Send': '/images/clients/taptap.png',
-          'Mortein': '/images/clients/mortein.png',
-          'Harpic': '/images/clients/harpic.png',
-          'Yatai Japanese': '/images/clients/yatai.png'
+          'UCB Bank': '/images/clients/ucb.webp',
+          'Chillox': '/images/clients/chillox.webp',
+          'Chillox Burgers': '/images/clients/chillox.webp',
+          'BAT Global': '/images/clients/bat.webp',
+          'LG Electronics': '/images/clients/lg.webp',
+          'Taptap Send': '/images/clients/taptap.webp',
+          'Mortein': '/images/clients/mortein.webp',
+          'Harpic': '/images/clients/harpic.webp',
+          'Yatai Japanese': '/images/clients/yatai.webp'
         };
 
         const activeBrands = cms.clientMarquee.filter(b => !b.toLowerCase().includes('fortress'));

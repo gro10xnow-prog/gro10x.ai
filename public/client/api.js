@@ -3,6 +3,9 @@
  * Client Portal API Client
  */
 window.CLIENT_API = {
+  _cache: {},
+  _cacheTTL: 30000,
+
   getToken() {
     return localStorage.getItem('sb-access-token') ||
            localStorage.getItem('purpleos_pin_token') ||
@@ -18,12 +21,20 @@ window.CLIENT_API = {
 
   async request(endpoint, options = {}) {
     const url = endpoint.startsWith('/api') ? endpoint : `/api${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
+    const method = options.method || 'GET';
     const config = {
-      method: options.method || 'GET',
+      method: method,
       headers: { ...this.getHeaders(), ...(options.headers || {}) }
     };
     if (options.body) {
       config.body = typeof options.body === 'string' ? options.body : JSON.stringify(options.body);
+    }
+
+    if (method === 'GET') {
+      const cached = this._cache[url];
+      if (cached && (Date.now() - cached.timestamp < this._cacheTTL)) {
+        return cached.data;
+      }
     }
 
     try {
@@ -33,7 +44,13 @@ window.CLIENT_API = {
         window.location.href = '/auth?redirect=' + encodeURIComponent(window.location.pathname);
         return null;
       }
-      return await response.json();
+      const data = await response.json();
+      
+      if (method === 'GET') {
+        this._cache[url] = { data, timestamp: Date.now() };
+      }
+      
+      return data;
     } catch (err) {
       console.error(`[Client API] Error:`, err);
       throw err;

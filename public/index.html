@@ -9,24 +9,49 @@
   <meta property="og:type" content="website">
   <meta property="og:title" content="Purplebot Digital — Award-Winning Digital Marketing & Tech Agency">
   <meta property="og:description" content="Driving high-impact commercial brand growth through video production, social media, branding, and custom tech.">
-  <meta property="og:image" content="https://purpleos-iota.vercel.app/images/mascot.png">
+  <meta property="og:image" content="https://purpleos-iota.vercel.app/images/mascot.webp">
   <meta property="og:url" content="https://purpleos-iota.vercel.app">
   <link rel="canonical" href="https://purpleos-iota.vercel.app">
   <meta property="og:site_name" content="Purplebot Digital">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Purplebot Digital — Digital Marketing Agency">
   <meta name="twitter:description" content="Award-winning digital marketing, video production, and commercial brand growth agency.">
+  
+  <!-- Structured Data (JSON-LD) for SEO -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Purplebot Digital",
+    "url": "https://purpleos-iota.vercel.app",
+    "logo": "https://purpleos-iota.vercel.app/images/logo-full.webp",
+    "sameAs": [
+      "https://facebook.com/purplebotdigital",
+      "https://instagram.com/purplebotdigital",
+      "https://linkedin.com/company/purplebotdigital",
+      "https://youtube.com/@purplebotdigital"
+    ],
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "telephone": "+8801711019550",
+      "contactType": "customer service",
+      "email": "contact@purplebot.digital"
+    }
+  }
+  </script>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/design-tokens.css">
   <link rel="stylesheet" href="/css/landing.css">
 </head>
-<body class="pb-landing-body">  <!-- TOP NAVBAR -->
+<body class="pb-landing-body">
+  <!-- TOP NAVBAR -->
   <header class="pb-nav" id="topNav">
     <div class="pb-nav-container">
       <a href="/" class="pb-brand-logo">
-        <img src="/images/logo-full.png" alt="Purplebot Digital Logo" class="pb-nav-logo-img">
+        <img src="/images/logo-full.webp" alt="Purplebot Digital Logo" class="pb-nav-logo-img" width="180" height="38">
       </a>
 
       <nav class="pb-nav-links" id="desktopNavLinks">
@@ -65,8 +90,11 @@
     </div>
   </header>
 
+  <!-- MAIN CONTENT AREA -->
+  <main id="mainContent">
+
   <!-- HERO SECTION -->
-  <section class="pb-hero-section" id="about">
+  <section class="pb-hero-section reveal-on-scroll" id="about">
     <div class="pb-hero-bg-glow"></div>
 
     <div class="pb-hero-container">
@@ -98,7 +126,7 @@
 
         <div class="pb-hero-visual">
           <div class="pb-mascot-wrapper">
-            <img src="/images/mascot-zen.png" alt="Purplebot Official Mascot" class="pb-hero-mascot-img">
+            <img src="/images/mascot-zen.webp" alt="Purplebot Official Mascot" class="pb-hero-mascot-img" width="440" height="440">
             <div class="pb-mascot-card pb-mascot-card-1">
               <span class="card-icon">⚡</span>
               <div>
@@ -140,20 +168,20 @@
   </section>
 
   <!-- TRUSTED CLIENTS LOGO MARQUEE -->
-  <section class="pb-clients-section">
+  <section class="pb-clients-section reveal-on-scroll">
     <div class="pb-section-container">
       <p class="pb-clients-header">Trusted by leading multinationals, fast-growing startups & enterprise brands</p>
       
       <div class="pb-marquee-wrapper">
         <div class="pb-marquee-content" id="clientMarquee">
-          <div class="pb-client-pill"><img src="/images/clients/ucb.png" alt="UCB Bank" class="pb-client-logo-img"><span>UCB Bank</span></div>
-          <div class="pb-client-pill"><img src="/images/clients/chillox.png" alt="Chillox Burgers" class="pb-client-logo-img"><span>Chillox</span></div>
-          <div class="pb-client-pill"><img src="/images/clients/bat.png" alt="BAT Global" class="pb-client-logo-img"><span>BAT Global</span></div>
-          <div class="pb-client-pill"><img src="/images/clients/lg.png" alt="LG Electronics" class="pb-client-logo-img"><span>LG Electronics</span></div>
-          <div class="pb-client-pill"><img src="/images/clients/taptap.png" alt="Taptap Send" class="pb-client-logo-img"><span>Taptap Send</span></div>
-          <div class="pb-client-pill"><img src="/images/clients/mortein.png" alt="Mortein" class="pb-client-logo-img"><span>Mortein</span></div>
-          <div class="pb-client-pill"><img src="/images/clients/harpic.png" alt="Harpic" class="pb-client-logo-img"><span>Harpic</span></div>
-          <div class="pb-client-pill"><img src="/images/clients/yatai.png" alt="Yatai Japanese" class="pb-client-logo-img"><span>Yatai Japanese</span></div>
+          <div class="pb-client-pill"><img src="/images/clients/ucb.webp" alt="UCB Bank" class="pb-client-logo-img" loading="lazy"><span>UCB Bank</span></div>
+          <div class="pb-client-pill"><img src="/images/clients/chillox.webp" alt="Chillox Burgers" class="pb-client-logo-img" loading="lazy"><span>Chillox</span></div>
+          <div class="pb-client-pill"><img src="/images/clients/bat.webp" alt="BAT Global" class="pb-client-logo-img" loading="lazy"><span>BAT Global</span></div>
+          <div class="pb-client-pill"><img src="/images/clients/lg.webp" alt="LG Electronics" class="pb-client-logo-img" loading="lazy"><span>LG Electronics</span></div>
+          <div class="pb-client-pill"><img src="/images/clients/taptap.webp" alt="Taptap Send" class="pb-client-logo-img" loading="lazy"><span>Taptap Send</span></div>
+          <div class="pb-client-pill"><img src="/images/clients/mortein.webp" alt="Mortein" class="pb-client-logo-img" loading="lazy"><span>Mortein</span></div>
+          <div class="pb-client-pill"><img src="/images/clients/harpic.webp" alt="Harpic" class="pb-client-logo-img" loading="lazy"><span>Harpic</span></div>
+          <div class="pb-client-pill"><img src="/images/clients/yatai.webp" alt="Yatai Japanese" class="pb-client-logo-img" loading="lazy"><span>Yatai Japanese</span></div>
         </div>
       </div>
     </div>
@@ -283,24 +311,24 @@
       </div>
 
       <!-- WORKFLOW STEP TABS -->
-      <div class="pb-work-tabs" id="workTabs">
-        <button class="pb-work-tab active" onclick="switchWorkStep(1)">
+      <div class="pb-work-tabs" id="workTabs" role="tablist" aria-label="Campaign Workflow Steps">
+        <button class="pb-work-tab active" role="tab" aria-selected="true" aria-controls="workCard1" onclick="switchWorkStep(1)">
           <span class="step-num">01</span>
           <span class="step-label">Brief</span>
         </button>
-        <button class="pb-work-tab" onclick="switchWorkStep(2)">
+        <button class="pb-work-tab" role="tab" aria-selected="false" aria-controls="workCard2" onclick="switchWorkStep(2)">
           <span class="step-num">02</span>
           <span class="step-label">Strategy</span>
         </button>
-        <button class="pb-work-tab" onclick="switchWorkStep(3)">
+        <button class="pb-work-tab" role="tab" aria-selected="false" aria-controls="workCard3" onclick="switchWorkStep(3)">
           <span class="step-num">03</span>
           <span class="step-label">Shoot Dispatch</span>
         </button>
-        <button class="pb-work-tab" onclick="switchWorkStep(4)">
+        <button class="pb-work-tab" role="tab" aria-selected="false" aria-controls="workCard4" onclick="switchWorkStep(4)">
           <span class="step-num">04</span>
           <span class="step-label">Review Room</span>
         </button>
-        <button class="pb-work-tab" onclick="switchWorkStep(5)">
+        <button class="pb-work-tab" role="tab" aria-selected="false" aria-controls="workCard5" onclick="switchWorkStep(5)">
           <span class="step-num">05</span>
           <span class="step-label">48h Delivery</span>
         </button>
@@ -440,7 +468,7 @@
   </section>
 
   <!-- PORTFOLIO SHOWCASE SECTION -->
-  <section class="pb-portfolio-section" id="portfolio">
+  <section class="pb-portfolio-section reveal-on-scroll" id="portfolio">
     <div class="pb-section-container">
       <div class="pb-section-header">
         <span class="pb-section-badge">CLIENT SHOWCASE</span>
@@ -450,7 +478,7 @@
 
       <div class="pb-portfolio-grid">
         <div class="pb-portfolio-card">
-          <div class="pb-portfolio-thumb" style="background-image: url('/images/portfolio/lg.jpg');">
+          <div class="pb-portfolio-thumb" style="background-image: url('/images/portfolio/lg.webp');">
             <span class="pb-category-tag">Electronics & Tech</span>
           </div>
           <div class="pb-portfolio-info">
@@ -461,7 +489,7 @@
         </div>
 
         <div class="pb-portfolio-card">
-          <div class="pb-portfolio-thumb" style="background-image: url('/images/portfolio/intercontinental.png');">
+          <div class="pb-portfolio-thumb" style="background-image: url('/images/portfolio/intercontinental.webp');">
             <span class="pb-category-tag">Hospitality & Luxury</span>
           </div>
           <div class="pb-portfolio-info">
@@ -472,7 +500,7 @@
         </div>
 
         <div class="pb-portfolio-card">
-          <div class="pb-portfolio-thumb" style="background-image: url('/images/portfolio/ucb.png');">
+          <div class="pb-portfolio-thumb" style="background-image: url('/images/portfolio/ucb.webp');">
             <span class="pb-category-tag">Corporate Financial</span>
           </div>
           <div class="pb-portfolio-info">
@@ -483,7 +511,7 @@
         </div>
 
         <div class="pb-portfolio-card">
-          <div class="pb-portfolio-thumb" style="background-image: url('/images/portfolio/chillox.png');">
+          <div class="pb-portfolio-thumb" style="background-image: url('/images/portfolio/chillox.webp');">
             <span class="pb-category-tag">FMCG & Food</span>
           </div>
           <div class="pb-portfolio-info">
@@ -494,7 +522,7 @@
         </div>
 
         <div class="pb-portfolio-card">
-          <div class="pb-portfolio-thumb" style="background-image: url('/images/portfolio/mortein.png');">
+          <div class="pb-portfolio-thumb" style="background-image: url('/images/portfolio/mortein.webp');">
             <span class="pb-category-tag">Health & FMCG</span>
           </div>
           <div class="pb-portfolio-info">
@@ -505,7 +533,7 @@
         </div>
 
         <div class="pb-portfolio-card">
-          <div class="pb-portfolio-thumb" style="background-image: url('/images/portfolio/harpic.png');">
+          <div class="pb-portfolio-thumb" style="background-image: url('/images/portfolio/harpic.webp');">
             <span class="pb-category-tag">Home Care & FMCG</span>
           </div>
           <div class="pb-portfolio-info">
@@ -516,7 +544,7 @@
         </div>
 
         <div class="pb-portfolio-card">
-          <div class="pb-portfolio-thumb" style="background-image: url('/images/portfolio/bat.png');">
+          <div class="pb-portfolio-thumb" style="background-image: url('/images/portfolio/bat.webp');">
             <span class="pb-category-tag">Corporate Enterprise</span>
           </div>
           <div class="pb-portfolio-info">
@@ -527,7 +555,7 @@
         </div>
 
         <div class="pb-portfolio-card">
-          <div class="pb-portfolio-thumb" style="background-image: url('/images/portfolio/taptap.png');">
+          <div class="pb-portfolio-thumb" style="background-image: url('/images/portfolio/taptap.webp');">
             <span class="pb-category-tag">Fintech & Mobile</span>
           </div>
           <div class="pb-portfolio-info">
@@ -538,7 +566,7 @@
         </div>
 
         <div class="pb-portfolio-card">
-          <div class="pb-portfolio-thumb" style="background-image: url('/images/portfolio/yatai.png');">
+          <div class="pb-portfolio-thumb" style="background-image: url('/images/portfolio/yatai.webp');">
             <span class="pb-category-tag">Restaurant & Dining</span>
           </div>
           <div class="pb-portfolio-info">
@@ -687,7 +715,7 @@
   </section>
 
   <!-- LET'S TALK & NEWSLETTER FOOTER SECTION -->
-  <section class="pb-contact-section" id="contact">
+  <section class="pb-contact-section reveal-on-scroll" id="contact">
     <div class="pb-section-container">
       <div class="pb-contact-grid">
         <div class="pb-contact-info">
@@ -749,6 +777,8 @@
     </div>
   </section>
 
+  </main>
+
   <!-- MAIN FOOTER -->
   <footer class="pb-main-footer">
     <div class="pb-footer-container">
@@ -798,5 +828,12 @@
 
   <script src="/js/landing.js" defer></script>
   <script src="/js/chat-widget.js" defer></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js').catch(() => {});
+      });
+    }
+  </script>
 </body>
 </html>

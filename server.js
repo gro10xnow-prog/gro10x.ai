@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const compression = require('compression');
 const cors = require('cors');
 const path = require('path');
 const apiRoutes = require('./src/routes/api');
@@ -21,6 +22,9 @@ const ALLOWED_ORIGINS = [
 ];
 
 const app = express();
+
+// Enable GZIP / Brotli compression for static responses & JSON APIs
+app.use(compression());
 
 // Sentry Error Tracking Initialization (if DSN provided)
 if (process.env.SENTRY_DSN) {
@@ -105,8 +109,8 @@ app.post(['/api/webhooks/telegram', '/webhooks/telegram'], (req, res) => {
 // Mount API routes (prioritized before static assets)
 app.use('/api', apiRoutes);
 
-// Serve static frontend assets from /public
-app.use(express.static(path.join(__dirname, 'public')));
+// Serve static frontend assets from /public with 1-day maxAge caching header
+app.use(express.static(path.join(__dirname, 'public'), { maxAge: '1d' }));
 
 // Explicit Multi-Portal Routes (Phase C Architecture)
 app.get('/', (req, res) => {

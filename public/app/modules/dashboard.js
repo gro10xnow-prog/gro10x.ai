@@ -9,7 +9,7 @@ window.APP_MODULES.dashboard = async function(container) {
     const [team, tasks, invoices, tickets] = await Promise.all([
       APP_API.get('/team').catch(() => []),
       APP_API.get('/tasks').catch(() => []),
-      APP_API.get('/invoices/invoices').catch(() => []),
+      APP_API.get('/invoices').catch(() => []),
       APP_API.get('/tickets').catch(() => [])
     ]);
 
@@ -81,15 +81,20 @@ window.APP_MODULES.dashboard = async function(container) {
           </div>
 
           <div style="display:flex; flex-direction:column; gap:0.75rem;">
-            ${(tasks || []).slice(0, 6).map(t => `
+            ${(tasks || []).slice(0, 6).map(t => {
+              const safeTitle = escapeHTML(t.title);
+              const safeClient = escapeHTML(t.client || 'Agency');
+              const safeAssignee = escapeHTML(t.assignee || 'Unassigned');
+              const safeStage = escapeHTML(t.stage || 'To Do');
+              return `
               <div style="display:flex; align-items:center; justify-content:space-between; padding:0.75rem 1rem; background:var(--surface-3); border-radius:12px; border:1px solid var(--border-subtle);">
                 <div>
-                  <div style="font-weight:700; color:var(--text-primary); font-size:0.9rem;">${t.title}</div>
-                  <div style="font-size:0.78rem; color:var(--text-muted); margin-top:0.2rem;">🏢 Client: ${t.client || 'Agency'} &bull; Assignee: ${t.assignee || 'Unassigned'}</div>
+                  <div style="font-weight:700; color:var(--text-primary); font-size:0.9rem;">${safeTitle}</div>
+                  <div style="font-size:0.78rem; color:var(--text-muted); margin-top:0.2rem;">🏢 Client: ${safeClient} &bull; Assignee: ${safeAssignee}</div>
                 </div>
-                <span class="badge badge-purple">${t.stage || 'To Do'}</span>
+                <span class="badge badge-purple">${safeStage}</span>
               </div>
-            `).join('') || `<div style="text-align:center; color:var(--text-muted); padding:2rem;">No active tasks</div>`}
+            `}).join('') || `<div style="text-align:center; color:var(--text-muted); padding:2rem;">No active tasks</div>`}
           </div>
         </div>
 
@@ -101,20 +106,25 @@ window.APP_MODULES.dashboard = async function(container) {
           </div>
 
           <div style="display:flex; flex-direction:column; gap:0.75rem;">
-            ${(team || []).slice(0, 6).map(m => `
+            ${(team || []).slice(0, 6).map(m => {
+              const safeName = escapeHTML(m.name || 'Team Member');
+              const safeInitials = escapeHTML((m.name || 'TM').substring(0, 2).toUpperCase());
+              const safeRole = escapeHTML(m.role || 'Specialist');
+              const safeStatus = escapeHTML(m.status || 'Active');
+              return `
               <div style="display:flex; align-items:center; justify-content:space-between; padding:0.6rem 0.8rem; background:var(--surface-3); border-radius:12px;">
                 <div style="display:flex; align-items:center; gap:0.6rem;">
                   <div style="width:32px; height:32px; border-radius:50%; background:var(--gradient-rose); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:0.8rem; color:#fff;">
-                    ${(m.name || 'TM').substring(0, 2).toUpperCase()}
+                    ${safeInitials}
                   </div>
                   <div>
-                    <div style="font-weight:700; font-size:0.85rem; color:var(--text-primary);">${m.name}</div>
-                    <div style="font-size:0.72rem; color:var(--text-muted);">${m.role || 'Specialist'}</div>
+                    <div style="font-weight:700; font-size:0.85rem; color:var(--text-primary);">${safeName}</div>
+                    <div style="font-size:0.72rem; color:var(--text-muted);">${safeRole}</div>
                   </div>
                 </div>
-                <span class="badge badge-emerald" style="font-size:0.65rem;">${m.status || 'Active'}</span>
+                <span class="badge badge-emerald" style="font-size:0.65rem;">${safeStatus}</span>
               </div>
-            `).join('') || `<div style="text-align:center; color:var(--text-muted); padding:2rem;">No team members</div>`}
+            `}).join('') || `<div style="text-align:center; color:var(--text-muted); padding:2rem;">No team members</div>`}
           </div>
         </div>
       </div>
