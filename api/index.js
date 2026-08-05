@@ -36,7 +36,7 @@ app.get(['/api/bot-status', '/bot-status'], (req, res) => {
 });
 
 // Telegram Webhook Endpoint for Production Updates
-app.post(['/api/webhooks/telegram', '/webhooks/telegram'], (req, res) => {
+app.post(['/api/webhooks/telegram', '/webhooks/telegram'], async (req, res) => {
   // const secretHeader = req.headers['x-telegram-bot-api-secret-token'];
   // if (process.env.WEBHOOK_SECRET && secretHeader !== process.env.WEBHOOK_SECRET) {
   //   console.warn('⚠️ Webhook request rejected: Invalid secret token');
@@ -58,7 +58,7 @@ app.post(['/api/webhooks/telegram', '/webhooks/telegram'], (req, res) => {
 
   if (targetBot && req.body) {
     try {
-      targetBot.processUpdate(req.body);
+      await targetBot.processUpdate(req.body);
     } catch (err) {
       console.error(`Telegram webhook update processing error (${botType}):`, err.message);
     }
