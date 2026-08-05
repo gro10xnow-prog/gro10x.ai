@@ -1348,46 +1348,6 @@ function registerLegacyTeamMenus(teamBot, readDB) {
         teamBot.sendMessage(chatId, `✅ *GPS Clock-In Verified for ${emp.name}!*\nStatus set to *In Studio* at ${clockResult.time}.`, { parse_mode: 'Markdown' });
       });
 
-      teamBot.onText(/\/clockin|📍 Clock-In GPS/, async (msg) => {
-        const chatId = msg.chat.id;
-        const emp = await state.getEmployeeByTelegramId(chatId);
-        if (!emp) {
-          return teamBot.sendMessage(chatId, `⚠️ Account not verified. Please tap *📱 Verify My Phone Number* first.`);
-        }
-
-        const clockResult = await state.clockIn(emp.emp_code, emp.name, 'Niketon Studio');
-        teamBot.sendMessage(chatId, `✅ *Clock In Recorded for ${emp.name}!*\nStatus set to *In Studio* at ${clockResult.time}.`, { parse_mode: 'Markdown' });
-      });
-
-      teamBot.onText(/\/clockout|🚪 Clock Out/, async (msg) => {
-        const chatId = msg.chat.id;
-        const emp = await state.getEmployeeByTelegramId(chatId);
-        if (!emp) {
-          return teamBot.sendMessage(chatId, `⚠️ Account not verified. Please tap *📱 Verify My Phone Number* first.`);
-        }
-
-        await state.clockOut(emp.emp_code);
-        teamBot.sendMessage(chatId, `🚪 *Clock Out Recorded for ${emp.name}!*\nStatus set to *Offline*. Have a great evening!`, { parse_mode: 'Markdown' });
-      });
-
-      teamBot.onText(/\/myearnings|💰 My Earnings/, async (msg) => {
-        const chatId = msg.chat.id;
-        const emp = await state.getEmployeeByTelegramId(chatId);
-        if (!emp) {
-          return teamBot.sendMessage(chatId, `⚠️ Account not verified.`);
-        }
-        const total = (emp.baseSalary || 0) + (emp.earnedCommissions || 0);
-        const message = `💰 *Salary & Commission Breakdown for ${emp.name}*\n\n` +
-          `• Role: *${emp.role}*\n` +
-          `• Base Pay: *BDT ${(emp.baseSalary || 0).toLocaleString()}*\n` +
-          `• Commissions: *BDT ${(emp.earnedCommissions || 0).toLocaleString()}*\n` +
-          `-----------------------------------------\n` +
-          `*Total Monthly Pay: BDT ${total.toLocaleString()}*`;
-        teamBot.sendMessage(chatId, message, { parse_mode: 'Markdown' });
-      });
-
-      teamBot.onText(/\/mytasks|📋 My Tasks/, (msg) => tasksHandler.handleMyTasks(teamBot, msg));
-
       teamBot.onText(/\/myteam|👥 My Team Roster|👥 My Team/, async (msg) => {
         const chatId = msg.chat.id;
         const emp = await state.getEmployeeByTelegramId(chatId);
@@ -1447,7 +1407,6 @@ function registerLegacyTeamMenus(teamBot, readDB) {
       const adminHandler = require('./admin');
       teamBot.onText(/🎬 Client Status/, (msg) => reportsHandler.handleClientStatus(teamBot, msg));
       teamBot.onText(/👥 Full Team Status/, (msg) => adminHandler.handleFullTeamStatus(teamBot, msg));
-      teamBot.onText(/🛠️ Tech Diagnostics/, (msg) => adminHandler.handleTechDiagnostics(teamBot, msg));
 
       // ──────── BATCH 2 MODULAR HANDLERS (Wizards) ────────
       const expensesHandler = require('./expenses');
