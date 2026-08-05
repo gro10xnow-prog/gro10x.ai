@@ -1428,9 +1428,9 @@ function registerLegacyTeamMenus(teamBot, readDB) {
       });
 
       // ──────── BATCH 1 MODULAR HANDLERS ────────
-      const briefingHandler = require('./bot/handlers/briefing');
-      const tasksHandler = require('./bot/handlers/tasks');
-      const approvalsHandler = require('./bot/handlers/approvals');
+      const briefingHandler = require('./briefing');
+      const tasksHandler = require('./tasks');
+      const approvalsHandler = require('./approvals');
 
       teamBot.onText(/\/morning|🌅 Morning Briefing/, (msg) => briefingHandler.handleMorningBriefing(teamBot, msg));
       teamBot.onText(/📊 Business Snapshot/, (msg) => briefingHandler.handleBusinessSnapshot(teamBot, msg));
@@ -1439,20 +1439,20 @@ function registerLegacyTeamMenus(teamBot, readDB) {
       teamBot.onText(/✍️ Pending Approvals/, (msg) => approvalsHandler.handlePendingApprovals(teamBot, msg));
 
       // ──────── CLIENT STATUS (Owner/Admin) ────────
-      const reportsHandler = require('./bot/handlers/reports');
+      const reportsHandler = require('./reports');
       teamBot.onText(/🎬 Client Status/, (msg) => reportsHandler.handleClientStatus(teamBot, msg));
 
       // ──────── BATCH 2 MODULAR HANDLERS (Wizards) ────────
-      const expensesHandler = require('./bot/handlers/expenses');
-      const leavesHandler = require('./bot/handlers/leaves');
-      const eodHandler = require('./bot/handlers/eod');
+      const expensesHandler = require('./expenses');
+      const leavesHandler = require('./leaves');
+      const eodHandler = require('./eod');
 
       teamBot.onText(/🧾 Submit Expense/, (msg) => expensesHandler.handleInitExpense(teamBot, msg));
       teamBot.onText(/🌴 Leave Request/, (msg) => leavesHandler.handleInitLeave(teamBot, msg));
       teamBot.onText(/📝 EOD Report/, (msg) => eodHandler.handleInitEOD(teamBot, msg));
 
       // ──────── MUKIT FINANCE EXECUTIVE HANDLERS ────────
-      const financeHandler = require('./bot/handlers/finance');
+      const financeHandler = require('./finance');
       teamBot.onText(/🧾 Log Expense Entry/, (msg) => financeHandler.handleLogExpenseEntry(teamBot, msg));
       teamBot.onText(/📋 Invoice Tracker/, (msg) => financeHandler.handleInvoiceTracker(teamBot, msg));
       teamBot.onText(/💰 Payment Follow-Up/, (msg) => financeHandler.handlePaymentFollowUp(teamBot, msg));
