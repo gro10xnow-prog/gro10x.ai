@@ -41,6 +41,27 @@ if (process.env.SENTRY_DSN) {
 // Initialize Telegram Bot & Webhooks
 try { initBot(); } catch (e) { console.warn('Bot init note:', e.message); }
 
+// 🔒 SAFETY NET: On every Vercel cold start, force-register the webhook.
+// This ensures the bot is never deaf after a deployment or cold start,
+// even if a previous local script accidentally cleared it.
+if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
+  const https = require('https');
+  const teamToken = process.env.TEAM_BOT_TOKEN;
+  const baseUrl = process.env.BASE_URL || 'https://purpleos-iota.vercel.app';
+  if (teamToken) {
+    const webhookUrl = `${baseUrl}/api/webhooks/telegram?bot=team`;
+    const payload = JSON.stringify({ url: webhookUrl, allowed_updates: ['message', 'callback_query', 'inline_query'] });
+    const req = https.request(`https://api.telegram.org/bot${teamToken}/setWebhook`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) }
+    }, (res) => {
+      let d = ''; res.on('data', c => d += c);
+      res.on('end', () => console.log('🔒 Webhook safety-net registration:', JSON.parse(d).description || 'done'));
+    });
+    req.on('error', e => console.warn('Webhook safety-net warning:', e.message));
+    req.write(payload); req.end();
+  }
+}
+
 // Sentry Request Handler
 if (Sentry) {
   app.use(Sentry.Handlers.requestHandler());

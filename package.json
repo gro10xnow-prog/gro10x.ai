@@ -8,7 +8,8 @@
     "dev": "node --watch server.js",
     "test": "jest --runInBand --detectOpenHandles --forceExit",
     "db:seed": "node scripts/seed-supabase.js",
-    "db:prod-reset": "node scripts/prepare-production-db.js"
+    "db:prod-reset": "node scripts/prepare-production-db.js",
+    "register-webhook": "node register-webhook.js"
   },
   "keywords": [
     "agency-ops",
