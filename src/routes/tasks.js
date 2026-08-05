@@ -29,6 +29,8 @@ function mapTask(t) {
     dueDate: t.due_date || t.dueDate,
     department: t.department,
     category: t.category,
+    labels: t.labels || [],
+    customFields: t.customFields || {},
     estimatedHours: Number(t.estimated_hours || t.estimatedHours) || 0,
     loggedHours: Number(t.logged_hours || t.loggedHours) || 0,
     sortOrder: Number(t.sort_order || t.sortOrder) || 0,
@@ -44,10 +46,10 @@ function mapTask(t) {
   };
 }
 
-// GET Tasks (Supports ?dept= and ?assignee= filters)
+// GET Tasks (Supports ?dept=, ?assignee=, ?label= filters)
 router.get('/', requireAuth, async (req, res) => {
   try {
-    const { dept, assignee } = req.query;
+    const { dept, assignee, label } = req.query;
     let query = supabase.from('tasks').select('*').order('created_at', { ascending: false });
 
     if (dept) {
@@ -61,7 +63,44 @@ router.get('/', requireAuth, async (req, res) => {
     const { data, error } = await query;
     if (error) throw error;
 
-    res.json((data || []).map(mapTask));
+    // Load labels & custom field values for tasks
+    let taskLabelsMap = {};
+    let taskCFVMap = {};
+
+    try {
+      const [tlsRes, cfvRes] = await Promise.all([
+        supabase.from('task_labels').select('task_id, label_id, labels(id, name, color)').catch(() => ({ data: null })),
+        supabase.from('task_custom_field_values').select('task_id, field_id, value').catch(() => ({ data: null }))
+      ]);
+
+      if (tlsRes.data) {
+        tlsRes.data.forEach(tl => {
+          if (!taskLabelsMap[tl.task_id]) taskLabelsMap[tl.task_id] = [];
+          if (tl.labels) {
+            taskLabelsMap[tl.task_id].push({ id: tl.labels.id, name: tl.labels.name, color: tl.labels.color });
+          }
+        });
+      }
+
+      if (cfvRes.data) {
+        cfvRes.data.forEach(cfv => {
+          if (!taskCFVMap[cfv.task_id]) taskCFVMap[cfv.task_id] = {};
+          taskCFVMap[cfv.task_id][cfv.field_id] = cfv.value;
+        });
+      }
+    } catch(e) {}
+
+    let tasks = (data || []).map(t => mapTask({
+      ...t,
+      labels: taskLabelsMap[t.id] || [],
+      customFields: taskCFVMap[t.id] || {}
+    }));
+
+    if (label) {
+      tasks = tasks.filter(t => (t.labels || []).some(l => l.name.toLowerCase() === label.toLowerCase() || l.id === label));
+    }
+
+    res.json(tasks);
   } catch (err) {
     console.error('Tasks GET error:', err.message);
     res.status(500).json({ error: err.message });
@@ -95,6 +134,28 @@ router.post('/', requireAuth, async (req, res) => {
 
     if (!task) {
       task = mapTask({ ...payload, created_at: new Date().toISOString() });
+    }
+
+    // Insert label associations if labelIds provided
+    if (req.body.labelIds && Array.isArray(req.body.labelIds) && req.body.labelIds.length > 0) {
+      try {
+        const rows = req.body.labelIds.map(lId => ({ task_id: newId, label_id: lId }));
+        await supabase.from('task_labels').insert(rows);
+      } catch(e) {}
+    }
+
+    // Insert custom field values if customFields object provided
+    if (req.body.customFields && typeof req.body.customFields === 'object') {
+      try {
+        const rows = Object.entries(req.body.customFields).map(([fId, val]) => ({
+          task_id: newId,
+          field_id: fId,
+          value: String(val || '')
+        }));
+        if (rows.length > 0) {
+          await supabase.from('task_custom_field_values').insert(rows);
+        }
+      } catch(e) {}
     }
 
     try {
@@ -468,6 +529,39 @@ router.patch('/:id/log-time', requireAuth, async (req, res) => {
     res.json({ success: true, task: mapTask(data) });
   } catch (err) {
     console.error('Task log-time error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/tasks/:id/labels — Add label to task
+router.post('/:id/labels', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { labelId } = req.body;
+    if (!labelId) return res.status(400).json({ error: 'labelId is required' });
+
+    const { error } = await supabase.from('task_labels').insert([{ task_id: id, label_id: labelId }]);
+    if (error && !error.message.includes('duplicate')) throw error;
+
+    broadcast('task_label_update', { taskId: id, action: 'add', labelId });
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Task Add Label error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// DELETE /api/tasks/:id/labels/:labelId — Remove label from task
+router.delete('/:id/labels/:labelId', requireAuth, async (req, res) => {
+  try {
+    const { id, labelId } = req.params;
+    const { error } = await supabase.from('task_labels').delete().eq('task_id', id).eq('label_id', labelId);
+    if (error) throw error;
+
+    broadcast('task_label_update', { taskId: id, action: 'remove', labelId });
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Task Delete Label error:', err.message);
     res.status(500).json({ error: err.message });
   }
 });

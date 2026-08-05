@@ -49,7 +49,7 @@
         <div class="brand-logo" style="background: linear-gradient(135deg, #3b82f6, #8b5cf6);">MP</div>
         <div>
           <div class="brand-title">PurpleOS</div>
-          <div style="font-size: 0.72rem; color: #60a5fa; font-weight: 600;">Department Manager Portal v0.8</div>
+          <div id="app-version-display" style="font-size: 0.72rem; color: #60a5fa; font-weight: 600;">Department Manager Portal</div>
         </div>
       </div>
     </div>
@@ -96,6 +96,10 @@
       <a class="nav-item" onclick="switchTab('kanban')">
         <span class="icon">📅</span>
         <span>Kanban & Shoots</span>
+      </a>
+      <a class="nav-item" onclick="switchTab('workload')">
+        <span class="icon">📊</span>
+        <span>Resource Allocation</span>
       </a>
 
       <div class="nav-category">HR & Workflows</div>
@@ -207,11 +211,18 @@
             <h1 class="page-title">📅 Department Kanban & Shoots</h1>
             <p class="page-subtitle">Track task stages, assign specialists, and manage workflow handoffs.</p>
           </div>
-          <div style="display: flex; gap: 0.8rem; align-items: center;">
+          <div style="display: flex; gap: 0.8rem; align-items: center; flex-wrap: wrap;">
             <div class="filter-toggle-group" style="display: flex; background: rgba(9,9,11,0.6); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 0.2rem;">
               <button id="btnFilterMyDept" class="btn-toggle active" onclick="setKanbanDeptFilter('my')" style="padding: 0.4rem 0.8rem; font-size: 0.78rem; font-weight: 600; border-radius: 8px; border: none; cursor: pointer; background: #3b82f6; color: #fff;">📍 My Dept</button>
               <button id="btnFilterAllDepts" class="btn-toggle" onclick="setKanbanDeptFilter('all')" style="padding: 0.4rem 0.8rem; font-size: 0.78rem; font-weight: 600; border-radius: 8px; border: none; cursor: pointer; background: transparent; color: #a1a1aa;">🌐 All Depts</button>
             </div>
+            <!-- Label Tag Filter -->
+            <select id="kanbanLabelFilter" onchange="onKanbanLabelFilterChange()" style="padding: 0.4rem 0.75rem; font-size: 0.78rem; background: #1e293b; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; cursor: pointer;">
+              <option value="">🏷️ All Tag Labels</option>
+            </select>
+            <button onclick="openManageLabelsModal()" style="padding: 0.4rem 0.75rem; font-size: 0.78rem; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #cbd5e1; cursor: pointer;">⚙️ Manage Tags</button>
+            <button onclick="openManageCustomFieldsModal()" style="padding: 0.4rem 0.75rem; font-size: 0.78rem; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #cbd5e1; cursor: pointer;">⚙️ Custom Fields</button>
+            <button onclick="openManageTaskTemplatesModal()" style="padding: 0.4rem 0.75rem; font-size: 0.78rem; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #cbd5e1; cursor: pointer;">📋 Templates</button>
             <button class="btn-purple" onclick="openManagerTaskModal()" style="background: linear-gradient(135deg, #3b82f6, #8b5cf6); padding: 0.5rem 1rem; font-size: 0.85rem; font-weight: 600; border-radius: 10px; border: none; color: #fff; cursor: pointer;">➕ Create Production Task</button>
           </div>
         </div>
@@ -272,6 +283,12 @@
           <form onsubmit="submitManagerTask(event)">
             <div style="display: flex; flex-direction: column; gap: 0.8rem;">
               <div>
+                <label style="font-size: 0.8rem; font-weight: 600; color: #cbd5e1;">Apply Workflow Blueprint (Optional)</label>
+                <select id="taskTemplateSelect" onchange="onApplyTaskTemplate()" class="form-input" style="width: 100%; padding: 0.5rem; background: #1e293b; border: 1px solid rgba(59,130,246,0.3); border-radius: 8px; color: #60a5fa; font-weight: 600;">
+                  <option value="">📋 Select a Workflow Blueprint to pre-fill...</option>
+                </select>
+              </div>
+              <div>
                 <label style="font-size: 0.8rem; font-weight: 600; color: #cbd5e1;">Task Title *</label>
                 <input type="text" id="taskTitleInput" class="form-input" style="width: 100%; padding: 0.5rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff;" required placeholder="e.g. Chillox Commercial Reel Edit">
               </div>
@@ -298,15 +315,35 @@
 
               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem;">
                 <div>
-                  <label style="font-size: 0.8rem; font-weight: 600; color: #cbd5e1;">Assigned Specialist</label>
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.2rem;">
+                    <label style="font-size: 0.8rem; font-weight: 600; color: #cbd5e1;">Assigned Specialist</label>
+                    <button type="button" onclick="suggestBestMatchAssignee()" style="background: transparent; border: none; color: #60a5fa; font-size: 0.72rem; font-weight: 700; cursor: pointer; text-decoration: underline;">🎯 Best Match</button>
+                  </div>
                   <select id="taskAssigneeSelect" class="form-input" style="width: 100%; padding: 0.5rem; background: #1e293b; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff;">
                     <!-- Populated dynamically per manager dept -->
                   </select>
                 </div>
                 <div>
-                  <label style="font-size: 0.8rem; font-weight: 600; color: #cbd5e1;">Due Date</label>
-                  <input type="date" id="taskDueDateInput" class="form-input" style="width: 100%; padding: 0.5rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff;">
+                  <label style="font-size: 0.8rem; font-weight: 600; color: #cbd5e1;">Estimated Hours (hrs)</label>
+                  <input type="number" step="0.5" id="taskEstimatedHoursInput" class="form-input" style="width: 100%; padding: 0.5rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff;" placeholder="e.g. 4.0">
                 </div>
+              </div>
+
+              <div>
+                <label style="font-size: 0.8rem; font-weight: 600; color: #cbd5e1;">Due Date</label>
+                <input type="date" id="taskDueDateInput" class="form-input" style="width: 100%; padding: 0.5rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff;">
+              </div>
+
+              <div>
+                <label style="font-size: 0.8rem; font-weight: 600; color: #cbd5e1;">Custom Labels (Tags)</label>
+                <div id="taskLabelCheckboxes" style="display: flex; flex-wrap: wrap; gap: 0.4rem; max-height: 90px; overflow-y: auto; padding: 0.4rem; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; margin-top: 0.2rem;">
+                  <!-- Checkboxes inserted dynamically -->
+                </div>
+              </div>
+
+              <!-- Dynamic Custom Fields Container -->
+              <div id="taskCustomFieldsContainer" style="display: flex; flex-direction: column; gap: 0.6rem; margin-top: 0.2rem;">
+                <!-- Dynamic custom field inputs rendered here -->
               </div>
 
               <div style="display: flex; justify-content: flex-end; gap: 0.8rem; margin-top: 1rem;">
@@ -317,6 +354,158 @@
           </form>
         </div>
       </div>
+
+      <!-- Manage Custom Labels Modal -->
+      <div id="managerLabelModal" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 999; justify-content: center; align-items: center;">
+        <div style="background: #0f172a; border: 1px solid rgba(139,92,246,0.3); border-radius: 16px; padding: 1.75rem; width: 100%; max-width: 480px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h2 style="font-size: 1.15rem; font-weight: 700; color: #f8fafc; margin: 0;">🏷️ Manage Customized Labels</h2>
+            <button onclick="closeManageLabelsModal()" style="background: transparent; border: none; color: #94a3b8; font-size: 1.2rem; cursor: pointer;">✕</button>
+          </div>
+          
+          <form onsubmit="submitCreateLabel(event)" style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+            <input type="text" id="newLabelNameInput" placeholder="Tag Name (e.g. Scripting, High-Priority)" required style="flex: 1; padding: 0.5rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; font-size: 0.85rem;">
+            <input type="color" id="newLabelColorInput" value="#3b82f6" style="width: 40px; height: 36px; padding: 2px; background: transparent; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; cursor: pointer;">
+            <button type="submit" style="padding: 0.5rem 0.85rem; background: #3b82f6; border: none; border-radius: 8px; color: #fff; font-weight: 600; font-size: 0.82rem; cursor: pointer;">+ Add</button>
+          </form>
+
+          <div style="font-size: 0.8rem; font-weight: 600; color: #cbd5e1; margin-bottom: 0.5rem;">Existing Workspace Labels</div>
+          <div id="labelsListContainer" style="display: flex; flex-direction: column; gap: 0.4rem; max-height: 220px; overflow-y: auto; padding-right: 0.2rem;">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Manage Custom Fields Modal -->
+      <div id="managerCustomFieldsModal" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 999; justify-content: center; align-items: center;">
+        <div style="background: #0f172a; border: 1px solid rgba(59,130,246,0.3); border-radius: 16px; padding: 1.75rem; width: 100%; max-width: 520px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h2 style="font-size: 1.15rem; font-weight: 700; color: #f8fafc; margin: 0;">⚙️ Manage Custom Fields</h2>
+            <button onclick="closeManageCustomFieldsModal()" style="background: transparent; border: none; color: #94a3b8; font-size: 1.2rem; cursor: pointer;">✕</button>
+          </div>
+          
+          <form onsubmit="submitCreateCustomField(event)" style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.25rem;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem;">
+              <div>
+                <label style="font-size: 0.75rem; color: #cbd5e1;">Field Name *</label>
+                <input type="text" id="newCFNameInput" placeholder="e.g. Frame.io Link" required style="width: 100%; padding: 0.45rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; font-size: 0.82rem;">
+              </div>
+              <div>
+                <label style="font-size: 0.75rem; color: #cbd5e1;">Field Type *</label>
+                <select id="newCFTypeSelect" onchange="onCFTypeChange()" style="width: 100%; padding: 0.45rem; background: #1e293b; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; font-size: 0.82rem;">
+                  <option value="text">Short Text</option>
+                  <option value="number">Number</option>
+                  <option value="dropdown">Dropdown Options</option>
+                  <option value="date">Date</option>
+                </select>
+              </div>
+            </div>
+
+            <div id="cfOptionsGroup" style="display: none;">
+              <label style="font-size: 0.75rem; color: #cbd5e1;">Dropdown Options (comma-separated)</label>
+              <input type="text" id="newCFOptionsInput" placeholder="e.g. 1080p, 4K UHD, Vertical 9:16" style="width: 100%; padding: 0.45rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; font-size: 0.82rem;">
+            </div>
+
+            <button type="submit" style="padding: 0.5rem; background: #3b82f6; border: none; border-radius: 8px; color: #fff; font-weight: 600; font-size: 0.85rem; cursor: pointer; align-self: flex-end;">+ Add Custom Field</button>
+          </form>
+
+          <div style="font-size: 0.8rem; font-weight: 600; color: #cbd5e1; margin-bottom: 0.5rem;">Existing Custom Fields</div>
+          <div id="customFieldsListContainer" style="display: flex; flex-direction: column; gap: 0.4rem; max-height: 200px; overflow-y: auto; padding-right: 0.2rem;">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Manage Task Templates Modal -->
+      <div id="managerTaskTemplatesModal" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 999; justify-content: center; align-items: center;">
+        <div style="background: #0f172a; border: 1px solid rgba(59,130,246,0.3); border-radius: 16px; padding: 1.75rem; width: 100%; max-width: 550px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h2 style="font-size: 1.15rem; font-weight: 700; color: #f8fafc; margin: 0;">📋 Workflow Blueprint Templates</h2>
+            <button onclick="closeManageTaskTemplatesModal()" style="background: transparent; border: none; color: #94a3b8; font-size: 1.2rem; cursor: pointer;">✕</button>
+          </div>
+          
+          <form onsubmit="submitCreateTaskTemplate(event)" style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.25rem;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem;">
+              <div>
+                <label style="font-size: 0.75rem; color: #cbd5e1;">Blueprint Title *</label>
+                <input type="text" id="newTmplNameInput" placeholder="e.g. Social Media Reel Campaign" required style="width: 100%; padding: 0.45rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; font-size: 0.82rem;">
+              </div>
+              <div>
+                <label style="font-size: 0.75rem; color: #cbd5e1;">Department *</label>
+                <select id="newTmplDeptSelect" style="width: 100%; padding: 0.45rem; background: #1e293b; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; font-size: 0.82rem;">
+                  <option value="Production">Production</option>
+                  <option value="Design">Design</option>
+                  <option value="Marketing">Marketing</option>
+                  <option value="Software">Software</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label style="font-size: 0.75rem; color: #cbd5e1;">Subtask Checklist (comma-separated)</label>
+              <input type="text" id="newTmplSubtasksInput" placeholder="e.g. Creative Brief, Shoot Day, Rough Cut, Final Render" style="width: 100%; padding: 0.45rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; font-size: 0.82rem;">
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem;">
+              <div>
+                <label style="font-size: 0.75rem; color: #cbd5e1;">Est. Hours</label>
+                <input type="number" step="0.5" id="newTmplEstHoursInput" value="8.0" style="width: 100%; padding: 0.45rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; font-size: 0.82rem;">
+              </div>
+              <div>
+                <label style="font-size: 0.75rem; color: #cbd5e1;">Priority</label>
+                <select id="newTmplPrioritySelect" style="width: 100%; padding: 0.45rem; background: #1e293b; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; font-size: 0.82rem;">
+                  <option value="High">🔴 High</option>
+                  <option value="Medium" selected>🟡 Medium</option>
+                  <option value="Normal">🟢 Normal</option>
+                </select>
+              </div>
+            </div>
+
+            <button type="submit" style="padding: 0.5rem; background: #3b82f6; border: none; border-radius: 8px; color: #fff; font-weight: 600; font-size: 0.85rem; cursor: pointer; align-self: flex-end;">+ Save Blueprint</button>
+          </form>
+
+          <div style="font-size: 0.8rem; font-weight: 600; color: #cbd5e1; margin-bottom: 0.5rem;">Existing Workflow Blueprints</div>
+          <div id="templatesListContainer" style="display: flex; flex-direction: column; gap: 0.4rem; max-height: 200px; overflow-y: auto; padding-right: 0.2rem;">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+      </div>
+
+      <!-- 3.5. RESOURCE ALLOCATION & TEAM WORKLOAD -->
+      <section id="tab-workload" class="tab-pane" style="display: none;">
+        <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+          <div>
+            <h1 class="page-title">📊 Resource Allocation & Team Workload</h1>
+            <p class="page-subtitle">Monitor capacity, prevent team burnout, and optimize task assignments.</p>
+          </div>
+          <button onclick="loadManagerWorkload()" style="padding: 0.45rem 0.85rem; font-size: 0.8rem; background: rgba(59,130,246,0.2); border: 1px solid rgba(59,130,246,0.3); border-radius: 8px; color: #60a5fa; cursor: pointer;">🔄 Refresh Workload</button>
+        </div>
+
+        <!-- Metric Summary Cards -->
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
+          <div style="background: rgba(17,24,39,0.7); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 1rem;">
+            <div style="font-size: 0.78rem; color: #94a3b8; margin-bottom: 0.25rem;">Total Team Capacity</div>
+            <div id="workloadTotalCapacity" style="font-size: 1.4rem; font-weight: 700; color: #f8fafc;">0 hrs/wk</div>
+          </div>
+          <div style="background: rgba(17,24,39,0.7); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 1rem;">
+            <div style="font-size: 0.78rem; color: #94a3b8; margin-bottom: 0.25rem;">Assigned Task Hours</div>
+            <div id="workloadAssignedHours" style="font-size: 1.4rem; font-weight: 700; color: #60a5fa;">0 hrs</div>
+          </div>
+          <div style="background: rgba(17,24,39,0.7); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 1rem;">
+            <div style="font-size: 0.78rem; color: #94a3b8; margin-bottom: 0.25rem;">Available Free Capacity</div>
+            <div id="workloadFreeHours" style="font-size: 1.4rem; font-weight: 700; color: #34d399;">0 hrs</div>
+          </div>
+          <div style="background: rgba(17,24,39,0.7); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 1rem;">
+            <div style="font-size: 0.78rem; color: #94a3b8; margin-bottom: 0.25rem;">Overloaded Members</div>
+            <div id="workloadOverloadedCount" style="font-size: 1.4rem; font-weight: 700; color: #ef4444;">0 Members</div>
+          </div>
+        </div>
+
+        <!-- Team Capacity Cards Grid -->
+        <div id="teamWorkloadCardsContainer" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+          <!-- Loaded dynamically -->
+        </div>
+      </section>
 
       <!-- 4. HR OPS -->
       <section id="tab-hrops" class="tab-pane" style="display: none;">

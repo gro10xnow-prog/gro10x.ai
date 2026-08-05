@@ -56,7 +56,10 @@ try {
       chats: [],
       webhookLogs: [],
       attendanceLog: [],
-      checkoutLog: []
+      checkoutLog: [],
+      labels: [],
+      custom_fields: [],
+      task_templates: []
     };
 
     fs.writeFileSync(dbPath, JSON.stringify(productionDb, null, 2));

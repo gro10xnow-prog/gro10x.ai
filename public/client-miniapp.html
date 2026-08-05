@@ -516,7 +516,10 @@
   <!-- HERO -->
   <div class="hero">
     <div class="hero-topbar">
-      <div class="hero-brand">Purple Bot · Client Portal</div>
+      <div class="hero-brand">
+        Purple Bot · Client Portal
+        <span id="app-version-display" style="opacity:0.6;font-weight:600;margin-left:4px;"></span>
+      </div>
       <div class="hero-notif">🔔</div>
     </div>
     <div class="hero-card">
@@ -820,6 +823,7 @@
   async function init() {
     const tgUser = tg?.initDataUnsafe?.user;
     const telegramId = tgUser?.id || 'debug';
+    fetchAppVersion();
     try {
       const res = await fetch(`/api/clients/me?telegramId=${telegramId}`);
       if (res.ok) {
@@ -832,6 +836,17 @@
     } catch(e) {
       renderHero({ name: 'Client Portal', accountManager: 'Team', campaigns: [] });
     }
+  }
+
+  async function fetchAppVersion() {
+    try {
+      const res = await fetch('/api/version');
+      if(res.ok) {
+        const data = await res.json();
+        const verDisplay = document.getElementById('app-version-display');
+        if(verDisplay) verDisplay.innerText = `v${data.version}`;
+      }
+    } catch(e) {}
   }
 
   function renderHero(client) {

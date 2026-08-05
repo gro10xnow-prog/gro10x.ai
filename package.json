@@ -1,6 +1,6 @@
 {
   "name": "purpleos",
-  "version": "0.9.0",
+  "version": "0.7.0",
   "description": "Business Operating System for Purplebot Digital",
   "main": "server.js",
   "scripts": {

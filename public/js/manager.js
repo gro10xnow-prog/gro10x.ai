@@ -41,12 +41,35 @@ document.addEventListener('DOMContentLoaded', async () => {
   await checkManagerAuth();
   await loadManagerMetadata();
   initManagerNavigation();
+  fetchAppVersion();
 });
+
+async function fetchAppVersion() {
+  try {
+    const res = await fetch('/api/version');
+    if(res.ok) {
+      const data = await res.json();
+      const verDisplay = document.getElementById('app-version-display');
+      if(verDisplay) verDisplay.innerText = `Department Manager Portal v${data.version}`;
+    }
+  } catch(e) {
+    console.error('Failed to fetch app version', e);
+  }
+}
 
 let managerClients = [];
 let managerTeamMembers = [];
+let managerLabels = [];
+let managerCustomFields = [];
+let managerTaskTemplates = [];
+let selectedKanbanLabel = '';
 
 async function loadManagerMetadata() {
+  try {
+    await loadManagerLabels();
+    await loadManagerCustomFields();
+    await loadManagerTaskTemplates();
+  } catch(e) {}
   try {
     const [clientRes, teamRes] = await Promise.all([
       fetch('/api/clients').catch(() => null),
@@ -278,6 +301,8 @@ function switchTab(tabId) {
     loadManagerSocialPlanner();
   } else if (tabId === 'tickets') {
     loadManagerTickets();
+  } else if (tabId === 'workload') {
+    loadManagerWorkload();
   }
 
   console.log(`📌 Manager Portal: Switched to tab '${tabId}'`);
@@ -328,6 +353,11 @@ function renderManagerKanbanBoard() {
     });
   }
 
+  // Filter tasks by selected tag label
+  if (selectedKanbanLabel) {
+    filteredTasks = filteredTasks.filter(t => (t.labels || []).some(l => l.id === selectedKanbanLabel));
+  }
+
   // Map task stage to column ID
   const columns = {
     'Briefing': document.getElementById('col-Briefing'),
@@ -363,12 +393,19 @@ function renderManagerKanbanBoard() {
       card.style.cssText = 'background: rgba(15,23,42,0.9); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 0.85rem; cursor: pointer; transition: all 0.2s;';
 
       const priorityColor = task.priority === 'High' ? '#f87171' : (task.priority === 'Medium' ? '#fbbf24' : '#34d399');
+      
+      const labelsHtml = (task.labels && task.labels.length > 0)
+        ? `<div style="display: flex; flex-wrap: wrap; gap: 0.25rem; margin-bottom: 0.4rem;">
+            ${task.labels.map(l => `<span style="font-size: 0.65rem; font-weight: 700; padding: 0.1rem 0.4rem; border-radius: 4px; color: #fff; background: ${l.color || '#3b82f6'}; display: inline-block;">${l.name}</span>`).join('')}
+           </div>`
+        : '';
 
       card.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.4rem;">
           <span style="font-size: 0.72rem; padding: 0.1rem 0.4rem; background: rgba(255,255,255,0.06); border-radius: 6px; color: #94a3b8; font-weight: 600;">${task.client || 'Agency Client'}</span>
           <span style="font-size: 0.68rem; font-weight: 700; color: ${priorityColor};">● ${task.priority || 'Normal'}</span>
         </div>
+        ${labelsHtml}
         <div style="font-size: 0.85rem; font-weight: 700; color: #f1f5f9; margin-bottom: 0.5rem; line-height: 1.3;">${task.title}</div>
         <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.72rem; color: #64748b;">
           <span>👤 ${task.assignee || 'Unassigned'}</span>
@@ -486,12 +523,25 @@ async function submitManagerTask(event) {
   const priority = document.getElementById('taskPrioritySelect').value;
   const assignee = document.getElementById('taskAssigneeSelect').value;
   const dueDate = document.getElementById('taskDueDateInput').value;
+  const estimatedHours = document.getElementById('taskEstimatedHoursInput') ? document.getElementById('taskEstimatedHoursInput').value : 0;
+
+  const labelCheckboxes = document.querySelectorAll('.task-label-checkbox:checked');
+  const labelIds = Array.from(labelCheckboxes).map(cb => cb.value);
+
+  const cfInputs = document.querySelectorAll('.task-cf-input');
+  const customFields = {};
+  cfInputs.forEach(input => {
+    const fId = input.getAttribute('data-field-id');
+    if (fId && input.value) {
+      customFields[fId] = input.value;
+    }
+  });
 
   try {
     const res = await fetch('/api/tasks', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title, client, priority, assignee, dueDate })
+      body: JSON.stringify({ title, client, priority, assignee, dueDate, estimatedHours, labelIds, customFields })
     });
     const data = await res.json();
     if (data.success) {
@@ -503,6 +553,137 @@ async function submitManagerTask(event) {
     }
   } catch (err) {
     showManagerToast('Error submitting task: ' + err.message, 'error');
+  }
+}
+
+/* -------------------------------------------------------------
+ * 🏷️ Customized Labels Management Helper Functions
+ * ------------------------------------------------------------- */
+async function loadManagerLabels() {
+  try {
+    const res = await fetch('/api/labels');
+    if (!res.ok) return;
+    managerLabels = await res.json();
+    populateKanbanLabelFilter();
+    populateTaskModalLabels();
+    populateManageLabelsModalList();
+  } catch (e) {
+    console.error('Error loading labels:', e);
+  }
+}
+
+function populateKanbanLabelFilter() {
+  const filterSelect = document.getElementById('kanbanLabelFilter');
+  if (!filterSelect) return;
+  const currentVal = filterSelect.value;
+  filterSelect.innerHTML = '<option value="">🏷️ All Tag Labels</option>';
+  managerLabels.forEach(lbl => {
+    const opt = document.createElement('option');
+    opt.value = lbl.id;
+    opt.textContent = `🏷️ ${lbl.name}`;
+    if (currentVal === lbl.id) opt.selected = true;
+    filterSelect.appendChild(opt);
+  });
+}
+
+function onKanbanLabelFilterChange() {
+  const filterSelect = document.getElementById('kanbanLabelFilter');
+  selectedKanbanLabel = filterSelect ? filterSelect.value : '';
+  renderManagerKanbanBoard();
+}
+
+function populateTaskModalLabels() {
+  const container = document.getElementById('taskLabelCheckboxes');
+  if (!container) return;
+  container.innerHTML = '';
+  if (managerLabels.length === 0) {
+    container.innerHTML = '<div style="font-size:0.75rem; color:#64748b;">No custom labels found</div>';
+    return;
+  }
+  managerLabels.forEach(lbl => {
+    const labelWrapper = document.createElement('label');
+    labelWrapper.style.cssText = 'display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.15rem 0.5rem; background: rgba(255,255,255,0.06); border-radius: 6px; font-size: 0.72rem; cursor: pointer; color: #fff;';
+    labelWrapper.innerHTML = `
+      <input type="checkbox" value="${lbl.id}" class="task-label-checkbox" style="cursor: pointer; accent-color: ${lbl.color || '#3b82f6'};">
+      <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:${lbl.color || '#3b82f6'};"></span>
+      <span>${lbl.name}</span>
+    `;
+    container.appendChild(labelWrapper);
+  });
+}
+
+function openManageLabelsModal() {
+  const modal = document.getElementById('managerLabelModal');
+  if (modal) {
+    modal.style.display = 'flex';
+    populateManageLabelsModalList();
+  }
+}
+
+function closeManageLabelsModal() {
+  const modal = document.getElementById('managerLabelModal');
+  if (modal) modal.style.display = 'none';
+}
+
+function populateManageLabelsModalList() {
+  const container = document.getElementById('labelsListContainer');
+  if (!container) return;
+  container.innerHTML = '';
+  if (managerLabels.length === 0) {
+    container.innerHTML = '<div style="font-size:0.78rem; color:#64748b; padding:0.5rem;">No labels created yet. Add one above!</div>';
+    return;
+  }
+  managerLabels.forEach(lbl => {
+    const item = document.createElement('div');
+    item.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 0.4rem 0.6rem; background: rgba(255,255,255,0.04); border-radius: 8px; font-size: 0.8rem; border: 1px solid rgba(255,255,255,0.06);';
+    item.innerHTML = `
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: ${lbl.color || '#3b82f6'};"></span>
+        <span style="font-weight: 600; color: #f8fafc;">${lbl.name}</span>
+      </div>
+      <button onclick="deleteCustomLabel('${lbl.id}')" style="background: transparent; border: none; color: #ef4444; font-size: 0.75rem; cursor: pointer; padding: 0.2rem 0.4rem; border-radius: 4px;">🗑️ Delete</button>
+    `;
+    container.appendChild(item);
+  });
+}
+
+async function submitCreateLabel(event) {
+  event.preventDefault();
+  const nameInput = document.getElementById('newLabelNameInput');
+  const colorInput = document.getElementById('newLabelColorInput');
+  if (!nameInput || !nameInput.value.trim()) return;
+
+  try {
+    const res = await fetch('/api/labels', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: nameInput.value.trim(), color: colorInput.value })
+    });
+    const data = await res.json();
+    if (data.success) {
+      showManagerToast(`✅ Custom tag "${nameInput.value}" created!`, 'success');
+      nameInput.value = '';
+      await loadManagerLabels();
+    } else {
+      showManagerToast('Error creating tag: ' + (data.error || 'Check input'), 'error');
+    }
+  } catch (err) {
+    showManagerToast('Error creating label: ' + err.message, 'error');
+  }
+}
+
+async function deleteCustomLabel(labelId) {
+  if (!confirm('Are you sure you want to delete this label?')) return;
+  try {
+    const res = await fetch(`/api/labels/${labelId}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (data.success) {
+      showManagerToast('🗑️ Label deleted successfully', 'success');
+      await loadManagerLabels();
+      await loadManagerKanban();
+    }
+  } catch (err) {
+    showManagerToast('Error deleting label: ' + err.message, 'error');
   }
 }
 
@@ -1099,4 +1280,381 @@ function setupManagerSSE() {
 function initManagerNavigation() {
   console.log('🚀 PurpleOS Manager Portal JS Initialized');
   setupManagerSSE();
+}
+
+/* -------------------------------------------------------------
+ * 📊 Resource Allocation & Workload Controller (Phase 0.6.2/3)
+ * ------------------------------------------------------------- */
+async function loadManagerWorkload() {
+  const container = document.getElementById('teamWorkloadCardsContainer');
+  if (!container) return;
+
+  try {
+    const res = await fetch('/api/team/workload');
+    if (!res.ok) throw new Error('Failed to fetch workload data');
+    const workloadList = await res.json();
+
+    let totalCapacity = 0;
+    let totalAssigned = 0;
+    let totalFree = 0;
+    let overloadedCount = 0;
+
+    container.innerHTML = '';
+
+    if (!workloadList || workloadList.length === 0) {
+      container.innerHTML = '<div style="font-size:0.85rem; color:#64748b; padding:1rem;">No team capacity data available.</div>';
+      return;
+    }
+
+    workloadList.forEach(member => {
+      totalCapacity += member.weeklyCapacityHours;
+      totalAssigned += member.assignedHours;
+      totalFree += member.availableCapacityHours;
+      if (member.status === 'Overloaded') overloadedCount++;
+
+      const barColor = member.status === 'Overloaded' ? '#ef4444' : (member.status === 'Balanced' ? '#f59e0b' : '#10b981');
+      const badgeBg = member.status === 'Overloaded' ? 'rgba(239,68,68,0.2)' : (member.status === 'Balanced' ? 'rgba(245,158,11,0.2)' : 'rgba(16,185,129,0.2)');
+
+      const card = document.createElement('div');
+      card.style.cssText = 'background: rgba(17,24,39,0.7); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 1.1rem;';
+      card.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
+          <div>
+            <div style="font-size: 0.95rem; font-weight: 700; color: #f8fafc;">${member.name}</div>
+            <div style="font-size: 0.75rem; color: #94a3b8;">${member.role} • <span style="color:#60a5fa;">${member.department}</span></div>
+          </div>
+          <span style="font-size: 0.72rem; font-weight: 700; padding: 0.2rem 0.55rem; border-radius: 12px; background: ${badgeBg}; color: ${barColor};">
+            ${member.status === 'Overloaded' ? '🔴 Overloaded' : (member.status === 'Balanced' ? '🟡 Balanced' : '🟢 Available')}
+          </span>
+        </div>
+
+        <div style="margin-bottom: 0.6rem;">
+          <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: #cbd5e1; margin-bottom: 0.3rem;">
+            <span>Assigned Load (${member.activeTasksCount} active tasks)</span>
+            <span style="font-weight: 700;">${member.assignedHours} / ${member.weeklyCapacityHours} hrs (${member.workloadPercent}%)</span>
+          </div>
+          <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden;">
+            <div style="width: ${Math.min(100, member.workloadPercent)}%; height: 100%; background: ${barColor}; transition: width 0.3s;"></div>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: #64748b; padding-top: 0.4rem; border-top: 1px solid rgba(255,255,255,0.05);">
+          <span>⏱️ Logged: ${member.loggedHours} hrs</span>
+          <span>💡 Free Capacity: ${member.availableCapacityHours} hrs</span>
+        </div>
+      `;
+      container.appendChild(card);
+    });
+
+    const capEl = document.getElementById('workloadTotalCapacity');
+    const assEl = document.getElementById('workloadAssignedHours');
+    const freeEl = document.getElementById('workloadFreeHours');
+    const overEl = document.getElementById('workloadOverloadedCount');
+
+    if (capEl) capEl.textContent = `${totalCapacity} hrs/wk`;
+    if (assEl) assEl.textContent = `${totalAssigned} hrs`;
+    if (freeEl) freeEl.textContent = `${totalFree} hrs`;
+    if (overEl) overEl.textContent = `${overloadedCount} Members`;
+  } catch (err) {
+    console.error('Error loading workload:', err);
+  }
+}
+
+async function suggestBestMatchAssignee() {
+  const estInput = document.getElementById('taskEstimatedHoursInput');
+  const estHours = estInput ? estInput.value : 0;
+  const userDept = currentManagerUser?.department || 'Production';
+
+  try {
+    const res = await fetch(`/api/team/best-match?department=${encodeURIComponent(userDept)}&estimatedHours=${estHours}`);
+    const data = await res.json();
+    if (data.bestMatch) {
+      const assigneeSelect = document.getElementById('taskAssigneeSelect');
+      if (assigneeSelect) {
+        let matchedOpt = false;
+        for (let opt of assigneeSelect.options) {
+          if (opt.value.toLowerCase().includes(data.bestMatch.name.toLowerCase()) || data.bestMatch.name.toLowerCase().includes(opt.value.toLowerCase())) {
+            opt.selected = true;
+            matchedOpt = true;
+            break;
+          }
+        }
+        if (!matchedOpt && assigneeSelect.options.length > 0) {
+          assigneeSelect.options[0].selected = true;
+        }
+      }
+      showManagerToast(`🎯 Best Match: ${data.bestMatch.name} (${data.bestMatch.freeHours} hrs free capacity)`, 'info');
+    }
+  } catch (err) {
+    showManagerToast('Error calculating best match: ' + err.message, 'error');
+  }
+}
+
+/* -------------------------------------------------------------
+ * ⚙️ Custom Fields Management Controller (Phase 0.6.4/5)
+ * ------------------------------------------------------------- */
+async function loadManagerCustomFields() {
+  try {
+    const res = await fetch('/api/custom-fields');
+    if (!res.ok) return;
+    managerCustomFields = await res.json();
+    renderTaskModalCustomFields();
+    populateManageCustomFieldsModalList();
+  } catch (e) {
+    console.error('Error loading custom fields:', e);
+  }
+}
+
+function renderTaskModalCustomFields() {
+  const container = document.getElementById('taskCustomFieldsContainer');
+  if (!container) return;
+  container.innerHTML = '';
+  if (!managerCustomFields || managerCustomFields.length === 0) return;
+
+  managerCustomFields.forEach(field => {
+    const fieldWrapper = document.createElement('div');
+    fieldWrapper.style.cssText = 'display: flex; flex-direction: column; gap: 0.2rem;';
+    const label = `<label style="font-size: 0.78rem; font-weight: 600; color: #cbd5e1;">${field.name}</label>`;
+
+    let inputHtml = '';
+    if (field.fieldType === 'dropdown') {
+      const opts = field.options || [];
+      const optsHtml = opts.map(o => `<option value="${o}">${o}</option>`).join('');
+      inputHtml = `<select class="task-cf-input form-input" data-field-id="${field.id}" style="width: 100%; padding: 0.45rem; background: #1e293b; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; font-size: 0.82rem;"><option value="">Select ${field.name}...</option>${optsHtml}</select>`;
+    } else if (field.fieldType === 'number') {
+      inputHtml = `<input type="number" step="any" class="task-cf-input form-input" data-field-id="${field.id}" placeholder="Enter ${field.name}" style="width: 100%; padding: 0.45rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; font-size: 0.82rem;">`;
+    } else if (field.fieldType === 'date') {
+      inputHtml = `<input type="date" class="task-cf-input form-input" data-field-id="${field.id}" style="width: 100%; padding: 0.45rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; font-size: 0.82rem;">`;
+    } else {
+      inputHtml = `<input type="text" class="task-cf-input form-input" data-field-id="${field.id}" placeholder="Enter ${field.name}" style="width: 100%; padding: 0.45rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; font-size: 0.82rem;">`;
+    }
+
+    fieldWrapper.innerHTML = label + inputHtml;
+    container.appendChild(fieldWrapper);
+  });
+}
+
+function openManageCustomFieldsModal() {
+  const modal = document.getElementById('managerCustomFieldsModal');
+  if (modal) {
+    modal.style.display = 'flex';
+    populateManageCustomFieldsModalList();
+  }
+}
+
+function closeManageCustomFieldsModal() {
+  const modal = document.getElementById('managerCustomFieldsModal');
+  if (modal) modal.style.display = 'none';
+}
+
+function onCFTypeChange() {
+  const typeSelect = document.getElementById('newCFTypeSelect');
+  const optsGroup = document.getElementById('cfOptionsGroup');
+  if (typeSelect && optsGroup) {
+    optsGroup.style.display = typeSelect.value === 'dropdown' ? 'block' : 'none';
+  }
+}
+
+function populateManageCustomFieldsModalList() {
+  const container = document.getElementById('customFieldsListContainer');
+  if (!container) return;
+  container.innerHTML = '';
+  if (!managerCustomFields || managerCustomFields.length === 0) {
+    container.innerHTML = '<div style="font-size:0.78rem; color:#64748b; padding:0.5rem;">No custom fields created yet.</div>';
+    return;
+  }
+  managerCustomFields.forEach(field => {
+    const item = document.createElement('div');
+    item.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 0.45rem 0.65rem; background: rgba(255,255,255,0.04); border-radius: 8px; font-size: 0.8rem; border: 1px solid rgba(255,255,255,0.06);';
+    item.innerHTML = `
+      <div>
+        <span style="font-weight: 600; color: #f8fafc;">${field.name}</span>
+        <span style="font-size: 0.7rem; padding: 0.1rem 0.4rem; background: rgba(59,130,246,0.15); color: #60a5fa; border-radius: 4px; margin-left: 0.4rem;">${field.fieldType}</span>
+      </div>
+      <button onclick="deleteCustomField('${field.id}')" style="background: transparent; border: none; color: #ef4444; font-size: 0.75rem; cursor: pointer;">🗑️ Delete</button>
+    `;
+    container.appendChild(item);
+  });
+}
+
+async function submitCreateCustomField(event) {
+  event.preventDefault();
+  const nameInput = document.getElementById('newCFNameInput');
+  const typeSelect = document.getElementById('newCFTypeSelect');
+  const optsInput = document.getElementById('newCFOptionsInput');
+
+  if (!nameInput || !nameInput.value.trim()) return;
+
+  const fieldType = typeSelect ? typeSelect.value : 'text';
+  let options = [];
+  if (fieldType === 'dropdown' && optsInput && optsInput.value.trim()) {
+    options = optsInput.value.split(',').map(s => s.trim()).filter(Boolean);
+  }
+
+  try {
+    const res = await fetch('/api/custom-fields', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: nameInput.value.trim(), fieldType, options })
+    });
+    const data = await res.json();
+    if (data.success) {
+      showManagerToast(`✅ Custom field "${nameInput.value}" created!`, 'success');
+      nameInput.value = '';
+      if (optsInput) optsInput.value = '';
+      await loadManagerCustomFields();
+    } else {
+      showManagerToast('Error creating field: ' + (data.error || 'Check input'), 'error');
+    }
+  } catch (err) {
+    showManagerToast('Error creating custom field: ' + err.message, 'error');
+  }
+}
+
+async function deleteCustomField(fieldId) {
+  if (!confirm('Are you sure you want to delete this custom field?')) return;
+  try {
+    const res = await fetch(`/api/custom-fields/${fieldId}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (data.success) {
+      showManagerToast('🗑️ Custom field deleted', 'success');
+      await loadManagerCustomFields();
+    }
+  } catch (err) {
+    showManagerToast('Error deleting field: ' + err.message, 'error');
+  }
+}
+
+/* -------------------------------------------------------------
+ * 📋 Task Templates Controller (Phase 0.6.6 - 0.6.9)
+ * ------------------------------------------------------------- */
+async function loadManagerTaskTemplates() {
+  try {
+    const res = await fetch('/api/task-templates');
+    if (!res.ok) return;
+    managerTaskTemplates = await res.json();
+    populateTaskModalTemplates();
+    populateManageTaskTemplatesModalList();
+  } catch (e) {
+    console.error('Error loading task templates:', e);
+  }
+}
+
+function populateTaskModalTemplates() {
+  const select = document.getElementById('taskTemplateSelect');
+  if (!select) return;
+  select.innerHTML = '<option value="">📋 Select a Workflow Blueprint to pre-fill...</option>';
+  managerTaskTemplates.forEach(tmpl => {
+    const opt = document.createElement('option');
+    opt.value = tmpl.id;
+    opt.textContent = `📋 ${tmpl.name} (${tmpl.department} - ${tmpl.estimatedHours}h)`;
+    select.appendChild(opt);
+  });
+}
+
+function onApplyTaskTemplate() {
+  const select = document.getElementById('taskTemplateSelect');
+  if (!select || !select.value) return;
+
+  const tmpl = managerTaskTemplates.find(t => t.id === select.value);
+  if (!tmpl) return;
+
+  const titleInput = document.getElementById('taskTitleInput');
+  const estInput = document.getElementById('taskEstimatedHoursInput');
+  const prioritySelect = document.getElementById('taskPrioritySelect');
+
+  if (titleInput && !titleInput.value) titleInput.value = tmpl.name;
+  if (estInput) estInput.value = tmpl.estimatedHours;
+  if (prioritySelect) prioritySelect.value = tmpl.priority || 'Medium';
+
+  showManagerToast(`📋 Loaded template: "${tmpl.name}" (${(tmpl.subtasks || []).length} subtasks ready)`, 'info');
+}
+
+function openManageTaskTemplatesModal() {
+  const modal = document.getElementById('managerTaskTemplatesModal');
+  if (modal) {
+    modal.style.display = 'flex';
+    populateManageTaskTemplatesModalList();
+  }
+}
+
+function closeManageTaskTemplatesModal() {
+  const modal = document.getElementById('managerTaskTemplatesModal');
+  if (modal) modal.style.display = 'none';
+}
+
+function populateManageTaskTemplatesModalList() {
+  const container = document.getElementById('templatesListContainer');
+  if (!container) return;
+  container.innerHTML = '';
+  if (!managerTaskTemplates || managerTaskTemplates.length === 0) {
+    container.innerHTML = '<div style="font-size:0.78rem; color:#64748b; padding:0.5rem;">No templates created yet.</div>';
+    return;
+  }
+  managerTaskTemplates.forEach(tmpl => {
+    const item = document.createElement('div');
+    item.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 0.45rem 0.65rem; background: rgba(255,255,255,0.04); border-radius: 8px; font-size: 0.8rem; border: 1px solid rgba(255,255,255,0.06);';
+    item.innerHTML = `
+      <div>
+        <span style="font-weight: 600; color: #f8fafc;">${tmpl.name}</span>
+        <span style="font-size: 0.7rem; padding: 0.1rem 0.4rem; background: rgba(59,130,246,0.15); color: #60a5fa; border-radius: 4px; margin-left: 0.4rem;">${tmpl.department} • ${tmpl.estimatedHours}h</span>
+      </div>
+      <button onclick="deleteTaskTemplate('${tmpl.id}')" style="background: transparent; border: none; color: #ef4444; font-size: 0.75rem; cursor: pointer;">🗑️ Delete</button>
+    `;
+    container.appendChild(item);
+  });
+}
+
+async function submitCreateTaskTemplate(event) {
+  event.preventDefault();
+  const nameInput = document.getElementById('newTmplNameInput');
+  const deptSelect = document.getElementById('newTmplDeptSelect');
+  const subtasksInput = document.getElementById('newTmplSubtasksInput');
+  const estInput = document.getElementById('newTmplEstHoursInput');
+  const prioritySelect = document.getElementById('newTmplPrioritySelect');
+
+  if (!nameInput || !nameInput.value.trim()) return;
+
+  const subtasks = subtasksInput && subtasksInput.value.trim()
+    ? subtasksInput.value.split(',').map(s => s.trim()).filter(Boolean)
+    : [];
+
+  try {
+    const res = await fetch('/api/task-templates', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: nameInput.value.trim(),
+        department: deptSelect ? deptSelect.value : 'Production',
+        subtasks,
+        estimatedHours: estInput ? estInput.value : 8.0,
+        priority: prioritySelect ? prioritySelect.value : 'Medium'
+      })
+    });
+    const data = await res.json();
+    if (data.success) {
+      showManagerToast(`✅ Workflow Blueprint "${nameInput.value}" saved!`, 'success');
+      nameInput.value = '';
+      if (subtasksInput) subtasksInput.value = '';
+      await loadManagerTaskTemplates();
+    } else {
+      showManagerToast('Error creating template: ' + (data.error || 'Check input'), 'error');
+    }
+  } catch (err) {
+    showManagerToast('Error creating template: ' + err.message, 'error');
+  }
+}
+
+async function deleteTaskTemplate(templateId) {
+  if (!confirm('Are you sure you want to delete this template?')) return;
+  try {
+    const res = await fetch(`/api/task-templates/${templateId}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (data.success) {
+      showManagerToast('🗑️ Template deleted', 'success');
+      await loadManagerTaskTemplates();
+    }
+  } catch (err) {
+    showManagerToast('Error deleting template: ' + err.message, 'error');
+  }
 }

@@ -25,8 +25,20 @@ const cronRoutes = require('./cron');
 const paymentsRoutes = require('./payments');
 const ticketsRoutes = require('./tickets');
 const projectsRoutes = require('./projects');
+const labelsRoutes = require('./labels');
+const customFieldsRoutes = require('./custom-fields');
+const taskTemplatesRoutes = require('./task-templates');
+
+// System Version Endpoint
+router.get('/version', (req, res) => {
+  const pkg = require('../../package.json');
+  res.json({ version: pkg.version });
+});
 
 // Mount Domain Sub-Routers
+router.use('/labels', labelsRoutes);
+router.use('/custom-fields', customFieldsRoutes);
+router.use('/task-templates', taskTemplatesRoutes);
 router.use('/', authRoutes);
 router.use('/clients', clientsRoutes);
 router.use('/leads', leadsRoutes);

@@ -54,7 +54,8 @@ function mapProfile(p) {
     nidNo: p.nid_no || '',
     primarySkill: p.primary_skill || '',
     joiningDate: p.joining_date || '',
-    reportsTo: p.reports_to || ''
+    reportsTo: p.reports_to || '',
+    weeklyCapacityHours: Number(p.weekly_capacity_hours) || 40
   };
 }
 
@@ -715,6 +716,140 @@ router.post('/', requireAuth, requireManager, async (req, res) => {
     });
   } catch (err) {
     console.error('Team Member POST error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/team/workload — Get workload & capacity stats for team members
+router.get('/workload', requireAuth, async (req, res) => {
+  try {
+    let team = [];
+    try {
+      const { data } = await supabase.from('profiles').select('*');
+      if (data && data.length > 0) team = data;
+    } catch(e) {}
+    if (team.length === 0) {
+      const db = await readDB();
+      team = db.team || [];
+    }
+
+    let tasks = [];
+    try {
+      const { data } = await supabase.from('tasks').select('*');
+      if (data) tasks = data;
+    } catch(e) {}
+
+    const workloadList = team.map(member => {
+      const name = member.name || 'Team Member';
+      const empCode = member.emp_code || member.id || name;
+      const capacity = Number(member.weekly_capacity_hours) || 40;
+
+      const memberTasks = tasks.filter(t => {
+        const stage = (t.stage || '').toLowerCase();
+        if (stage.includes('approved') || stage.includes('done') || stage.includes('completed')) return false;
+        const assignee = (t.assignee || '').toLowerCase();
+        return assignee.includes(name.toLowerCase()) || assignee.includes(empCode.toLowerCase());
+      });
+
+      const assignedHours = memberTasks.reduce((sum, t) => sum + (Number(t.estimated_hours || t.estimatedHours) || 0), 0);
+      const loggedHours = memberTasks.reduce((sum, t) => sum + (Number(t.logged_hours || t.loggedHours) || 0), 0);
+      const workloadPercent = Math.round((assignedHours / capacity) * 100);
+
+      let status = 'Available';
+      if (workloadPercent >= 100) status = 'Overloaded';
+      else if (workloadPercent >= 75) status = 'Balanced';
+
+      return {
+        id: empCode,
+        empCode,
+        name,
+        role: member.role || 'Specialist',
+        department: member.department || 'Production',
+        weeklyCapacityHours: capacity,
+        assignedHours,
+        loggedHours,
+        activeTasksCount: memberTasks.length,
+        workloadPercent,
+        status,
+        availableCapacityHours: Math.max(0, capacity - assignedHours)
+      };
+    });
+
+    res.json(workloadList);
+  } catch (err) {
+    console.error('Workload GET error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/team/best-match — Recommend best assignee for a task based on department & available capacity
+router.get('/best-match', requireAuth, async (req, res) => {
+  try {
+    const { department, estimatedHours } = req.query;
+    const taskEst = Number(estimatedHours) || 0;
+
+    let team = [];
+    try {
+      const { data } = await supabase.from('profiles').select('*');
+      if (data && data.length > 0) team = data;
+    } catch(e) {}
+    if (team.length === 0) {
+      const db = await readDB();
+      team = db.team || [];
+    }
+
+    let tasks = [];
+    try {
+      const { data } = await supabase.from('tasks').select('*');
+      if (data) tasks = data;
+    } catch(e) {}
+
+    const candidates = team.map(member => {
+      const name = member.name || 'Team Member';
+      const empCode = member.emp_code || member.id || name;
+      const capacity = Number(member.weekly_capacity_hours) || 40;
+      const dept = member.department || 'Production';
+
+      const memberTasks = tasks.filter(t => {
+        const stage = (t.stage || '').toLowerCase();
+        if (stage.includes('approved') || stage.includes('done') || stage.includes('completed')) return false;
+        const assignee = (t.assignee || '').toLowerCase();
+        return assignee.includes(name.toLowerCase()) || assignee.includes(empCode.toLowerCase());
+      });
+
+      const assignedHours = memberTasks.reduce((sum, t) => sum + (Number(t.estimated_hours || t.estimatedHours) || 0), 0);
+      const freeHours = Math.max(0, capacity - assignedHours);
+
+      let deptMatch = false;
+      if (department) {
+        deptMatch = dept.toLowerCase().includes(department.toLowerCase()) || department.toLowerCase().includes(dept.toLowerCase());
+      }
+
+      return {
+        id: empCode,
+        empCode,
+        name,
+        role: member.role || 'Specialist',
+        department: dept,
+        weeklyCapacityHours: capacity,
+        assignedHours,
+        freeHours,
+        deptMatch,
+        canFitTask: freeHours >= taskEst
+      };
+    });
+
+    candidates.sort((a, b) => {
+      if (a.deptMatch !== b.deptMatch) return b.deptMatch ? 1 : -1;
+      return b.freeHours - a.freeHours;
+    });
+
+    res.json({
+      bestMatch: candidates[0] || null,
+      recommendations: candidates
+    });
+  } catch (err) {
+    console.error('Best Match GET error:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
