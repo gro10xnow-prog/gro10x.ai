@@ -21,10 +21,20 @@ async function handleMyProfile(teamBot, msg) {
     `• Department: *${emp.department || 'General'}*\n` +
     `• Rank & XP: *${emp.badge || '🌱 Recruit'}* (${emp.xp || 0} XP)\n` +
     `• Access Level: *${emp.accessLevel || 'Specialist'}*\n` +
-    `• Current Status: *${emp.status || 'Offline'}*\n\n` +
-    `🌐 Update profile details via Web App: https://purpleos-iota.vercel.app/team-miniapp`;
+    `• Current Status: *${emp.status || 'Offline'}*`;
 
-  teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
+  const options = {
+    parse_mode: 'Markdown',
+    reply_markup: {
+      inline_keyboard: [
+        [
+          { text: '📱 Open Profile Card (Mini App)', web_app: { url: 'https://purpleos-iota.vercel.app/team-miniapp?tab=profile' } }
+        ]
+      ]
+    }
+  };
+
+  teamBot.sendMessage(chatId, text, options);
 }
 
 async function handleMyEarnings(teamBot, msg) {
