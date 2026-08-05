@@ -230,14 +230,34 @@
   <!-- Task Detail Drawer Backdrop & Panel -->
   <div class="drawer-backdrop" id="drawerBackdrop" onclick="closeTaskDrawer()"></div>
   <div class="drawer-panel" id="drawerPanel">
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-      <span class="badge badge-purple" id="drawerStageBadge">Briefing</span>
+    <!-- Header -->
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.85rem;">
+      <div style="display: flex; gap: 0.5rem; align-items: center;">
+        <select id="drawerStageSelect" class="stage-select" style="font-weight: 700; font-size: 0.8rem;" onchange="updateDrawerTaskStage(this.value)">
+          <option value="Briefing">Briefing</option>
+          <option value="Scripting">Scripting</option>
+          <option value="Shooting">Shooting</option>
+          <option value="Editing">Editing</option>
+          <option value="Internal QC">Internal QC</option>
+          <option value="Client Review">Client Review</option>
+          <option value="Approved">Approved</option>
+        </select>
+        <select id="drawerPrioritySelect" class="stage-select" style="font-weight: 700; font-size: 0.8rem;" onchange="updateDrawerTaskPriority(this.value)">
+          <option value="High">🔴 High</option>
+          <option value="Medium">🟡 Medium</option>
+          <option value="Low">🟢 Low</option>
+        </select>
+      </div>
       <button onclick="closeTaskDrawer()" style="background: transparent; border: none; color: #a1a1aa; font-size: 1.4rem; cursor: pointer;">✕</button>
     </div>
 
+    <!-- Title & Meta -->
     <div>
       <h2 id="drawerTaskTitle" style="color: #fff; font-size: 1.25rem; margin: 0 0 0.4rem 0;">Task Title</h2>
-      <div id="drawerClientName" style="color: var(--text-muted); font-size: 0.82rem;">Client: Agency Client</div>
+      <div style="display: flex; gap: 0.75rem; font-size: 0.82rem; color: var(--text-muted);">
+        <span id="drawerClientName">🏢 Client: Agency</span>
+        <span id="drawerAssigneeName">👤 Assignee: Staff</span>
+      </div>
     </div>
 
     <!-- Hours Logged Bar -->
@@ -246,16 +266,45 @@
         <span>Logged Time</span>
         <span id="drawerTimeText" style="color: #34d399; font-weight: 700;">0h / 8h</span>
       </div>
-      <button class="btn-secondary" style="font-size: 0.78rem; width: 100%; padding: 0.4rem;" onclick="logTaskTime()">⏱️ Log Worked Hours</button>
+      <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+        <input type="number" id="drawerHoursInput" step="0.5" placeholder="Hours" style="width: 90px; padding: 0.45rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.12); background: rgba(0,0,0,0.4); color: #fff; font-size: 0.8rem;">
+        <input type="text" id="drawerTimeNote" placeholder="Optional work note..." style="flex: 1; padding: 0.45rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.12); background: rgba(0,0,0,0.4); color: #fff; font-size: 0.8rem;">
+      </div>
+      <button class="btn-purple" style="font-size: 0.78rem; width: 100%; padding: 0.4rem;" onclick="logTaskTime()">⏱️ Log Worked Hours</button>
+    </div>
+
+    <!-- QC Review Gate Section (Visible when stage = Internal QC) -->
+    <div id="drawerQcSection" style="display: none; background: rgba(168,85,247,0.1); border: 1px solid rgba(168,85,247,0.3); padding: 1rem; border-radius: 14px;">
+      <div style="font-size: 0.82rem; font-weight: 800; color: #a855f7; text-transform: uppercase; margin-bottom: 0.6rem;">🔍 Internal QC Approval Gate</div>
+      <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+        <button class="btn-purple" style="flex: 1; font-size: 0.78rem; background: #10b981; border: none; padding: 0.45rem;" onclick="approveTaskQC()">✅ QC Approve</button>
+        <button class="btn-secondary" style="flex: 1; font-size: 0.78rem; background: rgba(239,68,68,0.2); color: #f87171; border: 1px solid rgba(239,68,68,0.4); padding: 0.45rem;" onclick="rejectTaskQC()">✏️ Send Back</button>
+      </div>
+      <input type="text" id="drawerQcFeedback" placeholder="Feedback or revision notes..." style="width: 100%; padding: 0.45rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.12); background: rgba(0,0,0,0.4); color: #fff; font-size: 0.8rem;">
     </div>
 
     <!-- Subtasks Checklist -->
     <div>
       <div style="font-size: 0.82rem; font-weight: 700; color: #fff; text-transform: uppercase; margin-bottom: 0.6rem;">Checklist & Subtasks</div>
-      <div id="drawerSubtasksList">
+      <div id="drawerSubtasksList" style="margin-bottom: 0.6rem;">
         <div style="color: var(--text-muted); font-size: 0.8rem;">No subtasks created for this task yet.</div>
       </div>
-      <button class="btn-secondary" style="font-size: 0.78rem; width: 100%; margin-top: 0.6rem; padding: 0.4rem;" onclick="addSubtask()">+ Add Subtask Item</button>
+      <div style="display: flex; gap: 0.5rem;">
+        <input type="text" id="drawerSubtaskInput" placeholder="New subtask title..." style="flex: 1; padding: 0.45rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.12); background: rgba(0,0,0,0.4); color: #fff; font-size: 0.8rem;">
+        <button class="btn-secondary" style="font-size: 0.78rem; padding: 0.45rem 0.85rem;" onclick="addSubtask()">+ Add</button>
+      </div>
+    </div>
+
+    <!-- Task Comments & Discussion -->
+    <div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 1rem;">
+      <div style="font-size: 0.82rem; font-weight: 700; color: #fff; text-transform: uppercase; margin-bottom: 0.6rem;">💬 Task Discussion & Log</div>
+      <div id="drawerCommentsList" style="max-height: 180px; overflow-y: auto; margin-bottom: 0.6rem; display: flex; flex-direction: column; gap: 0.5rem;">
+        <div style="color: var(--text-muted); font-size: 0.8rem;">Loading discussion...</div>
+      </div>
+      <div style="display: flex; gap: 0.5rem;">
+        <input type="text" id="drawerCommentInput" placeholder="Write a comment..." style="flex: 1; padding: 0.45rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.12); background: rgba(0,0,0,0.4); color: #fff; font-size: 0.8rem;" onkeypress="if(event.key==='Enter')addDrawerComment()">
+        <button class="btn-purple" style="font-size: 0.78rem; padding: 0.45rem 0.85rem;" onclick="addDrawerComment()">Send</button>
+      </div>
     </div>
   </div>
 
@@ -454,18 +503,29 @@
     }
 
     /* Task Detail Drawer */
-    function openTaskDrawer(taskId) {
+    async function openTaskDrawer(taskId) {
       window._activeTaskId = taskId;
       const task = (window._allTasks || []).find(t => t.id === taskId);
       if (!task) return;
 
-      document.getElementById('drawerStageBadge').textContent = task.stage || 'Briefing';
+      document.getElementById('drawerStageSelect').value = task.stage || 'Briefing';
+      document.getElementById('drawerPrioritySelect').value = task.priority || 'Medium';
       document.getElementById('drawerTaskTitle').textContent = task.title;
-      document.getElementById('drawerClientName').textContent = `Client: ${task.client || 'Agency Client'} · Assignee: ${task.assignee || 'Staff'}`;
+      document.getElementById('drawerClientName').textContent = `🏢 Client: ${task.client || 'Agency Client'}`;
+      document.getElementById('drawerAssigneeName').textContent = `👤 Assignee: ${task.assignee || 'Unassigned'}`;
       document.getElementById('drawerTimeText').textContent = `${task.loggedHours || 0}h / ${task.estimatedHours || 8}h`;
+
+      // Show/Hide QC section based on stage
+      const qcSec = document.getElementById('drawerQcSection');
+      if (qcSec) {
+        qcSec.style.display = (task.stage === 'Internal QC') ? 'block' : 'none';
+      }
 
       document.getElementById('drawerBackdrop').style.display = 'block';
       document.getElementById('drawerPanel').classList.add('open');
+
+      loadDrawerSubtasks(taskId);
+      loadDrawerComments(taskId);
     }
 
     function closeTaskDrawer() {
@@ -474,26 +534,148 @@
       window._activeTaskId = null;
     }
 
+    async function updateDrawerTaskStage(newStage) {
+      if (!window._activeTaskId) return;
+      await updateTaskStage(window._activeTaskId, newStage);
+      const qcSec = document.getElementById('drawerQcSection');
+      if (qcSec) qcSec.style.display = (newStage === 'Internal QC') ? 'block' : 'none';
+    }
+
+    async function updateDrawerTaskPriority(newPriority) {
+      if (!window._activeTaskId) return;
+      await fetch(`/api/tasks/${window._activeTaskId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ priority: newPriority })
+      });
+      loadProjectsData();
+    }
+
     async function logTaskTime() {
       if (!window._activeTaskId) return;
-      const hoursStr = prompt('Enter worked hours to log (e.g. 2):');
-      const hours = parseFloat(hoursStr);
-      if (hours && hours > 0) {
-        await fetch(`/api/tasks/${window._activeTaskId}/log-time`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ hours })
-        });
-        loadProjectsData();
-        closeTaskDrawer();
+      const hours = parseFloat(document.getElementById('drawerHoursInput').value);
+      const note = document.getElementById('drawerTimeNote').value;
+      if (!hours || hours <= 0) {
+        alert('Please enter valid hours to log');
+        return;
+      }
+
+      await fetch(`/api/tasks/${window._activeTaskId}/log-time`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ hours, note })
+      });
+      document.getElementById('drawerHoursInput').value = '';
+      document.getElementById('drawerTimeNote').value = '';
+      loadProjectsData();
+      openTaskDrawer(window._activeTaskId);
+    }
+
+    async function approveTaskQC() {
+      if (!window._activeTaskId) return;
+      await fetch(`/api/tasks/${window._activeTaskId}/qc-approve`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      alert('✅ Task QC Approved! Stage advanced to Client Review.');
+      loadProjectsData();
+      openTaskDrawer(window._activeTaskId);
+    }
+
+    async function rejectTaskQC() {
+      if (!window._activeTaskId) return;
+      const feedback = document.getElementById('drawerQcFeedback').value.trim() || 'Revisions needed.';
+      await fetch(`/api/tasks/${window._activeTaskId}/qc-reject`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ feedback })
+      });
+      alert('✏️ Task sent back for revisions.');
+      document.getElementById('drawerQcFeedback').value = '';
+      loadProjectsData();
+      openTaskDrawer(window._activeTaskId);
+    }
+
+    async function loadDrawerSubtasks(taskId) {
+      const box = document.getElementById('drawerSubtasksList');
+      try {
+        const subtasks = await fetch(`/api/tasks/${taskId}/subtasks`).then(r => r.json());
+        if (!subtasks || subtasks.length === 0) {
+          box.innerHTML = `<div style="color: var(--text-muted); font-size: 0.8rem;">No subtasks created for this task yet.</div>`;
+          return;
+        }
+        box.innerHTML = subtasks.map(st => `
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.35rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.85rem;">
+            <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer; text-decoration: ${st.completed ? 'line-through' : 'none'}; color: ${st.completed ? 'var(--text-muted)' : '#fff'};">
+              <input type="checkbox" ${st.completed ? 'checked' : ''} onchange="toggleDrawerSubtask('${st.id}', this.checked)" style="accent-color: var(--purple-main); cursor: pointer;">
+              <span>${st.title}</span>
+            </label>
+          </div>
+        `).join('');
+      } catch(e) {
+        box.innerHTML = `<div style="color: var(--text-muted); font-size: 0.8rem;">Subtasks list ready.</div>`;
       }
     }
 
-    function addSubtask() {
-      const title = prompt('Enter subtask title:');
-      if (title && title.trim()) {
-        alert(`Subtask "${title.trim()}" added.`);
+    async function toggleDrawerSubtask(subtaskId, completed) {
+      await fetch(`/api/tasks/subtasks/${subtaskId}/toggle`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ completed })
+      });
+    }
+
+    async function addSubtask() {
+      if (!window._activeTaskId) return;
+      const input = document.getElementById('drawerSubtaskInput');
+      const title = input.value.trim();
+      if (!title) return;
+
+      await fetch(`/api/tasks/${window._activeTaskId}/subtasks`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title })
+      });
+      input.value = '';
+      loadDrawerSubtasks(window._activeTaskId);
+    }
+
+    async function loadDrawerComments(taskId) {
+      const box = document.getElementById('drawerCommentsList');
+      try {
+        const comments = await fetch(`/api/tasks/${taskId}/comments`).then(r => r.json());
+        if (!comments || comments.length === 0) {
+          box.innerHTML = `<div style="color: var(--text-muted); font-size: 0.8rem;">No comments yet. Start the conversation below!</div>`;
+          return;
+        }
+        box.innerHTML = comments.map(c => `
+          <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); padding: 0.55rem; border-radius: 10px;">
+            <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--purple-light); font-weight: 700; margin-bottom: 0.2rem;">
+              <span>${c.author_name || c.authorName || 'Team Member'}</span>
+              <span style="color: var(--text-muted); font-weight: 400;">${new Date(c.created_at || Date.now()).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
+            </div>
+            <div style="font-size: 0.82rem; color: #fff;">${c.content}</div>
+          </div>
+        `).join('');
+        box.scrollTop = box.scrollHeight;
+      } catch(e) {
+        box.innerHTML = `<div style="color: var(--text-muted); font-size: 0.8rem;">Discussion thread active.</div>`;
       }
+    }
+
+    async function addDrawerComment() {
+      if (!window._activeTaskId) return;
+      const input = document.getElementById('drawerCommentInput');
+      const content = input.value.trim();
+      if (!content) return;
+
+      await fetch(`/api/tasks/${window._activeTaskId}/comments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content })
+      });
+      input.value = '';
+      loadDrawerComments(window._activeTaskId);
     }
 
     function createNewSpace() {
