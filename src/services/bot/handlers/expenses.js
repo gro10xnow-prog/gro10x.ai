@@ -17,11 +17,22 @@ async function handleInitExpense(teamBot, msg) {
   const sess = { action: 'await_expense_amount', empId: emp.emp_code, empName: emp.name };
   await state.setSession(chatId, sess);
 
+  const options = {
+    parse_mode: 'Markdown',
+    reply_markup: {
+      inline_keyboard: [
+        [
+          { text: '📱 Open Expense Form (Mini App)', web_app: { url: 'https://purpleos-iota.vercel.app/team-miniapp?tab=expense&action=new' } }
+        ]
+      ]
+    }
+  };
+
   teamBot.sendMessage(chatId,
     `🧾 *EXPENSE CLAIM SUBMISSION*\n\n` +
-    `Please reply with the *expense amount in BDT*:\n` +
-    `(e.g. \`1500\`)`,
-    { parse_mode: 'Markdown' }
+    `Tap **Open Expense Form** below for the full Mini App form (category picker, date & receipt upload).\n\n` +
+    `_Or simply reply here with the expense amount in BDT (e.g. \`1500\`):_`,
+    options
   );
 }
 

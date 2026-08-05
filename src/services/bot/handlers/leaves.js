@@ -16,14 +16,22 @@ async function handleInitLeave(teamBot, msg) {
   const sess = { action: 'await_leave_type', empId: emp.emp_code, empName: emp.name, reportsTo: emp.reportsTo };
   await state.setSession(chatId, sess);
 
+  const options = {
+    parse_mode: 'Markdown',
+    reply_markup: {
+      inline_keyboard: [
+        [
+          { text: '📱 Open Leave Request Form (Mini App)', web_app: { url: 'https://purpleos-iota.vercel.app/team-miniapp?tab=leave&action=new' } }
+        ]
+      ]
+    }
+  };
+
   teamBot.sendMessage(chatId,
     `🌴 *LEAVE REQUEST*\n\n` +
-    `Please select leave type by replying:\n\n` +
-    `1️⃣ Casual Leave\n` +
-    `2️⃣ Sick Leave\n` +
-    `3️⃣ Half Day\n\n` +
-    `Reply with \`1\`, \`2\`, or \`3\``,
-    { parse_mode: 'Markdown' }
+    `Tap **Open Leave Request Form** below to launch the Mini App sheet (date range picker & coverage plan).\n\n` +
+    `_Or reply here with your leave type:_\n1️⃣ Casual Leave\n2️⃣ Sick Leave\n3️⃣ Half Day`,
+    options
   );
 }
 

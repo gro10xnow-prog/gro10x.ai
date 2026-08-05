@@ -1587,6 +1587,15 @@
       } else if (tabParam === 'attendance') {
         showPage('pageAttendance');
         if (typeof startClock === 'function') startClock();
+      } else if (tabParam === 'expense' || actionParam === 'expense') {
+        showPage('pageHome');
+        openExpenseForm();
+      } else if (tabParam === 'leave' || actionParam === 'leave') {
+        showPage('pageHome');
+        openLeaveForm();
+      } else if (tabParam === 'eod' || actionParam === 'eod') {
+        showPage('pageHome');
+        openEODForm();
       }
     } catch (e) {
       // Fallback: show dashboard with basic info for debug
