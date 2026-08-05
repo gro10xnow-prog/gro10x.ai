@@ -85,19 +85,13 @@ async function getEmployeeByTelegramId(chatId) {
         const { data } = await supabase
           .from('profiles')
           .select('*')
-          .or(`telegram_id.eq.${strId},telegram_id.eq.${Number(strId) || 0}`)
+          .eq('telegram_id', strId)
           .maybeSingle();
         if (data) return mapProfile(data);
       } catch (e) {
         console.warn('state.getEmployeeByTelegramId Supabase err:', e.message);
       }
     }
-    try {
-      const { readDB } = require('./jsonDb');
-      const dbData = await readDB();
-      const emp = (dbData.team || []).find(e => String(e.telegramId) === strId || String(e.telegram_id) === strId);
-      if (emp) return mapProfile(emp);
-    } catch(e) {}
     return null;
   }, 60000);
 }

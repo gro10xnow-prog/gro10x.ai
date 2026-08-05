@@ -573,39 +573,69 @@ function initBot() {
       });
 
       
+      // ─── ALL KNOWN MENU BUTTON TEXTS ────────────────────────────────────────────
+      // These are the exact keyboard button texts. When pressed, they are handled
+      // by dedicated onText() listeners below. The on('message') handler below
+      // must NOT intercept them — it only routes active wizard step inputs.
+      const ALL_MENU_BUTTONS = [
+        // Navigation / display (handled by onText or other specific handlers)
+        '📱 Verify My Phone Number', '🎓 Complete My Profile Survey', '🔑 View My Web Login PIN',
+        '📋 My Tasks', '💰 My Earnings', '✍️ Pending Approvals', '🎬 Client Status',
+        '👥 Full Team Status', '📊 Department Report', '👤 My Profile', '💳 Bank & bKash',
+        '🛠️ Tech Diagnostics', '📍 Clock-In GPS', '🚪 Clock Out', '🌅 Morning Briefing',
+        '📊 Business Snapshot', '💰 Finance Summary',
+        // Wizard-initiating buttons — handled exclusively by their onText() listeners
+        '🧾 Submit Expense', '🌴 Leave Request', '📝 EOD Report',
+        '🧾 Log Expense Entry', '📋 Invoice Tracker', '💰 Payment Follow-Up'
+      ];
+
+      const VALID_WIZARD_ACTIONS = ['await_expense', 'await_leave', 'await_eod'];
+
       teamBot.on('message', async (msg) => {
         const chatId = msg.chat.id;
         const text = (msg.text || '').trim();
+        if (!text) return; // Ignore non-text messages (handled by other listeners)
 
-        // Check if message is a static menu button navigation
-        const isStaticMenuButton = [
-          '👤 My Profile', '💳 Bank & bKash', '🛠️ Tech Diagnostics',
-          '💰 My Earnings', '📍 Clock-In GPS', '🚪 Clock Out',
-          '📋 My Tasks', '✍️ Pending Approvals', '🎬 Client Status',
-          '👥 Full Team Status', '📊 Department Report'
-        ].some(b => text.startsWith(b));
-
-        if (isStaticMenuButton) {
+        // If the message matches ANY known menu button, let its dedicated onText()
+        // handler take it. This handler is ONLY for wizard step inputs.
+        const isKnownMenuButton = ALL_MENU_BUTTONS.some(b => text === b || text.startsWith(b));
+        if (isKnownMenuButton) {
+          // Clear any stale/corrupt session so wizard buttons always start fresh
           await state.clearSession(chatId);
           return;
         }
 
-        // Process active wizard input (checks Supabase persistent session state)
+        // Get active wizard session
         const wizardState = await state.getSession(chatId);
-        if (wizardState && text) {
-          const emp = await state.getEmployeeByTelegramId(chatId);
-          if (!emp) return;
+        if (!wizardState) return; // No active wizard — let onText handlers take it
 
-          if (wizardState.action.startsWith('await_expense')) {
-            const expensesHandler = require('./bot/handlers/expenses');
-            await expensesHandler.handleExpenseWizardStep(teamBot, msg, wizardState, emp);
-          } else if (wizardState.action.startsWith('await_leave')) {
-            const leavesHandler = require('./bot/handlers/leaves');
-            await leavesHandler.handleLeaveWizardStep(teamBot, msg, wizardState, emp);
-          } else if (wizardState.action.startsWith('await_eod')) {
-            const eodHandler = require('./bot/handlers/eod');
-            await eodHandler.handleEODWizardStep(teamBot, msg, wizardState, emp);
-          }
+        // ⚠️ Safety net: if the session action is not a known wizard prefix,
+        // it's corrupt/stale. Clear it so the user is never stuck.
+        const isValidWizard = VALID_WIZARD_ACTIONS.some(a => wizardState.action?.startsWith(a));
+        if (!isValidWizard) {
+          console.warn(`[Bot] Clearing corrupt session for chat ${chatId}: action=${wizardState.action}`);
+          await state.clearSession(chatId);
+          return; // Let onText handlers process the message normally
+        }
+
+        // We have a valid active wizard — look up the employee
+        const emp = await state.getEmployeeByTelegramId(chatId);
+        if (!emp) {
+          // Can't identify user — clear the session and ask them to re-verify
+          await state.clearSession(chatId);
+          return teamBot.sendMessage(chatId, `⚠️ Session expired. Please re-tap the menu button to start again.`, { parse_mode: 'Markdown' });
+        }
+
+        // Route to the correct wizard step handler
+        if (wizardState.action.startsWith('await_expense')) {
+          const expensesHandler = require('./bot/handlers/expenses');
+          await expensesHandler.handleExpenseWizardStep(teamBot, msg, wizardState, emp);
+        } else if (wizardState.action.startsWith('await_leave')) {
+          const leavesHandler = require('./bot/handlers/leaves');
+          await leavesHandler.handleLeaveWizardStep(teamBot, msg, wizardState, emp);
+        } else if (wizardState.action.startsWith('await_eod')) {
+          const eodHandler = require('./bot/handlers/eod');
+          await eodHandler.handleEODWizardStep(teamBot, msg, wizardState, emp);
         }
       });
 

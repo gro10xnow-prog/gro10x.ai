@@ -11,16 +11,8 @@ const { getRoleKeyboard } = require('../keyboards');
 
 async function handleInitExpense(teamBot, msg) {
   const chatId = msg.chat.id;
-  let emp = await state.getEmployeeByTelegramId(chatId);
-  if (!emp) {
-    try {
-      const { readDB } = require('../../jsonDb');
-      const dbData = await readDB();
-      const raw = (dbData.team || []).find(e => String(e.telegramId) === String(chatId) || String(e.telegram_id) === String(chatId));
-      if (raw) emp = { emp_code: raw.emp_code || raw.id, name: raw.name, accessLevel: raw.accessLevel || 'Specialist / Crew' };
-    } catch(e) {}
-  }
-  if (!emp) return teamBot.sendMessage(chatId, `⚠️ Account not verified.`);
+  const emp = await state.getEmployeeByTelegramId(chatId);
+  if (!emp) return teamBot.sendMessage(chatId, `⚠️ Account not verified. Please send your contact via the Verify button first.`, { parse_mode: 'Markdown' });
 
   const sess = { action: 'await_expense_amount', empId: emp.emp_code, empName: emp.name };
   await state.setSession(chatId, sess);
