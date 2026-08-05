@@ -879,10 +879,13 @@
 
       <label style="font-size:0.78rem;font-weight:700;color:var(--muted);display:block;margin-bottom:0.4rem;">WORKFLOW STAGE</label>
       <select id="newTaskStage" style="width:100%;padding:0.75rem;border-radius:12px;border:1px solid var(--border);background:#fff;font-family:inherit;font-size:0.9rem;margin-bottom:1rem;">
-        <option value="📝 Briefing">📝 Briefing</option>
-        <option value="🎬 Production">🎬 Production</option>
-        <option value="✂️ Editing">✂️ Editing</option>
-        <option value="👁️ Client Review">👁️ Client Review</option>
+        <option value="Briefing">📝 Briefing</option>
+        <option value="Scripting">📜 Scripting</option>
+        <option value="Shooting">🎬 Shooting</option>
+        <option value="Editing">✂️ Editing</option>
+        <option value="Internal QC">🔍 Internal QC</option>
+        <option value="Client Review">👁️ Client Review</option>
+        <option value="Approved">✅ Approved</option>
       </select>
 
       <label style="font-size:0.78rem;font-weight:700;color:var(--muted);display:block;margin-bottom:0.4rem;">DUE DATE</label>
@@ -2058,7 +2061,15 @@
   // ══════════════════════════════════════════
   // TASKS
   // ══════════════════════════════════════════
-  const stageClass = { 'Brief': 'stage-brief', 'Production': 'stage-shoot', 'Shoot': 'stage-shoot', 'Editing': 'stage-edit', 'Post Production': 'stage-edit', 'Client Review': 'stage-review', 'Review': 'stage-review', 'Delivered': 'stage-review' };
+  const stageClass = {
+    'Briefing': 'stage-brief',
+    'Scripting': 'stage-brief',
+    'Shooting': 'stage-shoot',
+    'Editing': 'stage-edit',
+    'Internal QC': 'stage-review',
+    'Client Review': 'stage-review',
+    'Approved': 'stage-review'
+  };
 
   async function toggleMiniappSubtask(subtaskId, completed) {
     try {
@@ -2146,10 +2157,11 @@
             <div style="display:flex; gap:0.4rem; margin-top:0.4rem;">
               <select class="role-select" style="font-size:0.7rem; padding:0.3rem 0.5rem; flex:1; background:var(--surface);" onchange="advanceMiniappStage('${t.id}', this.value)">
                 <option value="" disabled selected>Advance Stage...</option>
-                <option value="Strategy">Strategy</option>
+                <option value="Briefing">Briefing</option>
                 <option value="Scripting">Scripting</option>
                 <option value="Shooting">Shooting</option>
                 <option value="Editing">Editing</option>
+                <option value="Internal QC">Internal QC</option>
                 <option value="Client Review">Client Review</option>
                 <option value="Approved">Approved (Done)</option>
               </select>

@@ -372,12 +372,13 @@
                     <td style="padding: 0.85rem; color: var(--text-muted);">${t.client || 'Agency'}</td>
                     <td style="padding: 0.85rem;" onclick="event.stopPropagation()">
                       <select class="stage-select" onchange="updateTaskStage('${t.id}', this.value)">
-                        <option value="Briefing" ${t.stage === 'Briefing' ? 'selected' : ''}>Scripting / Brief</option>
-                        <option value="Shooting" ${t.stage === 'Shooting' ? 'selected' : ''}>Shooting / Prod</option>
-                        <option value="Editing" ${t.stage === 'Editing' ? 'selected' : ''}>Editing / Motion</option>
+                        <option value="Briefing" ${t.stage === 'Briefing' ? 'selected' : ''}>Briefing</option>
+                        <option value="Scripting" ${t.stage === 'Scripting' ? 'selected' : ''}>Scripting</option>
+                        <option value="Shooting" ${t.stage === 'Shooting' ? 'selected' : ''}>Shooting</option>
+                        <option value="Editing" ${t.stage === 'Editing' ? 'selected' : ''}>Editing</option>
                         <option value="Internal QC" ${t.stage === 'Internal QC' ? 'selected' : ''}>Internal QC</option>
                         <option value="Client Review" ${t.stage === 'Client Review' ? 'selected' : ''}>Client Review</option>
-                        <option value="Approved" ${t.stage === 'Approved' ? 'selected' : ''}>Approved / Done</option>
+                        <option value="Approved" ${t.stage === 'Approved' ? 'selected' : ''}>Approved</option>
                       </select>
                     </td>
                     <td style="padding: 0.85rem;">👤 ${t.assignee || 'Unassigned'}</td>
@@ -390,7 +391,7 @@
           </table>
         `;
       } else if (currentView === 'kanban') {
-        const stages = ['Briefing', 'Shooting', 'Editing', 'Internal QC', 'Client Review', 'Approved'];
+        const stages = ['Briefing', 'Scripting', 'Shooting', 'Editing', 'Internal QC', 'Client Review', 'Approved'];
         container.innerHTML = `
           <div class="kanban-grid">
             ${stages.map(stg => {
