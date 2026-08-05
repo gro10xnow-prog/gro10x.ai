@@ -1413,9 +1413,9 @@ function registerLegacyTeamMenus(teamBot, readDB) {
       const leavesHandler = require('./leaves');
       const eodHandler = require('./eod');
 
-      teamBot.onText(/🧾 Submit Expense/, (msg) => expensesHandler.handleInitExpense(teamBot, msg));
-      teamBot.onText(/🌴 Leave Request/, (msg) => leavesHandler.handleInitLeave(teamBot, msg));
-      teamBot.onText(/📝 EOD Report/, (msg) => eodHandler.handleInitEOD(teamBot, msg));
+      teamBot.onText(/\/submitexpense|\/expense|🧾 Submit Expense|Submit Expense/, (msg) => expensesHandler.handleInitExpense(teamBot, msg));
+      teamBot.onText(/\/leaverequest|\/leave|🌴 Leave Request|Leave Request/, (msg) => leavesHandler.handleInitLeave(teamBot, msg));
+      teamBot.onText(/\/eodreport|\/eod|📝 EOD Report|EOD Report/, (msg) => eodHandler.handleInitEOD(teamBot, msg));
 
       // ──────── MUKIT FINANCE EXECUTIVE HANDLERS ────────
       const financeHandler = require('./finance');
