@@ -896,6 +896,63 @@
 </div>
 
 <!-- ════════════════════════════════════════════
+     TASK DETAIL SHEET MODAL
+════════════════════════════════════════════ -->
+<div id="taskDetailSheet" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:210;overflow-y:auto;padding:1.2rem;">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1rem;">
+    <div>
+      <span class="stage-badge stage-brief" id="sheetStageBadge">Briefing</span>
+      <h2 id="sheetTaskTitle" style="font-size:1.2rem;font-weight:800;color:var(--text);margin:0.4rem 0 0.2rem 0;">Task Title</h2>
+      <div id="sheetTaskSub" style="font-size:0.8rem;color:var(--muted);">Client Name · Assignee</div>
+    </div>
+    <button onclick="closeTaskDetailSheet()" style="background:rgba(124,58,237,0.12);border:none;border-radius:12px;padding:0.4rem 0.8rem;color:var(--purple);font-weight:700;cursor:pointer;">✕ Close</button>
+  </div>
+
+  <!-- Smart Next Stage Button -->
+  <div class="card" style="margin-bottom:1rem;background:linear-gradient(135deg, rgba(124,58,237,0.08), rgba(99,102,241,0.08));border:1px solid rgba(124,58,237,0.2);">
+    <div style="font-size:0.75rem;font-weight:700;color:var(--muted);margin-bottom:0.4rem;">WORKFLOW ACTION</div>
+    <button id="sheetNextStageBtn" onclick="advanceMiniappStageFromSheet()" style="width:100%;padding:0.75rem;background:linear-gradient(135deg,var(--hero-b),var(--hero-d));color:#fff;border:none;border-radius:16px;font-size:0.88rem;font-weight:800;cursor:pointer;">→ Move to Next Stage</button>
+  </div>
+
+  <!-- Worked Time Logger Card -->
+  <div class="card" style="margin-bottom:1rem;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.6rem;">
+      <div class="card-title" style="margin:0;">⏱️ Logged Worked Time</div>
+      <div id="sheetTimeDisplay" style="font-size:0.85rem;font-weight:800;color:var(--purple);">0h / 8h</div>
+    </div>
+    <div style="display:flex;gap:0.5rem;margin-bottom:0.5rem;">
+      <input type="number" id="sheetTimeHours" step="0.5" placeholder="Hours (e.g. 1.5)" style="width:110px;padding:0.6rem;border-radius:10px;border:1px solid var(--border);font-family:inherit;font-size:0.85rem;">
+      <input type="text" id="sheetTimeNote" placeholder="Optional work note..." style="flex:1;padding:0.6rem;border-radius:10px;border:1px solid var(--border);font-family:inherit;font-size:0.85rem;">
+    </div>
+    <button onclick="submitMiniappTimeLog()" style="width:100%;padding:0.6rem;background:rgba(124,58,237,0.12);color:var(--purple);border:1px solid rgba(124,58,237,0.3);border-radius:10px;font-weight:700;font-size:0.82rem;cursor:pointer;">+ Submit Hours</button>
+  </div>
+
+  <!-- Subtasks Checklist Card -->
+  <div class="card" style="margin-bottom:1rem;">
+    <div class="card-title" style="margin-bottom:0.6rem;">☑️ Subtasks Checklist</div>
+    <div id="sheetSubtasksList" style="margin-bottom:0.8rem;">
+      <div style="font-size:0.8rem;color:var(--muted);">No subtasks yet.</div>
+    </div>
+    <div style="display:flex;gap:0.5rem;">
+      <input type="text" id="sheetNewSubtaskTitle" placeholder="New subtask item..." style="flex:1;padding:0.55rem;border-radius:10px;border:1px solid var(--border);font-family:inherit;font-size:0.85rem;">
+      <button onclick="addMiniappSubtask()" style="padding:0.55rem 0.9rem;background:var(--purple);color:#fff;border:none;border-radius:10px;font-weight:700;font-size:0.82rem;cursor:pointer;">+ Add</button>
+    </div>
+  </div>
+
+  <!-- Task Discussion / Comments Card -->
+  <div class="card" style="margin-bottom:1rem;">
+    <div class="card-title" style="margin-bottom:0.6rem;">💬 Discussion & Comments</div>
+    <div id="sheetCommentsList" style="max-height:220px;overflow-y:auto;margin-bottom:0.8rem;display:flex;flex-direction:column;gap:0.5rem;">
+      <div style="font-size:0.8rem;color:var(--muted);">Loading comments...</div>
+    </div>
+    <div style="display:flex;gap:0.5rem;">
+      <input type="text" id="sheetCommentInput" placeholder="Write a comment or update..." style="flex:1;padding:0.6rem;border-radius:10px;border:1px solid var(--border);font-family:inherit;font-size:0.85rem;" onkeypress="if(event.key==='Enter')submitMiniappComment()">
+      <button onclick="submitMiniappComment()" style="padding:0.6rem 1rem;background:var(--purple);color:#fff;border:none;border-radius:10px;font-weight:700;font-size:0.82rem;cursor:pointer;">Send</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
      SURVEY / ONBOARDING MODAL
 ════════════════════════════════════════════ -->
 <div id="surveyModal">
@@ -2102,10 +2159,195 @@
     }
   }
 
+  let currentSheetTask = null;
+  const CANONICAL_STAGES = ['Briefing', 'Scripting', 'Shooting', 'Editing', 'Internal QC', 'Client Review', 'Approved'];
+
   function logMiniappTime(taskId) {
+    openTaskDetailSheet(taskId);
+  }
+
+  async function openTaskDetailSheet(taskId) {
     if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
-    // For now, this is a placeholder UI action to show time log modal or just increment.
-    tg.showAlert('Time logging module opening... (Phase 2 feature)');
+    let task = (window._miniappTasks || []).find(t => t.id === taskId);
+    if (!task) {
+      try {
+        const res = await fetch('/api/tasks');
+        const all = await res.json();
+        task = (all || []).find(t => t.id === taskId);
+      } catch (e) {}
+    }
+    if (!task) {
+      task = { id: taskId, title: 'Task ' + taskId, client: 'Agency', stage: 'Briefing', assignee: 'Team Member', loggedHours: 0, estimatedHours: 8 };
+    }
+
+    currentSheetTask = task;
+
+    document.getElementById('sheetTaskTitle').textContent = task.title;
+    document.getElementById('sheetStageBadge').textContent = task.stage || 'Briefing';
+    document.getElementById('sheetStageBadge').className = `stage-badge ${stageClass[task.stage] || 'stage-brief'}`;
+    document.getElementById('sheetTaskSub').textContent = `🏢 ${task.client || 'Agency'} · 👤 ${task.assignee || 'Unassigned'}`;
+    document.getElementById('sheetTimeDisplay').textContent = `${task.loggedHours || 0}h / ${task.estimatedHours || 8}h`;
+
+    // Smart Next Stage Button
+    const currIdx = CANONICAL_STAGES.indexOf(task.stage || 'Briefing');
+    const nextStage = currIdx >= 0 && currIdx < CANONICAL_STAGES.length - 1 ? CANONICAL_STAGES[currIdx + 1] : null;
+    const btn = document.getElementById('sheetNextStageBtn');
+    if (nextStage) {
+      btn.textContent = `→ Move to ${nextStage}`;
+      btn.disabled = false;
+      btn.style.opacity = '1';
+    } else {
+      btn.textContent = `✅ Task Completed (${task.stage || 'Approved'})`;
+      btn.disabled = true;
+      btn.style.opacity = '0.7';
+    }
+
+    // Reset inputs
+    document.getElementById('sheetTimeHours').value = '';
+    document.getElementById('sheetTimeNote').value = '';
+    document.getElementById('sheetNewSubtaskTitle').value = '';
+    document.getElementById('sheetCommentInput').value = '';
+
+    // Show modal first
+    document.getElementById('taskDetailSheet').style.display = 'block';
+
+    // Load subtasks & comments
+    loadSheetSubtasks(task.id);
+    loadSheetComments(task.id);
+  }
+
+  function closeTaskDetailSheet() {
+    document.getElementById('taskDetailSheet').style.display = 'none';
+    currentSheetTask = null;
+  }
+
+  async function advanceMiniappStageFromSheet() {
+    if (!currentSheetTask) return;
+    const currIdx = CANONICAL_STAGES.indexOf(currentSheetTask.stage || 'Briefing');
+    const nextStage = currIdx >= 0 && currIdx < CANONICAL_STAGES.length - 1 ? CANONICAL_STAGES[currIdx + 1] : null;
+    if (!nextStage) return;
+
+    await advanceMiniappStage(currentSheetTask.id, nextStage);
+    currentSheetTask.stage = nextStage;
+    openTaskDetailSheet(currentSheetTask.id);
+  }
+
+  async function submitMiniappTimeLog() {
+    if (!currentSheetTask) return;
+    const hours = parseFloat(document.getElementById('sheetTimeHours').value);
+    const note = document.getElementById('sheetTimeNote').value;
+
+    if (!hours || hours <= 0) {
+      if (tg?.showAlert) tg.showAlert('Please enter valid hours to log');
+      else alert('Please enter valid hours to log');
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/tasks/${currentSheetTask.id}/log-time`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ hours, note, user: currentUser?.name })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        if (tg?.showAlert) tg.showAlert(`Logged ${hours} hours!`);
+        currentSheetTask.loggedHours = (currentSheetTask.loggedHours || 0) + hours;
+        document.getElementById('sheetTimeDisplay').textContent = `${currentSheetTask.loggedHours}h / ${currentSheetTask.estimatedHours || 8}h`;
+        document.getElementById('sheetTimeHours').value = '';
+        document.getElementById('sheetTimeNote').value = '';
+        loadUserTasks();
+      }
+    } catch (e) {
+      alert('Logged ' + hours + ' hours!');
+    }
+  }
+
+  async function loadSheetSubtasks(taskId) {
+    const list = document.getElementById('sheetSubtasksList');
+    list.innerHTML = '<div style="font-size:0.8rem;color:var(--muted);">Loading subtasks...</div>';
+    try {
+      const res = await fetch(`/api/tasks/${taskId}/subtasks`);
+      const subtasks = await res.json();
+      if (!subtasks || subtasks.length === 0) {
+        list.innerHTML = '<div style="font-size:0.8rem;color:var(--muted);">No subtasks added yet.</div>';
+        return;
+      }
+      list.innerHTML = subtasks.map(st => `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:0.4rem 0;border-bottom:1px solid rgba(0,0,0,0.05);font-size:0.82rem;">
+          <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;text-decoration:${st.completed ? 'line-through' : 'none'};color:${st.completed ? 'var(--muted)' : 'var(--text)'};">
+            <input type="checkbox" ${st.completed ? 'checked' : ''} onchange="toggleMiniappSubtask('${st.id}', this.checked)" style="accent-color:var(--purple);transform:scale(1.1);">
+            <span>${st.title}</span>
+          </label>
+        </div>
+      `).join('');
+    } catch (e) {
+      list.innerHTML = '<div style="font-size:0.8rem;color:var(--muted);">Subtasks module ready</div>';
+    }
+  }
+
+  async function addMiniappSubtask() {
+    if (!currentSheetTask) return;
+    const input = document.getElementById('sheetNewSubtaskTitle');
+    const title = input.value.trim();
+    if (!title) return;
+
+    try {
+      await fetch(`/api/tasks/${currentSheetTask.id}/subtasks`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, assignee: currentUser?.name })
+      });
+      input.value = '';
+      loadSheetSubtasks(currentSheetTask.id);
+      loadUserTasks();
+    } catch (e) {
+      console.error('Error adding subtask:', e);
+    }
+  }
+
+  async function loadSheetComments(taskId) {
+    const list = document.getElementById('sheetCommentsList');
+    list.innerHTML = '<div style="font-size:0.8rem;color:var(--muted);">Loading discussion...</div>';
+    try {
+      const res = await fetch(`/api/tasks/${taskId}/comments`);
+      const comments = await res.json();
+      if (!comments || comments.length === 0) {
+        list.innerHTML = '<div style="font-size:0.8rem;color:var(--muted);">No comments yet. Start the conversation below!</div>';
+        return;
+      }
+      list.innerHTML = comments.map(c => `
+        <div style="background:rgba(0,0,0,0.03);padding:0.6rem;border-radius:10px;">
+          <div style="display:flex;justify-content:space-between;font-size:0.72rem;font-weight:700;color:var(--purple);margin-bottom:0.2rem;">
+            <span>${c.author_name || c.authorName || 'Team Member'}</span>
+            <span style="color:var(--muted);font-weight:400;">${new Date(c.created_at || Date.now()).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
+          </div>
+          <div style="font-size:0.82rem;color:var(--text);">${c.content}</div>
+        </div>
+      `).join('');
+      list.scrollTop = list.scrollHeight;
+    } catch (e) {
+      list.innerHTML = '<div style="font-size:0.8rem;color:var(--muted);">Discussion board active</div>';
+    }
+  }
+
+  async function submitMiniappComment() {
+    if (!currentSheetTask) return;
+    const input = document.getElementById('sheetCommentInput');
+    const content = input.value.trim();
+    if (!content) return;
+
+    try {
+      await fetch(`/api/tasks/${currentSheetTask.id}/comments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content })
+      });
+      input.value = '';
+      loadSheetComments(currentSheetTask.id);
+    } catch (e) {
+      console.error('Error posting comment:', e);
+    }
   }
 
   async function loadUserTasks() {
@@ -2116,6 +2358,7 @@
       const telegramId = tgUser?.id || currentUser?.telegramId || 'debug';
       const res = await fetch(`/api/team/tasks?telegramId=${telegramId}`);
       const tasks = await res.json();
+      window._miniappTasks = tasks || [];
       if (!tasks.length) {
         list.innerHTML = '<div class="empty-state"><div class="empty-icon">✅</div>No active tasks right now</div>';
         return;
@@ -2139,33 +2382,26 @@
         `).join('');
 
         return `
-          <div class="task-item">
-            <div class="task-title">${t.title}</div>
-            <div class="task-meta">
-              <span>🏢 ${t.client}</span>
+          <div class="task-item" style="cursor:pointer;" onclick="openTaskDetailSheet('${t.id}')">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div class="task-title" style="margin:0;">${t.title}</div>
               <span class="stage-badge ${stageClass[t.stage] || 'stage-brief'}">${t.stage}</span>
             </div>
+            <div class="task-meta" style="margin-top:0.3rem;">
+              <span>🏢 ${t.client}</span>
+              <span>📅 ${t.dueDate || 'ASAP'}</span>
+            </div>
             ${subtasks.length > 0 ? `
-              <div style="margin-top:0.5rem; padding:0.4rem; background:rgba(0,0,0,0.03); border-radius:6px;">
+              <div style="margin-top:0.5rem; padding:0.4rem; background:rgba(0,0,0,0.03); border-radius:6px;" onclick="event.stopPropagation()">
                 <div style="font-size:0.68rem; font-weight:700; color:var(--purple); margin-bottom:0.2rem;">☑️ Subtasks Checklist:</div>
                 ${subHtml}
               </div>
             ` : ''}
-            <div style="font-size:0.68rem;color:var(--muted);margin-top:0.4rem;margin-bottom:0.6rem;">Due: ${t.dueDate || 'ASAP'} · Assignee: ${t.assignee}</div>
             
-            <!-- Phase 2: Interactive Parent Actions -->
-            <div style="display:flex; gap:0.4rem; margin-top:0.4rem;">
-              <select class="role-select" style="font-size:0.7rem; padding:0.3rem 0.5rem; flex:1; background:var(--surface);" onchange="advanceMiniappStage('${t.id}', this.value)">
-                <option value="" disabled selected>Advance Stage...</option>
-                <option value="Briefing">Briefing</option>
-                <option value="Scripting">Scripting</option>
-                <option value="Shooting">Shooting</option>
-                <option value="Editing">Editing</option>
-                <option value="Internal QC">Internal QC</option>
-                <option value="Client Review">Client Review</option>
-                <option value="Approved">Approved (Done)</option>
-              </select>
-              <button class="btn" style="padding:0.3rem 0.6rem; font-size:0.7rem; background:rgba(168, 85, 247, 0.1); color:var(--purple); border:1px solid rgba(168,85,247,0.2);" onclick="logMiniappTime('${t.id}')">⏱️ Log Time</button>
+            <!-- Phase 2: Action Bar -->
+            <div style="display:flex; gap:0.4rem; margin-top:0.6rem;" onclick="event.stopPropagation()">
+              <button class="btn" style="flex:1; padding:0.4rem; font-size:0.75rem; background:linear-gradient(135deg,var(--hero-b),var(--hero-d)); color:#fff; border:none; border-radius:10px; font-weight:700;" onclick="openTaskDetailSheet('${t.id}')">📱 Open Task Sheet</button>
+              <button class="btn" style="padding:0.4rem 0.7rem; font-size:0.75rem; background:rgba(168, 85, 247, 0.12); color:var(--purple); border:1px solid rgba(168,85,247,0.25); border-radius:10px; font-weight:700;" onclick="logMiniappTime('${t.id}')">⏱️ Log Time</button>
             </div>
           </div>
         `;
