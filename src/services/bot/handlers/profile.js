@@ -74,7 +74,7 @@ async function handleMyBank(teamBot, msg) {
     reply_markup: {
       inline_keyboard: [
         [
-          { text: '📱 Edit Bank / bKash Info', web_app: { url: 'https://purpleos-iota.vercel.app/team-miniapp?tab=pay' } }
+          { text: '📱 Edit Bank / bKash Info', web_app: { url: 'https://purpleos-iota.vercel.app/team-miniapp?tab=bank' } }
         ]
       ]
     }

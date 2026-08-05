@@ -36,7 +36,7 @@ async function handleMyTasks(teamBot, msg) {
       inline_keyboard: [
         [
           { text: '📱 Open Task Board', web_app: { url: 'https://purpleos-iota.vercel.app/team-miniapp?tab=tasks' } },
-          { text: '➕ Create Task', web_app: { url: 'https://purpleos-iota.vercel.app/team-miniapp?tab=tasks' } }
+          { text: '➕ Create Task', web_app: { url: 'https://purpleos-iota.vercel.app/team-miniapp?tab=tasks&action=new' } }
         ]
       ]
     }
