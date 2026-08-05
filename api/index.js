@@ -58,9 +58,7 @@ app.post(['/api/webhooks/telegram', '/webhooks/telegram'], async (req, res) => {
 
   if (targetBot && req.body) {
     try {
-      if (req.body.message && req.body.message.text) {
-        console.log(`Received text: "${req.body.message.text}" from chat ${req.body.message.chat.id}`);
-      }
+      console.log(`Webhook received payload:`, JSON.stringify(req.body));
       await targetBot.processUpdate(req.body);
       // Hack: keep lambda alive for 2.5s so floating async event listeners (like Supabase DB queries) finish before freezing
       await new Promise(r => setTimeout(r, 2500));
