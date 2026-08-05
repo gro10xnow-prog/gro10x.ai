@@ -15,7 +15,17 @@ async function handleLocationClockIn(teamBot, msg) {
   }
 
   const clockResult = await state.clockIn(emp.emp_code, emp.name, 'GPS Verified Location');
-  teamBot.sendMessage(chatId, `✅ *GPS Clock-In Verified for ${emp.name}!*\nStatus set to *In Studio* at ${clockResult.time}.`, { parse_mode: 'Markdown' });
+  const options = {
+    parse_mode: 'Markdown',
+    reply_markup: {
+      inline_keyboard: [
+        [
+          { text: '📍 Open Attendance Board (Mini App)', web_app: { url: 'https://purpleos-iota.vercel.app/team-miniapp?tab=attendance' } }
+        ]
+      ]
+    }
+  };
+  teamBot.sendMessage(chatId, `✅ *GPS Clock-In Verified for ${emp.name}!*\nStatus set to *In Studio* at ${clockResult.time}.`, options);
 }
 
 async function handleTextClockIn(teamBot, msg) {
@@ -26,7 +36,17 @@ async function handleTextClockIn(teamBot, msg) {
   }
 
   const clockResult = await state.clockIn(emp.emp_code, emp.name, 'Niketon Studio');
-  teamBot.sendMessage(chatId, `✅ *Clock In Recorded for ${emp.name}!*\nStatus set to *In Studio* at ${clockResult.time}.`, { parse_mode: 'Markdown' });
+  const options = {
+    parse_mode: 'Markdown',
+    reply_markup: {
+      inline_keyboard: [
+        [
+          { text: '📍 Open Attendance Board (Mini App)', web_app: { url: 'https://purpleos-iota.vercel.app/team-miniapp?tab=attendance' } }
+        ]
+      ]
+    }
+  };
+  teamBot.sendMessage(chatId, `✅ *Clock In Recorded for ${emp.name}!*\nStatus set to *In Studio* at ${clockResult.time}.`, options);
 }
 
 async function handleClockOut(teamBot, msg) {
@@ -36,8 +56,18 @@ async function handleClockOut(teamBot, msg) {
     return teamBot.sendMessage(chatId, `⚠️ Account not verified. Please tap *📱 Verify My Phone Number* first.`);
   }
 
-  await state.clockOut(emp.emp_code);
-  teamBot.sendMessage(chatId, `🚪 *Clock Out Recorded for ${emp.name}!*\nStatus set to *Offline*. Have a great evening!`, { parse_mode: 'Markdown' });
+  const result = await state.clockOut(emp.emp_code);
+  const options = {
+    parse_mode: 'Markdown',
+    reply_markup: {
+      inline_keyboard: [
+        [
+          { text: '📱 View Shift Log (Mini App)', web_app: { url: 'https://purpleos-iota.vercel.app/team-miniapp?tab=attendance' } }
+        ]
+      ]
+    }
+  };
+  teamBot.sendMessage(chatId, `🚪 *Clock Out Recorded for ${emp.name}!*\nStatus set to *Offline* at ${result.time}. Have a great evening!`, options);
 }
 
 module.exports = {
