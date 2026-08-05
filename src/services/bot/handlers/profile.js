@@ -46,7 +46,7 @@ async function handleMyEarnings(teamBot, msg) {
       inline_keyboard: [
         [
           { text: '💳 View/Update Bank Details', callback_data: 'cmd_mybank' },
-          { text: '📱 Open App Portal', web_app: { url: 'https://purpleos-iota.vercel.app/team-miniapp' } }
+          { text: '📱 Open Pay Portal', web_app: { url: 'https://purpleos-iota.vercel.app/team-miniapp?tab=pay' } }
         ]
       ]
     }
@@ -67,10 +67,20 @@ async function handleMyBank(teamBot, msg) {
     `• Account Name: *${bank.accName || emp.name}*\n` +
     `• Account No: *${bank.accNo || 'Not configured'}*\n` +
     `• Branch: *${bank.branch || 'Not configured'}*\n` +
-    `• bKash Personal: *${bank.mfsNo || 'Not configured'}*\n\n` +
-    `🌐 Update Payout Info via App: https://purpleos-iota.vercel.app/team-miniapp`;
+    `• bKash Personal: *${bank.mfsNo || 'Not configured'}*`;
 
-  teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
+  const options = {
+    parse_mode: 'Markdown',
+    reply_markup: {
+      inline_keyboard: [
+        [
+          { text: '📱 Edit Bank / bKash Info', web_app: { url: 'https://purpleos-iota.vercel.app/team-miniapp?tab=pay' } }
+        ]
+      ]
+    }
+  };
+
+  teamBot.sendMessage(chatId, text, options);
 }
 
 module.exports = {

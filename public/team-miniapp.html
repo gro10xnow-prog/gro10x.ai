@@ -1462,6 +1462,22 @@
       if (!emp || !emp.id) { showLock(); return; }
       currentUser = emp;
       renderDashboard(emp, data.myTasks || [], data.attendanceToday || null);
+
+      // Deep linking tab support (?tab=tasks, ?tab=pay, etc.)
+      const urlParams = new URLSearchParams(window.location.search);
+      const tabParam = urlParams.get('tab');
+      if (tabParam === 'tasks') {
+        showPage('pageTasks');
+        if (typeof loadUserTasks === 'function') loadUserTasks();
+      } else if (tabParam === 'pay' || tabParam === 'bank') {
+        showPage('pagePay');
+        if (typeof loadPayData === 'function') loadPayData();
+      } else if (tabParam === 'profile') {
+        showPage('pageProfile');
+      } else if (tabParam === 'attendance') {
+        showPage('pageAttendance');
+        if (typeof startClock === 'function') startClock();
+      }
     } catch (e) {
       // Fallback: show dashboard with basic info for debug
       currentUser = { name: tgUser?.first_name || 'Team Member', role: 'Specialist', department: 'Production', accessLevel: 'Specialist / Crew', xp: 0, badge: '🌱 Recruit', status: 'Offline', onboardingComplete: false, bankInfo: {} };
