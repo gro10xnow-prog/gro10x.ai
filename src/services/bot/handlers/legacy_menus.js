@@ -1438,9 +1438,12 @@ function registerLegacyTeamMenus(teamBot, readDB) {
       teamBot.onText(/\/mytasks|📋 My Tasks/, (msg) => tasksHandler.handleMyTasks(teamBot, msg));
       teamBot.onText(/✍️ Pending Approvals/, (msg) => approvalsHandler.handlePendingApprovals(teamBot, msg));
 
-      // ──────── CLIENT STATUS (Owner/Admin) ────────
+      // ──────── CLIENT STATUS & ADMIN (Owner/Admin) ────────
       const reportsHandler = require('./reports');
+      const adminHandler = require('./admin');
       teamBot.onText(/🎬 Client Status/, (msg) => reportsHandler.handleClientStatus(teamBot, msg));
+      teamBot.onText(/👥 Full Team Status/, (msg) => adminHandler.handleFullTeamStatus(teamBot, msg));
+      teamBot.onText(/🛠️ Tech Diagnostics/, (msg) => adminHandler.handleTechDiagnostics(teamBot, msg));
 
       // ──────── BATCH 2 MODULAR HANDLERS (Wizards) ────────
       const expensesHandler = require('./expenses');

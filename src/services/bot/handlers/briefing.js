@@ -69,16 +69,20 @@ async function handleFinanceSummary(teamBot, msg) {
   const chatId = msg.chat.id;
 
   let paid = 0, draft = 0, pendingExpenses = 0;
-  if (supabase) {
-    const [{ data: inv }, { count: expCount }] = await Promise.all([
-      supabase.from('invoices').select('amount, status'),
-      supabase.from('expenses').select('*', { count: 'exact', head: true }).neq('status', 'Disbursed')
-    ]);
-    (inv || []).forEach(i => {
-      if (i.status === 'Paid') paid += Number(i.amount) || 0;
-      else if (i.status === 'Draft') draft += Number(i.amount) || 0;
-    });
-    pendingExpenses = expCount || 0;
+  try {
+    if (supabase) {
+      const [{ data: inv }, { count: expCount }] = await Promise.all([
+        supabase.from('invoices').select('amount, status'),
+        supabase.from('expenses').select('*', { count: 'exact', head: true }).neq('status', 'Disbursed')
+      ]);
+      (inv || []).forEach(i => {
+        if (i.status === 'Paid') paid += Number(i.amount) || 0;
+        else if (i.status === 'Draft' || i.status === 'Pending') draft += Number(i.amount) || 0;
+      });
+      pendingExpenses = expCount || 0;
+    }
+  } catch (err) {
+    console.error('Finance summary error:', err.message);
   }
 
   let text = `💰 *PURPLEBOT FINANCE SNAPSHOT*\n\n` +
@@ -86,7 +90,7 @@ async function handleFinanceSummary(teamBot, msg) {
     `• Draft/Pending Invoices: *$${draft.toLocaleString()} USD*\n` +
     `• Pending Expense Claims: *${pendingExpenses} claims*\n\n` +
     `🌐 Open Web Finance Portal: https://purpleos-iota.vercel.app/admin`;
-  teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
+  teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown' }).catch(()=>{});
 }
 
 module.exports = {
