@@ -11,17 +11,28 @@ const { getRoleKeyboard } = require('../keyboards');
 async function handleInitEOD(teamBot, msg) {
   const chatId = msg.chat.id;
   const emp = await state.getEmployeeByTelegramId(chatId);
-  if (!emp) return teamBot.sendMessage(chatId, `⚠️ Account not verified.`);
+  if (!emp) return teamBot.sendMessage(chatId, `⚠️ Account not verified. Please send your contact via the Verify button first.`, { parse_mode: 'Markdown' });
 
   const sess = { action: 'await_eod_summary', empId: emp.emp_code, empName: emp.name };
   await state.setSession(chatId, sess);
 
+  const options = {
+    parse_mode: 'Markdown',
+    reply_markup: {
+      inline_keyboard: [
+        [
+          { text: '📱 Open EOD Report Form (Mini App)', web_app: { url: 'https://purpleos-iota.vercel.app/team-miniapp?tab=eod&action=new' } }
+        ]
+      ]
+    }
+  };
+
   teamBot.sendMessage(chatId,
     `📝 *END-OF-DAY REPORT*\n` +
     `📅 ${new Date().toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}\n\n` +
-    `Please reply with a *brief summary* of what you accomplished today:\n\n` +
-    `_(Example: Completed 3 social posts for Client X, attended strategy call, submitted revised deck)_`,
-    { parse_mode: 'Markdown' }
+    `Tap **Open EOD Report Form** below for the full Mini App form (tasks, blockers, plan & mood rating).\n\n` +
+    `_Or simply reply here with a brief summary of what you accomplished today:_`,
+    options
   );
 }
 
