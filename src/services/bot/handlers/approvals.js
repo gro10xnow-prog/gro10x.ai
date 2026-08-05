@@ -16,14 +16,18 @@ async function handlePendingApprovals(teamBot, msg) {
   let pendingTasks = [];
 
   if (supabase) {
-    const [lRes, eRes, tRes] = await Promise.all([
-      supabase.from('leaves').select('*').or('status.eq.Pending,status.ilike.%Review%'),
-      supabase.from('expenses').select('*').neq('status', 'Disbursed'),
-      supabase.from('tasks').select('*').ilike('stage', '%Review%')
-    ]);
-    pendingLeaves = lRes.data || [];
-    pendingExpenses = eRes.data || [];
-    pendingTasks = tRes.data || [];
+    try {
+      const [lRes, eRes, tRes] = await Promise.all([
+        supabase.from('leaves').select('*').or('status.eq.Pending,status.ilike.%Review%'),
+        supabase.from('expenses').select('*').neq('status', 'Disbursed'),
+        supabase.from('tasks').select('*').ilike('stage', '%Review%')
+      ]);
+      pendingLeaves = lRes.data || [];
+      pendingExpenses = eRes.data || [];
+      pendingTasks = tRes.data || [];
+    } catch (err) {
+      console.error('Pending Approvals DB Error:', err.message);
+    }
   }
 
   let text = `✍️ *PENDING APPROVALS DASHBOARD*\n` +

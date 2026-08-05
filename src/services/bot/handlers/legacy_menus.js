@@ -345,28 +345,32 @@ function registerLegacyTeamMenus(teamBot, readDB) {
 
       // 💸 Expense Queue — Tier-2 Payout approvals
       teamBot.onText(/💸 Expense Queue/, async (msg) => {
-        const chatId = msg.chat.id;
-        const dbData = await readDB();
-        const expenses = dbData.expenses || [];
+        try {
+          const chatId = msg.chat.id;
+          const dbData = await readDB();
+          const expenses = dbData.expenses || [];
 
-        // Tier-1 approved, awaiting Tier-2 (Borhan payout)
-        const pendingPayout = expenses.filter(e => e.status === 'Tier-1 Approved' || (e.tier1Approved && !e.tier2Approved));
+          // Tier-1 approved, awaiting Tier-2 (Borhan payout)
+          const pendingPayout = expenses.filter(e => e.status === 'Tier-1 Approved' || (e.tier1Approved && !e.tier2Approved));
 
-        let text = `💸 *Finance Expense Payout Queue*\n\n`;
-        if (!pendingPayout.length) {
-          text += `✅ All expense payouts up to date! No claims waiting for Tier-2 audit.`;
-        } else {
-          text += `⚠️ *${pendingPayout.length} Claim(s) Awaiting Tier-2 Disbursement:*\n\n`;
-          pendingPayout.forEach((e, i) => {
-            text += `${i + 1}. *${e.employeeName || e.loggedBy}* — BDT ${Number(e.amount).toLocaleString()}\n`;
-            text += `   Category: ${e.category || 'General'} | Item: "${e.description || 'Expense'}"\n\n`;
-          });
+          let text = `💸 *Finance Expense Payout Queue*\n\n`;
+          if (!pendingPayout.length) {
+            text += `✅ All expense payouts up to date! No claims waiting for Tier-2 audit.`;
+          } else {
+            text += `⚠️ *${pendingPayout.length} Claim(s) Awaiting Tier-2 Disbursement:*\n\n`;
+            pendingPayout.forEach((e, i) => {
+              text += `${i + 1}. *${e.employeeName || e.loggedBy}* — BDT ${Number(e.amount).toLocaleString()}\n`;
+              text += `   Category: ${e.category || 'General'} | Item: "${e.description || 'Expense'}"\n\n`;
+            });
+          }
+
+          teamBot.sendMessage(chatId, text, {
+            parse_mode: 'Markdown',
+            reply_markup: { inline_keyboard: [[{ text: '🌐 Open Finance Audit Portal', url: 'https://purpleos-iota.vercel.app/admin?tab=expenses' }]] }
+          }).catch(console.error);
+        } catch (err) {
+          console.error('Expense queue error:', err.message);
         }
-
-        teamBot.sendMessage(chatId, text, {
-          parse_mode: 'Markdown',
-          reply_markup: { inline_keyboard: [[{ text: '🌐 Open Finance Audit Portal', url: 'https://purpleos-iota.vercel.app/admin?tab=expenses' }]] }
-        });
       });
 
       // 🧾 Invoice Status — GST/VAT invoices tracking
