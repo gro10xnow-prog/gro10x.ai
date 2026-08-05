@@ -1441,6 +1441,10 @@ function registerLegacyTeamMenus(teamBot, readDB) {
         } else if (data === 'tech_clean_slate') {
           alertMsg = '🧹 Automation Logs & Test Slate Cleaned!';
           teamBot.sendMessage(chatId, `🧹 *Test Slate Cleaned! Automation logs reset.*`, { parse_mode: 'Markdown' });
+        } else if (data === 'cmd_mybank') {
+          const profileHandler = require('./profile');
+          profileHandler.handleMyBank(teamBot, query.message);
+          alertMsg = 'Opening Bank Details...';
         } else if (data === 'tech_fresh_pin') {
           const pinRecord = await createTempPin(emp.phone, emp.emp_code || emp.id, 'team', emp.email);
           alertMsg = `🔑 New Web PIN Generated: ${pinRecord.pin}`;

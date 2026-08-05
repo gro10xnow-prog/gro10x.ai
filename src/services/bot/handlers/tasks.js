@@ -30,7 +30,17 @@ async function handleMyTasks(teamBot, msg) {
       message += `${index + 1}. *${t.title}*\n   Client: ${t.client} | Stage: *${t.stage || t.status}* | Due: ${t.due_date || t.dueDate || 'ASAP'}\n\n`;
     });
   }
-  teamBot.sendMessage(chatId, message, { parse_mode: 'Markdown' });
+  const options = {
+    parse_mode: 'Markdown',
+    reply_markup: {
+      inline_keyboard: [
+        [
+          { text: '📱 Open Task Board', web_app: { url: 'https://purpleos-iota.vercel.app/team-miniapp' } }
+        ]
+      ]
+    }
+  };
+  teamBot.sendMessage(chatId, message, options);
 }
 
 module.exports = {

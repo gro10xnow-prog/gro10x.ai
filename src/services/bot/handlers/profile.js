@@ -40,7 +40,18 @@ async function handleMyEarnings(teamBot, msg) {
     `• Commissions: *BDT ${(emp.earnedCommissions || 0).toLocaleString()}*\n` +
     `-----------------------------------------\n` +
     `*Total Monthly Pay: BDT ${total.toLocaleString()}*`;
-  teamBot.sendMessage(chatId, message, { parse_mode: 'Markdown' });
+  const options = {
+    parse_mode: 'Markdown',
+    reply_markup: {
+      inline_keyboard: [
+        [
+          { text: '💳 View/Update Bank Details', callback_data: 'cmd_mybank' },
+          { text: '📱 Open App Portal', web_app: { url: 'https://purpleos-iota.vercel.app/team-miniapp' } }
+        ]
+      ]
+    }
+  };
+  teamBot.sendMessage(chatId, message, options);
 }
 
 async function handleMyBank(teamBot, msg) {
