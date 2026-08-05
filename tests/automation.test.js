@@ -10,20 +10,16 @@ describe('Automation Engine API & Triggers', () => {
 
   it('Automation Engine should process task_created event', () => {
     const mockTask = { id: 'TSK-MOCK', title: 'Mock Task', stage: 'Backlog', assignee: 'Jane' };
-    const result = processAutomationEvent('task_created', mockTask);
-    // processAutomationEvent might return undefined or a Promise, but it shouldn't throw
-    expect(result).toBeDefined();
+    expect(() => processAutomationEvent('task_created', mockTask)).not.toThrow();
   });
 
   it('Automation Engine should process task_stage_changed event', () => {
     const mockTask = { id: 'TSK-MOCK', title: 'Mock Task', stage: 'In Progress', assignee: 'Jane' };
-    const result = processAutomationEvent('task_stage_changed', mockTask);
-    expect(result).toBeDefined();
+    expect(() => processAutomationEvent('task_stage_changed', mockTask)).not.toThrow();
   });
 
   it('Automation Engine should process invoice_paid event', () => {
     const mockInvoice = { id: 'INV-MOCK', status: 'Paid', amount: 50000, client: 'Test Client' };
-    const result = processAutomationEvent('invoice_paid', mockInvoice);
-    expect(result).toBeDefined();
+    expect(() => processAutomationEvent('invoice_paid', mockInvoice)).not.toThrow();
   });
 });

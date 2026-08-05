@@ -434,6 +434,9 @@ async function sendAgreementNotification(stage, emp, dbData) {
 }
 
 function initBot() {
+  if (process.env.NODE_ENV === 'test') {
+    return;
+  }
 
   const teamToken = process.env.TEAM_BOT_TOKEN || null?.teamBot?.token;
   const clientToken = process.env.CLIENT_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN || null?.clientBot?.token;
