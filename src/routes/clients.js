@@ -94,6 +94,9 @@ router.post('/', requireAuth, requireAdmin, async (req, res) => {
     const { error } = await supabase.from('clients').insert([payload]);
     if (!error) {
       broadcast('client_update', [payload]);
+      const dbSnapshot = await readDB();
+      const { processAutomationEvent } = require('../services/automation');
+      await processAutomationEvent('client_onboarded', { client: payload }, dbSnapshot, writeDB, broadcast);
       return res.json({ success: true, client: newClient });
     }
   }
@@ -231,6 +234,118 @@ router.get('/:id/dashboard', requireAuth, requireClientOwnership, async (req, re
     posts,
     invoices
   });
+});
+
+// GET /api/clients/:id/timeline (CRM Activity Timeline)
+router.get('/:id/timeline', requireAuth, async (req, res) => {
+  const { id } = req.params;
+  
+  if (!isSupabaseConfigured()) return res.status(503).json({ error: 'Database unavailable' });
+
+  try {
+    const { data: client } = await supabase.from('clients').select('*').eq('id', id).maybeSingle();
+    const clientName = client ? client.name : '';
+
+    // Fetch related records
+    const [tasksRes, invoicesRes, reviewsRes, meetingsRes] = await Promise.all([
+      supabase.from('tasks').select('id, title, status, stage, created_at, updated_at').eq('client_id', id),
+      supabase.from('invoices').select('id, project_name, amount, status, issue_date').eq('client_id', id),
+      supabase.from('reviews').select('id, video_title, status, created_at').eq('client_id', id),
+      supabase.from('client_meetings').select('*').eq('client_id', id).order('meeting_date', { ascending: false })
+    ]);
+
+    const timeline = [];
+
+    (tasksRes.data || []).forEach(t => {
+      timeline.push({
+        type: 'task',
+        title: `Task: ${t.title}`,
+        description: `Stage: ${t.stage || t.status}`,
+        date: t.updated_at || t.created_at,
+        icon: '📋',
+        color: 'var(--blue-brand)'
+      });
+    });
+
+    (invoicesRes.data || []).forEach(i => {
+      timeline.push({
+        type: 'invoice',
+        title: `Invoice Generated: BDT ${i.amount}`,
+        description: `Project: ${i.project_name || 'N/A'} - Status: ${i.status}`,
+        date: i.issue_date,
+        icon: '💳',
+        color: 'var(--emerald-accent)'
+      });
+    });
+
+    (reviewsRes.data || []).forEach(r => {
+      timeline.push({
+        type: 'review',
+        title: `Deliverable Review: ${r.video_title}`,
+        description: `Status: ${r.status}`,
+        date: r.created_at,
+        icon: '🎬',
+        color: 'var(--purple-primary)'
+      });
+    });
+
+    // Sort descending by date
+    timeline.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    // Calculate Health Score (1-100)
+    let healthScore = 80; // Base score
+    const invoices = invoicesRes.data || [];
+    const paidInvoices = invoices.filter(i => i.status === 'Paid');
+    const overdueInvoices = invoices.filter(i => i.status === 'Overdue');
+    
+    if (invoices.length > 0) {
+      healthScore += (paidInvoices.length / invoices.length) * 20; // Up to +20 for paid ratio
+    }
+    if (overdueInvoices.length > 0) {
+      healthScore -= overdueInvoices.length * 10; // -10 for each overdue
+    }
+    
+    const tasks = tasksRes.data || [];
+    if (tasks.length > 5) healthScore += 5; // Active engagement bonus
+    
+    // Clamp score
+    healthScore = Math.max(1, Math.min(100, Math.floor(healthScore)));
+    
+    let healthLabel = 'Healthy';
+    if (healthScore < 50) healthLabel = 'At Risk';
+    else if (healthScore < 70) healthLabel = 'Needs Attention';
+    else if (healthScore >= 90) healthLabel = 'Excellent';
+
+    res.json({
+      success: true,
+      timeline,
+      meetings: meetingsRes.data || [],
+      health: {
+        score: healthScore,
+        label: healthLabel
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch timeline' });
+  }
+});
+
+// POST /api/clients/:id/meetings
+router.post('/:id/meetings', requireAuth, async (req, res) => {
+  const { id } = req.params;
+  const { meeting_date, notes, action_items } = req.body;
+
+  if (!isSupabaseConfigured()) return res.status(503).json({ error: 'Database unavailable' });
+
+  const { data, error } = await supabase.from('client_meetings').insert([{
+    client_id: id,
+    meeting_date,
+    notes,
+    action_items
+  }]).select('*').single();
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ success: true, meeting: data });
 });
 
 module.exports = router;

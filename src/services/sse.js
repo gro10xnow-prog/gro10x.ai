@@ -23,7 +23,12 @@ function broadcast(eventType, data) {
   clients.forEach(c => c.res.write(`data: ${payload}\n\n`));
 }
 
+function getActiveClientsCount() {
+  return clients.length;
+}
+
 module.exports = {
   sseHandler,
-  broadcast
+  broadcast,
+  getActiveClientsCount
 };

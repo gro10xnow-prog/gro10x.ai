@@ -135,13 +135,29 @@ window.APP_MODULES.dashboard = async function(container) {
       setTimeout(() => {
         const revCtx = document.getElementById('revenueChart');
         if (revCtx) {
+          const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+          const today = new Date();
+          const revLabels = [];
+          const revData = [];
+          for (let i = 5; i >= 0; i--) {
+            const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+            revLabels.push(monthNames[d.getMonth()]);
+            const monthTotal = (invoices || []).filter(inv => {
+              if (inv.status !== 'Paid') return false;
+              const invDate = new Date(inv.issueDate || inv.created_at || inv.createdAt);
+              if (isNaN(invDate)) return false;
+              return invDate.getMonth() === d.getMonth() && invDate.getFullYear() === d.getFullYear();
+            }).reduce((sum, inv) => sum + (Number(inv.amount) || 0), 0);
+            revData.push(monthTotal);
+          }
+
           new Chart(revCtx, {
             type: 'line',
             data: {
-              labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+              labels: revLabels,
               datasets: [{
                 label: 'Collected Revenue (BDT)',
-                data: [120000, 180000, 240000, 310000, 420000, paidRevenue || 480000],
+                data: revData,
                 borderColor: '#10b981',
                 backgroundColor: 'rgba(16, 185, 129, 0.1)',
                 tension: 0.4,

@@ -27,9 +27,10 @@ const app = express();
 app.use(compression());
 
 // Sentry Error Tracking Initialization (if DSN provided)
+let Sentry = null;
 if (process.env.SENTRY_DSN) {
   try {
-    const Sentry = require('@sentry/node');
+    Sentry = require('@sentry/node');
     Sentry.init({ dsn: process.env.SENTRY_DSN, environment: process.env.NODE_ENV || 'production' });
     console.log('✅ Sentry Error Monitoring initialized');
   } catch (e) {
@@ -39,6 +40,11 @@ if (process.env.SENTRY_DSN) {
 
 // Initialize Telegram Bot & Webhooks
 try { initBot(); } catch (e) { console.warn('Bot init note:', e.message); }
+
+// Sentry Request Handler
+if (Sentry) {
+  app.use(Sentry.Handlers.requestHandler());
+}
 
 // Middleware
 app.use(cors({
@@ -70,6 +76,29 @@ app.get(['/api/bot-status', '/bot-status'], (req, res) => {
     teamBot: team ? 'active' : 'null',
     clientBot: client ? 'active' : 'null',
     timestamp: new Date().toISOString()
+  });
+});
+
+// System Health Dashboard API
+app.get('/api/system-health', async (req, res) => {
+  const { isSupabaseConfigured } = require('./src/services/supabase');
+  const { getActiveClientsCount } = require('./src/services/sse');
+  
+  let dbStatus = 'Offline';
+  if (isSupabaseConfigured()) {
+    try {
+      const { data, error } = await require('./src/services/supabase').supabase.from('profiles').select('id').limit(1);
+      dbStatus = error ? 'Error' : 'Connected';
+    } catch (e) {
+      dbStatus = 'Error';
+    }
+  }
+
+  res.json({
+    dbConnection: dbStatus,
+    sseClients: getActiveClientsCount ? getActiveClientsCount() : 0,
+    uptimeSeconds: process.uptime(),
+    memoryUsage: process.memoryUsage().rss / 1024 / 1024 // MB
   });
 });
 
@@ -181,6 +210,11 @@ app.get('/robots.txt', (req, res) => {
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public/index.html'));
 });
+
+// Sentry Error Handler
+if (Sentry) {
+  app.use(Sentry.Handlers.errorHandler());
+}
 
 // Start Express Server (only when run directly, not when imported by Vercel serverless handler)
 if (require.main === module) {

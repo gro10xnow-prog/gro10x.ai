@@ -4,6 +4,110 @@
  */
 window.APP_MODULES = window.APP_MODULES || {};
 
+window.generateInvoicePDF = function(invoice) {
+  if (!window.jspdf || !window.jspdf.jsPDF) {
+    if (window.showToast) window.showToast('jsPDF library not loaded', 'error');
+    return;
+  }
+  
+  const doc = new window.jspdf.jsPDF();
+  
+  // Header details
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(22);
+  doc.setTextColor(124, 58, 237); // Purple
+  doc.text("PURPLEBOT DIGITAL", 14, 20);
+  
+  doc.setFontSize(10);
+  doc.setTextColor(100, 100, 100);
+  doc.setFont("helvetica", "normal");
+  doc.text("123 Marketing Ave, Tech District, Dhaka", 14, 28);
+  doc.text("contact@purplebot.digital | +880 1711 019550", 14, 33);
+  
+  // Invoice Title
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(28);
+  doc.setTextColor(30, 30, 30);
+  doc.text("INVOICE", 130, 25);
+  
+  // Invoice details
+  doc.setFontSize(10);
+  doc.setTextColor(50, 50, 50);
+  doc.text(`Invoice No: ${invoice.id || 'INV-000'}`, 130, 35);
+  const issueDate = new Date(invoice.issueDate || invoice.created_at || Date.now()).toLocaleDateString();
+  const dueDate = invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString() : 'Due on receipt';
+  doc.text(`Date: ${issueDate}`, 130, 42);
+  doc.text(`Due Date: ${dueDate}`, 130, 49);
+  
+  // Bill To
+  doc.setFont("helvetica", "bold");
+  doc.text("BILL TO:", 14, 50);
+  doc.setFont("helvetica", "normal");
+  doc.text(invoice.clientName || invoice.client || 'Client Name', 14, 57);
+  if (invoice.clientEmail) doc.text(invoice.clientEmail, 14, 64);
+  
+  // Line items
+  let yPos = 80;
+  
+  // Table Header
+  doc.setFillColor(124, 58, 237);
+  doc.rect(14, yPos - 6, 180, 10, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFont("helvetica", "bold");
+  doc.text("Description", 16, yPos);
+  doc.text("Amount", 150, yPos);
+  
+  yPos += 10;
+  doc.setTextColor(50, 50, 50);
+  doc.setFont("helvetica", "normal");
+  
+  let items = invoice.items || [];
+  if (typeof items === 'string') {
+    try { items = JSON.parse(items); } catch(e) { items = []; }
+  }
+  
+  if (items.length === 0) {
+    items = [{ description: invoice.description || 'Marketing Services', amount: invoice.amount }];
+  }
+  
+  items.forEach(item => {
+    doc.text(item.description || 'Service', 16, yPos);
+    doc.text(`BDT ${Number(item.amount || 0).toLocaleString()}`, 150, yPos);
+    yPos += 10;
+  });
+  
+  // Totals
+  yPos += 10;
+  doc.line(14, yPos - 5, 194, yPos - 5);
+  doc.setFont("helvetica", "bold");
+  
+  const taxAmt = Number(invoice.amount) * ((Number(invoice.taxRate || 15)) / 100);
+  const subTotal = Number(invoice.amount) - taxAmt;
+
+  if (taxAmt > 0) {
+    doc.text("Subtotal:", 120, yPos);
+    doc.text(`BDT ${subTotal.toLocaleString()}`, 150, yPos);
+    yPos += 10;
+    doc.text("VAT/Tax:", 120, yPos);
+    doc.text(`BDT ${taxAmt.toLocaleString()}`, 150, yPos);
+    yPos += 10;
+  }
+  
+  doc.setFontSize(14);
+  doc.text("Total:", 120, yPos);
+  doc.setTextColor(124, 58, 237);
+  doc.text(`BDT ${Number(invoice.amount).toLocaleString()}`, 150, yPos);
+  
+  // Footer
+  doc.setFontSize(10);
+  doc.setTextColor(100, 100, 100);
+  doc.setFont("helvetica", "italic");
+  doc.text("Thank you for your business!", 105, 270, null, null, "center");
+  
+  // Save PDF
+  doc.save(`${invoice.id || 'Invoice'}.pdf`);
+};
+
 window.APP_MODULES.finance = async function(container) {
   let activeTab = 'invoices';
   let invoicesData = [];
@@ -42,7 +146,11 @@ window.APP_MODULES.finance = async function(container) {
             Manage client retainer invoicing, 2-tier expense claims, and price quotes.
           </div>
         </div>
-        <button class="btn-primary" onclick="window.FINANCE_MODULE.openExpenseModal()">+ Log Expense Claim</button>
+        <div style="display:flex; gap:0.5rem;">
+          <button class="btn-primary" onclick="window.FINANCE_MODULE.openInvoiceModal()">+ Create Invoice</button>
+          <button class="btn-secondary" onclick="window.FINANCE_MODULE.openQuoteModal()">+ Generate Quote</button>
+          <button class="btn-primary" onclick="window.FINANCE_MODULE.openExpenseModal()">+ Log Expense Claim</button>
+        </div>
       </div>
 
       <!-- KPI Summary Cards -->
@@ -59,6 +167,12 @@ window.APP_MODULES.finance = async function(container) {
           <div class="kpi-label">Pending Expense Claims</div>
           <div class="kpi-val" style="color: var(--amber-brand);">${pendingExpCount}</div>
         </div>
+      </div>
+
+      <!-- Profit & Loss Chart -->
+      <div style="background:var(--surface-1); border:1px solid var(--border-subtle); border-radius:12px; padding:1.5rem; margin-bottom:1.5rem;">
+        <h3 style="margin:0 0 1rem; color:#fff; font-size:1.1rem;">Monthly P&L Summary (Last 6 Months)</h3>
+        <canvas id="pnlChart" width="100%" height="250"></canvas>
       </div>
 
       <!-- Subtab Navigation Switcher -->
@@ -104,11 +218,175 @@ window.APP_MODULES.finance = async function(container) {
             </div>
           </div>
 
+          <div class="form-group">
+            <label class="form-label">Receipt Image (Optional)</label>
+            <input type="file" id="fnExpReceipt" class="form-input" accept="image/*" style="padding-top:0.4rem;">
+          </div>
+
           <button class="btn-primary" style="width:100%; margin-top:0.5rem;" onclick="window.FINANCE_MODULE.submitExpense()">🚀 Submit Expense Claim</button>
         </div>
       </div>
+
+      <!-- Quote Generator Modal -->
+      <div class="modal-overlay" id="quoteModal">
+        <div class="modal-box">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h2 style="color:#fff; font-size:1.2rem; margin:0;">📜 Generate Price Quote</h2>
+            <button onclick="window.FINANCE_MODULE.closeQuoteModal()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Client / Prospect Name</label>
+            <input type="text" id="fnQuoteClient" class="form-input" placeholder="e.g. Acme Corp">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Description of Services</label>
+            <input type="text" id="fnQuoteDesc" class="form-input" placeholder="e.g. 3-Month Retainer (Social Media)">
+          </div>
+
+          <div style="display:flex; gap:1rem;">
+            <div class="form-group" style="flex:1;">
+              <label class="form-label">Quoted Amount (BDT)</label>
+              <input type="number" id="fnQuoteAmt" class="form-input" placeholder="50000">
+            </div>
+            <div class="form-group" style="flex:1;">
+              <label class="form-label">Valid Until (Days)</label>
+              <input type="number" id="fnQuoteValid" class="form-input" value="14">
+            </div>
+          </div>
+
+          <button class="btn-primary" style="width:100%; margin-top:0.5rem;" onclick="window.FINANCE_MODULE.submitQuote()">📜 Generate & Save Quote</button>
+        </div>
+      </div>
+
+      <!-- Invoice Generator Modal -->
+      <div class="modal-overlay" id="invoiceModal">
+        <div class="modal-box">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h2 style="color:#fff; font-size:1.2rem; margin:0;">🧾 Create Invoice</h2>
+            <button onclick="window.FINANCE_MODULE.closeInvoiceModal()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Client Name</label>
+            <input type="text" id="fnInvClient" class="form-input" placeholder="e.g. Acme Corp">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Description of Services</label>
+            <input type="text" id="fnInvDesc" class="form-input" placeholder="e.g. 3-Month Retainer (Social Media)">
+          </div>
+
+          <div style="display:flex; gap:1rem;">
+            <div class="form-group" style="flex:1;">
+              <label class="form-label">Subtotal (BDT)</label>
+              <input type="number" id="fnInvAmt" class="form-input" placeholder="50000" onchange="window.FINANCE_MODULE.calcInvoiceTotal()">
+            </div>
+            <div class="form-group" style="flex:1;">
+              <label class="form-label">VAT Rate (%)</label>
+              <input type="number" id="fnInvVat" class="form-input" value="15" onchange="window.FINANCE_MODULE.calcInvoiceTotal()">
+            </div>
+          </div>
+
+          <div style="display:flex; gap:1rem;">
+            <div class="form-group" style="flex:1;">
+              <label class="form-label">Discount (BDT)</label>
+              <input type="number" id="fnInvDisc" class="form-input" value="0" onchange="window.FINANCE_MODULE.calcInvoiceTotal()">
+            </div>
+            <div class="form-group" style="flex:1;">
+              <label class="form-label">Calculated Total</label>
+              <input type="text" id="fnInvTotal" class="form-input" disabled style="font-weight:bold; color:var(--emerald-brand);">
+            </div>
+          </div>
+
+          <button class="btn-primary" style="width:100%; margin-top:0.5rem;" onclick="window.FINANCE_MODULE.submitInvoice()">🧾 Create Invoice</button>
+        </div>
+      </div>
     `;
+    
+    // Add setTimeout to render chart after DOM updates
+    setTimeout(() => {
+      if (window.renderPnLChart) window.renderPnLChart(invoicesData, expensesData);
+    }, 50);
   }
+
+  window.renderPnLChart = function(invoices, expenses) {
+    const ctx = document.getElementById('pnlChart');
+    if (!ctx) return;
+    
+    const months = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date();
+      d.setMonth(d.getMonth() - i);
+      months.push({ 
+        label: d.toLocaleString('default', { month: 'short', year: '2-digit' }), 
+        year: d.getFullYear(), 
+        month: d.getMonth() 
+      });
+    }
+
+    const revData = months.map(m => {
+      return invoices
+        .filter(inv => {
+          if (inv.status !== 'Paid') return false;
+          const d = new Date(inv.date || inv.createdAt);
+          return d.getFullYear() === m.year && d.getMonth() === m.month;
+        })
+        .reduce((sum, inv) => sum + (Number(inv.amount) || 0), 0);
+    });
+
+    const expData = months.map(m => {
+      return expenses
+        .filter(exp => {
+          if (exp.status !== 'Approved' && exp.status !== 'Tier 3 Pending' && exp.status !== 'Paid') return false;
+          const d = new Date(exp.date || exp.createdAt);
+          return d.getFullYear() === m.year && d.getMonth() === m.month;
+        })
+        .reduce((sum, exp) => sum + (Number(exp.amount) || 0), 0);
+    });
+
+    if (window.pnlChartInstance) window.pnlChartInstance.destroy();
+    
+    window.pnlChartInstance = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: months.map(m => m.label),
+        datasets: [
+          {
+            label: 'Collected Revenue',
+            data: revData,
+            backgroundColor: 'rgba(16, 185, 129, 0.8)',
+            borderRadius: 4
+          },
+          {
+            label: 'Approved Expenses',
+            data: expData,
+            backgroundColor: 'rgba(239, 68, 68, 0.8)',
+            borderRadius: 4
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+            ticks: { color: 'rgba(255, 255, 255, 0.5)' }
+          },
+          x: {
+            grid: { display: false },
+            ticks: { color: 'rgba(255, 255, 255, 0.5)' }
+          }
+        },
+        plugins: {
+          legend: { labels: { color: 'rgba(255, 255, 255, 0.8)' } }
+        }
+      }
+    });
+  };
 
   function renderActiveTabGrid() {
     if (activeTab === 'invoices') {
@@ -122,6 +400,7 @@ window.APP_MODULES.finance = async function(container) {
               <th>Amount</th>
               <th>Due Date</th>
               <th>Status</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -132,6 +411,11 @@ window.APP_MODULES.finance = async function(container) {
                 <td style="font-weight:800; color:var(--emerald-brand);">৳${(Number(i.amount) || 0).toLocaleString()}</td>
                 <td style="color:var(--text-muted);">${i.dueDate || 'ASAP'}</td>
                 <td><span class="badge ${i.status === 'Paid' ? 'badge-emerald' : 'badge-amber'}">${i.status || 'Pending'}</span></td>
+                <td>
+                  <button class="btn-secondary btn-sm" onclick="window.FINANCE_MODULE.downloadInvoice('${i.id}')">📄 PDF</button>
+                  <button class="btn-secondary btn-sm" onclick="window.FINANCE_MODULE.sendInvoiceEmail('${i.id}')">✉️ Send</button>
+                  ${i.status !== 'Paid' ? `<button class="btn-secondary btn-sm" onclick="window.FINANCE_MODULE.markPartiallyPaid('${i.id}')">💸 Partial</button>` : ''}
+                </td>
               </tr>
             `).join('')}
           </tbody>
@@ -148,16 +432,30 @@ window.APP_MODULES.finance = async function(container) {
               <th>Submitted By</th>
               <th>Amount</th>
               <th>Approval Status</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             ${expensesData.map(e => `
               <tr>
-                <td style="font-weight:700;">${e.title}</td>
+                <td style="font-weight:700;">
+                  ${e.title}
+                  ${e.receiptUrl ? `<a href="${e.receiptUrl}" target="_blank" style="margin-left:0.5rem; color:var(--purple-light); font-size:0.8rem;">📎 Receipt</a>` : ''}
+                </td>
                 <td style="color:var(--text-muted);">${e.category || 'General'}</td>
                 <td>👤 ${e.submittedBy || e.loggedBy || 'Staff'}</td>
                 <td style="font-weight:800; color:#f87171;">৳${(Number(e.amount) || 0).toLocaleString()}</td>
-                <td><span class="badge badge-amber">Tier 1: Pending Review</span></td>
+                <td>
+                  ${e.status === 'Approved' ? '<span class="badge badge-emerald">Approved</span>' : 
+                    e.status === 'Rejected' ? '<span class="badge" style="background:rgba(239,68,68,0.2); color:#ef4444;">Rejected</span>' :
+                    '<span class="badge badge-amber">Pending Review</span>'}
+                </td>
+                <td>
+                  ${e.status !== 'Approved' && e.status !== 'Rejected' ? `
+                    <button class="btn-secondary btn-sm" onclick="window.FINANCE_MODULE.approveExpense('${e.id}')">✅</button>
+                    <button class="btn-secondary btn-sm" onclick="window.FINANCE_MODULE.rejectExpense('${e.id}')">❌</button>
+                  ` : ''}
+                </td>
               </tr>
             `).join('')}
           </tbody>
@@ -240,6 +538,65 @@ window.APP_MODULES.finance = async function(container) {
       activeTab = tab;
       renderFinanceView();
     },
+    downloadInvoice(id) {
+      const inv = invoicesData.find(i => String(i.id) === String(id));
+      if (inv && window.generateInvoicePDF) {
+        window.generateInvoicePDF(inv);
+      } else {
+        if (window.showToast) window.showToast('Failed to generate PDF', 'error');
+      }
+    },
+    async sendInvoiceEmail(id) {
+      const email = prompt('Enter client email to send invoice to (leave blank to auto-fetch):');
+      try {
+        const payload = {};
+        if (email) payload.email = email;
+        const res = await APP_API.post(`/invoices/${id}/send`, payload);
+        if (window.showToast) {
+          window.showToast(res.simulated ? 'Simulated Invoice Email Sent (No Resend API Key)' : 'Invoice Sent Successfully', 'success');
+        }
+      } catch (e) {
+        if (window.showToast) window.showToast('Failed to send invoice email: ' + e.message, 'error');
+      }
+    },
+    async markPartiallyPaid(id) {
+      const inv = invoicesData.find(i => i.id === id);
+      if (!inv) return;
+      const amtStr = prompt(`Enter amount paid for ${id} (Total: ${inv.amount}):`);
+      if (!amtStr) return;
+      const amt = Number(amtStr);
+      if (isNaN(amt) || amt <= 0) return alert('Invalid amount');
+      
+      const newStatus = amt >= Number(inv.amount) ? 'Paid' : 'Partially Paid';
+      
+      try {
+        await APP_API.put(`/invoices/${id}`, { status: newStatus, notes: `Paid ${amt} BDT` });
+        if (window.showToast) window.showToast(`Invoice marked ${newStatus}`, 'success');
+        loadFinance();
+      } catch (e) {
+        if (window.showToast) window.showToast('Failed to update invoice', 'error');
+      }
+    },
+    async approveExpense(id) {
+      if (!confirm('Approve this expense?')) return;
+      try {
+        await APP_API.patch(`/expenses/${id}`, { status: 'Approved' });
+        if (window.showToast) window.showToast('Expense Approved', 'success');
+        loadFinance();
+      } catch(e) {
+        if (window.showToast) window.showToast('Failed to approve', 'error');
+      }
+    },
+    async rejectExpense(id) {
+      if (!confirm('Reject this expense?')) return;
+      try {
+        await APP_API.patch(`/expenses/${id}`, { status: 'Rejected' });
+        if (window.showToast) window.showToast('Expense Rejected', 'success');
+        loadFinance();
+      } catch(e) {
+        if (window.showToast) window.showToast('Failed to reject', 'error');
+      }
+    },
     openExpenseModal() {
       document.getElementById('expModal').classList.add('active');
     },
@@ -272,20 +629,105 @@ window.APP_MODULES.finance = async function(container) {
     },
     async submitExpense() {
       const title = document.getElementById('fnExpTitle').value.trim();
-      const category = document.getElementById('fnExpCat').value;
-      const amount = parseFloat(document.getElementById('fnExpAmount').value);
+      const cat = document.getElementById('fnExpCat').value;
+      const amt = document.getElementById('fnExpAmount').value;
+      const receiptFile = document.getElementById('fnExpReceipt').files[0];
+      
+      if (!title || !amt) return alert('Title and Amount are required.');
 
-      if (!title || !amount) return alert('Please enter title and amount.');
+      let receiptBase64 = '';
+      if (receiptFile) {
+        receiptBase64 = await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result);
+          reader.readAsDataURL(receiptFile);
+        });
+      }
 
       try {
-        const res = await APP_API.post('/expenses', { title, category, amount });
-        if (res.success || res.id) {
-          this.closeExpenseModal();
-          showToast('Expense claim logged for approval!');
-          loadFinance();
+        await APP_API.post('/expenses', {
+          title, category: cat, amount: amt, receiptBase64
+        });
+        if (window.showToast) window.showToast('Expense Submitted!', 'success');
+        this.closeExpenseModal();
+        loadFinance();
+      } catch(e) {
+        if (window.showToast) window.showToast('Failed to submit expense', 'error');
+      }
+    },
+    openQuoteModal() {
+      document.getElementById('quoteModal').classList.add('active');
+    },
+    closeQuoteModal() {
+      document.getElementById('quoteModal').classList.remove('active');
+    },
+    async submitQuote() {
+      const clientName = document.getElementById('fnQuoteClient').value.trim();
+      const desc = document.getElementById('fnQuoteDesc').value.trim();
+      const amt = document.getElementById('fnQuoteAmt').value;
+      const validDays = document.getElementById('fnQuoteValid').value;
+
+      if (!clientName || !amt) return alert('Client name and amount required.');
+
+      try {
+        const res = await APP_API.post('/invoices/quotes', {
+          clientName,
+          items: [{ description: desc, amount: amt }],
+          amount: amt,
+          validDays: parseInt(validDays, 10) || 14
+        });
+        if (window.showToast) window.showToast('Quote Generated!', 'success');
+        this.closeQuoteModal();
+        loadFinance();
+        
+        // Optionally generate PDF immediately
+        if (res.quote && window.generateInvoicePDF) {
+          // Temporarily alter the invoice properties to look like a quote for the PDF
+          const quoteObj = { ...res.quote, id: res.quote.id.replace('INV', 'QTE'), dueDate: res.quote.validUntil };
+          window.generateInvoicePDF(quoteObj);
         }
-      } catch (err) {
-        showToast('Failed to submit expense', 'error');
+      } catch (e) {
+        if (window.showToast) window.showToast('Failed to save quote', 'error');
+      }
+    },
+    openInvoiceModal() {
+      document.getElementById('invoiceModal').classList.add('active');
+    },
+    closeInvoiceModal() {
+      document.getElementById('invoiceModal').classList.remove('active');
+    },
+    calcInvoiceTotal() {
+      const amt = Number(document.getElementById('fnInvAmt').value) || 0;
+      const vatRate = Number(document.getElementById('fnInvVat').value) || 0;
+      const disc = Number(document.getElementById('fnInvDisc').value) || 0;
+      const vatAmt = amt * (vatRate / 100);
+      const total = amt + vatAmt - disc;
+      document.getElementById('fnInvTotal').value = `BDT ${total.toLocaleString()}`;
+      return total;
+    },
+    async submitInvoice() {
+      const clientName = document.getElementById('fnInvClient').value.trim();
+      const desc = document.getElementById('fnInvDesc').value.trim();
+      const amt = Number(document.getElementById('fnInvAmt').value) || 0;
+      const taxRate = Number(document.getElementById('fnInvVat').value) || 0;
+      const discount = Number(document.getElementById('fnInvDisc').value) || 0;
+      const total = amt + (amt * (taxRate / 100)) - discount;
+
+      if (!clientName || !amt) return alert('Client name and amount required.');
+
+      try {
+        const res = await APP_API.post('/invoices', {
+          clientName,
+          items: [{ description: desc, amount: total }],
+          amount: total,
+          taxRate,
+          discount
+        });
+        if (window.showToast) window.showToast('Invoice Created!', 'success');
+        this.closeInvoiceModal();
+        loadFinance();
+      } catch (e) {
+        if (window.showToast) window.showToast('Failed to create invoice', 'error');
       }
     }
   };

@@ -4,8 +4,10 @@ const { readDB } = require('../services/db');
 const { supabase, isSupabaseConfigured } = require('../services/supabase');
 const { requireAuth } = require('../middleware/auth');
 const { requireAdmin } = require('../middleware/rbac');
+const { validateInput } = require('../middleware/validate');
 
 // Import Modular Domain Routers
+router.use(validateInput);
 const authRoutes = require('./auth');
 const clientsRoutes = require('./clients');
 const leadsRoutes = require('./leads');
@@ -28,6 +30,8 @@ const projectsRoutes = require('./projects');
 const labelsRoutes = require('./labels');
 const customFieldsRoutes = require('./custom-fields');
 const taskTemplatesRoutes = require('./task-templates');
+const exportRoutes = require('./export');
+const chatRoutes = require('./chat');
 
 // System Version Endpoint
 router.get('/version', (req, res) => {
@@ -39,6 +43,7 @@ router.get('/version', (req, res) => {
 router.use('/labels', labelsRoutes);
 router.use('/custom-fields', customFieldsRoutes);
 router.use('/task-templates', taskTemplatesRoutes);
+router.use('/chat', chatRoutes);
 router.use('/', authRoutes);
 router.use('/clients', clientsRoutes);
 router.use('/leads', leadsRoutes);

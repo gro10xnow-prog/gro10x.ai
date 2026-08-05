@@ -119,10 +119,10 @@ function renderSidebar() {
       ]
     },
     {
-      category: 'Finance & User Account',
+      category: 'Finance & Analytics',
       items: [
+        { label: 'Agency Analytics', icon: '📈', path: '/pages/analytics.html' },
         { label: 'Financials & Expenses', icon: '💰', path: '/pages/finance.html' },
-        { label: 'My Profile & PIN', icon: '🪪', path: '/pages/profile.html' },
         { label: 'System Settings', icon: '⚙️', path: '/pages/settings.html' }
       ]
     }

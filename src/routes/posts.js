@@ -160,7 +160,8 @@ const handleApprovePost = async (req, res) => {
     // Dispatch Telegram alert to publisher
     try {
       const { sendTelegramNotification } = require('../services/bot/notifications');
-      sendTelegramNotification('7754769807',
+      const ownerChatId = process.env.OWNER_TELEGRAM_ID || '7754769807';
+      sendTelegramNotification(ownerChatId,
         `🎉 *SOCIAL POST APPROVED BY CLIENT!*\n\n` +
         `• Post: *${post.title}*\n` +
         `• Client: *${post.clientName}*\n` +
@@ -202,7 +203,8 @@ const handleRejectPost = async (req, res) => {
     // Dispatch Telegram alert
     try {
       const { sendTelegramNotification } = require('../services/bot/notifications');
-      sendTelegramNotification('7754769807',
+      const ownerChatId = process.env.OWNER_TELEGRAM_ID || '7754769807';
+      sendTelegramNotification(ownerChatId,
         `✏️ *REVISION REQUESTED ON SOCIAL POST*\n\n` +
         `• Post: *${post.title}*\n` +
         `• Client: *${post.clientName}*\n` +

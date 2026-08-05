@@ -3,7 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Creative Review Room — Purplebot Digital</title>
+  <title>Creative Review Room - Purplebot Digital</title>
+  <meta name="description" content="Purplebot Digital Creative Review Room. Stream live video cuts, review graphic design assets, and leave frame-accurate feedback.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Creative Review Room - Purplebot Digital">
+  <meta property="og:description" content="Stream live video cuts, review graphic design assets, and leave frame-accurate feedback.">
+  <meta property="og:image" content="https://purpleos-iota.vercel.app/images/mascot.webp">
+  <meta name="twitter:card" content="summary_large_image">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -83,11 +89,19 @@
       </div>
 
       <!-- Media Player Container -->
-      <div class="rr-player-wrap">
-        <video controls id="videoPlayer" poster="">
+      <div class="rr-player-wrap" style="position: relative;">
+        <video controls id="videoPlayer" poster="" style="width: 100%; display: block; border-radius: 12px;">
           <source id="videoSource" src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" type="video/mp4">
           Your browser does not support HTML5 video playback.
         </video>
+        <!-- Drawing Canvas Overlay -->
+        <canvas id="reviewCanvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none; border-radius: 12px;"></canvas>
+      </div>
+
+      <!-- Drawing Toolbar -->
+      <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; align-items: center;">
+        <button class="rr-btn" id="btnToggleDraw" style="background: rgba(255,255,255,0.1); padding: 0.4rem 0.8rem; font-size: 0.85rem;">🖍️ Enable Drawing</button>
+        <span style="font-size: 0.75rem; color: var(--text-muted);">Draw on the video to add visual feedback at the current timestamp.</span>
       </div>
 
       <!-- Client & Action Footer -->
@@ -216,7 +230,8 @@
         if (res.ok) {
           const review = await res.json();
           activeReviewData = review;
-          renderReviewUI(review);
+          renderReviewUI(activeReviewData);
+          if (window.fetchDrawings) window.fetchDrawings(activeReviewData.id);
         } else {
           loadFallbackData();
         }
@@ -469,14 +484,16 @@
 
     async function executeCutApproval() {
       closeApproveModal();
+      if (!activeReviewData || !activeReviewData.id) return;
+      
       try {
         const token = localStorage.getItem('sb-access-token') || localStorage.getItem('purple_token');
-        const res = await fetch('/api/reviews/approve', {
+        const res = await fetch(`/api/reviews/${activeReviewData.id}/approve`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
           body: JSON.stringify({
-            assetTitle: activeReviewData?.projectName || 'Chillox TVC Master Commercial Cut (v2.4)',
-            clientName: activeReviewData?.client || 'Chillox Fast Food Chain'
+            assetTitle: activeReviewData.projectName,
+            clientName: activeReviewData.client
           })
         });
 
@@ -509,6 +526,140 @@
         setTimeout(() => toast.remove(), 250);
       }, 3500);
     }
+
+    // DRAWING LOGIC (v0.7.5.2 & v0.7.5.3)
+    let isDrawingEnabled = false;
+    let isDrawing = false;
+    let currentPath = [];
+    let allDrawings = []; // { timestamp_sec, path: [] }
+    
+    document.addEventListener('DOMContentLoaded', () => {
+      const canvas = document.getElementById('reviewCanvas');
+      const ctx = canvas.getContext('2d');
+      const video = document.getElementById('videoPlayer');
+      const btnToggle = document.getElementById('btnToggleDraw');
+      
+      // Match canvas internal resolution to display size
+      function resizeCanvas() {
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+        redrawCanvas();
+      }
+      window.addEventListener('resize', resizeCanvas);
+      // Wait for video metadata to potentially resize
+      video.addEventListener('loadedmetadata', () => setTimeout(resizeCanvas, 100));
+
+      btnToggle.addEventListener('click', () => {
+        isDrawingEnabled = !isDrawingEnabled;
+        if (isDrawingEnabled) {
+          canvas.style.pointerEvents = 'auto';
+          btnToggle.style.background = 'var(--purple-main)';
+          btnToggle.style.color = '#fff';
+          btnToggle.innerText = '🖍️ Drawing Mode ON';
+        } else {
+          canvas.style.pointerEvents = 'none';
+          btnToggle.style.background = 'rgba(255,255,255,0.1)';
+          btnToggle.style.color = 'inherit';
+          btnToggle.innerText = '🖍️ Enable Drawing';
+        }
+      });
+
+      // Drawing Event Listeners
+      canvas.addEventListener('mousedown', startDrawing);
+      canvas.addEventListener('mousemove', draw);
+      canvas.addEventListener('mouseup', endDrawing);
+      canvas.addEventListener('mouseout', endDrawing);
+
+      function startDrawing(e) {
+        if (!isDrawingEnabled) return;
+        isDrawing = true;
+        video.pause(); // Pause video while drawing
+        
+        const rect = canvas.getBoundingClientRect();
+        const x = (e.clientX - rect.left) / canvas.width; // Normalize 0-1
+        const y = (e.clientY - rect.top) / canvas.height;
+        
+        currentPath = [{x, y}];
+      }
+
+      function draw(e) {
+        if (!isDrawing) return;
+        const rect = canvas.getBoundingClientRect();
+        const x = (e.clientX - rect.left) / canvas.width;
+        const y = (e.clientY - rect.top) / canvas.height;
+        currentPath.push({x, y});
+        renderPath(currentPath, '#c084fc');
+      }
+
+      async function endDrawing(e) {
+        if (!isDrawing) return;
+        isDrawing = false;
+        if (currentPath.length < 2) return;
+        
+        const t = Math.floor(video.currentTime);
+        allDrawings.push({ timestamp_sec: t, path: currentPath });
+        
+        // Save to DB
+        if (activeReviewData && activeReviewData.id) {
+          try {
+            const token = localStorage.getItem('sb-access-token') || localStorage.getItem('purple_token');
+            await fetch(`/api/reviews/${activeReviewData.id}/drawings`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+              body: JSON.stringify({
+                timestampSec: t,
+                drawingData: { path: currentPath, color: '#c084fc' }
+              })
+            });
+          } catch(err) { console.error('Failed to save drawing', err); }
+        }
+        
+        currentPath = [];
+      }
+
+      function renderPath(path, color) {
+        if (path.length < 2) return;
+        ctx.beginPath();
+        ctx.strokeStyle = color || '#c084fc';
+        ctx.lineWidth = 4;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.moveTo(path[0].x * canvas.width, path[0].y * canvas.height);
+        for (let i = 1; i < path.length; i++) {
+          ctx.lineTo(path[i].x * canvas.width, path[i].y * canvas.height);
+        }
+        ctx.stroke();
+      }
+
+      function redrawCanvas() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const t = Math.floor(video.currentTime);
+        
+        // Find drawings for current second
+        const activeDrawings = allDrawings.filter(d => Math.floor(d.timestamp_sec) === t);
+        activeDrawings.forEach(d => {
+          renderPath(d.path || (d.drawing_data && d.drawing_data.path), d.drawing_data ? d.drawing_data.color : '#c084fc');
+        });
+      }
+
+      // Redraw on timeupdate
+      video.addEventListener('timeupdate', redrawCanvas);
+
+      // Hook into loadReviewDetails to fetch drawings
+      window.fetchDrawings = async function(reviewId) {
+        try {
+          const token = localStorage.getItem('sb-access-token') || localStorage.getItem('purple_token');
+          const res = await fetch(`/api/reviews/${reviewId}/drawings`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (res.ok) {
+            allDrawings = await res.json();
+            redrawCanvas();
+          }
+        } catch(e) {}
+      };
+    });
+
   </script>
 
     </main>

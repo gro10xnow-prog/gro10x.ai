@@ -15,10 +15,12 @@ window.CREW_MODULES.leaves = async function(container) {
 
   function renderLeaves() {
     const approvedLeaves = myLeaves.filter(l => l.status === 'Approved');
-    const casualUsed = approvedLeaves.filter(l => (l.leaveType || '').includes('Casual')).length * 1;
-    const sickUsed = approvedLeaves.filter(l => (l.leaveType || '').includes('Sick')).length * 1;
-    const casualRem = Math.max(0, 14 - casualUsed);
-    const sickRem = Math.max(0, 10 - sickUsed);
+    const casualUsed = (user.casual_leaves_used !== undefined) ? user.casual_leaves_used : approvedLeaves.filter(l => (l.leaveType || '').includes('Casual')).length * 1;
+    const sickUsed = (user.sick_leaves_used !== undefined) ? user.sick_leaves_used : approvedLeaves.filter(l => (l.leaveType || '').includes('Sick')).length * 1;
+    const casualAllowed = user.casual_leaves_allowed || 14;
+    const sickAllowed = user.sick_leaves_allowed || 10;
+    const casualRem = Math.max(0, casualAllowed - casualUsed);
+    const sickRem = Math.max(0, sickAllowed - sickUsed);
 
     container.innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
@@ -34,12 +36,12 @@ window.CREW_MODULES.leaves = async function(container) {
         <div class="kpi-tile">
           <div class="kpi-label">Casual Leave Balance</div>
           <div class="kpi-val" style="color:var(--purple-light);">${casualRem} Days</div>
-          <div class="kpi-sub">14 Allowed &bull; ${casualUsed} Used</div>
+          <div class="kpi-sub">${casualAllowed} Allowed &bull; ${casualUsed} Used</div>
         </div>
         <div class="kpi-tile">
           <div class="kpi-label">Sick Leave Balance</div>
           <div class="kpi-val" style="color:var(--emerald-brand);">${sickRem} Days</div>
-          <div class="kpi-sub">10 Allowed &bull; ${sickUsed} Used</div>
+          <div class="kpi-sub">${sickAllowed} Allowed &bull; ${sickUsed} Used</div>
         </div>
       </div>
 
@@ -85,12 +87,18 @@ window.CREW_MODULES.leaves = async function(container) {
           <div style="display:flex; gap:1rem;">
             <div class="form-group" style="flex:1;">
               <label class="form-label">Start Date</label>
-              <input type="date" id="crLeaveStart" class="form-input">
+              <input type="date" id="crLeaveStart" class="form-input" onchange="window.CREW_LEAVES.calcDays()">
             </div>
             <div class="form-group" style="flex:1;">
               <label class="form-label">End Date</label>
-              <input type="date" id="crLeaveEnd" class="form-input">
+              <input type="date" id="crLeaveEnd" class="form-input" onchange="window.CREW_LEAVES.calcDays()">
             </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Total Working Days</label>
+            <div id="crTotalDays" style="font-size: 1.1rem; font-weight: 700; color: var(--emerald-brand);">0 Days</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem;">Excluding Fridays & Saturdays</div>
           </div>
 
           <div class="form-group">
@@ -107,16 +115,48 @@ window.CREW_MODULES.leaves = async function(container) {
   window.CREW_LEAVES = {
     openModal() { document.getElementById('crLeaveModal').classList.add('active'); },
     closeModal() { document.getElementById('crLeaveModal').classList.remove('active'); },
+    calcDays() {
+      const startVal = document.getElementById('crLeaveStart').value;
+      const endVal = document.getElementById('crLeaveEnd').value;
+      const totalEl = document.getElementById('crTotalDays');
+      
+      if (!startVal || !endVal) {
+        totalEl.textContent = '0 Days';
+        return 0;
+      }
+
+      const start = new Date(startVal);
+      const end = new Date(endVal);
+      if (end < start) {
+        totalEl.textContent = 'Invalid Dates';
+        return 0;
+      }
+
+      let days = 0;
+      let cur = new Date(start);
+      while (cur <= end) {
+        const dayOfWeek = cur.getDay();
+        // 5 = Friday, 6 = Saturday
+        if (dayOfWeek !== 5 && dayOfWeek !== 6) {
+          days++;
+        }
+        cur.setDate(cur.getDate() + 1);
+      }
+      totalEl.textContent = `${days} Day${days !== 1 ? 's' : ''}`;
+      return days;
+    },
     async submit() {
       const leaveType = document.getElementById('crLeaveType').value;
       const startDate = document.getElementById('crLeaveStart').value;
       const endDate = document.getElementById('crLeaveEnd').value;
       const reason = document.getElementById('crLeaveReason').value.trim();
+      const totalDays = this.calcDays();
 
       if (!startDate || !endDate) return alert('Please select start and end dates.');
+      if (totalDays <= 0) return alert('Total working days must be greater than zero (select non-weekend dates).');
 
       try {
-        const res = await CREW_API.post('/leaves', { leaveType, startDate, endDate, reason });
+        const res = await CREW_API.post('/leaves', { leaveType, startDate, endDate, reason, totalDays });
         if (res.success || res.leave) {
           this.closeModal();
           showCrewToast('Leave request submitted! 🌴');

@@ -21,6 +21,26 @@
       "schedule": "0 14 * * 0,1,2,3,4,6"
     }
   ],
+  "headers": [
+    {
+      "source": "/(css|js|images)/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/(.*\\.html)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    }
+  ],
   "routes": [
     {
       "src": "/auth(.*)",

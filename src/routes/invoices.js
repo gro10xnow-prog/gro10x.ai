@@ -1,9 +1,30 @@
 const express = require('express');
 const router = express.Router();
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+
+// Ensure uploads directory exists
+const uploadDir = path.join(__dirname, '../../public/uploads');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, uploadDir);
+  },
+  filename: function (req, file, cb) {
+    cb(null, 'payment-' + Date.now() + path.extname(file.originalname));
+  }
+});
+const upload = multer({ storage: storage });
+
 const { requireAuth } = require('../middleware/auth');
 const { requireAdmin } = require('../middleware/rbac');
 const { supabase } = require('../services/supabase');
 const { broadcast } = require('../services/sse');
+const { sendInvoiceEmail } = require('../services/resend');
 
 function mapInvoice(i) {
   if (!i) return null;
@@ -123,11 +144,48 @@ router.put('/invoices/:id', requireAuth, async (req, res) => {
   }
 });
 
+// POST /invoices/:id/send (Send Invoice Email)
+router.post('/invoices/:id/send', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { data, error } = await supabase.from('invoices').select('*').eq('id', id).maybeSingle();
+    if (error) throw error;
+    if (!data) return res.status(404).json({ error: 'Invoice not found' });
+    
+    // We need the client's email. It might not be directly on the invoice, so let's try to fetch it if missing.
+    let clientEmail = req.body.email || data.clientEmail || null;
+    if (!clientEmail && data.client_id) {
+      const { data: clientData } = await supabase.from('clients').select('contact_email, company_email').eq('id', data.client_id).maybeSingle();
+      if (clientData) {
+        clientEmail = clientData.contact_email || clientData.company_email;
+      }
+    }
+    
+    if (!clientEmail) {
+      return res.status(400).json({ error: 'No client email found to send invoice.' });
+    }
+    
+    const invoice = mapInvoice(data);
+    invoice.clientEmail = clientEmail;
+    
+    const emailResult = await sendInvoiceEmail({ invoice });
+    if (!emailResult.success) {
+      throw new Error(emailResult.error);
+    }
+    
+    res.json({ success: true, message: 'Invoice sent successfully', simulated: emailResult.simulated });
+  } catch (err) {
+    console.error('Invoice Send Error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // POST /invoices/:id/pay (Partner Portal Online Payment Submission)
-router.post('/invoices/:id/pay', requireAuth, async (req, res) => {
+router.post('/invoices/:id/pay', requireAuth, upload.single('screenshot'), async (req, res) => {
   try {
     const { id } = req.params;
     const { trxId, method, amount } = req.body;
+    const screenshotUrl = req.file ? `/uploads/${req.file.filename}` : null;
 
     const { data: invData } = await supabase.from('invoices').select('*').eq('id', id).maybeSingle();
     const invoiceAmount = amount || (invData ? invData.amount : 0);
@@ -145,12 +203,17 @@ router.post('/invoices/:id/pay', requireAuth, async (req, res) => {
       verified: false,
       notes: `Submitted via Partner Portal`
     };
+    
+    // Add screenshot URL to notes if provided
+    if (screenshotUrl) {
+      paymentPayload.notes += ` | Screenshot: ${screenshotUrl}`;
+    }
 
     await supabase.from('payment_logs').insert([paymentPayload]);
 
     const updates = {
       status: 'Verification Pending',
-      notes: `Paid via ${method || 'bKash'} (TrxID: ${trxId || 'N/A'}) — Verification Pending`
+      notes: `Paid via ${method || 'bKash'} (TrxID: ${trxId || 'N/A'})${screenshotUrl ? ' [Screenshot Attached]' : ''} — Verification Pending`
     };
 
     const { data, error } = await supabase.from('invoices').update(updates).eq('id', id).select();

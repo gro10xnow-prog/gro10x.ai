@@ -92,7 +92,42 @@ async function sendClientOnboardingEmail({ clientName, email, magicLink }) {
   return sendEmail({ to: email, subject, html });
 }
 
+async function sendInvoiceEmail({ invoice }) {
+  const email = invoice.clientEmail;
+  if (!email) return { success: false, error: 'No client email provided.' };
+  
+  const issueDate = invoice.issueDate || new Date().toISOString();
+  const dateStr = new Date(issueDate).toLocaleDateString();
+  const amtStr = Number(invoice.amount).toLocaleString();
+
+  const subject = `Invoice ${invoice.id || ''} from Purplebot Digital`;
+  const html = `
+    <div style="font-family: Arial, sans-serif; background: #0f172a; color: #f8fafc; padding: 30px; border-radius: 12px; max-width:600px; margin: 0 auto;">
+      <h1 style="color: #c084fc; margin-top:0;">Purplebot Digital</h1>
+      <h2 style="color: #fff;">Invoice ${invoice.id || ''}</h2>
+      
+      <p style="font-size: 16px; color: #cbd5e1;">Dear <strong>${invoice.clientName || 'Valued Client'}</strong>,</p>
+      <p style="font-size: 15px; color: #94a3b8;">This is a notification for your recent invoice.</p>
+      
+      <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin: 20px 0;">
+        <div style="margin-bottom: 8px;"><strong>Invoice Date:</strong> ${dateStr}</div>
+        <div style="margin-bottom: 8px;"><strong>Due Date:</strong> ${invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString() : 'Due on receipt'}</div>
+        <div style="margin-bottom: 8px;"><strong>Description:</strong> ${invoice.description || 'Marketing Services'}</div>
+        <div style="font-size: 18px; color: #10b981; margin-top: 15px;"><strong>Total Amount: BDT ৳${amtStr}</strong></div>
+      </div>
+      
+      <p style="font-size: 14px; color: #94a3b8;">You can view and download the PDF copy of this invoice directly from your Client Portal.</p>
+      
+      <hr style="border: 0; border-top: 1px solid #334155; margin: 20px 0;">
+      <p style="font-size: 12px; color: #64748b;">Purplebot Digital Limited • Banani & Niketon, Dhaka, Bangladesh</p>
+    </div>
+  `;
+
+  return sendEmail({ to: email, subject, html });
+}
+
 module.exports = {
   sendEmail,
-  sendClientOnboardingEmail
+  sendClientOnboardingEmail,
+  sendInvoiceEmail
 };

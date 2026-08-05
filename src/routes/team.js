@@ -631,6 +631,10 @@ router.post('/leaves', requireAuth, async (req, res) => {
 
     const { data: allLeaves } = await supabase.from('leaves').select('*').order('created_at', { ascending: false });
     broadcast('leave_update', allLeaves || []);
+    
+    const dbSnapshot = await readDB();
+    const { processAutomationEvent } = require('../services/automation');
+    await processAutomationEvent('leave_request', { leave: payload }, dbSnapshot, writeDB, broadcast);
 
     res.json({ success: true, leave: newLeave });
   } catch (err) {
@@ -778,6 +782,129 @@ router.get('/workload', requireAuth, async (req, res) => {
     res.json(workloadList);
   } catch (err) {
     console.error('Workload GET error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+// GET /api/team/attendance-report — Generate CSV report for a date range
+router.get('/attendance-report', requireAuth, async (req, res) => {
+  try {
+    const { start, end } = req.query;
+    
+    // In a full implementation, we'd query clock_ins/clock_outs between start and end.
+    // For this prototype, we'll export team members and their approved leaves.
+    
+    const { data: teamData } = await supabase.from('profiles').select('id, name, department, role, status');
+    const { data: leaveData } = await supabase.from('leaves').select('*').eq('status', 'Approved');
+    
+    let csv = 'Employee ID,Name,Department,Role,Current Status,Approved Leaves (Days)\n';
+    
+    (teamData || []).forEach(emp => {
+      const empLeaves = (leaveData || []).filter(l => l.employee_id === emp.id);
+      const leaveDays = empLeaves.reduce((acc, curr) => {
+        const s = new Date(curr.start_date);
+        const e = new Date(curr.end_date);
+        return acc + (Math.round((e - s) / (1000 * 60 * 60 * 24)) + 1);
+      }, 0);
+      
+      csv += `${emp.id},"${emp.name}","${emp.department}","${emp.role}",${emp.status},${leaveDays}\n`;
+    });
+
+    res.header('Content-Type', 'text/csv');
+    res.attachment(`Attendance_Report_${start || 'all'}_to_${end || 'all'}.csv`);
+    return res.send(csv);
+  } catch (err) {
+    console.error('Attendance report error:', err.message);
+    res.status(500).send('Error generating report');
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PUT /api/team/:id — Update Team Member Profile (Survey, Settings, HR Ops)
+// ─────────────────────────────────────────────────────────────────────────────
+router.put('/:id', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const body = req.body;
+    
+    // Only allow self-edits or manager/admin edits
+    const userAccess = (req.user.accessLevel || req.user.role || '').toLowerCase();
+    const isOwner = userAccess.includes('admin') || userAccess.includes('owner') || userAccess.includes('technology');
+    if (!isOwner && req.user.linkedId !== id && req.user.id !== id && req.user.emp_code !== id) {
+      return res.status(403).json({ error: 'Unauthorized to edit this profile' });
+    }
+
+    const updates = {};
+    if (body.baseSalary !== undefined && isOwner) updates.base_salary = Number(body.baseSalary);
+    if (body.phone !== undefined) updates.phone = normalizePhone(body.phone);
+    if (body.role !== undefined && isOwner) updates.role = body.role;
+    if (body.department !== undefined && isOwner) updates.department = body.department;
+    if (body.blood_group !== undefined) updates.blood_group = body.blood_group;
+    if (body.personal_email !== undefined) updates.personal_email = body.personal_email;
+    if (body.address !== undefined) updates.address = body.address;
+    if (body.nid_no !== undefined) updates.nid_no = body.nid_no;
+    if (body.permanent_address !== undefined) updates.permanent_address = body.permanent_address;
+    if (body.primary_skill !== undefined) updates.primary_skill = body.primary_skill;
+    if (body.emergency_contact !== undefined) updates.emergency_contact = body.emergency_contact;
+    if (body.bank_info !== undefined) updates.bank_info = body.bank_info;
+    if (body.onboarding_complete !== undefined) updates.onboarding_complete = Boolean(body.onboarding_complete);
+    if (body.survey_complete !== undefined) updates.survey_complete = Boolean(body.survey_complete);
+
+    updates.updated_at = new Date().toISOString();
+
+    let updatedProfile = null;
+    if (supabase) {
+      const { data, error } = await supabase.from('profiles').update(updates).eq('emp_code', id).select().single();
+      if (error && error.code !== 'PGRST116') {
+        // Try falling back to 'id' if emp_code fails
+        const fallback = await supabase.from('profiles').update(updates).eq('id', id).select().single();
+        if (fallback.error) throw fallback.error;
+        updatedProfile = fallback.data;
+      } else {
+        updatedProfile = data;
+      }
+    }
+
+    if (updatedProfile) {
+      const mapped = mapProfile(updatedProfile);
+      broadcast('team_update', [mapped]);
+      res.json({ success: true, profile: mapped });
+    } else {
+      res.status(404).json({ error: 'Profile not found' });
+    }
+  } catch (err) {
+    console.error('PUT /team/:id error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DELETE /api/team/:id — Remove Team Member
+// ─────────────────────────────────────────────────────────────────────────────
+router.delete('/:id', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Only allow manager/admin deletes
+    const userAccess = (req.user.accessLevel || req.user.role || '').toLowerCase();
+    const isOwner = userAccess.includes('admin') || userAccess.includes('owner') || userAccess.includes('technology');
+    if (!isOwner) {
+      return res.status(403).json({ error: 'Unauthorized to delete profile' });
+    }
+
+    if (supabase) {
+      // First try to delete by emp_code
+      let { error } = await supabase.from('profiles').delete().eq('emp_code', id);
+      if (error) {
+        // Fallback to id
+        const fallback = await supabase.from('profiles').delete().eq('id', id);
+        if (fallback.error) throw fallback.error;
+      }
+    }
+
+    broadcast('team_update', []); // Force clients to refresh full list
+    res.json({ success: true });
+  } catch (err) {
+    console.error('DELETE /team/:id error:', err.message);
     res.status(500).json({ error: err.message });
   }
 });

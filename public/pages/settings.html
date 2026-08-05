@@ -137,26 +137,47 @@
           <button class="btn-purple" style="width: 100%; margin-top: 0.5rem;" onclick="saveProfileSettings()">💾 Save Profile Updates</button>
         </div>
 
-        <!-- 2. Bot Gateway Health -->
+        <!-- 2. System Health Dashboard -->
         <div class="settings-card">
-          <h3 class="card-title">🤖 Bot Gateway Health</h3>
-          <div style="font-size: 0.8rem; color: var(--text-muted);">Live real-time connection status with Telegram API endpoints.</div>
+          <h3 class="card-title">🖥️ System Health Dashboard</h3>
+          <div style="font-size: 0.8rem; color: var(--text-muted);">Real-time platform vitals.</div>
 
-          <div style="display: flex; flex-direction: column; gap: 1rem; margin-top: 0.5rem;">
-            <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); padding: 1rem; border-radius: 12px;">
-              <div style="font-size: 0.78rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Team Bot (Purple Man)</div>
-              <div id="teamBotStatus" style="font-size: 1.05rem; font-weight: 800; color: #34d399; margin-top: 0.3rem;">Checking...</div>
-              <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem;">Polling / Webhook Fallback Active</div>
+          <div style="display: flex; flex-direction: column; gap: 0.8rem; margin-top: 0.5rem;">
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); padding: 0.8rem 1rem; border-radius: 12px;">
+              <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 700;">Database Connection</span>
+              <span id="dbStatusBadge" style="font-size: 0.85rem; font-weight: 800; color: #34d399;">Checking...</span>
             </div>
 
-            <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); padding: 1rem; border-radius: 12px;">
-              <div style="font-size: 0.78rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Client Bot (Purple Bot)</div>
-              <div id="clientBotStatus" style="font-size: 1.05rem; font-weight: 800; color: #34d399; margin-top: 0.3rem;">Checking...</div>
-              <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem;">Polling / Webhook Fallback Active</div>
+            <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); padding: 0.8rem 1rem; border-radius: 12px;">
+              <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 700;">Active SSE Clients</span>
+              <span id="sseStatusBadge" style="font-size: 0.85rem; font-weight: 800; color: #fff;">0</span>
             </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); padding: 0.8rem 1rem; border-radius: 12px;">
+              <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 700;">Server Uptime</span>
+              <span id="uptimeBadge" style="font-size: 0.85rem; font-weight: 800; color: #fff;">00:00:00</span>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); padding: 0.8rem 1rem; border-radius: 12px;">
+              <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 700;">Memory Usage</span>
+              <span id="memoryBadge" style="font-size: 0.85rem; font-weight: 800; color: #fff;">0 MB</span>
+            </div>
+
+            <div style="display: flex; gap: 0.5rem;">
+              <div style="flex:1; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); padding: 0.8rem; border-radius: 12px; text-align: center;">
+                <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Team Bot</div>
+                <div id="teamBotStatus" style="font-size: 0.9rem; font-weight: 800; color: #34d399; margin-top: 0.2rem;">Checking...</div>
+              </div>
+              <div style="flex:1; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); padding: 0.8rem; border-radius: 12px; text-align: center;">
+                <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Client Bot</div>
+                <div id="clientBotStatus" style="font-size: 0.9rem; font-weight: 800; color: #34d399; margin-top: 0.2rem;">Checking...</div>
+              </div>
+            </div>
+
           </div>
 
-          <button class="btn-secondary" style="width: 100%; font-size: 0.8rem;" onclick="checkBotHealth()">🔄 Refresh Gateway Status</button>
+          <button class="btn-secondary" style="width: 100%; font-size: 0.8rem; margin-top: auto;" onclick="checkSystemHealth()">🔄 Refresh Diagnostics</button>
         </div>
 
         <!-- 3. Preferences & Security -->
@@ -200,6 +221,81 @@
           </div>
         </div>
       </div>
+
+      <!-- Automation Engine -->
+      <div style="margin-top: 3rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+          <div>
+            <h2 style="font-size: 1.4rem; font-weight: 800; color: #fff; margin: 0;">⚡ Automation Engine 2.0</h2>
+            <div style="font-size: 0.88rem; color: var(--text-muted);">Configure workflow rules and view execution logs.</div>
+          </div>
+          <button class="btn-primary" onclick="window.testAutomationRule()">🧪 Test Rule</button>
+        </div>
+
+        <div class="settings-grid" style="grid-template-columns: 1fr 2fr;">
+          <!-- Rule Builder -->
+          <div class="settings-card">
+            <h3 class="card-title">➕ Create New Rule</h3>
+            <div class="form-group">
+              <label class="form-label">Rule Name</label>
+              <input type="text" id="autoRuleName" class="form-input" placeholder="e.g. Notify On Due Date">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Trigger Event</label>
+              <select id="autoTrigger" class="form-input">
+                <option value="task_stage_change">Task Stage Change</option>
+                <option value="task_overdue">Task Overdue</option>
+                <option value="lead_won">Lead Won</option>
+                <option value="client_onboarded">Client Onboarded</option>
+                <option value="invoice_paid">Invoice Paid</option>
+                <option value="leave_request">Leave Request Submitted</option>
+                <option value="payroll_reminder">Monthly Payroll Reminder (25th)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Condition Field (Optional)</label>
+              <input type="text" id="autoCondField" class="form-input" placeholder="e.g. stage">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Condition Value (Optional)</label>
+              <input type="text" id="autoCondValue" class="form-input" placeholder="e.g. Client Review">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Action</label>
+              <select id="autoActionType" class="form-input">
+                <option value="notify_telegram">Notify Telegram</option>
+                <option value="create_client">Create Client Account</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Action Target</label>
+              <select id="autoActionTarget" class="form-input">
+                <option value="manager">Manager / Owner</option>
+                <option value="editor">Task Editor</option>
+                <option value="client">Client Rep</option>
+                <option value="finance">Finance Manager</option>
+                <option value="">(None)</option>
+              </select>
+            </div>
+
+            <button class="btn-purple" style="width: 100%; margin-top: 1rem;" onclick="saveAutomationRule()">💾 Save Rule</button>
+          </div>
+
+          <!-- Active Rules & Logs -->
+          <div class="settings-card">
+            <h3 class="card-title">📋 Active Rules & Execution Logs</h3>
+            <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">Recent automation events.</div>
+            <div id="automationLogsContainer" style="background: rgba(0,0,0,0.2); border-radius: 12px; padding: 1rem; flex: 1; overflow-y: auto; max-height: 400px; display: flex; flex-direction: column; gap: 0.5rem;">
+              <div style="color: var(--text-dim); text-align: center; font-size: 0.85rem; padding: 2rem;">Loading logs...</div>
+            </div>
+          </div>
+        </div>
+      </div>
     </main>
   </div>
 
@@ -207,8 +303,9 @@
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       loadProfileData();
-      checkBotHealth();
+      checkSystemHealth();
       loadPreferences();
+      loadAutomationData();
     });
 
     function loadProfileData() {
@@ -231,29 +328,38 @@
       }
     }
 
-    async function checkBotHealth() {
+    async function checkSystemHealth() {
       try {
-        const res = await fetch('/api/bot-status').then(r => r.json()).catch(() => null);
+        const botRes = await fetch('/api/bot-status').then(r => r.json()).catch(() => null);
+        const sysRes = await fetch('/api/system-health').then(r => r.json()).catch(() => null);
+
+        // Bots
         const teamEl = document.getElementById('teamBotStatus');
         const clientEl = document.getElementById('clientBotStatus');
+        
+        if (botRes && botRes.teamBot === 'active') { teamEl.textContent = '🟢 Connected'; teamEl.style.color = '#34d399'; }
+        else { teamEl.textContent = '🟡 Polling'; teamEl.style.color = '#fbbf24'; }
+        
+        if (botRes && botRes.clientBot === 'active') { clientEl.textContent = '🟢 Connected'; clientEl.style.color = '#34d399'; }
+        else { clientEl.textContent = '🟡 Polling'; clientEl.style.color = '#fbbf24'; }
 
-        if (res && res.teamBot === 'active') {
-          teamEl.textContent = '🟢 Active & Connected';
-          teamEl.style.color = '#34d399';
-        } else {
-          teamEl.textContent = '🟡 Polling Active';
-          teamEl.style.color = '#fbbf24';
+        // System
+        if (sysRes) {
+          const dbEl = document.getElementById('dbStatusBadge');
+          if (sysRes.dbConnection === 'Connected') { dbEl.textContent = '🟢 Connected'; dbEl.style.color = '#34d399'; }
+          else { dbEl.textContent = '🔴 Offline'; dbEl.style.color = '#ef4444'; }
+
+          document.getElementById('sseStatusBadge').textContent = sysRes.sseClients || 0;
+          
+          const hrs = Math.floor((sysRes.uptimeSeconds || 0) / 3600).toString().padStart(2, '0');
+          const mins = Math.floor(((sysRes.uptimeSeconds || 0) % 3600) / 60).toString().padStart(2, '0');
+          document.getElementById('uptimeBadge').textContent = `${hrs}h ${mins}m`;
+          
+          document.getElementById('memoryBadge').textContent = `${(sysRes.memoryUsage || 0).toFixed(1)} MB`;
         }
 
-        if (res && res.clientBot === 'active') {
-          clientEl.textContent = '🟢 Active & Connected';
-          clientEl.style.color = '#34d399';
-        } else {
-          clientEl.textContent = '🟡 Polling Active';
-          clientEl.style.color = '#fbbf24';
-        }
       } catch(e) {
-        console.error('Bot status check err:', e);
+        console.error('System health check err:', e);
       }
     }
 
@@ -274,24 +380,143 @@
       localStorage.setItem(key, isActive ? 'true' : 'false');
     }
 
-    function saveProfileSettings() {
+    async function saveProfileSettings() {
       const name = document.getElementById('profName').value.trim();
       const phone = document.getElementById('profPhone').value.trim();
       const email = document.getElementById('profEmail').value.trim();
 
-      const uRaw = localStorage.getItem('purple_user');
-      let u = uRaw ? JSON.parse(uRaw) : {};
-      u.name = name;
-      u.phone = phone;
-      u.email = email;
-      localStorage.setItem('purple_user', JSON.stringify(u));
+      try {
+        const uRaw = localStorage.getItem('purple_user');
+        let u = uRaw ? JSON.parse(uRaw) : {};
+        const userId = u.id || u.emp_code;
+        const token = localStorage.getItem('sb-access-token');
 
-      alert('🎉 Profile settings updated successfully!');
-      loadProfileData();
+        if (userId) {
+          const res = await fetch(`/api/team/${userId}`, {
+            method: 'PUT',
+            headers: { 
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}` 
+            },
+            body: JSON.stringify({ name, phone, personal_email: email })
+          });
+          if (!res.ok) throw new Error('API save failed');
+        }
+
+        u.name = name;
+        u.phone = phone;
+        u.email = email;
+        localStorage.setItem('purple_user', JSON.stringify(u));
+
+        alert('🎉 Profile settings updated successfully!');
+        loadProfileData();
+        if (typeof hydrateUserInfo === 'function') hydrateUserInfo();
+      } catch (err) {
+        alert('Failed to save settings: ' + err.message);
+        console.error('Settings Save Error:', err);
+      }
     }
 
     function resetPinPrompt() {
       alert('🔒 To reset your PIN, open your Telegram App and send command /setpin to @Purplemanbot.');
+    }
+
+    // Automation UI Functions
+    async function loadAutomationData() {
+      try {
+        const token = localStorage.getItem('sb-access-token');
+        const headers = { 'Authorization': `Bearer ${token}` };
+        
+        // Load Logs
+        const logsRes = await fetch('/api/automation/logs', { headers }).then(r => r.json()).catch(() => []);
+        const logsContainer = document.getElementById('automationLogsContainer');
+        
+        if (logsRes && logsRes.length > 0) {
+          logsContainer.innerHTML = logsRes.map(log => `
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 0.75rem; border-radius: 8px;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 0.3rem;">
+                <span style="font-size: 0.75rem; font-weight: bold; color: #fff;">${log.rule || 'Unknown Rule'}</span>
+                <span style="font-size: 0.7rem; color: ${log.status === 'Executed' ? 'var(--emerald-accent)' : 'var(--text-error)'}; background: rgba(0,0,0,0.3); padding: 0.1rem 0.4rem; border-radius: 4px;">${log.status}</span>
+              </div>
+              <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.3rem;">Trigger: <span style="color: var(--text-main);">${log.event}</span></div>
+              <div style="font-size: 0.7rem; color: var(--text-dim); display: flex; justify-content: space-between;">
+                <span>Target: ${log.target || 'N/A'}</span>
+                <span>${new Date(log.created_at || log.timestamp).toLocaleString()}</span>
+              </div>
+            </div>
+          `).join('');
+        } else {
+          logsContainer.innerHTML = '<div style="color: var(--text-dim); text-align: center; font-size: 0.85rem; padding: 2rem;">No logs found.</div>';
+        }
+      } catch (err) {
+        console.error('Failed to load automation data', err);
+      }
+    }
+
+    async function saveAutomationRule() {
+      const payload = {
+        rule_name: document.getElementById('autoRuleName').value.trim(),
+        trigger_event: document.getElementById('autoTrigger').value,
+        condition_field: document.getElementById('autoCondField').value.trim(),
+        condition_value: document.getElementById('autoCondValue').value.trim(),
+        action_type: document.getElementById('autoActionType').value,
+        action_target: document.getElementById('autoActionTarget').value
+      };
+
+      if (!payload.rule_name) return alert('Rule Name is required.');
+
+      try {
+        const token = localStorage.getItem('sb-access-token');
+        const res = await fetch('/api/automation/rules', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+          alert('✅ Rule saved successfully!');
+          document.getElementById('autoRuleName').value = '';
+          document.getElementById('autoCondField').value = '';
+          document.getElementById('autoCondValue').value = '';
+          loadAutomationData();
+        } else {
+          alert('Failed to save rule: ' + (data.error || 'Unknown error'));
+        }
+      } catch(err) {
+        alert('Error: ' + err.message);
+      }
+    }
+
+    async function testAutomationRule() {
+      const eventType = document.getElementById('autoTrigger').value;
+      const confirmTest = confirm(`Test a mock event for trigger: ${eventType}?`);
+      if (!confirmTest) return;
+
+      try {
+        const token = localStorage.getItem('sb-access-token');
+        const res = await fetch('/api/automation/trigger', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ 
+            eventType, 
+            eventData: { 
+              task: { title: 'Mock Test Task', client: 'Mock Client', stage: 'Client Review' },
+              lead: { company: 'Mock Company', contactPerson: 'John Doe', email: 'test@example.com' }
+            } 
+          })
+        });
+        
+        const data = await res.json();
+        if (data.success) {
+          alert('✅ Mock event fired successfully. Check logs in a moment.');
+          setTimeout(loadAutomationData, 1500);
+        } else {
+          alert('Test failed: ' + (data.error || 'Unknown'));
+        }
+      } catch(err) {
+        alert('Test Error: ' + err.message);
+      }
     }
   </script>
 </body>

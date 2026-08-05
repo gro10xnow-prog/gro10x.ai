@@ -1,7 +1,7 @@
 {
-  "name": "purpleos",
-  "version": "0.7.0",
-  "description": "Business Operating System for Purplebot Digital",
+  "name": "purplebot-core",
+  "version": "0.8.0-rc",
+  "description": "Purplebot Digital Core Agency OS API & App",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -27,6 +27,7 @@
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "express-rate-limit": "^8.6.1",
+    "multer": "^2.2.0",
     "node-telegram-bot-api": "^0.66.0",
     "sharp": "^0.35.3"
   },

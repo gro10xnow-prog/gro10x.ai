@@ -19,31 +19,94 @@ async function nextLeadId() {
   return `LED-${Date.now()}`;
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Helper: Calculate dynamic lead score (1-100)
+// ─────────────────────────────────────────────────────────────────────────────
+function calculateLeadScore(lead) {
+  let score = 50; // Base score
+
+  // Budget Tier
+  const value = String(lead.value || '').toLowerCase();
+  if (value.includes('1000') || value.includes('5000') || value.includes('high')) score += 20;
+  else if (value.includes('500') || value.includes('medium')) score += 10;
+  else if (value.includes('low') || value.includes('100')) score -= 10;
+
+  // Source
+  const source = String(lead.source || '').toLowerCase();
+  if (source.includes('referral') || source.includes('partner')) score += 15;
+  else if (source.includes('organic') || source.includes('search')) score += 5;
+  else if (source.includes('cold') || source.includes('outbound')) score -= 5;
+
+  // Time in pipeline decay (decay by 1 point per day since creation, max -20)
+  if (lead.created_at) {
+    const createdDate = new Date(lead.created_at);
+    const now = new Date();
+    const daysOld = Math.floor((now - createdDate) / (1000 * 60 * 60 * 24));
+    if (daysOld > 0) {
+      score -= Math.min(daysOld, 20);
+    }
+  }
+
+  // Bonus for activity
+  if (lead.stage === 'Proposal Sent' || lead.stage === 'Meeting Scheduled') score += 20;
+  else if (lead.stage === 'Contacted') score += 10;
+  else if (lead.stage === 'Lost' || lead.stage === 'Spam') score = 0;
+
+  return Math.max(1, Math.min(100, score)); // Clamp between 1 and 100
+}
+
 // GET all leads (Internal Team/Admin)
 router.get('/', requireAuth, async (req, res) => {
   if (isSupabaseConfigured()) {
     const { data, error } = await supabase.from('leads').select('*').order('created_at', { ascending: false });
-    if (!error) return res.json(data || []);
+    if (!error) {
+      const leads = (data || []).map(l => ({ ...l, score: calculateLeadScore(l) }));
+      return res.json(leads);
+    }
   }
   res.json([]);
 });
 
 // POST Public Lead Capture (Chat widget, newsletter, landing page form)
 router.post('/', async (req, res) => {
+  const email = req.body.contactEmail || req.body.email || '';
+  const phone = req.body.phone || '';
+
+  if (isSupabaseConfigured()) {
+    if (email || phone) {
+      let query = supabase.from('leads').select('id');
+      if (email && phone) {
+        query = query.or(`email.eq.${email},phone.eq.${phone}`);
+      } else if (email) {
+        query = query.eq('email', email);
+      } else {
+        query = query.eq('phone', phone);
+      }
+      
+      const { data: existing } = await query;
+      if (existing && existing.length > 0) {
+        return res.status(409).json({ success: false, error: 'A lead with this email or phone already exists.', duplicateIds: existing.map(e => e.id) });
+      }
+    }
+  }
+
   const newLead = {
     id: await nextLeadId(),
     stage: 'New Inquiry',
     created_at: new Date().toISOString(),
     company: req.body.clientName || req.body.company || '',
     contact_person: req.body.contactPerson || '',
-    email: req.body.contactEmail || req.body.email || '',
-    phone: req.body.phone || '',
-    whatsapp: req.body.whatsapp || req.body.phone || '',
+    email,
+    phone,
+    whatsapp: req.body.whatsapp || phone,
     source: req.body.source || 'Website Widget',
     category: req.body.category || 'General',
     service: req.body.service || req.body.serviceTitle || 'General',
     value: req.body.value || '',
-    notes: req.body.notes || ''
+    notes: req.body.notes || '',
+    utm_source: req.body.utm_source || '',
+    utm_medium: req.body.utm_medium || '',
+    utm_campaign: req.body.utm_campaign || ''
   };
 
   if (isSupabaseConfigured()) {
@@ -51,6 +114,7 @@ router.post('/', async (req, res) => {
     if (error) console.warn('Lead insert error:', error.message);
   }
 
+  newLead.score = calculateLeadScore(newLead);
   broadcast('lead_update', [newLead]);
 
   // Telegram alert to agency owner
@@ -82,6 +146,8 @@ router.put('/:id', requireAuth, async (req, res) => {
 
     const updatedLead = { ...existing, ...req.body, updated_at: new Date().toISOString() };
     await supabase.from('leads').update(updatedLead).eq('id', id);
+    
+    updatedLead.score = calculateLeadScore(updatedLead);
     broadcast('lead_update', [updatedLead]);
     return res.json({ success: true, lead: updatedLead });
   }
@@ -214,6 +280,49 @@ router.post('/book', async (req, res) => {
   }
 
   res.json({ success: true, lead: newLead });
+});
+
+// POST /api/leads/bulk (CSV Import)
+router.post('/bulk', requireAuth, async (req, res) => {
+  const { leads } = req.body;
+  if (!leads || !Array.isArray(leads) || leads.length === 0) {
+    return res.status(400).json({ error: 'No leads provided' });
+  }
+
+  const leadsToInsert = [];
+  const startId = parseInt((await nextLeadId()).replace('LD-', ''), 10);
+  let idCounter = isNaN(startId) ? 1 : startId;
+
+  for (const l of leads) {
+    const newLead = {
+      id: `LD-${String(idCounter++).padStart(4, '0')}`,
+      stage: 'New Inquiry',
+      created_at: new Date().toISOString(),
+      company: l.company || l.clientName || 'Unknown',
+      contact_person: l.contactPerson || l.name || '',
+      email: l.email || '',
+      phone: l.phone || l.whatsapp || '',
+      whatsapp: l.whatsapp || l.phone || '',
+      source: l.source || 'Bulk Import',
+      category: l.category || 'General',
+      service: l.service || 'General',
+      value: l.value || '',
+      notes: l.notes || 'Imported via CSV',
+      utm_source: '',
+      utm_medium: '',
+      utm_campaign: ''
+    };
+    newLead.score = calculateLeadScore(newLead);
+    leadsToInsert.push(newLead);
+  }
+
+  if (isSupabaseConfigured()) {
+    const { error } = await supabase.from('leads').insert(leadsToInsert);
+    if (error) return res.status(500).json({ error: 'Database insert failed: ' + error.message });
+  }
+
+  broadcast('lead_update', leadsToInsert);
+  res.json({ success: true, count: leadsToInsert.length });
 });
 
 module.exports = router;

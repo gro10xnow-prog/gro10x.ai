@@ -9,6 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/styles.css">
   <link rel="stylesheet" href="/css/shell.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     .kpi-grid {
       display: grid;
@@ -123,7 +124,10 @@
           <h1 style="font-size: 1.6rem; font-weight: 800; color: #fff; margin: 0;">👨‍💼 Team Roster, HR Ops & XP Badges</h1>
           <div style="font-size: 0.88rem; color: var(--text-muted);">Employee Profiles ➔ Attendance ➔ Onboarding Progress ➔ XP Leaderboards</div>
         </div>
-        <button class="btn-purple" onclick="openTeamModal()">+ Onboard Team Member</button>
+        <div style="display: flex; gap: 0.5rem;">
+          <button class="btn-secondary" onclick="window.location.href='/api/team/attendance-report'">📊 Export Attendance (CSV)</button>
+          <button class="btn-purple" onclick="openTeamModal()">+ Onboard Team Member</button>
+        </div>
       </div>
 
       <!-- KPI Summary Cards -->
@@ -146,6 +150,32 @@
       <div style="background: var(--panel-bg); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; padding: 1.5rem;">
         <div id="teamContent">
           <div style="color: var(--text-muted); padding: 2rem; text-align: center;">Loading team roster database...</div>
+        </div>
+      </div>
+
+      <!-- HISTORICAL DATA IMPORT PANEL (Moved from Onboarding) -->
+      <div style="margin-top: 2rem; background: rgba(168, 85, 247, 0.05); border: 1px dashed var(--purple-main); border-radius: 16px; padding: 1.5rem;">
+        <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 0.5rem; color: #c084fc;">📁 Historical Excel / CSV Data Import Hub</h3>
+        <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+          Upload historical spreadsheets to populate past invoices or client master lists.
+        </p>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
+          <!-- Client Import -->
+          <div style="background: rgba(9, 9, 11, 0.8); padding: 1rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+            <h4 style="font-size: 0.9rem; font-weight: 700; margin-bottom: 0.4rem;">👥 Client Master List CSV</h4>
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.8rem;">Columns: Name, ContactPerson, Phone, RetainerValue</p>
+            <textarea id="csvClients" style="width: 100%; height: 70px; font-family: monospace; font-size: 0.72rem; margin-bottom: 0.6rem; background:rgba(0,0,0,0.4); color:#fff; border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:0.5rem;" placeholder="Chillox Fast Food, Director, 01711223344, 150000&#10;Apex Shoes, Brand Mgr, 01811223344, 95000"></textarea>
+            <button class="btn-purple" style="width: 100%; font-size: 0.78rem;" onclick="importClientsCSV()">📥 Import Clients to DB</button>
+          </div>
+
+          <!-- Invoice Import -->
+          <div style="background: rgba(9, 9, 11, 0.8); padding: 1rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+            <h4 style="font-size: 0.9rem; font-weight: 700; margin-bottom: 0.4rem;">🧾 Historical Invoices CSV</h4>
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.8rem;">Columns: InvoiceID, ClientName, Amount, IssueDate, Status</p>
+            <textarea id="csvInvoices" style="width: 100%; height: 70px; font-family: monospace; font-size: 0.72rem; margin-bottom: 0.6rem; background:rgba(0,0,0,0.4); color:#fff; border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:0.5rem;" placeholder="INV-2026-001, Chillox, 150000, 2026-06-01, Paid&#10;INV-2026-002, Apex Shoes, 95000, 2026-06-05, Paid"></textarea>
+            <button class="btn-purple" style="width: 100%; font-size: 0.78rem;" onclick="importInvoicesCSV()">📥 Import Invoices to DB</button>
+          </div>
         </div>
       </div>
     </main>
@@ -199,9 +229,29 @@
 
     async function loadTeamData() {
       try {
-        const team = await fetch('/api/team').then(r => r.json()).catch(() => []);
-        window._allTeam = team;
+        const [teamRes, workloadRes] = await Promise.all([
+          fetch('/api/team').then(r => r.json()).catch(() => []),
+          fetch('/api/team/workload').then(r => r.json()).catch(() => [])
+        ]);
+        
+        // Merge workload into team data
+        window._allTeam = (teamRes || []).map(m => {
+          const wl = (workloadRes || []).find(w => w.empCode === m.emp_code || w.empCode === m.id || w.name === m.name);
+          if (wl) {
+            m.capacity = wl.capacity || 40;
+            m.assignedHours = wl.assignedHours || 0;
+            m.loggedHours = wl.loggedHours || 0;
+            m.workloadPercent = wl.workloadPercent || 0;
+          } else {
+            m.capacity = 40;
+            m.assignedHours = 0;
+            m.loggedHours = 0;
+            m.workloadPercent = 0;
+          }
+          return m;
+        });
 
+        const team = window._allTeam;
         const total = team.length;
         const inStudio = team.filter(m => m.status === 'In Studio').length;
         const onboarded = team.filter(m => m.onboardingComplete).length;
@@ -231,6 +281,15 @@
             const name = m.name || 'Employee';
             const initials = (name.substring(0, 2)).toUpperCase();
             const statusColor = m.status === 'In Studio' ? '#34d399' : '#a1a1aa';
+            
+            // Calculate onboarding progress (5 steps max)
+            let steps = 1; // Base step for created profile
+            if (m.blood_group || m.bloodGroup) steps++;
+            if (m.nid_no || m.nidNo) steps++;
+            if (m.bank_info || m.bankInfo) steps++;
+            if (m.primary_skill || m.primarySkill || m.survey_complete) steps++;
+            let progressPct = Math.min((steps / 5) * 100, 100);
+
             return `
               <div class="team-card">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -242,9 +301,36 @@
                   <div style="font-size: 0.78rem; color: var(--purple-light); font-weight: 600;">${m.role || 'Team Member'}</div>
                 </div>
                 <div style="font-size: 0.78rem; color: var(--text-muted);">Dept: ${m.department || 'General'}</div>
-                <div style="display: flex; justify-content: space-between; font-size: 0.78rem; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 0.6rem;">
+                <div style="display: flex; justify-content: space-between; font-size: 0.78rem; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 0.6rem; margin-bottom: 0.6rem;">
                   <span>Badge: <strong>${m.badge || '🌱 Recruit'}</strong></span>
                   <span style="color: ${statusColor}; font-weight: 700;">● ${m.status || 'Offline'}</span>
+                </div>
+                <!-- Onboarding Progress Bar -->
+                <div style="margin-bottom: 0.6rem;">
+                  <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted); margin-bottom: 0.2rem;">
+                    <span>Onboarding Progress</span>
+                    <span>${m.survey_complete ? '100' : progressPct}%</span>
+                  </div>
+                  <div style="width: 100%; background: rgba(255,255,255,0.1); height: 6px; border-radius: 4px; overflow: hidden;">
+                    <div style="height: 100%; width: ${m.survey_complete ? 100 : progressPct}%; background: ${progressPct === 100 || m.survey_complete ? '#34d399' : 'var(--purple-accent)'}; border-radius: 4px; transition: width 0.3s ease;"></div>
+                  </div>
+                </div>
+
+                <!-- Workload Capacity Bar -->
+                <div style="margin-bottom: 0.8rem;">
+                  <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted); margin-bottom: 0.2rem;">
+                    <span>Workload (${m.assignedHours}h assigned / ${m.capacity}h cap)</span>
+                    <span style="color: ${m.workloadPercent >= 100 ? '#ef4444' : '#34d399'}">${m.workloadPercent}%</span>
+                  </div>
+                  <div style="width: 100%; background: rgba(255,255,255,0.1); height: 6px; border-radius: 4px; overflow: hidden;">
+                    <div style="height: 100%; width: ${Math.min(m.workloadPercent, 100)}%; background: ${m.workloadPercent >= 100 ? '#ef4444' : m.workloadPercent >= 75 ? '#fbbf24' : '#34d399'}; border-radius: 4px; transition: width 0.3s ease;"></div>
+                  </div>
+                </div>
+
+                <div style="display: flex; gap: 0.4rem; margin-top: auto;">
+                  <button class="btn-secondary" style="flex: 1; font-size: 0.75rem; padding: 0.4rem;" onclick='window.editMemberPrompt(${JSON.stringify(m).replace(/'/g, "&apos;")})'>✏️ Edit</button>
+                  <button class="btn-secondary" style="flex: 1; font-size: 0.75rem; padding: 0.4rem;" onclick='window.generatePayslipPDF(${JSON.stringify(m).replace(/'/g, "&apos;")})'>📄 Payslip</button>
+                  <button class="btn-secondary" style="padding: 0.4rem 0.6rem; background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.2); color: #ef4444;" onclick='window.deleteMember("${m.id || m.emp_code}")'>🗑️</button>
                 </div>
               </div>
             `;
@@ -283,10 +369,173 @@
         } else {
           alert(data.error || 'Failed to onboard member');
         }
-      } catch(e) {
-        console.error('Team submit err:', e);
-      }
+      } catch (err) { alert('Error: ' + err.message); }
     }
+    
+    async function importClientsCSV() {
+      const text = document.getElementById('csvClients').value.trim();
+      if (!text) { alert('Please paste CSV rows first.'); return; }
+      const lines = text.split('\n');
+      const rows = lines.map(line => {
+        const parts = line.split(',').map(p => p.trim());
+        return { name: parts[0], contactPerson: parts[1] || 'Director', phone: parts[2] || '', retainerValue: parseFloat(parts[3]) || 0 };
+      }).filter(r => r.name);
+
+      try {
+        const res = await fetch('/api/admin/import/clients', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ rows })
+        });
+        const data = await res.json();
+        alert(`✅ Imported ${data.addedCount} client(s) into database! Total clients: ${data.totalClients}`);
+        document.getElementById('csvClients').value = '';
+      } catch (err) { alert('Import error: ' + err.message); }
+    }
+
+    async function importInvoicesCSV() {
+      const text = document.getElementById('csvInvoices').value.trim();
+      if (!text) { alert('Please paste CSV rows first.'); return; }
+      const lines = text.split('\n');
+      const rows = lines.map(line => {
+        const parts = line.split(',').map(p => p.trim());
+        return { invoiceId: parts[0], clientName: parts[1] || 'Client', amount: parseFloat(parts[2]) || 0, issueDate: parts[3] || '', status: parts[4] || 'Paid' };
+      }).filter(r => r.invoiceId || r.clientName);
+
+      try {
+        const res = await fetch('/api/admin/import/invoices', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ rows })
+        });
+        const data = await res.json();
+        alert(`✅ Imported ${data.addedCount} invoice(s) into database! Total invoices: ${data.totalInvoices}`);
+        document.getElementById('csvInvoices').value = '';
+      } catch (err) { alert('Import error: ' + err.message); }
+    }
+
+    window.generatePayslipPDF = function(member) {
+      if (!window.jspdf) {
+        alert("PDF library is loading. Please try again in a second.");
+        return;
+      }
+      
+      const doc = new window.jspdf.jsPDF();
+      const month = new Date().toLocaleString('default', { month: 'long', year: 'numeric' });
+      
+      doc.setFillColor(168, 85, 247); // Purple accent
+      doc.rect(0, 0, 210, 40, 'F');
+      
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(22);
+      doc.setFont("helvetica", "bold");
+      doc.text("PURPLEBOT DIGITAL", 14, 25);
+      
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      doc.text("SALARY PAYSLIP", 170, 25);
+      
+      doc.setTextColor(50, 50, 50);
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.text(`Payslip for ${month}`, 14, 55);
+      
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      doc.text(`Employee Name: ${member.name}`, 14, 65);
+      doc.text(`Designation: ${member.role || 'Specialist'}`, 14, 72);
+      doc.text(`Department: ${member.department || 'Production'}`, 14, 79);
+      doc.text(`Employee ID: ${member.empCode || member.emp_code || member.id}`, 14, 86);
+      
+      // Salary Details
+      doc.setDrawColor(200, 200, 200);
+      doc.line(14, 95, 196, 95);
+      
+      doc.setFont("helvetica", "bold");
+      doc.text("Earnings", 14, 105);
+      doc.text("Amount (BDT)", 160, 105);
+      
+      doc.line(14, 110, 196, 110);
+      
+      doc.setFont("helvetica", "normal");
+      const baseSalary = member.baseSalary || member.base_salary || 0;
+      const commission = member.earnedCommissions || member.earned_commissions || 0;
+      
+      doc.text("Basic Salary", 14, 120);
+      doc.text(`${baseSalary.toLocaleString()}`, 160, 120);
+      
+      if (commission > 0) {
+        doc.text("Earned Commissions", 14, 130);
+        doc.text(`${commission.toLocaleString()}`, 160, 130);
+      }
+      
+      doc.line(14, 140, 196, 140);
+      
+      doc.setFont("helvetica", "bold");
+      doc.text("Total Net Pay", 14, 150);
+      doc.text(`${(baseSalary + commission).toLocaleString()} BDT`, 160, 150);
+      
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8);
+      doc.setTextColor(100, 100, 100);
+      doc.text("This is a computer-generated document. No signature is required.", 14, 280);
+      
+      doc.save(`Payslip_${member.name.replace(/\s+/g, '_')}_${month.replace(' ', '_')}.pdf`);
+    };
+
+    window.editMemberPrompt = async function(member) {
+      const newSalary = prompt(`Edit base salary for ${member.name} (BDT):`, member.baseSalary || member.base_salary || 0);
+      if (newSalary === null) return;
+      
+      const newRole = prompt(`Edit role for ${member.name}:`, member.role || 'Specialist');
+      if (newRole === null) return;
+
+      try {
+        const id = member.emp_code || member.id;
+        const res = await fetch(`/api/team/${id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('sb-access-token')}`
+          },
+          body: JSON.stringify({
+            baseSalary: parseFloat(newSalary) || 0,
+            role: newRole
+          })
+        });
+
+        if (res.ok) {
+          alert('✅ Member updated successfully!');
+          loadTeamData();
+        } else {
+          alert('Failed to update member.');
+        }
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+    };
+
+    window.deleteMember = async function(id) {
+      if (!confirm(`⚠️ Are you sure you want to completely remove this employee record from the system? This cannot be undone.`)) return;
+      
+      try {
+        const res = await fetch(`/api/team/${id}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('sb-access-token')}`
+          }
+        });
+
+        if (res.ok) {
+          alert('🗑️ Member removed successfully.');
+          loadTeamData();
+        } else {
+          alert('Failed to remove member.');
+        }
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+    };
   </script>
 </body>
 </html>

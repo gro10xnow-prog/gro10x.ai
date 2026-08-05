@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PurpleOS - Team Onboarding & Access Control Dashboard</title>
+  <title>PurpleOS — Employee Onboarding Survey</title>
   <link rel="stylesheet" href="/css/styles.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,260 +17,297 @@
       --text-main: #f4f4f5;
       --text-muted: #a1a1aa;
     }
-    body { background: var(--bg-dark); color: var(--text-main); font-family: 'Plus Jakarta Sans', sans-serif; padding: 2rem; }
-    .header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
-    .page-title { font-size: 1.6rem; font-weight: 800; background: linear-gradient(135deg, #fff, var(--purple-accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; margin-bottom: 2rem; }
-    .stat-card { background: var(--card-bg); border: 1px solid var(--border-purple); border-radius: 16px; padding: 1.25rem; }
-    .stat-val { font-size: 1.8rem; font-weight: 800; color: #fff; margin-top: 0.3rem; }
-    .stat-label { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); }
-    .table-container { background: var(--card-bg); border: 1px solid var(--border-purple); border-radius: 18px; padding: 1.5rem; overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; text-align: left; }
-    th { padding: 0.85rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
-    td { padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.88rem; vertical-align: middle; }
-    .badge { padding: 0.3rem 0.7rem; border-radius: 999px; font-size: 0.72rem; font-weight: 700; display: inline-block; }
-    .badge-green { background: rgba(52,211,153,0.15); color: #34d399; border: 1px solid rgba(52,211,153,0.3); }
-    .badge-yellow { background: rgba(251,191,36,0.15); color: #fbbf24; border: 1px solid rgba(251,191,36,0.3); }
-    .badge-purple { background: rgba(168,85,247,0.15); color: #c084fc; border: 1px solid rgba(168,85,247,0.3); }
-    .btn { padding: 0.45rem 0.9rem; border-radius: 10px; font-size: 0.8rem; font-weight: 700; border: none; cursor: pointer; transition: all 0.2s; }
-    .btn-primary { background: linear-gradient(135deg, var(--purple-accent), #ec4899); color: #fff; }
+    body { background: var(--bg-dark); color: var(--text-main); font-family: 'Plus Jakarta Sans', sans-serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem; }
+    .onboarding-container { background: var(--card-bg); border: 1px solid var(--border-purple); border-radius: 24px; padding: 3rem; width: 100%; max-width: 600px; box-shadow: 0 10px 40px rgba(168, 85, 247, 0.1); }
+    
+    .progress-bar { display: flex; gap: 0.5rem; margin-bottom: 2.5rem; }
+    .progress-step { flex: 1; height: 6px; border-radius: 4px; background: rgba(255,255,255,0.1); transition: all 0.3s; }
+    .progress-step.active { background: var(--purple-accent); box-shadow: 0 0 10px var(--purple-accent); }
+    .progress-step.completed { background: #34d399; }
+
+    .step-content { display: none; animation: fadeIn 0.3s ease-in-out; }
+    .step-content.active { display: block; }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .page-title { font-size: 1.8rem; font-weight: 800; background: linear-gradient(135deg, #fff, var(--purple-accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 0.5rem; }
+    .page-desc { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 2rem; }
+
+    .form-group { margin-bottom: 1.5rem; }
+    .form-label { display: block; font-size: 0.82rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px; }
+    .form-input, .form-select { width: 100%; padding: 0.85rem 1rem; border-radius: 12px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); color: #fff; font-size: 0.95rem; font-family: inherit; transition: all 0.2s; }
+    .form-input:focus, .form-select:focus { outline: none; border-color: var(--purple-accent); background: rgba(168, 85, 247, 0.05); }
+
+    .btn-row { display: flex; justify-content: space-between; margin-top: 2.5rem; gap: 1rem; }
+    .btn { padding: 0.8rem 1.5rem; border-radius: 12px; font-size: 0.95rem; font-weight: 700; border: none; cursor: pointer; transition: all 0.2s; flex: 1; }
+    .btn-primary { background: linear-gradient(135deg, var(--purple-accent), #ec4899); color: #fff; box-shadow: 0 4px 15px rgba(168, 85, 247, 0.3); }
+    .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
     .btn-secondary { background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.15); }
-    .input-sm { width: 110px; padding: 0.35rem 0.6rem; border-radius: 8px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); color: #fff; font-size: 0.82rem; }
+    .btn-secondary:hover { background: rgba(255,255,255,0.12); }
   </style>
   <script>
-    (function() {
-      const savedPhone = localStorage.getItem('purple_user_phone');
-      const token = localStorage.getItem('sb-access-token');
-      const access = (localStorage.getItem('purple_user_access') || '').toLowerCase();
-      const role = (localStorage.getItem('purple_user_role') || '').toLowerCase();
-      const isOwnerAdmin = access.includes('owner') || access.includes('admin') || role.includes('owner') || role.includes('admin') || role.includes('technology');
+    const savedPhone = localStorage.getItem('purple_user_phone');
+    const token = localStorage.getItem('sb-access-token');
+    let empId = localStorage.getItem('purple_user_id') || localStorage.getItem('purple_emp_code'); // Try both
 
-      if (!savedPhone || !token || !isOwnerAdmin) {
-        window.location.href = '/auth';
+    if (!savedPhone || !token) {
+      window.location.href = '/auth';
+    }
+
+    let currentStep = 1;
+    let employeeData = {};
+
+    async function loadData() {
+      try {
+        const res = await fetch('/api/team', { headers: { 'Authorization': `Bearer ${token}` } });
+        const roster = await res.json();
+        const me = roster.find(r => r.phone === savedPhone || r.phone.includes(savedPhone.slice(-10)));
+        if (!me) {
+          alert('Employee record not found for your phone number. Contact Admin.');
+          window.location.href = '/auth';
+          return;
+        }
+        empId = me.id;
+        employeeData = me;
+
+        if (me.surveyComplete || me.survey_complete || me.onboardingComplete) {
+          document.getElementById('surveyFlow').style.display = 'none';
+          document.getElementById('completedState').style.display = 'block';
+          return;
+        }
+
+        // Pre-fill existing data
+        document.getElementById('blood_group').value = me.bloodGroup || '';
+        document.getElementById('personal_email').value = me.personalEmail || '';
+        document.getElementById('address').value = me.address || '';
+        document.getElementById('emergency_contact').value = me.emergencyContact || '';
+        
+        document.getElementById('nid_no').value = me.nidNo || '';
+        document.getElementById('permanent_address').value = me.permanentAddress || '';
+        
+        if (me.bankInfo) {
+          document.getElementById('bankName').value = me.bankInfo.bankName || '';
+          document.getElementById('accountTitle').value = me.bankInfo.accountTitle || '';
+          document.getElementById('accNo').value = me.bankInfo.accNo || '';
+          document.getElementById('branch').value = me.bankInfo.branch || '';
+          document.getElementById('mfsNo').value = me.bankInfo.mfsNo || '';
+        }
+        
+        document.getElementById('primary_skill').value = me.primarySkill || '';
+        
+        // Auto-advance if partially filled
+        if (me.surveyProgress) {
+          currentStep = Math.min(me.surveyProgress + 1, 4);
+        }
+        showStep(currentStep);
+      } catch(e) {
+        console.error('Failed to load profile', e);
       }
-    })();
+    }
+
+    function showStep(step) {
+      document.querySelectorAll('.step-content').forEach(el => el.classList.remove('active'));
+      document.getElementById(`step${step}`).classList.add('active');
+      
+      document.querySelectorAll('.progress-step').forEach((el, idx) => {
+        if (idx < step - 1) { el.classList.add('completed'); el.classList.remove('active'); }
+        else if (idx === step - 1) { el.classList.add('active'); el.classList.remove('completed'); }
+        else { el.classList.remove('completed', 'active'); }
+      });
+      currentStep = step;
+    }
+
+    async function saveStepAndNext(step) {
+      const payload = {};
+      
+      if (step === 1) {
+        payload.blood_group = document.getElementById('blood_group').value;
+        payload.personal_email = document.getElementById('personal_email').value;
+        payload.address = document.getElementById('address').value;
+        payload.emergency_contact = document.getElementById('emergency_contact').value;
+      } else if (step === 2) {
+        payload.nid_no = document.getElementById('nid_no').value;
+        payload.permanent_address = document.getElementById('permanent_address').value;
+      } else if (step === 3) {
+        payload.bank_info = {
+          bankName: document.getElementById('bankName').value,
+          accountTitle: document.getElementById('accountTitle').value,
+          accNo: document.getElementById('accNo').value,
+          branch: document.getElementById('branch').value,
+          mfsNo: document.getElementById('mfsNo').value
+        };
+      } else if (step === 4) {
+        payload.primary_skill = document.getElementById('primary_skill').value;
+        payload.survey_complete = true;
+      }
+
+      try {
+        const btn = document.getElementById(`btnNext${step}`);
+        const origText = btn.innerText;
+        btn.innerText = 'Saving...';
+        btn.disabled = true;
+
+        const res = await fetch(`/api/team/${empId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify(payload)
+        });
+        
+        btn.innerText = origText;
+        btn.disabled = false;
+
+        if (res.ok) {
+          if (step === 4) {
+            document.getElementById('surveyFlow').style.display = 'none';
+            document.getElementById('completedState').style.display = 'block';
+          } else {
+            showStep(step + 1);
+          }
+        } else {
+          alert('Failed to save data. Please try again.');
+        }
+      } catch(e) {
+        alert('Error saving data.');
+      }
+    }
+
+    function prevStep() {
+      if (currentStep > 1) showStep(currentStep - 1);
+    }
+
+    document.addEventListener('DOMContentLoaded', loadData);
   </script>
 </head>
 <body>
 
-  <div class="header-bar">
-    <div>
-      <div style="font-size: 0.8rem; font-weight: 800; color: var(--purple-accent); letter-spacing: 1px;">PURPLEBOT DIGITAL LIMITED</div>
-      <h1 class="page-title">Team Onboarding & Access Control Dashboard</h1>
-    </div>
-    <div style="display: flex; gap: 0.75rem;">
-      <button class="btn btn-secondary" onclick="loadOnboardingData()">🔄 Refresh Roster</button>
-      <a href="/admin" class="btn btn-primary" style="text-decoration: none;">👑 Open Admin Portal</a>
-    </div>
-  </div>
+  <div class="onboarding-container">
+    
+    <div id="surveyFlow">
+      <div style="font-size: 0.8rem; font-weight: 800; color: var(--purple-accent); letter-spacing: 1px; margin-bottom: 0.5rem;">PURPLEBOT DIGITAL LIMITED</div>
+      <h1 class="page-title">Employee Onboarding</h1>
+      <p class="page-desc">Complete your profile to unlock access to the Crew Portal.</p>
 
-  <!-- STATS OVERVIEW -->
-  <div class="stats-grid">
-    <div class="stat-card">
-      <div class="stat-label">TOTAL PBD TEAM MEMBERS</div>
-      <div class="stat-val" id="statTotal">33</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">TELEGRAM LINKED ACCOUNTS</div>
-      <div class="stat-val" style="color: #34d399;" id="statLinked">0</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">PERMANENT WEB PINS SET</div>
-      <div class="stat-val" style="color: #c084fc;" id="statPinSet">0</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">SALARIES CONFIGURED</div>
-      <div class="stat-val" style="color: #fbbf24;" id="statSalaries">0</div>
-    </div>
-  </div>
-
-  <!-- HISTORICAL DATA IMPORT PANEL -->
-  <div class="table-container" style="margin-bottom: 2rem; background: rgba(168, 85, 247, 0.05); border: 1px dashed var(--purple-accent);">
-    <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 0.5rem; color: #c084fc;">📁 Phase 8: Historical Excel / CSV Data Import Hub</h3>
-    <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1.25rem;">
-      Upload historical spreadsheets to populate past invoices, client master lists, or payroll records into system database.
-    </p>
-
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
-      <!-- Client Import -->
-      <div style="background: var(--card-bg); padding: 1rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
-        <h4 style="font-size: 0.9rem; font-weight: 700; margin-bottom: 0.4rem;">👥 Client Master List CSV</h4>
-        <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.8rem;">Columns: Name, ContactPerson, Phone, RetainerValue</p>
-        <textarea id="csvClients" class="input-sm" style="width: 100%; height: 70px; font-family: monospace; font-size: 0.72rem; margin-bottom: 0.6rem;" placeholder="Chillox Fast Food, Director, 01711223344, 150000&#10;Apex Shoes, Brand Mgr, 01811223344, 95000"></textarea>
-        <button class="btn btn-primary" style="width: 100%; font-size: 0.78rem;" onclick="importClientsCSV()">📥 Import Clients to DB</button>
+      <div class="progress-bar">
+        <div class="progress-step active"></div>
+        <div class="progress-step"></div>
+        <div class="progress-step"></div>
+        <div class="progress-step"></div>
       </div>
 
-      <!-- Invoice Import -->
-      <div style="background: var(--card-bg); padding: 1rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
-        <h4 style="font-size: 0.9rem; font-weight: 700; margin-bottom: 0.4rem;">🧾 Historical Invoices CSV</h4>
-        <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.8rem;">Columns: InvoiceID, ClientName, Amount, IssueDate, Status</p>
-        <textarea id="csvInvoices" class="input-sm" style="width: 100%; height: 70px; font-family: monospace; font-size: 0.72rem; margin-bottom: 0.6rem;" placeholder="INV-2026-001, Chillox, 150000, 2026-06-01, Paid&#10;INV-2026-002, Apex Shoes, 95000, 2026-06-05, Paid"></textarea>
-        <button class="btn btn-primary" style="width: 100%; font-size: 0.78rem;" onclick="importInvoicesCSV()">📥 Import Invoices to DB</button>
+      <!-- Step 1: Basic Profile -->
+      <div class="step-content active" id="step1">
+        <h3 style="margin-bottom: 1.5rem; font-weight: 700;">1. Personal Details</h3>
+        
+        <div class="form-group">
+          <label class="form-label">Personal Email</label>
+          <input type="email" id="personal_email" class="form-input" placeholder="you@gmail.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Blood Group</label>
+          <select id="blood_group" class="form-select">
+            <option value="">Select...</option>
+            <option value="A+">A+</option>
+            <option value="A-">A-</option>
+            <option value="B+">B+</option>
+            <option value="B-">B-</option>
+            <option value="O+">O+</option>
+            <option value="O-">O-</option>
+            <option value="AB+">AB+</option>
+            <option value="AB-">AB-</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Current Address</label>
+          <input type="text" id="address" class="form-input" placeholder="House X, Road Y, Dhaka">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Emergency Contact (Phone)</label>
+          <input type="text" id="emergency_contact" class="form-input" placeholder="+880 1XXXXXXXXX">
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-secondary" style="visibility: hidden;">Back</button>
+          <button class="btn btn-primary" id="btnNext1" onclick="saveStepAndNext(1)">Next Step →</button>
+        </div>
       </div>
+
+      <!-- Step 2: Identity -->
+      <div class="step-content" id="step2">
+        <h3 style="margin-bottom: 1.5rem; font-weight: 700;">2. Identity Verification</h3>
+        <div class="form-group">
+          <label class="form-label">NID Number</label>
+          <input type="text" id="nid_no" class="form-input" placeholder="10 or 17 digit NID">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Permanent Address</label>
+          <input type="text" id="permanent_address" class="form-input" placeholder="Village, Thana, District">
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-secondary" onclick="prevStep()">← Back</button>
+          <button class="btn btn-primary" id="btnNext2" onclick="saveStepAndNext(2)">Next Step →</button>
+        </div>
+      </div>
+
+      <!-- Step 3: Finance -->
+      <div class="step-content" id="step3">
+        <h3 style="margin-bottom: 1.5rem; font-weight: 700;">3. Payroll & Banking</h3>
+        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.5rem;">For salary disbursement. Fill either Bank Details OR bKash/Nagad.</p>
+        
+        <div class="form-group">
+          <label class="form-label">Bank Name</label>
+          <input type="text" id="bankName" class="form-input" placeholder="e.g. BRAC Bank">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Account Title</label>
+          <input type="text" id="accountTitle" class="form-input" placeholder="Your Name as per Bank">
+        </div>
+        <div style="display:flex; gap:1rem;">
+          <div class="form-group" style="flex:1;">
+            <label class="form-label">Account No</label>
+            <input type="text" id="accNo" class="form-input" placeholder="xxxxxxxxxxxxxx">
+          </div>
+          <div class="form-group" style="flex:1;">
+            <label class="form-label">Branch</label>
+            <input type="text" id="branch" class="form-input" placeholder="e.g. Gulshan">
+          </div>
+        </div>
+        
+        <div style="text-align: center; margin: 1rem 0; color: var(--text-muted); font-size: 0.8rem; font-weight: 700;">OR / AND</div>
+
+        <div class="form-group">
+          <label class="form-label">bKash / Nagad Number</label>
+          <input type="text" id="mfsNo" class="form-input" placeholder="017XXXXXXXX">
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-secondary" onclick="prevStep()">← Back</button>
+          <button class="btn btn-primary" id="btnNext3" onclick="saveStepAndNext(3)">Next Step →</button>
+        </div>
+      </div>
+
+      <!-- Step 4: Skills -->
+      <div class="step-content" id="step4">
+        <h3 style="margin-bottom: 1.5rem; font-weight: 700;">4. Skills & Specialization</h3>
+        <div class="form-group">
+          <label class="form-label">Primary Skill / Tool</label>
+          <input type="text" id="primary_skill" class="form-input" placeholder="e.g. Premiere Pro, React, Copywriting">
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-secondary" onclick="prevStep()">← Back</button>
+          <button class="btn btn-primary" id="btnNext4" onclick="saveStepAndNext(4)">Complete Survey 🎉</button>
+        </div>
+      </div>
+
     </div>
+
+    <!-- Completed State -->
+    <div id="completedState" style="display: none; text-align: center; padding: 2rem 0;">
+      <div style="font-size: 4rem; margin-bottom: 1rem;">🎉</div>
+      <h2 style="margin-bottom: 0.5rem; color: #fff;">Onboarding Complete!</h2>
+      <p style="color: var(--text-muted); margin-bottom: 2rem; font-size: 0.95rem;">Your profile is set up. You can now access your crew portal.</p>
+      <a href="/crew" class="btn btn-primary" style="text-decoration: none; display: inline-block;">🚀 Launch Crew Portal</a>
+    </div>
+
   </div>
 
-  <!-- ONBOARDING ROSTER TABLE -->
-  <div class="table-container">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
-      <h3 style="font-size: 1.1rem; font-weight: 800;">Real Employee Roster (33 Accounts)</h3>
-      <div style="font-size: 0.8rem; color: var(--text-muted);">
-        Tech Admin: <strong>Firoz Uddin Ahmed</strong> (01708-459008)
-      </div>
-    </div>
-    <table>
-      <thead>
-        <tr>
-          <th>Code</th>
-          <th>Employee Name & Designation</th>
-          <th>Phone</th>
-          <th>Department</th>
-          <th>Access Level</th>
-          <th>Telegram Link</th>
-          <th>Base Salary (BDT)</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody id="onboardingTableBody">
-        <tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading team roster...</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <script>
-    async function loadOnboardingData() {
-      const tbody = document.getElementById('onboardingTableBody');
-      try {
-        const res = await fetch('/api/team');
-        const team = await res.json();
-
-        let linkedCount = 0;
-        let pinSetCount = 0;
-        let salaryCount = 0;
-
-        tbody.innerHTML = team.map(emp => {
-          if (emp.telegramId) linkedCount++;
-          if (emp.permanentPinSet) pinSetCount++;
-          if (emp.baseSalary > 0) salaryCount++;
-
-          const tgStatus = emp.telegramId
-            ? `<span class="badge badge-green">✅ Linked (${emp.telegramId})</span>`
-            : `<span class="badge badge-yellow">⏳ Pending Verify</span>`;
-
-          const accessBadge = emp.accessLevel === 'Owner / Admin'
-            ? `<span class="badge badge-purple">${emp.accessLevel}</span>`
-            : `<span class="badge" style="background: rgba(255,255,255,0.08); color: #fff;">${emp.accessLevel}</span>`;
-
-          return `
-            <tr>
-              <td><strong>${emp.emp_code || emp.id}</strong></td>
-              <td>
-                <div style="font-weight: 700; color: #fff;">${emp.name}</div>
-                <div style="font-size: 0.75rem; color: var(--text-muted);">${emp.role}</div>
-              </td>
-              <td>${emp.phone}</td>
-              <td>${emp.department}</td>
-              <td>${accessBadge}</td>
-              <td>${tgStatus}</td>
-              <td>
-                <div style="display: flex; gap: 0.4rem; align-items: center;">
-                  <input type="number" class="input-sm" id="sal_${emp.id}" value="${emp.baseSalary || 0}">
-                  <button class="btn btn-secondary" style="padding: 0.3rem 0.5rem; font-size: 0.72rem;" onclick="updateSalary('${emp.id}')">💾</button>
-                </div>
-              </td>
-              <td>
-                <button class="btn btn-secondary" style="padding: 0.35rem 0.6rem; font-size: 0.75rem;" onclick="resetPin('${emp.phone}')">🔑 Web PIN</button>
-              </td>
-            </tr>
-          `;
-        }).join('');
-
-        document.getElementById('statTotal').innerText = team.length;
-        document.getElementById('statLinked').innerText = linkedCount;
-        document.getElementById('statPinSet').innerText = pinSetCount;
-        document.getElementById('statSalaries').innerText = salaryCount;
-      } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #f87171; padding: 2rem;">Error loading roster: ${err.message}</td></tr>`;
-      }
-    }
-
-    async function updateSalary(empId) {
-      const salaryInput = document.getElementById(`sal_${empId}`);
-      const newSalary = parseFloat(salaryInput.value) || 0;
-      try {
-        const res = await fetch(`/api/team/${empId}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ baseSalary: newSalary })
-        });
-        if (res.ok) {
-          alert('✅ Salary updated successfully!');
-          loadOnboardingData();
-        } else {
-          alert('Failed to update salary.');
-        }
-      } catch (err) { alert('Error: ' + err.message); }
-    }
-
-    async function resetPin(phone) {
-      try {
-        const res = await fetch('/api/auth/pin-request', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ phone })
-        });
-        const data = await res.json();
-        if (data.pin) {
-          alert(`🔑 Temp PIN generated for ${phone}:\n\nPIN: ${data.pin}\n\nShare this PIN with the employee for web login.`);
-        } else {
-          alert(data.error || 'Failed to request PIN');
-        }
-      } catch (err) { alert('Error: ' + err.message); }
-    }
-
-    async function importClientsCSV() {
-      const text = document.getElementById('csvClients').value.trim();
-      if (!text) { alert('Please paste CSV rows first.'); return; }
-      const lines = text.split('\n');
-      const rows = lines.map(line => {
-        const parts = line.split(',').map(p => p.trim());
-        return { name: parts[0], contactPerson: parts[1] || 'Director', phone: parts[2] || '', retainerValue: parseFloat(parts[3]) || 0 };
-      }).filter(r => r.name);
-
-      try {
-        const res = await fetch('/api/admin/import/clients', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ rows })
-        });
-        const data = await res.json();
-        alert(`✅ Imported ${data.addedCount} client(s) into database! Total clients: ${data.totalClients}`);
-        document.getElementById('csvClients').value = '';
-      } catch (err) { alert('Import error: ' + err.message); }
-    }
-
-    async function importInvoicesCSV() {
-      const text = document.getElementById('csvInvoices').value.trim();
-      if (!text) { alert('Please paste CSV rows first.'); return; }
-      const lines = text.split('\n');
-      const rows = lines.map(line => {
-        const parts = line.split(',').map(p => p.trim());
-        return { invoiceId: parts[0], clientName: parts[1] || 'Client', amount: parseFloat(parts[2]) || 0, issueDate: parts[3] || '', status: parts[4] || 'Paid' };
-      }).filter(r => r.invoiceId || r.clientName);
-
-      try {
-        const res = await fetch('/api/admin/import/invoices', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ rows })
-        });
-        const data = await res.json();
-        alert(`✅ Imported ${data.addedCount} invoice(s) into database! Total invoices: ${data.totalInvoices}`);
-        document.getElementById('csvInvoices').value = '';
-      } catch (err) { alert('Import error: ' + err.message); }
-    }
-
-    document.addEventListener('DOMContentLoaded', loadOnboardingData);
-  </script>
 </body>
 </html>

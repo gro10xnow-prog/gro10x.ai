@@ -1163,7 +1163,7 @@
       <div class="avatar" id="heroAvatar">PB</div>
       <div class="hero-info">
         <div class="hero-name" id="heroName">Team Member</div>
-        <div class="hero-role" id="heroRole">Loading...</div>
+        <div class="hero-role" id="heroRole"><div class="skeleton-box" style="width: 80px;"></div></div>
         <div class="hero-pills">
           <span class="pill pill-green" id="heroStatus">⬛ Offline</span>
           <span class="pill pill-gold" id="heroXP">🏆 0 XP</span>
@@ -2376,10 +2376,31 @@
   }
 
   // ══════════════════════════════════════════
+  // SSE REAL-TIME RECONNECT
+  // ══════════════════════════════════════════
+  let sseConnection = null;
+  function setupSSE() {
+    if (!window.EventSource) return;
+    if (sseConnection) sseConnection.close();
+    sseConnection = new EventSource('/api/events');
+    sseConnection.onmessage = (e) => {
+      try {
+        const payload = JSON.parse(e.data);
+        if (payload.type === 'task_update' || payload.type === 'subtask_update') loadUserTasks();
+      } catch(err) {}
+    };
+    sseConnection.onerror = () => {
+      sseConnection.close();
+      setTimeout(setupSSE, 4000); // 4-second auto-reconnect fallback
+    };
+  }
+
+  // ══════════════════════════════════════════
   // START
   // ══════════════════════════════════════════
   init();
   startClock();
+  setupSSE();
 </script>
 </body>
 </html>

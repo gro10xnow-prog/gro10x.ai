@@ -374,8 +374,11 @@ async function handleLeadFormSubmit(e) {
         contactPerson: name,
         phone: phone,
         service: service,
-        notes: notes ? `${notes} | UTM: ${JSON.stringify(utm)}` : `UTM: ${JSON.stringify(utm)}`,
-        source: 'Landing Page Contact Section Form'
+        notes: notes,
+        source: utm.utm_source ? `UTM: ${utm.utm_source}` : 'Landing Page Contact Section Form',
+        utm_source: utm.utm_source || '',
+        utm_medium: utm.utm_medium || '',
+        utm_campaign: utm.utm_campaign || ''
       })
     });
 
@@ -411,10 +414,12 @@ function showLandingToast(message, type = 'success') {
     document.body.appendChild(container);
   }
   const toast = document.createElement('div');
-  toast.style.cssText = 'background: #0f172a; border: 1px solid #7c3aed; color: #fff; padding: 0.85rem 1.25rem; border-radius: 12px; font-size: 0.9rem; box-shadow: 0 10px 25px rgba(124, 58, 237, 0.3); font-family: var(--font-family);';
-  toast.innerText = message;
+  toast.style.cssText = 'background: #0f172a; border: 1px solid #7c3aed; color: #fff; padding: 0.85rem 1.25rem; border-radius: 12px; font-size: 0.9rem; box-shadow: 0 10px 25px rgba(124, 58, 237, 0.3); font-family: var(--font-family); display: flex; justify-content: space-between; align-items: center; gap: 1rem;';
+  toast.innerHTML = `<span>${message}</span><button onclick="this.parentElement.remove()" style="background:none; border:none; color:rgba(255,255,255,0.7); cursor:pointer; font-size:1.1rem; padding:0;">✕</button>`;
   container.appendChild(toast);
-  setTimeout(() => toast.remove(), 4000);
+  setTimeout(() => {
+    if (toast.parentElement) toast.remove();
+  }, 4000);
 }
 
 // FETCH & RENDER PUBLIC CMS CONTENT

@@ -8,7 +8,6 @@ const ASSETS_TO_CACHE = [
   '/css/styles.css',
   '/css/landing.css',
   '/css/pwa.css',
-  '/js/app.js',
   '/js/landing.js',
   '/js/partners.js',
   '/js/team.js'

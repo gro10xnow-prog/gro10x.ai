@@ -266,9 +266,18 @@ function renderServiceDetailPage() {
   const urlParams = new URLSearchParams(window.location.search);
   const rawId = (urlParams.get('id') || urlParams.get('service') || '').trim().toLowerCase();
 
-  const key = ID_TO_KEY[rawId] || 'digital-marketing';
+  const key = ID_TO_KEY[rawId];
 
-  const data = SERVICE_DATABASE[key] || SERVICE_DATABASE['digital-marketing'];
+  if (!key) {
+    document.title = 'Service Not Found — Purplebot Digital';
+    const mainContent = document.getElementById('mainContent');
+    if (mainContent) mainContent.style.display = 'none';
+    const notFoundEl = document.getElementById('notFoundContent');
+    if (notFoundEl) notFoundEl.style.display = 'block';
+    return;
+  }
+
+  const data = SERVICE_DATABASE[key];
 
   // 1. UPDATE PAGE SEO & META TAGS
   const fullTitle = `${data.title} — Purplebot Digital Agency`;

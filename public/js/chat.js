@@ -7,6 +7,19 @@ function initWebChat() {
     document.getElementById('chatModeSelect').value = 'team';
     switchChatMode('team');
   }
+  setupSSE();
+}
+
+function setupSSE() {
+  const evtSource = new EventSource('/api/sync');
+  evtSource.onmessage = (e) => {
+    try {
+      const payload = JSON.parse(e.data);
+      if (payload.type === 'chat_message' && payload.data && payload.data.mode === currentChatMode) {
+        appendMessage(payload.data.text, payload.data.sender || 'bot');
+      }
+    } catch (err) {}
+  };
 }
 
 function switchChatMode(mode) {
@@ -120,7 +133,7 @@ async function webClockIn(btn) {
   btn.disabled = true;
   btn.innerText = '🟢 Clocked In at Gulshan Studio!';
   try {
-    await fetch('/api/telegram-simulator', {
+    await fetch('/api/chat/send', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ command: '/clockin', mode: 'team' })
@@ -143,15 +156,14 @@ async function handleSendWebChat(event) {
   input.value = '';
 
   try {
-    const res = await fetch('/api/telegram-simulator', {
+    await fetch('/api/chat/send', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ command: userText, mode: currentChatMode })
     });
-    const data = await res.json();
-    appendMessage(data.responseText || 'Received! Our team is processing your request.', 'bot');
+    // The response will arrive via SSE
   } catch (err) {
-    appendMessage('🤖 Response error: ' + err.message, 'bot');
+    appendMessage('🤖 Connection error: ' + err.message, 'bot');
   }
 }
 

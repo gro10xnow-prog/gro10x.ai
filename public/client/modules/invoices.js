@@ -4,6 +4,111 @@
  */
 window.CLIENT_MODULES = window.CLIENT_MODULES || {};
 
+window.generateInvoicePDF = function(invoice) {
+  if (!window.jspdf || !window.jspdf.jsPDF) {
+    if (window.showClientToast) window.showClientToast('jsPDF library not loaded', 'error');
+    else alert('jsPDF not loaded');
+    return;
+  }
+  
+  const doc = new window.jspdf.jsPDF();
+  
+  // Header details
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(22);
+  doc.setTextColor(124, 58, 237); // Purple
+  doc.text("PURPLEBOT DIGITAL", 14, 20);
+  
+  doc.setFontSize(10);
+  doc.setTextColor(100, 100, 100);
+  doc.setFont("helvetica", "normal");
+  doc.text("123 Marketing Ave, Tech District, Dhaka", 14, 28);
+  doc.text("contact@purplebot.digital | +880 1711 019550", 14, 33);
+  
+  // Invoice Title
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(28);
+  doc.setTextColor(30, 30, 30);
+  doc.text("INVOICE", 130, 25);
+  
+  // Invoice details
+  doc.setFontSize(10);
+  doc.setTextColor(50, 50, 50);
+  doc.text(`Invoice No: ${invoice.id || 'INV-000'}`, 130, 35);
+  const issueDate = new Date(invoice.issueDate || invoice.created_at || Date.now()).toLocaleDateString();
+  const dueDate = invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString() : 'Due on receipt';
+  doc.text(`Date: ${issueDate}`, 130, 42);
+  doc.text(`Due Date: ${dueDate}`, 130, 49);
+  
+  // Bill To
+  doc.setFont("helvetica", "bold");
+  doc.text("BILL TO:", 14, 50);
+  doc.setFont("helvetica", "normal");
+  doc.text(invoice.clientName || invoice.client || 'Client Name', 14, 57);
+  if (invoice.clientEmail) doc.text(invoice.clientEmail, 14, 64);
+  
+  // Line items
+  let yPos = 80;
+  
+  // Table Header
+  doc.setFillColor(124, 58, 237);
+  doc.rect(14, yPos - 6, 180, 10, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFont("helvetica", "bold");
+  doc.text("Description", 16, yPos);
+  doc.text("Amount", 150, yPos);
+  
+  yPos += 10;
+  doc.setTextColor(50, 50, 50);
+  doc.setFont("helvetica", "normal");
+  
+  let items = invoice.items || [];
+  if (typeof items === 'string') {
+    try { items = JSON.parse(items); } catch(e) { items = []; }
+  }
+  
+  if (items.length === 0) {
+    items = [{ description: invoice.description || 'Marketing Services', amount: invoice.amount }];
+  }
+  
+  items.forEach(item => {
+    doc.text(item.description || 'Service', 16, yPos);
+    doc.text(`BDT ${Number(item.amount || 0).toLocaleString()}`, 150, yPos);
+    yPos += 10;
+  });
+  
+  // Totals
+  yPos += 10;
+  doc.line(14, yPos - 5, 194, yPos - 5);
+  doc.setFont("helvetica", "bold");
+  
+  const taxAmt = Number(invoice.amount) * ((Number(invoice.taxRate || 15)) / 100);
+  const subTotal = Number(invoice.amount) - taxAmt;
+
+  if (taxAmt > 0) {
+    doc.text("Subtotal:", 120, yPos);
+    doc.text(`BDT ${subTotal.toLocaleString()}`, 150, yPos);
+    yPos += 10;
+    doc.text("VAT/Tax:", 120, yPos);
+    doc.text(`BDT ${taxAmt.toLocaleString()}`, 150, yPos);
+    yPos += 10;
+  }
+  
+  doc.setFontSize(14);
+  doc.text("Total:", 120, yPos);
+  doc.setTextColor(124, 58, 237);
+  doc.text(`BDT ${Number(invoice.amount).toLocaleString()}`, 150, yPos);
+  
+  // Footer
+  doc.setFontSize(10);
+  doc.setTextColor(100, 100, 100);
+  doc.setFont("helvetica", "italic");
+  doc.text("Thank you for your business!", 105, 270, null, null, "center");
+  
+  // Save PDF
+  doc.save(`${invoice.id || 'Invoice'}.pdf`);
+};
+
 window.CLIENT_MODULES.invoices = async function(container) {
   let invoices = [];
 
@@ -62,6 +167,9 @@ window.CLIENT_MODULES.invoices = async function(container) {
                     ` : `
                       <span style="font-size:0.78rem; color:var(--emerald-brand); font-weight:700;">✅ Paid</span>
                     `}
+                    <button class="btn-secondary btn-sm" style="margin-top:0.5rem;" onclick="window.CLIENT_INVOICES.downloadInvoice('${safeId}')">
+                      📄 Download
+                    </button>
                   </td>
                 </tr>
               `;
@@ -103,6 +211,11 @@ window.CLIENT_MODULES.invoices = async function(container) {
             <input type="text" id="payTrxId" class="form-input" placeholder="e.g. BKS982347102">
           </div>
 
+          <div class="form-group">
+            <label class="form-label">Payment Screenshot / Proof (Optional)</label>
+            <input type="file" id="payScreenshot" class="form-input" accept="image/*" style="padding: 0.4rem;">
+          </div>
+
           <button class="btn-primary" style="width:100%; margin-top:0.5rem;" onclick="window.CLIENT_INVOICES.submitPayment()">
             🚀 Submit Payment for Verification
           </button>
@@ -117,6 +230,22 @@ window.CLIENT_MODULES.invoices = async function(container) {
       document.getElementById('payAmount').value = amount || 0;
       document.getElementById('clientPayModal').classList.add('active');
     },
+    downloadInvoice(id) {
+      const inv = invoices.find(i => i.id === id);
+      if (!inv) return;
+      if (window.generateInvoicePDF) {
+        window.generateInvoicePDF(inv);
+      } else {
+        // Fallback to minimal PDF if generateInvoicePDF is not global
+        const { jsPDF } = window.jspdf || {};
+        if (!jsPDF) return alert('PDF Engine not loaded');
+        const doc = new jsPDF();
+        doc.text(`Invoice: ${inv.id}`, 14, 20);
+        doc.text(`Amount: BDT ${Number(inv.amount).toLocaleString()}`, 14, 30);
+        doc.text(`Status: ${inv.status}`, 14, 40);
+        doc.save(`${inv.id}.pdf`);
+      }
+    },
     closePayModal() {
       document.getElementById('clientPayModal').classList.remove('active');
     },
@@ -124,29 +253,39 @@ window.CLIENT_MODULES.invoices = async function(container) {
       const invoiceId = document.getElementById('payInvId').value;
       const amount = document.getElementById('payAmount').value;
       const paymentMethod = document.getElementById('payMethod').value;
-      const trxId = document.getElementById('payTrxId').value.trim();
+      const trxId = document.getElementById('payTrxId').value;
+      const fileInput = document.getElementById('payScreenshot');
 
-      if (!trxId) {
-        if (window.showClientToast) window.showClientToast('Transaction ID (TrxID) is required.', 'error');
-        else alert('Transaction ID (TrxID) is required.');
-        return;
-      }
+      if (!invoiceId) return alert('Invoice ID missing');
+      if (!amount) return alert('Amount missing');
+      if (!trxId) return alert('Transaction ID is required');
 
       try {
-        const res = await CLIENT_API.post('/payments', {
-          invoiceId,
-          amount,
-          paymentMethod,
-          trxId
-        });
+        const formData = new FormData();
+        formData.append('method', paymentMethod);
+        formData.append('trxId', trxId);
+        formData.append('amount', amount);
+        
+        if (fileInput && fileInput.files.length > 0) {
+          formData.append('screenshot', fileInput.files[0]);
+        }
 
-        if (res.success || res.payment) {
-          this.closePayModal();
-          showClientToast('Payment proof submitted! Verification in progress 💳');
+        const res = await CLIENT_API.fetchRaw(`/api/invoices/${invoiceId}/pay`, {
+          method: 'POST',
+          body: formData
+        });
+        
+        const data = await res.json();
+        
+        if (data.success) {
+          alert('Payment submitted! Waiting for finance verification.');
+          window.CLIENT_INVOICES.closePayModal();
           loadInvoicesData();
+        } else {
+          alert('Failed to submit: ' + (data.error || 'Unknown error'));
         }
       } catch (err) {
-        showClientToast('Error submitting payment proof');
+        alert('Payment Submission Error: ' + err.message);
       }
     }
   };

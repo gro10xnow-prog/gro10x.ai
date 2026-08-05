@@ -4,6 +4,7 @@ const { requireAuth } = require('../middleware/auth');
 const { requireManager } = require('../middleware/rbac');
 const { supabase } = require('../services/supabase');
 const { broadcast } = require('../services/sse');
+const { uploadFile } = require('../services/storage');
 
 function mapExpense(e) {
   if (!e) return null;
@@ -51,6 +52,19 @@ router.post('/', requireAuth, async (req, res) => {
     const { count } = await supabase.from('expenses').select('*', { count: 'exact', head: true });
     const newId = `EXP-${String((count || 0) + 1).padStart(3, '0')}`;
 
+    let receiptUrl = req.body.receiptUrl || '';
+    if (req.body.receiptBase64) {
+      try {
+        const base64Data = req.body.receiptBase64.replace(/^data:image\/\w+;base64,/, '');
+        const buffer = Buffer.from(base64Data, 'base64');
+        const filename = `receipts/${newId}_${Date.now()}.png`;
+        const uploadRes = await uploadFile('expenses', filename, buffer, 'image/png');
+        if (uploadRes.url) receiptUrl = uploadRes.url;
+      } catch (e) {
+        console.error('Receipt upload failed:', e);
+      }
+    }
+
     const payload = {
       id: newId,
       title: req.body.title || req.body.description || 'Studio Expense',
@@ -60,7 +74,7 @@ router.post('/', requireAuth, async (req, res) => {
       logged_by: req.body.submittedBy || req.user.name || 'Team Member',
       submitted_by: req.body.submittedBy || req.user.name || 'Team Member',
       submitted_by_id: req.body.submittedById || req.user.id || '',
-      receipt_url: req.body.receiptUrl || '',
+      receipt_url: receiptUrl,
       description: req.body.description || '',
       status: req.body.status || 'Tier 1 Pending'
     };
@@ -152,6 +166,34 @@ router.post('/:id/approve-tier2', requireAuth, async (req, res) => {
     res.json({ success: true, expense });
   } catch (err) {
     console.error('Expense Tier 2 error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PATCH /api/expenses/:id
+router.patch('/:id', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    const updates = {};
+    if (status) {
+      updates.status = status;
+      if (status === 'Approved') {
+        updates.tier1_approved = true;
+        updates.tier2_approved = true;
+      }
+    }
+    
+    const { data, error } = await supabase.from('expenses').update(updates).eq('id', id).select().single();
+    if (error) throw error;
+
+    const expense = mapExpense(data);
+    const { data: allExpenses } = await supabase.from('expenses').select('*').order('created_at', { ascending: false });
+    broadcast('expense_update', (allExpenses || []).map(mapExpense));
+
+    res.json({ success: true, expense });
+  } catch (err) {
+    console.error('Expense PATCH error:', err.message);
     res.status(500).json({ error: err.message });
   }
 });

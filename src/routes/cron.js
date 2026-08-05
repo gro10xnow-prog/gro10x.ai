@@ -200,4 +200,215 @@ router.get('/eod-summary', authorizeCron, async (req, res) => {
   }
 });
 
+// GET /api/cron/payment-reminders
+router.get('/payment-reminders', authorizeCron, async (req, res) => {
+  try {
+    const db = await fetchSupabaseSnapshot();
+    const now = new Date();
+    
+    // Find invoices unpaid and past 7 days from issue date (or due date if you prefer. We'll use 7 days past due date or issue date)
+    const overdueInvoices = db.invoices.filter(inv => {
+      if (inv.status === 'Paid') return false;
+      const dateToCheck = new Date(inv.dueDate || inv.issueDate || inv.date || inv.createdAt);
+      const diffTime = Math.abs(now - dateToCheck);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return diffDays >= 7;
+    });
+
+    if (!overdueInvoices.length) {
+      return res.json({ success: true, message: 'No overdue invoices.', sentCount: 0 });
+    }
+
+    // Build message
+    let msg = `⚠️ *Payment Reminder Summary*\n\n`;
+    msg += `There are *${overdueInvoices.length}* invoice(s) overdue by 7+ days:\n\n`;
+    let totalOverdue = 0;
+    
+    overdueInvoices.forEach(inv => {
+      msg += `• *${inv.id}* - ${inv.clientName}\n`;
+      msg += `   Amount: BDT ${Number(inv.amount).toLocaleString()}\n`;
+      msg += `   Status: ${inv.status}\n\n`;
+      totalOverdue += Number(inv.amount);
+    });
+
+    msg += `*Total Overdue: BDT ${totalOverdue.toLocaleString()}*`;
+
+    const owners = db.team.filter(t => (t.accessLevel === 'Owner / Admin' || t.role === 'Finance Lead') && t.telegramId);
+    let sentCount = 0;
+
+    for (const owner of owners) {
+      await sendTelegramNotification(owner.telegramId, msg, null, true);
+      sentCount++;
+    }
+
+    return res.json({
+      success: true,
+      message: `Payment reminders sent to ${sentCount} recipient(s)`,
+      overdueCount: overdueInvoices.length,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('❌ Error in payment reminders cron:', error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/cron/lead-followups
+router.get('/lead-followups', authorizeCron, async (req, res) => {
+  try {
+    const db = await fetchSupabaseSnapshot();
+    const now = new Date();
+    
+    // Find active leads with follow_up_date <= today
+    const followUpLeads = db.leads.filter(lead => {
+      if (lead.stage === 'Won / Closed' || lead.stage === 'Lost' || lead.stage === 'Spam') return false;
+      if (!lead.follow_up_date) return false;
+      const followUpDate = new Date(lead.follow_up_date);
+      // Check if it's today or in the past
+      return followUpDate <= now;
+    });
+
+    if (!followUpLeads.length) {
+      return res.json({ success: true, message: 'No lead follow-ups due.', sentCount: 0 });
+    }
+
+    let msg = `🔥 *Lead Follow-up Reminders*\n\n`;
+    msg += `You have *${followUpLeads.length}* lead(s) to follow up with today:\n\n`;
+    
+    followUpLeads.forEach(lead => {
+      msg += `• *${lead.company || lead.contact_person}*\n`;
+      msg += `   Service: ${lead.service}\n`;
+      msg += `   Stage: ${lead.stage}\n`;
+      msg += `   Phone: \`${lead.phone || 'N/A'}\`\n\n`;
+    });
+
+    const owners = db.team.filter(t => (t.accessLevel === 'Owner / Admin' || t.role === 'Sales') && t.telegramId);
+    let sentCount = 0;
+
+    for (const owner of owners) {
+      await sendTelegramNotification(owner.telegramId, msg, null, true);
+      sentCount++;
+    }
+
+    return res.json({
+      success: true,
+      message: `Lead follow-up reminders sent to ${sentCount} recipient(s)`,
+      followUpCount: followUpLeads.length,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('❌ Error in lead followups cron:', error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/cron/task-overdue
+router.get('/task-overdue', authorizeCron, async (req, res) => {
+  try {
+    const db = await fetchSupabaseSnapshot();
+    const now = new Date();
+    const { processAutomationEvent } = require('../services/automation');
+    let triggerCount = 0;
+
+    const overdueTasks = db.tasks.filter(task => {
+      if (task.stage === 'Approved' || !task.dueDate) return false;
+      const dueDate = new Date(task.dueDate);
+      const diffTime = Math.abs(now - dueDate);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return now > dueDate && diffDays >= 2;
+    });
+
+    for (const task of overdueTasks) {
+      await processAutomationEvent('task_overdue', { task }, db, null, null);
+      triggerCount++;
+    }
+
+    return res.json({ success: true, message: `Fired task_overdue for ${triggerCount} tasks` });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/cron/payroll-reminder
+router.get('/payroll-reminder', authorizeCron, async (req, res) => {
+  try {
+    const now = new Date();
+    if (now.getDate() === 25) {
+      const db = await fetchSupabaseSnapshot();
+      const { processAutomationEvent } = require('../services/automation');
+      await processAutomationEvent('payroll_reminder', {}, db, null, null);
+      return res.json({ success: true, message: 'Fired payroll_reminder' });
+    }
+    return res.json({ success: true, message: 'Not the 25th today.' });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/cron/weekly-digest
+router.get('/weekly-digest', authorizeCron, async (req, res) => {
+  try {
+    const db = await fetchSupabaseSnapshot();
+    const now = new Date();
+    // Verify it's Monday (or run regardless if hit directly)
+    if (req.query.force !== 'true' && now.getDay() !== 1) {
+      return res.json({ success: true, message: 'Not Monday. Skipped.' });
+    }
+
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+    // Calculate Weekly KPIs
+    let newRevenue = 0;
+    db.invoices.forEach(i => {
+      if (i.status === 'Paid' && new Date(i.paidAt || i.created_at) >= oneWeekAgo) {
+        newRevenue += Number(i.amount);
+      }
+    });
+
+    let tasksCompleted = 0;
+    let tasksOverdue = 0;
+    db.tasks.forEach(t => {
+      const isDone = t.stage === 'Approved' || t.stage === 'Completed';
+      if (isDone && new Date(t.updated_at || t.created_at) >= oneWeekAgo) tasksCompleted++;
+      
+      if (!isDone && t.dueDate && new Date(t.dueDate) < now) tasksOverdue++;
+    });
+
+    let newLeads = 0;
+    db.leads.forEach(l => {
+      if (new Date(l.created_at) >= oneWeekAgo) newLeads++;
+    });
+
+    let newExpenses = 0;
+    db.expenses.forEach(e => {
+      if (new Date(e.date || e.createdAt) >= oneWeekAgo) newExpenses += Number(e.amount);
+    });
+
+    const attendanceThisWeek = db.attendance.filter(a => new Date(a.date) >= oneWeekAgo).length;
+
+    let msg = `📊 *PURPLEOS WEEKLY DIGEST*\n\n`;
+    msg += `🗓️ *Last 7 Days Performance*\n`;
+    msg += `💰 Revenue Collected: *BDT ${newRevenue.toLocaleString()}*\n`;
+    msg += `💸 Expenses Logged: *BDT ${newExpenses.toLocaleString()}*\n`;
+    msg += `✅ Tasks Completed: *${tasksCompleted}*\n`;
+    msg += `🎯 New Leads: *${newLeads}*\n`;
+    msg += `⏰ Active Overdue Tasks: *${tasksOverdue}*\n`;
+    msg += `👨‍💼 Total Attendance Logs: *${attendanceThisWeek}*\n\n`;
+    msg += `_Have a productive week ahead!_ 🚀`;
+
+    const owners = db.team.filter(t => t.accessLevel === 'Owner / Admin' && t.telegramId);
+    let sentCount = 0;
+    for (const owner of owners) {
+      await sendTelegramNotification(owner.telegramId, msg, null, true);
+      sentCount++;
+    }
+
+    return res.json({ success: true, message: `Weekly digest sent to ${sentCount} admins` });
+  } catch (error) {
+    console.error('Weekly digest error:', error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;

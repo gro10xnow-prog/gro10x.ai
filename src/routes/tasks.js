@@ -30,7 +30,7 @@ function mapTask(t) {
     department: t.department,
     category: t.category,
     labels: t.labels || [],
-    customFields: t.customFields || {},
+    customFields: t.custom_fields || t.customFields || {},
     estimatedHours: Number(t.estimated_hours || t.estimatedHours) || 0,
     loggedHours: Number(t.logged_hours || t.loggedHours) || 0,
     sortOrder: Number(t.sort_order || t.sortOrder) || 0,
@@ -49,7 +49,7 @@ function mapTask(t) {
 // GET Tasks (Supports ?dept=, ?assignee=, ?label= filters)
 router.get('/', requireAuth, async (req, res) => {
   try {
-    const { dept, assignee, label } = req.query;
+    const { dept, assignee, label, parentId } = req.query;
     let query = supabase.from('tasks').select('*').order('created_at', { ascending: false });
 
     if (dept) {
@@ -58,6 +58,10 @@ router.get('/', requireAuth, async (req, res) => {
 
     if (assignee) {
       query = query.ilike('assignee', `%${assignee}%`);
+    }
+
+    if (parentId) {
+      query = query.eq('parent_task_id', parentId);
     }
 
     const { data, error } = await query;
@@ -93,7 +97,7 @@ router.get('/', requireAuth, async (req, res) => {
     let tasks = (data || []).map(t => mapTask({
       ...t,
       labels: taskLabelsMap[t.id] || [],
-      customFields: taskCFVMap[t.id] || {}
+      custom_fields: taskCFVMap[t.id] || {}
     }));
 
     if (label) {
@@ -121,7 +125,8 @@ router.post('/', requireAuth, async (req, res) => {
       stage: req.body.stage || 'Scripting',
       priority: req.body.priority || 'Medium',
       assignee: req.body.assignee || 'Unassigned',
-      due_date: req.body.dueDate || new Date(Date.now() + 3 * 86400000).toISOString().split('T')[0]
+      due_date: req.body.dueDate || new Date(Date.now() + 3 * 86400000).toISOString().split('T')[0],
+      parent_task_id: req.body.parentTaskId || null
     };
 
     let task = null;
@@ -166,6 +171,40 @@ router.post('/', requireAuth, async (req, res) => {
     res.json({ success: true, task });
   } catch (err) {
     console.error('Task POST error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+// POST Bulk Operations
+router.post('/bulk', requireAuth, async (req, res) => {
+  try {
+    const { action, taskIds, stage, assignee, labelId } = req.body;
+    if (!action || !taskIds || !Array.isArray(taskIds) || taskIds.length === 0) {
+      return res.status(400).json({ error: 'Valid action and taskIds array required' });
+    }
+
+    if (action === 'delete') {
+      const { error } = await supabase.from('tasks').delete().in('id', taskIds);
+      if (error) throw error;
+    } else if (action === 'stage') {
+      const { error } = await supabase.from('tasks').update({ stage, updated_at: new Date().toISOString() }).in('id', taskIds);
+      if (error) throw error;
+    } else if (action === 'assign') {
+      const { error } = await supabase.from('tasks').update({ assignee, updated_at: new Date().toISOString() }).in('id', taskIds);
+      if (error) throw error;
+    } else if (action === 'label') {
+      if (labelId) {
+        const rows = taskIds.map(id => ({ task_id: id, label_id: labelId }));
+        const { error } = await supabase.from('task_labels').upsert(rows, { onConflict: 'task_id,label_id' });
+        if (error) throw error;
+      }
+    } else {
+      return res.status(400).json({ error: 'Unknown action' });
+    }
+
+    broadcast('task_update', { bulkUpdate: true });
+    res.json({ success: true, count: taskIds.length });
+  } catch (err) {
+    console.error('Task bulk POST error:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
@@ -509,26 +548,77 @@ router.patch('/:id/stage', requireAuth, async (req, res) => {
   }
 });
 
-router.patch('/:id/log-time', requireAuth, async (req, res) => {
+// GET /api/tasks/:id/comments
+router.get('/:id/comments', requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
-    const { hours } = req.body;
+    const { data, error } = await supabase.from('task_comments').select('*').eq('task_id', id).order('created_at', { ascending: true });
+    if (error) throw error;
+    res.json(data || []);
+  } catch (err) {
+    console.error('Comments GET error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
 
+// POST /api/tasks/:id/comments
+router.post('/:id/comments', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { content } = req.body;
+    const userName = req.user?.name || 'Team Member';
+    if (!content) return res.status(400).json({ error: 'Comment content required' });
+
+    const { data, error } = await supabase.from('task_comments').insert([{ task_id: id, author_name: userName, content }]).select().single();
+    if (error) throw error;
+    
+    broadcast('task_comment_added', { taskId: id, comment: data });
+    res.json({ success: true, comment: data });
+  } catch (err) {
+    console.error('Comments POST error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/tasks/:id/time-logs
+router.get('/:id/time-logs', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { data, error } = await supabase.from('time_logs').select('*').eq('task_id', id).order('created_at', { ascending: false });
+    if (error) throw error;
+    res.json(data || []);
+  } catch (err) {
+    console.error('Time logs GET error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/tasks/:id/log-time
+router.post('/:id/log-time', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { hours, note } = req.body;
     const logged = Number(hours) || 0;
     if (logged <= 0) return res.status(400).json({ error: 'Hours must be greater than 0' });
 
+    const userName = req.user?.name || 'Team Member';
+    
+    // Insert into time_logs
+    const { data: logEntry, error: logError } = await supabase.from('time_logs').insert([{ task_id: id, user_name: userName, duration_hours: logged, note }]).select().single();
+    if (logError && !logError.message.includes('relation "public.time_logs" does not exist')) {
+      throw logError;
+    }
+
+    // Update tasks table
     const { data: existing } = await supabase.from('tasks').select('logged_hours').eq('id', id).single();
     const newLogged = (Number(existing?.logged_hours) || 0) + logged;
-
-    const { data, error } = await supabase.from('tasks').update({
-      logged_hours: newLogged,
-      updated_at: new Date().toISOString()
-    }).eq('id', id).select().single();
-
+    const { data, error } = await supabase.from('tasks').update({ logged_hours: newLogged, updated_at: new Date().toISOString() }).eq('id', id).select().single();
     if (error) throw error;
-    res.json({ success: true, task: mapTask(data) });
+
+    broadcast('task_time_logged', { taskId: id, log: logEntry });
+    res.json({ success: true, task: mapTask(data), log: logEntry });
   } catch (err) {
-    console.error('Task log-time error:', err.message);
+    console.error('Task log-time POST error:', err.message);
     res.status(500).json({ error: err.message });
   }
 });

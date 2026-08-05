@@ -158,7 +158,7 @@ window.APP_MODULES.social = async function(container) {
           caption,
           scheduledDate,
           scheduledTime: '18:00',
-          status: 'Pending Client Approval'
+          status: 'Draft'
         });
         if (res.success || res.id) {
           this.closePostModal();

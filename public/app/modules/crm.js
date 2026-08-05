@@ -73,6 +73,7 @@ window.APP_MODULES.crm = async function(container) {
                 <span style="color:var(--text-muted);">Total Spend: <strong style="color:var(--emerald-brand);">৳${(Number(c.totalSpent) || 0).toLocaleString()}</strong></span>
                 <span style="color:var(--purple-light); font-weight:700;">${c.activeCampaigns || 1} Active</span>
               </div>
+              <button class="btn-outline btn-sm" style="margin-top: 0.5rem; width: 100%; border-radius: 8px;" onclick="window.CRM_MODULE.openHub('${c.id}')">📂 Open CRM Hub</button>
             </div>
           `;
         }).join('') || `<div style="grid-column:1/-1; text-align:center; color:var(--text-muted); padding:3rem;">No client accounts found</div>`}
@@ -137,6 +138,54 @@ window.APP_MODULES.crm = async function(container) {
           </div>
         </div>
       </div>
+
+      <!-- CRM HUB MODAL -->
+      <div class="modal-overlay" id="crmHubModal">
+        <div class="modal-box" style="max-width: 800px; width: 90vw; max-height: 90vh; overflow-y: auto; background: var(--surface); padding: 1.5rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1rem; margin-bottom: 1rem;">
+            <div>
+              <h2 style="color:#fff; font-size:1.4rem; margin:0; font-family: var(--font-heading);" id="hubClientName">Client Name</h2>
+              <div style="font-size: 0.85rem; color: var(--text-muted);">360° CRM Hub & Activity Timeline</div>
+            </div>
+            <button onclick="window.CRM_MODULE.closeHub()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem;">
+            <!-- Left Col: Health & Meetings -->
+            <div>
+              <!-- Health Score Widget -->
+              <div style="background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 12px; margin-bottom: 1rem;">
+                <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Health Score</div>
+                <div style="display: flex; align-items: baseline; gap: 0.5rem; margin-top: 0.5rem;">
+                  <span id="hubHealthScore" style="font-size: 2.5rem; font-weight: 800; font-family: var(--font-heading); color: var(--emerald-accent);">--</span>
+                  <span style="color: var(--text-muted); font-size: 0.9rem;">/ 100</span>
+                </div>
+                <div id="hubHealthLabel" style="font-size: 0.85rem; color: var(--emerald-accent); margin-top: 0.2rem;">Healthy</div>
+                <div style="font-size: 0.7rem; color: var(--text-dim); margin-top: 0.5rem;">Based on payment history & engagement</div>
+              </div>
+
+              <!-- Meetings Log -->
+              <div style="background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                  <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Meeting Notes</div>
+                  <button class="btn-primary" style="padding: 0.2rem 0.5rem; font-size: 0.7rem;" onclick="window.CRM_MODULE.logMeeting()">+ Log</button>
+                </div>
+                <div id="hubMeetingsList" style="display: flex; flex-direction: column; gap: 0.5rem; max-height: 200px; overflow-y: auto;">
+                  <div style="color: var(--text-dim); font-size: 0.8rem;">Loading...</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Col: Timeline -->
+            <div>
+              <div style="font-size: 0.9rem; color: var(--text-muted); font-weight: bold; margin-bottom: 1rem;">Chronological Timeline</div>
+              <div id="hubTimeline" style="display: flex; flex-direction: column; gap: 1rem; max-height: 500px; overflow-y: auto; padding-right: 0.5rem;">
+                <div style="color: var(--text-dim); font-size: 0.8rem;">Loading timeline...</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     `;
   }
 
@@ -194,7 +243,7 @@ window.APP_MODULES.crm = async function(container) {
         }
       });
 
-      if (!name) return alert('Please enter client name.');
+      if (!name) return window.showToast('Please enter client name.', 'error');
 
       try {
         const res = await APP_API.post('/clients', {
@@ -207,11 +256,97 @@ window.APP_MODULES.crm = async function(container) {
 
         if (res.success || res.id) {
           this.closeModal();
-          showToast(`Client "${name}" added successfully!`);
+          window.showToast(`Client "${name}" added successfully!`, 'success');
           loadCRMData();
         }
       } catch (err) {
-        showToast('Failed to save client', 'error');
+        window.showToast('Failed to save client', 'error');
+      }
+    },
+
+    openHub: async function(clientId) {
+      document.getElementById('crmHubModal').style.display = 'flex';
+      document.getElementById('hubClientName').innerText = 'Loading...';
+      document.getElementById('hubHealthScore').innerText = '--';
+      document.getElementById('hubTimeline').innerHTML = '<div style="color: var(--text-dim); font-size: 0.8rem;">Loading timeline...</div>';
+      document.getElementById('hubMeetingsList').innerHTML = '<div style="color: var(--text-dim); font-size: 0.8rem;">Loading meetings...</div>';
+      
+      const client = clientsData.find(c => c.id === clientId);
+      if (client) document.getElementById('hubClientName').innerText = client.name;
+
+      this.currentHubClientId = clientId;
+      await this.loadHubData(clientId);
+    },
+
+    closeHub: function() {
+      document.getElementById('crmHubModal').style.display = 'none';
+      this.currentHubClientId = null;
+    },
+
+    loadHubData: async function(clientId) {
+      try {
+        const data = await APP_API.get(`/clients/${clientId}/timeline`);
+        
+        // Update Health
+        if (data.health) {
+          const scoreEl = document.getElementById('hubHealthScore');
+          const labelEl = document.getElementById('hubHealthLabel');
+          scoreEl.innerText = data.health.score;
+          labelEl.innerText = data.health.label;
+          if (data.health.score < 50) { scoreEl.style.color = 'var(--text-error)'; labelEl.style.color = 'var(--text-error)'; }
+          else if (data.health.score < 75) { scoreEl.style.color = 'var(--amber-accent)'; labelEl.style.color = 'var(--amber-accent)'; }
+          else { scoreEl.style.color = 'var(--emerald-accent)'; labelEl.style.color = 'var(--emerald-accent)'; }
+        }
+
+        // Update Meetings
+        const meetingsList = document.getElementById('hubMeetingsList');
+        if (data.meetings && data.meetings.length > 0) {
+          meetingsList.innerHTML = data.meetings.map(m => `
+            <div style="background: rgba(255,255,255,0.05); padding: 0.75rem; border-radius: 8px;">
+              <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.3rem;">📅 ${new Date(m.meeting_date).toLocaleDateString()}</div>
+              <div style="font-size: 0.85rem; color: var(--text-main); margin-bottom: 0.3rem;">${m.notes || 'No notes'}</div>
+              ${m.action_items ? `<div style="font-size: 0.75rem; color: var(--amber-accent);">🔥 Action: ${m.action_items}</div>` : ''}
+            </div>
+          `).join('');
+        } else {
+          meetingsList.innerHTML = '<div style="color: var(--text-muted); font-size: 0.8rem; text-align: center; padding: 1rem;">No meetings logged.</div>';
+        }
+
+        // Update Timeline
+        const timelineEl = document.getElementById('hubTimeline');
+        if (data.timeline && data.timeline.length > 0) {
+          timelineEl.innerHTML = data.timeline.map(t => `
+            <div style="display: flex; gap: 0.75rem;">
+              <div style="width: 32px; height: 32px; border-radius: 50%; background: ${t.color}22; color: ${t.color}; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0;">${t.icon}</div>
+              <div style="background: rgba(255,255,255,0.03); padding: 0.75rem; border-radius: 8px; flex: 1; border: 1px solid rgba(255,255,255,0.05);">
+                <div style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 0.2rem;">${new Date(t.date).toLocaleString()}</div>
+                <div style="font-size: 0.9rem; font-weight: bold; color: var(--text-main); margin-bottom: 0.2rem;">${t.title}</div>
+                <div style="font-size: 0.8rem; color: var(--text-dim);">${t.description}</div>
+              </div>
+            </div>
+          `).join('');
+        } else {
+          timelineEl.innerHTML = '<div style="color: var(--text-muted); font-size: 0.8rem; text-align: center; padding: 2rem;">No timeline activity yet.</div>';
+        }
+      } catch(err) {
+        window.showToast('Failed to load CRM Hub data', 'error');
+      }
+    },
+
+    logMeeting: async function() {
+      if (!this.currentHubClientId) return;
+      const date = prompt('Meeting Date (YYYY-MM-DD):', new Date().toISOString().split('T')[0]);
+      if (!date) return;
+      const notes = prompt('Meeting Notes/Summary:');
+      if (!notes) return;
+      const action_items = prompt('Action Items (Optional):');
+
+      try {
+        await APP_API.post(`/clients/${this.currentHubClientId}/meetings`, { meeting_date: date, notes, action_items });
+        window.showToast('Meeting logged!', 'success');
+        this.loadHubData(this.currentHubClientId);
+      } catch(err) {
+        window.showToast('Failed to log meeting', 'error');
       }
     }
   };

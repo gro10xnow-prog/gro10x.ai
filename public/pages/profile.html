@@ -193,15 +193,35 @@
       } catch(e) {}
     }
 
-    function saveProfile(e) {
+    async function saveProfile(e) {
       e.preventDefault();
       const name = document.getElementById('inpFullName').value.trim();
       const dept = document.getElementById('inpDept').value.trim();
       const email = document.getElementById('inpEmail').value.trim();
+      const btn = e.target.querySelector('button[type="submit"]');
 
       try {
         const rawUser = localStorage.getItem('purple_user');
         const user = rawUser ? JSON.parse(rawUser) : {};
+        const userId = user.id || user.emp_code;
+        const token = localStorage.getItem('sb-access-token');
+
+        if (btn) btn.disabled = true;
+
+        if (userId) {
+          const res = await fetch(`/api/team/${userId}`, {
+            method: 'PUT',
+            headers: { 
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}` 
+            },
+            body: JSON.stringify({ name, role: dept, personal_email: email })
+          });
+          
+          if (!res.ok) throw new Error('API save failed');
+        }
+
+        // Update local storage so the shell reflects the changes instantly
         user.name = name;
         user.role = dept;
         user.email = email;
@@ -212,6 +232,9 @@
         if (typeof hydrateUserInfo === 'function') hydrateUserInfo();
       } catch (err) {
         if (window.showShellToast) window.showShellToast('Failed to save profile', 'error');
+        console.error('Profile Save Error:', err);
+      } finally {
+        if (btn) btn.disabled = false;
       }
     }
 

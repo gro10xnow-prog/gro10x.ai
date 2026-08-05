@@ -109,7 +109,22 @@ window.APP_MODULES.kanban = async function(container) {
             </div>
           </div>
 
+          <div style="margin-bottom: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap; background:var(--surface-1); padding:0.8rem; border-radius:12px; border:1px solid var(--border-subtle);">
+            <input type="text" id="kanbanSearchQuery" placeholder="Search tasks..." oninput="window.KANBAN_MODULE.applyFilters()" style="background:var(--bg); border:1px solid var(--border-subtle); color:#fff; padding:0.4rem 0.8rem; border-radius:8px; width:200px;">
+            <select id="kanbanFilterAssignee" onchange="window.KANBAN_MODULE.applyFilters()" style="background:var(--bg); border:1px solid var(--border-subtle); color:#fff; padding:0.4rem 0.8rem; border-radius:8px;">
+              <option value="">All Assignees</option>
+            </select>
+            <select id="kanbanFilterPriority" onchange="window.KANBAN_MODULE.applyFilters()" style="background:var(--bg); border:1px solid var(--border-subtle); color:#fff; padding:0.4rem 0.8rem; border-radius:8px;">
+              <option value="">All Priorities</option>
+              <option value="Urgent">Urgent</option>
+              <option value="High">High</option>
+              <option value="Medium">Medium</option>
+              <option value="Low">Low</option>
+            </select>
+          </div>
+
           <div class="kanban-board-container" id="kanbanBoardArea"></div>
+          <div id="bulkToolbarContainer" style="position:fixed; bottom:2rem; left:50%; transform:translateX(-50%); z-index:900;"></div>
         </div>
       </div>
 
@@ -128,19 +143,29 @@ window.APP_MODULES.kanban = async function(container) {
         <div class="drawer-body">
           <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 1rem;">
             <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase;">⏱️ Time Tracking</div>
-            <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
               <div>
                 <div style="font-size: 1.2rem; font-weight: 800; color: var(--emerald-brand);" id="drawerTimeText">0h / 8h</div>
                 <div style="font-size: 0.75rem; color: var(--text-dim);">Logged vs Estimated</div>
               </div>
               <button class="btn-secondary" onclick="window.KANBAN_MODULE.logTime()">Log Hours</button>
             </div>
+            <div id="drawerTimeLogList" style="display:flex; flex-direction:column; gap:0.4rem; font-size:0.8rem;"></div>
           </div>
 
           <div>
             <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase;">📝 Subtasks</div>
             <div id="drawerSubtaskList" style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem;"></div>
             <button class="btn-secondary" style="width: 100%; font-size: 0.8rem; border-style: dashed;" onclick="window.KANBAN_MODULE.addSubtask()">+ Add Subtask</button>
+          </div>
+          
+          <div>
+            <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase;">💬 Activity & Comments</div>
+            <div id="drawerCommentsList" style="display:flex; flex-direction:column; gap:0.8rem; margin-bottom:1rem; max-height:300px; overflow-y:auto; padding-right:0.5rem;"></div>
+            <form onsubmit="window.KANBAN_MODULE.postComment(event)" style="display:flex; gap:0.5rem;">
+              <input type="text" id="drawerCommentInput" placeholder="Write a comment..." style="flex:1; background:var(--bg); border:1px solid var(--border-subtle); color:#fff; padding:0.6rem; border-radius:8px; font-size:0.85rem;" required>
+              <button type="submit" class="btn-primary" style="padding:0.6rem 1rem;">Post</button>
+            </form>
           </div>
         </div>
 
@@ -163,6 +188,18 @@ window.APP_MODULES.kanban = async function(container) {
       displayTasks = allTasks.filter(t => t.client === activeSpace || t.category === activeSpace);
     }
 
+    // Apply Filters
+    const searchQ = document.getElementById('kanbanSearchQuery')?.value.toLowerCase() || '';
+    const assigneeF = document.getElementById('kanbanFilterAssignee')?.value || '';
+    const priorityF = document.getElementById('kanbanFilterPriority')?.value || '';
+    
+    displayTasks = displayTasks.filter(t => {
+      if (searchQ && !t.title.toLowerCase().includes(searchQ) && !(t.client || '').toLowerCase().includes(searchQ)) return false;
+      if (assigneeF && t.assignee !== assigneeF) return false;
+      if (priorityF && t.priority !== priorityF) return false;
+      return true;
+    });
+
     if (currentView === 'kanban') {
       area.innerHTML = `
         <div class="kanban-grid">
@@ -181,7 +218,8 @@ window.APP_MODULES.kanban = async function(container) {
                     const safeAssignee = escapeHTML(t.assignee || 'Staff');
                     return `
                     <div class="kanban-card" draggable="true" ondragstart="window.KANBAN_MODULE.dragTask(event, '${t.id}')" onclick="window.KANBAN_MODULE.openDrawer('${t.id}')">
-                      <div style="font-size: 0.72rem; color: var(--purple-light); font-weight: 700; margin-bottom: 0.3rem;">${safeClient}</div>
+                      <input type="checkbox" class="task-cb" ${selectedTasks.has(t.id) ? 'checked' : ''} onclick="event.stopPropagation(); window.KANBAN_MODULE.toggleSelect(event, '${t.id}')" style="position:absolute; top:0.8rem; right:0.8rem; transform:scale(1.2); cursor:pointer;">
+                      <div style="font-size: 0.72rem; color: var(--purple-light); font-weight: 700; margin-bottom: 0.3rem; padding-right:1.5rem;">${safeClient}</div>
                       <div style="font-weight: 700; color: #fff; font-size: 0.9rem; line-height: 1.3;">${safeTitle}</div>
                       <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: var(--text-muted); margin-top: 0.8rem;">
                         <span>👤 ${safeAssignee}</span>
@@ -200,6 +238,7 @@ window.APP_MODULES.kanban = async function(container) {
         <table class="kanban-list-view">
           <thead>
             <tr>
+              <th style="width:40px;"></th>
               <th>Priority</th>
               <th>Task Title</th>
               <th>Client Space</th>
@@ -218,6 +257,7 @@ window.APP_MODULES.kanban = async function(container) {
               const safeAssignee = escapeHTML(t.assignee || 'Unassigned');
               return `
                 <tr onclick="window.KANBAN_MODULE.openDrawer('${t.id}')">
+                  <td onclick="event.stopPropagation()"><input type="checkbox" class="task-cb" ${selectedTasks.has(t.id) ? 'checked' : ''} onclick="window.KANBAN_MODULE.toggleSelect(event, '${t.id}')" style="transform:scale(1.2); cursor:pointer;"></td>
                   <td><span class="badge ${badgeClass}">${escapeHTML(prio)}</span></td>
                   <td style="font-weight: 700;">${safeTitle}</td>
                   <td style="color: var(--text-muted);">${safeClient}</td>
@@ -240,20 +280,122 @@ window.APP_MODULES.kanban = async function(container) {
     }
   }
 
+  let selectedTasks = new Set();
+  let lastSelectedTaskId = null;
+
   window.KANBAN_MODULE = {
     setSpace(space) {
       activeSpace = space;
       renderMainUI();
+      this.populateFilterDropdowns();
     },
     setView(view) {
       currentView = view;
       renderMainUI();
+      this.populateFilterDropdowns();
+    },
+    populateFilterDropdowns() {
+      const select = document.getElementById('kanbanFilterAssignee');
+      if (select) {
+        const assignees = [...new Set(allTasks.map(t => t.assignee).filter(Boolean))];
+        const currentVal = select.value;
+        select.innerHTML = '<option value="">All Assignees</option>' + assignees.map(a => `<option value="${a}">${a}</option>`).join('');
+        if (assignees.includes(currentVal)) select.value = currentVal;
+      }
+    },
+    applyFilters() {
+      renderViewArea();
+    },
+    toggleSelect(event, taskId) {
+      const idx = allTasks.findIndex(t => t.id === taskId);
+      if (idx === -1) return;
+      
+      if (event.shiftKey && lastSelectedTaskId) {
+        const lastIdx = allTasks.findIndex(t => t.id === lastSelectedTaskId);
+        if (lastIdx !== -1) {
+          const start = Math.min(idx, lastIdx);
+          const end = Math.max(idx, lastIdx);
+          const isChecked = event.target.checked;
+          for (let i = start; i <= end; i++) {
+            if (isChecked) selectedTasks.add(allTasks[i].id);
+            else selectedTasks.delete(allTasks[i].id);
+          }
+        }
+      } else {
+        if (event.target.checked) selectedTasks.add(taskId);
+        else selectedTasks.delete(taskId);
+        lastSelectedTaskId = taskId;
+      }
+      
+      // We will render bulk toolbar later (task 0.7.2.5)
+      renderViewArea(); // Re-render to update checkboxes state if needed
+      renderViewArea();
+      if (window.KANBAN_MODULE.renderBulkToolbar) window.KANBAN_MODULE.renderBulkToolbar();
     },
     addSpace() {
       const name = prompt('Enter new space name:');
       if (name) {
-        spacesData.push({ id: name.toLowerCase().replace(/\s/g, ''), name, type: 'department' });
-        renderMainUI();
+        APP_API.post('/projects/spaces', { name }).then(() => loadData());
+      }
+    },
+    renderBulkToolbar() {
+      const container = document.getElementById('bulkToolbarContainer');
+      if (!container) return;
+      if (selectedTasks.size === 0) {
+        container.innerHTML = '';
+        return;
+      }
+      container.innerHTML = `
+        <div style="background:var(--surface-2); border:1px solid var(--purple-light); border-radius:16px; padding:0.75rem 1.5rem; display:flex; align-items:center; gap:1rem; box-shadow:0 8px 32px rgba(0,0,0,0.5); backdrop-filter:blur(8px);">
+          <div style="font-weight:700; color:#fff;">${selectedTasks.size} Selected</div>
+          <div style="width:1px; height:24px; background:var(--border-subtle);"></div>
+          <select id="bulkStageSelect" style="background:var(--bg); border:1px solid var(--border-subtle); color:#fff; padding:0.4rem; border-radius:8px;">
+            <option value="">Move to Stage...</option>
+            ${stages.map(s => `<option value="${s}">${s}</option>`).join('')}
+          </select>
+          <button class="btn-secondary btn-sm" onclick="window.KANBAN_MODULE.applyBulkAction('stage')">Apply Stage</button>
+          
+          <div style="width:1px; height:24px; background:var(--border-subtle);"></div>
+          <input type="text" id="bulkAssigneeInput" placeholder="Assignee Name" style="background:var(--bg); border:1px solid var(--border-subtle); color:#fff; padding:0.4rem; border-radius:8px; width:120px;">
+          <button class="btn-secondary btn-sm" onclick="window.KANBAN_MODULE.applyBulkAction('assign')">Assign</button>
+          
+          <div style="width:1px; height:24px; background:var(--border-subtle);"></div>
+          <button class="btn-secondary btn-sm" style="color:var(--red-brand); border-color:rgba(239,68,68,0.3);" onclick="window.KANBAN_MODULE.applyBulkAction('delete')">Delete Selected</button>
+          
+          <button onclick="window.KANBAN_MODULE.clearSelection()" style="background:none; border:none; color:var(--text-muted); margin-left:1rem; cursor:pointer; font-size:1.2rem;">✕</button>
+        </div>
+      `;
+    },
+    clearSelection() {
+      selectedTasks.clear();
+      lastSelectedTaskId = null;
+      renderViewArea();
+      this.renderBulkToolbar();
+    },
+    async applyBulkAction(action) {
+      if (selectedTasks.size === 0) return;
+      const taskIds = Array.from(selectedTasks);
+      let payload = { action, taskIds };
+      
+      if (action === 'stage') {
+        const stage = document.getElementById('bulkStageSelect').value;
+        if (!stage) return alert('Select a stage first');
+        payload.stage = stage;
+      } else if (action === 'assign') {
+        const assignee = document.getElementById('bulkAssigneeInput').value.trim();
+        if (!assignee) return alert('Enter an assignee name');
+        payload.assignee = assignee;
+      } else if (action === 'delete') {
+        if (!confirm(`Are you sure you want to delete ${taskIds.length} tasks?`)) return;
+      }
+      
+      try {
+        await APP_API.post('/tasks/bulk', payload);
+        if (window.showToast) window.showToast(`Bulk ${action} applied to ${taskIds.length} tasks`, 'success');
+        this.clearSelection();
+        loadData();
+      } catch (e) {
+        alert('Failed bulk action: ' + e.message);
       }
     },
     dragTask(evt, taskId) {
@@ -280,7 +422,7 @@ window.APP_MODULES.kanban = async function(container) {
         else alert('Failed to update task stage');
       }
     },
-    openDrawer(taskId) {
+    async openDrawer(taskId) {
       activeTaskId = taskId;
       const task = allTasks.find(t => t.id === taskId);
       if (!task) return;
@@ -290,9 +432,38 @@ window.APP_MODULES.kanban = async function(container) {
       document.getElementById('drawerClientName').textContent = `Client: ${task.client || 'Agency'} · Assignee: ${task.assignee || 'Staff'}`;
       document.getElementById('drawerTimeText').textContent = `${task.loggedHours || 0}h / ${task.estimatedHours || 8}h`;
       document.getElementById('drawerSubtaskList').innerHTML = `<div style="color: var(--text-dim); font-size: 0.8rem; text-align: center; padding: 1rem;">No subtasks created yet</div>`;
+      
+      document.getElementById('drawerTimeLogList').innerHTML = '<div style="color:var(--text-muted);">Loading logs...</div>';
+      document.getElementById('drawerCommentsList').innerHTML = '<div style="color:var(--text-muted);">Loading comments...</div>';
 
       document.getElementById('taskDrawerBackdrop').classList.add('open');
       document.getElementById('taskDrawerPanel').classList.add('open');
+
+      try {
+        const [logs, comments] = await Promise.all([
+          APP_API.get(`/tasks/${taskId}/time-logs`),
+          APP_API.get(`/tasks/${taskId}/comments`)
+        ]);
+        
+        const logsHtml = (logs || []).map(l => `
+          <div style="display:flex; justify-content:space-between; background:rgba(255,255,255,0.05); padding:0.4rem 0.6rem; border-radius:4px;">
+            <span><span style="color:var(--purple-light);">${escapeHTML(l.user_name || 'User')}</span>: ${escapeHTML(l.note || 'Logged time')}</span>
+            <span style="color:var(--emerald-brand); font-weight:700;">+${l.duration_hours}h</span>
+          </div>
+        `).join('');
+        document.getElementById('drawerTimeLogList').innerHTML = logsHtml || '<div style="color:var(--text-dim);">No time logged yet.</div>';
+
+        const commentsHtml = (comments || []).map(c => `
+          <div style="background:rgba(255,255,255,0.02); padding:0.8rem; border-radius:8px; border:1px solid var(--border-subtle);">
+            <div style="display:flex; justify-content:space-between; margin-bottom:0.4rem; font-size:0.75rem;">
+              <strong style="color:var(--purple-light);">${escapeHTML(c.author_name || 'User')}</strong>
+              <span style="color:var(--text-dim);">${new Date(c.created_at).toLocaleString()}</span>
+            </div>
+            <div style="font-size:0.85rem; color:#fff;">${escapeHTML(c.content)}</div>
+          </div>
+        `).join('');
+        document.getElementById('drawerCommentsList').innerHTML = commentsHtml || '<div style="color:var(--text-dim); font-size:0.85rem;">No comments yet.</div>';
+      } catch(e) {}
     },
     closeDrawer() {
       document.getElementById('taskDrawerPanel').classList.remove('open');
@@ -304,26 +475,50 @@ window.APP_MODULES.kanban = async function(container) {
       const hoursStr = prompt('Enter worked hours to log (e.g. 2):');
       const hours = parseFloat(hoursStr);
       if (hours && hours > 0) {
+        const note = prompt('Enter a short note (optional):') || 'Logged time';
         try {
-          await APP_API.patch(`/tasks/${activeTaskId}/log-time`, { hours });
+          await APP_API.post(`/tasks/${activeTaskId}/log-time`, { hours, note });
           const task = allTasks.find(t => t.id === activeTaskId);
           if (task) {
             task.loggedHours = (task.loggedHours || 0) + hours;
             document.getElementById('drawerTimeText').textContent = `${task.loggedHours}h / ${task.estimatedHours || 8}h`;
             renderViewArea();
           }
+          this.openDrawer(activeTaskId);
         } catch (e) {
           if (window.showToast) window.showToast('Failed to log time', 'error');
           else alert('Failed to log time');
         }
       }
     },
-    addSubtask() {
+    async postComment(evt) {
+      evt.preventDefault();
+      if (!activeTaskId) return;
+      const input = document.getElementById('drawerCommentInput');
+      const content = input.value.trim();
+      if (!content) return;
+      
+      try {
+        await APP_API.post(`/tasks/${activeTaskId}/comments`, { content });
+        input.value = '';
+        this.openDrawer(activeTaskId);
+      } catch (e) {
+        if (window.showToast) window.showToast('Failed to post comment', 'error');
+      }
+    },
+    async addSubtask() {
+      if (!activeTaskId) return;
       const title = prompt('Enter subtask title:');
       if (title) {
-        const list = document.getElementById('drawerSubtaskList');
-        if (list.innerHTML.includes('No subtasks')) list.innerHTML = '';
-        list.innerHTML += `<div style="display:flex; align-items:center; gap:0.5rem; background:rgba(255,255,255,0.02); padding:0.6rem; border-radius:6px; font-size:0.85rem;"><input type="checkbox" style="cursor:pointer;"> <span>${title}</span></div>`;
+        try {
+          await APP_API.post('/tasks', { title, parentTaskId: activeTaskId, stage: 'To Do', client: activeSpace !== 'all' ? activeSpace : 'Agency' });
+          if (window.showToast) window.showToast('Subtask created!');
+          loadData();
+          // Optionally refresh drawer or close it; closing it is easiest for now
+          this.closeDrawer();
+        } catch(e) {
+          if (window.showToast) window.showToast('Failed to create subtask', 'error');
+        }
       }
     },
     async markApproved() {
@@ -349,4 +544,7 @@ window.APP_MODULES.kanban = async function(container) {
   };
 
   await loadData();
+  if (window.KANBAN_MODULE && window.KANBAN_MODULE.populateFilterDropdowns) {
+    window.KANBAN_MODULE.populateFilterDropdowns();
+  }
 };

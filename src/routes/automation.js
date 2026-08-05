@@ -15,15 +15,38 @@ router.get('/logs', requireAuth, requireAdmin, async (req, res) => {
   res.json([]);
 });
 
-// GET Automation Active Rules (static definition list)
-router.get('/rules', requireAuth, (req, res) => {
-  res.json([
-    { id: 'AUT-001', name: 'Task Stage Editing → Telegram Alert to Editor', active: true },
-    { id: 'AUT-003', name: 'Lead Won → Auto Create Client CRM Account', active: true },
-    { id: 'AUT-004', name: 'Task Stage Client Review → Telegram Push & Review Room Link', active: true },
-    { id: 'AUT-005', name: 'Invoice Paid → Payment Verification Telegram Push', active: true },
-    { id: 'AUT-006', name: 'Social Post Approved by Client → Publisher Notification', active: true }
-  ]);
+// GET Automation Active Rules
+router.get('/rules', requireAuth, async (req, res) => {
+  if (isSupabaseConfigured()) {
+    const { data, error } = await supabase.from('automation_rules').select('*').order('created_at', { ascending: false });
+    if (!error && data) return res.json(data);
+  }
+  res.json([]);
+});
+
+// POST Create Automation Rule
+router.post('/rules', requireAuth, requireAdmin, async (req, res) => {
+  if (!isSupabaseConfigured()) return res.status(503).json({ error: 'Database unavailable' });
+
+  const { rule_name, trigger_event, condition_field, condition_value, action_type, action_target } = req.body;
+  if (!rule_name || !trigger_event || !action_type) {
+    return res.status(400).json({ error: 'Missing required rule fields' });
+  }
+
+  const payload = {
+    rule_name,
+    trigger_event,
+    condition_field: condition_field || null,
+    condition_value: condition_value || null,
+    action_type,
+    action_target: action_target || null,
+    active: true
+  };
+
+  const { data, error } = await supabase.from('automation_rules').insert([payload]).select().single();
+  if (error) return res.status(500).json({ error: error.message });
+
+  res.json({ success: true, rule: data });
 });
 
 // POST Manual Trigger Simulation (Admin test) — Supabase only, no db.json write

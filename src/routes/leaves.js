@@ -78,18 +78,58 @@ router.post('/leaves', requireAuth, async (req, res) => {
 router.post(['/leaves/:id/approve', '/leaves/:id/manager-approve'], requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
+    
+    // 1. Fetch leave to determine type and days
+    const { data: leaveReq, error: fetchErr } = await supabase.from('leaves').select('*').eq('id', id).single();
+    if (fetchErr) throw fetchErr;
+
+    // 2. Update Leave Status
     const updates = {
       status: 'Approved',
-      reviewed_by: req.body.reviewedBy || req.user.name || 'Manager',
+      manager_reviewed_by: req.body.reviewedBy || req.user.name || 'Manager',
       updated_at: new Date().toISOString()
     };
-
     const { data, error } = await supabase.from('leaves').update(updates).eq('id', id).select().single();
     if (error) throw error;
+
+    // 3. Update Leave Balances
+    if (leaveReq && leaveReq.employee_id) {
+      const start = new Date(leaveReq.start_date);
+      const end = new Date(leaveReq.end_date);
+      // Basic days diff + 1 (inclusive). Note: v0.7.4.7 handles excluding weekends on frontend submission (totalDays)
+      let days = Math.round((end - start) / (1000 * 60 * 60 * 24)) + 1;
+      if (days < 1) days = 1;
+
+      // Determine type
+      const isSick = (leaveReq.leave_type || '').toLowerCase().includes('sick');
+      const usedCol = isSick ? 'sick_leaves_used' : 'casual_leaves_used';
+
+      // Fetch current profile to get current used balance
+      const { data: profile } = await supabase.from('profiles').select(usedCol).eq('id', leaveReq.employee_id).single();
+      
+      if (profile) {
+        const currentUsed = profile[usedCol] || 0;
+        await supabase.from('profiles').update({
+          [usedCol]: currentUsed + days
+        }).eq('id', leaveReq.employee_id);
+      } else {
+        // Fallback for emp_code
+        const { data: profileEmpCode } = await supabase.from('profiles').select(usedCol).eq('emp_code', leaveReq.employee_id).single();
+        if (profileEmpCode) {
+          const currentUsed = profileEmpCode[usedCol] || 0;
+          await supabase.from('profiles').update({
+            [usedCol]: currentUsed + days
+          }).eq('emp_code', leaveReq.employee_id);
+        }
+      }
+    }
 
     const leave = mapLeave(data);
     const { data: allLeaves } = await supabase.from('leaves').select('*').order('created_at', { ascending: false });
     broadcast('leave_update', (allLeaves || []).map(mapLeave));
+    // Broadcast team update so UI reflects new balances
+    const { data: teamData } = await supabase.from('profiles').select('*').order('created_at', { ascending: false });
+    broadcast('team_update', teamData || []);
 
     res.json({ success: true, leave });
   } catch (err) {

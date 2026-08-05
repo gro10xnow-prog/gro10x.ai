@@ -180,4 +180,75 @@ router.put('/comments/:commentId/resolve', requireAuth, async (req, res) => {
   }
 });
 
+// GET /:id/drawings — Load all drawings for a review video
+router.get('/:id/drawings', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { data, error } = await supabase.from('review_drawings').select('*').eq('review_id', id);
+    if (error) throw error;
+    res.json(data || []);
+  } catch (err) {
+    console.error('Review Drawings GET error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /:id/drawings — Save drawing at a specific timestamp
+router.post('/:id/drawings', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { timestampSec, drawingData } = req.body;
+    
+    const payload = {
+      review_id: id,
+      timestamp_sec: timestampSec,
+      drawing_data: drawingData,
+      author: req.user.name
+    };
+
+    // Note: We might want to overwrite existing drawings at exact timestamp, or append.
+    // Let's just insert new ones for now, UI will render all overlapping.
+    // We could optionally delete existing for this timestamp by this author before inserting.
+    await supabase.from('review_drawings').delete()
+      .eq('review_id', id)
+      .eq('timestamp_sec', timestampSec)
+      .eq('author', req.user.name);
+
+    const { data, error } = await supabase.from('review_drawings').insert([payload]).select().single();
+    if (error) throw error;
+
+    broadcast('drawing_update', { reviewId: id, drawing: data });
+    res.json({ success: true, drawing: data });
+  } catch (err) {
+    console.error('Review Drawings POST error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /:id/approve — Client formal sign-off
+router.post('/:id/approve', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { data: reviewData, error: fetchErr } = await supabase.from('reviews').select('*').eq('id', id).single();
+    if (fetchErr) throw fetchErr;
+
+    const updates = {
+      approved_by: req.user.name,
+      approved_at: new Date().toISOString()
+    };
+    
+    // Auto-release invoice logic (mock)
+    // Here you would trigger automation to mark the linked project/invoice as ready for payment
+    // updates.invoice_released = true;
+    
+    const { data, error } = await supabase.from('reviews').update(updates).eq('id', id).select().single();
+    if (error) throw error;
+
+    res.json({ success: true, review: data });
+  } catch (err) {
+    console.error('Review Approve error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;

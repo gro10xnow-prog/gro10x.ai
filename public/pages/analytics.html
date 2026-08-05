@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PurpleOS — Agency Analytics</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/css/shell.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    .analytics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+    }
+    .chart-card {
+      background: var(--panel-bg);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px;
+      padding: 1.5rem;
+      position: relative;
+    }
+    .chart-title {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 0.2rem;
+    }
+    .chart-subtitle {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 1.2rem;
+    }
+    canvas {
+      max-height: 280px;
+    }
+    
+    .scorecard-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    .scorecard-table th {
+      text-align: left;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      padding: 0.5rem;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .scorecard-table td {
+      padding: 0.8rem 0.5rem;
+      font-size: 0.85rem;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+    }
+  </style>
+</head>
+<body>
+  <!-- App Header -->
+  <div id="app-header"></div>
+
+  <div class="main-wrapper">
+    <!-- App Sidebar -->
+    <div id="app-sidebar"></div>
+
+    <!-- Main Content Area -->
+    <main class="content-area">
+      <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+        <div>
+          <h1 style="font-size: 1.8rem; font-weight: 800; color: #fff; margin: 0;">📈 Agency Analytics</h1>
+          <div style="font-size: 0.95rem; color: var(--text-muted); margin-top: 0.2rem;">Live performance, revenue, and delivery reports.</div>
+        </div>
+        <div style="display: flex; gap: 0.8rem;">
+          <select id="timeRangeSelect" class="input-base" style="width: auto; padding: 0.5rem 1rem;" onchange="loadAnalytics()">
+            <option value="30">Last 30 Days</option>
+            <option value="90">Last 90 Days</option>
+            <option value="365">This Year</option>
+          </select>
+          <button class="btn-primary" onclick="exportAnalyticsReport()">📥 Export Report</button>
+        </div>
+      </div>
+
+      <!-- Time Series Charts -->
+      <div class="analytics-grid">
+        <div class="chart-card">
+          <div class="chart-title">💰 Revenue Trend</div>
+          <div class="chart-subtitle">Daily paid invoice revenue</div>
+          <canvas id="revenueChart"></canvas>
+        </div>
+        
+        <div class="chart-card">
+          <div class="chart-title">📋 Task Pipeline & Throughput</div>
+          <div class="chart-subtitle">Tasks completed by day</div>
+          <canvas id="tasksChart"></canvas>
+        </div>
+      </div>
+
+      <div class="analytics-grid">
+        <!-- Lead Funnel & UTM Source -->
+        <div class="chart-card">
+          <div class="chart-title">🎯 Lead Generation by UTM Source</div>
+          <div class="chart-subtitle">Which channels drive the most landed leads</div>
+          <canvas id="utmChart"></canvas>
+        </div>
+        
+        <!-- Department Scorecard -->
+        <div class="chart-card">
+          <div class="chart-title">🏢 Department Scorecard</div>
+          <div class="chart-subtitle">Delivery and quality metrics per department</div>
+          <table class="scorecard-table">
+            <thead>
+              <tr>
+                <th>Department</th>
+                <th>Tasks Done</th>
+                <th>Avg Turnaround</th>
+                <th>QC Pass Rate</th>
+              </tr>
+            </thead>
+            <tbody id="departmentScorecardBody">
+              <tr><td colspan="4" style="text-align:center; color: var(--text-dim);">Loading metrics...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Client Performance Scorecard -->
+      <div class="chart-card" style="margin-top: 1.5rem;">
+        <div class="chart-title">🤝 Client Delivery Performance</div>
+        <div class="chart-subtitle">On-time rate, revision counts, and turnaround times per client account</div>
+        <div style="overflow-x: auto;">
+          <table class="scorecard-table">
+            <thead>
+              <tr>
+                <th>Client Name</th>
+                <th>Tasks Delivered</th>
+                <th>On-Time Rate</th>
+                <th>Avg Revisions</th>
+                <th>Avg Turnaround</th>
+              </tr>
+            </thead>
+            <tbody id="clientScorecardBody">
+              <tr><td colspan="5" style="text-align:center; color: var(--text-dim);">Loading client metrics...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script src="/js/shell.js"></script>
+  <script>
+    Chart.defaults.color = 'rgba(255, 255, 255, 0.6)';
+    Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
+    Chart.defaults.scale.grid.color = 'rgba(255, 255, 255, 0.05)';
+
+    let revenueChartInstance = null;
+    let tasksChartInstance = null;
+    let utmChartInstance = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadAnalytics();
+    });
+
+    async function loadAnalytics() {
+      const days = document.getElementById('timeRangeSelect').value;
+      const token = localStorage.getItem('sb-access-token');
+      const headers = { 'Authorization': `Bearer ${token}` };
+
+      try {
+        // Fetch Time-Series Data
+        const timeSeriesRes = await fetch(`/api/analytics/time-series?days=${days}`, { headers }).then(r => r.json());
+        renderTimeSeries(timeSeriesRes);
+
+        // Fetch Scorecards & Breakdowns
+        const scorecardsRes = await fetch(`/api/analytics/scorecards?days=${days}`, { headers }).then(r => r.json());
+        renderUTMChart(scorecardsRes.utmBreakdown);
+        renderDepartmentScorecard(scorecardsRes.departments);
+        renderClientScorecard(scorecardsRes.clients);
+      } catch (err) {
+        console.error('Analytics load error:', err);
+      }
+    }
+
+    function renderTimeSeries(data) {
+      if (!Array.isArray(data)) return;
+      
+      const labels = data.map(d => new Date(d.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }));
+      const revenue = data.map(d => d.revenue);
+      const tasks = data.map(d => d.tasksCompleted);
+
+      // Revenue Chart
+      if (revenueChartInstance) revenueChartInstance.destroy();
+      const ctxRev = document.getElementById('revenueChart').getContext('2d');
+      revenueChartInstance = new Chart(ctxRev, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Revenue (BDT)',
+            data: revenue,
+            borderColor: '#ec4899',
+            backgroundColor: 'rgba(236, 72, 153, 0.1)',
+            borderWidth: 3,
+            fill: true,
+            tension: 0.4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } }
+        }
+      });
+
+      // Tasks Chart
+      if (tasksChartInstance) tasksChartInstance.destroy();
+      const ctxTasks = document.getElementById('tasksChart').getContext('2d');
+      tasksChartInstance = new Chart(ctxTasks, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Tasks Completed',
+            data: tasks,
+            backgroundColor: '#8b5cf6',
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } }
+        }
+      });
+    }
+
+    function renderUTMChart(utmData) {
+      if (!utmData) return;
+      
+      const labels = Object.keys(utmData);
+      const data = Object.values(utmData);
+
+      if (utmChartInstance) utmChartInstance.destroy();
+      const ctxUtm = document.getElementById('utmChart').getContext('2d');
+      utmChartInstance = new Chart(ctxUtm, {
+        type: 'doughnut',
+        data: {
+          labels: labels.length ? labels : ['No Data'],
+          datasets: [{
+            data: data.length ? data : [1],
+            backgroundColor: ['#8b5cf6', '#ec4899', '#3b82f6', '#10b981', '#f59e0b', '#374151'],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '70%',
+          plugins: {
+            legend: { position: 'right' }
+          }
+        }
+      });
+    }
+
+    function renderDepartmentScorecard(depts) {
+      const tbody = document.getElementById('departmentScorecardBody');
+      if (!depts || depts.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color: var(--text-dim);">No department data available.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = depts.map(d => `
+        <tr>
+          <td><strong style="color: #fff;">${d.name}</strong></td>
+          <td>${d.tasksDone}</td>
+          <td>${d.avgTurnaroundDays.toFixed(1)} days</td>
+          <td><span style="color: ${d.qcPassRate >= 90 ? '#10b981' : '#f59e0b'}">${d.qcPassRate.toFixed(1)}%</span></td>
+        </tr>
+      `).join('');
+    }
+
+    function renderClientScorecard(clients) {
+      const tbody = document.getElementById('clientScorecardBody');
+      if (!clients || clients.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color: var(--text-dim);">No client data available.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = clients.map(c => `
+        <tr>
+          <td>
+            <div style="display:flex; align-items:center; gap:0.5rem;">
+              <div style="width:28px;height:28px;border-radius:6px;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:bold;">${c.name.substring(0,2).toUpperCase()}</div>
+              <strong style="color:#fff;">${c.name}</strong>
+            </div>
+          </td>
+          <td>${c.tasksDelivered}</td>
+          <td><span style="color: ${c.onTimeRate >= 85 ? '#10b981' : '#ef4444'}">${c.onTimeRate.toFixed(1)}%</span></td>
+          <td>${c.avgRevisions.toFixed(1)}</td>
+          <td>${c.avgTurnaround.toFixed(1)} days</td>
+        </tr>
+      `).join('');
+    }
+
+    function exportAnalyticsReport() {
+      const table = prompt('Which data would you like to export?\n(tasks, clients, invoices, leads, attendance, expenses)', 'tasks');
+      const validTables = ['tasks', 'clients', 'invoices', 'leads', 'attendance', 'expenses'];
+      if (table) {
+        if (validTables.includes(table.toLowerCase().trim())) {
+          window.location.href = '/api/export/' + table.toLowerCase().trim();
+        } else {
+          alert('Invalid table. Please choose from: ' + validTables.join(', '));
+        }
+      }
+    }
+  </script>
+</body>
+</html>

@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Purple Bot — Client Portal</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <!-- jsPDF for Invoice generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -271,20 +273,43 @@
     .btn-secondary {
       width: 100%;
       padding: 0.85rem;
-      background: var(--surface);
-      border: 1.5px solid var(--border);
-      border-radius: 16px;
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
       font-family: 'Outfit', sans-serif;
-      font-size: 0.9rem;
+      font-size: 0.95rem;
       font-weight: 700;
       color: var(--text-2);
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 0.5rem;
-      transition: all 0.15s;
-      margin-top: 0.5rem;
+    }
+
+    /* ───── SHIMMER SKELETON ───── */
+    @keyframes shimmer {
+      0% { background-position: -1000px 0; }
+      100% { background-position: 1000px 0; }
+    }
+    .skeleton-box {
+      display: inline-block;
+      height: 1em;
+      position: relative;
+      overflow: hidden;
+      background: #e2e8f0;
+      background-image: linear-gradient(to right, #e2e8f0 0%, #f1f5f9 20%, #e2e8f0 40%, #e2e8f0 100%);
+      background-repeat: no-repeat;
+      background-size: 1000px 100%;
+      animation-duration: 1.5s;
+      animation-fill-mode: forwards;
+      animation-iteration-count: infinite;
+      animation-name: shimmer;
+      animation-timing-function: linear;
+      border-radius: 6px;
+    }
+    .tg-dark-theme .skeleton-box {
+      background: #1e293b;
+      background-image: linear-gradient(to right, #1e293b 0%, #334155 20%, #1e293b 40%, #1e293b 100%);
     }
 
     /* ───── FEEDBACK FORM ───── */
@@ -564,9 +589,9 @@
     <div class="card">
       <div class="card-title">Active Campaign</div>
       <div id="homeActiveCampaign">
-        <div style="font-size:0.92rem;font-weight:800;color:var(--text);margin-bottom:0.5rem;" id="homeCampaignTitle">Loading...</div>
-        <div class="campaign-stages" id="homeCampaignStages"></div>
-        <div style="font-size:0.75rem;color:var(--text-2);" id="homeCampaignMeta">—</div>
+        <div style="font-size:0.92rem;font-weight:800;color:var(--text);margin-bottom:0.5rem;" id="homeCampaignTitle"><div class="skeleton-box" style="width: 60%;"></div></div>
+        <div class="campaign-stages" id="homeCampaignStages"><div class="skeleton-box" style="width: 100%; height: 32px; border-radius: 12px;"></div></div>
+        <div style="font-size:0.75rem;color:var(--text-2);" id="homeCampaignMeta"><div class="skeleton-box" style="width: 40%;"></div></div>
       </div>
     </div>
 
@@ -717,7 +742,7 @@
           <div>
             <div class="contact-name" id="amName">Account Manager</div>
             <div class="contact-role">Your Primary Contact</div>
-            <div class="contact-phone" id="amPhone">Loading...</div>
+            <div class="contact-phone" id="amPhone"><div class="skeleton-box" style="width: 70%;"></div></div>
           </div>
         </div>
       </div>
@@ -1220,9 +1245,30 @@
   }
 
   // ══════════════════════════════════════════
+  // SSE REAL-TIME RECONNECT
+  // ══════════════════════════════════════════
+  let sseConnection = null;
+  function setupSSE() {
+    if (!window.EventSource) return;
+    if (sseConnection) sseConnection.close();
+    sseConnection = new EventSource('/api/events');
+    sseConnection.onmessage = (e) => {
+      try {
+        const payload = JSON.parse(e.data);
+        if (payload.type === 'task_update') loadCampaigns();
+      } catch(err) {}
+    };
+    sseConnection.onerror = () => {
+      sseConnection.close();
+      setTimeout(setupSSE, 4000); // 4-second auto-reconnect fallback
+    };
+  }
+
+  // ══════════════════════════════════════════
   // START
   // ══════════════════════════════════════════
   init();
+  setupSSE();
   // Set today's date as default
   document.getElementById('inpPayDate').valueAsDate = new Date();
 </script>

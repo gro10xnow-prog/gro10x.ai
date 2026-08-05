@@ -58,6 +58,60 @@ window.APP_MODULES.hr = async function(container) {
       <div class="data-table-container">
         ${renderHrTabGrid()}
       </div>
+
+      <!-- Add Team Member Modal -->
+      <div id="hrAddMemberModal" class="modal-overlay">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3>+ Onboard Team Member</h3>
+            <button class="modal-close" onclick="window.HR_MODULE.closeAddModal()">✕</button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <label>Full Name *</label>
+              <input type="text" id="hrAddName" placeholder="e.g. Ayman Rahman" class="input-text" />
+            </div>
+            <div class="form-group">
+              <label>Phone Number (Login ID) *</label>
+              <input type="text" id="hrAddPhone" placeholder="e.g. +8801700000000" class="input-text" />
+            </div>
+            <div class="form-group">
+              <label>Temporary Web PIN</label>
+              <input type="text" id="hrAddPin" placeholder="1234" class="input-text" />
+            </div>
+            <div style="display:flex; gap:1rem;">
+              <div class="form-group" style="flex:1;">
+                <label>Role</label>
+                <input type="text" id="hrAddRole" placeholder="e.g. Video Editor" class="input-text" />
+              </div>
+              <div class="form-group" style="flex:1;">
+                <label>Department</label>
+                <select id="hrAddDept" class="input-text">
+                  <option value="Production">Production</option>
+                  <option value="Post Production">Post Production</option>
+                  <option value="Strategy">Strategy & Account Management</option>
+                  <option value="Creative">Creative & Design</option>
+                  <option value="Growth">Growth & Ads</option>
+                  <option value="Admin">Admin & Finance</option>
+                </select>
+              </div>
+            </div>
+            <div style="display:flex; gap:1rem;">
+              <div class="form-group" style="flex:1;">
+                <label>Base Salary (BDT)</label>
+                <input type="number" id="hrAddSalary" placeholder="35000" class="input-text" />
+              </div>
+              <div class="form-group" style="flex:1;">
+                <label>bKash Number</label>
+                <input type="text" id="hrAddBkash" placeholder="01700000000" class="input-text" />
+              </div>
+            </div>
+            <div style="margin-top: 1.5rem; text-align: right;">
+              <button class="btn-primary" onclick="window.HR_MODULE.submitMember()">Add Member</button>
+            </div>
+          </div>
+        </div>
+      </div>
     `;
   }
 
