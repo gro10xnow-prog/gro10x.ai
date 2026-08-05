@@ -2181,7 +2181,18 @@
   }
 
   let currentSheetTask = null;
-  const CANONICAL_STAGES = ['Briefing', 'Scripting', 'Shooting', 'Editing', 'Internal QC', 'Client Review', 'Approved'];
+  const WORKFLOW_MAP = {
+    'social': ['Draft', 'Graphic Design', 'Copy Review', 'Scheduled', 'Published'],
+    'branding': ['Strategy', 'Concepts', 'Client Refinement', 'Master Delivered'],
+    'video': ['Briefing', 'Scripting', 'Shooting', 'Editing', 'Internal QC', 'Client Review', 'Approved']
+  };
+
+  function getMiniappTaskStages(task) {
+    const category = (task?.category || task?.workflow_type || task?.department || task?.title || '').toLowerCase();
+    if (category.includes('social') || category.includes('posm')) return WORKFLOW_MAP['social'];
+    if (category.includes('brand') || category.includes('identity')) return WORKFLOW_MAP['branding'];
+    return WORKFLOW_MAP['video'];
+  }
 
   function logMiniappTime(taskId) {
     openTaskDetailSheet(taskId);
@@ -2202,23 +2213,24 @@
     }
 
     currentSheetTask = task;
+    const stages = getMiniappTaskStages(task);
 
     document.getElementById('sheetTaskTitle').textContent = task.title;
-    document.getElementById('sheetStageBadge').textContent = task.stage || 'Briefing';
+    document.getElementById('sheetStageBadge').textContent = task.stage || stages[0];
     document.getElementById('sheetStageBadge').className = `stage-badge ${stageClass[task.stage] || 'stage-brief'}`;
     document.getElementById('sheetTaskSub').textContent = `🏢 ${task.client || 'Agency'} · 👤 ${task.assignee || 'Unassigned'}`;
     document.getElementById('sheetTimeDisplay').textContent = `${task.loggedHours || 0}h / ${task.estimatedHours || 8}h`;
 
     // Smart Next Stage Button
-    const currIdx = CANONICAL_STAGES.indexOf(task.stage || 'Briefing');
-    const nextStage = currIdx >= 0 && currIdx < CANONICAL_STAGES.length - 1 ? CANONICAL_STAGES[currIdx + 1] : null;
+    const currIdx = stages.indexOf(task.stage || stages[0]);
+    const nextStage = currIdx >= 0 && currIdx < stages.length - 1 ? stages[currIdx + 1] : null;
     const btn = document.getElementById('sheetNextStageBtn');
     if (nextStage) {
       btn.textContent = `→ Move to ${nextStage}`;
       btn.disabled = false;
       btn.style.opacity = '1';
     } else {
-      btn.textContent = `✅ Task Completed (${task.stage || 'Approved'})`;
+      btn.textContent = `✅ Task Completed (${task.stage || stages[stages.length - 1]})`;
       btn.disabled = true;
       btn.style.opacity = '0.7';
     }
@@ -2244,8 +2256,9 @@
 
   async function advanceMiniappStageFromSheet() {
     if (!currentSheetTask) return;
-    const currIdx = CANONICAL_STAGES.indexOf(currentSheetTask.stage || 'Briefing');
-    const nextStage = currIdx >= 0 && currIdx < CANONICAL_STAGES.length - 1 ? CANONICAL_STAGES[currIdx + 1] : null;
+    const stages = getMiniappTaskStages(currentSheetTask);
+    const currIdx = stages.indexOf(currentSheetTask.stage || stages[0]);
+    const nextStage = currIdx >= 0 && currIdx < stages.length - 1 ? stages[currIdx + 1] : null;
     if (!nextStage) return;
 
     await advanceMiniappStage(currentSheetTask.id, nextStage);

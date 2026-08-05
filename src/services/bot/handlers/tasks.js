@@ -8,7 +8,18 @@
 const { supabase } = require('../../supabase');
 const state = require('../../state');
 
-const CANONICAL_STAGES = ['Briefing', 'Scripting', 'Shooting', 'Editing', 'Internal QC', 'Client Review', 'Approved'];
+const WORKFLOW_MAP = {
+  'social': ['Draft', 'Graphic Design', 'Copy Review', 'Scheduled', 'Published'],
+  'branding': ['Strategy', 'Concepts', 'Client Refinement', 'Master Delivered'],
+  'video': ['Briefing', 'Scripting', 'Shooting', 'Editing', 'Internal QC', 'Client Review', 'Approved']
+};
+
+function getTaskStages(task) {
+  const category = (task.category || task.workflow_type || task.department || task.title || '').toLowerCase();
+  if (category.includes('social') || category.includes('posm')) return WORKFLOW_MAP['social'];
+  if (category.includes('brand') || category.includes('identity')) return WORKFLOW_MAP['branding'];
+  return WORKFLOW_MAP['video'];
+}
 
 async function handleMyTasks(teamBot, msg) {
   const chatId = msg.chat.id;
@@ -44,9 +55,10 @@ async function handleMyTasks(teamBot, msg) {
 
   // Send individual task cards with 1-tap action buttons
   for (const [index, t] of tasks.entries()) {
-    const currStage = t.stage || 'Briefing';
-    const currIdx = CANONICAL_STAGES.indexOf(currStage);
-    const nextStage = currIdx >= 0 && currIdx < CANONICAL_STAGES.length - 1 ? CANONICAL_STAGES[currIdx + 1] : null;
+    const stages = getTaskStages(t);
+    const currStage = t.stage || stages[0];
+    const currIdx = stages.indexOf(currStage);
+    const nextStage = currIdx >= 0 && currIdx < stages.length - 1 ? stages[currIdx + 1] : null;
 
     let cardText = `${index + 1}. *${t.title}*\n`;
     cardText += `🏢 Client: *${t.client || 'Agency'}*\n`;
