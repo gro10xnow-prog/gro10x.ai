@@ -1445,10 +1445,39 @@ function registerLegacyTeamMenus(teamBot, readDB) {
           const profileHandler = require('./profile');
           profileHandler.handleMyBank(teamBot, query.message);
           alertMsg = 'Opening Bank Details...';
-        } else if (data === 'tech_fresh_pin') {
-          const pinRecord = await createTempPin(emp.phone, emp.emp_code || emp.id, 'team', emp.email);
-          alertMsg = `🔑 New Web PIN Generated: ${pinRecord.pin}`;
-          teamBot.sendMessage(chatId, `🔑 *New Web Login PIN:* \`${pinRecord.pin}\`\n\nUse this PIN at https://purpleos-iota.vercel.app/auth`, { parse_mode: 'Markdown' });
+        } else if (data.startsWith('task_advance:')) {
+          const parts = data.split(':');
+          const taskId = parts[1];
+          const targetStage = parts[2];
+
+          if (supabase) {
+            await supabase.from('tasks').update({
+              stage: targetStage,
+              custom_status: targetStage,
+              updated_at: new Date().toISOString()
+            }).eq('id', taskId);
+          }
+
+          alertMsg = `✅ Task moved to ${targetStage}!`;
+          statusBadge = `✅ Stage: ${targetStage}`;
+          teamBot.sendMessage(chatId, `✅ *Task Advanced!*\n\nTask \`${taskId}\` has been moved to *${targetStage}*.`, { parse_mode: 'Markdown' });
+
+          if (targetStage === 'Internal QC') {
+            try {
+              const { sendTelegramNotification } = require('../notifications');
+              const { data: ruhul } = await supabase.from('profiles').select('*').eq('emp_code', 'PBD-006').maybeSingle();
+              if (ruhul?.telegram_id) {
+                sendTelegramNotification(ruhul.telegram_id,
+                  `🔍 *Internal QC Review Required*\n\n• Task ID: *${taskId}*\n• Submitted by: *${emp.name}*\n\nPlease review and either approve for client delivery or send back for revision.`,
+                  [
+                    [{ text: '✅ QC Approve → Client Review', url: `https://purpleos-iota.vercel.app/admin?tab=tasks&action=qc-approve&id=${taskId}` }],
+                    [{ text: '✏️ Send Back for Revision', url: `https://purpleos-iota.vercel.app/admin?tab=tasks&action=qc-reject&id=${taskId}` }]
+                  ],
+                  true
+                );
+              }
+            } catch(e) {}
+          }
         } else if (data.startsWith('approve_leave:')) {
           const leaveId = data.split(':')[1];
           if (supabase) {
