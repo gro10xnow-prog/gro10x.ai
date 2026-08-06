@@ -2,8 +2,8 @@
  * public/app/modules/hr.js
  * ─────────────────────────────────────────────────────────────────────────────
  * HR Operations, Team Roster & Staff Profile Drawer Module (Admin SPA)
- * Manages roster, workload capacity, PDF payslips, leave approvals, and full
- * staff profile & survey drawers (skills, banking, attendance, EODs).
+ * v2.0 — Full Rebuild with Real jsPDF Payslips, ❌ Reject Leave button,
+ * 4 KPI tiles, UUID emp_code generation, toast notifications, and error states.
  * ─────────────────────────────────────────────────────────────────────────────
  */
 window.APP_MODULES = window.APP_MODULES || {};
@@ -15,43 +15,92 @@ window.APP_MODULES.hr = async function(container) {
   let workloadData = [];
   let attendanceData = [];
   let eodData = [];
+  let isLoading = true;
+  let hasError = false;
+
+  function escapeHTML(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
 
   async function loadHROps() {
-    const [team, leaves, workload, attendance, eod] = await Promise.all([
-      APP_API.get('/team').catch(() => []),
-      APP_API.get('/leaves').catch(() => []),
-      APP_API.get('/team/workload').catch(() => []),
-      APP_API.get('/team/attendance').catch(() => []),
-      APP_API.get('/team/eod').catch(() => [])
-    ]);
+    isLoading = true;
+    hasError = false;
+    renderSkeleton();
 
-    teamData = Array.isArray(team) ? team : [];
-    leavesData = Array.isArray(leaves) ? leaves : [];
-    workloadData = Array.isArray(workload) ? workload : [];
-    attendanceData = Array.isArray(attendance) ? attendance : [];
-    eodData = Array.isArray(eod) ? eod : [];
+    try {
+      const [team, leaves, workload, attendance, eod] = await Promise.all([
+        APP_API.get('/team').catch(err => { throw err; }),
+        APP_API.get('/leaves').catch(() => []),
+        APP_API.get('/team/workload').catch(() => []),
+        APP_API.get('/team/attendance').catch(() => []),
+        APP_API.get('/team/eod').catch(() => [])
+      ]);
 
-    // Merge workload into team data
-    teamData = teamData.map(m => {
-      const wl = workloadData.find(w => w.empCode === m.emp_code || w.empCode === m.id || w.name === m.name);
-      if (wl) {
-        m.capacity = wl.capacity || 40;
-        m.assignedHours = wl.assignedHours || 0;
-        m.workloadPercent = wl.workloadPercent || 0;
-      } else {
-        m.capacity = 40;
-        m.assignedHours = 0;
-        m.workloadPercent = 0;
-      }
-      return m;
-    });
+      teamData = Array.isArray(team) ? team : [];
+      leavesData = Array.isArray(leaves) ? leaves : [];
+      workloadData = Array.isArray(workload) ? workload : [];
+      attendanceData = Array.isArray(attendance) ? attendance : [];
+      eodData = Array.isArray(eod) ? eod : [];
 
-    renderHRView();
+      // Merge workload into team data
+      teamData = teamData.map(m => {
+        const wl = workloadData.find(w => w.empCode === m.emp_code || w.empCode === m.id || w.name === m.name);
+        if (wl) {
+          m.capacity = wl.capacity || 40;
+          m.assignedHours = wl.assignedHours || 0;
+          m.workloadPercent = wl.workloadPercent || 0;
+        } else {
+          m.capacity = 40;
+          m.assignedHours = 0;
+          m.workloadPercent = 0;
+        }
+        return m;
+      });
+
+      isLoading = false;
+      renderHRView();
+    } catch (err) {
+      console.error('[HR Module] Load error:', err);
+      isLoading = false;
+      hasError = true;
+      renderErrorState(err.message || 'Failed to load team roster and HR data.');
+    }
+  }
+
+  function renderSkeleton() {
+    container.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1.5rem; flex-wrap:wrap; gap:1rem;">
+        <div>
+          <h1 style="font-size: 1.6rem; font-weight: 800; font-family: var(--font-heading); margin: 0 0 0.3rem;">
+            👨‍💼 HR Operations, Team Roster & Staff Profiles
+          </h1>
+          <div style="font-size: 0.88rem; color: var(--text-muted);">
+            Manage team roster, view staff survey profiles, track attendance, generate PDF payslips, and review leave requests.
+          </div>
+        </div>
+      </div>
+      <div style="padding: 3rem; text-align: center; color: var(--text-muted);">Loading team roster and HR operations...</div>
+    `;
+  }
+
+  function renderErrorState(message) {
+    container.innerHTML = `
+      <div style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); border-radius:16px; padding:3rem; text-align:center; color:#fca5a5; margin-top:2rem;">
+        <div style="font-size:2.5rem; margin-bottom:0.5rem;">⚠️</div>
+        <div style="font-size:1.1rem; font-weight:700; color:#fff; margin-bottom:0.4rem;">Error Loading HR Operations</div>
+        <div style="font-size:0.85rem; margin-bottom:1.5rem;">${escapeHTML(message)}</div>
+        <button class="btn-primary" onclick="window.HR_MODULE.reload()">🔄 Retry Loading</button>
+      </div>
+    `;
   }
 
   function renderHRView() {
     const pendingLeaves = leavesData.filter(l => l.status === 'Pending').length;
-    const inStudioCount = teamData.filter(m => m.status === 'In Studio').length;
+    const inStudioCount = teamData.filter(m => (m.status || '').toLowerCase() === 'in studio').length;
+    const onLeaveCount = teamData.filter(m => (m.status || '').toLowerCase() === 'on leave').length;
+    const currentMonthStr = new Date().toISOString().slice(0, 7);
+    const approvedThisMonth = leavesData.filter(l => l.status === 'Approved' && (l.startDate || '').startsWith(currentMonthStr)).length;
 
     container.innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1.5rem; flex-wrap:wrap; gap:1rem;">
@@ -63,14 +112,14 @@ window.APP_MODULES.hr = async function(container) {
             Manage team roster, view staff survey profiles, track attendance, generate PDF payslips, and review leave requests.
           </div>
         </div>
-        <div style="display:flex; gap:0.5rem;">
-          <button class="btn-secondary" onclick="window.location.href='/api/team/attendance-report'">📊 Export Attendance (CSV)</button>
+        <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+          <a href="/api/team/attendance-report" target="_blank" class="btn-secondary" style="text-decoration:none; font-size:0.85rem;">📊 Export Attendance (CSV)</a>
           <button class="btn-primary" onclick="window.HR_MODULE.openAddModal()">+ Onboard Team Member</button>
         </div>
       </div>
 
       <!-- KPI Summary Cards -->
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; margin-bottom: 1.5rem;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 1.25rem; margin-bottom: 1.5rem;">
         <div class="kpi-tile">
           <div class="kpi-label">Active Headcount</div>
           <div class="kpi-val">${teamData.length}</div>
@@ -80,14 +129,18 @@ window.APP_MODULES.hr = async function(container) {
           <div class="kpi-val" style="color: var(--emerald-brand);">${inStudioCount}</div>
         </div>
         <div class="kpi-tile">
+          <div class="kpi-label">🌴 On Leave Today</div>
+          <div class="kpi-val" style="color: var(--purple-light);">${onLeaveCount}</div>
+        </div>
+        <div class="kpi-tile">
           <div class="kpi-label">Pending Leave Requests</div>
           <div class="kpi-val" style="color: var(--amber-brand);">${pendingLeaves}</div>
         </div>
       </div>
 
       <!-- Subtab Switcher -->
-      <div style="display:flex; gap:0.5rem; background:var(--surface-1); padding:0.35rem; border-radius:12px; border:1px solid var(--border-subtle); width:fit-content; margin-bottom:1.5rem;">
-        <button class="btn-ghost ${activeHrTab === 'roster' ? 'btn-secondary' : ''}" onclick="window.HR_MODULE.switchTab('roster')">👥 Team Roster & Profiles</button>
+      <div style="display:flex; gap:0.5rem; background:var(--surface-1); padding:0.35rem; border-radius:12px; border:1px solid var(--border-subtle); width:fit-content; margin-bottom:1.5rem; flex-wrap:wrap;">
+        <button class="btn-ghost ${activeHrTab === 'roster' ? 'btn-secondary' : ''}" onclick="window.HR_MODULE.switchTab('roster')">👥 Team Roster & Profiles (${teamData.length})</button>
         <button class="btn-ghost ${activeHrTab === 'leaves' ? 'btn-secondary' : ''}" onclick="window.HR_MODULE.switchTab('leaves')">🌴 Leave Requests (${pendingLeaves} Pending)</button>
       </div>
 
@@ -96,41 +149,43 @@ window.APP_MODULES.hr = async function(container) {
       </div>
 
       <!-- Staff Profile Drawer Overlay -->
-      <div id="hrProfileDrawer" style="display:none; position:fixed; top:0; right:0; bottom:0; width:520px; max-width:90vw; background:var(--bg-card, #0f172a); border-left:1px solid var(--border-subtle); z-index:9999; box-shadow:-10px 0 30px rgba(0,0,0,0.5); padding:1.5rem; overflow-y:auto;">
-        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-subtle); padding-bottom:1rem; margin-bottom:1.5rem;">
-          <h2 style="font-size:1.2rem; font-weight:800; margin:0;" id="drawerStaffName">Staff Profile</h2>
-          <button class="btn-ghost" onclick="document.getElementById('hrProfileDrawer').style.display='none'" style="font-size:1.2rem;">✕</button>
+      <div id="hrProfileDrawer" class="modal-overlay">
+        <div class="modal-box" style="max-width:560px; max-height:90vh; overflow-y:auto;">
+          <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-subtle); padding-bottom:0.75rem; margin-bottom:1.25rem;">
+            <h2 style="font-size:1.2rem; font-weight:800; margin:0; color:#fff;" id="drawerStaffName">Staff Profile</h2>
+            <button onclick="window.HR_MODULE.closeProfileDrawer()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
+          </div>
+          <div id="drawerStaffContent">Loading staff details...</div>
         </div>
-        <div id="drawerStaffContent">Loading staff details...</div>
       </div>
 
       <!-- Onboard Team Member Modal -->
       <div id="hrAddMemberModal" class="modal-overlay">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h3>+ Onboard Team Member</h3>
-            <button class="modal-close" onclick="window.HR_MODULE.closeAddModal()">✕</button>
+        <div class="modal-box" style="max-width:540px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+            <h3 style="margin:0; color:#fff; font-family:var(--font-heading);">+ Onboard Team Member</h3>
+            <button onclick="window.HR_MODULE.closeAddModal()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
           </div>
-          <div class="modal-body">
+          <form onsubmit="window.HR_MODULE.submitMember(event)" style="display:flex; flex-direction:column; gap:0.9rem;">
             <div class="form-group">
-              <label>Full Name *</label>
-              <input type="text" id="hrAddName" placeholder="e.g. Ayman Rahman" class="input-text" />
+              <label class="form-label">Full Name *</label>
+              <input type="text" id="hrAddName" placeholder="e.g. Ayman Rahman" class="input-text" required />
             </div>
             <div class="form-group">
-              <label>Phone Number (Login ID) *</label>
-              <input type="text" id="hrAddPhone" placeholder="e.g. +8801700000000" class="input-text" />
+              <label class="form-label">Phone Number (Login ID) *</label>
+              <input type="text" id="hrAddPhone" placeholder="e.g. +8801700000000" class="input-text" required />
             </div>
             <div class="form-group">
-              <label>Employee Code</label>
+              <label class="form-label">Employee Code (Leave blank to auto-generate)</label>
               <input type="text" id="hrAddCode" placeholder="e.g. EMP-109" class="input-text" />
             </div>
             <div style="display:flex; gap:1rem;">
               <div class="form-group" style="flex:1;">
-                <label>Role / Title</label>
+                <label class="form-label">Role / Title</label>
                 <input type="text" id="hrAddRole" placeholder="e.g. Senior Video Editor" class="input-text" />
               </div>
               <div class="form-group" style="flex:1;">
-                <label>Department</label>
+                <label class="form-label">Department</label>
                 <select id="hrAddDept" class="input-text">
                   <option value="Production">Production</option>
                   <option value="Post Production">Post Production</option>
@@ -143,18 +198,19 @@ window.APP_MODULES.hr = async function(container) {
             </div>
             <div style="display:flex; gap:1rem;">
               <div class="form-group" style="flex:1;">
-                <label>Base Salary (BDT)</label>
+                <label class="form-label">Base Salary (BDT)</label>
                 <input type="number" id="hrAddSalary" placeholder="35000" class="input-text" />
               </div>
               <div class="form-group" style="flex:1;">
-                <label>bKash Number</label>
+                <label class="form-label">bKash Number</label>
                 <input type="text" id="hrAddBkash" placeholder="01700000000" class="input-text" />
               </div>
             </div>
-            <div style="margin-top: 1.5rem; text-align: right;">
-              <button class="btn-primary" onclick="window.HR_MODULE.submitMember()">🚀 Onboard Member & Create Profile</button>
+            <div style="display:flex; justify-content:flex-end; gap:0.75rem; margin-top:0.8rem;">
+              <button type="button" class="btn-secondary" onclick="window.HR_MODULE.closeAddModal()">Cancel</button>
+              <button type="submit" class="btn-primary" id="hrSubmitBtn">🚀 Onboard Member & Create Profile</button>
             </div>
-          </div>
+          </form>
         </div>
       </div>
     `;
@@ -182,7 +238,7 @@ window.APP_MODULES.hr = async function(container) {
               const dept = m.department || 'Production';
               const salary = Number(m.baseSalary || m.base_salary) || 0;
               const wlPct = m.workloadPercent || 0;
-              const statusColor = m.status === 'In Studio' ? 'badge-emerald' : 'badge-purple';
+              const statusColor = m.status === 'In Studio' ? 'badge-emerald' : m.status === 'On Leave' ? 'badge-pink' : 'badge-purple';
 
               return `
                 <tr>
@@ -215,12 +271,12 @@ window.APP_MODULES.hr = async function(container) {
                   <td>
                     <div style="display:flex; gap:0.3rem;">
                       <button class="btn-primary btn-sm" onclick='window.HR_MODULE.viewProfile("${code}")'>👁️ Profile & Survey</button>
-                      <button class="btn-ghost btn-sm" onclick='window.HR_MODULE.generatePayslipPDF(${JSON.stringify(m).replace(/'/g, "&apos;")})'>📄 Payslip</button>
+                      <button class="btn-secondary btn-sm" onclick='window.HR_MODULE.generatePayslipPDF("${code}")'>📄 Payslip</button>
                     </div>
                   </td>
                 </tr>
               `;
-            }).join('') || `<tr><td colspan="6" style="text-align:center; padding:2rem; color:var(--text-muted);">No team members found</td></tr>`}
+            }).join('') || `<tr><td colspan="6" style="text-align:center; padding:3rem; color:var(--text-muted);">No team members found</td></tr>`}
           </tbody>
         </table>
       `;
@@ -231,29 +287,47 @@ window.APP_MODULES.hr = async function(container) {
             <tr>
               <th>Employee Name</th>
               <th>Leave Type</th>
-              <th>Dates</th>
+              <th>Dates & Duration</th>
               <th>Reason</th>
               <th>Status</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            ${leavesData.map(l => `
-              <tr>
-                <td style="font-weight:700;">👤 ${escapeHTML(l.employeeName || l.staffName || 'Staff Member')}</td>
-                <td><span class="badge badge-purple">${escapeHTML(l.leaveType || 'Casual Leave')}</span></td>
-                <td style="color:var(--text-muted);">${escapeHTML(l.startDate || l.fromDate || 'N/A')} ➔ ${escapeHTML(l.endDate || l.toDate || 'N/A')}</td>
-                <td style="font-size:0.8rem; color:var(--text-secondary);">${escapeHTML(l.reason || 'No reason specified')}</td>
-                <td><span class="badge ${l.status === 'Approved' ? 'badge-emerald' : l.status === 'Rejected' ? 'badge-pink' : 'badge-amber'}">${escapeHTML(l.status || 'Pending')}</span></td>
-                <td>
-                  ${l.status === 'Pending' ? `
-                    <div style="display:flex; gap:0.4rem;">
-                      <button class="btn-primary btn-sm" onclick="window.HR_MODULE.approveLeave('${l.id}')">Approve</button>
-                    </div>
-                  ` : `<span style="font-size:0.75rem; color:var(--text-dim);">Processed</span>`}
-                </td>
-              </tr>
-            `).join('') || `<tr><td colspan="6" style="text-align:center; padding:2rem; color:var(--text-muted);">No leave requests logged</td></tr>`}
+            ${leavesData.map(l => {
+              const start = l.startDate || l.fromDate;
+              const end = l.endDate || l.toDate;
+              let daysStr = 'N/A';
+              if (start && end) {
+                const diff = Math.round((new Date(end) - new Date(start)) / (1000 * 60 * 60 * 24)) + 1;
+                daysStr = `${diff} day${diff > 1 ? 's' : ''}`;
+              }
+
+              return `
+                <tr>
+                  <td style="font-weight:700;">👤 ${escapeHTML(l.employeeName || l.staffName || 'Staff Member')}</td>
+                  <td><span class="badge badge-purple">${escapeHTML(l.leaveType || 'Casual Leave')}</span></td>
+                  <td style="color:var(--text-muted);">
+                    <div>${escapeHTML(start || 'N/A')} ➔ ${escapeHTML(end || 'N/A')}</div>
+                    <div style="font-size:0.72rem; color:var(--purple-light); font-weight:700;">⏱️ ${daysStr}</div>
+                  </td>
+                  <td style="font-size:0.8rem; color:var(--text-secondary); max-width:200px;">${escapeHTML(l.reason || 'No reason specified')}</td>
+                  <td>
+                    <span class="badge ${l.status === 'Approved' ? 'badge-emerald' : l.status === 'Rejected' ? 'badge-pink' : 'badge-amber'}">
+                      ${escapeHTML(l.status || 'Pending')}
+                    </span>
+                  </td>
+                  <td>
+                    ${l.status === 'Pending' ? `
+                      <div style="display:flex; gap:0.4rem;">
+                        <button class="btn-emerald btn-sm" onclick="window.HR_MODULE.approveLeave('${l.id}')">✅ Approve</button>
+                        <button class="btn-secondary btn-sm" style="color:#ef4444;" onclick="window.HR_MODULE.rejectLeave('${l.id}')">❌ Reject</button>
+                      </div>
+                    ` : `<span style="font-size:0.75rem; color:var(--text-muted);">Reviewed</span>`}
+                  </td>
+                </tr>
+              `;
+            }).join('') || `<tr><td colspan="6" style="text-align:center; padding:3rem; color:var(--text-muted);">No leave requests logged</td></tr>`}
           </tbody>
         </table>
       `;
@@ -261,6 +335,9 @@ window.APP_MODULES.hr = async function(container) {
   }
 
   window.HR_MODULE = {
+    reload() {
+      loadHROps();
+    },
     switchTab(t) {
       activeHrTab = t;
       renderHRView();
@@ -270,6 +347,9 @@ window.APP_MODULES.hr = async function(container) {
     },
     closeAddModal() {
       document.getElementById('hrAddMemberModal').classList.remove('active');
+    },
+    closeProfileDrawer() {
+      document.getElementById('hrProfileDrawer').classList.remove('active');
     },
     viewProfile(code) {
       const member = teamData.find(m => (m.emp_code || m.id) === code || m.name === code);
@@ -313,8 +393,8 @@ window.APP_MODULES.hr = async function(container) {
               <div style="display:flex; flex-direction:column; gap:0.4rem; font-size:0.8rem;">
                 ${memberAtt.slice(0, 5).map(a => `
                   <div style="display:flex; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.04); padding-bottom:0.25rem;">
-                    <span>📅 ${a.date || 'Today'} (${a.status || 'In Studio'})</span>
-                    <span style="color:#34d399; font-weight:700;">${a.clock_in_time || 'Recorded'}</span>
+                    <span>📅 ${escapeHTML(a.date || 'Today')} (${escapeHTML(a.status || 'In Studio')})</span>
+                    <span style="color:#34d399; font-weight:700;">${escapeHTML(a.clock_in_time || 'Recorded')}</span>
                   </div>
                 `).join('')}
               </div>
@@ -330,7 +410,7 @@ window.APP_MODULES.hr = async function(container) {
                   <div style="background:rgba(0,0,0,0.2); padding:0.5rem; border-radius:6px;">
                     <div style="display:flex; justify-content:space-between; font-weight:700; color:var(--text-main);">
                       <span>📅 ${e.report_date || e.created_at ? new Date(e.report_date || e.created_at).toLocaleDateString() : 'Recent'}</span>
-                      <span>Mood: ${e.mood || '😊'}</span>
+                      <span>Mood: ${escapeHTML(e.mood || '😊')}</span>
                     </div>
                     <div style="color:var(--text-muted); margin-top:0.25rem;">${escapeHTML(e.tasks_completed || e.summary || 'Tasks completed')}</div>
                   </div>
@@ -341,17 +421,26 @@ window.APP_MODULES.hr = async function(container) {
         </div>
       `;
 
-      document.getElementById('hrProfileDrawer').style.display = 'block';
+      document.getElementById('hrProfileDrawer').classList.add('active');
     },
-    async submitMember() {
+    async submitMember(e) {
+      if (e && e.preventDefault) e.preventDefault();
       const name = document.getElementById('hrAddName').value.trim();
       const phone = document.getElementById('hrAddPhone').value.trim();
-      if (!name || !phone) return alert('Name and phone number are required.');
+      
+      if (!name || !phone) {
+        if (window.showToast) window.showToast('Name and phone number are required.', 'error');
+        return;
+      }
 
+      const submitBtn = document.getElementById('hrSubmitBtn');
+      if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = '⏳ Onboarding...'; }
+
+      const autoEmpCode = `EMP-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
       const payload = {
         name,
         phone,
-        emp_code: document.getElementById('hrAddCode').value.trim() || `EMP-${Date.now().toString().slice(-4)}`,
+        emp_code: document.getElementById('hrAddCode').value.trim() || autoEmpCode,
         role: document.getElementById('hrAddRole').value.trim() || 'Specialist',
         department: document.getElementById('hrAddDept').value,
         base_salary: Number(document.getElementById('hrAddSalary').value) || 0,
@@ -360,31 +449,123 @@ window.APP_MODULES.hr = async function(container) {
 
       try {
         await APP_API.post('/team', payload);
-        alert('Team member onboarded successfully!');
-        window.HR_MODULE.closeAddModal();
+        if (window.showToast) window.showToast('Team member onboarded successfully! 🚀', 'success');
+        this.closeAddModal();
         loadHROps();
       } catch(e) {
-        alert('Failed to onboard: ' + e.message);
+        if (window.showToast) window.showToast('Failed to onboard: ' + e.message, 'error');
+      } finally {
+        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '🚀 Onboard Member & Create Profile'; }
       }
     },
     async approveLeave(id) {
       try {
         await APP_API.put(`/leaves/${id}`, { status: 'Approved' });
-        alert('Leave approved!');
+        if (window.showToast) window.showToast('Leave request approved! ✅', 'success');
         loadHROps();
       } catch(e) {
-        alert('Failed to approve leave: ' + e.message);
+        if (window.showToast) window.showToast('Failed to approve leave: ' + e.message, 'error');
       }
     },
-    generatePayslipPDF(member) {
-      alert(`Generating PDF Payslip for ${member.name}... Salary: BDT ${(Number(member.baseSalary || member.base_salary) || 0).toLocaleString()}`);
+    async rejectLeave(id) {
+      try {
+        await APP_API.put(`/leaves/${id}`, { status: 'Rejected' });
+        if (window.showToast) window.showToast('Leave request rejected', 'info');
+        loadHROps();
+      } catch(e) {
+        if (window.showToast) window.showToast('Failed to reject leave: ' + e.message, 'error');
+      }
+    },
+    generatePayslipPDF(code) {
+      const member = teamData.find(m => (m.emp_code || m.id) === code || m.name === code);
+      if (!member) return;
+
+      if (!window.jspdf || !window.jspdf.jsPDF) {
+        if (window.showToast) window.showToast('jsPDF library not loaded', 'error');
+        return;
+      }
+
+      const doc = new window.jspdf.jsPDF();
+      const salary = Number(member.baseSalary || member.base_salary) || 0;
+      const monthStr = new Date().toLocaleString('default', { month: 'long', year: 'numeric' });
+
+      // Header details
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(22);
+      doc.setTextColor(124, 58, 237); // Purple
+      doc.text("PURPLEBOT DIGITAL", 14, 20);
+      
+      doc.setFontSize(10);
+      doc.setTextColor(100, 100, 100);
+      doc.setFont("helvetica", "normal");
+      doc.text("Plot 7, Road 17, Banani C/A, Dhaka - 1213", 14, 28);
+      doc.text("hr@purplebot.digital | +880 1711 019550", 14, 33);
+
+      // Title
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(24);
+      doc.setTextColor(30, 30, 30);
+      doc.text("SALARY PAYSLIP", 120, 25);
+      
+      // Details
+      doc.setFontSize(10);
+      doc.setTextColor(50, 50, 50);
+      doc.text(`Period: ${monthStr}`, 120, 35);
+      doc.text(`Generated: ${new Date().toLocaleDateString()}`, 120, 42);
+
+      // Staff Info Box
+      doc.setFillColor(245, 243, 255);
+      doc.rect(14, 50, 180, 28, 'F');
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(124, 58, 237);
+      doc.text("EMPLOYEE DETAILS", 18, 57);
+      
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(50, 50, 50);
+      doc.text(`Name: ${member.name || 'Staff Member'}`, 18, 64);
+      doc.text(`Emp Code: ${member.emp_code || member.id || 'N/A'}`, 18, 71);
+      doc.text(`Department: ${member.department || 'Production'}`, 110, 64);
+      doc.text(`Role: ${member.role || 'Specialist'}`, 110, 71);
+
+      // Earnings Table Header
+      let yPos = 90;
+      doc.setFillColor(124, 58, 237);
+      doc.rect(14, yPos - 6, 180, 10, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFont("helvetica", "bold");
+      doc.text("Component", 18, yPos);
+      doc.text("Amount (BDT)", 150, yPos);
+
+      yPos += 12;
+      doc.setTextColor(50, 50, 50);
+      doc.setFont("helvetica", "normal");
+      
+      doc.text("Base Salary", 18, yPos);
+      doc.text(`BDT ${salary.toLocaleString()}`, 150, yPos);
+      
+      yPos += 10;
+      const commission = Number(member.earnedCommissions) || 0;
+      doc.text("Earned Performance Bonus / Commission", 18, yPos);
+      doc.text(`BDT ${commission.toLocaleString()}`, 150, yPos);
+
+      yPos += 15;
+      doc.line(14, yPos - 5, 194, yPos - 5);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(14);
+      doc.text("Net Payable:", 110, yPos);
+      doc.setTextColor(124, 58, 237);
+      doc.text(`BDT ${(salary + commission).toLocaleString()}`, 150, yPos);
+
+      // Footer
+      doc.setFontSize(10);
+      doc.setTextColor(100, 100, 100);
+      doc.setFont("helvetica", "italic");
+      doc.text("Confidential — Issued by Purplebot Digital HR Operations", 105, 270, null, null, "center");
+
+      doc.save(`Payslip-${member.emp_code || 'EMP'}-${monthStr.replace(' ', '-')}.pdf`);
+      if (window.showToast) window.showToast(`PDF Payslip generated for ${member.name}! 📄`, 'success');
     }
   };
 
   await loadHROps();
 };
-
-function escapeHTML(str) {
-  if (!str) return '';
-  return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
-}

@@ -26,8 +26,8 @@ function mapLeave(l) {
   };
 }
 
-// GET leaves (mounted at /api/leaves or /api)
-router.get(['/', '/leaves'], requireAuth, async (req, res) => {
+// GET leaves (mounted at /api/leaves)
+router.get('/', requireAuth, async (req, res) => {
   try {
     const empFilter = req.query.empId || req.query.employeeId;
     let query = supabase.from('leaves').select('*').order('created_at', { ascending: false });
@@ -46,9 +46,10 @@ router.get(['/', '/leaves'], requireAuth, async (req, res) => {
 });
 
 // POST Submit a Leave Request
-router.post('/leaves', requireAuth, async (req, res) => {
+router.post('/', requireAuth, async (req, res) => {
   try {
-    const newId = `LEV-${Date.now()}`;
+    const { randomUUID } = require('crypto');
+    const newId = `LVE-${randomUUID().split('-')[0].toUpperCase()}`;
     const payload = {
       id: newId,
       employee_id: req.body.staffId || req.body.employeeId || req.user.id || 'PBD-001',
@@ -74,8 +75,8 @@ router.post('/leaves', requireAuth, async (req, res) => {
   }
 });
 
-// POST /leaves/:id/approve & /manager-approve
-router.post(['/leaves/:id/approve', '/leaves/:id/manager-approve'], requireAuth, async (req, res) => {
+// POST /:id/approve & /:id/manager-approve
+router.post(['/:id/approve', '/:id/manager-approve'], requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
     
@@ -96,15 +97,12 @@ router.post(['/leaves/:id/approve', '/leaves/:id/manager-approve'], requireAuth,
     if (leaveReq && leaveReq.employee_id) {
       const start = new Date(leaveReq.start_date);
       const end = new Date(leaveReq.end_date);
-      // Basic days diff + 1 (inclusive). Note: v0.7.4.7 handles excluding weekends on frontend submission (totalDays)
       let days = Math.round((end - start) / (1000 * 60 * 60 * 24)) + 1;
       if (days < 1) days = 1;
 
-      // Determine type
       const isSick = (leaveReq.leave_type || '').toLowerCase().includes('sick');
       const usedCol = isSick ? 'sick_leaves_used' : 'casual_leaves_used';
 
-      // Fetch current profile to get current used balance
       const { data: profile } = await supabase.from('profiles').select(usedCol).eq('id', leaveReq.employee_id).single();
       
       if (profile) {
@@ -113,7 +111,6 @@ router.post(['/leaves/:id/approve', '/leaves/:id/manager-approve'], requireAuth,
           [usedCol]: currentUsed + days
         }).eq('id', leaveReq.employee_id);
       } else {
-        // Fallback for emp_code
         const { data: profileEmpCode } = await supabase.from('profiles').select(usedCol).eq('emp_code', leaveReq.employee_id).single();
         if (profileEmpCode) {
           const currentUsed = profileEmpCode[usedCol] || 0;
@@ -127,7 +124,6 @@ router.post(['/leaves/:id/approve', '/leaves/:id/manager-approve'], requireAuth,
     const leave = mapLeave(data);
     const { data: allLeaves } = await supabase.from('leaves').select('*').order('created_at', { ascending: false });
     broadcast('leave_update', (allLeaves || []).map(mapLeave));
-    // Broadcast team update so UI reflects new balances
     const { data: teamData } = await supabase.from('profiles').select('*').order('created_at', { ascending: false });
     broadcast('team_update', teamData || []);
 
@@ -138,8 +134,8 @@ router.post(['/leaves/:id/approve', '/leaves/:id/manager-approve'], requireAuth,
   }
 });
 
-// POST /leaves/:id/reject
-router.post('/leaves/:id/reject', requireAuth, async (req, res) => {
+// POST /:id/reject
+router.post('/:id/reject', requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
     const updates = {
@@ -163,7 +159,7 @@ router.post('/leaves/:id/reject', requireAuth, async (req, res) => {
 });
 
 // PUT Update Leave Status
-router.put('/leaves/:id', requireAuth, requireManager, async (req, res) => {
+router.put('/:id', requireAuth, requireManager, async (req, res) => {
   try {
     const { id } = req.params;
     const updates = { ...req.body, updated_at: new Date().toISOString() };
