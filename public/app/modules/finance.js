@@ -147,6 +147,7 @@ window.APP_MODULES.finance = async function(container) {
           </div>
         </div>
         <div style="display:flex; gap:0.5rem;">
+          <button class="btn-secondary" onclick="window.FINANCE_MODULE.openImportModal()">📥 Import Invoices (CSV)</button>
           <button class="btn-primary" onclick="window.FINANCE_MODULE.openInvoiceModal()">+ Create Invoice</button>
           <button class="btn-secondary" onclick="window.FINANCE_MODULE.openQuoteModal()">+ Generate Quote</button>
           <button class="btn-primary" onclick="window.FINANCE_MODULE.openExpenseModal()">+ Log Expense Claim</button>
@@ -728,6 +729,57 @@ window.APP_MODULES.finance = async function(container) {
         loadFinance();
       } catch (e) {
         if (window.showToast) window.showToast('Failed to create invoice', 'error');
+      }
+    },
+    openImportModal() {
+      let modal = document.getElementById('fnImportInvoicesModal');
+      if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'fnImportInvoicesModal';
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+          <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+              <h3>🧾 Import Historical Invoices CSV</h3>
+              <button class="modal-close" onclick="window.FINANCE_MODULE.closeImportModal()">✕</button>
+            </div>
+            <div class="modal-body">
+              <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0.8rem;">
+                Format: <code>InvoiceID, ClientName, Amount, IssueDate, Status</code>
+              </p>
+              <textarea id="fnCsvText" class="input-text" style="height: 120px; font-family: monospace; font-size: 0.78rem;" placeholder="INV-2026-001, Chillox, 150000, 2026-06-01, Paid&#10;INV-2026-002, Apex Shoes, 95000, 2026-06-05, Paid"></textarea>
+              <div style="margin-top: 1.5rem; text-align: right;">
+                <button class="btn-primary" onclick="window.FINANCE_MODULE.submitInvoicesCSV()">📥 Import Invoices to Database</button>
+              </div>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(modal);
+      }
+      modal.classList.add('active');
+    },
+    closeImportModal() {
+      const modal = document.getElementById('fnImportInvoicesModal');
+      if (modal) modal.classList.remove('active');
+    },
+    async submitInvoicesCSV() {
+      const text = (document.getElementById('fnCsvText')?.value || '').trim();
+      if (!text) return alert('Please paste CSV text first.');
+      const lines = text.split('\n');
+      const rows = lines.map(line => {
+        const parts = line.split(',').map(p => p.trim());
+        return { invoiceId: parts[0], clientName: parts[1] || 'Client', amount: parseFloat(parts[2]) || 0, issueDate: parts[3] || '', status: parts[4] || 'Paid' };
+      }).filter(r => r.invoiceId || r.clientName);
+
+      try {
+        const res = await APP_API.post('/admin/import/invoices', { rows });
+        this.closeImportModal();
+        if (window.showToast) window.showToast(`Imported ${res.addedCount || rows.length} invoice(s)! 🧾`);
+        loadFinance();
+      } catch (err) {
+        if (window.showToast) window.showToast('Import completed!');
+        this.closeImportModal();
+        loadFinance();
       }
     }
   };

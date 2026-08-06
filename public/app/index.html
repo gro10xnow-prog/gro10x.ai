@@ -43,7 +43,15 @@
       </span>
     </div>
 
+    <!-- Multi-Portal Quick Launch Bar & User Actions -->
     <div style="display: flex; align-items: center; gap: 0.85rem;">
+      <div style="display: flex; gap: 0.4rem; background: var(--surface-1); padding: 0.25rem 0.5rem; border-radius: 10px; border: 1px solid var(--border-subtle);">
+        <a href="/manager" target="_blank" style="font-size: 0.72rem; font-weight: 700; color: var(--text-secondary); text-decoration: none; padding: 0.2rem 0.4rem; border-radius: 6px;" title="Launch Executive Manager Portal">👔 Manager</a>
+        <a href="/team-miniapp" target="_blank" style="font-size: 0.72rem; font-weight: 700; color: var(--text-secondary); text-decoration: none; padding: 0.2rem 0.4rem; border-radius: 6px;" title="Launch Crew MiniApp">📱 Crew</a>
+        <a href="/client-miniapp" target="_blank" style="font-size: 0.72rem; font-weight: 700; color: var(--text-secondary); text-decoration: none; padding: 0.2rem 0.4rem; border-radius: 6px;" title="Launch Client Portal">🤝 Client</a>
+        <a href="/chat" target="_blank" style="font-size: 0.72rem; font-weight: 700; color: var(--text-secondary); text-decoration: none; padding: 0.2rem 0.4rem; border-radius: 6px;" title="Launch Web Chat Widget">💬 Chat</a>
+      </div>
+
       <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()" title="Toggle Light/Dark Theme">🌙</button>
 
       <a href="#settings" class="user-profile-badge" title="Account Settings">
@@ -68,6 +76,10 @@
         <span class="icon">📊</span>
         <span>Executive Overview</span>
       </a>
+      <a href="#analytics" class="nav-item">
+        <span class="icon">📈</span>
+        <span>Agency Analytics</span>
+      </a>
 
       <div class="nav-category">Client Intelligence</div>
       <a href="#leads" class="nav-item">
@@ -84,9 +96,17 @@
         <span class="icon">📋</span>
         <span>Project Pipeline</span>
       </a>
+      <a href="#reviews" class="nav-item">
+        <span class="icon">🎬</span>
+        <span>Review Room</span>
+      </a>
       <a href="#social" class="nav-item">
         <span class="icon">📱</span>
         <span>Social Planner</span>
+      </a>
+      <a href="#cms" class="nav-item">
+        <span class="icon">📝</span>
+        <span>Services & CMS</span>
       </a>
 
       <div class="nav-category">Finance & HR</div>
@@ -96,7 +116,7 @@
       </a>
       <a href="#hr" class="nav-item">
         <span class="icon">👨‍💼</span>
-        <span>HR & Leave Requests</span>
+        <span>HR & Roster Ops</span>
       </a>
       <a href="#assets" class="nav-item">
         <span class="icon">📷</span>
@@ -107,6 +127,10 @@
       <a href="#tickets" class="nav-item">
         <span class="icon">🎟️</span>
         <span>Support Desk</span>
+      </a>
+      <a href="#automation" class="nav-item">
+        <span class="icon">⚡</span>
+        <span>Bot & Automation</span>
       </a>
       <a href="#settings" class="nav-item">
         <span class="icon">⚙️</span>

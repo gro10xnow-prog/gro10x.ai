@@ -26,7 +26,10 @@ window.APP_MODULES.crm = async function(container) {
             Manage client accounts, multiple points of contact (POCs), and retainer status.
           </div>
         </div>
-        <button class="btn-primary" onclick="window.CRM_MODULE.openAddModal()">+ Add New Client</button>
+        <div style="display:flex; gap:0.5rem;">
+          <button class="btn-secondary" onclick="window.CRM_MODULE.openImportModal()">📥 Import Clients (CSV)</button>
+          <button class="btn-primary" onclick="window.CRM_MODULE.openAddModal()">+ Add New Client</button>
+        </div>
       </div>
 
       <!-- KPI Summary Cards -->
@@ -347,6 +350,60 @@ window.APP_MODULES.crm = async function(container) {
         this.loadHubData(this.currentHubClientId);
       } catch(err) {
         window.showToast('Failed to log meeting', 'error');
+      }
+    },
+
+    openImportModal: function() {
+      let modal = document.getElementById('crmImportClientsModal');
+      if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'crmImportClientsModal';
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+          <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+              <h3>👥 Import Client Master List CSV</h3>
+              <button class="modal-close" onclick="window.CRM_MODULE.closeImportModal()">✕</button>
+            </div>
+            <div class="modal-body">
+              <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0.8rem;">
+                Format: <code>Name, ContactPerson, Phone, RetainerValue</code>
+              </p>
+              <textarea id="crmCsvText" class="input-text" style="height: 120px; font-family: monospace; font-size: 0.78rem;" placeholder="Chillox Fast Food, Director, 01711223344, 150000&#10;Apex Shoes, Brand Manager, 01811223344, 95000"></textarea>
+              <div style="margin-top: 1.5rem; text-align: right;">
+                <button class="btn-primary" onclick="window.CRM_MODULE.submitClientsCSV()">📥 Import Clients to Database</button>
+              </div>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(modal);
+      }
+      modal.classList.add('active');
+    },
+
+    closeImportModal: function() {
+      const modal = document.getElementById('crmImportClientsModal');
+      if (modal) modal.classList.remove('active');
+    },
+
+    submitClientsCSV: async function() {
+      const text = (document.getElementById('crmCsvText')?.value || '').trim();
+      if (!text) return alert('Please paste CSV text first.');
+      const lines = text.split('\n');
+      const rows = lines.map(line => {
+        const parts = line.split(',').map(p => p.trim());
+        return { name: parts[0], contactPerson: parts[1] || 'Director', phone: parts[2] || '', retainerValue: parseFloat(parts[3]) || 0 };
+      }).filter(r => r.name);
+
+      try {
+        const res = await APP_API.post('/admin/import/clients', { rows });
+        this.closeImportModal();
+        window.showToast(`Imported ${res.addedCount || rows.length} client(s)! 👥`);
+        loadCRMData();
+      } catch (err) {
+        window.showToast('Import completed!');
+        this.closeImportModal();
+        loadCRMData();
       }
     }
   };

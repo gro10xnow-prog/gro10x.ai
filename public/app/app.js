@@ -9,16 +9,20 @@
 
 (function initAdminApp() {
   const ROUTES = {
-    '#dashboard': { module: 'dashboard.js', title: 'Executive Overview', icon: '📊' },
-    '#crm':       { module: 'crm.js',       title: 'Client Intelligence & CRM', icon: '👥' },
-    '#kanban':    { module: 'kanban.js',    title: 'Production Pipeline Hub', icon: '📋' },
-    '#social':    { module: 'social.js',    title: 'Social Media Planner', icon: '📱' },
-    '#finance':   { module: 'finance.js',   title: 'Financials & Expense Hub', icon: '💰' },
-    '#hr':        { module: 'hr.js',        title: 'HR Ops & Leave Requests', icon: '👨‍💼' },
-    '#assets':    { module: 'assets.js',    title: 'Hardware Assets', icon: '📷' },
-    '#tickets':   { module: 'tickets.js',   title: 'Support Desk Triage', icon: '🎟️' },
-    '#leads':     { module: 'leads.js',     title: 'Leads Pipeline', icon: '🎯' },
-    '#settings':  { module: 'settings.js',  title: 'Workspace Settings', icon: '⚙️' }
+    '#dashboard':  { module: 'dashboard.js',  title: 'Executive Overview', icon: '📊' },
+    '#analytics':  { module: 'analytics.js',  title: 'Agency Analytics & Scorecards', icon: '📈' },
+    '#crm':        { module: 'crm.js',        title: 'Client Intelligence & CRM', icon: '👥' },
+    '#kanban':     { module: 'kanban.js',     title: 'Production Pipeline Hub', icon: '📋' },
+    '#reviews':    { module: 'reviews.js',    title: 'Client Review Room Proofing', icon: '🎬' },
+    '#social':     { module: 'social.js',     title: 'Social Media Planner', icon: '📱' },
+    '#cms':        { module: 'cms.js',        title: 'Services Catalog & CMS Editor', icon: '📝' },
+    '#finance':    { module: 'finance.js',    title: 'Financials & Expense Hub', icon: '💰' },
+    '#hr':         { module: 'hr.js',         title: 'HR Ops & Roster Management', icon: '👨‍💼' },
+    '#assets':     { module: 'assets.js',     title: 'Hardware Assets', icon: '📷' },
+    '#tickets':    { module: 'tickets.js',    title: 'Support Desk Triage', icon: '🎟️' },
+    '#automation': { module: 'automation.js', title: 'Bot Engine & Automation Logs', icon: '⚡' },
+    '#leads':      { module: 'leads.js',      title: 'Leads Pipeline', icon: '🎯' },
+    '#settings':   { module: 'settings.js',   title: 'Workspace Settings', icon: '⚙️' }
   };
 
   const loadedModules = {};
