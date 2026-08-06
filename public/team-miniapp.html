@@ -2484,18 +2484,7 @@
   }
 
   let currentSheetTask = null;
-  const WORKFLOW_MAP = {
-    'social': ['Draft', 'Graphic Design', 'Copy Review', 'Scheduled', 'Published'],
-    'branding': ['Strategy', 'Concepts', 'Client Refinement', 'Master Delivered'],
-    'video': ['Briefing', 'Scripting', 'Shooting', 'Editing', 'Internal QC', 'Client Review', 'Approved']
-  };
-
-  function getMiniappTaskStages(task) {
-    const category = (task?.category || task?.workflow_type || task?.department || task?.title || '').toLowerCase();
-    if (category.includes('social') || category.includes('posm')) return WORKFLOW_MAP['social'];
-    if (category.includes('brand') || category.includes('identity')) return WORKFLOW_MAP['branding'];
-    return WORKFLOW_MAP['video'];
-  }
+  // WORKFLOW_MAP and getMiniappTaskStages are now defined above using WORKFLOW_TYPES — no duplicate needed here
 
   function logMiniappTime(taskId) {
     openTaskDetailSheet(taskId);
@@ -2535,18 +2524,20 @@
     document.getElementById('sheetTaskSub').textContent = `🏢 ${task.client || 'Agency'} · 👤 ${task.assignee || 'Unassigned'}`;
     document.getElementById('sheetTimeDisplay').textContent = `${task.loggedHours || 0}h / ${task.estimatedHours || 8}h`;
 
-    // Smart Next Stage Button
+    // Confirm Stage Move button — update label to hint the next stage
     const currIdx = stages.indexOf(task.stage || stages[0]);
     const nextStage = currIdx >= 0 && currIdx < stages.length - 1 ? stages[currIdx + 1] : null;
-    const btn = document.getElementById('sheetNextStageBtn');
-    if (nextStage) {
-      btn.textContent = `→ Move to ${nextStage}`;
-      btn.disabled = false;
-      btn.style.opacity = '1';
-    } else {
-      btn.textContent = `✅ Task Completed (${task.stage || stages[stages.length - 1]})`;
-      btn.disabled = true;
-      btn.style.opacity = '0.7';
+    const confirmBtn = document.getElementById('sheetConfirmStageBtn');
+    if (confirmBtn) {
+      if (nextStage) {
+        confirmBtn.textContent = `✓ Confirm Stage Move`;
+        confirmBtn.disabled = false;
+        confirmBtn.style.opacity = '1';
+      } else {
+        confirmBtn.textContent = `✅ Task at Final Stage`;
+        confirmBtn.disabled = true;
+        confirmBtn.style.opacity = '0.6';
+      }
     }
 
     // Reset inputs

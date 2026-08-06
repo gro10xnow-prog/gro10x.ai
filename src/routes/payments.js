@@ -43,29 +43,26 @@ async function sendFinanceVerificationAlert(paymentLog) {
   }
 }
 
+const { ok, fail, asyncHandler } = require('../utils/response');
+
 // GET /api/payments — List payment logs (Admin / Finance)
-router.get('/', requireAuth, async (req, res) => {
-  try {
-    if (!isSupabaseConfigured()) return res.json([]);
+router.get('/', requireAuth, asyncHandler(async (req, res) => {
+  if (!isSupabaseConfigured()) return ok(res, []);
 
-    let query = supabase.from('payment_logs').select('*').order('created_at', { ascending: false });
+  let query = supabase.from('payment_logs').select('*').order('created_at', { ascending: false });
 
-    // Client user restriction
-    const isClientUser = req.user.role === 'Client' || req.user.linkedType === 'client' || req.user.accessLevel === 'Client Partner';
-    if (isClientUser) {
-      const clientId = req.user.linkedId || req.user.id;
-      query = query.eq('client_id', clientId);
-    }
-
-    const { data, error } = await query;
-    if (error) throw error;
-
-    res.json(data || []);
-  } catch (err) {
-    console.error('GET /api/payments error:', err.message);
-    res.status(500).json({ error: err.message });
+  // Client user restriction
+  const isClientUser = req.user.role === 'Client' || req.user.linkedType === 'client' || req.user.accessLevel === 'Client Partner';
+  if (isClientUser) {
+    const clientId = req.user.linkedId || req.user.id;
+    query = query.eq('client_id', clientId);
   }
-});
+
+  const { data, error } = await query;
+  if (error) return fail(res, 500, error.message, 'DB_ERROR');
+
+  return ok(res, data || []);
+}));
 
 // POST /api/payments — Submit new payment proof (Client / Admin)
 router.post('/', requireAuth, async (req, res) => {
