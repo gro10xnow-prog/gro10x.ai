@@ -13,7 +13,7 @@
   <style>
     .kpi-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 1.25rem;
       margin-bottom: 1.5rem;
     }
@@ -35,6 +35,51 @@
       color: #fff;
       margin-top: 0.3rem;
     }
+
+    /* Tabs Styling */
+    .admin-tabs {
+      display: flex;
+      gap: 0.6rem;
+      margin-bottom: 1.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 0.8rem;
+      flex-wrap: wrap;
+    }
+    .tab-btn {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--text-muted);
+      padding: 0.6rem 1.1rem;
+      border-radius: 12px;
+      font-family: inherit;
+      font-size: 0.88rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s ease;
+    }
+    .tab-btn:hover {
+      background: rgba(168, 85, 247, 0.1);
+      color: #fff;
+      border-color: rgba(168, 85, 247, 0.3);
+    }
+    .tab-btn.active {
+      background: linear-gradient(135deg, var(--purple-main), #9333ea);
+      color: #fff;
+      border-color: transparent;
+      box-shadow: 0 4px 15px rgba(168, 85, 247, 0.3);
+    }
+    .badge-count {
+      background: #ef4444;
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 800;
+      padding: 0.15rem 0.45rem;
+      border-radius: 999px;
+    }
+
     .team-cards-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -67,12 +112,73 @@
       font-size: 1.1rem;
     }
 
+    /* Data Tables Styling */
+    .data-table-container {
+      overflow-x: auto;
+    }
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      color: #fff;
+    }
+    .data-table th {
+      text-align: left;
+      padding: 0.8rem 1rem;
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text-muted);
+      font-weight: 700;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .data-table td {
+      padding: 0.85rem 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .data-table tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+    .badge-status {
+      display: inline-block;
+      padding: 0.25rem 0.6rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+    .badge-online { background: rgba(52, 211, 153, 0.15); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.3); }
+    .badge-offline { background: rgba(161, 161, 170, 0.15); color: #a1a1aa; border: 1px solid rgba(161, 161, 170, 0.3); }
+    .badge-pending { background: rgba(251, 191, 36, 0.15); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.3); }
+    .badge-approved { background: rgba(52, 211, 153, 0.15); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.3); }
+    .badge-rejected { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+
+    /* EOD Card Grid */
+    .eod-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .eod-card {
+      background: rgba(9, 9, 11, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 1.1rem;
+    }
+    .eod-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      padding-bottom: 0.6rem;
+    }
+
     /* Modal Overlay */
     .modal-overlay {
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.7);
+      background: rgba(0,0,0,0.75);
       backdrop-filter: blur(8px);
       z-index: 99990;
       align-items: center;
@@ -82,12 +188,14 @@
       background: rgba(18, 18, 22, 0.98);
       border: 1px solid rgba(168, 85, 247, 0.3);
       border-radius: 20px;
-      padding: 2rem;
-      width: 480px;
-      max-width: 90vw;
+      padding: 1.75rem;
+      width: 520px;
+      max-width: 92vw;
+      max-height: 85vh;
+      overflow-y: auto;
       display: flex;
       flex-direction: column;
-      gap: 1.2rem;
+      gap: 1rem;
     }
     .form-group {
       display: flex;
@@ -107,6 +215,22 @@
       border-radius: 10px;
       font-size: 0.88rem;
     }
+    .profile-section {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px;
+      padding: 1rem;
+    }
+    .profile-field {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.35rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      font-size: 0.82rem;
+    }
+    .profile-field:last-child { border-bottom: none; }
+    .profile-field-label { color: var(--text-muted); }
+    .profile-field-val { font-weight: 700; color: #fff; text-align: right; }
   </style>
 </head>
 <body>
@@ -121,8 +245,8 @@
     <main class="content-area">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
         <div>
-          <h1 style="font-size: 1.6rem; font-weight: 800; color: #fff; margin: 0;">👨‍💼 Team Roster, HR Ops & XP Badges</h1>
-          <div style="font-size: 0.88rem; color: var(--text-muted);">Employee Profiles ➔ Attendance ➔ Onboarding Progress ➔ XP Leaderboards</div>
+          <h1 style="font-size: 1.6rem; font-weight: 800; color: #fff; margin: 0;">👥 Team Operations & HR Hub</h1>
+          <div style="font-size: 0.88rem; color: var(--text-muted);">Unified management for Team Profiles, Live Attendance, Leave Approvals & EOD Reports</div>
         </div>
         <div style="display: flex; gap: 0.5rem;">
           <button class="btn-secondary" onclick="window.location.href='/api/team/attendance-report'">📊 Export Attendance (CSV)</button>
@@ -141,19 +265,102 @@
           <div class="kpi-val" id="kpiInStudio" style="color: #34d399;">0</div>
         </div>
         <div class="kpi-card">
-          <div class="kpi-label">Completed Onboarding</div>
-          <div class="kpi-val" id="kpiOnboarded" style="color: #c084fc;">0</div>
+          <div class="kpi-label">Pending Leave Requests</div>
+          <div class="kpi-val" id="kpiPendingLeaves" style="color: #fbbf24;">0</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">EOD Reports Today</div>
+          <div class="kpi-val" id="kpiEodsToday" style="color: #c084fc;">0</div>
         </div>
       </div>
 
-      <!-- Team Roster Grid -->
-      <div style="background: var(--panel-bg); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; padding: 1.5rem;">
-        <div id="teamContent">
-          <div style="color: var(--text-muted); padding: 2rem; text-align: center;">Loading team roster database...</div>
+      <!-- Admin Navigation Tabs -->
+      <div class="admin-tabs">
+        <button class="tab-btn active" id="tabBtnTeam" onclick="switchAdminTab('team')">👥 Team Members</button>
+        <button class="tab-btn" id="tabBtnAttendance" onclick="switchAdminTab('attendance')">⏱️ Attendance Log</button>
+        <button class="tab-btn" id="tabBtnLeaves" onclick="switchAdminTab('leaves')">🏖️ Leave Requests <span class="badge-count" id="pendingLeavesBadge" style="display:none;">0</span></button>
+        <button class="tab-btn" id="tabBtnEod" onclick="switchAdminTab('eod')">📋 Daily EOD Reports</button>
+      </div>
+
+      <!-- TAB 1: TEAM MEMBERS -->
+      <div id="tabContentTeam">
+        <div style="background: var(--panel-bg); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; padding: 1.5rem;">
+          <div id="teamContent">
+            <div style="color: var(--text-muted); padding: 2rem; text-align: center;">Loading team roster database...</div>
+          </div>
         </div>
       </div>
 
-      <!-- HISTORICAL DATA IMPORT PANEL (Moved from Onboarding) -->
+      <!-- TAB 2: ATTENDANCE LOG -->
+      <div id="tabContentAttendance" style="display: none;">
+        <div style="background: var(--panel-bg); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; padding: 1.5rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h3 style="font-size: 1.1rem; font-weight: 800; color: #fff; margin: 0;">⏱️ Attendance Records</h3>
+            <button class="btn-secondary" style="font-size: 0.78rem;" onclick="loadAttendanceData()">🔄 Refresh Attendance</button>
+          </div>
+          <div class="data-table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Employee</th>
+                  <th>ID</th>
+                  <th>Date</th>
+                  <th>Status</th>
+                  <th>Clock In</th>
+                  <th>Clock Out</th>
+                  <th>Location / GPS</th>
+                </tr>
+              </thead>
+              <tbody id="attendanceTableBody">
+                <tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading attendance records...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: LEAVE REQUESTS -->
+      <div id="tabContentLeaves" style="display: none;">
+        <div style="background: var(--panel-bg); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; padding: 1.5rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h3 style="font-size: 1.1rem; font-weight: 800; color: #fff; margin: 0;">🏖️ Staff Leave Applications</h3>
+            <button class="btn-secondary" style="font-size: 0.78rem;" onclick="loadLeavesData()">🔄 Refresh Leaves</button>
+          </div>
+          <div class="data-table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Employee</th>
+                  <th>Type</th>
+                  <th>Dates</th>
+                  <th>Total Days</th>
+                  <th>Reason</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="leavesTableBody">
+                <tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading leave requests...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 4: EOD REPORTS -->
+      <div id="tabContentEod" style="display: none;">
+        <div style="background: var(--panel-bg); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; padding: 1.5rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h3 style="font-size: 1.1rem; font-weight: 800; color: #fff; margin: 0;">📋 Daily End-of-Day Submissions</h3>
+            <button class="btn-secondary" style="font-size: 0.78rem;" onclick="loadEodData()">🔄 Refresh EOD Feed</button>
+          </div>
+          <div id="eodFeedContainer" class="eod-grid">
+            <div style="color: var(--text-muted); padding: 2rem; text-align: center;">Loading EOD report feed...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- HISTORICAL DATA IMPORT PANEL -->
       <div style="margin-top: 2rem; background: rgba(168, 85, 247, 0.05); border: 1px dashed var(--purple-main); border-radius: 16px; padding: 1.5rem;">
         <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 0.5rem; color: #c084fc;">📁 Historical Excel / CSV Data Import Hub</h3>
         <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1.25rem;">
@@ -219,13 +426,48 @@
     </div>
   </div>
 
+  <!-- Employee Full Profile & Survey Modal -->
+  <div class="modal-overlay" id="profileModal">
+    <div class="modal-box">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h2 style="color: #fff; font-size: 1.2rem; margin: 0;" id="profModalTitle">👤 Employee Profile</h2>
+        <button onclick="closeProfileModal()" style="background: transparent; border: none; color: #a1a1aa; font-size: 1.4rem; cursor: pointer;">✕</button>
+      </div>
+      <div id="profModalBody">
+        <div style="color: var(--text-muted); text-align: center; padding: 1.5rem;">Loading employee details...</div>
+      </div>
+    </div>
+  </div>
+
   <script src="/js/shell.js"></script>
   <script>
     window._allTeam = [];
+    window._attendanceData = [];
+    window._leavesData = [];
+    window._eodData = [];
 
     document.addEventListener('DOMContentLoaded', () => {
       loadTeamData();
+      loadAttendanceData();
+      loadLeavesData();
+      loadEodData();
     });
+
+    function switchAdminTab(tab) {
+      ['team', 'attendance', 'leaves', 'eod'].forEach(t => {
+        const btn = document.getElementById(`tabBtn${t.charAt(0).toUpperCase() + t.slice(1)}`);
+        const content = document.getElementById(`tabContent${t.charAt(0).toUpperCase() + t.slice(1)}`);
+        if (btn && content) {
+          if (t === tab) {
+            btn.classList.add('active');
+            content.style.display = 'block';
+          } else {
+            btn.classList.remove('active');
+            content.style.display = 'none';
+          }
+        }
+      });
+    }
 
     async function loadTeamData() {
       try {
@@ -234,7 +476,6 @@
           fetch('/api/team/workload').then(r => r.json()).catch(() => [])
         ]);
         
-        // Merge workload into team data
         window._allTeam = (teamRes || []).map(m => {
           const wl = (workloadRes || []).find(w => w.empCode === m.emp_code || w.empCode === m.id || w.name === m.name);
           if (wl) {
@@ -254,11 +495,9 @@
         const team = window._allTeam;
         const total = team.length;
         const inStudio = team.filter(m => m.status === 'In Studio').length;
-        const onboarded = team.filter(m => m.onboardingComplete).length;
 
         document.getElementById('kpiHeadcount').textContent = total;
         document.getElementById('kpiInStudio').textContent = inStudio;
-        document.getElementById('kpiOnboarded').textContent = onboarded;
 
         renderTeamGrid();
       } catch(e) {
@@ -282,12 +521,11 @@
             const initials = (name.substring(0, 2)).toUpperCase();
             const statusColor = m.status === 'In Studio' ? '#34d399' : '#a1a1aa';
             
-            // Calculate onboarding progress (5 steps max)
-            let steps = 1; // Base step for created profile
-            if (m.blood_group || m.bloodGroup) steps++;
-            if (m.nid_no || m.nidNo) steps++;
-            if (m.bank_info || m.bankInfo) steps++;
-            if (m.primary_skill || m.primarySkill || m.survey_complete) steps++;
+            let steps = 1;
+            if (m.bloodGroup || m.blood_group) steps++;
+            if (m.nidNo || m.nid_no) steps++;
+            if (m.bankInfo || m.bank_info) steps++;
+            if (m.primarySkill || m.primary_skill || m.surveyComplete) steps++;
             let progressPct = Math.min((steps / 5) * 100, 100);
 
             return `
@@ -308,11 +546,11 @@
                 <!-- Onboarding Progress Bar -->
                 <div style="margin-bottom: 0.6rem;">
                   <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted); margin-bottom: 0.2rem;">
-                    <span>Onboarding Progress</span>
-                    <span>${m.survey_complete ? '100' : progressPct}%</span>
+                    <span>Survey / Onboarding</span>
+                    <span>${m.surveyComplete ? '100' : progressPct}%</span>
                   </div>
                   <div style="width: 100%; background: rgba(255,255,255,0.1); height: 6px; border-radius: 4px; overflow: hidden;">
-                    <div style="height: 100%; width: ${m.survey_complete ? 100 : progressPct}%; background: ${progressPct === 100 || m.survey_complete ? '#34d399' : 'var(--purple-accent)'}; border-radius: 4px; transition: width 0.3s ease;"></div>
+                    <div style="height: 100%; width: ${m.surveyComplete ? 100 : progressPct}%; background: ${progressPct === 100 || m.surveyComplete ? '#34d399' : 'var(--purple-accent)'}; border-radius: 4px; transition: width 0.3s ease;"></div>
                   </div>
                 </div>
 
@@ -327,9 +565,10 @@
                   </div>
                 </div>
 
-                <div style="display: flex; gap: 0.4rem; margin-top: auto;">
-                  <button class="btn-secondary" style="flex: 1; font-size: 0.75rem; padding: 0.4rem;" onclick='window.editMemberPrompt(${JSON.stringify(m).replace(/'/g, "&apos;")})'>✏️ Edit</button>
-                  <button class="btn-secondary" style="flex: 1; font-size: 0.75rem; padding: 0.4rem;" onclick='window.generatePayslipPDF(${JSON.stringify(m).replace(/'/g, "&apos;")})'>📄 Payslip</button>
+                <div style="display: flex; gap: 0.4rem; margin-top: auto; flex-wrap: wrap;">
+                  <button class="btn-secondary" style="flex: 1; font-size: 0.72rem; padding: 0.4rem;" onclick='openProfileModal(${JSON.stringify(m).replace(/'/g, "&apos;")})'>👁️ Survey</button>
+                  <button class="btn-secondary" style="flex: 1; font-size: 0.72rem; padding: 0.4rem;" onclick='window.editMemberPrompt(${JSON.stringify(m).replace(/'/g, "&apos;")})'>✏️ Edit</button>
+                  <button class="btn-secondary" style="flex: 1; font-size: 0.72rem; padding: 0.4rem;" onclick='window.generatePayslipPDF(${JSON.stringify(m).replace(/'/g, "&apos;")})'>📄 Pay</button>
                   <button class="btn-secondary" style="padding: 0.4rem 0.6rem; background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.2); color: #ef4444;" onclick='window.deleteMember("${m.id || m.emp_code}")'>🗑️</button>
                 </div>
               </div>
@@ -337,6 +576,228 @@
           }).join('')}
         </div>
       `;
+    }
+
+    async function loadAttendanceData() {
+      try {
+        const res = await fetch('/api/team/attendance');
+        const data = await res.json();
+        window._attendanceData = data || [];
+        renderAttendanceTable();
+      } catch(e) {
+        console.error('Attendance fetch err:', e);
+      }
+    }
+
+    function renderAttendanceTable() {
+      const tbody = document.getElementById('attendanceTableBody');
+      const list = window._attendanceData || [];
+      if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">No attendance records found in database.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = list.map(r => {
+        const isOnline = r.status === 'In Studio';
+        const badgeClass = isOnline ? 'badge-online' : 'badge-offline';
+        return `
+          <tr>
+            <td><strong>${r.name || 'Team Member'}</strong></td>
+            <td><code>${r.employee_id || r.employeeId || '-'}</code></td>
+            <td>${r.date || '-'}</td>
+            <td><span class="badge-status ${badgeClass}">● ${r.status || 'Offline'}</span></td>
+            <td style="color: #34d399; font-weight: 700;">${r.clock_in_time || '-'}</td>
+            <td style="color: #ef4444; font-weight: 700;">${r.clock_out_time || '-'}</td>
+            <td style="color: var(--text-muted); font-size: 0.78rem;">📍 ${r.location || 'Niketon Studio'}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function loadLeavesData() {
+      try {
+        const res = await fetch('/api/team/leaves');
+        const data = await res.json();
+        window._leavesData = data || [];
+        
+        const pending = window._leavesData.filter(l => (l.status || '').toLowerCase().includes('pending'));
+        document.getElementById('kpiPendingLeaves').textContent = pending.length;
+        const badge = document.getElementById('pendingLeavesBadge');
+        if (pending.length > 0) {
+          badge.textContent = pending.length;
+          badge.style.display = 'inline-block';
+        } else {
+          badge.style.display = 'none';
+        }
+
+        renderLeavesTable();
+      } catch(e) {
+        console.error('Leaves fetch err:', e);
+      }
+    }
+
+    function renderLeavesTable() {
+      const tbody = document.getElementById('leavesTableBody');
+      const list = window._leavesData || [];
+      if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">No leave requests found.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = list.map(l => {
+        const st = l.status || 'Pending Line Review';
+        let badgeClass = 'badge-pending';
+        if (st.includes('Approved')) badgeClass = 'badge-approved';
+        if (st.includes('Rejected')) badgeClass = 'badge-rejected';
+
+        const isPending = st.toLowerCase().includes('pending');
+
+        return `
+          <tr>
+            <td><strong>${l.staff_name || l.staffName || 'Staff Member'}</strong></td>
+            <td>${l.type || l.leave_type || 'Casual Leave'}</td>
+            <td>${l.start_date || l.fromDate || '-'} ➔ ${l.end_date || l.toDate || '-'}</td>
+            <td><strong>${l.total_days || l.days || 1} day(s)</strong></td>
+            <td style="max-width: 200px; color: var(--text-muted);">${l.reason || '-'}</td>
+            <td><span class="badge-status ${badgeClass}">${st}</span></td>
+            <td>
+              ${isPending ? `
+                <div style="display: flex; gap: 0.3rem;">
+                  <button class="btn-secondary" style="padding: 0.3rem 0.6rem; font-size: 0.72rem; background: rgba(52, 211, 153, 0.15); color: #34d399; border-color: rgba(52, 211, 153, 0.3);" onclick="updateLeaveStatus('${l.id}', 'Approved')">✓ Approve</button>
+                  <button class="btn-secondary" style="padding: 0.3rem 0.6rem; font-size: 0.72rem; background: rgba(239, 68, 68, 0.15); color: #ef4444; border-color: rgba(239, 68, 68, 0.3);" onclick="updateLeaveStatus('${l.id}', 'Rejected')">✕ Reject</button>
+                </div>
+              ` : `<span style="font-size: 0.75rem; color: var(--text-muted);">Decided</span>`}
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function updateLeaveStatus(id, newStatus) {
+      try {
+        const res = await fetch(`/api/team/leaves/${id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('sb-access-token')}`
+          },
+          body: JSON.stringify({ status: newStatus })
+        });
+        if (res.ok) {
+          alert(`✅ Leave request ${newStatus.toLowerCase()} successfully!`);
+          loadLeavesData();
+        } else {
+          alert('Failed to update leave status');
+        }
+      } catch(e) {
+        alert('Error: ' + e.message);
+      }
+    }
+
+    async function loadEodData() {
+      try {
+        const res = await fetch('/api/team/eod');
+        const data = await res.json();
+        window._eodData = data || [];
+
+        const todayStr = new Date().toISOString().split('T')[0];
+        const todayEods = window._eodData.filter(e => (e.report_date || '').startsWith(todayStr) || (e.created_at || '').startsWith(todayStr));
+        document.getElementById('kpiEodsToday').textContent = todayEods.length;
+
+        renderEodFeed();
+      } catch(e) {
+        console.error('EOD fetch err:', e);
+      }
+    }
+
+    function renderEodFeed() {
+      const box = document.getElementById('eodFeedContainer');
+      const list = window._eodData || [];
+      if (list.length === 0) {
+        box.innerHTML = `<div style="color: var(--text-muted); padding: 2rem; text-align: center;">No End-of-Day reports submitted yet.</div>`;
+        return;
+      }
+
+      box.innerHTML = list.map(e => {
+        const dateStr = e.report_date || e.created_at || 'Today';
+        const hasBlockers = e.blockers && e.blockers.toLowerCase() !== 'none' && e.blockers.trim() !== '';
+
+        return `
+          <div class="eod-card">
+            <div class="eod-header">
+              <div>
+                <strong style="font-size: 1.05rem; color: #fff;">${e.employee_name || 'Team Member'}</strong>
+                <span style="font-size: 0.78rem; color: var(--text-muted); margin-left: 0.5rem;">📅 ${dateStr}</span>
+              </div>
+              <div style="display: flex; gap: 0.5rem; align-items: center;">
+                <span class="badge" style="background: rgba(168, 85, 247, 0.15); color: #c084fc;">⏱️ ${e.hours_worked || 8}h worked</span>
+                <span class="badge" style="background: rgba(255,255,255,0.06); color: #fff;">${e.mood || '😊 Energized'}</span>
+              </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; font-size: 0.85rem;">
+              <div>
+                <div style="font-weight: 700; color: #34d399; margin-bottom: 0.3rem;">✅ Tasks Completed:</div>
+                <div style="color: #e4e4e7; white-space: pre-line;">${e.tasks_completed || 'None listed'}</div>
+              </div>
+              <div>
+                <div style="font-weight: 700; color: #60a5fa; margin-bottom: 0.3rem;">🚀 Plan for Tomorrow:</div>
+                <div style="color: #e4e4e7; white-space: pre-line;">${e.plan_tomorrow || 'Same project work'}</div>
+              </div>
+            </div>
+
+            ${hasBlockers ? `
+              <div style="margin-top: 0.75rem; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 8px; padding: 0.6rem 0.8rem; font-size: 0.82rem; color: #fca5a5;">
+                <strong>⚠️ Blockers / Impediments:</strong> ${e.blockers}
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function openProfileModal(m) {
+      const modal = document.getElementById('profileModal');
+      document.getElementById('profModalTitle').textContent = `👤 ${m.name || 'Employee Profile'}`;
+
+      const b = m.bankInfo || m.bank_info || {};
+
+      document.getElementById('profModalBody').innerHTML = `
+        <div class="profile-section">
+          <h4 style="color: #c084fc; font-size: 0.88rem; margin-bottom: 0.6rem;">📌 Essential Details</h4>
+          <div class="profile-field"><span class="profile-field-label">Employee Code</span><span class="profile-field-val">${m.emp_code || m.id}</span></div>
+          <div class="profile-field"><span class="profile-field-label">Designation & Dept</span><span class="profile-field-val">${m.role || '-'} (${m.department || '-'})</span></div>
+          <div class="profile-field"><span class="profile-field-label">Work Email</span><span class="profile-field-val">${m.email || '-'}</span></div>
+          <div class="profile-field"><span class="profile-field-label">Phone</span><span class="profile-field-val">${m.phone || '-'}</span></div>
+          <div class="profile-field"><span class="profile-field-label">Telegram ID</span><span class="profile-field-val">${m.telegramId || m.telegram_id || '-'}</span></div>
+          <div class="profile-field"><span class="profile-field-label">XP Level & Badge</span><span class="profile-field-val">${m.xp || 0} XP (${m.badge || 'Recruit'})</span></div>
+        </div>
+
+        <div class="profile-section" style="margin-top: 0.75rem;">
+          <h4 style="color: #c084fc; font-size: 0.88rem; margin-bottom: 0.6rem;">📋 Survey & HR Info</h4>
+          <div class="profile-field"><span class="profile-field-label">Primary Skill</span><span class="profile-field-val">${m.primarySkill || m.primary_skill || 'Not specified'}</span></div>
+          <div class="profile-field"><span class="profile-field-label">Blood Group</span><span class="profile-field-val">${m.bloodGroup || m.blood_group || '-'}</span></div>
+          <div class="profile-field"><span class="profile-field-label">NID Number</span><span class="profile-field-val">${m.nidNo || m.nid_no || '-'}</span></div>
+          <div class="profile-field"><span class="profile-field-label">Personal Email</span><span class="profile-field-val">${m.personalEmail || m.personal_email || '-'}</span></div>
+          <div class="profile-field"><span class="profile-field-label">Emergency Contact</span><span class="profile-field-val">${m.emergencyContact || m.emergency_contact || '-'}</span></div>
+          <div class="profile-field"><span class="profile-field-label">Present Address</span><span class="profile-field-val">${m.address || '-'}</span></div>
+          <div class="profile-field"><span class="profile-field-label">Permanent Address</span><span class="profile-field-val">${m.permanentAddress || m.permanent_address || '-'}</span></div>
+        </div>
+
+        <div class="profile-section" style="margin-top: 0.75rem;">
+          <h4 style="color: #c084fc; font-size: 0.88rem; margin-bottom: 0.6rem;">💳 Payroll & Financial Setup</h4>
+          <div class="profile-field"><span class="profile-field-label">Base Monthly Salary</span><span class="profile-field-val">BDT ${(m.baseSalary || m.base_salary || 0).toLocaleString()}</span></div>
+          <div class="profile-field"><span class="profile-field-label">Bank Account No</span><span class="profile-field-val">${b.accNo || b.acc_no || 'Not set'}</span></div>
+          <div class="profile-field"><span class="profile-field-label">Bank Name & Branch</span><span class="profile-field-val">${b.bankName || b.bank_name || '-'}</span></div>
+          <div class="profile-field"><span class="profile-field-label">MFS (bKash/Nagad)</span><span class="profile-field-val">${b.mfsNo || b.mfs_no || '-'}</span></div>
+        </div>
+      `;
+
+      modal.style.display = 'flex';
+    }
+
+    function closeProfileModal() {
+      document.getElementById('profileModal').style.display = 'none';
     }
 
     function openTeamModal() {
@@ -423,7 +884,7 @@
       const doc = new window.jspdf.jsPDF();
       const month = new Date().toLocaleString('default', { month: 'long', year: 'numeric' });
       
-      doc.setFillColor(168, 85, 247); // Purple accent
+      doc.setFillColor(168, 85, 247);
       doc.rect(0, 0, 210, 40, 'F');
       
       doc.setTextColor(255, 255, 255);
@@ -447,7 +908,6 @@
       doc.text(`Department: ${member.department || 'Production'}`, 14, 79);
       doc.text(`Employee ID: ${member.empCode || member.emp_code || member.id}`, 14, 86);
       
-      // Salary Details
       doc.setDrawColor(200, 200, 200);
       doc.line(14, 95, 196, 95);
       
