@@ -3,12 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PurpleOS — Executive Dashboard</title>
+  <title>PurpleOS — Executive Command Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/styles.css">
   <link rel="stylesheet" href="/css/shell.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     .welcome-hero {
       background: linear-gradient(135deg, rgba(190, 24, 93, 0.16), rgba(147, 51, 234, 0.12));
@@ -21,21 +22,36 @@
       justify-content: space-between;
       backdrop-filter: blur(12px);
       box-shadow: var(--card-shadow);
+      flex-wrap: wrap;
+      gap: 1rem;
     }
-    .kpi-grid {
+
+    .kpi-row-title {
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.8rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .kpi-grid-5 {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 1.25rem;
-      margin-bottom: 1.75rem;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
     }
     .kpi-card {
       background: var(--bg-card);
       border: 1px solid var(--border-color);
-      border-radius: 18px;
-      padding: 1.25rem;
+      border-radius: 16px;
+      padding: 1.1rem;
       display: flex;
       flex-direction: column;
-      gap: 0.4rem;
+      gap: 0.35rem;
       backdrop-filter: blur(12px);
       box-shadow: var(--card-shadow);
       transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
@@ -45,111 +61,177 @@
       transform: translateY(-2px);
     }
     .kpi-title {
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       font-weight: 800;
       color: var(--text-dim);
       text-transform: uppercase;
       letter-spacing: 0.06em;
     }
     .kpi-val {
-      font-size: 1.8rem;
+      font-size: 1.6rem;
       font-weight: 900;
       color: var(--text-main);
       font-family: 'Outfit', sans-serif;
     }
     .kpi-sub {
-      font-size: 0.78rem;
+      font-size: 0.75rem;
       color: #10b981;
       font-weight: 700;
     }
-    .qa-dashboard-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-      gap: 0.75rem;
-      margin-bottom: 1.75rem;
-    }
-    .qa-card-btn {
+    .kpi-sub.warning { color: #f59e0b; }
+    .kpi-sub.alert { color: #ef4444; }
+
+    .action-btn-bar {
       display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.35rem;
-      padding: 0.85rem 0.5rem;
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      border-radius: 16px;
-      text-decoration: none;
-      color: var(--text-main);
-      font-family: 'Outfit', sans-serif;
-      font-size: 0.78rem;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+    }
+    .quick-act-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #fff;
+      padding: 0.5rem 0.9rem;
+      border-radius: 12px;
+      font-size: 0.8rem;
       font-weight: 700;
-      transition: all 0.2s ease;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.2s;
       cursor: pointer;
     }
-    .qa-card-btn:hover {
-      border-color: var(--pink-accent);
-      background: var(--bg-panel);
-      transform: scale(1.03);
+    .quick-act-btn:hover {
+      background: rgba(168, 85, 247, 0.2);
+      border-color: var(--purple-accent);
+      color: #fff;
     }
-    .qa-icon { font-size: 1.4rem; }
-    .section-grid {
+
+    .dashboard-grid-2 {
       display: grid;
-      grid-template-columns: 2fr 1fr;
+      grid-template-columns: 1fr 1fr;
       gap: 1.5rem;
+      margin-bottom: 1.5rem;
     }
+    @media (max-width: 960px) {
+      .dashboard-grid-2 { grid-template-columns: 1fr; }
+    }
+
     .panel-card {
       background: var(--bg-card);
       border: 1px solid var(--border-color);
       border-radius: 20px;
-      padding: 1.5rem;
+      padding: 1.35rem;
       box-shadow: var(--card-shadow);
+      display: flex;
+      flex-direction: column;
     }
     .panel-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 1.2rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.6rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
     }
     .panel-title {
-      font-size: 1.05rem;
+      font-size: 1rem;
       font-weight: 800;
       font-family: 'Outfit', sans-serif;
       color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
+
+    /* Pipeline Bars */
+    .stage-bar-item {
+      margin-bottom: 0.75rem;
+    }
+    .stage-bar-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.78rem;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+    }
+    .stage-progress-bg {
+      width: 100%;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .stage-progress-fill {
+      height: 100%;
+      border-radius: 999px;
+      transition: width 0.4s ease;
+    }
+
+    /* Feed List */
     .feed-item {
       display: flex;
       align-items: center;
       gap: 0.85rem;
-      padding: 0.75rem 0;
-      border-bottom: 1px solid var(--border-color);
+      padding: 0.65rem 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      font-size: 0.82rem;
     }
-    .feed-item:last-child {
-      border-bottom: none;
-    }
+    .feed-item:last-child { border-bottom: none; }
     .feed-badge {
-      width: 34px;
-      height: 34px;
+      width: 32px;
+      height: 32px;
       border-radius: 10px;
       background: rgba(236, 72, 153, 0.12);
       border: 1px solid var(--border-glow);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
+      flex-shrink: 0;
     }
-    @media (max-width: 900px) {
-      .section-grid {
-        grid-template-columns: 1fr;
-      }
+
+    /* Mini Table */
+    .mini-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
     }
+    .mini-table th {
+      text-align: left;
+      padding: 0.5rem;
+      color: var(--text-muted);
+      font-weight: 700;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+    }
+    .mini-table td {
+      padding: 0.65rem 0.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+    .mini-table tr:last-child td { border-bottom: none; }
+
+    .badge-pill {
+      padding: 0.2rem 0.55rem;
+      border-radius: 8px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      display: inline-block;
+    }
+    .badge-green { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .badge-amber { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .badge-red { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+    .badge-purple { background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); }
   </style>
 </head>
 <body>
 
-  <!-- App Header Injected by shell.js -->
+  <!-- App Header -->
   <div id="app-header"></div>
 
   <div class="main-wrapper">
-    <!-- App Sidebar Injected by shell.js -->
+    <!-- App Sidebar -->
     <div id="app-sidebar"></div>
 
     <!-- Main Content Area -->
@@ -159,92 +241,180 @@
       <div class="welcome-hero">
         <div>
           <h1 style="font-size: 1.5rem; font-weight: 900; font-family: 'Outfit', sans-serif; margin: 0 0 0.25rem; color: var(--text-main);" id="greetingHeader">
-            Good Morning, User 👋
+            Good Morning, Executive 👋
           </h1>
           <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">
-            Here is your live production overview & team status for today.
+            Live agency command center · Financials, operations, client health & roster status.
           </div>
         </div>
-        <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end;">
-          <span style="font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--pink-accent);" id="currentDateBadge">TODAY</span>
-          <span style="font-size: 0.8rem; color: #10b981; font-weight: 700;">🟢 All Systems Operational</span>
+
+        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem;">
+          <div style="display: flex; gap: 0.6rem; align-items: center;">
+            <span style="font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--pink-accent);" id="currentDateBadge">TODAY</span>
+            <span style="font-size: 0.78rem; color: #10b981; font-weight: 700;">🟢 All Systems Live</span>
+          </div>
+          <div class="action-btn-bar">
+            <a href="/pages/projects.html" class="quick-act-btn">📋 New Task</a>
+            <a href="/pages/finance.html" class="quick-act-btn">🧾 New Invoice</a>
+            <a href="/pages/team-admin.html" class="quick-act-btn">👥 Manage Team</a>
+          </div>
         </div>
       </div>
 
-      <!-- Mini-App Inspired Quick Action Buttons -->
-      <div class="qa-dashboard-grid">
-        <a href="/pages/projects.html" class="qa-card-btn">
-          <span class="qa-icon">📋</span>
-          <span>Project Hub</span>
-        </a>
-        <a href="/pages/social.html" class="qa-card-btn">
-          <span class="qa-icon">📱</span>
-          <span>Social Planner</span>
-        </a>
-        <a href="/pages/reviewroom.html" class="qa-card-btn">
-          <span class="qa-icon">🎥</span>
-          <span>Review Cuts</span>
-        </a>
-        <a href="/pages/finance.html" class="qa-card-btn">
-          <span class="qa-icon">💳</span>
-          <span>Financials</span>
-        </a>
-        <a href="/pages/profile.html" class="qa-card-btn">
-          <span class="qa-icon">🪪</span>
-          <span>My Profile</span>
-        </a>
-      </div>
-
-      <!-- KPI Grid -->
-      <div class="kpi-grid">
-        <div class="kpi-card">
-          <div class="kpi-title">Team On Duty</div>
-          <div class="kpi-val" id="dashTeamVal">—</div>
-          <div class="kpi-sub">🟢 Live Attendance</div>
-        </div>
-
-        <div class="kpi-card">
-          <div class="kpi-title">Active Tasks</div>
-          <div class="kpi-val" id="dashTaskVal">—</div>
-          <div class="kpi-sub">📋 Production Pipeline</div>
-        </div>
-
+      <!-- ROW 1: FINANCIAL COMMAND STRIP -->
+      <div class="kpi-row-title">💵 Financial Command Summary</div>
+      <div class="kpi-grid-5">
         <div class="kpi-card">
           <div class="kpi-title">Monthly Revenue</div>
-          <div class="kpi-val" id="dashRevVal">$0</div>
+          <div class="kpi-val" id="kpiRevenueVal">BDT 0</div>
           <div class="kpi-sub">💰 Settled Invoices</div>
         </div>
 
         <div class="kpi-card">
-          <div class="kpi-title">Pending Approvals</div>
-          <div class="kpi-val" id="dashApprVal">—</div>
-          <div class="kpi-sub" style="color: #f59e0b;">✍️ Action Required</div>
+          <div class="kpi-title">Outstanding Receivables</div>
+          <div class="kpi-val" id="kpiReceivablesVal">BDT 0</div>
+          <div class="kpi-sub warning">⏳ Pending Invoices</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-title">Overdue Invoices</div>
+          <div class="kpi-val" id="kpiOverdueVal">0</div>
+          <div class="kpi-sub alert" id="kpiOverdueSub">🔴 All Clear</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-title">Pending Expense Claims</div>
+          <div class="kpi-val" id="kpiPendingExpVal">0</div>
+          <div class="kpi-sub warning" id="kpiPendingExpSub">BDT 0 Awaiting Approval</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-title">Invoice Collection Rate</div>
+          <div class="kpi-val" id="kpiCollectionRate">0%</div>
+          <div class="kpi-sub">📈 Paid vs Total Billed</div>
         </div>
       </div>
 
-      <!-- Main Section Grid -->
-      <div class="section-grid">
-        <!-- Live Production Focus -->
+      <!-- ROW 2: OPERATIONS COMMAND STRIP -->
+      <div class="kpi-row-title">⚙️ Operations & Capacity Summary</div>
+      <div class="kpi-grid-5">
+        <div class="kpi-card">
+          <div class="kpi-title">Team On Duty Today</div>
+          <div class="kpi-val" id="kpiTeamDuty">0 / 0</div>
+          <div class="kpi-sub">🟢 Live Clocked-In Roster</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-title">EOD Report Submissions</div>
+          <div class="kpi-val" id="kpiEodSubmitted">0</div>
+          <div class="kpi-sub" id="kpiEodSub">📋 Submitted Today</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-title">Active Production Tasks</div>
+          <div class="kpi-val" id="kpiActiveTasks">0</div>
+          <div class="kpi-sub">🎬 Open Workflows</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-title">Pending Leave Requests</div>
+          <div class="kpi-val" id="kpiPendingLeaves">0</div>
+          <div class="kpi-sub warning">🏖️ Awaiting Review</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-title">Pipeline Lead Value</div>
+          <div class="kpi-val" id="kpiLeadValue">BDT 0</div>
+          <div class="kpi-sub">🚀 CRM Sales Funnel</div>
+        </div>
+      </div>
+
+      <!-- MAIN GRID SECTION 1: FINANCIAL & SALES PIPELINE -->
+      <div class="dashboard-grid-2">
+        <!-- Revenue Collections Overview -->
         <div class="panel-card">
           <div class="panel-header">
-            <h2 class="panel-title">📋 Production Focus & Active Shoots</h2>
-            <a href="/pages/projects.html" style="font-size: 0.8rem; font-weight: 700; color: var(--pink-accent); text-decoration: none;">View Project Hub →</a>
+            <h2 class="panel-title">💳 Financials & Invoices Summary</h2>
+            <a href="/pages/finance.html" style="font-size: 0.8rem; font-weight: 700; color: var(--pink-accent); text-decoration: none;">View Finance Hub →</a>
           </div>
-          <div id="dashTasksList">
-            <div style="color: var(--text-muted); padding: 1rem; text-align: center;">Loading active production focus...</div>
+          <div id="invoiceSummaryBox">
+            <div style="color: var(--text-muted); padding: 1rem; text-align: center;">Loading financial data...</div>
           </div>
         </div>
 
-        <!-- Team Live Status -->
+        <!-- CRM Lead Funnel -->
         <div class="panel-card">
           <div class="panel-header">
-            <h2 class="panel-title">👥 Team Roster Status</h2>
+            <h2 class="panel-title">🎯 Lead Acquisition Funnel</h2>
+            <a href="/pages/clients.html" style="font-size: 0.8rem; font-weight: 700; color: var(--pink-accent); text-decoration: none;">View CRM →</a>
           </div>
-          <div id="dashTeamRoster">
-            <div style="color: var(--text-muted); padding: 1rem; text-align: center;">Loading roster...</div>
+          <div id="leadFunnelBox">
+            <div style="color: var(--text-muted); padding: 1rem; text-align: center;">Loading CRM leads...</div>
           </div>
         </div>
       </div>
+
+      <!-- MAIN GRID SECTION 2: PRODUCTION PIPELINE & TEAM ROSTER -->
+      <div class="dashboard-grid-2">
+        <!-- Production Stage Pipeline -->
+        <div class="panel-card">
+          <div class="panel-header">
+            <h2 class="panel-title">🎬 Production Pipeline by Stage</h2>
+            <a href="/pages/projects.html" style="font-size: 0.8rem; font-weight: 700; color: var(--pink-accent); text-decoration: none;">Project Hub →</a>
+          </div>
+          <div id="productionPipelineBox">
+            <div style="color: var(--text-muted); padding: 1rem; text-align: center;">Loading production tasks...</div>
+          </div>
+        </div>
+
+        <!-- Live Team Roster & Attendance Status -->
+        <div class="panel-card">
+          <div class="panel-header">
+            <h2 class="panel-title">👥 Team Live Duty & EOD Status</h2>
+            <a href="/pages/team-admin.html" style="font-size: 0.8rem; font-weight: 700; color: var(--pink-accent); text-decoration: none;">Team Ops →</a>
+          </div>
+          <div id="teamRosterStatusBox">
+            <div style="color: var(--text-muted); padding: 1rem; text-align: center;">Loading team status...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MAIN GRID SECTION 3: CLIENT PORTFOLIO & EXPENSE APPROVALS -->
+      <div class="dashboard-grid-2">
+        <!-- Client Portfolio Health -->
+        <div class="panel-card">
+          <div class="panel-header">
+            <h2 class="panel-title">🏢 Client Accounts Portfolio</h2>
+            <a href="/pages/clients.html" style="font-size: 0.8rem; font-weight: 700; color: var(--pink-accent); text-decoration: none;">Client Hub →</a>
+          </div>
+          <div id="clientPortfolioBox">
+            <div style="color: var(--text-muted); padding: 1rem; text-align: center;">Loading client portfolio...</div>
+          </div>
+        </div>
+
+        <!-- Pending Expenses & Action Center -->
+        <div class="panel-card">
+          <div class="panel-header">
+            <h2 class="panel-title">🧾 Pending Expense Claims</h2>
+            <a href="/pages/finance.html" style="font-size: 0.8rem; font-weight: 700; color: var(--pink-accent); text-decoration: none;">Finance →</a>
+          </div>
+          <div id="pendingExpensesBox">
+            <div style="color: var(--text-muted); padding: 1rem; text-align: center;">Loading expense claims...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MAIN GRID SECTION 4: LIVE INTELLIGENCE FEED -->
+      <div class="panel-card" style="margin-bottom: 1.5rem;">
+        <div class="panel-header">
+          <h2 class="panel-title">⚡ Live Executive Activity Feed</h2>
+          <span style="font-size: 0.78rem; color: var(--text-muted);">Real-time stream of EODs, Attendance, Leaves & Finance</span>
+        </div>
+        <div id="executiveActivityFeed">
+          <div style="color: var(--text-muted); padding: 1.5rem; text-align: center;">Loading real-time executive feed...</div>
+        </div>
+      </div>
+
     </main>
   </div>
 
@@ -252,7 +422,7 @@
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
       initGreeting();
-      loadDashboardData();
+      loadExecutiveDashboard();
     });
 
     function initGreeting() {
@@ -264,7 +434,7 @@
 
       try {
         const rawUser = localStorage.getItem('purple_user');
-        const userName = rawUser ? (JSON.parse(rawUser).name || 'User') : 'User';
+        const userName = rawUser ? (JSON.parse(rawUser).name || 'Executive') : 'Executive';
         const greetingEl = document.getElementById('greetingHeader');
         if (greetingEl) greetingEl.textContent = `Good ${timeOfDay}, ${userName} 👋`;
       } catch(e) {}
@@ -275,64 +445,352 @@
       }
     }
 
-    async function loadDashboardData() {
+    async function loadExecutiveDashboard() {
       try {
-        const [teamRes, taskRes, invRes] = await Promise.all([
+        const [
+          teamRes,
+          attRes,
+          leaveRes,
+          eodRes,
+          workloadRes,
+          taskRes,
+          invRes,
+          expRes,
+          clientRes,
+          leadRes
+        ] = await Promise.all([
           fetch('/api/team').then(r => r.json()).catch(() => []),
+          fetch('/api/team/attendance').then(r => r.json()).catch(() => []),
+          fetch('/api/team/leaves').then(r => r.json()).catch(() => []),
+          fetch('/api/team/eod').then(r => r.json()).catch(() => []),
+          fetch('/api/team/workload').then(r => r.json()).catch(() => []),
           fetch('/api/tasks').then(r => r.json()).catch(() => []),
-          fetch('/api/invoices').then(r => r.json()).catch(() => [])
+          fetch('/api/invoices').then(r => r.json()).catch(() => []),
+          fetch('/api/expenses').then(r => r.json()).catch(() => []),
+          fetch('/api/clients').then(r => r.json()).catch(() => []),
+          fetch('/api/leads').then(r => r.json()).catch(() => [])
         ]);
 
-        // KPIs
-        const inStudio = (teamRes || []).filter(t => t.status === 'In Studio' || t.status === 'On Field Shoot').length;
-        document.getElementById('dashTeamVal').textContent = `${inStudio} / ${teamRes.length || 0}`;
+        const team = teamRes || [];
+        const attendance = attRes || [];
+        const leaves = leaveRes || [];
+        const eods = eodRes || [];
+        const workload = workloadRes || [];
+        const tasks = taskRes || [];
+        const invoices = invRes || [];
+        const expenses = expRes || [];
+        const clients = clientRes || [];
+        const leads = leadRes || [];
 
-        document.getElementById('dashTaskVal').textContent = (taskRes || []).length;
+        // ════════════════════════════════════════════
+        // 1. FINANCIAL STRIP COMPUTATIONS
+        // ════════════════════════════════════════════
+        const paidInvoices = invoices.filter(i => (i.status || '').toLowerCase() === 'paid');
+        const paidTotal = paidInvoices.reduce((sum, i) => sum + Number(i.amount || 0), 0);
+        
+        const pendingInvoices = invoices.filter(i => (i.status || '').toLowerCase() === 'sent' || (i.status || '').toLowerCase() === 'pending');
+        const pendingTotal = pendingInvoices.reduce((sum, i) => sum + Number(i.amount || 0), 0);
 
-        const paid = (invRes || []).filter(i => i.status === 'Paid').reduce((sum, i) => sum + (Number(i.amount) || 0), 0);
-        document.getElementById('dashRevVal').textContent = `BDT ${paid.toLocaleString()}`;
+        const overdueInvoices = invoices.filter(i => (i.status || '').toLowerCase() === 'overdue');
+        const overdueTotal = overdueInvoices.reduce((sum, i) => sum + Number(i.amount || 0), 0);
 
-        const pending = (taskRes || []).filter(t => (t.stage || '').includes('Review')).length;
-        document.getElementById('dashApprVal').textContent = pending;
+        const totalBilled = invoices.reduce((sum, i) => sum + Number(i.amount || 0), 0);
+        const collectionRate = totalBilled > 0 ? Math.round((paidTotal / totalBilled) * 100) : 100;
 
-        // Render Tasks
-        const taskBox = document.getElementById('dashTasksList');
-        if (!taskRes || taskRes.length === 0) {
-          taskBox.innerHTML = `<div style="color: var(--text-muted); padding: 1rem; text-align: center;">No active production tasks found.</div>`;
+        document.getElementById('kpiRevenueVal').textContent = `BDT ${paidTotal.toLocaleString()}`;
+        document.getElementById('kpiReceivablesVal').textContent = `BDT ${pendingTotal.toLocaleString()}`;
+        document.getElementById('kpiOverdueVal').textContent = overdueInvoices.length;
+        document.getElementById('kpiOverdueSub').textContent = overdueInvoices.length > 0 ? `🔴 BDT ${overdueTotal.toLocaleString()} Overdue` : '🟢 All Clear';
+        document.getElementById('kpiCollectionRate').textContent = `${collectionRate}%`;
+
+        // Expenses
+        const pendingExps = expenses.filter(e => {
+          const st = (e.status || '').toLowerCase();
+          return st.includes('pending') || !e.tier1?.approved || !e.tier2?.approved;
+        });
+        const pendingExpTotal = pendingExps.reduce((sum, e) => sum + Number(e.amount || 0), 0);
+        document.getElementById('kpiPendingExpVal').textContent = pendingExps.length;
+        document.getElementById('kpiPendingExpSub').textContent = `BDT ${pendingExpTotal.toLocaleString()} Awaiting Review`;
+
+        // ════════════════════════════════════════════
+        // 2. OPERATIONS STRIP COMPUTATIONS
+        // ════════════════════════════════════════════
+        const inStudioCount = team.filter(t => t.status === 'In Studio' || attendance.some(a => a.employee_id === (t.emp_code || t.id) && a.status === 'In Studio')).length;
+        document.getElementById('kpiTeamDuty').textContent = `${inStudioCount} / ${team.length}`;
+
+        const todayStr = new Date().toISOString().split('T')[0];
+        const todayEods = eods.filter(e => (e.report_date || '').startsWith(todayStr) || (e.created_at || '').startsWith(todayStr));
+        document.getElementById('kpiEodSubmitted').textContent = `${todayEods.length} / ${team.length}`;
+        document.getElementById('kpiEodSub').textContent = `📋 ${todayEods.length} Reports Submitted Today`;
+
+        const openTasks = tasks.filter(t => t.stage !== 'Approved' && t.stage !== 'Published' && t.stage !== 'Completed');
+        document.getElementById('kpiActiveTasks').textContent = openTasks.length;
+
+        const pendingLeavesList = leaves.filter(l => (l.status || '').toLowerCase().includes('pending'));
+        document.getElementById('kpiPendingLeaves').textContent = pendingLeavesList.length;
+
+        const totalLeadVal = leads.reduce((sum, l) => {
+          const val = parseFloat(String(l.value || '0').replace(/[^0-9.]/g, '')) || 0;
+          return sum + val;
+        }, 0);
+        document.getElementById('kpiLeadValue').textContent = `BDT ${totalLeadVal.toLocaleString()}`;
+
+        // ════════════════════════════════════════════
+        // 3. RENDER FINANCIAL SUMMARY BOX
+        // ════════════════════════════════════════════
+        const invBox = document.getElementById('invoiceSummaryBox');
+        if (invoices.length === 0) {
+          invBox.innerHTML = `<div style="color: var(--text-muted); padding: 1rem; text-align: center;">No invoices logged in system.</div>`;
         } else {
-          taskBox.innerHTML = taskRes.slice(0, 5).map(t => `
-            <div class="feed-item">
-              <div class="feed-badge">📋</div>
-              <div style="flex: 1;">
-                <div style="font-weight: 700; color: var(--text-main);">${t.title}</div>
-                <div style="font-size: 0.78rem; color: var(--text-muted);">Client: ${t.client || 'Agency'} &bull; Assignee: ${t.assignee || 'Unassigned'}</div>
+          invBox.innerHTML = `
+            <table class="mini-table">
+              <thead>
+                <tr>
+                  <th>Invoice ID</th>
+                  <th>Client</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${invoices.slice(0, 5).map(i => {
+                  let badgeClass = 'badge-amber';
+                  if ((i.status || '').toLowerCase() === 'paid') badgeClass = 'badge-green';
+                  if ((i.status || '').toLowerCase() === 'overdue') badgeClass = 'badge-red';
+                  return `
+                    <tr>
+                      <td><strong>${i.id}</strong></td>
+                      <td>${i.clientName || i.client || 'Client'}</td>
+                      <td><strong>BDT ${(Number(i.amount) || 0).toLocaleString()}</strong></td>
+                      <td><span class="badge-pill ${badgeClass}">${i.status || 'Pending'}</span></td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          `;
+        }
+
+        // ════════════════════════════════════════════
+        // 4. RENDER LEAD ACQUISITION FUNNEL
+        // ════════════════════════════════════════════
+        const leadBox = document.getElementById('leadFunnelBox');
+        if (leads.length === 0) {
+          leadBox.innerHTML = `<div style="color: var(--text-muted); padding: 1rem; text-align: center;">No CRM leads captured yet.</div>`;
+        } else {
+          const stagesMap = {
+            'New Inquiry': leads.filter(l => l.stage === 'New Inquiry').length,
+            'Contacted': leads.filter(l => l.stage === 'Contacted').length,
+            'Proposal Sent': leads.filter(l => l.stage === 'Proposal Sent' || l.stage === 'Meeting Scheduled').length,
+            'Won': leads.filter(l => l.stage === 'Won' || l.stage === 'Closed Won').length
+          };
+
+          const maxLeads = Math.max(1, leads.length);
+
+          leadBox.innerHTML = Object.entries(stagesMap).map(([stName, count]) => {
+            const pct = Math.round((count / maxLeads) * 100);
+            return `
+              <div class="stage-bar-item">
+                <div class="stage-bar-header">
+                  <span>${stName}</span>
+                  <span style="color: var(--pink-accent);">${count} leads (${pct}%)</span>
+                </div>
+                <div class="stage-progress-bg">
+                  <div class="stage-progress-fill" style="width: ${pct}%; background: linear-gradient(90deg, var(--purple-accent), var(--pink-accent));"></div>
+                </div>
               </div>
-              <span style="background: rgba(236, 72, 153, 0.12); border: 1px solid var(--border-glow); padding: 0.2rem 0.55rem; border-radius: 8px; color: var(--pink-accent); font-size: 0.72rem; font-weight: 700;">${t.stage || 'To Do'}</span>
+            `;
+          }).join('');
+        }
+
+        // ════════════════════════════════════════════
+        // 5. RENDER PRODUCTION PIPELINE STAGES
+        // ════════════════════════════════════════════
+        const prodBox = document.getElementById('productionPipelineBox');
+        if (tasks.length === 0) {
+          prodBox.innerHTML = `<div style="color: var(--text-muted); padding: 1rem; text-align: center;">No production tasks in system.</div>`;
+        } else {
+          const stageCounts = {
+            'Briefing & Strategy': tasks.filter(t => (t.stage || '').includes('Brief') || (t.stage || '').includes('Strategy')).length,
+            'In Execution (Shoot/Edit/Dev)': tasks.filter(t => ['Scripting','Shooting','Editing','Design','Development','Draft'].some(s => (t.stage || '').includes(s))).length,
+            'Review & QC': tasks.filter(t => (t.stage || '').includes('Review') || (t.stage || '').includes('QC') || (t.stage || '').includes('Testing')).length,
+            'Approved & Delivered': tasks.filter(t => t.stage === 'Approved' || t.stage === 'Published' || t.stage === 'Completed').length
+          };
+
+          const maxTasks = Math.max(1, tasks.length);
+
+          prodBox.innerHTML = Object.entries(stageCounts).map(([stName, count]) => {
+            const pct = Math.round((count / maxTasks) * 100);
+            return `
+              <div class="stage-bar-item">
+                <div class="stage-bar-header">
+                  <span>${stName}</span>
+                  <span>${count} tasks (${pct}%)</span>
+                </div>
+                <div class="stage-progress-bg">
+                  <div class="stage-progress-fill" style="width: ${pct}%; background: #34d399;"></div>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+
+        // ════════════════════════════════════════════
+        // 6. RENDER TEAM LIVE ROSTER & EOD STATUS
+        // ════════════════════════════════════════════
+        const rosterBox = document.getElementById('teamRosterStatusBox');
+        if (team.length === 0) {
+          rosterBox.innerHTML = `<div style="color: var(--text-muted); padding: 1rem; text-align: center;">No team members found.</div>`;
+        } else {
+          rosterBox.innerHTML = `
+            <table class="mini-table">
+              <thead>
+                <tr>
+                  <th>Member</th>
+                  <th>Role</th>
+                  <th>Status</th>
+                  <th>EOD Submitted</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${team.slice(0, 6).map(m => {
+                  const empCode = m.emp_code || m.id;
+                  const isOnline = m.status === 'In Studio' || attendance.some(a => a.employee_id === empCode && a.status === 'In Studio');
+                  const hasEod = eods.some(e => (e.employee_id === empCode || e.employee_name === m.name) && ((e.report_date || '').startsWith(todayStr) || (e.created_at || '').startsWith(todayStr)));
+
+                  return `
+                    <tr>
+                      <td><strong>${m.name}</strong></td>
+                      <td style="color: var(--text-muted);">${m.role || 'Team'}</td>
+                      <td><span class="badge-pill ${isOnline ? 'badge-green' : 'badge-amber'}">${isOnline ? '🟢 In Studio' : '⚫ Offline'}</span></td>
+                      <td><span class="badge-pill ${hasEod ? 'badge-purple' : 'badge-amber'}">${hasEod ? '✓ Done' : '⏳ Pending'}</span></td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          `;
+        }
+
+        // ════════════════════════════════════════════
+        // 7. RENDER CLIENT ACCOUNTS PORTFOLIO
+        // ════════════════════════════════════════════
+        const clientBox = document.getElementById('clientPortfolioBox');
+        if (clients.length === 0) {
+          clientBox.innerHTML = `<div style="color: var(--text-muted); padding: 1rem; text-align: center;">No clients in portfolio.</div>`;
+        } else {
+          clientBox.innerHTML = `
+            <table class="mini-table">
+              <thead>
+                <tr>
+                  <th>Client Name</th>
+                  <th>Category</th>
+                  <th>Total Billed</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${clients.slice(0, 5).map(c => {
+                  const clientInvoices = invoices.filter(i => i.clientName === c.name || i.client === c.name || i.clientId === c.id);
+                  const totalSpent = clientInvoices.reduce((sum, i) => sum + Number(i.amount || 0), 0);
+
+                  return `
+                    <tr>
+                      <td><strong>${c.name}</strong></td>
+                      <td style="color: var(--text-muted);">${c.category || c.industry || 'General'}</td>
+                      <td><strong>BDT ${totalSpent.toLocaleString()}</strong></td>
+                      <td><span class="badge-pill badge-green">${c.status || 'Active Retainer'}</span></td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          `;
+        }
+
+        // ════════════════════════════════════════════
+        // 8. RENDER PENDING EXPENSE CLAIMS
+        // ════════════════════════════════════════════
+        const expBox = document.getElementById('pendingExpensesBox');
+        if (pendingExps.length === 0) {
+          expBox.innerHTML = `<div style="color: #34d399; padding: 1rem; text-align: center; font-weight: 700;">✅ No pending expense approvals!</div>`;
+        } else {
+          expBox.innerHTML = `
+            <table class="mini-table">
+              <thead>
+                <tr>
+                  <th>Title</th>
+                  <th>Submitted By</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${pendingExps.slice(0, 5).map(e => `
+                  <tr>
+                    <td><strong>${e.title}</strong></td>
+                    <td>${e.submittedBy || e.loggedBy || 'Crew Member'}</td>
+                    <td><strong>BDT ${(Number(e.amount) || 0).toLocaleString()}</strong></td>
+                    <td><span class="badge-pill badge-amber">${e.status || 'Pending Approval'}</span></td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          `;
+        }
+
+        // ════════════════════════════════════════════
+        // 9. RENDER LIVE EXECUTIVE ACTIVITY FEED
+        // ════════════════════════════════════════════
+        const feedBox = document.getElementById('executiveActivityFeed');
+        const activityEvents = [];
+
+        eods.forEach(e => {
+          activityEvents.push({
+            icon: '📋',
+            title: `${e.employee_name || 'Team Member'} submitted EOD Report`,
+            sub: `Mood: ${e.mood || '😊'} · Hours: ${e.hours_worked || 8}h · Tasks: ${e.tasks_completed || 'Done'}`,
+            time: e.report_date || e.created_at
+          });
+        });
+
+        attendance.forEach(a => {
+          activityEvents.push({
+            icon: '⏱️',
+            title: `${a.name || 'Team Member'} clocked in (${a.status})`,
+            sub: `Time: ${a.clock_in_time || 'Just now'} · Location: ${a.location || 'Studio'}`,
+            time: a.date
+          });
+        });
+
+        leaves.forEach(l => {
+          activityEvents.push({
+            icon: '🏖️',
+            title: `${l.staff_name || 'Staff'} requested ${l.type || 'Leave'}`,
+            sub: `Dates: ${l.start_date || ''} to ${l.end_date || ''} · Reason: ${l.reason || '-'}`,
+            time: l.created_at
+          });
+        });
+
+        if (activityEvents.length === 0) {
+          feedBox.innerHTML = `<div style="color: var(--text-muted); padding: 1rem; text-align: center;">No activity recorded today.</div>`;
+        } else {
+          feedBox.innerHTML = activityEvents.slice(0, 6).map(act => `
+            <div class="feed-item">
+              <div class="feed-badge">${act.icon}</div>
+              <div style="flex: 1;">
+                <div style="font-weight: 700; color: var(--text-main);">${act.title}</div>
+                <div style="font-size: 0.78rem; color: var(--text-muted);">${act.sub}</div>
+              </div>
+              <span style="font-size: 0.72rem; color: var(--text-muted);">${act.time ? new Date(act.time).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'Today'}</span>
             </div>
           `).join('');
         }
 
-        // Render Team
-        const teamBox = document.getElementById('dashTeamRoster');
-        if (!teamRes || teamRes.length === 0) {
-          teamBox.innerHTML = `<div style="color: var(--text-muted); padding: 1rem; text-align: center;">No team members found.</div>`;
-        } else {
-          teamBox.innerHTML = teamRes.slice(0, 6).map(m => `
-            <div class="feed-item">
-              <div class="feed-badge" style="background: rgba(16, 185, 129, 0.12); border-color: rgba(16, 185, 129, 0.3);">👤</div>
-              <div style="flex: 1;">
-                <div style="font-weight: 700; color: var(--text-main);">${m.name}</div>
-                <div style="font-size: 0.75rem; color: var(--text-muted);">${m.role}</div>
-              </div>
-              <span style="font-size: 0.75rem; color: ${m.status === 'In Studio' ? '#10b981' : 'var(--text-muted)'}; font-weight: 700;">${m.status || 'Offline'}</span>
-            </div>
-          `).join('');
-        }
       } catch(e) {
-        console.error('Dashboard load err:', e);
+        console.error('Executive dashboard load err:', e);
       }
     }
   </script>
 </body>
 </html>
-
