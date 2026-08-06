@@ -2229,7 +2229,7 @@
   };
 
   // Full stageClass map — covers every stage across all 4 workflows
-  const stageClass = {
+  let stageClass = {
     // Briefing / planning
     'Briefing':         'stage-brief',
     'Strategy':         'stage-strategy',
@@ -2257,6 +2257,19 @@
     'Approved':         'stage-done',
     'Published':        'stage-done'
   };
+
+  async function loadMiniappWorkflowStages() {
+    try {
+      const res = await fetch('/api/workflows/stages');
+      const data = await res.json();
+      if (data && Object.keys(data).length > 0) {
+        Object.keys(data).forEach(k => {
+          if (WORKFLOW_TYPES[k]) WORKFLOW_TYPES[k] = { ...WORKFLOW_TYPES[k], ...data[k] };
+        });
+      }
+    } catch(e) {}
+  }
+
 
   // Priority colour helper
   function getMiniappPriorityColor(priority) {
@@ -2703,11 +2716,13 @@
     const list = document.getElementById('userTaskList');
     list.innerHTML = '<div class="empty-state"><div class="empty-icon">⏳</div>Loading tasks...</div>';
     try {
+      await loadMiniappWorkflowStages();
       const tgUser = tg?.initDataUnsafe?.user;
       const telegramId = tgUser?.id || currentUser?.telegramId || 'debug';
       const res = await fetch(`/api/team/tasks?telegramId=${telegramId}`);
       const tasks = await res.json();
       window._miniappTasks = tasks || [];
+
 
       // Fetch subtasks
       window._miniappAllSubtasks = [];

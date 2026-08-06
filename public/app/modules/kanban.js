@@ -30,8 +30,8 @@ window.APP_MODULES.kanban = async function(container) {
   let calCurrentYear = new Date().getFullYear();
   let calCurrentMonth = new Date().getMonth(); // 0-indexed
 
-  // Workflow Types & Default Stage Pipelines
-  const WORKFLOW_TYPES = {
+  // Workflow Types & Default Stage Pipelines (hydrated dynamically from API)
+  let WORKFLOW_TYPES = {
     video: {
       name: 'Video Production',
       icon: '🎬',
@@ -88,23 +88,28 @@ window.APP_MODULES.kanban = async function(container) {
 
   async function loadData() {
     try {
-      const [tasksRes, spacesRes, teamRes, clientsRes] = await Promise.all([
+      const [tasksRes, spacesRes, teamRes, clientsRes, stagesRes] = await Promise.all([
         APP_API.get('/tasks').catch(() => []),
         APP_API.get('/projects/spaces').catch(() => []),
         APP_API.get('/team').catch(() => []),
-        APP_API.get('/clients').catch(() => [])
+        APP_API.get('/clients').catch(() => []),
+        APP_API.get('/workflows/stages').catch(() => null)
       ]);
 
       allTasks = Array.isArray(tasksRes) ? tasksRes : [];
       if (spacesRes && spacesRes.length > 0) spacesData = spacesRes;
       teamMembers = Array.isArray(teamRes) ? teamRes : [];
       clientList = Array.isArray(clientsRes) ? clientsRes : [];
+      if (stagesRes && Object.keys(stagesRes).length > 0) {
+        WORKFLOW_TYPES = { ...WORKFLOW_TYPES, ...stagesRes };
+      }
 
       renderMainUI();
     } catch (e) {
       console.error('[Kanban] Failed to load initial data', e);
     }
   }
+
 
   function getActiveStages() {
     if (activeWorkflowFilter !== 'all' && WORKFLOW_TYPES[activeWorkflowFilter]) {
@@ -211,7 +216,11 @@ window.APP_MODULES.kanban = async function(container) {
               </div>
             `;
           }).join('')}
+          <div style="margin-top: 0.3rem;">
+            <button class="btn-secondary btn-sm" style="width: 100%; border-style: dashed;" onclick="window.KANBAN_MODULE.openStageEditor()">⚙️ Edit Pipeline Stages</button>
+          </div>
         </div>
+
 
         <!-- Main Content Area -->
         <div class="kanban-main">
@@ -1059,10 +1068,40 @@ window.APP_MODULES.kanban = async function(container) {
         await this.updateStage(activeTaskId, lastStage);
         this.closeDrawer();
       }
+    },
+
+    /* ── Phase 3: Stage Editor ── */
+    openStageEditor() {
+      const targetWf = activeWorkflowFilter !== 'all' ? activeWorkflowFilter : 'video';
+      const wf = WORKFLOW_TYPES[targetWf];
+      if (!wf) return;
+
+      const newStagesStr = prompt(`⚙️ Edit stage pipeline for ${wf.name} (${wf.icon}):\nEnter comma-separated stage names in order:`, wf.stages.join(', '));
+      if (newStagesStr === null) return;
+
+      const newStages = newStagesStr.split(',').map(s => s.trim()).filter(Boolean);
+      if (newStages.length < 2) return alert('Pipeline must have at least 2 stages.');
+
+      const payload = {
+        [targetWf]: {
+          stages: newStages
+        }
+      };
+
+      APP_API.put('/workflows/stages', payload)
+        .then(res => {
+          if (window.showToast) window.showToast('✅ Workflow stages updated and saved!');
+          else alert('Workflow stages updated!');
+          loadData();
+        })
+        .catch(err => {
+          alert('Failed to update stages: ' + (err.message || 'Permission denied'));
+        });
     }
   };
 
   await loadData();
+
   if (window.KANBAN_MODULE && window.KANBAN_MODULE.populateFilterDropdowns) {
     window.KANBAN_MODULE.populateFilterDropdowns();
   }

@@ -33,6 +33,7 @@ const taskTemplatesRoutes = require('./task-templates');
 const exportRoutes = require('./export');
 const chatRoutes = require('./chat');
 const adminImportRoutes = require('./admin-import');
+const workflowsRoutes = require('./workflows');
 
 // System Version Endpoint
 router.get('/version', (req, res) => {
@@ -49,6 +50,7 @@ router.use('/', authRoutes);
 router.use('/clients', clientsRoutes);
 router.use('/leads', leadsRoutes);
 router.use('/tasks', tasksRoutes);
+router.use('/workflows', workflowsRoutes);
 router.use('/projects', projectsRoutes);
 router.use('/workflows', projectsRoutes);
 router.use('/reviews', reviewsRoutes);
