@@ -72,12 +72,40 @@
   --transition-normal: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   --transition-slow: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 
-  /* ── Backward-Compat Aliases (used by modules) ── */
-  --text-main:       var(--text-primary);
-  --purple-main:     var(--purple-brand);
-  --amber-accent:    var(--amber-brand);
-  --emerald-accent:  var(--emerald-brand);
-  --text-error:      var(--red-brand);
+  /* Z-Index Layering Hierarchy */
+  --z-dropdown: 100;
+  --z-sticky-header: 500;
+  --z-mobile-nav: 800;
+  --z-drawer: 1000;
+  --z-modal-overlay: 2000;
+  --z-toast-notification: 3000;
+  --z-command-center: 4000;
+
+  /* ── Backward-Compat Aliases (used by legacy modules & design-tokens.css) ── */
+  --text-main:          var(--text-primary);
+  --purple-main:        var(--purple-brand);
+  --purple-primary:     var(--purple-brand);
+  --amber-accent:       var(--amber-brand);
+  --emerald-accent:     var(--emerald-brand);
+  --text-error:         var(--red-brand);
+
+  /* design-tokens.css aliases */
+  --brand-purple:       var(--purple-brand);
+  --brand-purple-mid:   var(--purple-light);
+  --brand-purple-soft:  rgba(124, 58, 237, 0.15);
+  --brand-pink:         var(--pink-brand);
+  --brand-gradient:     var(--gradient-brand);
+  --surface-border:     var(--border-subtle);
+  --text-heading:       var(--text-primary);
+  --text-body:          var(--text-secondary);
+  --success:            var(--emerald-brand);
+  --success-bg:         rgba(16, 185, 129, 0.15);
+  --warning:            var(--amber-brand);
+  --warning-bg:         rgba(245, 158, 11, 0.15);
+  --danger:             var(--red-brand);
+  --danger-bg:          var(--danger-bg-color, rgba(239, 68, 68, 0.15));
+  --shadow-cta:         var(--shadow-glow-purple);
+  --font-family:        var(--font-heading);
 }
 
 /* Light Theme Variable Overrides */

@@ -58,10 +58,8 @@ app.post(['/api/webhooks/telegram', '/webhooks/telegram'], async (req, res) => {
 
   if (targetBot && req.body) {
     try {
-      console.log(`Webhook received payload:`, JSON.stringify(req.body));
+      console.log(`Webhook received payload for ${botType}`);
       await targetBot.processUpdate(req.body);
-      // Hack: keep lambda alive for 2.5s so floating async event listeners (like Supabase DB queries) finish before freezing
-      await new Promise(r => setTimeout(r, 2500));
     } catch (err) {
       console.error(`Telegram webhook update processing error (${botType}):`, err.message);
     }

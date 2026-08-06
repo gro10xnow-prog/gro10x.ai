@@ -43,8 +43,8 @@ router.get('/auth/me', requireAuth, async (req, res) => {
   });
 });
 
-// 🔑 Generate Temp PIN (Admin only — prevents OTP spam abuse)
-router.post('/auth/pin/generate', requireAuth, requireAdmin, async (req, res) => {
+// 🔑 Generate Temp PIN (Admin only — rate limited & protected)
+router.post('/auth/pin/generate', authLimiter, requireAuth, requireAdmin, async (req, res) => {
   const { phone, linkedId, linkedType, email, sendTelegram } = req.body;
   if (!phone) {
     return res.status(400).json({ error: 'Phone number is required' });

@@ -235,20 +235,42 @@ function adminSignOut() {
   window.location.href = '/auth';
 }
 
-// Global Toast Notification System
+// Global Toast Notification System (Delegate to unified components.js showToast)
 window.showShellToast = function(message, type = 'info') {
-  let container = document.getElementById('shell-toast-container');
-  if (!container) {
-    container = document.createElement('div');
-    container.id = 'shell-toast-container';
-    container.style.cssText = 'position:fixed;bottom:5rem;right:1.5rem;z-index:99999;display:flex;flex-direction:column;gap:0.5rem;';
-    document.body.appendChild(container);
+  if (typeof window.showToast === 'function') {
+    window.showToast(message, type);
+  } else {
+    let container = document.getElementById('shell-toast-container');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'shell-toast-container';
+      container.style.cssText = 'position:fixed;bottom:5rem;right:1.5rem;z-index:99999;display:flex;flex-direction:column;gap:0.5rem;';
+      document.body.appendChild(container);
+    }
+    const colors = { success: '#10b981', error: '#ef4444', info: '#ec4899' };
+    const toast = document.createElement('div');
+    toast.style.cssText = `background:var(--surface-2, #181822);border:1px solid ${colors[type]||colors.info};color:var(--text-primary, #fff);padding:0.75rem 1.1rem;border-radius:14px;font-size:0.85rem;font-weight:700;font-family:inherit;max-width:340px;backdrop-filter:blur(12px);box-shadow:var(--shadow-elevated);transition:all 0.25s ease;`;
+    toast.textContent = message;
+    container.appendChild(toast);
+    setTimeout(() => { toast.style.opacity='0'; toast.style.transform='translateY(8px)'; setTimeout(()=>toast.remove(),250); }, 4000);
   }
-  const colors = { success: '#10b981', error: '#ef4444', info: '#ec4899' };
-  const toast = document.createElement('div');
-  toast.style.cssText = `background:var(--bg-panel);border:1px solid ${colors[type]||colors.info};color:var(--text-main);padding:0.75rem 1.1rem;border-radius:14px;font-size:0.85rem;font-weight:700;font-family:inherit;max-width:340px;backdrop-filter:blur(12px);box-shadow:var(--card-shadow);transition:all 0.25s ease;`;
-  toast.textContent = message;
-  container.appendChild(toast);
-  setTimeout(() => { toast.style.opacity='0'; toast.style.transform='translateY(8px)'; setTimeout(()=>toast.remove(),250); }, 4000);
 };
+
+// Global Keyboard & Modal Listener (Close modals on Escape key or backdrop click)
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    const activeModals = document.querySelectorAll('.modal-overlay.active, .cmd-backdrop.active');
+    activeModals.forEach(modal => {
+      modal.classList.remove('active');
+      modal.setAttribute('aria-hidden', 'true');
+    });
+  }
+});
+
+document.addEventListener('click', (e) => {
+  if (e.target && (e.target.classList.contains('modal-overlay') || e.target.classList.contains('cmd-backdrop'))) {
+    e.target.classList.remove('active');
+    e.target.setAttribute('aria-hidden', 'true');
+  }
+});
 

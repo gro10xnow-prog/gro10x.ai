@@ -34,10 +34,12 @@ function mapProfileToTeam(p) {
   };
 }
 
+let cachedDBState = null;
+
 async function readDB() {
   if (!isSupabaseConfigured()) {
-    console.warn('⚠️ Supabase not configured — returning empty data structure.');
-    return { team: [], clients: [], tasks: [], invoices: [], services: [], reviews: [], expenses: [], assets: [], attendance: [], eod_reports: [], authPins: [] };
+    console.warn('⚠️ Supabase not configured — returning fallback data structure.');
+    return cachedDBState || { team: [], clients: [], tasks: [], invoices: [], services: [], reviews: [], expenses: [], assets: [], attendance: [], eod_reports: [], projects: [], subtasks: [], workflows: [], tickets: [], posts: [], quotes: [], leaves: [], authPins: [] };
   }
 
   try {
@@ -72,16 +74,16 @@ async function readDB() {
       supabase.from('attendance').select('*'),
       supabase.from('eod_reports').select('*'),
       supabase.from('auth_pins').select('*'),
-      supabase.from('projects').select('*').catch ? supabase.from('projects').select('*') : Promise.resolve({ data: [] }),
-      supabase.from('subtasks').select('*').catch ? supabase.from('subtasks').select('*') : Promise.resolve({ data: [] }),
-      supabase.from('project_workflows').select('*').catch ? supabase.from('project_workflows').select('*') : Promise.resolve({ data: [] }),
-      supabase.from('tickets').select('*').catch ? supabase.from('tickets').select('*') : Promise.resolve({ data: [] }),
-      supabase.from('social_posts').select('*').catch ? supabase.from('social_posts').select('*') : Promise.resolve({ data: [] }),
-      supabase.from('quotes').select('*').catch ? supabase.from('quotes').select('*') : Promise.resolve({ data: [] }),
-      supabase.from('leaves').select('*').catch ? supabase.from('leaves').select('*') : Promise.resolve({ data: [] })
+      supabase.from('projects').select('*'),
+      supabase.from('subtasks').select('*'),
+      supabase.from('project_workflows').select('*'),
+      supabase.from('tickets').select('*'),
+      supabase.from('social_posts').select('*'),
+      supabase.from('quotes').select('*'),
+      supabase.from('leaves').select('*')
     ]);
 
-    return {
+    cachedDBState = {
       team: (profiles || []).map(mapProfileToTeam),
       clients: clients || [],
       tasks: tasks || [],
@@ -109,8 +111,13 @@ async function readDB() {
         email: ap.email
       }))
     };
+    return cachedDBState;
   } catch (e) {
     console.error('❌ Supabase readDB error:', e.message);
+    if (cachedDBState) {
+      console.warn('⚠️ Returning last-known-good cached DB state.');
+      return cachedDBState;
+    }
     return { team: [], clients: [], tasks: [], invoices: [], services: [], reviews: [], expenses: [], assets: [], attendance: [], eod_reports: [], projects: [], subtasks: [], workflows: [], tickets: [], posts: [], quotes: [], leaves: [], authPins: [] };
   }
 }

@@ -140,7 +140,7 @@
   function loadModuleScript(moduleFile) {
     return new Promise((resolve, reject) => {
       const script = document.createElement('script');
-      script.src = `/app/modules/${moduleFile}`;
+      script.src = `/app/modules/${moduleFile}?v=${Date.now()}`;
       script.onload = resolve;
       script.onerror = () => reject(new Error(`Could not load /app/modules/${moduleFile}`));
       document.body.appendChild(script);

@@ -155,9 +155,9 @@ router.post('/invoices/:id/send', requireAuth, requireAdmin, async (req, res) =>
     // We need the client's email. It might not be directly on the invoice, so let's try to fetch it if missing.
     let clientEmail = req.body.email || data.clientEmail || null;
     if (!clientEmail && data.client_id) {
-      const { data: clientData } = await supabase.from('clients').select('contact_email, company_email').eq('id', data.client_id).maybeSingle();
+      const { data: clientData } = await supabase.from('clients').select('email, contact_email, company_email').eq('id', data.client_id).maybeSingle();
       if (clientData) {
-        clientEmail = clientData.contact_email || clientData.company_email;
+        clientEmail = clientData.email || clientData.contact_email || clientData.company_email;
       }
     }
     

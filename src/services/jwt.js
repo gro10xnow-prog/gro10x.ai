@@ -1,15 +1,10 @@
 const crypto = require('crypto');
 
-// In production, JWT_SECRET MUST be set as an environment variable.
-// Generate one with: node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
-if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
-  console.error('\n❌ FATAL: JWT_SECRET environment variable is not set in production.');
-  console.error('   Run: node -e "console.log(require(\'crypto\').randomBytes(64).toString(\'hex\'))"');
-  console.error('   Then add it to your Vercel environment variables.\n');
-  process.exit(1);
-}
+const { getJwtSecret } = require('../utils/env');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'purpleos-dev-only-secret-not-for-production';
+function getSecret() {
+  return getJwtSecret();
+}
 
 function base64UrlEncode(str) {
   return Buffer.from(str)
@@ -43,7 +38,7 @@ function signToken(payload, expiresInSeconds = 7 * 24 * 60 * 60) {
   const encodedPayload = base64UrlEncode(JSON.stringify(fullPayload));
 
   const signature = crypto
-    .createHmac('sha256', JWT_SECRET)
+    .createHmac('sha256', getSecret())
     .update(`${encodedHeader}.${encodedPayload}`)
     .digest('base64')
     .replace(/=/g, '')
@@ -65,7 +60,7 @@ function verifyToken(token) {
   const [encodedHeader, encodedPayload, signature] = parts;
 
   const expectedSignature = crypto
-    .createHmac('sha256', JWT_SECRET)
+    .createHmac('sha256', getSecret())
     .update(`${encodedHeader}.${encodedPayload}`)
     .digest('base64')
     .replace(/=/g, '')

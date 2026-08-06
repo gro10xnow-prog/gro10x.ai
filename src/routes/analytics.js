@@ -4,8 +4,11 @@ const { requireAuth } = require('../middleware/auth');
 const { requireAdmin } = require('../middleware/rbac');
 const { supabase, isSupabaseConfigured } = require('../services/supabase');
 
+const { ok, fail, asyncHandler } = require('../utils/response');
+const { getCache, setCache } = require('../utils/cache');
+
 // POST Track Event (Public endpoint for analytics — writes to Supabase page_events)
-router.post('/track', async (req, res) => {
+router.post('/track', asyncHandler(async (req, res) => {
   const newEvent = {
     id: `EVT-${Date.now()}`,
     event: req.body.event || 'page_view',
@@ -31,19 +34,23 @@ router.post('/track', async (req, res) => {
     }
   }
 
-  res.json({ success: true });
-});
+  return ok(res, { tracked: true });
+}));
 
-// GET Analytics Overview (Admin only)
-router.get('/', requireAuth, requireAdmin, async (req, res) => {
+// GET Analytics Overview (Admin only — 5 min cache)
+router.get('/', requireAuth, requireAdmin, asyncHandler(async (req, res) => {
+  const cacheKey = 'analytics_overview';
+  const cached = getCache(cacheKey);
+  if (cached) return ok(res, cached);
+
   let events = [];
 
   if (isSupabaseConfigured()) {
     const { data } = await supabase
       .from('page_events')
-      .select('*')
+      .select('event, label, created_at')
       .order('created_at', { ascending: false })
-      .limit(2000);
+      .limit(1000);
     events = data || [];
   }
 
@@ -51,7 +58,6 @@ router.get('/', requireAuth, requireAdmin, async (req, res) => {
   const ctaClicks  = events.filter(e => e.event === 'cta_click').length;
   const botOpens   = events.filter(e => e.event === 'bot_open').length;
 
-  // Lead count from Supabase
   let leadsCaptured = 0;
   if (isSupabaseConfigured()) {
     const { count } = await supabase.from('leads').select('id', { count: 'exact', head: true });
@@ -63,7 +69,7 @@ router.get('/', requireAuth, requireAdmin, async (req, res) => {
     ctaBreakdown[e.label] = (ctaBreakdown[e.label] || 0) + 1;
   });
 
-  res.json({
+  const payload = {
     summary: {
       pageViews,
       ctaClicks,
@@ -73,87 +79,84 @@ router.get('/', requireAuth, requireAdmin, async (req, res) => {
     },
     ctaBreakdown,
     recentEvents: events.slice(0, 50)
-  });
-});
+  };
 
-// GET /api/analytics/time-series
-router.get('/time-series', requireAuth, requireAdmin, async (req, res) => {
-  try {
-    const period = req.query.period || 'daily'; // 'daily' or 'weekly'
-    const days = parseInt(req.query.days || '30', 10);
-    
-    // Fetch data
-    let invoices = [], tasks = [], leads = [];
-    if (isSupabaseConfigured()) {
-      const [invRes, taskRes, leadRes] = await Promise.all([
-        supabase.from('invoices').select('amount, status, created_at, paid_at'),
-        supabase.from('tasks').select('stage, created_at, updated_at'),
-        supabase.from('leads').select('created_at, stage, value')
-      ]);
-      invoices = invRes.data || [];
-      tasks = taskRes.data || [];
-      leads = leadRes.data || [];
+  setCache(cacheKey, payload, 300); // 5 min TTL
+  return ok(res, payload);
+}));
+
+// GET /api/analytics/time-series (5 min cache)
+router.get('/time-series', requireAuth, requireAdmin, asyncHandler(async (req, res) => {
+  const period = req.query.period || 'daily';
+  const days = parseInt(req.query.days || '30', 10);
+  const cacheKey = `analytics_time_series_${period}_${days}`;
+
+  const cached = getCache(cacheKey);
+  if (cached) return ok(res, cached);
+
+  let invoices = [], tasks = [], leads = [];
+  if (isSupabaseConfigured()) {
+    const [invRes, taskRes, leadRes] = await Promise.all([
+      supabase.from('invoices').select('amount, status, created_at, paid_at'),
+      supabase.from('tasks').select('stage, created_at, updated_at'),
+      supabase.from('leads').select('created_at, stage, value')
+    ]);
+    invoices = invRes.data || [];
+    tasks = taskRes.data || [];
+    leads = leadRes.data || [];
+  }
+
+  const now = new Date();
+  const cutoffDate = new Date();
+  cutoffDate.setDate(now.getDate() - days);
+
+  const getGroupKey = (dateStr) => {
+    if (!dateStr) return null;
+    const d = new Date(dateStr);
+    if (d < cutoffDate) return null;
+    if (period === 'weekly') {
+      const firstDayOfWeek = new Date(d.setDate(d.getDate() - d.getDay()));
+      return firstDayOfWeek.toISOString().split('T')[0];
     }
+    return d.toISOString().split('T')[0];
+  };
 
-    const now = new Date();
-    const cutoffDate = new Date();
-    cutoffDate.setDate(now.getDate() - days);
+  const timeSeries = {};
 
-    // Grouping helper
-    const getGroupKey = (dateStr) => {
-      if (!dateStr) return null;
-      const d = new Date(dateStr);
-      if (d < cutoffDate) return null;
-      if (period === 'weekly') {
-        const firstDayOfWeek = new Date(d.setDate(d.getDate() - d.getDay()));
-        return firstDayOfWeek.toISOString().split('T')[0]; // Sunday of that week
-      }
-      return d.toISOString().split('T')[0]; // YYYY-MM-DD
-    };
-
-    const timeSeries = {};
-
-    // 1. Revenue (Paid Invoices)
-    invoices.forEach(inv => {
-      if (inv.status === 'Paid') {
-        const dateKey = getGroupKey(inv.paid_at || inv.created_at);
-        if (dateKey) {
-          if (!timeSeries[dateKey]) timeSeries[dateKey] = { date: dateKey, revenue: 0, tasksCompleted: 0, newLeads: 0 };
-          timeSeries[dateKey].revenue += Number(inv.amount || 0);
-        }
-      }
-    });
-
-    // 2. Task Completions (Tasks in Approved/Completed stages)
-    tasks.forEach(task => {
-      if (task.stage === 'Approved' || task.stage === 'Completed') {
-        // Use updated_at as completion proxy
-        const dateKey = getGroupKey(task.updated_at || task.created_at);
-        if (dateKey) {
-          if (!timeSeries[dateKey]) timeSeries[dateKey] = { date: dateKey, revenue: 0, tasksCompleted: 0, newLeads: 0 };
-          timeSeries[dateKey].tasksCompleted += 1;
-        }
-      }
-    });
-
-    // 3. New Leads (Leads generated)
-    leads.forEach(lead => {
-      const dateKey = getGroupKey(lead.created_at);
+  invoices.forEach(inv => {
+    if (inv.status === 'Paid') {
+      const dateKey = getGroupKey(inv.paid_at || inv.created_at);
       if (dateKey) {
         if (!timeSeries[dateKey]) timeSeries[dateKey] = { date: dateKey, revenue: 0, tasksCompleted: 0, newLeads: 0 };
-        timeSeries[dateKey].newLeads += 1;
+        timeSeries[dateKey].revenue += Number(inv.amount || 0);
       }
-    });
+    }
+  });
 
-    // Format output as array, sorted by date
-    const seriesArray = Object.values(timeSeries).sort((a, b) => new Date(a.date) - new Date(b.date));
+  tasks.forEach(task => {
+    if (task.stage === 'Approved' || task.stage === 'Completed') {
+      const dateKey = getGroupKey(task.updated_at || task.created_at);
+      if (dateKey) {
+        if (!timeSeries[dateKey]) timeSeries[dateKey] = { date: dateKey, revenue: 0, tasksCompleted: 0, newLeads: 0 };
+        timeSeries[dateKey].tasksCompleted += 1;
+      }
+    }
+  });
 
-    res.json(seriesArray);
-  } catch (error) {
-    console.error('Time series error:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
+  leads.forEach(lead => {
+    const dateKey = getGroupKey(lead.created_at);
+    if (dateKey) {
+      if (!timeSeries[dateKey]) timeSeries[dateKey] = { date: dateKey, revenue: 0, tasksCompleted: 0, newLeads: 0 };
+      timeSeries[dateKey].newLeads += 1;
+    }
+  });
+
+  const seriesArray = Object.values(timeSeries).sort((a, b) => new Date(a.date) - new Date(b.date));
+  const payload = { period, days, series: seriesArray };
+
+  setCache(cacheKey, payload, 300);
+  return ok(res, payload);
+}));
 
 // GET /api/analytics/scorecards
 router.get('/scorecards', requireAuth, requireAdmin, async (req, res) => {

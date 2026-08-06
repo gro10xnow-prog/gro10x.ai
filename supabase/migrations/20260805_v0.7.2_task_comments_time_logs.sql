@@ -2,7 +2,7 @@
 -- Create task_comments table
 CREATE TABLE IF NOT EXISTS public.task_comments (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-    task_id UUID NOT NULL REFERENCES public.tasks(id) ON DELETE CASCADE,
+    task_id VARCHAR(20) NOT NULL REFERENCES public.tasks(id) ON DELETE CASCADE,
     author_name TEXT NOT NULL,
     author_avatar TEXT,
     content TEXT NOT NULL,
@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS public.task_comments (
 -- Create time_logs table for logging hours on tasks
 CREATE TABLE IF NOT EXISTS public.time_logs (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-    task_id UUID NOT NULL REFERENCES public.tasks(id) ON DELETE CASCADE,
+    task_id VARCHAR(20) NOT NULL REFERENCES public.tasks(id) ON DELETE CASCADE,
     user_name TEXT NOT NULL,
     duration_hours NUMERIC(5,2) NOT NULL,
     note TEXT,

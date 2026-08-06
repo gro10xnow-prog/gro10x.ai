@@ -168,6 +168,12 @@
   border: 1px solid rgba(6, 182, 212, 0.35);
 }
 
+.badge-cyan {
+  background: rgba(6, 182, 212, 0.18);
+  color: #38bdf8;
+  border: 1px solid rgba(6, 182, 212, 0.35);
+}
+
 .badge-gray {
   background: rgba(148, 163, 184, 0.15);
   color: var(--text-muted);
@@ -318,7 +324,7 @@
   background: rgba(0, 0, 0, 0.75);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  z-index: 9999;
+  z-index: var(--z-modal-overlay, 2000);
   align-items: center;
   justify-content: center;
   padding: 1rem;
@@ -351,7 +357,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  z-index: 99999;
+  z-index: var(--z-toast-notification, 3000);
 }
 
 .toast {
@@ -481,4 +487,48 @@
   color: var(--text-primary);
   border-color: var(--border-medium);
 }
+
+
+/* ───── 11. COMMON LAYOUT & UTILITY CLASSES ───── */
+.hidden {
+  display: none !important;
+}
+
+.flex-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.flex-row {
+  display: flex;
+  flex-direction: row;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.gap-sm { gap: 0.5rem; }
+.gap-md { gap: 1rem; }
+.gap-lg { gap: 1.5rem; }
+
+.p-sm { padding: 0.5rem; }
+.p-md { padding: 1rem; }
+.p-lg { padding: 1.5rem; }
+
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.text-muted { color: var(--text-muted); }
+.text-primary { color: var(--text-primary); }
+
+.grid-auto-fit {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+
 

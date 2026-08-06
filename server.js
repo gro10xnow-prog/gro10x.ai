@@ -23,6 +23,18 @@ const ALLOWED_ORIGINS = [
 
 const app = express();
 
+// Validate Environment Variables on Startup
+const { validateEnvironment } = require('./src/utils/env');
+try { validateEnvironment(); } catch (e) { console.warn('[ENV] Boot Note:', e.message); }
+
+// Enable Security Headers Middleware
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  next();
+});
+
 // Enable GZIP / Brotli compression for static responses & JSON APIs
 app.use(compression());
 
@@ -235,10 +247,12 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public/index.html'));
 });
 
-// Sentry Error Handler
+// Sentry & Global Error Handler
 if (Sentry) {
   app.use(Sentry.Handlers.errorHandler());
 }
+const errorHandler = require('./src/middleware/errorHandler');
+app.use(errorHandler);
 
 // Start Express Server (only when run directly, not when imported by Vercel serverless handler)
 if (require.main === module) {
