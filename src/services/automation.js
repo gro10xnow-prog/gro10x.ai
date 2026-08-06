@@ -82,19 +82,23 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
         target: lead.clientName || lead.company,
         status: 'Executed',
         timestamp: new Date().toISOString()
-      });
+       });
     }
 
-    // TRIGGER 3: Task Stage Changed to "Client Review" -> Direct notification to Client Rep
+    // TRIGGER 3: Task Stage Changed to "Client Review" -> Direct notification to Client Rep with Review Room deep link
     if (eventType === 'task_stage_change' && eventData.stage === 'Client Review') {
       const task = eventData.task;
       const clientObj = (db.clients || []).find(c => (c.name || '').toLowerCase().includes((task.client || '').toLowerCase()));
 
       if (clientObj && clientObj.telegramId) {
-        const reviewUrl = `https://purpleos-iota.vercel.app/partners?client=${encodeURIComponent(clientObj.name)}`;
-        const msgText = `ðŸŽ¬ *Deliverable Ready for Review!*\n\nProject: *${task.title}*\nClient: *${task.client}*\n\nAccess your interactive Review Room to stream cut & leave feedback:\nðŸ”— ${reviewUrl}`;
+        // Deep link to the review room using the review_id if available, else partner portal
+        const reviewId = eventData.reviewId || null;
+        const reviewUrl = reviewId
+          ? `https://purpleos-iota.vercel.app/reviewroom.html?id=${reviewId}`
+          : `https://purpleos-iota.vercel.app/partners?client=${encodeURIComponent(clientObj.name)}`;
+        const msgText = `🎬 *Deliverable Ready for Review!*\n\nProject: *${task.title}*\nClient: *${task.client}*\n\nYour interactive Review Room is live. Stream the cut, leave timecoded feedback, and sign off:\n🔗 ${reviewUrl}`;
         sendTelegramNotification(clientObj.telegramId, msgText, [
-          [{ text: 'ðŸŽ¬ Open Review Room', url: reviewUrl }]
+          [{ text: '🎬 Open Review Room', url: reviewUrl }]
         ], false);
       }
 
@@ -103,6 +107,44 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
         rule: 'AUT-004 (Client Review Portal Push)',
         event: eventType,
         target: task.title,
+        status: 'Executed',
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    // TRIGGER: Client approved creative deliverable -> Notify production team
+    if (eventType === 'review_approved') {
+      const { projectName, clientName, taskId, approvedBy } = eventData;
+      const productionTeamChatId = process.env.TELEGRAM_PRODUCTION_CHAT_ID || process.env.TELEGRAM_GROUP_CHAT_ID;
+      if (productionTeamChatId) {
+        const msgText = `✅ *Client Approved Deliverable!*\n\nProject: *${projectName}*\nClient: *${clientName}*\nApproved By: *${approvedBy || 'Client'}*\n${taskId ? `Linked Task: ${taskId} → Stage set to Approved` : ''}\n\nInvoice release triggered. 🎉`;
+        sendTelegramNotification(productionTeamChatId, msgText, [], true);
+      }
+
+      recordAutomationLog(db, {
+        id: `LOG-${Date.now()}`,
+        rule: 'AUT-009 (Review Room Approval Cascade)',
+        event: eventType,
+        target: projectName,
+        status: 'Executed',
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    // TRIGGER: Client requested revisions -> Alert production lead
+    if (eventType === 'review_revision_requested') {
+      const { projectName, clientName, revisionNotes, requestedBy } = eventData;
+      const productionTeamChatId = process.env.TELEGRAM_PRODUCTION_CHAT_ID || process.env.TELEGRAM_GROUP_CHAT_ID;
+      if (productionTeamChatId) {
+        const msgText = `🔴 *Client Requested Revisions!*\n\nProject: *${projectName}*\nClient: *${clientName}*\nRequested By: *${requestedBy || 'Client'}*\n\n📝 Revision Notes:\n"${revisionNotes}"\n\nPlease review feedback and update the deliverable.`;
+        sendTelegramNotification(productionTeamChatId, msgText, [], true);
+      }
+
+      recordAutomationLog(db, {
+        id: `LOG-${Date.now()}`,
+        rule: 'AUT-010 (Review Room Revision Request)',
+        event: eventType,
+        target: projectName,
         status: 'Executed',
         timestamp: new Date().toISOString()
       });

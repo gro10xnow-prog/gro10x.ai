@@ -45,13 +45,28 @@
       <!-- APPROVAL CONFIRMATION MODAL -->
       <div class="rr-modal-overlay" id="rrApproveModal">
         <div class="rr-modal-box">
-          <h3 style="font-size: 1.25rem; font-weight: 800; margin-top: 0; color: #ffffff;">🎉 Approve Final Video Cut?</h3>
+          <h3 style="font-size: 1.25rem; font-weight: 800; margin-top: 0; color: #ffffff;">🎉 Approve Final Deliverable?</h3>
           <p style="font-size: 0.88rem; color: #a1a1aa; line-height: 1.5; margin-bottom: 1.5rem;">
-            Approving this master cut will mark the creative review as complete, dispatch automated notifications to the production team, and release the client invoice.
+            Approving will mark the creative review as complete, notify the production team, and release the client invoice automatically.
           </p>
           <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
             <button class="rr-btn rr-btn-secondary" onclick="closeApproveModal()">Cancel</button>
             <button class="rr-btn rr-btn-approve" onclick="executeCutApproval()">✅ Confirm & Release Invoice</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- REVISION REQUEST MODAL -->
+      <div class="rr-modal-overlay" id="rrRevisionModal">
+        <div class="rr-modal-box">
+          <h3 style="font-size: 1.25rem; font-weight: 800; margin-top: 0; color: #ffffff;">🔴 Request Revisions</h3>
+          <p style="font-size: 0.88rem; color: #a1a1aa; line-height: 1.5; margin-bottom: 0.75rem;">
+            Describe the changes needed. The production team will be notified immediately.
+          </p>
+          <textarea id="revisionFeedbackInput" rows="4" style="width:100%; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); border-radius:10px; color:#fff; padding:0.75rem; font-size:0.88rem; resize:vertical; font-family:inherit; box-sizing:border-box;" placeholder="e.g. Please adjust the color grade on the opening sequence, and shorten the CTA overlay by 2 seconds..."></textarea>
+          <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1rem;">
+            <button class="rr-btn rr-btn-secondary" onclick="closeRevisionModal()">Cancel</button>
+            <button class="rr-btn" style="background:rgba(239,68,68,0.8); color:#fff;" onclick="executeRevisionRequest()">🔴 Submit Revision Request</button>
           </div>
         </div>
       </div>
@@ -90,26 +105,48 @@
 
       <!-- Media Player Container -->
       <div class="rr-player-wrap" style="position: relative;">
+        <!-- VIDEO PLAYER (shown for video media type) -->
         <video controls id="videoPlayer" poster="" style="width: 100%; display: block; border-radius: 12px;">
-          <source id="videoSource" src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" type="video/mp4">
+          <source id="videoSource" src="" type="video/mp4">
           Your browser does not support HTML5 video playback.
         </video>
-        <!-- Drawing Canvas Overlay -->
+        <!-- IMAGE VIEWER (shown for image/graphic media type) -->
+        <div id="imageViewer" style="display:none; text-align:center; background:rgba(0,0,0,0.3); border-radius:12px; overflow:hidden; min-height:300px; align-items:center; justify-content:center;">
+          <img id="imageViewerImg" src="" alt="Graphic Proof" style="max-width:100%; max-height:70vh; object-fit:contain; border-radius:12px;">
+        </div>
+        <!-- PDF VIEWER (shown for PDF/doc media type) -->
+        <div id="pdfViewer" style="display:none;">
+          <iframe id="pdfViewerFrame" src="" style="width:100%; height:600px; border:none; border-radius:12px;"></iframe>
+        </div>
+        <!-- No Asset Placeholder -->
+        <div id="noAssetPlaceholder" style="display:none; background:rgba(255,255,255,0.04); border:2px dashed rgba(255,255,255,0.15); border-radius:12px; padding:3rem; text-align:center;">
+          <div style="font-size:3rem; margin-bottom:0.75rem;">📁</div>
+          <div style="font-weight:700; color:#fff; margin-bottom:0.4rem;">No Asset Uploaded Yet</div>
+          <div style="font-size:0.82rem; color:#a1a1aa; margin-bottom:1.25rem;">Upload the deliverable file to enable client review.</div>
+          <label for="assetUploadInput" class="rr-btn rr-btn-secondary" style="cursor:pointer;">📤 Upload Asset</label>
+          <input type="file" id="assetUploadInput" accept="video/*,image/*,.pdf" style="display:none;" onchange="handleAssetUpload(event)">
+        </div>
+        <!-- Drawing Canvas Overlay (video only) -->
         <canvas id="reviewCanvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none; border-radius: 12px;"></canvas>
       </div>
 
-      <!-- Drawing Toolbar -->
-      <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; align-items: center;">
+      <!-- Drawing Toolbar (video only) -->
+      <div id="drawingToolbar" style="display: flex; gap: 0.5rem; margin-top: 0.5rem; align-items: center; flex-wrap:wrap;">
         <button class="rr-btn" id="btnToggleDraw" style="background: rgba(255,255,255,0.1); padding: 0.4rem 0.8rem; font-size: 0.85rem;">🖍️ Enable Drawing</button>
         <span style="font-size: 0.75rem; color: var(--text-muted);">Draw on the video to add visual feedback at the current timestamp.</span>
+        <label for="assetUploadInput" class="rr-btn" style="background:rgba(255,255,255,0.08); padding:0.4rem 0.8rem; font-size:0.85rem; cursor:pointer;">📤 Upload New Version</label>
+        <input type="file" id="assetUploadInput" accept="video/*,image/*,.pdf" style="display:none;" onchange="handleAssetUpload(event)">
       </div>
 
       <!-- Client & Action Footer -->
       <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
         <div style="font-size: 0.85rem; color: #a1a1aa;">
-          Client: <strong style="color: #fff;" id="clientNameLabel">Chillox Fast Food Chain</strong> | Lead Editor: <strong style="color: #fff;" id="editorNameLabel">Ruhul Amin Rupom</strong>
+          Client: <strong style="color: #fff;" id="clientNameLabel">—</strong> | Lead: <strong style="color: #fff;" id="editorNameLabel">Production Team</strong>
         </div>
-        <div id="approveBtnContainer">
+        <div id="approveBtnContainer" style="display:flex; gap:0.75rem;">
+          <button class="rr-btn" style="background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.4); color:#fca5a5;" id="btnRequestRevisions" onclick="openRevisionModal()">
+            🔴 Request Revisions
+          </button>
           <button class="rr-btn rr-btn-approve" id="btnApproveCut" onclick="openApproveModal()">
             ✅ Approve Final Cut & Release Invoice
           </button>
@@ -154,9 +191,18 @@
     let activeReviewData = null;
     let reviewsList = [];
 
+    // XSS-safe text renderer
+    function safeText(str) {
+      if (!str) return '';
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
       configureRoleBackLink();
-      fetchReviewsCatalog();
+      // Auto-load from URL ?id= param
+      const urlParams = new URLSearchParams(window.location.search);
+      const reviewId = urlParams.get('id');
+      fetchReviewsCatalog(reviewId);
     });
 
     // Configure role-based navigation link
@@ -175,7 +221,7 @@
     }
 
     // Fetch review projects list from API
-    async function fetchReviewsCatalog() {
+    async function fetchReviewsCatalog(preloadId) {
       try {
         const token = localStorage.getItem('sb-access-token') || localStorage.getItem('purple_token');
         const res = await fetch('/api/reviews', {
@@ -185,33 +231,40 @@
         if (res.ok) {
           const data = await res.json();
           reviewsList = Array.isArray(data) ? data : [];
-          populateProjectSelector(reviewsList);
+          populateProjectSelector(reviewsList, preloadId);
 
-          if (reviewsList.length > 0) {
-            loadReviewDetails(reviewsList[0].id);
+          const targetId = preloadId || (reviewsList.length > 0 ? reviewsList[0].id : null);
+          if (targetId) {
+            loadReviewDetails(targetId);
           } else {
-            loadFallbackData();
+            showNoProjectsState();
           }
         } else {
-          loadFallbackData();
+          showNoProjectsState();
         }
       } catch (err) {
-        console.warn('Reviews catalog fetch error, loading default dataset:', err);
-        loadFallbackData();
+        console.warn('Reviews catalog fetch error:', err);
+        showNoProjectsState();
       }
     }
 
-    function populateProjectSelector(list) {
+    function showNoProjectsState() {
+      document.getElementById('assetTitle').innerText = 'No Active Review Projects';
+      document.getElementById('noAssetPlaceholder').style.display = 'flex';
+      document.getElementById('videoPlayer').style.display = 'none';
+    }
+
+    function populateProjectSelector(list, preloadId) {
       const select = document.getElementById('reviewProjectSelector');
       if (!select) return;
 
       if (list.length === 0) {
-        select.innerHTML = '<option value="">No Active Cuts</option>';
+        select.innerHTML = '<option value="">No Active Review Cuts</option>';
         return;
       }
 
       select.innerHTML = list.map(r => `
-        <option value="${r.id}">${r.projectName || r.assetTitle} (${r.client || 'Client'})</option>
+        <option value="${r.id}" ${r.id === preloadId ? 'selected' : ''}>${safeText(r.projectName || r.clientName)} (${safeText(r.clientName || r.client || 'Client')})</option>
       `).join('');
     }
 
@@ -242,49 +295,75 @@
     }
 
     function renderReviewUI(data) {
-      // Asset Title & Client
-      document.getElementById('assetTitle').innerText = data.projectName || data.assetTitle || 'Creative Video Cut';
-      document.getElementById('clientNameLabel').innerText = data.client || data.clientName || 'Agency Client';
-      document.getElementById('editorNameLabel').innerText = data.editor || 'Ruhul Amin Rupom';
+      document.getElementById('assetTitle').innerText = safeText(data.projectName || data.assetTitle || 'Creative Deliverable');
+      document.getElementById('clientNameLabel').innerText = safeText(data.clientName || data.client || 'Agency Client');
+      document.getElementById('editorNameLabel').innerText = safeText(data.editor || data.leadEditor || 'Production Team');
 
-      // Video Source
-      const player = document.getElementById('videoPlayer');
-      const source = document.getElementById('videoSource');
-      const mediaUrl = data.mediaUrl || 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4';
+      // Switch between video / image / pdf / no-asset
+      const mediaUrl = data.mediaUrl || '';
+      const mediaType = (data.mediaType || 'video').toLowerCase();
+      const videoPlayer = document.getElementById('videoPlayer');
+      const imageViewer = document.getElementById('imageViewer');
+      const pdfViewer = document.getElementById('pdfViewer');
+      const noAsset = document.getElementById('noAssetPlaceholder');
+      const drawingToolbar = document.getElementById('drawingToolbar');
+      const canvas = document.getElementById('reviewCanvas');
 
-      if (source.src !== mediaUrl) {
-        source.src = mediaUrl;
-        player.load();
+      // Hide all first
+      videoPlayer.style.display = 'none';
+      imageViewer.style.display = 'none';
+      pdfViewer.style.display = 'none';
+      noAsset.style.display = 'none';
+
+      if (!mediaUrl) {
+        noAsset.style.display = 'flex';
+        if (drawingToolbar) drawingToolbar.style.display = 'none';
+        if (canvas) canvas.style.display = 'none';
+      } else if (mediaType === 'image' || mediaType === 'graphic') {
+        imageViewer.style.display = 'flex';
+        document.getElementById('imageViewerImg').src = mediaUrl;
+        if (drawingToolbar) drawingToolbar.style.display = 'none';
+        if (canvas) canvas.style.display = 'none';
+      } else if (mediaType === 'pdf' || mediaType === 'doc') {
+        pdfViewer.style.display = 'block';
+        document.getElementById('pdfViewerFrame').src = mediaUrl;
+        if (drawingToolbar) drawingToolbar.style.display = 'none';
+        if (canvas) canvas.style.display = 'none';
+      } else {
+        videoPlayer.style.display = 'block';
+        const source = document.getElementById('videoSource');
+        if (source.src !== mediaUrl) { source.src = mediaUrl; videoPlayer.load(); }
+        if (drawingToolbar) drawingToolbar.style.display = 'flex';
+        if (canvas) canvas.style.display = 'block';
       }
 
       // Versions Pills
       const versionsContainer = document.getElementById('rrVersionPills');
-      const versions = data.versions || ['v1', 'v2', data.activeVersion || 'v2.4'];
+      const versions = data.versions || ['v1'];
       const activeVer = data.activeVersion || versions[versions.length - 1];
-
       versionsContainer.innerHTML = versions.map(v => `
-        <button class="rr-version-btn ${v === activeVer ? 'is-active' : ''}" onclick="switchVersion('${v}')">
-          ${v} ${v === activeVer ? '⭐ (Active Master)' : ''}
+        <button class="rr-version-btn ${v === activeVer ? 'is-active' : ''}" onclick="switchVersion('${safeText(v)}')">
+          ${safeText(v)} ${v === activeVer ? '⭐ Active' : ''}
         </button>
       `).join('');
 
-      // Status & Approve Button
+      // Status & action buttons
       const approveContainer = document.getElementById('approveBtnContainer');
-      if (data.status === 'approved' || data.isApproved) {
+      if (data.isApproved || data.status === 'approved') {
         approveContainer.innerHTML = `
-          <span style="background: rgba(16, 185, 129, 0.2); color: #34d399; padding: 0.5rem 1rem; border-radius: 12px; font-weight: 700; font-size: 0.88rem; border: 1px solid rgba(16, 185, 129, 0.3);">
-            ✅ Cut Approved — Invoice Released
-          </span>
+          <span style="background:rgba(16,185,129,0.2); color:#34d399; padding:0.5rem 1rem; border-radius:12px; font-weight:700; font-size:0.88rem; border:1px solid rgba(16,185,129,0.3);">✅ Deliverable Approved — Invoice Released</span>
+        `;
+      } else if (data.status === 'revision_requested') {
+        approveContainer.innerHTML = `
+          <span style="background:rgba(239,68,68,0.15); color:#fca5a5; padding:0.5rem 1rem; border-radius:12px; font-weight:700; font-size:0.88rem; border:1px solid rgba(239,68,68,0.4);">🔴 Revision Requested — Awaiting Update</span>
         `;
       } else {
         approveContainer.innerHTML = `
-          <button class="rr-btn rr-btn-approve" id="btnApproveCut" onclick="openApproveModal()">
-            ✅ Approve Final Cut & Release Invoice
-          </button>
+          <button class="rr-btn" style="background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.4); color:#fca5a5;" onclick="openRevisionModal()">🔴 Request Revisions</button>
+          <button class="rr-btn rr-btn-approve" id="btnApproveCut" onclick="openApproveModal()">✅ Approve Final Cut & Release Invoice</button>
         `;
       }
 
-      // Render Comments
       renderCommentsList(data.comments || []);
     }
 
@@ -317,16 +396,16 @@
         return `
           <div class="rr-comment-box ${c.resolved ? 'is-resolved' : ''}">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem;">
-              <span class="rr-time-badge" onclick="seekVideoTo(${seconds})">⏱️ ${c.timestamp}</span>
+              <span class="rr-time-badge" onclick="seekVideoTo(${seconds})">⏱️ ${safeText(c.timestamp)}</span>
               <span style="font-weight: 700; font-size: 0.78rem; color: ${c.authorRole === 'Editor' ? '#34d399' : '#c084fc'};">
-                ${c.author || 'Reviewer'} (${c.authorRole || 'Client'})
+                ${safeText(c.author || 'Reviewer')} (${safeText(c.authorRole || 'Client')})
               </span>
             </div>
             <div style="font-size: 0.88rem; color: #f4f4f5; line-height: 1.4; margin-top: 0.25rem;">
-              ${c.text}
+              ${safeText(c.text)}
             </div>
             <div style="display: flex; justify-content: flex-end; margin-top: 0.4rem;">
-              <button class="rr-btn-secondary" style="padding: 0.15rem 0.5rem; font-size: 0.72rem; border-radius: 6px; cursor: pointer;" onclick="toggleResolveComment('${c.id}', ${!c.resolved})">
+              <button class="rr-btn-secondary" style="padding: 0.15rem 0.5rem; font-size: 0.72rem; border-radius: 6px; cursor: pointer;" onclick="toggleResolveComment('${safeText(c.id)}', ${!c.resolved})">
                 ${c.resolved ? '↩️ Mark Open' : '✅ Resolve'}
               </button>
             </div>
@@ -335,22 +414,9 @@
       }).join('');
     }
 
+    // No fallback with fake data — show empty state instead
     function loadFallbackData() {
-      const fallback = {
-        id: 'REV-001',
-        projectName: 'Chillox TVC Master Commercial Cut (v2.4)',
-        client: 'Chillox Fast Food Chain',
-        editor: 'Ruhul Amin Rupom',
-        mediaUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-        activeVersion: 'v2.4',
-        versions: ['v1.0', 'v2.0', 'v2.4'],
-        comments: [
-          { id: 'c1', timestamp: '00:14', author: 'Chillox Brand Mgr', authorRole: 'Client', text: 'Make the product logo color slightly brighter.', resolved: true },
-          { id: 'c2', timestamp: '00:42', author: 'Ruhul (Editor)', authorRole: 'Editor', text: 'Updated color grade applied in v2.4 master render!', resolved: true }
-        ]
-      };
-      activeReviewData = fallback;
-      renderReviewUI(fallback);
+      showNoProjectsState();
     }
 
     function captureCurrentTime() {
@@ -389,11 +455,41 @@
     }
 
     function switchVersion(ver) {
-      showToast(`Switching preview to cut version ${ver}`, 'info');
       if (activeReviewData) {
         activeReviewData.activeVersion = ver;
         renderReviewUI(activeReviewData);
+        showToast(`Switched to version ${ver}. Upload the new asset file to update the media.`, 'info');
       }
+    }
+
+    async function handleAssetUpload(event) {
+      const file = event.target.files[0];
+      if (!file || !activeReviewData) return;
+      showToast('📤 Uploading asset to Supabase Storage...', 'info');
+
+      const formData = new FormData();
+      formData.append('asset', file);
+
+      try {
+        const token = localStorage.getItem('sb-access-token') || localStorage.getItem('purple_token');
+        const res = await fetch(`/api/reviews/${activeReviewData.id}/upload`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: formData
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('✅ Asset uploaded successfully!', 'success');
+          activeReviewData.mediaUrl = data.url;
+          activeReviewData.mediaType = data.mediaType;
+          renderReviewUI(activeReviewData);
+        } else {
+          showToast('Upload failed: ' + (data.error || 'Unknown error'), 'error');
+        }
+      } catch (err) {
+        showToast('Upload error: ' + err.message, 'error');
+      }
+      event.target.value = '';
     }
 
     async function handleAddCommentSubmit(e) {
@@ -438,16 +534,19 @@
       textInput.value = '';
       showToast('💬 Timestamp note posted successfully!', 'success');
 
-      // Post to API if backend review ID exists
+      // Persist to backend
       if (activeReviewData && activeReviewData.id) {
         try {
           const token = localStorage.getItem('sb-access-token') || localStorage.getItem('purple_token');
-          fetch(`/api/reviews/${activeReviewData.id}/comments`, {
+          const apiRes = await fetch(`/api/reviews/${activeReviewData.id}/comments`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
             body: JSON.stringify({ timestamp: time, text: text, author: author, authorRole: role })
-          }).catch(e => {});
-        } catch (err) {}
+          });
+          if (!apiRes.ok) showToast('⚠️ Comment saved locally but sync to server failed.', 'warning');
+        } catch (err) {
+          showToast('⚠️ Could not sync comment to server: ' + err.message, 'warning');
+        }
       }
     }
 
@@ -460,26 +559,62 @@
         renderCommentsList(activeReviewData.comments);
         showToast(resolvedState ? '✅ Comment marked resolved' : '↩️ Comment reopened', 'info');
 
-        // Optional API sync
+        // Persist resolve to backend
         try {
           const token = localStorage.getItem('sb-access-token') || localStorage.getItem('purple_token');
-          fetch(`/api/reviews/comments/${commentId}/resolve`, {
+          const res = await fetch(`/api/reviews/comments/${commentId}/resolve`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
             body: JSON.stringify({ resolved: resolvedState })
-          }).catch(e => {});
-        } catch (err) {}
+          });
+          if (!res.ok) showToast('⚠️ Resolve sync failed — change saved locally.', 'warning');
+        } catch (err) {
+          showToast('⚠️ Could not sync resolve to server: ' + err.message, 'warning');
+        }
       }
     }
 
     function openApproveModal() {
       const modal = document.getElementById('rrApproveModal');
-      if (modal) modal.style.display = 'flex';
+      if (modal) modal.classList.add('active');
     }
-
     function closeApproveModal() {
       const modal = document.getElementById('rrApproveModal');
-      if (modal) modal.style.display = 'none';
+      if (modal) modal.classList.remove('active');
+    }
+    function openRevisionModal() {
+      const modal = document.getElementById('rrRevisionModal');
+      if (modal) modal.classList.add('active');
+      const input = document.getElementById('revisionFeedbackInput');
+      if (input) { input.value = ''; input.focus(); }
+    }
+    function closeRevisionModal() {
+      const modal = document.getElementById('rrRevisionModal');
+      if (modal) modal.classList.remove('active');
+    }
+    async function executeRevisionRequest() {
+      const feedback = document.getElementById('revisionFeedbackInput')?.value.trim();
+      if (!feedback) { showToast('Please describe the revisions needed.', 'error'); return; }
+      if (!activeReviewData?.id) return;
+      closeRevisionModal();
+      try {
+        const token = localStorage.getItem('sb-access-token') || localStorage.getItem('purple_token');
+        const res = await fetch(`/api/reviews/${activeReviewData.id}/request-revisions`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ feedback })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('🔴 Revision request submitted! Production team notified.', 'success');
+          activeReviewData.status = 'revision_requested';
+          renderReviewUI(activeReviewData);
+        } else {
+          showToast('Error: ' + (data.error || 'Could not submit revision request'), 'error');
+        }
+      } catch (err) {
+        showToast('Error submitting revision request: ' + err.message, 'error');
+      }
     }
 
     async function executeCutApproval() {
@@ -498,10 +633,11 @@
         });
 
         const data = await res.json();
-        showToast(`🎉 Master Cut Approved! Invoice INV-${data.invoiceId || '1042'} released and Telegram alerts sent.`, 'success');
+        showToast(`🎉 Deliverable Approved! Invoice INV-${data.invoiceId || 'TBD (Finance Notified)'} released. Production team alerted.`, 'success');
 
         if (activeReviewData) {
           activeReviewData.status = 'approved';
+          activeReviewData.isApproved = true;
           renderReviewUI(activeReviewData);
         }
       } catch (err) {
@@ -564,11 +700,16 @@
         }
       });
 
-      // Drawing Event Listeners
+      // Drawing Event Listeners — Mouse
       canvas.addEventListener('mousedown', startDrawing);
       canvas.addEventListener('mousemove', draw);
       canvas.addEventListener('mouseup', endDrawing);
       canvas.addEventListener('mouseout', endDrawing);
+
+      // Drawing Event Listeners — Touch (mobile support)
+      canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startDrawing(e.touches[0]); }, { passive: false });
+      canvas.addEventListener('touchmove', (e) => { e.preventDefault(); draw(e.touches[0]); }, { passive: false });
+      canvas.addEventListener('touchend', endDrawing);
 
       function startDrawing(e) {
         if (!isDrawingEnabled) return;

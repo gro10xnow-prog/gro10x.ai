@@ -267,7 +267,6 @@ router.patch('/:id/stage', requireAuth, async (req, res) => {
     // Fetch existing task to check blockers
     const { data: existing } = await supabase.from('tasks').select('*').eq('id', id).single();
     if (existing && existing.blocked_by) {
-      // Check if blocking task is approved
       const { data: blocker } = await supabase.from('tasks').select('stage').eq('id', existing.blocked_by).single();
       if (blocker && blocker.stage !== 'Approved') {
         return res.status(400).json({ error: `Cannot advance task. Blocked by task ${existing.blocked_by}` });
@@ -282,12 +281,63 @@ router.patch('/:id/stage', requireAuth, async (req, res) => {
     const { data: allTasks } = await supabase.from('tasks').select('*').order('created_at', { ascending: false });
     broadcast('task_update', (allTasks || []).map(mapTask));
 
-    res.json({ success: true, task });
+    // AUTO-CREATE: When task enters 'Client Review', create a Review Room project
+    let autoReviewId = null;
+    if (stage === 'Client Review') {
+      try {
+        const { randomUUID } = require('crypto');
+        const reviewId = `REV-${randomUUID().split('-')[0].toUpperCase()}`;
+        const reviewPayload = {
+          id: reviewId,
+          project_id: id,
+          project_name: existing.title || 'Creative Deliverable',
+          client: existing.client || 'Agency Client',
+          client_id: existing.client_id || null,
+          task_id: id,
+          active_version: 'v1',
+          versions: ['v1'],
+          media_type: existing.workflow_type === 'branding' ? 'image' : 'video',
+          media_url: '',
+          poster_url: '',
+          resolved_count: 0,
+          total_count: 0
+        };
+        // Only create if no existing review for this task
+        const { data: existingReview } = await supabase.from('reviews').select('id').eq('task_id', id).maybeSingle();
+        if (!existingReview) {
+          const { data: newReview } = await supabase.from('reviews').insert([reviewPayload]).select().single();
+          if (newReview) {
+            autoReviewId = newReview.id;
+            broadcast('review_update', [newReview]);
+          }
+        } else {
+          autoReviewId = existingReview.id;
+        }
+      } catch (revErr) {
+        console.warn('Auto-create review room failed (non-fatal):', revErr.message);
+      }
+    }
+
+    // Fire automation with review_id for deep-link URL
+    try {
+      const { processAutomationEvent } = require('../services/automation');
+      const dbSnapshot = await readDB().catch(() => ({ clients: [], team: [] }));
+      await processAutomationEvent('task_stage_change', {
+        task,
+        stage,
+        reviewId: autoReviewId
+      }, dbSnapshot, writeDB, broadcast);
+    } catch (autoErr) {
+      console.warn('Automation event skipped (non-fatal):', autoErr.message);
+    }
+
+    res.json({ success: true, task, reviewId: autoReviewId });
   } catch (err) {
     console.error('Task PATCH stage error:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
+
 
 // PATCH Set Task Dependency (Blocker)
 router.patch('/:id/dependency', requireAuth, async (req, res) => {
