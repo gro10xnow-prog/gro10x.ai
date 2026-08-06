@@ -221,7 +221,9 @@ window.APP_MODULES.finance = async function(container) {
       <!-- Profit & Loss Chart -->
       <div style="background:var(--surface-1); border:1px solid var(--border-subtle); border-radius:12px; padding:1.5rem; margin-bottom:1.5rem;">
         <h3 style="margin:0 0 1rem; color:#fff; font-size:1.1rem;">Monthly P&L Summary (Last 6 Months)</h3>
-        <canvas id="pnlChart" width="100%" height="230"></canvas>
+        <div style="position:relative; height:230px; width:100%;">
+          <canvas id="pnlChart"></canvas>
+        </div>
       </div>
 
       <!-- Subtab Navigation Switcher -->
@@ -404,11 +406,23 @@ window.APP_MODULES.finance = async function(container) {
       });
     }
 
+    // Parse date safely in local timezone (avoids UTC shift misclassifying months)
+    function parseLocalDate(dateStr) {
+      if (!dateStr) return new Date();
+      // Date-only strings like "2026-08-07" would parse as UTC midnight → shift to previous day in +06:00
+      // Appending T00:00:00 forces local timezone interpretation
+      if (/^\d{4}-\d{2}-\d{2}$/.test(String(dateStr))) {
+        return new Date(String(dateStr) + 'T00:00:00');
+      }
+      return new Date(dateStr);
+    }
+
     const revData = months.map(m => {
       return invoices
         .filter(inv => {
-          if (inv.status !== 'Paid') return false;
-          const d = new Date(inv.date || inv.createdAt);
+          const status = (inv.status || '').toLowerCase();
+          if (status !== 'paid') return false;
+          const d = parseLocalDate(inv.date || inv.paidDate || inv.createdAt);
           return d.getFullYear() === m.year && d.getMonth() === m.month;
         })
         .reduce((sum, inv) => sum + (Number(inv.amount) || 0), 0);
@@ -417,8 +431,9 @@ window.APP_MODULES.finance = async function(container) {
     const expData = months.map(m => {
       return expenses
         .filter(exp => {
-          if (exp.status !== 'Approved' && exp.status !== 'Paid') return false;
-          const d = new Date(exp.date || exp.createdAt);
+          const status = (exp.status || '').toLowerCase();
+          if (status !== 'approved' && status !== 'paid') return false;
+          const d = parseLocalDate(exp.date || exp.createdAt);
           return d.getFullYear() === m.year && d.getMonth() === m.month;
         })
         .reduce((sum, exp) => sum + (Number(exp.amount) || 0), 0);
