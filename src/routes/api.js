@@ -32,6 +32,7 @@ const customFieldsRoutes = require('./custom-fields');
 const taskTemplatesRoutes = require('./task-templates');
 const exportRoutes = require('./export');
 const chatRoutes = require('./chat');
+const adminImportRoutes = require('./admin-import');
 
 // System Version Endpoint
 router.get('/version', (req, res) => {
@@ -65,6 +66,7 @@ router.use('/automation', automationRoutes);
 router.use('/', automationRoutes);  // Exposes /api/groups, /api/logs at root level
 router.use('/cron', cronRoutes);
 router.use('/manager', managerRoutes);
+router.use('/admin/import', adminImportRoutes);
 router.use('/expenses', expensesRoutes);
 router.use('/assets', assetsRoutes);
 router.use('/', leavesRoutes);

@@ -98,4 +98,95 @@ router.put('/', requireAuth, requireAdmin, async (req, res) => {
   res.json({ success: true, content: updatedContent });
 });
 
+
+// ──────── SERVICE CATALOG CRUD ────────
+
+// GET /api/cms/services — list services from Supabase or default
+router.get('/services', async (req, res) => {
+  if (isSupabaseConfigured()) {
+    try {
+      const { data, error } = await supabase.from('services').select('*').order('created_at', { ascending: true });
+      if (!error && data && data.length > 0) {
+        return res.json(data.map(s => ({
+          ...s,
+          features: s.features || s.included_features || [],
+          includedFeatures: s.included_features || s.features || [],
+          public: s.is_public ?? true
+        })));
+      }
+    } catch (e) {}
+  }
+  // Fallback to embedded defaults
+  res.json(defaultCMSContent.services.map(s => ({ ...s, public: true })));
+});
+
+// POST /api/cms/services — create a new service
+router.post('/services', requireAuth, requireAdmin, async (req, res) => {
+  const { title, category, price, description, features, icon, is_public } = req.body;
+  if (!title) return res.status(400).json({ error: 'title is required' });
+
+  const newId = `SVC-${Date.now()}`;
+  const payload = {
+    id: newId,
+    title: String(title).trim(),
+    category: category || 'General',
+    price: price || '',
+    description: description || '',
+    icon: icon || '⚡',
+    features: Array.isArray(features) ? features : (features ? String(features).split(',').map(f => f.trim()) : []),
+    included_features: Array.isArray(features) ? features : (features ? String(features).split(',').map(f => f.trim()) : []),
+    is_public: is_public !== false,
+    created_at: new Date().toISOString()
+  };
+
+  if (isSupabaseConfigured()) {
+    const { data, error } = await supabase.from('services').insert([payload]).select().single();
+    if (error) return res.status(500).json({ error: error.message });
+    broadcast('cms_update', { serviceAdded: data });
+    return res.json({ success: true, service: { ...data, public: data.is_public } });
+  }
+
+  res.json({ success: true, service: { ...payload, public: payload.is_public } });
+});
+
+// PUT /api/cms/services/:id — update an existing service
+router.put('/services/:id', requireAuth, requireAdmin, async (req, res) => {
+  const { id } = req.params;
+  const { title, category, price, description, features, icon, is_public } = req.body;
+
+  const updates = {};
+  if (title !== undefined) updates.title = String(title).trim();
+  if (category !== undefined) updates.category = category;
+  if (price !== undefined) updates.price = price;
+  if (description !== undefined) updates.description = description;
+  if (icon !== undefined) updates.icon = icon;
+  if (is_public !== undefined) updates.is_public = is_public;
+  if (features !== undefined) {
+    updates.features = Array.isArray(features) ? features : String(features).split(',').map(f => f.trim());
+    updates.included_features = updates.features;
+  }
+  updates.updated_at = new Date().toISOString();
+
+  if (isSupabaseConfigured()) {
+    const { data, error } = await supabase.from('services').update(updates).eq('id', id).select().maybeSingle();
+    if (error) return res.status(500).json({ error: error.message });
+    if (!data) return res.status(404).json({ error: 'Service not found' });
+    broadcast('cms_update', { serviceUpdated: data });
+    return res.json({ success: true, service: { ...data, public: data.is_public } });
+  }
+
+  res.status(503).json({ error: 'Database unavailable — service update requires Supabase' });
+});
+
+// DELETE /api/cms/services/:id — remove a service
+router.delete('/services/:id', requireAuth, requireAdmin, async (req, res) => {
+  const { id } = req.params;
+  if (!isSupabaseConfigured()) return res.status(503).json({ error: 'Database unavailable' });
+
+  await supabase.from('services').delete().eq('id', id);
+  broadcast('cms_update', { serviceDeleted: id });
+  res.json({ success: true });
+});
+
 module.exports = router;
+

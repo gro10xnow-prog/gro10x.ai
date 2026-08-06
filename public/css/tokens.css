@@ -71,6 +71,13 @@
   --transition-fast: 0.15s cubic-bezier(0.16, 1, 0.3, 1);
   --transition-normal: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   --transition-slow: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* ── Backward-Compat Aliases (used by modules) ── */
+  --text-main:       var(--text-primary);
+  --purple-main:     var(--purple-brand);
+  --amber-accent:    var(--amber-brand);
+  --emerald-accent:  var(--emerald-brand);
+  --text-error:      var(--red-brand);
 }
 
 /* Light Theme Variable Overrides */

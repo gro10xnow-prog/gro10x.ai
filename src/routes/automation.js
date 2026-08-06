@@ -136,4 +136,70 @@ router.delete('/groups/:id', requireAuth, requireAdmin, async (req, res) => {
   res.json({ success: true });
 });
 
+// ──────── TELEGRAM BROADCAST ────────
+
+// POST /automation/broadcast — Send a Telegram message to a specific group or all groups
+router.post('/broadcast', requireAuth, requireAdmin, async (req, res) => {
+  const { target, title, message } = req.body;
+  if (!message) return res.status(400).json({ error: 'message is required' });
+
+  const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+  if (!TELEGRAM_BOT_TOKEN) {
+    return res.status(503).json({ error: 'Telegram bot not configured. Set TELEGRAM_BOT_TOKEN env var.' });
+  }
+
+  try {
+    let groups = [];
+    if (isSupabaseConfigured()) {
+      const { data } = await supabase.from('telegram_groups').select('*').eq('active', true);
+      groups = data || [];
+    }
+
+    if (target && target !== 'all') {
+      groups = groups.filter(g => g.id === target || g.chat_id === target);
+    }
+
+    if (groups.length === 0) {
+      return res.status(404).json({ error: 'No active groups found for the specified target.' });
+    }
+
+    const fullMessage = title ? `*${title}*\n\n${message}` : message;
+    const results = [];
+
+    for (const group of groups) {
+      try {
+        const tgRes = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: group.chat_id,
+            text: fullMessage,
+            parse_mode: 'Markdown'
+          })
+        });
+        const tgData = await tgRes.json();
+        results.push({ groupId: group.id, chatId: group.chat_id, ok: tgData.ok });
+      } catch (e) {
+        results.push({ groupId: group.id, chatId: group.chat_id, ok: false, error: e.message });
+      }
+    }
+
+    // Log the broadcast
+    if (isSupabaseConfigured()) {
+      await supabase.from('automation_logs').insert([{
+        event_type: 'broadcast_sent',
+        description: `Broadcast "${title || 'No Title'}" sent to ${results.length} group(s)`,
+        status: results.every(r => r.ok) ? 'success' : 'partial',
+        triggered_at: new Date().toISOString()
+      }]).catch(() => {});
+    }
+
+    res.json({ success: true, sent: results.filter(r => r.ok).length, total: results.length, results });
+  } catch (err) {
+    console.error('Broadcast error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
+
