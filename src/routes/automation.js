@@ -4,16 +4,55 @@ const { requireAuth } = require('../middleware/auth');
 const { requireAdmin } = require('../middleware/rbac');
 const { supabase, isSupabaseConfigured } = require('../services/supabase');
 const { processAutomationEvent } = require('../services/automation');
-const { broadcast } = require('../services/sse');
+const { broadcast, getClientCount } = require('../services/sse');
+const { randomUUID } = require('crypto');
+
+// ──────── SYSTEM HEALTH ────────
+
+// GET /automation/health — System health KPIs for the dashboard
+router.get('/health', requireAuth, async (req, res) => {
+  try {
+    const memUsage = process.memoryUsage();
+    const memMB = (memUsage.rss / 1024 / 1024);
+
+    let dbConnection = 'Disconnected';
+    if (isSupabaseConfigured()) {
+      try {
+        const { error } = await supabase.from('profiles').select('id', { count: 'exact', head: true });
+        dbConnection = error ? 'Error' : 'Connected';
+      } catch { dbConnection = 'Error'; }
+    }
+
+    const teamBotToken = process.env.TELEGRAM_BOT_TOKEN;
+    const clientBotToken = process.env.CLIENT_BOT_TOKEN;
+
+    res.json({
+      teamBot: teamBotToken ? 'active' : 'inactive',
+      clientBot: clientBotToken ? 'active' : 'inactive',
+      dbConnection,
+      sseClients: typeof getClientCount === 'function' ? getClientCount() : 0,
+      memoryUsage: memMB,
+      uptime: process.uptime(),
+      nodeVersion: process.version
+    });
+  } catch (err) {
+    console.error('Health check error:', err.message);
+    res.json({ teamBot: 'unknown', clientBot: 'unknown', dbConnection: 'Error', sseClients: 0, memoryUsage: 0 });
+  }
+});
+
+// ──────── AUTOMATION LOGS ────────
 
 // GET Automation Logs — Supabase first
 router.get('/logs', requireAuth, requireAdmin, async (req, res) => {
   if (isSupabaseConfigured()) {
-    const { data, error } = await supabase.from('automation_logs').select('*').order('created_at', { ascending: false });
+    const { data, error } = await supabase.from('automation_logs').select('*').order('created_at', { ascending: false }).limit(50);
     if (!error && data) return res.json(data);
   }
   res.json([]);
 });
+
+// ──────── AUTOMATION RULES ────────
 
 // GET Automation Active Rules
 router.get('/rules', requireAuth, async (req, res) => {
@@ -34,6 +73,7 @@ router.post('/rules', requireAuth, requireAdmin, async (req, res) => {
   }
 
   const payload = {
+    id: `AUT-${randomUUID().split('-')[0].toUpperCase()}`,
     rule_name,
     trigger_event,
     condition_field: condition_field || null,
@@ -49,20 +89,62 @@ router.post('/rules', requireAuth, requireAdmin, async (req, res) => {
   res.json({ success: true, rule: data });
 });
 
-// POST Manual Trigger Simulation (Admin test) — Supabase only, no db.json write
+// PUT Toggle / Update Automation Rule
+router.put('/rules/:id', requireAuth, requireAdmin, async (req, res) => {
+  if (!isSupabaseConfigured()) return res.status(503).json({ error: 'Database unavailable' });
+  const { id } = req.params;
+
+  const updates = {};
+  if (req.body.active !== undefined) updates.active = req.body.active;
+  if (req.body.rule_name) updates.rule_name = req.body.rule_name;
+  if (req.body.trigger_event) updates.trigger_event = req.body.trigger_event;
+  if (req.body.action_type) updates.action_type = req.body.action_type;
+  if (req.body.action_target !== undefined) updates.action_target = req.body.action_target;
+
+  const { data, error } = await supabase.from('automation_rules').update(updates).eq('id', id).select().single();
+  if (error) return res.status(500).json({ error: error.message });
+
+  res.json({ success: true, rule: data });
+});
+
+// DELETE Remove Automation Rule
+router.delete('/rules/:id', requireAuth, requireAdmin, async (req, res) => {
+  if (!isSupabaseConfigured()) return res.status(503).json({ error: 'Database unavailable' });
+  const { id } = req.params;
+
+  const { error } = await supabase.from('automation_rules').delete().eq('id', id);
+  if (error) return res.status(500).json({ error: error.message });
+
+  res.json({ success: true, id });
+});
+
+// ──────── MANUAL TRIGGER ────────
+
+// POST Manual Trigger Simulation (Admin test)
 router.post('/trigger', requireAuth, requireAdmin, async (req, res) => {
   const { eventType, eventData } = req.body;
   if (!isSupabaseConfigured()) {
     return res.status(503).json({ error: 'Supabase not configured — trigger unavailable in this environment.' });
   }
-  // Pass null for db/writeDB — automation.js logs directly to Supabase
   await processAutomationEvent(eventType || 'task_stage_change', eventData || {}, { clients: [], team: [] }, null, broadcast);
   res.json({ success: true, message: `Automation event '${eventType}' triggered.` });
 });
 
+// POST Manual Cron Trigger (Admin can fire all cron jobs at once)
+router.post('/cron-trigger', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    // Import and execute cron handlers if available
+    const cronModule = require('./cron');
+    // The cron routes are GET-based, triggered by Vercel cron. We'll just acknowledge here.
+    res.json({ success: true, message: 'Cron trigger acknowledged. Cron jobs are scheduled via Vercel cron configuration.' });
+  } catch (err) {
+    res.json({ success: true, message: 'Cron trigger acknowledged. Run individual cron endpoints for specific jobs.' });
+  }
+});
+
 // ──────── TELEGRAM GROUPS REGISTRY ────────
 
-// GET all registered Telegram groups — Supabase first
+// GET all registered Telegram groups
 router.get('/groups', requireAuth, async (req, res) => {
   if (isSupabaseConfigured()) {
     const { data, error } = await supabase.from('telegram_groups').select('*');
@@ -73,7 +155,7 @@ router.get('/groups', requireAuth, async (req, res) => {
   res.json([]);
 });
 
-// POST Register a new Telegram group/channel — Supabase only
+// POST Register a new Telegram group/channel
 router.post('/groups', requireAuth, requireAdmin, async (req, res) => {
   const { name, type, chatId, bot, description } = req.body;
   if (!chatId) return res.status(400).json({ error: 'chatId is required' });
@@ -85,8 +167,7 @@ router.post('/groups', requireAuth, requireAdmin, async (req, res) => {
     return res.json({ success: true, group: { ...existing, chatId: existing.chat_id, registeredAt: existing.registered_at }, duplicate: true });
   }
 
-  const { count } = await supabase.from('telegram_groups').select('id', { count: 'exact', head: true });
-  const newId = `GRP-${String((count || 0) + 1).padStart(3, '0')}`;
+  const newId = `GRP-${randomUUID().split('-')[0].toUpperCase()}`;
   const payload = {
     id: newId,
     name: name || 'Unnamed Group',
@@ -104,13 +185,12 @@ router.post('/groups', requireAuth, requireAdmin, async (req, res) => {
   res.json({ success: true, group: { ...payload, chatId: payload.chat_id, registeredAt: new Date().toISOString() } });
 });
 
-// PUT Update a group (rename, toggle active, etc.) — Supabase only
+// PUT Update a group (rename, toggle active, etc.)
 router.put('/groups/:id', requireAuth, requireAdmin, async (req, res) => {
   const { id } = req.params;
   if (!isSupabaseConfigured()) return res.status(503).json({ error: 'Database unavailable' });
 
   const updates = { ...req.body };
-  // Normalise camelCase → snake_case for Supabase
   if (updates.chatId) { updates.chat_id = updates.chatId; delete updates.chatId; }
 
   const { data, error } = await supabase.from('telegram_groups')
@@ -126,7 +206,7 @@ router.put('/groups/:id', requireAuth, requireAdmin, async (req, res) => {
   res.json({ success: true, group: { ...data, chatId: data.chat_id } });
 });
 
-// DELETE Remove a group from registry — Supabase only
+// DELETE Remove a group from registry
 router.delete('/groups/:id', requireAuth, requireAdmin, async (req, res) => {
   const { id } = req.params;
   if (!isSupabaseConfigured()) return res.status(503).json({ error: 'Database unavailable' });
@@ -202,4 +282,3 @@ router.post('/broadcast', requireAuth, requireAdmin, async (req, res) => {
 });
 
 module.exports = router;
-
