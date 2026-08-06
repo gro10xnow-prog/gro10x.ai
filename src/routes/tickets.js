@@ -5,6 +5,8 @@ const { requireAdmin } = require('../middleware/rbac');
 const { supabase, isSupabaseConfigured } = require('../services/supabase');
 const { broadcast } = require('../services/sse');
 const { sendTelegramNotification } = require('../services/bot');
+const { processAutomationEvent } = require('../services/automation');
+const { randomUUID } = require('crypto');
 
 /**
  * Helper to map ticket DB object to clean JSON API format
@@ -55,21 +57,21 @@ router.get('/', requireAuth, async (req, res) => {
 // POST /api/tickets — Create a new support ticket
 router.post('/', requireAuth, async (req, res) => {
   try {
-    const { title, description, category, priority, clientId } = req.body;
+    const { title, description, category, priority, clientId, submittedBy: customSubmittedBy } = req.body;
 
     if (!title) {
       return res.status(400).json({ error: 'Ticket title is required' });
     }
 
-    const ticketId = `TCK-${Date.now().toString().slice(-6)}`;
-    const submittedBy = req.user.name || req.user.email || 'Client';
+    const ticketId = `TCK-${randomUUID().split('-')[0].toUpperCase()}`;
+    const submittedBy = customSubmittedBy || req.user.name || req.user.email || 'Client';
 
     const payload = {
       id: ticketId,
       title: title.trim(),
       description: description || '',
       submitted_by: submittedBy,
-      assigned_to: null,
+      assigned_to: req.body.assignedTo || null,
       priority: priority || 'Medium',
       status: 'Open',
       category: category || 'General',
@@ -112,16 +114,19 @@ router.post('/', requireAuth, async (req, res) => {
   }
 });
 
-// PUT /api/tickets/:id — Update ticket status / assignee
+// PUT /api/tickets/:id — Update ticket status / assignee / priority
 router.put('/:id', requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
-    const { status, assignedTo, priority } = req.body;
+    const { status, assignedTo, priority, title, description, category } = req.body;
 
     const updates = { updated_at: new Date().toISOString() };
     if (status) updates.status = status;
     if (assignedTo !== undefined) updates.assigned_to = assignedTo;
     if (priority) updates.priority = priority;
+    if (title) updates.title = title;
+    if (description !== undefined) updates.description = description;
+    if (category) updates.category = category;
 
     if (status === 'Resolved' || status === 'Closed') {
       updates.resolved_at = new Date().toISOString();
@@ -136,6 +141,14 @@ router.put('/:id', requireAuth, async (req, res) => {
 
     const formatted = mapTicket(data);
     broadcast('ticket_update', [formatted]);
+
+    if (status === 'Resolved' || status === 'Closed') {
+      try {
+        await processAutomationEvent('ticket_resolved', { ticket: formatted });
+      } catch (ae) {
+        console.warn('Automation event ticket_resolved error:', ae.message);
+      }
+    }
 
     res.json({ success: true, ticket: formatted });
   } catch (err) {
@@ -164,9 +177,35 @@ router.patch('/:id/status', requireAuth, async (req, res) => {
 
     const formatted = mapTicket(data);
     broadcast('ticket_update', [formatted]);
+
+    if (status === 'Resolved' || status === 'Closed') {
+      try {
+        await processAutomationEvent('ticket_resolved', { ticket: formatted });
+      } catch (ae) {
+        console.warn('Automation event ticket_resolved error:', ae.message);
+      }
+    }
+
     res.json({ success: true, ticket: formatted });
   } catch (err) {
     console.error('PATCH /api/tickets/:id/status error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// DELETE /api/tickets/:id — Remove ticket (Admin/Manager)
+router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { error } = await supabase.from('tickets').delete().eq('id', id);
+    if (error) throw error;
+
+    const { data: allTickets } = await supabase.from('tickets').select('*').order('created_at', { ascending: false });
+    broadcast('ticket_update', (allTickets || []).map(mapTicket));
+
+    res.json({ success: true, id });
+  } catch (err) {
+    console.error('DELETE /api/tickets/:id error:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
