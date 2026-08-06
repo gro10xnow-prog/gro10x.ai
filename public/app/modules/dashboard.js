@@ -1,207 +1,292 @@
 /**
  * public/app/modules/dashboard.js
- * Executive Dashboard View Module
+ * ─────────────────────────────────────────────────────────────────────────────
+ * Executive Command Dashboard Module (Admin SPA Integration)
+ * Pulls from 10 live platform APIs (financials, CRM, tasks, team, attendance,
+ * EODs, expenses, clients, tickets, leads) and renders full executive command.
+ * ─────────────────────────────────────────────────────────────────────────────
  */
 window.APP_MODULES = window.APP_MODULES || {};
 
 window.APP_MODULES.dashboard = async function(container) {
   try {
-    const [team, tasks, invoices, tickets] = await Promise.all([
+    const [
+      teamRes,
+      attRes,
+      leaveRes,
+      eodRes,
+      workloadRes,
+      taskRes,
+      invRes,
+      expRes,
+      clientRes,
+      leadRes
+    ] = await Promise.all([
       APP_API.get('/team').catch(() => []),
+      APP_API.get('/team/attendance').catch(() => []),
+      APP_API.get('/leaves').catch(() => []),
+      APP_API.get('/team/eod').catch(() => []),
+      APP_API.get('/team/workload').catch(() => []),
       APP_API.get('/tasks').catch(() => []),
       APP_API.get('/invoices').catch(() => []),
-      APP_API.get('/tickets').catch(() => [])
+      APP_API.get('/expenses').catch(() => []),
+      APP_API.get('/clients').catch(() => []),
+      APP_API.get('/leads').catch(() => [])
     ]);
 
-    const activeTasks = (tasks || []).filter(t => t.stage !== 'Approved').length;
-    const paidRevenue = (invoices || []).filter(i => i.status === 'Paid').reduce((sum, i) => sum + (Number(i.amount) || 0), 0);
-    const openTickets = (tickets || []).filter(t => t.status === 'Open' || t.status === 'In Progress').length;
-    const teamCount = (team || []).length;
+    const team = teamRes || [];
+    const attendance = attRes || [];
+    const leaves = leaveRes || [];
+    const eods = eodRes || [];
+    const tasks = taskRes || [];
+    const invoices = invRes || [];
+    const expenses = expRes || [];
+    const clients = clientRes || [];
+    const leads = leadRes || [];
+
+    // Financial Metrics
+    const paidInvoices = invoices.filter(i => (i.status || '').toLowerCase() === 'paid');
+    const paidTotal = paidInvoices.reduce((sum, i) => sum + Number(i.amount || 0), 0);
+    const pendingInvoices = invoices.filter(i => (i.status || '').toLowerCase() === 'sent' || (i.status || '').toLowerCase() === 'pending');
+    const pendingTotal = pendingInvoices.reduce((sum, i) => sum + Number(i.amount || 0), 0);
+    const overdueInvoices = invoices.filter(i => (i.status || '').toLowerCase() === 'overdue');
+    const overdueTotal = overdueInvoices.reduce((sum, i) => sum + Number(i.amount || 0), 0);
+    const totalBilled = invoices.reduce((sum, i) => sum + Number(i.amount || 0), 0);
+    const collectionRate = totalBilled > 0 ? Math.round((paidTotal / totalBilled) * 100) : 100;
+
+    // Expenses
+    const pendingExps = expenses.filter(e => {
+      const st = (e.status || '').toLowerCase();
+      return st.includes('pending') || !e.tier1?.approved || !e.tier2?.approved;
+    });
+    const pendingExpTotal = pendingExps.reduce((sum, e) => sum + Number(e.amount || 0), 0);
+
+    // Operations
+    const inStudioCount = team.filter(t => t.status === 'In Studio' || attendance.some(a => a.employee_id === (t.emp_code || t.id) && a.status === 'In Studio')).length;
+    const todayStr = new Date().toISOString().split('T')[0];
+    const todayEods = eods.filter(e => (e.report_date || '').startsWith(todayStr) || (e.created_at || '').startsWith(todayStr));
+    const openTasks = tasks.filter(t => t.stage !== 'Approved' && t.stage !== 'Published' && t.stage !== 'Completed');
+    const pendingLeavesList = leaves.filter(l => (l.status || '').toLowerCase().includes('pending'));
+    const totalLeadVal = leads.reduce((sum, l) => {
+      const val = parseFloat(String(l.value || '0').replace(/[^0-9.]/g, '')) || 0;
+      return sum + val;
+    }, 0);
 
     container.innerHTML = `
-      <div style="margin-bottom: 1.5rem;">
-        <h1 style="font-size: 1.6rem; font-weight: 800; font-family: var(--font-heading); margin: 0 0 0.3rem;">
-          📊 Executive Operations Dashboard
-        </h1>
-        <div style="font-size: 0.88rem; color: var(--text-muted);">
-          Real-time production, client activity, and team status across agency operations.
+      <!-- Hero Header -->
+      <div style="background: linear-gradient(135deg, rgba(190, 24, 93, 0.16), rgba(147, 51, 234, 0.12)); border: 1px solid var(--border-subtle); border-radius: 20px; padding: 1.5rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <h1 style="font-size: 1.6rem; font-weight: 900; font-family: var(--font-heading); margin: 0 0 0.25rem; color: var(--text-main);">
+            Good Morning, Executive 👋
+          </h1>
+          <div style="font-size: 0.85rem; color: var(--text-muted);">
+            Live executive command center · Real-time financial, operational & roster status.
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 0.5rem;">
+          <a href="#kanban" class="btn-secondary" style="font-size: 0.8rem; text-decoration: none;">📋 New Task</a>
+          <a href="#finance" class="btn-secondary" style="font-size: 0.8rem; text-decoration: none;">🧾 New Invoice</a>
+          <a href="#hr" class="btn-primary" style="font-size: 0.8rem; text-decoration: none;">👥 Manage Team</a>
         </div>
       </div>
 
-      <!-- KPI Summary Cards Grid -->
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; margin-bottom: 1.75rem;">
+      <!-- ROW 1: FINANCIAL COMMAND STRIP -->
+      <div style="font-size: 0.8rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.75rem;">
+        💵 Financial Command Summary
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
         <div class="kpi-tile">
-          <div class="kpi-label">Active Crew</div>
-          <div class="kpi-val">${teamCount}</div>
-          <div class="kpi-sub">👥 Team Members On Roster</div>
+          <div class="kpi-label">Monthly Revenue</div>
+          <div class="kpi-val" style="color: var(--emerald-brand);">৳${paidTotal.toLocaleString()}</div>
+          <div style="font-size: 0.72rem; color: #10b981; font-weight: 700;">💰 Settled Invoices</div>
+        </div>
+
+        <div class="kpi-tile">
+          <div class="kpi-label">Outstanding Receivables</div>
+          <div class="kpi-val" style="color: var(--amber-brand);">৳${pendingTotal.toLocaleString()}</div>
+          <div style="font-size: 0.72rem; color: #f59e0b; font-weight: 700;">⏳ Pending Invoices</div>
+        </div>
+
+        <div class="kpi-tile">
+          <div class="kpi-label">Overdue Invoices</div>
+          <div class="kpi-val" style="color: ${overdueInvoices.length > 0 ? '#ef4444' : 'var(--text-main)'};">${overdueInvoices.length}</div>
+          <div style="font-size: 0.72rem; color: ${overdueInvoices.length > 0 ? '#ef4444' : '#10b981'}; font-weight: 700;">
+            ${overdueInvoices.length > 0 ? `🔴 ৳${overdueTotal.toLocaleString()} Overdue` : '🟢 All Clear'}
+          </div>
+        </div>
+
+        <div class="kpi-tile">
+          <div class="kpi-label">Pending Expense Claims</div>
+          <div class="kpi-val" style="color: var(--amber-brand);">${pendingExps.length}</div>
+          <div style="font-size: 0.72rem; color: #f59e0b; font-weight: 700;">৳${pendingExpTotal.toLocaleString()} Awaiting Review</div>
+        </div>
+
+        <div class="kpi-tile">
+          <div class="kpi-label">Collection Rate</div>
+          <div class="kpi-val" style="color: var(--purple-light);">${collectionRate}%</div>
+          <div style="font-size: 0.72rem; color: var(--purple-light); font-weight: 700;">📈 Paid vs Billed</div>
+        </div>
+      </div>
+
+      <!-- ROW 2: OPERATIONS COMMAND STRIP -->
+      <div style="font-size: 0.8rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.75rem;">
+        ⚙️ Operations & Capacity Summary
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+        <div class="kpi-tile">
+          <div class="kpi-label">Team On Duty Today</div>
+          <div class="kpi-val">${inStudioCount} / ${team.length}</div>
+          <div style="font-size: 0.72rem; color: #10b981; font-weight: 700;">🟢 Live Clocked-In Roster</div>
+        </div>
+
+        <div class="kpi-tile">
+          <div class="kpi-label">EOD Report Submissions</div>
+          <div class="kpi-val">${todayEods.length} / ${team.length}</div>
+          <div style="font-size: 0.72rem; color: var(--purple-light); font-weight: 700;">📋 Submitted Today</div>
         </div>
 
         <div class="kpi-tile">
           <div class="kpi-label">Active Production Tasks</div>
-          <div class="kpi-val" style="color: var(--purple-light);">${activeTasks}</div>
-          <div class="kpi-sub" style="color: var(--purple-light);">📋 Live Pipeline</div>
+          <div class="kpi-val">${openTasks.length}</div>
+          <div style="font-size: 0.72rem; color: var(--purple-light); font-weight: 700;">🎬 Open Workflows</div>
         </div>
 
         <div class="kpi-tile">
-          <div class="kpi-label">Settled Revenue</div>
-          <div class="kpi-val" style="color: var(--emerald-brand);">৳${paidRevenue.toLocaleString()}</div>
-          <div class="kpi-sub">💰 Paid Client Invoices</div>
+          <div class="kpi-label">Pending Leaves</div>
+          <div class="kpi-val" style="color: var(--amber-brand);">${pendingLeavesList.length}</div>
+          <div style="font-size: 0.72rem; color: #f59e0b; font-weight: 700;">🏖️ Awaiting Review</div>
         </div>
 
         <div class="kpi-tile">
-          <div class="kpi-label">Open Support Tickets</div>
-          <div class="kpi-val" style="color: var(--amber-brand);">${openTickets}</div>
-          <div class="kpi-sub" style="color: var(--amber-brand);">🎟️ Active Help Desk Requests</div>
+          <div class="kpi-label">Pipeline Lead Value</div>
+          <div class="kpi-val" style="color: var(--emerald-brand);">৳${totalLeadVal.toLocaleString()}</div>
+          <div style="font-size: 0.72rem; color: #10b981; font-weight: 700;">🚀 CRM Sales Funnel</div>
         </div>
       </div>
 
-      <!-- Analytics Visual Charts Grid -->
-      <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 1.75rem;">
+      <!-- MAIN GRID 1: FINANCIAL & SALES -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
         <div class="card-glass">
-          <h2 style="font-size: 1.1rem; font-weight: 800; font-family: var(--font-heading); margin-top:0; margin-bottom:1rem;">📈 Invoicing & Revenue Analytics</h2>
-          <div style="height:220px; position:relative;">
-            <canvas id="revenueChart"></canvas>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.5rem;">
+            <h3 style="font-size: 1rem; font-weight: 800; margin: 0;">💳 Financials & Invoices Summary</h3>
+            <a href="#finance" style="font-size: 0.75rem; color: var(--pink-brand); text-decoration: none; font-weight: 700;">View Finance →</a>
           </div>
-        </div>
-        <div class="card-glass">
-          <h2 style="font-size: 1.1rem; font-weight: 800; font-family: var(--font-heading); margin-top:0; margin-bottom:1rem;">📊 Task Pipeline Distribution</h2>
-          <div style="height:220px; position:relative;">
-            <canvas id="taskDistributionChart"></canvas>
-          </div>
-        </div>
-      </div>
-
-      <!-- Main Focus Grid -->
-      <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem;">
-        <!-- Active Tasks View -->
-        <div class="card-glass">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.2rem;">
-            <h2 style="font-size: 1.1rem; font-weight: 800; font-family: var(--font-heading); margin:0;">📋 Active Production Tasks</h2>
-            <a href="#kanban" class="btn-secondary btn-sm">View Pipeline →</a>
-          </div>
-
-          <div style="display:flex; flex-direction:column; gap:0.75rem;">
-            ${(tasks || []).slice(0, 6).map(t => {
-              const safeTitle = escapeHTML(t.title);
-              const safeClient = escapeHTML(t.client || 'Agency');
-              const safeAssignee = escapeHTML(t.assignee || 'Unassigned');
-              const safeStage = escapeHTML(t.stage || 'To Do');
-              return `
-              <div style="display:flex; align-items:center; justify-content:space-between; padding:0.75rem 1rem; background:var(--surface-3); border-radius:12px; border:1px solid var(--border-subtle);">
-                <div>
-                  <div style="font-weight:700; color:var(--text-primary); font-size:0.9rem;">${safeTitle}</div>
-                  <div style="font-size:0.78rem; color:var(--text-muted); margin-top:0.2rem;">🏢 Client: ${safeClient} &bull; Assignee: ${safeAssignee}</div>
-                </div>
-                <span class="badge badge-purple">${safeStage}</span>
-              </div>
-            `}).join('') || `<div style="text-align:center; color:var(--text-muted); padding:2rem;">No active tasks</div>`}
-          </div>
+          ${invoices.length === 0 ? '<div style="color: var(--text-muted); text-align: center; padding: 1rem;">No invoices logged.</div>' : `
+            <table class="data-table" style="font-size: 0.8rem;">
+              <thead>
+                <tr><th>Invoice ID</th><th>Client</th><th>Amount</th><th>Status</th></tr>
+              </thead>
+              <tbody>
+                ${invoices.slice(0, 5).map(i => `
+                  <tr>
+                    <td><strong>${i.id}</strong></td>
+                    <td>${escapeHTML(i.clientName || i.client || 'Client')}</td>
+                    <td><strong>৳${(Number(i.amount) || 0).toLocaleString()}</strong></td>
+                    <td><span class="badge ${i.status === 'Paid' ? 'badge-emerald' : i.status === 'Overdue' ? 'badge-pink' : 'badge-amber'}">${i.status || 'Pending'}</span></td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          `}
         </div>
 
-        <!-- Team Roster Quick Status -->
         <div class="card-glass">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.2rem;">
-            <h2 style="font-size: 1.1rem; font-weight: 800; font-family: var(--font-heading); margin:0;">👥 Team Status</h2>
-            <a href="#hr" class="btn-secondary btn-sm">HR Ops →</a>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.5rem;">
+            <h3 style="font-size: 1rem; font-weight: 800; margin: 0;">🎯 Lead Acquisition Funnel</h3>
+            <a href="#leads" style="font-size: 0.75rem; color: var(--pink-brand); text-decoration: none; font-weight: 700;">View CRM →</a>
           </div>
-
-          <div style="display:flex; flex-direction:column; gap:0.75rem;">
-            ${(team || []).slice(0, 6).map(m => {
-              const safeName = escapeHTML(m.name || 'Team Member');
-              const safeInitials = escapeHTML((m.name || 'TM').substring(0, 2).toUpperCase());
-              const safeRole = escapeHTML(m.role || 'Specialist');
-              const safeStatus = escapeHTML(m.status || 'Active');
-              return `
-              <div style="display:flex; align-items:center; justify-content:space-between; padding:0.6rem 0.8rem; background:var(--surface-3); border-radius:12px;">
-                <div style="display:flex; align-items:center; gap:0.6rem;">
-                  <div style="width:32px; height:32px; border-radius:50%; background:var(--gradient-rose); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:0.8rem; color:#fff;">
-                    ${safeInitials}
-                  </div>
+          ${leads.length === 0 ? '<div style="color: var(--text-muted); text-align: center; padding: 1rem;">No CRM leads captured.</div>' : `
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+              ${['New Inquiry', 'Contacted', 'Proposal Sent', 'Won'].map(st => {
+                const count = leads.filter(l => l.stage === st || (st === 'Won' && l.stage === 'Closed Won')).length;
+                const pct = Math.round((count / Math.max(1, leads.length)) * 100);
+                return `
                   <div>
-                    <div style="font-weight:700; font-size:0.85rem; color:var(--text-primary);">${safeName}</div>
-                    <div style="font-size:0.72rem; color:var(--text-muted);">${safeRole}</div>
+                    <div style="display:flex; justify-content:space-between; font-size:0.78rem; font-weight:700; margin-bottom:0.2rem;">
+                      <span>${st}</span>
+                      <span style="color:var(--pink-brand);">${count} leads (${pct}%)</span>
+                    </div>
+                    <div style="width:100%; height:8px; background:rgba(255,255,255,0.08); border-radius:999px; overflow:hidden;">
+                      <div style="height:100%; width:${pct}%; background:linear-gradient(90deg, var(--purple-main), var(--pink-brand)); border-radius:999px;"></div>
+                    </div>
                   </div>
-                </div>
-                <span class="badge badge-emerald" style="font-size:0.65rem;">${safeStatus}</span>
-              </div>
-            `}).join('') || `<div style="text-align:center; color:var(--text-muted); padding:2rem;">No team members</div>`}
+                `;
+              }).join('')}
+            </div>
+          `}
+        </div>
+      </div>
+
+      <!-- MAIN GRID 2: ROSTER & PRODUCTION -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+        <div class="card-glass">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.5rem;">
+            <h3 style="font-size: 1rem; font-weight: 800; margin: 0;">👥 Team Live Duty & EOD Status</h3>
+            <a href="#hr" style="font-size: 0.75rem; color: var(--pink-brand); text-decoration: none; font-weight: 700;">Team Ops →</a>
           </div>
+          ${team.length === 0 ? '<div style="color: var(--text-muted); text-align: center; padding: 1rem;">No team members found.</div>' : `
+            <table class="data-table" style="font-size: 0.8rem;">
+              <thead>
+                <tr><th>Member</th><th>Role</th><th>Status</th><th>EOD Today</th></tr>
+              </thead>
+              <tbody>
+                ${team.slice(0, 6).map(m => {
+                  const empCode = m.emp_code || m.id;
+                  const isOnline = m.status === 'In Studio' || attendance.some(a => a.employee_id === empCode && a.status === 'In Studio');
+                  const hasEod = eods.some(e => (e.employee_id === empCode || e.employee_name === m.name) && ((e.report_date || '').startsWith(todayStr) || (e.created_at || '').startsWith(todayStr)));
+
+                  return `
+                    <tr>
+                      <td><strong>${escapeHTML(m.name)}</strong></td>
+                      <td style="color: var(--text-muted);">${escapeHTML(m.role || 'Team')}</td>
+                      <td><span class="badge ${isOnline ? 'badge-emerald' : 'badge-amber'}">${isOnline ? '🟢 In Studio' : '⚫ Offline'}</span></td>
+                      <td><span class="badge ${hasEod ? 'badge-purple' : 'badge-amber'}">${hasEod ? '✓ Done' : '⏳ Pending'}</span></td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          `}
+        </div>
+
+        <div class="card-glass">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.5rem;">
+            <h3 style="font-size: 1rem; font-weight: 800; margin: 0;">🏢 Client Accounts Portfolio</h3>
+            <a href="#crm" style="font-size: 0.75rem; color: var(--pink-brand); text-decoration: none; font-weight: 700;">Client Hub →</a>
+          </div>
+          ${clients.length === 0 ? '<div style="color: var(--text-muted); text-align: center; padding: 1rem;">No clients in portfolio.</div>' : `
+            <table class="data-table" style="font-size: 0.8rem;">
+              <thead>
+                <tr><th>Client Name</th><th>Category</th><th>Total Billed</th><th>Status</th></tr>
+              </thead>
+              <tbody>
+                ${clients.slice(0, 5).map(c => {
+                  const clientInvoices = invoices.filter(i => i.clientName === c.name || i.client === c.name || i.clientId === c.id);
+                  const totalSpent = clientInvoices.reduce((sum, i) => sum + Number(i.amount || 0), 0);
+
+                  return `
+                    <tr>
+                      <td><strong>${escapeHTML(c.name)}</strong></td>
+                      <td style="color: var(--text-muted);">${escapeHTML(c.category || c.industry || 'General')}</td>
+                      <td><strong>৳${totalSpent.toLocaleString()}</strong></td>
+                      <td><span class="badge badge-emerald">${escapeHTML(c.status || 'Active Retainer')}</span></td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          `}
         </div>
       </div>
     `;
-
-    // Render Chart.js Visual Charts if Chart library loaded
-    if (window.Chart) {
-      setTimeout(() => {
-        const revCtx = document.getElementById('revenueChart');
-        if (revCtx) {
-          const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-          const today = new Date();
-          const revLabels = [];
-          const revData = [];
-          for (let i = 5; i >= 0; i--) {
-            const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
-            revLabels.push(monthNames[d.getMonth()]);
-            const monthTotal = (invoices || []).filter(inv => {
-              if (inv.status !== 'Paid') return false;
-              const invDate = new Date(inv.issueDate || inv.created_at || inv.createdAt);
-              if (isNaN(invDate)) return false;
-              return invDate.getMonth() === d.getMonth() && invDate.getFullYear() === d.getFullYear();
-            }).reduce((sum, inv) => sum + (Number(inv.amount) || 0), 0);
-            revData.push(monthTotal);
-          }
-
-          new Chart(revCtx, {
-            type: 'line',
-            data: {
-              labels: revLabels,
-              datasets: [{
-                label: 'Collected Revenue (BDT)',
-                data: revData,
-                borderColor: '#10b981',
-                backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                tension: 0.4,
-                fill: true
-              }]
-            },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: { legend: { labels: { color: '#a1a1aa' } } },
-              scales: {
-                x: { ticks: { color: '#71717a' }, grid: { display: false } },
-                y: { ticks: { color: '#71717a' }, grid: { color: 'rgba(255,255,255,0.05)' } }
-              }
-            }
-          });
-        }
-
-        const taskCtx = document.getElementById('taskDistributionChart');
-        if (taskCtx) {
-          const toDoCount = (tasks || []).filter(t => (t.stage || '').toLowerCase().includes('todo') || t.stage === 'To Do').length || 3;
-          const inProgCount = (tasks || []).filter(t => (t.stage || '').toLowerCase().includes('progress')).length || 5;
-          const reviewCount = (tasks || []).filter(t => (t.stage || '').toLowerCase().includes('review')).length || 2;
-          const doneCount = (tasks || []).filter(t => (t.stage || '').toLowerCase().includes('approve') || t.stage === 'Done').length || 4;
-
-          new Chart(taskCtx, {
-            type: 'doughnut',
-            data: {
-              labels: ['To Do', 'In Progress', 'Review', 'Approved'],
-              datasets: [{
-                data: [toDoCount, inProgCount, reviewCount, doneCount],
-                backgroundColor: ['#60a5fa', '#8b5cf6', '#f59e0b', '#10b981']
-              }]
-            },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: { legend: { position: 'right', labels: { color: '#a1a1aa' } } }
-            }
-          });
-        }
-      }, 50);
-    }
-  } catch (err) {
-    container.innerHTML = `<div class="card-glass" style="padding:2rem; text-align:center; color:var(--red-brand);">Failed to load dashboard data</div>`;
+  } catch(err) {
+    console.error('[Executive Dashboard Module Error]:', err);
+    container.innerHTML = `<div style="padding: 2rem; color: #ef4444;">Failed to load Executive Dashboard: ${err.message}</div>`;
   }
 };
+
+function escapeHTML(str) {
+  if (!str) return '';
+  return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+}
