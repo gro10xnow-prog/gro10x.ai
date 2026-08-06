@@ -65,7 +65,7 @@ function mapQuote(q) {
 }
 
 // GET Invoices
-router.get('/invoices', requireAuth, async (req, res) => {
+router.get('/', requireAuth, async (req, res) => {
   try {
     let query = supabase.from('invoices').select('*').order('created_at', { ascending: false });
 
@@ -86,11 +86,10 @@ router.get('/invoices', requireAuth, async (req, res) => {
 });
 
 // POST Create Invoice
-router.post('/invoices', requireAuth, requireAdmin, async (req, res) => {
+router.post('/', requireAuth, requireAdmin, async (req, res) => {
   try {
-    const { count } = await supabase.from('invoices').select('*', { count: 'exact', head: true });
-    const countNum = (count || 0) + 1;
-    const newId = `INV-2026-${String(countNum).padStart(3, '0')}`;
+    const { randomUUID } = require('crypto');
+    const newId = `INV-${randomUUID().split('-')[0].toUpperCase()}`;
 
     const payload = {
       id: newId,
@@ -121,13 +120,14 @@ router.post('/invoices', requireAuth, requireAdmin, async (req, res) => {
 });
 
 // PUT Update Invoice / Mark Paid
-router.put('/invoices/:id', requireAuth, async (req, res) => {
+router.put('/:id', requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
     const updates = {};
     if (req.body.status) updates.status = req.body.status;
     if (req.body.amount !== undefined) updates.amount = Number(req.body.amount);
     if (req.body.dueDate) updates.due_date = req.body.dueDate;
+    if (req.body.notes !== undefined) updates.notes = req.body.notes;
     if (req.body.status === 'Paid') updates.paid_date = new Date().toISOString().split('T')[0];
 
     const { data, error } = await supabase.from('invoices').update(updates).eq('id', id).select().single();
@@ -137,6 +137,15 @@ router.put('/invoices/:id', requireAuth, async (req, res) => {
     const { data: allInvoices } = await supabase.from('invoices').select('*').order('created_at', { ascending: false });
     broadcast('invoice_update', (allInvoices || []).map(mapInvoice));
 
+    if (req.body.status === 'Paid') {
+      try {
+        const { processAutomationEvent } = require('../services/automation');
+        await processAutomationEvent('invoice_paid', { invoice }, { clients: [], team: [] }, () => {}, broadcast);
+      } catch (e) {
+        console.warn('Invoice paid automation error:', e.message);
+      }
+    }
+
     res.json({ success: true, invoice });
   } catch (err) {
     console.error('Invoice PUT error:', err.message);
@@ -144,8 +153,9 @@ router.put('/invoices/:id', requireAuth, async (req, res) => {
   }
 });
 
-// POST /invoices/:id/send (Send Invoice Email)
-router.post('/invoices/:id/send', requireAuth, requireAdmin, async (req, res) => {
+// POST /:id/send (Send Invoice Email)
+router.post('/:id/send', requireAuth, requireAdmin, async (req, res) => {
+
   try {
     const { id } = req.params;
     const { data, error } = await supabase.from('invoices').select('*').eq('id', id).maybeSingle();
@@ -180,8 +190,8 @@ router.post('/invoices/:id/send', requireAuth, requireAdmin, async (req, res) =>
   }
 });
 
-// POST /invoices/:id/pay (Partner Portal Online Payment Submission)
-router.post('/invoices/:id/pay', requireAuth, upload.single('screenshot'), async (req, res) => {
+// POST /:id/pay (Partner Portal Online Payment Submission)
+router.post('/:id/pay', requireAuth, upload.single('screenshot'), async (req, res) => {
   try {
     const { id } = req.params;
     const { trxId, method, amount } = req.body;
