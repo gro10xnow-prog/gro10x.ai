@@ -561,22 +561,23 @@ function registerLegacyTeamMenus(teamBot, readDB) {
       // 🗓️ Content Calendars
       teamBot.onText(/🗓️ Content Calendars/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = await readDB();
-        const posts = dbData.posts || dbData.social_posts || [];
+        const { supabase } = require('../../supabase');
+        const { data: posts } = await supabase.from('social_posts').select('*').order('created_at', { ascending: false }).limit(5);
+        const postList = posts || [];
 
         let text = `🗓️ *Monthly Content Plans & Social Calendars*\n\n`;
-        text += `• Total Scheduled Posts: *${posts.length}*\n\n`;
+        text += `• Total Active Posts: *${postList.length}*\n\n`;
 
-        if (posts.length) {
-          posts.slice(0, 5).forEach((p, i) => {
-            text += `${i + 1}. *${p.title || p.caption || 'Post'}* (${p.clientName || p.client || 'Client'})\n`;
+        if (postList.length) {
+          postList.forEach((p, i) => {
+            text += `${i + 1}. *${p.title || p.caption || 'Post'}* (${p.client_name || 'Client'})\n`;
             text += `   Platform: ${p.platform || 'Social'} | Status: *${p.status || 'Scheduled'}*\n\n`;
           });
         }
 
         teamBot.sendMessage(chatId, text, {
           parse_mode: 'Markdown',
-          reply_markup: { inline_keyboard: [[{ text: '🌐 Open Content Planner', url: 'https://purpleos-iota.vercel.app/admin?tab=social-posts' }]] }
+          reply_markup: { inline_keyboard: [[{ text: '🌐 Open Content Planner', url: 'https://purpleos-iota.vercel.app/#social' }]] }
         });
       });
 
@@ -630,19 +631,21 @@ function registerLegacyTeamMenus(teamBot, readDB) {
       // 🚀 Dispatch Hub — 1-click publishing queue
       teamBot.onText(/🚀 Dispatch Hub/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = await readDB();
-        const posts = (dbData.posts || dbData.social_posts || []).filter(p => p.status === 'Approved');
+        const { supabase } = require('../../supabase');
+        const { data: posts } = await supabase.from('social_posts').select('*').or('status.eq.Approved,status.eq.Due Today');
+        const postList = posts || [];
 
         let text = `🚀 *Social Media Dispatch Hub*\n\n`;
-        if (!posts.length) {
+        if (!postList.length) {
           text += `✅ All approved posts have been dispatched! No pending publishing queue.`;
         } else {
-          text += `📢 *${posts.length} Approved Post(s) Ready for Publishing:*\n\n`;
-          posts.slice(0, 5).forEach((p, i) => {
-            text += `${i + 1}. *${p.title || 'Post'}* (${p.clientName || 'Client'})\n`;
-            text += `   Platform: ${p.platform} | Time: ${p.scheduledTime || 'Today'}\n\n`;
+          text += `📢 *${postList.length} Approved Post(s) Ready for Publishing:*\n\n`;
+          postList.slice(0, 5).forEach((p, i) => {
+            text += `${i + 1}. *${p.title || 'Post'}* (${p.client_name || 'Client'})\n`;
+            text += `   Platform: ${p.platform} | Scheduled: ${p.scheduled_date || 'Today'} @ ${p.scheduled_time || '18:00'}\n\n`;
           });
         }
+
 
         teamBot.sendMessage(chatId, text, {
           parse_mode: 'Markdown',

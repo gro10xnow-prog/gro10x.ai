@@ -3,25 +3,27 @@ const router = express.Router();
 const { requireAuth } = require('../middleware/auth');
 const { supabase } = require('../services/supabase');
 const { broadcast } = require('../services/sse');
+const { randomUUID } = require('crypto');
 
 function mapPost(p) {
   if (!p) return null;
   return {
     id: p.id,
-    clientId: p.client_id,
-    clientName: p.client_name,
-    platform: p.platform,
-    targetUrl: p.target_url,
-    title: p.title,
-    caption: p.caption,
+    clientId: p.client_id || null,
+    clientName: p.client_name || 'General Client',
+    platform: p.platform || 'Facebook',
+    targetUrl: p.target_url || '',
+    title: p.title || 'Untitled Post',
+    caption: p.caption || '',
+    hashtags: p.hashtags || '',
     mediaUrls: p.media_urls || [],
-    scheduledDate: p.scheduled_date,
-    scheduledTime: p.scheduled_time,
-    assignedPublisher: p.assigned_publisher,
-    status: p.status,
-    clientFeedback: p.client_feedback,
-    approvedBy: p.approved_by,
-    approvedAt: p.approved_at,
+    scheduledDate: p.scheduled_date || '',
+    scheduledTime: p.scheduled_time || '18:00',
+    assignedPublisher: p.assigned_publisher || 'Unassigned',
+    status: p.status || 'Draft',
+    clientFeedback: p.client_feedback || null,
+    approvedBy: p.approved_by || null,
+    approvedAt: p.approved_at || null,
     createdAt: p.created_at,
     updatedAt: p.updated_at
   };
@@ -58,7 +60,6 @@ router.get('/client/:clientName', requireAuth, async (req, res) => {
     const isClientUser = req.user.role === 'Client' || req.user.linkedType === 'client' || req.user.accessLevel === 'Client Partner';
     const userClientName = req.user.profile?.name || req.user.name;
 
-    // Hardening: If client role, enforce their own client context
     if (isClientUser && userClientName) {
       decoded = userClientName;
     }
@@ -76,11 +77,10 @@ router.get('/client/:clientName', requireAuth, async (req, res) => {
   }
 });
 
-// POST Schedule Social Post
+// POST Schedule/Draft Social Post
 router.post('/', requireAuth, async (req, res) => {
   try {
-    const { count } = await supabase.from('social_posts').select('*', { count: 'exact', head: true });
-    const newId = `PST-${(count || 0) + 101}`;
+    const newId = `PST-${randomUUID().split('-')[0].toUpperCase()}`;
 
     const payload = {
       id: newId,
@@ -90,11 +90,12 @@ router.post('/', requireAuth, async (req, res) => {
       target_url: req.body.targetUrl || '',
       title: req.body.title || 'Untitled Post',
       caption: req.body.caption || '',
+      hashtags: req.body.hashtags || '',
       media_urls: req.body.mediaUrls || (req.body.mediaUrl ? [req.body.mediaUrl] : []),
       scheduled_date: req.body.scheduledDate || new Date().toISOString().split('T')[0],
       scheduled_time: req.body.scheduledTime || '18:00',
       assigned_publisher: req.body.assignedPublisher || req.user?.name || 'Unassigned',
-      status: req.body.status || 'Pending Client Approval'
+      status: req.body.status || 'Draft'
     };
 
     const { data, error } = await supabase.from('social_posts').insert([payload]).select().single();
@@ -119,10 +120,14 @@ router.put('/:id', requireAuth, async (req, res) => {
 
     if (req.body.title) updates.title = req.body.title;
     if (req.body.caption !== undefined) updates.caption = req.body.caption;
+    if (req.body.hashtags !== undefined) updates.hashtags = req.body.hashtags;
     if (req.body.status) updates.status = req.body.status;
     if (req.body.platform) updates.platform = req.body.platform;
+    if (req.body.clientId !== undefined) updates.client_id = req.body.clientId;
+    if (req.body.clientName !== undefined) updates.client_name = req.body.clientName;
     if (req.body.scheduledDate) updates.scheduled_date = req.body.scheduledDate;
     if (req.body.scheduledTime) updates.scheduled_time = req.body.scheduledTime;
+    if (req.body.mediaUrls) updates.media_urls = req.body.mediaUrls;
 
     const { data, error } = await supabase.from('social_posts').update(updates).eq('id', id).select().single();
     if (error) throw error;
@@ -157,21 +162,15 @@ const handleApprovePost = async (req, res) => {
     const { data: allPosts } = await supabase.from('social_posts').select('*').order('created_at', { ascending: false });
     broadcast('post_update', (allPosts || []).map(mapPost));
 
-    // Dispatch Telegram alert to publisher
+    // Fire Automation Engine event
     try {
-      const { sendTelegramNotification } = require('../services/bot/notifications');
-      const ownerChatId = process.env.OWNER_TELEGRAM_ID || '7754769807';
-      sendTelegramNotification(ownerChatId,
-        `🎉 *SOCIAL POST APPROVED BY CLIENT!*\n\n` +
-        `• Post: *${post.title}*\n` +
-        `• Client: *${post.clientName}*\n` +
-        `• Platform: *${post.platform}*\n` +
-        `• Scheduled: *${post.scheduledDate} @ ${post.scheduledTime}*\n\n` +
-        `Post has been cleared for automated publishing! 🚀`,
-        null,
-        true
-      );
-    } catch(e) {}
+      const { processAutomationEvent } = require('../services/automation');
+      await processAutomationEvent('social_post_approved', {
+        post
+      }, { clients: [], team: [], tasks: [] }, () => {}, broadcast);
+    } catch(e) {
+      console.warn('Social post approved automation error:', e.message);
+    }
 
     res.json({ success: true, post });
   } catch (err) {
@@ -200,21 +199,6 @@ const handleRejectPost = async (req, res) => {
     const { data: allPosts } = await supabase.from('social_posts').select('*').order('created_at', { ascending: false });
     broadcast('post_update', (allPosts || []).map(mapPost));
 
-    // Dispatch Telegram alert
-    try {
-      const { sendTelegramNotification } = require('../services/bot/notifications');
-      const ownerChatId = process.env.OWNER_TELEGRAM_ID || '7754769807';
-      sendTelegramNotification(ownerChatId,
-        `✏️ *REVISION REQUESTED ON SOCIAL POST*\n\n` +
-        `• Post: *${post.title}*\n` +
-        `• Client: *${post.clientName}*\n` +
-        `• Feedback: "${req.body.feedback || 'Revision requested'}"\n\n` +
-        `Please update post copy and resubmit for review.`,
-        null,
-        true
-      );
-    } catch(e) {}
-
     res.json({ success: true, post });
   } catch (err) {
     console.error('Social Post Reject error:', err.message);
@@ -225,7 +209,7 @@ const handleRejectPost = async (req, res) => {
 router.post('/:id/reject', requireAuth, handleRejectPost);
 router.patch('/:id/reject', requireAuth, handleRejectPost);
 
-// PATCH Update Post Status (used by Client Review Room)
+// PATCH Update Post Status
 router.patch('/:id/status', requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
@@ -249,9 +233,42 @@ router.patch('/:id/status', requireAuth, async (req, res) => {
     const { data: allPosts } = await supabase.from('social_posts').select('*').order('created_at', { ascending: false });
     broadcast('post_update', (allPosts || []).map(mapPost));
 
+    if (status === 'Pending Client Approval' || status === 'Client Review') {
+      try {
+        const { processAutomationEvent } = require('../services/automation');
+        await processAutomationEvent('social_post_client_review', { post }, { clients: [], team: [] }, () => {}, broadcast);
+      } catch (e) {
+        console.warn('Client review automation error:', e.message);
+      }
+    } else if (status === 'Approved') {
+      try {
+        const { processAutomationEvent } = require('../services/automation');
+        await processAutomationEvent('social_post_approved', { post }, { clients: [], team: [] }, () => {}, broadcast);
+      } catch (e) {
+        console.warn('Approved post automation error:', e.message);
+      }
+    }
+
     res.json({ success: true, post });
   } catch (err) {
     console.error('Social Post status update error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// DELETE Post
+router.delete('/:id', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { error } = await supabase.from('social_posts').delete().eq('id', id);
+    if (error) throw error;
+
+    const { data: allPosts } = await supabase.from('social_posts').select('*').order('created_at', { ascending: false });
+    broadcast('post_update', (allPosts || []).map(mapPost));
+
+    res.json({ success: true, id });
+  } catch (err) {
+    console.error('Social Post DELETE error:', err.message);
     res.status(500).json({ error: err.message });
   }
 });

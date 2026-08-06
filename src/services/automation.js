@@ -852,26 +852,33 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
 }
 
 /**
- * Check posts scheduled for today or past due and trigger dispatch alerts
+ * Check posts scheduled for today or past due and trigger dispatch alerts via Supabase
  */
-function checkScheduledSocialDispatches(db, writeDB, broadcast) {
-  if (!db || !db.posts) return;
-  const todayStr = new Date().toISOString().split('T')[0];
-  let updated = false;
+async function checkScheduledSocialDispatches(db, writeDB, broadcast) {
+  try {
+    const { supabase } = require('./supabase');
+    const todayStr = new Date().toISOString().split('T')[0];
 
-  db.posts.forEach(post => {
-    if ((post.status === 'Approved' || post.status === 'Scheduled') && post.scheduledDate <= todayStr) {
-      post.status = 'Due Today';
-      updated = true;
-      processAutomationEvent('social_post_dispatch_alert', { post }, db, writeDB, broadcast);
+    const { data: posts, error } = await supabase.from('social_posts')
+      .select('*')
+      .or('status.eq.Approved,status.eq.Scheduled')
+      .lte('scheduled_date', todayStr);
+
+    if (error || !posts || posts.length === 0) return;
+
+    for (const post of posts) {
+      await supabase.from('social_posts').update({
+        status: 'Due Today',
+        updated_at: new Date().toISOString()
+      }).eq('id', post.id);
+
+      processAutomationEvent('social_post_dispatch_alert', { post }, db || { clients: [], team: [] }, writeDB, broadcast);
     }
-  });
-
-  if (updated && writeDB) {
-    writeDB(db);
-    if (broadcast) broadcast('post_update', db.posts);
+  } catch (err) {
+    console.warn('checkScheduledSocialDispatches error:', err.message);
   }
 }
+
 
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // SCHEDULED JOBS â€” Morning Briefing & EOD Summary
