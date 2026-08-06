@@ -117,15 +117,50 @@ router.get('/services', async (req, res) => {
     } catch (e) {}
   }
   // Fallback to embedded defaults
-  res.json(defaultCMSContent.services.map(s => ({ ...s, public: true })));
+  res.json(defaultCMSContent.services.map(s => ({ ...s, includedFeatures: s.features || [], public: true })));
+});
+
+// GET /api/cms/services/:id — get a single service by ID
+router.get('/services/:id', async (req, res) => {
+  const { id } = req.params;
+  if (isSupabaseConfigured()) {
+    try {
+      const { data, error } = await supabase.from('services').select('*').eq('id', id).maybeSingle();
+      if (!error && data) {
+        return res.json({
+          success: true,
+          service: {
+            ...data,
+            features: data.features || data.included_features || [],
+            includedFeatures: data.included_features || data.features || [],
+            public: data.is_public ?? true
+          }
+        });
+      }
+    } catch (e) {}
+  }
+
+  const fallback = defaultCMSContent.services.find(s => s.id === id);
+  if (fallback) {
+    return res.json({
+      success: true,
+      service: { ...fallback, includedFeatures: fallback.features || [], public: true }
+    });
+  }
+
+  res.status(404).json({ error: 'Service not found' });
 });
 
 // POST /api/cms/services — create a new service
 router.post('/services', requireAuth, requireAdmin, async (req, res) => {
-  const { title, category, price, description, features, icon, is_public } = req.body;
+  const { title, category, price, description, icon, is_public } = req.body;
+  const rawFeatures = req.body.features || req.body.includedFeatures || [];
   if (!title) return res.status(400).json({ error: 'title is required' });
 
-  const newId = `SVC-${Date.now()}`;
+  const { randomUUID } = require('crypto');
+  const newId = `SVC-${randomUUID().split('-')[0].toUpperCase()}`;
+  const parsedFeatures = Array.isArray(rawFeatures) ? rawFeatures : (rawFeatures ? String(rawFeatures).split(',').map(f => f.trim()) : []);
+
   const payload = {
     id: newId,
     title: String(title).trim(),
@@ -133,8 +168,8 @@ router.post('/services', requireAuth, requireAdmin, async (req, res) => {
     price: price || '',
     description: description || '',
     icon: icon || '⚡',
-    features: Array.isArray(features) ? features : (features ? String(features).split(',').map(f => f.trim()) : []),
-    included_features: Array.isArray(features) ? features : (features ? String(features).split(',').map(f => f.trim()) : []),
+    features: parsedFeatures,
+    included_features: parsedFeatures,
     is_public: is_public !== false,
     created_at: new Date().toISOString()
   };
@@ -143,16 +178,17 @@ router.post('/services', requireAuth, requireAdmin, async (req, res) => {
     const { data, error } = await supabase.from('services').insert([payload]).select().single();
     if (error) return res.status(500).json({ error: error.message });
     broadcast('cms_update', { serviceAdded: data });
-    return res.json({ success: true, service: { ...data, public: data.is_public } });
+    return res.json({ success: true, service: { ...data, includedFeatures: data.included_features || data.features || [], public: data.is_public } });
   }
 
-  res.json({ success: true, service: { ...payload, public: payload.is_public } });
+  res.json({ success: true, service: { ...payload, includedFeatures: payload.included_features, public: payload.is_public } });
 });
 
 // PUT /api/cms/services/:id — update an existing service
 router.put('/services/:id', requireAuth, requireAdmin, async (req, res) => {
   const { id } = req.params;
-  const { title, category, price, description, features, icon, is_public } = req.body;
+  const { title, category, price, description, icon, is_public } = req.body;
+  const rawFeatures = req.body.features !== undefined ? req.body.features : req.body.includedFeatures;
 
   const updates = {};
   if (title !== undefined) updates.title = String(title).trim();
@@ -161,9 +197,10 @@ router.put('/services/:id', requireAuth, requireAdmin, async (req, res) => {
   if (description !== undefined) updates.description = description;
   if (icon !== undefined) updates.icon = icon;
   if (is_public !== undefined) updates.is_public = is_public;
-  if (features !== undefined) {
-    updates.features = Array.isArray(features) ? features : String(features).split(',').map(f => f.trim());
-    updates.included_features = updates.features;
+  if (rawFeatures !== undefined) {
+    const parsedFeatures = Array.isArray(rawFeatures) ? rawFeatures : String(rawFeatures).split(',').map(f => f.trim());
+    updates.features = parsedFeatures;
+    updates.included_features = parsedFeatures;
   }
   updates.updated_at = new Date().toISOString();
 
@@ -172,7 +209,7 @@ router.put('/services/:id', requireAuth, requireAdmin, async (req, res) => {
     if (error) return res.status(500).json({ error: error.message });
     if (!data) return res.status(404).json({ error: 'Service not found' });
     broadcast('cms_update', { serviceUpdated: data });
-    return res.json({ success: true, service: { ...data, public: data.is_public } });
+    return res.json({ success: true, service: { ...data, includedFeatures: data.included_features || data.features || [], public: data.is_public } });
   }
 
   res.status(503).json({ error: 'Database unavailable — service update requires Supabase' });
@@ -189,4 +226,5 @@ router.delete('/services/:id', requireAuth, requireAdmin, async (req, res) => {
 });
 
 module.exports = router;
+
 

@@ -264,9 +264,47 @@ function renderServiceDetailPage() {
   };
 
   const urlParams = new URLSearchParams(window.location.search);
-  const rawId = (urlParams.get('id') || urlParams.get('service') || '').trim().toLowerCase();
+  const rawId = (urlParams.get('id') || urlParams.get('service') || '').trim();
 
-  const key = ID_TO_KEY[rawId];
+  // Try API lookup first for dynamic CMS services
+  if (rawId) {
+    try {
+      const apiRes = await fetch(`/api/cms/services/${encodeURIComponent(rawId)}`);
+      if (apiRes.ok) {
+        const apiData = await apiRes.json();
+        if (apiData.success && apiData.service) {
+          const s = apiData.service;
+          // Dynamically populate page from API service payload
+          document.title = `${s.title} — Purplebot Digital`;
+          const titleEl = document.getElementById('svcTitle');
+          const categoryEl = document.getElementById('svcCategory');
+          const priceEl = document.getElementById('svcPrice');
+          const descEl = document.getElementById('svcDesc');
+          const featuresContainer = document.getElementById('svcFeaturesContainer');
+          
+          if (titleEl) titleEl.textContent = s.title;
+          if (categoryEl) categoryEl.textContent = s.category || 'Service';
+          if (priceEl) priceEl.textContent = s.price || 'Contact for Quote';
+          if (descEl) descEl.textContent = s.description || '';
+          
+          const feats = s.includedFeatures || s.features || [];
+          if (featuresContainer && Array.isArray(feats) && feats.length > 0) {
+            featuresContainer.innerHTML = feats.map(f => `
+              <div style="display:flex; align-items:center; gap:0.5rem; background:rgba(255,255,255,0.04); padding:0.6rem 1rem; border-radius:8px; border:1px solid rgba(255,255,255,0.08); font-size:0.88rem; color:#fff;">
+                <span style="color:#10b981;">✓</span> ${String(f).replace(/</g,'&lt;')}
+              </div>
+            `).join('');
+          }
+          return; // Successfully rendered dynamic service
+        }
+      }
+    } catch (e) {
+      console.warn('Dynamic service fetch failed, falling back to static database:', e);
+    }
+  }
+
+  // Fallback to static ID mapping for legacy routes
+  const key = ID_TO_KEY[rawId.toLowerCase()];
 
   if (!key) {
     document.title = 'Service Not Found — Purplebot Digital';

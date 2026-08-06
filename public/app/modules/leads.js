@@ -34,9 +34,24 @@ window.APP_MODULES.leads = async function(container) {
       const data = await APP_API.get('/leads').catch(() => []);
       leadsData = Array.isArray(data) ? data : [];
       render();
+      populateServicesDropdown();
     } catch (err) {
       container.innerHTML = `<div style="color:#ef4444;padding:2rem;">Error loading leads: ${err.message}</div>`;
     }
+  }
+
+  async function populateServicesDropdown() {
+    try {
+      const services = await APP_API.get('/services').catch(() => []);
+      const select = document.getElementById('nlService');
+      if (select && Array.isArray(services) && services.length > 0) {
+        select.innerHTML = '<option value="">Select service from catalog...</option>' + services.map(s => `
+          <option value="${String(s.title).replace(/"/g, '&quot;')}">${String(s.title).replace(/</g, '&lt;')} (${String(s.price || 'Quote').replace(/</g, '&lt;')})</option>
+        `).join('') + `
+          <option value="Custom Project">Custom Agency Package</option>
+        `;
+      }
+    } catch (e) {}
   }
 
   // ─── Filter & Sort Leads ────────────────────────────────────────────────────

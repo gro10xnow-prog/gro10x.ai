@@ -196,11 +196,11 @@ async function fetchLandingServices() {
   try {
     const res = await fetch('/api/cms');
     const cmsData = await res.json();
-    const services = cmsData.services;
+    const services = (cmsData.content && cmsData.content.services) || cmsData.services || [];
 
     if (!services || services.length === 0) return;
 
-    const publicServices = services.filter(s => s.public !== false);
+    const publicServices = services.filter(s => s.public !== false && s.is_public !== false);
     if (publicServices.length === 0) return;
 
     const categoryIcons = {
@@ -331,8 +331,7 @@ async function handleNewsletterSubmit(e) {
       trackClick('Newsletter Subscribed');
     }
   } catch (err) {
-    showLandingToast('🎉 Thank you for subscribing to Purplebot Digital!', 'success');
-    input.value = '';
+    showLandingToast('⚠️ Could not subscribe right now. Please try again later or message us on WhatsApp!', 'error');
   }
 }
 
@@ -394,7 +393,7 @@ async function handleLeadFormSubmit(e) {
       showLandingToast('⚠️ There was an issue submitting your proposal request. Please WhatsApp us directly at +88 01711 019550.', 'error');
     }
   } catch (err) {
-    showLandingToast(`🎉 Thank you ${name}! Your request has been recorded. Our team will contact you shortly!`, 'success');
+    showLandingToast('⚠️ Form submission error. Please contact us via WhatsApp at +88 01711 019550.', 'error');
   } finally {
     if (submitBtn) {
       submitBtn.disabled = false;
