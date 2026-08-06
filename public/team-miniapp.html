@@ -300,11 +300,52 @@
       border-radius: 999px;
       font-size: 0.64rem;
       font-weight: 700;
+      white-space: nowrap;
     }
-    .stage-shoot { background: #fef3c7; color: #92400e; }
-    .stage-edit { background: #ede9fe; color: #4c1d95; }
-    .stage-review { background: #d1fae5; color: #064e3b; }
-    .stage-brief { background: #e0f2fe; color: #0c4a6e; }
+    /* ── Stage colours: briefing/planning ── */
+    .stage-brief    { background: #e0f2fe; color: #0c4a6e; }
+    .stage-strategy { background: #e0f2fe; color: #0c4a6e; }
+    .stage-wire     { background: #e0f2fe; color: #0c4a6e; }
+    /* ── Stage colours: in-progress ── */
+    .stage-shoot    { background: #fef3c7; color: #92400e; }
+    .stage-script   { background: #fef3c7; color: #92400e; }
+    .stage-draft    { background: #fef3c7; color: #92400e; }
+    .stage-design   { background: #fef3c7; color: #92400e; }
+    .stage-dev      { background: #fef3c7; color: #92400e; }
+    .stage-concept  { background: #fef3c7; color: #92400e; }
+    /* ── Stage colours: refining ── */
+    .stage-edit     { background: #ede9fe; color: #4c1d95; }
+    .stage-copy     { background: #ede9fe; color: #4c1d95; }
+    .stage-refine   { background: #ede9fe; color: #4c1d95; }
+    .stage-qa       { background: #ede9fe; color: #4c1d95; }
+    .stage-uat      { background: #ede9fe; color: #4c1d95; }
+    /* ── Stage colours: review/final ── */
+    .stage-review   { background: #d1fae5; color: #064e3b; }
+    .stage-approval { background: #d1fae5; color: #064e3b; }
+    .stage-delivery { background: #d1fae5; color: #064e3b; }
+    .stage-sched    { background: #d1fae5; color: #064e3b; }
+    /* ── Stage colours: done ── */
+    .stage-done     { background: #6ee7b7; color: #064e3b; }
+
+    /* ── Task card priority bars ── */
+    .task-item { position: relative; padding-left: 1.1rem !important; }
+    .task-priority-bar { position: absolute; left: 0; top: 0; bottom: 0; width: 4px; border-radius: 14px 0 0 14px; }
+
+    /* ── Quick Filter Pills ── */
+    .filter-pills { display: flex; gap: 0.4rem; overflow-x: auto; padding-bottom: 0.3rem; scrollbar-width: none; margin-bottom: 0.85rem; }
+    .filter-pills::-webkit-scrollbar { display: none; }
+    .fpill { padding: 0.3rem 0.75rem; border-radius: 999px; font-size: 0.72rem; font-weight: 700; border: 1px solid var(--border); background: transparent; color: var(--muted); cursor: pointer; white-space: nowrap; font-family: 'Outfit', sans-serif; transition: all 0.15s; }
+    .fpill.active { background: var(--purple); color: #fff; border-color: var(--purple); }
+
+    /* ── Stage Picker ── */
+    .stage-picker { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.5rem 0; }
+    .spill { padding: 0.3rem 0.65rem; border-radius: 999px; font-size: 0.72rem; font-weight: 700; border: 1px solid var(--border); background: transparent; color: var(--muted); cursor: pointer; font-family: 'Outfit', sans-serif; transition: all 0.15s; }
+    .spill.current { background: var(--purple); color: #fff; border-color: var(--purple); }
+    .spill:active { transform: scale(0.96); }
+
+    /* ── Mini Toast ── */
+    #miniappToast { position: fixed; bottom: 5rem; left: 50%; transform: translateX(-50%) translateY(10px); background: #1a1a2e; color: #fff; padding: 0.55rem 1.2rem; border-radius: 999px; font-size: 0.82rem; font-weight: 700; font-family: 'Outfit', sans-serif; box-shadow: 0 4px 20px rgba(0,0,0,0.4); z-index: 9999; opacity: 0; transition: all 0.25s; pointer-events: none; }
+    #miniappToast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
     /* ───── PAY CARD ───── */
     .pay-hero {
@@ -872,20 +913,29 @@
   <form id="createTaskForm" onsubmit="submitNewTask(event)">
     <div class="card" style="margin-bottom:1rem;">
       <label style="font-size:0.78rem;font-weight:700;color:var(--purple);display:block;margin-bottom:0.4rem;">📦 USE BLUEPRINT TEMPLATE</label>
-      <select id="miniappTemplateSelect" style="width:100%;padding:0.75rem;border-radius:12px;border:1px solid var(--border);background:#fff;font-family:inherit;font-size:0.9rem;margin-bottom:1rem;">
+      <select id="miniappTemplateSelect" onchange="onMiniappTemplateChange(this.value)" style="width:100%;padding:0.75rem;border-radius:12px;border:1px solid var(--border);background:#fff;font-family:inherit;font-size:0.9rem;margin-bottom:1rem;">
         <option value="">-- Custom Task (Blank) --</option>
-        <option value="tmpl-reels">📦 Social Media Reel Campaign (6 Subtasks)</option>
-        <option value="tmpl-branding">📦 360 Branding System (5 Subtasks)</option>
-        <option value="tmpl-tvc">📦 TVC Commercial Production (5 Subtasks)</option>
+        <option value="tmpl-tvc">📦 TVC Commercial Production</option>
+        <option value="tmpl-reels">📦 Social Media Reel Campaign (10 Reels)</option>
+        <option value="tmpl-branding">📦 360° Brand Identity System</option>
+        <option value="tmpl-web">📦 Website / Landing Page Build</option>
       </select>
 
       <label style="font-size:0.78rem;font-weight:700;color:var(--muted);display:block;margin-bottom:0.4rem;">TASK TITLE</label>
-      <input type="text" id="newTaskTitle" required placeholder="e.g. Reels Editing for Client X" style="width:100%;padding:0.75rem;border-radius:12px;border:1px solid var(--border);background:#fff;font-family:inherit;font-size:0.9rem;margin-bottom:1rem;">
+      <input type="text" id="newTaskTitle" required placeholder="e.g. Reels Editing for Client X" style="width:100%;padding:0.75rem;border-radius:12px;border:1px solid var(--border);background:#fff;font-family:inherit;font-size:0.9rem;margin-bottom:1rem;box-sizing:border-box;">
 
       <label style="font-size:0.78rem;font-weight:700;color:var(--muted);display:block;margin-bottom:0.4rem;">CLIENT NAME</label>
-      <input type="text" id="newTaskClient" required placeholder="e.g. Purple Man Brand" style="width:100%;padding:0.75rem;border-radius:12px;border:1px solid var(--border);background:#fff;font-family:inherit;font-size:0.9rem;margin-bottom:1rem;">
+      <input type="text" id="newTaskClient" required placeholder="e.g. Purple Man Brand" style="width:100%;padding:0.75rem;border-radius:12px;border:1px solid var(--border);background:#fff;font-family:inherit;font-size:0.9rem;margin-bottom:1rem;box-sizing:border-box;">
 
-      <label style="font-size:0.78rem;font-weight:700;color:var(--muted);display:block;margin-bottom:0.4rem;">WORKFLOW STAGE</label>
+      <label style="font-size:0.78rem;font-weight:700;color:var(--muted);display:block;margin-bottom:0.4rem;">WORKFLOW TYPE</label>
+      <select id="newTaskWorkflow" onchange="onMiniappWorkflowChange(this.value)" style="width:100%;padding:0.75rem;border-radius:12px;border:1px solid var(--border);background:#fff;font-family:inherit;font-size:0.9rem;margin-bottom:1rem;">
+        <option value="video">🎬 Video Production</option>
+        <option value="social">📢 Social & Content</option>
+        <option value="branding">🎨 Branding & Design</option>
+        <option value="dev">💻 Dev & Tech</option>
+      </select>
+
+      <label style="font-size:0.78rem;font-weight:700;color:var(--muted);display:block;margin-bottom:0.4rem;">STARTING STAGE</label>
       <select id="newTaskStage" style="width:100%;padding:0.75rem;border-radius:12px;border:1px solid var(--border);background:#fff;font-family:inherit;font-size:0.9rem;margin-bottom:1rem;">
         <option value="Briefing">📝 Briefing</option>
         <option value="Scripting">📜 Scripting</option>
@@ -896,10 +946,19 @@
         <option value="Approved">✅ Approved</option>
       </select>
 
+      <label style="font-size:0.78rem;font-weight:700;color:var(--muted);display:block;margin-bottom:0.5rem;">PRIORITY</label>
+      <div style="display:flex;gap:0.5rem;margin-bottom:1rem;flex-wrap:wrap;">
+        <button type="button" id="prioBtnUrgent" onclick="selectMiniappPriority('Urgent')" style="padding:0.45rem 0.9rem;border-radius:999px;border:1.5px solid #ef4444;background:transparent;color:#ef4444;font-weight:700;font-size:0.78rem;font-family:'Outfit',sans-serif;cursor:pointer;">🔴 Urgent</button>
+        <button type="button" id="prioBtnHigh" onclick="selectMiniappPriority('High')" style="padding:0.45rem 0.9rem;border-radius:999px;border:1.5px solid #f59e0b;background:transparent;color:#f59e0b;font-weight:700;font-size:0.78rem;font-family:'Outfit',sans-serif;cursor:pointer;">🟠 High</button>
+        <button type="button" id="prioBtnMedium" onclick="selectMiniappPriority('Medium')" style="padding:0.45rem 0.9rem;border-radius:999px;border:1.5px solid #7c3aed;background:#7c3aed;color:#fff;font-weight:700;font-size:0.78rem;font-family:'Outfit',sans-serif;cursor:pointer;">🔵 Medium</button>
+        <button type="button" id="prioBtnLow" onclick="selectMiniappPriority('Low')" style="padding:0.45rem 0.9rem;border-radius:999px;border:1.5px solid #94a3b8;background:transparent;color:#94a3b8;font-weight:700;font-size:0.78rem;font-family:'Outfit',sans-serif;cursor:pointer;">⚪ Low</button>
+      </div>
+      <input type="hidden" id="newTaskPriority" value="Medium">
+
       <label style="font-size:0.78rem;font-weight:700;color:var(--muted);display:block;margin-bottom:0.4rem;">DUE DATE</label>
-      <input type="date" id="newTaskDueDate" style="width:100%;padding:0.75rem;border-radius:12px;border:1px solid var(--border);background:#fff;font-family:inherit;font-size:0.9rem;">
+      <input type="date" id="newTaskDueDate" style="width:100%;padding:0.75rem;border-radius:12px;border:1px solid var(--border);background:#fff;font-family:inherit;font-size:0.9rem;box-sizing:border-box;">
     </div>
-    <button type="submit" style="width:100%;padding:0.9rem;background:linear-gradient(135deg,var(--hero-b),var(--hero-d));color:#fff;border:none;border-radius:16px;font-size:0.95rem;font-weight:800;cursor:pointer;">🚀 Submit Task</button>
+    <button type="submit" style="width:100%;padding:0.9rem;background:linear-gradient(135deg,var(--hero-b),var(--hero-d));color:#fff;border:none;border-radius:16px;font-size:0.95rem;font-weight:800;cursor:pointer;">🚀 Launch Task</button>
   </form>
 </div>
 
@@ -916,10 +975,11 @@
     <button onclick="closeTaskDetailSheet()" style="background:rgba(124,58,237,0.12);border:none;border-radius:12px;padding:0.4rem 0.8rem;color:var(--purple);font-weight:700;cursor:pointer;">✕ Close</button>
   </div>
 
-  <!-- Smart Next Stage Button -->
-  <div class="card" style="margin-bottom:1rem;background:linear-gradient(135deg, rgba(124,58,237,0.08), rgba(99,102,241,0.08));border:1px solid rgba(124,58,237,0.2);">
-    <div style="font-size:0.75rem;font-weight:700;color:var(--muted);margin-bottom:0.4rem;">WORKFLOW ACTION</div>
-    <button id="sheetNextStageBtn" onclick="advanceMiniappStageFromSheet()" style="width:100%;padding:0.75rem;background:linear-gradient(135deg,var(--hero-b),var(--hero-d));color:#fff;border:none;border-radius:16px;font-size:0.88rem;font-weight:800;cursor:pointer;">→ Move to Next Stage</button>
+  <!-- Smart Stage Navigation -->
+  <div class="card" style="margin-bottom:1rem;background:linear-gradient(135deg, rgba(124,58,237,0.06), rgba(99,102,241,0.06));border:1px solid rgba(124,58,237,0.18);">
+    <div style="font-size:0.75rem;font-weight:700;color:var(--muted);margin-bottom:0.5rem;">STAGE PIPELINE</div>
+    <div id="sheetStagePicker" class="stage-picker"></div>
+    <button id="sheetConfirmStageBtn" onclick="confirmMiniappStageChange()" style="width:100%;margin-top:0.6rem;padding:0.65rem;background:linear-gradient(135deg,var(--hero-b),var(--hero-d));color:#fff;border:none;border-radius:12px;font-size:0.85rem;font-weight:800;cursor:pointer;">✓ Confirm Stage Move</button>
   </div>
 
   <!-- Worked Time Logger Card -->
@@ -1334,12 +1394,20 @@
   <div id="pageTasks" class="page">
     <div style="height:0.85rem;"></div>
     <div class="card">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.9rem;">
-        <div class="card-title" style="margin:0;">Assigned Tasks</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
+        <div class="card-title" style="margin:0;">My Assigned Tasks</div>
         <div style="display:flex;gap:0.4rem;align-items:center;">
           <button onclick="openCreateTaskModal()" style="background:linear-gradient(135deg,var(--hero-b),var(--hero-d));color:#fff;border:none;border-radius:10px;padding:0.35rem 0.7rem;font-size:0.75rem;font-weight:700;cursor:pointer;">➕ New Task</button>
           <button onclick="loadUserTasks()" style="background:none;border:none;color:var(--purple);font-family:'Outfit',sans-serif;font-size:0.78rem;font-weight:700;cursor:pointer;">🔄</button>
         </div>
+      </div>
+      <!-- Quick Filter Pills -->
+      <div class="filter-pills" id="taskFilterPills">
+        <button class="fpill active" onclick="applyMiniappTaskFilter('all', this)">⚡ All</button>
+        <button class="fpill" onclick="applyMiniappTaskFilter('urgent', this)">🔴 Urgent</button>
+        <button class="fpill" onclick="applyMiniappTaskFilter('today', this)">⏰ Due Today</button>
+        <button class="fpill" onclick="applyMiniappTaskFilter('overdue', this)">⏳ Overdue</button>
+        <button class="fpill" onclick="applyMiniappTaskFilter('mine', this)">👤 Mine Only</button>
       </div>
       <div id="userTaskList">
         <div class="empty-state"><div class="empty-icon">📋</div>Loading tasks...</div>
@@ -1798,10 +1866,12 @@
   async function submitNewTask(e) {
     e.preventDefault();
     const tmplId = document.getElementById('miniappTemplateSelect')?.value;
-    const title = document.getElementById('newTaskTitle').value;
-    const client = document.getElementById('newTaskClient').value;
+    const title = document.getElementById('newTaskTitle').value.trim();
+    const client = document.getElementById('newTaskClient').value.trim();
+    const workflow_type = document.getElementById('newTaskWorkflow')?.value || 'video';
     const stage = document.getElementById('newTaskStage').value;
     const dueDate = document.getElementById('newTaskDueDate').value;
+    const priority = document.getElementById('newTaskPriority')?.value || 'Medium';
     const assignee = currentUser?.name || 'Unassigned';
 
     if (tmplId) {
@@ -1809,24 +1879,27 @@
         const res = await fetch(`/api/task-templates/${tmplId}/instantiate`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ client, assignee, dueDate })
+          body: JSON.stringify({ client, assignee, dueDate, workflow_type, priority })
         });
         const data = await res.json();
-        alert(`🚀 Blueprint Launched! Task created with ${data.subtasksCreated || 0} subtasks.`);
+        if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+        showMiniappToast(`🚀 Blueprint launched! ${data.subtasksCreated || 0} subtasks created.`);
       } catch (err) {
-        alert('🚀 Blueprint Launched!');
+        if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+        showMiniappToast('🚀 Blueprint launched!');
       }
     } else {
-      const payload = { title, client, stage, due_date: dueDate, assignee };
+      const payload = { title, client, stage, due_date: dueDate, assignee, workflow_type, priority };
       try {
-        await fetch('/api/tasks', {
+        const res = await fetch('/api/tasks', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
-        alert('✅ Task Created Successfully!');
+        if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+        showMiniappToast('✅ Task created successfully!');
       } catch (err) {
-        alert('✅ Task Created!');
+        showMiniappToast('⚠️ Task saved — sync pending', 'info');
       }
     }
     closeCreateTaskModal();
@@ -2146,17 +2219,225 @@
   }
 
   // ══════════════════════════════════════════
-  // TASKS
+  // TASKS — Unified Workflow System (synced with Web Portal Phase 1)
   // ══════════════════════════════════════════
-  const stageClass = {
-    'Briefing': 'stage-brief',
-    'Scripting': 'stage-brief',
-    'Shooting': 'stage-shoot',
-    'Editing': 'stage-edit',
-    'Internal QC': 'stage-review',
-    'Client Review': 'stage-review',
-    'Approved': 'stage-review'
+  const WORKFLOW_TYPES = {
+    video:    { icon: '🎬', name: 'Video Production',  stages: ['Briefing','Scripting','Shooting','Editing','Internal QC','Client Review','Approved'] },
+    social:   { icon: '📢', name: 'Social & Content',  stages: ['Briefing','Content Draft','Design','Copy Review','Client Approval','Scheduled','Published'] },
+    branding: { icon: '🎨', name: 'Branding & Design', stages: ['Briefing','Strategy','Concept Design','Client Refinement','Final Delivery','Approved'] },
+    dev:      { icon: '💻', name: 'Dev & Tech',        stages: ['Briefing','Wireframe','Development','QA Testing','Client UAT','Approved'] }
   };
+
+  // Full stageClass map — covers every stage across all 4 workflows
+  const stageClass = {
+    // Briefing / planning
+    'Briefing':         'stage-brief',
+    'Strategy':         'stage-strategy',
+    'Wireframe':        'stage-wire',
+    // In-progress
+    'Scripting':        'stage-script',
+    'Shooting':         'stage-shoot',
+    'Content Draft':    'stage-draft',
+    'Design':           'stage-design',
+    'Development':      'stage-dev',
+    'Concept Design':   'stage-concept',
+    // Refining
+    'Editing':          'stage-edit',
+    'Copy Review':      'stage-copy',
+    'Client Refinement':'stage-refine',
+    'QA Testing':       'stage-qa',
+    'Client UAT':       'stage-uat',
+    // Review / final
+    'Internal QC':      'stage-review',
+    'Client Review':    'stage-review',
+    'Client Approval':  'stage-approval',
+    'Final Delivery':   'stage-delivery',
+    'Scheduled':        'stage-sched',
+    // Done
+    'Approved':         'stage-done',
+    'Published':        'stage-done'
+  };
+
+  // Priority colour helper
+  function getMiniappPriorityColor(priority) {
+    switch (priority) {
+      case 'Urgent': return '#ef4444';
+      case 'High':   return '#f59e0b';
+      case 'Medium': return '#7c3aed';
+      case 'Low':    return '#64748b';
+      default:       return '#7c3aed';
+    }
+  }
+
+  function getMiniappTaskStages(task) {
+    // Read workflow_type directly — no more keyword guessing
+    const wf = (task?.workflow_type || task?.category || 'video').toLowerCase();
+    return (WORKFLOW_TYPES[wf] || WORKFLOW_TYPES['video']).stages;
+  }
+
+  // Toast helper — replaces all alert() calls in task flows
+  function showMiniappToast(msg, type = 'success') {
+    let toast = document.getElementById('miniappToast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'miniappToast';
+      document.body.appendChild(toast);
+    }
+    toast.textContent = msg;
+    toast.style.background = type === 'error' ? '#dc2626' : (type === 'info' ? '#1d4ed8' : '#059669');
+    toast.classList.add('show');
+    clearTimeout(toast._timeout);
+    toast._timeout = setTimeout(() => toast.classList.remove('show'), 2800);
+  }
+
+  // Create task form: workflow type change → update stage dropdown
+  function onMiniappWorkflowChange(wfKey) {
+    const stageSelect = document.getElementById('newTaskStage');
+    if (!stageSelect) return;
+    const wf = WORKFLOW_TYPES[wfKey] || WORKFLOW_TYPES['video'];
+    stageSelect.innerHTML = wf.stages.map(s => `<option value="${s}">${s}</option>`).join('');
+  }
+
+  // Create task form: blueprint preset → set workflow + title hint
+  function onMiniappTemplateChange(presetId) {
+    const wfMap = { 'tmpl-tvc': 'video', 'tmpl-reels': 'social', 'tmpl-branding': 'branding', 'tmpl-web': 'dev' };
+    const wf = wfMap[presetId];
+    if (wf) {
+      const wfSel = document.getElementById('newTaskWorkflow');
+      if (wfSel) { wfSel.value = wf; onMiniappWorkflowChange(wf); }
+    }
+  }
+
+  // Priority pill selection
+  let _miniappSelectedPriority = 'Medium';
+  function selectMiniappPriority(priority) {
+    _miniappSelectedPriority = priority;
+    document.getElementById('newTaskPriority').value = priority;
+    const colors = { Urgent: '#ef4444', High: '#f59e0b', Medium: '#7c3aed', Low: '#94a3b8' };
+    ['Urgent','High','Medium','Low'].forEach(p => {
+      const btn = document.getElementById(`prioBtn${p}`);
+      if (!btn) return;
+      const c = colors[p];
+      if (p === priority) {
+        btn.style.background = c;
+        btn.style.color = '#fff';
+        btn.style.borderColor = c;
+      } else {
+        btn.style.background = 'transparent';
+        btn.style.color = c;
+        btn.style.borderColor = c;
+      }
+    });
+    if (tg?.HapticFeedback) tg.HapticFeedback.selectionChanged();
+  }
+
+  // Quick task filter function
+  let _miniappActiveFilter = 'all';
+  function applyMiniappTaskFilter(filterKey, btn) {
+    _miniappActiveFilter = filterKey;
+    document.querySelectorAll('.fpill').forEach(p => p.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    renderMiniappTaskList(window._miniappTasks || [], window._miniappAllSubtasks || []);
+  }
+
+  function getFilteredMiniappTasks(tasks) {
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const todayStr = today.toISOString().split('T')[0];
+    switch (_miniappActiveFilter) {
+      case 'urgent':
+        return tasks.filter(t => t.priority === 'Urgent');
+      case 'today':
+        return tasks.filter(t => (t.dueDate || t.due_date) === todayStr);
+      case 'overdue': {
+        return tasks.filter(t => {
+          const d = t.dueDate || t.due_date;
+          if (!d) return false;
+          return new Date(d) < today && t.stage !== 'Approved' && t.stage !== 'Published';
+        });
+      }
+      case 'mine':
+        return tasks.filter(t => {
+          const me = currentUser?.name || '';
+          return t.assignee === me;
+        });
+      default:
+        return tasks;
+    }
+  }
+
+  function renderMiniappTaskList(tasks, allSubtasks) {
+    const list = document.getElementById('userTaskList');
+    if (!list) return;
+    const filtered = getFilteredMiniappTasks(tasks);
+    if (!filtered.length) {
+      list.innerHTML = '<div class="empty-state"><div class="empty-icon">✅</div>No tasks in this filter</div>';
+      return;
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    list.innerHTML = filtered.map(t => {
+      const subtasks = allSubtasks.filter(st => st.task_id === t.id || st.taskId === t.id);
+      const subtaskDone = subtasks.filter(st => st.completed).length;
+      const priorityColor = getMiniappPriorityColor(t.priority);
+      const wfKey = (t.workflow_type || t.category || 'video').toLowerCase();
+      const wfIcon = (WORKFLOW_TYPES[wfKey] || WORKFLOW_TYPES['video']).icon;
+
+      // Due date check
+      let dueStr = 'ASAP';
+      let isOverdue = false;
+      const dRaw = t.dueDate || t.due_date;
+      if (dRaw) {
+        const d = new Date(dRaw);
+        if (!isNaN(d)) {
+          dueStr = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+          if (d < today && t.stage !== 'Approved' && t.stage !== 'Published') isOverdue = true;
+        }
+      }
+
+      // Time progress
+      const loggedH = Number(t.loggedHours || 0);
+      const estH = Number(t.estimatedHours || 8);
+      const progress = Math.min(100, Math.round((loggedH / estH) * 100));
+
+      return `
+        <div class="task-item" style="cursor:pointer;" onclick="openTaskDetailSheet('${t.id}')">
+          <div class="task-priority-bar" style="background:${priorityColor};"></div>
+
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+            <div class="task-title" style="margin:0;flex:1;padding-right:0.5rem;">${t.title}</div>
+            <span class="stage-badge ${stageClass[t.stage] || 'stage-brief'}">${t.stage || 'Briefing'}</span>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:0.5rem;margin-top:0.4rem;flex-wrap:wrap;">
+            <span style="font-size:0.72rem;color:var(--muted);">🏢 ${t.client || 'Agency'}</span>
+            <span style="font-size:0.72rem;color:var(--muted);">${wfIcon} ${(WORKFLOW_TYPES[wfKey] || WORKFLOW_TYPES['video']).name}</span>
+            <span style="font-size:0.72rem;${isOverdue ? 'color:#ef4444;font-weight:700;' : 'color:var(--muted);'}">📅 ${dueStr}${isOverdue ? ' ⚠️' : ''}</span>
+            ${subtasks.length > 0 ? `<span style="font-size:0.72rem;color:var(--purple);font-weight:700;">☑️ ${subtaskDone}/${subtasks.length}</span>` : ''}
+          </div>
+
+          <!-- Time Progress Bar -->
+          ${estH > 0 ? `
+          <div style="margin-top:0.5rem;">
+            <div style="display:flex;justify-content:space-between;font-size:0.68rem;color:var(--muted);margin-bottom:0.2rem;">
+              <span>⏱️ ${loggedH}h / ${estH}h</span>
+              <span>${progress}%</span>
+            </div>
+            <div style="height:4px;background:rgba(0,0,0,0.08);border-radius:999px;overflow:hidden;">
+              <div style="width:${progress}%;height:100%;background:${progress >= 100 ? '#059669' : 'var(--purple)'};"></div>
+            </div>
+          </div>` : ''}
+
+          <div style="display:flex;gap:0.4rem;margin-top:0.65rem;" onclick="event.stopPropagation()">
+            <button style="flex:1;padding:0.4rem;font-size:0.75rem;background:linear-gradient(135deg,var(--hero-b),var(--hero-d));color:#fff;border:none;border-radius:10px;font-weight:700;cursor:pointer;" onclick="openTaskDetailSheet('${t.id}')">📱 Open Task</button>
+            <button style="padding:0.4rem 0.75rem;font-size:0.75rem;background:rgba(168,85,247,0.1);color:var(--purple);border:1px solid rgba(168,85,247,0.25);border-radius:10px;font-weight:700;cursor:pointer;" onclick="openTaskDetailSheet('${t.id}')">⏱️ Log Time</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
 
   async function toggleMiniappSubtask(subtaskId, completed) {
     try {
@@ -2222,7 +2503,18 @@
     }
 
     currentSheetTask = task;
+
+    // Populate segmented stage picker
     const stages = getMiniappTaskStages(task);
+
+    const picker = document.getElementById('sheetStagePicker');
+    if (picker) {
+      picker.innerHTML = stages.map(s => {
+        const isCurrent = s === (task.stage || stages[0]);
+        return `<button class="spill ${isCurrent ? 'current' : ''}" onclick="selectSheetStage(this, '${s.replace(/'/g, "\\'")}')"> ${s}</button>`;
+      }).join('');
+    }
+    window._currentSheetPendingStage = task.stage || stages[0];
 
     document.getElementById('sheetTaskTitle').textContent = task.title;
     document.getElementById('sheetStageBadge').textContent = task.stage || stages[0];
@@ -2263,16 +2555,30 @@
     currentSheetTask = null;
   }
 
-  async function advanceMiniappStageFromSheet() {
-    if (!currentSheetTask) return;
-    const stages = getMiniappTaskStages(currentSheetTask);
-    const currIdx = stages.indexOf(currentSheetTask.stage || stages[0]);
-    const nextStage = currIdx >= 0 && currIdx < stages.length - 1 ? stages[currIdx + 1] : null;
-    if (!nextStage) return;
+  function selectSheetStage(btn, stage) {
+    window._currentSheetPendingStage = stage;
+    document.querySelectorAll('.spill').forEach(b => b.classList.remove('current'));
+    btn.classList.add('current');
+    if (tg?.HapticFeedback) tg.HapticFeedback.selectionChanged();
+  }
 
-    await advanceMiniappStage(currentSheetTask.id, nextStage);
-    currentSheetTask.stage = nextStage;
+  async function confirmMiniappStageChange() {
+    if (!currentSheetTask) return;
+    const newStage = window._currentSheetPendingStage || currentSheetTask.stage;
+    if (newStage === currentSheetTask.stage) {
+      showMiniappToast('Task is already at that stage', 'info');
+      return;
+    }
+    await advanceMiniappStage(currentSheetTask.id, newStage);
+    currentSheetTask.stage = newStage;
+    if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+    showMiniappToast(`✓ Moved to ${newStage}`);
     openTaskDetailSheet(currentSheetTask.id);
+  }
+
+  async function advanceMiniappStageFromSheet() {
+    // Legacy compat shim — now delegates to confirmMiniappStageChange
+    await confirmMiniappStageChange();
   }
 
   async function submitMiniappTimeLog() {
@@ -2402,53 +2708,21 @@
       const res = await fetch(`/api/team/tasks?telegramId=${telegramId}`);
       const tasks = await res.json();
       window._miniappTasks = tasks || [];
+
+      // Fetch subtasks
+      window._miniappAllSubtasks = [];
+      try {
+        const dbRes = await fetch('/api/db');
+        const dbData = await dbRes.json();
+        window._miniappAllSubtasks = dbData.subtasks || [];
+      } catch (e) {}
+
       if (!tasks.length) {
         list.innerHTML = '<div class="empty-state"><div class="empty-icon">✅</div>No active tasks right now</div>';
         return;
       }
 
-      // Fetch subtasks for rendering
-      let allSubtasks = [];
-      try {
-        const dbRes = await fetch('/api/db');
-        const dbData = await dbRes.json();
-        allSubtasks = dbData.subtasks || [];
-      } catch (e) {}
-
-      list.innerHTML = tasks.map(t => {
-        const subtasks = allSubtasks.filter(st => st.task_id === t.id || st.taskId === t.id);
-        const subHtml = subtasks.map(st => `
-          <div style="display:flex; align-items:center; gap:0.4rem; margin-top:0.3rem; font-size:0.75rem; color:${st.completed ? 'var(--muted)' : 'var(--text)'}; text-decoration:${st.completed ? 'line-through' : 'none'};">
-            <input type="checkbox" ${st.completed ? 'checked' : ''} onchange="toggleMiniappSubtask('${st.id}', this.checked)" style="accent-color:var(--purple); cursor:pointer; transform:scale(1.1);">
-            <span>${st.title}</span>
-          </div>
-        `).join('');
-
-        return `
-          <div class="task-item" style="cursor:pointer;" onclick="openTaskDetailSheet('${t.id}')">
-            <div style="display:flex;justify-content:space-between;align-items:center;">
-              <div class="task-title" style="margin:0;">${t.title}</div>
-              <span class="stage-badge ${stageClass[t.stage] || 'stage-brief'}">${t.stage}</span>
-            </div>
-            <div class="task-meta" style="margin-top:0.3rem;">
-              <span>🏢 ${t.client}</span>
-              <span>📅 ${t.dueDate || 'ASAP'}</span>
-            </div>
-            ${subtasks.length > 0 ? `
-              <div style="margin-top:0.5rem; padding:0.4rem; background:rgba(0,0,0,0.03); border-radius:6px;" onclick="event.stopPropagation()">
-                <div style="font-size:0.68rem; font-weight:700; color:var(--purple); margin-bottom:0.2rem;">☑️ Subtasks Checklist:</div>
-                ${subHtml}
-              </div>
-            ` : ''}
-            
-            <!-- Phase 2: Action Bar -->
-            <div style="display:flex; gap:0.4rem; margin-top:0.6rem;" onclick="event.stopPropagation()">
-              <button class="btn" style="flex:1; padding:0.4rem; font-size:0.75rem; background:linear-gradient(135deg,var(--hero-b),var(--hero-d)); color:#fff; border:none; border-radius:10px; font-weight:700;" onclick="openTaskDetailSheet('${t.id}')">📱 Open Task Sheet</button>
-              <button class="btn" style="padding:0.4rem 0.7rem; font-size:0.75rem; background:rgba(168, 85, 247, 0.12); color:var(--purple); border:1px solid rgba(168,85,247,0.25); border-radius:10px; font-weight:700;" onclick="logMiniappTime('${t.id}')">⏱️ Log Time</button>
-            </div>
-          </div>
-        `;
-      }).join('');
+      renderMiniappTaskList(window._miniappTasks, window._miniappAllSubtasks);
     } catch (e) {
       list.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div>Couldn\'t load tasks</div>';
     }
@@ -2775,7 +3049,9 @@
     sseConnection.onmessage = (e) => {
       try {
         const payload = JSON.parse(e.data);
-        if (payload.type === 'task_update' || payload.type === 'subtask_update') loadUserTasks();
+        if (payload.type === 'task_update' || payload.type === 'subtask_update') {
+          loadUserTasks();
+        }
       } catch(err) {}
     };
     sseConnection.onerror = () => {
