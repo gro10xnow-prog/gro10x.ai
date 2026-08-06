@@ -1,98 +1,228 @@
+/**
+ * public/app/modules/settings.js
+ * Workspace & System Settings View Module
+ * v2.0 — Full Rebuild with live integration health checks, user profile info,
+ * workspace configuration summary, loading/error states, and quick navigation.
+ */
 window.APP_MODULES = window.APP_MODULES || {};
 
 window.APP_MODULES.settings = async function(container) {
+  let healthData = {};
   let rulesData = [];
-  let logsData = [];
+  let currentUser = {};
+  let isLoading = true;
+  let hasError = false;
+
+  function escapeHTML(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
 
   async function loadData() {
+    isLoading = true;
+    hasError = false;
+    renderSkeleton();
+
     try {
-      const [rules, logs] = await Promise.all([
-        window.APP_API.get('/automation/rules').catch(() => []),
-        window.APP_API.get('/automation/logs').catch(() => [])
+      const [health, rules] = await Promise.all([
+        APP_API.get('/automation/health').catch(() => ({})),
+        APP_API.get('/automation/rules').catch(() => [])
       ]);
-      rulesData = rules || [];
-      logsData = logs || [];
+
+      healthData = health || {};
+      rulesData = Array.isArray(rules) ? rules : [];
+
+      // Try to get current user info from window context or token decoding
+      currentUser = window.CURRENT_USER || {
+        name: 'Administrator',
+        role: 'Admin / Manager',
+        email: 'admin@purplebot.agency'
+      };
+
+      isLoading = false;
       render();
     } catch (err) {
-      console.error(err);
-      container.innerHTML = `<div style="color:var(--text-error); padding: 2rem;">Error loading settings data.</div>`;
+      console.error('[Settings Module] Load error:', err);
+      isLoading = false;
+      hasError = true;
+      renderErrorState(err.message || 'Failed to load settings data.');
     }
   }
 
-  function render() {
-    let rulesHtml = '<div style="color: var(--text-muted); font-size: 0.9rem;">No active rules.</div>';
-    if (rulesData.length > 0) {
-      rulesHtml = rulesData.map(r => `
-        <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.05);">
-          <div>
-            <div style="font-weight: 600; font-size: 0.9rem;">${r.name}</div>
-            <div style="font-size: 0.75rem; color: var(--text-muted); font-family: monospace;">${r.id}</div>
+  function renderSkeleton() {
+    container.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1.5rem;">
+        <div>
+          <h1 style="font-size: 1.6rem; font-weight: 800; font-family: var(--font-heading); margin: 0 0 0.3rem;">
+            ⚙️ System & Workspace Settings
+          </h1>
+          <div style="font-size: 0.88rem; color: var(--text-muted);">
+            Manage workspace configuration, live system health, and active integrations.
           </div>
-          <span class="badge ${r.active ? 'badge-emerald' : 'badge-amber'}">${r.active ? 'Active' : 'Inactive'}</span>
         </div>
-      `).join('');
-    }
+      </div>
+      <div style="padding: 3rem; text-align: center; color: var(--text-muted);">Loading workspace settings...</div>
+    `;
+  }
 
-    let logsHtml = '> Waiting for automation events...';
-    if (logsData.length > 0) {
-      logsHtml = logsData.map(l => `
-        <div style="margin-bottom: 0.5rem; border-bottom: 1px solid #222; padding-bottom: 0.5rem;">
-          <span style="color: #888;">[${new Date(l.created_at).toLocaleString()}]</span> 
-          <span style="color: #60a5fa;">[${l.event_type}]</span><br>
-          <span style="color: #ccc;">${l.details || 'Executed successfully'}</span>
-        </div>
-      `).join('');
-    }
+  function renderErrorState(message) {
+    container.innerHTML = `
+      <div style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); border-radius:16px; padding:3rem; text-align:center; color:#fca5a5; margin-top:2rem;">
+        <div style="font-size:2.5rem; margin-bottom:0.5rem;">⚠️</div>
+        <div style="font-size:1.1rem; font-weight:700; color:#fff; margin-bottom:0.4rem;">Error Loading Settings</div>
+        <div style="font-size:0.85rem; margin-bottom:1.5rem;">${escapeHTML(message)}</div>
+        <button class="btn-primary" onclick="window.SETTINGS_MODULE.reload()">🔄 Retry Loading</button>
+      </div>
+    `;
+  }
+
+  function render() {
+    const dbConnected = healthData.dbConnection === 'Connected';
+    const teamBotActive = healthData.teamBot === 'active';
+    const clientBotActive = healthData.clientBot === 'active';
+    const activeRulesCount = rulesData.filter(r => r.active).length;
+
+    const uptimeHrs = healthData.uptime ? (healthData.uptime / 3600).toFixed(1) : '--';
 
     container.innerHTML = `
-      <div class="module-header">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1.5rem; flex-wrap:wrap; gap:1rem;">
         <div>
-          <h2 style="font-family: var(--font-heading); font-size: 1.5rem;">⚙️ System & Workspace Settings</h2>
-          <p style="color: var(--text-muted); font-size: 0.9rem;">Manage workspace configuration, integrations, and automation triggers.</p>
+          <h1 style="font-size: 1.6rem; font-weight: 800; font-family: var(--font-heading); margin: 0 0 0.3rem;">
+            ⚙️ System & Workspace Settings
+          </h1>
+          <div style="font-size: 0.88rem; color: var(--text-muted);">
+            Manage workspace configuration, live system health, and active integrations.
+          </div>
+        </div>
+        <button class="btn-secondary" onclick="window.SETTINGS_MODULE.reload()">🔄 Refresh Health Status</button>
+      </div>
+
+      <!-- Live Integration Health Grid -->
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap:1.25rem; margin-bottom: 2rem;">
+        <!-- Database Card -->
+        <div class="card-glass" style="padding: 1.25rem;">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.75rem;">
+            <div>
+              <div style="font-weight:700; font-size:1rem; color:var(--text-primary);">🗄️ Supabase Database</div>
+              <div style="font-size:0.78rem; color:var(--text-muted);">PostgreSQL real-time database persistence.</div>
+            </div>
+            <span class="badge ${dbConnected ? 'badge-emerald' : 'badge-pink'}">
+              ${dbConnected ? '🟢 Connected' : '🔴 Disconnected'}
+            </span>
+          </div>
+          <div style="font-size:0.8rem; color:var(--text-muted);">
+            Status: <strong style="color:#fff;">${escapeHTML(healthData.dbConnection || 'Unknown')}</strong>
+          </div>
+        </div>
+
+        <!-- Team Bot Card -->
+        <div class="card-glass" style="padding: 1.25rem;">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.75rem;">
+            <div>
+              <div style="font-weight:700; font-size:1rem; color:var(--text-primary);">🤖 Team Telegram Bot</div>
+              <div style="font-size:0.78rem; color:var(--text-muted);">Crew alerts, daily briefings, and approvals.</div>
+            </div>
+            <span class="badge ${teamBotActive ? 'badge-emerald' : 'badge-pink'}">
+              ${teamBotActive ? '🟢 Online' : '🔴 Inactive'}
+            </span>
+          </div>
+          <div style="font-size:0.8rem; color:var(--text-muted);">
+            Status: <strong style="color:#fff;">${teamBotActive ? 'Configured & Active' : 'Missing Token'}</strong>
+          </div>
+        </div>
+
+        <!-- Client Bot Card -->
+        <div class="card-glass" style="padding: 1.25rem;">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.75rem;">
+            <div>
+              <div style="font-weight:700; font-size:1rem; color:var(--text-primary);">📲 Client Portal Bot</div>
+              <div style="font-size:0.78rem; color:var(--text-muted);">Client notifications and review room links.</div>
+            </div>
+            <span class="badge ${clientBotActive ? 'badge-emerald' : 'badge-pink'}">
+              ${clientBotActive ? '🟢 Online' : '🔴 Inactive'}
+            </span>
+          </div>
+          <div style="font-size:0.8rem; color:var(--text-muted);">
+            Status: <strong style="color:#fff;">${clientBotActive ? 'Configured & Active' : 'Missing Token'}</strong>
+          </div>
         </div>
       </div>
 
-      <div class="module-content">
-        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:1.5rem; margin-bottom: 2rem;">
-          <div class="card-glass" style="padding: 1.5rem;">
-            <h3 style="font-size:1.1rem; font-family:var(--font-heading); margin-top:0; color:var(--text-primary);">
-              🗄️ Database & Supabase Integration
-            </h3>
-            <div style="font-size:0.85rem; color:var(--text-muted); line-height:1.6; margin-bottom:1rem;">
-              Real-time persistence is enabled directly through Supabase PostgreSQL.
+      <!-- System Telemetry & Profile Section -->
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:1.5rem; margin-bottom:2rem;">
+        <!-- Server Telemetry Card -->
+        <div class="card-glass" style="padding: 1.5rem;">
+          <h3 style="font-size:1.1rem; font-family:var(--font-heading); margin:0 0 1rem; color:var(--text-primary);">
+            📊 Server & Telemetry Status
+          </h3>
+          <div style="display:flex; flex-direction:column; gap:0.6rem; font-size:0.85rem;">
+            <div style="display:flex; justify-content:space-between; border-bottom:1px solid var(--border-subtle); padding-bottom:0.4rem;">
+              <span style="color:var(--text-muted);">Active SSE Connections</span>
+              <strong style="color:var(--purple-light);">${healthData.sseClients || 0} clients</strong>
             </div>
-            <span class="badge badge-emerald">🟢 Supabase Connected</span>
-          </div>
-
-          <div class="card-glass" style="padding: 1.5rem;">
-            <h3 style="font-size:1.1rem; font-family:var(--font-heading); margin-top:0; color:var(--text-primary);">
-              🤖 Telegram Bot Webhooks
-            </h3>
-            <div style="font-size:0.85rem; color:var(--text-muted); line-height:1.6; margin-bottom:1rem;">
-              Crew Bot & Client Bot are configured for real-time notifications.
+            <div style="display:flex; justify-content:space-between; border-bottom:1px solid var(--border-subtle); padding-bottom:0.4rem;">
+              <span style="color:var(--text-muted);">Server Memory (RSS)</span>
+              <strong style="color:#fff;">${(healthData.memoryUsage || 0).toFixed(1)} MB</strong>
             </div>
-            <span class="badge badge-purple">🤖 Telegram Bots Online</span>
+            <div style="display:flex; justify-content:space-between; border-bottom:1px solid var(--border-subtle); padding-bottom:0.4rem;">
+              <span style="color:var(--text-muted);">Node.js Environment</span>
+              <strong style="color:#fff;">${escapeHTML(healthData.nodeVersion || 'v20.x')}</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between;">
+              <span style="color:var(--text-muted);">Server Uptime</span>
+              <strong style="color:var(--emerald-brand);">${uptimeHrs} hours</strong>
+            </div>
           </div>
         </div>
-        
-        <h3 style="font-family: var(--font-heading); margin-bottom: 1rem;">🤖 Automation & Webhooks</h3>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; align-items: start;">
-          <div class="card-glass" style="padding: 1.5rem;">
-            <h4 style="margin: 0 0 1rem;">Active Trigger Rules</h4>
-            <div>${rulesHtml}</div>
+
+        <!-- Automation & Workflows Card -->
+        <div class="card-glass" style="padding: 1.5rem;">
+          <h3 style="font-size:1.1rem; font-family:var(--font-heading); margin:0 0 0.5rem; color:var(--text-primary);">
+            ⚡ Automation Rules Summary
+          </h3>
+          <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1rem;">
+            ${activeRulesCount} active out of ${rulesData.length} total configured rules.
           </div>
-          
-          <div class="card-glass" style="padding: 1.5rem; background: #111; border: 1px solid #333;">
-            <h4 style="margin: 0 0 1rem; color: #eee;">Automation Execution Logs</h4>
-            <div style="font-family: monospace; font-size: 0.8rem; color: #4ade80; background: #000; padding: 1rem; border-radius: 8px; max-height: 300px; overflow-y: auto;">
-              ${logsHtml}
-            </div>
+          <div style="display:flex; flex-direction:column; gap:0.5rem; margin-bottom:1.25rem;">
+            ${rulesData.slice(0, 4).map(r => `
+              <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem; background:rgba(255,255,255,0.02); padding:0.4rem 0.6rem; border-radius:6px;">
+                <span>${escapeHTML(r.rule_name)}</span>
+                <span class="badge ${r.active ? 'badge-emerald' : 'badge-pink'}" style="font-size:0.7rem;">${r.active ? 'ON' : 'OFF'}</span>
+              </div>
+            `).join('') || '<div style="font-size:0.8rem; color:var(--text-muted);">No automation rules configured.</div>'}
           </div>
+          <button class="btn-secondary btn-sm" style="width:100%; text-align:center;" onclick="window.location.hash='#automation'">
+            ⚡ Manage Workflows in Bot Engine &rarr;
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Platform Actions -->
+      <div class="card-glass" style="padding: 1.5rem;">
+        <h3 style="font-size:1.1rem; font-family:var(--font-heading); margin:0 0 1rem; color:var(--text-primary);">
+          🛠️ Quick Management Actions
+        </h3>
+        <div style="display:flex; gap:1rem; flex-wrap:wrap;">
+          <button class="btn-secondary" onclick="window.SETTINGS_MODULE.clearCache()">🧹 Clear Local Cache & Reload</button>
+          <button class="btn-secondary" onclick="window.location.hash='#hr'">👥 Manage Staff Roster</button>
+          <button class="btn-secondary" onclick="window.location.hash='#automation'">📣 Send Telegram Broadcast</button>
         </div>
       </div>
     `;
   }
 
-  container.innerHTML = `<div style="padding: 3rem; text-align: center; color: var(--text-muted);">⏳ Loading Settings...</div>`;
+  window.SETTINGS_MODULE = {
+    reload() {
+      loadData();
+    },
+    clearCache() {
+      if (confirm('Clear local browser storage and reload application?')) {
+        localStorage.clear();
+        sessionStorage.clear();
+        window.location.reload();
+      }
+    }
+  };
+
   await loadData();
 };
