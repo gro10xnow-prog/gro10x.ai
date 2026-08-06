@@ -46,15 +46,45 @@ function registerLegacyTeamMenus(teamBot, readDB) {
         });
       });
 
-      // 📈 Lead Pipeline
+      // 📈 Lead Pipeline — reads from Supabase (production-safe)
       teamBot.onText(/📈 Lead Pipeline/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = await readDB();
-        const leads = dbData.leads || [];
+        let leads = [];
 
-        const active = leads.filter(l => l.status !== 'Won' && l.status !== 'Lost');
-        const won = leads.filter(l => l.status === 'Won');
-        const pipelineVal = active.reduce((s, l) => s + (l.value || 0), 0);
+        try {
+          const { supabase, isSupabaseConfigured } = require('../../supabase');
+          if (isSupabaseConfigured()) {
+            const { data } = await supabase
+              .from('leads')
+              .select('id, company, contact_person, stage, value, follow_up_date, created_at')
+              .order('created_at', { ascending: false });
+            leads = data || [];
+          } else {
+            // Fallback: local db.json (dev only)
+            const dbData = await readDB();
+            leads = dbData.leads || [];
+          }
+        } catch (e) {
+          const dbData = await readDB();
+          leads = dbData.leads || [];
+        }
+
+        const active = leads.filter(l => !['Won / Closed', 'Lost', 'Spam'].includes(l.stage));
+        const won = leads.filter(l => l.stage === 'Won / Closed');
+        const lost = leads.filter(l => l.stage === 'Lost');
+        const winRate = (won.length + lost.length) > 0
+          ? Math.round((won.length / (won.length + lost.length)) * 100)
+          : 0;
+
+        const today = new Date().toISOString().split('T')[0];
+        const followUpsDue = active.filter(l => l.follow_up_date && l.follow_up_date <= today).length;
+
+        const stageCounts = {
+          'New Inquiry': active.filter(l => l.stage === 'New Inquiry' || !l.stage).length,
+          'Contacted': active.filter(l => l.stage === 'Contacted').length,
+          'Proposal Sent': active.filter(l => l.stage === 'Proposal Sent').length,
+          'Meeting Scheduled': active.filter(l => l.stage === 'Meeting Scheduled').length,
+        };
 
         if (!leads.length) {
           return teamBot.sendMessage(chatId,
@@ -64,17 +94,21 @@ function registerLegacyTeamMenus(teamBot, readDB) {
         }
 
         let text = `📈 *Business Development Pipeline*\n\n`;
-        text += `• Active leads: *${active.length}*\n`;
-        text += `• Won (all time): *${won.length}*\n`;
-        if (pipelineVal > 0) text += `• Pipeline value: *BDT ${pipelineVal.toLocaleString()}*\n`;
-        text += `\n`;
+        text += `• Active in pipeline: *${active.length}*\n`;
+        text += `• Won (all time): *${won.length}* | Win Rate: *${winRate}%*\n`;
+        if (followUpsDue > 0) text += `• ⏰ Follow-ups due today: *${followUpsDue}*\n`;
+        text += `\n*Stage Breakdown:*\n`;
+        text += `🟡 New Inquiry: *${stageCounts['New Inquiry']}*\n`;
+        text += `🔵 Contacted: *${stageCounts['Contacted']}*\n`;
+        text += `🟣 Proposal Sent: *${stageCounts['Proposal Sent']}*\n`;
+        text += `🩷 Meeting Scheduled: *${stageCounts['Meeting Scheduled']}*\n`;
 
         if (active.length) {
-          text += `*Open Leads:*\n`;
-          active.slice(0, 8).forEach((l, i) => {
-            text += `${i + 1}. *${l.clientName || l.company || 'Lead'}*`;
-            if (l.status) text += ` — ${l.status}`;
-            if (l.value) text += ` (BDT ${Number(l.value).toLocaleString()})`;
+          text += `\n*🔥 Top Hot Leads:*\n`;
+          active.slice(0, 6).forEach((l, i) => {
+            text += `${i + 1}. *${l.company || 'Unknown Brand'}*`;
+            if (l.contact_person) text += ` (${l.contact_person})`;
+            if (l.stage) text += ` — ${l.stage}`;
             text += '\n';
           });
         }
@@ -83,7 +117,7 @@ function registerLegacyTeamMenus(teamBot, readDB) {
           parse_mode: 'Markdown',
           reply_markup: {
             inline_keyboard: [[
-              { text: '🌐 Open Leads Dashboard', url: 'https://purpleos-iota.vercel.app/admin?tab=leads' }
+              { text: '🌐 Open Leads Dashboard', url: 'https://purpleos-iota.vercel.app/app#leads' }
             ]]
           }
         });
