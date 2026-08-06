@@ -6,26 +6,49 @@ function registerLegacyTeamMenus(teamBot, readDB) {
       // MEHEDI CLIENT & GROWTH COMMANDS
       // ══════════════════════════════════════════
 
-      // 🎯 My Clients — full portfolio overview
+      // 🎯 My Clients — full portfolio overview (reads from Supabase)
       teamBot.onText(/🎯 My Clients/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = await readDB();
-        const clients = dbData.clients || [];
-        const tasks = dbData.tasks || [];
-        const invoices = dbData.invoices || [];
+        let clients = [];
+        let tasks = [];
+        let invoices = [];
+
+        try {
+          const { supabase, isSupabaseConfigured } = require('../../supabase');
+          if (isSupabaseConfigured()) {
+            const [cRes, tRes, iRes] = await Promise.all([
+              supabase.from('clients').select('id, name, status, category, total_spent').order('name'),
+              supabase.from('tasks').select('id, client, stage'),
+              supabase.from('invoices').select('id, client_name, status')
+            ]);
+            clients = cRes.data || [];
+            tasks = tRes.data || [];
+            invoices = iRes.data || [];
+          } else {
+            const dbData = await readDB();
+            clients = dbData.clients || [];
+            tasks = dbData.tasks || [];
+            invoices = dbData.invoices || [];
+          }
+        } catch (e) {
+          const dbData = await readDB();
+          clients = dbData.clients || [];
+          tasks = dbData.tasks || [];
+          invoices = dbData.invoices || [];
+        }
 
         if (!clients.length) {
           return teamBot.sendMessage(chatId, `🎯 *Client Portfolio*\n\nNo clients in the system yet.`, { parse_mode: 'Markdown' });
         }
 
-        const active = clients.filter(c => c.status === 'Active Retainer');
+        const active = clients.filter(c => (c.status || '').toLowerCase() === 'active retainer' || !c.status);
         const overdueInvs = invoices.filter(i => i.status !== 'Paid' && i.status !== 'Draft');
 
         let text = `🎯 *Client Portfolio — ${active.length} Active Retainers*\n\n`;
         active.slice(0, 10).forEach((c, i) => {
           const clientTasks = tasks.filter(t => t.client === c.name);
           const inReview = clientTasks.filter(t => t.stage === 'Client Review').length;
-          const overdue = overdueInvs.filter(inv => inv.clientName === c.name).length;
+          const overdue = overdueInvs.filter(inv => (inv.client_name || inv.clientName) === c.name).length;
           text += `${i + 1}. *${c.name}*`;
           if (inReview) text += ` — ⏳ ${inReview} in review`;
           if (overdue) text += ` — ⚠️ ${overdue} invoice(s) overdue`;
@@ -40,7 +63,7 @@ function registerLegacyTeamMenus(teamBot, readDB) {
           parse_mode: 'Markdown',
           reply_markup: {
             inline_keyboard: [[
-              { text: '🌐 Open Full Client Portal', url: 'https://purpleos-iota.vercel.app/admin?tab=clients' }
+              { text: '🌐 Open Full Client Portal', url: 'https://purpleos-iota.vercel.app/app#crm' }
             ]]
           }
         });

@@ -99,16 +99,32 @@ async function initPartnerPortal() {
       headerNameEl.innerText = `🏢 Workspace: ${currentPartnerClient}`;
     }
 
-    // Fetch Isolated Client Data
-    const [revRes, invRes, postRes] = await Promise.all([
-      fetch('/api/reviews'),
-      fetch('/api/invoices'),
-      fetch('/api/posts')
-    ]);
-
-    if (revRes.ok) partnerReviews = await revRes.json();
-    if (invRes.ok) partnerInvoices = await invRes.json();
-    if (postRes.ok) partnerPosts = await postRes.json();
+    // Securely Fetch Isolated Client Workspace Data via RBAC Endpoint
+    try {
+      const dashRes = await fetch(`/api/clients/${userClientId}/dashboard`);
+      if (dashRes.ok) {
+        const dashData = await dashRes.json();
+        partnerReviews = dashData.reviews || [];
+        partnerInvoices = dashData.invoices || [];
+        partnerPosts = dashData.posts || [];
+        if (dashData.client && dashData.client.name) {
+          currentPartnerClient = dashData.client.name;
+          if (headerNameEl) headerNameEl.innerText = `🏢 Workspace: ${currentPartnerClient}`;
+        }
+      } else {
+        // Fallback to isolated query parameters if direct endpoint degrades
+        const [revRes, invRes, postRes] = await Promise.all([
+          fetch(`/api/reviews?clientId=${userClientId}`),
+          fetch(`/api/invoices?clientId=${userClientId}`),
+          fetch(`/api/posts?clientId=${userClientId}`)
+        ]);
+        if (revRes.ok) partnerReviews = await revRes.json();
+        if (invRes.ok) partnerInvoices = await invRes.json();
+        if (postRes.ok) partnerPosts = await postRes.json();
+      }
+    } catch (e) {
+      console.warn('Isolated dashboard fetch error, using client scope:', e);
+    }
 
     renderPartnerView();
   } catch (err) {

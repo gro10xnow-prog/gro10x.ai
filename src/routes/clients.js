@@ -8,6 +8,16 @@ const { supabase, isSupabaseConfigured } = require('../services/supabase');
 
 function mapClient(c) {
   if (!c) return null;
+  const rawSpent = c.total_spent !== undefined ? c.total_spent : c.totalSpent;
+  const parsedSpent = typeof rawSpent === 'number' ? rawSpent : parseFloat(String(rawSpent || 0).replace(/[^0-9.]/g, '')) || 0;
+  
+  let campaignsVal = c.active_campaigns !== undefined ? c.active_campaigns : c.activeCampaigns;
+  if (Array.isArray(campaignsVal)) {
+    campaignsVal = campaignsVal.length;
+  } else {
+    campaignsVal = Number(campaignsVal) || 1;
+  }
+
   return {
     id: c.id,
     name: c.name || '',
@@ -18,8 +28,8 @@ function mapClient(c) {
     phone: c.phone || '',
     whatsapp: c.whatsapp || c.phone || '',
     status: c.status || 'Active Retainer',
-    totalSpent: Number(c.total_spent || c.totalSpent) || 0,
-    activeCampaigns: Number(c.active_campaigns || c.activeCampaigns) || 1,
+    totalSpent: parsedSpent,
+    activeCampaigns: campaignsVal,
     pocs: c.pocs && Array.isArray(c.pocs) ? c.pocs : [],
     createdAt: c.created_at || c.createdAt
   };
@@ -240,94 +250,111 @@ router.get('/:id/dashboard', requireAuth, requireClientOwnership, async (req, re
 router.get('/:id/timeline', requireAuth, async (req, res) => {
   const { id } = req.params;
   
-  if (!isSupabaseConfigured()) return res.status(503).json({ error: 'Database unavailable' });
+  if (isSupabaseConfigured()) {
+    try {
+      const { data: client } = await supabase.from('clients').select('*').eq('id', id).maybeSingle();
 
-  try {
-    const { data: client } = await supabase.from('clients').select('*').eq('id', id).maybeSingle();
-    const clientName = client ? client.name : '';
+      // Fetch related records
+      const [tasksRes, invoicesRes, reviewsRes, meetingsRes] = await Promise.all([
+        supabase.from('tasks').select('id, title, status, stage, created_at, updated_at').eq('client_id', id),
+        supabase.from('invoices').select('id, project_name, amount, status, issue_date').eq('client_id', id),
+        supabase.from('reviews').select('id, video_title, status, created_at').eq('client_id', id),
+        supabase.from('client_meetings').select('*').eq('client_id', id).order('meeting_date', { ascending: false })
+      ]);
 
-    // Fetch related records
-    const [tasksRes, invoicesRes, reviewsRes, meetingsRes] = await Promise.all([
-      supabase.from('tasks').select('id, title, status, stage, created_at, updated_at').eq('client_id', id),
-      supabase.from('invoices').select('id, project_name, amount, status, issue_date').eq('client_id', id),
-      supabase.from('reviews').select('id, video_title, status, created_at').eq('client_id', id),
-      supabase.from('client_meetings').select('*').eq('client_id', id).order('meeting_date', { ascending: false })
-    ]);
+      const timeline = [];
 
-    const timeline = [];
-
-    (tasksRes.data || []).forEach(t => {
-      timeline.push({
-        type: 'task',
-        title: `Task: ${t.title}`,
-        description: `Stage: ${t.stage || t.status}`,
-        date: t.updated_at || t.created_at,
-        icon: '📋',
-        color: 'var(--blue-brand)'
+      (tasksRes.data || []).forEach(t => {
+        timeline.push({
+          type: 'task',
+          title: `Task: ${t.title}`,
+          description: `Stage: ${t.stage || t.status}`,
+          date: t.updated_at || t.created_at,
+          icon: '📋',
+          color: 'var(--blue-brand)'
+        });
       });
-    });
 
-    (invoicesRes.data || []).forEach(i => {
-      timeline.push({
-        type: 'invoice',
-        title: `Invoice Generated: BDT ${i.amount}`,
-        description: `Project: ${i.project_name || 'N/A'} - Status: ${i.status}`,
-        date: i.issue_date,
-        icon: '💳',
-        color: 'var(--emerald-accent)'
+      (invoicesRes.data || []).forEach(i => {
+        timeline.push({
+          type: 'invoice',
+          title: `Invoice Generated: BDT ${i.amount}`,
+          description: `Project: ${i.project_name || 'N/A'} - Status: ${i.status}`,
+          date: i.issue_date,
+          icon: '💳',
+          color: 'var(--emerald-accent)'
+        });
       });
-    });
 
-    (reviewsRes.data || []).forEach(r => {
-      timeline.push({
-        type: 'review',
-        title: `Deliverable Review: ${r.video_title}`,
-        description: `Status: ${r.status}`,
-        date: r.created_at,
-        icon: '🎬',
-        color: 'var(--purple-primary)'
+      (reviewsRes.data || []).forEach(r => {
+        timeline.push({
+          type: 'review',
+          title: `Deliverable Review: ${r.video_title}`,
+          description: `Status: ${r.status}`,
+          date: r.created_at,
+          icon: '🎬',
+          color: 'var(--purple-primary)'
+        });
       });
-    });
 
-    // Sort descending by date
-    timeline.sort((a, b) => new Date(b.date) - new Date(a.date));
+      timeline.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-    // Calculate Health Score (1-100)
-    let healthScore = 80; // Base score
-    const invoices = invoicesRes.data || [];
-    const paidInvoices = invoices.filter(i => i.status === 'Paid');
-    const overdueInvoices = invoices.filter(i => i.status === 'Overdue');
-    
-    if (invoices.length > 0) {
-      healthScore += (paidInvoices.length / invoices.length) * 20; // Up to +20 for paid ratio
-    }
-    if (overdueInvoices.length > 0) {
-      healthScore -= overdueInvoices.length * 10; // -10 for each overdue
-    }
-    
-    const tasks = tasksRes.data || [];
-    if (tasks.length > 5) healthScore += 5; // Active engagement bonus
-    
-    // Clamp score
-    healthScore = Math.max(1, Math.min(100, Math.floor(healthScore)));
-    
-    let healthLabel = 'Healthy';
-    if (healthScore < 50) healthLabel = 'At Risk';
-    else if (healthScore < 70) healthLabel = 'Needs Attention';
-    else if (healthScore >= 90) healthLabel = 'Excellent';
-
-    res.json({
-      success: true,
-      timeline,
-      meetings: meetingsRes.data || [],
-      health: {
-        score: healthScore,
-        label: healthLabel
+      let healthScore = 80;
+      const invoices = invoicesRes.data || [];
+      const paidInvoices = invoices.filter(i => i.status === 'Paid');
+      const overdueInvoices = invoices.filter(i => i.status === 'Overdue');
+      
+      if (invoices.length > 0) {
+        healthScore += (paidInvoices.length / invoices.length) * 20;
       }
-    });
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch timeline' });
+      if (overdueInvoices.length > 0) {
+        healthScore -= overdueInvoices.length * 10;
+      }
+      
+      const tasks = tasksRes.data || [];
+      if (tasks.length > 5) healthScore += 5;
+      
+      healthScore = Math.max(1, Math.min(100, Math.floor(healthScore)));
+      
+      let healthLabel = 'Healthy';
+      if (healthScore < 50) healthLabel = 'At Risk';
+      else if (healthScore < 70) healthLabel = 'Needs Attention';
+      else if (healthScore >= 90) healthLabel = 'Excellent';
+
+      return res.json({
+        success: true,
+        timeline,
+        meetings: meetingsRes.data || [],
+        health: { score: healthScore, label: healthLabel }
+      });
+    } catch (err) {
+      console.warn('Timeline Supabase fetch error:', err.message);
+    }
   }
+
+  // Local DB Fallback (dev mode)
+  const db = await readDB();
+  const client = (db.clients || []).find(c => c.id === id);
+  const cName = (client?.name || '').toLowerCase();
+
+  const tasks = (db.tasks || []).filter(t => t.clientId === id || (t.client || '').toLowerCase().includes(cName));
+  const invoices = (db.invoices || []).filter(i => i.clientId === id || (i.clientName || '').toLowerCase().includes(cName));
+  const reviews = (db.reviews || []).filter(r => r.clientId === id || (r.client || '').toLowerCase().includes(cName));
+  const meetings = (db.clientMeetings || []).filter(m => m.client_id === id);
+
+  const timeline = [];
+  tasks.forEach(t => timeline.push({ type: 'task', title: `Task: ${t.title}`, description: `Stage: ${t.stage || t.status}`, date: t.updatedAt || t.createdAt, icon: '📋', color: 'var(--blue-brand)' }));
+  invoices.forEach(i => timeline.push({ type: 'invoice', title: `Invoice: BDT ${i.amount}`, description: `Status: ${i.status}`, date: i.date || i.issueDate, icon: '💳', color: 'var(--emerald-accent)' }));
+  reviews.forEach(r => timeline.push({ type: 'review', title: `Review: ${r.projectName || r.video_title}`, description: `Status: ${r.status}`, date: r.createdAt, icon: '🎬', color: 'var(--purple-primary)' }));
+
+  timeline.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+
+  res.json({
+    success: true,
+    timeline,
+    meetings,
+    health: { score: 85, label: 'Healthy' }
+  });
 });
 
 // POST /api/clients/:id/meetings
@@ -335,17 +362,25 @@ router.post('/:id/meetings', requireAuth, async (req, res) => {
   const { id } = req.params;
   const { meeting_date, notes, action_items } = req.body;
 
-  if (!isSupabaseConfigured()) return res.status(503).json({ error: 'Database unavailable' });
+  if (isSupabaseConfigured()) {
+    const { data, error } = await supabase.from('client_meetings').insert([{
+      client_id: id,
+      meeting_date,
+      notes,
+      action_items
+    }]).select('*').single();
 
-  const { data, error } = await supabase.from('client_meetings').insert([{
-    client_id: id,
-    meeting_date,
-    notes,
-    action_items
-  }]).select('*').single();
+    if (!error) return res.json({ success: true, meeting: data });
+  }
 
-  if (error) return res.status(500).json({ error: error.message });
-  res.json({ success: true, meeting: data });
+  // Fallback to local DB
+  const db = await readDB();
+  db.clientMeetings = db.clientMeetings || [];
+  const newMeeting = { id: `MTG-${Date.now()}`, client_id: id, meeting_date, notes, action_items, created_at: new Date().toISOString() };
+  db.clientMeetings.unshift(newMeeting);
+  try { writeDB(db); } catch (e) {}
+
+  res.json({ success: true, meeting: newMeeting });
 });
 
 module.exports = router;
