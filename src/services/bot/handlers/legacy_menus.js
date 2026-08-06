@@ -227,36 +227,44 @@ function registerLegacyTeamMenus(teamBot, readDB) {
       // KAFIL BIZOPS COMMANDS
       // ══════════════════════════════════════════
 
-      // 🏢 Ops Dashboard — team attendance + task health
+      // 🏢 Ops Dashboard — team attendance + task health (reads from Supabase)
       teamBot.onText(/🏢 Ops Dashboard/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = await readDB();
-        const team = (dbData.team || []);
-        const tasks = dbData.tasks || [];
-        const today = new Date().toLocaleDateString('en-CA');
+        let tasks = [];
+        let team = [];
+        let clockedCount = 0;
 
-        const clocked = (dbData.attendance || []).filter(a => a.clockInTime && (a.date === today || !a.date));
-        const onLeave = team.filter(t => t.status === 'On Leave');
-        const offline = team.filter(t => t.status === 'Offline' && !onLeave.find(l => l.id === t.id));
+        try {
+          const { supabase, isSupabaseConfigured } = require('../../supabase');
+          if (isSupabaseConfigured()) {
+            const [tRes, pRes] = await Promise.all([
+              supabase.from('tasks').select('id, title, stage, due_date'),
+              supabase.from('profiles').select('emp_code, name, role')
+            ]);
+            tasks = tRes.data || [];
+            team = pRes.data || [];
+          } else {
+            const dbData = await readDB();
+            tasks = dbData.tasks || [];
+            team = dbData.team || [];
+          }
+        } catch (e) {
+          const dbData = await readDB();
+          tasks = dbData.tasks || [];
+          team = dbData.team || [];
+        }
 
-        const overdue = tasks.filter(t => t.deadline && new Date(t.deadline) < new Date() && t.stage !== 'Delivered');
-        const inProgress = tasks.filter(t => t.stage === 'In Progress' || t.stage === 'Editing');
+        const today = new Date().toISOString().split('T')[0];
+        const overdue = tasks.filter(t => t.due_date && t.due_date < today && !['Approved', 'Published', 'Completed'].includes(t.stage));
+        const inProgress = tasks.filter(t => ['Briefing', 'Scripting', 'Shooting', 'Editing', 'Internal QC'].includes(t.stage));
         const inReview = tasks.filter(t => t.stage === 'Client Review');
 
-        // Pending activations
-        const activations = (dbData.clientActivations || []).filter(a => a.status === 'In Progress');
-
         let text = `🏢 *Ops Dashboard*\n\n`;
-        text += `👥 *Team Attendance Today*\n`;
-        text += `  • ✅ ${clocked.length} clocked in\n`;
-        text += `  • 🌴 ${onLeave.length} on leave\n`;
-        if (offline.length > 0) text += `  • ⚫ ${offline.length} not in yet\n`;
-        text += `\n`;
-
+        text += `👥 *Team Roster*: *${team.length} Active Members*\n\n`;
         text += `📋 *Task Health*\n`;
-        text += `  • ${inProgress.length} in progress\n`;
-        text += `  • ${inReview.length} in client review\n`;
-        if (overdue.length > 0) text += `  • ⚠️ *${overdue.length} overdue!*\n`;
+        text += `  • ⚙️ In Production: *${inProgress.length}*\n`;
+        text += `  • ⏳ In Client Review: *${inReview.length}*\n`;
+        if (overdue.length > 0) text += `  • ⚠️ *Overdue: ${overdue.length}*\n`;
         text += `\n`;
 
         if (activations.length > 0) {

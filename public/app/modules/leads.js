@@ -428,7 +428,7 @@ window.APP_MODULES.leads = async function(container) {
         <div style="font-size:0.72rem; font-weight:800; color:#10b981; text-transform:uppercase; margin-bottom:0.75rem;">🚀 Client Conversion Actions</div>
         <div style="display:flex; flex-direction:column; gap:0.5rem;">
           <button class="btn-primary" style="text-align:left; padding:0.65rem 1rem; background:linear-gradient(135deg,#10b981,#059669);"
-            onclick="window.LEADS_MODULE.convertLead('${lead.id}', '${escapeHTML(lead.company || '')}', '${escapeHTML(lead.email || '')}')">
+            onclick="window.LEADS_MODULE.convertLead('${lead.id}', '${escapeHTML(lead.company || '')}', '${escapeHTML(lead.email || '')}', this)">
             🏆 Convert Lead → Create Client CRM Account
           </button>
           <button class="btn-secondary" style="text-align:left; padding:0.65rem 1rem;"
@@ -508,8 +508,9 @@ window.APP_MODULES.leads = async function(container) {
       }
     },
 
-    async convertLead(id, company, email) {
+    async convertLead(id, company, email, btnEl) {
       if (!confirm(`Convert lead "${company || id}" into an active Client CRM account? This will mark the lead as Won and create a client record.`)) return;
+      if (btnEl) { btnEl.disabled = true; btnEl.innerText = '⏳ Converting...'; }
       try {
         const result = await APP_API.post(`/leads/${id}/convert`, {});
         const lead = leadsData.find(l => l.id === id);
@@ -528,6 +529,7 @@ window.APP_MODULES.leads = async function(container) {
         render();
         window.showToast && window.showToast('🏆 Lead converted to Client! CRM account created.', 'success');
       } catch (err) {
+        if (btnEl) { btnEl.disabled = false; btnEl.innerText = '🚀 Convert to Client CRM Account'; }
         window.showToast && window.showToast('Conversion failed: ' + err.message, 'error');
       }
     },

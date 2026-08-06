@@ -288,6 +288,19 @@ window.APP_MODULES.kanban = async function(container) {
         </div>
         
         <div class="drawer-body">
+          <!-- QC Panel & Blocker UI -->
+          <div id="drawerQcPanel" style="display:none; background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.3); border-radius:14px; padding:1.1rem; margin-bottom:0.5rem;">
+            <div style="font-size:0.78rem; font-weight:800; color:var(--amber-brand); margin-bottom:0.5rem; text-transform:uppercase;">🔍 Internal QC Handoff Actions</div>
+            <div style="display:flex; gap:0.5rem;">
+              <button class="btn-primary" style="flex:1; font-size:0.78rem; background:linear-gradient(135deg,#10b981,#059669);" onclick="window.KANBAN_MODULE.qcApproveActiveTask()">
+                ✅ QC Approve → Client Review
+              </button>
+              <button class="btn-secondary" style="flex:1; font-size:0.78rem; border-color:#ef4444; color:#ef4444;" onclick="window.KANBAN_MODULE.qcRejectActiveTask()">
+                ↩️ Return Briefing Revisions
+              </button>
+            </div>
+          </div>
+
           <div style="background: var(--surface-2); border: 1px solid var(--border-subtle); border-radius: 14px; padding: 1.1rem;">
             <div style="font-size: 0.78rem; font-weight: 800; color: var(--text-dim); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em;">⏱️ Time Tracking</div>
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
@@ -298,6 +311,17 @@ window.APP_MODULES.kanban = async function(container) {
               <button class="btn-secondary btn-sm" onclick="window.KANBAN_MODULE.logTime()">Log Hours</button>
             </div>
             <div id="drawerTimeLogList" style="display:flex; flex-direction:column; gap:0.4rem; font-size:0.8rem;"></div>
+          </div>
+
+          <!-- Dependency / Blocker Panel -->
+          <div style="background: var(--surface-2); border: 1px solid var(--border-subtle); border-radius: 14px; padding: 1.1rem;">
+            <div style="font-size: 0.78rem; font-weight: 800; color: var(--text-dim); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em;">🔒 Task Dependency / Blocker</div>
+            <div style="display:flex; gap:0.5rem; align-items:center;">
+              <select id="drawerBlockerSelect" class="input-text" style="flex:1; font-size:0.82rem;" onchange="window.KANBAN_MODULE.setTaskBlocker(this.value)">
+                <option value="">No Blocker Task (Clear)</option>
+              </select>
+            </div>
+            <div id="drawerBlockerStatus" style="font-size:0.75rem; color:var(--text-muted); margin-top:0.4rem;"></div>
           </div>
 
           <div>
@@ -950,14 +974,29 @@ window.APP_MODULES.kanban = async function(container) {
       document.getElementById('drawerStageBadge').textContent = task.stage || 'Briefing';
       document.getElementById('drawerTaskTitle').textContent = task.title;
       document.getElementById('drawerClientName').textContent = `Client: ${task.client || 'Agency'} · Assignee: ${task.assignee || 'Unassigned'}`;
-      document.getElementById('drawerTimeText').textContent = `${task.loggedHours || 0}h / ${task.estimatedHours || 8}h`;
-      document.getElementById('drawerSubtaskList').innerHTML = `<div style="color: var(--text-dim); font-size: 0.8rem; text-align: center; padding: 0.5rem;">Loading subtasks...</div>`;
-      
-      document.getElementById('drawerTimeLogList').innerHTML = '<div style="color:var(--text-muted); font-size:0.8rem;">Loading logs...</div>';
-      document.getElementById('drawerCommentsList').innerHTML = '<div style="color:var(--text-muted); font-size:0.8rem;">Loading comments...</div>';
+      // Toggle QC Panel visibility
+      const qcPanel = document.getElementById('drawerQcPanel');
+      if (qcPanel) {
+        qcPanel.style.display = (task.stage === 'Internal QC') ? 'block' : 'none';
+      }
 
-      document.getElementById('taskDrawerBackdrop').classList.add('open');
-      document.getElementById('taskDrawerPanel').classList.add('open');
+      // Populate Blocker Dropdown
+      const blockerSelect = document.getElementById('drawerBlockerSelect');
+      const blockerStatus = document.getElementById('drawerBlockerStatus');
+      if (blockerSelect) {
+        const otherTasks = allTasks.filter(t => t.id !== taskId);
+        blockerSelect.innerHTML = '<option value="">No Blocker Task (Clear)</option>' +
+          otherTasks.map(t => `<option value="${t.id}" ${task.blockedBy === t.id || task.blocked_by === t.id ? 'selected' : ''}>[${t.id}] ${escapeHTML(t.title)} (${t.stage})</option>`).join('');
+      }
+      if (blockerStatus) {
+        const blockerId = task.blockedBy || task.blocked_by;
+        if (blockerId) {
+          const blockerTask = allTasks.find(t => t.id === blockerId);
+          blockerStatus.innerHTML = `<span style="color:#ef4444; font-weight:700;">🔒 Blocked by: ${blockerId} (${blockerTask?.stage || 'Unknown'})</span>`;
+        } else {
+          blockerStatus.innerHTML = '<span style="color:var(--emerald-brand);">✅ Not blocked</span>';
+        }
+      }
 
       try {
         const [subtasks, logs, comments] = await Promise.all([
@@ -1059,6 +1098,40 @@ window.APP_MODULES.kanban = async function(container) {
         if (activeTaskId) this.openDrawer(activeTaskId);
       } catch (e) {
         console.error('Toggle subtask error', e);
+      }
+    },
+    async qcApproveActiveTask() {
+      if (!activeTaskId) return;
+      try {
+        await APP_API.post(`/tasks/${activeTaskId}/qc-approve`, {});
+        if (window.showToast) window.showToast('✅ QC Approved! Advanced to Client Review', 'success');
+        this.closeDrawer();
+        loadData();
+      } catch (err) {
+        if (window.showToast) window.showToast('QC Approval failed: ' + err.message, 'error');
+      }
+    },
+    async qcRejectActiveTask() {
+      if (!activeTaskId) return;
+      const feedback = prompt('Enter revision notes / feedback for the production team:');
+      if (feedback === null) return;
+      try {
+        await APP_API.post(`/tasks/${activeTaskId}/qc-reject`, { feedback: feedback.trim() });
+        if (window.showToast) window.showToast('↩️ Returned for Briefing revisions', 'success');
+        this.closeDrawer();
+        loadData();
+      } catch (err) {
+        if (window.showToast) window.showToast('QC Rejection failed: ' + err.message, 'error');
+      }
+    },
+    async setTaskBlocker(blockedBy) {
+      if (!activeTaskId) return;
+      try {
+        await APP_API.patch(`/tasks/${activeTaskId}/dependency`, { blockedBy: blockedBy || null });
+        if (window.showToast) window.showToast(blockedBy ? '🔒 Task blocker configured!' : '🔓 Task blocker cleared', 'success');
+        loadData();
+      } catch (err) {
+        if (window.showToast) window.showToast('Failed to set blocker: ' + err.message, 'error');
       }
     },
     async markApproved() {

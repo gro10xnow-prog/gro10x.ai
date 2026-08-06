@@ -114,18 +114,22 @@ router.get('/', requireAuth, async (req, res) => {
 // POST Create new Task
 router.post('/', requireAuth, async (req, res) => {
   try {
-    const { count } = await supabase.from('tasks').select('*', { count: 'exact', head: true });
-    const countNum = (count || 0) + 1;
-    const newId = `TSK-${String(countNum).padStart(3, '0')}`;
+    const rawUuid = require('crypto').randomUUID ? require('crypto').randomUUID() : String(Date.now());
+    const newId = `TSK-${rawUuid.split('-')[0].toUpperCase()}`;
 
     const payload = {
       id: newId,
       title: req.body.title || 'Untitled Task',
       client: req.body.client || 'General Agency',
-      stage: req.body.stage || 'Scripting',
+      client_id: req.body.clientId || null,
+      stage: req.body.stage || 'Briefing',
       priority: req.body.priority || 'Medium',
       assignee: req.body.assignee || 'Unassigned',
-      due_date: req.body.dueDate || new Date(Date.now() + 3 * 86400000).toISOString().split('T')[0],
+      due_date: req.body.due_date || req.body.dueDate || new Date(Date.now() + 3 * 86400000).toISOString().split('T')[0],
+      estimated_hours: Number(req.body.estimatedHours || req.body.estimated_hours) || 8,
+      description: req.body.description || '',
+      workflow_type: req.body.workflow_type || req.body.category || 'video',
+      category: req.body.category || req.body.workflow_type || 'video',
       parent_task_id: req.body.parentTaskId || null
     };
 
@@ -270,7 +274,7 @@ router.patch('/:id/stage', requireAuth, async (req, res) => {
       }
     }
 
-    const updates = { stage, updated_at: new Date().toISOString() };
+    const updates = { stage, custom_status: stage, updated_at: new Date().toISOString() };
     const { data, error } = await supabase.from('tasks').update(updates).eq('id', id).select().single();
     if (error) throw error;
 
@@ -310,9 +314,10 @@ router.patch('/:id/dependency', requireAuth, async (req, res) => {
 router.post('/:id/qc-approve', requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
+    const approverId = req.user.linkedId || req.user.id || 'EMP-001';
     const updates = {
       stage: 'Client Review',
-      qc_approved_by: 'PBD-006',
+      qc_approved_by: approverId,
       qc_approved_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
@@ -335,10 +340,11 @@ router.post('/:id/qc-approve', requireAuth, async (req, res) => {
 router.post('/:id/qc-reject', requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
+    const rejectorId = req.user.linkedId || req.user.id || 'EMP-001';
     const updates = {
-      stage: 'Revising',
-      qc_feedback: req.body.feedback || 'Revisions needed. Please check with Art Director.',
-      qc_rejected_by: 'PBD-006',
+      stage: 'Briefing',
+      qc_feedback: req.body.feedback || req.body.notes || 'Revisions needed.',
+      qc_rejected_by: rejectorId,
       qc_rejected_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
@@ -525,28 +531,7 @@ router.patch('/subtasks/:subtaskId/toggle', requireAuth, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-// PATCH /api/tasks/:id/stage — Update workflow stage (List View & Kanban drag-and-drop)
-router.patch('/:id/stage', requireAuth, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { stage } = req.body;
-    if (!stage) return res.status(400).json({ error: 'stage is required' });
 
-    const { data, error } = await supabase
-      .from('tasks')
-      .update({ stage, custom_status: stage, updated_at: new Date().toISOString() })
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error) throw error;
-    broadcast('task_update', { action: 'stage_change', task: mapTask(data) });
-    res.json({ success: true, task: mapTask(data) });
-  } catch (err) {
-    console.error('Task STAGE update error:', err.message);
-    res.status(500).json({ error: err.message });
-  }
-});
 
 // GET /api/tasks/:id/comments
 router.get('/:id/comments', requireAuth, async (req, res) => {

@@ -205,10 +205,6 @@ router.post('/:id/convert', requireAuth, async (req, res) => {
   const { data: lead } = await supabase.from('leads').select('*').eq('id', id).maybeSingle();
   if (!lead) return res.status(404).json({ error: 'Lead not found' });
 
-  // Mark lead as won
-  await supabase.from('leads').update({ stage: 'Won / Closed', updated_at: new Date().toISOString() }).eq('id', id);
-
-  // Check if client already exists
   const clientName = lead.company || lead.contact_person || 'New Client';
   const { data: existingClient } = await supabase.from('clients').select('id').ilike('name', clientName).maybeSingle();
 
@@ -234,7 +230,14 @@ router.post('/:id/convert', requireAuth, async (req, res) => {
     broadcast('client_update', [clientPayload]);
   }
 
-  broadcast('lead_update', [{ id, stage: 'Won / Closed' }]);
+  // Update lead with won status and client_id back-reference
+  await supabase.from('leads').update({
+    stage: 'Won / Closed',
+    client_id: clientRecord.id,
+    updated_at: new Date().toISOString()
+  }).eq('id', id);
+
+  broadcast('lead_update', [{ id, stage: 'Won / Closed', client_id: clientRecord.id }]);
   res.json({ success: true, client: clientRecord, lead });
 });
 

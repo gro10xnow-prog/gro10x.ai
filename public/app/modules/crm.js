@@ -630,13 +630,54 @@ window.APP_MODULES.crm = async function(container) {
         });
 
         if (res.success || res.pin) {
-          alert(`🔑 PORTAL ACCESS GENERATED FOR ${name.toUpperCase()}\n\nPhone: ${phone}\nTemp PIN: ${res.pin}\nPortal Direct Link: ${res.portalUrl}\n\nWhatsApp Invite Link:\n${res.whatsappLink}`);
+          this.showPocAccessModal(name, phone, res.pin, res.portalUrl, res.whatsappLink);
         } else {
           window.showToast && window.showToast('Failed to generate PIN', 'error');
         }
       } catch (err) {
         window.showToast && window.showToast('Access Generation Error: ' + err.message, 'error');
       }
+    },
+
+    showPocAccessModal(name, phone, pin, portalUrl, whatsappLink) {
+      let modal = document.getElementById('pocAccessCardModal');
+      if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'pocAccessCardModal';
+        modal.className = 'modal-overlay';
+        document.body.appendChild(modal);
+      }
+      modal.innerHTML = `
+        <div class="modal-box" style="max-width:440px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:0.75rem; margin-bottom:1rem;">
+            <h3 style="color:#fff; margin:0; font-family:var(--font-heading);">🔑 Portal Access Generated</h3>
+            <button onclick="document.getElementById('pocAccessCardModal').classList.remove('active')" style="background:transparent; border:none; color:var(--text-muted); font-size:1.2rem; cursor:pointer;">✕</button>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:0.85rem; font-size:0.88rem;">
+            <div style="background:var(--surface-3); padding:0.75rem; border-radius:10px; border:1px solid var(--border-subtle);">
+              <div style="color:var(--text-muted); font-size:0.75rem;">AUTHORIZED REPRESENTATIVE</div>
+              <div style="font-weight:800; color:#fff; font-size:1.05rem;">👤 ${escapeHTML(name)}</div>
+              <div style="color:var(--purple-light); font-size:0.82rem; margin-top:0.15rem;">📞 ${escapeHTML(phone)}</div>
+            </div>
+
+            <div style="background:rgba(124, 58, 237, 0.12); padding:1rem; border-radius:12px; border:1px solid var(--purple-brand); text-align:center;">
+              <div style="font-size:0.75rem; color:var(--purple-light); font-weight:700; text-transform:uppercase;">Temporary 4-Digit PIN</div>
+              <div style="font-size:2.2rem; font-weight:900; font-family:monospace; color:#fff; letter-spacing:0.2em; margin:0.3rem 0;">${pin}</div>
+              <div style="font-size:0.72rem; color:var(--text-muted);">Client will be prompted to change this on first login</div>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:0.5rem; margin-top:0.5rem;">
+              <a href="${whatsappLink}" target="_blank" class="btn-primary" style="text-align:center; text-decoration:none; background:linear-gradient(135deg,#059669,#10b981);">
+                📲 Send Access Card via WhatsApp
+              </a>
+              <button class="btn-secondary" onclick="navigator.clipboard.writeText('${portalUrl}'); window.showToast('Portal URL copied to clipboard!', 'success');">
+                📋 Copy Portal Direct Link
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+      modal.classList.add('active');
     },
 
     openLogMeetingModal() {

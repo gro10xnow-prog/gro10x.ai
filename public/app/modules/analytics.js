@@ -149,11 +149,27 @@ window.APP_MODULES.analytics = async function(container) {
       const cvr = leads.length > 0 ? ((wonLeads / leads.length) * 100).toFixed(1) + '%' : '0%';
       const eodCount = (eodRes || []).length;
 
+      // Calculate actual average turnaround time from completed tasks
+      let avgDays = 2.5;
+      if (completedTasks.length > 0) {
+        let totalDays = 0;
+        let counted = 0;
+        completedTasks.forEach(t => {
+          const start = new Date(t.created_at || t.createdAt);
+          const end = new Date(t.updated_at || t.updatedAt || t.completed_at || Date.now());
+          if (!isNaN(start.getTime()) && !isNaN(end.getTime()) && end >= start) {
+            totalDays += (end - start) / (1000 * 60 * 60 * 24);
+            counted++;
+          }
+        });
+        if (counted > 0) avgDays = (totalDays / counted).toFixed(1);
+      }
+
       document.getElementById('kpiRevVal').textContent = `৳${paidTotal.toLocaleString()}`;
       document.getElementById('kpiTasksVal').textContent = completedTasks.length;
       document.getElementById('kpiLeadsVal').textContent = leads.length;
       document.getElementById('kpiCvrVal').textContent = cvr;
-      document.getElementById('kpiTurnaroundVal').textContent = '2.4 days';
+      document.getElementById('kpiTurnaroundVal').textContent = `${avgDays} days`;
       document.getElementById('kpiEodRateVal').textContent = `${Math.min(100, Math.round((eodCount / (selectedDays * 8 || 1)) * 100))}%`;
 
       // 2. TIME-SERIES CHARTS (FIXED BUG: accesses series array correctly!)
