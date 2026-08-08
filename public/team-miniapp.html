@@ -1521,7 +1521,12 @@
   <div id="pageProfile" class="page">
     <div style="height:0.85rem;"></div>
     <div class="card">
-      <div class="profile-avatar-lg" id="profileAvatarLg">PB</div>
+      <div style="position:relative;width:72px;margin:0 auto 0.5rem;cursor:pointer;" onclick="document.getElementById('avatarFileInput').click()">
+        <div class="profile-avatar-lg" id="profileAvatarLg" style="margin:0 auto;">PB</div>
+        <div style="position:absolute;bottom:0;right:0;background:var(--purple);color:#fff;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:0.68rem;border:2px solid var(--card-bg);">📷</div>
+      </div>
+      <input type="file" id="avatarFileInput" accept="image/*" style="display:none;" onchange="uploadAvatarImage(this)">
+
       <div style="text-align:center;margin-bottom:1rem;">
         <div style="font-size:1.1rem;font-weight:800;color:var(--text);" id="profileName">Team Member</div>
         <div style="font-size:0.78rem;color:var(--muted);margin-top:0.2rem;" id="profileRole">—</div>
@@ -1540,11 +1545,24 @@
         <div class="profile-field-val" id="profileEmail">—</div>
       </div>
       <div class="profile-field">
-        <div class="profile-field-label">Emergency Contact</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div class="profile-field-label">Personal Email</div>
+          <button onclick="editProfileField('personalEmail', 'Personal Email')" style="background:none;border:none;font-size:0.75rem;cursor:pointer;opacity:0.7;">✏️</button>
+        </div>
+        <div class="profile-field-val" id="profilePersonalEmail">Not set</div>
+      </div>
+      <div class="profile-field">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div class="profile-field-label">Emergency Contact</div>
+          <button onclick="editProfileField('emergencyContact', 'Emergency Contact')" style="background:none;border:none;font-size:0.75rem;cursor:pointer;opacity:0.7;">✏️</button>
+        </div>
         <div class="profile-field-val" id="profileEmergency">Not set</div>
       </div>
       <div class="profile-field">
-        <div class="profile-field-label">Home Address</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div class="profile-field-label">Home Address</div>
+          <button onclick="editProfileField('address', 'Home Address')" style="background:none;border:none;font-size:0.75rem;cursor:pointer;opacity:0.7;">✏️</button>
+        </div>
         <div class="profile-field-val" id="profileAddress">Not set</div>
       </div>
       <div class="profile-field">
@@ -1769,12 +1787,19 @@
     if (labelEl) labelEl.textContent = `${xp} / ${nextXP} XP to ${nextTier}`;
 
     // Profile
-    document.getElementById('profileAvatarLg').textContent = initials;
+    const avatarEl = document.getElementById('profileAvatarLg');
+    if (emp.avatarUrl) {
+      avatarEl.innerHTML = `<img src="${emp.avatarUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
+    } else {
+      avatarEl.textContent = initials;
+    }
     document.getElementById('profileName').textContent = emp.name;
     document.getElementById('profileRole').textContent = `${emp.role} · ${emp.department}`;
     document.getElementById('profileId').textContent = emp.id || '—';
     document.getElementById('profileDept').textContent = emp.department || '—';
     document.getElementById('profileEmail').textContent = emp.email || emp.workEmail || 'Not set';
+    const pEmailEl = document.getElementById('profilePersonalEmail');
+    if (pEmailEl) pEmailEl.textContent = emp.personalEmail || 'Not set';
     document.getElementById('profileEmergency').textContent = emp.emergencyContact || 'Not set';
     document.getElementById('profileAddress').textContent = emp.address || 'Not set';
     document.getElementById('profileXP').textContent = `${emp.xp || 0} XP · ${emp.badge || '🌱 Recruit'}`;
@@ -2971,6 +2996,63 @@
     } catch(e) {
       list.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div>Unable to load EOD reports</div>';
     }
+  }
+
+  // ══════════════════════════════════════════
+  // PROFILE EDITING & AVATAR UPLOAD
+  // ══════════════════════════════════════════
+  async function editProfileField(fieldKey, label) {
+    triggerHaptic('medium');
+    if (!currentUser) return;
+    const currentVal = currentUser[fieldKey] || '';
+    const newVal = prompt(`Edit ${label}:`, currentVal);
+    if (newVal === null || newVal.trim() === currentVal) return;
+
+    const payload = {};
+    if (fieldKey === 'personalEmail') payload.personal_email = newVal.trim();
+    else if (fieldKey === 'emergencyContact') payload.emergency_contact = newVal.trim();
+    else if (fieldKey === 'address') payload.address = newVal.trim();
+    else payload[fieldKey] = newVal.trim();
+
+    try {
+      const res = await fetch(`/api/team/${currentUser.id}`, {
+        method: 'PUT',
+        headers: authHeaders(),
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) throw new Error('Failed');
+      currentUser[fieldKey] = newVal.trim();
+      renderDashboard(currentUser);
+      tg?.showAlert ? tg.showAlert(`✅ ${label} updated!`) : alert(`✅ ${label} updated!`);
+    } catch(e) {
+      tg?.showAlert ? tg.showAlert('⚠️ Failed to update profile field.') : alert('Error updating');
+    }
+  }
+
+  async function uploadAvatarImage(input) {
+    if (!input.files || !input.files[0] || !currentUser) return;
+    triggerHaptic('medium');
+    const file = input.files[0];
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const base64 = e.target.result;
+      try {
+        const res = await fetch('/api/team/avatar', {
+          method: 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify({ base64, mimeType: file.type, employeeId: currentUser.id })
+        });
+        const data = await res.json();
+        if (data.avatarUrl) {
+          currentUser.avatarUrl = data.avatarUrl;
+          renderDashboard(currentUser);
+          tg?.showAlert ? tg.showAlert('✅ Profile photo updated!') : alert('✅ Photo updated!');
+        }
+      } catch(err) {
+        tg?.showAlert ? tg.showAlert('⚠️ Failed to upload avatar.') : alert('Error uploading');
+      }
+    };
+    reader.readAsDataURL(file);
   }
 
   // ══════════════════════════════════════════

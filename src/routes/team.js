@@ -8,6 +8,8 @@ const { sendTelegramNotification, getTeamBot } = require('../services/bot');
 const { readDB } = require('../services/db');
 const { createTempPin } = require('../services/auth-pins');
 
+const { uploadFile } = require('../services/storage');
+
 function normalizePhone(p) {
   if (!p) return '';
   const digits = String(p).replace(/[^0-9]/g, '');
@@ -33,6 +35,7 @@ function mapProfile(p) {
     department: p.department,
     telegramId: p.telegram_id,
     phone: p.phone,
+    avatarUrl: p.avatar_url || '',
     baseSalary: Number(p.base_salary) || 0,
     commissionRate: Number(p.commission_rate) || 0,
     earnedCommissions: Number(p.earned_commissions) || 0,
@@ -898,6 +901,7 @@ router.put('/:id', requireAuth, async (req, res) => {
     if (body.primary_skill !== undefined) updates.primary_skill = body.primary_skill;
     if (body.emergency_contact !== undefined) updates.emergency_contact = body.emergency_contact;
     if (body.bank_info !== undefined) updates.bank_info = body.bank_info;
+    if (body.avatar_url !== undefined || body.avatarUrl !== undefined) updates.avatar_url = body.avatar_url || body.avatarUrl;
     if (body.onboarding_complete !== undefined) updates.onboarding_complete = Boolean(body.onboarding_complete);
     if (body.survey_complete !== undefined) updates.survey_complete = Boolean(body.survey_complete);
 
@@ -925,6 +929,41 @@ router.put('/:id', requireAuth, async (req, res) => {
     }
   } catch (err) {
     console.error('PUT /team/:id error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// POST /api/team/avatar — Upload Profile Picture
+// ─────────────────────────────────────────────────────────────────────────────
+router.post('/avatar', requireAuth, async (req, res) => {
+  try {
+    const { base64, mimeType, employeeId } = req.body;
+    if (!base64 || !employeeId) {
+      return res.status(400).json({ error: 'base64 and employeeId required' });
+    }
+
+    const base64Data = base64.replace(/^data:\w+\/\w+;base64,/, '');
+    const buffer = Buffer.from(base64Data, 'base64');
+    const ext = mimeType && mimeType.includes('png') ? 'png' : 'jpg';
+    const filePath = `avatars/${employeeId}_${Date.now()}.${ext}`;
+
+    let avatarUrl = '';
+    try {
+      const uploaded = await uploadFile('avatars', filePath, buffer, mimeType || 'image/jpeg');
+      avatarUrl = uploaded.url || uploaded.publicUrl || '';
+    } catch(e) {
+      console.warn('Storage upload error, fallback to data URL:', e.message);
+      avatarUrl = base64; // fallback to base64 data URL
+    }
+
+    if (supabase) {
+      await supabase.from('profiles').update({ avatar_url: avatarUrl }).eq('emp_code', employeeId);
+    }
+
+    res.json({ success: true, avatarUrl });
+  } catch (err) {
+    console.error('POST /team/avatar error:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
