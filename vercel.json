@@ -108,6 +108,14 @@
       "dest": "/public/js/$1"
     },
     {
+      "src": "/app/modules/(.*)",
+      "dest": "/public/app/modules/$1"
+    },
+    {
+      "src": "/app/(.*)",
+      "dest": "/public/app/$1"
+    },
+    {
       "src": "/api/(.*)",
       "dest": "/server.js"
     },
