@@ -510,7 +510,7 @@ window.APP_MODULES.crm = async function(container) {
 
     async deleteClient(id) {
       const client = clientsData.find(c => c.id === id);
-      if (!confirm(`Permanently delete client account "${client?.name || id}"? This will archive their profile.`)) return;
+      if (window.confirm && !window.confirm(`Permanently delete client account "${client?.name || id}"? This will archive their profile.`)) return;
       try {
         await APP_API.delete(`/clients/${id}`);
         window.showToast && window.showToast('Client deleted.', 'success');
@@ -742,7 +742,7 @@ window.APP_MODULES.crm = async function(container) {
 
     submitClientsCSV: async function() {
       const text = (document.getElementById('crmCsvText')?.value || '').trim();
-      if (!text) return alert('Please paste CSV text first.');
+      if (!text) { if (window.showToast) window.showToast('Please paste CSV text first.', 'error'); return; }
       const lines = text.split('\n');
       const rows = lines.map(line => {
         const parts = line.split(',').map(p => p.trim());

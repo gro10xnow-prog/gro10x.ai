@@ -836,14 +836,14 @@ window.APP_MODULES.kanban = async function(container) {
       
       if (action === 'stage') {
         const stage = document.getElementById('bulkStageSelect').value;
-        if (!stage) return alert('Select a stage first');
+        if (!stage) { if (window.showToast) window.showToast('Select a stage first', 'error'); return; }
         payload.stage = stage;
       } else if (action === 'assign') {
         const assignee = document.getElementById('bulkAssigneeInput').value.trim();
-        if (!assignee) return alert('Enter an assignee name');
+        if (!assignee) { if (window.showToast) window.showToast('Enter an assignee name', 'error'); return; }
         payload.assignee = assignee;
       } else if (action === 'delete') {
-        if (!confirm(`Are you sure you want to delete ${taskIds.length} tasks?`)) return;
+        if (window.confirm && !window.confirm(`Are you sure you want to delete ${taskIds.length} tasks?`)) return;
       }
       
       try {
@@ -852,7 +852,7 @@ window.APP_MODULES.kanban = async function(container) {
         this.clearSelection();
         loadData();
       } catch (e) {
-        alert('Failed bulk action: ' + e.message);
+        if (window.showToast) window.showToast('Failed bulk action: ' + e.message, 'error');
       }
     },
     dragTask(evt, taskId) {
@@ -876,7 +876,6 @@ window.APP_MODULES.kanban = async function(container) {
       } catch (e) {
         console.error(e);
         if (window.showToast) window.showToast('Failed to update task stage', 'error');
-        else alert('Failed to update task stage');
       }
     },
 
@@ -924,7 +923,7 @@ window.APP_MODULES.kanban = async function(container) {
     },
     async submitNewTaskModal() {
       const title = document.getElementById('ntTitle').value.trim();
-      if (!title) return alert('Please enter a task title');
+      if (!title) { if (window.showToast) window.showToast('Please enter a task title', 'error'); return; }
 
       const workflow_type = document.getElementById('ntWorkflow').value;
       const stage = document.getElementById('ntStage').value;
@@ -961,7 +960,6 @@ window.APP_MODULES.kanban = async function(container) {
       } catch (err) {
         console.error('Failed to create task', err);
         if (window.showToast) window.showToast('Failed to create task', 'error');
-        else alert('Failed to create task');
       }
     },
 
@@ -1060,7 +1058,6 @@ window.APP_MODULES.kanban = async function(container) {
           this.openDrawer(activeTaskId);
         } catch (e) {
           if (window.showToast) window.showToast('Failed to log time', 'error');
-          else alert('Failed to log time');
         }
       }
     },
@@ -1153,7 +1150,7 @@ window.APP_MODULES.kanban = async function(container) {
       if (newStagesStr === null) return;
 
       const newStages = newStagesStr.split(',').map(s => s.trim()).filter(Boolean);
-      if (newStages.length < 2) return alert('Pipeline must have at least 2 stages.');
+      if (newStages.length < 2) { if (window.showToast) window.showToast('Pipeline must have at least 2 stages.', 'error'); return; }
 
       const payload = {
         [targetWf]: {
@@ -1163,12 +1160,11 @@ window.APP_MODULES.kanban = async function(container) {
 
       APP_API.put('/workflows/stages', payload)
         .then(res => {
-          if (window.showToast) window.showToast('✅ Workflow stages updated and saved!');
-          else alert('Workflow stages updated!');
+          if (window.showToast) window.showToast('✅ Workflow stages updated and saved!', 'success');
           loadData();
         })
         .catch(err => {
-          alert('Failed to update stages: ' + (err.message || 'Permission denied'));
+          if (window.showToast) window.showToast('Failed to update stages: ' + (err.message || 'Permission denied'), 'error');
         });
     }
   };
