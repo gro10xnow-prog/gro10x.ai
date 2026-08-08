@@ -1387,6 +1387,25 @@
       </div>
     </div>
 
+    <!-- My Personal Performance Card (Priority 5) -->
+    <div class="card" id="myStatsCard">
+      <div class="card-title" id="myStatsTitle">📊 My Performance — This Month</div>
+      <div class="status-row" style="margin-top:0.4rem;">
+        <div class="stat-tile" style="background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.15);">
+          <div class="stat-val" id="statTasksDone" style="color:#047857;">0</div>
+          <div class="stat-lbl">Tasks Done</div>
+        </div>
+        <div class="stat-tile" style="background:rgba(139,92,246,0.06);border:1px solid rgba(139,92,246,0.15);">
+          <div class="stat-val" id="statDaysPresent" style="color:var(--purple);">0</div>
+          <div class="stat-lbl">Days Present</div>
+        </div>
+        <div class="stat-tile" style="background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.15);">
+          <div class="stat-val" id="statEODCount" style="color:#b45309;">0</div>
+          <div class="stat-lbl">EOD Reports</div>
+        </div>
+      </div>
+    </div>
+
     <!-- Activity Feed -->
     <div class="card">
       <div class="card-title">Recent Activity</div>
@@ -1471,12 +1490,17 @@
   <div id="pagePay" class="page">
     <div style="height:0.85rem;"></div>
     <div class="pay-hero">
-      <div class="pay-label">Estimated Monthly Pay</div>
+      <div class="pay-label" id="payMonthLabel">Estimated Net Monthly Pay</div>
       <div class="pay-amount" id="payTotal">BDT 0</div>
-      <div class="pay-sub" id="paySub">Base + Commissions</div>
+      <div class="pay-sub" id="paySub">Gross: BDT 0 · Deductions: BDT 0</div>
+      <div style="margin-top:0.6rem;display:flex;justify-content:center;gap:0.4rem;align-items:center;">
+        <span id="payStatusBadge" style="background:#ecfdf5;color:#047857;padding:0.25rem 0.65rem;border-radius:12px;font-size:0.72rem;font-weight:800;">🟢 Paid</span>
+        <span id="payDisbursedLabel" style="font-size:0.72rem;color:rgba(255,255,255,0.7);">Disbursed: —</span>
+      </div>
     </div>
+
     <div class="card">
-      <div class="card-title">Breakdown</div>
+      <div class="card-title">Earnings Breakdown</div>
       <div class="pay-row">
         <div class="pay-row-label">💼 Base Salary</div>
         <div class="pay-row-val" id="payBase">BDT 0</div>
@@ -1486,8 +1510,20 @@
         <div class="pay-row-val" id="payComm">BDT 0</div>
       </div>
       <div class="pay-row">
-        <div class="pay-row-label">📅 Pay Cycle</div>
-        <div class="pay-row-val">Bi-Weekly</div>
+        <div class="pay-row-label">🎁 Performance Bonus</div>
+        <div class="pay-row-val" id="payBonus">BDT 0</div>
+      </div>
+      <div class="pay-row">
+        <div class="pay-row-label">📈 Gross Take-Home</div>
+        <div class="pay-row-val" id="payGross" style="font-weight:800;">BDT 0</div>
+      </div>
+      <div class="pay-row">
+        <div class="pay-row-label">📉 Deductions / Tax</div>
+        <div class="pay-row-val" id="payDeductions" style="color:#b91c1c;">- BDT 0</div>
+      </div>
+      <div class="pay-row" style="border-top:1.5px dashed rgba(0,0,0,0.1);padding-top:0.6rem;margin-top:0.2rem;">
+        <div class="pay-row-label" style="font-weight:800;color:var(--purple);">💰 Net Payable</div>
+        <div class="pay-row-val" id="payNet" style="font-weight:800;color:var(--purple);font-size:0.95rem;">BDT 0</div>
       </div>
     </div>
     <div class="card">
@@ -1604,6 +1640,14 @@
       </div>
       <div id="eodHistoryList">
         <div class="empty-state"><div class="empty-icon">📝</div>Loading EOD reports...</div>
+      </div>
+    </div>
+
+    <!-- XP LEADERBOARD CARD (Priority 5) -->
+    <div class="card">
+      <div class="card-title">🏆 Team XP Leaderboard</div>
+      <div id="xpLeaderboardList">
+        <div class="empty-state"><div class="empty-icon">🏆</div>Loading leaderboard...</div>
       </div>
     </div>
 
@@ -1741,6 +1785,7 @@
         if (dot) dot.style.display = 'block';
       }
       renderDashboard(emp, data.myTasks || [], data.attendanceToday || null);
+      loadMyStats();
 
       // Deep linking tab support (?tab=tasks, ?tab=pay, etc.)
       const urlParams = new URLSearchParams(window.location.search);
@@ -1971,6 +2016,7 @@
       loadAttendanceHistory();
     } else if (pageId === 'pageProfile') {
       loadEODHistory();
+      loadXPLeaderboard();
     }
   }
 
@@ -2947,24 +2993,132 @@
   }
 
   // ══════════════════════════════════════════
-  // PAY DATA
+  // PAY DATA & ENRICHED BREAKDOWN (Priority 4)
   // ══════════════════════════════════════════
-  function loadPayData() {
+  async function loadPayData() {
     const emp = currentUser;
     if (!emp) return;
-    const base = emp.baseSalary || 0;
-    const comm = emp.earnedCommissions || 0;
-    const total = base + comm;
-    document.getElementById('payTotal').textContent = `BDT ${total.toLocaleString()}`;
-    document.getElementById('paySub').textContent = `Base: BDT ${base.toLocaleString()} + Commissions: BDT ${comm.toLocaleString()}`;
-    document.getElementById('payBase').textContent = `BDT ${base.toLocaleString()}`;
-    document.getElementById('payComm').textContent = `BDT ${comm.toLocaleString()}`;
+
+    // Default pre-fill from currentUser memory
+    const baseMemory = emp.baseSalary || 0;
+    const commMemory = emp.earnedCommissions || 0;
+    const totalMemory = baseMemory + commMemory;
+
+    document.getElementById('payTotal').textContent = `BDT ${totalMemory.toLocaleString()}`;
+    document.getElementById('payBase').textContent = `BDT ${baseMemory.toLocaleString()}`;
+    document.getElementById('payComm').textContent = `BDT ${commMemory.toLocaleString()}`;
+    document.getElementById('payGross').textContent = `BDT ${totalMemory.toLocaleString()}`;
+    document.getElementById('payNet').textContent = `BDT ${totalMemory.toLocaleString()}`;
+
     const bank = emp.bankInfo || {};
     document.getElementById('bankName').textContent = bank.bankName || 'Not configured';
     document.getElementById('bankAccNo').textContent = bank.accNo || '—';
     document.getElementById('bankBranch').textContent = bank.branch || '—';
     document.getElementById('mfsBkash').textContent = bank.mfsNo || bank.bkash || 'Not set';
     document.getElementById('mfsNagad').textContent = bank.nagad || 'Not set';
+
+    // Fetch live summary from payroll API
+    try {
+      const telegramId = tg?.initDataUnsafe?.user?.id || emp.telegramId || 'debug';
+      const res = await fetch(`/api/team/payroll/summary?telegramId=${telegramId}`, { headers: authHeaders() });
+      if (!res.ok) return;
+      const data = await res.json();
+
+      const net = data.netPay || 0;
+      const gross = data.grossPay || (data.baseSalary + data.commissions);
+      const deductions = data.deductions || 0;
+
+      document.getElementById('payTotal').textContent = `BDT ${net.toLocaleString()}`;
+      document.getElementById('paySub').textContent = `Gross: BDT ${gross.toLocaleString()} · Deductions: BDT ${deductions.toLocaleString()}`;
+      document.getElementById('payBase').textContent = `BDT ${(data.baseSalary || 0).toLocaleString()}`;
+      document.getElementById('payComm').textContent = `BDT ${(data.commissions || 0).toLocaleString()}`;
+      document.getElementById('payBonus').textContent = `BDT ${(data.bonus || 0).toLocaleString()}`;
+      document.getElementById('payGross').textContent = `BDT ${gross.toLocaleString()}`;
+      document.getElementById('payDeductions').textContent = `- BDT ${deductions.toLocaleString()}`;
+      document.getElementById('payNet').textContent = `BDT ${net.toLocaleString()}`;
+
+      if (data.month) {
+        document.getElementById('payMonthLabel').textContent = `Net Pay (${data.month})`;
+      }
+
+      const badge = document.getElementById('payStatusBadge');
+      if (badge && data.status) {
+        const isPaid = (data.status || '').toLowerCase() === 'paid';
+        badge.textContent = isPaid ? '🟢 Paid' : '🟡 Processing';
+        badge.style.background = isPaid ? '#ecfdf5' : '#fef3c7';
+        badge.style.color = isPaid ? '#047857' : '#b45309';
+      }
+
+      const disbursedLabel = document.getElementById('payDisbursedLabel');
+      if (disbursedLabel && data.disbursedDate) {
+        disbursedLabel.textContent = `Disbursed: ${data.disbursedDate}`;
+      }
+    } catch(e) {
+      console.warn('Unable to refresh payroll API summary:', e.message);
+    }
+  }
+
+  // ══════════════════════════════════════════
+  // PERSONAL ANALYTICS & LEADERBOARD (Priority 5)
+  // ══════════════════════════════════════════
+  async function loadMyStats() {
+    const titleEl = document.getElementById('myStatsTitle');
+    const tasksEl = document.getElementById('statTasksDone');
+    const attEl = document.getElementById('statDaysPresent');
+    const eodEl = document.getElementById('statEODCount');
+
+    if (!tasksEl || !currentUser) return;
+
+    try {
+      const res = await fetch('/api/team/me/stats', { headers: authHeaders() });
+      if (!res.ok) return;
+      const data = await res.json();
+
+      if (titleEl && data.month) titleEl.textContent = `📊 My Performance — ${data.month}`;
+      if (tasksEl) tasksEl.textContent = data.tasksCompleted || 0;
+      if (attEl) attEl.textContent = data.attendanceDays || 0;
+      if (eodEl) eodEl.textContent = data.eodSubmitted || 0;
+    } catch(e) {
+      console.warn('Unable to load personal stats:', e.message);
+    }
+  }
+
+  async function loadXPLeaderboard() {
+    const list = document.getElementById('xpLeaderboardList');
+    if (!list) return;
+
+    try {
+      const res = await fetch('/api/team/roster', { headers: authHeaders() });
+      if (!res.ok) throw new Error('Failed');
+      const members = await res.json();
+      if (!members || !members.length) {
+        list.innerHTML = '<div class="empty-state"><div class="empty-icon">🏆</div>No leaderboard data</div>';
+        return;
+      }
+
+      // Sort by XP descending
+      const sorted = members.slice().sort((a, b) => (b.xp || 0) - (a.xp || 0));
+      const medals = ['🥇', '🥈', '🥉'];
+
+      list.innerHTML = sorted.slice(0, 5).map((m, idx) => {
+        const isMe = currentUser && (m.id === currentUser.id || m.emp_code === currentUser.emp_code);
+        const rank = medals[idx] || `#${idx + 1}`;
+        return `
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:0.55rem 0.6rem;border-radius:10px;margin-bottom:0.35rem;background:${isMe ? 'rgba(139,92,246,0.1)' : 'rgba(0,0,0,0.02)'};border:${isMe ? '1px solid rgba(139,92,246,0.3)' : '1px solid transparent'};">
+            <div style="display:flex;align-items:center;gap:0.5rem;">
+              <span style="font-size:0.95rem;width:24px;text-align:center;">${rank}</span>
+              <div>
+                <div style="font-size:0.84rem;font-weight:${isMe ? '800' : '700'};color:var(--text);">${m.name} ${isMe ? '(You)' : ''}</div>
+                <div style="font-size:0.7rem;color:var(--muted);">${m.role || 'Specialist'}</div>
+              </div>
+            </div>
+            <div style="font-size:0.82rem;font-weight:800;color:var(--purple);">${m.xp || 0} XP</div>
+          </div>
+        `;
+      }).join('');
+    } catch(e) {
+      list.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div>Unable to load leaderboard</div>';
+    }
   }
 
   // ══════════════════════════════════════════

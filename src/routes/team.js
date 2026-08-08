@@ -1113,7 +1113,7 @@ router.post('/eod', async (req, res) => {
   }
 });
 
-// GET /api/team/payroll/summary or /api/payroll/summary — Mini App payroll data
+// GET /api/team/payroll/summary — Mini App payroll summary data
 router.get('/payroll/summary', async (req, res) => {
   try {
     const telegramId = req.query.telegramId;
@@ -1127,20 +1127,74 @@ router.get('/payroll/summary', async (req, res) => {
     }
 
     const baseSalary = Number(emp?.base_salary || emp?.baseSalary) || 45000;
-    const bonus = Number(emp?.earned_commissions || emp?.earnedCommissions) || 5000;
-    const totalEarnings = baseSalary + bonus;
+    const commissions = Number(emp?.earned_commissions || emp?.earnedCommissions) || 0;
+    const bonus = Number(emp?.bonus) || 0;
+    const deductions = Number(emp?.deductions) || 0;
+    const grossPay = baseSalary + commissions + bonus;
+    const netPay = Math.max(0, grossPay - deductions);
 
     res.json({
       baseSalary,
+      commissions,
       bonus,
-      deductions: 0,
-      netPay: totalEarnings,
+      deductions,
+      grossPay,
+      netPay,
       month: new Date().toLocaleString('en-US', { month: 'long', year: 'numeric' }),
-      status: 'Paid',
-      disbursedDate: new Date().toISOString().split('T')[0]
+      status: emp?.payout_status || 'Paid',
+      disbursedDate: emp?.payout_date || new Date().toISOString().split('T')[0]
     });
   } catch (err) {
     console.error('Payroll summary GET error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/team/me/stats — Personal performance statistics for Home tab
+router.get('/me/stats', requireAuth, async (req, res) => {
+  try {
+    const empCode = req.user.emp_code || req.user.linkedId || req.user.id;
+    const empName = req.user.name || req.user.profile?.name || '';
+    const firstName = empName.split(' ')[0] || '';
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+    const monthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+    let tasksCompleted = 0;
+    let attendanceDays = 0;
+    let eodSubmitted = 0;
+
+    if (supabase) {
+      // Completed tasks this month
+      const { data: tasks } = await supabase.from('tasks')
+        .select('id, stage')
+        .ilike('assignee', `%${firstName}%`)
+        .or('stage.eq.Done,stage.eq.Completed');
+      tasksCompleted = (tasks || []).length;
+
+      // Attendance days this month
+      const { data: att } = await supabase.from('attendance')
+        .select('date')
+        .eq('employee_id', empCode)
+        .ilike('date', `${monthStr}%`);
+      attendanceDays = (att || []).length;
+
+      // EOD reports this month
+      const { data: eods } = await supabase.from('eod_reports')
+        .select('id')
+        .eq('employee_id', empCode)
+        .gte('created_at', monthStart);
+      eodSubmitted = (eods || []).length;
+    }
+
+    res.json({
+      tasksCompleted,
+      attendanceDays,
+      eodSubmitted,
+      month: now.toLocaleString('en-US', { month: 'long' })
+    });
+  } catch (err) {
+    console.error('GET /me/stats error:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
