@@ -3008,18 +3008,32 @@
     const amt = document.getElementById('expAmt')?.value;
     const date = document.getElementById('expDate')?.value;
     const desc = document.getElementById('expDesc')?.value;
+    const fileInput = document.getElementById('expFile');
     if (!cat || !amt || !date) { tg?.showAlert ? tg.showAlert('Please fill in Category, Amount & Date.') : alert('Fill required fields'); return; }
+
+    let receiptUrl = '';
+    if (fileInput && fileInput.files && fileInput.files[0]) {
+      try {
+        const file = fileInput.files[0];
+        receiptUrl = await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onload = e => resolve(e.target.result);
+          reader.readAsDataURL(file);
+        });
+      } catch (e) {}
+    }
+
     try {
       const tgUser = tg?.initDataUnsafe?.user;
       const telegramId = tgUser?.id || currentUser?.telegramId || 'debug';
       await fetch('/api/expenses', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ telegramId, employeeId: currentUser?.id, employeeName: currentUser?.name, category: cat, amount: Number(amt), date, description: desc })
+        headers: authHeaders(),
+        body: JSON.stringify({ telegramId, employeeId: currentUser?.id, employeeName: currentUser?.name, category: cat, amount: Number(amt), date, description: desc, receipt_url: receiptUrl })
       });
     } catch(e) {}
     document.getElementById('expenseSheet')?.remove();
-    showPhaseGate('🧾', 'Expense Submitted!', 5, `BDT ${Number(document.getElementById('expAmt')?.value || 0).toLocaleString()} claim forwarded to your Line Manager for Tier-1 approval.`, () => {});
+    showPhaseGate('🧾', 'Expense Submitted!', 5, `BDT ${Number(amt).toLocaleString()} claim forwarded to your Line Manager for Tier-1 approval.`, () => {});
   }
 
   function openLeaveForm() {
@@ -3060,12 +3074,9 @@
     if (!type || !from || !to || !reason) { tg?.showAlert ? tg.showAlert('Please fill all required fields.') : alert('Fill required fields'); return; }
     try {
       const tgUser = tg?.initDataUnsafe?.user;
-      const token = sessionStorage.getItem('jwt_token');
-      const headers = { 'Content-Type': 'application/json' };
-      if (token) headers['Authorization'] = `Bearer ${token}`;
       await fetch('/api/leaves', {
         method: 'POST',
-        headers,
+        headers: authHeaders(),
         body: JSON.stringify({ telegramId: tgUser?.id || 'debug', employeeId: currentUser?.id, employeeName: currentUser?.name, type, fromDate: from, toDate: to, reason, coverage: document.getElementById('leaveCover')?.value })
       });
     } catch(e) {}
@@ -3073,7 +3084,7 @@
     showPhaseGate('🌴', 'Leave Requested!', 0, `Your ${type} request has been sent to your Line Manager for approval. You'll get a Telegram notification on the decision.`, () => {});
   }
 
-  function openEODForm() {
+  async function openEODForm() {
     const now = new Date();
     const sheet = document.createElement('div');
     sheet.id = 'eodSheet';
@@ -3089,8 +3100,13 @@
         <div style="font-size:0.72rem;opacity:0.75;margin-top:0.15rem;">${currentUser?.name || 'Team Member'} · ${currentUser?.role || ''}</div>
       </div>
       <div class="card" style="margin:0 0 0.75rem;">
-        <div class="form-group"><label class="form-label">Today's Completed Tasks *</label>
-          <textarea id="eodTasks" class="form-input" rows="4" placeholder="• Edited Chillox Eid TVC (v3)&#10;• Attended morning briefing&#10;• Delivered 5 social posts for Apex"></textarea></div>
+        <div class="form-group">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.2rem;">
+            <label class="form-label" style="margin:0;">Today's Completed Tasks *</label>
+            <span id="eodAutoBadge" style="font-size:0.65rem;color:var(--purple);font-weight:700;">⏳ Auto-filling...</span>
+          </div>
+          <textarea id="eodTasks" class="form-input" rows="4" placeholder="• Edited Chillox Eid TVC (v3)&#10;• Attended morning briefing&#10;• Delivered 5 social posts for Apex"></textarea>
+        </div>
         <div class="form-group"><label class="form-label">Blockers / Challenges (if any)</label>
           <textarea id="eodBlockers" class="form-input" rows="2" placeholder="e.g. Waiting for client feedback on Chillox cut"></textarea></div>
         <div class="form-group"><label class="form-label">Plan for Tomorrow</label>
@@ -3102,6 +3118,25 @@
         <button class="btn-primary" onclick="submitEOD()" style="margin-top:0.25rem;">📤 Submit EOD Report</button>
       </div>`;
     document.body.appendChild(sheet);
+
+    // Auto-fill completed activity
+    try {
+      const tgUser = tg?.initDataUnsafe?.user;
+      const telegramId = tgUser?.id || currentUser?.telegramId || 'debug';
+      const res = await fetch(`/api/team/daily-activity?telegramId=${telegramId}`, { headers: authHeaders() });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.text) {
+          const ta = document.getElementById('eodTasks');
+          if (ta && !ta.value) ta.value = data.text;
+          const badge = document.getElementById('eodAutoBadge');
+          if (badge) badge.textContent = '✨ Auto-filled';
+        }
+      }
+    } catch(e) {
+      const badge = document.getElementById('eodAutoBadge');
+      if (badge) badge.style.display = 'none';
+    }
   }
 
   async function submitEOD() {
@@ -3112,7 +3147,7 @@
       const tgUser = tg?.initDataUnsafe?.user;
       await fetch('/api/team/eod', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: authHeaders(),
         body: JSON.stringify({
           telegramId: tgUser?.id || 'debug',
           employeeId: currentUser?.id,
