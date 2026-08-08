@@ -68,6 +68,18 @@ router.post('/', requireAuth, async (req, res) => {
     const { data: allLeaves } = await supabase.from('leaves').select('*').order('created_at', { ascending: false });
     broadcast('leave_update', (allLeaves || []).map(mapLeave));
 
+    try {
+      const { automation } = require('../services/automation');
+      await automation.trigger('leave_submitted', {
+        employeeId: payload.employee_id,
+        employeeName: payload.employee_name,
+        leaveType: payload.leave_type,
+        startDate: payload.start_date,
+        endDate: payload.end_date,
+        reason: payload.reason
+      });
+    } catch (e) { console.warn('Automation trigger leave_submitted failed:', e.message); }
+
     res.json({ success: true, leave });
   } catch (err) {
     console.error('Leave POST error:', err.message);
@@ -127,6 +139,17 @@ router.post(['/:id/approve', '/:id/manager-approve'], requireAuth, async (req, r
     const { data: teamData } = await supabase.from('profiles').select('*').order('created_at', { ascending: false });
     broadcast('team_update', teamData || []);
 
+    try {
+      const { automation } = require('../services/automation');
+      await automation.trigger('leave_decision', {
+        employeeId: data.employee_id,
+        employeeName: data.employee_name,
+        status: 'Approved',
+        leaveType: data.leave_type,
+        decidedBy: updates.manager_reviewed_by
+      });
+    } catch (e) { console.warn('Automation trigger leave_decision (Approved) failed:', e.message); }
+
     res.json({ success: true, leave });
   } catch (err) {
     console.error('Leave approve error:', err.message);
@@ -150,6 +173,17 @@ router.post('/:id/reject', requireAuth, async (req, res) => {
     const leave = mapLeave(data);
     const { data: allLeaves } = await supabase.from('leaves').select('*').order('created_at', { ascending: false });
     broadcast('leave_update', (allLeaves || []).map(mapLeave));
+
+    try {
+      const { automation } = require('../services/automation');
+      await automation.trigger('leave_decision', {
+        employeeId: data.employee_id,
+        employeeName: data.employee_name,
+        status: 'Rejected',
+        leaveType: data.leave_type,
+        decidedBy: updates.reviewed_by
+      });
+    } catch (e) { console.warn('Automation trigger leave_decision (Rejected) failed:', e.message); }
 
     res.json({ success: true, leave });
   } catch (err) {

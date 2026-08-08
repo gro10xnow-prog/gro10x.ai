@@ -91,6 +91,17 @@ router.post('/', requireAuth, async (req, res) => {
     const { data: allExpenses } = await supabase.from('expenses').select('*').order('created_at', { ascending: false });
     broadcast('expense_update', (allExpenses || []).map(mapExpense));
 
+    try {
+      const { automation } = require('../services/automation');
+      await automation.trigger('expense_submitted', {
+        employeeId: payload.submitted_by_id,
+        employeeName: payload.submitted_by,
+        amount: payload.amount,
+        category: payload.category,
+        description: payload.description
+      });
+    } catch (e) { console.warn('Automation trigger expense_submitted failed:', e.message); }
+
     res.json({ success: true, expense });
   } catch (err) {
     console.error('Expenses POST error:', err.message);
@@ -115,6 +126,15 @@ router.put('/:id/approve', requireAuth, requireManager, async (req, res) => {
     const expense = mapExpense(data);
     const { data: allExpenses } = await supabase.from('expenses').select('*').order('created_at', { ascending: false });
     broadcast('expense_update', (allExpenses || []).map(mapExpense));
+
+    try {
+      const { automation } = require('../services/automation');
+      await automation.trigger('expense_tier1_approved', {
+        employeeId: data.submitted_by_id || data.employee_id,
+        amount: data.amount,
+        approvedBy: req.user.name
+      });
+    } catch (e) { console.warn('Automation trigger expense_tier1_approved failed:', e.message); }
 
     res.json({ success: true, expense });
   } catch (err) {
@@ -142,6 +162,15 @@ router.post('/:id/approve-tier1', requireAuth, async (req, res) => {
     const { data: allExpenses } = await supabase.from('expenses').select('*').order('created_at', { ascending: false });
     broadcast('expense_update', (allExpenses || []).map(mapExpense));
 
+    try {
+      const { automation } = require('../services/automation');
+      await automation.trigger('expense_tier1_approved', {
+        employeeId: data.submitted_by_id || data.employee_id,
+        amount: data.amount,
+        approvedBy: approver
+      });
+    } catch (e) { console.warn('Automation trigger expense_tier1_approved failed:', e.message); }
+
     res.json({ success: true, expense });
   } catch (err) {
     console.error('Expense Tier 1 error:', err.message);
@@ -167,6 +196,15 @@ router.post('/:id/approve-tier2', requireAuth, async (req, res) => {
     const expense = mapExpense(data);
     const { data: allExpenses } = await supabase.from('expenses').select('*').order('created_at', { ascending: false });
     broadcast('expense_update', (allExpenses || []).map(mapExpense));
+
+    try {
+      const { automation } = require('../services/automation');
+      await automation.trigger('expense_tier2_approved', {
+        employeeId: data.submitted_by_id || data.employee_id,
+        amount: data.amount,
+        approvedBy: approver
+      });
+    } catch (e) { console.warn('Automation trigger expense_tier2_approved failed:', e.message); }
 
     res.json({ success: true, expense });
   } catch (err) {

@@ -125,6 +125,7 @@ router.post('/', requireAuth, async (req, res) => {
       stage: req.body.stage || 'Briefing',
       priority: req.body.priority || 'Medium',
       assignee: req.body.assignee || 'Unassigned',
+      assignee_id: req.body.assignee_id || req.body.assigneeId || null,
       due_date: req.body.due_date || req.body.dueDate || new Date(Date.now() + 3 * 86400000).toISOString().split('T')[0],
       estimated_hours: Number(req.body.estimatedHours || req.body.estimated_hours) || 8,
       description: req.body.description || '',

@@ -141,6 +141,8 @@ window.APP_MODULES.hr = async function(container) {
       <!-- Subtab Switcher -->
       <div style="display:flex; gap:0.5rem; background:var(--surface-1); padding:0.35rem; border-radius:12px; border:1px solid var(--border-subtle); width:fit-content; margin-bottom:1.5rem; flex-wrap:wrap;">
         <button class="btn-ghost ${activeHrTab === 'roster' ? 'btn-secondary' : ''}" onclick="window.HR_MODULE.switchTab('roster')">👥 Team Roster & Profiles (${teamData.length})</button>
+        <button class="btn-ghost ${activeHrTab === 'attendance' ? 'btn-secondary' : ''}" onclick="window.HR_MODULE.switchTab('attendance')">📍 Today's Attendance (${attendanceData.length})</button>
+        <button class="btn-ghost ${activeHrTab === 'eod' ? 'btn-secondary' : ''}" onclick="window.HR_MODULE.switchTab('eod')">📝 EOD Reports (${eodData.length})</button>
         <button class="btn-ghost ${activeHrTab === 'leaves' ? 'btn-secondary' : ''}" onclick="window.HR_MODULE.switchTab('leaves')">🌴 Leave Requests (${pendingLeaves} Pending)</button>
       </div>
 
@@ -271,12 +273,60 @@ window.APP_MODULES.hr = async function(container) {
                   <td>
                     <div style="display:flex; gap:0.3rem;">
                       <button class="btn-primary btn-sm" onclick='window.HR_MODULE.viewProfile("${code}")'>👁️ Profile & Survey</button>
-                      <button class="btn-secondary btn-sm" onclick='window.HR_MODULE.generatePayslipPDF("${code}")'>📄 Payslip</button>
-                    </div>
-                  </td>
-                </tr>
-              `;
-            }).join('') || `<tr><td colspan="6" style="text-align:center; padding:3rem; color:var(--text-muted);">No team members found</td></tr>`}
+              </tbody>
+        </table>
+      `;
+    } else if (activeHrTab === 'attendance') {
+      return `
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Employee Name</th>
+              <th>Date</th>
+              <th>Clock In</th>
+              <th>Clock Out</th>
+              <th>Status</th>
+              <th>Location</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${attendanceData.map(a => `
+              <tr>
+                <td style="font-weight:700;">👤 ${escapeHTML(a.name || a.employee_name || a.employee_id || 'Staff')}</td>
+                <td>${escapeHTML(a.date || 'Today')}</td>
+                <td style="color:#34d399; font-weight:700;">${escapeHTML(a.clock_in_time || '—')}</td>
+                <td style="color:var(--text-muted);">${escapeHTML(a.clock_out_time || '—')}</td>
+                <td><span class="badge badge-emerald">● ${escapeHTML(a.status || 'In Studio')}</span></td>
+                <td style="font-size:0.75rem; color:var(--text-muted);">${escapeHTML(a.location || 'Studio HQ')}</td>
+              </tr>
+            `).join('') || `<tr><td colspan="6" style="text-align:center; padding:3rem; color:var(--text-muted);">No attendance records logged for today</td></tr>`}
+          </tbody>
+        </table>
+      `;
+    } else if (activeHrTab === 'eod') {
+      return `
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Employee Name</th>
+              <th>Date</th>
+              <th>Tasks Completed</th>
+              <th>Blockers</th>
+              <th>Highlights</th>
+              <th>Mood</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${eodData.map(e => `
+              <tr style="${e.blockers ? 'background:rgba(239,68,68,0.05);' : ''}">
+                <td style="font-weight:700;">👤 ${escapeHTML(e.employee_name || e.employee_id || 'Staff')}</td>
+                <td>${escapeHTML(e.report_date || (e.created_at ? new Date(e.created_at).toLocaleDateString() : 'Today'))}</td>
+                <td style="font-size:0.8rem; color:var(--text-main); max-width:220px;">${escapeHTML(e.tasks_completed || e.summary || 'N/A')}</td>
+                <td style="font-size:0.8rem; color:${e.blockers ? '#fca5a5' : 'var(--text-muted)'}; max-width:180px;">${escapeHTML(e.blockers || 'None')}</td>
+                <td style="font-size:0.8rem; color:var(--text-secondary); max-width:180px;">${escapeHTML(e.highlights || 'N/A')}</td>
+                <td><span style="font-size:1.1rem;">${escapeHTML(e.mood || '😊')}</span></td>
+              </tr>
+            `).join('') || `<tr><td colspan="6" style="text-align:center; padding:3rem; color:var(--text-muted);">No EOD reports logged yet</td></tr>`}
           </tbody>
         </table>
       `;
@@ -355,8 +405,8 @@ window.APP_MODULES.hr = async function(container) {
       const member = teamData.find(m => (m.emp_code || m.id) === code || m.name === code);
       if (!member) return;
 
-      document.getElementById('drawerStaffName').textContent = `👤 ${member.name} (${member.emp_code || member.id})`;
-      
+      document.getElementById('drawerStaffName').textContent = `${member.name} (${member.emp_code || member.id})`;
+
       const memberAtt = attendanceData.filter(a => a.employee_id === (member.emp_code || member.id) || a.name === member.name);
       const memberEods = eodData.filter(e => e.employee_id === (member.emp_code || member.id) || e.employee_name === member.name);
 
@@ -375,14 +425,38 @@ window.APP_MODULES.hr = async function(container) {
             </div>
           </div>
 
-          <!-- Survey & Profile Details -->
+          <!-- Identity & Emergency -->
           <div style="background:rgba(255,255,255,0.04); border:1px solid var(--border-subtle); border-radius:12px; padding:1rem;">
-            <div style="font-size:0.75rem; font-weight:800; color:var(--purple-light); text-transform:uppercase; margin-bottom:0.5rem;">Survey & Onboarding Details</div>
+            <div style="font-size:0.75rem; font-weight:800; color:var(--purple-light); text-transform:uppercase; margin-bottom:0.5rem;">Identity & Emergency</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.6rem; font-size:0.85rem;">
+              <div><strong>Blood Group:</strong> ${escapeHTML(member.bloodGroup || member.blood_group || 'N/A')}</div>
+              <div><strong>NID No:</strong> ${escapeHTML(member.nidNo || member.nid_no || 'N/A')}</div>
+              <div><strong>TIN No:</strong> ${escapeHTML(member.tinNo || member.tin_no || 'N/A')}</div>
+              <div><strong>Driving License:</strong> ${escapeHTML(member.drivingLicense || member.driving_license || 'N/A')}</div>
+              <div><strong>Emergency Contact:</strong> ${escapeHTML(member.emergency_contact || member.emergencyContact || 'N/A')}</div>
+              <div><strong>Relation:</strong> ${escapeHTML(member.emergencyRelation || member.emergency_relation || 'N/A')}</div>
+            </div>
+          </div>
+
+          <!-- Education & Professional -->
+          <div style="background:rgba(255,255,255,0.04); border:1px solid var(--border-subtle); border-radius:12px; padding:1rem;">
+            <div style="font-size:0.75rem; font-weight:800; color:#38bdf8; text-transform:uppercase; margin-bottom:0.5rem;">Education & Skills</div>
             <div style="display:flex; flex-direction:column; gap:0.5rem; font-size:0.85rem;">
-              <div><strong>Skills & Strengths:</strong> ${escapeHTML(member.skills || member.strengths || 'Video Editing, Color Grading, Storyboarding')}</div>
-              <div><strong>Personal Goals:</strong> ${escapeHTML(member.goals || 'Master Motion Graphics & Lead Studio Projects')}</div>
-              <div><strong>bKash / Bank Account:</strong> ${escapeHTML(member.bkash || member.bank_account || '01700000000')}</div>
-              <div><strong>Emergency Contact:</strong> ${escapeHTML(member.emergency_contact || 'Family Contact (+880 1700000000)')}</div>
+              <div><strong>Degree & Institute:</strong> ${escapeHTML(member.educationDegree || 'N/A')} — ${escapeHTML(member.institution || 'N/A')} (${escapeHTML(member.passingYear || 'N/A')})</div>
+              <div><strong>Primary Skill:</strong> ${escapeHTML(member.primarySkill || member.skills || 'N/A')}</div>
+              <div><strong>Secondary Skill:</strong> ${escapeHTML(member.secondarySkill || 'N/A')}</div>
+              <div><strong>Portfolio:</strong> ${member.portfolioUrl ? `<a href="${escapeHTML(member.portfolioUrl)}" target="_blank" style="color:var(--purple-light);">${escapeHTML(member.portfolioUrl)}</a>` : 'N/A'}</div>
+            </div>
+          </div>
+
+          <!-- Studio Equipment & Preferences -->
+          <div style="background:rgba(255,255,255,0.04); border:1px solid var(--border-subtle); border-radius:12px; padding:1rem;">
+            <div style="font-size:0.75rem; font-weight:800; color:#f472b6; text-transform:uppercase; margin-bottom:0.5rem;">Studio Equipment & Gear</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.6rem; font-size:0.85rem;">
+              <div><strong>Laptop Serial:</strong> ${escapeHTML(member.laptopSerial || 'N/A')}</div>
+              <div><strong>Studio Gear:</strong> ${escapeHTML(member.studioGear || 'N/A')}</div>
+              <div><strong>T-Shirt Size:</strong> ${escapeHTML(member.tshirtSize || 'N/A')}</div>
+              <div><strong>Dietary Pref:</strong> ${escapeHTML(member.dietaryPref || 'N/A')}</div>
             </div>
           </div>
 
@@ -410,6 +484,16 @@ window.APP_MODULES.hr = async function(container) {
                   <div style="background:rgba(0,0,0,0.2); padding:0.5rem; border-radius:6px;">
                     <div style="display:flex; justify-content:space-between; font-weight:700; color:var(--text-main);">
                       <span>📅 ${e.report_date || e.created_at ? new Date(e.report_date || e.created_at).toLocaleDateString() : 'Recent'}</span>
+                      <span>Mood: ${escapeHTML(e.mood || '😊')}</span>
+                    </div>
+                    <div style="color:var(--text-muted); margin-top:0.25rem;">${escapeHTML(e.tasks_completed || e.summary || 'Tasks completed')}</div>
+                  </div>
+                `).join('')}
+              </div>
+            `}
+          </div>
+        </div>
+      `; 'Recent'}</span>
                       <span>Mood: ${escapeHTML(e.mood || '😊')}</span>
                     </div>
                     <div style="color:var(--text-muted); margin-top:0.25rem;">${escapeHTML(e.tasks_completed || e.summary || 'Tasks completed')}</div>
