@@ -1619,6 +1619,13 @@
     }
   }
 
+  function authHeaders() {
+    const token = sessionStorage.getItem('jwt_token');
+    const h = { 'Content-Type': 'application/json' };
+    if (token) h['Authorization'] = `Bearer ${token}`;
+    return h;
+  }
+
   let currentUser = null;
   let currentPart = 1;
   let clockTimer = null;
@@ -1808,11 +1815,11 @@
   function renderQuickActions(emp) {
     const grid = document.getElementById('quickActionsGrid');
     const level = emp.accessLevel || 'Specialist / Crew';
+    const isClockedIn = emp?.status === 'In Studio' || emp?.status === 'On Field Shoot';
 
     const allActions = {
       // ── Standard employee (everyone gets these)
-      clockIn:    { icon: '📍', label: 'Clock In',       fn: "handleClockIn()" },
-      clockOut:   { icon: '🚪', label: 'Clock Out',      fn: "handleClockOut()" },
+      clockToggle: { icon: isClockedIn ? '🚪' : '📍', label: isClockedIn ? 'Clock Out' : 'Clock In', fn: "handleClockToggle()" },
       tasks:      { icon: '📋', label: 'My Tasks',       fn: "showPage('pageTasks');loadUserTasks();" },
       pay:        { icon: '💰', label: 'My Earnings',    fn: "showPage('pagePay');loadPayData();" },
       bank:       { icon: '🏦', label: 'Bank/bKash',     fn: "showPage('pagePay');loadPayData();" },
@@ -1837,23 +1844,21 @@
 
     if (level === 'Owner / Admin') {
       keys = isTech
-        // Tech Admin: executive + employee + tech tools
-        ? ['clockIn', 'briefing', 'team', 'approvals', 'tasks', 'expense', 'leave', 'eod', 'pay', 'bank', 'clients', 'admin']
-        // MD / Owner: executive overview + every employee action
-        : ['clockIn', 'briefing', 'team', 'approvals', 'expQueue', 'clients', 'tasks', 'expense', 'leave', 'eod', 'pay', 'bank'];
+        ? ['clockToggle', 'briefing', 'team', 'approvals', 'tasks', 'expense', 'leave', 'eod', 'pay', 'bank', 'clients', 'admin']
+        : ['clockToggle', 'briefing', 'team', 'approvals', 'expQueue', 'clients', 'tasks', 'expense', 'leave', 'eod', 'pay', 'bank'];
     } else if (level === 'Director / Manager') {
-      keys = ['clockIn', 'team', 'tasks', 'briefing', 'expense', 'leave', 'eod', 'pay', 'bank', 'profile', 'clockOut'];
+      keys = ['clockToggle', 'team', 'tasks', 'briefing', 'expense', 'leave', 'eod', 'pay', 'bank', 'profile'];
     } else if (level === 'Finance Manager') {
-      keys = ['clockIn', 'expQueue', 'payroll', 'finance', 'expense', 'leave', 'eod', 'pay', 'bank', 'profile', 'clockOut'];
+      keys = ['clockToggle', 'expQueue', 'payroll', 'finance', 'expense', 'leave', 'eod', 'pay', 'bank', 'profile'];
     } else {
       // Specialist / Crew — standard set
-      keys = ['clockIn', 'tasks', 'expense', 'leave', 'eod', 'pay', 'bank', 'profile', 'clockOut'];
+      keys = ['clockToggle', 'tasks', 'expense', 'leave', 'eod', 'pay', 'bank', 'profile'];
     }
 
     grid.innerHTML = keys.map(k => {
       const a = allActions[k];
       if (!a) return '';
-      return `<button class="qa-btn" onclick="${a.fn}">
+      return `<button class="qa-btn" onclick="triggerHaptic('medium');${a.fn}">
         <div class="qa-icon">${a.icon}</div>
         <div class="qa-label">${a.label}</div>
       </button>`;
@@ -2216,6 +2221,16 @@
     document.getElementById('attDate').textContent = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   }
 
+  async function handleClockToggle() {
+    triggerHaptic('medium');
+    const isClockedIn = currentUser?.status === 'In Studio' || currentUser?.status === 'On Field Shoot';
+    if (isClockedIn) {
+      await handleClockOut();
+    } else {
+      await handleClockIn();
+    }
+  }
+
   async function handleClockIn() {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(async (pos) => {
@@ -2232,15 +2247,14 @@
       const telegramId = tgUser?.id || currentUser?.telegramId || 'debug';
       await fetch('/api/team/clockin', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: authHeaders(),
         body: JSON.stringify({ telegramId, lat, lng, gps })
       });
     } catch (e) {}
     if (currentUser) currentUser.status = 'In Studio';
     setStatusPill('In Studio');
     const pill = document.getElementById('attStatusPill');
-    pill.textContent = '🟢 Clocked In';
-    pill.className = 'att-status-pill att-pill-online';
+    if (pill) { pill.textContent = '🟢 Clocked In'; pill.className = 'att-status-pill att-pill-online'; }
     tg?.showAlert ? tg.showAlert('✅ Clocked in successfully!') : alert('✅ Clocked in!');
   }
 
@@ -2250,15 +2264,14 @@
       const telegramId = tgUser?.id || currentUser?.telegramId || 'debug';
       await fetch('/api/team/clockout', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: authHeaders(),
         body: JSON.stringify({ telegramId })
       });
     } catch (e) {}
     if (currentUser) currentUser.status = 'Offline';
     setStatusPill('Offline');
     const pill = document.getElementById('attStatusPill');
-    pill.textContent = '⬛ Offline';
-    pill.className = 'att-status-pill att-pill-offline';
+    if (pill) { pill.textContent = '⬛ Offline'; pill.className = 'att-status-pill att-pill-offline'; }
     tg?.showAlert ? tg.showAlert('🚪 Clocked out. Have a great evening!') : alert('🚪 Clocked out!');
   }
 
