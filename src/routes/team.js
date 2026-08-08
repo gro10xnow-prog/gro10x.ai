@@ -617,7 +617,8 @@ router.get('/', requireAuth, async (req, res) => {
   try {
     const { data, error } = await supabase.from('profiles').select('*').order('emp_code', { ascending: true });
     if (error) throw error;
-    const isManager = req.user?.accessLevel === 'admin' || req.user?.accessLevel === 'manager' || req.user?.role === 'Manager' || req.user?.role === 'Admin';
+    const access = (req.user?.accessLevel || req.user?.role || '').toLowerCase();
+    const isManager = access.includes('admin') || access.includes('owner') || access.includes('manager') || access.includes('director') || access.includes('lead') || access.includes('technology');
     res.json((data || []).map(p => isManager ? mapProfile(p) : mapPublicProfile(p)));
   } catch (err) {
     console.error('Team GET error:', err.message);
