@@ -2,7 +2,8 @@ const express = require('express');
 const router = express.Router();
 const { requireAuth } = require('../middleware/auth');
 const { requireManager } = require('../middleware/rbac');
-const { verifyTelegramInitData } = require('../middleware/telegramAuth');
+const { verifyTelegramInitData, requireMiniAppAuth } = require('../middleware/telegramAuth');
+const rateLimit = require('express-rate-limit');
 const { supabase } = require('../services/supabase');
 const { broadcast } = require('../services/sse');
 const { sendTelegramNotification, getTeamBot } = require('../services/bot');
@@ -10,6 +11,14 @@ const { readDB } = require('../services/db');
 const { createTempPin } = require('../services/auth-pins');
 
 const { uploadFile } = require('../services/storage');
+
+const miniAppLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 15,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests, please try again in a minute.' }
+});
 
 function normalizePhone(p) {
   if (!p) return '';
@@ -76,6 +85,23 @@ function mapProfile(p) {
     tshirtSize: p.tshirt_size || '',
     dietaryPref: p.dietary_pref || ''
   };
+}
+
+function mapPublicProfile(p) {
+  const full = mapProfile(p);
+  if (!full) return null;
+  delete full.baseSalary;
+  delete full.commissionRate;
+  delete full.earnedCommissions;
+  delete full.nidNo;
+  delete full.bankInfo;
+  delete full.permanentAddress;
+  delete full.bloodGroup;
+  delete full.maritalStatus;
+  delete full.dependents;
+  delete full.tinNo;
+  delete full.drivingLicense;
+  return full;
 }
 
 function mapAttendance(a) {
@@ -317,7 +343,7 @@ router.get('/daily-activity', async (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 // POST /api/team/clockin   ← Mini App clock-in button (with GPS)
 // ─────────────────────────────────────────────────────────────────────────────
-router.post('/clockin', verifyTelegramInitData, async (req, res) => {
+router.post('/clockin', miniAppLimiter, requireMiniAppAuth, async (req, res) => {
   try {
     const telegramId = req.telegramUser ? String(req.telegramUser.id) : req.body.telegramId;
     const { location, latitude, longitude } = req.body;
@@ -361,7 +387,7 @@ router.post('/clockin', verifyTelegramInitData, async (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 // POST /api/team/clockout   ← Mini App clock-out button
 // ─────────────────────────────────────────────────────────────────────────────
-router.post('/clockout', verifyTelegramInitData, async (req, res) => {
+router.post('/clockout', miniAppLimiter, requireMiniAppAuth, async (req, res) => {
   try {
     const telegramId = req.telegramUser ? String(req.telegramUser.id) : req.body.telegramId;
     let emp = req.user;
@@ -394,9 +420,10 @@ router.post('/clockout', verifyTelegramInitData, async (req, res) => {
 // POST /api/team/survey   ← Mini App profile survey parts 1-4
 // Body: { telegramId, part, data }
 // ─────────────────────────────────────────────────────────────────────────────
-router.post('/survey', async (req, res) => {
+router.post('/survey', miniAppLimiter, requireMiniAppAuth, async (req, res) => {
   try {
-    const { telegramId, part, data: partData } = req.body;
+    const telegramId = req.telegramUser ? String(req.telegramUser.id) : req.body.telegramId;
+    const { part, data: partData } = req.body;
     if (!telegramId || !part) return res.status(400).json({ error: 'telegramId and part required' });
 
     const found = await findEmpByTelegramId(telegramId);
@@ -504,9 +531,10 @@ router.post('/survey', async (req, res) => {
 // POST /api/team/agreement   ← Mini App employment agreement e-sign
 // Body: { telegramId, stage, signature, timestamp }
 // ─────────────────────────────────────────────────────────────────────────────
-router.post('/agreement', async (req, res) => {
+router.post('/agreement', miniAppLimiter, requireMiniAppAuth, async (req, res) => {
   try {
-    const { telegramId, stage, signature, timestamp } = req.body;
+    const telegramId = req.telegramUser ? String(req.telegramUser.id) : req.body.telegramId;
+    const { stage, signature, timestamp } = req.body;
     if (!telegramId) return res.status(400).json({ error: 'telegramId required' });
 
     const found = await findEmpByTelegramId(telegramId);
@@ -589,7 +617,8 @@ router.get('/', requireAuth, async (req, res) => {
   try {
     const { data, error } = await supabase.from('profiles').select('*').order('emp_code', { ascending: true });
     if (error) throw error;
-    res.json((data || []).map(mapProfile));
+    const isManager = req.user?.accessLevel === 'admin' || req.user?.accessLevel === 'manager' || req.user?.role === 'Manager' || req.user?.role === 'Admin';
+    res.json((data || []).map(p => isManager ? mapProfile(p) : mapPublicProfile(p)));
   } catch (err) {
     console.error('Team GET error:', err.message);
     res.status(500).json({ error: err.message });

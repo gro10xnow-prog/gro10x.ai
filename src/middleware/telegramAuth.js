@@ -1,15 +1,12 @@
 const crypto = require('crypto');
+const { requireAuth } = require('./auth');
 
 /**
  * Validates Telegram WebApp initData using HMAC-SHA256 signature algorithm.
  * Attaches req.telegramUser = { id, first_name, username, ... } if valid.
- * 
- * Non-blocking behavior:
- * - If x-telegram-init-data header is missing, passes through to next middleware (allowing JWT / API key fallback).
- * - Rejects HTTP 401 ONLY IF initData is provided but signature hash is invalid.
  */
 function verifyTelegramInitData(req, res, next) {
-  const botToken = process.env.TELEGRAM_BOT_TOKEN;
+  const botToken = process.env.TEAM_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN;
   const initData = req.headers['x-telegram-init-data'] || req.body?.initData;
 
   if (!initData || !botToken) {
@@ -50,4 +47,37 @@ function verifyTelegramInitData(req, res, next) {
   }
 }
 
-module.exports = { verifyTelegramInitData };
+/**
+ * requireMiniAppAuth — Combined guard for Mini App endpoints.
+ * Accepts either:
+ *  1) Valid JWT token in Authorization header (Admin panel / SPA)
+ *  2) Valid Telegram initData HMAC signature (Mini App frontend)
+ * Rejects all other unauthenticated requests with 401.
+ */
+function requireMiniAppAuth(req, res, next) {
+  const authHeader = req.headers['authorization'];
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    return requireAuth(req, res, next);
+  }
+
+  const botToken = process.env.TEAM_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN;
+  const initData = req.headers['x-telegram-init-data'] || req.body?.initData;
+
+  if (!initData) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
+
+  if (!botToken) {
+    console.warn('[Security Warning] Bot token missing from env during initData auth check');
+    return res.status(500).json({ error: 'Server auth configuration error' });
+  }
+
+  verifyTelegramInitData(req, res, () => {
+    if (!req.telegramUser && !req.user) {
+      return res.status(401).json({ error: 'Invalid Telegram authentication payload' });
+    }
+    next();
+  });
+}
+
+module.exports = { verifyTelegramInitData, requireMiniAppAuth };

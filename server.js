@@ -137,11 +137,12 @@ app.get('/api/system-health', async (req, res) => {
 
 // Telegram Webhook Endpoint for Production Updates
 app.post(['/api/webhooks/telegram', '/webhooks/telegram'], async (req, res) => {
-  // const secretHeader = req.headers['x-telegram-bot-api-secret-token'];
-  // if (process.env.WEBHOOK_SECRET && secretHeader !== process.env.WEBHOOK_SECRET) {
-  //   console.warn('⚠️ Webhook request rejected: Invalid secret token');
-  //   return res.status(403).json({ error: 'Forbidden' });
-  // }
+  const secretHeader = req.headers['x-telegram-bot-api-secret-token'];
+  const expectedSecret = process.env.WEBHOOK_SECRET_TOKEN || process.env.WEBHOOK_SECRET;
+  if (expectedSecret && secretHeader !== expectedSecret) {
+    console.warn('⚠️ Webhook request rejected: Invalid secret token');
+    return res.status(403).json({ error: 'Forbidden' });
+  }
 
   const botType = req.query.bot || 'team';
   let targetBot = botType === 'client' ? getClientBot() : getTeamBot();
