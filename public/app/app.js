@@ -118,10 +118,12 @@
         viewContainer.innerHTML = '';
         await renderFn(viewContainer);
       } else {
+        console.error(`[PurpleOS Router] Module function missing for '${moduleName}'. Available:`, Object.keys(window.APP_MODULES || {}));
         viewContainer.innerHTML = `
           <div class="card-glass" style="text-align:center; padding:3rem;">
             <div style="font-size:2rem; margin-bottom:0.5rem;">⚠️ Module Error</div>
-            <div style="color:var(--text-muted);">Failed to render module: ${moduleName}</div>
+            <div style="color:var(--text-muted); margin-bottom:1rem;">Failed to render module: <b>${moduleName}</b></div>
+            <button class="btn-primary" onclick="window.location.reload()">🔄 Reload Portal</button>
           </div>
         `;
       }
@@ -130,7 +132,8 @@
       viewContainer.innerHTML = `
         <div class="card-glass" style="text-align:center; padding:3rem;">
           <div style="font-size:2rem; margin-bottom:0.5rem;">❌ Failed to load page</div>
-          <div style="color:var(--text-muted);">${err.message || 'Network error'}</div>
+          <div style="color:var(--text-muted); margin-bottom:1rem;">${err.message || 'Network error'}</div>
+          <button class="btn-primary" onclick="window.location.reload()">🔄 Reload Portal</button>
         </div>
       `;
       if (window.showToast) window.showToast(`Failed to load module: ${err.message}`, 'error');
@@ -141,8 +144,14 @@
     return new Promise((resolve, reject) => {
       const script = document.createElement('script');
       script.src = `/app/modules/${moduleFile}?v=${Date.now()}`;
-      script.onload = resolve;
-      script.onerror = () => reject(new Error(`Could not load /app/modules/${moduleFile}`));
+      script.onload = () => {
+        console.log(`[PurpleOS Router] Script loaded successfully: /app/modules/${moduleFile}`);
+        resolve();
+      };
+      script.onerror = (e) => {
+        console.error(`[PurpleOS Router] Failed script load event for /app/modules/${moduleFile}`, e);
+        reject(new Error(`Could not load /app/modules/${moduleFile}`));
+      };
       document.body.appendChild(script);
     });
   }

@@ -175,7 +175,9 @@ app.post(['/api/webhooks/telegram', '/webhooks/telegram'], async (req, res) => {
 // Mount API routes (prioritized before static assets)
 app.use('/api', apiRoutes);
 
-// Serve static frontend assets from /public with 1-day maxAge caching header
+// Serve SPA app modules and public static assets
+app.use('/app/modules', express.static(path.join(__dirname, 'public/app/modules'), { maxAge: 0 }));
+app.use('/app', express.static(path.join(__dirname, 'public/app'), { maxAge: 0 }));
 app.use(express.static(path.join(__dirname, 'public'), { maxAge: '1d' }));
 
 // Explicit Multi-Portal Routes (Phase C Architecture)
