@@ -224,15 +224,21 @@ router.get('/tasks', async (req, res) => {
     const found = await findEmpByTelegramId(telegramId);
     if (!found) return res.status(404).json({ error: 'Employee not found' });
 
+    const empCode = req.query.empCode || found.profile.emp_code || found.profile.id;
     const firstName = (found.profile.name || '').split(' ')[0];
     let tasks = [];
 
     if (supabase) {
-      const { data } = await supabase.from('tasks').select('*').ilike('assignee', `%${firstName}%`);
+      const { data } = await supabase.from('tasks')
+        .select('*')
+        .or(`assignee_id.eq.${empCode},assignee.ilike.%${firstName}%`);
       tasks = data || [];
     } else {
       const db = found.db || (await readDB());
-      tasks = (db.tasks || []).filter(t => (t.assignee || '').toLowerCase().includes(firstName.toLowerCase()));
+      tasks = (db.tasks || []).filter(t => 
+        (t.assignee_id && t.assignee_id === empCode) ||
+        (t.assignee || '').toLowerCase().includes(firstName.toLowerCase())
+      );
     }
 
     res.json(tasks);
@@ -298,12 +304,15 @@ router.get('/daily-activity', async (req, res) => {
 router.post('/clockin', async (req, res) => {
   try {
     const { telegramId, location, latitude, longitude } = req.body;
-    if (!telegramId) return res.status(400).json({ error: 'telegramId required' });
+    let emp = req.user;
 
-    const found = await findEmpByTelegramId(telegramId);
-    if (!found) return res.status(404).json({ error: 'Employee not found' });
+    if (!emp && telegramId) {
+      const found = await findEmpByTelegramId(telegramId);
+      if (found) emp = found.profile;
+    }
 
-    const emp = found.profile;
+    if (!emp) return res.status(401).json({ error: 'Authentication required' });
+
     const empCode = emp.emp_code || emp.id;
     const empName = emp.name;
     const today = new Date().toISOString().split('T')[0];
@@ -338,12 +347,15 @@ router.post('/clockin', async (req, res) => {
 router.post('/clockout', async (req, res) => {
   try {
     const { telegramId } = req.body;
-    if (!telegramId) return res.status(400).json({ error: 'telegramId required' });
+    let emp = req.user;
 
-    const found = await findEmpByTelegramId(telegramId);
-    if (!found) return res.status(404).json({ error: 'Employee not found' });
+    if (!emp && telegramId) {
+      const found = await findEmpByTelegramId(telegramId);
+      if (found) emp = found.profile;
+    }
 
-    const emp = found.profile;
+    if (!emp) return res.status(401).json({ error: 'Authentication required' });
+
     const empCode = emp.emp_code || emp.id;
     const nowTime = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
 
@@ -391,27 +403,54 @@ router.post('/survey', async (req, res) => {
     const profileUpdate = { xp: currentXP, badge, updated_at: new Date().toISOString() };
 
     if (part === 1 && partData) {
-      if (partData.emergencyPhone) profileUpdate.emergency_contact = partData.emergencyPhone;
+      const emerg = partData.emergencyPhone || partData.emergencyContact;
+      if (emerg) profileUpdate.emergency_contact = emerg;
+      if (partData.emergencyRelation) profileUpdate.emergency_relation = partData.emergencyRelation;
+      if (partData.maritalStatus) profileUpdate.marital_status = partData.maritalStatus;
+      if (partData.joiningDate) profileUpdate.joining_date = partData.joiningDate;
+      if (partData.dob) profileUpdate.date_of_birth = partData.dob;
+      if (partData.dependents) profileUpdate.dependents = partData.dependents;
       if (partData.address) profileUpdate.address = partData.address;
       if (partData.personalEmail) profileUpdate.personal_email = partData.personalEmail;
       if (partData.bloodGroup) profileUpdate.blood_group = partData.bloodGroup;
     }
     if (part === 2 && partData) {
-      if (partData.nidNo) profileUpdate.nid_no = partData.nidNo;
-      if (partData.permanentAddress) profileUpdate.permanent_address = partData.permanentAddress;
+      const nid = partData.nidNo || partData.nid;
+      const perm = partData.permanentAddress || partData.permAddress;
+      if (nid) profileUpdate.nid_no = nid;
+      if (perm) profileUpdate.permanent_address = perm;
+      if (partData.tin) profileUpdate.tin_no = partData.tin;
+      if (partData.license) profileUpdate.driving_license = partData.license;
+      if (partData.degree) profileUpdate.education_degree = partData.degree;
+      if (partData.institution) profileUpdate.institution = partData.institution;
+      if (partData.passingYear) profileUpdate.passing_year = partData.passingYear;
     }
     if (part === 3 && partData) {
-      // Bank info stored as JSONB
+      const bkash = partData.bkashNo || partData.bkash || '';
+      const nagad = partData.nagadNo || partData.nagad || '';
+      const rocket = partData.rocketNo || partData.rocket || '';
       profileUpdate.bank_info = {
         bankName: partData.bankName || '',
-        accountTitle: partData.accountTitle || '',
-        accNo: partData.accountNo || '',
+        accountTitle: partData.accountTitle || partData.accTitle || '',
+        accountNo: partData.accountNo || partData.accNo || '',
+        accNo: partData.accountNo || partData.accNo || '',
         branch: partData.branch || '',
-        mfsNo: partData.bkashNo || partData.nagadNo || ''
+        bkashNo: bkash,
+        nagadNo: nagad,
+        rocketNo: rocket,
+        mfsNo: bkash || nagad || rocket || ''
       };
+      if (partData.baseSalary) profileUpdate.base_salary = partData.baseSalary;
     }
     if (part === 4 && partData) {
-      if (partData.primarySkill) profileUpdate.primary_skill = partData.primarySkill;
+      const skill = partData.primarySkill || partData.skillPrimary;
+      if (skill) profileUpdate.primary_skill = skill;
+      if (partData.skillSecondary) profileUpdate.secondary_skill = partData.skillSecondary;
+      if (partData.portfolio) profileUpdate.portfolio_url = partData.portfolio;
+      if (partData.laptopSerial) profileUpdate.laptop_serial = partData.laptopSerial;
+      if (partData.studioGear) profileUpdate.studio_gear = partData.studioGear;
+      if (partData.tshirtSize) profileUpdate.tshirt_size = partData.tshirtSize;
+      if (partData.dietary) profileUpdate.dietary_pref = partData.dietary;
       // Part 4 completion → survey done, unlock full menu after agreement
       profileUpdate.survey_complete = true;
     }
@@ -1165,10 +1204,10 @@ router.get('/me/stats', requireAuth, async (req, res) => {
     let eodSubmitted = 0;
 
     if (supabase) {
-      // Completed tasks this month
+      // Completed tasks this month (match assignee_id or fallback name match)
       const { data: tasks } = await supabase.from('tasks')
         .select('id, stage')
-        .ilike('assignee', `%${firstName}%`)
+        .or(`assignee_id.eq.${empCode},assignee.ilike.%${firstName}%`)
         .or('stage.eq.Done,stage.eq.Completed');
       tasksCompleted = (tasks || []).length;
 

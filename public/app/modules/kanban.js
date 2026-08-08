@@ -397,7 +397,7 @@ window.APP_MODULES.kanban = async function(container) {
                 <label class="form-label">Assignee</label>
                 <select id="ntAssignee" class="input-text">
                   <option value="">Unassigned</option>
-                  ${teamMembers.map(m => `<option value="${escapeHTML(m.name)}">${escapeHTML(m.name)} (${escapeHTML(m.role || 'Specialist')})</option>`).join('')}
+                  ${teamMembers.map(m => `<option value="${escapeHTML(m.name)}" data-empcode="${escapeHTML(m.emp_code || m.id || '')}">${escapeHTML(m.name)} (${escapeHTML(m.role || 'Specialist')})</option>`).join('')}
                 </select>
               </div>
             </div>
@@ -928,7 +928,9 @@ window.APP_MODULES.kanban = async function(container) {
       const workflow_type = document.getElementById('ntWorkflow').value;
       const stage = document.getElementById('ntStage').value;
       const client = document.getElementById('ntClient').value;
-      const assignee = document.getElementById('ntAssignee').value;
+      const assigneeSelect = document.getElementById('ntAssignee');
+      const assignee = assigneeSelect.value;
+      const assignee_id = assigneeSelect.options[assigneeSelect.selectedIndex]?.dataset?.empcode || '';
       const priority = document.getElementById('ntPriority').value;
       const due_date = document.getElementById('ntDueDate').value;
       const estimatedHours = Number(document.getElementById('ntEstHours').value) || 8;
@@ -940,6 +942,7 @@ window.APP_MODULES.kanban = async function(container) {
         stage,
         client,
         assignee,
+        assignee_id,
         priority,
         due_date,
         estimatedHours,

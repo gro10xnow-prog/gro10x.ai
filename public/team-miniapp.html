@@ -2229,9 +2229,10 @@
 
   function submitPart1() {
     const emerg = document.getElementById('inpEmergency').value.trim();
-    if (!emerg) { alert('Please enter emergency contact number.'); return; }
+    if (!emerg) { if (tg?.showAlert) tg.showAlert('Please enter emergency contact number.'); else alert('Please enter emergency contact number.'); return; }
     const xp = calcXP(part1Fields);
     submitPart(1, {
+      emergencyPhone: emerg,
       emergencyContact: emerg,
       emergencyRelation: document.getElementById('inpRelation').value,
       address: document.getElementById('inpAddress').value,
@@ -2252,10 +2253,13 @@
 
   function submitPart2() {
     const nid = document.getElementById('inpNid').value.trim();
-    if (!nid) { alert('Please enter NID / Passport number.'); return; }
+    if (!nid) { if (tg?.showAlert) tg.showAlert('Please enter NID / Passport number.'); else alert('Please enter NID / Passport number.'); return; }
     const xp = calcXP(part2Fields);
     submitPart(2, {
-      nid, permAddress: document.getElementById('inpPermAddress').value,
+      nidNo: nid,
+      nid: nid,
+      permanentAddress: document.getElementById('inpPermAddress').value,
+      permAddress: document.getElementById('inpPermAddress').value,
       tin: document.getElementById('inpTin').value,
       license: document.getElementById('inpLicense').value,
       degree: document.getElementById('inpDegree').value,
@@ -2266,14 +2270,17 @@
 
   function submitPart3() {
     const bkash = document.getElementById('inpBkash').value.trim();
-    if (!bkash) { alert('Please enter your bKash number.'); return; }
+    if (!bkash) { if (tg?.showAlert) tg.showAlert('Please enter your bKash number.'); else alert('Please enter your bKash number.'); return; }
     const xp = calcXP(part3Fields);
     if (currentUser) {
       currentUser.bankInfo = {
         bankName: document.getElementById('inpBankName').value,
+        accountTitle: document.getElementById('inpAccTitle').value,
         accTitle: document.getElementById('inpAccTitle').value,
+        accountNo: document.getElementById('inpAccNo').value,
         accNo: document.getElementById('inpAccNo').value,
         branch: document.getElementById('inpBranchRouting').value,
+        bkashNo: bkash,
         mfsNo: bkash
       };
     }
@@ -2281,19 +2288,26 @@
       baseSalary: Number(document.getElementById('inpBaseSalary').value) || 0,
       commission: document.getElementById('inpCommission').value,
       bankName: document.getElementById('inpBankName').value,
+      accountTitle: document.getElementById('inpAccTitle').value,
       accTitle: document.getElementById('inpAccTitle').value,
+      accountNo: document.getElementById('inpAccNo').value,
       accNo: document.getElementById('inpAccNo').value,
       branch: document.getElementById('inpBranchRouting').value,
-      bkash, nagad: document.getElementById('inpNagad').value,
+      bkashNo: bkash,
+      bkash: bkash,
+      nagadNo: document.getElementById('inpNagad').value,
+      nagad: document.getElementById('inpNagad').value,
+      rocketNo: document.getElementById('inpRocket').value,
       rocket: document.getElementById('inpRocket').value
     }, xp, '💳', 'Part 3 Saved!', `+${xp} XP • Next: Skills & Equipment`, 4);
   }
 
   function submitPart4() {
     const skill = document.getElementById('inpSkillPrimary').value.trim();
-    if (!skill) { alert('Please enter your primary skillset.'); return; }
+    if (!skill) { if (tg?.showAlert) tg.showAlert('Please enter your primary skillset.'); else alert('Please enter your primary skillset.'); return; }
     const xp = calcXP(part4Fields);
     submitPart(4, {
+      primarySkill: skill,
       skillPrimary: skill,
       skillSecondary: document.getElementById('inpSkillSecondary').value,
       portfolio: document.getElementById('inpPortfolio').value,
@@ -2971,7 +2985,8 @@
       await loadMiniappWorkflowStages();
       const tgUser = tg?.initDataUnsafe?.user;
       const telegramId = tgUser?.id || currentUser?.telegramId || 'debug';
-      const res = await fetch(`/api/team/tasks?telegramId=${telegramId}`);
+      const empCode = currentUser?.emp_code || currentUser?.id || '';
+      const res = await fetch(`/api/team/tasks?telegramId=${telegramId}&empCode=${encodeURIComponent(empCode)}`);
       const tasks = await res.json();
       window._miniappTasks = tasks || [];
 
