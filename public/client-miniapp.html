@@ -850,7 +850,21 @@
     const telegramId = tgUser?.id || 'debug';
     fetchAppVersion();
     try {
-      const res = await fetch(`/api/clients/me?telegramId=${telegramId}`);
+      // Handshake: exchange telegramId for signed JWT token
+      const authRes = await fetch('/api/auth/telegram', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ telegramId, userType: 'client' })
+      });
+      if (authRes.ok) {
+        const authData = await authRes.json();
+        if (authData.token) sessionStorage.setItem('jwt_token', authData.token);
+      }
+
+      const token = sessionStorage.getItem('jwt_token');
+      const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+
+      const res = await fetch(`/api/clients/me?telegramId=${telegramId}`, { headers });
       if (res.ok) {
         clientData = await res.json();
         renderHero(clientData);
@@ -976,10 +990,13 @@
     triggerHaptic('heavy');
     try {
       const tgUser = tg?.initDataUnsafe?.user;
-      await fetch('/api/reviews/approve', {
+      const token = sessionStorage.getItem('jwt_token');
+      const headers = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      await fetch('/api/reviews/REV-001/approve', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ telegramId: tgUser?.id || 'debug', reviewId: 'REV-001' })
+        headers,
+        body: JSON.stringify({ telegramId: tgUser?.id || 'debug' })
       });
     } catch(e) {}
 
@@ -999,9 +1016,12 @@
     if (!val) { showSuccess('⚠️', 'Validation Required', 'Please enter your feedback note before submitting.'); return; }
     try {
       const tgUser = tg?.initDataUnsafe?.user;
-      await fetch('/api/reviews/feedback', {
+      const token = sessionStorage.getItem('jwt_token');
+      const headers = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      await fetch('/api/reviews/REV-001/request-revisions', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({ telegramId: tgUser?.id || 'debug', feedback: val })
       });
     } catch(e) {}

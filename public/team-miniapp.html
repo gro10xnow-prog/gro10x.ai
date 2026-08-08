@@ -1628,7 +1628,21 @@
     }
     const telegramId = tgUser?.id || 'debug';
     try {
-      const res = await fetch(`/api/team/me?telegramId=${telegramId}`);
+      // Handshake: exchange telegramId for signed JWT token
+      const authRes = await fetch('/api/auth/telegram', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ telegramId, userType: 'team' })
+      });
+      if (authRes.ok) {
+        const authData = await authRes.json();
+        if (authData.token) sessionStorage.setItem('jwt_token', authData.token);
+      }
+
+      const token = sessionStorage.getItem('jwt_token');
+      const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+
+      const res = await fetch(`/api/team/me?telegramId=${telegramId}`, { headers });
       if (!res.ok) { showLock(); return; }
       const data = await res.json();
       const emp = data.profile || data; // fallback in case API changes back
@@ -2935,10 +2949,13 @@
     if (!type || !from || !to || !reason) { tg?.showAlert ? tg.showAlert('Please fill all required fields.') : alert('Fill required fields'); return; }
     try {
       const tgUser = tg?.initDataUnsafe?.user;
-      await fetch('/api/team/leave', {
+      const token = sessionStorage.getItem('jwt_token');
+      const headers = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      await fetch('/api/leaves', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ telegramId: tgUser?.id || 'debug', employeeId: currentUser?.id, employeeName: currentUser?.name, leaveType: type, fromDate: from, toDate: to, reason, coverage: document.getElementById('leaveCover')?.value })
+        headers,
+        body: JSON.stringify({ telegramId: tgUser?.id || 'debug', employeeId: currentUser?.id, employeeName: currentUser?.name, type, fromDate: from, toDate: to, reason, coverage: document.getElementById('leaveCover')?.value })
       });
     } catch(e) {}
     document.getElementById('leaveSheet')?.remove();

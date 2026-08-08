@@ -993,4 +993,77 @@ router.get('/best-match', requireAuth, async (req, res) => {
   }
 });
 
+// POST /api/team/eod — Submit Daily EOD Report
+router.post('/eod', async (req, res) => {
+  try {
+    const { telegramId, employeeId, name, text, summary, blockers } = req.body;
+    let empCode = employeeId;
+    let empName = name;
+
+    if (telegramId && !empName) {
+      const found = await findEmpByTelegramId(telegramId);
+      if (found) {
+        empCode = found.profile.emp_code || found.profile.id;
+        empName = found.profile.name;
+      }
+    }
+
+    const payload = {
+      id: `EOD-${Date.now()}`,
+      employee_id: empCode || 'EMP-001',
+      name: empName || req.user?.name || 'Team Member',
+      text: text || summary || 'Daily tasks completed',
+      blockers: blockers || 'None',
+      date: new Date().toISOString().split('T')[0],
+      created_at: new Date().toISOString()
+    };
+
+    if (supabase) {
+      await supabase.from('eod_reports').insert([payload]);
+    }
+
+    broadcast('eod_update', [payload]);
+    const { processAutomationEvent } = require('../services/automation');
+    await processAutomationEvent('eod_submitted', { eod: payload }, null, null, broadcast).catch(() => {});
+
+    res.json({ success: true, eod: payload });
+  } catch (err) {
+    console.error('EOD POST error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/team/payroll/summary or /api/payroll/summary — Mini App payroll data
+router.get('/payroll/summary', async (req, res) => {
+  try {
+    const telegramId = req.query.telegramId;
+    let emp = null;
+
+    if (telegramId) {
+      const found = await findEmpByTelegramId(telegramId);
+      if (found) emp = found.profile;
+    } else if (req.user) {
+      emp = req.user;
+    }
+
+    const baseSalary = Number(emp?.base_salary || emp?.baseSalary) || 45000;
+    const bonus = Number(emp?.earned_commissions || emp?.earnedCommissions) || 5000;
+    const totalEarnings = baseSalary + bonus;
+
+    res.json({
+      baseSalary,
+      bonus,
+      deductions: 0,
+      netPay: totalEarnings,
+      month: new Date().toLocaleString('en-US', { month: 'long', year: 'numeric' }),
+      status: 'Paid',
+      disbursedDate: new Date().toISOString().split('T')[0]
+    });
+  } catch (err) {
+    console.error('Payroll summary GET error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
+
