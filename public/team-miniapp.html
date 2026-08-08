@@ -1424,18 +1424,43 @@
   <!-- ATTENDANCE PAGE -->
   <div id="pageAttendance" class="page">
     <div style="height:0.85rem;"></div>
+    
+    <!-- Clock Card -->
     <div class="card">
       <div class="att-clock">
         <div class="att-time" id="attClock">--:--</div>
+        <div id="shiftDuration" style="font-size:0.82rem;font-weight:700;color:var(--purple);margin-top:0.2rem;">─ Not clocked in</div>
         <div class="att-date" id="attDate">Saturday, 1 Aug 2026</div>
         <div id="attStatusPill" class="att-status-pill att-pill-offline">⬛ Offline</div>
       </div>
-      <div class="divider" style="margin:0 0 0.85rem;"></div>
-      <button class="btn-clock-in" onclick="handleClockIn()">🟢 Clock In — Share GPS Location</button>
-      <button class="btn-clock-out" onclick="handleClockOut()">🚪 Clock Out</button>
+
+      <!-- Today's Session Card -->
+      <div id="todaySessionCard" style="display:none;margin:0.85rem 0 0.5rem;padding:0.65rem 0.8rem;background:rgba(139,92,246,0.06);border:1px solid rgba(139,92,246,0.15);border-radius:12px;text-align:left;">
+        <div style="font-size:0.72rem;font-weight:800;color:var(--purple);letter-spacing:0.04em;margin-bottom:0.3rem;">TODAY'S SESSION</div>
+        <div id="todayClockIn" style="font-size:0.84rem;font-weight:700;color:var(--text);">—</div>
+        <div id="todayClockOut" style="font-size:0.78rem;color:var(--muted);margin-top:0.15rem;">—</div>
+      </div>
+
+      <div class="divider" style="margin:0.75rem 0;"></div>
+      <button id="attClockBtn" class="btn-clock-in" onclick="handleClockToggle()">🟢 Clock In — Share GPS Location</button>
     </div>
+
+    <!-- Monthly Calendar Grid Card -->
     <div class="card">
-      <div class="card-title">This Week</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
+        <button onclick="changeCalendarMonth(-1)" style="background:none;border:none;font-size:1rem;cursor:pointer;padding:0.2rem 0.5rem;">◀</button>
+        <div class="card-title" style="margin:0;" id="calMonthLabel">August 2026</div>
+        <button onclick="changeCalendarMonth(1)" style="background:none;border:none;font-size:1rem;cursor:pointer;padding:0.2rem 0.5rem;">▶</button>
+      </div>
+      <div id="attCalendarGrid">
+        <div class="empty-state"><div class="empty-icon">📅</div>Loading monthly timesheet...</div>
+      </div>
+      <div id="attCalendarSummary" style="font-size:0.72rem;color:var(--muted);margin-top:0.6rem;text-align:center;"></div>
+    </div>
+
+    <!-- Recent Log Card -->
+    <div class="card">
+      <div class="card-title">Recent Activity Log</div>
       <div id="attHistory">
         <div class="empty-state"><div class="empty-icon">⏱️</div>No attendance records yet</div>
       </div>
@@ -1769,8 +1794,14 @@
     document.getElementById('heroName').textContent = emp.name || 'Team Member';
     document.getElementById('heroRole').textContent = `${emp.role || 'Specialist'} · ${emp.department || 'Production'}`;
     setStatusPill(emp.status || 'Offline');
+    updateClockButton(emp.status || 'Offline');
     document.getElementById('heroXP').textContent = `🏆 ${emp.xp || 0} XP`;
     document.getElementById('heroBadge').textContent = emp.badge || '🌱 Recruit';
+
+    if (attendanceToday) {
+      window._todayAttendance = attendanceToday;
+      renderTodaySessionCard(attendanceToday);
+    }
 
     // XP Progress Bar
     const xp = emp.xp || 0;
@@ -2279,12 +2310,58 @@
     if (clockTimer) clearInterval(clockTimer);
     updateClock();
     clockTimer = setInterval(updateClock, 1000);
+    loadAttendanceCalendar(currentCalYear, currentCalMonth);
+  }
+
+  function parseTimeString(timeStr, dateStr) {
+    if (!timeStr) return null;
+    const todayStr = dateStr || new Date().toISOString().split('T')[0];
+    const parts = timeStr.trim().split(' ');
+    if (parts.length < 2) return null;
+    const [t, meridiem] = parts;
+    let [h, m] = t.split(':').map(Number);
+    if (meridiem.toUpperCase() === 'PM' && h !== 12) h += 12;
+    if (meridiem.toUpperCase() === 'AM' && h === 12) h = 0;
+    return new Date(`${todayStr}T${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:00`);
+  }
+
+  function getShiftDuration(clockInStr, dateStr) {
+    const start = parseTimeString(clockInStr, dateStr);
+    if (!start) return null;
+    const diff = Date.now() - start.getTime();
+    if (diff < 0) return null;
+    const totalMins = Math.floor(diff / 60000);
+    const hrs = Math.floor(totalMins / 60);
+    const mins = totalMins % 60;
+    return `${hrs}h ${mins}m`;
   }
 
   function updateClock() {
     const now = new Date();
     document.getElementById('attClock').textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     document.getElementById('attDate').textContent = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+    // Live Shift Counter
+    const durationEl = document.getElementById('shiftDuration');
+    if (durationEl) {
+      const isClocked = currentUser?.status === 'In Studio' || currentUser?.status === 'On Field Shoot';
+      const clockInStr = window._todayAttendance?.clockInTime;
+      const dateStr = window._todayAttendance?.date;
+      if (isClocked && clockInStr) {
+        const dur = getShiftDuration(clockInStr, dateStr);
+        durationEl.textContent = dur ? `⏱️ ${dur} on shift` : '🟢 Clocked In';
+      } else {
+        durationEl.textContent = '─ Not clocked in';
+      }
+    }
+  }
+
+  function updateClockButton(status) {
+    const btn = document.getElementById('attClockBtn');
+    if (!btn) return;
+    const isClockedIn = status === 'In Studio' || status === 'On Field Shoot';
+    btn.className = isClockedIn ? 'btn-clock-out' : 'btn-clock-in';
+    btn.innerHTML = isClockedIn ? '🚪 Clock Out — End Shift' : '🟢 Clock In — Share GPS Location';
   }
 
   async function handleClockToggle() {
@@ -2311,16 +2388,22 @@
     try {
       const tgUser = tg?.initDataUnsafe?.user;
       const telegramId = tgUser?.id || currentUser?.telegramId || 'debug';
-      await fetch('/api/team/clockin', {
+      const res = await fetch('/api/team/clockin', {
         method: 'POST',
         headers: authHeaders(),
         body: JSON.stringify({ telegramId, lat, lng, gps })
       });
+      const data = await res.json();
+      if (data.time) {
+        window._todayAttendance = { clockInTime: data.time, date: new Date().toISOString().split('T')[0], location: 'Studio' };
+      }
     } catch (e) {}
     if (currentUser) currentUser.status = 'In Studio';
     setStatusPill('In Studio');
     const pill = document.getElementById('attStatusPill');
     if (pill) { pill.textContent = '🟢 Clocked In'; pill.className = 'att-status-pill att-pill-online'; }
+    updateClockButton('In Studio');
+    renderTodaySessionCard(window._todayAttendance);
     tg?.showAlert ? tg.showAlert('✅ Clocked in successfully!') : alert('✅ Clocked in!');
   }
 
@@ -2328,16 +2411,22 @@
     try {
       const tgUser = tg?.initDataUnsafe?.user;
       const telegramId = tgUser?.id || currentUser?.telegramId || 'debug';
-      await fetch('/api/team/clockout', {
+      const res = await fetch('/api/team/clockout', {
         method: 'POST',
         headers: authHeaders(),
         body: JSON.stringify({ telegramId })
       });
+      const data = await res.json();
+      if (window._todayAttendance && data.time) {
+        window._todayAttendance.clockOutTime = data.time;
+      }
     } catch (e) {}
     if (currentUser) currentUser.status = 'Offline';
     setStatusPill('Offline');
     const pill = document.getElementById('attStatusPill');
     if (pill) { pill.textContent = '⬛ Offline'; pill.className = 'att-status-pill att-pill-offline'; }
+    updateClockButton('Offline');
+    renderTodaySessionCard(window._todayAttendance);
     tg?.showAlert ? tg.showAlert('🚪 Clocked out. Have a great evening!') : alert('🚪 Clocked out!');
   }
 
@@ -3053,6 +3142,163 @@
       }
     };
     reader.readAsDataURL(file);
+  }
+
+  // ══════════════════════════════════════════
+  // TODAY'S SESSION CARD & MONTHLY CALENDAR GRID
+  // ══════════════════════════════════════════
+  function renderTodaySessionCard(att) {
+    const card = document.getElementById('todaySessionCard');
+    if (!card) return;
+    if (!att || !att.clockInTime) {
+      card.style.display = 'none';
+      return;
+    }
+    card.style.display = 'block';
+
+    const inTimeDate = parseTimeString(att.clockInTime, att.date);
+    let isLate = false;
+    if (inTimeDate) {
+      const tenAM = new Date(inTimeDate);
+      tenAM.setHours(10, 0, 0, 0);
+      isLate = inTimeDate > tenAM;
+    }
+
+    document.getElementById('todayClockIn').innerHTML = `📍 ${att.location || 'Studio'} · In: ${att.clockInTime} ${isLate ? '<span style="background:#fef3c7;color:#b45309;padding:0.1rem 0.4rem;border-radius:8px;font-size:0.68rem;margin-left:0.3rem;">⚠️ Late</span>' : ''}`;
+    
+    const clockOutStr = att.clockOutTime;
+    if (clockOutStr) {
+      document.getElementById('todayClockOut').textContent = `🚪 Out: ${clockOutStr}`;
+    } else {
+      document.getElementById('todayClockOut').textContent = '🟢 Currently on shift';
+    }
+  }
+
+  let currentCalYear = new Date().getFullYear();
+  let currentCalMonth = new Date().getMonth();
+
+  function changeCalendarMonth(delta) {
+    currentCalMonth += delta;
+    if (currentCalMonth < 0) { currentCalMonth = 11; currentCalYear--; }
+    else if (currentCalMonth > 11) { currentCalMonth = 0; currentCalYear++; }
+    loadAttendanceCalendar(currentCalYear, currentCalMonth);
+  }
+
+  async function loadAttendanceCalendar(year, month) {
+    const gridEl = document.getElementById('attCalendarGrid');
+    const labelEl = document.getElementById('calMonthLabel');
+    if (!gridEl || !currentUser) return;
+
+    const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    if (labelEl) labelEl.textContent = `${monthNames[month]} ${year}`;
+
+    try {
+      const [attRes, leaveRes] = await Promise.all([
+        fetch(`/api/team/attendance?employeeId=${currentUser.id || currentUser.emp_code}`, { headers: authHeaders() }),
+        fetch(`/api/leaves?employeeId=${currentUser.id || currentUser.emp_code}`, { headers: authHeaders() })
+      ]);
+
+      const attRecords = attRes.ok ? await attRes.json() : [];
+      const leaveRecords = leaveRes.ok ? await leaveRes.json() : [];
+
+      const dayMap = {};
+
+      attRecords.forEach(a => {
+        if (a.date) {
+          const inTime = parseTimeString(a.clockInTime, a.date);
+          let late = false;
+          if (inTime) {
+            const tenAM = new Date(inTime);
+            tenAM.setHours(10, 0, 0, 0);
+            late = inTime > tenAM;
+          }
+          dayMap[a.date] = late ? 'late' : 'present';
+        }
+      });
+
+      leaveRecords.forEach(l => {
+        if ((l.status || '').toLowerCase().includes('approved')) {
+          const start = new Date(l.fromDate || l.startDate);
+          const end = new Date(l.toDate || l.endDate);
+          for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+            const dateStr = d.toISOString().split('T')[0];
+            dayMap[dateStr] = 'leave';
+          }
+        }
+      });
+
+      renderCalendarGrid(year, month, dayMap);
+    } catch(e) {
+      gridEl.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div>Unable to load calendar</div>';
+    }
+  }
+
+  function renderCalendarGrid(year, month, dayMap) {
+    const gridEl = document.getElementById('attCalendarGrid');
+    const summaryEl = document.getElementById('attCalendarSummary');
+    if (!gridEl) return;
+
+    const firstDay = new Date(year, month, 1).getDay(); // 0 = Sun
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const todayStr = new Date().toISOString().split('T')[0];
+
+    // Day headers
+    let html = `
+      <div style="display:grid;grid-template-columns:repeat(7, 1fr);gap:4px;text-align:center;font-weight:700;color:var(--muted);margin-bottom:6px;font-size:0.7rem;">
+        <div>Su</div><div>Mo</div><div>Tu</div><div>We</div><div>Th</div><div>Fr</div><div>Sa</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(7, 1fr);gap:4px;text-align:center;">
+    `;
+
+    // Padding blank days
+    for (let i = 0; i < firstDay; i++) {
+      html += `<div></div>`;
+    }
+
+    let presentCount = 0;
+    let lateCount = 0;
+    let leaveCount = 0;
+    let absentCount = 0;
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dStr = `${year}-${String(month + 1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+      const status = dayMap[dStr];
+      const isToday = dStr === todayStr;
+      const dObj = new Date(year, month, day);
+      const isWeekend = dObj.getDay() === 5 || dObj.getDay() === 6; // Fri or Sat in BD
+      const isPast = dObj < new Date(new Date().setHours(0,0,0,0));
+
+      let bg = 'rgba(0,0,0,0.03)';
+      let symbol = day;
+      let title = 'Not clocked';
+
+      if (status === 'present') {
+        bg = '#ecfdf5'; symbol = `✅`; presentCount++; title = 'Present';
+      } else if (status === 'late') {
+        bg = '#fef3c7'; symbol = `⚠️`; lateCount++; presentCount++; title = 'Late';
+      } else if (status === 'leave') {
+        bg = '#e0e7ff'; symbol = `🌴`; leaveCount++; title = 'On Leave';
+      } else if (isPast && !isWeekend) {
+        bg = '#fef2f2'; symbol = `❌`; absentCount++; title = 'Absent';
+      } else if (isWeekend) {
+        bg = 'rgba(0,0,0,0.02)'; symbol = `<span style="opacity:0.4;">${day}</span>`;
+      }
+
+      const border = isToday ? '2px solid var(--purple)' : '1px solid rgba(0,0,0,0.05)';
+
+      html += `
+        <div title="${title} (${dStr})" style="background:${bg};border:${border};border-radius:8px;padding:0.35rem 0.1rem;font-size:0.72rem;font-weight:700;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:34px;">
+          <div>${symbol}</div>
+        </div>
+      `;
+    }
+
+    html += `</div>`;
+    gridEl.innerHTML = html;
+
+    if (summaryEl) {
+      summaryEl.innerHTML = `✅ Present: <b>${presentCount}</b> · ⚠️ Late: <b>${lateCount}</b> · 🌴 Leave: <b>${leaveCount}</b> · ❌ Absent: <b>${absentCount}</b>`;
+    }
   }
 
   // ══════════════════════════════════════════

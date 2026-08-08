@@ -70,6 +70,7 @@ function mapAttendance(a) {
     name: a.name,
     status: a.status,
     clockInTime: a.clock_in_time,
+    clockOutTime: a.clock_out_time || null,
     location: a.location,
     date: a.date,
     createdAt: a.created_at
