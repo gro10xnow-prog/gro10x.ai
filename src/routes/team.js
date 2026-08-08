@@ -23,7 +23,7 @@ function mapProfile(p) {
   let surveyProgress = 0;
   if (p.blood_group || p.personal_email || p.address) surveyProgress = Math.max(surveyProgress, 1);
   if (p.nid_no || p.permanent_address) surveyProgress = Math.max(surveyProgress, 2);
-  if (p.bank_info && (p.bank_info.accNo || p.bank_info.mfsNo)) surveyProgress = Math.max(surveyProgress, 3);
+  if (p.bank_info && (p.bank_info.accountNo || p.bank_info.accNo || p.bank_info.mfsNo || p.bank_info.bkashNo)) surveyProgress = Math.max(surveyProgress, 3);
   if (p.primary_skill || p.survey_complete) surveyProgress = Math.max(surveyProgress, 4);
   if (p.onboarding_complete) surveyProgress = 5;
 
@@ -39,7 +39,7 @@ function mapProfile(p) {
     baseSalary: Number(p.base_salary) || 0,
     commissionRate: Number(p.commission_rate) || 0,
     earnedCommissions: Number(p.earned_commissions) || 0,
-    status: p.status || 'In Studio',
+    status: p.status || 'Offline',
     activeBookings: p.active_bookings || 0,
     xp: p.xp || 0,
     badge: p.badge || '🌱 Recruit',
@@ -58,7 +58,22 @@ function mapProfile(p) {
     primarySkill: p.primary_skill || '',
     joiningDate: p.joining_date || '',
     reportsTo: p.reports_to || '',
-    weeklyCapacityHours: Number(p.weekly_capacity_hours) || 40
+    weeklyCapacityHours: Number(p.weekly_capacity_hours) || 40,
+    emergencyRelation: p.emergency_relation || '',
+    maritalStatus: p.marital_status || '',
+    dateOfBirth: p.date_of_birth || '',
+    dependents: p.dependents || null,
+    tinNo: p.tin_no || '',
+    drivingLicense: p.driving_license || '',
+    educationDegree: p.education_degree || '',
+    institution: p.institution || '',
+    passingYear: p.passing_year || '',
+    secondarySkill: p.secondary_skill || '',
+    portfolioUrl: p.portfolio_url || '',
+    laptopSerial: p.laptop_serial || '',
+    studioGear: p.studio_gear || '',
+    tshirtSize: p.tshirt_size || '',
+    dietaryPref: p.dietary_pref || ''
   };
 }
 

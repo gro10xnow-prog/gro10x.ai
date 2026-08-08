@@ -1872,8 +1872,8 @@
     } else {
       avatarEl.textContent = initials;
     }
-    document.getElementById('profileName').textContent = emp.name;
-    document.getElementById('profileRole').textContent = `${emp.role} · ${emp.department}`;
+    document.getElementById('profileName').textContent = emp.name || '—';
+    document.getElementById('profileRole').textContent = `${emp.role || 'Specialist'} · ${emp.department || 'Production'}`;
     document.getElementById('profileId').textContent = emp.id || '—';
     document.getElementById('profileDept').textContent = emp.department || '—';
     document.getElementById('profileEmail').textContent = emp.email || emp.workEmail || 'Not set';
@@ -2321,8 +2321,8 @@
   async function submitEmployeeSignature() {
     const sig = document.getElementById('inpSignName').value.trim();
     const consented = document.getElementById('chkAgrConsent').checked;
-    if (!sig) { alert('Please type your full legal name as e-signature.'); return; }
-    if (!consented) { alert('Please read and accept the agreement terms.'); return; }
+    if (!sig) { if (tg?.showAlert) tg.showAlert('Please type your full legal name as e-signature.'); else alert('Please type your full legal name as e-signature.'); return; }
+    if (!consented) { if (tg?.showAlert) tg.showAlert('Please read and accept the agreement terms.'); else alert('Please read and accept the agreement terms.'); return; }
     if (sig.toLowerCase() !== (currentUser?.name || '').toLowerCase()) {
       if (!confirm(`Name "${sig}" doesn't exactly match your registered name. Continue anyway?`)) return;
     }
@@ -2823,6 +2823,10 @@
 
     // Show modal first
     document.getElementById('taskDetailSheet').style.display = 'block';
+    if (tg?.BackButton) {
+      tg.BackButton.show();
+      tg.BackButton.onClick(closeTaskDetailSheet);
+    }
 
     // Load subtasks & comments
     loadSheetSubtasks(task.id);
@@ -2832,6 +2836,7 @@
   function closeTaskDetailSheet() {
     document.getElementById('taskDetailSheet').style.display = 'none';
     currentSheetTask = null;
+    if (tg?.BackButton) tg.BackButton.hide();
   }
 
   function selectSheetStage(btn, stage) {
@@ -2887,7 +2892,7 @@
         loadUserTasks();
       }
     } catch (e) {
-      alert('Logged ' + hours + ' hours!');
+      if (tg?.showAlert) tg.showAlert('⚠️ Failed to log time'); else alert('Failed to log time');
     }
   }
 
@@ -3089,15 +3094,23 @@
 
     try {
       const res = await fetch('/api/team/me/stats', { headers: authHeaders() });
-      if (!res.ok) return;
+      if (!res.ok) {
+        if (tasksEl) tasksEl.textContent = '—';
+        if (attEl) attEl.textContent = '—';
+        if (eodEl) eodEl.textContent = '—';
+        return;
+      }
       const data = await res.json();
 
       if (titleEl && data.month) titleEl.textContent = `📊 My Performance — ${data.month}`;
-      if (tasksEl) tasksEl.textContent = data.tasksCompleted || 0;
-      if (attEl) attEl.textContent = data.attendanceDays || 0;
-      if (eodEl) eodEl.textContent = data.eodSubmitted || 0;
+      if (tasksEl) tasksEl.textContent = data.tasksCompleted !== undefined ? data.tasksCompleted : '—';
+      if (attEl) attEl.textContent = data.attendanceDays !== undefined ? data.attendanceDays : '—';
+      if (eodEl) eodEl.textContent = data.eodSubmitted !== undefined ? data.eodSubmitted : '—';
     } catch(e) {
       console.warn('Unable to load personal stats:', e.message);
+      if (tasksEl) tasksEl.textContent = '—';
+      if (attEl) attEl.textContent = '—';
+      if (eodEl) eodEl.textContent = '—';
     }
   }
 
@@ -3118,7 +3131,7 @@
       const sorted = members.slice().sort((a, b) => (b.xp || 0) - (a.xp || 0));
       const medals = ['🥇', '🥈', '🥉'];
 
-      list.innerHTML = sorted.slice(0, 5).map((m, idx) => {
+      let html = sorted.slice(0, 5).map((m, idx) => {
         const isMe = currentUser && (m.id === currentUser.id || m.emp_code === currentUser.emp_code);
         const rank = medals[idx] || `#${idx + 1}`;
         return `
@@ -3134,6 +3147,26 @@
           </div>
         `;
       }).join('');
+
+      const myIdx = sorted.findIndex(m => currentUser && (m.id === currentUser.id || m.emp_code === currentUser.emp_code));
+      if (myIdx >= 5) {
+        const m = sorted[myIdx];
+        html += `
+          <div style="text-align:center;font-size:0.65rem;color:var(--muted);padding:0.3rem 0;">— Your Position —</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:0.55rem 0.6rem;border-radius:10px;background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.3);">
+            <div style="display:flex;align-items:center;gap:0.5rem;">
+              <span style="font-size:0.95rem;width:24px;text-align:center;">#${myIdx + 1}</span>
+              <div>
+                <div style="font-size:0.84rem;font-weight:800;color:var(--text);">${m.name} (You)</div>
+                <div style="font-size:0.7rem;color:var(--muted);">${m.role || 'Specialist'}</div>
+              </div>
+            </div>
+            <div style="font-size:0.82rem;font-weight:800;color:var(--purple);">${m.xp || 0} XP</div>
+          </div>
+        `;
+      }
+
+      list.innerHTML = html;
     } catch(e) {
       list.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div>Unable to load leaderboard</div>';
     }
@@ -3657,7 +3690,7 @@
     sheet.innerHTML = `
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
         <div style="font-size:1rem;font-weight:800;color:var(--text);">🧾 Submit Expense Claim</div>
-        <button onclick="document.getElementById('expenseSheet').remove()" style="background:var(--border);border:none;border-radius:10px;padding:0.35rem 0.7rem;font-family:'Outfit',sans-serif;font-size:0.78rem;font-weight:700;cursor:pointer;">✕ Close</button>
+        <button onclick="closeExpenseSheet()" style="background:var(--border);border:none;border-radius:10px;padding:0.35rem 0.7rem;font-family:'Outfit',sans-serif;font-size:0.78rem;font-weight:700;cursor:pointer;">✕ Close</button>
       </div>
       <div class="card" style="margin:0 0 0.75rem;">
         <div class="form-group"><label class="form-label">Category *</label>
@@ -3674,7 +3707,16 @@
       </div>`;
     document.getElementById('expDate') && (document.getElementById('expDate').valueAsDate = new Date());
     document.body.appendChild(sheet);
+    if (tg?.BackButton) {
+      tg.BackButton.show();
+      tg.BackButton.onClick(closeExpenseSheet);
+    }
     setTimeout(() => { const el = document.getElementById('expDate'); if (el) el.valueAsDate = new Date(); }, 50);
+  }
+
+  function closeExpenseSheet() {
+    document.getElementById('expenseSheet')?.remove();
+    if (tg?.BackButton) tg.BackButton.hide();
   }
 
   async function submitExpense() {
@@ -3706,7 +3748,7 @@
         body: JSON.stringify({ telegramId, employeeId: currentUser?.id, employeeName: currentUser?.name, category: cat, amount: Number(amt), date, description: desc, receipt_url: receiptUrl })
       });
     } catch(e) {}
-    document.getElementById('expenseSheet')?.remove();
+    closeExpenseSheet();
     showPhaseGate('🧾', 'Expense Submitted!', 5, `BDT ${Number(amt).toLocaleString()} claim forwarded to your Line Manager for Tier-1 approval.`, () => {});
   }
 
@@ -3717,7 +3759,7 @@
     sheet.innerHTML = `
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
         <div style="font-size:1rem;font-weight:800;color:var(--text);">🌴 Leave Request</div>
-        <button onclick="document.getElementById('leaveSheet').remove()" style="background:var(--border);border:none;border-radius:10px;padding:0.35rem 0.7rem;font-family:'Outfit',sans-serif;font-size:0.78rem;font-weight:700;cursor:pointer;">✕ Close</button>
+        <button onclick="closeLeaveSheet()" style="background:var(--border);border:none;border-radius:10px;padding:0.35rem 0.7rem;font-family:'Outfit',sans-serif;font-size:0.78rem;font-weight:700;cursor:pointer;">✕ Close</button>
       </div>
       <div class="card" style="margin:0 0 0.75rem;">
         <div class="form-group"><label class="form-label">Leave Type *</label>
@@ -3733,11 +3775,20 @@
         <button class="btn-primary" onclick="submitLeave()" style="margin-top:0.25rem;">📤 Submit Leave Request</button>
       </div>`;
     document.body.appendChild(sheet);
+    if (tg?.BackButton) {
+      tg.BackButton.show();
+      tg.BackButton.onClick(closeLeaveSheet);
+    }
     setTimeout(() => {
       const today = new Date().toLocaleDateString('en-CA');
       const f = document.getElementById('leaveFrom'); if (f) f.value = today;
       const t = document.getElementById('leaveTo'); if (t) t.value = today;
     }, 50);
+  }
+
+  function closeLeaveSheet() {
+    document.getElementById('leaveSheet')?.remove();
+    if (tg?.BackButton) tg.BackButton.hide();
   }
 
   async function submitLeave() {
@@ -3754,7 +3805,7 @@
         body: JSON.stringify({ telegramId: tgUser?.id || 'debug', employeeId: currentUser?.id, employeeName: currentUser?.name, type, fromDate: from, toDate: to, reason, coverage: document.getElementById('leaveCover')?.value })
       });
     } catch(e) {}
-    document.getElementById('leaveSheet')?.remove();
+    closeLeaveSheet();
     showPhaseGate('🌴', 'Leave Requested!', 0, `Your ${type} request has been sent to your Line Manager for approval. You'll get a Telegram notification on the decision.`, () => {});
   }
 
@@ -3833,7 +3884,7 @@
         })
       });
     } catch(e) {}
-    document.getElementById('eodSheet')?.remove();
+    closeEODSheet();
     showPhaseGate('📝', 'EOD Submitted!', 10, `Your end-of-day report has been logged. Your manager will see it in tonight's summary. +10 XP earned!`, () => {});
   }
 
