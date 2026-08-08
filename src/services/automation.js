@@ -844,6 +844,65 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
       });
     }
 
+    // TRIGGER 22: Task Overdue Alert
+    if (eventType === 'task_overdue') {
+      const task = eventData.task;
+      const firstName = (task.assignee || '').split(' ')[0].toLowerCase();
+      const assignee = (db.team || []).find(t => (t.name || '').toLowerCase().includes(firstName));
+      const manager = assignee?.reportsTo
+        ? (db.team || []).find(t => t.id === assignee.reportsTo)
+        : (db.team || []).find(t => t.id === 'PBD-001');
+
+      const msg = `⏰ *TASK OVERDUE ALERT*\n\n` +
+        `• Task: *${task.title}*\n` +
+        `• Client: *${task.client || 'Agency'}*\n` +
+        `• Stage: *${task.stage}*\n` +
+        `• Due: *${task.due_date || task.dueDate || 'Past Due'}*\n\n` +
+        `Please update the task stage or request an extension.`;
+
+      if (assignee?.telegramId) sendTelegramNotification(assignee.telegramId, msg, null, true);
+      if (manager?.telegramId && manager.telegramId !== assignee?.telegramId) {
+        sendTelegramNotification(manager.telegramId, msg, null, true);
+      }
+
+      recordAutomationLog(db, {
+        id: `LOG-${Date.now()}`,
+        rule: 'AUT-OVERDUE (Task Overdue Alert)',
+        event: eventType,
+        target: task.title,
+        status: 'Executed',
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    // TRIGGER 23: Monthly Payroll Reminder (25th)
+    if (eventType === 'payroll_reminder') {
+      const finManager = (db.team || []).find(t => t.id === 'PBD-029' || (t.role || '').toLowerCase().includes('finance'));
+      const owner = (db.team || []).find(t => t.id === 'PBD-001');
+      const totalSalary = (db.team || []).reduce((s, t) => s + (t.base_salary || t.baseSalary || 0), 0);
+      const headCount = (db.team || []).filter(t => t.id !== 'PBD-000').length;
+
+      const msg = `💰 *MONTHLY PAYROLL REMINDER (25th)*\n\n` +
+        `• Total Headcount: *${headCount} Employees*\n` +
+        `• Estimated Payroll: *BDT ${totalSalary.toLocaleString()}*\n\n` +
+        `Please ensure all salary & bonus disbursements are prepared before month end.`;
+
+      if (finManager?.telegramId) sendTelegramNotification(finManager.telegramId, msg, null, true);
+      if (owner?.telegramId && owner.telegramId !== finManager?.telegramId) {
+        sendTelegramNotification(owner.telegramId, msg, null, true);
+      }
+
+      recordAutomationLog(db, {
+        id: `LOG-${Date.now()}`,
+        rule: 'AUT-PAYROLL (Monthly Payroll Reminder)',
+        event: eventType,
+        target: 'Finance & Owner',
+        status: 'Executed',
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    const logs = db.automationLogs || [];
     if (logs.length > 50) db.automationLogs = logs.slice(0, 50);
 
   } catch (err) {
@@ -905,11 +964,11 @@ function buildMorningBriefing(db) {
   const onLeave = team.filter(t => t.status === 'On Leave').length;
   const offline = team.length - inStudio - onShoot - onLeave;
 
-  const pendingAgreements = team.filter(t => t.agreementStage === 1 || (t.agreementStage === 2 && true)).length;
-  const pendingExpenses = (db.expenses || []).filter(e => e.status === 'Tier 3 Pending').length;
+  const PENDING_EXP_STATUSES = ['Tier 1 Pending', 'Tier 1 Approved', 'Finance Verified', 'Owner Approved'];
+  const pendingExpenses = (db.expenses || []).filter(e => PENDING_EXP_STATUSES.includes(e.status)).length;
   const pendingExpAmt = (db.expenses || [])
-    .filter(e => e.status === 'Tier 3 Pending')
-    .reduce((s, e) => s + (e.amount || 0), 0);
+    .filter(e => PENDING_EXP_STATUSES.includes(e.status))
+    .reduce((s, e) => s + (Number(e.amount) || 0), 0);
 
   const pendingInvoices = (db.invoices || []).filter(i => i.status !== 'Paid' && i.status !== 'Draft');
   const pendingInvAmt = pendingInvoices.reduce((s, i) => s + (i.amount || 0), 0);

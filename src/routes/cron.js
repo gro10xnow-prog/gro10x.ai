@@ -411,4 +411,156 @@ router.get('/weekly-digest', authorizeCron, async (req, res) => {
   }
 });
 
+// GET /api/cron/eod-reminder — 6:30 PM BD reminder to team members missing EOD
+router.get('/eod-reminder', authorizeCron, async (req, res) => {
+  try {
+    const db = await fetchSupabaseSnapshot();
+    const todayStr = new Date().toLocaleDateString('en-CA');
+
+    const submittedToday = new Set((db.eodReports || [])
+      .filter(e => (e.date || e.report_date || '').startsWith(todayStr))
+      .map(e => e.employee_id || e.employeeId));
+
+    const missingEmployees = db.team.filter(t => t.telegramId && !submittedToday.has(t.id));
+
+    const { sendTelegramNotification } = require('../services/bot');
+    let sentCount = 0;
+    for (const emp of missingEmployees) {
+      const firstName = (emp.name || 'Team Member').split(' ')[0];
+      await sendTelegramNotification(emp.telegramId,
+        `📝 *EOD REPORT REMINDER*\n\nHey ${firstName}! It's past 6 PM and your End-of-Day report for today hasn't been submitted yet.\n\nPlease submit your summary or use the Mini App:`,
+        [[{ text: '📱 Open EOD Form', url: 'https://purpleos-iota.vercel.app/team-miniapp?tab=eod&action=new' }]],
+        true
+      );
+      sentCount++;
+    }
+
+    return res.json({ success: true, message: `EOD reminders sent to ${sentCount} employee(s)`, timestamp: new Date().toISOString() });
+  } catch (error) {
+    console.error('EOD reminder cron error:', error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/cron/daily-briefing — 9:00 AM BD personal daily task briefing
+router.get('/daily-briefing', authorizeCron, async (req, res) => {
+  try {
+    const db = await fetchSupabaseSnapshot();
+    const { processAutomationEvent } = require('../services/automation');
+    await processAutomationEvent('specialist_daily_briefing', {}, db, null, null);
+    return res.json({ success: true, message: 'Specialist daily briefings sent', timestamp: new Date().toISOString() });
+  } catch (error) {
+    console.error('Daily briefing cron error:', error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/cron/late-clockin-alert — 10:00 AM BD late clock-in alert
+router.get('/late-clockin-alert', authorizeCron, async (req, res) => {
+  try {
+    const db = await fetchSupabaseSnapshot();
+    const todayStr = new Date().toLocaleDateString('en-CA');
+    const clockedIn = new Set((db.attendance || []).filter(a => (a.date || '').startsWith(todayStr)).map(a => a.employee_id || a.empCode));
+
+    const lateEmployees = db.team.filter(t => t.telegramId && !clockedIn.has(t.id) && t.status !== 'On Leave');
+    const { sendTelegramNotification } = require('../services/bot');
+
+    let sentCount = 0;
+    for (const emp of lateEmployees) {
+      const firstName = (emp.name || 'Team Member').split(' ')[0];
+      await sendTelegramNotification(emp.telegramId,
+        `⏰ *ATTENDANCE REMINDER (10:00 AM)*\n\nHey ${firstName}! You haven't clocked in for studio work today yet.\n\nPlease clock in using the Mini App below:`,
+        [[{ text: '📍 Clock In Studio', url: 'https://purpleos-iota.vercel.app/team-miniapp?tab=attendance' }]],
+        true
+      );
+      sentCount++;
+    }
+
+    return res.json({ success: true, message: `Late clock-in alerts sent to ${sentCount} employee(s)`, timestamp: new Date().toISOString() });
+  } catch (error) {
+    console.error('Late clockin cron error:', error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/cron/approval-expiry — Remind managers of stale approval items (>48h / >72h)
+router.get('/approval-expiry', authorizeCron, async (req, res) => {
+  try {
+    const db = await fetchSupabaseSnapshot();
+    const now = new Date();
+    const { sendTelegramNotification } = require('../services/bot');
+    const owner = db.team.find(t => t.id === 'PBD-001');
+
+    const staleLeaves = (db.leaveRequests || []).filter(l => {
+      if (l.status !== 'Pending Line Review') return false;
+      const age = (now - new Date(l.created_at || l.createdAt)) / 1000 / 3600;
+      return age > 48;
+    });
+
+    const staleExpenses = (db.expenses || []).filter(e => {
+      if (!['Tier 1 Pending', 'Tier 2 Pending', 'Finance Verified'].includes(e.status)) return false;
+      const age = (now - new Date(e.created_at || e.date)) / 1000 / 3600;
+      return age > 72;
+    });
+
+    if (!staleLeaves.length && !staleExpenses.length) {
+      return res.json({ success: true, message: 'No stale approval requests found', timestamp: new Date().toISOString() });
+    }
+
+    let msg = `⚠️ *PENDING APPROVALS EXPIRY ALERT*\n\n`;
+    if (staleLeaves.length) msg += `🌴 *${staleLeaves.length}* leave request(s) pending >48h without manager action\n`;
+    if (staleExpenses.length) msg += `🧾 *${staleExpenses.length}* expense claim(s) pending >72h without approval\n`;
+    msg += `\nPlease review and approve/reject pending items in the Admin Portal.`;
+
+    if (owner?.telegramId) {
+      await sendTelegramNotification(owner.telegramId, msg, [[{ text: '🌐 Open Admin Portal', url: 'https://purpleos-iota.vercel.app/admin' }]], true);
+    }
+
+    return res.json({ success: true, staleLeaves: staleLeaves.length, staleExpenses: staleExpenses.length, timestamp: new Date().toISOString() });
+  } catch (error) {
+    console.error('Approval expiry cron error:', error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/cron/invoice-due-reminder — 3-day upcoming invoice due alert
+router.get('/invoice-due-reminder', authorizeCron, async (req, res) => {
+  try {
+    const db = await fetchSupabaseSnapshot();
+    const now = new Date();
+    const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000;
+    const { sendTelegramNotification } = require('../services/bot');
+
+    const upcomingInvoices = (db.invoices || []).filter(inv => {
+      if (inv.status === 'Paid') return false;
+      const dueDate = new Date(inv.due_date || inv.dueDate || inv.issueDate);
+      const diff = dueDate - now;
+      return diff > 0 && diff <= THREE_DAYS_MS;
+    });
+
+    if (!upcomingInvoices.length) return res.json({ success: true, message: 'No upcoming invoice dues', sentCount: 0 });
+
+    let msg = `💳 *INVOICE DUE REMINDER (Next 3 Days)*\n\n`;
+    upcomingInvoices.forEach(inv => {
+      msg += `• *${inv.id}* — ${inv.client_name || inv.clientName || 'Client'} — BDT ${Number(inv.amount || 0).toLocaleString()}\n`;
+      msg += `  Due: *${inv.due_date || inv.dueDate}*\n\n`;
+    });
+
+    const finTeam = db.team.filter(t => t.id === 'PBD-029' || t.id === 'PBD-001');
+    let sentCount = 0;
+    for (const fin of finTeam) {
+      if (fin.telegramId) {
+        await sendTelegramNotification(fin.telegramId, msg, null, true);
+        sentCount++;
+      }
+    }
+
+    return res.json({ success: true, message: `Invoice due reminders sent to ${sentCount} recipient(s)`, count: upcomingInvoices.length, timestamp: new Date().toISOString() });
+  } catch (error) {
+    console.error('Invoice due reminder cron error:', error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;
+

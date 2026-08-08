@@ -19,6 +19,46 @@
     {
       "path": "/api/cron/eod-summary",
       "schedule": "0 14 * * 0,1,2,3,4,6"
+    },
+    {
+      "path": "/api/cron/eod-reminder",
+      "schedule": "30 12 * * 0,1,2,3,4,6"
+    },
+    {
+      "path": "/api/cron/daily-briefing",
+      "schedule": "0 3 * * 0,1,2,3,4,6"
+    },
+    {
+      "path": "/api/cron/late-clockin-alert",
+      "schedule": "0 4 * * 0,1,2,3,4,6"
+    },
+    {
+      "path": "/api/cron/payment-reminders",
+      "schedule": "0 4 * * *"
+    },
+    {
+      "path": "/api/cron/lead-followups",
+      "schedule": "30 3 * * 0,1,2,3,4,6"
+    },
+    {
+      "path": "/api/cron/task-overdue",
+      "schedule": "0 5 * * *"
+    },
+    {
+      "path": "/api/cron/approval-expiry",
+      "schedule": "30 5 * * *"
+    },
+    {
+      "path": "/api/cron/invoice-due-reminder",
+      "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/cron/payroll-reminder",
+      "schedule": "0 3 25 * *"
+    },
+    {
+      "path": "/api/cron/weekly-digest",
+      "schedule": "0 3 * * 1"
     }
   ],
   "headers": [
