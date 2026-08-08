@@ -92,6 +92,10 @@
   ],
   "routes": [
     {
+      "src": "/(PBD_Transformation_Tool_Overview|docs|overview)(.*)",
+      "dest": "/public/PBD_Transformation_Tool_Overview.html"
+    },
+    {
       "src": "/auth(.*)",
       "dest": "/public/auth.html"
     },

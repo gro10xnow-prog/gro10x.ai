@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PBD Transformation Tool (PurpleOS BOS 0.5) — Comprehensive Documentation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #7c3aed;
+      --primary-dark: #6d28d9;
+      --secondary: #ec4899;
+      --dark: #0f172a;
+      --light-bg: #f8fafc;
+      --card-bg: #ffffff;
+      --border: #e2e8f0;
+      --text: #334155;
+      --text-muted: #64748b;
+      --accent-green: #10b981;
+      --accent-blue: #3b82f6;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background-color: var(--light-bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 0;
+      margin: 0;
+    }
+
+    .no-print-bar {
+      background: #0f172a;
+      color: #fff;
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .btn-print {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .btn-print:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(124, 58, 237, 0.4);
+    }
+
+    .document-container {
+      max-width: 900px;
+      margin: 40px auto;
+      background: var(--card-bg);
+      padding: 60px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    }
+
+    .header-banner {
+      border-bottom: 3px solid var(--primary);
+      padding-bottom: 24px;
+      margin-bottom: 36px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      background: rgba(124, 58, 237, 0.1);
+      color: var(--primary);
+      border-radius: 99px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      font-size: 2.4rem;
+      font-weight: 900;
+      color: var(--dark);
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin: 24px 0 36px;
+      padding: 16px;
+      background: #f1f5f9;
+      border-radius: 12px;
+    }
+
+    .meta-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .meta-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .meta-value {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--dark);
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--dark);
+      margin: 36px 0 16px;
+      border-left: 4px solid var(--primary);
+      padding-left: 12px;
+    }
+
+    h3 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--dark);
+      margin: 20px 0 10px;
+    }
+
+    p, li {
+      font-size: 0.95rem;
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+
+    ul, ol {
+      padding-left: 24px;
+      margin-bottom: 16px;
+    }
+
+    li { margin-bottom: 6px; }
+
+    .feature-card {
+      background: #faf5ff;
+      border: 1px solid #f3e8ff;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .feature-card h4 {
+      color: var(--primary);
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      font-size: 0.9rem;
+    }
+
+    th, td {
+      border: 1px solid var(--border);
+      padding: 10px 14px;
+      text-align: left;
+    }
+
+    th {
+      background: #f8fafc;
+      font-weight: 700;
+      color: var(--dark);
+    }
+
+    tr:nth-child(even) {
+      background: #fdfdfe;
+    }
+
+    .code-block {
+      background: #0f172a;
+      color: #38bdf8;
+      padding: 16px;
+      border-radius: 10px;
+      font-family: monospace;
+      font-size: 0.85rem;
+      overflow-x: auto;
+      margin-bottom: 16px;
+    }
+
+    .url-tag {
+      background: #e0e7ff;
+      color: #3730a3;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .footer {
+      margin-top: 50px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    @media print {
+      .no-print-bar { display: none !important; }
+      body { background: white; }
+      .document-container {
+        box-shadow: none;
+        border: none;
+        padding: 0;
+        margin: 0;
+        max-width: 100%;
+      }
+      h2 { page-break-after: avoid; }
+      .feature-card, table { page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="no-print-bar">
+    <div>
+      <strong>PurpleOS Document Viewer</strong> — PBD Transformation Tool Dev Overview
+    </div>
+    <button class="btn-print" onclick="window.print()">
+      🖨️ Export / Print to PDF
+    </button>
+  </div>
+
+  <div class="document-container">
+    <div class="header-banner">
+      <div class="badge">Technical & Operational System Overview</div>
+      <h1>PBD Transformation Tool (PurpleOS BOS 0.5)</h1>
+      <div class="subtitle">Complete Technical Architecture, Feature Specifications & Testing Guide</div>
+
+      <div class="meta-grid">
+        <div class="meta-item">
+          <span class="meta-label">System Version</span>
+          <span class="meta-value">v0.8.9.9 (BOS 0.5)</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Environment</span>
+          <span class="meta-value">Production / Vercel</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Database</span>
+          <span class="meta-value">Supabase PostgreSQL</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Target Audience</span>
+          <span class="meta-value">Dev Team & Management</span>
+        </div>
+      </div>
+    </div>
+
+    <h2>1. Executive Summary & Core Objectives</h2>
+    <p>
+      The <strong>PBD Transformation Tool (PurpleOS Business Operating System)</strong> is an all-in-one digital agency operating system specifically engineered for <strong>Purplebot Digital</strong>. It unifies distributed team management, video production workflows, studio resource allocation, retainer client CRM, financial ledger management, and automated client proofing into a single platform.
+    </p>
+
+    <h2>2. Key Deployment & Portal Endpoints</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Portal Name</th>
+          <th>URL / Access Endpoint</th>
+          <th>Primary Function</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Workspace App</strong></td>
+          <td><span class="url-tag">https://purpleos-iota.vercel.app/app</span></td>
+          <td>Executive Morning Briefing, Real-Time Team Status, Studio & Shoot Allocation</td>
+        </tr>
+        <tr>
+          <td><strong>Manager & Admin Hub</strong></td>
+          <td><span class="url-tag">https://purpleos-iota.vercel.app/manager</span></td>
+          <td>ClickUp-style Task Hierarchy, HR Roster, Expenses, Invoices, CRM, Automations</td>
+        </tr>
+        <tr>
+          <td><strong>Review Room</strong></td>
+          <td><span class="url-tag">https://purpleos-iota.vercel.app/reviewroom</span></td>
+          <td>Client Video Proofing, Frame-accurate Comments, Approval Sign-off</td>
+        </tr>
+        <tr>
+          <td><strong>Authentication Portal</strong></td>
+          <td><span class="url-tag">https://purpleos-iota.vercel.app/auth</span></td>
+          <td>Phone Number + 4-Digit Secure PIN Authentication</td>
+        </tr>
+        <tr>
+          <td><strong>Crew Telegram Bot</strong></td>
+          <td><span class="url-tag">@purplemanosbot</span></td>
+          <td>Daily check-ins, leave requests, automated briefings, PIN retrieval</td>
+        </tr>
+        <tr>
+          <td><strong>Client Telegram Bot</strong></td>
+          <td><span class="url-tag">@purpleosbot</span></td>
+          <td>Client approval notifications, campaign status tracking</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>3. Module & Feature Specifications</h2>
+
+    <div class="feature-card">
+      <h4>🌅 Executive Morning Briefing & Live Roster</h4>
+      <ul>
+        <li><strong>Real-time Status Tracking:</strong> Aggregates live counts for <em>In Studio</em>, <em>On Shoot</em>, <em>On Leave</em>, and <em>Offline</em> personnel.</li>
+        <li><strong>Automated Telegram Briefings:</strong> Pushes daily 9:00 AM summaries to crew Telegram channels.</li>
+        <li><strong>Pending Action Alerts:</strong> Highlights pending employment agreements, unapproved expense claims, and urgent tasks.</li>
+      </ul>
+    </div>
+
+    <div class="feature-card">
+      <h4>📋 Task & Production Management Engine</h4>
+      <ul>
+        <li><strong>Hierarchy Scale:</strong> Multi-tiered structure (Spaces → Folders → Lists → Tasks → Subtasks).</li>
+        <li><strong>Custom Task Attributes:</strong> Assignees, priority levels, due dates, task labels, custom fields, and task dependencies.</li>
+        <li><strong>Task Templates & Time Logging:</strong> Pre-configured workflows for shoot prep, edit revisions, and social post creation.</li>
+      </ul>
+    </div>
+
+    <div class="feature-card">
+      <h4>👥 HR Roster & Designation Directory</h4>
+      <ul>
+        <li><strong>Employee Master Table:</strong> Complete records for staff members including designation, role, email, mobile, department, and pay model.</li>
+        <li><strong>Leave Management:</strong> Automated balance computation, submission of leave requests via Telegram, and manager approvals.</li>
+        <li><strong>Security & PIN Access:</strong> Phone number verification coupled with 4-digit PIN authentication hashed via JWT.</li>
+      </ul>
+    </div>
+
+    <div class="feature-card">
+      <h4>💰 Finance, Invoices & Expense Approvals</h4>
+      <ul>
+        <li><strong>Invoice Ledger:</strong> Tracks Paid, Draft, and Pending client invoices with automated total calculations.</li>
+        <li><strong>Reimbursements:</strong> Crew members upload receipt clips via Telegram or Manager Portal for rapid disbursal sign-off.</li>
+      </ul>
+    </div>
+
+    <div class="feature-card">
+      <h4>🎬 Review Room (Asset Proofing)</h4>
+      <ul>
+        <li><strong>Client Proofing Interface:</strong> Allows client stakeholders to review video cuts, branding collateral, and social graphics.</li>
+        <li><strong>Feedback Loop:</strong> Frame-accurate feedback markers, status toggles (Approved / Revision Requested), and automatic notification triggers.</li>
+      </ul>
+    </div>
+
+    <h2>4. System Architecture & Tech Stack</h2>
+    <div class="code-block">
+Front-End  : Vanilla ES Modules + CSS Token System (tokens.css v3.0) + Mobile Glassmorphism
+Back-End   : Node.js Express API Engine + TTL Caching Middleware + Global Error Handler
+Database   : Supabase PostgreSQL (18+ Tables, Row-Level Security, B-Tree Indexes)
+Bots Bridge: Node-Telegram-Bot-API Webhook Router (Dual Bot Handlers)
+Hosting    : Vercel Serverless Platform (Edge Static Assets Caching)
+    </div>
+
+    <h2>5. Quick Team Testing Instructions</h2>
+    <ol>
+      <li>Visit the <strong>Auth Portal</strong> at <span class="url-tag">https://purpleos-iota.vercel.app/auth</span>.</li>
+      <li>Enter your registered phone number. If logging in for the first time, open Telegram and send <code>/start</code> to <strong>@purplemanosbot</strong> to generate your 4-digit access PIN.</li>
+      <li>Log into the <strong>Manager Hub</strong> (<span class="url-tag">/manager</span>) and test creating a task, reviewing employee profiles, and checking invoice totals.</li>
+      <li>Open the <strong>Workspace App</strong> (<span class="url-tag">/app</span>) to verify the Morning Briefing live team counts.</li>
+    </ol>
+
+    <div class="footer">
+      <strong>Purplebot Digital Agency Operating System</strong> • Generated for PBD Transformation Tool Dev Team • August 2026
+    </div>
+  </div>
+
+</body>
+</html>

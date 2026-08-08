@@ -217,6 +217,10 @@ app.get(['/onboarding', '/team-onboarding'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public/onboarding.html'));
 });
 
+app.get(['/docs', '/overview', '/PBD_Transformation_Tool_Overview.html', '/PBD_Transformation_Tool_Overview'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/PBD_Transformation_Tool_Overview.html'));
+});
+
 // Dedicated Public Service Pages Routes
 app.get([
   '/services/digital-marketing',
