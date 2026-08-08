@@ -1438,25 +1438,36 @@ function registerLegacyTeamMenus(teamBot, readDB) {
 
       teamBot.onText(/\/deptreport|📊 Department Report/, async (msg) => {
         const chatId = msg.chat.id;
-        const dbData = await readDB();
-        const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId)) || (dbData.team || [])[0];
+        try {
+          const emp = await state.getEmployeeByTelegramId(chatId);
+          if (!emp) return teamBot.sendMessage(chatId, `⚠️ Account not verified.`);
 
-        const tasks = dbData.tasks || [];
-        const pendingLeaves = (dbData.leaves || []).filter(l => l.status === 'Pending Line Review').length;
-        const pendingExpenses = (dbData.expenses || []).filter(e => !e.tier1?.approved).length;
+          const [tasksRes, leavesRes, expRes] = await Promise.all([
+            supabase.from('tasks').select('stage'),
+            supabase.from('leaves').select('id').eq('status', 'Pending'),
+            supabase.from('expenses').select('id').or('status.eq.Pending Review,status.eq.Tier 1 Pending')
+          ]);
 
-        let text = `📊 *DEPARTMENT OPERATIONAL REPORT*\n` +
-          `📍 Department: *${emp.department || 'Operations'}*\n\n` +
-          `📋 *Task Pipeline:*\n` +
-          `• 📝 Briefing: *${tasks.filter(t => (t.stage || '').toLowerCase().includes('brief')).length}*\n` +
-          `• 🎬 Shoot/Prod: *${tasks.filter(t => (t.stage || '').toLowerCase().includes('prod')).length}*\n` +
-          `• ✂️ Editing: *${tasks.filter(t => (t.stage || '').toLowerCase().includes('edit')).length}*\n` +
-          `• 👁️ Client Review: *${tasks.filter(t => (t.stage || '').toLowerCase().includes('review')).length}*\n\n` +
-          `⏳ *Open Approvals:*\n` +
-          `• 🌴 Pending Leaves: *${pendingLeaves}*\n` +
-          `• 💰 Pending Expenses: *${pendingExpenses}*`;
+          const tasks = tasksRes.data || [];
+          const pendingLeaves = (leavesRes.data || []).length;
+          const pendingExpenses = (expRes.data || []).length;
 
-        teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
+          let text = `📊 *DEPARTMENT OPERATIONAL REPORT*\n` +
+            `📍 Department: *${emp.department || 'Operations'}*\n\n` +
+            `📋 *Task Pipeline:*\n` +
+            `• 📝 Briefing: *${tasks.filter(t => (t.stage || '').toLowerCase().includes('brief')).length}*\n` +
+            `• 🎬 Shoot/Prod: *${tasks.filter(t => (t.stage || '').toLowerCase().includes('prod') || (t.stage || '').toLowerCase().includes('shoot')).length}*\n` +
+            `• ✂️ Editing/QC: *${tasks.filter(t => (t.stage || '').toLowerCase().includes('edit') || (t.stage || '').toLowerCase().includes('qc')).length}*\n` +
+            `• 👁️ Client Review: *${tasks.filter(t => (t.stage || '').toLowerCase().includes('review')).length}*\n\n` +
+            `⏳ *Open Approvals:*\n` +
+            `• 🌴 Pending Leaves: *${pendingLeaves}*\n` +
+            `• 💰 Pending Expenses: *${pendingExpenses}*`;
+
+          teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
+        } catch (err) {
+          console.error('[DeptReport Bot] error:', err.message);
+          teamBot.sendMessage(chatId, '⚠️ Could not generate department report.');
+        }
       });
 
       // ──────── BATCH 1 MODULAR HANDLERS ────────

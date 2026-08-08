@@ -475,6 +475,14 @@ function initBot() {
         { command: 'resetpin', description: '🔑 Get new web portal login PIN' },
         { command: 'clockin', description: '📍 GPS clock-in to studio' },
         { command: 'clockout', description: '🚪 Clock-out & log hours' },
+        { command: 'leave', description: '🌴 Apply for leave' },
+        { command: 'leavebalance', description: '🌴 Check remaining leave balance' },
+        { command: 'expense', description: '🧾 Submit expense claim' },
+        { command: 'eod', description: '📝 Submit EOD report' },
+        { command: 'myeod', description: '📝 View your submitted EOD history' },
+        { command: 'myattendance', description: '📅 View your monthly attendance log' },
+        { command: 'leaderboard', description: '🏆 View team XP rankings' },
+        { command: 'status', description: '📊 Quick personal dashboard' },
         { command: 'orientation', description: '🎓 Employee onboarding survey' },
         { command: 'techdiag', description: '🛠️ System diagnostics (Admin)' }
       ]).catch(e => {});
@@ -696,6 +704,18 @@ function initBot() {
       teamBot.onText(/\/clockout|🚪 Clock Out/, (msg) => attendanceHandler.handleClockOut(teamBot, msg));
       teamBot.on('location', (msg) => attendanceHandler.handleLocationClockIn(teamBot, msg));
 
+      // F1 New Commands
+      const leaderboardHandler = require('./bot/handlers/leaderboard');
+      const mystatsHandler = require('./bot/handlers/mystats');
+      const leavesHandler = require('./bot/handlers/leaves');
+      const eodHandler = require('./bot/handlers/eod');
+
+      teamBot.onText(/\/leaderboard|🏆 Leaderboard/, (msg) => leaderboardHandler.handleLeaderboard(teamBot, msg));
+      teamBot.onText(/\/status|📊 Dashboard Status/, (msg) => mystatsHandler.handleStatus(teamBot, msg));
+      teamBot.onText(/\/myattendance|📅 My Attendance Log/, (msg) => attendanceHandler.handleMyAttendance(teamBot, msg));
+      teamBot.onText(/\/myeod|📝 My EOD History/, (msg) => eodHandler.handleMyEODHistory(teamBot, msg));
+      teamBot.onText(/\/leavebalance|🌴 Leave Balance/, (msg) => leavesHandler.handleLeaveBalance(teamBot, msg));
+
       // Reset PIN Command
       teamBot.onText(/\/resetpin|🔑 View My Web Login PIN/, async (msg) => {
         const chatId = msg.chat.id;
@@ -716,8 +736,8 @@ function initBot() {
       teamBot.onText(/\/orientation|🎓 Orientation/, async (msg) => {
         const chatId = msg.chat.id;
         await state.clearSession(chatId);
-        const dbData = await readDB();
-        const emp = (dbData.team || []).find(e => String(e.telegramId) === String(chatId)) || (dbData.team || [])[0];
+        const emp = await state.getEmployeeByTelegramId(chatId);
+        if (!emp) return teamBot.sendMessage(chatId, `⚠️ Account not verified. Please tap *📱 Verify My Phone Number* first.`);
 
         const tasks = emp.onboardingTasks || [
           { label: '📧 Add Work Email', completed: Boolean(emp.email) },
