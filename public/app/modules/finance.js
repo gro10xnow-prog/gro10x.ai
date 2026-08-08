@@ -551,14 +551,21 @@ window.APP_MODULES.finance = async function(container) {
                 <td>👤 ${escapeHTML(e.submittedBy || e.loggedBy || 'Staff')}</td>
                 <td style="font-weight:800; color:#f87171;">৳${(Number(e.amount) || 0).toLocaleString()}</td>
                 <td>
-                  ${e.status === 'Approved' ? '<span class="badge badge-emerald">Approved</span>' : 
+                  ${e.status === 'Approved' || e.status === 'Tier 3 Pending' ? '<span class="badge badge-emerald">Approved</span>' : 
                     e.status === 'Rejected' ? '<span class="badge" style="background:rgba(239,68,68,0.2); color:#ef4444;">Rejected</span>' :
-                    '<span class="badge badge-amber">Pending Review</span>'}
+                    e.status === 'Tier 2 Pending' ? '<span class="badge badge-purple">Tier 2 Pending</span>' :
+                    '<span class="badge badge-amber">Tier 1 Pending</span>'}
                 </td>
                 <td>
-                  ${e.status !== 'Approved' && e.status !== 'Rejected' ? `
-                    <button class="btn-emerald btn-sm" onclick="window.FINANCE_MODULE.approveExpense('${e.id}')">✅</button>
-                    <button class="btn-secondary btn-sm" style="color:#ef4444;" onclick="window.FINANCE_MODULE.rejectExpense('${e.id}')">❌</button>
+                  ${e.status !== 'Approved' && e.status !== 'Rejected' && e.status !== 'Tier 3 Pending' ? `
+                    <div style="display:flex; gap:0.3rem;">
+                      ${(e.status || '').includes('Tier 2') ? `
+                        <button class="btn-emerald btn-sm" style="font-size:0.72rem; padding:0.25rem 0.5rem;" onclick="window.FINANCE_MODULE.approveTier2('${e.id}')">✅ Tier 2</button>
+                      ` : `
+                        <button class="btn-emerald btn-sm" style="font-size:0.72rem; padding:0.25rem 0.5rem;" onclick="window.FINANCE_MODULE.approveTier1('${e.id}')">✅ Tier 1</button>
+                      `}
+                      <button class="btn-secondary btn-sm" style="color:#ef4444; font-size:0.72rem; padding:0.25rem 0.5rem;" onclick="window.FINANCE_MODULE.rejectExpense('${e.id}')">❌</button>
+                    </div>
                   ` : ''}
                 </td>
               </tr>
@@ -955,6 +962,33 @@ window.APP_MODULES.finance = async function(container) {
         loadFinance();
       } catch (err) {
         if (window.showToast) window.showToast('CSV import failed: ' + err.message, 'error');
+      }
+    },
+    async approveTier1(id) {
+      try {
+        await APP_API.post(`/expenses/${id}/approve-tier1`, {});
+        if (window.showToast) window.showToast('Expense Tier 1 Approved! 🚀', 'success');
+        loadFinance();
+      } catch (e) {
+        if (window.showToast) window.showToast('Failed Tier 1 approval: ' + e.message, 'error');
+      }
+    },
+    async approveTier2(id) {
+      try {
+        await APP_API.post(`/expenses/${id}/approve-tier2`, {});
+        if (window.showToast) window.showToast('Expense Tier 2 Approved! 💰', 'success');
+        loadFinance();
+      } catch (e) {
+        if (window.showToast) window.showToast('Failed Tier 2 approval: ' + e.message, 'error');
+      }
+    },
+    async rejectExpense(id) {
+      try {
+        await APP_API.patch(`/expenses/${id}`, { status: 'Rejected' });
+        if (window.showToast) window.showToast('Expense Claim Rejected.', 'info');
+        loadFinance();
+      } catch (e) {
+        if (window.showToast) window.showToast('Failed to reject expense: ' + e.message, 'error');
       }
     }
   };

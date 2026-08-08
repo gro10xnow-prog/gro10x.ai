@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { requireAuth } = require('../middleware/auth');
 const { requireManager } = require('../middleware/rbac');
+const { verifyTelegramInitData } = require('../middleware/telegramAuth');
 const { supabase } = require('../services/supabase');
 const { broadcast } = require('../services/sse');
 const { sendTelegramNotification, getTeamBot } = require('../services/bot');
@@ -103,9 +104,9 @@ async function findEmpByTelegramId(telegramId) {
 // ─────────────────────────────────────────────────────────────────────────────
 // GET /api/team/me?telegramId=xxx   ← Mini App init call
 // ─────────────────────────────────────────────────────────────────────────────
-router.get('/me', async (req, res) => {
+router.get('/me', verifyTelegramInitData, async (req, res) => {
   try {
-    const { telegramId } = req.query;
+    const telegramId = req.telegramUser ? String(req.telegramUser.id) : req.query.telegramId;
     if (!telegramId) return res.status(400).json({ error: 'telegramId required' });
 
     const found = await findEmpByTelegramId(telegramId);
@@ -316,9 +317,10 @@ router.get('/daily-activity', async (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 // POST /api/team/clockin   ← Mini App clock-in button (with GPS)
 // ─────────────────────────────────────────────────────────────────────────────
-router.post('/clockin', async (req, res) => {
+router.post('/clockin', verifyTelegramInitData, async (req, res) => {
   try {
-    const { telegramId, location, latitude, longitude } = req.body;
+    const telegramId = req.telegramUser ? String(req.telegramUser.id) : req.body.telegramId;
+    const { location, latitude, longitude } = req.body;
     let emp = req.user;
 
     if (!emp && telegramId) {
@@ -359,9 +361,9 @@ router.post('/clockin', async (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 // POST /api/team/clockout   ← Mini App clock-out button
 // ─────────────────────────────────────────────────────────────────────────────
-router.post('/clockout', async (req, res) => {
+router.post('/clockout', verifyTelegramInitData, async (req, res) => {
   try {
-    const { telegramId } = req.body;
+    const telegramId = req.telegramUser ? String(req.telegramUser.id) : req.body.telegramId;
     let emp = req.user;
 
     if (!emp && telegramId) {
@@ -1128,9 +1130,10 @@ router.get('/best-match', requireAuth, async (req, res) => {
 });
 
 // POST /api/team/eod — Submit Daily EOD Report
-router.post('/eod', async (req, res) => {
+router.post('/eod', verifyTelegramInitData, async (req, res) => {
   try {
-    const { telegramId, employeeId, name, text, summary, blockers } = req.body;
+    const telegramId = req.telegramUser ? String(req.telegramUser.id) : req.body.telegramId;
+    const { employeeId, name, text, summary, blockers } = req.body;
     let empCode = employeeId;
     let empName = name;
 
@@ -1154,6 +1157,18 @@ router.post('/eod', async (req, res) => {
 
     if (supabase) {
       await supabase.from('eod_reports').insert([payload]);
+      // Award +10 XP for daily EOD submission
+      if (empCode) {
+        try {
+          await supabase.rpc('increment_xp', { p_emp_code: empCode, xp_amount: 10 });
+        } catch (e) {
+          // Fallback if rpc is not created yet
+          const { data: prof } = await supabase.from('profiles').select('xp').or(`emp_code.eq.${empCode},id.eq.${empCode}`).single();
+          if (prof) {
+            await supabase.from('profiles').update({ xp: (prof.xp || 0) + 10 }).or(`emp_code.eq.${empCode},id.eq.${empCode}`);
+          }
+        }
+      }
     }
 
     broadcast('eod_update', [payload]);

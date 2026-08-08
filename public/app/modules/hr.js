@@ -292,10 +292,10 @@ window.APP_MODULES.hr = async function(container) {
           <tbody>
             ${attendanceData.map(a => `
               <tr>
-                <td style="font-weight:700;">👤 ${escapeHTML(a.name || a.employee_name || a.employee_id || 'Staff')}</td>
-                <td>${escapeHTML(a.date || 'Today')}</td>
-                <td style="color:#34d399; font-weight:700;">${escapeHTML(a.clock_in_time || '—')}</td>
-                <td style="color:var(--text-muted);">${escapeHTML(a.clock_out_time || '—')}</td>
+                <td style="font-weight:700;">👤 ${escapeHTML(a.employeeName || a.name || a.employee_name || a.employee_id || 'Staff')}</td>
+                <td>${escapeHTML(a.date || a.clockInDate || 'Today')}</td>
+                <td style="color:#34d399; font-weight:700;">${escapeHTML(a.clockInTime || a.clock_in_time || '—')}</td>
+                <td style="color:var(--text-muted);">${escapeHTML(a.clockOutTime || a.clock_out_time || '—')}</td>
                 <td><span class="badge badge-emerald">● ${escapeHTML(a.status || 'In Studio')}</span></td>
                 <td style="font-size:0.75rem; color:var(--text-muted);">${escapeHTML(a.location || 'Studio HQ')}</td>
               </tr>

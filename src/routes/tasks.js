@@ -279,6 +279,19 @@ router.patch('/:id/stage', requireAuth, async (req, res) => {
     if (error) throw error;
 
     const task = mapTask(data);
+
+    // Award +15 XP on task completion
+    if ((stage === 'Done' || stage === 'Completed') && data.assignee_id) {
+      try {
+        await supabase.rpc('increment_xp', { p_emp_code: data.assignee_id, xp_amount: 15 });
+      } catch (e) {
+        const { data: prof } = await supabase.from('profiles').select('xp').or(`emp_code.eq.${data.assignee_id},id.eq.${data.assignee_id}`).single();
+        if (prof) {
+          await supabase.from('profiles').update({ xp: (prof.xp || 0) + 15 }).or(`emp_code.eq.${data.assignee_id},id.eq.${data.assignee_id}`);
+        }
+      }
+    }
+
     const { data: allTasks } = await supabase.from('tasks').select('*').order('created_at', { ascending: false });
     broadcast('task_update', (allTasks || []).map(mapTask));
 
