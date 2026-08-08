@@ -36,19 +36,22 @@ async function handleReviewRoom(clientBot, msg) {
     let pendingReview = [];
 
     if (cData) {
-      const { data: tasks } = await supabase.from('tasks').select('*').ilike('client', `%${cData.name}%`).eq('stage', 'Client Review');
-      pendingReview = tasks || [];
+      const { data: reviews } = await supabase.from('reviews').select('*').or(`client.ilike.%${cData.name}%,client_id.eq.${cData.id}`);
+      pendingReview = reviews || [];
     }
 
     let text = `🎬 *Review Room — Your Deliverables*\n\n`;
     if (pendingReview.length) {
-      text += `You have *${pendingReview.length}* cut(s) awaiting your review:\n\n`;
-      pendingReview.forEach((t, i) => { text += `${i+1}. *${t.title}*\n   Campaign: ${t.client}\n\n`; });
-      text += `Open the app to stream & approve in 4K:`;
+      text += `You have *${pendingReview.length}* deliverable(s) in your Review Room:\n\n`;
+      pendingReview.forEach((r, i) => {
+        text += `${i+1}. *${r.project_name || r.projectName || 'Video Cut'}*\n`;
+        text += `   Version: ${r.active_version || 'v1'} | Items: ${r.total_count || 0}\n`;
+        text += `   🔗 Link: https://purpleos-iota.vercel.app/reviewroom.html?id=${r.id}\n\n`;
+      });
+      text += `Tap any link above to stream & leave timecoded comments in 4K.`;
     } else {
       text += `No deliverables pending review right now.\n\nWe'll notify you when your next cut is ready.`;
     }
-    text += `\n🔗 https://purpleos-iota.vercel.app/client-miniapp`;
     
     const keyboard = cData ? legacyBot.getClientKeyboard(cData) : undefined;
     clientBot.sendMessage(chatId, text, { parse_mode: 'Markdown', reply_markup: keyboard });

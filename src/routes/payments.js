@@ -147,6 +147,23 @@ router.post('/:id/verify', requireAuth, requireAdmin, async (req, res) => {
     broadcast('payment_update', [{ id, verified: true }]);
     broadcast('invoice_update', [{ id: log.invoice_id, status: 'Paid' }]);
 
+    // Trigger invoice_paid automation event (notifies client via Telegram if linked)
+    try {
+      const { processAutomationEvent } = require('../services/automation');
+      const { readDB } = require('../services/db');
+      const db = await readDB();
+      const invoiceObj = {
+        id: log.invoice_id,
+        clientId: log.client_id,
+        clientName: log.client_name,
+        amount: log.amount,
+        paidDate: new Date().toISOString().split('T')[0]
+      };
+      processAutomationEvent('invoice_paid', { invoice: invoiceObj }, db, null, null);
+    } catch (autoErr) {
+      console.warn('Payment verification automation event error:', autoErr.message);
+    }
+
     res.json({ success: true, message: 'Payment verified and invoice marked as Paid.' });
   } catch (err) {
     console.error('Verify payment error:', err.message);

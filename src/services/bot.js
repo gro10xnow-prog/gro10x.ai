@@ -1009,7 +1009,7 @@ function sendTelegramNotification(chatId, text, inlineKeyboard = null, isTeam = 
 
   if (!targetBot) return false;
 
-  const targetChatId = (chatId === '1708459008' || chatId === '+8801708459008') ? '7754769807' : chatId;
+  const targetChatId = chatId;
 
   const options = { parse_mode: 'Markdown' };
   if (inlineKeyboard && inlineKeyboard.length > 0) {
