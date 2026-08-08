@@ -37,6 +37,7 @@ async function handleInitExpense(teamBot, msg) {
     );
   } catch (err) {
     console.error('[Expenses Bot] handleInitExpense error:', err.message);
+    await state.clearSession(chatId).catch(() => {});
     teamBot.sendMessage(chatId, '⚠️ Could not start expense wizard. Please try again.');
   }
 }
@@ -84,7 +85,7 @@ async function handleExpenseWizardStep(teamBot, msg, wizardState, emp) {
     }
   } catch (err) {
     console.error('[Expenses Bot] handleExpenseWizardStep error:', err.message);
-    await state.clearSession(chatId);
+    await state.clearSession(chatId).catch(() => {});
     teamBot.sendMessage(chatId, '⚠️ Failed to submit expense claim. Please try again.');
   }
 }

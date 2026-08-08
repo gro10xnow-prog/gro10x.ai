@@ -1452,6 +1452,35 @@ function registerLegacyTeamMenus(teamBot, readDB) {
 
           if (data === 'noop') return;
 
+          // ─── 0. EOD MOOD CALLBACK ──────────────────────────────────────────────────
+          if (data.startsWith('eod_mood:')) {
+            const mood = data.split(':')[1];
+            const wizardState = await state.getSession(chatId);
+            const summaryText = wizardState?.summary || 'Daily tasks completed';
+            const blockersText = wizardState?.blockers || 'None';
+
+            await state.submitEOD(emp.emp_code, emp.name, {
+              done: summaryText,
+              tomorrow: 'Standard daily tasks',
+              blockers: blockersText,
+              mood: mood,
+              hours: 8
+            });
+
+            await state.clearSession(chatId);
+
+            const { getRoleKeyboard } = require('../keyboards');
+            return teamBot.sendMessage(chatId,
+              `✅ *EOD Report Submitted!* (+10 XP)\n\n` +
+              `📅 ${new Date().toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}\n` +
+              `📝 *Summary:* "${summaryText.substring(0, 80)}${summaryText.length > 80 ? '...' : ''}"\n` +
+              `🚧 *Blockers:* "${blockersText}"\n` +
+              `😊 *Mood:* ${mood}\n\n` +
+              `Saved to database! 💜`,
+              { parse_mode: 'Markdown', reply_markup: getRoleKeyboard(emp.accessLevel, true, emp) }
+            );
+          }
+
           // ─── 0. GEN MAGIC LINK ─────────────────────────────────────────────────────
           if (data.startsWith('gen_magic_link:')) {
             const clientId = data.split(':')[1];

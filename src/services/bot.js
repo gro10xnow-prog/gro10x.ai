@@ -468,6 +468,7 @@ function initBot() {
       teamBot.setMyCommands([
         { command: 'start', description: '🚀 Verify identity & launch menu' },
         { command: 'help', description: '📖 Show all available commands' },
+        { command: 'cancel', description: '🚫 Cancel active wizard session' },
         { command: 'myprofile', description: '👤 View & edit employee profile' },
         { command: 'mybank', description: '💳 Bank & bKash payout details' },
         { command: 'mytasks', description: '📋 See assigned tasks' },
@@ -486,6 +487,22 @@ function initBot() {
         { command: 'orientation', description: '🎓 Employee onboarding survey' },
         { command: 'techdiag', description: '🛠️ System diagnostics (Admin)' }
       ]).catch(e => {});
+
+      // /cancel command handler
+      teamBot.onText(/\/cancel|❌ Cancel/, async (msg) => {
+        const chatId = msg.chat.id;
+        const sess = await state.getSession(chatId);
+        if (sess) {
+          await state.clearSession(chatId);
+          const emp = await state.getEmployeeByTelegramId(chatId);
+          const keyboard = emp ? getRoleKeyboard(emp.accessLevel, true, emp) : {};
+          return teamBot.sendMessage(chatId,
+            `🚫 *Wizard Cancelled.*\nYour session progress has been cleared.\n\nTap any menu button below to continue.`,
+            { parse_mode: 'Markdown', reply_markup: keyboard }
+          );
+        }
+        teamBot.sendMessage(chatId, `✅ No active wizard session to cancel. Tap any button to continue.`);
+      });
 
       // Register persistent Chat Menu Button (Open App)
       fetch(`https://api.telegram.org/bot${teamToken}/setChatMenuButton`, {
@@ -602,7 +619,20 @@ function initBot() {
       teamBot.on('message', async (msg) => {
         const chatId = msg.chat.id;
         const text = (msg.text || '').trim();
-        if (!text) return; // Ignore non-text messages (handled by other listeners)
+
+        // Check if there is an active wizard session
+        const wizardState = await state.getSession(chatId);
+
+        // F3-5: If a wizard is active and user sends media/photo, warn them gracefully instead of freezing
+        if (wizardState && !text) {
+          return teamBot.sendMessage(chatId,
+            `⚠️ Please reply with *text only* during this wizard.\n` +
+            `To upload images/receipts, use the Mini App. Type /cancel to exit.`,
+            { parse_mode: 'Markdown' }
+          );
+        }
+
+        if (!text) return; // Ignore non-wizard non-text messages
 
         // If the message matches ANY known menu button, let its dedicated onText()
         // handler take it. This handler is ONLY for wizard step inputs.
@@ -613,8 +643,6 @@ function initBot() {
           return;
         }
 
-        // Get active wizard session
-        const wizardState = await state.getSession(chatId);
         if (!wizardState) return; // No active wizard — let onText handlers take it
 
         // ⚠️ Safety net: if the session action is not a known wizard prefix,

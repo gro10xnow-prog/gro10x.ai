@@ -23,58 +23,74 @@ function getTaskStages(task) {
 
 async function handleMyTasks(teamBot, msg) {
   const chatId = msg.chat.id;
-  const emp = await state.getEmployeeByTelegramId(chatId);
-  if (!emp) {
-    return teamBot.sendMessage(chatId, `⚠️ Account not verified.`);
-  }
-
-  let tasks = [];
-  if (supabase) {
-    const firstName = (emp.name || '').split(' ')[0];
-    const { data } = await supabase.from('tasks').select('*').ilike('assignee', `%${firstName}%`);
-    tasks = data || [];
-  }
-
-  if (tasks.length === 0) {
-    const options = {
-      parse_mode: 'Markdown',
-      reply_markup: {
-        inline_keyboard: [
-          [
-            { text: '📱 Open Task Board', web_app: { url: 'https://purpleos-iota.vercel.app/team-miniapp?tab=tasks' } },
-            { text: '➕ Create Task', web_app: { url: 'https://purpleos-iota.vercel.app/team-miniapp?tab=tasks&action=new' } }
-          ]
-        ]
-      }
-    };
-    return teamBot.sendMessage(chatId, `📋 *Assigned Shoots & Tasks for ${emp.name}:*\n\nNo active task assignments found right now.`, options);
-  }
-
-  // Send summary header
-  teamBot.sendMessage(chatId, `📋 *Assigned Shoots & Tasks for ${emp.name} (${tasks.length} Active):*`, { parse_mode: 'Markdown' });
-
-  // Send individual task cards with 1-tap action buttons
-  for (const [index, t] of tasks.entries()) {
-    const stages = getTaskStages(t);
-    const currStage = t.stage || stages[0];
-    const currIdx = stages.indexOf(currStage);
-    const nextStage = currIdx >= 0 && currIdx < stages.length - 1 ? stages[currIdx + 1] : null;
-
-    let cardText = `${index + 1}. *${t.title}*\n`;
-    cardText += `🏢 Client: *${t.client || 'Agency'}*\n`;
-    cardText += `📌 Stage: *${currStage}*\n`;
-    cardText += `📅 Due: ${t.due_date || t.dueDate || 'ASAP'}`;
-
-    const inlineRow = [];
-    if (nextStage) {
-      inlineRow.push({ text: `→ Move to ${nextStage}`, callback_data: `task_advance:${t.id}:${nextStage}` });
+  try {
+    const emp = await state.getEmployeeByTelegramId(chatId);
+    if (!emp) {
+      return teamBot.sendMessage(chatId, `⚠️ Account not verified.`);
     }
-    inlineRow.push({ text: '📱 Details', web_app: { url: `https://purpleos-iota.vercel.app/team-miniapp?tab=tasks&taskId=${t.id}` } });
 
-    teamBot.sendMessage(chatId, cardText, {
-      parse_mode: 'Markdown',
-      reply_markup: { inline_keyboard: [inlineRow] }
-    });
+    let tasks = [];
+    if (supabase) {
+      const empCode = emp.emp_code || emp.id;
+      const firstName = (emp.name || '').split(' ')[0];
+
+      // F3-8: Query by assignee_id (employee code) or name fallback
+      const { data, error } = await supabase
+        .from('tasks')
+        .select('*')
+        .or(`assignee_id.eq.${empCode},assignee.ilike.%${firstName}%`)
+        .not('stage', 'in', '("Done","Completed","Cancelled")')
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (error) throw error;
+      tasks = data || [];
+    }
+
+    if (tasks.length === 0) {
+      const options = {
+        parse_mode: 'Markdown',
+        reply_markup: {
+          inline_keyboard: [
+            [
+              { text: '📱 Open Task Board', web_app: { url: 'https://purpleos-iota.vercel.app/team-miniapp?tab=tasks' } },
+              { text: '➕ Create Task', web_app: { url: 'https://purpleos-iota.vercel.app/team-miniapp?tab=tasks&action=new' } }
+            ]
+          ]
+        }
+      };
+      return teamBot.sendMessage(chatId, `📋 *Assigned Shoots & Tasks for ${emp.name}:*\n\nNo active task assignments found right now.`, options);
+    }
+
+    // Send summary header
+    teamBot.sendMessage(chatId, `📋 *Assigned Shoots & Tasks for ${emp.name} (${tasks.length} Active):*`, { parse_mode: 'Markdown' });
+
+    // Send individual task cards with 1-tap action buttons
+    for (const [index, t] of tasks.entries()) {
+      const stages = getTaskStages(t);
+      const currStage = t.stage || stages[0];
+      const currIdx = stages.indexOf(currStage);
+      const nextStage = currIdx >= 0 && currIdx < stages.length - 1 ? stages[currIdx + 1] : null;
+
+      let cardText = `${index + 1}. *${t.title}*\n`;
+      cardText += `🏢 Client: *${t.client || 'Agency'}*\n`;
+      cardText += `📌 Stage: *${currStage}*\n`;
+      cardText += `📅 Due: ${t.due_date || t.dueDate || 'ASAP'}`;
+
+      const inlineRow = [];
+      if (nextStage) {
+        inlineRow.push({ text: `→ Move to ${nextStage}`, callback_data: `task_advance:${t.id}:${nextStage}` });
+      }
+      inlineRow.push({ text: '📱 Details', web_app: { url: `https://purpleos-iota.vercel.app/team-miniapp?tab=tasks&taskId=${t.id}` } });
+
+      teamBot.sendMessage(chatId, cardText, {
+        parse_mode: 'Markdown',
+        reply_markup: { inline_keyboard: [inlineRow] }
+      });
+    }
+  } catch (err) {
+    console.error('[Tasks Bot] handleMyTasks error:', err.message);
+    teamBot.sendMessage(chatId, '⚠️ Could not fetch active tasks.');
   }
 }
 

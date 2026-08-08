@@ -45,8 +45,25 @@ async function handleInitLeave(teamBot, msg) {
     );
   } catch (err) {
     console.error('[Leaves Bot] handleInitLeave error:', err.message);
+    await state.clearSession(chatId).catch(() => {});
     teamBot.sendMessage(chatId, '⚠️ Could not start leave request wizard. Please try again.');
   }
+}
+
+function parseDateInput(text) {
+  if (!text) return null;
+  const str = text.trim();
+  // Try YYYY-MM-DD
+  if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
+    const d = new Date(str);
+    return isNaN(d.getTime()) ? null : str;
+  }
+  // Try DD MMM or DD Month (e.g. 15 Aug, 20 August)
+  const d = new Date(`${str} ${new Date().getFullYear()}`);
+  if (!isNaN(d.getTime())) {
+    return d.toISOString().split('T')[0];
+  }
+  return null;
 }
 
 async function handleLeaveWizardStep(teamBot, msg, wizardState, emp) {
@@ -67,7 +84,13 @@ async function handleLeaveWizardStep(teamBot, msg, wizardState, emp) {
     }
 
     if (wizardState.action === 'await_leave_start_date') {
-      const startDate = text;
+      const startDate = parseDateInput(text);
+      if (!startDate) {
+        return teamBot.sendMessage(chatId,
+          `⚠️ *Invalid Date Format*\n\nPlease reply with a valid start date e.g. \`2026-08-15\` or \`15 Aug\` (or type /cancel to abort):`,
+          { parse_mode: 'Markdown' }
+        );
+      }
       const nextState = { ...wizardState, startDate, action: 'await_leave_end_date' };
       await state.setSession(chatId, nextState);
       return teamBot.sendMessage(chatId,
@@ -78,9 +101,16 @@ async function handleLeaveWizardStep(teamBot, msg, wizardState, emp) {
 
     if (wizardState.action === 'await_leave_end_date') {
       const startDate = wizardState.startDate;
-      let endDate = text.toLowerCase() === 'same' ? startDate : text;
+      let endDate = text.toLowerCase() === 'same' ? startDate : parseDateInput(text);
       
-      // Calculate total days (simple estimate if same month/year or 1 day)
+      if (!endDate) {
+        return teamBot.sendMessage(chatId,
+          `⚠️ *Invalid Date Format*\n\nPlease reply with a valid end date e.g. \`2026-08-17\`, or type **same** for 1 day:`,
+          { parse_mode: 'Markdown' }
+        );
+      }
+
+      // Calculate total days
       let totalDays = 1;
       try {
         const d1 = new Date(startDate);
@@ -126,7 +156,7 @@ async function handleLeaveWizardStep(teamBot, msg, wizardState, emp) {
     }
   } catch (err) {
     console.error('[Leaves Bot] handleLeaveWizardStep error:', err.message);
-    await state.clearSession(chatId);
+    await state.clearSession(chatId).catch(() => {});
     teamBot.sendMessage(chatId, '⚠️ Failed to submit leave request. Please try again.');
   }
 }

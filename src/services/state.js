@@ -260,12 +260,9 @@ async function submitLeave(empCode, empName, leaveData) {
   };
 
   if (supabase) {
-    try {
-      const { data, error } = await supabase.from('leaves').insert([payload]).select().single();
-      if (!error && data) return data;
-    } catch (e) {
-      console.warn('state.submitLeave Supabase err:', e.message);
-    }
+    const { data, error } = await supabase.from('leaves').insert([payload]).select().single();
+    if (error) throw new Error(`Leave DB error: ${error.message}`);
+    if (data) return data;
   }
   return payload;
 }
@@ -301,12 +298,9 @@ async function submitExpense(empCode, empName, expenseData) {
   };
 
   if (supabase) {
-    try {
-      const { data, error } = await supabase.from('expenses').insert([payload]).select().single();
-      if (!error && data) return data;
-    } catch (e) {
-      console.warn('state.submitExpense Supabase err:', e.message);
-    }
+    const { data, error } = await supabase.from('expenses').insert([payload]).select().single();
+    if (error) throw new Error(`Expense DB error: ${error.message}`);
+    if (data) return data;
   }
   return payload;
 }
@@ -344,12 +338,9 @@ async function submitEOD(empCode, empName, eodData) {
   };
 
   if (supabase) {
-    try {
-      const { data, error } = await supabase.from('eod_reports').upsert(payload, { onConflict: 'employee_id,report_date' }).select().single();
-      if (!error && data) return data;
-    } catch (e) {
-      console.warn('state.submitEOD Supabase err:', e.message);
-    }
+    const { data, error } = await supabase.from('eod_reports').upsert(payload, { onConflict: 'employee_id,report_date' }).select().single();
+    if (error) throw new Error(`EOD DB error: ${error.message}`);
+    if (data) return data;
   }
   return payload;
 }
@@ -376,8 +367,19 @@ async function getSession(chatId) {
 
   if (supabase) {
     try {
-      const { data } = await supabase.from('bot_sessions').select('state').eq('chat_id', strId).maybeSingle();
-      if (data && data.state) return data.state;
+      const { data } = await supabase.from('bot_sessions').select('state, updated_at').eq('chat_id', strId).maybeSingle();
+      if (data && data.state) {
+        // Auto-expire sessions older than 30 minutes
+        if (data.updated_at) {
+          const updatedAt = new Date(data.updated_at);
+          const ageMinutes = (Date.now() - updatedAt.getTime()) / 1000 / 60;
+          if (ageMinutes > 30) {
+            await supabase.from('bot_sessions').delete().eq('chat_id', strId).catch(() => {});
+            return null;
+          }
+        }
+        return data.state;
+      }
     } catch (e) {
       console.warn('state.getSession Supabase err:', e.message);
     }

@@ -38,6 +38,7 @@ async function handleInitEOD(teamBot, msg) {
     );
   } catch (err) {
     console.error('[EOD Bot] handleInitEOD error:', err.message);
+    await state.clearSession(chatId).catch(() => {});
     teamBot.sendMessage(chatId, '⚠️ Could not start EOD report wizard. Please try again.');
   }
 }
@@ -49,14 +50,13 @@ async function handleEODWizardStep(teamBot, msg, wizardState, emp) {
   try {
     if (wizardState.action === 'await_eod_summary') {
       await state.setSession(chatId, {
+        ...wizardState,
         action: 'await_eod_blockers',
-        empId: emp.emp_code,
-        empName: emp.name,
         summary: text
       });
 
       return teamBot.sendMessage(chatId,
-        `📝 *END-OF-DAY REPORT (Step 2/2)*\n\n` +
+        `📝 *END-OF-DAY REPORT (Step 2/3)*\n\n` +
         `Summary logged: _"${text.substring(0, 100)}${text.length > 100 ? '...' : ''}"_\n\n` +
         `Any blockers or challenges faced today? (Reply with text, or reply **none** if clear):`,
         { parse_mode: 'Markdown' }
@@ -67,28 +67,39 @@ async function handleEODWizardStep(teamBot, msg, wizardState, emp) {
       const summaryText = wizardState.summary || 'Daily tasks completed';
       const blockersText = text;
 
-      await state.submitEOD(emp.emp_code, emp.name, {
-        done: summaryText,
-        tomorrow: 'Standard daily tasks',
-        blockers: blockersText,
-        mood: '😊 Energized',
-        hours: 8
+      await state.setSession(chatId, {
+        ...wizardState,
+        action: 'await_eod_mood',
+        summary: summaryText,
+        blockers: blockersText
       });
 
-      await state.clearSession(chatId);
-
       return teamBot.sendMessage(chatId,
-        `✅ *EOD Report Submitted!* (+10 XP)\n\n` +
-        `📅 ${new Date().toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}\n` +
-        `📝 *Summary:* "${summaryText.substring(0, 80)}${summaryText.length > 80 ? '...' : ''}"\n` +
-        `🚧 *Blockers:* "${blockersText}"\n\n` +
-        `Saved to database! 💜`,
-        { parse_mode: 'Markdown', reply_markup: getRoleKeyboard(emp.accessLevel, true, emp) }
+        `📝 *END-OF-DAY REPORT (Step 3/3)*\n\n` +
+        `How was your energy and mood today? Select an option below:`,
+        {
+          parse_mode: 'Markdown',
+          reply_markup: {
+            inline_keyboard: [
+              [
+                { text: '😊 Energized', callback_data: 'eod_mood:😊 Energized' },
+                { text: '🌟 On Fire!', callback_data: 'eod_mood:🌟 On Fire!' }
+              ],
+              [
+                { text: '😐 Average', callback_data: 'eod_mood:😐 Average' },
+                { text: '😴 Tired', callback_data: 'eod_mood:😴 Tired' }
+              ],
+              [
+                { text: '🔥 Overloaded', callback_data: 'eod_mood:🔥 Overloaded' }
+              ]
+            ]
+          }
+        }
       );
     }
   } catch (err) {
     console.error('[EOD Bot] handleEODWizardStep error:', err.message);
-    await state.clearSession(chatId);
+    await state.clearSession(chatId).catch(() => {});
     teamBot.sendMessage(chatId, '⚠️ Failed to record EOD report. Please try again.');
   }
 }
