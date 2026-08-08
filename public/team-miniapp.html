@@ -1315,19 +1315,25 @@
   <!-- HERO -->
   <div class="hero">
     <div class="hero-topbar">
-      <div class="hero-brand">Purplebot Digital</div>
-      <div class="hero-notif" onclick="showPage('pageHome')">🔔</div>
+      <div class="hero-brand" onclick="window.location.reload()" style="cursor:pointer;">Purplebot Digital</div>
+      <div class="hero-notif" onclick="toggleNotifDrawer()" style="cursor:pointer;position:relative;">
+        🔔<span id="notifBadgeDot" style="display:none;position:absolute;top:-2px;right:-2px;width:8px;height:8px;background:#ef4444;border-radius:50%;"></span>
+      </div>
     </div>
     <div class="hero-card">
       <div class="avatar" id="heroAvatar">PB</div>
       <div class="hero-info">
         <div class="hero-name" id="heroName">Team Member</div>
-        <div class="hero-role" id="heroRole"><div class="skeleton-box" style="width: 80px;"></div></div>
+        <div class="hero-role" id="heroRole">Specialist · Production</div>
         <div class="hero-pills">
-          <span class="pill pill-green" id="heroStatus">⬛ Offline</span>
+          <span class="pill pill-green" id="heroStatus" onclick="openStatusPicker()" style="cursor:pointer;">⬛ Offline</span>
           <span class="pill pill-gold" id="heroXP">🏆 0 XP</span>
           <span class="pill pill-white" id="heroBadge">🌱 Recruit</span>
         </div>
+        <div class="xp-bar-container" style="margin-top:0.4rem;background:rgba(255,255,255,0.15);border-radius:10px;height:6px;overflow:hidden;">
+          <div id="xpBarFill" style="width:0%;height:100%;background:linear-gradient(90deg, #f59e0b, #ec4899);transition:width 0.4s;"></div>
+        </div>
+        <div id="xpBarLabel" style="font-size:0.65rem;color:rgba(255,255,255,0.8);margin-top:0.2rem;text-align:right;">0 / 500 XP to ⭐ Rising Star</div>
       </div>
     </div>
   </div>
@@ -1648,6 +1654,11 @@
       const emp = data.profile || data; // fallback in case API changes back
       if (!emp || !emp.id) { showLock(); return; }
       currentUser = emp;
+      window._currentUserActivity = data.recentActivity || [];
+      if (data.recentActivity && data.recentActivity.length > 0) {
+        const dot = document.getElementById('notifBadgeDot');
+        if (dot) dot.style.display = 'block';
+      }
       renderDashboard(emp, data.myTasks || [], data.attendanceToday || null);
 
       // Deep linking tab support (?tab=tasks, ?tab=pay, etc.)
@@ -1704,6 +1715,20 @@
     setStatusPill(emp.status || 'Offline');
     document.getElementById('heroXP').textContent = `🏆 ${emp.xp || 0} XP`;
     document.getElementById('heroBadge').textContent = emp.badge || '🌱 Recruit';
+
+    // XP Progress Bar
+    const xp = emp.xp || 0;
+    let nextXP = 500;
+    let nextTier = '⭐ Rising Star';
+    if (xp >= 500 && xp < 1000) { nextXP = 1000; nextTier = '🔥 Performer'; }
+    else if (xp >= 1000 && xp < 2000) { nextXP = 2000; nextTier = '💜 Champion'; }
+    else if (xp >= 2000) { nextXP = 5000; nextTier = '🚀 Legend'; }
+    
+    const pct = Math.min(100, Math.round((xp / nextXP) * 100));
+    const fillEl = document.getElementById('xpBarFill');
+    if (fillEl) fillEl.style.width = `${pct}%`;
+    const labelEl = document.getElementById('xpBarLabel');
+    if (labelEl) labelEl.textContent = `${xp} / ${nextXP} XP to ${nextTier}`;
 
     // Profile
     document.getElementById('profileAvatarLg').textContent = initials;
@@ -1764,7 +1789,12 @@
     const stepIdx = Math.min(p, 4);
     document.getElementById('obLabel').textContent = `Step ${stepIdx + 1} of 5 — ${ONBOARDING_STEPS[stepIdx]}`;
     document.getElementById('obSubText').textContent = stepIdx === 4 ? '🎉 Survey done! Sign your agreement.' : `${stepIdx} of 4 profile parts complete`;
-    document.getElementById('obContinueBtn').textContent = stepIdx === 0 ? '▶ Start Setup' : stepIdx === 4 ? '✍️ Review & Sign Agreement' : `▶ Continue — Part ${stepIdx + 1}`;
+    const btn = document.getElementById('obContinueBtn');
+    btn.textContent = stepIdx === 0 ? '▶ Start Setup' : stepIdx === 4 ? '✍️ Review & Sign Agreement' : `▶ Continue — Part ${stepIdx + 1}`;
+    if (stepIdx === 4) {
+      btn.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
+      btn.style.borderColor = '#b45309';
+    }
 
     for (let i = 1; i <= 5; i++) {
       const dot = document.getElementById(`obDot${i}`);
@@ -2782,18 +2812,99 @@
       document.getElementById('statOffline').textContent = data.offline || 0;
 
       const feed = document.getElementById('activityFeed');
-      if (data.recentActivity && data.recentActivity.length) {
-        feed.innerHTML = data.recentActivity.slice(0, 5).map(a => `
-          <div class="activity-item">
-            <div class="activity-dot" style="background:${a.color || 'var(--purple)'}"></div>
-            <div>
-              <div class="activity-text">${a.text}</div>
-              <div class="activity-time">${a.time}</div>
+      const activities = (window._currentUserActivity || []).concat(data.recentActivity || []);
+      if (activities.length > 0 && feed) {
+        feed.innerHTML = activities.slice(0, 5).map(a => `
+          <div class="activity-item" style="display:flex;align-items:center;gap:0.75rem;padding:0.6rem 0;border-bottom:1px solid rgba(0,0,0,0.05);">
+            <div style="font-size:1.2rem;">${a.icon || '📌'}</div>
+            <div style="flex:1;">
+              <div class="activity-text" style="font-size:0.85rem;font-weight:700;color:var(--text);">${a.title || a.text}</div>
+              <div class="activity-time" style="font-size:0.75rem;color:var(--muted);">${a.description || ''} · ${a.time ? new Date(a.time).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : 'Just now'}</div>
             </div>
           </div>
         `).join('');
       }
     } catch (e) {}
+  }
+
+  function toggleNotifDrawer() {
+    triggerHaptic('medium');
+    let drawer = document.getElementById('notifDrawer');
+    if (!drawer) {
+      drawer = document.createElement('div');
+      drawer.id = 'notifDrawer';
+      drawer.className = 'bottom-sheet';
+      drawer.innerHTML = `
+        <div class="sheet-backdrop" onclick="toggleNotifDrawer()"></div>
+        <div class="sheet-content" style="padding:1.2rem;background:#fff;border-radius:24px 24px 0 0;max-height:70vh;overflow-y:auto;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+            <div style="font-weight:800;font-size:1.1rem;color:var(--text);">🔔 Notifications & Activity</div>
+            <div onclick="toggleNotifDrawer()" style="font-weight:800;cursor:pointer;padding:0.3rem;">✕</div>
+          </div>
+          <div id="notifDrawerBody">
+            <div class="empty-state"><div class="empty-icon">🔕</div>No unread notifications</div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(drawer);
+    }
+    const isVisible = drawer.style.display === 'block';
+    drawer.style.display = isVisible ? 'none' : 'block';
+
+    if (!isVisible) {
+      const body = document.getElementById('notifDrawerBody');
+      const items = window._currentUserActivity || [];
+      if (items.length > 0) {
+        body.innerHTML = items.map(n => `
+          <div style="padding:0.75rem;background:#f9f5ff;border-radius:14px;margin-bottom:0.6rem;border:1px solid #ede9fe;">
+            <div style="font-weight:700;font-size:0.85rem;color:var(--purple);">${n.icon || '📌'} ${n.title}</div>
+            <div style="font-size:0.8rem;color:var(--text-2);margin-top:0.2rem;">${n.description}</div>
+            <div style="font-size:0.7rem;color:var(--muted);margin-top:0.3rem;">${new Date(n.time).toLocaleString()}</div>
+          </div>
+        `).join('');
+      }
+    }
+  }
+
+  function openStatusPicker() {
+    triggerHaptic('medium');
+    let sheet = document.getElementById('statusPickerSheet');
+    if (!sheet) {
+      sheet = document.createElement('div');
+      sheet.id = 'statusPickerSheet';
+      sheet.className = 'bottom-sheet';
+      sheet.innerHTML = `
+        <div class="sheet-backdrop" onclick="closeStatusPicker()"></div>
+        <div class="sheet-content" style="padding:1.2rem;background:#fff;border-radius:24px 24px 0 0;">
+          <div style="font-weight:800;font-size:1.1rem;color:var(--text);margin-bottom:1rem;text-align:center;">Update Your Work Status</div>
+          <div style="display:flex;flex-direction:column;gap:0.6rem;">
+            <button class="ob-btn" onclick="selectStatus('In Studio')" style="background:#ecfdf5;color:#047857;border:1px solid #a7f3d0;">🟢 In Studio</button>
+            <button class="ob-btn" onclick="selectStatus('On Field Shoot')" style="background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;">🎬 On Field Shoot</button>
+            <button class="ob-btn" onclick="selectStatus('On Leave')" style="background:#fef3c7;color:#b45309;border:1px solid #fde68a;">🌴 On Leave</button>
+            <button class="ob-btn" onclick="selectStatus('Offline')" style="background:#f3f4f6;color:#374151;border:1px solid #e5e7eb;">⬛ Offline</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(sheet);
+    }
+    sheet.style.display = 'block';
+  }
+
+  function closeStatusPicker() {
+    const sheet = document.getElementById('statusPickerSheet');
+    if (sheet) sheet.style.display = 'none';
+  }
+
+  async function selectStatus(status) {
+    closeStatusPicker();
+    triggerHaptic('heavy');
+    if (status === 'In Studio' || status === 'On Field Shoot') {
+      await handleClockIn();
+    } else {
+      await handleClockOut();
+    }
+    if (currentUser) currentUser.status = status;
+    setStatusPill(status);
   }
 
   async function loadRosterPage() {

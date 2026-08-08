@@ -126,10 +126,35 @@ router.get('/me', async (req, res) => {
       attendanceToday = mapAttendance(att);
     }
 
+    // Build recentActivity feed for user
+    const recentActivity = [];
+    myTasks.slice(0, 3).forEach(t => {
+      recentActivity.push({
+        id: `act-task-${t.id}`,
+        title: `Task Update: ${t.title || 'Assigned Task'}`,
+        description: `Current stage: ${t.stage || t.status || 'In Production'}`,
+        icon: '📋',
+        time: t.updated_at || t.created_at || new Date().toISOString()
+      });
+    });
+
+    if (attendanceToday) {
+      recentActivity.push({
+        id: `act-att-${attendanceToday.id || 'today'}`,
+        title: `Attendance Recorded`,
+        description: `Status: ${attendanceToday.status} at ${attendanceToday.clockInTime || 'Studio'}`,
+        icon: '⏱️',
+        time: attendanceToday.createdAt || new Date().toISOString()
+      });
+    }
+
+    recentActivity.sort((a, b) => new Date(b.time || 0) - new Date(a.time || 0));
+
     res.json({
       profile: mapProfile(emp),
       myTasks,
       attendanceToday,
+      recentActivity,
       xp: emp.xp || 0
     });
   } catch (err) {
