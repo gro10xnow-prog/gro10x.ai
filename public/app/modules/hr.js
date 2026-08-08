@@ -37,7 +37,7 @@ window.APP_MODULES.hr = async function(container) {
         APP_API.get('/team/eod').catch(() => [])
       ]);
 
-      teamData = Array.isArray(team) ? team : [];
+      teamData = Array.isArray(team) ? team : (team && Array.isArray(team.data) ? team.data : []);
       leavesData = Array.isArray(leaves) ? leaves : [];
       workloadData = Array.isArray(workload) ? workload : [];
       attendanceData = Array.isArray(attendance) ? attendance : [];

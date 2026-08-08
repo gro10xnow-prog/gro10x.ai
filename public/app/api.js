@@ -56,6 +56,10 @@ window.APP_API = {
       }
 
       const data = await response.json();
+
+      if (!response.ok || (data && data.error)) {
+        throw new Error(data?.error || `HTTP ${response.status}`);
+      }
       
       // Store in cache
       if (method === 'GET') {
