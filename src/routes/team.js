@@ -614,7 +614,12 @@ router.get('/attendance', requireAuth, async (req, res) => {
   try {
     const { data, error } = await supabase.from('attendance').select('*').order('created_at', { ascending: false });
     if (error) throw error;
-    res.json((data || []).map(mapAttendance));
+    let mapped = (data || []).map(mapAttendance);
+    const empId = req.query.employeeId || req.query.empId;
+    if (empId) {
+      mapped = mapped.filter(a => a.employeeId === empId || a.employee_id === empId);
+    }
+    res.json(mapped);
   } catch (err) {
     console.error('Attendance GET error:', err.message);
     res.status(500).json({ error: err.message });
@@ -626,7 +631,12 @@ router.get('/leaves', requireAuth, async (req, res) => {
   try {
     const { data, error } = await supabase.from('leaves').select('*').order('created_at', { ascending: false });
     if (error) throw error;
-    res.json(data || []);
+    let rows = data || [];
+    const empId = req.query.employeeId || req.query.empId;
+    if (empId) {
+      rows = rows.filter(l => l.employee_id === empId || l.staff_id === empId || l.employeeId === empId);
+    }
+    res.json(rows);
   } catch (err) {
     console.error('Leaves GET error:', err.message);
     res.status(500).json({ error: err.message });
@@ -638,7 +648,12 @@ router.get('/eod', requireAuth, async (req, res) => {
   try {
     const { data, error } = await supabase.from('eod_reports').select('*').order('created_at', { ascending: false });
     if (error) throw error;
-    res.json(data || []);
+    let rows = data || [];
+    const empId = req.query.employeeId || req.query.empId;
+    if (empId) {
+      rows = rows.filter(e => e.employee_id === empId || e.employeeId === empId);
+    }
+    res.json(rows);
   } catch (err) {
     console.error('EOD GET error:', err.message);
     res.status(500).json({ error: err.message });

@@ -39,7 +39,12 @@ router.get('/', requireAuth, async (req, res) => {
   try {
     const { data, error } = await supabase.from('expenses').select('*').order('created_at', { ascending: false });
     if (error) throw error;
-    res.json((data || []).map(mapExpense));
+    let mapped = (data || []).map(mapExpense);
+    const empId = req.query.submittedById || req.query.employeeId;
+    if (empId) {
+      mapped = mapped.filter(e => e.submittedById === empId || e.submittedBy === empId);
+    }
+    res.json(mapped);
   } catch (err) {
     console.error('Expenses GET error:', err.message);
     res.status(500).json({ error: err.message });

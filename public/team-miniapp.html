@@ -1494,6 +1494,26 @@
           <div id="mfsNagad">Not set</div>
         </div>
       </div>
+    <!-- MY LEAVE REQUESTS HISTORY -->
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
+        <div class="card-title" style="margin:0;">🌴 My Leave Requests</div>
+        <button onclick="openLeaveForm()" style="background:var(--purple);color:#fff;border:none;border-radius:10px;padding:0.35rem 0.7rem;font-size:0.75rem;font-weight:700;cursor:pointer;">+ Request Leave</button>
+      </div>
+      <div id="leaveHistoryList">
+        <div class="empty-state"><div class="empty-icon">🌴</div>Loading leave history...</div>
+      </div>
+    </div>
+
+    <!-- MY EXPENSE CLAIMS HISTORY -->
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
+        <div class="card-title" style="margin:0;">🧾 My Expense Claims</div>
+        <button onclick="openExpenseForm()" style="background:var(--purple);color:#fff;border:none;border-radius:10px;padding:0.35rem 0.7rem;font-size:0.75rem;font-weight:700;cursor:pointer;">+ Submit Expense</button>
+      </div>
+      <div id="expenseHistoryList">
+        <div class="empty-state"><div class="empty-icon">🧾</div>Loading expense claims...</div>
+      </div>
     </div>
   </div>
 
@@ -1530,6 +1550,17 @@
       <div class="profile-field">
         <div class="profile-field-label">XP / Rank</div>
         <div class="profile-field-val" id="profileXP">0 XP · 🌱 Recruit</div>
+      </div>
+    </div>
+
+    <!-- MY EOD REPORTS HISTORY -->
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
+        <div class="card-title" style="margin:0;">📝 My EOD Reports</div>
+        <button onclick="openEODForm()" style="background:var(--purple);color:#fff;border:none;border-radius:10px;padding:0.35rem 0.7rem;font-size:0.75rem;font-weight:700;cursor:pointer;">+ Submit EOD</button>
+      </div>
+      <div id="eodHistoryList">
+        <div class="empty-state"><div class="empty-icon">📝</div>Loading EOD reports...</div>
       </div>
     </div>
 
@@ -1875,6 +1906,16 @@
     const map = { pageHome: 'navHome', pageTasks: 'navTasks', pageAttendance: 'navAttendance', pagePay: 'navPay', pageProfile: 'navProfile' };
     if (map[pageId]) document.getElementById(map[pageId]).classList.add('active');
     window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    if (pageId === 'pagePay') {
+      loadPayData();
+      loadLeaveHistory();
+      loadExpenseHistory();
+    } else if (pageId === 'pageAttendance') {
+      loadAttendanceHistory();
+    } else if (pageId === 'pageProfile') {
+      loadEODHistory();
+    }
   }
 
   // ══════════════════════════════════════════
@@ -2810,6 +2851,126 @@
     document.getElementById('bankBranch').textContent = bank.branch || '—';
     document.getElementById('mfsBkash').textContent = bank.mfsNo || bank.bkash || 'Not set';
     document.getElementById('mfsNagad').textContent = bank.nagad || 'Not set';
+  }
+
+  // ══════════════════════════════════════════
+  // HISTORY LOADERS
+  // ══════════════════════════════════════════
+  async function loadLeaveHistory() {
+    const list = document.getElementById('leaveHistoryList');
+    if (!list || !currentUser) return;
+    try {
+      const res = await fetch(`/api/leaves?employeeId=${currentUser.id || currentUser.emp_code}`, { headers: authHeaders() });
+      if (!res.ok) throw new Error('Failed');
+      const leaves = await res.json();
+      if (!leaves.length) {
+        list.innerHTML = '<div class="empty-state"><div class="empty-icon">🌴</div>No leave requests submitted yet</div>';
+        return;
+      }
+      const statusPill = (s) => {
+        const st = (s || 'Pending').toLowerCase();
+        if (st.includes('approved')) return '<span style="background:#ecfdf5;color:#047857;padding:0.2rem 0.55rem;border-radius:10px;font-size:0.7rem;font-weight:700;">✅ Approved</span>';
+        if (st.includes('reject')) return '<span style="background:#fef2f2;color:#b91c1c;padding:0.2rem 0.55rem;border-radius:10px;font-size:0.7rem;font-weight:700;">❌ Rejected</span>';
+        return '<span style="background:#fef3c7;color:#b45309;padding:0.2rem 0.55rem;border-radius:10px;font-size:0.7rem;font-weight:700;">⏳ Pending</span>';
+      };
+
+      list.innerHTML = leaves.map(l => `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:0.6rem 0;border-bottom:1px solid rgba(0,0,0,0.05);">
+          <div>
+            <div style="font-size:0.85rem;font-weight:700;color:var(--text);">🌴 ${l.type || l.leaveType || 'Leave'}</div>
+            <div style="font-size:0.72rem;color:var(--muted);margin-top:0.15rem;">${l.fromDate || l.startDate} to ${l.toDate || l.endDate}</div>
+          </div>
+          <div>${statusPill(l.status)}</div>
+        </div>
+      `).join('');
+    } catch(e) {
+      list.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div>Unable to load leave history</div>';
+    }
+  }
+
+  async function loadExpenseHistory() {
+    const list = document.getElementById('expenseHistoryList');
+    if (!list || !currentUser) return;
+    try {
+      const res = await fetch(`/api/expenses?submittedById=${currentUser.id || currentUser.emp_code}`, { headers: authHeaders() });
+      if (!res.ok) throw new Error('Failed');
+      const claims = await res.json();
+      if (!claims.length) {
+        list.innerHTML = '<div class="empty-state"><div class="empty-icon">🧾</div>No expense claims submitted yet</div>';
+        return;
+      }
+      const statusPill = (s) => {
+        const st = (s || 'Pending').toLowerCase();
+        if (st.includes('approved') || st.includes('paid')) return '<span style="background:#ecfdf5;color:#047857;padding:0.2rem 0.55rem;border-radius:10px;font-size:0.7rem;font-weight:700;">✅ Approved</span>';
+        if (st.includes('reject')) return '<span style="background:#fef2f2;color:#b91c1c;padding:0.2rem 0.55rem;border-radius:10px;font-size:0.7rem;font-weight:700;">❌ Rejected</span>';
+        return '<span style="background:#fef3c7;color:#b45309;padding:0.2rem 0.55rem;border-radius:10px;font-size:0.7rem;font-weight:700;">⏳ Pending</span>';
+      };
+
+      list.innerHTML = claims.map(c => `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:0.6rem 0;border-bottom:1px solid rgba(0,0,0,0.05);">
+          <div>
+            <div style="font-size:0.85rem;font-weight:700;color:var(--text);">${c.category || 'Expense'} · BDT ${(c.amount || 0).toLocaleString()}</div>
+            <div style="font-size:0.72rem;color:var(--muted);margin-top:0.15rem;">${c.date} ${c.description ? `· ${c.description.slice(0, 30)}` : ''}</div>
+          </div>
+          <div>${statusPill(c.status)}</div>
+        </div>
+      `).join('');
+    } catch(e) {
+      list.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div>Unable to load expense claims</div>';
+    }
+  }
+
+  async function loadAttendanceHistory() {
+    const list = document.getElementById('attHistory');
+    if (!list || !currentUser) return;
+    try {
+      const res = await fetch(`/api/team/attendance?employeeId=${currentUser.id || currentUser.emp_code}`, { headers: authHeaders() });
+      if (!res.ok) throw new Error('Failed');
+      const records = await res.json();
+      if (!records.length) {
+        list.innerHTML = '<div class="empty-state"><div class="empty-icon">⏱️</div>No attendance records yet</div>';
+        return;
+      }
+      list.innerHTML = records.slice(0, 7).map(r => `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:0.55rem 0;border-bottom:1px solid rgba(0,0,0,0.05);">
+          <div>
+            <div style="font-size:0.85rem;font-weight:700;color:var(--text);">📅 ${r.date || 'Today'}</div>
+            <div style="font-size:0.72rem;color:var(--muted);margin-top:0.15rem;">${r.location || 'Studio'}</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:0.8rem;font-weight:700;color:#047857;">🟢 ${r.clockInTime || r.clock_in_time || 'Present'}</div>
+          </div>
+        </div>
+      `).join('');
+    } catch(e) {
+      list.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div>Unable to load attendance history</div>';
+    }
+  }
+
+  async function loadEODHistory() {
+    const list = document.getElementById('eodHistoryList');
+    if (!list || !currentUser) return;
+    try {
+      const res = await fetch(`/api/team/eod?employeeId=${currentUser.id || currentUser.emp_code}`, { headers: authHeaders() });
+      if (!res.ok) throw new Error('Failed');
+      const eods = await res.json();
+      if (!eods.length) {
+        list.innerHTML = '<div class="empty-state"><div class="empty-icon">📝</div>No EOD reports submitted yet</div>';
+        return;
+      }
+      const moodMap = { '5': '🔥', '4': '😊', '3': '😐', '2': '😓', '1': '🆘' };
+      list.innerHTML = eods.slice(0, 10).map(e => `
+        <div style="padding:0.6rem 0;border-bottom:1px solid rgba(0,0,0,0.05);">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div style="font-size:0.85rem;font-weight:700;color:var(--text);">📝 ${e.date || new Date(e.created_at).toLocaleDateString()}</div>
+            <div style="font-size:0.85rem;">${moodMap[e.mood] || '📝'}</div>
+          </div>
+          <div style="font-size:0.75rem;color:var(--text-2);margin-top:0.25rem;white-space:pre-line;">${(e.tasks || e.text || '').slice(0, 120)}${(e.tasks || e.text || '').length > 120 ? '...' : ''}</div>
+        </div>
+      `).join('');
+    } catch(e) {
+      list.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div>Unable to load EOD reports</div>';
+    }
   }
 
   // ══════════════════════════════════════════
