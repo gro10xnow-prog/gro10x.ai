@@ -271,9 +271,13 @@ window.APP_MODULES.hr = async function(container) {
                   <td><span class="badge ${statusColor}">● ${escapeHTML(m.status || 'Active')}</span></td>
                   <td style="font-weight:700; color:var(--purple-light);">৳${salary.toLocaleString()}</td>
                   <td>
-                    <div style="display:flex; gap:0.3rem;">
                       <button class="btn-primary btn-sm" onclick='window.HR_MODULE.viewProfile("${code}")'>👁️ Profile & Survey</button>
-              </tbody>
+                    </div>
+                  </td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
         </table>
       `;
     } else if (activeHrTab === 'attendance') {
@@ -484,16 +488,6 @@ window.APP_MODULES.hr = async function(container) {
                   <div style="background:rgba(0,0,0,0.2); padding:0.5rem; border-radius:6px;">
                     <div style="display:flex; justify-content:space-between; font-weight:700; color:var(--text-main);">
                       <span>📅 ${e.report_date || e.created_at ? new Date(e.report_date || e.created_at).toLocaleDateString() : 'Recent'}</span>
-                      <span>Mood: ${escapeHTML(e.mood || '😊')}</span>
-                    </div>
-                    <div style="color:var(--text-muted); margin-top:0.25rem;">${escapeHTML(e.tasks_completed || e.summary || 'Tasks completed')}</div>
-                  </div>
-                `).join('')}
-              </div>
-            `}
-          </div>
-        </div>
-      `; 'Recent'}</span>
                       <span>Mood: ${escapeHTML(e.mood || '😊')}</span>
                     </div>
                     <div style="color:var(--text-muted); margin-top:0.25rem;">${escapeHTML(e.tasks_completed || e.summary || 'Tasks completed')}</div>
