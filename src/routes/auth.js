@@ -28,7 +28,7 @@ router.get('/health',  async (req, res) => {
 });
 
 // Auth Config
-router.get('/auth/config',  async (req, res) => {
+router.get('/config', async (req, res) => {
   res.json({
     supabaseUrl: process.env.SUPABASE_URL || '',
     supabaseAnonKey: process.env.SUPABASE_ANON_KEY || ''
@@ -36,7 +36,7 @@ router.get('/auth/config',  async (req, res) => {
 });
 
 // User Profile Me
-router.get('/auth/me', requireAuth, async (req, res) => {
+router.get('/me', requireAuth, async (req, res) => {
   res.json({
     success: true,
     user: req.user
@@ -44,7 +44,7 @@ router.get('/auth/me', requireAuth, async (req, res) => {
 });
 
 // 📱 Telegram Mini App Authenticate / Handshake
-router.post('/auth/telegram', async (req, res) => {
+router.post('/telegram', async (req, res) => {
   try {
     const { telegramId, initData, userType } = req.body;
     const tgId = String(telegramId || '').trim();
@@ -108,7 +108,7 @@ router.post('/auth/telegram', async (req, res) => {
 });
 
 // 🔑 Generate Temp PIN (Admin only — rate limited & protected)
-router.post('/auth/pin/generate', authLimiter, requireAuth, requireAdmin, async (req, res) => {
+router.post('/pin/generate', authLimiter, requireAuth, requireAdmin, async (req, res) => {
   const { phone, linkedId, linkedType, email, sendTelegram } = req.body;
   if (!phone) {
     return res.status(400).json({ error: 'Phone number is required' });
@@ -171,7 +171,7 @@ router.post('/auth/pin/generate', authLimiter, requireAuth, requireAdmin, async 
 });
 
 // 🔐 Verify PIN & Issue Signed JWT
-router.post('/auth/pin/verify', authLimiter, async (req, res) => {
+router.post('/pin/verify', authLimiter, async (req, res) => {
   const { phone, pin } = req.body;
   if (!phone || !pin) {
     return res.status(400).json({ error: 'Phone number and PIN are required' });
@@ -230,7 +230,7 @@ router.post('/auth/pin/verify', authLimiter, async (req, res) => {
 });
 
 // Set Permanent PIN
-router.post('/auth/pin/set', requireAuth, async (req, res) => {
+router.post('/pin/set', requireAuth, async (req, res) => {
   const { phone, newPin, email } = req.body;
   if (!phone || !newPin || String(newPin).length < 4) {
     return res.status(400).json({ error: 'Valid phone number and 4-digit PIN are required' });
