@@ -155,9 +155,78 @@ window.APP_MODULES.hr = async function(container) {
         <div class="modal-box" style="max-width:560px; max-height:90vh; overflow-y:auto;">
           <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-subtle); padding-bottom:0.75rem; margin-bottom:1.25rem;">
             <h2 style="font-size:1.2rem; font-weight:800; margin:0; color:#fff;" id="drawerStaffName">Staff Profile</h2>
-            <button onclick="window.HR_MODULE.closeProfileDrawer()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
+            <div style="display:flex; align-items:center; gap:0.5rem;" id="drawerHeaderActions">
+              <button onclick="window.HR_MODULE.closeProfileDrawer()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
+            </div>
           </div>
           <div id="drawerStaffContent">Loading staff details...</div>
+        </div>
+      </div>
+
+      <!-- Edit Team Member Modal -->
+      <div id="hrEditMemberModal" class="modal-overlay">
+        <div class="modal-box" style="max-width:540px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+            <h3 style="margin:0; color:#fff; font-family:var(--font-heading);">✏️ Edit Team Profile</h3>
+            <button onclick="window.HR_MODULE.closeEditModal()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
+          </div>
+          <form onsubmit="window.HR_MODULE.submitEditMember(event)" style="display:flex; flex-direction:column; gap:0.9rem;">
+            <input type="hidden" id="hrEditCode" />
+            <div class="form-group">
+              <label class="form-label">Full Name *</label>
+              <input type="text" id="hrEditName" class="input-text" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Phone Number (Login ID) *</label>
+              <input type="text" id="hrEditPhone" class="input-text" required />
+            </div>
+            <div style="display:flex; gap:1rem;">
+              <div class="form-group" style="flex:1;">
+                <label class="form-label">Role / Title</label>
+                <input type="text" id="hrEditRole" class="input-text" />
+              </div>
+              <div class="form-group" style="flex:1;">
+                <label class="form-label">Department</label>
+                <select id="hrEditDept" class="input-text">
+                  <option value="Production">Production</option>
+                  <option value="Post Production">Post Production</option>
+                  <option value="Strategy">Strategy & Account Management</option>
+                  <option value="Creative">Creative & Design</option>
+                  <option value="Growth">Growth & Ads</option>
+                  <option value="Admin">Admin & Finance</option>
+                  <option value="Executive">Executive</option>
+                </select>
+              </div>
+            </div>
+            <div style="display:flex; gap:1rem;">
+              <div class="form-group" style="flex:1;">
+                <label class="form-label">Base Salary (BDT)</label>
+                <input type="number" id="hrEditSalary" class="input-text" />
+              </div>
+              <div class="form-group" style="flex:1;">
+                <label class="form-label">Personal Email</label>
+                <input type="email" id="hrEditEmail" class="input-text" />
+              </div>
+            </div>
+            <div style="display:flex; gap:1rem;">
+              <div class="form-group" style="flex:1;">
+                <label class="form-label">Blood Group</label>
+                <input type="text" id="hrEditBlood" placeholder="e.g. B+" class="input-text" />
+              </div>
+              <div class="form-group" style="flex:1;">
+                <label class="form-label">NID Number</label>
+                <input type="text" id="hrEditNid" placeholder="e.g. 1234567890" class="input-text" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Emergency Contact</label>
+              <input type="text" id="hrEditEmergency" placeholder="e.g. +88017..." class="input-text" />
+            </div>
+            <div style="display:flex; justify-content:flex-end; gap:0.75rem; margin-top:0.8rem;">
+              <button type="button" class="btn-secondary" onclick="window.HR_MODULE.closeEditModal()">Cancel</button>
+              <button type="submit" class="btn-primary" id="hrEditSubmitBtn">💾 Save Changes</button>
+            </div>
+          </form>
         </div>
       </div>
 
@@ -271,7 +340,9 @@ window.APP_MODULES.hr = async function(container) {
                   <td><span class="badge ${statusColor}">● ${escapeHTML(m.status || 'Active')}</span></td>
                   <td style="font-weight:700; color:var(--purple-light);">৳${salary.toLocaleString()}</td>
                   <td>
-                      <button class="btn-primary btn-sm" onclick='window.HR_MODULE.viewProfile("${code}")'>👁️ Profile & Survey</button>
+                    <div style="display:flex; gap:0.4rem;">
+                      <button class="btn-primary btn-sm" onclick='window.HR_MODULE.viewProfile("${code}")'>👁️ Profile</button>
+                      <button class="btn-secondary btn-sm" onclick='window.HR_MODULE.openEditModal("${code}")'>✏️ Edit</button>
                     </div>
                   </td>
                 </tr>
@@ -405,11 +476,76 @@ window.APP_MODULES.hr = async function(container) {
     closeProfileDrawer() {
       document.getElementById('hrProfileDrawer').classList.remove('active');
     },
+    openEditModal(code) {
+      const member = teamData.find(m => (m.emp_code || m.id) === code || m.name === code);
+      if (!member) return;
+
+      document.getElementById('hrEditCode').value = member.emp_code || member.id || '';
+      document.getElementById('hrEditName').value = member.name || '';
+      document.getElementById('hrEditPhone').value = member.phone || member.whatsapp || '';
+      document.getElementById('hrEditRole').value = member.role || '';
+      document.getElementById('hrEditDept').value = member.department || 'Production';
+      document.getElementById('hrEditSalary').value = member.baseSalary || member.base_salary || 0;
+      document.getElementById('hrEditEmail').value = member.email || member.personal_email || '';
+      document.getElementById('hrEditBlood').value = member.bloodGroup || member.blood_group || '';
+      document.getElementById('hrEditNid').value = member.nidNo || member.nid_no || '';
+      document.getElementById('hrEditEmergency').value = member.emergency_contact || member.emergencyContact || '';
+
+      document.getElementById('hrEditMemberModal').classList.add('active');
+    },
+    closeEditModal() {
+      document.getElementById('hrEditMemberModal').classList.remove('active');
+    },
+    async submitEditMember(e) {
+      if (e && e.preventDefault) e.preventDefault();
+      const code = document.getElementById('hrEditCode').value;
+      const name = document.getElementById('hrEditName').value.trim();
+      const phone = document.getElementById('hrEditPhone').value.trim();
+      
+      if (!code || !name || !phone) {
+        if (window.showToast) window.showToast('Name and phone number are required.', 'error');
+        return;
+      }
+
+      const submitBtn = document.getElementById('hrEditSubmitBtn');
+      if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = '⏳ Saving...'; }
+
+      const payload = {
+        name,
+        phone,
+        role: document.getElementById('hrEditRole').value.trim(),
+        department: document.getElementById('hrEditDept').value,
+        baseSalary: Number(document.getElementById('hrEditSalary').value) || 0,
+        personal_email: document.getElementById('hrEditEmail').value.trim(),
+        blood_group: document.getElementById('hrEditBlood').value.trim(),
+        nid_no: document.getElementById('hrEditNid').value.trim(),
+        emergency_contact: document.getElementById('hrEditEmergency').value.trim()
+      };
+
+      try {
+        await APP_API.put(`/team/${encodeURIComponent(code)}`, payload);
+        if (window.showToast) window.showToast('Team member profile updated successfully! 🚀', 'success');
+        this.closeEditModal();
+        this.closeProfileDrawer();
+        loadHROps();
+      } catch(err) {
+        if (window.showToast) window.showToast('Failed to update profile: ' + (err.message || 'Error'), 'error');
+      } finally {
+        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '💾 Save Changes'; }
+      }
+    },
     viewProfile(code) {
       const member = teamData.find(m => (m.emp_code || m.id) === code || m.name === code);
       if (!member) return;
 
       document.getElementById('drawerStaffName').textContent = `${member.name} (${member.emp_code || member.id})`;
+      const drawerActions = document.getElementById('drawerHeaderActions');
+      if (drawerActions) {
+        drawerActions.innerHTML = `
+          <button class="btn-secondary btn-sm" style="font-size:0.8rem; padding:0.25rem 0.65rem;" onclick='window.HR_MODULE.openEditModal("${member.emp_code || member.id}")'>✏️ Edit Profile</button>
+          <button onclick="window.HR_MODULE.closeProfileDrawer()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
+        `;
+      }
 
       const memberAtt = attendanceData.filter(a => a.employee_id === (member.emp_code || member.id) || a.name === member.name);
       const memberEods = eodData.filter(e => e.employee_id === (member.emp_code || member.id) || e.employee_name === member.name);
