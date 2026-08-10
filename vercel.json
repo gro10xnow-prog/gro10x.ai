@@ -96,6 +96,10 @@
       "dest": "/public/PBD_Transformation_Tool_Overview.html"
     },
     {
+      "src": "/api/(.*)",
+      "dest": "/server.js"
+    },
+    {
       "src": "/auth(.*)",
       "dest": "/public/auth.html"
     },
@@ -118,10 +122,6 @@
     {
       "src": "/app/(.*)",
       "dest": "/public/app/$1"
-    },
-    {
-      "src": "/api/(.*)",
-      "dest": "/server.js"
     },
     {
       "src": "/(.*)",
