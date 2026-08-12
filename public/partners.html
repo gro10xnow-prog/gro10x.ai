@@ -1,7 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
+  <meta name="color-scheme" content="dark">
+  <script src="/js/theme.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Purplebot Client & Partner Portal — Deliverables & Review Room</title>
   <meta name="description" content="Purplebot Client & Partner Portal — Stream latest video cuts, approve creative assets, and manage campaign invoices.">
@@ -22,16 +24,16 @@
   <link rel="stylesheet" href="/css/landing.css">
   <style>
     .glass-panel, .glass-card {
-      background: var(--surface-1, #ffffff);
-      border: 1px solid var(--surface-border, rgba(124, 58, 237, 0.15));
+      background: var(--surface-1);
+      border: 1px solid var(--surface-border);
       border-radius: 16px;
-      box-shadow: var(--shadow-card, 0 8px 25px rgba(0, 0, 0, 0.03));
+      box-shadow: var(--shadow-card);
       transition: all 0.25s ease;
       padding: 1.5rem;
     }
     .glass-panel:hover, .glass-card:hover {
-      border-color: var(--brand-purple, #7c3aed);
-      box-shadow: var(--shadow-elevated, 0 16px 40px rgba(124, 58, 237, 0.12));
+      border-color: var(--brand-purple);
+      box-shadow: var(--shadow-elevated);
     }
     @media (max-width: 900px) {
       #partnerPlayerGrid {

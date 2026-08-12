@@ -8,6 +8,9 @@
  */
 
 :root, [data-theme="dark"] {
+  /* ── color-scheme enforcement (also set via theme.js) ── */
+  color-scheme: dark;
+
   /* Surface Hierarchy (Dark Canvas) */
   --surface-0: #09090d;          /* Base canvas / background */
   --surface-1: #121218;          /* Primary cards & panels */
