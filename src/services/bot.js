@@ -447,17 +447,49 @@ function initBot() {
         teamBot.deleteWebHook().catch(e => console.error('Error deleting webhook:', e));
         console.log('✅ Local polling enabled for teamBot (Webhook deleted)');
       } else {
-        const webhookBody = { url: `${baseUrl}/api/webhooks/telegram?bot=team` };
+        const expectedUrl = `${baseUrl}/api/webhooks/telegram?bot=team`;
+        const webhookBody = { url: expectedUrl };
         if (process.env.WEBHOOK_SECRET) webhookBody.secret_token = process.env.WEBHOOK_SECRET;
 
-        fetch(`https://api.telegram.org/bot${teamToken}/setWebhook`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(webhookBody)
-        }).then(res => res.json()).then(data => {
-          console.log(`📡 Team Bot Webhook status (${baseUrl}):`, data);
-        }).catch(e => console.error('Error setting team webhook:', e));
+        // Smart check: fetch current webhook info before re-registering
+        fetch(`https://api.telegram.org/bot${teamToken}/getWebhookInfo`)
+          .then(res => res.json())
+          .then(info => {
+            if (info.result && info.result.url === expectedUrl) {
+              console.log(`✅ Team Bot webhook already registered to ${expectedUrl} — skipping setWebhook`);
+            } else {
+              fetch(`https://api.telegram.org/bot${teamToken}/setWebhook`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(webhookBody)
+              }).then(res => res.json()).then(data => {
+                console.log(`📡 Team Bot Webhook status (${baseUrl}):`, data);
+              }).catch(e => console.error('Error setting team webhook:', e));
+            }
+          })
+          .catch(() => {
+            // Fallback direct setWebhook
+            fetch(`https://api.telegram.org/bot${teamToken}/setWebhook`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(webhookBody)
+            }).catch(e => console.error('Error setting team webhook:', e));
+          });
       }
+
+      // Global bot error handlers — DM Firoz on unhandled errors
+      teamBot.on('polling_error', (err) => {
+        console.error('🔴 Team Bot polling_error:', err.message);
+      });
+
+      teamBot.on('error', (err) => {
+        const FIROZ_TG_ID = process.env.TECH_ADMIN_TELEGRAM_ID || '1708459008';
+        console.error('🔴 Team Bot unhandled error:', err.message);
+        teamBot.sendMessage(FIROZ_TG_ID,
+          `⚠️ *PurpleOS Bot Exception*\n\n\`${err.message}\`\n\n_${new Date().toISOString()}_`,
+          { parse_mode: 'Markdown' }
+        ).catch(() => {});
+      });
 
       // Register native command menu
       teamBot.setMyCommands([

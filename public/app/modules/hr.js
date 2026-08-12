@@ -21,7 +21,7 @@ window.APP_MODULES.hr = async function(container) {
 
   function escapeHTML(str) {
     if (!str) return '';
-    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
   }
 
   async function loadHROps() {
@@ -301,6 +301,19 @@ window.APP_MODULES.hr = async function(container) {
           </div>
         </div>
       </div>
+
+      <!-- Telegram Stage Reminder Modal -->
+      <div id="hrReminderModal" class="modal-overlay">
+        <div class="modal-box" style="max-width:540px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; border-bottom:1px solid var(--border-subtle); padding-bottom:0.75rem;">
+            <h3 style="margin:0; color:#fff; font-family:var(--font-heading);" id="reminderModalTitle">📲 Send Telegram Reminder</h3>
+            <button onclick="window.HR_MODULE.closeReminderModal()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
+          </div>
+          <div id="reminderModalContent" style="display:flex; flex-direction:column; gap:1rem;">
+            Loading reminder form...
+          </div>
+        </div>
+      </div>
     `;
   }
 
@@ -313,21 +326,12 @@ window.APP_MODULES.hr = async function(container) {
 
       return `
         <div style="background:var(--surface-1); border:1px solid var(--border-subtle); border-radius:16px; padding:1.25rem; margin-bottom:1.25rem;">
-          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1rem;">
-            <div>
-              <div style="font-size:1.1rem; font-weight:800; color:#fff;">📋 Platform Onboarding & PIN Invitation Pipeline</div>
-              <div style="font-size:0.8rem; color:var(--text-muted);">Track workspace PIN generation, Telegram bot linking, survey progress, and agreement sign-offs.</div>
-            </div>
-            <div style="display:flex; gap:0.5rem;">
-              <button class="btn-secondary btn-sm" disabled title="Will be activated after feedback cycle sign-off" style="opacity:0.6; cursor:not-allowed;">🚀 Bulk Send PINs (Pending Sign-off)</button>
-            </div>
-          </div>
-
           <div style="margin-bottom:0.75rem;">
-            <div style="display:flex; justify-content:space-between; font-size:0.82rem; font-weight:700; margin-bottom:0.3rem;">
-              <span>Overall Onboarding Completion</span>
-              <span style="color:var(--purple-light);">${onboarded} / ${invitationsData.length} Members (${pct}%)</span>
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:0.4rem;">
+              <div style="font-size:1.1rem; font-weight:800; color:#fff;">📋 Platform Onboarding & PIN Invitation Pipeline</div>
+              <div style="font-size:0.82rem; font-weight:700; color:var(--purple-light);">${onboarded} / ${invitationsData.length} Members Complete (${pct}%)</div>
             </div>
+            <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0.75rem;">Generate PINs & send WhatsApp invites for 1-on-1 onboarding. For Telegram-linked members, send direct stage reminders.</div>
             <div style="width:100%; height:8px; background:rgba(255,255,255,0.08); border-radius:4px; overflow:hidden;">
               <div style="height:100%; width:${pct}%; background:linear-gradient(90deg, var(--purple-brand), var(--pink-brand)); border-radius:4px;"></div>
             </div>
@@ -373,6 +377,10 @@ window.APP_MODULES.hr = async function(container) {
                 ? '<span class="badge badge-purple">📋 Survey Signed</span>'
                 : '<span class="badge badge-amber">⏳ Pending</span>';
 
+              const reminderBtn = m.telegramLinked
+                ? `<button class="btn-secondary btn-sm" onclick='window.HR_MODULE.openReminderModal("${code}")'>📲 TG Reminder</button>`
+                : `<button class="btn-secondary btn-sm" disabled style="opacity:0.4; cursor:not-allowed;" title="Connect Telegram first">📲 TG Reminder</button>`;
+
               return `
                 <tr>
                   <td>
@@ -388,9 +396,12 @@ window.APP_MODULES.hr = async function(container) {
                   <td>${tgBadge}</td>
                   <td>${progressBadge}</td>
                   <td>
-                    <button class="btn-primary btn-sm" onclick='window.HR_MODULE.openInviteModal("${code}")'>
-                      🔑 ${m.hasPIN ? 'Resend PIN' : 'Generate & Send PIN'}
-                    </button>
+                    <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
+                      <button class="btn-primary btn-sm" onclick='window.HR_MODULE.openWhatsAppInvite("${code}")'>
+                        📱 Open WhatsApp
+                      </button>
+                      ${reminderBtn}
+                    </div>
                   </td>
                 </tr>
               `;
@@ -984,6 +995,110 @@ window.APP_MODULES.hr = async function(container) {
         loadHROps();
       } catch (err) {
         if (window.showToast) window.showToast('Failed to generate link: ' + (err.message || 'Error'), 'error');
+      }
+    },
+
+    async openWhatsAppInvite(code) {
+      const member = invitationsData.find(m => m.empCode === code || m.name === code);
+      if (!member) return;
+
+      try {
+        if (window.showToast) window.showToast(`Generating PIN for ${member.name}...`, 'info');
+        const res = await APP_API.post('/auth/pin/generate', {
+          phone: member.phone,
+          linkedId: member.empCode,
+          linkedType: 'team',
+          sendTelegram: false
+        });
+
+        if (res.whatsappLink) {
+          window.open(res.whatsappLink, '_blank');
+          if (window.showToast) window.showToast(`WhatsApp Web opened for ${member.name}! PIN: ${res.pin} 🔑`, 'success');
+        }
+        loadHROps();
+      } catch (err) {
+        if (window.showToast) window.showToast('Failed to generate WhatsApp invite: ' + (err.message || 'Error'), 'error');
+      }
+    },
+
+    openReminderModal(code) {
+      const member = invitationsData.find(m => m.empCode === code || m.name === code);
+      if (!member) return;
+
+      const modal = document.getElementById('hrReminderModal');
+      const title = document.getElementById('reminderModalTitle');
+      const content = document.getElementById('reminderModalContent');
+
+      if (!modal || !content) return;
+
+      title.textContent = `📲 Send Telegram Reminder — ${member.name}`;
+
+      const preset1 = `Hello ${member.name}! Friendly reminder to log into your PurpleOS workspace app with your PIN.`;
+      const preset2 = `Hello ${member.name}! Please take 3 minutes to complete your onboarding survey in the bot menu.`;
+      const preset3 = `Hello ${member.name}! Your onboarding survey is complete. Please sign your employment agreement to unlock full account features.`;
+
+      content.innerHTML = `
+        <div style="background:rgba(255,255,255,0.05); padding:0.85rem; border-radius:12px; border:1px solid var(--border-subtle);">
+          <div style="font-weight:700; color:#fff; font-size:0.95rem;">${escapeHTML(member.name)} (${escapeHTML(member.empCode)})</div>
+          <div style="font-size:0.8rem; color:var(--emerald-brand);">✅ Telegram Account Linked</div>
+        </div>
+
+        <div>
+          <label class="form-label" style="margin-bottom:0.4rem;">Select Quick Preset:</label>
+          <div style="display:flex; flex-direction:column; gap:0.4rem;">
+            <button type="button" class="btn-secondary btn-sm" style="text-align:left; font-size:0.8rem;" onclick='document.getElementById("reminderMsgInput").value = \`${escapeHTML(preset1)}\`'>
+              🔑 PIN & Login Reminder
+            </button>
+            <button type="button" class="btn-secondary btn-sm" style="text-align:left; font-size:0.8rem;" onclick='document.getElementById("reminderMsgInput").value = \`${escapeHTML(preset2)}\`'>
+              📋 Complete Survey Reminder
+            </button>
+            <button type="button" class="btn-secondary btn-sm" style="text-align:left; font-size:0.8rem;" onclick='document.getElementById("reminderMsgInput").value = \`${escapeHTML(preset3)}\`'>
+              ✍️ Sign Agreement Reminder
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Message Text *</label>
+          <textarea id="reminderMsgInput" class="input-text" rows="4" style="resize:vertical;" placeholder="Type custom reminder message..."></textarea>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:0.75rem;">
+          <button type="button" class="btn-secondary" onclick="window.HR_MODULE.closeReminderModal()">Cancel</button>
+          <button type="button" class="btn-primary" id="sendReminderBtn" onclick='window.HR_MODULE.sendTelegramReminder("${member.empCode}")'>📲 Push to Telegram</button>
+        </div>
+      `;
+
+      modal.classList.add('active');
+    },
+
+    closeReminderModal() {
+      const modal = document.getElementById('hrReminderModal');
+      if (modal) modal.classList.remove('active');
+    },
+
+    async sendTelegramReminder(code) {
+      const msgInput = document.getElementById('reminderMsgInput');
+      const message = msgInput ? msgInput.value.trim() : '';
+
+      if (!message) {
+        if (window.showToast) window.showToast('Please type a reminder message.', 'error');
+        return;
+      }
+
+      const btn = document.getElementById('sendReminderBtn');
+      if (btn) { btn.disabled = true; btn.textContent = '⏳ Pushing...'; }
+
+      try {
+        const res = await APP_API.post(`/team/${encodeURIComponent(code)}/push-reminder`, { message });
+        if (res.success) {
+          if (window.showToast) window.showToast(`Telegram reminder sent to ${res.sentTo || 'member'}! 📲`, 'success');
+          this.closeReminderModal();
+        }
+      } catch (err) {
+        if (window.showToast) window.showToast('Failed to send reminder: ' + (err.message || 'Error'), 'error');
+      } finally {
+        if (btn) { btn.disabled = false; btn.textContent = '📲 Push to Telegram'; }
       }
     }
   };

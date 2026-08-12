@@ -1389,5 +1389,42 @@ router.get('/invitation-status', requireAuth, requireManager, async (req, res) =
   }
 });
 
+// POST /api/team/:code/push-reminder — Push onboarding/stage reminder to Telegram-linked member (Manager+)
+router.post('/:code/push-reminder', requireAuth, requireManager, async (req, res) => {
+  try {
+    const { code } = req.params;
+    const { message } = req.body;
+
+    if (!message || !message.trim()) {
+      return res.status(400).json({ error: 'message required' });
+    }
+
+    if (!supabase) return res.status(503).json({ error: 'Database unavailable' });
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('name, telegram_id')
+      .or(`emp_code.eq.${code},id.eq.${code}`)
+      .maybeSingle();
+
+    if (!profile || !profile.telegram_id) {
+      return res.status(404).json({ error: 'Telegram account not linked for this team member.' });
+    }
+
+    const formattedMessage = `📣 *Message from PurpleOS Operations*\n\n${message.trim()}`;
+    sendTelegramNotification(
+      profile.telegram_id,
+      formattedMessage,
+      [[{ text: '🚀 Open Workspace App', web_app: { url: 'https://purpleos-iota.vercel.app/team-miniapp' } }]],
+      true
+    );
+
+    res.json({ success: true, message: 'Telegram reminder sent successfully!', sentTo: profile.name });
+  } catch (err) {
+    console.error('POST /push-reminder error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
 
