@@ -1,14 +1,9 @@
 const { supabase, isSupabaseConfigured } = require('./supabase');
+const { normalizePhone } = require('../utils/phone');
 
 // ─────────────────────────────────────────────────────────────
 // Helpers
 // ─────────────────────────────────────────────────────────────
-
-function normalizePhone(p) {
-  if (!p) return '';
-  const digits = String(p).replace(/[^0-9]/g, '');
-  return digits.length >= 10 ? digits.slice(-10) : digits;
-}
 
 function getDeterministicPin(phone) {
   const norm = normalizePhone(phone);

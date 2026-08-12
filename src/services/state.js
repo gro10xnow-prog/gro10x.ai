@@ -8,12 +8,7 @@
  */
 
 const { supabase } = require('./supabase');
-
-function normalizePhone(p) {
-  if (!p) return '';
-  const digits = String(p).replace(/[^0-9]/g, '');
-  return digits.length >= 10 ? digits.slice(-10) : digits;
-}
+const { normalizePhone } = require('../utils/phone');
 
 function calcBadge(xp) {
   if (xp >= 2000) return '💜 Champion';

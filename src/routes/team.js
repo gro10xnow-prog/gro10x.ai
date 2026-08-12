@@ -11,6 +11,7 @@ const { readDB } = require('../services/db');
 const { createTempPin } = require('../services/auth-pins');
 
 const { uploadFile } = require('../services/storage');
+const { normalizePhone } = require('../utils/phone');
 
 const miniAppLimiter = rateLimit({
   windowMs: 60 * 1000,
@@ -19,12 +20,6 @@ const miniAppLimiter = rateLimit({
   legacyHeaders: false,
   message: { error: 'Too many requests, please try again in a minute.' }
 });
-
-function normalizePhone(p) {
-  if (!p) return '';
-  const digits = String(p).replace(/[^0-9]/g, '');
-  return digits.length >= 10 ? digits.slice(-10) : digits;
-}
 
 function mapProfile(p) {
   if (!p) return null;

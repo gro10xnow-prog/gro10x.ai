@@ -4,6 +4,7 @@ const { requireAuth } = require('../middleware/auth');
 const { requireAdmin, requireManager } = require('../middleware/rbac');
 const { createTempPin, verifyPin, setPermanentPin } = require('../services/auth-pins');
 const { signToken } = require('../services/jwt');
+const { normalizePhone } = require('../utils/phone');
 
 const rateLimit = require('express-rate-limit');
 const { sendTelegramNotification } = require('../services/bot');
@@ -184,7 +185,7 @@ router.post('/pin/verify', authLimiter, async (req, res) => {
   }
 
   try {
-    const norm = String(phone).replace(/[^0-9]/g, '').slice(-10);
+    const norm = normalizePhone(phone);
     if (isSupabaseConfigured()) {
       await supabase.from('profiles').update({ permanent_pin_set: true }).ilike('phone', `%${norm}`);
     }

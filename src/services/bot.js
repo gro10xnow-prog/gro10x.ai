@@ -1,5 +1,6 @@
 const TelegramBot = require('node-telegram-bot-api');
 const { supabase } = require('./supabase');
+const { normalizePhone } = require('../utils/phone');
 
 const { broadcast } = require('./sse');
 const { processAutomationEvent } = require('./automation');
@@ -23,12 +24,6 @@ module.exports = {
   getClientKeyboard,
   sendAgreementNotification
 };
-
-function normalizePhone(p) {
-  if (!p) return '';
-  const digits = String(p).replace(/[^0-9]/g, '');
-  return digits.length >= 10 ? digits.slice(-10) : digits;
-}
 
 function getRoleKeyboard(accessLevel, isVerified = false, emp = null) {
   if (!isVerified || !emp) {

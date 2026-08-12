@@ -8,6 +8,7 @@
 
 const express = require('express');
 const router = express.Router();
+const { normalizePhone } = require('../utils/phone');
 const { readDB } = require('../services/db');
 const { supabase, isSupabaseConfigured } = require('../services/supabase');
 const { requireAuth } = require('../middleware/auth');
@@ -82,7 +83,7 @@ router.use('/chat', chatRoutes);
 router.get('/public/client-check', asyncHandler(async (req, res) => {
   const { phone } = req.query;
   if (!phone) return ok(res, { found: false });
-  const norm = String(phone).replace(/[^0-9]/g, '').slice(-10);
+  const norm = normalizePhone(phone);
   if (isSupabaseConfigured() && norm.length >= 6) {
     try {
       const { data } = await supabase.from('clients').select('id,name,phone').ilike('phone', `%${norm}%`).maybeSingle();
