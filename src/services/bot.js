@@ -928,57 +928,71 @@ function initBot() {
         clientBot.sendMessage(chatId, helpText, { parse_mode: 'Markdown' });
       });
 
-      // Client phone verification
+      // ─── Helper: find client by phone (checks main phone + pocs array) ───
+      async function findClientByPhone(normPhone) {
+        if (supabase) {
+          try {
+            const { data: byMain } = await supabase.from('clients').select('*')
+              .ilike('phone', `%${normPhone}`).maybeSingle();
+            if (byMain) return { ...byMain, activeCampaigns: byMain.active_campaigns || [] };
+            const { data: allClients } = await supabase.from('clients').select('*');
+            if (allClients) {
+              const matched = allClients.find(c => {
+                const pocs = Array.isArray(c.pocs) ? c.pocs : [];
+                return pocs.some(p => p.phone && normalizePhone(p.phone).includes(normPhone));
+              });
+              if (matched) return { ...matched, activeCampaigns: matched.active_campaigns || [] };
+            }
+          } catch (e) {}
+        }
+        const dbData = await readDB();
+        return (dbData.clients || []).find(c => normalizePhone(c.phone || '').includes(normPhone)) || null;
+      }
+
+      async function sendClientWelcome(chatId, client) {
+        await supabase?.from('clients').update({ telegram_id: String(chatId) }).eq('id', client.id);
+        const welcome = `\u2705 *Account Linked \u2014 Welcome, ${client.name}!*\n\n` +
+          `\u2022 Account Manager: *${client.account_manager || client.accountManager || 'Team'}*\n\n` +
+          `\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\n` +
+          `\ud83d\udccc *Next Steps:*\n` +
+          `1. Tap *\ud83c\udfa6 Review Room* to preview your latest deliverable\n` +
+          `2. Tap *\ud83d\udccb Campaign Status* to track production progress\n` +
+          `3. Tap *Open App* anytime for your full client portal`;
+        clientBot.sendMessage(chatId, welcome, { parse_mode: 'Markdown', reply_markup: getClientKeyboard(client) });
+      }
+
+      // ─── Client phone verification via shared contact ───
       clientBot.on('contact', async (msg) => {
         const chatId = msg.chat.id;
         const contact = msg.contact;
         if (!contact || !contact.phone_number) return;
         const normPhone = normalizePhone(contact.phone_number);
-
-        let client = null;
-
-        // Try Supabase first
-        if (supabase) {
-          try {
-            const { data } = await supabase
-              .from('clients')
-              .select('*')
-              .ilike('phone', `%${normPhone}`)
-              .maybeSingle();
-            if (data) {
-              client = { ...data, activeCampaigns: data.active_campaigns || [] };
-              // Link telegram ID in Supabase
-              await supabase.from('clients').update({ telegram_id: String(chatId) }).eq('id', data.id);
-            }
-          } catch (e) {}
-        }
-
-        // db.json fallback (local dev)
-        if (!client) {
-          const dbData = await readDB();
-          const localClient = (dbData.clients || []).find(c => normalizePhone(c.phone) === normPhone);
-          if (localClient) {
-            client = localClient;
-            client.telegramId = String(chatId);
-          }
-        }
-
+        const client = await findClientByPhone(normPhone);
         if (!client) {
           return clientBot.sendMessage(chatId,
             `🔒 *Phone not found in our client database.*\n\nIf you are an active Purplebot Digital client, please contact your Account Manager to register your phone number.`,
             { parse_mode: 'Markdown' }
           );
         }
+        await sendClientWelcome(chatId, client);
+      });
 
-        const welcome = `✅ *Account Linked — Welcome, ${client.name}!*\n\n` +
-          `• Retainer: *BDT ${(client.retainer_value || client.retainerValue || 0).toLocaleString()}/month*\n` +
-          `• Account Manager: *${client.account_manager || client.accountManager || 'Team'}*\n\n` +
-          `━━━━━━━━━━━━━━━━━━━━\n` +
-          `📌 *Next Steps:*\n` +
-          `1. Tap *🎬 Review Room* to preview your latest deliverable\n` +
-          `2. Tap *📋 Campaign Status* to track production progress\n` +
-          `3. Tap *Open App* anytime for your full client portal`;
-        clientBot.sendMessage(chatId, welcome, { parse_mode: 'Markdown', reply_markup: getClientKeyboard(client) });
+      // ─── Manual phone number typed as text ───
+      clientBot.on('message', async (msg) => {
+        const chatId = msg.chat.id;
+        const text = (msg.text || '').trim();
+        if (msg.contact) return; // handled above
+        if (!/^[\+\d][\d\s\-]{7,14}$/.test(text)) return; // must look like a phone number
+        const normPhone = normalizePhone(text);
+        if (!normPhone || normPhone.length < 8) return;
+        const client = await findClientByPhone(normPhone);
+        if (!client) {
+          return clientBot.sendMessage(chatId,
+            `🔒 *Phone not found in our client database.*\n\nIf you are an active Purplebot Digital client, please contact your Account Manager to register your phone number.`,
+            { parse_mode: 'Markdown' }
+          );
+        }
+        await sendClientWelcome(chatId, client);
       });
 
       const clientHandler = require('./bot/handlers/client');
