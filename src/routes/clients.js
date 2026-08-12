@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { requireAuth } = require('../middleware/auth');
-const { requireAdmin, requireClientOwnership } = require('../middleware/rbac');
+const { requireAdmin, requireManager, requireClientOwnership } = require('../middleware/rbac');
 const { readDB, writeDB } = require('../services/db');
 const { broadcast } = require('../services/sse');
 const { supabase, isSupabaseConfigured } = require('../services/supabase');
@@ -171,8 +171,8 @@ router.get('/:id', requireAuth, requireClientOwnership, async (req, res) => {
   res.json(mapClient(client));
 });
 
-// POST Create new client (Admin only)
-router.post('/', requireAuth, requireAdmin, async (req, res) => {
+// POST Create new client (Manager+ — heads, directors, admins)
+router.post('/', requireAuth, requireManager, async (req, res) => {
   const newClient = req.body;
 
   if (isSupabaseConfigured()) {
