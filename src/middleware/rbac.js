@@ -3,6 +3,11 @@
  */
 
 function requireAdmin(req, res, next) {
+  // ── PERMISSION MATRIX ──────────────────────────────────────────
+  // ADMIN tier: Firoz (PBD-000), Iftekhar (PBD-001), Tariful (PBD-002)
+  //   access_level: 'Owner / Admin'
+  //   Roles: Technology Admin, Managing Director, Chairman
+  // ────────────────────────────────────────────────────────────────
   if (!req.user) {
     return res.status(401).json({ error: 'Unauthorized: Authentication required' });
   }
@@ -28,6 +33,10 @@ function requireAdmin(req, res, next) {
 }
 
 function requireManager(req, res, next) {
+  // ── PERMISSION MATRIX ──────────────────────────────────────────
+  // MANAGER tier: Director / Manager, Finance Manager (+ all Admin tier)
+  //   Covers: all Heads, Directors, Managers, Finance, HR, Operations
+  // ────────────────────────────────────────────────────────────────
   if (!req.user) {
     return res.status(401).json({ error: 'Unauthorized: Authentication required' });
   }

@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { requireAuth } = require('../middleware/auth');
-const { requireAdmin } = require('../middleware/rbac');
+const { requireAdmin, requireManager } = require('../middleware/rbac');
 const { supabase } = require('../services/supabase');
 const { broadcast } = require('../services/sse');
 const { randomUUID } = require('crypto');
@@ -38,8 +38,8 @@ router.get('/', requireAuth, async (req, res) => {
   }
 });
 
-// POST Add Asset (Admin only)
-router.post('/', requireAuth, requireAdmin, async (req, res) => {
+// POST Add Asset (Manager+)
+router.post('/', requireAuth, requireManager, async (req, res) => {
   try {
     const newId = `AST-${randomUUID().split('-')[0].toUpperCase()}`;
 
@@ -72,7 +72,7 @@ router.post('/', requireAuth, requireAdmin, async (req, res) => {
 });
 
 // PUT Update Asset Assignment / Condition / Details
-router.put('/:id', requireAuth, requireAdmin, async (req, res) => {
+router.put('/:id', requireAuth, requireManager, async (req, res) => {
   try {
     const { id } = req.params;
     const updates = {};

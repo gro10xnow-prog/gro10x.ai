@@ -21,7 +21,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 const { requireAuth } = require('../middleware/auth');
-const { requireAdmin } = require('../middleware/rbac');
+const { requireAdmin, requireManager } = require('../middleware/rbac');
 const { supabase } = require('../services/supabase');
 const { broadcast } = require('../services/sse');
 const { sendInvoiceEmail } = require('../services/resend');
@@ -86,7 +86,7 @@ router.get('/', requireAuth, async (req, res) => {
 });
 
 // POST Create Invoice
-router.post('/', requireAuth, requireAdmin, async (req, res) => {
+router.post('/', requireAuth, requireManager, async (req, res) => {
   try {
     const { randomUUID } = require('crypto');
     const newId = `INV-${randomUUID().split('-')[0].toUpperCase()}`;
@@ -154,7 +154,7 @@ router.put('/:id', requireAuth, async (req, res) => {
 });
 
 // POST /:id/send (Send Invoice Email)
-router.post('/:id/send', requireAuth, requireAdmin, async (req, res) => {
+router.post('/:id/send', requireAuth, requireManager, async (req, res) => {
 
   try {
     const { id } = req.params;

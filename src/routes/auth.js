@@ -107,8 +107,8 @@ router.post('/telegram', async (req, res) => {
   }
 });
 
-// 🔑 Generate Temp PIN (Admin only — rate limited & protected)
-router.post('/pin/generate', authLimiter, requireAuth, requireAdmin, async (req, res) => {
+// 🔑 Generate Temp PIN (Manager+ — rate limited & protected)
+router.post('/pin/generate', authLimiter, requireAuth, requireManager, async (req, res) => {
   const { phone, linkedId, linkedType, email, sendTelegram } = req.body;
   if (!phone) {
     return res.status(400).json({ error: 'Phone number is required' });
@@ -132,7 +132,7 @@ router.post('/pin/generate', authLimiter, requireAuth, requireAdmin, async (req,
   const pinRecord = await createTempPin(cleanPhone, userObj?.id || linkedId, targetType, email || userObj?.email || '');
 
   const portalPath = targetType === 'team' ? '/crew' : '/client';
-  const botUsername = targetType === 'team' ? 'PurpleManBot' : 'PurpleBotAgencyBot';
+  const botUsername = targetType === 'team' ? 'purplemanosbot' : 'purpleosbot';
   const portalUrl = `https://purpleos-iota.vercel.app${portalPath}?phone=${encodeURIComponent(cleanPhone)}`;
 
   const inviteCardText = `📋 *PURPLEOS WORKSPACE ACCESS CARD*\n\n` +
@@ -154,7 +154,7 @@ router.post('/pin/generate', authLimiter, requireAuth, requireAdmin, async (req,
       `🌐 Direct Portal Access: ${portalUrl}`;
 
     sendTelegramNotification(userObj.telegramId, pushMsg, [
-      [{ text: '🌐 Open Web Portal', url: portalUrl }]
+      [{ text: '🚀 Open Workspace App', web_app: { url: 'https://purpleos-iota.vercel.app/team-miniapp' } }]
     ], targetType === 'team');
     telegramPushed = true;
   }

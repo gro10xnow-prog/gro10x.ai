@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { requireAuth } = require('../middleware/auth');
-const { requireAdmin } = require('../middleware/rbac');
+const { requireAdmin, requireManager } = require('../middleware/rbac');
 const { supabase, isSupabaseConfigured } = require('../services/supabase');
 
 const { ok, fail, asyncHandler } = require('../utils/response');
@@ -37,8 +37,8 @@ router.post('/track', asyncHandler(async (req, res) => {
   return ok(res, { tracked: true });
 }));
 
-// GET Analytics Overview (Admin only — 5 min cache)
-router.get('/', requireAuth, requireAdmin, asyncHandler(async (req, res) => {
+// GET Analytics Overview (Manager+ — 5 min cache)
+router.get('/', requireAuth, requireManager, asyncHandler(async (req, res) => {
   const cacheKey = 'analytics_overview';
   const cached = getCache(cacheKey);
   if (cached) return ok(res, cached);
@@ -86,7 +86,7 @@ router.get('/', requireAuth, requireAdmin, asyncHandler(async (req, res) => {
 }));
 
 // GET /api/analytics/time-series (5 min cache)
-router.get('/time-series', requireAuth, requireAdmin, asyncHandler(async (req, res) => {
+router.get('/time-series', requireAuth, requireManager, asyncHandler(async (req, res) => {
   const period = req.query.period || 'daily';
   const days = parseInt(req.query.days || '30', 10);
   const cacheKey = `analytics_time_series_${period}_${days}`;
@@ -159,7 +159,7 @@ router.get('/time-series', requireAuth, requireAdmin, asyncHandler(async (req, r
 }));
 
 // GET /api/analytics/scorecards
-router.get('/scorecards', requireAuth, requireAdmin, async (req, res) => {
+router.get('/scorecards', requireAuth, requireManager, async (req, res) => {
   try {
     const days = parseInt(req.query.days || '30', 10);
     const cutoffDate = new Date();

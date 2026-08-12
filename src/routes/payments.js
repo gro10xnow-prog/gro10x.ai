@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { requireAuth } = require('../middleware/auth');
-const { requireAdmin } = require('../middleware/rbac');
+const { requireAdmin, requireManager } = require('../middleware/rbac');
 const { supabase, isSupabaseConfigured } = require('../services/supabase');
 const { broadcast } = require('../services/sse');
 const { sendTelegramNotification } = require('../services/bot');
@@ -116,7 +116,7 @@ router.post('/', requireAuth, async (req, res) => {
 });
 
 // POST /api/payments/:id/verify — Verify & Approve Payment (Admin / Finance)
-router.post('/:id/verify', requireAuth, requireAdmin, async (req, res) => {
+router.post('/:id/verify', requireAuth, requireManager, async (req, res) => {
   try {
     const { id } = req.params;
     const verifiedBy = req.user.name || req.user.id || 'Admin';
@@ -172,7 +172,7 @@ router.post('/:id/verify', requireAuth, requireAdmin, async (req, res) => {
 });
 
 // POST /api/payments/:id/reject — Reject Invalid Payment (Admin / Finance)
-router.post('/:id/reject', requireAuth, requireAdmin, async (req, res) => {
+router.post('/:id/reject', requireAuth, requireManager, async (req, res) => {
   try {
     const { id } = req.params;
     const reason = req.body.reason || 'Invalid TrxID or amount mismatch';
