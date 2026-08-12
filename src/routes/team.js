@@ -446,6 +446,17 @@ router.post('/survey', miniAppLimiter, requireMiniAppAuth, async (req, res) => {
     const { part, data: partData } = req.body;
     if (!part) return res.status(400).json({ error: 'part required' });
 
+    // Part order enforcement (ensure previous part was submitted)
+    if (part === 2 && !emp.blood_group && !emp.emergency_contact) {
+      return res.status(400).json({ error: 'Please complete Part 1 (Personal Info) before Part 2.', code: 'PART_ORDER_VIOLATION' });
+    }
+    if (part === 3 && !emp.primary_skill && !emp.secondary_skill) {
+      return res.status(400).json({ error: 'Please complete Part 2 (Professional Info) before Part 3.', code: 'PART_ORDER_VIOLATION' });
+    }
+    if (part === 4 && !emp.bank_info) {
+      return res.status(400).json({ error: 'Please complete Part 3 (Bank Info) before Part 4.', code: 'PART_ORDER_VIOLATION' });
+    }
+
     // XP awarded per part
     const XP_PER_PART = { 1: 100, 2: 150, 3: 200, 4: 100 };
     const xpEarned = XP_PER_PART[part] || 50;
@@ -566,6 +577,10 @@ router.post('/agreement', miniAppLimiter, requireMiniAppAuth, async (req, res) =
     const emp = found.profile;
     const empCode = emp.emp_code || emp.id;
     const empName = emp.name;
+
+    if (!emp.survey_complete) {
+      return res.status(400).json({ error: 'Please complete the onboarding survey before signing the agreement.', code: 'SURVEY_INCOMPLETE' });
+    }
 
     // Stage 1: Employee signs → unlock full account, notify Finance Manager
     if (stage === 1) {
@@ -1317,6 +1332,59 @@ router.get('/me/stats', requireAuth, async (req, res) => {
     });
   } catch (err) {
     console.error('GET /me/stats error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/team/invitation-status — Team onboarding & invitation dashboard data (Manager+)
+router.get('/invitation-status', requireAuth, requireManager, async (req, res) => {
+  try {
+    if (!supabase) return res.json({ members: [], total: 0 });
+
+    const { data: profiles, error: pErr } = await supabase
+      .from('profiles')
+      .select('emp_code, name, role, phone, department, survey_complete, onboarding_complete, telegram_id')
+      .order('name');
+
+    if (pErr) throw pErr;
+
+    const { data: pins } = await supabase
+      .from('auth_pins')
+      .select('phone, is_temp, attempts, locked_at')
+      .eq('linked_type', 'team');
+
+    const pinMap = {};
+    (pins || []).forEach(p => {
+      if (p.phone) pinMap[normalizePhone(p.phone)] = p;
+    });
+
+    const members = (profiles || []).map(p => {
+      const pinRecord = p.phone ? pinMap[normalizePhone(p.phone)] : null;
+      return {
+        empCode: p.emp_code,
+        name: p.name,
+        role: p.role,
+        department: p.department || 'General',
+        phone: p.phone || '',
+        telegramLinked: !!p.telegram_id,
+        hasPIN: !!pinRecord,
+        pinIsTemp: pinRecord ? (pinRecord.is_temp ?? true) : null,
+        surveyComplete: p.survey_complete || false,
+        onboardingComplete: p.onboarding_complete || false
+      };
+    });
+
+    const stats = {
+      total: members.length,
+      pinsSent: members.filter(m => m.hasPIN).length,
+      telegramLinked: members.filter(m => m.telegramLinked).length,
+      surveyComplete: members.filter(m => m.surveyComplete).length,
+      onboardingComplete: members.filter(m => m.onboardingComplete).length
+    };
+
+    res.json({ success: true, stats, members });
+  } catch (err) {
+    console.error('GET /invitation-status error:', err.message);
     res.status(500).json({ error: err.message });
   }
 });

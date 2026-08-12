@@ -15,12 +15,13 @@ window.APP_MODULES.hr = async function(container) {
   let workloadData = [];
   let attendanceData = [];
   let eodData = [];
+  let invitationsData = [];
   let isLoading = true;
   let hasError = false;
 
   function escapeHTML(str) {
     if (!str) return '';
-    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
   }
 
   async function loadHROps() {
@@ -29,12 +30,13 @@ window.APP_MODULES.hr = async function(container) {
     renderSkeleton();
 
     try {
-      const [team, leaves, workload, attendance, eod] = await Promise.all([
+      const [team, leaves, workload, attendance, eod, invites] = await Promise.all([
         APP_API.get('/team').catch(err => { throw err; }),
         APP_API.get('/leaves').catch(() => []),
         APP_API.get('/team/workload').catch(() => []),
         APP_API.get('/team/attendance').catch(() => []),
-        APP_API.get('/team/eod').catch(() => [])
+        APP_API.get('/team/eod').catch(() => []),
+        APP_API.get('/team/invitation-status').catch(() => ({ members: [] }))
       ]);
 
       teamData = Array.isArray(team) ? team : (team && Array.isArray(team.data) ? team.data : []);
@@ -42,6 +44,7 @@ window.APP_MODULES.hr = async function(container) {
       workloadData = Array.isArray(workload) ? workload : [];
       attendanceData = Array.isArray(attendance) ? attendance : [];
       eodData = Array.isArray(eod) ? eod : [];
+      invitationsData = invites && Array.isArray(invites.members) ? invites.members : [];
 
       // Merge workload into team data
       teamData = teamData.map(m => {
@@ -141,6 +144,7 @@ window.APP_MODULES.hr = async function(container) {
       <!-- Subtab Switcher -->
       <div style="display:flex; gap:0.5rem; background:var(--surface-1); padding:0.35rem; border-radius:12px; border:1px solid var(--border-subtle); width:fit-content; margin-bottom:1.5rem; flex-wrap:wrap;">
         <button class="btn-ghost ${activeHrTab === 'roster' ? 'btn-secondary' : ''}" onclick="window.HR_MODULE.switchTab('roster')">👥 Team Roster & Profiles (${teamData.length})</button>
+        <button class="btn-ghost ${activeHrTab === 'invitations' ? 'btn-secondary' : ''}" onclick="window.HR_MODULE.switchTab('invitations')">📩 Onboarding & PIN Invites (${invitationsData.length})</button>
         <button class="btn-ghost ${activeHrTab === 'attendance' ? 'btn-secondary' : ''}" onclick="window.HR_MODULE.switchTab('attendance')">📍 Today's Attendance (${attendanceData.length})</button>
         <button class="btn-ghost ${activeHrTab === 'eod' ? 'btn-secondary' : ''}" onclick="window.HR_MODULE.switchTab('eod')">📝 EOD Reports (${eodData.length})</button>
         <button class="btn-ghost ${activeHrTab === 'leaves' ? 'btn-secondary' : ''}" onclick="window.HR_MODULE.switchTab('leaves')">🌴 Leave Requests (${pendingLeaves} Pending)</button>
@@ -284,10 +288,118 @@ window.APP_MODULES.hr = async function(container) {
           </form>
         </div>
       </div>
+
+      <!-- Send PIN Invitation Modal -->
+      <div id="hrInviteModal" class="modal-overlay">
+        <div class="modal-box" style="max-width:540px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; border-bottom:1px solid var(--border-subtle); padding-bottom:0.75rem;">
+            <h3 style="margin:0; color:#fff; font-family:var(--font-heading);" id="inviteModalTitle">📋 Send PIN Invitation</h3>
+            <button onclick="window.HR_MODULE.closeInviteModal()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
+          </div>
+          <div id="inviteModalContent" style="display:flex; flex-direction:column; gap:1rem;">
+            Loading invitation options...
+          </div>
+        </div>
+      </div>
     `;
   }
 
   function renderHrTabGrid() {
+    if (activeHrTab === 'invitations') {
+      const pinsSent = invitationsData.filter(m => m.hasPIN).length;
+      const tgLinked = invitationsData.filter(m => m.telegramLinked).length;
+      const onboarded = invitationsData.filter(m => m.onboardingComplete).length;
+      const pct = invitationsData.length > 0 ? Math.round((onboarded / invitationsData.length) * 100) : 0;
+
+      return `
+        <div style="background:var(--surface-1); border:1px solid var(--border-subtle); border-radius:16px; padding:1.25rem; margin-bottom:1.25rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1rem;">
+            <div>
+              <div style="font-size:1.1rem; font-weight:800; color:#fff;">📋 Platform Onboarding & PIN Invitation Pipeline</div>
+              <div style="font-size:0.8rem; color:var(--text-muted);">Track workspace PIN generation, Telegram bot linking, survey progress, and agreement sign-offs.</div>
+            </div>
+            <div style="display:flex; gap:0.5rem;">
+              <button class="btn-secondary btn-sm" disabled title="Will be activated after feedback cycle sign-off" style="opacity:0.6; cursor:not-allowed;">🚀 Bulk Send PINs (Pending Sign-off)</button>
+            </div>
+          </div>
+
+          <div style="margin-bottom:0.75rem;">
+            <div style="display:flex; justify-content:space-between; font-size:0.82rem; font-weight:700; margin-bottom:0.3rem;">
+              <span>Overall Onboarding Completion</span>
+              <span style="color:var(--purple-light);">${onboarded} / ${invitationsData.length} Members (${pct}%)</span>
+            </div>
+            <div style="width:100%; height:8px; background:rgba(255,255,255,0.08); border-radius:4px; overflow:hidden;">
+              <div style="height:100%; width:${pct}%; background:linear-gradient(90deg, var(--purple-brand), var(--pink-brand)); border-radius:4px;"></div>
+            </div>
+          </div>
+
+          <div style="display:flex; gap:1.5rem; font-size:0.82rem; color:var(--text-muted);">
+            <span>🔑 PIN Generated: <b style="color:#fff;">${pinsSent}</b></span>
+            <span>📱 Telegram Linked: <b style="color:#fff;">${tgLinked}</b></span>
+            <span>✅ Onboarding Complete: <b style="color:#fff;">${onboarded}</b></span>
+          </div>
+        </div>
+
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Member Name</th>
+              <th>Role & Dept</th>
+              <th>Phone Number</th>
+              <th>PIN Status</th>
+              <th>Telegram</th>
+              <th>Survey & Agreement</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${invitationsData.map(m => {
+              const name = m.name || 'Member';
+              const code = m.empCode || 'EMP';
+              const role = m.role || 'Specialist';
+              const dept = m.department || 'General';
+              const phone = m.phone || 'N/A';
+              const pinBadge = m.hasPIN
+                ? (m.pinIsTemp ? '<span class="badge badge-amber">⏳ Temp PIN</span>' : '<span class="badge badge-emerald">✅ Perm PIN</span>')
+                : '<span class="badge badge-pink">❌ No PIN</span>';
+
+              const tgBadge = m.telegramLinked
+                ? '<span class="badge badge-emerald">✅ Linked</span>'
+                : '<span class="badge badge-amber">❌ Pending</span>';
+
+              const progressBadge = m.onboardingComplete
+                ? '<span class="badge badge-emerald">🎉 Fully Onboarded</span>'
+                : m.surveyComplete
+                ? '<span class="badge badge-purple">📋 Survey Signed</span>'
+                : '<span class="badge badge-amber">⏳ Pending</span>';
+
+              return `
+                <tr>
+                  <td>
+                    <strong style="color:#fff;">${escapeHTML(name)}</strong>
+                    <div style="font-size:0.7rem; color:var(--text-muted);">${escapeHTML(code)}</div>
+                  </td>
+                  <td>
+                    <div>${escapeHTML(role)}</div>
+                    <div style="font-size:0.72rem; color:var(--text-muted);">${escapeHTML(dept)}</div>
+                  </td>
+                  <td style="font-family:monospace;">${escapeHTML(phone)}</td>
+                  <td>${pinBadge}</td>
+                  <td>${tgBadge}</td>
+                  <td>${progressBadge}</td>
+                  <td>
+                    <button class="btn-primary btn-sm" onclick='window.HR_MODULE.openInviteModal("${code}")'>
+                      🔑 ${m.hasPIN ? 'Resend PIN' : 'Generate & Send PIN'}
+                    </button>
+                  </td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+
     if (activeHrTab === 'roster') {
       return `
         <table class="data-table">
@@ -778,6 +890,101 @@ window.APP_MODULES.hr = async function(container) {
 
       doc.save(`Payslip-${member.emp_code || 'EMP'}-${monthStr.replace(' ', '-')}.pdf`);
       if (window.showToast) window.showToast(`PDF Payslip generated for ${member.name}! 📄`, 'success');
+    },
+
+    openInviteModal(code) {
+      const member = invitationsData.find(m => m.empCode === code || m.name === code);
+      if (!member) return;
+
+      const modal = document.getElementById('hrInviteModal');
+      const title = document.getElementById('inviteModalTitle');
+      const content = document.getElementById('inviteModalContent');
+
+      if (!modal || !content) return;
+
+      title.textContent = `📋 Send PIN Invitation — ${member.name}`;
+      content.innerHTML = `
+        <div style="background:rgba(255,255,255,0.05); padding:1rem; border-radius:12px; border:1px solid var(--border-subtle);">
+          <div style="font-weight:700; color:#fff; font-size:1rem; margin-bottom:0.3rem;">${escapeHTML(member.name)} (${escapeHTML(member.empCode)})</div>
+          <div style="font-size:0.85rem; color:var(--text-muted);">Role: <b>${escapeHTML(member.role)}</b> (${escapeHTML(member.department)})</div>
+          <div style="font-size:0.85rem; color:var(--text-muted); font-family:monospace;">Phone: <b>${escapeHTML(member.phone)}</b></div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:0.75rem;">
+          <button class="btn-primary" style="width:100%; justify-content:center;" onclick='window.HR_MODULE.pushTelegramPin("${member.phone}", "${member.empCode}")'>
+            📲 Generate & Push PIN via Telegram
+          </button>
+          
+          <button class="btn-secondary" style="width:100%; justify-content:center;" onclick='window.HR_MODULE.copyWhatsAppInvite("${member.phone}", "${member.empCode}")'>
+            📱 Copy WhatsApp Direct Invite Link
+          </button>
+        </div>
+
+        <div id="inviteResultArea" style="display:none; background:var(--surface-2); padding:1rem; border-radius:12px; border:1px solid var(--border-active); font-size:0.85rem;">
+        </div>
+      `;
+
+      modal.classList.add('active');
+    },
+
+    closeInviteModal() {
+      const modal = document.getElementById('hrInviteModal');
+      if (modal) modal.classList.remove('active');
+    },
+
+    async pushTelegramPin(phone, code) {
+      try {
+        if (window.showToast) window.showToast('Generating PIN and sending Telegram push...', 'info');
+        const res = await APP_API.post('/auth/pin/generate', {
+          phone,
+          linkedId: code,
+          linkedType: 'team',
+          sendTelegram: true
+        });
+
+        const resultArea = document.getElementById('inviteResultArea');
+        if (resultArea && res.success) {
+          resultArea.style.display = 'block';
+          resultArea.innerHTML = `
+            <div style="color:var(--emerald-brand); font-weight:700; margin-bottom:0.4rem;">✅ Temp PIN Generated: <span style="font-size:1.1rem; font-family:monospace;">${res.pin}</span></div>
+            <div style="color:var(--text-muted); font-size:0.8rem; margin-bottom:0.6rem;">${res.telegramPushed ? '📲 Telegram push notification sent successfully!' : '⚠️ Telegram ID not linked yet for this member. Share via WhatsApp or text below.'}</div>
+            <button class="btn-secondary btn-sm" onclick="navigator.clipboard.writeText(\`${escapeHTML(res.inviteCardText)}\`); if(window.showToast) window.showToast('Invite text copied! 📋', 'success');">📋 Copy Access Card Text</button>
+          `;
+        }
+
+        if (window.showToast) window.showToast(`PIN ${res.pin} generated for ${phone}! 🔑`, 'success');
+        loadHROps();
+      } catch (err) {
+        if (window.showToast) window.showToast('Failed to generate PIN: ' + (err.message || 'Error'), 'error');
+      }
+    },
+
+    async copyWhatsAppInvite(phone, code) {
+      try {
+        const res = await APP_API.post('/auth/pin/generate', {
+          phone,
+          linkedId: code,
+          linkedType: 'team',
+          sendTelegram: false
+        });
+
+        if (res.whatsappLink) {
+          navigator.clipboard.writeText(res.whatsappLink);
+          if (window.showToast) window.showToast('WhatsApp link copied to clipboard! 📱', 'success');
+          
+          const resultArea = document.getElementById('inviteResultArea');
+          if (resultArea) {
+            resultArea.style.display = 'block';
+            resultArea.innerHTML = `
+              <div style="color:var(--purple-light); font-weight:700; margin-bottom:0.4rem;">🔑 Temp PIN Generated: <span style="font-size:1.1rem; font-family:monospace;">${res.pin}</span></div>
+              <div style="margin-bottom:0.5rem; word-break:break-all;"><a href="${res.whatsappLink}" target="_blank" style="color:var(--purple-light); text-decoration:underline;">Click to Open WhatsApp Web</a></div>
+            `;
+          }
+        }
+        loadHROps();
+      } catch (err) {
+        if (window.showToast) window.showToast('Failed to generate link: ' + (err.message || 'Error'), 'error');
+      }
     }
   };
 
