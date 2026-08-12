@@ -128,14 +128,23 @@ async function findEmpByTelegramId(telegramId) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// GET /api/team/me?telegramId=xxx   ← Mini App init call
+// GET /api/team/me?telegramId=xxx   ← Mini App init call (Telegram) OR web JWT auth
 // ─────────────────────────────────────────────────────────────────────────────
-router.get('/me', verifyTelegramInitData, async (req, res) => {
+router.get('/me', requireMiniAppAuth, async (req, res) => {
   try {
     const telegramId = req.telegramUser ? String(req.telegramUser.id) : req.query.telegramId;
-    if (!telegramId) return res.status(400).json({ error: 'telegramId required' });
+    let found = telegramId ? await findEmpByTelegramId(telegramId) : null;
 
-    const found = await findEmpByTelegramId(telegramId);
+    // JWT web fallback: look up by linkedId (emp_code) from the JWT payload
+    if (!found && req.user) {
+      const uid = req.user.linkedId || req.user.id;
+      if (uid && supabase) {
+        const { data } = await supabase.from('profiles').select('*')
+          .or(`emp_code.eq.${uid},id.eq.${uid}`).maybeSingle();
+        if (data) found = { source: 'supabase', profile: mapProfile(data) };
+      }
+    }
+
     if (!found) return res.status(404).json({ error: 'Employee not found' });
 
     const emp = found.profile;
@@ -423,14 +432,24 @@ router.post('/clockout', miniAppLimiter, requireMiniAppAuth, async (req, res) =>
 router.post('/survey', miniAppLimiter, requireMiniAppAuth, async (req, res) => {
   try {
     const telegramId = req.telegramUser ? String(req.telegramUser.id) : req.body.telegramId;
-    const { part, data: partData } = req.body;
-    if (!telegramId || !part) return res.status(400).json({ error: 'telegramId and part required' });
+    let found = telegramId ? await findEmpByTelegramId(telegramId) : null;
 
-    const found = await findEmpByTelegramId(telegramId);
+    // JWT web fallback: look up by req.user.linkedId (emp_code)
+    if (!found && req.user) {
+      const uid = req.user.linkedId || req.user.id;
+      if (uid && supabase) {
+        const { data } = await supabase.from('profiles').select('*')
+          .or(`emp_code.eq.${uid},id.eq.${uid}`).maybeSingle();
+        if (data) found = { source: 'supabase', profile: mapProfile(data) };
+      }
+    }
+
     if (!found) return res.status(404).json({ error: 'Employee not found' });
 
     const emp = found.profile;
     const empCode = emp.emp_code || emp.id;
+    const { part, data: partData } = req.body;
+    if (!part) return res.status(400).json({ error: 'part required' });
 
     // XP awarded per part
     const XP_PER_PART = { 1: 100, 2: 150, 3: 200, 4: 100 };
@@ -535,9 +554,18 @@ router.post('/agreement', miniAppLimiter, requireMiniAppAuth, async (req, res) =
   try {
     const telegramId = req.telegramUser ? String(req.telegramUser.id) : req.body.telegramId;
     const { stage, signature, timestamp } = req.body;
-    if (!telegramId) return res.status(400).json({ error: 'telegramId required' });
+    let found = telegramId ? await findEmpByTelegramId(telegramId) : null;
 
-    const found = await findEmpByTelegramId(telegramId);
+    // JWT web fallback: look up by req.user.linkedId (emp_code)
+    if (!found && req.user) {
+      const uid = req.user.linkedId || req.user.id;
+      if (uid && supabase) {
+        const { data } = await supabase.from('profiles').select('*')
+          .or(`emp_code.eq.${uid},id.eq.${uid}`).maybeSingle();
+        if (data) found = { source: 'supabase', profile: mapProfile(data) };
+      }
+    }
+
     if (!found) return res.status(404).json({ error: 'Employee not found' });
 
     const emp = found.profile;

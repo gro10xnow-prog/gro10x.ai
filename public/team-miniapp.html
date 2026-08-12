@@ -1741,7 +1741,10 @@
   }
 
   function authHeaders() {
-    const token = sessionStorage.getItem('jwt_token');
+    const token = sessionStorage.getItem('jwt_token') ||
+                  localStorage.getItem('sb-access-token') ||
+                  localStorage.getItem('purpleos_pin_token') ||
+                  localStorage.getItem('purple_token');
     const h = { 'Content-Type': 'application/json' };
     if (token) h['Authorization'] = `Bearer ${token}`;
     return h;
@@ -1756,27 +1759,47 @@
   // ══════════════════════════════════════════
   async function init() {
     const tgUser = tg?.initDataUnsafe?.user;
-    if (!tgUser && !window.location.search.includes('debug')) {
+
+    // ── Web (JWT) fallback path ──────────────────────────────────────────────
+    const webToken = localStorage.getItem('sb-access-token') ||
+                     localStorage.getItem('purpleos_pin_token') ||
+                     localStorage.getItem('purple_token');
+    if (!tgUser && !window.location.search.includes('debug') && !webToken) {
       showLock();
       return;
     }
-    const telegramId = tgUser?.id || 'debug';
+
+    // Mirror web token into sessionStorage so authHeaders() works everywhere
+    if (webToken && !sessionStorage.getItem('jwt_token')) {
+      sessionStorage.setItem('jwt_token', webToken);
+    }
+
+    const telegramId = tgUser?.id || null;
     try {
-      // Handshake: exchange telegramId for signed JWT token
-      const authRes = await fetch('/api/auth/telegram', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ telegramId, userType: 'team' })
-      });
-      if (authRes.ok) {
-        const authData = await authRes.json();
-        if (authData.token) sessionStorage.setItem('jwt_token', authData.token);
+      // If in Telegram Mini App: exchange telegramId for signed JWT token
+      if (telegramId) {
+        const authRes = await fetch('/api/auth/telegram', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ telegramId, userType: 'team' })
+        });
+        if (authRes.ok) {
+          const authData = await authRes.json();
+          if (authData.token) sessionStorage.setItem('jwt_token', authData.token);
+        }
       }
 
       const token = sessionStorage.getItem('jwt_token');
       const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
 
-      const res = await fetch(`/api/team/me?telegramId=${telegramId}`, { headers });
+      // Fetch profile — use telegramId if available, else use /api/auth/me (web JWT)
+      let res;
+      if (telegramId) {
+        res = await fetch(`/api/team/me?telegramId=${telegramId}`, { headers });
+      } else {
+        // Web path: get profile via JWT auth
+        res = await fetch('/api/team/me', { headers });
+      }
       if (!res.ok) { showLock(); return; }
       const data = await res.json();
       const emp = data.profile || data; // fallback in case API changes back
@@ -2206,11 +2229,13 @@
   async function submitPart(partNum, payload, xp, emoji, title, sub, nextPart) {
     try {
       const tgUser = tg?.initDataUnsafe?.user;
-      const telegramId = tgUser?.id || currentUser?.telegramId || 'debug';
+      const telegramId = tgUser?.id || currentUser?.telegramId || null;
+      const body = { part: partNum, data: payload };
+      if (telegramId) body.telegramId = telegramId;
       await fetch('/api/team/survey', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ telegramId, part: partNum, data: payload })
+        headers: authHeaders(),
+        body: JSON.stringify(body)
       });
     } catch (e) {}
 
@@ -2329,11 +2354,13 @@
 
     try {
       const tgUser = tg?.initDataUnsafe?.user;
-      const telegramId = tgUser?.id || currentUser?.telegramId || 'debug';
+      const telegramId = tgUser?.id || currentUser?.telegramId || null;
+      const body = { stage: 1, signature: sig, timestamp: new Date().toISOString() };
+      if (telegramId) body.telegramId = telegramId;
       await fetch('/api/team/agreement', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ telegramId, stage: 1, signature: sig, timestamp: new Date().toISOString() })
+        headers: authHeaders(),
+        body: JSON.stringify(body)
       });
     } catch (e) {}
 
