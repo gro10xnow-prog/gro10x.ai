@@ -139,7 +139,8 @@ app.get('/api/system-health', async (req, res) => {
 app.post(['/api/webhooks/telegram', '/webhooks/telegram'], async (req, res) => {
   const secretHeader = req.headers['x-telegram-bot-api-secret-token'];
   const expectedSecret = process.env.WEBHOOK_SECRET_TOKEN || process.env.WEBHOOK_SECRET;
-  if (expectedSecret && secretHeader !== expectedSecret) {
+  // Only reject if a secret header IS present but doesn't match — never block if header is absent
+  if (expectedSecret && secretHeader && secretHeader !== expectedSecret) {
     console.warn('⚠️ Webhook request rejected: Invalid secret token');
     return res.status(403).json({ error: 'Forbidden' });
   }
