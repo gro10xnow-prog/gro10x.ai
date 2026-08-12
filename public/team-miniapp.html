@@ -743,6 +743,8 @@
       min-height: 100vh;
       padding: 2rem;
       text-align: center;
+      background: #0d0d14;
+      color: #e2e8f0;
     }
     #lockScreen.visible { display: flex; }
 
@@ -891,15 +893,21 @@
 ════════════════════════════════════════════ -->
 <div id="lockScreen">
   <div style="font-size:3.5rem;margin-bottom:1rem;">🔒</div>
-  <div style="font-size:1.2rem;font-weight:800;color:var(--text);margin-bottom:0.5rem;">Access Restricted</div>
-  <div style="font-size:0.85rem;color:var(--text-2);line-height:1.6;margin-bottom:1.5rem;max-width:280px;">
-    This portal is restricted to authorized <strong style="color:var(--purple)">Purplebot Digital Limited</strong> team members.<br><br>
-    Open the bot in Telegram and tap <strong>📱 Verify My Phone Number</strong> to link your account.
+  <div style="font-size:1.2rem;font-weight:800;color:#fff;margin-bottom:0.5rem;">Access Restricted</div>
+  <div style="font-size:0.85rem;color:#94a3b8;line-height:1.6;margin-bottom:1.5rem;max-width:280px;">
+    This portal is restricted to authorised <strong style="color:#c084fc">Purplebot Digital Limited</strong> team members.<br><br>
+    If you already have an account, please <strong style="color:#fff">log in below</strong>. If you're new, open the Telegram bot first to get your PIN.
   </div>
-  <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:0.85rem;font-size:0.78rem;color:var(--text-2);max-width:260px;">
+  <a href="/auth" style="display:block;width:100%;max-width:260px;padding:0.85rem;background:linear-gradient(135deg,#7c3aed,#ec4899);color:#fff;font-weight:800;font-size:0.95rem;border-radius:14px;text-decoration:none;margin-bottom:0.75rem;">
+    🔑 Login to Your Workspace
+  </a>
+  <a href="https://t.me/purplemanosbot" target="_blank" style="display:block;width:100%;max-width:260px;padding:0.75rem;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:#c084fc;font-weight:700;font-size:0.85rem;border-radius:14px;text-decoration:none;margin-bottom:1.5rem;">
+    🤖 Open @purplemanosbot on Telegram
+  </a>
+  <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:0.85rem;font-size:0.78rem;color:#94a3b8;max-width:260px;">
     Tech Admin Support:<br>
-    <strong style="color:var(--text)">Firoz Uddin Ahmed</strong><br>
-    <span style="color:var(--purple)">+8801708459008</span>
+    <strong style="color:#fff">Firoz Uddin Ahmed</strong><br>
+    <span style="color:#c084fc">+8801708459008</span>
   </div>
 </div>
 
