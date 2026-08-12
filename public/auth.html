@@ -15,16 +15,17 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/tokens.css">
   <style>
-    :root {
-      --bg-light: var(--surface-2, #f8f5ff);
-      --card-bg: var(--surface-1, #ffffff);
-      --card-border: var(--surface-border, rgba(124, 58, 237, 0.18));
-      --primary-purple: var(--brand-purple, #7c3aed);
-      --primary-pink: var(--brand-pink, #ec4899);
-      --text-main: var(--text-heading, #0f172a);
-      --text-muted: var(--text-body, #475569);
-      --input-bg: #ffffff;
-      --input-border: var(--surface-border, rgba(124, 58, 237, 0.2));
+    /* Force dark mode always — auth page is designed for dark backgrounds */
+    :root, body {
+      --bg-light:        #0d0d14;
+      --card-bg:         #121218;
+      --card-border:     rgba(139, 92, 246, 0.25);
+      --primary-purple:  #7c3aed;
+      --primary-pink:    #ec4899;
+      --text-main:       #e2e8f0;
+      --text-muted:      #94a3b8;
+      --input-bg:        rgba(255, 255, 255, 0.06);
+      --input-border:    rgba(139, 92, 246, 0.25);
     }
 
     * {
