@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { requireAuth } = require('../middleware/auth');
-const { requireAdmin } = require('../middleware/rbac');
+const { requireAdmin, requireManager } = require('../middleware/rbac');
 const { createTempPin, verifyPin, setPermanentPin } = require('../services/auth-pins');
 const { signToken } = require('../services/jwt');
 
