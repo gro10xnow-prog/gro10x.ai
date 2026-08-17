@@ -35,6 +35,14 @@ function mapClient(c) {
   };
 }
 
+const DEFAULT_CLIENTS = [
+  { id: 'cli_chillox', name: 'Chillox Bangladesh', category: 'Food & Beverage', status: 'Active Retainer', company: 'Chillox Bangladesh' },
+  { id: 'cli_aura', name: 'Aura Cosmetics', category: 'Beauty & Fashion', status: 'Active Retainer', company: 'Aura Cosmetics' },
+  { id: 'cli_apex', name: 'Apex Footwear', category: 'Retail', status: 'Active Retainer', company: 'Apex Footwear' },
+  { id: 'cli_gp', name: 'Grameenphone', category: 'Telecommunications', status: 'Enterprise', company: 'Grameenphone' },
+  { id: 'cli_daraz', name: 'Daraz Bangladesh', category: 'E-commerce', status: 'Project Basis', company: 'Daraz Bangladesh' }
+];
+
 // GET all clients (Admin sees all; Client sees ONLY their own client record)
 router.get('/', requireAuth, async (req, res) => {
   const isClient = req.user.linkedType === 'client';
@@ -53,27 +61,13 @@ router.get('/', requireAuth, async (req, res) => {
     } catch(e) {}
   }
 
-  let clientsList = [];
-  try {
-    const db = await readDB();
-    clientsList = db.clients || [];
-  } catch(e) {}
-
-  if (clientsList.length === 0 && !isClient) {
-    clientsList = [
-      { id: 'cli_chillox', name: 'Chillox Bangladesh', category: 'Food & Beverage', status: 'Active Retainer' },
-      { id: 'cli_aura', name: 'Aura Cosmetics', category: 'Beauty & Fashion', status: 'Active Retainer' },
-      { id: 'cli_apex', name: 'Apex Footwear', category: 'Retail', status: 'Active Retainer' },
-      { id: 'cli_gp', name: 'Grameenphone', category: 'Telecommunications', status: 'Enterprise' },
-      { id: 'cli_daraz', name: 'Daraz Bangladesh', category: 'E-commerce', status: 'Project Basis' }
-    ];
-  }
+  let clientsList = [...DEFAULT_CLIENTS];
 
   if (isClient && clientLimitId) {
     clientsList = clientsList.filter(c => c.id === clientLimitId || (c.name || '').toLowerCase() === (req.user.name || '').toLowerCase());
   }
 
-  res.json(clientsList.map(mapClient));
+  return res.json(clientsList.map(mapClient));
 });
 
 // GET current authenticated client profile (/api/clients/me)

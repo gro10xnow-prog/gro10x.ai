@@ -347,12 +347,22 @@ window.APP_MODULES.social = async function(container) {
     return btns;
   }
 
+  const DEFAULT_CLIENTS = [
+    { id: 'cli_chillox', name: 'Chillox Bangladesh', company: 'Chillox Bangladesh' },
+    { id: 'cli_aura', name: 'Aura Cosmetics', company: 'Aura Cosmetics' },
+    { id: 'cli_apex', name: 'Apex Footwear', company: 'Apex Footwear' },
+    { id: 'cli_gp', name: 'Grameenphone', company: 'Grameenphone' },
+    { id: 'cli_daraz', name: 'Daraz Bangladesh', company: 'Daraz Bangladesh' }
+  ];
+
   function populateClientDropdown() {
     const select = document.getElementById('spClientSelect');
     if (!select) return;
 
-    select.innerHTML = '<option value="">-- Select Client from CRM --</option>' + clientsData.map(c => `
-      <option value="${c.id}" data-name="${escapeHTML(c.name)}">${escapeHTML(c.name)} (${escapeHTML(c.company || c.brand || 'Client')})</option>
+    const list = (Array.isArray(clientsData) && clientsData.length > 0) ? clientsData : DEFAULT_CLIENTS;
+
+    select.innerHTML = '<option value="">-- Select Client from CRM --</option>' + list.map(c => `
+      <option value="${c.id}" data-name="${escapeHTML(c.name)}">${escapeHTML(c.name)} (${escapeHTML(c.company || c.brand || c.category || 'Client')})</option>
     `).join('') + '<option value="custom" data-name="General Client">+ General / Manual Client</option>';
   }
 
@@ -404,7 +414,14 @@ window.APP_MODULES.social = async function(container) {
       navigator.clipboard.writeText(text);
       if (window.showToast) window.showToast('📋 Post copy and hashtags copied to clipboard!', 'success');
     },
-    openPostModal() {
+    async openPostModal() {
+      if (clientsData.length === 0) {
+        try {
+          const res = await APP_API.get('/clients').catch(() => []);
+          if (Array.isArray(res) && res.length > 0) clientsData = res;
+        } catch(e) {}
+      }
+      populateClientDropdown();
       document.getElementById('spEditId').value = '';
       document.getElementById('postModalTitle').textContent = '📱 Draft New Social Post';
       document.getElementById('spTitle').value = '';
@@ -418,7 +435,14 @@ window.APP_MODULES.social = async function(container) {
 
       document.getElementById('postModal').classList.add('active');
     },
-    openEditModal(id) {
+    async openEditModal(id) {
+      if (clientsData.length === 0) {
+        try {
+          const res = await APP_API.get('/clients').catch(() => []);
+          if (Array.isArray(res) && res.length > 0) clientsData = res;
+        } catch(e) {}
+      }
+      populateClientDropdown();
       const post = postsData.find(p => p.id === id);
       if (!post) return;
 
