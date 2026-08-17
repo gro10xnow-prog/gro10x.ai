@@ -77,11 +77,9 @@ router.post('/', requireAuth, async (req, res) => {
       amount: Number(req.body.amount) || 0,
       date: req.body.date || new Date().toISOString().split('T')[0],
       logged_by: req.body.submittedBy || req.user.name || 'Team Member',
-      submitted_by: req.body.submittedBy || req.user.name || 'Team Member',
-      submitted_by_id: req.body.submittedById || req.user.id || '',
-      receipt_url: receiptUrl,
-      description: req.body.description || '',
-      status: req.body.status || 'Tier 1 Pending'
+      submitted_via: 'web_portal',
+      currency: 'BDT',
+      created_at: new Date().toISOString()
     };
 
     const { data, error } = await supabase.from('expenses').insert([payload]).select().single();

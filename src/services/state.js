@@ -283,13 +283,10 @@ async function submitExpense(empCode, empName, expenseData) {
     category: expenseData.category || 'Production Supplies',
     amount: Number(expenseData.amount) || 0,
     date: expenseData.date || new Date().toISOString().split('T')[0],
-    logged_by: empName,
-    submitted_by: empName,
-    submitted_by_id: empCode,
-    receipt_url: expenseData.receiptUrl || '',
-    description: expenseData.description || '',
-    status: 'Tier 1 Pending',
-    submitted_via: 'telegram_bot'
+    logged_by: empName || 'Team Member',
+    submitted_via: 'telegram_bot',
+    currency: 'BDT',
+    created_at: new Date().toISOString()
   };
 
   if (supabase) {
@@ -300,10 +297,12 @@ async function submitExpense(empCode, empName, expenseData) {
   return payload;
 }
 
-async function getMyExpenses(empCode) {
+async function getMyExpenses(empCode, empName = '') {
   if (supabase) {
     try {
-      const { data } = await supabase.from('expenses').select('*').eq('submitted_by_id', empCode).order('created_at', { ascending: false });
+      let query = supabase.from('expenses').select('*').order('created_at', { ascending: false });
+      if (empName) query = query.ilike('logged_by', `%${empName}%`);
+      const { data } = await query;
       if (data) return data;
     } catch (e) {
       console.warn('state.getMyExpenses Supabase err:', e.message);
