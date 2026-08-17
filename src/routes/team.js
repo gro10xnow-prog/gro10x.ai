@@ -1401,11 +1401,15 @@ router.post('/:code/push-reminder', requireAuth, requireManager, async (req, res
 
     if (!supabase) return res.status(503).json({ error: 'Database unavailable' });
 
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('name, telegram_id')
-      .or(`emp_code.eq.${code},id.eq.${code}`)
-      .maybeSingle();
+    // Query by emp_code first; fall back to UUID id only if code looks like a UUID
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(code);
+    let profileQuery = supabase.from('profiles').select('name, telegram_id');
+    if (isUUID) {
+      profileQuery = profileQuery.eq('id', code);
+    } else {
+      profileQuery = profileQuery.eq('emp_code', code);
+    }
+    const { data: profile } = await profileQuery.maybeSingle();
 
     if (!profile || !profile.telegram_id) {
       return res.status(404).json({ error: 'Telegram account not linked for this team member.' });
