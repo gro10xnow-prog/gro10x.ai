@@ -184,33 +184,39 @@ router.post('/', requireAuth, async (req, res) => {
 
     if (supabase && isSupabaseConfigured()) {
       try {
+        // 1. Try insert with full payload
         const { data, error } = await supabase.from('tasks').insert([fullPayload]).select().single();
-        if (error) {
-          console.warn('[Tasks API] Full insert warning, trying core payload:', error.message);
-          // Retry with core columns in case custom columns (like category/description) don't exist in Supabase tasks table
-          const corePayload = {
-            id: newId,
-            title: fullPayload.title,
-            client: fullPayload.client,
-            stage: fullPayload.stage,
-            priority: fullPayload.priority,
-            assignee: fullPayload.assignee,
-            assignee_id: assigneeUuid,
-            due_date: dueDateVal,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          };
-          const { data: coreData, error: coreErr } = await supabase.from('tasks').insert([corePayload]).select().single();
-          if (coreErr) {
-            console.error('[Tasks API] Core insert error:', coreErr.message);
-          } else if (coreData) {
-            task = mapTask({ ...coreData, ...fullPayload });
-          }
-        } else if (data) {
+        if (!error && data) {
           task = mapTask(data);
+        } else {
+          // 2. Try with standard UUID primary key in case DB uses UUID type
+          const uuidPayload = { ...fullPayload, id: rawUuid };
+          const { data: uData, error: uErr } = await supabase.from('tasks').insert([uuidPayload]).select().single();
+          if (!uErr && uData) {
+            task = mapTask({ ...uData, id: newId });
+          } else {
+            // 3. Try with core standard columns
+            const corePayload = {
+              title: fullPayload.title,
+              client: fullPayload.client,
+              stage: fullPayload.stage,
+              priority: fullPayload.priority,
+              assignee: fullPayload.assignee,
+              due_date: dueDateVal,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            };
+            if (assigneeUuid) corePayload.assignee_id = assigneeUuid;
+            if (clientUuid) corePayload.client_id = clientUuid;
+
+            const { data: cData } = await supabase.from('tasks').insert([corePayload]).select().single();
+            if (cData) {
+              task = mapTask({ ...cData, ...fullPayload, id: cData.id || newId });
+            }
+          }
         }
       } catch (e) {
-        console.warn('[Tasks API] Supabase tasks insert warning:', e.message);
+        console.warn('[Tasks API] Supabase tasks insert safe fallback:', e.message);
       }
     }
 

@@ -67,7 +67,14 @@ if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
       method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) }
     }, (res) => {
       let d = ''; res.on('data', c => d += c);
-      res.on('end', () => console.log('🔒 Webhook safety-net registration:', JSON.parse(d).description || 'done'));
+      res.on('end', () => {
+        try {
+          const parsed = JSON.parse(d || '{}');
+          console.log('🔒 Webhook safety-net registration:', parsed.description || 'done');
+        } catch (e) {
+          console.warn('Webhook safety-net parse warning:', e.message);
+        }
+      });
     });
     req.on('error', e => console.warn('Webhook safety-net warning:', e.message));
     req.write(payload); req.end();
