@@ -220,7 +220,7 @@ window.APP_MODULES.kanban = async function(container) {
           </div>
 
           <!-- Filter & Search Toolbar -->
-          <div class="filter-bar">
+          <div class="filter-bar" id="kanbanFilterBar">
             <input type="text" id="kanbanSearchQuery" placeholder="🔍 Search tasks or clients..." oninput="window.KANBAN_MODULE.applyFilters()" class="input-text" style="width: 220px; padding: 0.45rem 0.85rem;">
             
             <select id="kanbanFilterAssignee" onchange="window.KANBAN_MODULE.applyFilters()" class="input-text" style="width: 170px; padding: 0.45rem 0.85rem;">
@@ -628,10 +628,16 @@ window.APP_MODULES.kanban = async function(container) {
     const area = document.getElementById('kanbanBoardArea');
     if (!area) return;
 
+    const filterBar = document.getElementById('kanbanFilterBar');
+    if (filterBar) {
+      filterBar.style.display = (currentView === 'dashboard') ? 'none' : 'flex';
+    }
+
     const displayTasks = getFilteredTasks();
     const currentStages = getActiveStages();
 
     if (currentView === 'kanban') {
+      area.style.overflowY = 'hidden';
       area.innerHTML = `
         <div class="kanban-grid">
           ${currentStages.map(stg => {
@@ -760,10 +766,16 @@ window.APP_MODULES.kanban = async function(container) {
           </tbody>
         </table>
       `;
+      area.style.overflowY = 'auto';
     } else if (currentView === 'calendar') {
+      area.style.overflowY = 'hidden';
       renderCalendarView(area, displayTasks);
     } else if (currentView === 'dashboard') {
-      renderDashboardView(area, displayTasks);
+      area.style.overflowY = 'auto';
+      const dashTasks = (activeSpace !== 'all') 
+        ? allTasks.filter(t => t.client === activeSpace || t.space === activeSpace || t.category === activeSpace)
+        : allTasks;
+      renderDashboardView(area, dashTasks);
     }
   }
 
@@ -1013,7 +1025,7 @@ window.APP_MODULES.kanban = async function(container) {
       }).join('');
 
       area.innerHTML = `
-        <div style="display: flex; flex-direction: column; gap: 1.5rem; width: 100%; max-width: 1300px; margin: 0 auto;">
+        <div style="display: flex; flex-direction: column; gap: 1.5rem; width: 100%; max-width: 1300px; margin: 0 auto; padding: 0.25rem 0.25rem 4rem 0.25rem;">
           
           <!-- Executive KPI Row -->
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem;">
