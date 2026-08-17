@@ -165,37 +165,31 @@ router.post('/', requireAuth, async (req, res) => {
 
     const payload = {
       id: newId,
-      client_id: req.body.clientId || '',
-      client_name: req.body.clientName || 'General Client',
+      client_id: req.body.clientId || req.body.client_id || '',
+      client_name: req.body.clientName || req.body.client_name || 'General Client',
       platform: req.body.platform || 'Facebook',
-      target_url: req.body.targetUrl || '',
+      target_url: req.body.targetUrl || req.body.target_url || '',
       title: req.body.title || 'Untitled Post',
       caption: req.body.caption || '',
       hashtags: req.body.hashtags || '',
       media_urls: req.body.mediaUrls || (req.body.mediaUrl ? [req.body.mediaUrl] : []),
-      scheduled_date: req.body.scheduledDate || new Date().toISOString().split('T')[0],
-      scheduled_time: req.body.scheduledTime || '18:00',
-      assigned_publisher: req.body.assignedPublisher || req.user?.name || 'Unassigned',
+      scheduled_date: req.body.scheduledDate || req.body.scheduled_date || new Date().toISOString().split('T')[0],
+      scheduled_time: req.body.scheduledTime || req.body.scheduled_time || '18:00',
+      assigned_publisher: req.body.assignedPublisher || req.body.assigned_publisher || req.user?.name || 'Unassigned',
       status: req.body.status || 'Draft',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
 
-    let post = null;
-    if (supabase) {
-      try {
-        const { data, error } = await supabase.from('social_posts').insert([payload]).select().single();
-        if (!error && data) post = mapPost(data);
-      } catch (e) {
-        console.warn('Supabase post insert note:', e.message);
-      }
-    }
-
-    if (!post) {
-      post = mapPost(payload);
-    }
-
+    const post = mapPost(payload);
     inMemoryPosts.unshift(payload);
+
+    // Persist to Supabase in background
+    if (supabase) {
+      supabase.from('social_posts').insert([payload]).catch(e => {
+        console.warn('[Social API] Supabase post insert note:', e.message);
+      });
+    }
 
     try {
       broadcast('post_update', inMemoryPosts.map(mapPost));
@@ -225,27 +219,23 @@ router.put('/:id', requireAuth, async (req, res) => {
     if (req.body.scheduledTime) updates.scheduled_time = req.body.scheduledTime;
     if (req.body.mediaUrls) updates.media_urls = req.body.mediaUrls;
 
-    let post = null;
-    if (supabase) {
-      try {
-        const { data, error } = await supabase.from('social_posts').update(updates).eq('id', id).select().single();
-        if (!error && data) post = mapPost(data);
-      } catch (e) {}
-    }
-
     const memIdx = inMemoryPosts.findIndex(p => p.id === id);
     if (memIdx !== -1) {
       inMemoryPosts[memIdx] = { ...inMemoryPosts[memIdx], ...updates };
-      if (!post) post = mapPost(inMemoryPosts[memIdx]);
     }
 
-    if (!post) post = mapPost({ id, ...updates });
+    const post = mapPost(inMemoryPosts[memIdx] || { id, ...updates });
+
+    // Persist to Supabase in background
+    if (supabase) {
+      supabase.from('social_posts').update(updates).eq('id', id).catch(() => {});
+    }
 
     try { broadcast('post_update', inMemoryPosts.map(mapPost)); } catch (e) {}
-    res.json({ success: true, post });
+    return res.json({ success: true, post });
   } catch (err) {
     console.error('Social Post PUT error:', err.message);
-    res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: err.message });
   }
 });
 
@@ -261,20 +251,15 @@ const handleApprovePost = async (req, res) => {
       updated_at: new Date().toISOString()
     };
 
-    let post = null;
-    if (supabase) {
-      try {
-        const { data, error } = await supabase.from('social_posts').update(updates).eq('id', id).select().single();
-        if (!error && data) post = mapPost(data);
-      } catch (e) {}
-    }
-
     const memIdx = inMemoryPosts.findIndex(p => p.id === id);
     if (memIdx !== -1) {
       inMemoryPosts[memIdx] = { ...inMemoryPosts[memIdx], ...updates };
-      if (!post) post = mapPost(inMemoryPosts[memIdx]);
     }
-    if (!post) post = mapPost({ id, ...updates });
+    const post = mapPost(inMemoryPosts[memIdx] || { id, ...updates });
+
+    if (supabase) {
+      supabase.from('social_posts').update(updates).eq('id', id).catch(() => {});
+    }
 
     try { broadcast('post_update', inMemoryPosts.map(mapPost)); } catch (e) {}
 
@@ -284,10 +269,10 @@ const handleApprovePost = async (req, res) => {
       processAutomationEvent('social_post_approved', { post }, { clients: [], team: [], tasks: [] }, () => {}, broadcast).catch(() => {});
     } catch(e) {}
 
-    res.json({ success: true, post });
+    return res.json({ success: true, post });
   } catch (err) {
     console.error('Social Post Approve error:', err.message);
-    res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: err.message });
   }
 };
 
@@ -304,26 +289,21 @@ const handleRejectPost = async (req, res) => {
       updated_at: new Date().toISOString()
     };
 
-    let post = null;
-    if (supabase) {
-      try {
-        const { data, error } = await supabase.from('social_posts').update(updates).eq('id', id).select().single();
-        if (!error && data) post = mapPost(data);
-      } catch (e) {}
-    }
-
     const memIdx = inMemoryPosts.findIndex(p => p.id === id);
     if (memIdx !== -1) {
       inMemoryPosts[memIdx] = { ...inMemoryPosts[memIdx], ...updates };
-      if (!post) post = mapPost(inMemoryPosts[memIdx]);
     }
-    if (!post) post = mapPost({ id, ...updates });
+    const post = mapPost(inMemoryPosts[memIdx] || { id, ...updates });
+
+    if (supabase) {
+      supabase.from('social_posts').update(updates).eq('id', id).catch(() => {});
+    }
 
     try { broadcast('post_update', inMemoryPosts.map(mapPost)); } catch (e) {}
-    res.json({ success: true, post });
+    return res.json({ success: true, post });
   } catch (err) {
     console.error('Social Post Reject error:', err.message);
-    res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: err.message });
   }
 };
 
@@ -345,26 +325,21 @@ router.patch('/:id/status', requireAuth, async (req, res) => {
       updates.approved_at = new Date().toISOString();
     }
 
-    let post = null;
-    if (supabase) {
-      try {
-        const { data, error } = await supabase.from('social_posts').update(updates).eq('id', id).select().single();
-        if (!error && data) post = mapPost(data);
-      } catch (e) {}
-    }
-
     const memIdx = inMemoryPosts.findIndex(p => p.id === id);
     if (memIdx !== -1) {
       inMemoryPosts[memIdx] = { ...inMemoryPosts[memIdx], ...updates };
-      if (!post) post = mapPost(inMemoryPosts[memIdx]);
     }
-    if (!post) post = mapPost({ id, ...updates });
+    const post = mapPost(inMemoryPosts[memIdx] || { id, ...updates });
+
+    if (supabase) {
+      supabase.from('social_posts').update(updates).eq('id', id).catch(() => {});
+    }
 
     try { broadcast('post_update', inMemoryPosts.map(mapPost)); } catch (e) {}
-    res.json({ success: true, post });
+    return res.json({ success: true, post });
   } catch (err) {
     console.error('Social Post status update error:', err.message);
-    res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: err.message });
   }
 });
 
@@ -373,18 +348,16 @@ router.delete('/:id', requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
     if (supabase) {
-      try {
-        await supabase.from('social_posts').delete().eq('id', id);
-      } catch (e) {}
+      supabase.from('social_posts').delete().eq('id', id).catch(() => {});
     }
 
     inMemoryPosts = inMemoryPosts.filter(p => p.id !== id);
     try { broadcast('post_update', inMemoryPosts.map(mapPost)); } catch (e) {}
 
-    res.json({ success: true, id });
+    return res.json({ success: true, id });
   } catch (err) {
     console.error('Social Post DELETE error:', err.message);
-    res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: err.message });
   }
 });
 
