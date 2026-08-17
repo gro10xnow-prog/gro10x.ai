@@ -561,7 +561,7 @@ window.APP_MODULES.crm = async function(container) {
               </div>
               ${p.phone ? `
                 <button class="btn-secondary btn-sm" style="font-size:0.68rem; padding:0.2rem 0.5rem;"
-                  onclick="window.CRM_MODULE.generatePocAccess('${client.id}', '${escapeHTML(p.name)}', '${escapeHTML(p.phone)}')">
+                  onclick="window.CRM_MODULE.generatePocAccess('${client.id}', '${escapeHTML(p.name)}', '${escapeHTML(p.phone)}', '${escapeHTML(p.role || '')}')">
                   🔑 Grant Access
                 </button>
               ` : ''}
@@ -621,17 +621,19 @@ window.APP_MODULES.crm = async function(container) {
       }
     },
 
-    async generatePocAccess(clientId, name, phone) {
+    async generatePocAccess(clientId, name, phone, role = '') {
       try {
         const res = await APP_API.post('/auth/pin/generate', {
           phone,
           linkedId: clientId,
           linkedType: 'client',
+          contactName: name,
+          pocRole: role,
           sendTelegram: false
         });
 
         if (res.success || res.pin) {
-          this.showPocAccessModal(name, phone, res.pin, res.portalUrl, res.whatsappLink);
+          this.showPocAccessModal(name, phone, res.pin, res.portalUrl, res.whatsappLink, role);
         } else {
           window.showToast && window.showToast('Failed to generate PIN', 'error');
         }

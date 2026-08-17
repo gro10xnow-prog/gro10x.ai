@@ -985,35 +985,53 @@ function initBot() {
       });
 
       // ─── Helper: find client by phone (checks main phone + pocs array) ───
-      async function findClientByPhone(normPhone) {
-        if (supabase) {
-          try {
-            const { data: byMain } = await supabase.from('clients').select('*')
-              .ilike('phone', `%${normPhone}`).maybeSingle();
-            if (byMain) return { ...byMain, activeCampaigns: byMain.active_campaigns || [] };
-            const { data: allClients } = await supabase.from('clients').select('*');
-            if (allClients) {
-              const matched = allClients.find(c => {
-                const pocs = Array.isArray(c.pocs) ? c.pocs : [];
-                return pocs.some(p => p.phone && normalizePhone(p.phone).includes(normPhone));
-              });
-              if (matched) return { ...matched, activeCampaigns: matched.active_campaigns || [] };
-            }
-          } catch (e) {}
+      async function findClientAndPoc(normPhone) {
+        const { findClientAndPocByPhone } = require('./auth-pins');
+        const match = await findClientAndPocByPhone(normPhone);
+        if (match) {
+          return {
+            ...match.client,
+            activeCampaigns: match.client.active_campaigns || [],
+            matchedPoc: match.poc
+          };
         }
         const dbData = await readDB();
-        return (dbData.clients || []).find(c => normalizePhone(c.phone || '').includes(normPhone)) || null;
+        const found = (dbData.clients || []).find(c => normalizePhone(c.phone || '').includes(normPhone));
+        return found ? { ...found, matchedPoc: { name: found.contact_person || found.name, role: 'Primary POC', phone: found.phone } } : null;
       }
 
-      async function sendClientWelcome(chatId, client) {
-        await supabase?.from('clients').update({ telegram_id: String(chatId) }).eq('id', client.id);
-        const welcome = `\u2705 *Account Linked \u2014 Welcome, ${client.name}!*\n\n` +
-          `\u2022 Account Manager: *${client.account_manager || client.accountManager || 'Team'}*\n\n` +
-          `\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\n` +
-          `\ud83d\udccc *Next Steps:*\n` +
-          `1. Tap *\ud83c\udfa6 Review Room* to preview your latest deliverable\n` +
-          `2. Tap *\ud83d\udccb Campaign Status* to track production progress\n` +
-          `3. Tap *Open App* anytime for your full client portal`;
+      async function sendClientWelcome(chatId, client, normPhone) {
+        const poc = client.matchedPoc || { name: client.contact_person || client.name, role: 'Authorized POC' };
+        
+        if (supabase) {
+          try {
+            const updatedPocs = (client.pocs || []).map(p => {
+              if (p.phone && normalizePhone(p.phone).includes(normPhone)) {
+                return { ...p, telegram_id: String(chatId) };
+              }
+              return p;
+            });
+            await supabase.from('clients').update({
+              telegram_id: String(chatId),
+              pocs: updatedPocs
+            }).eq('id', client.id);
+          } catch (e) {
+            console.warn('sendClientWelcome Supabase update error:', e.message);
+          }
+        }
+
+        const pinRecord = await createTempPin(normPhone, client.id, 'client', poc.email || client.email || '');
+
+        const welcome = `✅ *Account Linked — Welcome, ${poc.name}!*\n\n` +
+          `🏢 Organization: *${client.name}*\n` +
+          `👤 Designation: *${poc.role || 'Authorized Representative'}*\n` +
+          `🔑 Web Portal PIN: \`${pinRecord.pin}\`\n\n` +
+          `━━━━━━━━━━━━━━━━━━━━\n` +
+          `📌 *Quick Access Actions:*\n` +
+          `1. Tap *🎬 Review Room* to preview your latest creative deliverables\n` +
+          `2. Tap *📋 Campaign Status* to track active production workflows\n` +
+          `3. Tap *Open App* anytime for your full client portal workspace!`;
+
         clientBot.sendMessage(chatId, welcome, { parse_mode: 'Markdown', reply_markup: getClientKeyboard(client) });
       }
 
@@ -1023,14 +1041,14 @@ function initBot() {
         const contact = msg.contact;
         if (!contact || !contact.phone_number) return;
         const normPhone = normalizePhone(contact.phone_number);
-        const client = await findClientByPhone(normPhone);
+        const client = await findClientAndPoc(normPhone);
         if (!client) {
           return clientBot.sendMessage(chatId,
             `🔒 *Phone not found in our client database.*\n\nIf you are an active Purplebot Digital client, please contact your Account Manager to register your phone number.`,
             { parse_mode: 'Markdown' }
           );
         }
-        await sendClientWelcome(chatId, client);
+        await sendClientWelcome(chatId, client, normPhone);
       });
 
       // ─── Manual phone number typed as text ───
@@ -1041,14 +1059,14 @@ function initBot() {
         if (!/^[\+\d][\d\s\-]{7,14}$/.test(text)) return; // must look like a phone number
         const normPhone = normalizePhone(text);
         if (!normPhone || normPhone.length < 8) return;
-        const client = await findClientByPhone(normPhone);
+        const client = await findClientAndPoc(normPhone);
         if (!client) {
           return clientBot.sendMessage(chatId,
             `🔒 *Phone not found in our client database.*\n\nIf you are an active Purplebot Digital client, please contact your Account Manager to register your phone number.`,
             { parse_mode: 'Markdown' }
           );
         }
-        await sendClientWelcome(chatId, client);
+        await sendClientWelcome(chatId, client, normPhone);
       });
 
       const clientHandler = require('./bot/handlers/client');

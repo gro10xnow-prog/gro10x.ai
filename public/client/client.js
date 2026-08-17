@@ -25,7 +25,13 @@
       if (rawUser) {
         const user = JSON.parse(rawUser);
         const nameEl = document.getElementById('clientHeaderName');
-        if (nameEl) nameEl.textContent = user.name || 'Client Account';
+        const subEl = document.getElementById('clientHeaderSub');
+        if (nameEl) {
+          nameEl.textContent = user.name || user.company || 'Client Partner';
+        }
+        if (subEl) {
+          subEl.textContent = `${user.pocRole ? user.pocRole.toUpperCase() + ' · ' : ''}${user.company ? user.company.toUpperCase() : 'PURPLEOS CLIENT PORTAL'}`;
+        }
       }
     } catch (e) {}
   }

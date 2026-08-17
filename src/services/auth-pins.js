@@ -91,34 +91,94 @@ async function createTempPin(phone, linkedId = null, linkedType = 'team', email 
 }
 
 // ─────────────────────────────────────────────────────────────
+// Multi-POC Client Resolver: searches clients.phone AND clients.pocs[]
+// ─────────────────────────────────────────────────────────────
+
+async function findClientAndPocByPhone(phone) {
+  if (!isSupabaseConfigured() || !phone) return null;
+  const norm = normalizePhone(phone);
+  if (!norm) return null;
+  const last10 = norm.slice(-10);
+
+  try {
+    // 1. Direct query on top-level client phone/whatsapp
+    const { data: directClients } = await supabase
+      .from('clients')
+      .select('id,name,phone,email,contact_person,pocs,category,status')
+      .or(`phone.ilike.%${last10},whatsapp.ilike.%${last10}`);
+
+    if (directClients && directClients.length > 0) {
+      for (const client of directClients) {
+        const pocs = Array.isArray(client.pocs) ? client.pocs : [];
+        const matchedPoc = pocs.find(p => p.phone && normalizePhone(p.phone).slice(-10) === last10);
+        return {
+          client,
+          poc: matchedPoc || {
+            id: 'poc_primary',
+            name: client.contact_person || client.name,
+            role: 'Primary POC',
+            phone: client.phone,
+            email: client.email
+          },
+          isPrimary: !matchedPoc || Boolean(matchedPoc.isPrimary)
+        };
+      }
+    }
+
+    // 2. Full scan of clients.pocs array across all clients
+    const { data: allClients } = await supabase
+      .from('clients')
+      .select('id,name,phone,email,contact_person,pocs,category,status');
+
+    if (allClients && allClients.length > 0) {
+      for (const client of allClients) {
+        const pocs = Array.isArray(client.pocs) ? client.pocs : [];
+        const matchedPoc = pocs.find(p => p.phone && normalizePhone(p.phone).slice(-10) === last10);
+        if (matchedPoc) {
+          return {
+            client,
+            poc: matchedPoc,
+            isPrimary: Boolean(matchedPoc.isPrimary)
+          };
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('findClientAndPocByPhone error:', err.message);
+  }
+  return null;
+}
+
+// ─────────────────────────────────────────────────────────────
 // verifyPin — Verify phone + PIN, returns user info on success
 // ─────────────────────────────────────────────────────────────
 
-async function verifyPin(phone, inputPin) {
+async function verifyPin(phone, inputPin, requestedPortal = null) {
   const norm = normalizePhone(phone);
 
   let record = await findPinRecordSupabase(norm);
   let userObj = null;
-  let linkedType = record ? (record.linked_type || record.linkedType || 'team') : 'team';
+  let linkedType = requestedPortal === 'client' ? 'client' : (record ? (record.linked_type || record.linkedType || 'team') : 'team');
   const targetId = record ? (record.linked_id || record.linkedId) : null;
 
   if (isSupabaseConfigured()) {
     try {
-      if (linkedType === 'client' || (targetId && String(targetId).startsWith('CLI-'))) {
-        let cQuery = supabase.from('clients').select('id,name,phone,email,contact_person');
-        if (targetId) cQuery = cQuery.eq('id', targetId);
-        else cQuery = cQuery.ilike('phone', `%${norm}`);
-        const { data: clientRec } = await cQuery.maybeSingle();
+      if (linkedType === 'client' || requestedPortal === 'client' || (targetId && String(targetId).startsWith('CLI-'))) {
+        const clientMatch = await findClientAndPocByPhone(norm);
 
-        if (clientRec) {
+        if (clientMatch) {
+          const { client, poc } = clientMatch;
           userObj = {
-            id: clientRec.id,
-            name: clientRec.name,
-            phone: clientRec.phone,
-            email: clientRec.email,
+            id: client.id,
+            pocId: poc.id || 'poc_1',
+            name: poc.name || client.name,
+            pocRole: poc.role || 'Authorized POC',
+            company: client.name,
+            phone: poc.phone || client.phone,
+            email: poc.email || client.email || '',
             role: 'Client Representative',
             accessLevel: 'Client Partner',
-            department: 'Client Partner'
+            department: client.category || 'Client Partner'
           };
           linkedType = 'client';
         }
@@ -144,14 +204,30 @@ async function verifyPin(phone, inputPin) {
 
       // Fallback if not found under initial linkedType assumption
       if (!userObj) {
-        const { data: profile } = await supabase.from('profiles').select('emp_code,name,role,phone,email,access_level').ilike('phone', `%${norm}`).maybeSingle();
-        if (profile) {
-          userObj = { id: profile.emp_code, emp_code: profile.emp_code, name: profile.name, role: profile.role, phone: profile.phone, email: profile.email, accessLevel: profile.access_level };
-          linkedType = 'team';
-        } else {
-          const { data: clientRec } = await supabase.from('clients').select('id,name,phone,email,contact_person').ilike('phone', `%${norm}`).maybeSingle();
-          if (clientRec) {
-            userObj = { id: clientRec.id, name: clientRec.name, phone: clientRec.phone, email: clientRec.email, role: 'Client Representative', accessLevel: 'Client Partner', department: 'Client Partner' };
+        if (requestedPortal !== 'client') {
+          const { data: profile } = await supabase.from('profiles').select('emp_code,name,role,phone,email,access_level').ilike('phone', `%${norm}`).maybeSingle();
+          if (profile) {
+            userObj = { id: profile.emp_code, emp_code: profile.emp_code, name: profile.name, role: profile.role, phone: profile.phone, email: profile.email, accessLevel: profile.access_level };
+            linkedType = 'team';
+          }
+        }
+        
+        if (!userObj) {
+          const clientMatch = await findClientAndPocByPhone(norm);
+          if (clientMatch) {
+            const { client, poc } = clientMatch;
+            userObj = {
+              id: client.id,
+              pocId: poc.id || 'poc_1',
+              name: poc.name || client.name,
+              pocRole: poc.role || 'Authorized POC',
+              company: client.name,
+              phone: poc.phone || client.phone,
+              email: poc.email || client.email || '',
+              role: 'Client Representative',
+              accessLevel: 'Client Partner',
+              department: client.category || 'Client Partner'
+            };
             linkedType = 'client';
           }
         }
@@ -297,5 +373,6 @@ module.exports = {
   verifyPin,
   setPermanentPin,
   normalizePhone,
-  getDeterministicPin
+  getDeterministicPin,
+  findClientAndPocByPhone
 };

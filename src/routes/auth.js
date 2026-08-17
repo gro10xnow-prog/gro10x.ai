@@ -108,9 +108,11 @@ router.post('/telegram', async (req, res) => {
   }
 });
 
+const { createTempPin, verifyPin, setPermanentPin, findClientAndPocByPhone } = require('../services/auth-pins');
+
 // 🔑 Generate Temp PIN (Manager+ — rate limited & protected)
 router.post('/pin/generate', authLimiter, requireAuth, requireManager, async (req, res) => {
-  const { phone, linkedId, linkedType, email, sendTelegram } = req.body;
+  const { phone, linkedId, linkedType, email, sendTelegram, contactName, pocRole } = req.body;
   if (!phone) {
     return res.status(400).json({ error: 'Phone number is required' });
   }
@@ -118,19 +120,29 @@ router.post('/pin/generate', authLimiter, requireAuth, requireManager, async (re
   const cleanPhone = phone.replace(/[^0-9+]/g, '');
 
   let userObj = null;
-  let name = 'User';
+  let name = contactName || 'User';
+  let companyName = 'Client Partner';
+  let roleTitle = pocRole || 'Authorized Representative';
   let targetType = linkedType || 'team';
 
   if (isSupabaseConfigured()) {
     if (targetType === 'client' || (linkedId && String(linkedId).startsWith('CLI-'))) {
-      let cQuery = supabase.from('clients').select('*');
-      if (linkedId) cQuery = cQuery.eq('id', linkedId);
-      else cQuery = cQuery.ilike('phone', `%${cleanPhone}%`);
-      const { data } = await cQuery.maybeSingle();
-      if (data) {
-        userObj = data;
-        name = data.name;
+      const clientMatch = await findClientAndPocByPhone(cleanPhone);
+      if (clientMatch) {
+        userObj = clientMatch.client;
+        companyName = clientMatch.client.name;
+        name = contactName || clientMatch.poc.name || clientMatch.client.contact_person || clientMatch.client.name;
+        roleTitle = pocRole || clientMatch.poc.role || 'Authorized Representative';
         targetType = 'client';
+      } else if (linkedId) {
+        const { data: directClient } = await supabase.from('clients').select('*').eq('id', linkedId).maybeSingle();
+        if (directClient) {
+          userObj = directClient;
+          companyName = directClient.name;
+          name = contactName || directClient.contact_person || directClient.name;
+          roleTitle = pocRole || 'Authorized Representative';
+          targetType = 'client';
+        }
       }
     } else {
       let pQuery = supabase.from('profiles').select('*');
@@ -158,12 +170,13 @@ router.post('/pin/generate', authLimiter, requireAuth, requireManager, async (re
       `👉 https://t.me/${botUsername}?start=join_crew\n\n` +
       `📌 *Step 2:* Tap *Start* (or send /start) and press *📱 Verify My Phone Number* to link your account.\n\n` +
       `The bot will instantly verify your number and deliver your secure 4-digit PIN for Web & Mini App access! 🔑`
-    : `📋 *PURPLEOS WORKSPACE ACCESS CARD*\n\n` +
-      `👤 Name: *${name}*\n` +
-      `📱 Mobile: \`${cleanPhone}\`\n` +
+    : `📋 *PURPLEOS CLIENT WORKSPACE ACCESS CARD*\n\n` +
+      `👤 Representative: *${name}* (${roleTitle})\n` +
+      `🏢 Client Account: *${companyName}*\n` +
+      `📱 Login Mobile: \`${cleanPhone}\`\n` +
       `🔑 Temporary 4-Digit PIN: \`${pinRecord.pin}\` *(Change on first login)*\n\n` +
       `🌐 Web Portal Direct Link:\n${portalUrl}\n\n` +
-      `🤖 Telegram Bot: t.me/${botUsername}`;
+      `🤖 Telegram Assistant Bot: t.me/${botUsername}`;
 
   const waText = encodeURIComponent(inviteCardText);
   const whatsappLink = `https://wa.me/${cleanPhone.replace('+', '')}?text=${waText}`;
@@ -195,12 +208,12 @@ router.post('/pin/generate', authLimiter, requireAuth, requireManager, async (re
 
 // 🔐 Verify PIN & Issue Signed JWT
 router.post('/pin/verify', authLimiter, async (req, res) => {
-  const { phone, pin } = req.body;
+  const { phone, pin, portal } = req.body;
   if (!phone || !pin) {
     return res.status(400).json({ error: 'Phone number and PIN are required' });
   }
 
-  const result = await verifyPin(phone, pin);
+  const result = await verifyPin(phone, pin, portal);
   if (!result.success) {
     const status = result.locked ? 429 : 401;
     return res.status(status).json(result);
@@ -208,17 +221,20 @@ router.post('/pin/verify', authLimiter, async (req, res) => {
 
   try {
     const norm = normalizePhone(phone);
-    if (isSupabaseConfigured()) {
+    if (isSupabaseConfigured() && result.linkedType === 'team') {
       await supabase.from('profiles').update({ permanent_pin_set: true }).ilike('phone', `%${norm}`);
     }
   } catch (err) {
     console.warn('Web login update error:', err.message);
   }
 
-  // Issue real signed JWT token
+  // Issue real signed JWT token with individual POC identity
   const jwtPayload = {
     userId: result.user?.id || result.linkedId || 'EMP-001',
+    pocId: result.user?.pocId || 'poc_1',
     name: result.user?.name || 'User',
+    company: result.user?.company || result.user?.name || '',
+    pocRole: result.user?.pocRole || '',
     email: result.email || result.user?.email || '',
     phone: phone,
     role: result.user?.role || (result.linkedType === 'client' ? 'Client Representative' : 'Specialist'),

@@ -47,10 +47,13 @@ async function handlePinLogin(event) {
   currentPhone = phone;
 
   try {
+    const urlParams = new URLSearchParams(window.location.search);
+    const portal = urlParams.get('portal') || (window.location.pathname.includes('client') ? 'client' : '');
+
     const res = await fetch('/api/auth/pin/verify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ phone, pin })
+      body: JSON.stringify({ phone, pin, portal })
     });
 
     const data = await res.json();
@@ -88,29 +91,42 @@ async function submitPermanentPinSetup(event) {
   const email = document.getElementById('perm-email').value.trim();
 
   if (newPin !== confirmPin) {
-    showAlert('PIN codes do not match. Please re-enter.', 'danger');
+    showAlert('PINs do not match. Please verify.', 'error');
     return;
   }
+  if (newPin.length < 4) {
+    showAlert('PIN must be at least 4 digits.', 'error');
+    return;
+  }
+
+  showAlert('Saving your permanent PIN...', 'success');
 
   try {
     const res = await fetch('/api/auth/pin/set', {
       method: 'POST',
-      headers: { 
+      headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${tempAuthToken}` 
+        'Authorization': `Bearer ${tempAuthToken}`
       },
-      body: JSON.stringify({ phone: currentPhone, newPin, email })
+      body: JSON.stringify({
+        phone: currentPhone,
+        newPin: newPin,
+        email: email
+      })
     });
+
     const data = await res.json();
-    if (data.success) {
-      document.getElementById('setup-pin-modal').style.display = 'none';
-      // Use the temp token that was already verified to get through auth
-      saveSessionAndRedirect({ phone: currentPhone }, 'team', email, tempAuthToken);
-    } else {
-      showAlert('Error setting permanent PIN: ' + (data.error || 'Please try again.'), 'danger');
+    if (!data.success) {
+      showAlert(data.error || 'Failed to save permanent PIN', 'error');
+      return;
     }
+
+    document.getElementById('setup-pin-modal').style.display = 'none';
+    const userPayload = { phone: currentPhone, email: email, token: tempAuthToken };
+    saveSessionAndRedirect(userPayload, 'team', email, tempAuthToken);
+
   } catch (err) {
-    console.error('Permanent PIN setup error:', err);
+    showAlert(`Error setting PIN: ${err.message}`, 'error');
   }
 }
 
@@ -120,7 +136,10 @@ function saveSessionAndRedirect(user, linkedType, email, realToken) {
   // Build unified user object for shell and profile hydration
   const userObj = {
     id: user?.id || 'USR-001',
+    pocId: user?.pocId || 'poc_1',
     name: user?.name || 'PurpleOS User',
+    company: user?.company || user?.name || '',
+    pocRole: user?.pocRole || '',
     role: user?.role || user?.accessLevel || (linkedType === 'client' ? 'Client Representative' : 'Specialist'),
     phone: cleanPhone,
     email: email || user?.email || '',
@@ -131,6 +150,8 @@ function saveSessionAndRedirect(user, linkedType, email, realToken) {
   localStorage.setItem('purple_user_phone', cleanPhone);
   if (email || userObj.email) localStorage.setItem('purple_user_email', email || userObj.email);
   if (userObj.name) localStorage.setItem('purple_user_name', userObj.name);
+  if (userObj.company) localStorage.setItem('purple_user_company', userObj.company);
+  if (userObj.pocRole) localStorage.setItem('purple_user_poc_role', userObj.pocRole);
   if (userObj.role) localStorage.setItem('purple_user_role', userObj.role);
   if (userObj.accessLevel) localStorage.setItem('purple_user_access', userObj.accessLevel);
   if (userObj.id) localStorage.setItem('purple_user_id', userObj.id);
