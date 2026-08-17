@@ -26,11 +26,11 @@ function mapProfile(p) {
 
   // Calculate surveyProgress from what fields are filled
   let surveyProgress = 0;
-  if (p.blood_group || p.personal_email || p.address) surveyProgress = Math.max(surveyProgress, 1);
-  if (p.nid_no || p.permanent_address) surveyProgress = Math.max(surveyProgress, 2);
+  if (p.blood_group || p.personal_email || p.address || p.emergency_contact) surveyProgress = Math.max(surveyProgress, 1);
+  if (p.nid_no || p.permanent_address || p.education_degree || p.tin_no || p.driving_license) surveyProgress = Math.max(surveyProgress, 2);
   if (p.bank_info && (p.bank_info.accountNo || p.bank_info.accNo || p.bank_info.mfsNo || p.bank_info.bkashNo)) surveyProgress = Math.max(surveyProgress, 3);
-  if (p.primary_skill || p.survey_complete) surveyProgress = Math.max(surveyProgress, 4);
-  if (p.onboarding_complete) surveyProgress = 5;
+  if (p.primary_skill || p.secondary_skill || p.tshirt_size || p.portfolio_url) surveyProgress = Math.max(surveyProgress, 4);
+  if (p.onboarding_complete && surveyProgress >= 4) surveyProgress = 5;
 
   return {
     id: p.emp_code || p.id,
@@ -447,13 +447,17 @@ router.post('/survey', miniAppLimiter, requireMiniAppAuth, async (req, res) => {
     if (!part) return res.status(400).json({ error: 'part required' });
 
     // Part order enforcement (ensure previous part was submitted)
-    if (part === 2 && !emp.blood_group && !emp.emergency_contact) {
+    const hasPart1 = !!(emp.blood_group || emp.emergency_contact || emp.personal_email || emp.address);
+    const hasPart2 = !!(emp.nid_no || emp.permanent_address || emp.education_degree || emp.tin_no || emp.driving_license);
+    const hasPart3 = !!(emp.bank_info && (emp.bank_info.accountNo || emp.bank_info.accNo || emp.bank_info.mfsNo || emp.bank_info.bkashNo));
+
+    if (part === 2 && !hasPart1) {
       return res.status(400).json({ error: 'Please complete Part 1 (Personal Info) before Part 2.', code: 'PART_ORDER_VIOLATION' });
     }
-    if (part === 3 && !emp.primary_skill && !emp.secondary_skill) {
-      return res.status(400).json({ error: 'Please complete Part 2 (Professional Info) before Part 3.', code: 'PART_ORDER_VIOLATION' });
+    if (part === 3 && !hasPart2) {
+      return res.status(400).json({ error: 'Please complete Part 2 (Verification Docs) before Part 3.', code: 'PART_ORDER_VIOLATION' });
     }
-    if (part === 4 && !emp.bank_info) {
+    if (part === 4 && !hasPart3) {
       return res.status(400).json({ error: 'Please complete Part 3 (Bank Info) before Part 4.', code: 'PART_ORDER_VIOLATION' });
     }
 
