@@ -241,14 +241,15 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
 
     // TRIGGER 7: Expense Tier 1 Approved -> Notify Finance Lead (AUT-008)
     if (eventType === 'expense_tier1_approved') {
-      const expense = eventData.expense;
-      const portalUrl = `https://purpleos-iota.vercel.app/admin?tab=expenses&expenseId=${expense.id}`;
-      const msgText = `ðŸ’° *EXPENSE TIER 1 APPROVED â€” READY FOR FINANCE VERIFICATION*\n\n` +
-        `ðŸ“‹ Claim ID: *${expense.id}*\n` +
-        `ðŸ‘¤ Submitted By: *${expense.submittedBy}*\n` +
-        `ðŸ“‚ Category: *${expense.category}*\n` +
-        `ðŸ’µ Amount: *BDT ${(Number(expense.amount) || 0).toLocaleString()}*\n` +
-        `âœï¸ Line Manager: *${expense.tier1.approvedBy}*\n\n` +
+      const expense = eventData.expense || eventData || {};
+      const portalUrl = `https://purpleos-iota.vercel.app/admin?tab=expenses&expenseId=${expense.id || ''}`;
+      const lineManager = expense.tier1?.approvedBy || expense.approvedBy || 'Line Manager';
+      const msgText = `💰 *EXPENSE TIER 1 APPROVED — READY FOR FINANCE VERIFICATION*\n\n` +
+        `📋 Claim ID: *${expense.id || 'N/A'}*\n` +
+        `👤 Submitted By: *${expense.submittedBy || expense.employeeName || 'Team Member'}*\n` +
+        `📁 Category: *${expense.category || 'Expense'}*\n` +
+        `💵 Amount: *BDT ${(Number(expense.amount) || 0).toLocaleString()}*\n` +
+        `✍️ Line Manager: *${lineManager}*\n\n` +
         `Please review and verify budget allocation in the Finance Portal.`;
 
       const financeUser = (db.team || []).find(t => (t.role || '').toLowerCase().includes('finance') || (t.role || '').toLowerCase().includes('owner'));
@@ -692,36 +693,38 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
 
     // TRIGGER 20: New Leave Request Submitted -> Alert Line Manager (AUT-020)
     if (eventType === 'leave_submitted') {
-      const leave = eventData.leave;
-      const staffName = (leave.staffName || '').split(' ')[0].toLowerCase();
+      const leave = eventData.leave || eventData || {};
+      const staffRaw = leave.staffName || leave.employeeName || leave.employee_name || 'Staff';
+      const leaveId = leave.id || 'N/A';
+      const staffName = staffRaw.split(' ')[0].toLowerCase();
       const staffObj = (db.team || []).find(t => (t.name || '').toLowerCase().includes(staffName));
 
       const targetManager = (staffObj && staffObj.reportsTo)
         ? (db.team || []).find(t => t.id === staffObj.reportsTo)
         : (db.team || []).find(t => (t.role || '').toLowerCase().includes('managing director') || t.id === 'PBD-001');
 
-      const msgText = `ðŸŒ´ *NEW LEAVE REQUEST SUBMITTED (PENDING MANAGER REVIEW)*\n\n` +
-        `ðŸ“‹ Leave ID: *${leave.id}*\n` +
-        `ðŸ‘¤ Staff: *${leave.staffName}*\n` +
-        `ðŸŒ´ Type: *${leave.type}*\n` +
-        `ðŸ“… Dates: *${leave.startDate} to ${leave.endDate}* (${leave.totalDays || 1} Days)\n` +
-        `ðŸ“ Reason: *${leave.reason}*\n\n` +
+      const msgText = `🌴 *NEW LEAVE REQUEST SUBMITTED (PENDING MANAGER REVIEW)*\n\n` +
+        `📋 Leave ID: *${leave.id || 'N/A'}*\n` +
+        `👤 Staff: *${leave.staffName || leave.employeeName || 'Staff'}*\n` +
+        `🌴 Type: *${leave.type || leave.leaveType || 'Leave'}*\n` +
+        `📅 Dates: *${leave.startDate || leave.start_date} to ${leave.endDate || leave.end_date}* (${leave.totalDays || 1} Days)\n` +
+        `📝 Reason: *${leave.reason || 'Not specified'}*\n\n` +
         `Click below to review leave request.`;
 
       const targetId = targetManager?.telegramId || '1708459008';
       sendTelegramNotification(targetId, msgText, [
         [
-          { text: 'âœ… Approve Leave', callback_data: `approve_leave:${leave.id}` },
-          { text: 'âŒ Reject Leave', callback_data: `reject_leave:${leave.id}` }
+          { text: '✅ Approve Leave', callback_data: `approve_leave:${leave.id}` },
+          { text: '❌ Reject Leave', callback_data: `reject_leave:${leave.id}` }
         ],
-        [{ text: 'ðŸ” Inspect in Manager Portal', url: `https://purpleos-iota.vercel.app/manager` }]
+        [{ text: '🔍 Inspect in Manager Portal', url: `https://purpleos-iota.vercel.app/manager` }]
       ], true);
 
       recordAutomationLog(db, {
         id: `LOG-${Date.now()}`,
         rule: 'AUT-020 (Leave Submitted Alert)',
         event: eventType,
-        target: `${leave.staffName} - ${leave.id}`,
+        target: `${staffRaw} - ${leaveId}`,
         status: 'Executed',
         timestamp: new Date().toISOString()
       });
@@ -729,22 +732,22 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
 
     // TRIGGER: Leave Manager Approved -> Alert Owner for Final Sign-off
     if (eventType === 'leave_manager_approved') {
-      const leave = eventData.leave;
+      const leave = eventData.leave || eventData || {};
       const iftekhar = (db.team || []).find(t => t.id === 'PBD-001');
       const firoz = (db.team || []).find(t => t.id === 'PBD-000');
 
-      const msgText = `ðŸ‘‘ *LEAVE MANAGER APPROVED â€” AWAITING OWNER FINAL SIGN-OFF*\n\n` +
-        `ðŸ“‹ Leave ID: *${leave.id}*\n` +
-        `ðŸ‘¤ Staff: *${leave.staffName}*\n` +
-        `ðŸŒ´ Type: *${leave.type}*\n` +
-        `ðŸ“… Dates: *${leave.startDate} to ${leave.endDate}*\n` +
-        `âœï¸ Manager Approved By: *${leave.managerReviewedBy || 'Line Manager'}*\n\n` +
+      const msgText = `👑 *LEAVE MANAGER APPROVED — AWAITING OWNER FINAL SIGN-OFF*\n\n` +
+        `📋 Leave ID: *${leave.id || 'N/A'}*\n` +
+        `👤 Staff: *${leave.staffName || leave.employeeName || leave.employee_name || 'Staff'}*\n` +
+        `🌴 Type: *${leave.type || leave.leaveType || leave.leave_type || 'Leave'}*\n` +
+        `📅 Dates: *${leave.startDate || leave.start_date} to ${leave.endDate || leave.end_date}*\n` +
+        `✍️ Manager Approved By: *${leave.managerReviewedBy || leave.manager_reviewed_by || 'Line Manager'}*\n\n` +
         `Click below to issue final leave sign-off.`;
 
       const buttons = [
-        [{ text: 'ðŸ‘‘ Final Leave Sign-off', callback_data: `approve_leave_owner:${leave.id}` }],
-        [{ text: 'âŒ Decline Leave', callback_data: `reject_leave:${leave.id}` }],
-        [{ text: 'ðŸ” Inspect in Admin Portal', url: `https://purpleos-iota.vercel.app/admin` }]
+        [{ text: '👑 Final Leave Sign-off', callback_data: `approve_leave_owner:${leave.id}` }],
+        [{ text: '❌ Decline Leave', callback_data: `reject_leave:${leave.id}` }],
+        [{ text: '🔍 Inspect in Admin Portal', url: `https://purpleos-iota.vercel.app/admin` }]
       ];
 
       if (iftekhar && iftekhar.telegramId) {
@@ -758,7 +761,7 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
         id: `LOG-${Date.now()}`,
         rule: 'Leave Manager Approved Alert',
         event: eventType,
-        target: `${leave.staffName} (${leave.id})`,
+        target: `${leave.staffName || leave.employeeName || 'Staff'} (${leave.id || ''})`,
         status: 'Executed',
         timestamp: new Date().toISOString()
       });
@@ -766,19 +769,24 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
 
     // TRIGGER: Individual EOD Report Submitted -> Notify Manager, MD & Department Group
     if (eventType === 'eod_submitted') {
-      const eod = eventData.eod;
-      const staffObj = (db.team || []).find(t => t.name === eod.staffName) || (db.team || [])[0];
+      const eod = eventData.eod || eventData || {};
+      const staffRaw = eod.staffName || eod.employeeName || eod.employee_name || 'Team Member';
+      const staffObj = (db.team || []).find(t => (t.name || '').toLowerCase() === staffRaw.toLowerCase()) || (db.team || [])[0];
       const dept = staffObj?.department || 'Operations';
 
       const lineManager = (db.team || []).find(t => (t.department || '').toLowerCase() === dept.toLowerCase() && (t.accessLevel || '').includes('Manager'));
       const owner = (db.team || []).find(t => (t.role || '').toLowerCase().includes('managing director') || t.id === 'PBD-001') || (db.team || [])[0];
+      const tasksCompleted = eod.tasksCompleted || eod.tasksDone || eod.tasks_done || 'None';
+      const tasksInProgress = eod.tasksInProgress || eod.tasksTomorrow || eod.tasks_tomorrow || 'None';
+      const blockers = eod.blockers || 'None';
+      const subTime = eod.submittedAt ? new Date(eod.submittedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-      const msgText = `ðŸ“‹ *NEW EOD REPORT LOGGED*\n\n` +
-        `ðŸ‘¤ Staff: *${eod.staffName}* (${dept})\n` +
-        `âœ… *Completed:* ${eod.tasksCompleted}\n` +
-        `â³ *In Progress:* ${eod.tasksInProgress}\n` +
-        `ðŸš§ *Blockers:* ${eod.blockers}\n\n` +
-        `Submitted at ${new Date(eod.submittedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+      const msgText = `📋 *NEW EOD REPORT LOGGED*\n\n` +
+        `👤 Staff: *${staffRaw}* (${dept})\n` +
+        `✅ *Completed:* ${tasksCompleted}\n` +
+        `⏳ *In Progress / Tomorrow:* ${tasksInProgress}\n` +
+        `🚧 *Blockers:* ${blockers}\n\n` +
+        `Submitted at ${subTime}`;
 
       if (lineManager && lineManager.telegramId) {
         sendTelegramNotification(lineManager.telegramId, msgText, null, true);
@@ -808,7 +816,7 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
         id: `LOG-${Date.now()}`,
         rule: 'EOD Submitted Alert',
         event: eventType,
-        target: `${eod.staffName}`,
+        target: `${staffRaw}`,
         status: 'Executed',
         timestamp: new Date().toISOString()
       });
@@ -1166,7 +1174,37 @@ function startScheduledJobs(readDB, writeDB, broadcast) {
   }, 60 * 1000);
 }
 
+const automation = {
+  trigger: async (eventType, eventData) => {
+    try {
+      const { supabase, isSupabaseConfigured } = require('./supabase');
+      let dbSnapshot = { team: [], clients: [], tasks: [] };
+      if (isSupabaseConfigured()) {
+        const [pRes, cRes] = await Promise.all([
+          supabase.from('profiles').select('*'),
+          supabase.from('clients').select('*')
+        ]);
+        dbSnapshot.team = (pRes?.data || []).map(p => ({
+          ...p,
+          id: p.emp_code || p.id,
+          telegramId: p.telegram_id,
+          accessLevel: p.access_level || p.role
+        }));
+        dbSnapshot.clients = (cRes?.data || []).map(c => ({
+          ...c,
+          telegramId: c.telegram_id
+        }));
+      }
+      const { broadcast } = require('./sse');
+      return processAutomationEvent(eventType, eventData, dbSnapshot, () => {}, broadcast);
+    } catch (err) {
+      console.warn(`[Automation] trigger(${eventType}) warning:`, err.message);
+    }
+  }
+};
+
 module.exports = {
+  automation,
   processAutomationEvent,
   checkScheduledSocialDispatches,
   startScheduledJobs,
