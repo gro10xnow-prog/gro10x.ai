@@ -31,6 +31,7 @@ window.APP_MODULES.kanban = async function(container) {
   let selectedSpaceColor = '#a855f7';
   let editorActiveWf = 'video';
   let editorStages = [];
+  let selectedNewWfIcon = '🌟';
 
   const DEFAULT_WORKFLOW_PRESETS = {
     video: {
@@ -212,6 +213,7 @@ window.APP_MODULES.kanban = async function(container) {
                 <button class="view-btn ${currentView === 'kanban' ? 'active' : ''}" onclick="window.KANBAN_MODULE.setView('kanban')">🗂️ Board</button>
                 <button class="view-btn ${currentView === 'list' ? 'active' : ''}" onclick="window.KANBAN_MODULE.setView('list')">📄 List</button>
                 <button class="view-btn ${currentView === 'calendar' ? 'active' : ''}" onclick="window.KANBAN_MODULE.setView('calendar')">📅 Calendar</button>
+                <button class="view-btn ${currentView === 'dashboard' ? 'active' : ''}" onclick="window.KANBAN_MODULE.setView('dashboard')">📊 Dashboard</button>
               </div>
               <button class="btn-primary" onclick="window.KANBAN_MODULE.openNewTaskModal()">+ New Task</button>
             </div>
@@ -488,15 +490,18 @@ window.APP_MODULES.kanban = async function(container) {
 
       <!-- Workflow Pipeline Stage Editor Modal -->
       <div class="modal-overlay" id="kanbanStageEditorModal">
-        <div class="modal-content" style="max-width: 620px;">
+        <div class="modal-content" style="max-width: 640px;">
           <div class="modal-header">
             <span style="font-weight: 800; font-family: var(--font-heading);">⚙️ Workflow Pipeline Stage Manager</span>
             <button class="modal-close" onclick="window.KANBAN_MODULE.closeStageEditor()">✕</button>
           </div>
           <div class="modal-body" style="display: flex; flex-direction: column; gap: 1rem;">
-            <!-- Workflow Tabs -->
+            <!-- Workflow Tabs & Add Workflow Button -->
             <div>
-              <div style="font-size: 0.75rem; color: var(--text-dim); font-weight: 700; text-transform: uppercase; margin-bottom: 0.4rem;">Select Workflow Pipeline:</div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <div style="font-size: 0.75rem; color: var(--text-dim); font-weight: 700; text-transform: uppercase;">Select Workflow Pipeline:</div>
+                <button type="button" class="btn-secondary btn-sm" style="font-size: 0.72rem; border-style: dashed; padding: 0.2rem 0.5rem;" onclick="window.KANBAN_MODULE.toggleNewWorkflowForm(true)">+ Add Custom Workflow</button>
+              </div>
               <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;" id="editorWfTabsContainer">
                 ${Object.keys(WORKFLOW_TYPES).map(k => `
                   <button type="button" class="${editorActiveWf === k ? 'btn-primary btn-sm' : 'btn-secondary btn-sm'}" onclick="window.KANBAN_MODULE.selectEditorWorkflow('${k}')">
@@ -506,15 +511,50 @@ window.APP_MODULES.kanban = async function(container) {
               </div>
             </div>
 
+            <!-- Inline New Custom Workflow Creator Form -->
+            <div id="newWorkflowFormContainer" style="display:none; background:var(--surface-2); border:1px solid var(--purple-brand); border-radius:12px; padding:0.9rem;">
+              <div style="font-size:0.82rem; font-weight:800; color:var(--text-primary); margin-bottom:0.6rem;">✨ Create New Custom Workflow Pipeline</div>
+              <div style="display:grid; grid-template-columns: 1.2fr 1fr; gap:0.75rem;">
+                <div class="form-group" style="margin-bottom:0;">
+                  <label class="form-label">Workflow Name *</label>
+                  <input type="text" id="newWfNameInput" class="input-text" placeholder="e.g. Influencer Outreach, Podcast" style="font-size:0.82rem; padding:0.35rem 0.65rem;">
+                </div>
+                <div class="form-group" style="margin-bottom:0;">
+                  <label class="form-label">Icon / Emoji</label>
+                  <div style="display:flex; gap:0.3rem; flex-wrap:wrap;" id="newWfIconPicker">
+                    ${['🌟', '📸', '🎙️', '📊', '🛍️', '🎨', '🚀', '💻', '📈', '⚡', '📢', '🎬'].map(ic => `
+                      <button type="button" class="btn-ghost btn-sm" onclick="window.KANBAN_MODULE.selectNewWfIcon('${ic}')" style="font-size:1rem; padding:0.2rem 0.45rem; border:1px solid ${selectedNewWfIcon === ic ? 'var(--purple-brand)' : 'transparent'}; background:${selectedNewWfIcon === ic ? 'var(--surface-3)' : 'transparent'}; border-radius:6px;">${ic}</button>
+                    `).join('')}
+                  </div>
+                </div>
+              </div>
+              <div class="form-group" style="margin-top:0.6rem; margin-bottom:0;">
+                <label class="form-label">Initial Pipeline Stages (comma separated)</label>
+                <input type="text" id="newWfStagesInput" class="input-text" value="Briefing, In Progress, Internal Review, Client Approval, Delivered" style="font-size:0.82rem; padding:0.35rem 0.65rem;">
+              </div>
+              <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:0.75rem;">
+                <button type="button" class="btn-ghost btn-sm" onclick="window.KANBAN_MODULE.toggleNewWorkflowForm(false)">Cancel</button>
+                <button type="button" class="btn-primary btn-sm" onclick="window.KANBAN_MODULE.submitNewCustomWorkflow()">🚀 Create Workflow</button>
+              </div>
+            </div>
+
             <!-- Stage Pills Visual Reorder List -->
             <div style="background: var(--surface-3); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 0.9rem;">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
                 <div style="font-size: 0.82rem; font-weight: 800; color: var(--text-primary);" id="editorStageListTitle">
                   ${WORKFLOW_TYPES[editorActiveWf]?.icon || '⚡'} ${WORKFLOW_TYPES[editorActiveWf]?.name || 'Pipeline'} Stages
                 </div>
-                <button type="button" class="btn-ghost btn-sm" style="font-size: 0.72rem; color: var(--pink-brand);" onclick="window.KANBAN_MODULE.resetStagesToDefault()">
-                  ↺ Reset to Preset
-                </button>
+                <div style="display:flex; gap:0.4rem; align-items:center;" id="editorWorkflowActionButtons">
+                  ${!['video', 'social', 'branding', 'dev'].includes(editorActiveWf) ? `
+                    <button type="button" class="btn-danger btn-sm" style="font-size:0.72rem; padding:0.2rem 0.45rem;" onclick="window.KANBAN_MODULE.deleteWorkflow('${editorActiveWf}')">
+                      🗑️ Delete Workflow
+                    </button>
+                  ` : `
+                    <button type="button" class="btn-ghost btn-sm" style="font-size: 0.72rem; color: var(--pink-brand);" onclick="window.KANBAN_MODULE.resetStagesToDefault()">
+                      ↺ Reset to Preset
+                    </button>
+                  `}
+                </div>
               </div>
 
               <div style="display: flex; flex-direction: column; gap: 0.45rem; max-height: 240px; overflow-y: auto;" id="editorStageList">
@@ -713,6 +753,8 @@ window.APP_MODULES.kanban = async function(container) {
       `;
     } else if (currentView === 'calendar') {
       renderCalendarView(area, displayTasks);
+    } else if (currentView === 'dashboard') {
+      renderDashboardView(area, displayTasks);
     }
   }
 
@@ -821,6 +863,279 @@ window.APP_MODULES.kanban = async function(container) {
         </div>
       </div>
     `;
+  }
+
+  function renderDashboardView(area, displayTasks) {
+      // ── Dashboard KPI Metrics ──
+      const totalTasks = displayTasks.length;
+      const completedTasks = displayTasks.filter(t => ['approved', 'published', 'delivered', 'completed', 'done'].includes((t.stage || '').toLowerCase())).length;
+      const inReviewTasks = displayTasks.filter(t => (t.stage || '').toLowerCase().includes('qc') || (t.stage || '').toLowerCase().includes('review') || (t.stage || '').toLowerCase().includes('approval')).length;
+      const inProdTasks = Math.max(0, totalTasks - completedTasks - inReviewTasks);
+      const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+      
+      let totalLoggedHours = 0;
+      let totalEstHours = 0;
+      displayTasks.forEach(t => {
+        totalLoggedHours += Number(t.loggedHours || 0);
+        totalEstHours += Number(t.estimatedHours || 8);
+      });
+
+      // Review & QC Radar Tasks
+      const reviewRadarTasks = displayTasks.filter(t => 
+        (t.stage || '').toLowerCase().includes('qc') || 
+        (t.stage || '').toLowerCase().includes('review') ||
+        (t.stage || '').toLowerCase().includes('approval') ||
+        t.blockedBy
+      );
+
+      // Overdue & Urgent Tasks
+      const now = new Date();
+      const urgentOverdueTasks = displayTasks.filter(t => {
+        if (['approved', 'published', 'delivered', 'completed'].includes((t.stage || '').toLowerCase())) return false;
+        if (t.priority === 'Urgent') return true;
+        if (t.dueDate || t.due_date) {
+          const d = new Date(t.dueDate || t.due_date);
+          return !isNaN(d) && d < now;
+        }
+        return false;
+      });
+
+      // Specialist Team Workload
+      const memberMap = {};
+      teamMembers.forEach(m => {
+        memberMap[m.name] = { name: m.name, role: m.role || 'Specialist', taskCount: 0, workflows: new Set(), logged: 0 };
+      });
+      displayTasks.forEach(t => {
+        if (t.assignee) {
+          if (!memberMap[t.assignee]) {
+            memberMap[t.assignee] = { name: t.assignee, role: 'Specialist', taskCount: 0, workflows: new Set(), logged: 0 };
+          }
+          memberMap[t.assignee].taskCount += 1;
+          if (t.workflow_type) memberMap[t.assignee].workflows.add(t.workflow_type);
+          memberMap[t.assignee].logged += Number(t.loggedHours || 0);
+        }
+      });
+      const workloadList = Object.values(memberMap).sort((a, b) => b.taskCount - a.taskCount);
+
+      // ── Workflow Matrix Cards ──
+      const workflowCardsHtml = Object.keys(WORKFLOW_TYPES).map(wfKey => {
+        const wf = WORKFLOW_TYPES[wfKey];
+        const wfTasks = displayTasks.filter(t => {
+          const taskWf = (t.workflow_type || t.category || '').toLowerCase();
+          if (taskWf.includes(wfKey.toLowerCase())) return true;
+          if (wfKey === 'video' && (t.department === 'Video' || (t.title || '').toLowerCase().includes('video') || (t.title || '').toLowerCase().includes('reel'))) return true;
+          if (wfKey === 'social' && (t.department === 'Social' || (t.title || '').toLowerCase().includes('post'))) return true;
+          if (wfKey === 'branding' && (t.department === 'Graphics' || (t.title || '').toLowerCase().includes('brand'))) return true;
+          if (wfKey === 'dev' && (t.department === 'Tech' || (t.title || '').toLowerCase().includes('app'))) return true;
+          return false;
+        });
+
+        const wfTotal = wfTasks.length;
+        const wfCompleted = wfTasks.filter(t => ['approved', 'published', 'delivered', 'completed'].includes((t.stage || '').toLowerCase())).length;
+        const wfPct = wfTotal > 0 ? Math.round((wfCompleted / wfTotal) * 100) : 0;
+        
+        let wfLogged = 0;
+        wfTasks.forEach(t => { wfLogged += Number(t.loggedHours || 0); });
+
+        const stageCounts = (wf.stages || []).map(stg => {
+          const count = wfTasks.filter(t => (t.stage || wf.stages[0]) === stg).length;
+          return { stage: stg, count, pct: wfTotal > 0 ? (count / wfTotal) * 100 : 0 };
+        });
+
+        return `
+          <div style="background:var(--surface-2); border:1px solid var(--border-subtle); border-radius:16px; padding:1.25rem; display:flex; flex-direction:column; gap:0.9rem; box-shadow:var(--shadow-sm);">
+            <!-- Workflow Header -->
+            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+              <div style="display:flex; align-items:center; gap:0.6rem;">
+                <div style="font-size:1.5rem; width:42px; height:42px; display:flex; align-items:center; justify-content:center; background:var(--surface-3); border-radius:10px; border:1px solid var(--border-subtle);">${wf.icon || '⚡'}</div>
+                <div>
+                  <div style="font-size:1.05rem; font-weight:800; color:var(--text-primary); font-family:var(--font-heading);">${escapeHTML(wf.name)}</div>
+                  <div style="font-size:0.75rem; color:var(--text-muted);">${wfTotal} Tasks · ${wfLogged}h Logged</div>
+                </div>
+              </div>
+              <div style="display:flex; align-items:center; gap:0.5rem;">
+                <span class="badge ${wfPct === 100 ? 'badge-emerald' : 'badge-purple'}" style="font-size:0.75rem; font-weight:800;">${wfPct}% Done</span>
+                <button class="btn-ghost btn-sm" style="font-size:0.75rem; padding:0.25rem 0.5rem;" onclick="window.KANBAN_MODULE.setWorkflowFilter('${wfKey}'); window.KANBAN_MODULE.setView('kanban');" title="Open ${escapeHTML(wf.name)} Board">Board ➔</button>
+              </div>
+            </div>
+
+            <!-- Segmented Stage Progress Bar -->
+            <div>
+              <div style="font-size:0.72rem; color:var(--text-dim); font-weight:700; text-transform:uppercase; margin-bottom:0.4rem; display:flex; justify-content:space-between;">
+                <span>Stage Distribution</span>
+                <span>${wfCompleted} / ${wfTotal} Approved</span>
+              </div>
+              <div style="display:flex; height:8px; border-radius:4px; overflow:hidden; background:var(--surface-3); width:100%;">
+                ${stageCounts.map((sc, i) => {
+                  if (sc.count === 0) return '';
+                  const colors = ['#3b82f6', '#8b5cf6', '#a855f7', '#ec4899', '#f59e0b', '#06b6d4', '#10b981'];
+                  const color = colors[i % colors.length];
+                  return `<div style="width:${sc.pct}%; background:${color};" title="${escapeHTML(sc.stage)}: ${sc.count} tasks"></div>`;
+                }).join('')}
+              </div>
+            </div>
+
+            <!-- Stage Chips -->
+            <div style="display:flex; flex-wrap:wrap; gap:0.4rem;">
+              ${stageCounts.map((sc) => {
+                const isApproved = ['approved', 'published', 'delivered'].includes(sc.stage.toLowerCase());
+                return `
+                  <div style="display:flex; align-items:center; gap:0.3rem; background:${sc.count > 0 ? (isApproved ? 'rgba(16,185,129,0.15)' : 'var(--surface-3)') : 'transparent'}; border:1px solid ${sc.count > 0 ? (isApproved ? 'var(--emerald-brand)' : 'var(--border-subtle)') : 'rgba(255,255,255,0.05)'}; padding:0.2rem 0.45rem; border-radius:6px; font-size:0.7rem; color:${sc.count > 0 ? 'var(--text-primary)' : 'var(--text-dim)'};">
+                    <span>${escapeHTML(sc.stage)}</span>
+                    <span class="badge ${sc.count > 0 ? (isApproved ? 'badge-emerald' : 'badge-purple') : 'badge-gray'}" style="font-size:0.65rem; padding:0.05rem 0.35rem;">${sc.count}</span>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+
+            <!-- Recent Active Tasks in Workflow -->
+            ${wfTasks.length > 0 ? `
+              <div style="border-top:1px solid var(--border-subtle); padding-top:0.65rem; display:flex; flex-direction:column; gap:0.35rem;">
+                ${wfTasks.slice(0, 3).map(t => `
+                  <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; cursor:pointer;" onclick="window.KANBAN_MODULE.openDrawer('${t.id}')">
+                    <span style="color:var(--text-primary); font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:65%;" title="${escapeHTML(t.title)}">• ${escapeHTML(t.title)}</span>
+                    <span class="badge badge-purple" style="font-size:0.65rem;">${escapeHTML(t.stage || 'Briefing')}</span>
+                  </div>
+                `).join('')}
+              </div>
+            ` : '<div style="font-size:0.75rem; color:var(--text-dim); text-align:center; padding:0.5rem;">No active tasks in this pipeline.</div>'}
+          </div>
+        `;
+      }).join('');
+
+      area.innerHTML = `
+        <div style="display: flex; flex-direction: column; gap: 1.5rem; width: 100%; max-width: 1300px; margin: 0 auto;">
+          
+          <!-- Executive KPI Row -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem;">
+            <div class="card-glass" style="padding: 1.1rem; border-left: 4px solid var(--purple-brand);">
+              <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase;">⚡ Total Tasks</div>
+              <div style="font-size: 1.6rem; font-weight: 800; color: var(--text-primary); margin-top: 0.2rem;">${totalTasks}</div>
+              <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.2rem;">${activeSpace === 'all' ? 'All Spaces' : escapeHTML(activeSpace)}</div>
+            </div>
+
+            <div class="card-glass" style="padding: 1.1rem; border-left: 4px solid var(--blue-brand);">
+              <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase;">🎬 In Production</div>
+              <div style="font-size: 1.6rem; font-weight: 800; color: var(--blue-brand); margin-top: 0.2rem;">${inProdTasks}</div>
+              <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.2rem;">Active shooting / build</div>
+            </div>
+
+            <div class="card-glass" style="padding: 1.1rem; border-left: 4px solid var(--amber-brand);">
+              <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase;">🔍 QC & Client Review</div>
+              <div style="font-size: 1.6rem; font-weight: 800; color: var(--amber-brand); margin-top: 0.2rem;">${inReviewTasks}</div>
+              <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.2rem;">Awaiting sign-off</div>
+            </div>
+
+            <div class="card-glass" style="padding: 1.1rem; border-left: 4px solid var(--emerald-brand);">
+              <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase;">✅ Approved / Delivered</div>
+              <div style="font-size: 1.6rem; font-weight: 800; color: var(--emerald-brand); margin-top: 0.2rem;">${completedTasks} <span style="font-size:0.9rem; font-weight:600; color:var(--text-muted);">(${completionRate}%)</span></div>
+              <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.2rem;">Completed deliverables</div>
+            </div>
+
+            <div class="card-glass" style="padding: 1.1rem; border-left: 4px solid var(--pink-brand);">
+              <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase;">⏱️ Logged Hours</div>
+              <div style="font-size: 1.6rem; font-weight: 800; color: var(--pink-brand); margin-top: 0.2rem;">${totalLoggedHours}h <span style="font-size:0.9rem; font-weight:600; color:var(--text-muted);">/ ${totalEstHours}h</span></div>
+              <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.2rem;">Tracked vs estimated</div>
+            </div>
+          </div>
+
+          <!-- Section: Workflow Pipeline Matrix -->
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem;">
+              <h2 style="font-size: 1.15rem; font-weight: 800; font-family: var(--font-heading); color: var(--text-primary); margin: 0;">
+                ⚡ Workflow-Wise Production Pipelines
+              </h2>
+              <button class="btn-secondary btn-sm" onclick="window.KANBAN_MODULE.openStageEditor()">⚙️ Manage Pipelines</button>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 1.1rem;">
+              ${workflowCardsHtml}
+            </div>
+          </div>
+
+          <!-- 2-Column Grid: Review Radar & Urgent Deliverables -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+            
+            <!-- Left: Awaiting Review Radar -->
+            <div style="background: var(--surface-2); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="font-size: 0.92rem; font-weight: 800; color: var(--amber-brand); font-family: var(--font-heading);">
+                  🔍 Awaiting QC & Client Sign-off (${reviewRadarTasks.length})
+                </div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 0.5rem; max-height: 260px; overflow-y: auto;">
+                ${reviewRadarTasks.map(t => `
+                  <div style="background: var(--surface-3); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 0.65rem 0.85rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="window.KANBAN_MODULE.openDrawer('${t.id}')">
+                    <div>
+                      <div style="font-weight: 700; font-size: 0.82rem; color: var(--text-primary);">${escapeHTML(t.title)}</div>
+                      <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.15rem;">🏢 ${escapeHTML(t.client || 'Agency')} · 👤 ${escapeHTML(t.assignee || 'Unassigned')}</div>
+                    </div>
+                    <span class="badge badge-amber" style="font-size: 0.7rem;">${escapeHTML(t.stage || 'Review')}</span>
+                  </div>
+                `).join('') || '<div style="font-size:0.8rem; color:var(--text-muted); text-align:center; padding:1.5rem;">No deliverables pending review.</div>'}
+              </div>
+            </div>
+
+            <!-- Right: Urgent & Overdue Radar -->
+            <div style="background: var(--surface-2); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="font-size: 0.92rem; font-weight: 800; color: #ef4444; font-family: var(--font-heading);">
+                  ⚠️ Urgent Deliverables & Deadlines (${urgentOverdueTasks.length})
+                </div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 0.5rem; max-height: 260px; overflow-y: auto;">
+                ${urgentOverdueTasks.map(t => `
+                  <div style="background: var(--surface-3); border: 1px solid rgba(239,68,68,0.3); border-radius: 10px; padding: 0.65rem 0.85rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="window.KANBAN_MODULE.openDrawer('${t.id}')">
+                    <div>
+                      <div style="font-weight: 700; font-size: 0.82rem; color: var(--text-primary);">${escapeHTML(t.title)}</div>
+                      <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.15rem;">🏢 ${escapeHTML(t.client || 'Agency')} · 👤 ${escapeHTML(t.assignee || 'Unassigned')}</div>
+                    </div>
+                    <div style="text-align: right;">
+                      <span class="badge badge-pink" style="font-size: 0.68rem;">🔴 ${escapeHTML(t.priority || 'Urgent')}</span>
+                    </div>
+                  </div>
+                `).join('') || '<div style="font-size:0.8rem; color:var(--text-muted); text-align:center; padding:1.5rem;">All tasks on track!</div>'}
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Section: Team Workload Allocation Table -->
+          <div style="background: var(--surface-2); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 1.25rem;">
+            <div style="font-size: 0.95rem; font-weight: 800; color: var(--text-primary); font-family: var(--font-heading); margin-bottom: 0.75rem;">
+              👥 Team Specialist Workload Allocation
+            </div>
+            <div style="overflow-x: auto;">
+              <table style="width: 100%; border-collapse: collapse; font-size: 0.82rem; text-align: left;">
+                <thead>
+                  <tr style="border-bottom: 1px solid var(--border-subtle); color: var(--text-dim); font-size: 0.72rem; text-transform: uppercase;">
+                    <th style="padding: 0.6rem 0.85rem;">Specialist</th>
+                    <th style="padding: 0.6rem 0.85rem;">Role / Designation</th>
+                    <th style="padding: 0.6rem 0.85rem;">Assigned Tasks</th>
+                    <th style="padding: 0.6rem 0.85rem;">Workflows Involved</th>
+                    <th style="padding: 0.6rem 0.85rem;">Logged Hours</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${workloadList.filter(w => w.taskCount > 0 || w.logged > 0).map(w => `
+                    <tr style="border-bottom: 1px solid var(--border-subtle);">
+                      <td style="padding: 0.6rem 0.85rem; font-weight: 700; color: var(--text-primary);">👤 ${escapeHTML(w.name)}</td>
+                      <td style="padding: 0.6rem 0.85rem; color: var(--text-muted);">${escapeHTML(w.role)}</td>
+                      <td style="padding: 0.6rem 0.85rem;">
+                        <span class="badge ${w.taskCount > 4 ? 'badge-amber' : 'badge-purple'}">${w.taskCount} Tasks</span>
+                      </td>
+                      <td style="padding: 0.6rem 0.85rem;">
+                        ${Array.from(w.workflows).map(wf => `<span class="badge badge-gray" style="margin-right:0.25rem; font-size:0.68rem; text-transform:capitalize;">${escapeHTML(wf)}</span>`).join('') || '<span style="color:var(--text-dim);">-</span>'}
+                      </td>
+                      <td style="padding: 0.6rem 0.85rem; font-weight: 700; color: var(--emerald-brand);">⏱️ ${w.logged}h</td>
+                    </tr>
+                  `).join('') || '<tr><td colspan="5" style="padding:1.5rem; text-align:center; color:var(--text-muted);">No task assignments found.</td></tr>'}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      `;
   }
 
   window.KANBAN_MODULE = {
@@ -1394,6 +1709,23 @@ window.APP_MODULES.kanban = async function(container) {
         titleEl.innerHTML = `${WORKFLOW_TYPES[editorActiveWf].icon} ${WORKFLOW_TYPES[editorActiveWf].name} Stages (${editorStages.length} steps)`;
       }
 
+      const actionBtns = document.getElementById('editorWorkflowActionButtons');
+      if (actionBtns) {
+        if (!['video', 'social', 'branding', 'dev'].includes(editorActiveWf)) {
+          actionBtns.innerHTML = `
+            <button type="button" class="btn-danger btn-sm" style="font-size:0.72rem; padding:0.2rem 0.45rem;" onclick="window.KANBAN_MODULE.deleteWorkflow('${editorActiveWf}')">
+              🗑️ Delete Workflow
+            </button>
+          `;
+        } else {
+          actionBtns.innerHTML = `
+            <button type="button" class="btn-ghost btn-sm" style="font-size: 0.72rem; color: var(--pink-brand);" onclick="window.KANBAN_MODULE.resetStagesToDefault()">
+              ↺ Reset to Preset
+            </button>
+          `;
+        }
+      }
+
       const listEl = document.getElementById('editorStageList');
       if (listEl) {
         listEl.innerHTML = editorStages.map((stg, idx) => `
@@ -1446,6 +1778,84 @@ window.APP_MODULES.kanban = async function(container) {
         editorStages = [...preset.stages];
         this.renderStageEditorContent();
         if (window.showToast) window.showToast(`Reset ${preset.name} to default preset stages`, 'success');
+      }
+    },
+    toggleNewWorkflowForm(show) {
+      const form = document.getElementById('newWorkflowFormContainer');
+      if (form) {
+        form.style.display = show ? 'block' : 'none';
+        if (show) {
+          const inp = document.getElementById('newWfNameInput');
+          if (inp) inp.focus();
+        }
+      }
+    },
+    selectNewWfIcon(icon) {
+      selectedNewWfIcon = icon;
+      const picker = document.getElementById('newWfIconPicker');
+      if (picker) {
+        picker.querySelectorAll('button').forEach(btn => {
+          if (btn.innerText.trim() === icon) {
+            btn.style.borderColor = 'var(--purple-brand)';
+            btn.style.background = 'var(--surface-3)';
+          } else {
+            btn.style.borderColor = 'transparent';
+            btn.style.background = 'transparent';
+          }
+        });
+      }
+    },
+    async submitNewCustomWorkflow() {
+      const nameInp = document.getElementById('newWfNameInput');
+      const name = (nameInp?.value || '').trim();
+      if (!name) {
+        if (window.showToast) window.showToast('Please enter a workflow name', 'error');
+        return;
+      }
+
+      const rawStages = document.getElementById('newWfStagesInput')?.value || 'Briefing, In Progress, Internal Review, Client Approval, Delivered';
+      const stages = rawStages.split(',').map(s => s.trim()).filter(Boolean);
+      if (stages.length < 2) {
+        if (window.showToast) window.showToast('Workflow must have at least 2 stages', 'error');
+        return;
+      }
+
+      const key = name.toLowerCase().replace(/[^a-z0-9]/g, '_').replace(/^_+|_+$/g, '') || `wf_${Date.now()}`;
+      
+      const payload = {
+        [key]: {
+          name,
+          icon: selectedNewWfIcon,
+          stages
+        }
+      };
+
+      try {
+        await APP_API.put('/workflows/stages', payload);
+        if (window.showToast) window.showToast(`✨ Custom Workflow "${name}" created!`, 'success');
+        this.toggleNewWorkflowForm(false);
+        if (nameInp) nameInp.value = '';
+        await loadData();
+        this.openStageEditor(key);
+      } catch (err) {
+        if (window.showToast) window.showToast('Failed to create workflow: ' + (err.message || 'Error'), 'error');
+      }
+    },
+    async deleteWorkflow(wfKey) {
+      if (['video', 'social', 'branding', 'dev'].includes(wfKey)) {
+        if (window.showToast) window.showToast('Core system workflows cannot be deleted', 'error');
+        return;
+      }
+      if (window.confirm && !window.confirm(`Are you sure you want to delete this custom workflow pipeline?`)) return;
+
+      try {
+        await APP_API.delete(`/workflows/${encodeURIComponent(wfKey)}`);
+        if (window.showToast) window.showToast('Workflow deleted', 'success');
+        if (activeWorkflowFilter === wfKey) activeWorkflowFilter = 'all';
+        await loadData();
+        this.openStageEditor('video');
+      } catch (err) {
+        if (window.showToast) window.showToast('Failed to delete workflow: ' + (err.message || 'Error'), 'error');
       }
     },
     async savePipelineStages() {

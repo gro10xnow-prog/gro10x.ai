@@ -73,8 +73,8 @@ router.get('/stages', async (req, res) => {
 
 /**
  * PUT /api/workflows/stages
- * Admin only — Updates stage definitions for one or all workflow types
- * Body example: { "video": { "stages": ["Briefing", "Shooting", "Editing", "Approved"] } }
+ * Admin only — Updates or creates workflow stage definitions
+ * Body example: { "influencer": { "name": "Influencer Outreach", "icon": "🌟", "stages": ["Briefing", "Outreach", "Draft", "Approved"] } }
  */
 router.put('/stages', requireAuth, requireAdmin, async (req, res) => {
   try {
@@ -92,6 +92,14 @@ router.put('/stages', requireAuth, requireAdmin, async (req, res) => {
         .eq('key', 'workflow_stages')
         .maybeSingle();
       if (data && data.value) currentStages = { ...DEFAULT_WORKFLOW_TYPES, ...data.value };
+      else {
+        const { data: appSetData } = await supabase
+          .from('app_settings')
+          .select('value')
+          .eq('key', 'workflow_stages')
+          .maybeSingle();
+        if (appSetData && appSetData.value) currentStages = { ...DEFAULT_WORKFLOW_TYPES, ...appSetData.value };
+      }
     } else {
       const db = await readDB();
       if (db.settings && db.settings.workflow_stages) {
@@ -99,28 +107,36 @@ router.put('/stages', requireAuth, requireAdmin, async (req, res) => {
       }
     }
 
-    // Merge updates
+    // Merge updates (supports updating existing workflows AND adding new custom workflows)
     const mergedStages = { ...currentStages };
     Object.keys(updates).forEach(wfKey => {
-      if (mergedStages[wfKey]) {
-        if (Array.isArray(updates[wfKey].stages)) {
-          mergedStages[wfKey] = {
-            ...mergedStages[wfKey],
-            stages: updates[wfKey].stages,
-            ...(updates[wfKey].name ? { name: updates[wfKey].name } : {}),
-            ...(updates[wfKey].icon ? { icon: updates[wfKey].icon } : {})
-          };
-        }
+      const updateItem = updates[wfKey];
+      if (Array.isArray(updateItem.stages)) {
+        mergedStages[wfKey] = {
+          name: updateItem.name || (mergedStages[wfKey]?.name || wfKey),
+          icon: updateItem.icon || (mergedStages[wfKey]?.icon || '⚡'),
+          stages: updateItem.stages
+        };
       }
     });
 
-    // Save to persistence
+    // Save to persistence (both settings and app_settings tables for resilience)
     if (isSupabaseConfigured()) {
-      await supabase.from('settings').upsert({
-        key: 'workflow_stages',
-        value: mergedStages,
-        updated_at: new Date().toISOString()
-      }, { onConflict: 'key' });
+      try {
+        await supabase.from('settings').upsert({
+          key: 'workflow_stages',
+          value: mergedStages,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'key' });
+      } catch (e) {}
+
+      try {
+        await supabase.from('app_settings').upsert({
+          key: 'workflow_stages',
+          value: mergedStages,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'key' });
+      } catch (e) {}
     } else {
       const db = await readDB();
       db.settings = db.settings || {};
@@ -134,6 +150,53 @@ router.put('/stages', requireAuth, requireAdmin, async (req, res) => {
     res.json({ success: true, workflows: mergedStages });
   } catch (err) {
     console.error('[Workflows API] Error updating stages:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * DELETE /api/workflows/:wfKey
+ * Admin only — Deletes a custom workflow pipeline
+ */
+router.delete('/:wfKey', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const { wfKey } = req.params;
+    const CORE_KEYS = ['video', 'social', 'branding', 'dev'];
+    if (CORE_KEYS.includes(wfKey)) {
+      return res.status(400).json({ error: 'Cannot delete core system default workflow' });
+    }
+
+    let currentStages = DEFAULT_WORKFLOW_TYPES;
+    if (isSupabaseConfigured()) {
+      const { data } = await supabase.from('settings').select('value').eq('key', 'workflow_stages').maybeSingle();
+      if (data && data.value) currentStages = { ...DEFAULT_WORKFLOW_TYPES, ...data.value };
+    }
+
+    const mergedStages = { ...currentStages };
+    delete mergedStages[wfKey];
+
+    if (isSupabaseConfigured()) {
+      try {
+        await supabase.from('settings').upsert({
+          key: 'workflow_stages',
+          value: mergedStages,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'key' });
+      } catch (e) {}
+
+      try {
+        await supabase.from('app_settings').upsert({
+          key: 'workflow_stages',
+          value: mergedStages,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'key' });
+      } catch (e) {}
+    }
+
+    broadcast('workflow_stages_update', mergedStages);
+    res.json({ success: true, workflows: mergedStages, deletedKey: wfKey });
+  } catch (err) {
+    console.error('[Workflows API] Error deleting workflow:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
