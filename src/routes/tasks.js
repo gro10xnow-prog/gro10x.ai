@@ -220,53 +220,42 @@ router.post('/', requireAuth, async (req, res) => {
       }
     }
 
-    // Always ensure task exists in return and JSON DB backup
+    // Always ensure task exists in return
     if (!task) {
       task = mapTask(fullPayload);
     }
 
-    try {
-      const db = await readDB();
-      db.tasks = db.tasks || [];
-      db.tasks.unshift(task);
-      await writeDB(db);
-    } catch (e) {}
-
-    // Insert label associations if labelIds provided
+    // Insert label associations non-blockingly if labelIds provided
     if (req.body.labelIds && Array.isArray(req.body.labelIds) && req.body.labelIds.length > 0 && supabase && isSupabaseConfigured()) {
       try {
-        const rows = req.body.labelIds.map(lId => ({ task_id: newId, label_id: lId }));
-        await supabase.from('task_labels').insert(rows);
+        const rows = req.body.labelIds.map(lId => ({ task_id: task.id || newId, label_id: lId }));
+        supabase.from('task_labels').insert(rows).catch(() => {});
       } catch(e) {}
     }
 
-    // Insert custom field values if customFields object provided
+    // Insert custom field values non-blockingly if customFields object provided
     if (req.body.customFields && typeof req.body.customFields === 'object' && supabase && isSupabaseConfigured()) {
       try {
         const rows = Object.entries(req.body.customFields).map(([fId, val]) => ({
-          task_id: newId,
+          task_id: task.id || newId,
           field_id: fId,
           value: String(val || '')
         }));
         if (rows.length > 0) {
-          await supabase.from('task_custom_field_values').insert(rows);
+          supabase.from('task_custom_field_values').insert(rows).catch(() => {});
         }
       } catch(e) {}
     }
 
+    // Fire SSE broadcast non-blockingly
     try {
-      if (supabase && isSupabaseConfigured()) {
-        const { data: allTasks } = await supabase.from('tasks').select('*').order('created_at', { ascending: false });
-        broadcast('task_update', (allTasks || [task]).map(mapTask));
-      } else {
-        broadcast('task_update', [task]);
-      }
+      broadcast('task_update', [task]);
     } catch (e) {}
 
-    res.json({ success: true, task });
+    return res.status(201).json({ success: true, task });
   } catch (err) {
     console.error('Task POST error:', err.message);
-    res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: err.message || 'Task creation failed' });
   }
 });
 // POST Bulk Operations
