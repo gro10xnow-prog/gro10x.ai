@@ -746,30 +746,59 @@ function initBot() {
         teamBot.sendMessage(chatId, helpText, { parse_mode: 'Markdown' });
       });
 
-      // ──────── BATCH 3 MODULAR HANDLERS ────────
+      // ──────── MODULAR HANDLERS ────────
       const attendanceHandler = require('./bot/handlers/attendance');
       const profileHandler = require('./bot/handlers/profile');
       const adminHandler = require('./bot/handlers/admin');
-
-      teamBot.onText(/\/myprofile|👤 My Profile/, (msg) => profileHandler.handleMyProfile(teamBot, msg));
-      teamBot.onText(/\/mybank|💳 Bank & bKash/, (msg) => profileHandler.handleMyBank(teamBot, msg));
-      teamBot.onText(/\/techdiag|🛠️ Tech Diagnostics/, (msg) => adminHandler.handleTechDiagnostics(teamBot, msg));
-      teamBot.onText(/\/myearnings|💰 My Earnings/, (msg) => profileHandler.handleMyEarnings(teamBot, msg));
-      teamBot.onText(/\/clockin|📍 Clock-In GPS/, (msg) => attendanceHandler.handleTextClockIn(teamBot, msg));
-      teamBot.onText(/\/clockout|🚪 Clock Out/, (msg) => attendanceHandler.handleClockOut(teamBot, msg));
-      teamBot.on('location', (msg) => attendanceHandler.handleLocationClockIn(teamBot, msg));
-
-      // F1 New Commands
       const leaderboardHandler = require('./bot/handlers/leaderboard');
       const mystatsHandler = require('./bot/handlers/mystats');
       const leavesHandler = require('./bot/handlers/leaves');
       const eodHandler = require('./bot/handlers/eod');
+      const tasksHandler = require('./bot/handlers/tasks');
+      const expensesHandler = require('./bot/handlers/expenses');
+      const briefingHandler = require('./bot/handlers/briefing');
+      const approvalsHandler = require('./bot/handlers/approvals');
+      const reportsHandler = require('./bot/handlers/reports');
+      const financeHandler = require('./bot/handlers/finance');
+
+      // Core profile & earnings
+      teamBot.onText(/\/myprofile|👤 My Profile/, (msg) => profileHandler.handleMyProfile(teamBot, msg));
+      teamBot.onText(/\/mybank|💳 Bank & bKash/, (msg) => profileHandler.handleMyBank(teamBot, msg));
+      teamBot.onText(/\/myearnings|💰 My Earnings|💰 My Commission/, (msg) => profileHandler.handleMyEarnings(teamBot, msg));
+      teamBot.onText(/\/techdiag|🛠️ Tech Diagnostics/, (msg) => adminHandler.handleTechDiagnostics(teamBot, msg));
+
+      // Tasks
+      teamBot.onText(/\/mytasks|📋 My Tasks/, (msg) => tasksHandler.handleMyTasks(teamBot, msg));
+
+      // Attendance
+      teamBot.onText(/\/clockin|📍 Clock-In GPS/, (msg) => attendanceHandler.handleTextClockIn(teamBot, msg));
+      teamBot.onText(/\/clockout|🚪 Clock Out/, (msg) => attendanceHandler.handleClockOut(teamBot, msg));
+      teamBot.on('location', (msg) => attendanceHandler.handleLocationClockIn(teamBot, msg));
+      teamBot.onText(/\/myattendance|📅 My Attendance Log|👥 HR & Attendance/, (msg) => attendanceHandler.handleMyAttendance(teamBot, msg));
+
+      // Leaves
+      teamBot.onText(/\/leave$|\/leaverequest|🌴 Leave Request/, (msg) => leavesHandler.handleInitLeave(teamBot, msg));
+      teamBot.onText(/\/leavebalance|🌴 Leave Balance/, (msg) => leavesHandler.handleLeaveBalance(teamBot, msg));
+
+      // Expenses
+      teamBot.onText(/\/expense$|\/submitexpense|🧾 Submit Expense|💸 Expense Queue/, (msg) => expensesHandler.handleInitExpense(teamBot, msg));
+      teamBot.onText(/\/logexpense|🧾 Log Expense Entry/, (msg) => financeHandler.handleLogExpenseEntry(teamBot, msg));
+
+      // EOD
+      teamBot.onText(/\/eod$|\/submiteod|📝 EOD Report/, (msg) => eodHandler.handleInitEOD(teamBot, msg));
+      teamBot.onText(/\/myeod|📝 My EOD History/, (msg) => eodHandler.handleMyEODHistory(teamBot, msg));
+
+      // Executive briefing & status
+      teamBot.onText(/\/briefing|🌅 Morning Briefing/, (msg) => briefingHandler.handleMorningBriefing(teamBot, msg));
+      teamBot.onText(/\/snapshot|📊 Business Snapshot|🏢 Ops Dashboard/, (msg) => briefingHandler.handleBusinessSnapshot(teamBot, msg));
+      teamBot.onText(/\/finance|💰 Finance Summary/, (msg) => briefingHandler.handleFinanceSummary(teamBot, msg));
+      teamBot.onText(/\/approvals|✍️ Pending Approvals/, (msg) => approvalsHandler.handlePendingApprovals(teamBot, msg));
+      teamBot.onText(/\/clients|🎬 Client Status|🎯 My Clients|🔔 Client Updates|🚀 Client Activation/, (msg) => reportsHandler.handleClientStatus(teamBot, msg));
+      teamBot.onText(/\/invoicetracker|📋 Invoice Tracker/, (msg) => financeHandler.handleInvoiceTracker(teamBot, msg));
+      teamBot.onText(/\/paymentfollowup|💰 Payment Follow-Up/, (msg) => financeHandler.handlePaymentFollowUp(teamBot, msg));
 
       teamBot.onText(/\/leaderboard|🏆 Leaderboard/, (msg) => leaderboardHandler.handleLeaderboard(teamBot, msg));
       teamBot.onText(/\/status|📊 Dashboard Status/, (msg) => mystatsHandler.handleStatus(teamBot, msg));
-      teamBot.onText(/\/myattendance|📅 My Attendance Log/, (msg) => attendanceHandler.handleMyAttendance(teamBot, msg));
-      teamBot.onText(/\/myeod|📝 My EOD History/, (msg) => eodHandler.handleMyEODHistory(teamBot, msg));
-      teamBot.onText(/\/leavebalance|🌴 Leave Balance/, (msg) => leavesHandler.handleLeaveBalance(teamBot, msg));
 
       // Reset PIN Command
       teamBot.onText(/\/resetpin|🔑 View My Web Login PIN/, async (msg) => {

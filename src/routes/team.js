@@ -800,14 +800,15 @@ router.post('/leaves', requireAuth, async (req, res) => {
 
     const payload = {
       id: newId,
-      staff_id: req.user.linkedId || req.user.id || 'PBD-001',
-      staff_name: req.user.profile?.name || req.user.name || 'Team Member',
-      type: req.body.type || 'Casual Leave',
+      employee_id: req.user.linkedId || req.user.id || 'PBD-001',
+      employee_name: req.user.profile?.name || req.user.name || 'Team Member',
+      leave_type: req.body.type || req.body.leaveType || 'Casual Leave',
       start_date: req.body.fromDate || req.body.startDate || new Date().toISOString().split('T')[0],
       end_date: req.body.toDate || req.body.endDate || new Date().toISOString().split('T')[0],
       total_days: Number(req.body.totalDays) || 1,
       reason: req.body.reason || 'Personal work',
-      status: 'Pending Line Review'
+      status: 'Pending',
+      submitted_via: 'web_portal'
     };
 
     const { data: newLeave, error } = await supabase.from('leaves').insert([payload]).select().single();
@@ -1224,11 +1225,15 @@ router.post('/eod', miniAppLimiter, requireMiniAppAuth, async (req, res) => {
 
     const payload = {
       id: `EOD-${Date.now()}`,
-      employee_id: empCode || 'EMP-001',
-      name: empName || req.user?.name || 'Team Member',
-      text: text || summary || 'Daily tasks completed',
+      employee_id: empCode || 'PBD-000',
+      employee_name: empName || req.user?.name || 'Team Member',
+      report_date: new Date().toISOString().split('T')[0],
+      tasks_done: text || summary || 'Daily tasks completed',
+      tasks_tomorrow: req.body.tasksTomorrow || req.body.tomorrow || 'Standard daily tasks',
       blockers: blockers || 'None',
-      date: new Date().toISOString().split('T')[0],
+      mood: req.body.mood || '😊 Energized',
+      hours_worked: Number(req.body.hours) || 8,
+      submitted_via: req.telegramUser ? 'telegram_miniapp' : 'web_portal',
       created_at: new Date().toISOString()
     };
 
