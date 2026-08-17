@@ -117,6 +117,18 @@ router.post('/', requireAuth, async (req, res) => {
     const rawUuid = require('crypto').randomUUID ? require('crypto').randomUUID() : String(Date.now());
     const newId = `TSK-${rawUuid.split('-')[0].toUpperCase()}`;
 
+    let assigneeUuid = null;
+    const rawAssigneeId = req.body.assignee_id || req.body.assigneeId;
+    if (rawAssigneeId && supabase) {
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(rawAssigneeId);
+      if (isUUID) {
+        assigneeUuid = rawAssigneeId;
+      } else {
+        const { data: prof } = await supabase.from('profiles').select('id').eq('emp_code', rawAssigneeId).maybeSingle();
+        if (prof) assigneeUuid = prof.id;
+      }
+    }
+
     const payload = {
       id: newId,
       title: req.body.title || 'Untitled Task',
@@ -125,19 +137,20 @@ router.post('/', requireAuth, async (req, res) => {
       stage: req.body.stage || 'Briefing',
       priority: req.body.priority || 'Medium',
       assignee: req.body.assignee || 'Unassigned',
-      assignee_id: req.body.assignee_id || req.body.assigneeId || null,
+      assignee_id: assigneeUuid,
       due_date: req.body.due_date || req.body.dueDate || new Date(Date.now() + 3 * 86400000).toISOString().split('T')[0],
-      estimated_hours: Number(req.body.estimatedHours || req.body.estimated_hours) || 8,
-      description: req.body.description || '',
-      workflow_type: req.body.workflow_type || req.body.category || 'video',
-      category: req.body.category || req.body.workflow_type || 'video',
-      parent_task_id: req.body.parentTaskId || null
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     };
 
     let task = null;
     try {
       const { data, error } = await supabase.from('tasks').insert([payload]).select().single();
-      if (!error && data) task = mapTask(data);
+      if (error) {
+        console.error('Supabase tasks insert error:', error.message);
+      } else if (data) {
+        task = mapTask(data);
+      }
     } catch (e) {
       console.warn('Supabase tasks insert warning:', e.message);
     }
@@ -281,14 +294,29 @@ router.patch('/:id/stage', requireAuth, async (req, res) => {
     const task = mapTask(data);
 
     // Award +15 XP on task completion
-    if ((stage === 'Done' || stage === 'Completed') && data.assignee_id) {
+    if ((stage === 'Done' || stage === 'Completed' || stage === 'Approved' || stage === 'Published') && data.assignee_id) {
       try {
-        await supabase.rpc('increment_xp', { p_emp_code: data.assignee_id, xp_amount: 15 });
-      } catch (e) {
-        const { data: prof } = await supabase.from('profiles').select('xp').or(`emp_code.eq.${data.assignee_id},id.eq.${data.assignee_id}`).single();
+        const empCode = data.assignee_id;
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(empCode);
+        let pQuery = supabase.from('profiles').select('xp');
+        if (isUUID) pQuery = pQuery.eq('id', empCode);
+        else pQuery = pQuery.eq('emp_code', empCode);
+        const { data: prof } = await pQuery.maybeSingle();
         if (prof) {
-          await supabase.from('profiles').update({ xp: (prof.xp || 0) + 15 }).or(`emp_code.eq.${data.assignee_id},id.eq.${data.assignee_id}`);
+          const newXP = (prof.xp || 0) + 15;
+          let badge = '🌱 Recruit';
+          if (newXP >= 500) badge = '⭐ Rising Star';
+          if (newXP >= 1000) badge = '🔥 Performer';
+          if (newXP >= 2000) badge = '💜 Champion';
+
+          let uQuery = supabase.from('profiles').update({ xp: newXP, badge, updated_at: new Date().toISOString() });
+          if (isUUID) uQuery = uQuery.eq('id', empCode);
+          else uQuery = uQuery.eq('emp_code', empCode);
+          await uQuery;
+          broadcast('team_update', [{ emp_code: empCode, xp: newXP, badge }]);
         }
+      } catch (xpErr) {
+        console.warn('Task completion XP update warning:', xpErr.message);
       }
     }
 
