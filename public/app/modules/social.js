@@ -48,6 +48,17 @@ window.APP_MODULES.social = async function(container) {
     }
   }
 
+  let activePlatformFilter = 'all';
+
+  const PLATFORM_LIMITS = {
+    Facebook: 63000,
+    Instagram: 2200,
+    LinkedIn: 3000,
+    TikTok: 2200,
+    Twitter: 280,
+    YouTube: 5000
+  };
+
   function renderSkeleton() {
     container.innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1.5rem; flex-wrap:wrap; gap:1rem;">
@@ -68,6 +79,17 @@ window.APP_MODULES.social = async function(container) {
         <div class="kpi-tile"><div class="kpi-label">📝 In Pipeline</div><div class="kpi-val" id="kpiPipeline">...</div></div>
         <div class="kpi-tile"><div class="kpi-label">💬 Client Review</div><div class="kpi-val" id="kpiReview">...</div></div>
         <div class="kpi-tile"><div class="kpi-label">🚀 Approved / Ready</div><div class="kpi-val" id="kpiApproved">...</div></div>
+      </div>
+
+      <!-- Platform Filter Pills -->
+      <div class="review-filter-pills" style="margin-bottom:1.5rem;">
+        <button class="r-pill active" id="sp-pill-all" onclick="window.SOCIAL_MODULE.filterPlatform('all')">All Platforms</button>
+        <button class="r-pill" id="sp-pill-Facebook" onclick="window.SOCIAL_MODULE.filterPlatform('Facebook')">📘 Facebook</button>
+        <button class="r-pill" id="sp-pill-Instagram" onclick="window.SOCIAL_MODULE.filterPlatform('Instagram')">📸 Instagram</button>
+        <button class="r-pill" id="sp-pill-LinkedIn" onclick="window.SOCIAL_MODULE.filterPlatform('LinkedIn')">💼 LinkedIn</button>
+        <button class="r-pill" id="sp-pill-TikTok" onclick="window.SOCIAL_MODULE.filterPlatform('TikTok')">🎵 TikTok</button>
+        <button class="r-pill" id="sp-pill-Twitter" onclick="window.SOCIAL_MODULE.filterPlatform('Twitter')">🐦 Twitter / X</button>
+        <button class="r-pill" id="sp-pill-YouTube" onclick="window.SOCIAL_MODULE.filterPlatform('YouTube')">🎬 YouTube</button>
       </div>
 
       <div id="socialBoardContainer">
@@ -96,7 +118,7 @@ window.APP_MODULES.social = async function(container) {
             <div style="display:flex; gap:1rem;">
               <div class="form-group" style="flex:1;">
                 <label class="form-label">Platform</label>
-                <select id="spPlatform" class="input-text">
+                <select id="spPlatform" class="input-text" onchange="window.SOCIAL_MODULE.onPlatformChange(this)">
                   <option value="Facebook">📘 Facebook</option>
                   <option value="Instagram">📸 Instagram</option>
                   <option value="LinkedIn">💼 LinkedIn</option>
@@ -181,10 +203,21 @@ window.APP_MODULES.social = async function(container) {
     const board = document.getElementById('socialBoardContainer');
     if (!board) return;
 
-    const drafts = postsData.filter(p => p.status === 'Draft' || p.status === 'Pending Draft');
-    const internal = postsData.filter(p => p.status === 'Internal QC' || p.status === 'Internal Review');
-    const client = postsData.filter(p => p.status === 'Pending Client Approval' || p.status === 'Client Review' || p.status === 'Revision Requested');
-    const approved = postsData.filter(p => p.status === 'Approved' || p.status === 'Scheduled' || p.status === 'Due Today');
+    let filteredPosts = postsData;
+    if (activePlatformFilter !== 'all') {
+      filteredPosts = postsData.filter(p => (p.platform || '').toLowerCase() === activePlatformFilter.toLowerCase());
+    }
+
+    // Update active pill state
+    ['all', 'Facebook', 'Instagram', 'LinkedIn', 'TikTok', 'Twitter', 'YouTube'].forEach(plat => {
+      const pill = document.getElementById(`sp-pill-${plat}`);
+      if (pill) pill.classList.toggle('active', plat === activePlatformFilter);
+    });
+
+    const drafts = filteredPosts.filter(p => p.status === 'Draft' || p.status === 'Pending Draft');
+    const internal = filteredPosts.filter(p => p.status === 'Internal QC' || p.status === 'Internal Review');
+    const client = filteredPosts.filter(p => p.status === 'Pending Client Approval' || p.status === 'Client Review' || p.status === 'Revision Requested');
+    const approved = filteredPosts.filter(p => p.status === 'Approved' || p.status === 'Scheduled' || p.status === 'Due Today');
 
     board.innerHTML = `
       <div class="social-board">
@@ -302,7 +335,7 @@ window.APP_MODULES.social = async function(container) {
         <button class="btn-secondary btn-sm" style="font-size:0.72rem; color:#fca5a5;" onclick="window.SOCIAL_MODULE.promptRejectPost('${p.id}')">🔴 Request Revisions</button>
       `;
     } else if (stageKey === 'approved') {
-      btns += `<button class="btn-secondary btn-sm" style="font-size:0.72rem; flex:1;" onclick="navigator.clipboard.writeText(\`${escapeHTML(p.caption)}\`); window.showToast && window.showToast('Caption copied to clipboard!', 'success');">📋 Copy Copy</button>`;
+      btns += `<button class="btn-secondary btn-sm" style="font-size:0.72rem; flex:1;" onclick="window.SOCIAL_MODULE.copyPostContent('${p.id}')">📋 Copy Copy & Tags</button>`;
     }
 
     // Always include Edit and Delete icon buttons
@@ -339,6 +372,15 @@ window.APP_MODULES.social = async function(container) {
     reload() {
       loadInitialData();
     },
+    filterPlatform(plat) {
+      activePlatformFilter = plat;
+      renderBoard();
+    },
+    onPlatformChange(selectEl) {
+      const plat = selectEl.value;
+      const caption = document.getElementById('spCaption');
+      this.updateCharCount(caption || { value: '' }, plat);
+    },
     syncClientName(selectEl) {
       const selectedOption = selectEl.options[selectEl.selectedIndex];
       const nameInput = document.getElementById('spClientName');
@@ -346,13 +388,21 @@ window.APP_MODULES.social = async function(container) {
         nameInput.value = selectedOption.getAttribute('data-name') || selectedOption.text || 'General Client';
       }
     },
-    updateCharCount(textarea) {
+    updateCharCount(textarea, optPlatform) {
       const counter = document.getElementById('captionCharCount');
-      if (counter) {
-        const len = textarea.value.length;
-        counter.textContent = `${len} / 2,200`;
-        counter.style.color = len > 2200 ? '#ef4444' : 'var(--text-dim)';
-      }
+      if (!counter) return;
+      const plat = optPlatform || document.getElementById('spPlatform')?.value || 'Facebook';
+      const limit = PLATFORM_LIMITS[plat] || 2200;
+      const len = (textarea.value || '').length;
+      counter.textContent = `${len.toLocaleString()} / ${limit.toLocaleString()} (${plat})`;
+      counter.style.color = len > limit ? '#ef4444' : 'var(--text-dim)';
+    },
+    copyPostContent(id) {
+      const p = postsData.find(post => post.id === id);
+      if (!p) return;
+      const text = [p.caption, p.hashtags].filter(Boolean).join('\n\n');
+      navigator.clipboard.writeText(text);
+      if (window.showToast) window.showToast('📋 Post copy and hashtags copied to clipboard!', 'success');
     },
     openPostModal() {
       document.getElementById('spEditId').value = '';
@@ -386,7 +436,7 @@ window.APP_MODULES.social = async function(container) {
       if (clientSelect) {
         clientSelect.value = post.clientId || '';
       }
-      this.updateCharCount({ value: post.caption || '' });
+      this.updateCharCount({ value: post.caption || '' }, post.platform);
 
       document.getElementById('postModal').classList.add('active');
     },
