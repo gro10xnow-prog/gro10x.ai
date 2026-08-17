@@ -36,13 +36,13 @@ window.APP_MODULES.analytics = async function(container) {
           
           <div style="position:relative; display:inline-block;">
             <button class="btn-primary" onclick="window.ANALYTICS_MODULE.toggleExportMenu()">📥 Export Report ▼</button>
-            <div id="exportMenuDropdown" style="display:none; position:absolute; right:0; top:110%; background:var(--bg-card, #0f172a); border:1px solid var(--border-subtle); border-radius:10px; width:180px; z-index:100; box-shadow:0 10px 25px rgba(0,0,0,0.5); overflow:hidden;">
-              <a href="/api/export/tasks" target="_blank" class="dropdown-item" style="display:block; padding:0.6rem 1rem; color:var(--text-main); text-decoration:none; font-size:0.8rem;">📋 Tasks CSV</a>
-              <a href="/api/export/invoices" target="_blank" class="dropdown-item" style="display:block; padding:0.6rem 1rem; color:var(--text-main); text-decoration:none; font-size:0.8rem;">💰 Invoices CSV</a>
-              <a href="/api/export/clients" target="_blank" class="dropdown-item" style="display:block; padding:0.6rem 1rem; color:var(--text-main); text-decoration:none; font-size:0.8rem;">🏢 Clients CSV</a>
-              <a href="/api/export/leads" target="_blank" class="dropdown-item" style="display:block; padding:0.6rem 1rem; color:var(--text-main); text-decoration:none; font-size:0.8rem;">🎯 Leads CSV</a>
-              <a href="/api/export/attendance" target="_blank" class="dropdown-item" style="display:block; padding:0.6rem 1rem; color:var(--text-main); text-decoration:none; font-size:0.8rem;">⏱️ Attendance CSV</a>
-              <a href="/api/export/expenses" target="_blank" class="dropdown-item" style="display:block; padding:0.6rem 1rem; color:var(--text-main); text-decoration:none; font-size:0.8rem;">🧾 Expenses CSV</a>
+            <div id="exportMenuDropdown" style="display:none; position:absolute; right:0; top:110%; background:var(--surface-2); border:1px solid var(--border-medium); border-radius:12px; width:180px; z-index:100; box-shadow:var(--shadow-elevated); overflow:hidden;">
+              <a href="/api/export/tasks" target="_blank" class="dropdown-item" style="display:block; padding:0.6rem 1rem; color:var(--text-primary); text-decoration:none; font-size:0.8rem;">📋 Tasks CSV</a>
+              <a href="/api/export/invoices" target="_blank" class="dropdown-item" style="display:block; padding:0.6rem 1rem; color:var(--text-primary); text-decoration:none; font-size:0.8rem;">💰 Invoices CSV</a>
+              <a href="/api/export/clients" target="_blank" class="dropdown-item" style="display:block; padding:0.6rem 1rem; color:var(--text-primary); text-decoration:none; font-size:0.8rem;">🏢 Clients CSV</a>
+              <a href="/api/export/leads" target="_blank" class="dropdown-item" style="display:block; padding:0.6rem 1rem; color:var(--text-primary); text-decoration:none; font-size:0.8rem;">🎯 Leads CSV</a>
+              <a href="/api/export/attendance" target="_blank" class="dropdown-item" style="display:block; padding:0.6rem 1rem; color:var(--text-primary); text-decoration:none; font-size:0.8rem;">⏱️ Attendance CSV</a>
+              <a href="/api/export/expenses" target="_blank" class="dropdown-item" style="display:block; padding:0.6rem 1rem; color:var(--text-primary); text-decoration:none; font-size:0.8rem;">🧾 Expenses CSV</a>
             </div>
           </div>
         </div>
@@ -59,9 +59,9 @@ window.APP_MODULES.analytics = async function(container) {
       </div>
 
       <!-- SECTION 3: REVENUE TREND & TASK THROUGHPUT CHARTS -->
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
         <div class="card-glass">
-          <h3 style="font-size: 1rem; font-weight: 800; margin: 0 0 0.2rem;">💰 Revenue Trend (Paid Invoices)</h3>
+          <h3 style="font-size: 1rem; font-weight: 800; margin: 0 0 0.2rem; color: var(--text-primary);">💰 Revenue Trend (Paid Invoices)</h3>
           <div style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 1rem;">Daily settled revenue in BDT</div>
           <div style="height: 240px; position: relative;">
             <canvas id="revTrendCanvas"></canvas>
@@ -69,7 +69,7 @@ window.APP_MODULES.analytics = async function(container) {
         </div>
 
         <div class="card-glass">
-          <h3 style="font-size: 1rem; font-weight: 800; margin: 0 0 0.2rem;">📋 Task Throughput & Deliveries</h3>
+          <h3 style="font-size: 1rem; font-weight: 800; margin: 0 0 0.2rem; color: var(--text-primary);">📋 Task Throughput & Deliveries</h3>
           <div style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 1rem;">Completed workflows by date</div>
           <div style="height: 240px; position: relative;">
             <canvas id="taskThroughputCanvas"></canvas>
@@ -78,27 +78,29 @@ window.APP_MODULES.analytics = async function(container) {
       </div>
 
       <!-- SECTION 4: DEPARTMENT SCORECARD & UTM LEAD ATTRIBUTION -->
-      <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
         <div class="card-glass">
-          <h3 style="font-size: 1rem; font-weight: 800; margin: 0 0 0.2rem;">🏢 Department Delivery Scorecard</h3>
+          <h3 style="font-size: 1rem; font-weight: 800; margin: 0 0 0.2rem; color: var(--text-primary);">🏢 Department Delivery Scorecard</h3>
           <div style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 1rem;">Task volume, turnaround times, and quality pass rates per department</div>
-          <table class="data-table" style="font-size:0.8rem;">
-            <thead>
-              <tr>
-                <th>Department</th>
-                <th>Tasks Done</th>
-                <th>Avg Turnaround</th>
-                <th>QC Pass Rate</th>
-              </tr>
-            </thead>
-            <tbody id="deptScorecardTbody">
-              <tr><td colspan="4" style="text-align:center; padding:1.5rem; color:var(--text-muted);">Loading scorecard...</td></tr>
-            </tbody>
-          </table>
+          <div class="table-responsive">
+            <table class="data-table" style="font-size:0.8rem;">
+              <thead>
+                <tr>
+                  <th>Department</th>
+                  <th>Tasks Done</th>
+                  <th>Avg Turnaround</th>
+                  <th>QC Pass Rate</th>
+                </tr>
+              </thead>
+              <tbody id="deptScorecardTbody">
+                <tr><td colspan="4" style="text-align:center; padding:1.5rem; color:var(--text-muted);">Loading scorecard...</td></tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
         <div class="card-glass">
-          <h3 style="font-size: 1rem; font-weight: 800; margin: 0 0 0.2rem;">🎯 Lead UTM Channel Attribution</h3>
+          <h3 style="font-size: 1rem; font-weight: 800; margin: 0 0 0.2rem; color: var(--text-primary);">🎯 Lead UTM Channel Attribution</h3>
           <div style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 1rem;">Lead acquisition breakdown by source</div>
           <div style="height: 200px; position: relative;">
             <canvas id="utmAttributionCanvas"></canvas>
@@ -108,20 +110,28 @@ window.APP_MODULES.analytics = async function(container) {
 
       <!-- SECTION 5: CLIENT DELIVERY PERFORMANCE SCORECARD -->
       <div class="card-glass" style="margin-bottom: 1.5rem;">
-        <h3 style="font-size: 1rem; font-weight: 800; margin: 0 0 0.2rem;">🤝 Client Delivery & Account Performance</h3>
-        <div style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 1rem;">On-time delivery rates, revision counts, and turnaround times per account</div>
-        <table class="data-table" style="font-size:0.8rem;">
-          <thead>
-            <tr>
-              <th>Client Account</th>
-              <th>Tasks Delivered</th>
-              <th>On-Time Rate</th>
-              <th>Avg Revisions</th>
-              <th>Avg Turnaround</th>
-            </tr>
-          </thead>
-          <tbody id="clientScorecardTbody">
-            <tr><td colspan="5" style="text-align:center; padding:1.5rem; color:var(--text-muted);">Loading client metrics...</td></tr>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; border-bottom:1px solid var(--border-subtle); padding-bottom:0.5rem;">
+          <div>
+            <h3 style="font-size:1rem; font-weight:800; margin:0; color: var(--text-primary);">🤝 Client Delivery Performance Scorecard</h3>
+            <div style="font-size:0.78rem; color:var(--text-muted);">Completed tasks, average delivery velocity, and total revisions per client</div>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table" style="font-size:0.8rem;">
+            <thead>
+              <tr>
+                <th>Client Partner</th>
+                <th>Total Tasks</th>
+                <th>Avg Turnaround</th>
+                <th>Total Revisions</th>
+                <th>Delivery Velocity</th>
+              </tr>
+            </thead>
+            <tbody id="clientScorecardTbody">
+              <tr><td colspan="5" style="text-align:center; padding:1.5rem; color:var(--text-muted);">Loading client scorecard...</td></tr>
+            </tbody>
+          </table>
+        </div>
           </tbody>
         </table>
       </div>
@@ -300,7 +310,18 @@ window.APP_MODULES.analytics = async function(container) {
     },
     toggleExportMenu() {
       const menu = document.getElementById('exportMenuDropdown');
-      if (menu) menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+      if (!menu) return;
+      const isShowing = menu.style.display === 'block';
+      menu.style.display = isShowing ? 'none' : 'block';
+      if (!isShowing) {
+        const closeHandler = (e) => {
+          if (!e.target.closest('#exportMenuDropdown') && !e.target.closest('button')) {
+            menu.style.display = 'none';
+            document.removeEventListener('click', closeHandler);
+          }
+        };
+        setTimeout(() => document.addEventListener('click', closeHandler), 10);
+      }
     }
   };
 

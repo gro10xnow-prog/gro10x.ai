@@ -23,19 +23,6 @@ window.APP_MODULES.reviews = async function(container) {
 
   function renderSkeleton() {
     container.innerHTML = `
-      <style>
-        .review-kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
-        @media (max-width: 900px) { .review-kpi-row { grid-template-columns: repeat(2,1fr); } }
-        .review-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 1.25rem; }
-        .review-card { background: var(--surface-2); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 1.25rem; display: flex; flex-direction: column; gap: 0.85rem; transition: var(--transition-fast); }
-        .review-card:hover { border-color: var(--border-glow); transform: translateY(-2px); box-shadow: var(--shadow-card); }
-        .review-card-thumb { background: rgba(0,0,0,0.4); border-radius: 10px; height: 120px; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; border: 1px solid var(--border-subtle); }
-        .review-card-thumb img { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; }
-        .review-filter-pills { display: flex; gap: 0.5rem; background: var(--surface-1); padding: 0.35rem; border-radius: 12px; border: 1px solid var(--border-subtle); width: fit-content; margin-bottom: 1.5rem; }
-        .r-pill { padding: 0.4rem 1rem; border: none; background: transparent; color: var(--text-muted); border-radius: 9px; cursor: pointer; font-size: 0.83rem; font-weight: 600; transition: var(--transition-fast); }
-        .r-pill.active { background: var(--surface-3); color: var(--text-primary); }
-      </style>
-
       <!-- Header -->
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem;">
         <div>

@@ -190,4 +190,32 @@
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
   };
+
+  // Global Modal & Drawer Accessibility Controller
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      // Close active modal overlays
+      document.querySelectorAll('.modal-overlay.active, .modal-overlay[style*="display: flex"], .modal-overlay[style*="display: block"]').forEach(m => {
+        m.classList.remove('active');
+        if (m.style.display && m.style.display !== 'none') m.style.display = 'none';
+      });
+
+      // Close drawers
+      document.querySelectorAll('.drawer-panel.open, .drawer-backdrop.open').forEach(d => d.classList.remove('open'));
+      const leadDrawer = document.getElementById('leadProfileDrawer');
+      const leadBackdrop = document.getElementById('leadDrawerBackdrop');
+      if (leadDrawer) leadDrawer.style.display = 'none';
+      if (leadBackdrop) leadBackdrop.style.display = 'none';
+    }
+  });
+
+  document.addEventListener('click', (e) => {
+    // Backdrop click dismiss for modal overlays
+    if (e.target.classList && e.target.classList.contains('modal-overlay')) {
+      e.target.classList.remove('active');
+      if (e.target.style.display && e.target.style.display !== 'none') {
+        e.target.style.display = 'none';
+      }
+    }
+  });
 })();

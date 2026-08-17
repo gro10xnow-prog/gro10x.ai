@@ -86,6 +86,9 @@
 
   /* ── Backward-Compat Aliases (used by legacy modules & design-tokens.css) ── */
   --text-main:          var(--text-primary);
+  --bg-card:            var(--surface-1);
+  --bg-card-elevated:   var(--surface-2);
+  --bg-light:           var(--surface-0);
   --purple-main:        var(--purple-brand);
   --purple-primary:     var(--purple-brand);
   --amber-accent:       var(--amber-brand);

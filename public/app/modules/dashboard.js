@@ -166,37 +166,51 @@ window.APP_MODULES.dashboard = async function(container) {
       </div>
 
       <!-- MAIN GRID 1: FINANCIAL & SALES -->
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
         <div class="card-glass">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.5rem;">
-            <h3 style="font-size: 1rem; font-weight: 800; margin: 0;">💳 Financials & Invoices Summary</h3>
+            <h3 style="font-size: 1rem; font-weight: 800; margin: 0; color: var(--text-primary);">💳 Financials & Invoices Summary</h3>
             <a href="#finance" style="font-size: 0.75rem; color: var(--pink-brand); text-decoration: none; font-weight: 700;">View Finance →</a>
           </div>
-          ${invoices.length === 0 ? '<div style="color: var(--text-muted); text-align: center; padding: 1rem;">No invoices logged.</div>' : `
-            <table class="data-table" style="font-size: 0.8rem;">
-              <thead>
-                <tr><th>Invoice ID</th><th>Client</th><th>Amount</th><th>Status</th></tr>
-              </thead>
-              <tbody>
-                ${invoices.slice(0, 5).map(i => `
-                  <tr>
-                    <td><strong>${i.id}</strong></td>
-                    <td>${escapeHTML(i.clientName || i.client || 'Client')}</td>
-                    <td><strong>৳${(Number(i.amount) || 0).toLocaleString()}</strong></td>
-                    <td><span class="badge ${i.status === 'Paid' ? 'badge-emerald' : i.status === 'Overdue' ? 'badge-pink' : 'badge-amber'}">${i.status || 'Pending'}</span></td>
-                  </tr>
-                `).join('')}
-              </tbody>
-            </table>
+          ${invoices.length === 0 ? `
+            <div class="empty-state" style="padding: 1.5rem;">
+              <div class="empty-state-icon">🧾</div>
+              <div class="empty-state-title">No Invoices Logged</div>
+              <div class="empty-state-desc">Create your first client invoice in the Financials portal.</div>
+            </div>
+          ` : `
+            <div class="table-responsive">
+              <table class="data-table" style="font-size: 0.8rem;">
+                <thead>
+                  <tr><th>Invoice ID</th><th>Client</th><th>Amount</th><th>Status</th></tr>
+                </thead>
+                <tbody>
+                  ${invoices.slice(0, 5).map(i => `
+                    <tr>
+                      <td><strong>${escapeHTML(i.id)}</strong></td>
+                      <td>${escapeHTML(i.clientName || i.client || 'Client')}</td>
+                      <td><strong>৳${(Number(i.amount) || 0).toLocaleString()}</strong></td>
+                      <td><span class="badge ${i.status === 'Paid' ? 'badge-emerald' : i.status === 'Overdue' ? 'badge-pink' : 'badge-amber'}">${escapeHTML(i.status || 'Pending')}</span></td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
           `}
         </div>
 
         <div class="card-glass">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.5rem;">
-            <h3 style="font-size: 1rem; font-weight: 800; margin: 0;">🎯 Lead Acquisition Funnel</h3>
+            <h3 style="font-size: 1rem; font-weight: 800; margin: 0; color: var(--text-primary);">🎯 Lead Acquisition Funnel</h3>
             <a href="#leads" style="font-size: 0.75rem; color: var(--pink-brand); text-decoration: none; font-weight: 700;">View CRM →</a>
           </div>
-          ${leads.length === 0 ? '<div style="color: var(--text-muted); text-align: center; padding: 1rem;">No CRM leads captured.</div>' : `
+          ${leads.length === 0 ? `
+            <div class="empty-state" style="padding: 1.5rem;">
+              <div class="empty-state-icon">🎯</div>
+              <div class="empty-state-title">No CRM Leads Captured</div>
+              <div class="empty-state-desc">Incoming leads from the website and campaigns will appear here.</div>
+            </div>
+          ` : `
             <div style="display: flex; flex-direction: column; gap: 0.75rem;">
               ${['New Inquiry', 'Contacted', 'Proposal Sent', 'Won'].map(st => {
                 const count = leads.filter(l => l.stage === st || (st === 'Won' && l.stage === 'Closed Won')).length;
@@ -204,11 +218,11 @@ window.APP_MODULES.dashboard = async function(container) {
                 return `
                   <div>
                     <div style="display:flex; justify-content:space-between; font-size:0.78rem; font-weight:700; margin-bottom:0.2rem;">
-                      <span>${st}</span>
+                      <span style="color: var(--text-primary);">${st}</span>
                       <span style="color:var(--pink-brand);">${count} leads (${pct}%)</span>
                     </div>
-                    <div style="width:100%; height:8px; background:rgba(255,255,255,0.08); border-radius:999px; overflow:hidden;">
-                      <div style="height:100%; width:${pct}%; background:linear-gradient(90deg, var(--purple-main), var(--pink-brand)); border-radius:999px;"></div>
+                    <div style="width:100%; height:8px; background:var(--surface-3); border-radius:999px; overflow:hidden;">
+                      <div style="height:100%; width:${pct}%; background:var(--gradient-brand); border-radius:999px;"></div>
                     </div>
                   </div>
                 `;
@@ -219,63 +233,79 @@ window.APP_MODULES.dashboard = async function(container) {
       </div>
 
       <!-- MAIN GRID 2: ROSTER & PRODUCTION -->
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
         <div class="card-glass">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.5rem;">
-            <h3 style="font-size: 1rem; font-weight: 800; margin: 0;">👥 Team Live Duty & EOD Status</h3>
+            <h3 style="font-size: 1rem; font-weight: 800; margin: 0; color: var(--text-primary);">👥 Team Live Duty & EOD Status</h3>
             <a href="#hr" style="font-size: 0.75rem; color: var(--pink-brand); text-decoration: none; font-weight: 700;">Team Ops →</a>
           </div>
-          ${team.length === 0 ? '<div style="color: var(--text-muted); text-align: center; padding: 1rem;">No team members found.</div>' : `
-            <table class="data-table" style="font-size: 0.8rem;">
-              <thead>
-                <tr><th>Member</th><th>Role</th><th>Status</th><th>EOD Today</th></tr>
-              </thead>
-              <tbody>
-                ${team.slice(0, 6).map(m => {
-                  const empCode = m.emp_code || m.id;
-                  const isOnline = m.status === 'In Studio' || attendance.some(a => a.employee_id === empCode && a.status === 'In Studio');
-                  const hasEod = eods.some(e => (e.employee_id === empCode || e.employee_name === m.name) && ((e.report_date || '').startsWith(todayStr) || (e.created_at || '').startsWith(todayStr)));
+          ${team.length === 0 ? `
+            <div class="empty-state" style="padding: 1.5rem;">
+              <div class="empty-state-icon">👥</div>
+              <div class="empty-state-title">No Team Members Found</div>
+              <div class="empty-state-desc">Add staff members in the HR Operations module.</div>
+            </div>
+          ` : `
+            <div class="table-responsive">
+              <table class="data-table" style="font-size: 0.8rem;">
+                <thead>
+                  <tr><th>Member</th><th>Role</th><th>Status</th><th>EOD Today</th></tr>
+                </thead>
+                <tbody>
+                  ${team.slice(0, 6).map(m => {
+                    const empCode = m.emp_code || m.id;
+                    const isOnline = m.status === 'In Studio' || attendance.some(a => a.employee_id === empCode && a.status === 'In Studio');
+                    const hasEod = eods.some(e => (e.employee_id === empCode || e.employee_name === m.name) && ((e.report_date || '').startsWith(todayStr) || (e.created_at || '').startsWith(todayStr)));
 
-                  return `
-                    <tr>
-                      <td><strong>${escapeHTML(m.name)}</strong></td>
-                      <td style="color: var(--text-muted);">${escapeHTML(m.role || 'Team')}</td>
-                      <td><span class="badge ${isOnline ? 'badge-emerald' : 'badge-amber'}">${isOnline ? '🟢 In Studio' : '⚫ Offline'}</span></td>
-                      <td><span class="badge ${hasEod ? 'badge-purple' : 'badge-amber'}">${hasEod ? '✓ Done' : '⏳ Pending'}</span></td>
-                    </tr>
-                  `;
-                }).join('')}
-              </tbody>
-            </table>
+                    return `
+                      <tr>
+                        <td><strong>${escapeHTML(m.name)}</strong></td>
+                        <td style="color: var(--text-muted);">${escapeHTML(m.role || 'Team')}</td>
+                        <td><span class="badge ${isOnline ? 'badge-emerald' : 'badge-amber'}">${isOnline ? '🟢 In Studio' : '⚫ Offline'}</span></td>
+                        <td><span class="badge ${hasEod ? 'badge-purple' : 'badge-amber'}">${hasEod ? '✓ Done' : '⏳ Pending'}</span></td>
+                      </tr>
+                    `;
+                  }).join('')}
+                </tbody>
+              </table>
+            </div>
           `}
         </div>
 
         <div class="card-glass">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.5rem;">
-            <h3 style="font-size: 1rem; font-weight: 800; margin: 0;">🏢 Client Accounts Portfolio</h3>
+            <h3 style="font-size: 1rem; font-weight: 800; margin: 0; color: var(--text-primary);">🏢 Client Accounts Portfolio</h3>
             <a href="#crm" style="font-size: 0.75rem; color: var(--pink-brand); text-decoration: none; font-weight: 700;">Client Hub →</a>
           </div>
-          ${clients.length === 0 ? '<div style="color: var(--text-muted); text-align: center; padding: 1rem;">No clients in portfolio.</div>' : `
-            <table class="data-table" style="font-size: 0.8rem;">
-              <thead>
-                <tr><th>Client Name</th><th>Category</th><th>Total Billed</th><th>Status</th></tr>
-              </thead>
-              <tbody>
-                ${clients.slice(0, 5).map(c => {
-                  const clientInvoices = invoices.filter(i => i.clientName === c.name || i.client === c.name || i.clientId === c.id);
-                  const totalSpent = clientInvoices.reduce((sum, i) => sum + Number(i.amount || 0), 0);
+          ${clients.length === 0 ? `
+            <div class="empty-state" style="padding: 1.5rem;">
+              <div class="empty-state-icon">🏢</div>
+              <div class="empty-state-title">No Clients in Portfolio</div>
+              <div class="empty-state-desc">Add client partners in the Client CRM directory.</div>
+            </div>
+          ` : `
+            <div class="table-responsive">
+              <table class="data-table" style="font-size: 0.8rem;">
+                <thead>
+                  <tr><th>Client Name</th><th>Category</th><th>Total Billed</th><th>Status</th></tr>
+                </thead>
+                <tbody>
+                  ${clients.slice(0, 5).map(c => {
+                    const clientInvoices = invoices.filter(i => i.clientName === c.name || i.client === c.name || i.clientId === c.id);
+                    const totalSpent = clientInvoices.reduce((sum, i) => sum + Number(i.amount || 0), 0);
 
-                  return `
-                    <tr>
-                      <td><strong>${escapeHTML(c.name)}</strong></td>
-                      <td style="color: var(--text-muted);">${escapeHTML(c.category || c.industry || 'General')}</td>
-                      <td><strong>৳${totalSpent.toLocaleString()}</strong></td>
-                      <td><span class="badge badge-emerald">${escapeHTML(c.status || 'Active Retainer')}</span></td>
-                    </tr>
-                  `;
-                }).join('')}
-              </tbody>
-            </table>
+                    return `
+                      <tr>
+                        <td><strong>${escapeHTML(c.name)}</strong></td>
+                        <td style="color: var(--text-muted);">${escapeHTML(c.category || c.industry || 'General')}</td>
+                        <td><strong>৳${totalSpent.toLocaleString()}</strong></td>
+                        <td><span class="badge badge-emerald">${escapeHTML(c.status || 'Active Retainer')}</span></td>
+                      </tr>
+                    `;
+                  }).join('')}
+                </tbody>
+              </table>
+            </div>
           `}
         </div>
       </div>

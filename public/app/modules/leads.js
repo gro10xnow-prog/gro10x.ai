@@ -193,7 +193,7 @@ window.APP_MODULES.leads = async function(container) {
       </div>
 
       <!-- Lead Profile Drawer -->
-      <div id="leadProfileDrawer" style="display:none; position:fixed; top:0; right:0; bottom:0; width:540px; max-width:92vw; background:var(--bg-card, #0f172a); border-left:1px solid var(--border-subtle); z-index:9999; box-shadow:-12px 0 40px rgba(0,0,0,0.6); overflow-y:auto;">
+      <div id="leadProfileDrawer" style="display:none; position:fixed; top:0; right:0; bottom:0; width:540px; max-width:92vw; background:var(--surface-1); border-left:1px solid var(--border-subtle); z-index:9999; box-shadow:-12px 0 40px rgba(0,0,0,0.6); overflow-y:auto;">
         <div id="leadDrawerContent" style="padding:1.5rem;">Loading...</div>
       </div>
       <div id="leadDrawerBackdrop" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:9998;" onclick="window.LEADS_MODULE.closeDrawer()"></div>

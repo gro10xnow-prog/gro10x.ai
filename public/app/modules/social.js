@@ -49,17 +49,6 @@ window.APP_MODULES.social = async function(container) {
 
   function renderSkeleton() {
     container.innerHTML = `
-      <style>
-        .social-kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
-        @media (max-width: 900px) { .social-kpi-row { grid-template-columns: repeat(2, 1fr); } }
-        .social-board { display: grid; grid-template-columns: repeat(4, minmax(280px, 1fr)); gap: 1.25rem; overflow-x: auto; padding-bottom: 1rem; }
-        @media (max-width: 1100px) { .social-board { display: flex; scroll-snap-type: x mandatory; } .social-col { min-width: 290px; flex: 0 0 290px; scroll-snap-align: start; } }
-        .social-col { background: var(--surface-1); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 1.1rem; min-height: 520px; display: flex; flex-direction: column; gap: 0.85rem; }
-        .post-card { background: var(--surface-2); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 1rem; display: flex; flex-direction: column; gap: 0.6rem; transition: var(--transition-fast); position: relative; }
-        .post-card:hover { border-color: var(--border-glow); transform: translateY(-2px); box-shadow: var(--shadow-card); }
-        .post-card-actions { display: flex; gap: 0.4rem; margin-top: 0.4rem; border-top: 1px solid var(--border-subtle); padding-top: 0.6rem; flex-wrap: wrap; }
-      </style>
-
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1.5rem; flex-wrap:wrap; gap:1rem;">
         <div>
           <h1 style="font-size: 1.6rem; font-weight: 800; font-family: var(--font-heading); margin: 0 0 0.3rem;">

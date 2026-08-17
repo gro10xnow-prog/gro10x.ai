@@ -22,14 +22,6 @@ window.APP_MODULES.cms = async function(container) {
 
   function renderSkeleton() {
     container.innerHTML = `
-      <style>
-        .cms-kpi-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
-        @media (max-width: 800px) { .cms-kpi-row { grid-template-columns: 1fr; } }
-        .cms-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.25rem; }
-        .cms-card { background: var(--surface-2); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 1.25rem; display: flex; flex-direction: column; justify-content: space-between; gap: 0.85rem; transition: var(--transition-fast); }
-        .cms-card:hover { border-color: var(--border-glow); transform: translateY(-2px); box-shadow: var(--shadow-card); }
-      </style>
-
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
         <div>
           <h1 style="font-size: 1.6rem; font-weight: 800; font-family: var(--font-heading); margin: 0 0 0.3rem;">

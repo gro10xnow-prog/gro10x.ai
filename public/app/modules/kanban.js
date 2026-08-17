@@ -131,63 +131,6 @@ window.APP_MODULES.kanban = async function(container) {
 
   function renderMainUI() {
     container.innerHTML = `
-      <style>
-        .kanban-layout { display: flex; gap: 1.25rem; height: calc(100vh - 110px); }
-        .kanban-sidebar { width: 230px; background: var(--surface-1); border-right: 1px solid var(--border-subtle); border-radius: 16px; padding: 1rem 0.85rem; display: flex; flex-direction: column; gap: 0.5rem; overflow-y: auto; flex-shrink: 0; }
-        .sidebar-section-title { font-size: 0.7rem; text-transform: uppercase; color: var(--text-dim); font-weight: 800; letter-spacing: 0.06em; margin-top: 0.8rem; margin-bottom: 0.3rem; padding-left: 0.6rem; }
-        
-        .space-item { padding: 0.55rem 0.75rem; border-radius: 10px; cursor: pointer; color: var(--text-muted); font-size: 0.84rem; font-weight: 600; transition: var(--transition-fast); display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
-        .space-item:hover { background: var(--surface-3); color: var(--text-primary); }
-        .space-item.active { background: rgba(124, 58, 237, 0.18); color: var(--purple-light); font-weight: 700; border-left: 3px solid var(--purple-brand); }
-        
-        .kanban-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-        .kanban-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-        
-        .view-toggles { display: flex; gap: 0.35rem; background: var(--surface-1); padding: 0.3rem; border-radius: 12px; border: 1px solid var(--border-subtle); }
-        .view-btn { padding: 0.4rem 0.85rem; border-radius: 8px; font-size: 0.82rem; cursor: pointer; border: none; background: transparent; color: var(--text-muted); font-weight: 600; transition: var(--transition-fast); }
-        .view-btn.active { background: var(--gradient-brand); color: #fff; box-shadow: var(--shadow-sm); }
-
-        .filter-bar { margin-bottom: 1rem; display: flex; gap: 0.6rem; flex-wrap: wrap; background: var(--surface-1); padding: 0.75rem; border-radius: 14px; border: 1px solid var(--border-subtle); align-items: center; }
-
-        .kanban-board-container { flex: 1; overflow-x: auto; overflow-y: hidden; }
-        .kanban-grid { display: flex; gap: 1rem; height: 100%; padding-bottom: 1rem; }
-        .kanban-col { min-width: 290px; max-width: 290px; background: var(--surface-1); border: 1px solid var(--border-subtle); border-radius: 16px; display: flex; flex-direction: column; overflow: hidden; }
-        .kanban-col-header { padding: 0.9rem 1.1rem; border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center; font-weight: 800; font-size: 0.82rem; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.05em; background: var(--surface-2); }
-        .kanban-col-body { padding: 0.8rem; flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 0.85rem; }
-        
-        .kanban-card { background: var(--surface-2); border: 1px solid var(--border-subtle); border-radius: 14px; padding: 1rem; cursor: grab; transition: var(--transition-fast); position: relative; display: flex; flex-direction: column; gap: 0.6rem; box-shadow: var(--shadow-sm); }
-        .kanban-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-card); border-color: var(--border-glow); }
-        .kanban-card:active { cursor: grabbing; }
-        
-        .kanban-list-view { width: 100%; border-collapse: collapse; text-align: left; background: var(--surface-1); border-radius: 16px; border: 1px solid var(--border-subtle); overflow: hidden; }
-        .kanban-list-view th { padding: 0.85rem 1rem; background: var(--surface-2); border-bottom: 1px solid var(--border-subtle); color: var(--text-dim); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; }
-        .kanban-list-view td { padding: 0.85rem 1rem; border-bottom: 1px solid var(--border-subtle); font-size: 0.85rem; color: var(--text-primary); }
-        .kanban-list-view tr:hover td { background: rgba(255,255,255,0.03); cursor: pointer; }
-
-        /* Calendar View Styles */
-        .calendar-wrapper { display: flex; gap: 1.25rem; height: 100%; overflow: hidden; }
-        .calendar-main-grid { flex: 1; background: var(--surface-1); border: 1px solid var(--border-subtle); border-radius: 16px; display: flex; flex-direction: column; overflow: hidden; padding: 1rem; }
-        .calendar-header-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-        .calendar-grid-table { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; flex: 1; overflow-y: auto; }
-        .cal-day-header { text-align: center; font-size: 0.75rem; font-weight: 800; color: var(--text-dim); text-transform: uppercase; padding: 0.4rem; background: var(--surface-2); border-radius: 6px; }
-        .cal-cell { background: var(--surface-2); border: 1px solid var(--border-subtle); border-radius: 10px; min-height: 85px; padding: 0.4rem; display: flex; flex-direction: column; gap: 0.3rem; overflow-y: auto; }
-        .cal-cell.other-month { opacity: 0.35; background: transparent; }
-        .cal-cell.today { border-color: var(--purple-brand); box-shadow: 0 0 8px rgba(124,58,237,0.3); }
-        .cal-date-num { font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-align: right; }
-        .cal-task-chip { padding: 0.25rem 0.45rem; border-radius: 6px; font-size: 0.72rem; font-weight: 700; color: #fff; cursor: pointer; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; display: flex; align-items: center; gap: 0.3rem; }
-
-        .calendar-backlog-panel { width: 260px; background: var(--surface-1); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; overflow-y: auto; flex-shrink: 0; }
-
-        /* Drawer Overlay */
-        .drawer-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(6px); z-index: 10000; display: none; opacity: 0; transition: opacity 0.3s; }
-        .drawer-panel { position: fixed; right: -520px; top: 0; bottom: 0; width: 480px; max-width: 95vw; background: var(--surface-1); border-left: 1px solid var(--border-glow); z-index: 10001; transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; box-shadow: var(--shadow-elevated); }
-        .drawer-panel.open { right: 0; }
-        .drawer-backdrop.open { display: block; opacity: 1; }
-        .drawer-header { padding: 1.5rem; border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: flex-start; background: var(--surface-2); }
-        .drawer-body { padding: 1.5rem; flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 1.5rem; }
-        .drawer-footer { padding: 1rem 1.5rem; border-top: 1px solid var(--border-subtle); background: var(--surface-2); display: flex; justify-content: flex-end; gap: 0.8rem; }
-      </style>
-
       <div class="kanban-layout">
         <!-- Sidebar Navigation -->
         <div class="kanban-sidebar">
