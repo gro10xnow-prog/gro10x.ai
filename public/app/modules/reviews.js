@@ -70,7 +70,13 @@ window.APP_MODULES.reviews = async function(container) {
             </div>
             <div class="form-group">
               <label class="form-label">Client Name *</label>
-              <input type="text" id="nrClient" class="input-text" placeholder="e.g. Chillox Fast Food Chain">
+              <select id="nrClient" class="input-text">
+                <option value="Chillox Bangladesh">Chillox Bangladesh</option>
+                <option value="Aura Cosmetics">Aura Cosmetics</option>
+                <option value="Apex Footwear">Apex Footwear</option>
+                <option value="Grameenphone">Grameenphone</option>
+                <option value="Daraz Bangladesh">Daraz Bangladesh</option>
+              </select>
             </div>
             <div class="form-group">
               <label class="form-label">Media Type</label>
@@ -222,8 +228,17 @@ window.APP_MODULES.reviews = async function(container) {
       renderGrid();
     },
     reload() { loadData(); },
-    openNewReviewModal() {
-      document.getElementById('newReviewModal').classList.add('active');
+    async openNewReviewModal() {
+      const modal = document.getElementById('newReviewModal');
+      if (!modal) return;
+      try {
+        const clients = await APP_API.get('/clients').catch(() => []);
+        const clientSelect = document.getElementById('nrClient');
+        if (clientSelect && Array.isArray(clients) && clients.length > 0) {
+          clientSelect.innerHTML = clients.map(c => `<option value="${escapeHTML(c.name)}">${escapeHTML(c.name)}</option>`).join('');
+        }
+      } catch (e) {}
+      modal.classList.add('active');
     },
     closeNewReviewModal() {
       document.getElementById('newReviewModal').classList.remove('active');

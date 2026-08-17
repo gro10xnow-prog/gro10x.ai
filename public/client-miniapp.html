@@ -928,12 +928,20 @@
     }).join('');
   }
 
+  let activeClientReviewId = 'REV-001';
+
   async function loadHomeData() {
     try {
       const tgUser = tg?.initDataUnsafe?.user;
       const telegramId = tgUser?.id || 'debug';
       const res = await fetch(`/api/clients/dashboard?telegramId=${telegramId}`);
       const data = await res.json();
+
+      if (data.activeReview && data.activeReview.id) {
+        activeClientReviewId = data.activeReview.id;
+      } else if (data.activeCampaign && data.activeCampaign.reviewId) {
+        activeClientReviewId = data.activeCampaign.reviewId;
+      }
 
       if (data.activeCampaign) {
         document.getElementById('homeCampaignTitle').textContent = data.activeCampaign.title || 'Active Campaign';
@@ -993,7 +1001,7 @@
       const token = sessionStorage.getItem('jwt_token');
       const headers = { 'Content-Type': 'application/json' };
       if (token) headers['Authorization'] = `Bearer ${token}`;
-      await fetch('/api/reviews/REV-001/approve', {
+      await fetch(`/api/reviews/${activeClientReviewId}/approve`, {
         method: 'POST',
         headers,
         body: JSON.stringify({ telegramId: tgUser?.id || 'debug' })
@@ -1019,7 +1027,7 @@
       const token = sessionStorage.getItem('jwt_token');
       const headers = { 'Content-Type': 'application/json' };
       if (token) headers['Authorization'] = `Bearer ${token}`;
-      await fetch('/api/reviews/REV-001/request-revisions', {
+      await fetch(`/api/reviews/${activeClientReviewId}/request-revisions`, {
         method: 'POST',
         headers,
         body: JSON.stringify({ telegramId: tgUser?.id || 'debug', feedback: val })

@@ -97,6 +97,115 @@ router.get('/me', requireAuth, async (req, res) => {
   res.json({ success: true, client: mapClient(client || db.clients[0]) });
 });
 
+// GET /api/clients/dashboard — Supports ?telegramId= or JWT auth for Client Mini App
+router.get('/dashboard', async (req, res) => {
+  try {
+    const telegramId = req.query.telegramId;
+    let client = null;
+    if (telegramId && supabase && isSupabaseConfigured()) {
+      const { data } = await supabase.from('clients').select('*').eq('telegram_id', String(telegramId)).maybeSingle();
+      if (data) client = data;
+    }
+    if (!client && req.headers.authorization) {
+      const { verifyToken } = require('../services/jwt');
+      const token = req.headers.authorization.replace('Bearer ', '');
+      const decoded = verifyToken(token);
+      if (decoded && decoded.linkedId) {
+        const { data } = await supabase.from('clients').select('*').eq('id', decoded.linkedId).maybeSingle();
+        if (data) client = data;
+      }
+    }
+    if (!client) {
+      if (supabase && isSupabaseConfigured()) {
+        const { data } = await supabase.from('clients').select('*').limit(1).maybeSingle();
+        client = data;
+      }
+    }
+
+    const clientName = client?.name || 'Chillox Bangladesh';
+    const clientId = client?.id || 'CLI-001';
+
+    let activeCampaign = null;
+    let latestInvoice = null;
+    let activeReview = null;
+
+    if (supabase && isSupabaseConfigured()) {
+      const [{ data: tasks }, { data: invs }, { data: revs }] = await Promise.all([
+        supabase.from('tasks').select('*').or(`client.ilike.%${clientName}%,client_id.eq.${clientId}`).order('created_at', { ascending: false }).limit(1),
+        supabase.from('invoices').select('*').or(`client.ilike.%${clientName}%,client_id.eq.${clientId}`).order('created_at', { ascending: false }).limit(1),
+        supabase.from('reviews').select('*').or(`client.ilike.%${clientName}%,client_id.eq.${clientId}`).order('created_at', { ascending: false }).limit(1)
+      ]);
+
+      if (tasks && tasks[0]) {
+        activeCampaign = {
+          id: tasks[0].id,
+          reviewId: revs && revs[0] ? revs[0].id : 'REV-001',
+          title: tasks[0].title,
+          stage: (tasks[0].stage || 'brief').toLowerCase(),
+          dueDate: tasks[0].due_date,
+          videoUrl: revs && revs[0] ? revs[0].media_url : 'https://assets.mixkit.co/videos/preview/mixkit-set-of-plateaus-seen-from-the-sky-in-a-sunset-26070-large.mp4'
+        };
+      }
+
+      if (invs && invs[0]) {
+        latestInvoice = {
+          id: invs[0].id,
+          description: invs[0].description || `${clientName} Campaign Invoice`,
+          amount: invs[0].amount || invs[0].total || 50000,
+          status: invs[0].status || 'Pending'
+        };
+      }
+
+      if (revs && revs[0]) {
+        activeReview = {
+          id: revs[0].id,
+          title: revs[0].project_name,
+          version: revs[0].active_version || 'v1',
+          mediaUrl: revs[0].media_url,
+          status: revs[0].status
+        };
+      }
+    }
+
+    return res.json({
+      client: client || { name: clientName },
+      activeCampaign,
+      activeReview,
+      latestInvoice
+    });
+  } catch (err) {
+    console.error('Client MiniApp Dashboard error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/clients/campaigns — Client campaign listing for Telegram Mini App
+router.get('/campaigns', async (req, res) => {
+  try {
+    const telegramId = req.query.telegramId;
+    let client = null;
+    if (telegramId && supabase && isSupabaseConfigured()) {
+      const { data } = await supabase.from('clients').select('*').eq('telegram_id', String(telegramId)).maybeSingle();
+      client = data;
+    }
+    const clientName = client?.name || 'Chillox';
+    let tasks = [];
+    if (supabase && isSupabaseConfigured()) {
+      const { data } = await supabase.from('tasks').select('*').ilike('client', `%${clientName}%`).order('created_at', { ascending: false });
+      tasks = data || [];
+    }
+    res.json(tasks.map(t => ({
+      id: t.id,
+      title: t.title,
+      stage: t.stage,
+      dueDate: t.due_date,
+      priority: t.priority
+    })));
+  } catch (err) {
+    res.json([]);
+  }
+});
+
 // Client Portal Workspace Dashboard Data (Isolated for authenticated client)
 router.get('/:id/dashboard', requireAuth, requireClientOwnership, async (req, res) => {
   const { id } = req.params;

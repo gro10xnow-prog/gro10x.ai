@@ -85,7 +85,7 @@
           </select>
 
           <!-- Back to Dashboard / Portal Link -->
-          <a href="/pages/dashboard.html" id="rrBackLink" class="rr-btn rr-btn-secondary" style="text-decoration: none;">👑 Back to Dashboard</a>
+          <a href="/admin#reviews" id="rrBackLink" class="rr-btn rr-btn-secondary" style="text-decoration: none;">👑 Back to Dashboard</a>
         </div>
       </div>
 
@@ -210,13 +210,22 @@
       try {
         const userRaw = localStorage.getItem('purple_user');
         const link = document.getElementById('rrBackLink');
-        if (userRaw && link) {
+        if (!link) return;
+        if (userRaw) {
           const user = JSON.parse(userRaw);
-          if (user.linkedType === 'client' || (user.role && user.role.toLowerCase().includes('client'))) {
-            link.href = '/partners';
+          if (user.linkedType === 'client' || (user.role && user.role.toLowerCase().includes('client')) || user.accessLevel === 'Client Partner') {
+            link.href = '/portal';
             link.innerText = '💼 Back to Partner Portal';
+            return;
+          }
+          if (user.role && (user.role.toLowerCase().includes('crew') || user.role.toLowerCase().includes('specialist'))) {
+            link.href = '/crew';
+            link.innerText = '⚡ Back to Crew Hub';
+            return;
           }
         }
+        link.href = '/admin#reviews';
+        link.innerText = '👑 Back to Admin Dashboard';
       } catch (e) {}
     }
 

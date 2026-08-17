@@ -298,6 +298,12 @@ router.post('/:id/approve', requireAuth, async (req, res) => {
     };
     await supabase.from('review_comments').insert([approvalComment]).catch(() => {});
 
+    // Persist formal approval to reviews table
+    await supabase.from('reviews').update({
+      approved_by: approverName,
+      approved_at: new Date().toISOString()
+    }).eq('id', id).catch(() => {});
+
     // Cascade: advance linked Kanban task to 'Approved'
     if (taskId) {
       await supabase.from('tasks').update({
@@ -369,6 +375,13 @@ router.post('/:id/request-revisions', requireAuth, async (req, res) => {
     };
     await supabase.from('review_comments').insert([revisionComment]).catch(() => {});
 
+    // Persist revision request to reviews table
+    await supabase.from('reviews').update({
+      revision_requested_by: requesterName,
+      revision_notes: revisionText,
+      revision_requested_at: new Date().toISOString()
+    }).eq('id', id).catch(() => {});
+
     // Cascade: move linked task back to 'Editing' with feedback
     if (taskId) {
       await supabase.from('tasks').update({
@@ -411,179 +424,6 @@ router.post('/:id/request-revisions', requireAuth, async (req, res) => {
     res.json({ success: true, review: mapped });
   } catch (err) {
     console.error('Review Request Revisions error:', err.message);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-module.exports = router;
-
-// POST Create Review Room Video Cut
-router.post('/', requireAuth, async (req, res) => {
-  try {
-    const { count } = await supabase.from('reviews').select('*', { count: 'exact', head: true });
-    const countNum = (count || 0) + 1;
-    const newId = `REV-${String(countNum).padStart(3, '0')}`;
-
-    const payload = {
-      id: newId,
-      project_id: req.body.projectId || `PRJ-${countNum}`,
-      project_name: req.body.projectName || 'Untitled Video Cut',
-      client: req.body.client || 'Agency Client',
-      active_version: req.body.activeVersion || 'v1',
-      versions: req.body.versions || ['v1'],
-      media_type: req.body.mediaType || 'video',
-      media_url: req.body.mediaUrl || 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-      poster_url: req.body.posterUrl || '',
-      resolved_count: 0,
-      total_count: 0
-    };
-
-    const { data, error } = await supabase.from('reviews').insert([payload]).select().single();
-    if (error) throw error;
-
-    const review = mapReview(data);
-    const { data: allReviews } = await supabase.from('reviews').select('*').order('created_at', { ascending: false });
-    broadcast('review_update', (allReviews || []).map(mapReview));
-
-    res.json({ success: true, review });
-  } catch (err) {
-    console.error('Review POST error:', err.message);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// POST Add Timecoded Comment to Video Cut
-router.post('/:id/comments', requireAuth, async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const { data: review } = await supabase.from('reviews').select('*').eq('id', id).single();
-    if (!review) return res.status(404).json({ error: 'Review project not found' });
-
-    const newComment = {
-      id: `CMT-${Date.now()}`,
-      review_id: id,
-      author: req.user.name || req.body.author || 'Reviewer',
-      author_role: req.user.role || req.body.authorRole || 'Client Reviewer',
-      timestamp: req.body.timestamp || '0:05',
-      time_seconds: req.body.timeSeconds || 5,
-      text: req.body.text || '',
-      resolved: false,
-      drawings: req.body.drawings || []
-    };
-
-    const { data: insertedComment, error: cErr } = await supabase.from('review_comments').insert([newComment]).select().single();
-    if (cErr) throw cErr;
-
-    const newTotal = (review.total_count || 0) + 1;
-    await supabase.from('reviews').update({ total_count: newTotal }).eq('id', id);
-
-    const comment = mapComment(insertedComment);
-    broadcast('comment_update', { reviewId: id, comment });
-
-    res.json({ success: true, comment });
-  } catch (err) {
-    console.error('Review Comment POST error:', err.message);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// PUT Resolve Comment
-router.put('/comments/:commentId/resolve', requireAuth, async (req, res) => {
-  try {
-    const { commentId } = req.params;
-    const isResolved = req.body.resolved !== undefined ? req.body.resolved : true;
-
-    const { data: commentData, error: cErr } = await supabase.from('review_comments')
-      .update({ resolved: isResolved })
-      .eq('id', commentId)
-      .select().single();
-    if (cErr || !commentData) return res.status(404).json({ error: 'Comment not found' });
-
-    // Recalculate resolved count for parent review
-    const reviewId = commentData.review_id;
-    const { data: allComments } = await supabase.from('review_comments').select('resolved').eq('review_id', reviewId);
-    const resolvedCount = (allComments || []).filter(c => c.resolved).length;
-
-    await supabase.from('reviews').update({ resolved_count: resolvedCount }).eq('id', reviewId);
-
-    const comment = mapComment(commentData);
-    broadcast('comment_update', { reviewId, comment });
-
-    res.json({ success: true, comment });
-  } catch (err) {
-    console.error('Comment Resolve error:', err.message);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// GET /:id/drawings — Load all drawings for a review video
-router.get('/:id/drawings', requireAuth, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { data, error } = await supabase.from('review_drawings').select('*').eq('review_id', id);
-    if (error) throw error;
-    res.json(data || []);
-  } catch (err) {
-    console.error('Review Drawings GET error:', err.message);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// POST /:id/drawings — Save drawing at a specific timestamp
-router.post('/:id/drawings', requireAuth, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { timestampSec, drawingData } = req.body;
-    
-    const payload = {
-      review_id: id,
-      timestamp_sec: timestampSec,
-      drawing_data: drawingData,
-      author: req.user.name
-    };
-
-    // Note: We might want to overwrite existing drawings at exact timestamp, or append.
-    // Let's just insert new ones for now, UI will render all overlapping.
-    // We could optionally delete existing for this timestamp by this author before inserting.
-    await supabase.from('review_drawings').delete()
-      .eq('review_id', id)
-      .eq('timestamp_sec', timestampSec)
-      .eq('author', req.user.name);
-
-    const { data, error } = await supabase.from('review_drawings').insert([payload]).select().single();
-    if (error) throw error;
-
-    broadcast('drawing_update', { reviewId: id, drawing: data });
-    res.json({ success: true, drawing: data });
-  } catch (err) {
-    console.error('Review Drawings POST error:', err.message);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// POST /:id/approve — Client formal sign-off
-router.post('/:id/approve', requireAuth, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { data: reviewData, error: fetchErr } = await supabase.from('reviews').select('*').eq('id', id).single();
-    if (fetchErr) throw fetchErr;
-
-    const updates = {
-      approved_by: req.user.name,
-      approved_at: new Date().toISOString()
-    };
-    
-    // Auto-release invoice logic (mock)
-    // Here you would trigger automation to mark the linked project/invoice as ready for payment
-    // updates.invoice_released = true;
-    
-    const { data, error } = await supabase.from('reviews').update(updates).eq('id', id).select().single();
-    if (error) throw error;
-
-    res.json({ success: true, review: data });
-  } catch (err) {
-    console.error('Review Approve error:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
