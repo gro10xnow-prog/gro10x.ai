@@ -27,6 +27,7 @@ window.APP_MODULES.leads = async function(container) {
   let sortBy = 'score';
   let showLost = false;
   let selectedLead = null;
+  let parsedImportLeads = [];
 
   // ─── Load Data ──────────────────────────────────────────────────────────────
   async function loadLeads() {
@@ -116,11 +117,8 @@ window.APP_MODULES.leads = async function(container) {
           <h1 style="font-size:1.6rem; font-weight:900; font-family:var(--font-heading); margin:0 0 0.25rem;">🎯 Leads CRM Pipeline</h1>
           <div style="font-size:0.85rem; color:var(--text-muted);">Full sales funnel — capture, qualify, convert, and activate clients.</div>
         </div>
-        <div style="display:flex; gap:0.5rem;">
-          <label class="btn-secondary" style="cursor:pointer; font-size:0.8rem;">
-            📥 Bulk Import CSV
-            <input type="file" accept=".csv" style="display:none;" onchange="window.LEADS_MODULE.handleCSVImport(event)">
-          </label>
+        <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+          <button class="btn-secondary" style="font-size:0.8rem;" onclick="window.LEADS_MODULE.openImportModal()">📥 Bulk Import CSV</button>
           <button class="btn-primary" style="font-size:0.8rem;" onclick="window.LEADS_MODULE.openAddModal()">+ Add Lead</button>
         </div>
       </div>
@@ -269,6 +267,77 @@ window.APP_MODULES.leads = async function(container) {
             </div>
             <div style="text-align:right; margin-top:0.5rem;">
               <button class="btn-primary" onclick="window.LEADS_MODULE.submitAddLead()">🚀 Add Lead to Pipeline</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bulk Import Leads Modal -->
+      <div id="importLeadsModal" class="modal-overlay">
+        <div class="modal-content" style="max-width:620px;">
+          <div class="modal-header">
+            <h3>📥 Bulk Import Leads (CSV)</h3>
+            <button class="modal-close" onclick="window.LEADS_MODULE.closeImportModal()">✕</button>
+          </div>
+          <div class="modal-body" style="display:flex; flex-direction:column; gap:1rem;">
+            
+            <!-- Guideline Box -->
+            <div style="background:var(--surface-3); border:1px solid var(--border-subtle); border-radius:12px; padding:0.9rem;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem; flex-wrap:wrap; gap:0.5rem;">
+                <div style="font-weight:800; font-size:0.82rem; color:var(--text-primary);">📋 CSV Column Format Guidelines</div>
+                <button type="button" class="btn-secondary" onclick="window.LEADS_MODULE.downloadSampleCSV()" style="font-size:0.75rem; padding:0.35rem 0.75rem;">
+                  📥 Download Sample CSV
+                </button>
+              </div>
+              <div class="table-responsive" style="margin-bottom:0;">
+                <table class="data-table" style="font-size:0.74rem;">
+                  <thead>
+                    <tr><th>Column Header</th><th>Status</th><th>Description / Example</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr><td><code>Company</code></td><td><span style="color:#ef4444; font-weight:700;">Required</span></td><td>Company / Brand Name (e.g. <em>Chillox BD</em>)</td></tr>
+                    <tr><td><code>Contact Person</code></td><td><span style="color:#ef4444; font-weight:700;">Required</span></td><td>Primary lead contact (e.g. <em>Arman Hossain</em>)</td></tr>
+                    <tr><td><code>Phone</code></td><td><span style="color:#10b981; font-weight:700;">Recommended</span></td><td>Mobile / WhatsApp (e.g. <em>+8801711223344</em>)</td></tr>
+                    <tr><td><code>Email</code></td><td>Optional</td><td>Contact email (e.g. <em>arman@chillox.bd</em>)</td></tr>
+                    <tr><td><code>Service</code></td><td>Optional</td><td>Service category (e.g. <em>Commercial Video & TVC</em>)</td></tr>
+                    <tr><td><code>Budget</code></td><td>Optional</td><td>Estimated deal value in BDT (e.g. <em>150000</em>)</td></tr>
+                    <tr><td><code>Source</code></td><td>Optional</td><td>Lead origin (e.g. <em>Outbound Campaign</em>)</td></tr>
+                    <tr><td><code>Notes</code></td><td>Optional</td><td>Context, briefing, timeline requirements</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Upload / Paste Mode Switcher -->
+            <div>
+              <div style="display:flex; gap:0.5rem; margin-bottom:0.6rem;">
+                <button type="button" id="importTabFileBtn" class="btn-secondary" style="font-size:0.78rem; padding:0.4rem 0.85rem;" onclick="window.LEADS_MODULE.switchImportTab('file')">📂 Upload CSV File</button>
+                <button type="button" id="importTabPasteBtn" class="btn-ghost" style="font-size:0.78rem; padding:0.4rem 0.85rem;" onclick="window.LEADS_MODULE.switchImportTab('paste')">📋 Paste Raw CSV Text</button>
+              </div>
+
+              <div id="importFileContainer">
+                <input type="file" id="leadCsvFileInput" accept=".csv,text/csv" class="input-text" style="padding:0.6rem;" onchange="window.LEADS_MODULE.handleFileSelected(event)">
+              </div>
+
+              <div id="importPasteContainer" style="display:none;">
+                <textarea id="leadCsvTextInput" class="input-text" style="height:110px; font-family:monospace; font-size:0.78rem;" placeholder="Company,Contact Person,Email,Phone,Service,Budget,Source,Notes&#10;Chillox Fast Food,Arman Hossain,arman@chillox.bd,+8801711223344,Commercial TVC,150000,Outbound,Winter campaign&#10;Aura Skincare,Tania Ahmed,tania@auraskin.com,+8801811556677,Social Retainer,80000,Referral,15 monthly reels" oninput="window.LEADS_MODULE.handleTextPasted(event)"></textarea>
+              </div>
+            </div>
+
+            <!-- Live Preview Container -->
+            <div id="importPreviewContainer" style="display:none; background:var(--surface-2); border:1px solid var(--border-subtle); border-radius:10px; padding:0.75rem;">
+              <div style="font-size:0.8rem; font-weight:800; color:var(--text-primary); margin-bottom:0.4rem;" id="importPreviewTitle">👁️ Live Pre-Import Preview</div>
+              <div class="table-responsive" style="max-height:150px; overflow-y:auto;">
+                <table class="data-table" style="font-size:0.74rem;" id="importPreviewTable">
+                  <thead id="importPreviewThead"></thead>
+                  <tbody id="importPreviewTbody"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; gap:0.75rem; margin-top:0.25rem;">
+              <button type="button" class="btn-secondary" onclick="window.LEADS_MODULE.closeImportModal()">Cancel</button>
+              <button type="button" id="submitImportLeadsBtn" class="btn-primary" disabled onclick="window.LEADS_MODULE.executeImport()">🚀 Import Leads to Pipeline</button>
             </div>
           </div>
         </div>
@@ -638,44 +707,197 @@ window.APP_MODULES.leads = async function(container) {
       }
     },
 
-    async handleCSVImport(e) {
+    openImportModal() {
+      parsedImportLeads = [];
+      const modal = document.getElementById('importLeadsModal');
+      if (modal) {
+        modal.classList.add('active');
+        const fileInput = document.getElementById('leadCsvFileInput');
+        const textInput = document.getElementById('leadCsvTextInput');
+        const previewCont = document.getElementById('importPreviewContainer');
+        const submitBtn = document.getElementById('submitImportLeadsBtn');
+        if (fileInput) fileInput.value = '';
+        if (textInput) textInput.value = '';
+        if (previewCont) previewCont.style.display = 'none';
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.innerText = '🚀 Import Leads to Pipeline';
+        }
+        this.switchImportTab('file');
+      }
+    },
+
+    closeImportModal() {
+      const modal = document.getElementById('importLeadsModal');
+      if (modal) modal.classList.remove('active');
+      parsedImportLeads = [];
+    },
+
+    downloadSampleCSV() {
+      const csvHeader = "Company,Contact Person,Email,Phone,Service,Budget,Source,Notes\n";
+      const sampleRow1 = "Chillox Fast Food,Arman Hossain,arman@chillox.bd,+8801711223344,Commercial Video & TVC,150000,Outbound Campaign,Interested in winter TVC shoot\n";
+      const sampleRow2 = "Aura Skincare,Tania Ahmed,tania@auraskin.com,+8801811556677,Social Media Retainer,80000,Referral,Looking for 15 monthly short reels\n";
+      const sampleRow3 = "Apex Footwear,Sabbir Rahman,sabbir@apex.bd,+8801911998877,Branding & Identity,200000,Event / Network,360 brand redesign";
+      
+      const csvContent = csvHeader + sampleRow1 + sampleRow2 + sampleRow3;
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', 'purpleos_leads_template.csv');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.showToast && window.showToast('📥 Downloaded sample CSV template!', 'success');
+    },
+
+    switchImportTab(tab) {
+      const fileBtn = document.getElementById('importTabFileBtn');
+      const pasteBtn = document.getElementById('importTabPasteBtn');
+      const fileCont = document.getElementById('importFileContainer');
+      const pasteCont = document.getElementById('importPasteContainer');
+
+      if (tab === 'file') {
+        if (fileBtn) { fileBtn.className = 'btn-secondary'; }
+        if (pasteBtn) { pasteBtn.className = 'btn-ghost'; }
+        if (fileCont) fileCont.style.display = 'block';
+        if (pasteCont) pasteCont.style.display = 'none';
+      } else {
+        if (fileBtn) { fileBtn.className = 'btn-ghost'; }
+        if (pasteBtn) { pasteBtn.className = 'btn-secondary'; }
+        if (fileCont) fileCont.style.display = 'none';
+        if (pasteCont) pasteCont.style.display = 'block';
+      }
+    },
+
+    parseCSVText(text) {
+      if (!text || !text.trim()) return [];
+      const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+      if (lines.length < 2) return [];
+
+      const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/["']/g, ''));
+      const parsed = [];
+
+      for (let i = 1; i < lines.length; i++) {
+        // Handle basic quoted commas or standard comma split
+        const cols = lines[i].split(',').map(c => c.trim().replace(/^["']|["']$/g, ''));
+        const row = {};
+        headers.forEach((h, idx) => {
+          if (cols[idx] !== undefined) row[h] = cols[idx];
+        });
+
+        const company = row.company || row['company name'] || row.client || row['brand name'] || row.brand || '';
+        const contactPerson = row['contact person'] || row.contact || row.name || row['person'] || '';
+        const email = row.email || row['contact email'] || row.mail || '';
+        const phone = row.phone || row.mobile || row.whatsapp || row['cell'] || row['phone number'] || '';
+        const service = row.service || row['service interested in'] || row.package || 'General';
+        const value = row.budget || row.value || row.amount || row.price || '';
+        const source = row.source || row['lead source'] || 'Bulk Import';
+        const notes = row.notes || row.note || row.comment || row.description || '';
+
+        if (company || contactPerson || phone || email) {
+          parsed.push({
+            company: company || contactPerson || 'New Lead',
+            contactPerson: contactPerson || company || 'Contact',
+            email,
+            phone,
+            service,
+            value,
+            source,
+            notes
+          });
+        }
+      }
+      return parsed;
+    },
+
+    handleFileSelected(e) {
       const file = e.target.files[0];
       if (!file) return;
       const reader = new FileReader();
-      reader.onload = async (ev) => {
-        const lines = ev.target.result.split('\n').filter(l => l.trim());
-        if (lines.length < 2) return window.showToast && window.showToast('CSV is empty or invalid.', 'error');
-        const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
-        const leads = [];
-        for (let i = 1; i < lines.length; i++) {
-          const cols = lines[i].split(',').map(c => c.trim());
-          const row = {};
-          headers.forEach((h, idx) => { if (cols[idx]) row[h] = cols[idx]; });
-          leads.push({
-            company: row.company || row['company name'] || row.client || '',
-            contactPerson: row.name || row['contact person'] || row.contact || '',
-            email: row.email || '',
-            phone: row.phone || row.whatsapp || '',
-            service: row.service || 'General',
-            value: row.budget || row.value || '',
-            source: row.source || 'Bulk Import',
-            notes: row.notes || ''
-          });
-        }
-        if (!leads.length) return window.showToast && window.showToast('No valid leads found.', 'error');
-        if (!confirm(`Import ${leads.length} leads from CSV?`)) return;
-        try {
-          const res = await APP_API.post('/leads/bulk', { leads });
-          if (res.success) {
-            await loadLeads();
-            window.showToast && window.showToast(`✅ Imported ${res.count} leads!`, 'success');
-          }
-        } catch (err) {
-          window.showToast && window.showToast('Import error: ' + err.message, 'error');
-        }
+      reader.onload = (ev) => {
+        const text = ev.target.result;
+        parsedImportLeads = window.LEADS_MODULE.parseCSVText(text);
+        window.LEADS_MODULE.renderPreview(parsedImportLeads);
       };
       reader.readAsText(file);
-      e.target.value = '';
+    },
+
+    handleTextPasted(e) {
+      const text = e.target.value;
+      parsedImportLeads = window.LEADS_MODULE.parseCSVText(text);
+      window.LEADS_MODULE.renderPreview(parsedImportLeads);
+    },
+
+    renderPreview(leads) {
+      const previewCont = document.getElementById('importPreviewContainer');
+      const thead = document.getElementById('importPreviewThead');
+      const tbody = document.getElementById('importPreviewTbody');
+      const title = document.getElementById('importPreviewTitle');
+      const submitBtn = document.getElementById('submitImportLeadsBtn');
+
+      if (!leads || leads.length === 0) {
+        if (previewCont) previewCont.style.display = 'none';
+        if (submitBtn) submitBtn.disabled = true;
+        return;
+      }
+
+      if (previewCont) previewCont.style.display = 'block';
+      if (title) title.innerHTML = `👁️ Live Pre-Import Preview <span class="badge badge-emerald" style="margin-left:0.5rem;">${leads.length} leads detected</span>`;
+
+      if (thead) {
+        thead.innerHTML = `<tr><th>Company</th><th>Contact</th><th>Phone</th><th>Service</th><th>Budget</th></tr>`;
+      }
+
+      if (tbody) {
+        tbody.innerHTML = leads.slice(0, 3).map(l => `
+          <tr>
+            <td class="nowrap"><strong>${escapeHTML(l.company)}</strong></td>
+            <td class="nowrap">${escapeHTML(l.contactPerson)}</td>
+            <td class="nowrap" style="color:var(--text-muted);">${escapeHTML(l.phone || '—')}</td>
+            <td class="truncate" style="color:var(--text-muted);">${escapeHTML(l.service || 'General')}</td>
+            <td class="nowrap">${l.value ? '৳' + escapeHTML(l.value) : '—'}</td>
+          </tr>
+        `).join('') + (leads.length > 3 ? `<tr><td colspan="5" style="text-align:center; color:var(--text-muted); font-size:0.75rem;">...and ${leads.length - 3} more leads ready for import</td></tr>` : '');
+      }
+
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerText = `🚀 Import ${leads.length} Leads to Pipeline`;
+      }
+    },
+
+    async executeImport() {
+      if (!parsedImportLeads || parsedImportLeads.length === 0) {
+        return window.showToast && window.showToast('Please select a valid CSV file or paste lead data first.', 'error');
+      }
+
+      const submitBtn = document.getElementById('submitImportLeadsBtn');
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerText = '⏳ Importing Leads...';
+      }
+
+      try {
+        const res = await APP_API.post('/leads/bulk', { leads: parsedImportLeads });
+        if (res.success) {
+          this.closeImportModal();
+          await loadLeads();
+          window.showToast && window.showToast(`🎉 Successfully imported ${res.count} leads to pipeline!`, 'success');
+        } else {
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerText = '🚀 Import Leads to Pipeline';
+          }
+          window.showToast && window.showToast('Import failed: ' + (res.error || 'Unknown error'), 'error');
+        }
+      } catch (err) {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerText = '🚀 Import Leads to Pipeline';
+        }
+        window.showToast && window.showToast('Import error: ' + err.message, 'error');
+      }
     }
   };
 
