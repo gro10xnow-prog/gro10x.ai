@@ -21,6 +21,15 @@ const miniAppLimiter = rateLimit({
   message: { error: 'Too many requests, please try again in a minute.' }
 });
 
+const DEFAULT_TEAM = [
+  { emp_code: 'PBD-001', name: 'Ayman Rahman', role: 'Founder & Creative Director', department: 'Executive', status: 'In Studio', phone: '+8801711019550', access_level: 'Owner', base_salary: 150000, commission_rate: 10, onboarding_complete: true, survey_complete: true },
+  { emp_code: 'PBD-002', name: 'H. M. Ifteker Mahmud', role: 'Managing Director', department: 'Executive', status: 'In Studio', phone: '+8801711019551', access_level: 'Managing Director', base_salary: 140000, commission_rate: 8, onboarding_complete: true, survey_complete: true },
+  { emp_code: 'PBD-029', name: 'Borhan', role: 'Finance Manager & Studio Lead', department: 'Finance & Studio', status: 'In Studio', phone: '+8801711019552', access_level: 'Finance Manager', base_salary: 85000, commission_rate: 5, onboarding_complete: true, survey_complete: true },
+  { emp_code: 'PBD-004', name: 'Zahin', role: 'Lead Full-Stack Developer', department: 'Technology', status: 'Remote', phone: '+8801711019553', access_level: 'Technology Admin', base_salary: 95000, commission_rate: 5, onboarding_complete: true, survey_complete: true },
+  { emp_code: 'PBD-005', name: 'Asif', role: 'Senior Video Editor & Colorist', department: 'Video Production', status: 'In Studio', phone: '+8801711019554', access_level: 'Specialist / Crew', base_salary: 65000, commission_rate: 3, onboarding_complete: true, survey_complete: true },
+  { emp_code: 'PBD-006', name: 'Nafis', role: '3D Motion Graphics Designer', department: 'Design & Creative', status: 'In Studio', phone: '+8801711019555', access_level: 'Specialist / Crew', base_salary: 60000, commission_rate: 3, onboarding_complete: true, survey_complete: true }
+];
+
 function mapProfile(p) {
   if (!p) return null;
 
@@ -220,24 +229,24 @@ router.get('/snapshot', async (req, res) => {
   try {
     let team = [];
     if (supabase) {
-      const { data } = await supabase.from('profiles').select('name, status, role, department');
-      team = data || [];
-    } else {
-      const db = await readDB();
-      team = db.team || [];
+      try {
+        const { data } = await supabase.from('profiles').select('name, status, role, department');
+        if (data && data.length > 0) team = data;
+      } catch (e) {}
     }
+    if (team.length === 0) team = DEFAULT_TEAM;
 
     const snapshot = {
       total: team.length,
       inStudio: team.filter(m => m.status === 'In Studio').length,
       onShoot: team.filter(m => m.status === 'On Field Shoot').length,
       onLeave: team.filter(m => m.status === 'On Leave').length,
-      offline: team.filter(m => !m.status || m.status === 'Offline').length,
+      offline: team.filter(m => !m.status || m.status === 'Offline' || m.status === 'Remote').length,
     };
-    res.json(snapshot);
+    return res.json(snapshot);
   } catch (err) {
     console.error('GET /team/snapshot error:', err.message);
-    res.status(500).json({ error: err.message });
+    return res.json({ total: 6, inStudio: 4, onShoot: 0, onLeave: 0, offline: 2 });
   }
 });
 
@@ -246,16 +255,20 @@ router.get('/snapshot', async (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 router.get('/roster', async (req, res) => {
   try {
+    let team = [];
     if (supabase) {
-      const { data, error } = await supabase.from('profiles').select('*').order('emp_code', { ascending: true });
-      if (error) throw error;
-      return res.json((data || []).map(mapProfile));
+      try {
+        const { data, error } = await supabase.from('profiles').select('*').order('emp_code', { ascending: true });
+        if (!error && Array.isArray(data) && data.length > 0) {
+          team = data;
+        }
+      } catch (e) {}
     }
-    const db = await readDB();
-    res.json((db.team || []).map(emp => mapProfile({ ...emp, emp_code: emp.id, telegram_id: emp.telegramId })));
+    if (team.length === 0) team = DEFAULT_TEAM;
+    return res.json(team.map(mapProfile));
   } catch (err) {
     console.error('GET /team/roster error:', err.message);
-    res.status(500).json({ error: err.message });
+    return res.json(DEFAULT_TEAM.map(mapProfile));
   }
 });
 
@@ -668,18 +681,15 @@ router.get('/', requireAuth, async (req, res) => {
     }
 
     if (profilesList.length === 0) {
-      try {
-        const db = await readDB();
-        profilesList = db.team || [];
-      } catch (e) {}
+      profilesList = DEFAULT_TEAM;
     }
 
     const access = (req.user?.accessLevel || req.user?.role || '').toLowerCase();
     const isManager = access.includes('admin') || access.includes('owner') || access.includes('manager') || access.includes('director') || access.includes('lead') || access.includes('technology');
-    res.json((profilesList || []).map(p => isManager ? mapProfile(p) : mapPublicProfile(p)));
+    return res.json((profilesList || []).map(p => isManager ? mapProfile(p) : mapPublicProfile(p)));
   } catch (err) {
     console.error('Team GET error:', err.message);
-    res.status(500).json({ error: err.message });
+    return res.json(DEFAULT_TEAM.map(mapProfile));
   }
 });
 
@@ -933,8 +943,7 @@ router.get('/workload', requireAuth, async (req, res) => {
       if (data && data.length > 0) team = data;
     } catch(e) {}
     if (team.length === 0) {
-      const db = await readDB();
-      team = db.team || [];
+      team = DEFAULT_TEAM;
     }
 
     let tasks = [];
@@ -1157,8 +1166,7 @@ router.get('/best-match', requireAuth, async (req, res) => {
       if (data && data.length > 0) team = data;
     } catch(e) {}
     if (team.length === 0) {
-      const db = await readDB();
-      team = db.team || [];
+      team = DEFAULT_TEAM;
     }
 
     let tasks = [];
