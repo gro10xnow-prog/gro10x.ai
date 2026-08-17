@@ -1202,19 +1202,24 @@ router.get('/best-match', requireAuth, async (req, res) => {
 });
 
 // POST /api/team/eod — Submit Daily EOD Report
-router.post('/eod', verifyTelegramInitData, async (req, res) => {
+router.post('/eod', miniAppLimiter, requireMiniAppAuth, async (req, res) => {
   try {
     const telegramId = req.telegramUser ? String(req.telegramUser.id) : req.body.telegramId;
     const { employeeId, name, text, summary, blockers } = req.body;
-    let empCode = employeeId;
-    let empName = name;
+    let empCode = employeeId || req.user?.linkedId || req.user?.id;
+    let empName = name || req.user?.name;
 
-    if (telegramId && !empName) {
+    if (telegramId && (!empName || !empCode)) {
       const found = await findEmpByTelegramId(telegramId);
       if (found) {
         empCode = found.profile.emp_code || found.profile.id;
         empName = found.profile.name;
       }
+    }
+
+    if (!empCode && req.user) {
+      empCode = req.user.linkedId || req.user.id;
+      empName = req.user.name;
     }
 
     const payload = {
@@ -1232,13 +1237,32 @@ router.post('/eod', verifyTelegramInitData, async (req, res) => {
       // Award +10 XP for daily EOD submission
       if (empCode) {
         try {
-          await supabase.rpc('increment_xp', { p_emp_code: empCode, xp_amount: 10 });
-        } catch (e) {
-          // Fallback if rpc is not created yet
-          const { data: prof } = await supabase.from('profiles').select('xp').or(`emp_code.eq.${empCode},id.eq.${empCode}`).single();
-          if (prof) {
-            await supabase.from('profiles').update({ xp: (prof.xp || 0) + 10 }).or(`emp_code.eq.${empCode},id.eq.${empCode}`);
+          const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(empCode);
+          let pQuery = supabase.from('profiles').select('xp');
+          if (isUUID) {
+            pQuery = pQuery.eq('id', empCode);
+          } else {
+            pQuery = pQuery.eq('emp_code', empCode);
           }
+          const { data: prof } = await pQuery.maybeSingle();
+          if (prof) {
+            const newXP = (prof.xp || 0) + 10;
+            let badge = '🌱 Recruit';
+            if (newXP >= 500) badge = '⭐ Rising Star';
+            if (newXP >= 1000) badge = '🔥 Performer';
+            if (newXP >= 2000) badge = '💜 Champion';
+
+            let uQuery = supabase.from('profiles').update({ xp: newXP, badge, updated_at: new Date().toISOString() });
+            if (isUUID) {
+              uQuery = uQuery.eq('id', empCode);
+            } else {
+              uQuery = uQuery.eq('emp_code', empCode);
+            }
+            await uQuery;
+            broadcast('team_update', [{ emp_code: empCode, xp: newXP, badge }]);
+          }
+        } catch (xpErr) {
+          console.warn('EOD XP update warning:', xpErr.message);
         }
       }
     }
