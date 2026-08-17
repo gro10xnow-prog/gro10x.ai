@@ -323,29 +323,27 @@ router.patch('/:id/stage', requireAuth, async (req, res) => {
     const { data: allTasks } = await supabase.from('tasks').select('*').order('created_at', { ascending: false });
     broadcast('task_update', (allTasks || []).map(mapTask));
 
-    // AUTO-CREATE: When task enters 'Client Review', create a Review Room project
-    let autoReviewId = null;
     if (stage === 'Client Review') {
       try {
         const { randomUUID } = require('crypto');
         const reviewId = `REV-${randomUUID().split('-')[0].toUpperCase()}`;
+        const defaultVideoUrl = 'https://assets.mixkit.co/videos/preview/mixkit-set-of-plateaus-seen-from-the-sky-in-a-sunset-26070-large.mp4';
         const reviewPayload = {
           id: reviewId,
           project_id: id,
           project_name: existing.title || 'Creative Deliverable',
           client: existing.client || 'Agency Client',
-          client_id: existing.client_id || null,
-          task_id: id,
           active_version: 'v1',
           versions: ['v1'],
           media_type: existing.workflow_type === 'branding' ? 'image' : 'video',
-          media_url: '',
-          poster_url: '',
+          media_url: defaultVideoUrl,
+          poster_url: null,
           resolved_count: 0,
-          total_count: 0
+          total_count: 0,
+          created_at: new Date().toISOString()
         };
-        // Only create if no existing review for this task
-        const { data: existingReview } = await supabase.from('reviews').select('id').eq('task_id', id).maybeSingle();
+        // Only create if no existing review for this task/project
+        const { data: existingReview } = await supabase.from('reviews').select('id').eq('project_id', id).maybeSingle();
         if (!existingReview) {
           const { data: newReview } = await supabase.from('reviews').insert([reviewPayload]).select().single();
           if (newReview) {

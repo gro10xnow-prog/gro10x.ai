@@ -61,9 +61,8 @@ router.get('/', requireAuth, async (req, res) => {
     let query = supabase.from('reviews').select('*').order('created_at', { ascending: false });
 
     const isClientUser = req.user.role === 'Client' || req.user.linkedType === 'client' || req.user.accessLevel === 'Client Partner';
-    if (isClientUser) {
-      const linkedId = req.user.linkedId || req.user.id;
-      query = query.or(`client_id.eq.${linkedId},client.ilike.%${req.user.name || ''}%`);
+    if (isClientUser && req.user.name) {
+      query = query.ilike('client', `%${req.user.name}%`);
     }
 
     const { data, error } = await query;
@@ -102,20 +101,20 @@ router.post('/', requireAuth, async (req, res) => {
     const { randomUUID } = require('crypto');
     const newId = `REV-${randomUUID().split('-')[0].toUpperCase()}`;
 
+    const defaultMedia = 'https://assets.mixkit.co/videos/preview/mixkit-set-of-plateaus-seen-from-the-sky-in-a-sunset-26070-large.mp4';
     const payload = {
       id: newId,
       project_id: req.body.projectId || req.body.taskId || newId,
       project_name: req.body.projectName || req.body.title || 'Untitled Creative Project',
       client: req.body.client || 'Agency Client',
-      client_id: req.body.clientId || null,
-      task_id: req.body.taskId || null,
       active_version: req.body.activeVersion || 'v1',
       versions: req.body.versions || ['v1'],
       media_type: req.body.mediaType || req.body.media_type || 'video',
-      media_url: req.body.mediaUrl || req.body.media_url || '',
-      poster_url: req.body.posterUrl || req.body.poster_url || '',
+      media_url: req.body.mediaUrl || req.body.media_url || defaultMedia,
+      poster_url: req.body.posterUrl || req.body.poster_url || null,
       resolved_count: 0,
-      total_count: 0
+      total_count: 0,
+      created_at: new Date().toISOString()
     };
 
     const { data, error } = await supabase.from('reviews').insert([payload]).select().single();
@@ -280,30 +279,36 @@ router.post('/:id/approve', requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
     const { data: reviewData, error: fetchErr } = await supabase.from('reviews').select('*').eq('id', id).single();
-    if (fetchErr) throw fetchErr;
+    if (fetchErr || !reviewData) return res.status(404).json({ error: 'Review project not found' });
 
-    const updates = {
-      approved_by: req.user.name || 'Client',
-      approved_at: new Date().toISOString(),
-      revision_requested_at: null,
-      revision_notes: null
+    const approverName = req.user?.name || 'Client Partner';
+    const taskId = reviewData.project_id || id;
+
+    // Add formal approval comment into review_comments
+    const approvalComment = {
+      id: `CMT-APP-${Date.now()}`,
+      review_id: id,
+      author: approverName,
+      author_role: req.user?.role || 'Client Partner',
+      timestamp: '0:00',
+      time_seconds: 0,
+      text: '✅ Deliverable Approved by Client',
+      resolved: true,
+      drawings: []
     };
-
-    const { data, error } = await supabase.from('reviews').update(updates).eq('id', id).select().single();
-    if (error) throw error;
+    await supabase.from('review_comments').insert([approvalComment]).catch(() => {});
 
     // Cascade: advance linked Kanban task to 'Approved'
-    let invoiceId = null;
-    if (reviewData.task_id) {
+    if (taskId) {
       await supabase.from('tasks').update({
         stage: 'Approved',
-        custom_status: 'Approved',
+        qc_approved_by: approverName,
+        qc_approved_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
-      }).eq('id', reviewData.task_id);
+      }).eq('id', taskId).catch(() => {});
 
-      // Broadcast Kanban update
       const { data: allTasks } = await supabase.from('tasks').select('*').order('created_at', { ascending: false });
-      broadcast('task_update', allTasks || []);
+      if (allTasks) broadcast('task_update', allTasks);
 
       // Fire automation event
       try {
@@ -311,18 +316,26 @@ router.post('/:id/approve', requireAuth, async (req, res) => {
         const dbSnapshot = { clients: [], team: [], tasks: allTasks || [] };
         await processAutomationEvent('review_approved', {
           reviewId: id,
-          taskId: reviewData.task_id,
+          taskId: taskId,
           projectName: reviewData.project_name,
           clientName: reviewData.client,
-          approvedBy: req.user.name
+          approvedBy: approverName
         }, dbSnapshot, () => {}, broadcast);
       } catch (autoErr) {
         console.warn('Automation event failed (non-fatal):', autoErr.message);
       }
     }
 
-    broadcast('review_update', [mapReview(data)]);
-    res.json({ success: true, review: mapReview(data), invoiceId });
+    const mapped = {
+      ...mapReview(reviewData),
+      status: 'approved',
+      isApproved: true,
+      approvedBy: approverName,
+      approvedAt: new Date().toISOString()
+    };
+
+    broadcast('review_update', [mapped]);
+    res.json({ success: true, review: mapped });
   } catch (err) {
     console.error('Review Approve error:', err.message);
     res.status(500).json({ error: err.message });
@@ -334,38 +347,68 @@ router.post('/:id/request-revisions', requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
     const { feedback, notes } = req.body;
-
-    const updates = {
-      revision_requested_by: req.user.name || 'Client',
-      revision_notes: feedback || notes || 'Revisions requested.',
-      revision_requested_at: new Date().toISOString(),
-      approved_at: null,
-      approved_by: null
-    };
+    const requesterName = req.user?.name || 'Client Partner';
+    const revisionText = feedback || notes || 'Revisions requested.';
 
     const { data: reviewData, error: fetchErr } = await supabase.from('reviews').select('*').eq('id', id).single();
-    if (fetchErr) throw fetchErr;
+    if (fetchErr || !reviewData) return res.status(404).json({ error: 'Review project not found' });
 
-    const { data, error } = await supabase.from('reviews').update(updates).eq('id', id).select().single();
-    if (error) throw error;
+    const taskId = reviewData.project_id || id;
 
-    // Fire automation event for production team alert
-    try {
-      const { processAutomationEvent } = require('../services/automation');
-      await processAutomationEvent('review_revision_requested', {
-        reviewId: id,
-        taskId: reviewData.task_id,
-        projectName: reviewData.project_name,
-        clientName: reviewData.client,
-        revisionNotes: updates.revision_notes,
-        requestedBy: req.user.name
-      }, { clients: [], team: [], tasks: [] }, () => {}, broadcast);
-    } catch (autoErr) {
-      console.warn('Automation event failed (non-fatal):', autoErr.message);
+    // Add revision request comment into review_comments
+    const revisionComment = {
+      id: `CMT-REV-${Date.now()}`,
+      review_id: id,
+      author: requesterName,
+      author_role: req.user?.role || 'Client Partner',
+      timestamp: '0:00',
+      time_seconds: 0,
+      text: `✏️ Revision Requested: ${revisionText}`,
+      resolved: false,
+      drawings: []
+    };
+    await supabase.from('review_comments').insert([revisionComment]).catch(() => {});
+
+    // Cascade: move linked task back to 'Editing' with feedback
+    if (taskId) {
+      await supabase.from('tasks').update({
+        stage: 'Editing',
+        qc_rejected_by: requesterName,
+        qc_feedback: revisionText,
+        qc_rejected_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }).eq('id', taskId).catch(() => {});
+
+      const { data: allTasks } = await supabase.from('tasks').select('*').order('created_at', { ascending: false });
+      if (allTasks) broadcast('task_update', allTasks);
+
+      // Fire automation event for production team alert
+      try {
+        const { processAutomationEvent } = require('../services/automation');
+        await processAutomationEvent('review_revision_requested', {
+          reviewId: id,
+          taskId: taskId,
+          projectName: reviewData.project_name,
+          clientName: reviewData.client,
+          revisionNotes: revisionText,
+          requestedBy: requesterName
+        }, { clients: [], team: [], tasks: allTasks || [] }, () => {}, broadcast);
+      } catch (autoErr) {
+        console.warn('Automation event failed (non-fatal):', autoErr.message);
+      }
     }
 
-    broadcast('review_update', [mapReview(data)]);
-    res.json({ success: true, review: mapReview(data) });
+    const mapped = {
+      ...mapReview(reviewData),
+      status: 'revision_requested',
+      isApproved: false,
+      revisionRequestedBy: requesterName,
+      revisionNotes: revisionText,
+      revisionRequestedAt: new Date().toISOString()
+    };
+
+    broadcast('review_update', [mapped]);
+    res.json({ success: true, review: mapped });
   } catch (err) {
     console.error('Review Request Revisions error:', err.message);
     res.status(500).json({ error: err.message });
