@@ -122,11 +122,26 @@ router.post('/pin/generate', authLimiter, requireAuth, requireManager, async (re
   let targetType = linkedType || 'team';
 
   if (isSupabaseConfigured()) {
-    const table = targetType === 'team' ? 'team' : 'clients';
-    const { data } = await supabase.from(table).select('*').or(`phone.ilike.%${cleanPhone}%,id.eq.${linkedId}`).maybeSingle();
-    if (data) {
-      userObj = data;
-      name = data.name;
+    if (targetType === 'client' || (linkedId && String(linkedId).startsWith('CLI-'))) {
+      let cQuery = supabase.from('clients').select('*');
+      if (linkedId) cQuery = cQuery.eq('id', linkedId);
+      else cQuery = cQuery.ilike('phone', `%${cleanPhone}%`);
+      const { data } = await cQuery.maybeSingle();
+      if (data) {
+        userObj = data;
+        name = data.name;
+        targetType = 'client';
+      }
+    } else {
+      let pQuery = supabase.from('profiles').select('*');
+      if (linkedId) pQuery = pQuery.eq('emp_code', linkedId);
+      else pQuery = pQuery.ilike('phone', `%${cleanPhone}%`);
+      const { data } = await pQuery.maybeSingle();
+      if (data) {
+        userObj = data;
+        name = data.name;
+        targetType = 'team';
+      }
     }
   }
 

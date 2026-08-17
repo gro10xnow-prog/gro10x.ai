@@ -97,46 +97,69 @@ async function createTempPin(phone, linkedId = null, linkedType = 'team', email 
 async function verifyPin(phone, inputPin) {
   const norm = normalizePhone(phone);
 
+  let record = await findPinRecordSupabase(norm);
   let userObj = null;
-  let linkedType = 'team';
+  let linkedType = record ? (record.linked_type || record.linkedType || 'team') : 'team';
+  const targetId = record ? (record.linked_id || record.linkedId) : null;
 
   if (isSupabaseConfigured()) {
     try {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('emp_code,name,role,phone,email,access_level,onboarding_complete,telegram_id')
-        .ilike('phone', `%${norm}`)
-        .maybeSingle();
-
-      if (profile) {
-        userObj = {
-          id: profile.emp_code,
-          emp_code: profile.emp_code,
-          name: profile.name,
-          role: profile.role,
-          phone: profile.phone,
-          email: profile.email,
-          accessLevel: profile.access_level
-        };
-        linkedType = 'team';
-      }
-
-      if (!userObj) {
-        const { data: clientRec } = await supabase
-          .from('clients')
-          .select('id,name,phone,email,contact_person')
-          .ilike('phone', `%${norm}`)
-          .maybeSingle();
+      if (linkedType === 'client' || (targetId && String(targetId).startsWith('CLI-'))) {
+        let cQuery = supabase.from('clients').select('id,name,phone,email,contact_person');
+        if (targetId) cQuery = cQuery.eq('id', targetId);
+        else cQuery = cQuery.ilike('phone', `%${norm}`);
+        const { data: clientRec } = await cQuery.maybeSingle();
 
         if (clientRec) {
-          userObj = { id: clientRec.id, name: clientRec.name, phone: clientRec.phone, email: clientRec.email };
+          userObj = {
+            id: clientRec.id,
+            name: clientRec.name,
+            phone: clientRec.phone,
+            email: clientRec.email,
+            role: 'Client Representative',
+            accessLevel: 'Client Partner',
+            department: 'Client Partner'
+          };
           linkedType = 'client';
         }
-      }
-    } catch (e) {}
-  }
+      } else {
+        let pQuery = supabase.from('profiles').select('emp_code,name,role,phone,email,access_level,onboarding_complete,telegram_id');
+        if (targetId) pQuery = pQuery.eq('emp_code', targetId);
+        else pQuery = pQuery.ilike('phone', `%${norm}`);
+        const { data: profile } = await pQuery.maybeSingle();
 
-  let record = await findPinRecordSupabase(norm);
+        if (profile) {
+          userObj = {
+            id: profile.emp_code,
+            emp_code: profile.emp_code,
+            name: profile.name,
+            role: profile.role,
+            phone: profile.phone,
+            email: profile.email,
+            accessLevel: profile.access_level
+          };
+          linkedType = 'team';
+        }
+      }
+
+      // Fallback if not found under initial linkedType assumption
+      if (!userObj) {
+        const { data: profile } = await supabase.from('profiles').select('emp_code,name,role,phone,email,access_level').ilike('phone', `%${norm}`).maybeSingle();
+        if (profile) {
+          userObj = { id: profile.emp_code, emp_code: profile.emp_code, name: profile.name, role: profile.role, phone: profile.phone, email: profile.email, accessLevel: profile.access_level };
+          linkedType = 'team';
+        } else {
+          const { data: clientRec } = await supabase.from('clients').select('id,name,phone,email,contact_person').ilike('phone', `%${norm}`).maybeSingle();
+          if (clientRec) {
+            userObj = { id: clientRec.id, name: clientRec.name, phone: clientRec.phone, email: clientRec.email, role: 'Client Representative', accessLevel: 'Client Partner', department: 'Client Partner' };
+            linkedType = 'client';
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('verifyPin lookup error:', e.message);
+    }
+  }
 
   if (!record && !userObj) {
     return { success: false, error: 'Phone number not found in employee or client database.' };

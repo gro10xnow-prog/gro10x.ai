@@ -60,5 +60,12 @@ window.CLIENT_API = {
   get(ep) { return this.request(ep, { method: 'GET' }); },
   post(ep, body) { return this.request(ep, { method: 'POST', body }); },
   put(ep, body) { return this.request(ep, { method: 'PUT', body }); },
-  patch(ep, body) { return this.request(ep, { method: 'PATCH', body }); }
+  patch(ep, body) { return this.request(ep, { method: 'PATCH', body }); },
+  async fetchRaw(endpoint, options = {}) {
+    const url = endpoint.startsWith('/api') ? endpoint : `/api${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
+    const token = this.getToken();
+    const headers = { ...(options.headers || {}) };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    return fetch(url, { ...options, headers });
+  }
 };

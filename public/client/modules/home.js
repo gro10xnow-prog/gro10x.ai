@@ -11,7 +11,7 @@ window.CLIENT_MODULES.home = async function(container) {
     const user = me?.user || me || localUser;
     const [posts, invoices, tickets] = await Promise.all([
       CLIENT_API.get('/posts').catch(() => []),
-      CLIENT_API.get('/invoices/invoices').catch(() => []),
+      CLIENT_API.get('/invoices').catch(() => []),
       CLIENT_API.get('/tickets').catch(() => [])
     ]);
 
