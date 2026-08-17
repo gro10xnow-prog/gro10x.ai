@@ -233,7 +233,7 @@ window.APP_MODULES.dashboard = async function(container) {
       </div>
 
       <!-- MAIN GRID 2: ROSTER & PRODUCTION -->
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
         <div class="card-glass">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.5rem;">
             <h3 style="font-size: 1rem; font-weight: 800; margin: 0; color: var(--text-primary);">👥 Team Live Duty & EOD Status</h3>
@@ -249,20 +249,31 @@ window.APP_MODULES.dashboard = async function(container) {
             <div class="table-responsive">
               <table class="data-table" style="font-size: 0.8rem;">
                 <thead>
-                  <tr><th>Member</th><th>Role</th><th>Status</th><th>EOD Today</th></tr>
+                  <tr>
+                    <th style="min-width: 140px;">Member</th>
+                    <th style="min-width: 120px;">Role</th>
+                    <th style="text-align: center; min-width: 80px;">Status</th>
+                    <th style="text-align: center; min-width: 80px;">EOD</th>
+                  </tr>
                 </thead>
                 <tbody>
                   ${team.slice(0, 6).map(m => {
                     const empCode = m.emp_code || m.id;
                     const isOnline = m.status === 'In Studio' || attendance.some(a => a.employee_id === empCode && a.status === 'In Studio');
                     const hasEod = eods.some(e => (e.employee_id === empCode || e.employee_name === m.name) && ((e.report_date || '').startsWith(todayStr) || (e.created_at || '').startsWith(todayStr)));
+                    const initials = (m.name || 'PB').split(' ').filter(Boolean).map(n => n[0]).slice(0, 2).join('').toUpperCase();
 
                     return `
                       <tr>
-                        <td><strong>${escapeHTML(m.name)}</strong></td>
-                        <td style="color: var(--text-muted);">${escapeHTML(m.role || 'Team')}</td>
-                        <td><span class="badge ${isOnline ? 'badge-emerald' : 'badge-amber'}">${isOnline ? '🟢 In Studio' : '⚫ Offline'}</span></td>
-                        <td><span class="badge ${hasEod ? 'badge-purple' : 'badge-amber'}">${hasEod ? '✓ Done' : '⏳ Pending'}</span></td>
+                        <td class="nowrap">
+                          <div class="member-avatar-chip">
+                            <span class="member-avatar-dot">${initials}</span>
+                            <span style="font-weight:700;">${escapeHTML(m.name)}</span>
+                          </div>
+                        </td>
+                        <td class="truncate" title="${escapeHTML(m.role || 'Team')}" style="color: var(--text-muted);">${escapeHTML(m.role || 'Team')}</td>
+                        <td style="text-align: center;"><span class="badge ${isOnline ? 'badge-emerald' : 'badge-amber'}">${isOnline ? '🟢 In Studio' : '⚫ Offline'}</span></td>
+                        <td style="text-align: center;"><span class="badge ${hasEod ? 'badge-purple' : 'badge-amber'}">${hasEod ? '✓ Done' : '⏳ Pending'}</span></td>
                       </tr>
                     `;
                   }).join('')}
@@ -287,19 +298,30 @@ window.APP_MODULES.dashboard = async function(container) {
             <div class="table-responsive">
               <table class="data-table" style="font-size: 0.8rem;">
                 <thead>
-                  <tr><th>Client Name</th><th>Category</th><th>Total Billed</th><th>Status</th></tr>
+                  <tr>
+                    <th style="min-width: 140px;">Client</th>
+                    <th style="min-width: 110px;">Category</th>
+                    <th style="min-width: 90px;">Total Billed</th>
+                    <th style="text-align: center; min-width: 80px;">Status</th>
+                  </tr>
                 </thead>
                 <tbody>
                   ${clients.slice(0, 5).map(c => {
                     const clientInvoices = invoices.filter(i => i.clientName === c.name || i.client === c.name || i.clientId === c.id);
                     const totalSpent = clientInvoices.reduce((sum, i) => sum + Number(i.amount || 0), 0);
+                    const initials = (c.name || 'CL').split(' ').filter(Boolean).map(n => n[0]).slice(0, 2).join('').toUpperCase();
 
                     return `
                       <tr>
-                        <td><strong>${escapeHTML(c.name)}</strong></td>
-                        <td style="color: var(--text-muted);">${escapeHTML(c.category || c.industry || 'General')}</td>
-                        <td><strong>৳${totalSpent.toLocaleString()}</strong></td>
-                        <td><span class="badge badge-emerald">${escapeHTML(c.status || 'Active Retainer')}</span></td>
+                        <td class="nowrap">
+                          <div class="member-avatar-chip">
+                            <span class="member-avatar-dot" style="background: var(--gradient-rose);">${initials}</span>
+                            <span style="font-weight:700;">${escapeHTML(c.name)}</span>
+                          </div>
+                        </td>
+                        <td class="truncate" title="${escapeHTML(c.category || c.industry || 'General')}" style="color: var(--text-muted);">${escapeHTML(c.category || c.industry || 'General')}</td>
+                        <td class="nowrap"><strong style="color:var(--text-primary);">৳${totalSpent.toLocaleString()}</strong></td>
+                        <td style="text-align: center;"><span class="badge badge-emerald">Active Retainer</span></td>
                       </tr>
                     `;
                   }).join('')}

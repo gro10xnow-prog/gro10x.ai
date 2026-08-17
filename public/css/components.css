@@ -166,13 +166,15 @@
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  padding: 0.2rem 0.65rem;
+  padding: 0.22rem 0.6rem;
   border-radius: 999px;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
+  font-size: 0.73rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  white-space: nowrap;
   width: fit-content;
+  line-height: 1.2;
 }
 
 .badge-purple {
@@ -327,21 +329,58 @@
 }
 
 .data-table th {
-  padding: 0.85rem 1.1rem;
+  padding: 0.75rem 0.85rem;
   background: var(--surface-2);
   color: var(--text-dim);
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.05em;
   border-bottom: 1px solid var(--border-subtle);
+  white-space: nowrap;
 }
 
 .data-table td {
-  padding: 0.9rem 1.1rem;
+  padding: 0.75rem 0.85rem;
   border-bottom: 1px solid var(--border-subtle);
-  font-size: 0.88rem;
+  font-size: 0.84rem;
   color: var(--text-primary);
+  vertical-align: middle;
+  line-height: 1.35;
+}
+
+.data-table td.nowrap, .nowrap {
+  white-space: nowrap !important;
+}
+
+.data-table td.truncate, .truncate {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  max-width: 160px;
+}
+
+.member-avatar-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+}
+
+.member-avatar-dot {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--gradient-brand);
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-family: var(--font-heading);
+  letter-spacing: -0.02em;
 }
 
 .data-table tr:last-child td {
