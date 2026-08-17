@@ -26,6 +26,35 @@ window.APP_MODULES.kanban = async function(container) {
   let selectedTasks = new Set();
   let lastSelectedTaskId = null;
 
+  // Space & Stage Editor State
+  let selectedSpaceIcon = '📁';
+  let selectedSpaceColor = '#a855f7';
+  let editorActiveWf = 'video';
+  let editorStages = [];
+
+  const DEFAULT_WORKFLOW_PRESETS = {
+    video: {
+      name: 'Video Production',
+      icon: '🎬',
+      stages: ['Briefing', 'Scripting', 'Shooting', 'Editing', 'Internal QC', 'Client Review', 'Approved']
+    },
+    social: {
+      name: 'Social & Content',
+      icon: '📢',
+      stages: ['Briefing', 'Content Draft', 'Design', 'Copy Review', 'Client Approval', 'Scheduled', 'Published']
+    },
+    branding: {
+      name: 'Branding & Design',
+      icon: '🎨',
+      stages: ['Briefing', 'Strategy', 'Concept Design', 'Client Refinement', 'Final Delivery', 'Approved']
+    },
+    dev: {
+      name: 'Dev & Tech',
+      icon: '💻',
+      stages: ['Briefing', 'Wireframe', 'Development', 'QA Testing', 'Client UAT', 'Approved']
+    }
+  };
+
   // Calendar State
   let calCurrentYear = new Date().getFullYear();
   let calCurrentMonth = new Date().getMonth(); // 0-indexed
@@ -140,11 +169,11 @@ window.APP_MODULES.kanban = async function(container) {
           </div>
           ${spacesData.map(s => `
             <div class="space-item ${activeSpace === s.name ? 'active' : ''}" onclick="window.KANBAN_MODULE.setSpace('${s.name}')">
-              <span>${s.type === 'client' ? '🟣' : '🏢'} ${escapeHTML(s.name)}</span>
+              <span>${s.icon || (s.type === 'client' ? '🟣' : '🏢')} ${escapeHTML(s.name)}</span>
             </div>
           `).join('')}
           <div style="margin-top: 0.3rem;">
-            <button class="btn-secondary btn-sm" style="width: 100%; border-style: dashed;" onclick="window.KANBAN_MODULE.addSpace()">+ New Space</button>
+            <button class="btn-secondary btn-sm" style="width: 100%; border-style: dashed;" onclick="window.KANBAN_MODULE.openSpaceModal('create')">+ New Space</button>
           </div>
 
           <div class="sidebar-section-title">Workflow Pipeline</div>
@@ -171,7 +200,7 @@ window.APP_MODULES.kanban = async function(container) {
             <div>
               <h1 style="font-size: 1.5rem; font-weight: 800; font-family: var(--font-heading); margin: 0 0 0.2rem;">
                 ${activeSpace === 'all' ? 'Production Pipeline Hub' : escapeHTML(activeSpace)}
-                ${activeWorkflowFilter !== 'all' ? `<span style="font-size:0.85rem; font-weight:600; color:var(--purple-light); margin-left:0.5rem;">(${WORKFLOW_TYPES[activeWorkflowFilter].name})</span>` : ''}
+                ${activeWorkflowFilter !== 'all' && WORKFLOW_TYPES[activeWorkflowFilter] ? `<span style="font-size:0.85rem; font-weight:600; color:var(--purple-light); margin-left:0.5rem;">(${WORKFLOW_TYPES[activeWorkflowFilter].name})</span>` : ''}
               </h1>
               <div style="font-size: 0.85rem; color: var(--text-muted);">
                 Manage agency tasks, time tracking, blueprints, and delivery schedules.
@@ -206,10 +235,9 @@ window.APP_MODULES.kanban = async function(container) {
 
             <select id="kanbanFilterWorkflow" onchange="window.KANBAN_MODULE.setWorkflowFilter(this.value)" class="input-text" style="width: 170px; padding: 0.45rem 0.85rem;">
               <option value="all">⚡ All Workflows</option>
-              <option value="video" ${activeWorkflowFilter === 'video' ? 'selected' : ''}>🎬 Video Production</option>
-              <option value="social" ${activeWorkflowFilter === 'social' ? 'selected' : ''}>📢 Social & Content</option>
-              <option value="branding" ${activeWorkflowFilter === 'branding' ? 'selected' : ''}>🎨 Branding & Design</option>
-              <option value="dev" ${activeWorkflowFilter === 'dev' ? 'selected' : ''}>💻 Dev & Tech</option>
+              ${Object.keys(WORKFLOW_TYPES).map(k => `
+                <option value="${k}" ${activeWorkflowFilter === k ? 'selected' : ''}>${WORKFLOW_TYPES[k].icon} ${WORKFLOW_TYPES[k].name}</option>
+              `).join('')}
             </select>
           </div>
 
@@ -314,10 +342,7 @@ window.APP_MODULES.kanban = async function(container) {
               <div class="form-group" style="margin-bottom: 0;">
                 <label class="form-label">Workflow Type *</label>
                 <select id="ntWorkflow" class="input-text" onchange="window.KANBAN_MODULE.onModalWorkflowChange(this.value)">
-                  <option value="video">🎬 Video Production</option>
-                  <option value="social">📢 Social & Content</option>
-                  <option value="branding">🎨 Branding & Design</option>
-                  <option value="dev">💻 Dev & Tech</option>
+                  ${Object.keys(WORKFLOW_TYPES).map(k => `<option value="${k}">${WORKFLOW_TYPES[k].icon} ${WORKFLOW_TYPES[k].name}</option>`).join('')}
                 </select>
               </div>
 
@@ -331,8 +356,9 @@ window.APP_MODULES.kanban = async function(container) {
               <div class="form-group" style="margin-bottom: 0;">
                 <label class="form-label">Client / Account Space</label>
                 <select id="ntClient" class="input-text">
-                  <option value="Agency">Internal Agency</option>
-                  ${clientList.map(c => `<option value="${escapeHTML(c.name)}">${escapeHTML(c.name)}</option>`).join('')}
+                  <option value="Agency">🏢 Internal Agency</option>
+                  ${spacesData.filter(s => s.name !== 'Internal Agency').map(s => `<option value="${escapeHTML(s.name)}">${s.icon || '🟣'} ${escapeHTML(s.name)}</option>`).join('')}
+                  ${clientList.map(c => `<option value="${escapeHTML(c.name)}">👤 ${escapeHTML(c.name)}</option>`).join('')}
                 </select>
               </div>
 
@@ -378,6 +404,137 @@ window.APP_MODULES.kanban = async function(container) {
           </div>
         </div>
       </div>
+
+      <!-- Space Creator & Manager Modal -->
+      <div class="modal-overlay" id="kanbanSpaceModal">
+        <div class="modal-content" style="max-width: 520px;">
+          <div class="modal-header">
+            <span style="font-weight: 800; font-family: var(--font-heading);">📁 Workspace Spaces Manager</span>
+            <button class="modal-close" onclick="window.KANBAN_MODULE.closeSpaceModal()">✕</button>
+          </div>
+          <div class="modal-body" style="display: flex; flex-direction: column; gap: 1rem;">
+            <div style="display: flex; gap: 0.5rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.5rem;">
+              <button type="button" id="spaceModalTabCreate" class="btn-secondary btn-sm" onclick="window.KANBAN_MODULE.switchSpaceTab('create')">✨ Create New Space</button>
+              <button type="button" id="spaceModalTabManage" class="btn-ghost btn-sm" onclick="window.KANBAN_MODULE.switchSpaceTab('manage')">⚙️ Manage Spaces (${spacesData.length})</button>
+            </div>
+
+            <!-- Create Space Form View -->
+            <div id="spaceModalCreateView">
+              <div class="form-group">
+                <label class="form-label">Space / Project Name *</label>
+                <input type="text" id="spaceNameInput" class="input-text" placeholder="e.g. Q3 Brand Campaign, E-commerce Launch, Creative Lab" required>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; margin-top: 0.75rem;">
+                <div class="form-group" style="margin-bottom:0;">
+                  <label class="form-label">Space Category</label>
+                  <select id="spaceTypeInput" class="input-text">
+                    <option value="custom">📁 Custom Space</option>
+                    <option value="department">🏢 Internal Department</option>
+                    <option value="client">🟣 Client Partner Space</option>
+                    <option value="campaign">🚀 Special Campaign</option>
+                  </select>
+                </div>
+
+                <div class="form-group" style="margin-bottom:0;">
+                  <label class="form-label">Theme Color</label>
+                  <div style="display:flex; gap:0.4rem; align-items:center; margin-top:0.35rem;" id="spaceColorPicker">
+                    ${['#a855f7', '#3b82f6', '#10b981', '#f59e0b', '#ec4899', '#06b6d4'].map(col => `
+                      <div onclick="window.KANBAN_MODULE.selectSpaceColor('${col}')" 
+                           style="width:24px; height:24px; border-radius:50%; background:${col}; cursor:pointer; border:2px solid ${selectedSpaceColor === col ? '#fff' : 'transparent'}; box-shadow: 0 0 4px ${col}88;"></div>
+                    `).join('')}
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group" style="margin-top: 0.75rem;">
+                <label class="form-label">Icon / Emoji</label>
+                <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;" id="spaceIconPicker">
+                  ${['📁', '🏢', '🟣', '🚀', '🎬', '🎯', '💻', '📦', '⚡', '🎨', '📈', '🔥'].map(ic => `
+                    <button type="button" class="btn-ghost btn-sm" onclick="window.KANBAN_MODULE.selectSpaceIcon('${ic}')" style="font-size:1.1rem; padding:0.3rem 0.55rem; border:1px solid ${selectedSpaceIcon === ic ? 'var(--purple-brand)' : 'transparent'}; background:${selectedSpaceIcon === ic ? 'var(--surface-3)' : 'transparent'}; border-radius:8px;">${ic}</button>
+                  `).join('')}
+                </div>
+              </div>
+
+              <div style="margin-top: 1.25rem; display: flex; justify-content: flex-end; gap: 0.75rem;">
+                <button type="button" class="btn-secondary" onclick="window.KANBAN_MODULE.closeSpaceModal()">Cancel</button>
+                <button type="button" class="btn-primary" onclick="window.KANBAN_MODULE.submitNewSpace()">🚀 Create Space</button>
+              </div>
+            </div>
+
+            <!-- Manage Spaces List View -->
+            <div id="spaceModalManageView" style="display:none;">
+              <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0.75rem;">Active Workspace Spaces:</div>
+              <div style="display: flex; flex-direction: column; gap: 0.5rem; max-height: 240px; overflow-y: auto;" id="spaceModalListContainer">
+                ${spacesData.map(s => `
+                  <div style="display:flex; justify-content:space-between; align-items:center; background:var(--surface-2); border:1px solid var(--border-subtle); padding:0.6rem 0.85rem; border-radius:10px;">
+                    <div style="display:flex; align-items:center; gap:0.6rem;">
+                      <span style="font-size:1.1rem;">${s.icon || (s.type === 'client' ? '🟣' : '🏢')}</span>
+                      <div>
+                        <div style="font-weight:700; font-size:0.85rem; color:var(--text-primary);">${escapeHTML(s.name)}</div>
+                        <div style="font-size:0.7rem; color:var(--text-dim); text-transform:capitalize;">${escapeHTML(s.type || 'Custom Space')}</div>
+                      </div>
+                    </div>
+                    ${s.name !== 'Internal Agency' && s.name !== 'Client Retainers' ? `
+                      <button class="btn-danger btn-sm" style="font-size:0.72rem; padding:0.25rem 0.5rem;" onclick="window.KANBAN_MODULE.deleteSpace('${s.id || s.name}')">🗑️ Delete</button>
+                    ` : '<span style="font-size:0.72rem; color:var(--text-dim);">System Default</span>'}
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Workflow Pipeline Stage Editor Modal -->
+      <div class="modal-overlay" id="kanbanStageEditorModal">
+        <div class="modal-content" style="max-width: 620px;">
+          <div class="modal-header">
+            <span style="font-weight: 800; font-family: var(--font-heading);">⚙️ Workflow Pipeline Stage Manager</span>
+            <button class="modal-close" onclick="window.KANBAN_MODULE.closeStageEditor()">✕</button>
+          </div>
+          <div class="modal-body" style="display: flex; flex-direction: column; gap: 1rem;">
+            <!-- Workflow Tabs -->
+            <div>
+              <div style="font-size: 0.75rem; color: var(--text-dim); font-weight: 700; text-transform: uppercase; margin-bottom: 0.4rem;">Select Workflow Pipeline:</div>
+              <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;" id="editorWfTabsContainer">
+                ${Object.keys(WORKFLOW_TYPES).map(k => `
+                  <button type="button" class="${editorActiveWf === k ? 'btn-primary btn-sm' : 'btn-secondary btn-sm'}" onclick="window.KANBAN_MODULE.selectEditorWorkflow('${k}')">
+                    ${WORKFLOW_TYPES[k].icon} ${WORKFLOW_TYPES[k].name}
+                  </button>
+                `).join('')}
+              </div>
+            </div>
+
+            <!-- Stage Pills Visual Reorder List -->
+            <div style="background: var(--surface-3); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 0.9rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
+                <div style="font-size: 0.82rem; font-weight: 800; color: var(--text-primary);" id="editorStageListTitle">
+                  ${WORKFLOW_TYPES[editorActiveWf]?.icon || '⚡'} ${WORKFLOW_TYPES[editorActiveWf]?.name || 'Pipeline'} Stages
+                </div>
+                <button type="button" class="btn-ghost btn-sm" style="font-size: 0.72rem; color: var(--pink-brand);" onclick="window.KANBAN_MODULE.resetStagesToDefault()">
+                  ↺ Reset to Preset
+                </button>
+              </div>
+
+              <div style="display: flex; flex-direction: column; gap: 0.45rem; max-height: 240px; overflow-y: auto;" id="editorStageList">
+                <!-- Dynamically rendered via renderStageEditorContent() -->
+              </div>
+
+              <!-- Add Stage Row -->
+              <div style="display: flex; gap: 0.5rem; margin-top: 0.75rem;">
+                <input type="text" id="newStageInput" class="input-text" placeholder="Add new stage name (e.g. Color Grading, Client UAT)..." style="flex:1; font-size:0.82rem; padding:0.4rem 0.75rem;" onkeydown="if(event.key==='Enter'){event.preventDefault();window.KANBAN_MODULE.addStageToEditor();}">
+                <button type="button" class="btn-secondary btn-sm" onclick="window.KANBAN_MODULE.addStageToEditor()">+ Add Step</button>
+              </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 0.25rem;">
+              <button type="button" class="btn-secondary" onclick="window.KANBAN_MODULE.closeStageEditor()">Cancel</button>
+              <button type="button" class="btn-primary" onclick="window.KANBAN_MODULE.savePipelineStages()">💾 Save Pipeline Stages</button>
+            </div>
+          </div>
+        </div>
+      </div>
     `;
 
     renderViewArea();
@@ -388,7 +545,7 @@ window.APP_MODULES.kanban = async function(container) {
 
     // Filter by active workspace space
     if (activeSpace !== 'all') {
-      displayTasks = displayTasks.filter(t => t.client === activeSpace || t.category === activeSpace);
+      displayTasks = displayTasks.filter(t => t.client === activeSpace || t.category === activeSpace || t.space === activeSpace);
     }
 
     // Filter by Workflow
@@ -432,9 +589,12 @@ window.APP_MODULES.kanban = async function(container) {
             const stageTasks = displayTasks.filter(t => (t.stage || currentStages[0]) === stg);
             return `
               <div class="kanban-col" ondragover="event.preventDefault()" ondrop="window.KANBAN_MODULE.dropTask(event, '${escapeHTML(stg)}')">
-                <div class="kanban-col-header">
-                  <span>${escapeHTML(stg)}</span>
-                  <span class="badge badge-purple">${stageTasks.length}</span>
+                <div class="kanban-col-header" style="display: flex; justify-content: space-between; align-items: center;">
+                  <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span>${escapeHTML(stg)}</span>
+                    <span class="badge badge-purple">${stageTasks.length}</span>
+                  </div>
+                  <button type="button" class="btn-ghost btn-sm" style="padding: 0.15rem 0.45rem; font-size: 0.85rem; line-height: 1; font-weight: 800; border-radius: 6px;" onclick="window.KANBAN_MODULE.openNewTaskModal({ stage: '${escapeHTML(stg)}' })" title="Add task directly to ${escapeHTML(stg)}">+</button>
                 </div>
                 <div class="kanban-col-body">
                   ${stageTasks.map(t => {
@@ -731,114 +891,41 @@ window.APP_MODULES.kanban = async function(container) {
       renderViewArea();
       this.renderBulkToolbar();
     },
-    addSpace() {
-      const name = prompt('Enter new space name:');
-      if (name && name.trim()) {
-        APP_API.post('/projects/spaces', { name: name.trim() }).then(() => loadData());
-      }
-    },
-    renderBulkToolbar() {
-      const container = document.getElementById('bulkToolbarContainer');
-      if (!container) return;
-      if (selectedTasks.size === 0) {
-        container.innerHTML = '';
-        return;
-      }
-      const currentStages = getActiveStages();
-      container.innerHTML = `
-        <div style="background:var(--surface-2); border:1px solid var(--purple-brand); border-radius:16px; padding:0.75rem 1.5rem; display:flex; align-items:center; gap:1rem; box-shadow:var(--shadow-elevated); backdrop-filter:blur(8px);">
-          <div style="font-weight:800; color:var(--text-primary); font-size:0.88rem;">${selectedTasks.size} Selected</div>
-          <div style="width:1px; height:24px; background:var(--border-subtle);"></div>
-          <select id="bulkStageSelect" class="input-text" style="width: 150px; padding: 0.35rem 0.6rem;">
-            <option value="">Move to Stage...</option>
-            ${currentStages.map(s => `<option value="${escapeHTML(s)}">${escapeHTML(s)}</option>`).join('')}
-          </select>
-          <button class="btn-secondary btn-sm" onclick="window.KANBAN_MODULE.applyBulkAction('stage')">Apply Stage</button>
-          
-          <div style="width:1px; height:24px; background:var(--border-subtle);"></div>
-          <input type="text" id="bulkAssigneeInput" placeholder="Assignee Name" class="input-text" style="width: 120px; padding: 0.35rem 0.6rem;">
-          <button class="btn-secondary btn-sm" onclick="window.KANBAN_MODULE.applyBulkAction('assign')">Assign</button>
-          
-          <div style="width:1px; height:24px; background:var(--border-subtle);"></div>
-          <button class="btn-danger btn-sm" onclick="window.KANBAN_MODULE.applyBulkAction('delete')">Delete Selected</button>
-          
-          <button onclick="window.KANBAN_MODULE.clearSelection()" style="background:none; border:none; color:var(--text-muted); margin-left:0.5rem; cursor:pointer; font-size:1.1rem;">✕</button>
-        </div>
-      `;
-    },
-    clearSelection() {
-      selectedTasks.clear();
-      lastSelectedTaskId = null;
-      renderViewArea();
-      this.renderBulkToolbar();
-    },
-    async applyBulkAction(action) {
-      if (selectedTasks.size === 0) return;
-      const taskIds = Array.from(selectedTasks);
-      let payload = { action, taskIds };
-      
-      if (action === 'stage') {
-        const stage = document.getElementById('bulkStageSelect').value;
-        if (!stage) { if (window.showToast) window.showToast('Select a stage first', 'error'); return; }
-        payload.stage = stage;
-      } else if (action === 'assign') {
-        const assignee = document.getElementById('bulkAssigneeInput').value.trim();
-        if (!assignee) { if (window.showToast) window.showToast('Enter an assignee name', 'error'); return; }
-        payload.assignee = assignee;
-      } else if (action === 'delete') {
-        if (window.confirm && !window.confirm(`Are you sure you want to delete ${taskIds.length} tasks?`)) return;
-      }
-      
-      try {
-        await APP_API.post('/tasks/bulk', payload);
-        if (window.showToast) window.showToast(`Bulk ${action} applied to ${taskIds.length} tasks`, 'success');
-        this.clearSelection();
-        loadData();
-      } catch (e) {
-        if (window.showToast) window.showToast('Failed bulk action: ' + e.message, 'error');
-      }
-    },
-    dragTask(evt, taskId) {
-      evt.dataTransfer.setData('text/plain', taskId);
-    },
-    async dropTask(evt, targetStage) {
-      evt.preventDefault();
-      const taskId = evt.dataTransfer.getData('text/plain');
-      if (taskId) {
-        await this.updateStage(taskId, targetStage);
-      }
-    },
-    async updateStage(taskId, newStage) {
-      try {
-        const res = await APP_API.patch(`/tasks/${taskId}/stage`, { stage: newStage });
-        if (res.success || res.task) {
-          const t = allTasks.find(x => x.id === taskId);
-          if (t) t.stage = newStage;
-          renderViewArea();
-        }
-      } catch (e) {
-        console.error(e);
-        if (window.showToast) window.showToast('Failed to update task stage', 'error');
-      }
-    },
-
     /* ── Modal Task Creation ── */
-    openNewTaskModal() {
+    openNewTaskModal(prefill = {}) {
       const modal = document.getElementById('newTaskModalOverlay');
       if (!modal) return;
 
-      // Populate stages for current modal workflow
+      // Dynamically repopulate clients/spaces to ensure newly added custom spaces are listed
+      const clientSelect = document.getElementById('ntClient');
+      if (clientSelect) {
+        clientSelect.innerHTML = `
+          <option value="Agency">🏢 Internal Agency</option>
+          ${spacesData.filter(s => s.name !== 'Internal Agency').map(s => `<option value="${escapeHTML(s.name)}">${s.icon || (s.type === 'client' ? '🟣' : '📁')} ${escapeHTML(s.name)}</option>`).join('')}
+          ${clientList.map(c => `<option value="${escapeHTML(c.name)}">👤 ${escapeHTML(c.name)}</option>`).join('')}
+        `;
+      }
+
+      // Populate workflows & stages
       const wfSelect = document.getElementById('ntWorkflow');
       if (wfSelect) {
-        const currentWf = activeWorkflowFilter !== 'all' ? activeWorkflowFilter : 'video';
+        wfSelect.innerHTML = Object.keys(WORKFLOW_TYPES).map(k => `<option value="${k}">${WORKFLOW_TYPES[k].icon} ${WORKFLOW_TYPES[k].name}</option>`).join('');
+        const currentWf = prefill.workflow || (activeWorkflowFilter !== 'all' ? activeWorkflowFilter : 'video');
         wfSelect.value = currentWf;
         this.onModalWorkflowChange(currentWf);
       }
 
-      // Pre-select active space if client selected
-      const clientSelect = document.getElementById('ntClient');
-      if (clientSelect && activeSpace !== 'all') {
-        clientSelect.value = activeSpace;
+      if (prefill.stage) {
+        const stageSelect = document.getElementById('ntStage');
+        if (stageSelect) stageSelect.value = prefill.stage;
+      }
+
+      if (clientSelect) {
+        if (prefill.space) {
+          clientSelect.value = prefill.space;
+        } else if (activeSpace !== 'all') {
+          clientSelect.value = activeSpace;
+        }
       }
 
       modal.classList.add('active');
@@ -1086,32 +1173,301 @@ window.APP_MODULES.kanban = async function(container) {
       }
     },
 
-    /* ── Phase 3: Stage Editor ── */
-    openStageEditor() {
-      const targetWf = activeWorkflowFilter !== 'all' ? activeWorkflowFilter : 'video';
-      const wf = WORKFLOW_TYPES[targetWf];
-      if (!wf) return;
+    /* ── Bulk Actions & Drag Drop ── */
+    renderBulkToolbar() {
+      const container = document.getElementById('bulkToolbarContainer');
+      if (!container) return;
+      if (selectedTasks.size === 0) {
+        container.innerHTML = '';
+        return;
+      }
+      const currentStages = getActiveStages();
+      container.innerHTML = `
+        <div style="background:var(--surface-2); border:1px solid var(--purple-brand); border-radius:16px; padding:0.75rem 1.5rem; display:flex; align-items:center; gap:1rem; box-shadow:var(--shadow-elevated); backdrop-filter:blur(8px);">
+          <div style="font-weight:800; color:var(--text-primary); font-size:0.88rem;">${selectedTasks.size} Selected</div>
+          <div style="width:1px; height:24px; background:var(--border-subtle);"></div>
+          <select id="bulkStageSelect" class="input-text" style="width: 150px; padding: 0.35rem 0.6rem;">
+            <option value="">Move to Stage...</option>
+            ${currentStages.map(s => `<option value="${escapeHTML(s)}">${escapeHTML(s)}</option>`).join('')}
+          </select>
+          <button class="btn-secondary btn-sm" onclick="window.KANBAN_MODULE.applyBulkAction('stage')">Apply Stage</button>
+          
+          <div style="width:1px; height:24px; background:var(--border-subtle);"></div>
+          <input type="text" id="bulkAssigneeInput" placeholder="Assignee Name" class="input-text" style="width: 120px; padding: 0.35rem 0.6rem;">
+          <button class="btn-secondary btn-sm" onclick="window.KANBAN_MODULE.applyBulkAction('assign')">Assign</button>
+          
+          <div style="width:1px; height:24px; background:var(--border-subtle);"></div>
+          <button class="btn-danger btn-sm" onclick="window.KANBAN_MODULE.applyBulkAction('delete')">Delete Selected</button>
+          
+          <button onclick="window.KANBAN_MODULE.clearSelection()" style="background:none; border:none; color:var(--text-muted); margin-left:0.5rem; cursor:pointer; font-size:1.1rem;">✕</button>
+        </div>
+      `;
+    },
+    clearSelection() {
+      selectedTasks.clear();
+      lastSelectedTaskId = null;
+      renderViewArea();
+      this.renderBulkToolbar();
+    },
+    async applyBulkAction(action) {
+      if (selectedTasks.size === 0) return;
+      const taskIds = Array.from(selectedTasks);
+      let payload = { action, taskIds };
+      
+      if (action === 'stage') {
+        const stage = document.getElementById('bulkStageSelect')?.value;
+        if (!stage) { if (window.showToast) window.showToast('Select a stage first', 'error'); return; }
+        payload.stage = stage;
+      } else if (action === 'assign') {
+        const assignee = document.getElementById('bulkAssigneeInput')?.value.trim();
+        if (!assignee) { if (window.showToast) window.showToast('Enter an assignee name', 'error'); return; }
+        payload.assignee = assignee;
+      } else if (action === 'delete') {
+        if (window.confirm && !window.confirm(`Are you sure you want to delete ${taskIds.length} tasks?`)) return;
+      }
+      
+      try {
+        await APP_API.post('/tasks/bulk', payload);
+        if (window.showToast) window.showToast(`Bulk ${action} applied to ${taskIds.length} tasks`, 'success');
+        this.clearSelection();
+        loadData();
+      } catch (e) {
+        if (window.showToast) window.showToast('Failed bulk action: ' + e.message, 'error');
+      }
+    },
+    dragTask(evt, taskId) {
+      evt.dataTransfer.setData('text/plain', taskId);
+    },
+    async dropTask(evt, targetStage) {
+      evt.preventDefault();
+      const taskId = evt.dataTransfer.getData('text/plain');
+      if (taskId) {
+        await this.updateStage(taskId, targetStage);
+      }
+    },
+    async updateStage(taskId, newStage) {
+      try {
+        const res = await APP_API.patch(`/tasks/${taskId}/stage`, { stage: newStage });
+        if (res.success || res.task) {
+          const t = allTasks.find(x => x.id === taskId);
+          if (t) t.stage = newStage;
+          renderViewArea();
+        }
+      } catch (e) {
+        console.error(e);
+        if (window.showToast) window.showToast('Failed to update task stage', 'error');
+      }
+    },
 
-      const newStagesStr = prompt(`⚙️ Edit stage pipeline for ${wf.name} (${wf.icon}):\nEnter comma-separated stage names in order:`, wf.stages.join(', '));
-      if (newStagesStr === null) return;
+    /* ── Space Creator & Manager ── */
+    openSpaceModal(tab = 'create') {
+      const modal = document.getElementById('kanbanSpaceModal');
+      if (!modal) return;
+      this.switchSpaceTab(tab);
+      const nameInp = document.getElementById('spaceNameInput');
+      if (nameInp) nameInp.value = '';
+      this.selectSpaceIcon('📁');
+      this.selectSpaceColor('#a855f7');
+      modal.classList.add('active');
+    },
+    closeSpaceModal() {
+      const modal = document.getElementById('kanbanSpaceModal');
+      if (modal) modal.classList.remove('active');
+    },
+    switchSpaceTab(tab) {
+      const tabCreate = document.getElementById('spaceModalTabCreate');
+      const tabManage = document.getElementById('spaceModalTabManage');
+      const viewCreate = document.getElementById('spaceModalCreateView');
+      const viewManage = document.getElementById('spaceModalManageView');
 
-      const newStages = newStagesStr.split(',').map(s => s.trim()).filter(Boolean);
-      if (newStages.length < 2) { if (window.showToast) window.showToast('Pipeline must have at least 2 stages.', 'error'); return; }
+      if (tab === 'create') {
+        if (tabCreate) tabCreate.className = 'btn-secondary btn-sm';
+        if (tabManage) tabManage.className = 'btn-ghost btn-sm';
+        if (viewCreate) viewCreate.style.display = 'block';
+        if (viewManage) viewManage.style.display = 'none';
+      } else {
+        if (tabCreate) tabCreate.className = 'btn-ghost btn-sm';
+        if (tabManage) tabManage.className = 'btn-secondary btn-sm';
+        if (viewCreate) viewCreate.style.display = 'none';
+        if (viewManage) viewManage.style.display = 'block';
+      }
+    },
+    selectSpaceIcon(icon) {
+      selectedSpaceIcon = icon;
+      const picker = document.getElementById('spaceIconPicker');
+      if (picker) {
+        picker.querySelectorAll('button').forEach(btn => {
+          if (btn.innerText.trim() === icon) {
+            btn.style.borderColor = 'var(--purple-brand)';
+            btn.style.background = 'var(--surface-3)';
+          } else {
+            btn.style.borderColor = 'transparent';
+            btn.style.background = 'transparent';
+          }
+        });
+      }
+    },
+    selectSpaceColor(color) {
+      selectedSpaceColor = color;
+      const picker = document.getElementById('spaceColorPicker');
+      if (picker) {
+        picker.querySelectorAll('div').forEach(dot => {
+          if (dot.style.background.includes(color) || dot.getAttribute('style').includes(color)) {
+            dot.style.borderColor = '#fff';
+          } else {
+            dot.style.borderColor = 'transparent';
+          }
+        });
+      }
+    },
+    async submitNewSpace() {
+      const name = (document.getElementById('spaceNameInput')?.value || '').trim();
+      if (!name) {
+        if (window.showToast) window.showToast('Please enter a space name', 'error');
+        return;
+      }
+      const type = document.getElementById('spaceTypeInput')?.value || 'custom';
+
+      try {
+        await APP_API.post('/projects/spaces', {
+          name,
+          type,
+          icon: selectedSpaceIcon,
+          color: selectedSpaceColor
+        });
+        if (window.showToast) window.showToast(`✨ Space "${name}" created!`, 'success');
+        this.closeSpaceModal();
+        await loadData();
+      } catch (err) {
+        if (window.showToast) window.showToast('Failed to create space: ' + err.message, 'error');
+      }
+    },
+    async deleteSpace(spaceId) {
+      if (window.confirm && !window.confirm('Are you sure you want to delete this custom space?')) return;
+      try {
+        await APP_API.delete(`/projects/spaces/${encodeURIComponent(spaceId)}`);
+        if (window.showToast) window.showToast('Space deleted', 'success');
+        if (activeSpace === spaceId) activeSpace = 'all';
+        await loadData();
+        this.openSpaceModal('manage');
+      } catch (err) {
+        if (window.showToast) window.showToast('Failed to delete space: ' + err.message, 'error');
+      }
+    },
+
+    /* ── Pipeline Stage Editor ── */
+    openStageEditor(wfKey = null) {
+      const targetWf = wfKey || (activeWorkflowFilter !== 'all' ? activeWorkflowFilter : 'video');
+      editorActiveWf = targetWf;
+      const wf = WORKFLOW_TYPES[targetWf] || DEFAULT_WORKFLOW_PRESETS[targetWf] || DEFAULT_WORKFLOW_PRESETS['video'];
+      editorStages = [...wf.stages];
+
+      const modal = document.getElementById('kanbanStageEditorModal');
+      if (!modal) return;
+
+      this.renderStageEditorContent();
+      modal.classList.add('active');
+    },
+    closeStageEditor() {
+      const modal = document.getElementById('kanbanStageEditorModal');
+      if (modal) modal.classList.remove('active');
+    },
+    selectEditorWorkflow(wfKey) {
+      editorActiveWf = wfKey;
+      const wf = WORKFLOW_TYPES[wfKey] || DEFAULT_WORKFLOW_PRESETS[wfKey] || DEFAULT_WORKFLOW_PRESETS['video'];
+      editorStages = [...wf.stages];
+      this.renderStageEditorContent();
+    },
+    renderStageEditorContent() {
+      // Update Tab button active styles
+      const tabsCont = document.getElementById('editorWfTabsContainer');
+      if (tabsCont) {
+        tabsCont.innerHTML = Object.keys(WORKFLOW_TYPES).map(k => `
+          <button type="button" class="${editorActiveWf === k ? 'btn-primary btn-sm' : 'btn-secondary btn-sm'}" onclick="window.KANBAN_MODULE.selectEditorWorkflow('${k}')">
+            ${WORKFLOW_TYPES[k].icon} ${WORKFLOW_TYPES[k].name}
+          </button>
+        `).join('');
+      }
+
+      const titleEl = document.getElementById('editorStageListTitle');
+      if (titleEl && WORKFLOW_TYPES[editorActiveWf]) {
+        titleEl.innerHTML = `${WORKFLOW_TYPES[editorActiveWf].icon} ${WORKFLOW_TYPES[editorActiveWf].name} Stages (${editorStages.length} steps)`;
+      }
+
+      const listEl = document.getElementById('editorStageList');
+      if (listEl) {
+        listEl.innerHTML = editorStages.map((stg, idx) => `
+          <div style="display: flex; align-items: center; gap: 0.5rem; background: var(--surface-2); border: 1px solid var(--border-subtle); padding: 0.45rem 0.65rem; border-radius: 8px;">
+            <span class="badge badge-purple" style="font-size:0.7rem; min-width:24px; text-align:center;">${idx + 1}</span>
+            <input type="text" class="input-text" style="flex:1; padding:0.3rem 0.6rem; font-size:0.82rem;" value="${escapeHTML(stg)}" onchange="window.KANBAN_MODULE.updateStageName(${idx}, this.value)">
+            <button type="button" class="btn-secondary btn-sm" style="padding:0.2rem 0.45rem; font-size:0.75rem;" onclick="window.KANBAN_MODULE.moveStage(${idx}, -1)" ${idx === 0 ? 'disabled' : ''} title="Move Earlier">↑</button>
+            <button type="button" class="btn-secondary btn-sm" style="padding:0.2rem 0.45rem; font-size:0.75rem;" onclick="window.KANBAN_MODULE.moveStage(${idx}, 1)" ${idx === editorStages.length - 1 ? 'disabled' : ''} title="Move Later">↓</button>
+            <button type="button" class="btn-danger btn-sm" style="padding:0.2rem 0.45rem; font-size:0.75rem;" onclick="window.KANBAN_MODULE.removeStage(${idx})" ${editorStages.length <= 2 ? 'disabled' : ''} title="Remove Stage">✕</button>
+          </div>
+        `).join('');
+      }
+    },
+    updateStageName(idx, newName) {
+      if (newName && newName.trim()) {
+        editorStages[idx] = newName.trim();
+      }
+    },
+    moveStage(idx, direction) {
+      const targetIdx = idx + direction;
+      if (targetIdx < 0 || targetIdx >= editorStages.length) return;
+      const temp = editorStages[idx];
+      editorStages[idx] = editorStages[targetIdx];
+      editorStages[targetIdx] = temp;
+      this.renderStageEditorContent();
+    },
+    removeStage(idx) {
+      if (editorStages.length <= 2) {
+        if (window.showToast) window.showToast('A workflow must have at least 2 stages', 'error');
+        return;
+      }
+      editorStages.splice(idx, 1);
+      this.renderStageEditorContent();
+    },
+    addStageToEditor() {
+      const input = document.getElementById('newStageInput');
+      const val = (input?.value || '').trim();
+      if (!val) return;
+      if (editorStages.some(s => s.toLowerCase() === val.toLowerCase())) {
+        if (window.showToast) window.showToast('This stage step already exists', 'error');
+        return;
+      }
+      editorStages.push(val);
+      if (input) input.value = '';
+      this.renderStageEditorContent();
+    },
+    resetStagesToDefault() {
+      const preset = DEFAULT_WORKFLOW_PRESETS[editorActiveWf];
+      if (preset && preset.stages) {
+        editorStages = [...preset.stages];
+        this.renderStageEditorContent();
+        if (window.showToast) window.showToast(`Reset ${preset.name} to default preset stages`, 'success');
+      }
+    },
+    async savePipelineStages() {
+      if (editorStages.length < 2) {
+        if (window.showToast) window.showToast('Pipeline must contain at least 2 stages', 'error');
+        return;
+      }
 
       const payload = {
-        [targetWf]: {
-          stages: newStages
+        [editorActiveWf]: {
+          stages: editorStages
         }
       };
 
-      APP_API.put('/workflows/stages', payload)
-        .then(res => {
-          if (window.showToast) window.showToast('✅ Workflow stages updated and saved!', 'success');
-          loadData();
-        })
-        .catch(err => {
-          if (window.showToast) window.showToast('Failed to update stages: ' + (err.message || 'Permission denied'), 'error');
-        });
+      try {
+        await APP_API.put('/workflows/stages', payload);
+        if (window.showToast) window.showToast('✅ Workflow pipeline stages saved successfully!', 'success');
+        this.closeStageEditor();
+        await loadData();
+      } catch (err) {
+        if (window.showToast) window.showToast('Failed to save stages: ' + (err.message || 'Error'), 'error');
+      }
     }
   };
 

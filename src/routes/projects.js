@@ -150,20 +150,36 @@ router.get('/workflows', requireAuth, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+// GET Spaces (Supabase spaces table or app_settings fallback)
 router.get('/spaces', requireAuth, async (req, res) => {
   try {
     const { data, error } = await supabase.from('spaces').select('*').order('name', { ascending: true });
-    if (error) {
-      // Fallback if spaces table not yet migrated
-      return res.json([
-        { id: 'space-internal', name: 'Internal Agency', type: 'department', icon: '🏢' },
-        { id: 'space-clients', name: 'Client Retainers', type: 'client', icon: '🟣' }
-      ]);
+    if (!error && data && data.length > 0) {
+      return res.json(data);
     }
-    res.json(data || []);
+    
+    // Fallback: check app_settings for custom spaces
+    const { data: settingsData } = await supabase
+      .from('app_settings')
+      .select('value')
+      .eq('key', 'project_spaces')
+      .maybeSingle();
+
+    if (settingsData && Array.isArray(settingsData.value) && settingsData.value.length > 0) {
+      return res.json(settingsData.value);
+    }
+
+    const defaultSpaces = [
+      { id: 'space-internal', name: 'Internal Agency', type: 'department', icon: '🏢', color: '#3b82f6' },
+      { id: 'space-clients', name: 'Client Retainers', type: 'client', icon: '🟣', color: '#a855f7' }
+    ];
+    res.json(defaultSpaces);
   } catch (err) {
     console.error('Spaces GET error:', err.message);
-    res.status(500).json({ error: err.message });
+    res.json([
+      { id: 'space-internal', name: 'Internal Agency', type: 'department', icon: '🏢', color: '#3b82f6' },
+      { id: 'space-clients', name: 'Client Retainers', type: 'client', icon: '🟣', color: '#a855f7' }
+    ]);
   }
 });
 
@@ -173,20 +189,70 @@ router.post('/spaces', requireAuth, async (req, res) => {
     const { name, type, color, icon, clientId } = req.body;
     if (!name || !name.trim()) return res.status(400).json({ error: 'Space name is required' });
 
-    const payload = {
+    const newSpace = {
+      id: 'space_' + Date.now(),
       name: name.trim(),
-      type: type || 'client',
+      type: type || 'custom',
       client_id: clientId || null,
       color: color || '#a855f7',
       icon: icon || '📁'
     };
 
-    const { data, error } = await supabase.from('spaces').insert([payload]).select().single();
-    if (error) throw error;
+    // Try insert into spaces table
+    let savedSpace = null;
+    try {
+      const { data, error } = await supabase.from('spaces').insert([newSpace]).select().single();
+      if (!error && data) savedSpace = data;
+    } catch (e) {}
 
-    res.json({ success: true, space: data });
+    // Also persist in app_settings as resilient backup
+    try {
+      const { data: curSettings } = await supabase.from('app_settings').select('value').eq('key', 'project_spaces').maybeSingle();
+      const existing = (curSettings && Array.isArray(curSettings.value)) ? curSettings.value : [
+        { id: 'space-internal', name: 'Internal Agency', type: 'department', icon: '🏢', color: '#3b82f6' },
+        { id: 'space-clients', name: 'Client Retainers', type: 'client', icon: '🟣', color: '#a855f7' }
+      ];
+      
+      const filtered = existing.filter(s => s.name.toLowerCase() !== newSpace.name.toLowerCase());
+      filtered.push(newSpace);
+
+      await supabase.from('app_settings').upsert({
+        key: 'project_spaces',
+        value: filtered,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'key' });
+    } catch (e) {}
+
+    res.json({ success: true, space: savedSpace || newSpace });
   } catch (err) {
     console.error('Spaces POST error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// DELETE Space
+router.delete('/spaces/:id', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    try {
+      await supabase.from('spaces').delete().eq('id', id);
+    } catch (e) {}
+
+    try {
+      const { data: curSettings } = await supabase.from('app_settings').select('value').eq('key', 'project_spaces').maybeSingle();
+      if (curSettings && Array.isArray(curSettings.value)) {
+        const filtered = curSettings.value.filter(s => s.id !== id && s.name !== id);
+        await supabase.from('app_settings').upsert({
+          key: 'project_spaces',
+          value: filtered,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'key' });
+      }
+    } catch (e) {}
+
+    res.json({ success: true, deletedId: id });
+  } catch (err) {
+    console.error('Spaces DELETE error:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
