@@ -20,7 +20,7 @@ const { ok, fail, asyncHandler } = require('../utils/response');
 
 /**
  * POST /api/admin/import/clients
- * Body: { rows: [{ name, contact, phone, budget }] }
+ * Body: { rows: [{ name, contact, phone, email, industry, category, budget, retainerValue, status }] }
  */
 router.post('/clients', requireAuth, requireManager, asyncHandler(async (req, res) => {
   const { rows } = req.body;
@@ -28,23 +28,53 @@ router.post('/clients', requireAuth, requireManager, asyncHandler(async (req, re
     return fail(res, 400, 'rows array is required and must not be empty', 'INVALID_INPUT');
   }
 
+  let startIdNum = 1;
+  if (isSupabaseConfigured()) {
+    const { data: countData } = await supabase.from('clients').select('id');
+    startIdNum = (countData?.length || 0) + 1;
+  }
+
   const validPayloads = [];
   const errors = [];
 
   rows.forEach((row, idx) => {
-    const { name, contact, phone, budget } = row;
+    const name = row.name || row.company || row['company name'] || row.client || '';
     if (!name || typeof name !== 'string' || !name.trim()) {
-      errors.push({ row, reason: 'Name is required' });
+      errors.push({ row, reason: 'Company/Client name is required' });
       return;
     }
 
+    const contactPerson = row.contact || row.contact_person || row.contactPerson || row['contact person'] || '';
+    const phone = row.phone || row.whatsapp || row.mobile || row['phone number'] || '';
+    const email = row.email || row['contact email'] || row.mail || '';
+    const category = row.category || row.industry || 'General';
+    const status = row.status || 'Active Retainer';
+    const rawBudget = row.budget || row.retainerValue || row.totalSpent || row.total_spent || 0;
+    const parsedBudget = typeof rawBudget === 'number' ? rawBudget : Number(String(rawBudget).replace(/[^0-9.]/g, '')) || 0;
+
+    const clientId = `CLI-${String(startIdNum + idx).padStart(4, '0')}`;
+    const pocList = (contactPerson || phone || email) ? [{
+      id: `poc_${Date.now()}_${idx}`,
+      name: contactPerson || name,
+      role: 'Primary POC',
+      phone: phone || '',
+      email: email || '',
+      isPrimary: true
+    }] : [];
+
     validPayloads.push({
-      id: `CLT-${Date.now()}-${idx}-${Math.random().toString(36).slice(2, 5)}`,
+      id: clientId,
       name: String(name).trim(),
-      contact_person: contact ? String(contact).trim() : null,
+      contact_person: contactPerson ? String(contactPerson).trim() : null,
       phone: phone ? String(phone).trim() : null,
-      budget: budget ? Number(String(budget).replace(/[^0-9.]/g, '')) || 0 : 0,
-      status: 'Active',
+      whatsapp: phone ? String(phone).trim() : null,
+      email: email ? String(email).trim() : null,
+      category: String(category).trim(),
+      industry: String(category).trim(),
+      status: String(status).trim(),
+      total_spent: parsedBudget ? `৳${parsedBudget.toLocaleString()}` : '$0',
+      active_campaigns: [],
+      pocs: pocList,
       created_at: new Date().toISOString()
     });
   });
@@ -68,6 +98,8 @@ router.post('/clients', requireAuth, requireManager, asyncHandler(async (req, re
   if (imported.length > 0) broadcast('clients_update', imported);
 
   return ok(res, {
+    success: true,
+    addedCount: imported.length,
     imported: imported.length,
     errorsCount: errors.length,
     errors: errors.length > 0 ? errors : undefined

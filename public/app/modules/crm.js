@@ -15,6 +15,7 @@ window.APP_MODULES.crm = async function(container) {
   let filterStatus = 'all';
   let sortBy = 'revenue';
   let currentEditingClient = null;
+  let parsedImportClients = [];
 
   // ─── Load Data ──────────────────────────────────────────────────────────────
   async function loadCRMData() {
@@ -708,63 +709,265 @@ window.APP_MODULES.crm = async function(container) {
     },
 
     openImportModal() {
+      parsedImportClients = [];
       let modal = document.getElementById('crmImportClientsModal');
       if (!modal) {
         modal = document.createElement('div');
         modal.id = 'crmImportClientsModal';
         modal.className = 'modal-overlay';
         modal.innerHTML = `
-          <div class="modal-content" style="max-width: 500px;">
+          <div class="modal-content" style="max-width: 640px;">
             <div class="modal-header">
-              <h3>👥 Import Client Master List CSV</h3>
+              <h3>👥 Bulk Import Clients (CSV)</h3>
               <button class="modal-close" onclick="window.CRM_MODULE.closeImportModal()">✕</button>
             </div>
-            <div class="modal-body">
-              <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0.8rem;">
-                Format: <code>Name, ContactPerson, Phone, RetainerValue, Email</code>
-              </p>
-              <textarea id="crmCsvText" class="input-text" style="height: 120px; font-family: monospace; font-size: 0.78rem;" placeholder="Chillox Fast Food, Director, 01711223344, 150000, info@chillox.bd&#10;Apex Shoes, Brand Manager, 01811223344, 95000, brand@apex.bd"></textarea>
-              <div style="margin-top: 1.5rem; text-align: right;">
-                <button class="btn-primary" onclick="window.CRM_MODULE.submitClientsCSV()">📥 Import Clients to Database</button>
+            <div class="modal-body" style="display:flex; flex-direction:column; gap:1rem;">
+              
+              <!-- Guideline Box -->
+              <div style="background:var(--surface-3); border:1px solid var(--border-subtle); border-radius:12px; padding:0.9rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem; flex-wrap:wrap; gap:0.5rem;">
+                  <div style="font-weight:800; font-size:0.82rem; color:var(--text-primary);">📋 Client CSV Column Format Guidelines</div>
+                  <button type="button" class="btn-secondary" onclick="window.CRM_MODULE.downloadSampleCSV()" style="font-size:0.75rem; padding:0.35rem 0.75rem;">
+                    📥 Download Sample CSV
+                  </button>
+                </div>
+                <div class="table-responsive" style="margin-bottom:0;">
+                  <table class="data-table" style="font-size:0.74rem;">
+                    <thead>
+                      <tr><th>Column Header</th><th>Status</th><th>Description / Example</th></tr>
+                    </thead>
+                    <tbody>
+                      <tr><td><code>Company Name</code></td><td><span style="color:#ef4444; font-weight:700;">Required</span></td><td>Client brand / business name (e.g. <em>Chillox BD</em>)</td></tr>
+                      <tr><td><code>Contact Person</code></td><td><span style="color:#ef4444; font-weight:700;">Required</span></td><td>Primary POC name (e.g. <em>Arman Hossain</em>)</td></tr>
+                      <tr><td><code>Phone</code></td><td><span style="color:#10b981; font-weight:700;">Recommended</span></td><td>Mobile / WhatsApp for PIN login (e.g. <em>+8801711223344</em>)</td></tr>
+                      <tr><td><code>Email</code></td><td>Optional</td><td>Official email (e.g. <em>info@chillox.bd</em>)</td></tr>
+                      <tr><td><code>Industry</code></td><td>Optional</td><td>Category (e.g. <em>Food & Beverage, Fashion, Retail</em>)</td></tr>
+                      <tr><td><code>Monthly Retainer</code></td><td>Optional</td><td>Retainer budget in BDT (e.g. <em>150000</em>)</td></tr>
+                      <tr><td><code>Status</code></td><td>Optional</td><td>Account status (<em>Active Retainer, Onboarding</em>)</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Upload / Paste Mode Switcher -->
+              <div>
+                <div style="display:flex; gap:0.5rem; margin-bottom:0.6rem;">
+                  <button type="button" id="crmImportTabFileBtn" class="btn-secondary" style="font-size:0.78rem; padding:0.4rem 0.85rem;" onclick="window.CRM_MODULE.switchImportTab('file')">📂 Upload CSV File</button>
+                  <button type="button" id="crmImportTabPasteBtn" class="btn-ghost" style="font-size:0.78rem; padding:0.4rem 0.85rem;" onclick="window.CRM_MODULE.switchImportTab('paste')">📋 Paste Raw CSV Text</button>
+                </div>
+
+                <div id="crmImportFileContainer">
+                  <input type="file" id="crmCsvFileInput" accept=".csv,text/csv" class="input-text" style="padding:0.6rem;" onchange="window.CRM_MODULE.handleFileSelected(event)">
+                </div>
+
+                <div id="crmImportPasteContainer" style="display:none;">
+                  <textarea id="crmCsvTextInput" class="input-text" style="height:110px; font-family:monospace; font-size:0.78rem;" placeholder="Company Name,Contact Person,Phone,Email,Industry,Monthly Retainer,Status&#10;Chillox Bangladesh,Arman Hossain,+8801711223344,arman@chillox.bd,Food & Beverage,150000,Active Retainer&#10;Apex Footwear,Sabbir Rahman,+8801811556677,sabbir@apex.bd,Fashion & Retail,95000,Active Retainer" oninput="window.CRM_MODULE.handleTextPasted(event)"></textarea>
+                </div>
+              </div>
+
+              <!-- Live Preview Container -->
+              <div id="crmImportPreviewContainer" style="display:none; background:var(--surface-2); border:1px solid var(--border-subtle); border-radius:10px; padding:0.75rem;">
+                <div style="font-size:0.8rem; font-weight:800; color:var(--text-primary); margin-bottom:0.4rem;" id="crmImportPreviewTitle">👁️ Live Pre-Import Preview</div>
+                <div class="table-responsive" style="max-height:150px; overflow-y:auto;">
+                  <table class="data-table" style="font-size:0.74rem;" id="crmImportPreviewTable">
+                    <thead id="crmImportPreviewThead"></thead>
+                    <tbody id="crmImportPreviewTbody"></tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div style="display:flex; justify-content:flex-end; gap:0.75rem; margin-top:0.25rem;">
+                <button type="button" class="btn-secondary" onclick="window.CRM_MODULE.closeImportModal()">Cancel</button>
+                <button type="button" id="crmSubmitImportBtn" class="btn-primary" disabled onclick="window.CRM_MODULE.executeImport()">🚀 Import Clients to Database</button>
               </div>
             </div>
           </div>
         `;
         document.body.appendChild(modal);
       }
+
+      const fileInput = document.getElementById('crmCsvFileInput');
+      const textInput = document.getElementById('crmCsvTextInput');
+      const previewCont = document.getElementById('crmImportPreviewContainer');
+      const submitBtn = document.getElementById('crmSubmitImportBtn');
+      if (fileInput) fileInput.value = '';
+      if (textInput) textInput.value = '';
+      if (previewCont) previewCont.style.display = 'none';
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerText = '🚀 Import Clients to Database';
+      }
+      this.switchImportTab('file');
       modal.classList.add('active');
     },
 
     closeImportModal() {
       const modal = document.getElementById('crmImportClientsModal');
       if (modal) modal.classList.remove('active');
+      parsedImportClients = [];
     },
 
-    submitClientsCSV: async function() {
-      const text = (document.getElementById('crmCsvText')?.value || '').trim();
-      if (!text) { if (window.showToast) window.showToast('Please paste CSV text first.', 'error'); return; }
-      const lines = text.split('\n');
-      const rows = lines.map(line => {
-        const parts = line.split(',').map(p => p.trim());
-        return {
-          name: parts[0],
-          contactPerson: parts[1] || 'Director',
-          phone: parts[2] || '',
-          retainerValue: parseFloat(parts[3]) || 0,
-          email: parts[4] || ''
-        };
-      }).filter(r => r.name);
+    downloadSampleCSV() {
+      const csvHeader = "Company Name,Contact Person,Phone,Email,Industry,Monthly Retainer,Status\n";
+      const sampleRow1 = "Chillox Bangladesh,Arman Hossain,+8801711223344,arman@chillox.bd,Food & Beverage,150000,Active Retainer\n";
+      const sampleRow2 = "Apex Footwear,Sabbir Rahman,+8801811556677,sabbir@apex.bd,Fashion & Retail,95000,Active Retainer\n";
+      const sampleRow3 = "Aura Skincare,Tania Ahmed,+8801911998877,tania@auraskin.com,Health & Beauty,80000,Onboarding";
+      
+      const csvContent = csvHeader + sampleRow1 + sampleRow2 + sampleRow3;
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', 'purpleos_clients_template.csv');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.showToast && window.showToast('📥 Downloaded sample Client CSV template!', 'success');
+    },
+
+    switchImportTab(tab) {
+      const fileBtn = document.getElementById('crmImportTabFileBtn');
+      const pasteBtn = document.getElementById('crmImportTabPasteBtn');
+      const fileCont = document.getElementById('crmImportFileContainer');
+      const pasteCont = document.getElementById('crmImportPasteContainer');
+
+      if (tab === 'file') {
+        if (fileBtn) { fileBtn.className = 'btn-secondary'; }
+        if (pasteBtn) { pasteBtn.className = 'btn-ghost'; }
+        if (fileCont) fileCont.style.display = 'block';
+        if (pasteCont) pasteCont.style.display = 'none';
+      } else {
+        if (fileBtn) { fileBtn.className = 'btn-ghost'; }
+        if (pasteBtn) { pasteBtn.className = 'btn-secondary'; }
+        if (fileCont) fileCont.style.display = 'none';
+        if (pasteCont) pasteCont.style.display = 'block';
+      }
+    },
+
+    parseCSVText(text) {
+      if (!text || !text.trim()) return [];
+      const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+      if (lines.length < 2) return [];
+
+      const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/["']/g, ''));
+      const parsed = [];
+
+      for (let i = 1; i < lines.length; i++) {
+        const cols = lines[i].split(',').map(c => c.trim().replace(/^["']|["']$/g, ''));
+        const row = {};
+        headers.forEach((h, idx) => {
+          if (cols[idx] !== undefined) row[h] = cols[idx];
+        });
+
+        const name = row.name || row['company name'] || row.company || row.client || row['brand name'] || '';
+        const contactPerson = row['contact person'] || row.contact || row.contactperson || row.name || 'Primary POC';
+        const phone = row.phone || row.mobile || row.whatsapp || row['cell'] || row['phone number'] || '';
+        const email = row.email || row['contact email'] || row.mail || '';
+        const industry = row.industry || row.category || 'General';
+        const retainerValue = row['monthly retainer'] || row.retainervalue || row.retainer || row.budget || row.value || 0;
+        const status = row.status || 'Active Retainer';
+
+        if (name && name.toLowerCase() !== 'company name' && name.toLowerCase() !== 'name') {
+          parsed.push({
+            name,
+            contactPerson,
+            phone,
+            email,
+            industry,
+            category: industry,
+            retainerValue,
+            status
+          });
+        }
+      }
+      return parsed;
+    },
+
+    handleFileSelected(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const text = ev.target.result;
+        parsedImportClients = window.CRM_MODULE.parseCSVText(text);
+        window.CRM_MODULE.renderPreview(parsedImportClients);
+      };
+      reader.readAsText(file);
+    },
+
+    handleTextPasted(e) {
+      const text = e.target.value;
+      parsedImportClients = window.CRM_MODULE.parseCSVText(text);
+      window.CRM_MODULE.renderPreview(parsedImportClients);
+    },
+
+    renderPreview(clients) {
+      const previewCont = document.getElementById('crmImportPreviewContainer');
+      const thead = document.getElementById('crmImportPreviewThead');
+      const tbody = document.getElementById('crmImportPreviewTbody');
+      const title = document.getElementById('crmImportPreviewTitle');
+      const submitBtn = document.getElementById('crmSubmitImportBtn');
+
+      if (!clients || clients.length === 0) {
+        if (previewCont) previewCont.style.display = 'none';
+        if (submitBtn) submitBtn.disabled = true;
+        return;
+      }
+
+      if (previewCont) previewCont.style.display = 'block';
+      if (title) title.innerHTML = `👁️ Live Pre-Import Preview <span class="badge badge-emerald" style="margin-left:0.5rem;">${clients.length} clients detected</span>`;
+
+      if (thead) {
+        thead.innerHTML = `<tr><th>Company</th><th>Contact POC</th><th>Phone</th><th>Industry</th><th>Retainer</th></tr>`;
+      }
+
+      if (tbody) {
+        tbody.innerHTML = clients.slice(0, 3).map(c => `
+          <tr>
+            <td class="nowrap"><strong>${escapeHTML(c.name)}</strong></td>
+            <td class="nowrap">${escapeHTML(c.contactPerson)}</td>
+            <td class="nowrap" style="color:var(--text-muted);">${escapeHTML(c.phone || '—')}</td>
+            <td class="truncate" style="color:var(--text-muted);">${escapeHTML(c.industry || 'General')}</td>
+            <td class="nowrap">${c.retainerValue ? '৳' + Number(c.retainerValue).toLocaleString() : '—'}</td>
+          </tr>
+        `).join('') + (clients.length > 3 ? `<tr><td colspan="5" style="text-align:center; color:var(--text-muted); font-size:0.75rem;">...and ${clients.length - 3} more client accounts ready for import</td></tr>` : '');
+      }
+
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerText = `🚀 Import ${clients.length} Clients to Database`;
+      }
+    },
+
+    async executeImport() {
+      if (!parsedImportClients || parsedImportClients.length === 0) {
+        return window.showToast && window.showToast('Please select a valid CSV file or paste client data first.', 'error');
+      }
+
+      const submitBtn = document.getElementById('crmSubmitImportBtn');
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerText = '⏳ Importing Clients...';
+      }
 
       try {
-        const res = await APP_API.post('/admin/import/clients', { rows });
-        if (res && res.error) {
-          window.showToast && window.showToast('Import failed: ' + res.error, 'error');
-        } else {
+        const res = await APP_API.post('/admin/import/clients', { rows: parsedImportClients });
+        if (res && (res.success || res.imported || res.addedCount)) {
           this.closeImportModal();
-          window.showToast && window.showToast(`Imported ${res.addedCount || rows.length} client(s)! 👥`, 'success');
-          loadCRMData();
+          await loadCRMData();
+          window.showToast && window.showToast(`🎉 Successfully imported ${res.addedCount || res.imported || parsedImportClients.length} clients!`, 'success');
+        } else {
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerText = '🚀 Import Clients to Database';
+          }
+          window.showToast && window.showToast('Import failed: ' + (res.error || 'Unknown error'), 'error');
         }
       } catch (err) {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerText = '🚀 Import Clients to Database';
+        }
         window.showToast && window.showToast('Import error: ' + err.message, 'error');
       }
     }
