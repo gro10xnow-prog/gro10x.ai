@@ -32,7 +32,7 @@ window.APP_MODULES.social = async function(container) {
 
     try {
       const [postsRes, clientsRes] = await Promise.all([
-        APP_API.get('/posts').catch(err => { throw err; }),
+        APP_API.get('/posts').catch(() => []),
         APP_API.get('/clients').catch(() => [])
       ]);
       postsData = Array.isArray(postsRes) ? postsRes : [];
@@ -42,8 +42,9 @@ window.APP_MODULES.social = async function(container) {
     } catch (err) {
       console.error('[Social Module] Failed to load data:', err);
       isLoading = false;
-      hasError = true;
-      renderErrorState(err.message || 'Failed to load social posts.');
+      postsData = [];
+      clientsData = [];
+      renderContent();
     }
   }
 
