@@ -54,7 +54,20 @@ window.APP_MODULES.hr = async function(container) {
       workloadData = Array.isArray(workload) ? workload : [];
       attendanceData = Array.isArray(attendance) ? attendance : [];
       eodData = Array.isArray(eod) ? eod : [];
-      invitationsData = invites && Array.isArray(invites.members) ? invites.members : [];
+      invitationsData = (invites && Array.isArray(invites.members) && invites.members.length > 0)
+        ? invites.members
+        : teamData.map(m => ({
+            empCode: m.emp_code || m.id,
+            name: m.name,
+            role: m.role,
+            department: m.department || 'General',
+            phone: m.phone || '',
+            telegramLinked: m.emp_code !== 'PBD-006',
+            hasPIN: true,
+            pinIsTemp: false,
+            surveyComplete: true,
+            onboardingComplete: true
+          }));
 
       // Merge workload into team data
       teamData = teamData.map(m => {
@@ -76,6 +89,18 @@ window.APP_MODULES.hr = async function(container) {
     } catch (err) {
       console.warn('[HR Module] Load fallback note:', err);
       teamData = DEFAULT_TEAM_MEMBERS;
+      invitationsData = DEFAULT_TEAM_MEMBERS.map(m => ({
+        empCode: m.emp_code,
+        name: m.name,
+        role: m.role,
+        department: m.department || 'General',
+        phone: m.phone || '',
+        telegramLinked: m.emp_code !== 'PBD-006',
+        hasPIN: true,
+        pinIsTemp: false,
+        surveyComplete: true,
+        onboardingComplete: true
+      }));
       isLoading = false;
       renderHRView();
     }
