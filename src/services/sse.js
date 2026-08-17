@@ -19,8 +19,18 @@ function sseHandler(req, res) {
 }
 
 function broadcast(eventType, data) {
-  const payload = JSON.stringify({ type: eventType, data, timestamp: new Date().toISOString() });
-  clients.forEach(c => c.res.write(`data: ${payload}\n\n`));
+  try {
+    const payload = JSON.stringify({ type: eventType, data, timestamp: new Date().toISOString() });
+    clients = clients.filter(c => {
+      try {
+        if (c.res && !c.res.writableEnded && !c.res.finished) {
+          c.res.write(`data: ${payload}\n\n`);
+          return true;
+        }
+      } catch (e) {}
+      return false;
+    });
+  } catch (e) {}
 }
 
 function getActiveClientsCount() {

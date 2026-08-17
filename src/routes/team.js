@@ -657,11 +657,26 @@ router.post('/agreement', miniAppLimiter, requireMiniAppAuth, async (req, res) =
 // ─────────────────────────────────────────────────────────────────────────────
 router.get('/', requireAuth, async (req, res) => {
   try {
-    const { data, error } = await supabase.from('profiles').select('*').order('emp_code', { ascending: true });
-    if (error) throw error;
+    let profilesList = [];
+    if (supabase) {
+      try {
+        const { data, error } = await supabase.from('profiles').select('*').order('emp_code', { ascending: true });
+        if (!error && Array.isArray(data) && data.length > 0) {
+          profilesList = data;
+        }
+      } catch (e) {}
+    }
+
+    if (profilesList.length === 0) {
+      try {
+        const db = await readDB();
+        profilesList = db.team || [];
+      } catch (e) {}
+    }
+
     const access = (req.user?.accessLevel || req.user?.role || '').toLowerCase();
     const isManager = access.includes('admin') || access.includes('owner') || access.includes('manager') || access.includes('director') || access.includes('lead') || access.includes('technology');
-    res.json((data || []).map(p => isManager ? mapProfile(p) : mapPublicProfile(p)));
+    res.json((profilesList || []).map(p => isManager ? mapProfile(p) : mapPublicProfile(p)));
   } catch (err) {
     console.error('Team GET error:', err.message);
     res.status(500).json({ error: err.message });

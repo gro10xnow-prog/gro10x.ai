@@ -55,7 +55,13 @@ window.APP_API = {
         return null;
       }
 
-      const data = await response.json();
+      const text = await response.text();
+      let data = null;
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch (e) {
+        data = { error: text || `HTTP ${response.status}` };
+      }
 
       if (!response.ok || (data && data.error)) {
         throw new Error(data?.error || `HTTP ${response.status}`);

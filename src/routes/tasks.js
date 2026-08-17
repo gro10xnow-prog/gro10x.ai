@@ -154,6 +154,10 @@ router.post('/', requireAuth, async (req, res) => {
       }
     }
 
+    const rawClientId = req.body.client_id || req.body.clientId;
+    const isClientUUID = rawClientId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(rawClientId);
+    const clientUuid = isClientUUID ? rawClientId : null;
+
     // Default due date: 3 days in future if omitted
     const defaultDueDate = new Date(Date.now() + 3 * 86400000).toISOString().split('T')[0];
     const dueDateVal = (req.body.due_date && req.body.due_date.trim()) ? req.body.due_date.trim() : (req.body.dueDate && req.body.dueDate.trim()) ? req.body.dueDate.trim() : defaultDueDate;
@@ -162,7 +166,7 @@ router.post('/', requireAuth, async (req, res) => {
       id: newId,
       title: req.body.title || 'Untitled Task',
       client: req.body.client || req.body.company || 'General Agency',
-      client_id: req.body.client_id || req.body.clientId || null,
+      client_id: clientUuid,
       stage: req.body.stage || 'Briefing',
       priority: req.body.priority || 'Medium',
       assignee: req.body.assignee || 'Unassigned',

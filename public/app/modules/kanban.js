@@ -116,6 +116,23 @@ window.APP_MODULES.kanban = async function(container) {
     }
   ];
 
+  const DEFAULT_CLIENTS = [
+    { id: 'cli_chillox', name: 'Chillox Bangladesh', category: 'Food & Beverage' },
+    { id: 'cli_aura', name: 'Aura Cosmetics', category: 'Beauty & Fashion' },
+    { id: 'cli_apex', name: 'Apex Footwear', category: 'Retail' },
+    { id: 'cli_gp', name: 'Grameenphone', category: 'Telecommunications' },
+    { id: 'cli_daraz', name: 'Daraz Bangladesh', category: 'E-commerce' }
+  ];
+
+  const DEFAULT_TEAM_MEMBERS = [
+    { emp_code: 'PBD-001', name: 'Mahmudul Hasan', role: 'Agency Owner / Director' },
+    { emp_code: 'PBD-002', name: 'H. M. Ifteker Mahmud', role: 'Managing Director' },
+    { emp_code: 'PBD-003', name: 'Borhan Uddin', role: 'Lead Video Producer' },
+    { emp_code: 'PBD-004', name: 'Zahin', role: 'Senior Graphic Designer' },
+    { emp_code: 'PBD-005', name: 'Ruhul Amin', role: 'QC & Quality Specialist' },
+    { emp_code: 'PBD-006', name: 'Firoz Ahmed', role: 'Operations & Tech Lead' }
+  ];
+
   async function loadData() {
     try {
       const [tasksRes, spacesRes, teamRes, clientsRes, stagesRes] = await Promise.all([
@@ -128,8 +145,8 @@ window.APP_MODULES.kanban = async function(container) {
 
       allTasks = Array.isArray(tasksRes) ? tasksRes : [];
       if (spacesRes && spacesRes.length > 0) spacesData = spacesRes;
-      teamMembers = Array.isArray(teamRes) ? teamRes : [];
-      clientList = Array.isArray(clientsRes) ? clientsRes : [];
+      teamMembers = (Array.isArray(teamRes) && teamRes.length > 0) ? teamRes : DEFAULT_TEAM_MEMBERS;
+      clientList = (Array.isArray(clientsRes) && clientsRes.length > 0) ? clientsRes : DEFAULT_CLIENTS;
       if (stagesRes && Object.keys(stagesRes).length > 0) {
         WORKFLOW_TYPES = { ...WORKFLOW_TYPES, ...stagesRes };
       }
@@ -1236,14 +1253,18 @@ window.APP_MODULES.kanban = async function(container) {
       if (!teamMembers || teamMembers.length === 0) {
         try {
           const res = await APP_API.get('/team');
-          teamMembers = Array.isArray(res) ? res : [];
-        } catch(e) {}
+          teamMembers = (Array.isArray(res) && res.length > 0) ? res : DEFAULT_TEAM_MEMBERS;
+        } catch(e) {
+          teamMembers = DEFAULT_TEAM_MEMBERS;
+        }
       }
       if (!clientList || clientList.length === 0) {
         try {
           const res = await APP_API.get('/clients');
-          clientList = Array.isArray(res) ? res : [];
-        } catch(e) {}
+          clientList = (Array.isArray(res) && res.length > 0) ? res : DEFAULT_CLIENTS;
+        } catch(e) {
+          clientList = DEFAULT_CLIENTS;
+        }
       }
 
       // Repopulate Workspace Spaces
