@@ -342,38 +342,45 @@ window.APP_MODULES.kanban = async function(container) {
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem;">
               <div class="form-group" style="margin-bottom: 0;">
-                <label class="form-label">Workflow Type *</label>
+                <label class="form-label">⚡ Workflow Pipeline *</label>
                 <select id="ntWorkflow" class="input-text" onchange="window.KANBAN_MODULE.onModalWorkflowChange(this.value)">
                   ${Object.keys(WORKFLOW_TYPES).map(k => `<option value="${k}">${WORKFLOW_TYPES[k].icon} ${WORKFLOW_TYPES[k].name}</option>`).join('')}
                 </select>
               </div>
 
               <div class="form-group" style="margin-bottom: 0;">
-                <label class="form-label">Stage Pipeline</label>
+                <label class="form-label">📍 Stage Pipeline</label>
                 <select id="ntStage" class="input-text"></select>
               </div>
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem;">
               <div class="form-group" style="margin-bottom: 0;">
-                <label class="form-label">Client / Account Space</label>
-                <select id="ntClient" class="input-text">
-                  <option value="Agency">🏢 Internal Agency</option>
-                  ${spacesData.filter(s => s.name !== 'Internal Agency').map(s => `<option value="${escapeHTML(s.name)}">${s.icon || '🟣'} ${escapeHTML(s.name)}</option>`).join('')}
-                  ${clientList.map(c => `<option value="${escapeHTML(c.name)}">👤 ${escapeHTML(c.name)}</option>`).join('')}
+                <label class="form-label">📁 Workspace Space</label>
+                <select id="ntSpace" class="input-text">
+                  <option value="Internal Agency">🏢 Internal Agency</option>
+                  ${spacesData.filter(s => s.name !== 'Internal Agency').map(s => `<option value="${escapeHTML(s.name)}">${s.icon || (s.type === 'client' ? '🟣' : '📁')} ${escapeHTML(s.name)}</option>`).join('')}
                 </select>
               </div>
 
               <div class="form-group" style="margin-bottom: 0;">
-                <label class="form-label">Assignee</label>
-                <select id="ntAssignee" class="input-text">
-                  <option value="">Unassigned</option>
-                  ${teamMembers.map(m => `<option value="${escapeHTML(m.name)}" data-empcode="${escapeHTML(m.emp_code || m.id || '')}">${escapeHTML(m.name)} (${escapeHTML(m.role || 'Specialist')})</option>`).join('')}
+                <label class="form-label">🏷️ Client / Company Tag</label>
+                <select id="ntCompany" class="input-text">
+                  <option value="Agency">🏢 Internal (Agency)</option>
+                  ${clientList.map(c => `<option value="${escapeHTML(c.name)}" data-clientid="${escapeHTML(c.id)}">👤 ${escapeHTML(c.name)}</option>`).join('')}
                 </select>
               </div>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.85rem;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label">👤 Assignee Specialist</label>
+                <select id="ntAssignee" class="input-text">
+                  <option value="Unassigned">Unassigned</option>
+                  ${teamMembers.map(m => `<option value="${escapeHTML(m.name)}" data-empcode="${escapeHTML(m.emp_code || m.id || '')}">👤 ${escapeHTML(m.name)} (${escapeHTML(m.role || 'Specialist')})</option>`).join('')}
+                </select>
+              </div>
+
               <div class="form-group" style="margin-bottom: 0;">
                 <label class="form-label">Priority</label>
                 <select id="ntPriority" class="input-text">
@@ -383,14 +390,16 @@ window.APP_MODULES.kanban = async function(container) {
                   <option value="Low">⚪ Low</option>
                 </select>
               </div>
+            </div>
 
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem;">
               <div class="form-group" style="margin-bottom: 0;">
-                <label class="form-label">Due Date</label>
+                <label class="form-label">📅 Due Date</label>
                 <input type="date" id="ntDueDate" class="input-text">
               </div>
 
               <div class="form-group" style="margin-bottom: 0;">
-                <label class="form-label">Est. Hours</label>
+                <label class="form-label">⏱️ Est. Hours</label>
                 <input type="number" id="ntEstHours" class="input-text" placeholder="8" value="8" min="1">
               </div>
             </div>
@@ -1207,18 +1216,60 @@ window.APP_MODULES.kanban = async function(container) {
       this.renderBulkToolbar();
     },
     /* ── Modal Task Creation ── */
-    openNewTaskModal(prefill = {}) {
+    async openNewTaskModal(prefill = {}) {
       const modal = document.getElementById('newTaskModalOverlay');
       if (!modal) return;
 
-      // Dynamically repopulate clients/spaces to ensure newly added custom spaces are listed
-      const clientSelect = document.getElementById('ntClient');
-      if (clientSelect) {
-        clientSelect.innerHTML = `
-          <option value="Agency">🏢 Internal Agency</option>
+      // Ensure teamMembers and clientList are loaded
+      if (!teamMembers || teamMembers.length === 0) {
+        try {
+          const res = await APP_API.get('/team');
+          teamMembers = Array.isArray(res) ? res : [];
+        } catch(e) {}
+      }
+      if (!clientList || clientList.length === 0) {
+        try {
+          const res = await APP_API.get('/clients');
+          clientList = Array.isArray(res) ? res : [];
+        } catch(e) {}
+      }
+
+      // Repopulate Workspace Spaces
+      const spaceSelect = document.getElementById('ntSpace');
+      if (spaceSelect) {
+        spaceSelect.innerHTML = `
+          <option value="Internal Agency">🏢 Internal Agency</option>
           ${spacesData.filter(s => s.name !== 'Internal Agency').map(s => `<option value="${escapeHTML(s.name)}">${s.icon || (s.type === 'client' ? '🟣' : '📁')} ${escapeHTML(s.name)}</option>`).join('')}
-          ${clientList.map(c => `<option value="${escapeHTML(c.name)}">👤 ${escapeHTML(c.name)}</option>`).join('')}
         `;
+        if (prefill.space) {
+          spaceSelect.value = prefill.space;
+        } else if (activeSpace !== 'all') {
+          spaceSelect.value = activeSpace;
+        }
+      }
+
+      // Repopulate Client / Company Tag
+      const companySelect = document.getElementById('ntCompany');
+      if (companySelect) {
+        companySelect.innerHTML = `
+          <option value="Agency">🏢 Internal (Agency)</option>
+          ${clientList.map(c => `<option value="${escapeHTML(c.name)}" data-clientid="${escapeHTML(c.id)}">👤 ${escapeHTML(c.name)}</option>`).join('')}
+        `;
+        if (prefill.client || prefill.company) {
+          companySelect.value = prefill.client || prefill.company;
+        }
+      }
+
+      // Repopulate Assignee Specialist
+      const assigneeSelect = document.getElementById('ntAssignee');
+      if (assigneeSelect) {
+        assigneeSelect.innerHTML = `
+          <option value="Unassigned">Unassigned</option>
+          ${teamMembers.map(m => `<option value="${escapeHTML(m.name)}" data-empcode="${escapeHTML(m.emp_code || m.id || '')}">👤 ${escapeHTML(m.name)} (${escapeHTML(m.role || 'Specialist')})</option>`).join('')}
+        `;
+        if (prefill.assignee) {
+          assigneeSelect.value = prefill.assignee;
+        }
       }
 
       // Populate workflows & stages
@@ -1233,14 +1284,6 @@ window.APP_MODULES.kanban = async function(container) {
       if (prefill.stage) {
         const stageSelect = document.getElementById('ntStage');
         if (stageSelect) stageSelect.value = prefill.stage;
-      }
-
-      if (clientSelect) {
-        if (prefill.space) {
-          clientSelect.value = prefill.space;
-        } else if (activeSpace !== 'all') {
-          clientSelect.value = activeSpace;
-        }
       }
 
       modal.classList.add('active');
@@ -1267,47 +1310,60 @@ window.APP_MODULES.kanban = async function(container) {
       document.getElementById('ntDescription').value = preset.description;
     },
     async submitNewTaskModal() {
-      const title = document.getElementById('ntTitle').value.trim();
+      const title = (document.getElementById('ntTitle')?.value || '').trim();
       if (!title) { if (window.showToast) window.showToast('Please enter a task title', 'error'); return; }
 
-      const workflow_type = document.getElementById('ntWorkflow').value;
-      const stage = document.getElementById('ntStage').value;
-      const client = document.getElementById('ntClient').value;
+      const workflow_type = document.getElementById('ntWorkflow')?.value || 'video';
+      const stage = document.getElementById('ntStage')?.value || 'Briefing';
+      const space = document.getElementById('ntSpace')?.value || 'Internal Agency';
+      
+      const companySelect = document.getElementById('ntCompany');
+      const company = companySelect?.value || 'Agency';
+      const client_id = companySelect?.options[companySelect.selectedIndex]?.dataset?.clientid || null;
+
       const assigneeSelect = document.getElementById('ntAssignee');
-      const assignee = assigneeSelect.value;
-      const assignee_id = assigneeSelect.options[assigneeSelect.selectedIndex]?.dataset?.empcode || '';
-      const priority = document.getElementById('ntPriority').value;
-      const due_date = document.getElementById('ntDueDate').value;
-      const estimatedHours = Number(document.getElementById('ntEstHours').value) || 8;
-      const description = document.getElementById('ntDescription').value.trim();
+      const assignee = assigneeSelect?.value || 'Unassigned';
+      const assignee_id = assigneeSelect?.options[assigneeSelect.selectedIndex]?.dataset?.empcode || null;
+
+      const priority = document.getElementById('ntPriority')?.value || 'Medium';
+      const due_date = document.getElementById('ntDueDate')?.value || null;
+      const estimatedHours = Number(document.getElementById('ntEstHours')?.value) || 8;
+      const description = (document.getElementById('ntDescription')?.value || '').trim();
 
       const payload = {
         title,
         workflow_type,
         stage,
-        client,
+        space,
+        client: company,
+        company,
+        client_id,
         assignee,
         assignee_id,
         priority,
         due_date,
         estimatedHours,
+        estimated_hours: estimatedHours,
         description,
         category: workflow_type
       };
 
       try {
         const res = await APP_API.post('/tasks', payload);
+        if (res && res.error) {
+          throw new Error(res.error);
+        }
         if (window.showToast) window.showToast('🚀 Task created successfully!', 'success');
         this.closeNewTaskModal();
         
         // Reset form
-        document.getElementById('ntTitle').value = '';
-        document.getElementById('ntDescription').value = '';
+        if (document.getElementById('ntTitle')) document.getElementById('ntTitle').value = '';
+        if (document.getElementById('ntDescription')) document.getElementById('ntDescription').value = '';
         
-        loadData();
+        await loadData();
       } catch (err) {
         console.error('Failed to create task', err);
-        if (window.showToast) window.showToast('Failed to create task', 'error');
+        if (window.showToast) window.showToast('Failed to create task: ' + (err.message || 'Error'), 'error');
       }
     },
 

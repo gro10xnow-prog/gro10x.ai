@@ -5,6 +5,9 @@ const { requireAdmin } = require('../middleware/rbac');
 const { supabase } = require('../services/supabase');
 const { broadcast } = require('../services/sse');
 
+const { readDB, writeDB } = require('../services/db');
+const { isSupabaseConfigured } = require('../services/supabase');
+
 function mapTask(t) {
   if (!t) return null;
   const assigneesArr = Array.isArray(t.assignees) && t.assignees.length > 0 
@@ -14,24 +17,29 @@ function mapTask(t) {
   return {
     id: t.id,
     title: t.title,
-    client: t.client,
+    client: t.client || t.company || 'Agency',
+    company: t.company || t.client || 'Agency',
+    space: t.space || t.client || 'Internal Agency',
     clientId: t.client_id || t.clientId,
     projectId: t.project_id || t.projectId,
     parentTaskId: t.parent_task_id || t.parentTaskId,
     blockedBy: t.blocked_by || t.blockedBy,
-    stage: t.stage,
+    stage: t.stage || 'Briefing',
     customStatus: t.custom_status || t.stage || 'To Do',
     statusCategory: t.status_category || 'open',
-    priority: t.priority,
+    priority: t.priority || 'Medium',
     assignee: t.assignee || assigneesArr[0],
     assignees: assigneesArr,
     assigneeId: t.assignee_id || t.assigneeId,
     dueDate: t.due_date || t.dueDate,
     department: t.department,
-    category: t.category,
+    category: t.category || t.workflow_type,
+    workflowType: t.workflow_type || t.category || 'video',
+    workflow_type: t.workflow_type || t.category || 'video',
+    description: t.description || '',
     labels: t.labels || [],
     customFields: t.custom_fields || t.customFields || {},
-    estimatedHours: Number(t.estimated_hours || t.estimatedHours) || 0,
+    estimatedHours: Number(t.estimated_hours || t.estimatedHours) || 8,
     loggedHours: Number(t.logged_hours || t.loggedHours) || 0,
     sortOrder: Number(t.sort_order || t.sortOrder) || 0,
     qcApprovedBy: t.qc_approved_by,
@@ -50,61 +58,76 @@ function mapTask(t) {
 router.get('/', requireAuth, async (req, res) => {
   try {
     const { dept, assignee, label, parentId } = req.query;
-    let query = supabase.from('tasks').select('*').order('created_at', { ascending: false });
+    let tasks = [];
 
-    if (dept) {
-      query = query.or(`department.ilike.%${dept}%,category.ilike.%${dept}%`);
+    if (supabase && isSupabaseConfigured()) {
+      try {
+        let query = supabase.from('tasks').select('*').order('created_at', { ascending: false });
+
+        if (dept) {
+          query = query.or(`department.ilike.%${dept}%,category.ilike.%${dept}%`);
+        }
+        if (assignee) {
+          query = query.ilike('assignee', `%${assignee}%`);
+        }
+        if (parentId) {
+          query = query.eq('parent_task_id', parentId);
+        }
+
+        const { data, error } = await query;
+        if (!error && Array.isArray(data)) {
+          tasks = data;
+        }
+      } catch (e) {
+        console.warn('[Tasks API] Supabase query warning:', e.message);
+      }
     }
 
-    if (assignee) {
-      query = query.ilike('assignee', `%${assignee}%`);
+    if (tasks.length === 0) {
+      const db = await readDB();
+      tasks = db.tasks || [];
     }
-
-    if (parentId) {
-      query = query.eq('parent_task_id', parentId);
-    }
-
-    const { data, error } = await query;
-    if (error) throw error;
 
     // Load labels & custom field values for tasks
     let taskLabelsMap = {};
     let taskCFVMap = {};
 
-    try {
-      const [tlsRes, cfvRes] = await Promise.all([
-        supabase.from('task_labels').select('task_id, label_id, labels(id, name, color)').catch(() => ({ data: null })),
-        supabase.from('task_custom_field_values').select('task_id, field_id, value').catch(() => ({ data: null }))
-      ]);
+    if (supabase && isSupabaseConfigured()) {
+      try {
+        const [tlsRes, cfvRes] = await Promise.all([
+          supabase.from('task_labels').select('task_id, label_id, labels(id, name, color)').catch(() => ({ data: null })),
+          supabase.from('task_custom_field_values').select('task_id, field_id, value').catch(() => ({ data: null }))
+        ]);
 
-      if (tlsRes.data) {
-        tlsRes.data.forEach(tl => {
-          if (!taskLabelsMap[tl.task_id]) taskLabelsMap[tl.task_id] = [];
-          if (tl.labels) {
-            taskLabelsMap[tl.task_id].push({ id: tl.labels.id, name: tl.labels.name, color: tl.labels.color });
-          }
-        });
-      }
+        if (tlsRes.data) {
+          tlsRes.data.forEach(tl => {
+            if (!taskLabelsMap[tl.task_id]) taskLabelsMap[tl.task_id] = [];
+            if (tl.labels) {
+              taskLabelsMap[tl.task_id].push({ id: tl.labels.id, name: tl.labels.name, color: tl.labels.color });
+            }
+          });
+        }
 
-      if (cfvRes.data) {
-        cfvRes.data.forEach(cfv => {
-          if (!taskCFVMap[cfv.task_id]) taskCFVMap[cfv.task_id] = {};
-          taskCFVMap[cfv.task_id][cfv.field_id] = cfv.value;
-        });
-      }
-    } catch(e) {}
+        if (cfvRes.data) {
+          cfvRes.data.forEach(cfv => {
+            if (!taskCFVMap[cfv.task_id]) taskCFVMap[cfv.task_id] = {};
+            taskCFVMap[cfv.task_id][cfv.field_id] = cfv.value;
+          });
+        }
+      } catch(e) {}
+    }
 
-    let tasks = (data || []).map(t => mapTask({
+    let mapped = tasks.map(t => mapTask({
       ...t,
-      labels: taskLabelsMap[t.id] || [],
-      custom_fields: taskCFVMap[t.id] || {}
+      labels: taskLabelsMap[t.id] || t.labels || [],
+      custom_fields: taskCFVMap[t.id] || t.custom_fields || {}
     }));
 
     if (label) {
-      tasks = tasks.filter(t => (t.labels || []).some(l => l.name.toLowerCase() === label.toLowerCase() || l.id === label));
+      mapped = mapped.filter(t => (t.labels || []).some(l => l.name.toLowerCase() === label.toLowerCase() || l.id === label));
     }
 
-    res.json(tasks);
+    res.json(mapped);
   } catch (err) {
     console.error('Tasks GET error:', err.message);
     res.status(500).json({ error: err.message });
@@ -119,48 +142,88 @@ router.post('/', requireAuth, async (req, res) => {
 
     let assigneeUuid = null;
     const rawAssigneeId = req.body.assignee_id || req.body.assigneeId;
-    if (rawAssigneeId && supabase) {
+    if (rawAssigneeId && supabase && isSupabaseConfigured()) {
       const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(rawAssigneeId);
       if (isUUID) {
         assigneeUuid = rawAssigneeId;
       } else {
-        const { data: prof } = await supabase.from('profiles').select('id').eq('emp_code', rawAssigneeId).maybeSingle();
-        if (prof) assigneeUuid = prof.id;
+        try {
+          const { data: prof } = await supabase.from('profiles').select('id').eq('emp_code', rawAssigneeId).maybeSingle();
+          if (prof) assigneeUuid = prof.id;
+        } catch (e) {}
       }
     }
 
-    const payload = {
+    // Default due date: 3 days in future if omitted
+    const defaultDueDate = new Date(Date.now() + 3 * 86400000).toISOString().split('T')[0];
+    const dueDateVal = (req.body.due_date && req.body.due_date.trim()) ? req.body.due_date.trim() : (req.body.dueDate && req.body.dueDate.trim()) ? req.body.dueDate.trim() : defaultDueDate;
+
+    const fullPayload = {
       id: newId,
       title: req.body.title || 'Untitled Task',
-      client: req.body.client || 'General Agency',
-      client_id: req.body.clientId || null,
+      client: req.body.client || req.body.company || 'General Agency',
+      client_id: req.body.client_id || req.body.clientId || null,
       stage: req.body.stage || 'Briefing',
       priority: req.body.priority || 'Medium',
       assignee: req.body.assignee || 'Unassigned',
       assignee_id: assigneeUuid,
-      due_date: req.body.due_date || req.body.dueDate || new Date(Date.now() + 3 * 86400000).toISOString().split('T')[0],
+      due_date: dueDateVal,
+      department: req.body.department || null,
+      category: req.body.category || req.body.workflow_type || null,
+      description: req.body.description || '',
+      estimated_hours: Number(req.body.estimated_hours || req.body.estimatedHours) || 8,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
 
     let task = null;
-    try {
-      const { data, error } = await supabase.from('tasks').insert([payload]).select().single();
-      if (error) {
-        console.error('Supabase tasks insert error:', error.message);
-      } else if (data) {
-        task = mapTask(data);
+
+    if (supabase && isSupabaseConfigured()) {
+      try {
+        const { data, error } = await supabase.from('tasks').insert([fullPayload]).select().single();
+        if (error) {
+          console.warn('[Tasks API] Full insert warning, trying core payload:', error.message);
+          // Retry with core columns in case custom columns (like category/description) don't exist in Supabase tasks table
+          const corePayload = {
+            id: newId,
+            title: fullPayload.title,
+            client: fullPayload.client,
+            stage: fullPayload.stage,
+            priority: fullPayload.priority,
+            assignee: fullPayload.assignee,
+            assignee_id: assigneeUuid,
+            due_date: dueDateVal,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          };
+          const { data: coreData, error: coreErr } = await supabase.from('tasks').insert([corePayload]).select().single();
+          if (coreErr) {
+            console.error('[Tasks API] Core insert error:', coreErr.message);
+          } else if (coreData) {
+            task = mapTask({ ...coreData, ...fullPayload });
+          }
+        } else if (data) {
+          task = mapTask(data);
+        }
+      } catch (e) {
+        console.warn('[Tasks API] Supabase tasks insert warning:', e.message);
       }
-    } catch (e) {
-      console.warn('Supabase tasks insert warning:', e.message);
     }
 
+    // Always ensure task exists in return and JSON DB backup
     if (!task) {
-      task = mapTask({ ...payload, created_at: new Date().toISOString() });
+      task = mapTask(fullPayload);
     }
+
+    try {
+      const db = await readDB();
+      db.tasks = db.tasks || [];
+      db.tasks.unshift(task);
+      await writeDB(db);
+    } catch (e) {}
 
     // Insert label associations if labelIds provided
-    if (req.body.labelIds && Array.isArray(req.body.labelIds) && req.body.labelIds.length > 0) {
+    if (req.body.labelIds && Array.isArray(req.body.labelIds) && req.body.labelIds.length > 0 && supabase && isSupabaseConfigured()) {
       try {
         const rows = req.body.labelIds.map(lId => ({ task_id: newId, label_id: lId }));
         await supabase.from('task_labels').insert(rows);
@@ -168,7 +231,7 @@ router.post('/', requireAuth, async (req, res) => {
     }
 
     // Insert custom field values if customFields object provided
-    if (req.body.customFields && typeof req.body.customFields === 'object') {
+    if (req.body.customFields && typeof req.body.customFields === 'object' && supabase && isSupabaseConfigured()) {
       try {
         const rows = Object.entries(req.body.customFields).map(([fId, val]) => ({
           task_id: newId,
@@ -182,8 +245,12 @@ router.post('/', requireAuth, async (req, res) => {
     }
 
     try {
-      const { data: allTasks } = await supabase.from('tasks').select('*').order('created_at', { ascending: false });
-      broadcast('task_update', (allTasks || [task]).map(mapTask));
+      if (supabase && isSupabaseConfigured()) {
+        const { data: allTasks } = await supabase.from('tasks').select('*').order('created_at', { ascending: false });
+        broadcast('task_update', (allTasks || [task]).map(mapTask));
+      } else {
+        broadcast('task_update', [task]);
+      }
     } catch (e) {}
 
     res.json({ success: true, task });
