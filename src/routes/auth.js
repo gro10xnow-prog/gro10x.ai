@@ -151,14 +151,21 @@ router.post('/pin/generate', authLimiter, requireAuth, requireManager, async (re
   const botUsername = targetType === 'team' ? 'purplemanosbot' : 'purpleosbot';
   const portalUrl = `https://purpleos-iota.vercel.app${portalPath}?phone=${encodeURIComponent(cleanPhone)}`;
 
-  const inviteCardText = `📋 *PURPLEOS WORKSPACE ACCESS CARD*\n\n` +
-    `👤 Name: *${name}*\n` +
-    `📱 Mobile: \`${cleanPhone}\`\n` +
-    `🔑 Temporary 4-Digit PIN: \`${pinRecord.pin}\` *(Change on first login)*\n\n` +
-    `🌐 Web Portal Direct Link:\n${portalUrl}\n\n` +
-    `🤖 Telegram Bot: t.me/${botUsername}`;
+  const inviteCardText = targetType === 'team'
+    ? `🟣 *PURPLEBOT DIGITAL — WORKSPACE ACTIVATION*\n\n` +
+      `Hello *${name}*! You have been invited to join the PurpleOS Workspace.\n\n` +
+      `📌 *Step 1:* Open our official Telegram Assistant Bot:\n` +
+      `👉 https://t.me/${botUsername}?start=join_crew\n\n` +
+      `📌 *Step 2:* Tap *Start* (or send /start) and press *📱 Verify My Phone Number* to link your account.\n\n` +
+      `The bot will instantly verify your number and deliver your secure 4-digit PIN for Web & Mini App access! 🔑`
+    : `📋 *PURPLEOS WORKSPACE ACCESS CARD*\n\n` +
+      `👤 Name: *${name}*\n` +
+      `📱 Mobile: \`${cleanPhone}\`\n` +
+      `🔑 Temporary 4-Digit PIN: \`${pinRecord.pin}\` *(Change on first login)*\n\n` +
+      `🌐 Web Portal Direct Link:\n${portalUrl}\n\n` +
+      `🤖 Telegram Bot: t.me/${botUsername}`;
 
-  const waText = encodeURIComponent(`Hi ${name}! Here is your PurpleOS Workspace Access Card:\n\nMobile: ${cleanPhone}\nTemp PIN: ${pinRecord.pin}\nPortal Link: ${portalUrl}`);
+  const waText = encodeURIComponent(inviteCardText);
   const whatsappLink = `https://wa.me/${cleanPhone.replace('+', '')}?text=${waText}`;
 
   let telegramPushed = false;
