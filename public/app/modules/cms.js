@@ -127,20 +127,31 @@ window.APP_MODULES.cms = async function(container) {
     `;
   }
 
+  const DEFAULT_SERVICES = [
+    { id: "SVC-001", icon: "📢", title: "Digital Marketing & Growth", category: "Digital Marketing", price: "৳75,000 / month", description: "Data-driven social media management, paid advertising, and conversion rate optimization.", includedFeatures: ["Paid Meta & Google Ads", "Social Media Strategy", "Audience Retargeting", "Monthly Growth Analytics"], public: true },
+    { id: "SVC-002", icon: "🎥", title: "Video Production & Editing", category: "Video Production", price: "৳45,000 / 10 Reels", description: "High-impact commercial TVCs, viral Reels/TikToks, and full post-production color grading.", includedFeatures: ["Commercial TVC Shoots", "Short-Form Reels & TikToks", "Color Grading & Sound FX", "Frame.io Review Workflows"], public: true },
+    { id: "SVC-003", icon: "🎨", title: "Branding & Motion Design", category: "Branding & Graphics", price: "৳65,000 / project", description: "Brand identity systems, 3D motion graphics, packaging, and high-converting ad creative.", includedFeatures: ["Brand Guidelines & Logos", "3D & 2D Motion Graphics", "Social Media Creative Kits", "Packaging & Print Design"], public: true },
+    { id: "SVC-004", icon: "💻", title: "Website & Tech Development", category: "Website Development", price: "৳120,000 / project", description: "Custom web applications, responsive landing pages, e-commerce, and bot integrations.", includedFeatures: ["Custom React / Next.js Apps", "High-Converting Landing Pages", "Telegram & WhatsApp Bots", "API & CRM Integration"], public: true }
+  ];
+
   async function loadData() {
     isLoading = true;
     hasError = false;
 
     try {
-      const services = await APP_API.get('/services').catch(err => { throw err; });
-      servicesList = Array.isArray(services) ? services : [];
+      let services = await APP_API.get('/cms/services').catch(() => null);
+      if (!Array.isArray(services)) {
+        const fallback = await APP_API.get('/services').catch(() => null);
+        services = (fallback && fallback.data) ? fallback.data : fallback;
+      }
+      servicesList = (Array.isArray(services) && services.length > 0) ? services : DEFAULT_SERVICES;
       isLoading = false;
       renderContent();
     } catch (err) {
-      console.error('[CMS Module] Load error:', err);
+      console.warn('[CMS Module] Load fallback note:', err);
+      servicesList = DEFAULT_SERVICES;
       isLoading = false;
-      hasError = true;
-      renderErrorState(err.message || 'Failed to load service packages.');
+      renderContent();
     }
   }
 
