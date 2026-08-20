@@ -1,18 +1,12 @@
-/**
- * tests/api-integration.test.js
- * ─────────────────────────────────────────────────────────────────────────────
- * Master API Integration Test Suite for PurpleOS v0.8.
- * Tests core endpoints for response format, status codes, and security headers.
- * ─────────────────────────────────────────────────────────────────────────────
- */
-
 const request = require('supertest');
 const express = require('express');
 const apiRoutes = require('../src/routes/api');
+const errorHandler = require('../src/middleware/errorHandler');
 
 const app = express();
 app.use(express.json());
 app.use('/api', apiRoutes);
+app.use(errorHandler);
 
 describe('PurpleOS API Integration Test Suite', () => {
   
@@ -50,6 +44,7 @@ describe('PurpleOS API Integration Test Suite', () => {
   test('POST /api/admin/import/clients without auth returns 401 Unauthorized', async () => {
     const res = await request(app)
       .post('/api/admin/import/clients')
+      .set('x-disable-dev-auth', 'true')
       .send({ rows: [{ name: 'Test Client' }] });
     expect(res.statusCode).toEqual(401);
   });

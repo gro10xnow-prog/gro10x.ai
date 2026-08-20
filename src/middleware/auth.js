@@ -103,7 +103,7 @@ async function requireAuth(req, res, next) {
   }
 
   // 4. Development Fallback ONLY when NODE_ENV is not production and FORCE_SUPABASE is false
-  if (process.env.NODE_ENV !== 'production' && !process.env.FORCE_SUPABASE) {
+  if (process.env.NODE_ENV !== 'production' && !process.env.FORCE_SUPABASE && req.headers['x-disable-dev-auth'] !== 'true') {
     const db = await readDB();
     const defaultEmp = (db.team && db.team[0]) || { name: 'Mahmudul Hasan', role: 'Agency Director' };
 

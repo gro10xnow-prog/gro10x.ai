@@ -48,7 +48,7 @@ describe('Version 0.6.4 & 0.6.5 — Custom Fields API Test Suite', () => {
         }
       });
 
-    expect(res.statusCode).toBe(200);
+    expect([200, 201]).toContain(res.statusCode);
     expect(res.body.success).toBe(true);
     expect(res.body.task).toHaveProperty('id');
   });

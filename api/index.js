@@ -60,8 +60,6 @@ app.post(['/api/webhooks/telegram', '/webhooks/telegram'], async (req, res) => {
     try {
       console.log(`Webhook received payload for ${botType}`);
       await targetBot.processUpdate(req.body);
-      // Keep lambda alive for 2500ms so Supabase queries and Telegram message sends complete before Vercel freezes execution
-      await new Promise(r => setTimeout(r, 2500));
     } catch (err) {
       console.error(`Telegram webhook update processing error (${botType}):`, err.message);
     }

@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "name": "purpleos-v06",
+  "name": "purpleos",
   "builds": [
     {
       "src": "server.js",
