@@ -1,194 +1,95 @@
-/**
- * src/routes/ai.js
- * ─────────────────────────────────────────────────────────────────────────────
- * PurpleOS AI Intelligence Route — Gemini-Powered Message Generator
- * Mounted at: /api/ai/*
- * ─────────────────────────────────────────────────────────────────────────────
- */
-
 const express = require('express');
 const router = express.Router();
 const https = require('https');
 const { requireAuth } = require('../middleware/auth');
 const { requireManager } = require('../middleware/rbac');
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
-const GEMINI_MODEL = 'gemini-flash-latest';
+const PORTAL = 'https://purpleos-iota.vercel.app';
 
-// ── Stage definitions ──────────────────────────────────────────────────────────
-const STAGE_LABELS = {
-  no_pin: 'has not received or set any PIN yet',
-  temp_pin: 'has a temporary PIN generated but has not set a permanent PIN yet',
-  pin_no_tg: 'has set their permanent PIN but has not linked their Telegram account yet',
-  pin_tg_no_survey: 'has set their PIN and linked Telegram but has not completed the survey & agreement yet',
-  fully_onboarded: 'has completed all onboarding steps successfully'
+const STEPS = {
+  no_pin:           'Visit the PurpleOS portal and log in with your phone number to receive your temporary access PIN.',
+  temp_pin:         'Log in with your temporary PIN and set your permanent 6-digit PIN in Profile Settings.',
+  pin_no_tg:        'In PurpleOS, go to Profile then Telegram Setup and link your Telegram account to receive daily alerts.',
+  pin_tg_no_survey: 'Complete your Staff Survey and Agreement under Profile then Survey inside PurpleOS to unlock full access.',
+  fully_onboarded:  'Check your daily tasks via the Kanban board, log EOD reports, and clock in through the Team Bot.'
 };
 
-const STAGE_NEXT_STEPS = {
-  no_pin: 'Step 1: Visit the PurpleOS portal and log in with your phone number. Your temporary access PIN will be sent to you.',
-  temp_pin: 'Step 2: Log in to PurpleOS using your temporary PIN, then go to Profile Settings and set your permanent 6-digit PIN.',
-  pin_no_tg: 'Step 3: In PurpleOS, navigate to Telegram Setup and link your account so you receive daily briefings and task alerts.',
-  pin_tg_no_survey: 'Step 4 (Final!): Complete your Staff Survey & Agreement inside PurpleOS under Profile → Survey to unlock full platform access.',
-  fully_onboarded: 'Keep using the platform daily — check your tasks via Kanban, log your EOD report, and clock in via the Team Bot.'
-};
-
-// ── Fallback templates when Gemini is unavailable ─────────────────────────────
-function getFallbackMessage(name, role, stage) {
-  const firstName = (name || 'Team Member').split(' ')[0];
-  const step = STAGE_NEXT_STEPS[stage] || STAGE_NEXT_STEPS.no_pin;
-  const greetings = {
-    no_pin: `Hi ${firstName}! 👋 Welcome to Purplebot Digital's PurpleOS platform. We're excited to have you on the team as our ${role || 'Specialist'}. Let's get you set up!`,
-    temp_pin: `Hey ${firstName}! 🔑 Your PurpleOS account is almost ready. You've received your temporary PIN — the next step is to make it permanent.`,
-    pin_no_tg: `Hi ${firstName}! ✅ Great work setting your PIN! One more step — connect your Telegram to receive team alerts and daily briefings directly.`,
-    pin_tg_no_survey: `Hey ${firstName}! 🎯 You're almost there! Just one final step: complete your Staff Survey & Agreement inside PurpleOS to get fully onboarded.`,
-    fully_onboarded: `Hi ${firstName}! 🎉 You're fully onboarded on PurpleOS! Start using the platform to track your tasks, log your hours, and stay connected with the team.`
+// Rich, complete message for every stage — always reliable
+function build(name, role, dept, stage) {
+  const fn = (name || 'Team').split(' ')[0];
+  const r = role || 'Specialist';
+  const d = dept || 'the team';
+  const step = STEPS[stage] || STEPS.no_pin;
+  const map = {
+    no_pin:           'Hi ' + fn + '!\n\nWelcome to Purplebot Digital! We are so excited to have you join us as our ' + r + ' in ' + d + '.\n\nYour PurpleOS workspace is ready and waiting. This is where you will track your daily tasks, log your work, and stay connected with the team.',
+    temp_pin:         'Hi ' + fn + '!\n\nGreat to have you on board as our ' + r + ' in ' + d + '! You have already received your temporary PIN.\n\nYou are just one step away from securing your account and getting full access to everything inside PurpleOS.',
+    pin_no_tg:        'Hi ' + fn + '!\n\nExcellent work setting your permanent PIN! You are making great progress through onboarding as our ' + r + '.\n\nThe next step is linking your Telegram account. This is how you will receive your daily task briefings, schedule updates, and team announcements directly on your phone.',
+    pin_tg_no_survey: 'Hi ' + fn + '!\n\nYou are almost fully onboarded as our ' + r + ' in ' + d + ' -- you are so close to the finish line!\n\nThe Staff Survey and Agreement is the final step. Completing it unlocks your full PurpleOS profile, payslip access, and confirms your role details in our system.',
+    fully_onboarded:  'Hi ' + fn + '!\n\nYou are officially fully onboarded as our ' + r + ' -- welcome to the Purplebot Digital family!\n\nYour PurpleOS workspace is fully unlocked and ready. Here is your recommended daily workflow to get the most out of the platform:'
   };
-  const greeting = greetings[stage] || greetings.no_pin;
-  return `${greeting}\n\n📌 Next Step:\n${step}\n\n🔗 Platform: https://purpleos-iota.vercel.app\n\nFor support, reach out to the Admin team.\n\n— Purplebot Digital Admin`;
+  const intro = map[stage] || map.no_pin;
+  return intro + '\n\nNext Step:\n' + step + '\n\nPortal: ' + PORTAL + '\n\nReach out to the Admin team anytime if you need help. Looking forward to doing great work together!\n\n-- Purplebot Digital Admin';
 }
 
-const CANDIDATE_MODELS = ['gemini-flash-latest', 'gemini-3.6-flash', 'gemini-3.1-flash-lite'];
+// Gemini with strict response validation
+const MODELS = ['gemini-3.6-flash', 'gemini-flash-latest'];
 
-// ── Gemini API call with model fallback ───────────────────────────────────────
-async function callGeminiSingle(model, prompt, key) {
+function callSingle(model, prompt, key) {
   return new Promise((resolve, reject) => {
-    const payload = JSON.stringify({
-      contents: [{ role: 'user', parts: [{ text: prompt }] }],
-      generationConfig: { maxOutputTokens: 400, temperature: 0.6 }
-    });
-
-    const options = {
-      hostname: 'generativelanguage.googleapis.com',
-      path: `/v1beta/models/${model}:generateContent?key=${key}`,
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(payload)
-      }
-    };
-
-    const req = https.request(options, (res) => {
+    const payload = JSON.stringify({ contents: [{ role: 'user', parts: [{ text: prompt }] }], generationConfig: { maxOutputTokens: 600, temperature: 0.6 } });
+    const req = https.request({ hostname: 'generativelanguage.googleapis.com', path: '/v1beta/models/' + model + ':generateContent?key=' + key, method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) } }, (res) => {
       let data = '';
-      res.on('data', chunk => data += chunk);
+      res.on('data', c => data += c);
       res.on('end', () => {
         try {
-          const json = JSON.parse(data);
-          if (json.candidates && json.candidates[0] && json.candidates[0].content) {
-            const parts = json.candidates[0].content.parts || [];
-            const text = parts.map(p => p.text).join('').trim();
-            if (text && text.length > 20) {
-              return resolve(text);
-            }
+          const j = JSON.parse(data);
+          if (j.candidates && j.candidates[0] && j.candidates[0].content) {
+            const text = (j.candidates[0].content.parts || []).map(p => p.text || '').join('').trim();
+            if (text.length >= 200 && (text.toLowerCase().includes('purpleos') || text.toLowerCase().includes('admin'))) return resolve(text);
+            return reject(new Error('Incomplete: ' + model + ' only ' + text.length + ' chars'));
           }
-          reject(new Error(json.error?.message || 'Empty or short response'));
-        } catch (e) {
-          reject(new Error('Failed to parse response'));
-        }
+          reject(new Error((j.error && j.error.message) || 'No output: ' + model));
+        } catch (e) { reject(new Error('ParseErr: ' + model)); }
       });
     });
-
     req.on('error', reject);
-    req.setTimeout(8000, () => { req.destroy(); reject(new Error(`Timeout on ${model}`)); });
-    req.write(payload);
-    req.end();
+    req.setTimeout(10000, () => { req.destroy(); reject(new Error('Timeout: ' + model)); });
+    req.write(payload); req.end();
   });
 }
 
-async function callGemini(prompt) {
-  const key = process.env.GEMINI_API_KEY || GEMINI_API_KEY;
-  if (!key) throw new Error('GEMINI_API_KEY not configured');
-
-  let lastError = null;
-  for (const model of CANDIDATE_MODELS) {
-    try {
-      const result = await callGeminiSingle(model, prompt, key);
-      if (result) return result;
-    } catch (err) {
-      lastError = err;
-      console.warn(`[AI Route] Model ${model} failed (${err.message}), trying next...`);
-    }
+async function tryGemini(name, role, dept, stage, key) {
+  const fn = name.split(' ')[0];
+  const nextStep = STEPS[stage] || '';
+  const prompt =
+    'You are the Admin of Purplebot Digital, a creative digital agency in Dhaka.\n\n' +
+    'Write a complete WhatsApp onboarding message in English for ' + name + ' (' + (role || 'Specialist') + ', ' + (dept || 'General') + ') at Purplebot Digital. Stage: ' + stage + '.\n\n' +
+    'The message MUST include all of these in order:\n' +
+    '1. Hi ' + fn + '! [one relevant emoji]\n' +
+    '2. Warm welcome mentioning role (' + role + ') and department (' + dept + ')\n' +
+    '3. Why completing this step matters for them\n' +
+    '4. Next Step: ' + nextStep + '\n' +
+    '5. Portal: ' + PORTAL + '\n' +
+    '6. Short encouraging closing sentence\n' +
+    '7. Sign-off: -- Purplebot Digital Admin\n\n' +
+    'Output the message text ONLY. No markdown, no code blocks. Minimum 150 words.';
+  for (const model of MODELS) {
+    try { const r = await callSingle(model, prompt, key); console.log('[AI] OK ' + model + ' ' + r.length + ' chars'); return r; }
+    catch (e) { console.warn('[AI] skip ' + model + ': ' + e.message); }
   }
-  throw lastError || new Error('All Gemini models failed');
+  return null;
 }
 
-// ── POST /api/ai/generate-message ─────────────────────────────────────────────
-/**
- * Body: { name, role, department, stage, empCode }
- * stage: 'no_pin' | 'temp_pin' | 'pin_no_tg' | 'pin_tg_no_survey' | 'fully_onboarded'
- */
 router.post('/generate-message', requireAuth, requireManager, async (req, res) => {
   const { name, role, department, stage, empCode } = req.body;
-
-  if (!name || !stage || !STAGE_LABELS[stage]) {
-    return res.status(400).json({
-      success: false,
-      error: 'name and a valid stage are required'
-    });
-  }
-
-  const stageDescription = STAGE_LABELS[stage];
-  const nextStep = STAGE_NEXT_STEPS[stage];
-  const firstName = name.split(' ')[0];
-
-  const prompt = `Write a complete, professional, and friendly WhatsApp onboarding message in English for a team member at Purplebot Digital agency:
-- Member Name: ${name} (call them "${firstName}")
-- Role: ${role || 'Specialist'}
-- Department: ${department || 'General'}
-- Status: This member ${stageDescription}.
-
-Structure the message cleanly as:
-1. Warm greeting: "Hi ${firstName}! 👋 Welcome to Purplebot Digital as our ${role || 'Specialist'}."
-2. Brief encouragement welcoming them to the ${department || 'agency'} team.
-3. Next step:
-📌 Next Step:
-${nextStep}
-4. Portal URL: 🔗 https://purpleos-iota.vercel.app
-5. Sign-off: "— Purplebot Digital Admin 🔮"
-
-Output ONLY the full message text ready to send.`;
-
-  try {
-    let message;
-    const key = process.env.GEMINI_API_KEY || GEMINI_API_KEY;
-
-    if (key) {
-      try {
-        message = await callGemini(prompt);
-      } catch (geminiError) {
-        console.warn('[AI Route] Gemini call fallback:', geminiError.message);
-        message = getFallbackMessage(name, role, stage);
-      }
-    } else {
-      message = getFallbackMessage(name, role, stage);
-    }
-
-    return res.json({
-      success: true,
-      message,
-      stage,
-      generatedBy: key ? 'gemini' : 'fallback',
-      member: { name, role, department, empCode }
-    });
-  } catch (err) {
-    console.error('[AI Route] generate-message error:', err.message);
-    return res.json({
-      success: true,
-      message: getFallbackMessage(name, role, stage),
-      stage,
-      generatedBy: 'fallback',
-      member: { name, role, department, empCode }
-    });
-  }
+  if (!name || !stage || !STEPS[stage]) return res.status(400).json({ success: false, error: 'name and valid stage required' });
+  let message = null, generatedBy = 'template';
+  const key = process.env.GEMINI_API_KEY;
+  if (key) { message = await tryGemini(name, role, department, stage, key).catch(() => null); if (message) generatedBy = 'gemini'; }
+  if (!message) { message = build(name, role, department, stage); generatedBy = 'template'; }
+  return res.json({ success: true, message, stage, generatedBy, member: { name, role, department, empCode } });
 });
 
-// ── GET /api/ai/status ─────────────────────────────────────────────────────────
-router.get('/status', requireAuth, (req, res) => {
-  const key = process.env.GEMINI_API_KEY || GEMINI_API_KEY;
-  return res.json({
-    success: true,
-    configured: !!key,
-    model: GEMINI_MODEL
-  });
-});
+router.get('/status', requireAuth, (req, res) => res.json({ success: true, configured: !!process.env.GEMINI_API_KEY, models: MODELS }));
 
 module.exports = router;
