@@ -365,4 +365,244 @@ router.post('/tasks', requireAuth, requireAdmin, asyncHandler(async (req, res) =
   });
 }));
 
+
+// ──────── AI DATA SANITIZER & ENRICHER ────────
+
+function normalizeDateStr(rawDate) {
+  if (!rawDate) return null;
+  const str = String(rawDate).trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
+
+  const dmy = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+  if (dmy) {
+    const d = dmy[1].padStart(2, '0');
+    const m = dmy[2].padStart(2, '0');
+    const y = dmy[3];
+    return `${y}-${m}-${d}`;
+  }
+
+  const months = { jan: '01', feb: '02', mar: '03', apr: '04', may: '05', jun: '06', jul: '07', aug: '08', sep: '09', oct: '10', nov: '11', dec: '12' };
+  const textMatch = str.match(/(\d{1,2})(?:st|nd|rd|th)?\s*([a-zA-Z]{3,9})(?:\s*(\d{4}))?/i) ||
+                    str.match(/([a-zA-Z]{3,9})\s*(\d{1,2})(?:st|nd|rd|th)?(?:\s*(\d{4}))?/i);
+  if (textMatch) {
+    let day = '', monthName = '', year = textMatch[3] || '2026';
+    if (/^\d+/.test(textMatch[1])) {
+      day = textMatch[1].padStart(2, '0');
+      monthName = textMatch[2].substring(0, 3).toLowerCase();
+    } else {
+      monthName = textMatch[1].substring(0, 3).toLowerCase();
+      day = textMatch[2].padStart(2, '0');
+    }
+    const monthNum = months[monthName] || '09';
+    return `${year}-${monthNum}-${day}`;
+  }
+
+  if (str.toLowerCase().includes('tomorrow')) {
+    const d = new Date(); d.setDate(d.getDate() + 1);
+    return d.toISOString().split('T')[0];
+  }
+
+  return '2026-09-15';
+}
+
+/**
+ * POST /api/admin/import/clean-tasks-ai
+ * Body: { rows: [{ title, client, assignee, dueDate, ... }] }
+ * Cleans, sanitizes, and enriches raw imported rows using AI and rule matching.
+ */
+router.post('/clean-tasks-ai', requireAuth, requireManager, asyncHandler(async (req, res) => {
+  const { rows } = req.body;
+  if (!Array.isArray(rows) || rows.length === 0) {
+    return fail(res, 400, 'rows array is required and must not be empty', 'INVALID_INPUT');
+  }
+
+  let teamProfiles = [];
+  let clientList = [];
+
+  const DEFAULT_CLIENTS = [
+    { name: 'Apex Footwear' },
+    { name: 'Chillox Bangladesh' },
+    { name: 'Aura Cosmetics' },
+    { name: 'Daraz Bangladesh' },
+    { name: 'Grameenphone' },
+    { name: 'Internal Agency' }
+  ];
+
+  const DEFAULT_TEAM = [
+    { emp_code: 'PBD-001', name: 'Mahmudul Hasan', department: 'Leadership' },
+    { emp_code: 'PBD-002', name: 'Md. Zahin Khandaker', department: 'Leadership' },
+    { emp_code: 'PBD-003', name: 'Borhan Uddin', department: 'Production' },
+    { emp_code: 'PBD-004', name: 'Zahin', department: 'Creative & Content' },
+    { emp_code: 'PBD-005', name: 'Ruhul Amin', department: 'Quality Assurance' },
+    { emp_code: 'PBD-006', name: 'Firoz Ahmed', department: 'Operations' }
+  ];
+
+  if (isSupabaseConfigured()) {
+    const [pRes, cRes] = await Promise.all([
+      supabase.from('profiles').select('id, emp_code, name, role, department'),
+      supabase.from('clients').select('id, name, category')
+    ]);
+    teamProfiles = (pRes.data && pRes.data.length > 0) ? pRes.data : DEFAULT_TEAM;
+    clientList = (cRes.data && cRes.data.length > 0) ? cRes.data : DEFAULT_CLIENTS;
+  } else {
+    teamProfiles = DEFAULT_TEAM;
+    clientList = DEFAULT_CLIENTS;
+  }
+
+  // Ensure default clients & team are always in search pool
+  DEFAULT_CLIENTS.forEach(dc => {
+    if (!clientList.some(c => c.name.toLowerCase() === dc.name.toLowerCase())) {
+      clientList.push(dc);
+    }
+  });
+
+  DEFAULT_TEAM.forEach(dt => {
+    if (!teamProfiles.some(p => p.name.toLowerCase() === dt.name.toLowerCase())) {
+      teamProfiles.push(dt);
+    }
+  });
+
+  const { getFirstName, getPreferredName, matchesAssignee } = require('../utils/name');
+
+  const cleanedRows = [];
+  let modificationsCount = 0;
+
+  rows.forEach((row) => {
+    let title = (row.title || row.task || row['task title'] || row.name || '').trim();
+    let client = (row.client || row.client_name || row.company || row['client name'] || '').trim();
+    let rawAssignee = (row.assignee || row.assigned_to || row['assigned to'] || row.staff || '').trim();
+    let department = (row.department || row.dept || '').trim();
+    let workflowType = (row.workflowType || row.workflow_type || row.workflow || '').trim().toLowerCase();
+    let stage = (row.stage || row.status || 'Briefing').trim();
+    let priority = (row.priority || 'Medium').trim();
+    let dueDate = row.dueDate || row.due_date || row.deadline || row.due || '';
+    let estimatedHours = Number(String(row.estimatedHours || row.estimated_hours || row.hours || '8').replace(/[^0-9.]/g, '')) || 8;
+    let description = (row.description || row.desc || row.brief || row.notes || '').trim();
+    let projectName = (row.projectName || row.project_name || row.project || '').trim();
+
+    const changes = [];
+
+    // 1. Clean Title (Capitalize nicely)
+    if (title) {
+      const origTitle = title;
+      title = title.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+      if (title !== origTitle) changes.push(`Title capitalized`);
+    } else {
+      title = 'General Deliverable';
+      changes.push(`Default title assigned`);
+    }
+
+    // 2. Fuzzy Client Matching
+    if (client) {
+      const matchClient = clientList.find(c =>
+        c.name.toLowerCase().includes(client.toLowerCase()) ||
+        client.toLowerCase().includes(c.name.toLowerCase())
+      );
+      if (matchClient && matchClient.name !== client) {
+        changes.push(`Client matched: "${client}" → "${matchClient.name}"`);
+        client = matchClient.name;
+      }
+    } else {
+      client = 'Agency';
+      changes.push(`Client defaulted to "Agency"`);
+    }
+
+    // 3. Fuzzy Assignee Matching
+    let matchedEmp = null;
+    if (rawAssignee) {
+      const cleanRaw = rawAssignee.toLowerCase().replace(/\b(bhai|vai|bro|lead|designer|editor|qa|qc|specialist)\b/g, '').trim();
+      matchedEmp = teamProfiles.find(p =>
+        (p.emp_code && p.emp_code.toLowerCase() === rawAssignee.toLowerCase()) ||
+        matchesAssignee(cleanRaw, p.name, p.emp_code) ||
+        p.name.toLowerCase().includes(cleanRaw) ||
+        cleanRaw.includes(p.name.toLowerCase())
+      );
+      if (matchedEmp && matchedEmp.name !== rawAssignee) {
+        changes.push(`Assignee resolved: "${rawAssignee}" → "${matchedEmp.name}"`);
+      }
+    }
+
+    const finalAssignee = matchedEmp ? matchedEmp.name : (rawAssignee || 'Unassigned');
+
+    // 4. Workflow & Department Auto-Inference
+    const lowerTitle = title.toLowerCase();
+    if (!workflowType || workflowType === 'video') {
+      if (lowerTitle.includes('banner') || lowerTitle.includes('post') || lowerTitle.includes('social') || lowerTitle.includes('carousel')) {
+        workflowType = 'social';
+        department = department || 'Creative & Content';
+        changes.push(`Workflow inferred as "social"`);
+      } else if (lowerTitle.includes('brand') || lowerTitle.includes('logo') || lowerTitle.includes('guideline') || lowerTitle.includes('typography')) {
+        workflowType = 'branding';
+        department = department || 'Branding & Design';
+        changes.push(`Workflow inferred as "branding"`);
+      } else if (lowerTitle.includes('landing') || lowerTitle.includes('app') || lowerTitle.includes('web') || lowerTitle.includes('ui') || lowerTitle.includes('dev')) {
+        workflowType = 'dev';
+        department = department || 'Development & Tech';
+        changes.push(`Workflow inferred as "dev"`);
+      } else {
+        workflowType = 'video';
+        department = department || 'Post Production';
+      }
+    }
+
+    if (matchedEmp?.department && !department) {
+      department = matchedEmp.department;
+    }
+
+    // 5. Stage Normalization
+    const lowerStage = stage.toLowerCase();
+    if (lowerStage.includes('edit')) stage = 'Editing';
+    else if (lowerStage.includes('shoot') || lowerStage.includes('film')) stage = 'Shooting';
+    else if (lowerStage.includes('script')) stage = 'Scripting';
+    else if (lowerStage.includes('qc') || lowerStage.includes('check')) stage = 'Internal QC';
+    else if (lowerStage.includes('client') || lowerStage.includes('review')) stage = 'Client Review';
+    else if (lowerStage.includes('approve') || lowerStage.includes('done')) stage = 'Approved';
+    else stage = 'Briefing';
+
+    // 6. Date Normalization
+    const normalizedDueDate = normalizeDateStr(dueDate);
+    if (dueDate && normalizedDueDate !== dueDate) {
+      changes.push(`Date formatted: "${dueDate}" → "${normalizedDueDate}"`);
+    }
+
+    // 7. Priority Normalization
+    const lowerPri = priority.toLowerCase();
+    if (lowerPri.includes('urg') || lowerPri.includes('crit') || lowerPri.includes('p1')) priority = 'Urgent';
+    else if (lowerPri.includes('hi') || lowerPri.includes('p2')) priority = 'High';
+    else if (lowerPri.includes('low') || lowerPri.includes('p4')) priority = 'Low';
+    else priority = 'Medium';
+
+    // 8. Description Polish
+    if (!description && title) {
+      description = `${title} deliverable for ${client} (${workflowType.toUpperCase()} workflow).`;
+      changes.push(`Description generated`);
+    }
+
+    if (changes.length > 0) modificationsCount++;
+
+    cleanedRows.push({
+      title,
+      client,
+      projectName,
+      assignee: finalAssignee,
+      assigneeId: matchedEmp?.emp_code || null,
+      department: department || 'Production',
+      workflowType,
+      stage,
+      priority,
+      dueDate: normalizedDueDate || '2026-09-15',
+      estimatedHours,
+      description,
+      _changes: changes
+    });
+  });
+
+  return ok(res, {
+    success: true,
+    cleanedRows,
+    modificationsCount,
+    totalRows: rows.length
+  });
+}));
+
 module.exports = router;

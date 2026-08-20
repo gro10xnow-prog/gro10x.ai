@@ -634,8 +634,11 @@ window.APP_MODULES.kanban = async function(container) {
           </div>
 
           <!-- Preview Table -->
-          <div id="kImportPreviewContainer" style="display:none; margin-top:1rem; max-height:220px; overflow-y:auto; background:var(--surface-2); border:1px solid var(--border-subtle); border-radius:8px; padding:0.5rem;">
-            <div style="font-size:0.78rem; font-weight:800; margin-bottom:0.4rem;" id="kImportPreviewTitle">Live Preview</div>
+          <div id="kImportPreviewContainer" style="display:none; margin-top:1rem; max-height:240px; overflow-y:auto; background:var(--surface-2); border:1px solid var(--border-subtle); border-radius:8px; padding:0.6rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem; flex-wrap:wrap; gap:0.4rem;">
+              <div style="font-size:0.78rem; font-weight:800;" id="kImportPreviewTitle">Live Preview</div>
+              <button type="button" class="btn-primary btn-sm" id="kAiCleanBtn" style="background: linear-gradient(135deg, #9333ea, #db2777); font-size:0.75rem; padding:0.25rem 0.65rem;" onclick="window.KANBAN_MODULE.aiCleanImportData()">✨ AI Auto-Clean & Standardize</button>
+            </div>
             <table class="data-table" style="font-size:0.72rem; width:100%;" id="kImportPreviewTable">
               <thead id="kImportThead"></thead>
               <tbody id="kImportTbody"></tbody>
@@ -2136,7 +2139,7 @@ window.APP_MODULES.kanban = async function(container) {
       }
       return results;
     },
-    renderImportPreview(rows) {
+    renderImportPreview(rows, isCleaned = false) {
       const preview = document.getElementById('kImportPreviewContainer');
       const thead = document.getElementById('kImportThead');
       const tbody = document.getElementById('kImportTbody');
@@ -2147,21 +2150,51 @@ window.APP_MODULES.kanban = async function(container) {
         return;
       }
 
-      if (title) title.innerHTML = `👁️ Live Preview (${rows.length} Deliverables Detected)`;
-      if (thead) thead.innerHTML = `<tr><th>Task Title</th><th>Client</th><th>Assignee</th><th>Stage</th><th>Priority</th><th>Due Date</th></tr>`;
+      if (title) title.innerHTML = isCleaned
+        ? `✨ <span style="color:#10b981;">AI Standardized & Sanitized</span> (${rows.length} Deliverables Ready)`
+        : `👁️ Live Preview (${rows.length} Deliverables Detected)`;
+
+      if (thead) thead.innerHTML = `<tr><th>Task Title</th><th>Client</th><th>Assignee</th><th>Stage</th><th>Priority</th><th>Due Date</th>${isCleaned ? '<th>AI Optimizations</th>' : ''}</tr>`;
       if (tbody) {
-        tbody.innerHTML = rows.slice(0, 5).map(r => `
+        tbody.innerHTML = rows.slice(0, 6).map(r => `
           <tr>
             <td><strong>${escapeHTML(r.title)}</strong></td>
             <td>${escapeHTML(r.client)}</td>
             <td>${escapeHTML(r.assignee || 'Unassigned')}</td>
             <td><span class="status-badge status-open">${escapeHTML(r.stage)}</span></td>
             <td>${escapeHTML(r.priority)}</td>
-            <td>${escapeHTML(r.dueDate || 'N/A')}</td>
+            <td><code>${escapeHTML(r.dueDate || 'N/A')}</code></td>
+            ${isCleaned ? `<td><span style="font-size:0.68rem; color:#10b981; font-weight:700;">${(r._changes && r._changes.length > 0) ? `✨ ${r._changes.length} field(s) normalized` : '✅ Verified'}</span></td>` : ''}
           </tr>
-        `).join('') + (rows.length > 5 ? `<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">...and ${rows.length - 5} more deliverables ready to import</td></tr>` : '');
+        `).join('') + (rows.length > 6 ? `<tr><td colspan="${isCleaned ? 7 : 6}" style="text-align:center; color:var(--text-muted);">...and ${rows.length - 6} more deliverables ready to import</td></tr>` : '');
       }
       if (preview) preview.style.display = 'block';
+    },
+    async aiCleanImportData() {
+      if (!this.parsedImportTasks || this.parsedImportTasks.length === 0) return;
+      const btn = document.getElementById('kAiCleanBtn');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerText = '✨ AI Standardizing...';
+      }
+
+      try {
+        const res = await APP_API.post('/admin/import/clean-tasks-ai', { rows: this.parsedImportTasks });
+        if (res && res.success && Array.isArray(res.data?.cleanedRows || res.cleanedRows)) {
+          const cleaned = res.data?.cleanedRows || res.cleanedRows;
+          const mods = res.data?.modificationsCount ?? res.modificationsCount ?? cleaned.length;
+          this.parsedImportTasks = cleaned;
+          this.renderImportPreview(cleaned, true);
+          if (window.showToast) window.showToast(`✨ AI cleaned and standardized ${mods} deliverable(s)!`, 'success');
+        }
+      } catch (err) {
+        if (window.showToast) window.showToast('AI Clean error: ' + (err.message || 'Error'), 'error');
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerText = '✨ AI Auto-Clean & Standardize';
+        }
+      }
     },
     async submitImport() {
       if (!this.parsedImportTasks || this.parsedImportTasks.length === 0) return;

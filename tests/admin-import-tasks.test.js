@@ -93,4 +93,32 @@ describe('Admin Bulk Import Projects & Tasks Test Suite', () => {
     expect(res.body.success).toBe(true);
     expect(res.body.data?.addedCount || res.body.addedCount).toBeGreaterThanOrEqual(1);
   });
+
+  // 4. AI Data Cleaner & Sanitizer
+  test('POST /api/admin/import/clean-tasks-ai sanitizes messy dates, assignees, and infers workflows', async () => {
+    const res = await request(app)
+      .post('/api/admin/import/clean-tasks-ai')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({
+        rows: [
+          {
+            title: 'viral video cut 1',
+            client: 'apex',
+            assignee: 'zahin bhai',
+            dueDate: '15th Sept',
+            stage: 'edit'
+          }
+        ]
+      });
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.success).toBe(true);
+    const cleaned = res.body.data?.cleanedRows || res.body.cleanedRows;
+    expect(Array.isArray(cleaned)).toBe(true);
+    expect(cleaned[0].title).toBe('Viral Video Cut 1');
+    expect(cleaned[0].client).toBe('Apex Footwear');
+    expect(cleaned[0].stage).toBe('Editing');
+    expect(cleaned[0].dueDate).toBe('2026-09-15');
+    expect(cleaned[0].workflowType).toBe('video');
+  });
 });
