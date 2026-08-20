@@ -11,26 +11,28 @@ const state = require('../../state');
 
 async function handleMorningBriefing(teamBot, msg) {
   const chatId = msg.chat.id;
+  const todayStr = new Date().toISOString().split('T')[0];
 
-  const [team, tasks] = await Promise.all([
+  const [team, tasks, attRes] = await Promise.all([
     state.getAllTeam(),
-    supabase ? supabase.from('tasks').select('*').limit(3).then(r => r.data || []) : Promise.resolve([])
+    supabase ? supabase.from('tasks').select('*').limit(3).then(r => r.data || []) : Promise.resolve([]),
+    supabase ? supabase.from('attendance').select('*').gte('clock_in_time', todayStr).then(r => r.data || []) : Promise.resolve([])
   ]);
 
   const totalStaff = team.length;
-  const inStudio = team.filter(t => t.status === 'In Studio').length;
-  const onShoot = team.filter(t => t.status === 'On Field Shoot').length;
+  const inStudio = (attRes || []).filter(a => a.status === 'In Studio').length || team.filter(t => t.status === 'In Studio').length;
+  const onShoot = (attRes || []).filter(a => a.status === 'On Field Shoot').length || team.filter(t => t.status === 'On Field Shoot').length;
   const onLeave = team.filter(t => t.status === 'On Leave').length;
-  const offline = totalStaff - (inStudio + onShoot + onLeave);
+  const offline = Math.max(0, totalStaff - (inStudio + onShoot + onLeave));
 
-  let text = `🌅 *PURPLEBOT MORNING BRIEFING*\n` +
+  let text = `🌅 *PURPLEBOT DIGITAL — EXECUTIVE MORNING BRIEFING*\n` +
     `📅 ${new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })}\n\n` +
-    `👥 *Team Status (${totalStaff} Members):*\n` +
+    `👥 *Live Studio Headcount (${totalStaff} Total):*\n` +
     `• 🟢 In Studio: *${inStudio}*\n` +
     `• 🎬 On Shoot: *${onShoot}*\n` +
     `• 🌴 On Leave: *${onLeave}*\n` +
     `• ⬛ Offline: *${offline}*\n\n` +
-    `📋 *Today's Production Focus:*\n`;
+    `📋 *Priority Deliverables Focus:*\n`;
 
   const topTasks = (tasks || []).slice(0, 3);
   if (topTasks.length === 0) {
@@ -41,8 +43,17 @@ async function handleMorningBriefing(teamBot, msg) {
     });
   }
 
-  text += `\nHave a productive day! 💜`;
-  teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
+  text += `\nHave a productive and profitable day! 💜`;
+
+  teamBot.sendMessage(chatId, text, {
+    parse_mode: 'Markdown',
+    reply_markup: {
+      inline_keyboard: [[
+        { text: '📊 Command Dashboard', url: 'https://purpleos-iota.vercel.app/app' },
+        { text: '✍️ Pending Approvals', callback_data: 'cmd_approvals' }
+      ]]
+    }
+  }).catch(() => {});
 }
 
 async function handleBusinessSnapshot(teamBot, msg) {

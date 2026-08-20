@@ -1540,6 +1540,9 @@ function registerLegacyTeamMenus(teamBot, readDB) {
           } else if (data === 'tech_clean_slate') {
             alertMsg = '🧹 Automation Logs & Test Slate Cleaned!';
             teamBot.sendMessage(chatId, `🧹 *Test Slate Cleaned! Automation logs reset.*`, { parse_mode: 'Markdown' });
+          } else if (data === 'cmd_approvals' || data === 'view_expenses_queue') {
+            const approvalsHandler = require('./approvals');
+            return approvalsHandler.handlePendingApprovals(teamBot, query.message);
           } else if (data === 'cmd_mybank') {
             const profileHandler = require('./profile');
             profileHandler.handleMyBank(teamBot, query.message);
