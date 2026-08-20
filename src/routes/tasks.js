@@ -4,6 +4,14 @@ const { requireAuth } = require('../middleware/auth');
 const { requireAdmin } = require('../middleware/rbac');
 const { supabase } = require('../services/supabase');
 const { broadcast } = require('../services/sse');
+const cache = require('../services/cache');
+
+function broadcastTaskEvent(eventType, data) {
+  cache.delByPrefix('tasks:');
+  try {
+    return broadcast(eventType, data);
+  } catch (e) {}
+}
 
 const { readDB, writeDB } = require('../services/db');
 const { isSupabaseConfigured } = require('../services/supabase');
@@ -54,15 +62,25 @@ function mapTask(t) {
   };
 }
 
-// GET Tasks (Supports ?dept=, ?assignee=, ?label= filters)
+// GET Tasks (Supports ?dept=, ?assignee=, ?label=, ?limit=, ?page= filters)
 router.get('/', requireAuth, async (req, res) => {
   try {
     const { dept, assignee, label, parentId } = req.query;
+    const limit = Math.min(parseInt(req.query.limit) || 100, 500);
+    const page = Math.max(parseInt(req.query.page) || 0, 0);
+    const offset = page * limit;
+
+    const cacheKey = `tasks:list:${dept || ''}:${assignee || ''}:${parentId || ''}:${label || ''}:${limit}:${page}`;
+    const cached = cache.get(cacheKey);
+    if (cached) {
+      return res.json(cached);
+    }
+
     let tasks = [];
 
     if (supabase && isSupabaseConfigured()) {
       try {
-        let query = supabase.from('tasks').select('*').order('created_at', { ascending: false });
+        let query = supabase.from('tasks').select('*').order('created_at', { ascending: false }).range(offset, offset + limit - 1);
 
         if (dept) {
           query = query.or(`department.ilike.%${dept}%,category.ilike.%${dept}%`);
@@ -85,7 +103,7 @@ router.get('/', requireAuth, async (req, res) => {
 
     if (tasks.length === 0) {
       const db = await readDB();
-      tasks = db.tasks || [];
+      tasks = (db.tasks || []).slice(offset, offset + limit);
     }
 
     // Load labels & custom field values for tasks
@@ -127,6 +145,7 @@ router.get('/', requireAuth, async (req, res) => {
       mapped = mapped.filter(t => (t.labels || []).some(l => l.name.toLowerCase() === label.toLowerCase() || l.id === label));
     }
 
+    cache.set(cacheKey, mapped, 30000);
     res.json(mapped);
   } catch (err) {
     console.error('Tasks GET error:', err.message);
@@ -249,7 +268,7 @@ router.post('/', requireAuth, async (req, res) => {
 
     // Fire SSE broadcast non-blockingly
     try {
-      broadcast('task_update', [task]);
+      broadcastTaskEvent('task_update', [task]);
     } catch (e) {}
 
     return res.status(201).json({ success: true, task });
@@ -285,7 +304,7 @@ router.post('/bulk', requireAuth, async (req, res) => {
       return res.status(400).json({ error: 'Unknown action' });
     }
 
-    broadcast('task_update', { bulkUpdate: true });
+    broadcastTaskEvent('task_update', { bulkUpdate: true });
     res.json({ success: true, count: taskIds.length });
   } catch (err) {
     console.error('Task bulk POST error:', err.message);
@@ -310,7 +329,7 @@ router.put('/:id', requireAuth, async (req, res) => {
 
     const task = mapTask(data);
     const { data: allTasks } = await supabase.from('tasks').select('*').order('created_at', { ascending: false });
-    broadcast('task_update', (allTasks || []).map(mapTask));
+    broadcastTaskEvent('task_update', (allTasks || []).map(mapTask));
 
     // QC Gate Notification if moved to Internal QC
     if (req.body.stage === 'Internal QC') {
@@ -379,7 +398,7 @@ router.patch('/:id/stage', requireAuth, async (req, res) => {
           if (isUUID) uQuery = uQuery.eq('id', empCode);
           else uQuery = uQuery.eq('emp_code', empCode);
           await uQuery;
-          broadcast('team_update', [{ emp_code: empCode, xp: newXP, badge }]);
+          broadcastTaskEvent('team_update', [{ emp_code: empCode, xp: newXP, badge }]);
         }
       } catch (xpErr) {
         console.warn('Task completion XP update warning:', xpErr.message);
@@ -387,7 +406,7 @@ router.patch('/:id/stage', requireAuth, async (req, res) => {
     }
 
     const { data: allTasks } = await supabase.from('tasks').select('*').order('created_at', { ascending: false });
-    broadcast('task_update', (allTasks || []).map(mapTask));
+    broadcastTaskEvent('task_update', (allTasks || []).map(mapTask));
 
     if (stage === 'Client Review') {
       try {
@@ -414,7 +433,7 @@ router.patch('/:id/stage', requireAuth, async (req, res) => {
           const { data: newReview } = await supabase.from('reviews').insert([reviewPayload]).select().single();
           if (newReview) {
             autoReviewId = newReview.id;
-            broadcast('review_update', [newReview]);
+            broadcastTaskEvent('review_update', [newReview]);
           }
         } else {
           autoReviewId = existingReview.id;
@@ -457,7 +476,7 @@ router.patch('/:id/dependency', requireAuth, async (req, res) => {
 
     const task = mapTask(data);
     const { data: allTasks } = await supabase.from('tasks').select('*').order('created_at', { ascending: false });
-    broadcast('task_update', (allTasks || []).map(mapTask));
+    broadcastTaskEvent('task_update', (allTasks || []).map(mapTask));
 
     res.json({ success: true, task });
   } catch (err) {
@@ -483,7 +502,7 @@ router.post('/:id/qc-approve', requireAuth, async (req, res) => {
 
     const task = mapTask(data);
     const { data: allTasks } = await supabase.from('tasks').select('*').order('created_at', { ascending: false });
-    broadcast('task_update', (allTasks || []).map(mapTask));
+    broadcastTaskEvent('task_update', (allTasks || []).map(mapTask));
 
     res.json({ success: true, task });
   } catch (err) {
@@ -510,7 +529,7 @@ router.post('/:id/qc-reject', requireAuth, async (req, res) => {
 
     const task = mapTask(data);
     const { data: allTasks } = await supabase.from('tasks').select('*').order('created_at', { ascending: false });
-    broadcast('task_update', (allTasks || []).map(mapTask));
+    broadcastTaskEvent('task_update', (allTasks || []).map(mapTask));
 
     res.json({ success: true, task });
   } catch (err) {
@@ -535,7 +554,7 @@ router.post('/:id/reassign', requireAuth, async (req, res) => {
 
     const task = mapTask(data);
     const { data: allTasks } = await supabase.from('tasks').select('*').order('created_at', { ascending: false });
-    broadcast('task_update', (allTasks || []).map(mapTask));
+    broadcastTaskEvent('task_update', (allTasks || []).map(mapTask));
 
     res.json({ success: true, task });
   } catch (err) {
@@ -594,7 +613,7 @@ router.post('/studio-bookings', requireAuth, async (req, res) => {
     };
 
     const { data: allBookings } = await supabase.from('studio_bookings').select('*');
-    broadcast('studio_booking_update', allBookings || []);
+    broadcastTaskEvent('studio_booking_update', allBookings || []);
 
     res.json({ success: true, booking });
   } catch (err) {
@@ -611,7 +630,7 @@ router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
     if (error) throw error;
 
     const { data: allTasks } = await supabase.from('tasks').select('*').order('created_at', { ascending: false });
-    broadcast('task_update', (allTasks || []).map(mapTask));
+    broadcastTaskEvent('task_update', (allTasks || []).map(mapTask));
 
     res.json({ success: true });
   } catch (err) {
@@ -657,7 +676,7 @@ router.post('/:id/subtasks', requireAuth, async (req, res) => {
     const { data, error } = await supabase.from('subtasks').insert([payload]).select().single();
     if (error) throw error;
 
-    broadcast('subtask_update', { taskId: id, action: 'create', subtask: data });
+    broadcastTaskEvent('subtask_update', { taskId: id, action: 'create', subtask: data });
     res.json({ success: true, subtask: data });
   } catch (err) {
     console.error('Subtask POST error:', err.message);
@@ -680,7 +699,7 @@ router.patch('/subtasks/:subtaskId/toggle', requireAuth, async (req, res) => {
     const { data, error } = await supabase.from('subtasks').update(updatePayload).eq('id', subtaskId).select().single();
     if (error) throw error;
 
-    broadcast('subtask_update', { taskId: data.task_id, action: 'toggle', subtask: data });
+    broadcastTaskEvent('subtask_update', { taskId: data.task_id, action: 'toggle', subtask: data });
     res.json({ success: true, subtask: data });
   } catch (err) {
     console.error('Subtask TOGGLE error:', err.message);
@@ -713,7 +732,7 @@ router.post('/:id/comments', requireAuth, async (req, res) => {
     const { data, error } = await supabase.from('task_comments').insert([{ task_id: id, author_name: userName, content }]).select().single();
     if (error) throw error;
     
-    broadcast('task_comment_added', { taskId: id, comment: data });
+    broadcastTaskEvent('task_comment_added', { taskId: id, comment: data });
     res.json({ success: true, comment: data });
   } catch (err) {
     console.error('Comments POST error:', err.message);
@@ -756,7 +775,7 @@ router.post('/:id/log-time', requireAuth, async (req, res) => {
     const { data, error } = await supabase.from('tasks').update({ logged_hours: newLogged, updated_at: new Date().toISOString() }).eq('id', id).select().single();
     if (error) throw error;
 
-    broadcast('task_time_logged', { taskId: id, log: logEntry });
+    broadcastTaskEvent('task_time_logged', { taskId: id, log: logEntry });
     res.json({ success: true, task: mapTask(data), log: logEntry });
   } catch (err) {
     console.error('Task log-time POST error:', err.message);
@@ -774,7 +793,7 @@ router.post('/:id/labels', requireAuth, async (req, res) => {
     const { error } = await supabase.from('task_labels').insert([{ task_id: id, label_id: labelId }]);
     if (error && !error.message.includes('duplicate')) throw error;
 
-    broadcast('task_label_update', { taskId: id, action: 'add', labelId });
+    broadcastTaskEvent('task_label_update', { taskId: id, action: 'add', labelId });
     res.json({ success: true });
   } catch (err) {
     console.error('Task Add Label error:', err.message);
@@ -789,7 +808,7 @@ router.delete('/:id/labels/:labelId', requireAuth, async (req, res) => {
     const { error } = await supabase.from('task_labels').delete().eq('task_id', id).eq('label_id', labelId);
     if (error) throw error;
 
-    broadcast('task_label_update', { taskId: id, action: 'remove', labelId });
+    broadcastTaskEvent('task_label_update', { taskId: id, action: 'remove', labelId });
     res.json({ success: true });
   } catch (err) {
     console.error('Task Delete Label error:', err.message);

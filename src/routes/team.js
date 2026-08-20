@@ -6,6 +6,14 @@ const { verifyTelegramInitData, requireMiniAppAuth } = require('../middleware/te
 const rateLimit = require('express-rate-limit');
 const { supabase } = require('../services/supabase');
 const { broadcast } = require('../services/sse');
+const cache = require('../services/cache');
+
+function broadcastTeamEvent(eventType, data) {
+  cache.delByPrefix('team:');
+  try {
+    return broadcast(eventType, data);
+  } catch (e) {}
+}
 const { sendTelegramNotification, getTeamBot } = require('../services/bot');
 const { readDB } = require('../services/db');
 const { createTempPin } = require('../services/auth-pins');
@@ -393,7 +401,7 @@ router.post('/clockin', miniAppLimiter, requireMiniAppAuth, async (req, res) => 
       await supabase.from('profiles').update({ status: 'In Studio' }).eq('emp_code', empCode);
     }
 
-    broadcast('attendance_update', [{ employee_id: empCode, status: 'In Studio', clock_in_time: nowTime }]);
+    broadcastTeamEvent('attendance_update', [{ employee_id: empCode, status: 'In Studio', clock_in_time: nowTime }]);
     res.json({ success: true, time: nowTime, status: 'In Studio' });
   } catch (err) {
     console.error('POST /team/clockin error:', err.message);
@@ -425,7 +433,7 @@ router.post('/clockout', miniAppLimiter, requireMiniAppAuth, async (req, res) =>
       await supabase.from('profiles').update({ status: 'Offline' }).eq('emp_code', empCode);
     }
 
-    broadcast('attendance_update', [{ employee_id: empCode, status: 'Clocked Out', clock_out_time: nowTime }]);
+    broadcastTeamEvent('attendance_update', [{ employee_id: empCode, status: 'Clocked Out', clock_out_time: nowTime }]);
     res.json({ success: true, time: nowTime, status: 'Offline' });
   } catch (err) {
     console.error('POST /team/clockout error:', err.message);
@@ -546,7 +554,7 @@ router.post('/survey', miniAppLimiter, requireMiniAppAuth, async (req, res) => {
       await supabase.from('profiles').update(profileUpdate).eq('emp_code', empCode);
     }
 
-    broadcast('team_update', [{ emp_code: empCode, xp: currentXP, badge }]);
+    broadcastTeamEvent('team_update', [{ emp_code: empCode, xp: currentXP, badge }]);
 
     // Send bot notification for XP milestone
     try {
@@ -613,7 +621,7 @@ router.post('/agreement', miniAppLimiter, requireMiniAppAuth, async (req, res) =
         await supabase.from('profiles').update(profileUpdate).eq('emp_code', empCode);
       }
 
-      broadcast('team_update', [{ emp_code: empCode, onboarding_complete: true, agreement_stage: 1 }]);
+      broadcastTeamEvent('team_update', [{ emp_code: empCode, onboarding_complete: true, agreement_stage: 1 }]);
 
       // Send bot congrats + unlock notification
       try {
@@ -670,17 +678,20 @@ router.post('/agreement', miniAppLimiter, requireMiniAppAuth, async (req, res) =
 // ─────────────────────────────────────────────────────────────────────────────
 router.get('/', requireAuth, async (req, res) => {
   try {
-    let profilesList = [];
-    if (supabase) {
-      try {
-        const { data, error } = await supabase.from('profiles').select('*').order('emp_code', { ascending: true });
-        if (!error && Array.isArray(data) && data.length > 0) {
-          profilesList = data;
-        }
-      } catch (e) {}
+    let profilesList = cache.get('team:raw_profiles');
+    if (!profilesList) {
+      if (supabase) {
+        try {
+          const { data, error } = await supabase.from('profiles').select('*').order('emp_code', { ascending: true });
+          if (!error && Array.isArray(data) && data.length > 0) {
+            profilesList = data;
+            cache.set('team:raw_profiles', profilesList, 120000);
+          }
+        } catch (e) {}
+      }
     }
 
-    if (profilesList.length === 0) {
+    if (!profilesList || profilesList.length === 0) {
       profilesList = DEFAULT_TEAM;
     }
 
@@ -757,7 +768,7 @@ router.post('/attendance', requireAuth, async (req, res) => {
     await supabase.from('profiles').update({ status: payload.status }).eq('emp_code', empId);
 
     const { data: allAtt } = await supabase.from('attendance').select('*').order('created_at', { ascending: false });
-    broadcast('attendance_update', (allAtt || []).map(mapAttendance));
+    broadcastTeamEvent('attendance_update', (allAtt || []).map(mapAttendance));
 
     res.json({ success: true, attendance: mapAttendance(record) });
   } catch (err) {
@@ -840,7 +851,7 @@ router.post('/leaves', requireAuth, async (req, res) => {
     if (error) throw error;
 
     const { data: allLeaves } = await supabase.from('leaves').select('*').order('created_at', { ascending: false });
-    broadcast('leave_update', allLeaves || []);
+    broadcastTeamEvent('leave_update', allLeaves || []);
     
     const dbSnapshot = await readDB();
     const { processAutomationEvent } = require('../services/automation');
@@ -863,7 +874,7 @@ router.put('/leaves/:id', requireAuth, requireManager, async (req, res) => {
     if (error) throw error;
 
     const { data: allLeaves } = await supabase.from('leaves').select('*').order('created_at', { ascending: false });
-    broadcast('leave_update', allLeaves || []);
+    broadcastTeamEvent('leave_update', allLeaves || []);
 
     res.json({ success: true, leave });
   } catch (err) {
@@ -917,7 +928,7 @@ router.post('/', requireAuth, requireManager, async (req, res) => {
 
     const member = mapProfile(data);
     const { data: allTeam } = await supabase.from('team_members').select('*').order('created_at', { ascending: false });
-    broadcast('team_update', (allTeam || []).map(mapProfile));
+    broadcastTeamEvent('team_update', (allTeam || []).map(mapProfile));
 
     res.json({
       success: true,
@@ -1076,7 +1087,7 @@ router.put('/:id', requireAuth, async (req, res) => {
 
     if (updatedProfile) {
       const mapped = mapProfile(updatedProfile);
-      broadcast('team_update', [mapped]);
+      broadcastTeamEvent('team_update', [mapped]);
       res.json({ success: true, profile: mapped });
     } else {
       res.status(404).json({ error: 'Profile not found' });
@@ -1146,7 +1157,7 @@ router.delete('/:id', requireAuth, async (req, res) => {
       }
     }
 
-    broadcast('team_update', []); // Force clients to refresh full list
+    broadcastTeamEvent('team_update', []); // Force clients to refresh full list
     res.json({ success: true });
   } catch (err) {
     console.error('DELETE /team/:id error:', err.message);
@@ -1287,7 +1298,7 @@ router.post('/eod', miniAppLimiter, requireMiniAppAuth, async (req, res) => {
               uQuery = uQuery.eq('emp_code', empCode);
             }
             await uQuery;
-            broadcast('team_update', [{ emp_code: empCode, xp: newXP, badge }]);
+            broadcastTeamEvent('team_update', [{ emp_code: empCode, xp: newXP, badge }]);
           }
         } catch (xpErr) {
           console.warn('EOD XP update warning:', xpErr.message);
@@ -1295,7 +1306,7 @@ router.post('/eod', miniAppLimiter, requireMiniAppAuth, async (req, res) => {
       }
     }
 
-    broadcast('eod_update', [payload]);
+    broadcastTeamEvent('eod_update', [payload]);
     const { processAutomationEvent } = require('../services/automation');
     await processAutomationEvent('eod_submitted', { eod: payload }, null, null, broadcast).catch(() => {});
 

@@ -15,6 +15,19 @@ const { requireAuth } = require('../middleware/auth');
 const { requireAdmin } = require('../middleware/rbac');
 const { validateInput } = require('../middleware/validate');
 const { ok, fail, asyncHandler } = require('../utils/response');
+const rateLimit = require('express-rate-limit');
+
+// Global API rate limiter (300 req / min per IP) — generous for SPA usage
+const globalLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 300,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req) => req.path.startsWith('/cron') || req.path.startsWith('/webhooks') || process.env.NODE_ENV === 'test',
+  message: { error: 'Rate limit exceeded. Please slow down.' }
+});
+
+router.use(globalLimiter);
 
 // Mount Payload Validation Middleware
 router.use(validateInput);

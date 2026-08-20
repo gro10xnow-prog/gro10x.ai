@@ -123,6 +123,7 @@ app.get(['/api/bot-status', '/bot-status'], (req, res) => {
 app.get('/api/system-health', async (req, res) => {
   const { isSupabaseConfigured } = require('./src/services/supabase');
   const { getActiveClientsCount } = require('./src/services/sse');
+  const cache = require('./src/services/cache');
   
   let dbStatus = 'Offline';
   if (isSupabaseConfigured()) {
@@ -134,11 +135,24 @@ app.get('/api/system-health', async (req, res) => {
     }
   }
 
+  let team = getTeamBot();
+  let client = getClientBot();
+
   res.json({
+    version: '0.9.0.0',
+    environment: process.env.NODE_ENV || 'development',
     dbConnection: dbStatus,
     sseClients: getActiveClientsCount ? getActiveClientsCount() : 0,
-    uptimeSeconds: process.uptime(),
-    memoryUsage: process.memoryUsage().rss / 1024 / 1024 // MB
+    botStatus: {
+      teamBot: team ? 'active' : 'null',
+      clientBot: client ? 'active' : 'null'
+    },
+    uptimeSeconds: Math.round(process.uptime()),
+    memoryMB: Math.round((process.memoryUsage().rss / 1024 / 1024) * 100) / 100,
+    cacheStats: {
+      activeKeys: cache.size()
+    },
+    timestamp: new Date().toISOString()
   });
 });
 
@@ -182,8 +196,18 @@ app.post(['/api/webhooks/telegram', '/webhooks/telegram'], async (req, res) => {
 app.use('/api', apiRoutes);
 
 // Serve SPA app modules and public static assets
-app.use('/app/modules', express.static(path.join(__dirname, 'public/app/modules'), { maxAge: 0 }));
-app.use('/app', express.static(path.join(__dirname, 'public/app'), { maxAge: 0 }));
+app.use('/app/modules', express.static(path.join(__dirname, 'public/app/modules'), {
+  maxAge: '5m',
+  setHeaders: (res) => {
+    res.setHeader('Cache-Control', 'public, max-age=300, must-revalidate');
+  }
+}));
+app.use('/app', express.static(path.join(__dirname, 'public/app'), {
+  maxAge: '5m',
+  setHeaders: (res) => {
+    res.setHeader('Cache-Control', 'public, max-age=300, must-revalidate');
+  }
+}));
 app.use(express.static(path.join(__dirname, 'public'), { maxAge: '1d' }));
 
 // Explicit Multi-Portal Routes (Phase C Architecture)

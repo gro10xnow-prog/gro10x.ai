@@ -1,3 +1,8 @@
+/**
+ * src/services/sse.js
+ * Server-Sent Events (SSE) manager with keepalive heartbeat.
+ */
+
 let clients = [];
 
 function sseHandler(req, res) {
@@ -10,10 +15,25 @@ function sseHandler(req, res) {
   const newClient = { id: clientId, res };
   clients.push(newClient);
 
-  // Initial connection heartbeat
+  // Initial connection handshake
   res.write(`data: ${JSON.stringify({ type: 'connected', clientId })}\n\n`);
 
+  // 25-second keepalive heartbeat ping for serverless / edge environments
+  const heartbeat = setInterval(() => {
+    try {
+      if (res.writableEnded || res.finished) {
+        clearInterval(heartbeat);
+      } else {
+        res.write(': ping\n\n');
+      }
+    } catch (e) {
+      clearInterval(heartbeat);
+    }
+  }, 25000);
+
+  // Clean up on disconnect
   req.on('close', () => {
+    clearInterval(heartbeat);
     clients = clients.filter(c => c.id !== clientId);
   });
 }

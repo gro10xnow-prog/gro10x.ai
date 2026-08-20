@@ -7,6 +7,14 @@ const { broadcast } = require('../services/sse');
 const { processAutomationEvent } = require('../services/automation');
 const { sendTelegramNotification } = require('../services/bot');
 const { sendClientOnboardingEmail } = require('../services/resend');
+const cache = require('../services/cache');
+
+function broadcastLeadEvent(eventType, data) {
+  cache.delByPrefix('leads:');
+  try {
+    return broadcast(eventType, data);
+  } catch (e) {}
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helper: generate next lead ID from Supabase count
@@ -55,12 +63,23 @@ function calculateLeadScore(lead) {
   return Math.max(1, Math.min(100, score)); // Clamp between 1 and 100
 }
 
-// GET all leads (Internal Team/Admin)
+// GET all leads (Internal Team/Admin, Supports ?limit=, ?page=)
 router.get('/', requireAuth, async (req, res) => {
+  const limit = Math.min(parseInt(req.query.limit) || 200, 500);
+  const page = Math.max(parseInt(req.query.page) || 0, 0);
+  const offset = page * limit;
+  const cacheKey = `leads:list:${limit}:${page}`;
+
+  const cached = cache.get(cacheKey);
+  if (cached) {
+    return res.json(cached);
+  }
+
   if (isSupabaseConfigured()) {
-    const { data, error } = await supabase.from('leads').select('*').order('created_at', { ascending: false });
+    const { data, error } = await supabase.from('leads').select('*').order('created_at', { ascending: false }).range(offset, offset + limit - 1);
     if (!error) {
       const leads = (data || []).map(l => ({ ...l, score: calculateLeadScore(l) }));
+      cache.set(cacheKey, leads, 60000);
       return res.json(leads);
     }
   }
@@ -148,7 +167,7 @@ router.put('/:id', requireAuth, async (req, res) => {
     await supabase.from('leads').update(updatedLead).eq('id', id);
     
     updatedLead.score = calculateLeadScore(updatedLead);
-    broadcast('lead_update', [updatedLead]);
+    broadcastLeadEvent('lead_update', [updatedLead]);
     return res.json({ success: true, lead: updatedLead });
   }
 
@@ -161,7 +180,7 @@ router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
 
   if (isSupabaseConfigured()) {
     await supabase.from('leads').delete().eq('id', id);
-    broadcast('lead_update', [{ id, deleted: true }]);
+    broadcastLeadEvent('lead_update', [{ id, deleted: true }]);
     return res.json({ success: true });
   }
 
@@ -227,7 +246,7 @@ router.post('/:id/convert', requireAuth, async (req, res) => {
     };
     await supabase.from('clients').insert([clientPayload]);
     clientRecord = clientPayload;
-    broadcast('client_update', [clientPayload]);
+    broadcastLeadEvent('client_update', [clientPayload]);
   }
 
   // Update lead with won status and client_id back-reference
@@ -237,7 +256,7 @@ router.post('/:id/convert', requireAuth, async (req, res) => {
     updated_at: new Date().toISOString()
   }).eq('id', id);
 
-  broadcast('lead_update', [{ id, stage: 'Won / Closed', client_id: clientRecord.id }]);
+  broadcastLeadEvent('lead_update', [{ id, stage: 'Won / Closed', client_id: clientRecord.id }]);
   res.json({ success: true, client: clientRecord, lead });
 });
 
@@ -263,7 +282,7 @@ router.post('/book', async (req, res) => {
     await supabase.from('leads').insert([newLead]);
   }
 
-  broadcast('lead_update', [newLead]);
+  broadcastLeadEvent('lead_update', [newLead]);
 
   // Telegram alert to agency owner
   try {
@@ -324,7 +343,7 @@ router.post('/bulk', requireAuth, async (req, res) => {
     if (error) return res.status(500).json({ error: 'Database insert failed: ' + error.message });
   }
 
-  broadcast('lead_update', leadsToInsert);
+  broadcastLeadEvent('lead_update', leadsToInsert);
   res.json({ success: true, count: leadsToInsert.length });
 });
 
