@@ -232,7 +232,10 @@ window.APP_MODULES.kanban = async function(container) {
                 <button class="view-btn ${currentView === 'calendar' ? 'active' : ''}" onclick="window.KANBAN_MODULE.setView('calendar')">📅 Calendar</button>
                 <button class="view-btn ${currentView === 'dashboard' ? 'active' : ''}" onclick="window.KANBAN_MODULE.setView('dashboard')">📊 Dashboard</button>
               </div>
-              <button class="btn-primary" onclick="window.KANBAN_MODULE.openNewTaskModal()">+ New Task</button>
+              <div style="display: flex; gap: 0.5rem; align-items: center;">
+                <button class="btn-secondary" onclick="window.KANBAN_MODULE.openImportModal()">📥 Bulk Import</button>
+                <button class="btn-primary" onclick="window.KANBAN_MODULE.openNewTaskModal()">+ New Task</button>
+              </div>
             </div>
           </div>
 
@@ -598,6 +601,50 @@ window.APP_MODULES.kanban = async function(container) {
               <button type="button" class="btn-secondary" onclick="window.KANBAN_MODULE.closeStageEditor()">Cancel</button>
               <button type="button" class="btn-primary" onclick="window.KANBAN_MODULE.savePipelineStages()">💾 Save Pipeline Stages</button>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bulk Import Tasks Modal -->
+      <div class="modal-overlay" id="kanbanImportModal" style="display:none;">
+        <div class="modal-card" style="max-width: 680px; width: 95%;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+            <div style="font-size:1.15rem; font-weight:800; font-family:var(--font-heading);">
+              📥 Bulk Import Tasks & Projects
+            </div>
+            <button class="modal-close-btn" onclick="window.KANBAN_MODULE.closeImportModal()">✕</button>
+          </div>
+
+          <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1rem;">
+            Upload an Excel (.csv) file or paste CSV text to pre-populate deliverables, assignees, and deadlines for September 1.
+          </div>
+
+          <div style="display:flex; gap:0.5rem; margin-bottom:1rem; flex-wrap:wrap;">
+            <button type="button" id="kImportTabFile" class="btn-secondary btn-sm" onclick="window.KANBAN_MODULE.switchImportTab('file')">📂 Upload CSV File</button>
+            <button type="button" id="kImportTabPaste" class="btn-ghost btn-sm" onclick="window.KANBAN_MODULE.switchImportTab('paste')">📋 Paste Raw CSV Text</button>
+            <button type="button" class="btn-ghost btn-sm" style="margin-left:auto;" onclick="window.KANBAN_MODULE.downloadSampleCSV()">📄 Download Template (.csv)</button>
+          </div>
+
+          <div id="kImportFileContainer">
+            <input type="file" id="kImportFileInput" accept=".csv" class="input-text" style="width:100%; padding:0.6rem;" onchange="window.KANBAN_MODULE.handleFileSelect(event)">
+          </div>
+
+          <div id="kImportPasteContainer" style="display:none;">
+            <textarea id="kImportPasteInput" class="input-text" rows="6" style="width:100%; font-family:monospace; font-size:0.75rem;" placeholder="Task Title,Client Name,Project Name,Assignee,Department,Workflow Type,Stage,Priority,Due Date,Estimated Hours,Description" oninput="window.KANBAN_MODULE.handlePasteInput()"></textarea>
+          </div>
+
+          <!-- Preview Table -->
+          <div id="kImportPreviewContainer" style="display:none; margin-top:1rem; max-height:220px; overflow-y:auto; background:var(--surface-2); border:1px solid var(--border-subtle); border-radius:8px; padding:0.5rem;">
+            <div style="font-size:0.78rem; font-weight:800; margin-bottom:0.4rem;" id="kImportPreviewTitle">Live Preview</div>
+            <table class="data-table" style="font-size:0.72rem; width:100%;" id="kImportPreviewTable">
+              <thead id="kImportThead"></thead>
+              <tbody id="kImportTbody"></tbody>
+            </table>
+          </div>
+
+          <div style="display:flex; justify-content:flex-end; gap:0.75rem; margin-top:1.25rem;">
+            <button type="button" class="btn-secondary" onclick="window.KANBAN_MODULE.closeImportModal()">Cancel</button>
+            <button type="button" class="btn-primary" id="kImportSubmitBtn" disabled onclick="window.KANBAN_MODULE.submitImport()">🚀 Import Tasks to Kanban</button>
           </div>
         </div>
       </div>
@@ -1966,6 +2013,180 @@ window.APP_MODULES.kanban = async function(container) {
         await loadData();
       } catch (err) {
         if (window.showToast) window.showToast('Failed to save stages: ' + (err.message || 'Error'), 'error');
+      }
+    },
+    // Bulk Import Methods
+    parsedImportTasks: [],
+    openImportModal() {
+      const modal = document.getElementById('kanbanImportModal');
+      if (modal) modal.style.display = 'flex';
+      this.parsedImportTasks = [];
+      const submitBtn = document.getElementById('kImportSubmitBtn');
+      if (submitBtn) submitBtn.disabled = true;
+      const preview = document.getElementById('kImportPreviewContainer');
+      if (preview) preview.style.display = 'none';
+      const fileInp = document.getElementById('kImportFileInput');
+      if (fileInp) fileInp.value = '';
+      const pasteInp = document.getElementById('kImportPasteInput');
+      if (pasteInp) pasteInp.value = '';
+    },
+    closeImportModal() {
+      const modal = document.getElementById('kanbanImportModal');
+      if (modal) modal.style.display = 'none';
+    },
+    switchImportTab(tab) {
+      const fileCont = document.getElementById('kImportFileContainer');
+      const pasteCont = document.getElementById('kImportPasteContainer');
+      const fileBtn = document.getElementById('kImportTabFile');
+      const pasteBtn = document.getElementById('kImportTabPaste');
+
+      if (tab === 'file') {
+        if (fileCont) fileCont.style.display = 'block';
+        if (pasteCont) pasteCont.style.display = 'none';
+        if (fileBtn) { fileBtn.className = 'btn-secondary btn-sm'; }
+        if (pasteBtn) { pasteBtn.className = 'btn-ghost btn-sm'; }
+      } else {
+        if (fileCont) fileCont.style.display = 'none';
+        if (pasteCont) pasteCont.style.display = 'block';
+        if (fileBtn) { fileBtn.className = 'btn-ghost btn-sm'; }
+        if (pasteBtn) { pasteBtn.className = 'btn-secondary btn-sm'; }
+      }
+    },
+    downloadSampleCSV() {
+      const csvContent = "Task Title,Client Name,Project Name,Assignee,Department,Workflow Type,Stage,Priority,Due Date,Estimated Hours,Description\n" +
+        "Hero Commercial Video Cut 1,Apex Footwear,Apex Autumn 2026 Campaign,Md. Zahin Khandaker,Post Production,video,Editing,High,2026-09-15,12,Main 60s 4K video edit with color grading\n" +
+        "Social Media 15-Grid Creative Suite,Chillox Bangladesh,Chillox September Retainer,Firoz Ahmed,Creative & Content,social,Content Draft,Medium,2026-09-10,16,15 static and carousel banners\n" +
+        "Influencer Campaign Outreach,Aura Cosmetics,Aura Q3 Product Launch,Lead Video Producer,Influencer Marketing,social,Briefing,High,2026-09-08,8,Selection of 10 Tier-1 beauty influencers\n" +
+        "Landing Page UI Redesign,Daraz Bangladesh,Daraz 11.11 Teaser Portal,Mahmudul Hasan,Development & Tech,dev,Wireframe,Urgent,2026-09-12,24,Responsive mobile-first components";
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', 'purpleos_projects_tasks_template.csv');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    },
+    handleFileSelect(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        const text = evt.target.result;
+        this.processCSVText(text);
+      };
+      reader.readAsText(file);
+    },
+    handlePasteInput() {
+      const text = document.getElementById('kImportPasteInput')?.value || '';
+      this.processCSVText(text);
+    },
+    processCSVText(text) {
+      if (!text || !text.trim()) {
+        const preview = document.getElementById('kImportPreviewContainer');
+        if (preview) preview.style.display = 'none';
+        const submitBtn = document.getElementById('kImportSubmitBtn');
+        if (submitBtn) submitBtn.disabled = true;
+        return;
+      }
+
+      const rows = this.parseCSV(text);
+      this.parsedImportTasks = rows;
+      this.renderImportPreview(rows);
+
+      const submitBtn = document.getElementById('kImportSubmitBtn');
+      if (submitBtn) submitBtn.disabled = rows.length === 0;
+    },
+    parseCSV(text) {
+      const lines = text.trim().split(/\r?\n/).filter(Boolean);
+      if (lines.length < 2) return [];
+
+      const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/['"]/g, ''));
+      const results = [];
+
+      for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+
+        // Standard CSV cell splitter handling basic quotes
+        const match = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || line.split(',');
+        const values = match.map(v => v.replace(/^"|"$/g, '').trim());
+
+        const row = {};
+        headers.forEach((h, idx) => {
+          row[h] = values[idx] || '';
+        });
+
+        if (row['task title'] || row.title || row.task) {
+          results.push({
+            title: row['task title'] || row.title || row.task,
+            client: row['client name'] || row.client || row.company || 'Agency',
+            projectName: row['project name'] || row.project || '',
+            assignee: row.assignee || row['assigned to'] || '',
+            department: row.department || row.dept || 'Production',
+            workflowType: row['workflow type'] || row.workflow || 'video',
+            stage: row.stage || row.status || 'Briefing',
+            priority: row.priority || 'Medium',
+            dueDate: row['due date'] || row.due || row.deadline || '',
+            estimatedHours: Number(row['estimated hours'] || row.hours || 8) || 8,
+            description: row.description || row.desc || row.brief || ''
+          });
+        }
+      }
+      return results;
+    },
+    renderImportPreview(rows) {
+      const preview = document.getElementById('kImportPreviewContainer');
+      const thead = document.getElementById('kImportThead');
+      const tbody = document.getElementById('kImportTbody');
+      const title = document.getElementById('kImportPreviewTitle');
+
+      if (!rows || rows.length === 0) {
+        if (preview) preview.style.display = 'none';
+        return;
+      }
+
+      if (title) title.innerHTML = `👁️ Live Preview (${rows.length} Deliverables Detected)`;
+      if (thead) thead.innerHTML = `<tr><th>Task Title</th><th>Client</th><th>Assignee</th><th>Stage</th><th>Priority</th><th>Due Date</th></tr>`;
+      if (tbody) {
+        tbody.innerHTML = rows.slice(0, 5).map(r => `
+          <tr>
+            <td><strong>${escapeHTML(r.title)}</strong></td>
+            <td>${escapeHTML(r.client)}</td>
+            <td>${escapeHTML(r.assignee || 'Unassigned')}</td>
+            <td><span class="status-badge status-open">${escapeHTML(r.stage)}</span></td>
+            <td>${escapeHTML(r.priority)}</td>
+            <td>${escapeHTML(r.dueDate || 'N/A')}</td>
+          </tr>
+        `).join('') + (rows.length > 5 ? `<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">...and ${rows.length - 5} more deliverables ready to import</td></tr>` : '');
+      }
+      if (preview) preview.style.display = 'block';
+    },
+    async submitImport() {
+      if (!this.parsedImportTasks || this.parsedImportTasks.length === 0) return;
+      const submitBtn = document.getElementById('kImportSubmitBtn');
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerText = '⏳ Importing...';
+      }
+
+      try {
+        const res = await APP_API.post('/admin/import/tasks', { rows: this.parsedImportTasks });
+        if (res && (res.success || res.data?.success || res.imported || res.addedCount)) {
+          const count = res.data?.addedCount || res.addedCount || res.imported || this.parsedImportTasks.length;
+          if (window.showToast) window.showToast(`🎉 Successfully imported ${count} tasks to Kanban!`, 'success');
+          this.closeImportModal();
+          await loadData();
+        } else {
+          throw new Error(res.error || 'Import failed');
+        }
+      } catch (err) {
+        if (window.showToast) window.showToast('Import error: ' + err.message, 'error');
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerText = '🚀 Import Tasks to Kanban';
+        }
       }
     }
   };

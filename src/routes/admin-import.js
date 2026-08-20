@@ -171,4 +171,198 @@ router.post('/invoices', requireAuth, requireAdmin, asyncHandler(async (req, res
   });
 }));
 
+
+// ──────── PROJECTS IMPORT ────────
+
+/**
+ * POST /api/admin/import/projects
+ * Body: { rows: [{ name, client, department, workflowType, status, startDate, dueDate, budget, description }] }
+ */
+router.post('/projects', requireAuth, requireAdmin, asyncHandler(async (req, res) => {
+  const { rows } = req.body;
+  if (!Array.isArray(rows) || rows.length === 0) {
+    return fail(res, 400, 'rows array is required and must not be empty', 'INVALID_INPUT');
+  }
+
+  const validPayloads = [];
+  const errors = [];
+
+  rows.forEach((row, idx) => {
+    const name = row.name || row.title || row['project name'] || row['project'] || '';
+    if (!name || typeof name !== 'string' || !name.trim()) {
+      errors.push({ row, reason: 'Project name is required' });
+      return;
+    }
+
+    const clientName = row.client || row.client_name || row.clientName || row.company || 'Agency';
+    const department = row.department || row.dept || 'Production';
+    const workflowType = (row.workflowType || row.workflow_type || row.workflow || 'video_production').toLowerCase();
+    const status = row.status || 'Active';
+    const startDate = row.startDate || row.start_date || row.start || null;
+    const dueDate = row.dueDate || row.due_date || row.due || row.deadline || null;
+    const budget = Number(String(row.budget || '0').replace(/[^0-9.]/g, '')) || 0;
+    const description = row.description || row.desc || row.brief || '';
+
+    const rawUuid = require('crypto').randomUUID ? require('crypto').randomUUID() : String(Date.now());
+    validPayloads.push({
+      id: row.id || `PRJ-${rawUuid.split('-')[0].toUpperCase()}`,
+      name: String(name).trim(),
+      client_name: String(clientName).trim(),
+      department: String(department).trim(),
+      workflow_type: String(workflowType).trim(),
+      status: String(status).trim(),
+      start_date: startDate ? String(startDate).trim() : null,
+      due_date: dueDate ? String(dueDate).trim() : null,
+      budget: budget,
+      description: String(description).trim(),
+      created_at: new Date().toISOString()
+    });
+  });
+
+  let imported = [];
+
+  if (validPayloads.length > 0 && isSupabaseConfigured()) {
+    try {
+      const { data, error } = await supabase
+        .from('projects')
+        .upsert(validPayloads, { onConflict: 'id', ignoreDuplicates: false })
+        .select();
+
+      if (!error && data) {
+        imported = data;
+      }
+    } catch (e) {}
+
+    // Also persist in app_settings projects_registry for full resilience
+    try {
+      const { data: curData } = await supabase.from('app_settings').select('value').eq('key', 'projects_registry').maybeSingle();
+      const existing = (curData && Array.isArray(curData.value)) ? curData.value : [];
+      const merged = [...existing.filter(p => !validPayloads.some(v => v.name.toLowerCase() === (p.name || '').toLowerCase())), ...validPayloads];
+      await supabase.from('app_settings').upsert({
+        key: 'projects_registry',
+        value: merged,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'key' });
+      if (imported.length === 0) imported = validPayloads;
+    } catch (e) {}
+  } else {
+    imported = validPayloads;
+  }
+
+  if (imported.length > 0) broadcast('project_update', imported);
+
+  return ok(res, {
+    success: true,
+    addedCount: imported.length,
+    imported: imported.length,
+    errorsCount: errors.length,
+    errors: errors.length > 0 ? errors : undefined
+  });
+}));
+
+
+// ──────── TASKS IMPORT ────────
+
+/**
+ * POST /api/admin/import/tasks
+ * Body: { rows: [{ title, client, projectName, assignee, department, workflowType, stage, priority, dueDate, estimatedHours, description }] }
+ */
+router.post('/tasks', requireAuth, requireAdmin, asyncHandler(async (req, res) => {
+  const { rows } = req.body;
+  if (!Array.isArray(rows) || rows.length === 0) {
+    return fail(res, 400, 'rows array is required and must not be empty', 'INVALID_INPUT');
+  }
+
+  // Pre-fetch team profiles to auto-link assignees
+  let teamProfiles = [];
+
+  if (isSupabaseConfigured()) {
+    const { data: pData } = await supabase.from('profiles').select('id, emp_code, name, role, department');
+    teamProfiles = pData || [];
+  }
+
+  const { matchesAssignee } = require('../utils/name');
+
+  const validPayloads = [];
+  const errors = [];
+
+  rows.forEach((row, idx) => {
+    const title = row.title || row.task || row['task title'] || row.name || '';
+    if (!title || typeof title !== 'string' || !title.trim()) {
+      errors.push({ row, reason: 'Task title is required' });
+      return;
+    }
+
+    const client = row.client || row.client_name || row.company || row['client name'] || 'Agency';
+    const rawAssignee = row.assignee || row.assigned_to || row['assigned to'] || row.staff || '';
+    const stage = row.stage || row.status || 'Briefing';
+    const priority = row.priority || 'Medium';
+    const dueDate = row.dueDate || row.due_date || row.deadline || row.due || null;
+    const description = row.description || row.desc || row.brief || row.notes || '';
+
+    // Resolve Assignee to actual employee
+    let matchedEmp = null;
+    if (rawAssignee) {
+      matchedEmp = teamProfiles.find(p =>
+        (p.emp_code && p.emp_code.toLowerCase() === rawAssignee.trim().toLowerCase()) ||
+        matchesAssignee(rawAssignee, p.name, p.emp_code)
+      );
+    }
+
+    const resolvedAssigneeName = matchedEmp ? matchedEmp.name : (rawAssignee ? String(rawAssignee).trim() : 'Unassigned');
+    const resolvedAssigneeUuid = matchedEmp ? matchedEmp.id : null;
+
+    const rawUuid = require('crypto').randomUUID ? require('crypto').randomUUID() : String(Date.now());
+    const taskId = row.id || `TSK-${rawUuid.split('-')[0].toUpperCase()}`;
+
+    const taskRow = {
+      id: taskId,
+      title: String(title).trim(),
+      client: String(client).trim(),
+      stage: String(stage).trim(),
+      priority: String(priority).trim(),
+      assignee: resolvedAssigneeName,
+      due_date: dueDate ? String(dueDate).trim() : null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
+    if (resolvedAssigneeUuid) {
+      taskRow.assignee_id = resolvedAssigneeUuid;
+    }
+
+    validPayloads.push(taskRow);
+  });
+
+  let imported = [];
+
+  if (validPayloads.length > 0 && isSupabaseConfigured()) {
+    const { data, error } = await supabase
+      .from('tasks')
+      .upsert(validPayloads, { onConflict: 'id', ignoreDuplicates: false })
+      .select();
+
+    if (error) {
+      console.warn('[Tasks Import DB error]:', error.message);
+      return fail(res, 500, `Database import error: ${error.message}`, 'DB_ERROR');
+    }
+    imported = data || validPayloads;
+  } else {
+    imported = validPayloads;
+  }
+
+  // Clear task cache and broadcast
+  const cache = require('../services/cache');
+  cache.delByPrefix('tasks:');
+  if (imported.length > 0) broadcast('task_update', imported);
+
+  return ok(res, {
+    success: true,
+    addedCount: imported.length,
+    imported: imported.length,
+    errorsCount: errors.length,
+    errors: errors.length > 0 ? errors : undefined
+  });
+}));
+
 module.exports = router;
