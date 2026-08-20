@@ -73,7 +73,14 @@ router.post('/telegram', async (req, res) => {
       }
     }
 
-    // Fallback default admin user if not found by telegram_id (e.g. dev/testing environment)
+    // Reject unlinked users in production or strict auth mode
+    if (!resolvedUser) {
+      if (process.env.NODE_ENV === 'production' || process.env.FORCE_SUPABASE === 'true' || req.headers['x-disable-dev-auth'] === 'true') {
+        return res.status(404).json({ error: 'No account linked to this Telegram account. Please link your phone number first.' });
+      }
+    }
+
+    // Fallback default user for local development only
     const userPayload = {
       userId: resolvedUser?.id || (linkedType === 'client' ? 'CLI-001' : 'EMP-001'),
       name: resolvedUser?.name || (linkedType === 'client' ? 'Client Partner' : 'Mahmudul Hasan'),

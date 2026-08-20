@@ -22,7 +22,7 @@ const { ok, fail, asyncHandler } = require('../utils/response');
  * POST /api/admin/import/clients
  * Body: { rows: [{ name, contact, phone, email, industry, category, budget, retainerValue, status }] }
  */
-router.post('/clients', requireAuth, requireManager, asyncHandler(async (req, res) => {
+router.post('/clients', requireAuth, requireAdmin, asyncHandler(async (req, res) => {
   const { rows } = req.body;
   if (!Array.isArray(rows) || rows.length === 0) {
     return fail(res, 400, 'rows array is required and must not be empty', 'INVALID_INPUT');
@@ -113,7 +113,7 @@ router.post('/clients', requireAuth, requireManager, asyncHandler(async (req, re
  * POST /api/admin/import/invoices
  * Body: { rows: [{ id, client, amount, date, status }] }
  */
-router.post('/invoices', requireAuth, requireManager, asyncHandler(async (req, res) => {
+router.post('/invoices', requireAuth, requireAdmin, asyncHandler(async (req, res) => {
   const { rows } = req.body;
   if (!Array.isArray(rows) || rows.length === 0) {
     return fail(res, 400, 'rows array is required and must not be empty', 'INVALID_INPUT');
