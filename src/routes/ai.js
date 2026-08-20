@@ -47,20 +47,19 @@ function getFallbackMessage(name, role, stage) {
   return `${greeting}\n\n📌 Next Step:\n${step}\n\n🔗 Platform: https://purpleos-iota.vercel.app\n\nFor support, reach out to the Admin team.\n\n— Purplebot Digital Admin`;
 }
 
-// ── Gemini API call ────────────────────────────────────────────────────────────
-function callGemini(prompt) {
-  return new Promise((resolve, reject) => {
-    const key = process.env.GEMINI_API_KEY || GEMINI_API_KEY;
-    if (!key) return reject(new Error('GEMINI_API_KEY not configured'));
+const CANDIDATE_MODELS = ['gemini-flash-latest', 'gemini-3.6-flash', 'gemini-3.1-flash-lite'];
 
+// ── Gemini API call with model fallback ───────────────────────────────────────
+async function callGeminiSingle(model, prompt, key) {
+  return new Promise((resolve, reject) => {
     const payload = JSON.stringify({
       contents: [{ role: 'user', parts: [{ text: prompt }] }],
-      generationConfig: { maxOutputTokens: 350, temperature: 0.7 }
+      generationConfig: { maxOutputTokens: 400, temperature: 0.6 }
     });
 
     const options = {
       hostname: 'generativelanguage.googleapis.com',
-      path: `/v1beta/models/${GEMINI_MODEL}:generateContent?key=${key}`,
+      path: `/v1beta/models/${model}:generateContent?key=${key}`,
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -75,21 +74,41 @@ function callGemini(prompt) {
         try {
           const json = JSON.parse(data);
           if (json.candidates && json.candidates[0] && json.candidates[0].content) {
-            resolve(json.candidates[0].content.parts[0].text.trim());
-          } else {
-            reject(new Error(json.error?.message || 'No candidates returned'));
+            const parts = json.candidates[0].content.parts || [];
+            const text = parts.map(p => p.text).join('').trim();
+            if (text && text.length > 20) {
+              return resolve(text);
+            }
           }
+          reject(new Error(json.error?.message || 'Empty or short response'));
         } catch (e) {
-          reject(new Error('Failed to parse Gemini response'));
+          reject(new Error('Failed to parse response'));
         }
       });
     });
 
     req.on('error', reject);
-    req.setTimeout(15000, () => { req.destroy(); reject(new Error('Gemini request timed out')); });
+    req.setTimeout(8000, () => { req.destroy(); reject(new Error(`Timeout on ${model}`)); });
     req.write(payload);
     req.end();
   });
+}
+
+async function callGemini(prompt) {
+  const key = process.env.GEMINI_API_KEY || GEMINI_API_KEY;
+  if (!key) throw new Error('GEMINI_API_KEY not configured');
+
+  let lastError = null;
+  for (const model of CANDIDATE_MODELS) {
+    try {
+      const result = await callGeminiSingle(model, prompt, key);
+      if (result) return result;
+    } catch (err) {
+      lastError = err;
+      console.warn(`[AI Route] Model ${model} failed (${err.message}), trying next...`);
+    }
+  }
+  throw lastError || new Error('All Gemini models failed');
 }
 
 // ── POST /api/ai/generate-message ─────────────────────────────────────────────
@@ -111,21 +130,22 @@ router.post('/generate-message', requireAuth, requireManager, async (req, res) =
   const nextStep = STAGE_NEXT_STEPS[stage];
   const firstName = name.split(' ')[0];
 
-  const prompt = `You are the Admin of Purplebot Digital, a premier digital agency in Dhaka, Bangladesh.
-
-Write a personalized, encouraging, and clear WhatsApp message in English for our team member:
-- Name: ${name} (call them "${firstName}")
-- Role: ${role || 'Team Member'}
+  const prompt = `Write a complete, professional, and friendly WhatsApp onboarding message in English for a team member at Purplebot Digital agency:
+- Member Name: ${name} (call them "${firstName}")
+- Role: ${role || 'Specialist'}
 - Department: ${department || 'General'}
 - Status: This member ${stageDescription}.
 
-Rules:
-1. Warm greeting using their first name.
-2. Mention their role at Purplebot Digital.
-3. State their next single action clearly: "${nextStep}".
-4. Include the portal URL: https://purpleos-iota.vercel.app
-5. Sign off as "— Purplebot Digital Admin 🔮".
-6. Keep length under 100 words. Ready to send via WhatsApp.`;
+Structure the message cleanly as:
+1. Warm greeting: "Hi ${firstName}! 👋 Welcome to Purplebot Digital as our ${role || 'Specialist'}."
+2. Brief encouragement welcoming them to the ${department || 'agency'} team.
+3. Next step:
+📌 Next Step:
+${nextStep}
+4. Portal URL: 🔗 https://purpleos-iota.vercel.app
+5. Sign-off: "— Purplebot Digital Admin 🔮"
+
+Output ONLY the full message text ready to send.`;
 
   try {
     let message;
