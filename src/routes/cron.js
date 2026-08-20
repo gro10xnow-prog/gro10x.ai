@@ -7,6 +7,7 @@ const {
   buildEODSummary,
   buildChairmanBriefing
 } = require('../services/automation');
+const { getFirstName } = require('../utils/name');
 
 /**
  * Middleware to authorize Cron requests.
@@ -426,7 +427,7 @@ router.get('/eod-reminder', authorizeCron, async (req, res) => {
     const { sendTelegramNotification } = require('../services/bot');
     let sentCount = 0;
     for (const emp of missingEmployees) {
-      const firstName = (emp.name || 'Team Member').split(' ')[0];
+      const firstName = getFirstName(emp.name);
       await sendTelegramNotification(emp.telegramId,
         `📝 *EOD REPORT REMINDER*\n\nHey ${firstName}! It's past 6 PM and your End-of-Day report for today hasn't been submitted yet.\n\nPlease submit your summary or use the Mini App:`,
         [[{ text: '📱 Open EOD Form', url: 'https://purpleos-iota.vercel.app/team-miniapp?tab=eod&action=new' }]],
@@ -467,7 +468,7 @@ router.get('/late-clockin-alert', authorizeCron, async (req, res) => {
 
     let sentCount = 0;
     for (const emp of lateEmployees) {
-      const firstName = (emp.name || 'Team Member').split(' ')[0];
+      const firstName = getFirstName(emp.name);
       await sendTelegramNotification(emp.telegramId,
         `⏰ *ATTENDANCE REMINDER (10:00 AM)*\n\nHey ${firstName}! You haven't clocked in for studio work today yet.\n\nPlease clock in using the Mini App below:`,
         [[{ text: '📍 Clock In Studio', url: 'https://purpleos-iota.vercel.app/team-miniapp?tab=attendance' }]],

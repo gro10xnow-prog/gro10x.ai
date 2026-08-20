@@ -37,6 +37,7 @@
     "supertest": "^7.2.2"
   },
   "jest": {
+    "testTimeout": 15000,
     "testPathIgnorePatterns": [
       "/node_modules/",
       "/tests-e2e/"

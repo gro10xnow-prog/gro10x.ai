@@ -3,6 +3,7 @@ const router = express.Router();
 const https = require('https');
 const { requireAuth } = require('../middleware/auth');
 const { requireManager } = require('../middleware/rbac');
+const { getFirstName } = require('../utils/name');
 
 const PORTAL = 'https://purpleos-iota.vercel.app';
 
@@ -16,7 +17,7 @@ const STEPS = {
 
 // Rich, complete message for every stage — always reliable
 function build(name, role, dept, stage) {
-  const fn = (name || 'Team').split(' ')[0];
+  const fn = getFirstName(name);
   const r = role || 'Specialist';
   const d = dept || 'the team';
   const step = STEPS[stage] || STEPS.no_pin;
@@ -59,7 +60,7 @@ function callSingle(model, prompt, key) {
 }
 
 async function tryGemini(name, role, dept, stage, key) {
-  const fn = name.split(' ')[0];
+  const fn = getFirstName(name);
   const nextStep = STEPS[stage] || '';
   const prompt =
     'You are the Admin of Purplebot Digital, a creative digital agency in Dhaka.\n\n' +

@@ -20,6 +20,7 @@ const { createTempPin } = require('../services/auth-pins');
 
 const { uploadFile } = require('../services/storage');
 const { normalizePhone } = require('../utils/phone');
+const { getFirstName, getPreferredName, matchesAssignee } = require('../utils/name');
 
 const miniAppLimiter = rateLimit({
   windowMs: 60 * 1000,
@@ -178,11 +179,13 @@ router.get('/me', requireMiniAppAuth, async (req, res) => {
     // Fetch tasks assigned to this employee
     let myTasks = [];
     if (supabase) {
-      const { data: tasks } = await supabase.from('tasks').select('*').ilike('assignee', `%${empName.split(' ')[0]}%`);
+      const prefName = getPreferredName(empName);
+      const { data: tasks } = await supabase.from('tasks').select('*')
+        .or(`assignee.ilike.%${prefName || empName}%,assignee_id.eq.${empCode}`);
       myTasks = tasks || [];
     } else {
       const db = found.db || (await readDB());
-      myTasks = (db.tasks || []).filter(t => (t.assignee || '').toLowerCase().includes(empName.split(' ')[0].toLowerCase()));
+      myTasks = (db.tasks || []).filter(t => matchesAssignee(t.assignee, empName, empCode));
     }
 
     // Fetch today's attendance
@@ -720,7 +723,9 @@ router.get('/tg/:telegramId', async (req, res) => {
 
     let myTasks = [];
     if (supabase) {
-      const { data: tasks } = await supabase.from('tasks').select('*').ilike('assignee', `%${empName.split(' ')[0]}%`);
+      const prefName = getPreferredName(empName);
+      const { data: tasks } = await supabase.from('tasks').select('*')
+        .or(`assignee.ilike.%${prefName || empName}%,assignee_id.eq.${empCode}`);
       myTasks = tasks || [];
     }
 
