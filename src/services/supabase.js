@@ -35,10 +35,13 @@ if (supabaseUrl && !supabaseUrl.includes('your-project-id')) {
 }
 
 // PRODUCTION ENFORCEMENT GUARD
+// NOTE: process.exit(1) is intentionally avoided in Vercel serverless context —
+// it kills the entire container and produces FUNCTION_INVOCATION_FAILED with no logs.
+// Instead, throw a descriptive error that surfaces in Vercel Function logs.
 if ((process.env.NODE_ENV === 'production' || process.env.VERCEL) && supabase === null) {
-  const msg = '🚨 FATAL: Supabase is not configured in production environment. Set SUPABASE_URL and SUPABASE_ANON_KEY / SUPABASE_SERVICE_ROLE_KEY. Refusing to start.';
+  const msg = '🚨 FATAL: Supabase is not configured in production environment. Set SUPABASE_URL and SUPABASE_ANON_KEY / SUPABASE_SERVICE_ROLE_KEY in your Vercel Environment Variables dashboard.';
   console.error(msg);
-  process.exit(1);
+  throw new Error(msg);
 }
 
 function isSupabaseConfigured() {

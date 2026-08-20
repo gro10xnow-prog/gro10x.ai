@@ -169,8 +169,6 @@ app.post(['/api/webhooks/telegram', '/webhooks/telegram'], async (req, res) => {
     try {
       console.log(`Webhook received payload (server.js):`, JSON.stringify(req.body));
       await targetBot.processUpdate(req.body);
-      // Keep lambda alive for 2500ms so floating async event listeners (Supabase DB queries & Telegram API calls) complete before Vercel freezes execution
-      await new Promise(r => setTimeout(r, 2500));
     } catch (err) {
       console.error(`Telegram webhook update processing error (${botType}):`, err.message);
     }

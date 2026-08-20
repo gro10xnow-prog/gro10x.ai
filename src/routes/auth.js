@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { requireAuth } = require('../middleware/auth');
 const { requireAdmin, requireManager } = require('../middleware/rbac');
-const { createTempPin, verifyPin, setPermanentPin } = require('../services/auth-pins');
+const { createTempPin, verifyPin, setPermanentPin, findClientAndPocByPhone } = require('../services/auth-pins');
 const { signToken } = require('../services/jwt');
 const { normalizePhone } = require('../utils/phone');
 
@@ -108,7 +108,6 @@ router.post('/telegram', async (req, res) => {
   }
 });
 
-const { createTempPin, verifyPin, setPermanentPin, findClientAndPocByPhone } = require('../services/auth-pins');
 
 // 🔑 Generate Temp PIN (Manager+ — rate limited & protected)
 router.post('/pin/generate', authLimiter, requireAuth, requireManager, async (req, res) => {
