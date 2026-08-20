@@ -20,8 +20,11 @@ router.get('/:table', requireAuth, requireAdmin, async (req, res) => {
     const { data, error } = await supabase.from(table).select('*');
     if (error) throw error;
 
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename="${table}_export_${new Date().toISOString().split('T')[0]}.csv"`);
+
     if (!data || data.length === 0) {
-      return res.send('No data available');
+      return res.send('id\n');
     }
 
     // Convert JSON to CSV

@@ -1,34 +1,25 @@
 /**
  * src/utils/cache.js
  * ─────────────────────────────────────────────────────────────────────────────
- * In-Memory TTL Cache Manager for PurpleOS.
- * Provides fast response caching for analytics, services catalog, and CMS.
+ * In-Memory TTL Cache Wrapper for PurpleOS.
+ * Delegates to centralized src/services/cache.js for unified memory store.
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
-const cacheStore = new Map();
+const cacheService = require('../services/cache');
 
 /**
  * Set a key with TTL (in seconds)
  */
 function setCache(key, value, ttlSeconds = 60) {
-  const expiresAt = Date.now() + (ttlSeconds * 1000);
-  cacheStore.set(key, { value, expiresAt });
+  cacheService.set(key, value, ttlSeconds * 1000);
 }
 
 /**
  * Get cached value if valid and not expired
  */
 function getCache(key) {
-  const entry = cacheStore.get(key);
-  if (!entry) return null;
-
-  if (Date.now() > entry.expiresAt) {
-    cacheStore.delete(key);
-    return null;
-  }
-
-  return entry.value;
+  return cacheService.get(key);
 }
 
 /**
@@ -36,14 +27,10 @@ function getCache(key) {
  */
 function clearCache(pattern = null) {
   if (!pattern) {
-    cacheStore.clear();
+    cacheService.clear();
     return;
   }
-  for (const key of cacheStore.keys()) {
-    if (key.includes(pattern)) {
-      cacheStore.delete(key);
-    }
-  }
+  cacheService.delByPrefix(pattern);
 }
 
 module.exports = {
