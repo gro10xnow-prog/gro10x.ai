@@ -54,12 +54,20 @@ window.APP_MODULES.dashboard = async function(container) {
     const totalBilled = invoices.reduce((sum, i) => sum + Number(i.amount || 0), 0);
     const collectionRate = totalBilled > 0 ? Math.round((paidTotal / totalBilled) * 100) : 100;
 
-    // Expenses
+    // Expenses & Liabilities
     const pendingExps = expenses.filter(e => {
       const st = (e.status || '').toLowerCase();
       return st.includes('pending') || !e.tier1?.approved || !e.tier2?.approved;
     });
     const pendingExpTotal = pendingExps.reduce((sum, e) => sum + Number(e.amount || 0), 0);
+    const disbursedExps = expenses.filter(e => (e.status || '').toLowerCase() === 'disbursed');
+    const disbursedExpTotal = disbursedExps.reduce((sum, e) => sum + Number(e.amount || 0), 0);
+
+    // Payroll & Net Cash Flow
+    const monthlyPayroll = team.reduce((sum, t) => sum + (Number(t.baseSalary || t.base_salary) || 0), 0);
+    const netCashPosition = paidTotal - (disbursedExpTotal + monthlyPayroll);
+    const netCashColor = netCashPosition >= 0 ? 'var(--emerald-brand)' : '#ef4444';
+    const netCashPrefix = netCashPosition >= 0 ? '+৳' : '-৳';
 
     // Operations
     const inStudioCount = team.filter(t => t.status === 'In Studio' || attendance.some(a => a.employee_id === (t.emp_code || t.id) && a.status === 'In Studio')).length;
@@ -97,23 +105,27 @@ window.APP_MODULES.dashboard = async function(container) {
       </div>
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
         <div class="kpi-tile">
-          <div class="kpi-label">Monthly Revenue</div>
+          <div class="kpi-label">Monthly Settled Revenue</div>
           <div class="kpi-val" style="color: var(--emerald-brand);">৳${paidTotal.toLocaleString()}</div>
-          <div style="font-size: 0.72rem; color: #10b981; font-weight: 700;">💰 Settled Invoices</div>
+          <div style="font-size: 0.72rem; color: #10b981; font-weight: 700;">💰 Paid Invoices</div>
+        </div>
+
+        <div class="kpi-tile">
+          <div class="kpi-label">Net Cash Position</div>
+          <div class="kpi-val" style="color: ${netCashColor};">${netCashPrefix}${Math.abs(netCashPosition).toLocaleString()}</div>
+          <div style="font-size: 0.72rem; color: ${netCashColor}; font-weight: 700;">📊 Rev − Exp − Payroll</div>
+        </div>
+
+        <div class="kpi-tile">
+          <div class="kpi-label">Monthly Fixed Payroll</div>
+          <div class="kpi-val" style="color: var(--purple-light);">৳${monthlyPayroll.toLocaleString()}</div>
+          <div style="font-size: 0.72rem; color: var(--purple-light); font-weight: 700;">👥 ${team.length} Active Staff</div>
         </div>
 
         <div class="kpi-tile">
           <div class="kpi-label">Outstanding Receivables</div>
           <div class="kpi-val" style="color: var(--amber-brand);">৳${pendingTotal.toLocaleString()}</div>
           <div style="font-size: 0.72rem; color: #f59e0b; font-weight: 700;">⏳ Pending Invoices</div>
-        </div>
-
-        <div class="kpi-tile">
-          <div class="kpi-label">Overdue Invoices</div>
-          <div class="kpi-val" style="color: ${overdueInvoices.length > 0 ? '#ef4444' : 'var(--text-main)'};">${overdueInvoices.length}</div>
-          <div style="font-size: 0.72rem; color: ${overdueInvoices.length > 0 ? '#ef4444' : '#10b981'}; font-weight: 700;">
-            ${overdueInvoices.length > 0 ? `🔴 ৳${overdueTotal.toLocaleString()} Overdue` : '🟢 All Clear'}
-          </div>
         </div>
 
         <div class="kpi-tile">

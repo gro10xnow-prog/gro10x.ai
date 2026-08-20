@@ -68,29 +68,73 @@ async function handleBusinessSnapshot(teamBot, msg) {
 async function handleFinanceSummary(teamBot, msg) {
   const chatId = msg.chat.id;
 
-  let paid = 0, draft = 0, pendingExpenses = 0;
+  let paid = 0;
+  let draft = 0;
+  let pendingExpenses = 0;
+  let pendingExpTotal = 0;
+  let disbursedExpenses = 0;
+  let monthlyPayroll = 0;
+
   try {
     if (supabase) {
-      const [{ data: inv }, { count: expCount }] = await Promise.all([
+      const [invRes, expRes, profileRes] = await Promise.all([
         supabase.from('invoices').select('amount, status'),
-        supabase.from('expenses').select('*', { count: 'exact', head: true }).neq('status', 'Disbursed')
+        supabase.from('expenses').select('amount, status'),
+        supabase.from('profiles').select('base_salary')
       ]);
-      (inv || []).forEach(i => {
-        if (i.status === 'Paid') paid += Number(i.amount) || 0;
-        else if (i.status === 'Draft' || i.status === 'Pending') draft += Number(i.amount) || 0;
+
+      (invRes.data || []).forEach(i => {
+        const amt = Number(i.amount) || 0;
+        if ((i.status || '').toLowerCase() === 'paid') paid += amt;
+        else if (i.status !== 'Cancelled') draft += amt;
       });
-      pendingExpenses = expCount || 0;
+
+      (expRes.data || []).forEach(e => {
+        const amt = Number(e.amount) || 0;
+        const st = (e.status || '').toLowerCase();
+        if (st === 'disbursed') {
+          disbursedExpenses += amt;
+        } else if (st.includes('pending') || st === 'approved') {
+          pendingExpenses += 1;
+          pendingExpTotal += amt;
+        }
+      });
+
+      (profileRes.data || []).forEach(p => {
+        monthlyPayroll += Number(p.base_salary) || 0;
+      });
     }
   } catch (err) {
     console.error('Finance summary error:', err.message);
   }
 
-  let text = `💰 *PURPLEBOT FINANCE SNAPSHOT*\n\n` +
-    `• Paid Invoices: *$${paid.toLocaleString()} USD*\n` +
-    `• Draft/Pending Invoices: *$${draft.toLocaleString()} USD*\n` +
-    `• Pending Expense Claims: *${pendingExpenses} claims*\n\n` +
-    `🌐 Open Web Finance Portal: https://purpleos-iota.vercel.app/admin`;
-  teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown' }).catch(()=>{});
+  const totalBilled = paid + draft;
+  const collectionRate = totalBilled > 0 ? Math.round((paid / totalBilled) * 100) : 100;
+  const netCashPosition = paid - (disbursedExpenses + monthlyPayroll);
+  const netSign = netCashPosition >= 0 ? '🟢 +৳' : '🔴 -৳';
+
+  const text = `💰 *PURPLEBOT DIGITAL — EXECUTIVE FINANCIAL INTELLIGENCE*\n` +
+    `📅 ${new Date().toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}\n\n` +
+    `💵 *Revenue & Collections:*\n` +
+    `• Settled Revenue: *৳${paid.toLocaleString()} BDT*\n` +
+    `• Outstanding Receivables: *৳${draft.toLocaleString()} BDT*\n` +
+    `• Collection Efficiency: *${collectionRate}%*\n\n` +
+    `💸 *Liabilities & Operational Costs:*\n` +
+    `• Pending Expense Queue: *${pendingExpenses} claims (৳${pendingExpTotal.toLocaleString()})*\n` +
+    `• Monthly Fixed Payroll: *৳${monthlyPayroll.toLocaleString()} BDT*\n\n` +
+    `📊 *Net Operational Cash Position:*\n` +
+    `• Estimated Balance: *${netSign}${Math.abs(netCashPosition).toLocaleString()} BDT*\n\n` +
+    `🌐 [Open Financial Command Center](https://purpleos-iota.vercel.app/app#finance)`;
+
+  teamBot.sendMessage(chatId, text, {
+    parse_mode: 'Markdown',
+    reply_markup: {
+      inline_keyboard: [[
+        { text: '🧾 View Invoices', url: 'https://purpleos-iota.vercel.app/app#finance' },
+        { text: '💸 Expense Queue', callback_data: 'view_expenses_queue' }
+      ]]
+    }
+  }).catch(() => {});
 }
 
 module.exports = {

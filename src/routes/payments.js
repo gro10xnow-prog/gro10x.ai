@@ -11,15 +11,17 @@ const { sendTelegramNotification } = require('../services/bot');
  */
 async function sendFinanceVerificationAlert(paymentLog) {
   try {
-    let financeTgId = process.env.OWNER_TELEGRAM_ID;
+    const recipientIds = new Set();
+    if (process.env.OWNER_TELEGRAM_ID) recipientIds.add(process.env.OWNER_TELEGRAM_ID);
+    if (process.env.TELEGRAM_ADMIN_CHAT_ID) recipientIds.add(process.env.TELEGRAM_ADMIN_CHAT_ID);
 
     // Check if Finance Manager (Borhan - PBD-029) has a Telegram ID set
     if (isSupabaseConfigured()) {
       const { data } = await supabase.from('profiles').select('telegram_id').eq('emp_code', 'PBD-029').maybeSingle();
-      if (data?.telegram_id) financeTgId = data.telegram_id;
+      if (data?.telegram_id) recipientIds.add(data.telegram_id);
     }
 
-    if (!financeTgId) return;
+    if (recipientIds.size === 0) return;
 
     const msg =
       `💳 *New Payment Proof Received — Verification Required*\n\n` +
@@ -37,7 +39,9 @@ async function sendFinanceVerificationAlert(paymentLog) {
       ]
     ];
 
-    await sendTelegramNotification(financeTgId, msg, keyboard, true);
+    for (const tgId of recipientIds) {
+      await sendTelegramNotification(tgId, msg, keyboard, true);
+    }
   } catch (err) {
     console.warn('Failed to send payment verification Telegram alert:', err.message);
   }

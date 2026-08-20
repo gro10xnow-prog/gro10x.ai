@@ -983,6 +983,7 @@ function buildMorningBriefing(db) {
 
   const clientsInReview = (db.tasks || []).filter(t => t.stage === 'Client Review').length;
   const clientsInEdit = (db.tasks || []).filter(t => t.stage === 'Editing' || t.stage === 'Post Production').length;
+  const pendingAgreements = (db.team || []).filter(t => t.agreementStage === 2 || t.agreement_stage === 2).length;
 
   const now = getBDTime().bd;
   const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
