@@ -45,6 +45,7 @@ const taskTemplatesRoutes = require('./task-templates');
 const chatRoutes = require('./chat');
 const adminImportRoutes = require('./admin-import');
 const workflowsRoutes = require('./workflows');
+const aiRoutes = require('./ai');
 
 // System Version Endpoint
 router.get('/version', (req, res) => {
@@ -78,6 +79,7 @@ router.use('/labels', labelsRoutes);
 router.use('/custom-fields', customFieldsRoutes);
 router.use('/task-templates', taskTemplatesRoutes);
 router.use('/chat', chatRoutes);
+router.use('/ai', aiRoutes);
 
 // Public Client Phone Check (used by chat widget — rate-limited & safe)
 router.get('/public/client-check', asyncHandler(async (req, res) => {

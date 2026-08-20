@@ -1436,11 +1436,11 @@ router.get('/invitation-status', requireAuth, async (req, res) => {
         role: p.role,
         department: p.department || 'General',
         phone: p.phone || '',
-        telegramLinked: !!p.telegram_id || (p.emp_code !== 'PBD-006'),
-        hasPIN: !!pinRecord || true,
-        pinIsTemp: pinRecord ? (pinRecord.is_temp ?? false) : false,
-        surveyComplete: p.survey_complete ?? true,
-        onboardingComplete: p.onboarding_complete ?? true
+        telegramLinked: !!p.telegram_id,
+        hasPIN: !!pinRecord,
+        pinIsTemp: pinRecord ? (pinRecord.is_temp ?? true) : false,
+        surveyComplete: p.survey_complete === true,
+        onboardingComplete: p.onboarding_complete === true
       };
     });
 

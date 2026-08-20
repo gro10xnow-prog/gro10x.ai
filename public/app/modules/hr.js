@@ -349,6 +349,21 @@ window.APP_MODULES.hr = async function(container) {
           </div>
         </div>
       </div>
+
+      <!-- Gemini AI Personalized Message Modal -->
+      <div id="hrAiMessageModal" class="modal-overlay">
+        <div class="modal-box" style="max-width:580px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; border-bottom:1px solid var(--border-subtle); padding-bottom:0.75rem;">
+            <h3 style="margin:0; color:#fff; font-family:var(--font-heading); display:flex; align-items:center; gap:0.5rem;" id="aiModalTitle">
+              ✨ AI Stage Message
+            </h3>
+            <button onclick="window.HR_MODULE.closeAiModal()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
+          </div>
+          <div id="aiModalContent" style="display:flex; flex-direction:column; gap:1rem;">
+            Loading personalized message...
+          </div>
+        </div>
+      </div>
     `;
   }
 
@@ -433,7 +448,10 @@ window.APP_MODULES.hr = async function(container) {
                   <td>
                     <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
                       <button class="btn-primary btn-sm" onclick='window.HR_MODULE.openWhatsAppInvite("${code}")'>
-                        📱 Open WhatsApp
+                        📱 WhatsApp
+                      </button>
+                      <button class="btn-secondary btn-sm" style="background:linear-gradient(135deg, rgba(168,85,247,0.25), rgba(236,72,153,0.25)); border-color:var(--purple-brand); color:#f3e8ff;" onclick='window.HR_MODULE.openAiMessageModal("${code}")'>
+                        ✨ AI Message
                       </button>
                       ${reminderBtn}
                     </div>
@@ -1135,6 +1153,153 @@ window.APP_MODULES.hr = async function(container) {
       } finally {
         if (btn) { btn.disabled = false; btn.textContent = '📲 Push to Telegram'; }
       }
+    },
+
+    async openAiMessageModal(code) {
+      const member = invitationsData.find(m => m.empCode === code || m.name === code);
+      if (!member) return;
+
+      const modal = document.getElementById('hrAiMessageModal');
+      const title = document.getElementById('aiModalTitle');
+      const content = document.getElementById('aiModalContent');
+
+      if (!modal || !content) return;
+
+      title.innerHTML = `✨ Gemini AI Stage Message — ${escapeHTML(member.name)}`;
+
+      // Derive actual stage
+      let stage = 'no_pin';
+      let stageName = 'Step 1: PIN Required';
+      let stageBadge = 'badge-pink';
+
+      if (!member.hasPIN) {
+        stage = 'no_pin';
+        stageName = '❌ Step 1: No PIN Set';
+        stageBadge = 'badge-pink';
+      } else if (member.pinIsTemp) {
+        stage = 'temp_pin';
+        stageName = '⏳ Step 2: Temp PIN Active (Needs Perm PIN)';
+        stageBadge = 'badge-amber';
+      } else if (!member.telegramLinked) {
+        stage = 'pin_no_tg';
+        stageName = '📱 Step 3: PIN Ready, Connect Telegram';
+        stageBadge = 'badge-purple';
+      } else if (!member.surveyComplete) {
+        stage = 'pin_tg_no_survey';
+        stageName = '📋 Step 4: Survey & Agreement Pending';
+        stageBadge = 'badge-amber';
+      } else {
+        stage = 'fully_onboarded';
+        stageName = '🎉 Fully Onboarded';
+        stageBadge = 'badge-emerald';
+      }
+
+      content.innerHTML = `
+        <div style="background:rgba(255,255,255,0.04); padding:0.9rem; border-radius:12px; border:1px solid var(--border-subtle); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+          <div>
+            <div style="font-weight:700; color:#fff; font-size:0.95rem;">${escapeHTML(member.name)} (${escapeHTML(member.empCode)})</div>
+            <div style="font-size:0.78rem; color:var(--text-muted);">${escapeHTML(member.role)} • ${escapeHTML(member.department)}</div>
+          </div>
+          <span class="badge ${stageBadge}" style="font-size:0.78rem;">${stageName}</span>
+        </div>
+
+        <div style="text-align:center; padding:1.5rem; color:var(--purple-light);">
+          <div style="font-size:1.5rem; margin-bottom:0.5rem; animation:spin 1s infinite linear;">🧠</div>
+          <div>Generating stage-aware message with Gemini AI...</div>
+        </div>
+      `;
+
+      modal.classList.add('active');
+
+      try {
+        const res = await APP_API.post('/ai/generate-message', {
+          name: member.name,
+          role: member.role,
+          department: member.department,
+          stage: stage,
+          empCode: member.empCode
+        });
+
+        const generatedMsg = res.message || '';
+        const cleanPhone = (member.phone || '').replace(/[^0-9+]/g, '').replace(/^\+/, '');
+        const provider = res.generatedBy === 'gemini' ? '✨ Gemini AI' : '📋 Template Engine';
+
+        content.innerHTML = `
+          <div style="background:rgba(255,255,255,0.04); padding:0.85rem; border-radius:12px; border:1px solid var(--border-subtle); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+            <div>
+              <div style="font-weight:700; color:#fff; font-size:0.95rem;">${escapeHTML(member.name)} (${escapeHTML(member.empCode)})</div>
+              <div style="font-size:0.78rem; color:var(--text-muted);">${escapeHTML(member.role)} • Phone: <b style="color:#fff;">${escapeHTML(member.phone || 'N/A')}</b></div>
+            </div>
+            <div style="display:flex; flex-direction:column; align-items:flex-end; gap:0.2rem;">
+              <span class="badge ${stageBadge}" style="font-size:0.74rem;">${stageName}</span>
+              <span style="font-size:0.7rem; color:var(--purple-light);">${provider}</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" style="display:flex; justify-content:space-between;">
+              <span>Personalized English Message (Editable)</span>
+              <span style="font-size:0.75rem; color:var(--text-muted);">Ready to send</span>
+            </label>
+            <textarea id="aiGeneratedMsgText" class="input-text" rows="7" style="resize:vertical; font-family:var(--font-sans); line-height:1.5;">${escapeHTML(generatedMsg)}</textarea>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem; border-top:1px solid var(--border-subtle); padding-top:0.75rem;">
+            <button type="button" class="btn-secondary btn-sm" onclick='window.HR_MODULE.openAiMessageModal("${member.empCode}")'>
+              🔄 Regenerate
+            </button>
+            <div style="display:flex; gap:0.6rem;">
+              <button type="button" class="btn-secondary" onclick="window.HR_MODULE.closeAiModal()">
+                Close
+              </button>
+              <button type="button" class="btn-secondary" onclick="window.HR_MODULE.copyAiMessageText()">
+                📋 Copy Text
+              </button>
+              <button type="button" class="btn-primary" style="background:linear-gradient(135deg, #25D366, #128C7E); border:none;" onclick='window.HR_MODULE.sendWhatsAppCustom("${cleanPhone}")'>
+                📱 Send via WhatsApp
+              </button>
+            </div>
+          </div>
+        `;
+      } catch (err) {
+        content.innerHTML = `
+          <div style="background:rgba(239,68,68,0.1); padding:1rem; border-radius:12px; border:1px solid rgba(239,68,68,0.3); color:#fca5a5; text-align:center;">
+            <div>Failed to generate message: ${escapeHTML(err.message || 'Error')}</div>
+            <button class="btn-secondary btn-sm" style="margin-top:0.75rem;" onclick='window.HR_MODULE.openAiMessageModal("${member.empCode}")'>🔄 Retry</button>
+          </div>
+        `;
+      }
+    },
+
+    closeAiModal() {
+      const modal = document.getElementById('hrAiMessageModal');
+      if (modal) modal.classList.remove('active');
+    },
+
+    copyAiMessageText() {
+      const textarea = document.getElementById('aiGeneratedMsgText');
+      if (!textarea) return;
+      navigator.clipboard.writeText(textarea.value);
+      if (window.showToast) window.showToast('AI message copied to clipboard! 📋', 'success');
+    },
+
+    sendWhatsAppCustom(cleanPhone) {
+      const textarea = document.getElementById('aiGeneratedMsgText');
+      const text = textarea ? textarea.value : '';
+      if (!text) {
+        if (window.showToast) window.showToast('Message text is empty.', 'error');
+        return;
+      }
+
+      if (!cleanPhone) {
+        if (window.showToast) window.showToast('No phone number found for this member.', 'error');
+        return;
+      }
+
+      const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`;
+      window.open(waUrl, '_blank');
+      if (window.showToast) window.showToast('WhatsApp Web opened with pre-filled message! 🚀', 'success');
+      this.closeAiModal();
     }
   };
 
