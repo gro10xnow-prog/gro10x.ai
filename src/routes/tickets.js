@@ -145,7 +145,7 @@ router.post('/', requireAuth, async (req, res) => {
     const formatted = mapTicket(payload);
 
     if (supabase) {
-      supabase.from('tickets').insert([payload]).catch(e => {
+      supabase.from('tickets').insert([payload]).then(null, e => {
         console.warn('[Tickets API] Supabase insert note:', e.message);
       });
     }
@@ -201,7 +201,7 @@ router.put('/:id', requireAuth, async (req, res) => {
     const formatted = mapTicket(inMemoryTickets[memIdx] || { id, ...updates });
 
     if (supabase) {
-      supabase.from('tickets').update(updates).eq('id', id).catch(() => {});
+      supabase.from('tickets').update(updates).eq('id', id).then(null, () => {});
     }
 
     try { broadcast('ticket_update', inMemoryTickets.map(mapTicket)); } catch (e) {}
@@ -243,7 +243,7 @@ router.patch('/:id/status', requireAuth, async (req, res) => {
     const formatted = mapTicket(inMemoryTickets[memIdx] || { id, ...updates });
 
     if (supabase) {
-      supabase.from('tickets').update(updates).eq('id', id).catch(() => {});
+      supabase.from('tickets').update(updates).eq('id', id).then(null, () => {});
     }
 
     try { broadcast('ticket_update', inMemoryTickets.map(mapTicket)); } catch (e) {}
@@ -270,7 +270,7 @@ router.delete('/:id', requireAuth, async (req, res) => {
     inMemoryTickets = inMemoryTickets.filter(t => t.id !== id);
 
     if (supabase) {
-      supabase.from('tickets').delete().eq('id', id).catch(() => {});
+      supabase.from('tickets').delete().eq('id', id).then(null, () => {});
     }
 
     try { broadcast('ticket_update', inMemoryTickets.map(mapTicket)); } catch (e) {}

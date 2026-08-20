@@ -138,7 +138,7 @@ router.post('/', requireAuth, async (req, res) => {
     const expense = mapExpense(payload);
 
     if (supabase) {
-      supabase.from('expenses').insert([payload]).catch(e => {
+      supabase.from('expenses').insert([payload]).then(null, e => {
         console.warn('[Expenses API] Supabase insert note:', e.message);
       });
     }
@@ -183,7 +183,7 @@ router.put('/:id/approve', requireAuth, requireManager, async (req, res) => {
     const expense = mapExpense(inMemoryExpenses[memIdx] || { id, ...updates });
 
     if (supabase) {
-      supabase.from('expenses').update(updates).eq('id', id).catch(() => {});
+      supabase.from('expenses').update(updates).eq('id', id).then(null, () => {});
     }
 
     try { broadcast('expense_update', inMemoryExpenses.map(mapExpense)); } catch (e) {}
@@ -213,7 +213,7 @@ router.post('/:id/approve-tier1', requireAuth, async (req, res) => {
     const expense = mapExpense(inMemoryExpenses[memIdx] || { id, ...updates });
 
     if (supabase) {
-      supabase.from('expenses').update(updates).eq('id', id).catch(() => {});
+      supabase.from('expenses').update(updates).eq('id', id).then(null, () => {});
     }
 
     try { broadcast('expense_update', inMemoryExpenses.map(mapExpense)); } catch (e) {}
@@ -243,7 +243,7 @@ router.post('/:id/approve-tier2', requireAuth, async (req, res) => {
     const expense = mapExpense(inMemoryExpenses[memIdx] || { id, ...updates });
 
     if (supabase) {
-      supabase.from('expenses').update(updates).eq('id', id).catch(() => {});
+      supabase.from('expenses').update(updates).eq('id', id).then(null, () => {});
     }
 
     try { broadcast('expense_update', inMemoryExpenses.map(mapExpense)); } catch (e) {}
@@ -275,7 +275,7 @@ router.patch('/:id', requireAuth, async (req, res) => {
     const expense = mapExpense(inMemoryExpenses[memIdx] || { id, ...updates });
 
     if (supabase) {
-      supabase.from('expenses').update(updates).eq('id', id).catch(() => {});
+      supabase.from('expenses').update(updates).eq('id', id).then(null, () => {});
     }
 
     try { broadcast('expense_update', inMemoryExpenses.map(mapExpense)); } catch (e) {}

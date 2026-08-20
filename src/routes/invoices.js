@@ -203,7 +203,7 @@ router.post('/', requireAuth, requireManager, async (req, res) => {
     const invoice = mapInvoice(payload);
 
     if (supabase) {
-      supabase.from('invoices').insert([payload]).catch(e => {
+      supabase.from('invoices').insert([payload]).then(null, e => {
         console.warn('[Invoices API] Supabase insert note:', e.message);
       });
     }
@@ -235,7 +235,7 @@ router.put('/:id', requireAuth, async (req, res) => {
     const invoice = mapInvoice(inMemoryInvoices[memIdx] || { id, ...updates });
 
     if (supabase) {
-      supabase.from('invoices').update(updates).eq('id', id).catch(() => {});
+      supabase.from('invoices').update(updates).eq('id', id).then(null, () => {});
     }
 
     try { broadcast('invoice_update', inMemoryInvoices.map(mapInvoice)); } catch (e) {}
@@ -310,7 +310,7 @@ router.post('/:id/pay', requireAuth, upload.single('screenshot'), async (req, re
     };
     
     if (supabase) {
-      supabase.from('payment_logs').insert([paymentPayload]).catch(() => {});
+      supabase.from('payment_logs').insert([paymentPayload]).then(null, () => {});
     }
 
     const updates = {
@@ -325,7 +325,7 @@ router.post('/:id/pay', requireAuth, upload.single('screenshot'), async (req, re
     const invoice = mapInvoice(inMemoryInvoices[memIdx] || { id, ...updates });
 
     if (supabase) {
-      supabase.from('invoices').update(updates).eq('id', id).catch(() => {});
+      supabase.from('invoices').update(updates).eq('id', id).then(null, () => {});
     }
 
     try { broadcast('invoice_update', inMemoryInvoices.map(mapInvoice)); } catch (e) {}
@@ -409,7 +409,7 @@ router.post('/quotes', requireAuth, async (req, res) => {
     const quote = mapQuote(payload);
 
     if (supabase) {
-      supabase.from('quotes').insert([payload]).catch(() => {});
+      supabase.from('quotes').insert([payload]).then(null, () => {});
     }
 
     try { broadcast('quote_update', inMemoryQuotes.map(mapQuote)); } catch (e) {}
@@ -434,7 +434,7 @@ router.put('/quotes/:id', requireAuth, async (req, res) => {
     const quote = mapQuote(inMemoryQuotes[memIdx] || { id, ...updates });
 
     if (supabase) {
-      supabase.from('quotes').update(updates).eq('id', id).catch(() => {});
+      supabase.from('quotes').update(updates).eq('id', id).then(null, () => {});
     }
 
     try { broadcast('quote_update', inMemoryQuotes.map(mapQuote)); } catch (e) {}
@@ -473,8 +473,8 @@ router.post('/quotes/:id/convert', requireAuth, async (req, res) => {
     inMemoryInvoices.unshift(newInvoice);
 
     if (supabase) {
-      supabase.from('quotes').update({ status: 'Converted' }).eq('id', id).catch(() => {});
-      supabase.from('invoices').insert([newInvoice]).catch(() => {});
+      supabase.from('quotes').update({ status: 'Converted' }).eq('id', id).then(null, () => {});
+      supabase.from('invoices').insert([newInvoice]).then(null, () => {});
     }
 
     const invoice = mapInvoice(newInvoice);

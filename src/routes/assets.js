@@ -149,7 +149,7 @@ router.post('/', requireAuth, async (req, res) => {
     const asset = mapAsset(payload);
 
     if (supabase) {
-      supabase.from('assets').insert([payload]).catch(e => {
+      supabase.from('assets').insert([payload]).then(null, e => {
         console.warn('[Assets API] Supabase insert note:', e.message);
       });
     }
@@ -184,7 +184,7 @@ router.put('/:id', requireAuth, async (req, res) => {
     const asset = mapAsset(inMemoryAssets[memIdx] || { id, ...updates });
 
     if (supabase) {
-      supabase.from('assets').update(updates).eq('id', id).catch(() => {});
+      supabase.from('assets').update(updates).eq('id', id).then(null, () => {});
     }
 
     try { broadcast('asset_update', inMemoryAssets.map(mapAsset)); } catch (e) {}
@@ -209,7 +209,7 @@ router.post('/:id/checkout', requireAuth, async (req, res) => {
     const asset = mapAsset(inMemoryAssets[memIdx] || { id, ...updates });
 
     if (supabase) {
-      supabase.from('assets').update(updates).eq('id', id).catch(() => {});
+      supabase.from('assets').update(updates).eq('id', id).then(null, () => {});
     }
 
     try { broadcast('asset_update', inMemoryAssets.map(mapAsset)); } catch (e) {}
@@ -233,7 +233,7 @@ router.post('/:id/checkin', requireAuth, async (req, res) => {
     const asset = mapAsset(inMemoryAssets[memIdx] || { id, ...updates });
 
     if (supabase) {
-      supabase.from('assets').update(updates).eq('id', id).catch(() => {});
+      supabase.from('assets').update(updates).eq('id', id).then(null, () => {});
     }
 
     try { broadcast('asset_update', inMemoryAssets.map(mapAsset)); } catch (e) {}
@@ -251,7 +251,7 @@ router.delete('/:id', requireAuth, async (req, res) => {
     inMemoryAssets = inMemoryAssets.filter(a => a.id !== id);
 
     if (supabase) {
-      supabase.from('assets').delete().eq('id', id).catch(() => {});
+      supabase.from('assets').delete().eq('id', id).then(null, () => {});
     }
 
     try { broadcast('asset_update', inMemoryAssets.map(mapAsset)); } catch (e) {}

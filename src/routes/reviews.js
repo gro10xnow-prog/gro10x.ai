@@ -296,22 +296,22 @@ router.post('/:id/approve', requireAuth, async (req, res) => {
       resolved: true,
       drawings: []
     };
-    await supabase.from('review_comments').insert([approvalComment]).catch(() => {});
+    await supabase.from('review_comments').insert([approvalComment]).then(null, () => {});
 
     // Persist formal approval to reviews table
-    await supabase.from('reviews').update({
+    await Promise.resolve(supabase.from('reviews').update({
       approved_by: approverName,
       approved_at: new Date().toISOString()
-    }).eq('id', id).catch(() => {});
+    }).eq('id', id)).catch(() => {});
 
     // Cascade: advance linked Kanban task to 'Approved'
     if (taskId) {
-      await supabase.from('tasks').update({
+      await Promise.resolve(supabase.from('tasks').update({
         stage: 'Approved',
         qc_approved_by: approverName,
         qc_approved_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
-      }).eq('id', taskId).catch(() => {});
+      }).eq('id', taskId)).catch(() => {});
 
       const { data: allTasks } = await supabase.from('tasks').select('*').order('created_at', { ascending: false });
       if (allTasks) broadcast('task_update', allTasks);
@@ -373,24 +373,24 @@ router.post('/:id/request-revisions', requireAuth, async (req, res) => {
       resolved: false,
       drawings: []
     };
-    await supabase.from('review_comments').insert([revisionComment]).catch(() => {});
+    await supabase.from('review_comments').insert([revisionComment]).then(null, () => {});
 
     // Persist revision request to reviews table
-    await supabase.from('reviews').update({
+    await Promise.resolve(supabase.from('reviews').update({
       revision_requested_by: requesterName,
       revision_notes: revisionText,
       revision_requested_at: new Date().toISOString()
-    }).eq('id', id).catch(() => {});
+    }).eq('id', id)).catch(() => {});
 
     // Cascade: move linked task back to 'Editing' with feedback
     if (taskId) {
-      await supabase.from('tasks').update({
+      await Promise.resolve(supabase.from('tasks').update({
         stage: 'Editing',
         qc_rejected_by: requesterName,
         qc_feedback: revisionText,
         qc_rejected_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
-      }).eq('id', taskId).catch(() => {});
+      }).eq('id', taskId)).catch(() => {});
 
       const { data: allTasks } = await supabase.from('tasks').select('*').order('created_at', { ascending: false });
       if (allTasks) broadcast('task_update', allTasks);

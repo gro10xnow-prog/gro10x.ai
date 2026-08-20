@@ -230,7 +230,7 @@ router.post('/rules', requireAuth, async (req, res) => {
 
     inMemoryRules.unshift(payload);
     if (supabase) {
-      supabase.from('automation_rules').insert([payload]).catch(() => {});
+      supabase.from('automation_rules').insert([payload]).then(null, () => {});
     }
 
     return res.json({ success: true, rule: payload });
@@ -257,7 +257,7 @@ router.put('/rules/:id', requireAuth, async (req, res) => {
     const rule = inMemoryRules[memIdx] || { id, ...updates };
 
     if (supabase) {
-      supabase.from('automation_rules').update(updates).eq('id', id).catch(() => {});
+      supabase.from('automation_rules').update(updates).eq('id', id).then(null, () => {});
     }
 
     return res.json({ success: true, rule });
@@ -273,7 +273,7 @@ router.delete('/rules/:id', requireAuth, async (req, res) => {
     inMemoryRules = inMemoryRules.filter(r => r.id !== id);
 
     if (supabase) {
-      supabase.from('automation_rules').delete().eq('id', id).catch(() => {});
+      supabase.from('automation_rules').delete().eq('id', id).then(null, () => {});
     }
 
     return res.json({ success: true, id });
@@ -454,12 +454,12 @@ router.post('/broadcast', requireAuth, requireAdmin, async (req, res) => {
 
     // Log the broadcast
     if (isSupabaseConfigured()) {
-      await supabase.from('automation_logs').insert([{
+      await Promise.resolve(supabase.from('automation_logs').insert([{
         event_type: 'broadcast_sent',
         description: `Broadcast "${title || 'No Title'}" sent to ${results.length} group(s)`,
         status: results.every(r => r.ok) ? 'success' : 'partial',
         triggered_at: new Date().toISOString()
-      }]).catch(() => {});
+      }])).catch(() => {});
     }
 
     res.json({ success: true, sent: results.filter(r => r.ok).length, total: results.length, results });

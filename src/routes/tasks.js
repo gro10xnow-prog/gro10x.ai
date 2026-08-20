@@ -95,8 +95,8 @@ router.get('/', requireAuth, async (req, res) => {
     if (supabase && isSupabaseConfigured()) {
       try {
         const [tlsRes, cfvRes] = await Promise.all([
-          supabase.from('task_labels').select('task_id, label_id, labels(id, name, color)').catch(() => ({ data: null })),
-          supabase.from('task_custom_field_values').select('task_id, field_id, value').catch(() => ({ data: null }))
+          supabase.from('task_labels').select('task_id, label_id, labels(id, name, color)').then(null, () => ({ data: null })),
+          supabase.from('task_custom_field_values').select('task_id, field_id, value').then(null, () => ({ data: null }))
         ]);
 
         if (tlsRes.data) {
@@ -229,7 +229,7 @@ router.post('/', requireAuth, async (req, res) => {
     if (req.body.labelIds && Array.isArray(req.body.labelIds) && req.body.labelIds.length > 0 && supabase && isSupabaseConfigured()) {
       try {
         const rows = req.body.labelIds.map(lId => ({ task_id: task.id || newId, label_id: lId }));
-        supabase.from('task_labels').insert(rows).catch(() => {});
+        supabase.from('task_labels').insert(rows).then(null, () => {});
       } catch(e) {}
     }
 
@@ -242,7 +242,7 @@ router.post('/', requireAuth, async (req, res) => {
           value: String(val || '')
         }));
         if (rows.length > 0) {
-          supabase.from('task_custom_field_values').insert(rows).catch(() => {});
+          supabase.from('task_custom_field_values').insert(rows).then(null, () => {});
         }
       } catch(e) {}
     }

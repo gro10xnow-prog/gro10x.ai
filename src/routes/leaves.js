@@ -106,7 +106,7 @@ router.post('/', requireAuth, async (req, res) => {
     const leave = mapLeave(payload);
 
     if (supabase) {
-      supabase.from('leaves').insert([payload]).catch(e => {
+      supabase.from('leaves').insert([payload]).then(null, e => {
         console.warn('[Leaves API] Supabase insert note:', e.message);
       });
     }

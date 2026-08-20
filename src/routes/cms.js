@@ -182,7 +182,7 @@ router.post('/services', requireAuth, requireAdmin, async (req, res) => {
   inMemoryServices.unshift(payload);
 
   if (isSupabaseConfigured()) {
-    supabase.from('services').insert([payload]).catch(e => {
+    supabase.from('services').insert([payload]).then(null, e => {
       console.warn('[CMS API] Supabase insert background note:', e.message);
     });
   }
@@ -221,7 +221,7 @@ router.put('/services/:id', requireAuth, requireAdmin, async (req, res) => {
   }
 
   if (isSupabaseConfigured()) {
-    supabase.from('services').update(updates).eq('id', id).catch(() => {});
+    supabase.from('services').update(updates).eq('id', id).then(null, () => {});
   }
 
   try { broadcast('cms_update', { serviceUpdated: { id, ...updates } }); } catch (e) {}
@@ -234,7 +234,7 @@ router.delete('/services/:id', requireAuth, requireAdmin, async (req, res) => {
   inMemoryServices = inMemoryServices.filter(s => s.id !== id);
 
   if (isSupabaseConfigured()) {
-    supabase.from('services').delete().eq('id', id).catch(() => {});
+    supabase.from('services').delete().eq('id', id).then(null, () => {});
   }
 
   try { broadcast('cms_update', { serviceDeleted: id }); } catch (e) {}

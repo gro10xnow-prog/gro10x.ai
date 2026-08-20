@@ -186,7 +186,7 @@ router.post('/', requireAuth, async (req, res) => {
 
     // Persist to Supabase in background
     if (supabase) {
-      supabase.from('social_posts').insert([payload]).catch(e => {
+      supabase.from('social_posts').insert([payload]).then(null, e => {
         console.warn('[Social API] Supabase post insert note:', e.message);
       });
     }
@@ -228,7 +228,7 @@ router.put('/:id', requireAuth, async (req, res) => {
 
     // Persist to Supabase in background
     if (supabase) {
-      supabase.from('social_posts').update(updates).eq('id', id).catch(() => {});
+      supabase.from('social_posts').update(updates).eq('id', id).then(null, () => {});
     }
 
     try { broadcast('post_update', inMemoryPosts.map(mapPost)); } catch (e) {}
@@ -258,7 +258,7 @@ const handleApprovePost = async (req, res) => {
     const post = mapPost(inMemoryPosts[memIdx] || { id, ...updates });
 
     if (supabase) {
-      supabase.from('social_posts').update(updates).eq('id', id).catch(() => {});
+      supabase.from('social_posts').update(updates).eq('id', id).then(null, () => {});
     }
 
     try { broadcast('post_update', inMemoryPosts.map(mapPost)); } catch (e) {}
@@ -296,7 +296,7 @@ const handleRejectPost = async (req, res) => {
     const post = mapPost(inMemoryPosts[memIdx] || { id, ...updates });
 
     if (supabase) {
-      supabase.from('social_posts').update(updates).eq('id', id).catch(() => {});
+      supabase.from('social_posts').update(updates).eq('id', id).then(null, () => {});
     }
 
     try { broadcast('post_update', inMemoryPosts.map(mapPost)); } catch (e) {}
@@ -332,7 +332,7 @@ router.patch('/:id/status', requireAuth, async (req, res) => {
     const post = mapPost(inMemoryPosts[memIdx] || { id, ...updates });
 
     if (supabase) {
-      supabase.from('social_posts').update(updates).eq('id', id).catch(() => {});
+      supabase.from('social_posts').update(updates).eq('id', id).then(null, () => {});
     }
 
     try { broadcast('post_update', inMemoryPosts.map(mapPost)); } catch (e) {}
@@ -348,7 +348,7 @@ router.delete('/:id', requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
     if (supabase) {
-      supabase.from('social_posts').delete().eq('id', id).catch(() => {});
+      supabase.from('social_posts').delete().eq('id', id).then(null, () => {});
     }
 
     inMemoryPosts = inMemoryPosts.filter(p => p.id !== id);
