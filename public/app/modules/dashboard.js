@@ -80,12 +80,16 @@ window.APP_MODULES.dashboard = async function(container) {
       return sum + val;
     }, 0);
 
+    const hr = new Date().getHours();
+    const timeGreeting = hr < 12 ? 'Good Morning' : (hr < 17 ? 'Good Afternoon' : 'Good Evening');
+    const execName = (window.CURRENT_USER && window.CURRENT_USER.firstName) ? window.CURRENT_USER.firstName : 'Executive';
+
     container.innerHTML = `
       <!-- Hero Header -->
       <div style="background: linear-gradient(135deg, rgba(190, 24, 93, 0.16), rgba(147, 51, 234, 0.12)); border: 1px solid var(--border-subtle); border-radius: 20px; padding: 1.5rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
         <div>
           <h1 style="font-size: 1.6rem; font-weight: 900; font-family: var(--font-heading); margin: 0 0 0.25rem; color: var(--text-main);">
-            Good Morning, Executive 👋
+            ${timeGreeting}, ${escapeHTML(execName)} 👋
           </h1>
           <div style="font-size: 0.85rem; color: var(--text-muted);">
             Live executive command center · Real-time financial, operational & roster status.
