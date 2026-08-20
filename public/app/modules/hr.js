@@ -1241,7 +1241,7 @@ window.APP_MODULES.hr = async function(container) {
               <span>Personalized English Message (Editable)</span>
               <span style="font-size:0.75rem; color:var(--text-muted);">Ready to send</span>
             </label>
-            <textarea id="aiGeneratedMsgText" class="input-text" rows="7" style="resize:vertical; font-family:var(--font-sans); line-height:1.5;">${escapeHTML(generatedMsg)}</textarea>
+            <textarea id="aiGeneratedMsgText" class="input-text" rows="8" style="resize:vertical; font-family:var(--font-sans); line-height:1.6;"></textarea>
           </div>
 
           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem; border-top:1px solid var(--border-subtle); padding-top:0.75rem;">
@@ -1255,12 +1255,20 @@ window.APP_MODULES.hr = async function(container) {
               <button type="button" class="btn-secondary" onclick="window.HR_MODULE.copyAiMessageText()">
                 📋 Copy Text
               </button>
-              <button type="button" class="btn-primary" style="background:linear-gradient(135deg, #25D366, #128C7E); border:none;" onclick='window.HR_MODULE.sendWhatsAppCustom("${cleanPhone}")'>
+              <button type="button" id="aiWaBtn" class="btn-primary" style="background:linear-gradient(135deg, #25D366, #128C7E); border:none;" onclick="window.HR_MODULE.sendWhatsAppCustom()">
                 📱 Send via WhatsApp
               </button>
             </div>
           </div>
         `;
+
+        // ── Set message via DOM (avoids backtick/special char truncation in template literal)
+        const ta = document.getElementById('aiGeneratedMsgText');
+        if (ta) ta.value = generatedMsg;
+
+        // ── Store phone on button via dataset to avoid JS injection
+        const waBtn = document.getElementById('aiWaBtn');
+        if (waBtn) waBtn.dataset.phone = cleanPhone;
       } catch (err) {
         content.innerHTML = `
           <div style="background:rgba(239,68,68,0.1); padding:1rem; border-radius:12px; border:1px solid rgba(239,68,68,0.3); color:#fca5a5; text-align:center;">
@@ -1283,13 +1291,16 @@ window.APP_MODULES.hr = async function(container) {
       if (window.showToast) window.showToast('AI message copied to clipboard! 📋', 'success');
     },
 
-    sendWhatsAppCustom(cleanPhone) {
+    sendWhatsAppCustom() {
       const textarea = document.getElementById('aiGeneratedMsgText');
       const text = textarea ? textarea.value : '';
       if (!text) {
         if (window.showToast) window.showToast('Message text is empty.', 'error');
         return;
       }
+
+      const waBtn = document.getElementById('aiWaBtn');
+      const cleanPhone = waBtn ? waBtn.dataset.phone : '';
 
       if (!cleanPhone) {
         if (window.showToast) window.showToast('No phone number found for this member.', 'error');
