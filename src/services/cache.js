@@ -5,14 +5,21 @@
  */
 
 const store = new Map();
+let hits = 0;
+let misses = 0;
 
 function get(key) {
   const item = store.get(key);
-  if (!item) return null;
-  if (Date.now() > item.expiry) {
-    store.delete(key);
+  if (!item) {
+    misses++;
     return null;
   }
+  if (Date.now() > item.expiry) {
+    store.delete(key);
+    misses++;
+    return null;
+  }
+  hits++;
   return item.value;
 }
 
@@ -37,6 +44,8 @@ function delByPrefix(prefix) {
 
 function clear() {
   store.clear();
+  hits = 0;
+  misses = 0;
 }
 
 function size() {
@@ -49,11 +58,23 @@ function size() {
   return count;
 }
 
+function stats() {
+  const total = hits + misses;
+  const hitRate = total > 0 ? Math.round((hits / total) * 100) : 100;
+  return {
+    activeKeys: size(),
+    hits,
+    misses,
+    hitRatePercent: hitRate
+  };
+}
+
 module.exports = {
   get,
   set,
   del,
   delByPrefix,
   clear,
-  size
+  size,
+  stats
 };

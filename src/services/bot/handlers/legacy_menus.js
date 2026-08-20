@@ -1411,6 +1411,7 @@ function registerLegacyTeamMenus(teamBot, readDB) {
       teamBot.onText(/\/morning|🌅 Morning Briefing/, (msg) => briefingHandler.handleMorningBriefing(teamBot, msg));
       teamBot.onText(/📊 Business Snapshot/, (msg) => briefingHandler.handleBusinessSnapshot(teamBot, msg));
       teamBot.onText(/💰 Finance Summary/, (msg) => briefingHandler.handleFinanceSummary(teamBot, msg));
+      teamBot.onText(/\/health|🩺 Ops Health|🩺 System Health/, (msg) => briefingHandler.handleOpsHealthSummary(teamBot, msg));
       teamBot.onText(/\/mytasks|📋 My Tasks/, (msg) => tasksHandler.handleMyTasks(teamBot, msg));
       teamBot.onText(/✍️ Pending Approvals/, (msg) => approvalsHandler.handlePendingApprovals(teamBot, msg));
 
@@ -1447,10 +1448,12 @@ function registerLegacyTeamMenus(teamBot, readDB) {
 
         try {
           const emp = await state.getEmployeeByTelegramId(chatId) || { name: 'Team Member', emp_code: 'UNKNOWN' };
-          let alertMsg = 'Action processed!';
-          let statusBadge = `✅ Completed by ${emp.name}`;
-
           if (data === 'noop') return;
+
+          if (data === 'cmd_health_refresh') {
+            await briefingHandler.handleOpsHealthSummary(teamBot, query.message);
+            return teamBot.answerCallbackQuery(queryId, { text: '🩺 Telemetry Refreshed!' }).catch(() => {});
+          }
 
           // ─── 0. EOD MOOD CALLBACK ──────────────────────────────────────────────────
           if (data.startsWith('eod_mood:')) {

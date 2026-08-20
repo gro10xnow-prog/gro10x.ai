@@ -121,39 +121,68 @@ app.get(['/api/bot-status', '/bot-status'], (req, res) => {
   });
 });
 
-// System Health Dashboard API
-app.get('/api/system-health', async (req, res) => {
-  const { isSupabaseConfigured } = require('./src/services/supabase');
+// System Health Dashboard API & Deep Telemetry
+app.get(['/api/system-health', '/api/system-health/detailed'], async (req, res) => {
+  const { supabase, isSupabaseConfigured } = require('./src/services/supabase');
   const { getActiveClientsCount } = require('./src/services/sse');
   const cache = require('./src/services/cache');
   
   let dbStatus = 'Offline';
+  let dbLatencyMs = null;
+  let agencyStats = {
+    totalStaff: 0,
+    openTasks: 0,
+    urgentTasks: 0,
+    overdueTasks: 0
+  };
+
   if (isSupabaseConfigured()) {
+    const dbStart = Date.now();
     try {
-      const { data, error } = await require('./src/services/supabase').supabase.from('profiles').select('id').limit(1);
-      dbStatus = error ? 'Error' : 'Connected';
+      const [profRes, taskRes] = await Promise.all([
+        supabase.from('profiles').select('id, emp_code, status').limit(100),
+        supabase.from('tasks').select('id, priority, due_date, stage').limit(200)
+      ]);
+      dbLatencyMs = Date.now() - dbStart;
+      dbStatus = (profRes.error || taskRes.error) ? 'Degraded' : 'Connected';
+
+      if (profRes.data) {
+        agencyStats.totalStaff = profRes.data.length;
+      }
+      if (taskRes.data) {
+        const todayStr = new Date().toISOString().split('T')[0];
+        agencyStats.openTasks = taskRes.data.filter(t => !['Approved', 'Published', 'Completed'].includes(t.stage)).length;
+        agencyStats.urgentTasks = taskRes.data.filter(t => t.priority === 'Urgent').length;
+        agencyStats.overdueTasks = taskRes.data.filter(t => t.due_date && t.due_date < todayStr && !['Approved', 'Published', 'Completed'].includes(t.stage)).length;
+      }
     } catch (e) {
       dbStatus = 'Error';
+      dbLatencyMs = Date.now() - dbStart;
     }
   }
 
-  let team = getTeamBot();
-  let client = getClientBot();
+  const team = getTeamBot();
+  const client = getClientBot();
+
+  const isHealthy = dbStatus === 'Connected' && (team !== null || !process.env.TELEGRAM_BOT_TOKEN_TEAM);
 
   res.json({
+    status: isHealthy ? 'healthy' : 'degraded',
     version: '0.9.0.0',
-    environment: process.env.NODE_ENV || 'development',
+    environment: process.env.NODE_ENV || 'production',
     dbConnection: dbStatus,
+    dbLatencyMs: dbLatencyMs !== null ? dbLatencyMs : 0,
     sseClients: getActiveClientsCount ? getActiveClientsCount() : 0,
     botStatus: {
       teamBot: team ? 'active' : 'null',
-      clientBot: client ? 'active' : 'null'
+      teamBotMode: process.env.RENDER || process.env.NODE_ENV === 'production' ? 'webhook' : 'polling',
+      clientBot: client ? 'active' : 'null',
+      clientBotMode: process.env.RENDER || process.env.NODE_ENV === 'production' ? 'webhook' : 'polling'
     },
     uptimeSeconds: Math.round(process.uptime()),
     memoryMB: Math.round((process.memoryUsage().rss / 1024 / 1024) * 100) / 100,
-    cacheStats: {
-      activeKeys: cache.size()
-    },
+    cacheStats: cache.stats ? cache.stats() : { activeKeys: cache.size() },
+    agencyTelemetry: agencyStats,
     timestamp: new Date().toISOString()
   });
 });

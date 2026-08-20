@@ -148,8 +148,68 @@ async function handleFinanceSummary(teamBot, msg) {
   }).catch(() => {});
 }
 
+async function handleOpsHealthSummary(teamBot, msg) {
+  const chatId = msg.chat.id;
+  const cache = require('../../../services/cache');
+  const { getActiveClientsCount } = require('../../../services/sse');
+  
+  let dbLatency = 0;
+  let dbStatus = 'Offline';
+  let openTasks = 0;
+  let overdueTasks = 0;
+  const todayStr = new Date().toISOString().split('T')[0];
+
+  const dbStart = Date.now();
+  try {
+    if (supabase) {
+      const [profRes, taskRes] = await Promise.all([
+        supabase.from('profiles').select('id', { count: 'exact', head: true }),
+        supabase.from('tasks').select('id, priority, due_date, stage')
+      ]);
+      dbLatency = Date.now() - dbStart;
+      dbStatus = '🟢 Connected';
+      if (taskRes.data) {
+        openTasks = taskRes.data.filter(t => !['Approved', 'Published', 'Completed'].includes(t.stage)).length;
+        overdueTasks = taskRes.data.filter(t => t.due_date && t.due_date < todayStr && !['Approved', 'Published', 'Completed'].includes(t.stage)).length;
+      }
+    }
+  } catch (e) {
+    dbStatus = '🔴 Error';
+    dbLatency = Date.now() - dbStart;
+  }
+
+  const cacheStats = cache.stats ? cache.stats() : { activeKeys: cache.size(), hitRatePercent: 100 };
+  const sseClients = getActiveClientsCount ? getActiveClientsCount() : 0;
+  const memoryMB = Math.round((process.memoryUsage().rss / 1024 / 1024) * 100) / 100;
+  const uptimeHrs = (process.uptime() / 3600).toFixed(1);
+
+  const text = `🩺 *PURPLEBOT DIGITAL — OPS HEALTH TELEMETRY*\n` +
+    `📅 ${new Date().toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })} | ⏱️ Uptime: *${uptimeHrs}h*\n\n` +
+    `⚡ *System Diagnostics:*\n` +
+    `• Database: *${dbStatus}* (⚡ ${dbLatency}ms latency)\n` +
+    `• Telegram Bot: *🟢 Live & Responsive*\n` +
+    `• Active Web SSE Clients: *${sseClients} connected*\n` +
+    `• In-Memory Cache: *${cacheStats.activeKeys} keys (${cacheStats.hitRatePercent}% hit rate)*\n` +
+    `• Memory Footprint: *${memoryMB} MB RSS*\n\n` +
+    `📋 *Agency Pipeline Health:*\n` +
+    `• Active In-Progress Tasks: *${openTasks} tasks*\n` +
+    `• Overdue Deliverables: *${overdueTasks > 0 ? `🚨 ${overdueTasks} OVERDUE` : '✅ 0 Overdue'}*\n\n` +
+    `🌐 [Open Live Health Center](https://purpleos-iota.vercel.app/app)`;
+
+  teamBot.sendMessage(chatId, text, {
+    parse_mode: 'Markdown',
+    reply_markup: {
+      inline_keyboard: [[
+        { text: '🖥️ Web Admin OS', url: 'https://purpleos-iota.vercel.app/app' },
+        { text: '🔄 Refresh Status', callback_data: 'cmd_health_refresh' }
+      ]]
+    }
+  }).catch(() => {});
+}
+
 module.exports = {
   handleMorningBriefing,
   handleBusinessSnapshot,
-  handleFinanceSummary
+  handleFinanceSummary,
+  handleOpsHealthSummary
 };
