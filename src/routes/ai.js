@@ -13,7 +13,7 @@ const { requireAuth } = require('../middleware/auth');
 const { requireManager } = require('../middleware/rbac');
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
-const GEMINI_MODEL = 'gemini-3.6-flash';
+const GEMINI_MODEL = 'gemini-flash-latest';
 
 // ── Stage definitions ──────────────────────────────────────────────────────────
 const STAGE_LABELS = {
@@ -86,7 +86,7 @@ function callGemini(prompt) {
     });
 
     req.on('error', reject);
-    req.setTimeout(7000, () => { req.destroy(); reject(new Error('Gemini request timed out')); });
+    req.setTimeout(15000, () => { req.destroy(); reject(new Error('Gemini request timed out')); });
     req.write(payload);
     req.end();
   });
