@@ -105,6 +105,12 @@ window.APP_MODULES.finance = async function(container) {
   let isLoading = true;
   let hasError = false;
 
+  // Filter & Search states
+  let invoiceFilter = 'all';
+  let invoiceSearch = '';
+  let expenseFilter = 'all';
+  let expenseSearch = '';
+
   function escapeHTML(str) {
     if (!str) return '';
     return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
@@ -602,95 +608,171 @@ window.APP_MODULES.finance = async function(container) {
 
   function renderActiveTabGrid() {
     if (activeTab === 'invoices') {
-      if (invoicesData.length === 0) return `<div style="text-align:center; padding:3rem; color:var(--text-muted);">No invoices logged yet.</div>`;
+      const totOverdueCount = invoicesData.filter(i => isOverdue(i)).length;
+      const totPaidCount = invoicesData.filter(i => (i.status || '').toLowerCase() === 'paid').length;
+      const totPendingCount = invoicesData.filter(i => (i.status || '').toLowerCase() === 'pending' || (i.status || '').toLowerCase() === 'sent').length;
+
+      let filtered = invoicesData;
+      if (invoiceSearch) {
+        const q = invoiceSearch.toLowerCase();
+        filtered = filtered.filter(i => 
+          (i.id || '').toLowerCase().includes(q) ||
+          (i.clientName || i.client || '').toLowerCase().includes(q) ||
+          (i.projectName || '').toLowerCase().includes(q)
+        );
+      }
+      if (invoiceFilter === 'overdue') {
+        filtered = filtered.filter(i => isOverdue(i));
+      } else if (invoiceFilter === 'paid') {
+        filtered = filtered.filter(i => (i.status || '').toLowerCase() === 'paid');
+      } else if (invoiceFilter === 'pending') {
+        filtered = filtered.filter(i => (i.status || '').toLowerCase() === 'pending' || (i.status || '').toLowerCase() === 'sent');
+      }
+
       return `
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Invoice No</th>
-              <th>Client Name</th>
-              <th>Amount</th>
-              <th>Due Date</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${invoicesData.map(i => {
-              const overdue = isOverdue(i);
-              return `
-                <tr>
-                  <td style="font-weight:700; color:var(--purple-light);">${escapeHTML(i.id || 'INV-101')}</td>
-                  <td style="font-weight:700;">${escapeHTML(i.clientName || 'Agency Client')}</td>
-                  <td style="font-weight:800; color:var(--emerald-brand);">৳${(Number(i.amount) || 0).toLocaleString()}</td>
-                  <td style="color:var(--text-muted);">${escapeHTML(i.dueDate || 'ASAP')}</td>
-                  <td>
-                    ${i.status === 'Paid' ? '<span class="badge badge-emerald">Paid</span>' :
-                      overdue ? '<span class="badge" style="background:rgba(239,68,68,0.2); color:#ef4444;">🔴 Overdue</span>' :
-                      `<span class="badge badge-amber">${escapeHTML(i.status || 'Pending')}</span>`}
-                  </td>
-                  <td>
-                    <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
-                      ${i.status !== 'Paid' ? `
-                        <button class="btn-emerald btn-sm" style="font-size:0.75rem;" onclick="window.FINANCE_MODULE.markFullyPaid('${i.id}')">✅ Mark Paid</button>
-                        <button class="btn-secondary btn-sm" style="font-size:0.75rem;" onclick="window.FINANCE_MODULE.markPartiallyPaid('${i.id}')">💸 Partial</button>
-                      ` : ''}
-                      <button class="btn-secondary btn-sm" style="font-size:0.75rem;" onclick="window.FINANCE_MODULE.downloadInvoice('${i.id}')">📄 PDF</button>
-                      <button class="btn-secondary btn-sm" style="font-size:0.75rem;" onclick="window.FINANCE_MODULE.sendInvoiceEmail('${i.id}')">✉️ Send</button>
-                    </div>
-                  </td>
-                </tr>
-              `;
-            }).join('')}
-          </tbody>
-        </table>
+        <!-- Filter & Search Toolbar -->
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:0.75rem;">
+          <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
+            <button class="btn-ghost ${invoiceFilter === 'all' ? 'btn-secondary' : ''}" style="font-size:0.75rem; padding:0.3rem 0.6rem;" onclick="window.FINANCE_MODULE.setInvoiceFilter('all')">All (${invoicesData.length})</button>
+            <button class="btn-ghost ${invoiceFilter === 'overdue' ? 'btn-secondary' : ''}" style="font-size:0.75rem; padding:0.3rem 0.6rem; color:#ef4444;" onclick="window.FINANCE_MODULE.setInvoiceFilter('overdue')">🔴 Overdue (${totOverdueCount})</button>
+            <button class="btn-ghost ${invoiceFilter === 'pending' ? 'btn-secondary' : ''}" style="font-size:0.75rem; padding:0.3rem 0.6rem; color:#f59e0b;" onclick="window.FINANCE_MODULE.setInvoiceFilter('pending')">🟡 Pending (${totPendingCount})</button>
+            <button class="btn-ghost ${invoiceFilter === 'paid' ? 'btn-secondary' : ''}" style="font-size:0.75rem; padding:0.3rem 0.6rem; color:#10b981;" onclick="window.FINANCE_MODULE.setInvoiceFilter('paid')">🟢 Paid (${totPaidCount})</button>
+          </div>
+          <div style="position:relative; width:240px;">
+            <input type="text" class="input-text" placeholder="🔍 Search invoices..." value="${escapeHTML(invoiceSearch)}" oninput="window.FINANCE_MODULE.setInvoiceSearch(this.value)" style="padding:0.4rem 0.75rem; font-size:0.8rem;">
+          </div>
+        </div>
+
+        ${filtered.length === 0 ? `
+          <div style="text-align:center; padding:3rem; color:var(--text-muted);">
+            No matching invoices found for the selected criteria.
+          </div>
+        ` : `
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Invoice No</th>
+                <th>Client Name</th>
+                <th>Project / Retainer</th>
+                <th>Amount</th>
+                <th>Due Date</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${filtered.map(i => {
+                const overdue = isOverdue(i);
+                return `
+                  <tr>
+                    <td style="font-weight:700; color:var(--purple-light);">${escapeHTML(i.id || 'INV-101')}</td>
+                    <td style="font-weight:700;">${escapeHTML(i.clientName || i.client || 'Agency Client')}</td>
+                    <td style="color:var(--text-muted); font-size:0.78rem;">${escapeHTML(i.projectName || 'General Services')}</td>
+                    <td style="font-weight:800; color:var(--emerald-brand);">৳${(Number(i.amount) || 0).toLocaleString()}</td>
+                    <td style="color:var(--text-muted);">${escapeHTML(i.dueDate || 'ASAP')}</td>
+                    <td>
+                      ${i.status === 'Paid' ? '<span class="badge badge-emerald">Paid</span>' :
+                        overdue ? '<span class="badge" style="background:rgba(239,68,68,0.2); color:#ef4444;">🔴 Overdue</span>' :
+                        `<span class="badge badge-amber">${escapeHTML(i.status || 'Pending')}</span>`}
+                    </td>
+                    <td>
+                      <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
+                        ${i.status !== 'Paid' ? `
+                          <button class="btn-emerald btn-sm" style="font-size:0.75rem;" onclick="window.FINANCE_MODULE.markFullyPaid('${i.id}')">✅ Mark Paid</button>
+                          <button class="btn-secondary btn-sm" style="font-size:0.75rem;" onclick="window.FINANCE_MODULE.markPartiallyPaid('${i.id}')">💸 Partial</button>
+                        ` : ''}
+                        <button class="btn-secondary btn-sm" style="font-size:0.75rem;" onclick="window.FINANCE_MODULE.downloadInvoice('${i.id}')">📄 PDF</button>
+                        <button class="btn-secondary btn-sm" style="font-size:0.75rem;" onclick="window.FINANCE_MODULE.sendInvoiceEmail('${i.id}')">✉️ Send</button>
+                      </div>
+                    </td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        `}
       `;
     } else if (activeTab === 'expenses') {
-      if (expensesData.length === 0) return `<div style="text-align:center; padding:3rem; color:var(--text-muted);">No expense claims logged.</div>`;
+      const pendingCount = expensesData.filter(e => !(e.tier1?.approved && e.tier2?.approved) && e.status !== 'Approved' && e.status !== 'Rejected').length;
+      const disbursedCount = expensesData.filter(e => e.status === 'Approved' || (e.tier1?.approved && e.tier2?.approved)).length;
+      const rejectedCount = expensesData.filter(e => e.status === 'Rejected').length;
+
+      let filtered = expensesData;
+      if (expenseSearch) {
+        const q = expenseSearch.toLowerCase();
+        filtered = filtered.filter(e => 
+          (e.title || '').toLowerCase().includes(q) ||
+          (e.category || '').toLowerCase().includes(q) ||
+          (e.submittedBy || e.loggedBy || '').toLowerCase().includes(q)
+        );
+      }
+      if (expenseFilter === 'pending') {
+        filtered = filtered.filter(e => !(e.tier1?.approved && e.tier2?.approved) && e.status !== 'Approved' && e.status !== 'Rejected');
+      } else if (expenseFilter === 'disbursed') {
+        filtered = filtered.filter(e => e.status === 'Approved' || (e.tier1?.approved && e.tier2?.approved));
+      } else if (expenseFilter === 'rejected') {
+        filtered = filtered.filter(e => e.status === 'Rejected');
+      }
+
       return `
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Expense Description</th>
-              <th>Category</th>
-              <th>Submitted By</th>
-              <th>Amount</th>
-              <th>Approval Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${expensesData.map(e => `
+        <!-- Filter & Search Toolbar -->
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:0.75rem;">
+          <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
+            <button class="btn-ghost ${expenseFilter === 'all' ? 'btn-secondary' : ''}" style="font-size:0.75rem; padding:0.3rem 0.6rem;" onclick="window.FINANCE_MODULE.setExpenseFilter('all')">All (${expensesData.length})</button>
+            <button class="btn-ghost ${expenseFilter === 'pending' ? 'btn-secondary' : ''}" style="font-size:0.75rem; padding:0.3rem 0.6rem; color:#f59e0b;" onclick="window.FINANCE_MODULE.setExpenseFilter('pending')">🟡 Pending Review (${pendingCount})</button>
+            <button class="btn-ghost ${expenseFilter === 'disbursed' ? 'btn-secondary' : ''}" style="font-size:0.75rem; padding:0.3rem 0.6rem; color:#10b981;" onclick="window.FINANCE_MODULE.setExpenseFilter('disbursed')">🟢 Disbursed (${disbursedCount})</button>
+            <button class="btn-ghost ${expenseFilter === 'rejected' ? 'btn-secondary' : ''}" style="font-size:0.75rem; padding:0.3rem 0.6rem; color:#ef4444;" onclick="window.FINANCE_MODULE.setExpenseFilter('rejected')">🔴 Rejected (${rejectedCount})</button>
+          </div>
+          <div style="position:relative; width:240px;">
+            <input type="text" class="input-text" placeholder="🔍 Search expenses..." value="${escapeHTML(expenseSearch)}" oninput="window.FINANCE_MODULE.setExpenseSearch(this.value)" style="padding:0.4rem 0.75rem; font-size:0.8rem;">
+          </div>
+        </div>
+
+        ${filtered.length === 0 ? `
+          <div style="text-align:center; padding:3rem; color:var(--text-muted);">
+            No matching expense claims found.
+          </div>
+        ` : `
+          <table class="data-table">
+            <thead>
               <tr>
-                <td style="font-weight:700;">
-                  ${escapeHTML(e.title)}
-                  ${e.receiptUrl ? `<a href="${escapeHTML(e.receiptUrl)}" target="_blank" style="margin-left:0.5rem; color:var(--purple-light); font-size:0.8rem;">📎 Receipt</a>` : ''}
-                </td>
-                <td style="color:var(--text-muted);">${escapeHTML(e.category || 'General')}</td>
-                <td>👤 ${escapeHTML(e.submittedBy || e.loggedBy || 'Staff')}</td>
-                <td style="font-weight:800; color:#f87171;">৳${(Number(e.amount) || 0).toLocaleString()}</td>
-                <td>
-                  ${e.status === 'Approved' || e.status === 'Tier 3 Pending' ? '<span class="badge badge-emerald">Approved</span>' : 
-                    e.status === 'Rejected' ? '<span class="badge" style="background:rgba(239,68,68,0.2); color:#ef4444;">Rejected</span>' :
-                    e.status === 'Tier 2 Pending' ? '<span class="badge badge-purple">Tier 2 Pending</span>' :
-                    '<span class="badge badge-amber">Tier 1 Pending</span>'}
-                </td>
-                <td>
-                  ${e.status !== 'Approved' && e.status !== 'Rejected' && e.status !== 'Tier 3 Pending' ? `
-                    <div style="display:flex; gap:0.3rem;">
-                      ${(e.status || '').includes('Tier 2') ? `
-                        <button class="btn-emerald btn-sm" style="font-size:0.72rem; padding:0.25rem 0.5rem;" onclick="window.FINANCE_MODULE.approveTier2('${e.id}')">✅ Tier 2</button>
-                      ` : `
-                        <button class="btn-emerald btn-sm" style="font-size:0.72rem; padding:0.25rem 0.5rem;" onclick="window.FINANCE_MODULE.approveTier1('${e.id}')">✅ Tier 1</button>
-                      `}
-                      <button class="btn-secondary btn-sm" style="color:#ef4444; font-size:0.72rem; padding:0.25rem 0.5rem;" onclick="window.FINANCE_MODULE.rejectExpense('${e.id}')">❌</button>
-                    </div>
-                  ` : ''}
-                </td>
+                <th>Expense Description</th>
+                <th>Category</th>
+                <th>Submitted By</th>
+                <th>Amount</th>
+                <th>Approval Status</th>
+                <th>Actions</th>
               </tr>
-            `).join('')}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              ${filtered.map(e => `
+                <tr>
+                  <td style="font-weight:700;">
+                    ${escapeHTML(e.title)}
+                    ${e.receiptUrl ? `<a href="${escapeHTML(e.receiptUrl)}" target="_blank" style="margin-left:0.5rem; color:var(--purple-light); font-size:0.8rem;">📎 Receipt</a>` : ''}
+                  </td>
+                  <td style="color:var(--text-muted);">${escapeHTML(e.category || 'General')}</td>
+                  <td>👤 ${escapeHTML(e.submittedBy || e.loggedBy || 'Staff')}</td>
+                  <td style="font-weight:800; color:#f87171;">৳${(Number(e.amount) || 0).toLocaleString()}</td>
+                  <td>
+                    ${e.status === 'Approved' || (e.tier1?.approved && e.tier2?.approved) ? '<span class="badge badge-emerald">Disbursed (Approved)</span>' : 
+                      e.status === 'Rejected' ? '<span class="badge" style="background:rgba(239,68,68,0.2); color:#ef4444;">Rejected</span>' :
+                      e.status === 'Tier 2 Pending' || e.tier1?.approved ? '<span class="badge badge-purple">🟡 Pending Owner Disbursal</span>' :
+                      '<span class="badge badge-amber">🟡 Tier 1 Review</span>'}
+                  </td>
+                  <td>
+                    ${e.status !== 'Approved' && e.status !== 'Rejected' ? `
+                      <div style="display:flex; gap:0.3rem;">
+                        <button class="btn-emerald btn-sm" style="font-size:0.72rem; padding:0.25rem 0.5rem;" onclick="window.FINANCE_MODULE.approveTier2('${e.id}')">✅ Authorize & Disburse</button>
+                        <button class="btn-secondary btn-sm" style="color:#ef4444; font-size:0.72rem; padding:0.25rem 0.5rem;" onclick="window.FINANCE_MODULE.rejectExpense('${e.id}')">❌</button>
+                      </div>
+                    ` : ''}
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `}
       `;
     } else if (activeTab === 'quotes') {
       if (quotesData.length === 0) return `<div style="text-align:center; padding:3rem; color:var(--text-muted);">No price quotes logged.</div>`;
@@ -777,6 +859,49 @@ window.APP_MODULES.finance = async function(container) {
     reload() {
       loadFinance();
     },
+    setInvoiceFilter(f) {
+      invoiceFilter = f;
+      renderFinanceView();
+    },
+    setInvoiceSearch(q) {
+      invoiceSearch = q;
+      renderFinanceView();
+    },
+    setExpenseFilter(f) {
+      expenseFilter = f;
+      renderFinanceView();
+    },
+    setExpenseSearch(q) {
+      expenseSearch = q;
+      renderFinanceView();
+    },
+    openInvoiceModal() {
+      const modal = document.getElementById('invoiceModal');
+      if (modal) modal.classList.add('active');
+    },
+    closeInvoiceModal() {
+      const modal = document.getElementById('invoiceModal');
+      if (modal) modal.classList.remove('active');
+    },
+    openNewInvoiceModal() {
+      this.openInvoiceModal();
+    },
+    openQuoteModal() {
+      const modal = document.getElementById('quoteModal');
+      if (modal) modal.classList.add('active');
+    },
+    closeQuoteModal() {
+      const modal = document.getElementById('quoteModal');
+      if (modal) modal.classList.remove('active');
+    },
+    openExpenseModal() {
+      const modal = document.getElementById('expModal');
+      if (modal) modal.classList.add('active');
+    },
+    closeExpenseModal() {
+      const modal = document.getElementById('expModal');
+      if (modal) modal.classList.remove('active');
+    },
     syncInvClient(selectEl) {
       const selected = selectEl.options[selectEl.selectedIndex];
       const nameInput = document.getElementById('fnInvClient');
@@ -831,6 +956,7 @@ window.APP_MODULES.finance = async function(container) {
         await APP_API.put(`/invoices/${id}`, { status: 'Paid' });
         if (window.showToast) window.showToast('🎉 Invoice marked as Fully Paid!', 'success');
         loadFinance();
+        if (typeof window.updateSidebarBadges === 'function') window.updateSidebarBadges();
       } catch (e) {
         if (window.showToast) window.showToast('Failed to mark invoice as paid: ' + e.message, 'error');
       }
@@ -852,6 +978,7 @@ window.APP_MODULES.finance = async function(container) {
         await APP_API.put(`/invoices/${id}`, { status: newStatus, notes: `Paid ${amt} BDT` });
         if (window.showToast) window.showToast(`Invoice marked as ${newStatus}`, 'success');
         loadFinance();
+        if (typeof window.updateSidebarBadges === 'function') window.updateSidebarBadges();
       } catch (e) {
         if (window.showToast) window.showToast('Failed to update invoice: ' + e.message, 'error');
       }
@@ -862,28 +989,41 @@ window.APP_MODULES.finance = async function(container) {
         if (res.success) {
           if (window.showToast) window.showToast('📜 Quote converted to Invoice successfully!', 'success');
           loadFinance();
+          if (typeof window.updateSidebarBadges === 'function') window.updateSidebarBadges();
         }
       } catch (e) {
         if (window.showToast) window.showToast('Failed to convert quote: ' + e.message, 'error');
       }
     },
-    async approveExpense(id) {
-      if (!confirm('Approve this expense?')) return;
+    async approveTier1(id) {
       try {
-        await APP_API.patch(`/expenses/${id}`, { status: 'Approved' });
-        if (window.showToast) window.showToast('Expense Approved ✅', 'success');
+        await APP_API.post(`/expenses/${id}/approve-tier1`, { approvedBy: window.CURRENT_USER?.name || 'Line Manager' });
+        if (window.showToast) window.showToast('Tier 1 Approved ✅ (Pending Owner Disbursal)', 'success');
         loadFinance();
-      } catch(e) {
-        if (window.showToast) window.showToast('Failed to approve expense: ' + e.message, 'error');
+        if (typeof window.updateSidebarBadges === 'function') window.updateSidebarBadges();
+      } catch (e) {
+        if (window.showToast) window.showToast('Failed to approve Tier 1: ' + e.message, 'error');
+      }
+    },
+    async approveTier2(id) {
+      try {
+        await APP_API.post(`/expenses/${id}/approve-tier2`, { approvedBy: window.CURRENT_USER?.name || 'Executive Owner' });
+        if (window.showToast) window.showToast('✅ Expense Authorized & Disbursed!', 'success');
+        loadFinance();
+        if (typeof window.updateSidebarBadges === 'function') window.updateSidebarBadges();
+      } catch (e) {
+        if (window.showToast) window.showToast('Failed to approve Tier 2: ' + e.message, 'error');
       }
     },
     async rejectExpense(id) {
-      if (!confirm('Reject this expense?')) return;
+      const reason = prompt('Enter rejection note for this expense claim:');
+      if (reason === null) return;
       try {
-        await APP_API.patch(`/expenses/${id}`, { status: 'Rejected' });
-        if (window.showToast) window.showToast('Expense Rejected', 'info');
+        await APP_API.post(`/expenses/${id}/reject`, { reason: reason || 'Declined by Executive' });
+        if (window.showToast) window.showToast('Expense claim declined', 'info');
         loadFinance();
-      } catch(e) {
+        if (typeof window.updateSidebarBadges === 'function') window.updateSidebarBadges();
+      } catch (e) {
         if (window.showToast) window.showToast('Failed to reject expense: ' + e.message, 'error');
       }
     },
