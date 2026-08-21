@@ -705,16 +705,26 @@ window.APP_MODULES.kanban = async function(container) {
 
     if (currentView === 'kanban') {
       area.style.overflowY = 'hidden';
+      const todayStr = new Date().toISOString().split('T')[0];
+      const todayDate = new Date();
+
       area.innerHTML = `
         <div class="kanban-grid">
           ${currentStages.map(stg => {
             const stageTasks = displayTasks.filter(t => (t.stage || currentStages[0]) === stg);
+            const totalStageHours = stageTasks.reduce((sum, t) => sum + Number(t.estimatedHours || 8), 0);
+            const urgentCount = stageTasks.filter(t => t.priority === 'Urgent').length;
+            const overdueCount = stageTasks.filter(t => (t.dueDate || t.due_date) && (t.dueDate || t.due_date) < todayStr && !['Approved', 'Published', 'Completed'].includes(stg)).length;
+
             return `
               <div class="kanban-col" ondragover="event.preventDefault()" ondrop="window.KANBAN_MODULE.dropTask(event, '${escapeHTML(stg)}')">
                 <div class="kanban-col-header" style="display: flex; justify-content: space-between; align-items: center;">
-                  <div style="display: flex; align-items: center; gap: 0.5rem;">
-                    <span>${escapeHTML(stg)}</span>
-                    <span class="badge badge-purple">${stageTasks.length}</span>
+                  <div style="display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
+                    <span style="font-weight: 800; font-size: 0.88rem; color: var(--text-primary);">${escapeHTML(stg)}</span>
+                    <span class="badge badge-purple" style="font-size: 0.72rem; font-weight: 800;">${stageTasks.length}</span>
+                    <span class="badge" style="background: var(--surface-3); color: var(--text-muted); font-size: 0.68rem; font-weight: 700;">⚡ ${totalStageHours}h</span>
+                    ${urgentCount > 0 ? `<span class="badge" style="background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); font-size: 0.65rem; font-weight: 800;">🔴 ${urgentCount} Urgent</span>` : ''}
+                    ${overdueCount > 0 ? `<span class="badge" style="background: rgba(239, 68, 68, 0.25); color: #ef4444; font-size: 0.65rem; font-weight: 800;">🚨 ${overdueCount} Late</span>` : ''}
                   </div>
                   <button type="button" class="btn-ghost btn-sm" style="padding: 0.15rem 0.45rem; font-size: 0.85rem; line-height: 1; font-weight: 800; border-radius: 6px;" onclick="window.KANBAN_MODULE.openNewTaskModal({ stage: '${escapeHTML(stg)}' })" title="Add task directly to ${escapeHTML(stg)}">+</button>
                 </div>
@@ -728,23 +738,27 @@ window.APP_MODULES.kanban = async function(container) {
                     const loggedH = Number(t.loggedHours || 0);
                     const estH = Number(t.estimatedHours || 8);
                     const timeProgress = Math.min(100, Math.round((loggedH / estH) * 100));
+                    const isUrgent = t.priority === 'Urgent';
                     
                     // Due Date Check
                     let isOverdue = false;
+                    let diffDays = 0;
                     let dueStr = '';
-                    if (t.dueDate || t.due_date) {
-                      const d = new Date(t.dueDate || t.due_date);
+                    const rawDue = t.dueDate || t.due_date;
+                    if (rawDue) {
+                      const d = new Date(rawDue);
                       if (!isNaN(d)) {
                         dueStr = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-                        if (d < new Date() && stg !== 'Approved' && stg !== 'Published') {
+                        if (rawDue < todayStr && !['Approved', 'Published', 'Completed'].includes(stg)) {
                           isOverdue = true;
+                          diffDays = Math.ceil((todayDate - d) / (1000 * 60 * 60 * 24));
                         }
                       }
                     }
 
                     return `
                     <div class="kanban-card" 
-                         style="border-left: 4px solid ${priorityColor}; ${t.priority === 'Urgent' ? 'background: linear-gradient(135deg, rgba(239, 68, 68, 0.08), var(--surface-2));' : ''}" 
+                         style="border-left: 4px solid ${priorityColor}; ${isUrgent ? 'background: linear-gradient(135deg, rgba(239, 68, 68, 0.12), var(--surface-2)); box-shadow: 0 0 10px rgba(239, 68, 68, 0.2);' : ''} ${isOverdue ? 'border-top: 1px solid rgba(239, 68, 68, 0.35);' : ''}" 
                          draggable="true" 
                          ondragstart="window.KANBAN_MODULE.dragTask(event, '${t.id}')" 
                          onclick="window.KANBAN_MODULE.openDrawer('${t.id}')">
@@ -755,17 +769,17 @@ window.APP_MODULES.kanban = async function(container) {
                         🏢 ${safeClient}
                       </div>
 
-                      <div style="font-weight: 700; color: var(--text-primary); font-size: 0.88rem; line-height: 1.35;">
+                      <div style="font-weight: 700; color: var(--text-primary); font-size: 0.88rem; line-height: 1.35; margin: 0.15rem 0;">
                         ${safeTitle}
                       </div>
 
-                      <div style="display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; font-size: 0.7rem;">
-                        ${t.priority ? `<span class="badge" style="background:rgba(255,255,255,0.06); color:${priorityColor}; border:1px solid ${priorityColor}55;">${escapeHTML(t.priority)}</span>` : ''}
-                        ${dueStr ? `<span class="badge ${isOverdue ? 'badge-pink' : 'badge-gray'}">📅 ${dueStr} ${isOverdue ? '⚠️' : ''}</span>` : ''}
+                      <div style="display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; font-size: 0.7rem; margin: 0.2rem 0;">
+                        ${t.priority ? `<span class="badge" style="background:${isUrgent ? 'rgba(239, 68, 68, 0.2)' : 'rgba(255,255,255,0.06)'}; color:${priorityColor}; border:1px solid ${priorityColor}55; font-weight:700;">${isUrgent ? '🔴 ' : ''}${escapeHTML(t.priority)}</span>` : ''}
+                        ${dueStr ? `<span class="badge ${isOverdue ? 'badge-pink' : 'badge-gray'}" style="${isOverdue ? 'font-weight:800; background:rgba(239,68,68,0.25); color:#ef4444;' : ''}">📅 ${dueStr} ${isOverdue ? `(🚨 ${diffDays}d Late)` : ''}</span>` : ''}
                       </div>
 
                       <!-- Hours Progress Bar -->
-                      <div style="margin-top: 0.2rem;">
+                      <div style="margin-top: 0.35rem;">
                         <div style="display:flex; justify-content:space-between; font-size: 0.7rem; color: var(--text-dim); margin-bottom: 0.2rem;">
                           <span>⏱️ ${loggedH}h / ${estH}h</span>
                           <span>${timeProgress}%</span>
@@ -775,13 +789,14 @@ window.APP_MODULES.kanban = async function(container) {
                         </div>
                       </div>
 
-                      <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: var(--text-muted); margin-top: 0.3rem;">
+                      <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: var(--text-muted); margin-top: 0.4rem;">
                         <div style="display:flex; align-items:center; gap:0.4rem;">
                           <div style="width:22px; height:22px; border-radius:50%; background:var(--gradient-rose); font-size:0.65rem; font-weight:800; color:#fff; display:flex; align-items:center; justify-content:center;">
                             ${assigneeInitials}
                           </div>
-                          <span>${safeAssignee}</span>
+                          <span style="font-weight:600;">${safeAssignee}</span>
                         </div>
+                        <span style="font-size:0.68rem; color:var(--text-dim); font-weight:700;">#${t.id ? String(t.id).substring(0, 6) : ''}</span>
                       </div>
                     </div>
                   `}).join('')}
