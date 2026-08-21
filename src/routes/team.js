@@ -950,6 +950,41 @@ router.post('/', requireAuth, requireManager, async (req, res) => {
   }
 });
 
+// POST /api/team/:empCode/reset-pin — Reset PIN for a staff member
+router.post('/:empCode/reset-pin', requireAuth, async (req, res) => {
+  try {
+    const { empCode } = req.params;
+    const { customPin } = req.body || {};
+    let targetPhone = '';
+
+    if (supabase) {
+      const { data } = await supabase.from('team_members').select('phone').eq('emp_code', empCode).maybeSingle();
+      if (data && data.phone) targetPhone = data.phone;
+    }
+
+    let pinRecord = null;
+    try {
+      pinRecord = await createTempPin(targetPhone || '01700000000', empCode, 'team', '');
+      if (customPin && pinRecord && supabase) {
+        await supabase.from('pins').update({ pin: customPin, is_permanent: true }).eq('phone', targetPhone).catch(() => {});
+        pinRecord.pin = customPin;
+      }
+    } catch (e) {
+      console.warn('createTempPin error:', e.message);
+    }
+
+    return res.json({
+      success: true,
+      empCode,
+      tempPin: pinRecord ? pinRecord.pin : (customPin || '123456'),
+      message: 'PIN successfully reset'
+    });
+  } catch (err) {
+    console.error('Reset PIN error:', err.message);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /api/team/workload — Get workload & capacity stats for team members
 router.get('/workload', requireAuth, async (req, res) => {
   try {

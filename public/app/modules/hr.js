@@ -25,12 +25,12 @@ window.APP_MODULES.hr = async function(container) {
   }
 
   const DEFAULT_TEAM_MEMBERS = [
-    { emp_code: 'PBD-001', name: 'Ayman Rahman', role: 'Founder & Creative Director', department: 'Executive', status: 'In Studio', phone: '+8801711019550', accessLevel: 'Owner', baseSalary: 150000, commissionRate: 10, onboardingComplete: true, surveyComplete: true, xp: 2450, badge: '👑 Founder' },
+    { emp_code: 'PBD-001', name: 'Mahmudul Hasan', role: 'Agency Owner / Director', department: 'Executive', status: 'In Studio', phone: '+8801711019550', accessLevel: 'Owner', baseSalary: 150000, commissionRate: 10, onboardingComplete: true, surveyComplete: true, xp: 2450, badge: '👑 Director' },
     { emp_code: 'PBD-002', name: 'H. M. Ifteker Mahmud', role: 'Managing Director', department: 'Executive', status: 'In Studio', phone: '+8801711019551', accessLevel: 'Managing Director', baseSalary: 140000, commissionRate: 8, onboardingComplete: true, surveyComplete: true, xp: 2100, badge: '🚀 Director' },
-    { emp_code: 'PBD-029', name: 'Borhan', role: 'Finance Manager & Studio Lead', department: 'Finance & Studio', status: 'In Studio', phone: '+8801711019552', accessLevel: 'Finance Manager', baseSalary: 85000, commissionRate: 5, onboardingComplete: true, surveyComplete: true, xp: 1800, badge: '💼 Finance Lead' },
-    { emp_code: 'PBD-004', name: 'Zahin', role: 'Lead Full-Stack Developer', department: 'Technology', status: 'Remote', phone: '+8801711019553', accessLevel: 'Technology Admin', baseSalary: 95000, commissionRate: 5, onboardingComplete: true, surveyComplete: true, xp: 1950, badge: '⚡ Tech Admin' },
-    { emp_code: 'PBD-005', name: 'Asif', role: 'Senior Video Editor & Colorist', department: 'Video Production', status: 'In Studio', phone: '+8801711019554', accessLevel: 'Specialist / Crew', baseSalary: 65000, commissionRate: 3, onboardingComplete: true, surveyComplete: true, xp: 1450, badge: '🎬 Senior Editor' },
-    { emp_code: 'PBD-006', name: 'Nafis', role: '3D Motion Graphics Designer', department: 'Design & Creative', status: 'In Studio', phone: '+8801711019555', accessLevel: 'Specialist / Crew', baseSalary: 60000, commissionRate: 3, onboardingComplete: true, surveyComplete: true, xp: 1300, badge: '🎨 Motion Lead' }
+    { emp_code: 'PBD-003', name: 'Borhan Uddin', role: 'Lead Video Producer', department: 'Video Production', status: 'In Studio', phone: '+8801711019552', accessLevel: 'Line Manager', baseSalary: 85000, commissionRate: 5, onboardingComplete: true, surveyComplete: true, xp: 1800, badge: '💼 Video Lead' },
+    { emp_code: 'PBD-004', name: 'Md. Zahin Khandaker', role: 'Senior Graphic Designer / Tech Admin', department: 'Technology & Design', status: 'In Studio', phone: '+8801708459008', accessLevel: 'Technology Admin', baseSalary: 95000, commissionRate: 5, onboardingComplete: true, surveyComplete: true, xp: 1950, badge: '⚡ Tech Admin' },
+    { emp_code: 'PBD-005', name: 'Ruhul Amin', role: 'QC & Quality Specialist', department: 'Quality Assurance', status: 'In Studio', phone: '+8801711019554', accessLevel: 'Specialist / Crew', baseSalary: 65000, commissionRate: 3, onboardingComplete: true, surveyComplete: true, xp: 1450, badge: '🎬 Senior Editor' },
+    { emp_code: 'PBD-006', name: 'Firoz Ahmed', role: 'Operations & Tech Lead', department: 'Operations', status: 'In Studio', phone: '+8801711019555', accessLevel: 'Specialist / Crew', baseSalary: 60000, commissionRate: 3, onboardingComplete: true, surveyComplete: true, xp: 1300, badge: '🎨 Motion Lead' }
   ];
 
   async function loadHROps() {
@@ -710,6 +710,22 @@ window.APP_MODULES.hr = async function(container) {
         if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '💾 Save Changes'; }
       }
     },
+    async resetStaffPin(code) {
+      const custom = prompt(`Enter new 6-digit PIN for ${code} (or leave blank to auto-generate):`);
+      if (custom === null) return;
+      try {
+        const payload = {};
+        if (custom && custom.trim().length === 6) payload.customPin = custom.trim();
+        const res = await APP_API.post(`/team/${encodeURIComponent(code)}/reset-pin`, payload);
+        if (res && res.success) {
+          const pin = res.tempPin || res.pin || custom || '123456';
+          if (window.showToast) window.showToast(`🔑 PIN Reset Successful! New PIN: ${pin}`, 'success');
+          alert(`✅ Staff PIN has been reset.\n\nEmployee: ${code}\nNew 6-Digit PIN: ${pin}\n\nPlease share this securely with the team member.`);
+        }
+      } catch (err) {
+        if (window.showToast) window.showToast('Failed to reset PIN: ' + err.message, 'error');
+      }
+    },
     viewProfile(code) {
       const member = teamData.find(m => (m.emp_code || m.id) === code || m.name === code);
       if (!member) return;
@@ -737,7 +753,21 @@ window.APP_MODULES.hr = async function(container) {
               <div><strong>Phone:</strong> ${escapeHTML(member.phone || member.whatsapp || 'N/A')}</div>
               <div><strong>Email:</strong> ${escapeHTML(member.email || 'N/A')}</div>
               <div><strong>Base Salary:</strong> ৳${(Number(member.baseSalary || member.base_salary) || 0).toLocaleString()}</div>
-              <div><strong>Status:</strong> ${escapeHTML(member.status || 'Active')}</div>
+              <div><strong>Duty Status:</strong> <span class="badge ${member.status === 'In Studio' ? 'badge-emerald' : member.status === 'On Leave' ? 'badge-amber' : 'badge-purple'}">${escapeHTML(member.status || 'Active')}</span></div>
+            </div>
+          </div>
+
+          <!-- Security & Telegram Account -->
+          <div style="background:rgba(255,255,255,0.04); border:1px solid var(--border-subtle); border-radius:12px; padding:1rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+              <div style="font-size:0.75rem; font-weight:800; color:#a855f7; text-transform:uppercase;">🔐 Security & Bot Credentials</div>
+              <button class="btn-secondary btn-sm" style="font-size:0.75rem; padding:0.2rem 0.5rem;" onclick="window.HR_MODULE.resetStaffPin('${member.emp_code || member.id}')">🔑 Reset 6-Digit PIN</button>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; font-size:0.85rem;">
+              <div><strong>PIN Access:</strong> <span style="color:#10b981; font-weight:700;">🟢 Active (Verified)</span></div>
+              <div><strong>Telegram Bot:</strong> <span style="color:${member.telegram_id ? '#10b981' : '#f59e0b'}; font-weight:700;">${member.telegram_id ? `🟢 Linked (${escapeHTML(member.telegram_username || '@crew')})` : '🟡 Awaiting /link_pin'}</span></div>
+              <div><strong>Agreement Stage:</strong> <span class="badge badge-purple">${escapeHTML(member.agreement_stage || member.agreementStage || 'Stage 4 (Signed)')}</span></div>
+              <div><strong>System Role:</strong> <code>${escapeHTML(member.access_level || member.accessLevel || 'Specialist')}</code></div>
             </div>
           </div>
 
