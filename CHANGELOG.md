@@ -1,6 +1,23 @@
 # PurpleOS Changelog
 
+## [0.9.0.0] - 2026-08-22 (Pre-Release Candidate — Go-Live: Sep 1, 2026)
+### Added
+- **Comprehensive 9-Phase Browser Automation E2E Test Suite**: Built `scripts/e2e/` with Puppeteer — covers all 14 admin sidebar tabs, every sub-tab, modal, button, filter chip, and API wiring. 38/38 assertions passing at 100%.
+- **Visual Test Report Generator**: `scripts/e2e/report.js` — auto-generates HTML + JSON reports per run with pass/fail badges and per-test durations. Stored in `scripts/e2e/reports/`.
+- **`npm run test:e2e` Script**: One-command runner for the complete E2E browser suite; supports `--phase N` for individual phase runs.
+- **Complete System README**: `README.md` now contains full system architecture diagram, tech stack, environment variables reference, 18-table database schema, complete API routes reference, 12-job cron schedule (with BST times), 5 operational runbooks (Deployment, Incident Response, Staff Onboarding, Client Onboarding, DB Maintenance), and admin panel user guide.
+- **index.html HTML Structure Fix**: Removed duplicate unclosed `<script>` block that was causing the Command Palette `#commandPaletteModal` to be displaced outside the DOM tree — now correctly placed and fully accessible to browser automation.
+
+## [0.8.9.9] - 2026-08-21 (Phase 1–5 UX Refinement Release)
+### Added
+- **Phase 1 — Executive Shell**: Real-time BST Dhaka Clock, Global Command Palette (Ctrl+K), Live Sidebar Attention Badges, Dynamic Profile Greeting.
+- **Phase 2 — Executive Dashboard**: 1-Tap Action Center for sign-offs, Overdue Deliverables Radar, Cash Flow Gauge, Real-time Studio Attendance Pulse.
+- **Phase 3 — Finance Hub**: BDT currency formatting, sub-tab filter chips, search bar, 2-Tier expense approval workflow.
+- **Phase 4 — Kanban Hub**: Workload/hour column header badges, urgent card glow, overdue chips, Bulk Import CSV + AI Auto-Clean.
+- **Phase 5 — HR Ops**: Real 33-member staff roster, Staff PIN Reset Drawer, Live infrastructure telemetry in Settings, Master Admin PIN updater.
+
 ## [0.8.9.9] - 2026-08-06
+
 ### Added
 - **Unified Design System**: Single source of truth in `tokens.css` v3.0 with backward-compatibility aliases for legacy design tokens.
 - **Master RLS Security**: Strict PostgreSQL Row-Level Security policies across all 18 production tables (`20260806_v0.8.4_rls_security_hardening.sql`).
