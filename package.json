@@ -7,6 +7,7 @@
     "start": "node server.js",
     "dev": "node --watch server.js",
     "test": "jest --runInBand --detectOpenHandles --forceExit",
+    "test:e2e": "node scripts/e2e/runner.js",
     "db:seed": "node scripts/seed-supabase.js",
     "db:prod-reset": "node scripts/prepare-production-db.js",
     "register-webhook": "node register-webhook.js"
@@ -34,6 +35,7 @@
   },
   "devDependencies": {
     "jest": "^30.4.2",
+    "puppeteer": "^25.8.0",
     "supertest": "^7.2.2"
   },
   "jest": {
