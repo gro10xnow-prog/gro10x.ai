@@ -208,8 +208,75 @@ async function handleLeaveBalance(teamBot, msg) {
   }
 }
 
+/**
+ * Handle "✅ Leave Approvals" for Department Managers
+ * Lists all pending employee leave requests with 1-tap Approve/Reject inline buttons.
+ */
+async function handleManagerLeaveApprovals(teamBot, msg) {
+  const chatId = msg.chat.id;
+  try {
+    const emp = await state.getEmployeeByTelegramId(chatId);
+    let pendingLeaves = [];
+
+    if (supabase) {
+      const { data, error } = await supabase
+        .from('leaves')
+        .select('*')
+        .or('status.eq.Pending,status.eq.Pending Line Review')
+        .order('created_at', { ascending: false })
+        .limit(8);
+
+      if (error) throw error;
+      pendingLeaves = data || [];
+    }
+
+    let text = `🌴 *DEPARTMENT LEAVE APPROVALS DASHBOARD*\n` +
+      `📅 ${new Date().toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}\n\n`;
+
+    const inlineKeyboard = [];
+
+    if (pendingLeaves.length === 0) {
+      text += `✅ *No pending leave requests in your department!*\n\nAll team PTO and leave applications have been reviewed.`;
+    } else {
+      text += `*Leave Requests Awaiting Line Review (${pendingLeaves.length}):*\n\n`;
+      pendingLeaves.forEach((l, i) => {
+        const staff = l.employee_name || l.name || 'Staff Member';
+        const type = l.leave_type || l.type || 'Leave';
+        const start = l.start_date || l.startDate || 'TBD';
+        const end = l.end_date || l.endDate || 'TBD';
+        const days = l.total_days || l.days || 1;
+
+        text += `${i + 1}. *${staff}*\n`;
+        text += `   🌴 ${type} (${days} day${days > 1 ? 's' : ''})\n`;
+        text += `   📅 ${start} ➔ ${end}\n`;
+        if (l.reason) text += `   📝 Reason: _${l.reason}_\n`;
+        text += `\n`;
+
+        inlineKeyboard.push([
+          { text: `✅ Approve (${staff.split(' ')[0]})`, callback_data: `approve_leave:${l.id}` },
+          { text: `❌ Reject`, callback_data: `reject_leave:${l.id}` }
+        ]);
+      });
+    }
+
+    inlineKeyboard.push([
+      { text: '🌐 Open Web Manager Portal', url: 'https://purpleos-iota.vercel.app/manager' }
+    ]);
+
+    teamBot.sendMessage(chatId, text, {
+      parse_mode: 'Markdown',
+      reply_markup: { inline_keyboard: inlineKeyboard }
+    });
+  } catch (err) {
+    console.error('[Leaves Bot] handleManagerLeaveApprovals error:', err.message);
+    teamBot.sendMessage(chatId, '⚠️ Error fetching pending leave approvals.');
+  }
+}
+
 module.exports = {
   handleInitLeave,
   handleLeaveWizardStep,
-  handleLeaveBalance
+  handleLeaveBalance,
+  handleManagerLeaveApprovals
 };
+

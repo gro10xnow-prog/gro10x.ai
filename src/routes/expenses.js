@@ -15,11 +15,11 @@ function mapExpense(e) {
     amount: Number(e.amount) || 0,
     date: e.date,
     loggedBy: e.logged_by,
-    submittedBy: e.submitted_by || e.logged_by,
-    submittedById: e.submitted_by_id,
+    submittedBy: e.submitted_by || e.logged_by || 'Staff Member',
+    submittedById: e.submitted_by_id || e.employee_id || null,
     receiptUrl: e.receipt_url,
     description: e.description,
-    status: e.status || (e.tier1_approved ? 'Tier 2 Pending' : 'Tier 1 Pending'),
+    status: e.status || (e.tier2_approved ? 'Approved' : (e.tier1_approved ? 'Tier 2 Pending' : 'Tier 1 Pending')),
     tier1: {
       approved: !!e.tier1_approved,
       approvedBy: e.tier1_approved_by,
@@ -30,6 +30,12 @@ function mapExpense(e) {
       approvedBy: e.tier2_approved_by,
       approvedAt: e.tier2_approved_at
     },
+    financeVerified: !!e.finance_verified,
+    financeVerifiedBy: e.finance_verified_by,
+    financeVerifiedAt: e.finance_verified_at,
+    disbursed: !!e.disbursed,
+    disbursedBy: e.disbursed_by,
+    disbursedAt: e.disbursed_at,
     createdAt: e.created_at
   };
 }
@@ -41,30 +47,30 @@ const DEFAULT_EXPENSES = [
     category: 'Equipment & Gear',
     amount: 12500,
     date: '2026-08-10',
-    logged_by: 'Borhan (Finance & Studio Lead)',
-    submitted_by: 'Borhan (Finance & Studio Lead)',
+    logged_by: 'Studio Lead',
+    submitted_by: 'Studio Lead',
     description: 'Godox softbox replacement diffuser and C-stand mounts',
     status: 'Approved',
     tier1_approved: true,
-    tier1_approved_by: 'Ayman Rahman',
+    tier1_approved_by: 'Department Head',
     tier1_approved_at: '2026-08-10T14:30:00Z',
     tier2_approved: true,
-    tier2_approved_by: 'H. M. Ifteker Mahmud',
+    tier2_approved_by: 'Managing Director',
     tier2_approved_at: '2026-08-10T16:00:00Z',
     created_at: '2026-08-10T14:00:00Z'
   },
   {
     id: 'EXP-002',
-    title: 'Food Styling & Props for Chillox Campaign Shoot',
+    title: 'Props & Supplies for Brand Shoot',
     category: 'Shoot Props',
     amount: 4200,
     date: '2026-08-14',
-    logged_by: 'Asif (Creative Lead)',
-    submitted_by: 'Asif (Creative Lead)',
-    description: 'Gourmet background condiments, acrylic styling props, ice cubes',
+    logged_by: 'Creative Lead',
+    submitted_by: 'Creative Lead',
+    description: 'Styling props, acrylic mounts, studio background panels',
     status: 'Tier 2 Pending',
     tier1_approved: true,
-    tier1_approved_by: 'Ayman Rahman',
+    tier1_approved_by: 'Department Head',
     tier1_approved_at: '2026-08-14T11:00:00Z',
     tier2_approved: false,
     created_at: '2026-08-14T10:00:00Z'
@@ -125,8 +131,9 @@ router.post('/', requireAuth, async (req, res) => {
       category: req.body.category || 'Production Supplies',
       amount: Number(req.body.amount) || 0,
       date: req.body.date || new Date().toISOString().split('T')[0],
-      logged_by: req.body.submittedBy || req.user.name || 'Team Member',
-      submitted_by: req.body.submittedBy || req.user.name || 'Team Member',
+      logged_by: req.body.submittedBy || req.user?.name || 'Team Member',
+      submitted_by: req.body.submittedBy || req.user?.name || 'Team Member',
+      submitted_by_id: req.body.submittedById || req.user?.empCode || req.user?.id || null,
       submitted_via: 'web_portal',
       currency: 'BDT',
       status: 'Tier 1 Pending',
@@ -153,7 +160,7 @@ router.post('/', requireAuth, async (req, res) => {
           employeeName: payload.submitted_by,
           amount: payload.amount,
           category: payload.category,
-          description: payload.description
+          description: payload.description || payload.title
         }).catch(() => {});
       }
     } catch (e) {}
@@ -183,10 +190,18 @@ router.put('/:id/approve', requireAuth, requireManager, async (req, res) => {
     const expense = mapExpense(inMemoryExpenses[memIdx] || { id, ...updates });
 
     if (supabase) {
-      supabase.from('expenses').update(updates).eq('id', id).then(null, () => {});
+      await supabase.from('expenses').update(updates).eq('id', id);
     }
 
     try { broadcast('expense_update', inMemoryExpenses.map(mapExpense)); } catch (e) {}
+
+    try {
+      const { automation } = require('../services/automation');
+      if (automation && automation.trigger) {
+        automation.trigger('expense_tier1_approved', { expense }).catch(() => {});
+      }
+    } catch (e) {}
+
     return res.json({ success: true, expense });
   } catch (err) {
     console.error('Expense approve error:', err.message);
@@ -213,10 +228,18 @@ router.post('/:id/approve-tier1', requireAuth, async (req, res) => {
     const expense = mapExpense(inMemoryExpenses[memIdx] || { id, ...updates });
 
     if (supabase) {
-      supabase.from('expenses').update(updates).eq('id', id).then(null, () => {});
+      await supabase.from('expenses').update(updates).eq('id', id);
     }
 
     try { broadcast('expense_update', inMemoryExpenses.map(mapExpense)); } catch (e) {}
+
+    try {
+      const { automation } = require('../services/automation');
+      if (automation && automation.trigger) {
+        automation.trigger('expense_tier1_approved', { expense }).catch(() => {});
+      }
+    } catch (e) {}
+
     return res.json({ success: true, expense });
   } catch (err) {
     console.error('Expense Tier 1 error:', err.message);
@@ -243,10 +266,18 @@ router.post('/:id/approve-tier2', requireAuth, async (req, res) => {
     const expense = mapExpense(inMemoryExpenses[memIdx] || { id, ...updates });
 
     if (supabase) {
-      supabase.from('expenses').update(updates).eq('id', id).then(null, () => {});
+      await supabase.from('expenses').update(updates).eq('id', id);
     }
 
     try { broadcast('expense_update', inMemoryExpenses.map(mapExpense)); } catch (e) {}
+
+    try {
+      const { automation } = require('../services/automation');
+      if (automation && automation.trigger) {
+        automation.trigger('expense_tier2_approved', { expense }).catch(() => {});
+      }
+    } catch (e) {}
+
     return res.json({ success: true, expense });
   } catch (err) {
     console.error('Expense Tier 2 error:', err.message);
@@ -275,10 +306,22 @@ router.patch('/:id', requireAuth, async (req, res) => {
     const expense = mapExpense(inMemoryExpenses[memIdx] || { id, ...updates });
 
     if (supabase) {
-      supabase.from('expenses').update(updates).eq('id', id).then(null, () => {});
+      await supabase.from('expenses').update(updates).eq('id', id);
     }
 
     try { broadcast('expense_update', inMemoryExpenses.map(mapExpense)); } catch (e) {}
+
+    try {
+      const { automation } = require('../services/automation');
+      if (automation && automation.trigger) {
+        if (status === 'Disbursed') {
+          automation.trigger('expense_disbursed', { expense }).catch(() => {});
+        } else if (status === 'Approved') {
+          automation.trigger('expense_tier2_approved', { expense }).catch(() => {});
+        }
+      }
+    } catch (e) {}
+
     return res.json({ success: true, expense });
   } catch (err) {
     console.error('Expense PATCH error:', err.message);

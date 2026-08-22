@@ -42,27 +42,35 @@
     <!-- Left Navigation Sidebar -->
     <nav class="sidebar-nav">
       <div class="nav-category">Department Operations</div>
-      <a href="#overview" class="nav-item active">
+      <a href="#overview" class="nav-item active" data-roles="all">
         <span class="icon">📊</span>
         <span>Overview</span>
       </a>
-      <a href="#tasks" class="nav-item">
+      <a href="#tasks" class="nav-item" data-roles="creative,operations,tech,all">
         <span class="icon">📋</span>
         <span>Task Pipeline</span>
       </a>
+      <a href="#finance" class="nav-item" data-roles="finance,all">
+        <span class="icon">💰</span>
+        <span>Financial Command</span>
+      </a>
 
       <div class="nav-category">Team & HR</div>
-      <a href="#team" class="nav-item">
+      <a href="#team" class="nav-item" data-roles="all">
         <span class="icon">👥</span>
         <span>Team Roster</span>
       </a>
-      <a href="#leaves" class="nav-item">
+      <a href="#leaves" class="nav-item" data-roles="creative,operations,finance,all">
         <span class="icon">🌴</span>
         <span>Leave Approvals</span>
       </a>
-      <a href="#tickets" class="nav-item">
+      <a href="#tickets" class="nav-item" data-roles="creative,operations,tech,all">
         <span class="icon">🎟️</span>
         <span>Ticket Triage</span>
+      </a>
+      <a href="#tech" class="nav-item" data-roles="tech,all">
+        <span class="icon">🛠️</span>
+        <span>Tech Diagnostics</span>
       </a>
     </nav>
 
@@ -71,6 +79,30 @@
       <!-- Rendered dynamically -->
     </main>
   </div>
+
+  <!-- Mobile Bottom Navigation Bar (<768px) -->
+  <nav class="mobile-bottom-nav">
+    <a href="#overview" class="mobile-nav-item">
+      <span class="icon">📊</span>
+      <span>Overview</span>
+    </a>
+    <a href="#tasks" class="mobile-nav-item">
+      <span class="icon">📋</span>
+      <span>Tasks</span>
+    </a>
+    <a href="#team" class="mobile-nav-item">
+      <span class="icon">👥</span>
+      <span>Team</span>
+    </a>
+    <a href="#leaves" class="mobile-nav-item">
+      <span class="icon">🌴</span>
+      <span>Leaves</span>
+    </a>
+    <a href="#finance" class="mobile-nav-item" data-roles="finance,all">
+      <span class="icon">💰</span>
+      <span>Finance</span>
+    </a>
+  </nav>
 
   <script src="/manager/api.js"></script>
   <script src="/manager/manager.js"></script>

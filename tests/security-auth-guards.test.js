@@ -123,4 +123,22 @@ describe('Security & RBAC Auth Guards Test Suite', () => {
       expect(res.statusCode).toBe(201);
     });
   });
+
+  describe('Server Root Protected Endpoints', () => {
+    const mainApp = require('../server');
+
+    test('GET /api/system-health without auth returns 401 when dev auth disabled', async () => {
+      const res = await request(mainApp)
+        .get('/api/system-health')
+        .set('x-disable-dev-auth', 'true');
+      expect(res.statusCode).toBe(401);
+    });
+
+    test('GET /api/sync without auth returns 401 when dev auth disabled', async () => {
+      const res = await request(mainApp)
+        .get('/api/sync')
+        .set('x-disable-dev-auth', 'true');
+      expect(res.statusCode).toBe(401);
+    });
+  });
 });

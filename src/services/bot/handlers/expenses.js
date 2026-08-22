@@ -74,6 +74,29 @@ async function handleExpenseWizardStep(teamBot, msg, wizardState, emp) {
       await state.clearSession(chatId);
       try { broadcast('expense_update', [submittedExpense]); } catch (e) {}
 
+      // Notify Line Manager / Finance Lead via Telegram DM
+      try {
+        const manager = await state.getEmployeeByTelegramId(emp.reportsTo || 'PBD-029');
+        if (manager && manager.telegramId) {
+          teamBot.sendMessage(manager.telegramId,
+            `💸 *NEW EXPENSE CLAIM SUBMITTED*\n\n` +
+            `• From: *${emp.name}*\n` +
+            `• Amount: *৳${wizardState.amount.toLocaleString()} BDT*\n` +
+            `• Category: *${category}*\n` +
+            `• Status: *Pending Tier-1 Line Review*\n\n` +
+            `_Tap below for 1-click approval:_`,
+            {
+              parse_mode: 'Markdown',
+              reply_markup: {
+                inline_keyboard: [
+                  [{ text: `✅ Line Approve ৳${wizardState.amount.toLocaleString()}`, callback_data: `approve_expense_t1:${submittedExpense?.id || ''}` }]
+                ]
+              }
+            }
+          ).catch(() => {});
+        }
+      } catch (e) {}
+
       return teamBot.sendMessage(chatId,
         `✅ *Expense Claim Submitted!*\n\n` +
         `• Amount: *BDT ${wizardState.amount.toLocaleString()}*\n` +

@@ -59,7 +59,7 @@ const DEFAULT_AUTOMATION_RULES = [
     condition_field: 'days_overdue',
     condition_value: '>= 3',
     action_type: 'telegram_notify_finance',
-    action_target: 'Borhan (Finance Lead)',
+    action_target: 'Finance Manager',
     active: true,
     created_at: '2026-08-10T10:00:00Z'
   }
@@ -69,14 +69,14 @@ const DEFAULT_AUTOMATION_LOGS = [
   {
     id: 'LOG-001',
     event_type: 'task_stage_change',
-    description: 'Task "Chillox 4K Reel Edit" moved to "Client Review". Telegram webhook triggered.',
+    description: 'Task "Brand Campaign Reel Edit" moved to "Client Review". Telegram notification triggered.',
     status: 'Success',
     created_at: '2026-08-17T20:15:00Z'
   },
   {
     id: 'LOG-002',
     event_type: 'review_approved',
-    description: 'Aura Cosmetics approved "Beauty TVC Color Grade". Auto-advanced task stage.',
+    description: 'Client approved "Product Showcase Color Grade". Auto-advanced task stage.',
     status: 'Success',
     created_at: '2026-08-17T18:30:00Z'
   },

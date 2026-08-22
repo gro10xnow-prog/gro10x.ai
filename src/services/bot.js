@@ -635,7 +635,19 @@ function initBot() {
         '📋 My Tasks', '💰 My Earnings', '✍️ Pending Approvals', '🎬 Client Status',
         '👥 Full Team Status', '📊 Department Report', '👤 My Profile', '💳 Bank & bKash',
         '🛠️ Tech Diagnostics', '📍 Clock-In GPS', '🚪 Clock Out', '🌅 Morning Briefing',
-        '📊 Business Snapshot', '💰 Finance Summary',
+        '📊 Business Snapshot', '💰 Finance Summary', '💰 My Commission',
+        // Creative Director
+        '🎨 Design Queue', '👁️ Review Room', '👥 Design Team',
+        // Studio Lead & Production
+        '⚡ Studio Workload', '🚧 Bottleneck Radar', '📸 Studio & Gear Slots', '📊 Turnaround Metrics',
+        '🎬 Production Queue', '📜 Script & Copy QC', '🎥 Shoot Call-Sheets', '👥 Content Team',
+        // Strategy & Clients
+        '📈 Campaign Strategy', '🗓️ Content Calendars', '👥 Strategy Team', '🎯 My Clients', '🎯 My Client Roster',
+        '🎬 Client Approvals', '📢 Send Client Link', '💬 Client Feedback', '👥 Account Team', '📡 Media Buying', '🚀 Client Activation', '🏢 Ops Dashboard',
+        // Finance Manager
+        '💸 Expense Queue', '🧾 Invoice Status', '📊 Payroll Summary', '🏦 Bank & bKash Hub', '👥 Admin Team',
+        // Shared Manager & Approvals
+        '👥 My Team', '✅ Leave Approvals', '👥 HR & Attendance',
         // Wizard-initiating buttons — handled exclusively by their onText() listeners
         '🧾 Submit Expense', '🌴 Leave Request', '📝 EOD Report',
         '🧾 Log Expense Entry', '📋 Invoice Tracker', '💰 Payment Follow-Up'
@@ -760,6 +772,9 @@ function initBot() {
       const approvalsHandler = require('./bot/handlers/approvals');
       const reportsHandler = require('./bot/handlers/reports');
       const financeHandler = require('./bot/handlers/finance');
+      const creativeHandler = require('./bot/handlers/creative');
+      const studioHandler = require('./bot/handlers/studio');
+      const finMgrHandler = require('./bot/handlers/finance-manager');
 
       // Core profile & earnings
       teamBot.onText(/\/myprofile|👤 My Profile/, (msg) => profileHandler.handleMyProfile(teamBot, msg));
@@ -779,10 +794,42 @@ function initBot() {
       // Leaves
       teamBot.onText(/\/leave$|\/leaverequest|🌴 Leave Request/, (msg) => leavesHandler.handleInitLeave(teamBot, msg));
       teamBot.onText(/\/leavebalance|🌴 Leave Balance/, (msg) => leavesHandler.handleLeaveBalance(teamBot, msg));
+      teamBot.onText(/\/leaveapprovals|✅ Leave Approvals/, (msg) => leavesHandler.handleManagerLeaveApprovals(teamBot, msg));
 
-      // Expenses
-      teamBot.onText(/\/expense$|\/submitexpense|🧾 Submit Expense|💸 Expense Queue/, (msg) => expensesHandler.handleInitExpense(teamBot, msg));
+      // Creative Director & Review Room
+      teamBot.onText(/\/designqueue|🎨 Design Queue/, (msg) => creativeHandler.handleDesignQueue(teamBot, msg));
+      teamBot.onText(/\/reviewroom|👁️ Review Room/, (msg) => creativeHandler.handleReviewRoom(teamBot, msg));
+      teamBot.onText(/\/myteam|👥 My Team|👥 Design Team|👥 Content Team|👥 Strategy Team|👥 Account Team/, (msg) => creativeHandler.handleMyTeam(teamBot, msg));
+
+      // Studio Lead & Production Operations
+      teamBot.onText(/\/workload|⚡ Studio Workload|🎬 Production Queue/, (msg) => studioHandler.handleStudioWorkload(teamBot, msg));
+      teamBot.onText(/\/bottlenecks|🚧 Bottleneck Radar/, (msg) => studioHandler.handleBottleneckRadar(teamBot, msg));
+      teamBot.onText(/\/gearslots|📸 Studio & Gear Slots|🎥 Shoot Call-Sheets/, (msg) => studioHandler.handleStudioGearSlots(teamBot, msg));
+      teamBot.onText(/\/metrics|📊 Turnaround Metrics|📊 Department Report/, (msg) => studioHandler.handleTurnaroundMetrics(teamBot, msg));
+
+      // Expenses - Role-aware dispatch for Expense Queue vs Personal Submit
+      teamBot.onText(/\/expense$|\/submitexpense|🧾 Submit Expense/, (msg) => expensesHandler.handleInitExpense(teamBot, msg));
       teamBot.onText(/\/logexpense|🧾 Log Expense Entry/, (msg) => financeHandler.handleLogExpenseEntry(teamBot, msg));
+      teamBot.onText(/\/expensequeue|💸 Expense Queue/, async (msg) => {
+        try {
+          const emp = await state.getEmployeeByTelegramId(msg.chat.id);
+          const access = emp?.accessLevel || '';
+          const role = (emp?.role || '').toLowerCase();
+          if (access === 'Finance Manager' || role.includes('finance') || access === 'Owner / Admin' || emp?.id === 'PBD-000') {
+            return finMgrHandler.handleExpenseQueueFinance(teamBot, msg);
+          }
+          return expensesHandler.handleInitExpense(teamBot, msg);
+        } catch (e) {
+          return expensesHandler.handleInitExpense(teamBot, msg);
+        }
+      });
+
+      // Finance Manager Hubs & Invoice Tracking
+      teamBot.onText(/\/invoicetracker|📋 Invoice Tracker|🧾 Invoice Status/, (msg) => financeHandler.handleInvoiceTracker(teamBot, msg));
+      teamBot.onText(/\/paymentfollowup|💰 Payment Follow-Up/, (msg) => financeHandler.handlePaymentFollowUp(teamBot, msg));
+      teamBot.onText(/\/payroll|📊 Payroll Summary/, (msg) => finMgrHandler.handlePayrollSummary(teamBot, msg));
+      teamBot.onText(/\/bankhub|🏦 Bank & bKash Hub/, (msg) => finMgrHandler.handleBankBkashHub(teamBot, msg));
+      teamBot.onText(/\/adminteam|👥 Admin Team/, (msg) => finMgrHandler.handleAdminTeam(teamBot, msg));
 
       // EOD
       teamBot.onText(/\/eod$|\/submiteod|📝 EOD Report/, (msg) => eodHandler.handleInitEOD(teamBot, msg));
@@ -793,9 +840,7 @@ function initBot() {
       teamBot.onText(/\/snapshot|📊 Business Snapshot|🏢 Ops Dashboard/, (msg) => briefingHandler.handleBusinessSnapshot(teamBot, msg));
       teamBot.onText(/\/finance|💰 Finance Summary/, (msg) => briefingHandler.handleFinanceSummary(teamBot, msg));
       teamBot.onText(/\/approvals|✍️ Pending Approvals/, (msg) => approvalsHandler.handlePendingApprovals(teamBot, msg));
-      teamBot.onText(/\/clients|🎬 Client Status|🎯 My Clients|🔔 Client Updates|🚀 Client Activation/, (msg) => reportsHandler.handleClientStatus(teamBot, msg));
-      teamBot.onText(/\/invoicetracker|📋 Invoice Tracker/, (msg) => financeHandler.handleInvoiceTracker(teamBot, msg));
-      teamBot.onText(/\/paymentfollowup|💰 Payment Follow-Up/, (msg) => financeHandler.handlePaymentFollowUp(teamBot, msg));
+      teamBot.onText(/\/clients|🎬 Client Status|🎯 My Clients|🔔 Client Updates|🚀 Client Activation|📜 Script & Copy QC|📈 Campaign Strategy|🗓️ Content Calendars|🎯 My Client Roster|🎬 Client Approvals|📢 Send Client Link|💬 Client Feedback|📡 Media Buying/, (msg) => reportsHandler.handleClientStatus(teamBot, msg));
 
       teamBot.onText(/\/leaderboard|🏆 Leaderboard/, (msg) => leaderboardHandler.handleLeaderboard(teamBot, msg));
       teamBot.onText(/\/status|📊 Dashboard Status/, (msg) => mystatsHandler.handleStatus(teamBot, msg));

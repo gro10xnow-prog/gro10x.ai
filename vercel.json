@@ -59,6 +59,10 @@
     {
       "path": "/api/cron/weekly-digest",
       "schedule": "0 3 * * 1"
+    },
+    {
+      "path": "/api/cron/eod-evening-digest",
+      "schedule": "30 13 * * 0,1,2,3,4,6"
     }
   ],
   "headers": [

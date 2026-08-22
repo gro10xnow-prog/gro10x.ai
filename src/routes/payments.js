@@ -15,9 +15,9 @@ async function sendFinanceVerificationAlert(paymentLog) {
     if (process.env.OWNER_TELEGRAM_ID) recipientIds.add(process.env.OWNER_TELEGRAM_ID);
     if (process.env.TELEGRAM_ADMIN_CHAT_ID) recipientIds.add(process.env.TELEGRAM_ADMIN_CHAT_ID);
 
-    // Check if Finance Manager (Borhan - PBD-029) has a Telegram ID set
+    // Check if Finance Manager has a Telegram ID set
     if (isSupabaseConfigured()) {
-      const { data } = await supabase.from('profiles').select('telegram_id').eq('emp_code', 'PBD-029').maybeSingle();
+      const { data } = await supabase.from('profiles').select('telegram_id').or('access_level.eq.Finance Manager,role.ilike.%finance manager%').maybeSingle();
       if (data?.telegram_id) recipientIds.add(data.telegram_id);
     }
 

@@ -117,6 +117,21 @@ function mapPublicProfile(p) {
   return full;
 }
 
+function mapDepartmentManagerProfile(p) {
+  const full = mapProfile(p);
+  if (!full) return null;
+  delete full.baseSalary;
+  delete full.commissionRate;
+  delete full.earnedCommissions;
+  delete full.bankInfo;
+  delete full.tinNo;
+  delete full.nidNo;
+  delete full.maritalStatus;
+  delete full.dependents;
+  delete full.drivingLicense;
+  return full;
+}
+
 function mapAttendance(a) {
   if (!a) return null;
   return {
@@ -641,20 +656,20 @@ router.post('/agreement', miniAppLimiter, requireMiniAppAuth, async (req, res) =
         }
       } catch (e) { /* non-critical */ }
 
-      // Notify Finance Manager (Borhan - PBD-029) via Telegram
+      // Notify Finance Manager via Telegram
       try {
-        let borhanTgId = null;
+        let financeTgId = null;
         if (supabase) {
-          const { data: borhan } = await supabase.from('profiles').select('telegram_id').eq('emp_code', 'PBD-029').maybeSingle();
-          borhanTgId = borhan?.telegram_id;
+          const { data: fin } = await supabase.from('profiles').select('telegram_id').or('access_level.eq.Finance Manager,role.ilike.%finance manager%').maybeSingle();
+          financeTgId = fin?.telegram_id;
         }
-        if (!borhanTgId) {
+        if (!financeTgId) {
           const db2 = await readDB();
-          borhanTgId = (db2.team || []).find(t => t.id === 'PBD-029')?.telegramId;
+          financeTgId = (db2.team || []).find(t => (t.role || '').toLowerCase().includes('finance') || t.accessLevel === 'Finance Manager')?.telegramId;
         }
-        if (borhanTgId) {
+        if (financeTgId) {
           await sendTelegramNotification(
-            borhanTgId,
+            financeTgId,
             `📝 *Employment Agreement — Stage 2 Countersign Required*\n\n` +
             `• Employee: *${empName}* (${empCode})\n` +
             `• Role: *${emp.role}*\n` +
@@ -699,11 +714,17 @@ router.get('/', requireAuth, async (req, res) => {
     }
 
     const access = (req.user?.accessLevel || req.user?.role || '').toLowerCase();
-    const isManager = access.includes('admin') || access.includes('owner') || access.includes('manager') || access.includes('director') || access.includes('lead') || access.includes('technology');
-    return res.json((profilesList || []).map(p => isManager ? mapProfile(p) : mapPublicProfile(p)));
+    const isExecutiveOrFinance = access.includes('admin') || access.includes('owner') || access.includes('finance') || (req.user?.role || '').toLowerCase().includes('finance');
+    const isDeptManager = access.includes('manager') || access.includes('director') || access.includes('lead') || access.includes('technology');
+
+    return res.json((profilesList || []).map(p => {
+      if (isExecutiveOrFinance) return mapProfile(p);
+      if (isDeptManager) return mapDepartmentManagerProfile(p);
+      return mapPublicProfile(p);
+    }));
   } catch (err) {
     console.error('Team GET error:', err.message);
-    return res.json(DEFAULT_TEAM.map(mapProfile));
+    return res.json(DEFAULT_TEAM.map(mapPublicProfile));
   }
 });
 
@@ -859,8 +880,12 @@ router.post('/leaves', requireAuth, async (req, res) => {
     broadcastTeamEvent('leave_update', allLeaves || []);
     
     const dbSnapshot = await readDB();
-    const { processAutomationEvent } = require('../services/automation');
-    await processAutomationEvent('leave_request', { leave: payload }, dbSnapshot, writeDB, broadcast);
+    const { automation, processAutomationEvent } = require('../services/automation');
+    if (automation && automation.trigger) {
+      automation.trigger('leave_submitted', { leave: payload }).catch(() => {});
+    } else if (processAutomationEvent) {
+      await processAutomationEvent('leave_submitted', { leave: payload }, dbSnapshot, writeDB, broadcast).catch(() => {});
+    }
 
     res.json({ success: true, leave: newLeave });
   } catch (err) {
@@ -1347,8 +1372,13 @@ router.post('/eod', miniAppLimiter, requireMiniAppAuth, async (req, res) => {
     }
 
     broadcastTeamEvent('eod_update', [payload]);
-    const { processAutomationEvent } = require('../services/automation');
-    await processAutomationEvent('eod_submitted', { eod: payload }, null, null, broadcast).catch(() => {});
+    const { automation, processAutomationEvent } = require('../services/automation');
+    if (automation && automation.trigger) {
+      automation.trigger('eod_submitted', { eod: payload }).catch(() => {});
+    } else if (processAutomationEvent) {
+      const dbSnapshot = await readDB().catch(() => ({ team: [] }));
+      await processAutomationEvent('eod_submitted', { eod: payload }, dbSnapshot, null, broadcast).catch(() => {});
+    }
 
     res.json({ success: true, eod: payload });
   } catch (err) {

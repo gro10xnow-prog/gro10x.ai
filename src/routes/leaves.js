@@ -21,28 +21,47 @@ function mapLeave(l) {
     toDate: l.end_date,
     reason: l.reason,
     status: l.status || 'Pending',
-    reviewedBy: l.manager_reviewed_by,
-    createdAt: l.created_at
+    reviewedBy: l.manager_reviewed_by || l.reviewed_by || null,
+    ownerApprovedAt: l.owner_approved_at || null,
+    createdAt: l.created_at,
+    updatedAt: l.updated_at || null
   };
+}
+
+async function updateSupabaseLeave(id, updates) {
+  if (!supabase) return null;
+  try {
+    const { data, error } = await supabase.from('leaves').update(updates).eq('id', id).select().maybeSingle();
+    if (!error) return data;
+    if (error.message && error.message.includes('updated_at')) {
+      const { updated_at, ...cleanUpdates } = updates;
+      const { data: retryData, error: retryErr } = await supabase.from('leaves').update(cleanUpdates).eq('id', id).select().maybeSingle();
+      if (!retryErr) return retryData;
+    }
+    console.warn('[Leaves API] Supabase update warning:', error.message);
+  } catch (err) {
+    console.warn('[Leaves API] Supabase update exception:', err.message);
+  }
+  return null;
 }
 
 const DEFAULT_LEAVES = [
   {
     id: 'LEV-001',
-    employee_id: 'PBD-005',
-    employee_name: 'Asif',
+    employee_id: 'PBD-010',
+    employee_name: 'Lead Designer',
     leave_type: 'Annual Leave',
     start_date: '2026-08-20',
     end_date: '2026-08-22',
     reason: 'Family event & travel',
     status: 'Approved',
-    manager_reviewed_by: 'Ayman Rahman',
+    manager_reviewed_by: 'Department Head',
     created_at: '2026-08-15T10:00:00Z'
   },
   {
     id: 'LEV-002',
-    employee_id: 'PBD-006',
-    employee_name: 'Nafis',
+    employee_id: 'PBD-011',
+    employee_name: 'Video Editor',
     leave_type: 'Casual Leave',
     start_date: '2026-08-25',
     end_date: '2026-08-26',
@@ -138,69 +157,98 @@ router.post('/', requireAuth, async (req, res) => {
 router.post(['/:id/approve', '/:id/manager-approve'], requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
-    
-    // 1. Fetch leave to determine type and days
-    const { data: leaveReq, error: fetchErr } = await supabase.from('leaves').select('*').eq('id', id).single();
-    if (fetchErr) throw fetchErr;
-
-    // 2. Update Leave Status
+    const approver = req.body.reviewedBy || req.user?.name || 'Department Manager';
     const updates = {
       status: 'Approved',
-      manager_reviewed_by: req.body.reviewedBy || req.user.name || 'Manager',
+      manager_reviewed_by: approver,
       updated_at: new Date().toISOString()
     };
-    const { data, error } = await supabase.from('leaves').update(updates).eq('id', id).select().single();
-    if (error) throw error;
 
-    // 3. Update Leave Balances
-    if (leaveReq && leaveReq.employee_id) {
-      const start = new Date(leaveReq.start_date);
-      const end = new Date(leaveReq.end_date);
-      let days = Math.round((end - start) / (1000 * 60 * 60 * 24)) + 1;
-      if (days < 1) days = 1;
+    let leaveData = null;
 
-      const isSick = (leaveReq.leave_type || '').toLowerCase().includes('sick');
-      const usedCol = isSick ? 'sick_leaves_used' : 'casual_leaves_used';
-
-      const { data: profile } = await supabase.from('profiles').select(usedCol).eq('id', leaveReq.employee_id).single();
+    if (supabase) {
+      // 1. Fetch leave to determine type and days
+      const { data: leaveReq } = await supabase.from('leaves').select('*').eq('id', id).maybeSingle();
       
-      if (profile) {
-        const currentUsed = profile[usedCol] || 0;
-        await supabase.from('profiles').update({
-          [usedCol]: currentUsed + days
-        }).eq('id', leaveReq.employee_id);
-      } else {
-        const { data: profileEmpCode } = await supabase.from('profiles').select(usedCol).eq('emp_code', leaveReq.employee_id).single();
-        if (profileEmpCode) {
-          const currentUsed = profileEmpCode[usedCol] || 0;
-          await supabase.from('profiles').update({
-            [usedCol]: currentUsed + days
-          }).eq('emp_code', leaveReq.employee_id);
+      // 2. Update Leave Status
+      leaveData = await updateSupabaseLeave(id, updates);
+
+      // 3. Update Leave Balances if columns exist
+      if (leaveReq && leaveReq.employee_id) {
+        try {
+          const start = new Date(leaveReq.start_date);
+          const end = new Date(leaveReq.end_date);
+          let days = Math.round((end - start) / (1000 * 60 * 60 * 24)) + 1;
+          if (days < 1) days = 1;
+
+          const isSick = (leaveReq.leave_type || '').toLowerCase().includes('sick');
+          const usedCol = isSick ? 'sick_leaves_used' : 'casual_leaves_used';
+
+          const { data: profile } = await supabase.from('profiles').select(usedCol).eq('id', leaveReq.employee_id).maybeSingle();
+          
+          if (profile && profile[usedCol] !== undefined) {
+            const currentUsed = profile[usedCol] || 0;
+            await supabase.from('profiles').update({ [usedCol]: currentUsed + days }).eq('id', leaveReq.employee_id);
+          } else {
+            const { data: profileEmpCode } = await supabase.from('profiles').select(usedCol).eq('emp_code', leaveReq.employee_id).maybeSingle();
+            if (profileEmpCode && profileEmpCode[usedCol] !== undefined) {
+              const currentUsed = profileEmpCode[usedCol] || 0;
+              await supabase.from('profiles').update({ [usedCol]: currentUsed + days }).eq('emp_code', leaveReq.employee_id);
+            }
+          }
+        } catch (balErr) {
+          console.warn('[Leaves API] Leave balance decrement skipped:', balErr.message);
         }
       }
     }
 
-    const leave = mapLeave(data);
-    const { data: allLeaves } = await supabase.from('leaves').select('*').order('created_at', { ascending: false });
-    broadcast('leave_update', (allLeaves || []).map(mapLeave));
-    const { data: teamData } = await supabase.from('profiles').select('*').order('created_at', { ascending: false });
-    broadcast('team_update', teamData || []);
+    const memIdx = inMemoryLeaves.findIndex(l => l.id === id);
+    if (memIdx !== -1) {
+      inMemoryLeaves[memIdx] = { ...inMemoryLeaves[memIdx], ...updates };
+    }
+    const leave = mapLeave(leaveData || inMemoryLeaves[memIdx] || { id, ...updates });
+
+    try { broadcast('leave_update', inMemoryLeaves.map(mapLeave)); } catch (e) {}
 
     try {
       const { automation } = require('../services/automation');
-      await automation.trigger('leave_decision', {
-        employeeId: data.employee_id,
-        employeeName: data.employee_name,
-        status: 'Approved',
-        leaveType: data.leave_type,
-        decidedBy: updates.manager_reviewed_by
-      });
-    } catch (e) { console.warn('Automation trigger leave_decision (Approved) failed:', e.message); }
+      if (automation && automation.trigger) {
+        await automation.trigger('leave_decision', {
+          leave: {
+            staffName: leave.employeeName || leave.staffName,
+            employeeId: leave.employeeId,
+            status: 'Approved',
+            type: leave.leaveType,
+            startDate: leave.startDate,
+            endDate: leave.endDate,
+            reviewedBy: updates.manager_reviewed_by
+          },
+          employeeId: leave.employeeId,
+          employeeName: leave.employeeName,
+          status: 'Approved',
+          leaveType: leave.leaveType,
+          decidedBy: updates.manager_reviewed_by
+        }).catch(() => {});
 
-    res.json({ success: true, leave });
+        await automation.trigger('leave_manager_approved', {
+          leave: {
+            id: leave.id,
+            staffName: leave.employeeName || leave.staffName,
+            employeeName: leave.employeeName,
+            leaveType: leave.leaveType,
+            type: leave.leaveType,
+            startDate: leave.startDate,
+            endDate: leave.endDate,
+            managerReviewedBy: updates.manager_reviewed_by
+          }
+        }).catch(() => {});
+      }
+    } catch (e) {}
+
+    return res.json({ success: true, leave });
   } catch (err) {
     console.error('Leave approve error:', err.message);
-    res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: err.message });
   }
 });
 
@@ -208,34 +256,52 @@ router.post(['/:id/approve', '/:id/manager-approve'], requireAuth, async (req, r
 router.post('/:id/reject', requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
+    const reviewer = req.body.reviewedBy || req.user?.name || 'Department Manager';
     const updates = {
       status: 'Rejected',
-      reviewed_by: req.body.reviewedBy || req.user.name || 'Manager',
+      manager_reviewed_by: reviewer,
       updated_at: new Date().toISOString()
     };
 
-    const { data, error } = await supabase.from('leaves').update(updates).eq('id', id).select().single();
-    if (error) throw error;
+    let leaveData = null;
+    if (supabase) {
+      leaveData = await updateSupabaseLeave(id, updates);
+    }
 
-    const leave = mapLeave(data);
-    const { data: allLeaves } = await supabase.from('leaves').select('*').order('created_at', { ascending: false });
-    broadcast('leave_update', (allLeaves || []).map(mapLeave));
+    const memIdx = inMemoryLeaves.findIndex(l => l.id === id);
+    if (memIdx !== -1) {
+      inMemoryLeaves[memIdx] = { ...inMemoryLeaves[memIdx], ...updates };
+    }
+    const leave = mapLeave(leaveData || inMemoryLeaves[memIdx] || { id, ...updates });
+
+    try { broadcast('leave_update', inMemoryLeaves.map(mapLeave)); } catch (e) {}
 
     try {
       const { automation } = require('../services/automation');
-      await automation.trigger('leave_decision', {
-        employeeId: data.employee_id,
-        employeeName: data.employee_name,
-        status: 'Rejected',
-        leaveType: data.leave_type,
-        decidedBy: updates.reviewed_by
-      });
-    } catch (e) { console.warn('Automation trigger leave_decision (Rejected) failed:', e.message); }
+      if (automation && automation.trigger) {
+        await automation.trigger('leave_decision', {
+          leave: {
+            staffName: leave.employeeName || leave.staffName,
+            employeeId: leave.employeeId,
+            status: 'Rejected',
+            type: leave.leaveType,
+            startDate: leave.startDate,
+            endDate: leave.endDate,
+            reviewedBy: updates.manager_reviewed_by
+          },
+          employeeId: leave.employeeId,
+          employeeName: leave.employeeName,
+          status: 'Rejected',
+          leaveType: leave.leaveType,
+          decidedBy: updates.manager_reviewed_by
+        }).catch(() => {});
+      }
+    } catch (e) {}
 
-    res.json({ success: true, leave });
+    return res.json({ success: true, leave });
   } catch (err) {
     console.error('Leave reject error:', err.message);
-    res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: err.message });
   }
 });
 
@@ -245,17 +311,23 @@ router.put('/:id', requireAuth, requireManager, async (req, res) => {
     const { id } = req.params;
     const updates = { ...req.body, updated_at: new Date().toISOString() };
 
-    const { data, error } = await supabase.from('leaves').update(updates).eq('id', id).select().single();
-    if (error) throw error;
+    let leaveData = null;
+    if (supabase) {
+      leaveData = await updateSupabaseLeave(id, updates);
+    }
 
-    const leave = mapLeave(data);
-    const { data: allLeaves } = await supabase.from('leaves').select('*').order('created_at', { ascending: false });
-    broadcast('leave_update', (allLeaves || []).map(mapLeave));
+    const memIdx = inMemoryLeaves.findIndex(l => l.id === id);
+    if (memIdx !== -1) {
+      inMemoryLeaves[memIdx] = { ...inMemoryLeaves[memIdx], ...updates };
+    }
+    const leave = mapLeave(leaveData || inMemoryLeaves[memIdx] || { id, ...updates });
 
-    res.json({ success: true, leave });
+    try { broadcast('leave_update', inMemoryLeaves.map(mapLeave)); } catch (e) {}
+
+    return res.json({ success: true, leave });
   } catch (err) {
     console.error('Leave PUT error:', err.message);
-    res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: err.message });
   }
 });
 

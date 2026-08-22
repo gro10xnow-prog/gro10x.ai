@@ -6,15 +6,18 @@
   const ROUTES = {
     '#overview': { module: 'overview.js', title: 'Department Overview', icon: '📊' },
     '#tasks':    { module: 'tasks.js',    title: 'Department Pipeline', icon: '📋' },
+    '#finance':  { module: 'finance.js',  title: 'Financial Command', icon: '💰' },
     '#team':     { module: 'team.js',     title: 'Team Roster', icon: '👥' },
     '#leaves':   { module: 'leaves.js',   title: 'Leave Approvals', icon: '🌴' },
-    '#tickets':  { module: 'tickets.js',  title: 'Ticket Triage', icon: '🎟️' }
+    '#tickets':  { module: 'tickets.js',  title: 'Ticket Triage', icon: '🎟️' },
+    '#tech':     { module: 'tech.js',     title: 'System Diagnostics', icon: '🛠️' }
   };
 
   const loadedModules = {};
 
   document.addEventListener('DOMContentLoaded', async () => {
     hydrateUserBadge();
+    applyRoleBasedNavigation();
     initRouter();
   });
 
@@ -27,6 +30,44 @@
         if (nameEl) nameEl.textContent = user.name || 'Department Manager';
       }
     } catch (e) {}
+  }
+
+  function applyRoleBasedNavigation() {
+    try {
+      const rawUser = localStorage.getItem('purple_user');
+      const user = rawUser ? JSON.parse(rawUser) : {};
+      const role = (user.role || '').toLowerCase();
+      const access = (user.accessLevel || '').toLowerCase();
+
+      const isFinance = role.includes('finance') || access.includes('finance');
+      const isTech = role.includes('tech') || user.id === 'PBD-000' || role.includes('admin');
+      const isCreative = role.includes('art') || role.includes('creative') || role.includes('design');
+      const isExecutive = access.includes('owner') || role.includes('director') || role.includes('head');
+
+      document.querySelectorAll('.nav-item').forEach(el => {
+        const rolesAttr = el.getAttribute('data-roles');
+        if (!rolesAttr) return;
+
+        const allowed = rolesAttr.split(',').map(r => r.trim());
+        let show = false;
+
+        if (allowed.includes('all') || isExecutive) {
+          show = true;
+        } else if (isFinance && allowed.includes('finance')) {
+          show = true;
+        } else if (isTech && allowed.includes('tech')) {
+          show = true;
+        } else if (isCreative && allowed.includes('creative')) {
+          show = true;
+        } else if (allowed.includes('operations')) {
+          show = true;
+        }
+
+        el.style.display = show ? 'flex' : 'none';
+      });
+    } catch (e) {
+      console.warn('Navigation role filtering error:', e);
+    }
   }
 
   function initRouter() {

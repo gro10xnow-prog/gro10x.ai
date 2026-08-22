@@ -32,36 +32,36 @@ function mapTicket(t) {
 const DEFAULT_TICKETS = [
   {
     id: 'TCK-001',
-    title: 'Instagram 4K Video Aspect Ratio Issue for Chillox Reel',
-    description: 'The reel uploaded yesterday has letterboxing on Instagram mobile feed. Need 9:16 vertical crop re-export.',
-    submitted_by: 'Chillox Bangladesh',
-    assigned_to: 'Asif (Senior Video Editor & Colorist)',
+    title: 'Brand Campaign Reel Aspect Ratio Adjustment',
+    description: 'The reel requires 9:16 vertical crop re-export for social platforms.',
+    submitted_by: 'Partner Brand',
+    assigned_to: 'Video Editor & Colorist',
     priority: 'Urgent',
     status: 'In Progress',
     category: 'Creative Adjustment',
-    client_id: 'cli_chillox',
+    client_id: 'cli_001',
     created_at: '2026-08-16T14:20:00Z',
     updated_at: '2026-08-16T15:00:00Z'
   },
   {
     id: 'TCK-002',
-    title: 'Aura Cosmetics Color Grade Tone Adjustment',
-    description: 'Client requested warmer skin tones on the cosmetic packaging close-up shot 3.',
-    submitted_by: 'Aura Cosmetics',
-    assigned_to: 'Asif (Senior Video Editor & Colorist)',
+    title: 'Product Packaging Color Grade Tone Adjustment',
+    description: 'Client requested warmer skin tones on the cosmetic packaging close-up shot.',
+    submitted_by: 'Partner Brand',
+    assigned_to: 'Video Editor & Colorist',
     priority: 'Medium',
     status: 'Open',
     category: 'Post Production',
-    client_id: 'cli_aura',
+    client_id: 'cli_002',
     created_at: '2026-08-17T09:30:00Z',
     updated_at: '2026-08-17T09:30:00Z'
   },
   {
     id: 'TCK-003',
     title: 'Meta Ads Manager Access Token Re-authorization',
-    description: 'Facebook API access token expired. Needs agency admin re-authentication in Meta Business Suite.',
-    submitted_by: 'Nafis (Marketing Specialist)',
-    assigned_to: 'Zahin (Lead Full-Stack Developer)',
+    description: 'API access token expired. Needs admin re-authentication.',
+    submitted_by: 'Marketing Team',
+    assigned_to: 'Technical Admin',
     priority: 'High',
     status: 'Resolved',
     category: 'IT & Infrastructure',
@@ -208,7 +208,10 @@ router.put('/:id', requireAuth, async (req, res) => {
 
     if (status === 'Resolved' || status === 'Closed') {
       try {
-        if (processAutomationEvent) {
+        const { automation } = require('../services/automation');
+        if (automation && automation.trigger) {
+          automation.trigger('ticket_resolved', { ticket: formatted }).catch(() => {});
+        } else if (processAutomationEvent) {
           processAutomationEvent('ticket_resolved', { ticket: formatted }).catch(() => {});
         }
       } catch (ae) {}
@@ -221,8 +224,8 @@ router.put('/:id', requireAuth, async (req, res) => {
   }
 });
 
-// PATCH /api/tickets/:id/status — Quick status update
-router.patch('/:id/status', requireAuth, async (req, res) => {
+// PATCH /api/tickets/:id or /api/tickets/:id/status — Quick status update
+router.patch(['/:id', '/:id/status'], requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
@@ -250,7 +253,10 @@ router.patch('/:id/status', requireAuth, async (req, res) => {
 
     if (status === 'Resolved' || status === 'Closed') {
       try {
-        if (processAutomationEvent) {
+        const { automation } = require('../services/automation');
+        if (automation && automation.trigger) {
+          automation.trigger('ticket_resolved', { ticket: formatted }).catch(() => {});
+        } else if (processAutomationEvent) {
           processAutomationEvent('ticket_resolved', { ticket: formatted }).catch(() => {});
         }
       } catch (ae) {}

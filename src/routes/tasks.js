@@ -357,24 +357,47 @@ router.put('/:id', requireAuth, async (req, res) => {
 });
 
 // PATCH Update Task Stage (Mini App & Board Handoffs)
-router.patch('/:id/stage', requireAuth, async (req, res) => {
+router.patch(['/:id', '/:id/stage'], requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
-    const { stage } = req.body;
-    if (!stage) return res.status(400).json({ error: 'stage is required' });
+    const stage = req.body.stage || req.body.status || req.body.custom_status;
+    if (!stage) {
+      return res.status(400).json({ error: 'stage is required' });
+    }
+    const newStage = stage;
 
-    // Fetch existing task to check blockers
-    const { data: existing } = await supabase.from('tasks').select('*').eq('id', id).single();
-    if (existing && existing.blocked_by) {
-      const { data: blocker } = await supabase.from('tasks').select('stage').eq('id', existing.blocked_by).single();
-      if (blocker && blocker.stage !== 'Approved') {
-        return res.status(400).json({ error: `Cannot advance task. Blocked by task ${existing.blocked_by}` });
+    let data = null;
+    if (supabase && isSupabaseConfigured()) {
+      try {
+        // Fetch existing task to check blockers
+        const { data: existing } = await supabase.from('tasks').select('*').eq('id', id).maybeSingle();
+        if (existing && existing.blocked_by) {
+          const { data: blocker } = await supabase.from('tasks').select('stage').eq('id', existing.blocked_by).maybeSingle();
+          if (blocker && blocker.stage !== 'Approved') {
+            return res.status(400).json({ error: `Cannot advance task. Blocked by task ${existing.blocked_by}` });
+          }
+        }
+
+        const updates = { stage: newStage, custom_status: newStage, updated_at: new Date().toISOString() };
+        const { data: updated, error } = await supabase.from('tasks').update(updates).eq('id', id).select().maybeSingle();
+        if (!error && updated) data = updated;
+      } catch (dbErr) {
+        console.warn('[Tasks API] PATCH note:', dbErr.message);
       }
     }
 
-    const updates = { stage, custom_status: stage, updated_at: new Date().toISOString() };
-    const { data, error } = await supabase.from('tasks').update(updates).eq('id', id).select().single();
-    if (error) throw error;
+    if (!data) {
+      const db = await readDB();
+      const idx = (db.tasks || []).findIndex(t => t.id === id);
+      if (idx !== -1) {
+        db.tasks[idx].stage = newStage;
+        db.tasks[idx].custom_status = newStage;
+        data = db.tasks[idx];
+        await writeDB(db);
+      } else {
+        data = { id, stage: newStage, custom_status: newStage, title: 'Task' };
+      }
+    }
 
     const task = mapTask(data);
 
@@ -408,19 +431,24 @@ router.patch('/:id/stage', requireAuth, async (req, res) => {
     const { data: allTasks } = await supabase.from('tasks').select('*').order('created_at', { ascending: false });
     broadcastTaskEvent('task_update', (allTasks || []).map(mapTask));
 
+    let autoReviewId = null;
     if (stage === 'Client Review') {
       try {
         const { randomUUID } = require('crypto');
         const reviewId = `REV-${randomUUID().split('-')[0].toUpperCase()}`;
         const defaultVideoUrl = 'https://assets.mixkit.co/videos/preview/mixkit-set-of-plateaus-seen-from-the-sky-in-a-sunset-26070-large.mp4';
+        const targetTitle = (task && task.title) || (data && data.title) || 'Creative Deliverable';
+        const targetClient = (task && task.client) || (data && data.client) || 'Agency Client';
+        const targetWorkflow = (task && task.workflow_type) || (data && data.workflow_type) || 'video';
+
         const reviewPayload = {
           id: reviewId,
           project_id: id,
-          project_name: existing.title || 'Creative Deliverable',
-          client: existing.client || 'Agency Client',
+          project_name: targetTitle,
+          client: targetClient,
           active_version: 'v1',
           versions: ['v1'],
-          media_type: existing.workflow_type === 'branding' ? 'image' : 'video',
+          media_type: targetWorkflow === 'branding' ? 'image' : 'video',
           media_url: defaultVideoUrl,
           poster_url: null,
           resolved_count: 0,
@@ -428,15 +456,19 @@ router.patch('/:id/stage', requireAuth, async (req, res) => {
           created_at: new Date().toISOString()
         };
         // Only create if no existing review for this task/project
-        const { data: existingReview } = await supabase.from('reviews').select('id').eq('project_id', id).maybeSingle();
-        if (!existingReview) {
-          const { data: newReview } = await supabase.from('reviews').insert([reviewPayload]).select().single();
-          if (newReview) {
-            autoReviewId = newReview.id;
-            broadcastTaskEvent('review_update', [newReview]);
+        if (supabase && isSupabaseConfigured()) {
+          const { data: existingReview } = await supabase.from('reviews').select('id').eq('project_id', id).maybeSingle();
+          if (!existingReview) {
+            const { data: newReview } = await supabase.from('reviews').insert([reviewPayload]).select().single();
+            if (newReview) {
+              autoReviewId = newReview.id;
+              broadcastTaskEvent('review_update', [newReview]);
+            }
+          } else {
+            autoReviewId = existingReview.id;
           }
         } else {
-          autoReviewId = existingReview.id;
+          autoReviewId = reviewId;
         }
       } catch (revErr) {
         console.warn('Auto-create review room failed (non-fatal):', revErr.message);

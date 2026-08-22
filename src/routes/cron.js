@@ -26,6 +26,11 @@ function authorizeCron(req, res, next) {
       console.warn('⚠️ Unauthorized cron attempt blocked');
       return res.status(401).json({ error: 'Unauthorized cron request' });
     }
+  } else if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
+    if (!isVercelCron) {
+      console.warn('⚠️ Cron invocation rejected: CRON_SECRET not configured and not from Vercel');
+      return res.status(401).json({ error: 'Unauthorized cron request: CRON_SECRET required in production' });
+    }
   }
 
   next();
@@ -490,10 +495,10 @@ router.get('/approval-expiry', authorizeCron, async (req, res) => {
     const db = await fetchSupabaseSnapshot();
     const now = new Date();
     const { sendTelegramNotification } = require('../services/bot');
-    const owner = db.team.find(t => t.id === 'PBD-001');
+    const managers = db.team.filter(t => (t.accessLevel || '').toLowerCase().includes('manager') || (t.accessLevel || '').toLowerCase().includes('owner') || (t.role || '').toLowerCase().includes('managing director') || t.id === 'PBD-001');
 
     const staleLeaves = (db.leaveRequests || []).filter(l => {
-      if (l.status !== 'Pending Line Review') return false;
+      if (l.status !== 'Pending Line Review' && l.status !== 'Pending') return false;
       const age = (now - new Date(l.created_at || l.createdAt)) / 1000 / 3600;
       return age > 48;
     });
@@ -511,13 +516,17 @@ router.get('/approval-expiry', authorizeCron, async (req, res) => {
     let msg = `⚠️ *PENDING APPROVALS EXPIRY ALERT*\n\n`;
     if (staleLeaves.length) msg += `🌴 *${staleLeaves.length}* leave request(s) pending >48h without manager action\n`;
     if (staleExpenses.length) msg += `🧾 *${staleExpenses.length}* expense claim(s) pending >72h without approval\n`;
-    msg += `\nPlease review and approve/reject pending items in the Admin Portal.`;
+    msg += `\nPlease review and approve/reject pending items in the Manager/Admin Portal.`;
 
-    if (owner?.telegramId) {
-      await sendTelegramNotification(owner.telegramId, msg, [[{ text: '🌐 Open Admin Portal', url: 'https://purpleos-iota.vercel.app/admin' }]], true);
+    let sentCount = 0;
+    for (const mgr of managers) {
+      if (mgr.telegramId) {
+        await sendTelegramNotification(mgr.telegramId, msg, [[{ text: '🌐 Open Manager Portal', url: 'https://purpleos-iota.vercel.app/manager' }]], true);
+        sentCount++;
+      }
     }
 
-    return res.json({ success: true, staleLeaves: staleLeaves.length, staleExpenses: staleExpenses.length, timestamp: new Date().toISOString() });
+    return res.json({ success: true, staleLeaves: staleLeaves.length, staleExpenses: staleExpenses.length, sentCount, timestamp: new Date().toISOString() });
   } catch (error) {
     console.error('Approval expiry cron error:', error);
     return res.status(500).json({ error: error.message });
@@ -547,7 +556,7 @@ router.get('/invoice-due-reminder', authorizeCron, async (req, res) => {
       msg += `  Due: *${inv.due_date || inv.dueDate}*\n\n`;
     });
 
-    const finTeam = db.team.filter(t => t.id === 'PBD-029' || t.id === 'PBD-001');
+    const finTeam = db.team.filter(t => (t.accessLevel || '').toLowerCase().includes('finance manager') || (t.role || '').toLowerCase().includes('finance') || (t.accessLevel || '').toLowerCase().includes('owner') || t.id === 'PBD-001');
     let sentCount = 0;
     for (const fin of finTeam) {
       if (fin.telegramId) {
@@ -559,6 +568,19 @@ router.get('/invoice-due-reminder', authorizeCron, async (req, res) => {
     return res.json({ success: true, message: `Invoice due reminders sent to ${sentCount} recipient(s)`, count: upcomingInvoices.length, timestamp: new Date().toISOString() });
   } catch (error) {
     console.error('Invoice due reminder cron error:', error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/cron/eod-evening-digest — 7:30 PM BD Department Manager EOD summary
+router.get('/eod-evening-digest', authorizeCron, async (req, res) => {
+  try {
+    const db = await fetchSupabaseSnapshot();
+    const { processAutomationEvent } = require('../services/automation');
+    await processAutomationEvent('eod_evening_digest', {}, db, null, null);
+    return res.json({ success: true, message: 'Department manager 7:30 PM EOD digest sent', timestamp: new Date().toISOString() });
+  } catch (error) {
+    console.error('EOD evening digest cron error:', error);
     return res.status(500).json({ error: error.message });
   }
 });

@@ -1,6 +1,6 @@
 {
   "name": "purplebot-core",
-  "version": "0.8.9.9",
+  "version": "0.9.0.0",
   "description": "Purplebot Digital Core Agency OS API & App",
   "main": "server.js",
   "scripts": {

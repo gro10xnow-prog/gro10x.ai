@@ -737,7 +737,111 @@
 .cms-kpi-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
 @media (max-width: 800px) { .cms-kpi-row { grid-template-columns: 1fr; } }
 .cms-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.25rem; }
-.cms-card { background: var(--surface-2); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 1.25rem; display: flex; flex-direction: column; justify-content: space-between; gap: 0.85rem; transition: var(--transition-fast); }
-.cms-card:hover { border-color: var(--border-glow); transform: translateY(-2px); box-shadow: var(--shadow-card); }
+/* ───── 18. MANAGER PORTAL & FILTER PILL STYLES ───── */
+.card-glass {
+  background: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  padding: 1.25rem;
+  box-shadow: var(--shadow-card);
+}
+
+.filter-pill {
+  padding: 0.45rem 1rem;
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-2);
+  color: var(--text-muted);
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: var(--transition-fast);
+}
+
+.filter-pill:hover {
+  background: var(--surface-3);
+  color: var(--text-primary);
+  border-color: var(--border-active);
+}
+
+.filter-pill.active {
+  background: var(--purple-brand);
+  color: var(--text-on-brand);
+  border-color: var(--purple-brand);
+  box-shadow: 0 0 12px rgba(124, 58, 237, 0.4);
+}
+
+.stage-select {
+  padding: 0.35rem 0.6rem;
+  background: var(--surface-3);
+  border: 1px solid var(--border-medium);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.stage-select.stage-done {
+  border-color: var(--emerald-brand);
+  color: var(--emerald-brand);
+}
+
+.stage-select.stage-review {
+  border-color: var(--pink-brand);
+  color: var(--pink-brand);
+}
+
+.mobile-bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  background: var(--surface-1);
+  border-top: 1px solid var(--border-subtle);
+  z-index: 1000;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  justify-content: space-around;
+  align-items: center;
+  padding: 0 0.5rem;
+}
+
+.mobile-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  text-decoration: none;
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.3rem 0.5rem;
+  border-radius: 8px;
+  transition: var(--transition-fast);
+}
+
+.mobile-nav-item.active, .mobile-nav-item:hover {
+  color: var(--purple-light);
+}
+
+.mobile-nav-item span.icon {
+  font-size: 1.2rem;
+}
+
+@media (max-width: 768px) {
+  .mobile-bottom-nav {
+    display: flex;
+  }
+  .app-shell {
+    padding-bottom: 70px;
+  }
+  .sidebar {
+    display: none !important;
+  }
+}
 
 

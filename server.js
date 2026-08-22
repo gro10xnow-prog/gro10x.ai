@@ -10,6 +10,8 @@ const { initBot, getTeamBot, getClientBot } = require('./src/services/bot');
 const { readDB, writeDB } = require('./src/services/db');
 const { broadcast } = require('./src/services/sse');
 
+const { requireAuth } = require('./src/middleware/auth');
+
 const PORT = process.env.PORT || 3000;
 
 // Allowed origins — restrict to known production & preview domains
@@ -30,6 +32,7 @@ try { validateEnvironment(); } catch (e) { console.warn('[ENV] Boot Note:', e.me
 // Enable Security Headers Middleware
 app.use((req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.setHeader('X-XSS-Protection', '1; mode=block');
   res.setHeader('Content-Security-Policy', "default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'; frame-ancestors 'self' https://web.telegram.org https://*.telegram.org;");
@@ -105,7 +108,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(subdomainRouter);
 
 // SSE Endpoint for real-time synchronization
-app.get(['/api/sync', '/sync'], sseHandler);
+app.get(['/api/sync', '/sync'], requireAuth, sseHandler);
 
 // Bot Status Health Check
 app.get(['/api/bot-status', '/bot-status'], (req, res) => {
@@ -122,10 +125,11 @@ app.get(['/api/bot-status', '/bot-status'], (req, res) => {
 });
 
 // System Health Dashboard API & Deep Telemetry
-app.get(['/api/system-health', '/api/system-health/detailed'], async (req, res) => {
+app.get(['/api/system-health', '/api/system-health/detailed'], requireAuth, async (req, res) => {
   const { supabase, isSupabaseConfigured } = require('./src/services/supabase');
   const { getActiveClientsCount } = require('./src/services/sse');
   const cache = require('./src/services/cache');
+  const pkg = require('./package.json');
   
   let dbStatus = 'Offline';
   let dbLatencyMs = null;
@@ -168,7 +172,7 @@ app.get(['/api/system-health', '/api/system-health/detailed'], async (req, res) 
 
   res.json({
     status: isHealthy ? 'healthy' : 'degraded',
-    version: '0.9.0.0',
+    version: pkg.version || '0.9.0.0',
     environment: process.env.NODE_ENV || 'production',
     dbConnection: dbStatus,
     dbLatencyMs: dbLatencyMs !== null ? dbLatencyMs : 0,
@@ -197,6 +201,9 @@ app.post(['/api/webhooks/telegram', '/webhooks/telegram'], async (req, res) => {
       console.warn('⚠️ Webhook request rejected: Invalid or missing secret token');
       return res.status(403).json({ error: 'Forbidden: Invalid secret token' });
     }
+  } else if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
+    console.warn('⚠️ Webhook request rejected: WEBHOOK_SECRET required in production');
+    return res.status(403).json({ error: 'Forbidden: Webhook secret configuration required in production' });
   }
 
   const botType = req.query.bot || 'team';
@@ -304,9 +311,16 @@ app.get('/robots.txt', (req, res) => {
     'Disallow: /admin\n' +
     'Disallow: /dashboard\n' +
     'Disallow: /os\n' +
+    'Disallow: /manager\n' +
+    'Disallow: /manager-portal\n' +
     'Disallow: /team\n' +
     'Disallow: /crew\n' +
+    'Disallow: /staff\n' +
     'Disallow: /partners\n' +
+    'Disallow: /client\n' +
+    'Disallow: /portal\n' +
+    'Disallow: /chat\n' +
+    'Disallow: /onboarding\n' +
     'Disallow: /api/\n' +
     'Allow: /\n'
   );

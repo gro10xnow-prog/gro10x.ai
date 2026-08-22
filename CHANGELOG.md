@@ -1,12 +1,15 @@
 # PurpleOS Changelog
 
-## [0.9.0.0] - 2026-08-22 (Pre-Release Candidate — Go-Live: Sep 1, 2026)
+## [0.9.0.0] - 2026-08-22 (Department Manager Stakeholder Handover Release — Go-Live: Sep 1, 2026)
 ### Added
-- **Comprehensive 9-Phase Browser Automation E2E Test Suite**: Built `scripts/e2e/` with Puppeteer — covers all 14 admin sidebar tabs, every sub-tab, modal, button, filter chip, and API wiring. 38/38 assertions passing at 100%.
-- **Visual Test Report Generator**: `scripts/e2e/report.js` — auto-generates HTML + JSON reports per run with pass/fail badges and per-test durations. Stored in `scripts/e2e/reports/`.
-- **`npm run test:e2e` Script**: One-command runner for the complete E2E browser suite; supports `--phase N` for individual phase runs.
-- **Complete System README**: `README.md` now contains full system architecture diagram, tech stack, environment variables reference, 18-table database schema, complete API routes reference, 12-job cron schedule (with BST times), 5 operational runbooks (Deployment, Incident Response, Staff Onboarding, Client Onboarding, DB Maintenance), and admin panel user guide.
-- **index.html HTML Structure Fix**: Removed duplicate unclosed `<script>` block that was causing the Command Palette `#commandPaletteModal` to be displaced outside the DOM tree — now correctly placed and fully accessible to browser automation.
+- **Department Manager Web Portal (`/manager`)**: Dedicated SPA module architecture for Creative Director, Finance Manager, Tech Admin, and Studio Lead stakeholders. Includes 7 modules (Overview, Task Pipeline, Financial Command, Team Roster, Leave Approvals, Ticket Triage, Tech Diagnostics), role-based view filtering, and mobile bottom navigation.
+- **Production Readiness Security Hardening**: Strict authentication enforcement in production, `CRON_SECRET` protection across all 13 cron endpoints, `WEBHOOK_SECRET` mandatory production validation, and `requireAuth` on real-time SSE (`/api/sync`) and telemetry (`/api/system-health`).
+- **Clickjacking Protection**: Global `X-Frame-Options: SAMEORIGIN` header.
+- **Search Engine Concealment**: Hardened `/robots.txt` disallow list covering all internal portals (`/manager`, `/partners`, `/client`, `/portal`, `/chat`, `/onboarding`).
+- **Database Schema Migration (`20260822_v2.3_leaves_updated_at.sql`)**: Added `updated_at` column and moddatetime auto-update trigger for HR compliance; added graceful fallback helper `updateSupabaseLeave`.
+- **Comprehensive 11-Phase Manager Browser E2E Test Suite (`scripts/e2e-manager-portal.js`)**: 44/44 browser automation tests passing (100%).
+- **Full Backend Regression Suite**: 134/134 Jest tests passing across 29 test suites with clean teardowns.
+- **Complete Visual Test Suite**: 38/38 Admin suite assertions passing at 100%. HTML + JSON reports in `scripts/e2e/reports/`.
 
 ## [0.8.9.9] - 2026-08-21 (Phase 1–5 UX Refinement Release)
 ### Added

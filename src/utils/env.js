@@ -38,9 +38,15 @@ function validateEnvironment() {
     warnings.push('Neither SUPABASE_SERVICE_ROLE_KEY nor SUPABASE_ANON_KEY is set.');
   }
 
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
     if (!process.env.JWT_SECRET) {
       errors.push('JWT_SECRET is required in production.');
+    }
+    if (!process.env.CRON_SECRET) {
+      warnings.push('CRON_SECRET is missing in production — cron endpoints will require header protection.');
+    }
+    if (!process.env.WEBHOOK_SECRET && !process.env.WEBHOOK_SECRET_TOKEN) {
+      warnings.push('WEBHOOK_SECRET is missing in production — webhook requests will not be signed.');
     }
   }
 

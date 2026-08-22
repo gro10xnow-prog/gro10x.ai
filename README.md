@@ -1,6 +1,6 @@
 # PurpleOS — System Architecture, Runbooks & API Reference
 
-> **Version**: `0.9.0.0` (Pre-Release Candidate)
+> **Version**: `0.9.0.0` (Department Manager Stakeholder Handover Release)
 > **Go-Live Date**: September 1, 2026
 > **Primary Stakeholder / Tech Admin**: Md. Zahin Khandaker (`PBD-004`)
 > **Production URL**: https://purpleos-iota.vercel.app
@@ -20,7 +20,7 @@
 9. [Runbook — Onboarding a New Staff Member](#9-runbook--onboarding-a-new-staff-member)
 10. [Runbook — Onboarding a New Client](#10-runbook--onboarding-a-new-client)
 11. [Runbook — Database Maintenance](#11-runbook--database-maintenance)
-12. [Admin Panel User Guide](#12-admin-panel-user-guide)
+12. [Admin & Manager Portals Guide](#12-admin--manager-portals-guide)
 13. [Testing Reference](#13-testing-reference)
 
 ---
@@ -28,11 +28,11 @@
 ## 1. System Architecture Overview
 
 ```
-+---------------------------------------------------------------+
-|                       CLIENT BROWSERS                         |
-|  Admin Panel      Crew Mini App         Client Portal         |
-|  /app/index.html  (Telegram Mini App)   /client-portal/       |
-+---------------------------+-----------------------------------+
++-------------------------------------------------------------------------------+
+|                               CLIENT BROWSERS                                 |
+|  Admin Panel      Manager Portal    Crew Mini App         Client Portal       |
+|  /app/index.html  /manager          (Telegram Mini App)   /client-portal/     |
++---------------------------------------+---------------------------------------+
                             | HTTPS
                             v
 +---------------------------------------------------------------+

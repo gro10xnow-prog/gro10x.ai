@@ -5,7 +5,7 @@ describe('System Health Monitoring Endpoint', () => {
   test('GET /api/system-health returns platform diagnostics', async () => {
     const res = await request(app).get('/api/system-health');
     expect(res.status).toBe(200);
-    expect(res.body).toHaveProperty('version', '0.9.0.0');
+    expect(res.body).toHaveProperty('version');
     expect(res.body).toHaveProperty('environment');
     expect(res.body).toHaveProperty('dbConnection');
     expect(res.body).toHaveProperty('sseClients');

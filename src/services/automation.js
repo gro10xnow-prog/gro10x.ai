@@ -1,5 +1,7 @@
+const { broadcast } = require('./sse');
+
 // Lazy require to break the circular dependency:
-// bot.js â†’ automation.js â†’ bot.js (sendTelegramNotification)
+// bot.js → automation.js → bot.js (sendTelegramNotification)
 // By deferring the require to call-time, both modules finish initialising first.
 function getSendTelegram() {
   return require('./bot').sendTelegramNotification;
@@ -571,15 +573,15 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
           taskListText = staffTasks.map((t, idx) => `${idx + 1}. *${t.title}* (${t.client})\n   Stage: ${t.stage} | Deadline: ${t.dueDate || 'Today'}`).join('\n');
         }
 
-        const msgText = `â˜€ï¸ *GOOD MORNING ${staff.name.toUpperCase()}!*\n` +
-          `ðŸŽ¯ *YOUR DAILY ACTION PLAN & TASK BRIEFING (9:00 AM)*\n\n` +
-          `ðŸ“‹ *Assigned Tasks & Deliverables:*\n${taskListText}\n\n` +
-          `â° Please remember to clock in when starting studio work.\n` +
-          `ðŸŒ Open Crew Portal: https://purpleos-iota.vercel.app/team`;
+        const msgText = `☀️ *GOOD MORNING ${staff.name.toUpperCase()}!*\n` +
+          `🎯 *YOUR DAILY ACTION PLAN & TASK BRIEFING (9:00 AM)*\n\n` +
+          `📋 *Assigned Tasks & Deliverables:*\n${taskListText}\n\n` +
+          `⏰ Please remember to clock in when starting studio work.\n` +
+          `🌐 Open Crew Portal: https://purpleos-iota.vercel.app/team`;
 
         if (staff.telegramId) {
           sendTelegramNotification(staff.telegramId, msgText, [
-            [{ text: 'ðŸŸ¢ Clock In Studio', url: 'https://purpleos-iota.vercel.app/team' }]
+            [{ text: '🟢 Clock In Studio', url: 'https://purpleos-iota.vercel.app/team' }]
           ], true);
         }
       });
@@ -596,26 +598,26 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
 
     // TRIGGER 19: New Expense Claim Submitted -> Alert Line Manager (AUT-019)
     if (eventType === 'expense_submitted') {
-      const expense = eventData.expense;
-      const staffName = (expense.submittedBy || '').split(' ')[0].toLowerCase();
+      const expense = eventData?.expense || eventData || {};
+      const staffName = (expense.submittedBy || expense.loggedBy || '').split(' ')[0].toLowerCase();
       const staffObj = (db.team || []).find(t => (t.name || '').toLowerCase().includes(staffName));
       
       const targetManager = (staffObj && staffObj.reportsTo)
         ? (db.team || []).find(t => t.id === staffObj.reportsTo)
         : (db.team || []).find(t => (t.role || '').toLowerCase().includes('managing director') || t.id === 'PBD-001');
 
-      const msgText = `ðŸ’° *NEW EXPENSE CLAIM SUBMITTED (TIER 1 PENDING)*\n\n` +
-        `ðŸ“‹ Claim ID: *${expense.id}*\n` +
-        `ðŸ‘¤ Submitted By: *${expense.submittedBy}*\n` +
-        `ðŸ“‚ Category: *${expense.category}*\n` +
-        `ðŸ’µ Amount: *BDT ${(Number(expense.amount) || 0).toLocaleString()}*\n` +
-        `ðŸ“ Note: *${expense.description || 'Field operational expense'}*\n\n` +
+      const msgText = `💰 *NEW EXPENSE CLAIM SUBMITTED (TIER 1 PENDING)*\n\n` +
+        `📋 Claim ID: *${expense.id || 'EXP-NEW'}*\n` +
+        `👤 Submitted By: *${expense.submittedBy || expense.loggedBy || 'Staff Member'}*\n` +
+        `📁 Category: *${expense.category || 'General'}*\n` +
+        `💵 Amount: *BDT ${(Number(expense.amount) || 0).toLocaleString()}*\n` +
+        `📝 Note: *${expense.description || 'Field operational expense'}*\n\n` +
         `Click below to approve Tier 1 or inspect in Manager Portal.`;
 
       if (targetManager && targetManager.telegramId) {
         sendTelegramNotification(targetManager.telegramId, msgText, [
-          [{ text: 'âœ… Approve T1 (Manager)', callback_data: `approve_expense_t1:${expense.id}` }],
-          [{ text: 'ðŸ” Inspect in Manager Portal', url: `https://purpleos-iota.vercel.app/manager` }]
+          [{ text: '✅ Approve T1 (Manager)', callback_data: `approve_expense_t1:${expense.id}` }],
+          [{ text: '🔍 Inspect in Manager Portal', url: `https://purpleos-iota.vercel.app/manager` }]
         ], true);
       }
 
@@ -623,7 +625,7 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
         id: `LOG-${Date.now()}`,
         rule: 'AUT-019 (Expense Submitted Alert)',
         event: eventType,
-        target: `${expense.submittedBy} - ${expense.id}`,
+        target: `${expense.submittedBy || expense.loggedBy || 'Staff'} - ${expense.id}`,
         status: 'Executed',
         timestamp: new Date().toISOString()
       });
@@ -631,7 +633,7 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
 
     // TRIGGER 19.1: Expense Tier 1 Approved -> Check High-Value (> BDT 10k) Ops Routing
     if (eventType === 'expense_tier1_approved') {
-      const expense = eventData.expense;
+      const expense = eventData?.expense || eventData || {};
       const amt = Number(expense.amount) || 0;
 
       if (amt > 10000) {
@@ -639,28 +641,28 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
         const kafil = (db.team || []).find(t => t.id === 'PBD-004' || (t.role || '').toLowerCase().includes('business operations'));
         expense.status = 'Tier 1.5 Pending (Ops Review)';
 
-        const msgText = `ðŸš¨ *HIGH-VALUE EXPENSE CLAIM (> BDT 10,000) â€” TIER 1.5 OPS REVIEW*\n\n` +
-          `ðŸ“‹ Claim ID: *${expense.id}*\n` +
-          `ðŸ‘¤ Submitted By: *${expense.submittedBy}*\n` +
-          `ðŸ’µ Amount: *BDT ${amt.toLocaleString()}*\n` +
-          `âœï¸ T1 Approved By: *${expense.tier1?.approvedBy || 'Line Manager'}*\n\n` +
+        const msgText = `🚨 *HIGH-VALUE EXPENSE CLAIM (> BDT 10,000) — TIER 1.5 OPS REVIEW*\n\n` +
+          `📋 Claim ID: *${expense.id || 'EXP-NEW'}*\n` +
+          `👤 Submitted By: *${expense.submittedBy || expense.loggedBy || 'Staff Member'}*\n` +
+          `💵 Amount: *BDT ${amt.toLocaleString()}*\n` +
+          `✍️ T1 Approved By: *${expense.tier1?.approvedBy || 'Line Manager'}*\n\n` +
           `Requires Head of Business Operations sign-off before Finance disbursement.`;
 
         const targetId = kafil?.telegramId || '1708459008';
         sendTelegramNotification(targetId, msgText, [
-          [{ text: 'âœ… Approve T1.5 (Ops Head)', callback_data: `approve_expense_t1_5:${expense.id}` }],
-          [{ text: 'ðŸ” Inspect in Portal', url: `https://purpleos-iota.vercel.app/admin` }]
+          [{ text: '✅ Approve T1.5 (Ops Head)', callback_data: `approve_expense_t1_5:${expense.id}` }],
+          [{ text: '🔍 Inspect in Portal', url: `https://purpleos-iota.vercel.app/admin` }]
         ], true);
       } else {
         // Standard Claim (<= 10k) -> Route directly to Borhan Siddique (Finance Manager) for Tier 2
         const borhan = (db.team || []).find(t => t.id === 'PBD-029' || (t.role || '').toLowerCase().includes('finance manager'));
         expense.status = 'Tier 2 Pending';
 
-        const msgText = `ðŸ’° *EXPENSE CLAIM TIER 1 APPROVED â€” AWAITING TIER 2 FINANCE VERIFICATION*\n\n` +
-          `ðŸ“‹ Claim ID: *${expense.id}*\n` +
-          `ðŸ‘¤ Submitted By: *${expense.submittedBy}*\n` +
-          `ðŸ’µ Amount: *BDT ${amt.toLocaleString()}*\n` +
-          `âœï¸ T1 Approved By: *${expense.tier1?.approvedBy || 'Line Manager'}*\n\n` +
+        const msgText = `💰 *EXPENSE CLAIM TIER 1 APPROVED — AWAITING TIER 2 FINANCE VERIFICATION*\n\n` +
+          `📋 Claim ID: *${expense.id || 'EXP-NEW'}*\n` +
+          `👤 Submitted By: *${expense.submittedBy || expense.loggedBy || 'Staff Member'}*\n` +
+          `💵 Amount: *BDT ${amt.toLocaleString()}*\n` +
+          `✍️ T1 Approved By: *${expense.tier1?.approvedBy || 'Line Manager'}*\n\n` +
           `Click below to verify for final disbursement.`;
 
         const targetId = borhan?.telegramId || '1708459008';
@@ -1179,24 +1181,33 @@ const automation = {
   trigger: async (eventType, eventData) => {
     try {
       const { supabase, isSupabaseConfigured } = require('./supabase');
-      let dbSnapshot = { team: [], clients: [], tasks: [] };
+      let dbSnapshot = { team: [], clients: [], tasks: [], expenses: [], leaves: [], eod_reports: [] };
       if (isSupabaseConfigured()) {
-        const [pRes, cRes] = await Promise.all([
-          supabase.from('profiles').select('*'),
-          supabase.from('clients').select('*')
-        ]);
-        dbSnapshot.team = (pRes?.data || []).map(p => ({
-          ...p,
-          id: p.emp_code || p.id,
-          telegramId: p.telegram_id,
-          accessLevel: p.access_level || p.role
-        }));
-        dbSnapshot.clients = (cRes?.data || []).map(c => ({
-          ...c,
-          telegramId: c.telegram_id
-        }));
+        try {
+          const [pRes, cRes, tRes, expRes, lRes] = await Promise.all([
+            supabase.from('profiles').select('*').limit(500),
+            supabase.from('clients').select('*').limit(500),
+            supabase.from('tasks').select('*').limit(500),
+            supabase.from('expenses').select('*').limit(500),
+            supabase.from('leaves').select('*').limit(500)
+          ]);
+          dbSnapshot.team = (pRes?.data || []).map(p => ({
+            ...p,
+            id: p.emp_code || p.id,
+            telegramId: p.telegram_id,
+            accessLevel: p.access_level || p.role
+          }));
+          dbSnapshot.clients = (cRes?.data || []).map(c => ({
+            ...c,
+            telegramId: c.telegram_id
+          }));
+          dbSnapshot.tasks = tRes?.data || [];
+          dbSnapshot.expenses = expRes?.data || [];
+          dbSnapshot.leaves = lRes?.data || [];
+        } catch (dbErr) {
+          console.warn('[Automation] Snapshot fetch note:', dbErr.message);
+        }
       }
-      const { broadcast } = require('./sse');
       return processAutomationEvent(eventType, eventData, dbSnapshot, () => {}, broadcast);
     } catch (err) {
       console.warn(`[Automation] trigger(${eventType}) warning:`, err.message);
