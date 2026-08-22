@@ -283,9 +283,70 @@ async function handleTurnaroundMetrics(teamBot, msg) {
   }
 }
 
+/**
+ * Handle "📸 Book Gear / Studio" for Crew / Specialist Staff
+ */
+async function handleCrewStudioRequest(teamBot, msg) {
+  const chatId = msg.chat.id;
+  try {
+    const emp = await state.getEmployeeByTelegramId(chatId);
+    if (!emp) {
+      return teamBot.sendMessage(chatId, '⚠️ Account not verified. Please verify your phone number first.');
+    }
+
+    let bookings = [];
+    if (supabase) {
+      const today = new Date().toISOString().split('T')[0];
+      const { data } = await supabase
+        .from('studio_bookings')
+        .select('*')
+        .gte('start_time', today)
+        .order('start_time', { ascending: true })
+        .limit(5);
+      bookings = data || [];
+    }
+
+    let text = `📸 *STUDIO GEAR & SLOTS*\n` +
+      `📅 ${new Date().toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}\n\n`;
+
+    if (bookings.length > 0) {
+      text += `*Scheduled Equipment & Shoot Slots:*\n\n`;
+      bookings.forEach((b, i) => {
+        const timeStr = b.start_time ? new Date(b.start_time).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : 'TBD';
+        text += `${i + 1}. *${b.equipment_type || b.gear || 'Camera Kit'}* (${b.location || 'Studio'})\n`;
+        text += `   👤 Booked by: *${b.booked_by || 'Crew'}* | ⏰ ${timeStr}\n\n`;
+      });
+    } else {
+      text += `✅ *All camera bodies, lenses, and lighting kits are currently available in studio.*\n\n`;
+    }
+
+    text += `_Tap below to reserve studio floor or gear for your upcoming shoot:_`;
+
+    const options = {
+      parse_mode: 'Markdown',
+      reply_markup: {
+        inline_keyboard: [
+          [
+            { text: '📅 Production Calendar & Gear', web_app: { url: 'https://purpleos-iota.vercel.app/crew#calendar' } }
+          ],
+          [
+            { text: '🎬 Production Deliverables', web_app: { url: 'https://purpleos-iota.vercel.app/crew#deliverables' } }
+          ]
+        ]
+      }
+    };
+
+    teamBot.sendMessage(chatId, text, options);
+  } catch (err) {
+    console.error('[Studio Bot] handleCrewStudioRequest error:', err.message);
+    teamBot.sendMessage(chatId, '⚠️ Error fetching studio gear availability.');
+  }
+}
+
 module.exports = {
   handleStudioWorkload,
   handleBottleneckRadar,
   handleStudioGearSlots,
-  handleTurnaroundMetrics
+  handleTurnaroundMetrics,
+  handleCrewStudioRequest
 };

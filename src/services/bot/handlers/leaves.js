@@ -11,10 +11,10 @@ const { getRoleKeyboard } = require('../keyboards');
 
 // Default agency leave policy allowances per calendar year
 const LEAVE_POLICY = {
-  Annual: 18,
-  Sick: 7,
-  Emergency: 3,
-  Unpaid: 99
+  'Casual Leave': 14,
+  'Sick Leave': 10,
+  'Earned Leave': 18,
+  'Unpaid Leave': 99
 };
 
 async function handleInitLeave(teamBot, msg) {
@@ -40,7 +40,7 @@ async function handleInitLeave(teamBot, msg) {
     teamBot.sendMessage(chatId,
       `🌴 *LEAVE REQUEST (Step 1/3)*\n\n` +
       `Tap **Open Leave Request Form** for date range picker,\n` +
-      `_or reply here with your leave type:_\n1️⃣ Annual Leave\n2️⃣ Sick Leave\n3️⃣ Emergency Leave\n4️⃣ Unpaid Leave`,
+      `_or reply here with your leave type:_\n1️⃣ Casual Leave\n2️⃣ Sick Leave\n3️⃣ Earned Leave\n4️⃣ Unpaid Leave`,
       options
     );
   } catch (err) {
@@ -72,7 +72,7 @@ async function handleLeaveWizardStep(teamBot, msg, wizardState, emp) {
 
   try {
     if (wizardState.action === 'await_leave_type') {
-      const leaveTypes = { '1': 'Annual Leave', '2': 'Sick Leave', '3': 'Emergency Leave', '4': 'Unpaid Leave' };
+      const leaveTypes = { '1': 'Casual Leave', '2': 'Sick Leave', '3': 'Earned Leave', '4': 'Unpaid Leave' };
       const leaveType = leaveTypes[text] || text;
       
       const nextState = { ...wizardState, leaveType, action: 'await_leave_start_date' };
@@ -110,14 +110,23 @@ async function handleLeaveWizardStep(teamBot, msg, wizardState, emp) {
         );
       }
 
-      // Calculate total days
+      // Calculate total working days (excluding Friday & Saturday)
       let totalDays = 1;
       try {
         const d1 = new Date(startDate);
         const d2 = new Date(endDate);
         if (!isNaN(d1) && !isNaN(d2) && d2 >= d1) {
-          const diffTime = Math.abs(d2 - d1);
-          totalDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+          let workingDays = 0;
+          let cur = new Date(d1);
+          while (cur <= d2) {
+            const dayOfWeek = cur.getDay();
+            // 5 = Friday, 6 = Saturday (Bangladesh corporate weekend)
+            if (dayOfWeek !== 5 && dayOfWeek !== 6) {
+              workingDays++;
+            }
+            cur.setDate(cur.getDate() + 1);
+          }
+          totalDays = Math.max(1, workingDays);
         }
       } catch (e) {}
 
@@ -149,7 +158,7 @@ async function handleLeaveWizardStep(teamBot, msg, wizardState, emp) {
         `✅ *Leave Request Submitted!*\n\n` +
         `• Type: *${wizardState.leaveType}*\n` +
         `• Period: *${startDate}* to *${endDate}* (${totalDays} day${totalDays > 1 ? 's' : ''})\n` +
-        `• Status: *Pending Line Review*\n\n` +
+        `• Status: *Pending Review*\n\n` +
         `Your manager ${manager ? `(*${manager.name}*)` : ''} has been notified.`,
         { parse_mode: 'Markdown', reply_markup: getRoleKeyboard(emp.accessLevel, true, emp) }
       );
@@ -179,26 +188,26 @@ async function handleLeaveBalance(teamBot, msg) {
 
     if (error) throw error;
 
-    const used = { Annual: 0, Sick: 0, Emergency: 0, Unpaid: 0 };
+    const used = { 'Casual Leave': 0, 'Sick Leave': 0, 'Earned Leave': 0, 'Unpaid Leave': 0 };
     (approvedLeaves || []).forEach(l => {
-      const type = l.leave_type || l.type || 'Annual';
+      const type = l.leave_type || l.type || 'Casual Leave';
       const days = Number(l.total_days || l.days) || 1;
-      if (type.includes('Annual')) used.Annual += days;
-      else if (type.includes('Sick')) used.Sick += days;
-      else if (type.includes('Emergency')) used.Emergency += days;
-      else used.Unpaid += days;
+      if (type.includes('Casual') || type.includes('Annual')) used['Casual Leave'] += days;
+      else if (type.includes('Sick')) used['Sick Leave'] += days;
+      else if (type.includes('Earned') || type.includes('Emergency')) used['Earned Leave'] += days;
+      else used['Unpaid Leave'] += days;
     });
 
-    const annualRem = Math.max(0, LEAVE_POLICY.Annual - used.Annual);
-    const sickRem = Math.max(0, LEAVE_POLICY.Sick - used.Sick);
-    const emergencyRem = Math.max(0, LEAVE_POLICY.Emergency - used.Emergency);
+    const casualRem = Math.max(0, LEAVE_POLICY['Casual Leave'] - used['Casual Leave']);
+    const sickRem = Math.max(0, LEAVE_POLICY['Sick Leave'] - used['Sick Leave']);
+    const earnedRem = Math.max(0, LEAVE_POLICY['Earned Leave'] - used['Earned Leave']);
 
     const balanceMsg =
       `🌴 *Your Leave Balance — ${currentYear}*\n\n` +
-      `✅ *Annual Leave:*   ${annualRem} / ${LEAVE_POLICY.Annual} days remaining (used ${used.Annual})\n` +
-      `🤒 *Sick Leave:*     ${sickRem} / ${LEAVE_POLICY.Sick} days remaining (used ${used.Sick})\n` +
-      `🆘 *Emergency:*      ${emergencyRem} / ${LEAVE_POLICY.Emergency} days remaining (used ${used.Emergency})\n` +
-      `📝 *Unpaid Taken:*   ${used.Unpaid} days\n\n` +
+      `🌴 *Casual Leave:*   ${casualRem} / ${LEAVE_POLICY['Casual Leave']} days remaining (used ${used['Casual Leave']})\n` +
+      `🤒 *Sick Leave:*     ${sickRem} / ${LEAVE_POLICY['Sick Leave']} days remaining (used ${used['Sick Leave']})\n` +
+      `🏖️ *Earned Leave:*   ${earnedRem} / ${LEAVE_POLICY['Earned Leave']} days remaining (used ${used['Earned Leave']})\n` +
+      `📝 *Unpaid Taken:*   ${used['Unpaid Leave']} days\n\n` +
       `_Type /leave to submit a new leave request._`;
 
     teamBot.sendMessage(chatId, balanceMsg, { parse_mode: 'Markdown' });

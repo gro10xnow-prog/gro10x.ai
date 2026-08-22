@@ -4,6 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PurpleOS — Crew Personal Workspace</title>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#8b5cf6">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <script>
     (function() {
       var token = localStorage.getItem('sb-access-token') ||
@@ -39,21 +44,64 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      justify-content: center;
       gap: 0.2rem;
       color: var(--text-dim);
       text-decoration: none;
-      font-size: 0.68rem;
+      font-size: 0.72rem;
       font-weight: 700;
       font-family: var(--font-heading);
-      padding: 0.4rem 0.6rem;
+      padding: 0.35rem 0.65rem;
       border-radius: 10px;
+      min-height: 48px;
+      min-width: 48px;
       transition: var(--transition-fast);
     }
     .bottom-nav-item.active {
       color: var(--purple-light);
     }
     .bottom-nav-item .icon {
-      font-size: 1.2rem;
+      font-size: 1.25rem;
+    }
+
+    /* Skeleton Loading State */
+    .skeleton {
+      background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
+      background-size: 200% 100%;
+      animation: skeleton-loading 1.5s infinite;
+      border-radius: 12px;
+      border: 1px solid var(--border-subtle);
+    }
+    @keyframes skeleton-loading {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* Live Notification Toast */
+    .crew-notification-toast {
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--surface-1);
+      border: 1px solid var(--purple-light);
+      border-radius: 12px;
+      padding: 0.75rem 1.25rem;
+      font-size: 0.85rem;
+      color: #fff;
+      z-index: 4000;
+      display: flex;
+      gap: 0.6rem;
+      align-items: center;
+      box-shadow: 0 8px 28px rgba(139,92,246,0.35);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      max-width: 90vw;
+      pointer-events: none;
+    }
+    .crew-notification-toast.visible {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
     }
   </style>
 </head>
@@ -69,8 +117,19 @@
       </div>
     </div>
 
-    <button onclick="crewSignOut()" style="color: #f87171; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 10px; font-size: 0.8rem; font-weight: 700; padding: 0.4rem 0.75rem; cursor: pointer;">Sign Out</button>
+    <div style="display: flex; align-items: center; gap: 0.65rem;">
+      <!-- Notification Bell -->
+      <button id="crewNotifBell" onclick="toggleCrewNotifications()" style="position:relative; background:rgba(255,255,255,0.06); border:1px solid var(--border-subtle); border-radius:10px; width:36px; height:36px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:1.1rem; color:var(--text-primary);" aria-label="Notifications">
+        🔔
+        <span id="crewNotifBadge" style="display:none; position:absolute; top:-4px; right:-4px; background:#ef4444; color:#fff; border-radius:50%; width:18px; height:18px; font-size:0.65rem; font-weight:800; align-items:center; justify-content:center; box-shadow:0 0 8px rgba(239,68,68,0.6);"></span>
+      </button>
+
+      <button onclick="crewSignOut()" style="color: #f87171; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 10px; font-size: 0.8rem; font-weight: 700; padding: 0.4rem 0.75rem; cursor: pointer;">Sign Out</button>
+    </div>
   </header>
+
+  <!-- Live Notification Dropdown Panel -->
+  <div id="crewNotifPanel" style="display:none; position:fixed; top:62px; right:1rem; z-index:3000; background:var(--surface-1); border:1px solid var(--border-subtle); border-radius:14px; width:320px; max-width:calc(100vw - 2rem); max-height:420px; overflow:hidden; box-shadow:0 12px 36px rgba(0,0,0,0.5); backdrop-filter:blur(14px);"></div>
 
   <!-- Main View Area -->
   <main id="crew-view" class="content-area" style="max-width: 1000px; margin: 0 auto; padding-bottom: 80px;">
@@ -101,14 +160,75 @@
     </a>
   </nav>
 
+  <!-- Quick Action FAB -->
+  <div id="crewFabMenu" style="display:none; position:fixed; bottom:76px; right:1.25rem; flex-direction:column; gap:0.6rem; z-index:1100; align-items:flex-end;">
+    <a href="#deliverables" onclick="toggleCrewFab(false)" class="btn-primary" style="display:flex; align-items:center; gap:0.5rem; padding:0.6rem 1rem; font-size:0.88rem; text-decoration:none; box-shadow:0 8px 24px rgba(0,0,0,0.4); border-radius:12px;">
+      <span>📤</span> <span>Submit Deliverables</span>
+    </a>
+    <a href="#eod" onclick="toggleCrewFab(false)" class="btn-primary" style="display:flex; align-items:center; gap:0.5rem; padding:0.6rem 1rem; font-size:0.88rem; text-decoration:none; box-shadow:0 8px 24px rgba(0,0,0,0.4); border-radius:12px;">
+      <span>📝</span> <span>Daily EOD Report</span>
+    </a>
+    <a href="#expenses" onclick="toggleCrewFab(false)" class="btn-primary" style="display:flex; align-items:center; gap:0.5rem; padding:0.6rem 1rem; font-size:0.88rem; text-decoration:none; box-shadow:0 8px 24px rgba(0,0,0,0.4); border-radius:12px;">
+      <span>🧾</span> <span>Submit Expense</span>
+    </a>
+    <a href="#tickets" onclick="toggleCrewFab(false)" class="btn-secondary" style="display:flex; align-items:center; gap:0.5rem; padding:0.6rem 1rem; font-size:0.88rem; text-decoration:none; box-shadow:0 8px 24px rgba(0,0,0,0.4); border-radius:12px;">
+      <span>🎟️</span> <span>Tech Tickets & Deploy</span>
+    </a>
+    <a href="#calendar" onclick="toggleCrewFab(false)" class="btn-secondary" style="display:flex; align-items:center; gap:0.5rem; padding:0.6rem 1rem; font-size:0.88rem; text-decoration:none; box-shadow:0 8px 24px rgba(0,0,0,0.4); border-radius:12px;">
+      <span>📅</span> <span>Content Calendar</span>
+    </a>
+    <a href="#leaderboard" onclick="toggleCrewFab(false)" class="btn-secondary" style="display:flex; align-items:center; gap:0.5rem; padding:0.6rem 1rem; font-size:0.88rem; text-decoration:none; box-shadow:0 8px 24px rgba(0,0,0,0.4); border-radius:12px;">
+      <span>🏆</span> <span>XP Leaderboard</span>
+    </a>
+  </div>
+
+  <button id="crewFabBtn" onclick="toggleCrewFab()" style="position:fixed; bottom:76px; right:1.25rem; width:48px; height:48px; border-radius:50%; background:var(--gradient-brand); border:none; color:#fff; font-size:1.5rem; display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:1101; box-shadow:0 6px 20px rgba(139,92,246,0.5); transition:transform 0.2s ease;" aria-label="Quick Actions">
+    +
+  </button>
+
   <script src="/crew/api.js"></script>
   <script src="/crew/crew.js"></script>
   <script src="/crew/sse.js"></script>
   <script>
+    function toggleCrewFab(forceState) {
+      const menu = document.getElementById('crewFabMenu');
+      const btn = document.getElementById('crewFabBtn');
+      if (!menu || !btn) return;
+      const isOpen = forceState !== undefined ? !forceState : menu.style.display === 'flex';
+      if (isOpen) {
+        menu.style.display = 'none';
+        btn.style.transform = 'rotate(0deg)';
+      } else {
+        menu.style.display = 'flex';
+        btn.style.transform = 'rotate(45deg)';
+      }
+    }
+
+    document.addEventListener('click', (e) => {
+      const menu = document.getElementById('crewFabMenu');
+      const btn = document.getElementById('crewFabBtn');
+      if (menu && btn && menu.style.display === 'flex') {
+        if (!menu.contains(e.target) && !btn.contains(e.target)) {
+          toggleCrewFab(false);
+        }
+      }
+    });
+
     function crewSignOut() {
       localStorage.removeItem('sb-access-token');
+      localStorage.removeItem('purpleos_pin_token');
+      localStorage.removeItem('purple_token');
       localStorage.removeItem('purple_user');
+      localStorage.removeItem('crew_notifications_v1');
       window.location.href = '/auth';
+    }
+
+    // Register Service Worker for PWA
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js', { scope: '/' })
+          .catch(() => {});
+      });
     }
   </script>
 </body>

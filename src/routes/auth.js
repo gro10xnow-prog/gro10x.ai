@@ -38,9 +38,28 @@ router.get('/config', async (req, res) => {
 
 // User Profile Me
 router.get('/me', requireAuth, async (req, res) => {
+  const u = req.user || {};
+  const prof = u.profile || {};
+  const empCode = u.emp_code || u.empCode || u.linkedId || prof.emp_code || prof.empCode || u.id;
+  const name = u.name || prof.name || 'Crew Member';
+
   res.json({
     success: true,
-    user: req.user
+    user: {
+      ...u,
+      id: u.id || empCode,
+      emp_code: empCode,
+      empCode: empCode,
+      name: name,
+      role: u.role || prof.role || 'Specialist',
+      accessLevel: u.accessLevel || prof.accessLevel || 'Specialist / Crew',
+      department: u.department || prof.department || 'Production',
+      profile: {
+        ...prof,
+        emp_code: empCode,
+        name: name
+      }
+    }
   });
 });
 
@@ -279,6 +298,16 @@ router.post('/pin/set', requireAuth, async (req, res) => {
   const { phone, newPin, email } = req.body;
   if (!phone || !newPin || String(newPin).length < 4) {
     return res.status(400).json({ error: 'Valid phone number and 4-digit PIN are required' });
+  }
+
+  const callerPhone = normalizePhone(req.user?.profile?.phone || req.user?.phone || '');
+  const targetPhone = normalizePhone(phone);
+  const userAccess = (req.user?.accessLevel || req.user?.profile?.accessLevel || '').toLowerCase();
+  const userRole = (req.user?.role || req.user?.profile?.role || '').toLowerCase();
+  const isAdmin = userAccess.includes('owner') || userAccess.includes('admin') || userRole.includes('owner') || userRole.includes('admin');
+
+  if (!isAdmin && callerPhone && targetPhone && callerPhone !== targetPhone) {
+    return res.status(403).json({ error: 'Forbidden: You can only set your own PIN' });
   }
 
   const result = await setPermanentPin(phone, newPin, email);

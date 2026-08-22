@@ -8,6 +8,9 @@ async function requireAuth(req, res, next) {
 
   if (authHeader && authHeader.startsWith('Bearer ')) {
     token = authHeader.split(' ')[1];
+  } else if (req.query && (req.query.token || req.query.t)) {
+    // Allow query-string token for EventSource (SSE) connections that cannot set headers
+    token = req.query.token || req.query.t;
   } else if (req.headers.cookie) {
     const cookies = Object.fromEntries(
       req.headers.cookie.split('; ').map(c => {
@@ -53,7 +56,7 @@ async function requireAuth(req, res, next) {
           .from('profiles')
           .select('*')
           .or(`id.eq.${user.id},email.eq.${user.email}`)
-          .single();
+          .maybeSingle();
 
         req.user = {
           id: user.id,
@@ -81,24 +84,27 @@ async function requireAuth(req, res, next) {
     const dbData = await readDB();
     const pinUser = (dbData.authPins || []).find(p => p.pin === token || p.phone === token);
     if (pinUser) {
-      const emp = (dbData.team || []).find(t => t.id === pinUser.linkedId || t.phone === pinUser.phone) || dbData.team[0];
-      req.user = {
-        id: emp.id || 'EMP-001',
-        email: emp.email || 'owner@purplebot.co',
-        role: emp.role || 'Agency Owner',
-        accessLevel: emp.accessLevel || 'Owner / Admin',
-        department: emp.department || 'Management',
-        linkedType: pinUser.linkedType || 'team',
-        linkedId: emp.id || 'EMP-001',
-        profile: {
-          emp_code: emp.id || 'EMP-001',
-          name: emp.name || 'Mahmudul Hasan',
-          role: emp.role || 'Agency Owner',
-          accessLevel: emp.accessLevel || 'Owner / Admin',
-          department: emp.department || 'Management'
-        }
-      };
-      return next();
+      const emp = (dbData.team || []).find(t => t.id === pinUser.linkedId || t.phone === pinUser.phone);
+      if (emp) {
+        req.user = {
+          id: emp.id || 'EMP-001',
+          email: emp.email || '',
+          name: emp.name || 'Team Member',
+          role: emp.role || 'Specialist',
+          accessLevel: emp.accessLevel || 'Specialist / Crew',
+          department: emp.department || 'Production',
+          linkedType: pinUser.linkedType || 'team',
+          linkedId: emp.id,
+          profile: {
+            emp_code: emp.id,
+            name: emp.name,
+            role: emp.role,
+            accessLevel: emp.accessLevel,
+            department: emp.department
+          }
+        };
+        return next();
+      }
     }
   }
 

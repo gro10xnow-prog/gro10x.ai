@@ -427,15 +427,30 @@ router.get('/eod-reminder', authorizeCron, async (req, res) => {
       .filter(e => (e.date || e.report_date || '').startsWith(todayStr))
       .map(e => e.employee_id || e.employeeId));
 
-    const missingEmployees = db.team.filter(t => t.telegramId && !submittedToday.has(t.id));
+    const clockedInToday = new Set((db.attendance || [])
+      .filter(a => (a.date || a.clock_in_time || a.clockInTime || '').startsWith(todayStr))
+      .map(a => a.employee_id || a.employeeId || a.empCode));
+
+    const onApprovedLeave = new Set((db.leaveRequests || [])
+      .filter(l => (l.status === 'Approved' || l.status === 'Owner Approved') && (l.startDate || l.start_date) <= todayStr && (l.endDate || l.end_date) >= todayStr)
+      .map(l => l.employeeId || l.employee_id));
+
+    // Only notify employees who clocked in today, have not submitted EOD, and are not on leave
+    const missingEmployees = db.team.filter(t =>
+      t.telegramId &&
+      !submittedToday.has(t.id) &&
+      (clockedInToday.has(t.id) || t.status === 'In Studio' || t.status === 'On Field Shoot') &&
+      !onApprovedLeave.has(t.id) &&
+      t.status !== 'On Leave'
+    );
 
     const { sendTelegramNotification } = require('../services/bot');
     let sentCount = 0;
     for (const emp of missingEmployees) {
       const firstName = getFirstName(emp.name);
       await sendTelegramNotification(emp.telegramId,
-        `📝 *EOD REPORT REMINDER*\n\nHey ${firstName}! It's past 6 PM and your End-of-Day report for today hasn't been submitted yet.\n\nPlease submit your summary or use the Mini App:`,
-        [[{ text: '📱 Open EOD Form', url: 'https://purpleos-iota.vercel.app/team-miniapp?tab=eod&action=new' }]],
+        `📝 *EOD REPORT REMINDER*\n\nHey ${firstName}! It's past 6 PM and your End-of-Day report for today hasn't been submitted yet.\n\nPlease submit your summary via bot or web workspace:`,
+        [[{ text: '📱 Open EOD Form', url: 'https://purpleos-iota.vercel.app/crew#eod' }]],
         true
       );
       sentCount++;
@@ -468,7 +483,14 @@ router.get('/late-clockin-alert', authorizeCron, async (req, res) => {
     const todayStr = new Date().toLocaleDateString('en-CA');
     const clockedIn = new Set((db.attendance || []).filter(a => (a.date || '').startsWith(todayStr)).map(a => a.employee_id || a.empCode));
 
-    const lateEmployees = db.team.filter(t => t.telegramId && !clockedIn.has(t.id) && t.status !== 'On Leave');
+    const lateEmployees = db.team.filter(t => {
+      if (!t.telegramId) return false;
+      if (t.status === 'On Leave') return false;
+      const access = (t.accessLevel || t.access_level || '').toLowerCase();
+      const role = (t.role || '').toLowerCase();
+      const isLeadership = ['owner', 'founder', 'chairman', 'ceo', 'managing director', 'finance manager', 'head of'].some(kw => access.includes(kw) || role.includes(kw));
+      return !isLeadership && !clockedIn.has(t.id);
+    });
     const { sendTelegramNotification } = require('../services/bot');
 
     let sentCount = 0;
@@ -498,7 +520,7 @@ router.get('/approval-expiry', authorizeCron, async (req, res) => {
     const managers = db.team.filter(t => (t.accessLevel || '').toLowerCase().includes('manager') || (t.accessLevel || '').toLowerCase().includes('owner') || (t.role || '').toLowerCase().includes('managing director') || t.id === 'PBD-001');
 
     const staleLeaves = (db.leaveRequests || []).filter(l => {
-      if (l.status !== 'Pending Line Review' && l.status !== 'Pending') return false;
+      if (l.status !== 'Pending' && l.status !== 'Pending Line Review') return false;
       const age = (now - new Date(l.created_at || l.createdAt)) / 1000 / 3600;
       return age > 48;
     });
@@ -581,6 +603,58 @@ router.get('/eod-evening-digest', authorizeCron, async (req, res) => {
     return res.json({ success: true, message: 'Department manager 7:30 PM EOD digest sent', timestamp: new Date().toISOString() });
   } catch (error) {
     console.error('EOD evening digest cron error:', error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/cron/eod-daily-prompt — 7:00 PM BD EOD reminder prompt
+router.get('/eod-daily-prompt', authorizeCron, async (req, res) => {
+  try {
+    const db = await fetchSupabaseSnapshot();
+    const { processAutomationEvent } = require('../services/automation');
+    await processAutomationEvent('eod_daily_prompt', {}, db, null, null);
+    return res.json({ success: true, message: '7:00 PM EOD daily prompt sent to active crew', timestamp: new Date().toISOString() });
+  } catch (error) {
+    console.error('EOD daily prompt cron error:', error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/cron/morning-executive-briefing — 9:00 AM Morning Executive Briefing
+router.get('/morning-executive-briefing', authorizeCron, async (req, res) => {
+  try {
+    const db = await fetchSupabaseSnapshot();
+    const { processAutomationEvent } = require('../services/automation');
+    await processAutomationEvent('morning_executive_briefing', {}, db, null, null);
+    return res.json({ success: true, message: '9:00 AM morning executive briefing sent to leadership', timestamp: new Date().toISOString() });
+  } catch (error) {
+    console.error('Morning executive briefing error:', error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/cron/evening-digest — 8:30 PM Evening Executive Digest
+router.get('/evening-digest', authorizeCron, async (req, res) => {
+  try {
+    const db = await fetchSupabaseSnapshot();
+    const { processAutomationEvent } = require('../services/automation');
+    await processAutomationEvent('evening_digest', {}, db, null, null);
+    return res.json({ success: true, message: '8:30 PM evening executive digest sent to leadership', timestamp: new Date().toISOString() });
+  } catch (error) {
+    console.error('Evening digest error:', error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/cron/weekly-kpi-summary — Weekly Executive KPI Summary
+router.get('/weekly-kpi-summary', authorizeCron, async (req, res) => {
+  try {
+    const db = await fetchSupabaseSnapshot();
+    const { processAutomationEvent } = require('../services/automation');
+    await processAutomationEvent('weekly_kpi_summary', {}, db, null, null);
+    return res.json({ success: true, message: 'Weekly executive KPI summary sent to leadership', timestamp: new Date().toISOString() });
+  } catch (error) {
+    console.error('Weekly KPI summary error:', error);
     return res.status(500).json({ error: error.message });
   }
 });

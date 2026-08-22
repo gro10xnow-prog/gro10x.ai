@@ -60,6 +60,13 @@ function requireMiniAppAuth(req, res, next) {
     return requireAuth(req, res, next);
   }
 
+  // Also accept session tokens via query params or cookies for web-based access / SSE
+  const queryToken = req.query?.token || req.query?.t;
+  const cookieToken = req.cookies?.['sb-access-token'] || req.cookies?.['purpleos_pin_token'] || req.cookies?.['purple_token'];
+  if (queryToken || cookieToken) {
+    return requireAuth(req, res, next);
+  }
+
   const botToken = process.env.TEAM_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN;
   const initData = req.headers['x-telegram-init-data'] || req.body?.initData;
 

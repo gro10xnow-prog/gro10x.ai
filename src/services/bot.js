@@ -24,300 +24,8 @@ module.exports = {
   getClientKeyboard,
   sendAgreementNotification
 };
+const { getRoleKeyboard } = require('./bot/keyboards');
 
-function getRoleKeyboard(accessLevel, isVerified = false, emp = null) {
-  if (!isVerified || !emp) {
-    return {
-      keyboard: [
-        [{ text: '📱 Verify My Phone Number', request_contact: true }]
-      ],
-      resize_keyboard: true
-    };
-  }
-
-  const isTechAdmin = (emp.id === 'PBD-000' || emp.role === 'Technology Admin' || normalizePhone(emp.phone) === '1708459008');
-
-  // Progressive Disclosure: Guided Journey Mode during onboarding
-  if (!emp.onboardingComplete) {
-    return {
-      keyboard: [
-        [{ text: '🎓 Complete My Profile Survey', web_app: { url: 'https://purpleos-iota.vercel.app/team-miniapp' } }],
-        [{ text: '🔑 View My Web Login PIN' }]
-      ],
-      resize_keyboard: true
-    };
-  }
-
-  // All onboarding tasks complete -> Unlock Full Operational Menu!
-  if (accessLevel === 'Owner / Admin') {
-    if (isTechAdmin) {
-      return {
-        keyboard: [
-          [{ text: '🌅 Morning Briefing' }, { text: '📊 Business Snapshot' }],
-          [{ text: '👥 Full Team Status' }, { text: '💰 Finance Summary' }],
-          [{ text: '✍️ Pending Approvals' }, { text: '💸 Expense Queue' }],
-          [{ text: '📋 My Tasks' }, { text: '💰 My Earnings' }],
-          [{ text: '🧾 Submit Expense' }, { text: '🌴 Leave Request' }],
-          [{ text: '📝 EOD Report' }, { text: '💳 Bank & bKash' }],
-          [{ text: '👤 My Profile' }, { text: '🛠️ Tech Diagnostics' }],
-          [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
-        ],
-        resize_keyboard: true
-      };
-    }
-    // Owner / MD — all employee features + executive command layer
-    return {
-      keyboard: [
-        [{ text: '🌅 Morning Briefing' }, { text: '📊 Business Snapshot' }],
-        [{ text: '👥 Full Team Status' }, { text: '💰 Finance Summary' }],
-        [{ text: '✍️ Pending Approvals' }, { text: '💸 Expense Queue' }],
-        [{ text: '📋 My Tasks' }, { text: '💰 My Earnings' }],
-        [{ text: '🧾 Submit Expense' }, { text: '🌴 Leave Request' }],
-        [{ text: '📝 EOD Report' }, { text: '💳 Bank & bKash' }],
-        [{ text: '👤 My Profile' }, { text: '🎬 Client Status' }],
-        [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
-      ],
-      resize_keyboard: true
-    };
-  }
-
-  if (accessLevel === 'Director / Manager') {
-    const role = (emp?.role || '').toLowerCase();
-    const isClientGrowth = role.includes('client') || role.includes('growth');
-    const isBizOps = role.includes('business operation') || role.includes('head of business');
-    const isInternalOps = role.includes('internal operation') || role.includes('internal ops');
-
-    if (isClientGrowth) {
-      return {
-        keyboard: [
-          [{ text: '🎯 My Clients' }, { text: '📈 Lead Pipeline' }],
-          [{ text: '🔔 Client Updates' }, { text: '💰 My Commission' }],
-          [{ text: '🌅 Morning Briefing' }, { text: '📋 My Tasks' }],
-          [{ text: '🧾 Submit Expense' }, { text: '🌴 Leave Request' }],
-          [{ text: '📝 EOD Report' }, { text: '💳 Bank & bKash' }],
-          [{ text: '👤 My Profile' }, { text: '👥 My Team' }],
-          [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
-        ],
-        resize_keyboard: true
-      };
-    }
-
-    if (isBizOps) {
-      return {
-        keyboard: [
-          [{ text: '🏢 Ops Dashboard' }, { text: '👥 HR & Attendance' }],
-          [{ text: '📡 Media Buying' }, { text: '🚀 Client Activation' }],
-          [{ text: '🌅 Morning Briefing' }, { text: '📋 My Tasks' }],
-          [{ text: '🧾 Submit Expense' }, { text: '🌴 Leave Request' }],
-          [{ text: '📝 EOD Report' }, { text: '💳 Bank & bKash' }],
-          [{ text: '👤 My Profile' }, { text: '👥 My Team' }],
-          [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
-        ],
-        resize_keyboard: true
-      };
-    }
-
-    if (isInternalOps) {
-      return {
-        keyboard: [
-          [{ text: '⚡ Studio Workload' }, { text: '🚧 Bottleneck Radar' }],
-          [{ text: '📸 Studio & Gear Slots' }, { text: '📊 Turnaround Metrics' }],
-          [{ text: '🌅 Morning Briefing' }, { text: '📋 My Tasks' }],
-          [{ text: '🧾 Submit Expense' }, { text: '🌴 Leave Request' }],
-          [{ text: '📝 EOD Report' }, { text: '💳 Bank & bKash' }],
-          [{ text: '👤 My Profile' }, { text: '👥 My Team' }],
-          [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
-        ],
-        resize_keyboard: true
-      };
-    }
-
-    const isArtDirector = role.includes('art director') || (role.includes('art') && role.includes('direct'));
-    if (isArtDirector) {
-      return {
-        keyboard: [
-          [{ text: '🎨 Design Queue' }, { text: '👁️ Review Room' }],
-          [{ text: '👥 Design Team' }, { text: '✅ Leave Approvals' }],
-          [{ text: '🌅 Morning Briefing' }, { text: '📋 My Tasks' }],
-          [{ text: '🧾 Submit Expense' }, { text: '🌴 Leave Request' }],
-          [{ text: '📝 EOD Report' }, { text: '💳 Bank & bKash' }],
-          [{ text: '👤 My Profile' }, { text: '👥 My Team' }],
-          [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
-        ],
-        resize_keyboard: true
-      };
-    }
-
-    const isHeadOfProduction = role.includes('head of production') || role.includes('production head') || role.includes('production');
-    if (isHeadOfProduction) {
-      return {
-        keyboard: [
-          [{ text: '🎬 Production Queue' }, { text: '📜 Script & Copy QC' }],
-          [{ text: '🎥 Shoot Call-Sheets' }, { text: '👥 Content Team' }],
-          [{ text: '🌅 Morning Briefing' }, { text: '✅ Leave Approvals' }],
-          [{ text: '🧾 Submit Expense' }, { text: '🌴 Leave Request' }],
-          [{ text: '📝 EOD Report' }, { text: '💳 Bank & bKash' }],
-          [{ text: '👤 My Profile' }, { text: '👥 My Team' }],
-          [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
-        ],
-        resize_keyboard: true
-      };
-    }
-
-    const isStrategyLead = role.includes('strategy & planning') || role.includes('strategy');
-    if (isStrategyLead) {
-      return {
-        keyboard: [
-          [{ text: '📈 Campaign Strategy' }, { text: '🗓️ Content Calendars' }],
-          [{ text: '👥 Strategy Team' }, { text: '✅ Leave Approvals' }],
-          [{ text: '🌅 Morning Briefing' }, { text: '📋 My Tasks' }],
-          [{ text: '🧾 Submit Expense' }, { text: '🌴 Leave Request' }],
-          [{ text: '📝 EOD Report' }, { text: '💳 Bank & bKash' }],
-          [{ text: '👤 My Profile' }, { text: '👥 My Team' }],
-          [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
-        ],
-        resize_keyboard: true
-      };
-    }
-
-    const isClientServices = role.includes('client services') || role.includes('account manager') || role.includes('client service');
-    if (isClientServices && !role.includes('head of client')) {
-      return {
-        keyboard: [
-          [{ text: '🎯 My Client Roster' }, { text: '🎬 Client Approvals' }],
-          [{ text: '📢 Send Client Link' }, { text: '💬 Client Feedback' }],
-          [{ text: '🌅 Morning Briefing' }, { text: '👥 Account Team' }],
-          [{ text: '🧾 Submit Expense' }, { text: '🌴 Leave Request' }],
-          [{ text: '📝 EOD Report' }, { text: '💳 Bank & bKash' }],
-          [{ text: '👤 My Profile' }, { text: '📍 Clock-In GPS', request_location: true }],
-          [{ text: '🚪 Clock Out' }]
-        ],
-        resize_keyboard: true
-      };
-    }
-
-    // Default Director
-    return {
-      keyboard: [
-        [{ text: '👥 My Team' }, { text: '📊 Department Report' }],
-        [{ text: '🌅 Morning Briefing' }, { text: '📋 My Tasks' }],
-        [{ text: '🧾 Submit Expense' }, { text: '🌴 Leave Request' }],
-        [{ text: '📝 EOD Report' }, { text: '💳 Bank & bKash' }],
-        [{ text: '👤 My Profile' }, { text: '📍 Clock-In GPS', request_location: true }],
-        [{ text: '🚪 Clock Out' }]
-      ],
-      resize_keyboard: true
-    };
-  }
-
-  if (accessLevel === 'Finance Manager' || (emp?.role || '').toLowerCase().includes('finance manager')) {
-    return {
-      keyboard: [
-        [{ text: '💸 Expense Queue' }, { text: '🧾 Invoice Status' }],
-        [{ text: '📊 Payroll Summary' }, { text: '🏦 Bank & bKash Hub' }],
-        [{ text: '🌅 Morning Briefing' }, { text: '✅ Leave Approvals' }],
-        [{ text: '🧾 Submit Expense' }, { text: '🌴 Leave Request' }],
-        [{ text: '📝 EOD Report' }, { text: '👥 Admin Team' }],
-        [{ text: '👤 My Profile' }, { text: '📍 Clock-In GPS', request_location: true }],
-        [{ text: '🚪 Clock Out' }]
-      ],
-      resize_keyboard: true
-    };
-  }
-
-  if (accessLevel === 'Office Staff') {
-    return {
-      keyboard: [
-        [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }],
-        [{ text: '👤 My Profile' }, { text: '🌴 Leave Request' }]
-      ],
-      resize_keyboard: true
-    };
-  }
-
-  const userRole = (emp?.role || '').toLowerCase();
-
-  // PBD-028 Rythm: Digital Marketing Associate in Client Services dept → Client Services keyboard
-  if (emp?.id === 'PBD-028') {
-    return {
-      keyboard: [
-        [{ text: '🎯 My Client Roster' }, { text: '🎬 Client Approvals' }],
-        [{ text: '📢 Send Client Link' }, { text: '💬 Client Feedback' }],
-        [{ text: '📝 EOD Report' }, { text: '🧾 Submit Expense' }],
-        [{ text: '🌴 Leave Request' }, { text: '👤 My Profile' }],
-        [{ text: '💳 Bank & bKash' }, { text: '📍 Clock-In GPS', request_location: true }],
-        [{ text: '🚪 Clock Out' }]
-      ],
-      resize_keyboard: true
-    };
-  }
-
-  // PBD-030 Mukit: Junior Finance Executive → Finance Assistant keyboard
-  if (emp?.id === 'PBD-030' || (userRole.includes('finance') && userRole.includes('executive'))) {
-    return {
-      keyboard: [
-        [{ text: '🧾 Log Expense Entry' }, { text: '📋 Invoice Tracker' }],
-        [{ text: '💰 Payment Follow-Up' }, { text: '📝 EOD Report' }],
-        [{ text: '🧾 Submit Expense' }, { text: '🌴 Leave Request' }],
-        [{ text: '👤 My Profile' }, { text: '💳 Bank & bKash' }],
-        [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
-      ],
-      resize_keyboard: true
-    };
-  }
-
-  // Strategy & Digital Marketing Associate Keyboard
-  if (userRole.includes('strategy') || userRole.includes('digital marketing') || userRole.includes('associate')) {
-    return {
-      keyboard: [
-        [{ text: '📅 My Content Plans' }, { text: '🚀 Dispatch Hub' }],
-        [{ text: '📝 Draft New Plan' }, { text: '📝 EOD Report' }],
-        [{ text: '🧾 Submit Expense' }, { text: '🌴 Leave Request' }],
-        [{ text: '👤 My Profile' }, { text: '💳 Bank & bKash' }],
-        [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
-      ],
-      resize_keyboard: true
-    };
-  }
-
-  // Content Production Crew Keyboard (Copywriter, AI Prompt Engineer)
-  if (userRole.includes('copywriter') || userRole.includes('prompt') || userRole.includes('content')) {
-    return {
-      keyboard: [
-        [{ text: '📜 My Scripts & Copy' }, { text: '🤖 AI Prompt Studio' }],
-        [{ text: '📤 Submit Script QC' }, { text: '📝 EOD Report' }],
-        [{ text: '🧾 Submit Expense' }, { text: '🌴 Leave Request' }],
-        [{ text: '👤 My Profile' }, { text: '💳 Bank & bKash' }],
-        [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
-      ],
-      resize_keyboard: true
-    };
-  }
-
-  // Visualizer / Creative Specialist Keyboard
-  if (userRole.includes('visualizer')) {
-    return {
-      keyboard: [
-        [{ text: '🖌️ My Creative Tasks' }, { text: '📤 Submit for QC' }],
-        [{ text: '✏️ View Revisions' }, { text: '📝 EOD Report' }],
-        [{ text: '🧾 Submit Expense' }, { text: '🌴 Leave Request' }],
-        [{ text: '👤 My Profile' }, { text: '💳 Bank & bKash' }],
-        [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
-      ],
-      resize_keyboard: true
-    };
-  }
-
-  // Default: Specialist / Crew
-  return {
-    keyboard: [
-      [{ text: '📋 My Tasks' }, { text: '💰 My Earnings' }],
-      [{ text: '👤 My Profile' }, { text: '💳 Bank & bKash' }],
-      [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
-    ],
-    resize_keyboard: true
-  };
-}
 
 // ══════════════════════════════════════════
 // CLIENT BOT KEYBOARD
@@ -589,39 +297,44 @@ function initBot() {
 
       // 📱 TELEGRAM CONTACT VERIFICATION HANDLER (1-time phone link)
       teamBot.on('contact', async (msg) => {
-        const chatId = msg.chat.id;
-        const contact = msg.contact;
-        if (!contact || !contact.phone_number) return;
+        try {
+          const chatId = msg.chat.id;
+          const contact = msg.contact;
+          if (!contact || !contact.phone_number) return;
 
-        const normPhone = state.normalizePhone(contact.phone_number);
-        const emp = await state.getEmployeeByPhone(normPhone);
+          const normPhone = state.normalizePhone(contact.phone_number);
+          const emp = await state.getEmployeeByPhone(normPhone);
 
-        if (!emp) {
-          const errorMsg = `🔒 *Access Restricted — Purplebot Digital Internal Portal*\n\n` +
-            `The phone number *+${normPhone}* is not registered in the PBD employee database.\n\n` +
-            `If you are an authorized employee, please contact Technology Admin *Firoz Uddin Ahmed* (01708-459008) to authorize your account.`;
-          return teamBot.sendMessage(chatId, errorMsg, { parse_mode: 'Markdown' });
+          if (!emp) {
+            const errorMsg = `🔒 *Access Restricted — Purplebot Digital Internal Portal*\n\n` +
+              `The phone number *+${normPhone}* is not registered in the PBD employee database.\n\n` +
+              `If you are an authorized employee, please contact Technology Admin *Firoz Uddin Ahmed* (01708-459008) to authorize your account.`;
+            return teamBot.sendMessage(chatId, errorMsg, { parse_mode: 'Markdown' });
+          }
+
+          // Link Telegram ID and generate temp PIN in parallel for max performance
+          const [, pinRecord] = await Promise.all([
+            state.linkTelegramId(emp.emp_code, chatId),
+            createTempPin(emp.phone, emp.emp_code, 'team', emp.email)
+          ]);
+          emp.telegramId = String(chatId);
+
+          const welcomeMsg = `✅ *Identity Verified — Welcome, ${emp.name}!*\n\n` +
+            `• Designation: *${emp.role}*\n` +
+            `• Department: *${emp.department}*\n` +
+            `• Access Level: *${emp.accessLevel}*\n\n` +
+            `🔑 *Desktop Web PIN:* \`${pinRecord.pin}\`\n` +
+            `🌐 Portal: https://purpleos-iota.vercel.app/auth\n\n` +
+            `━━━━━━━━━━━━━━━━━━━━\n` +
+            `🚀 *Your full dashboard is now unlocked!*\n` +
+            `Use the menu below or tap *Open App* for the full portal.`;
+
+          const keyboard = getRoleKeyboard(emp.accessLevel, true, emp);
+          teamBot.sendMessage(chatId, welcomeMsg, { parse_mode: 'Markdown', reply_markup: keyboard });
+        } catch (err) {
+          console.error('[Bot Error: contact handler]', err.message);
+          teamBot.sendMessage(msg.chat.id, '⚠️ An error occurred during verification. Please try again.').catch(() => {});
         }
-
-        // Link Telegram ID and generate temp PIN in parallel for max performance
-        const [, pinRecord] = await Promise.all([
-          state.linkTelegramId(emp.emp_code, chatId),
-          createTempPin(emp.phone, emp.emp_code, 'team', emp.email)
-        ]);
-        emp.telegramId = String(chatId);
-
-        const welcomeMsg = `✅ *Identity Verified — Welcome, ${emp.name}!*\n\n` +
-          `• Designation: *${emp.role}*\n` +
-          `• Department: *${emp.department}*\n` +
-          `• Access Level: *${emp.accessLevel}*\n\n` +
-          `🔑 *Desktop Web PIN:* \`${pinRecord.pin}\`\n` +
-          `🌐 Portal: https://purpleos-iota.vercel.app/auth\n\n` +
-          `━━━━━━━━━━━━━━━━━━━━\n` +
-          `🚀 *Your full dashboard is now unlocked!*\n` +
-          `Use the menu below or tap *Open App* for the full portal.`;
-
-        const keyboard = getRoleKeyboard(emp.accessLevel, true, emp);
-        teamBot.sendMessage(chatId, welcomeMsg, { parse_mode: 'Markdown', reply_markup: keyboard });
       });
 
       
@@ -635,9 +348,14 @@ function initBot() {
         '📋 My Tasks', '💰 My Earnings', '✍️ Pending Approvals', '🎬 Client Status',
         '👥 Full Team Status', '📊 Department Report', '👤 My Profile', '💳 Bank & bKash',
         '🛠️ Tech Diagnostics', '📍 Clock-In GPS', '🚪 Clock Out', '🌅 Morning Briefing',
-        '📊 Business Snapshot', '💰 Finance Summary', '💰 My Commission',
-        // Creative Director
-        '🎨 Design Queue', '👁️ Review Room', '👥 Design Team',
+        '📊 Business Snapshot', '💰 Finance Summary', '💰 My Commission', '📊 My Status',
+        // Creative & Specialists
+        '🎨 Design Queue', '👁️ Review Room', '👥 Design Team', '🖌️ My Creative Tasks', '📤 Submit for QC', '✏️ View Revisions',
+        '✂️ My Edit Queue', '📤 Submit for Review', '🎨 My 3D Task Queue', '📤 Submit Render', '📸 Book Gear / Studio',
+        '🎟️ My Tickets', '🚀 Log Deployment',
+        // Copywriters & Content Strategy
+        '📜 My Scripts & Copy', '🤖 AI Prompt Studio', '📤 Submit Script QC',
+        '📅 My Content Plans', '🚀 Dispatch Hub', '📝 Draft New Plan',
         // Studio Lead & Production
         '⚡ Studio Workload', '🚧 Bottleneck Radar', '📸 Studio & Gear Slots', '📊 Turnaround Metrics',
         '🎬 Production Queue', '📜 Script & Copy QC', '🎥 Shoot Call-Sheets', '👥 Content Team',
@@ -653,7 +371,7 @@ function initBot() {
         '🧾 Log Expense Entry', '📋 Invoice Tracker', '💰 Payment Follow-Up'
       ];
 
-      const VALID_WIZARD_ACTIONS = ['await_expense', 'await_leave', 'await_eod'];
+      const VALID_WIZARD_ACTIONS = ['await_expense', 'await_leave', 'await_eod', 'await_deploy'];
 
       teamBot.on('message', async (msg) => {
         const chatId = msg.chat.id;
@@ -711,6 +429,9 @@ function initBot() {
         } else if (wizardState.action.startsWith('await_eod')) {
           const eodHandler = require('./bot/handlers/eod');
           await eodHandler.handleEODWizardStep(teamBot, msg, wizardState, emp);
+        } else if (wizardState.action.startsWith('await_deploy')) {
+          const ticketsHandler = require('./bot/handlers/tickets');
+          await ticketsHandler.handleDeployWizardStep(teamBot, msg, wizardState, emp);
         }
       });
 
@@ -775,6 +496,7 @@ function initBot() {
       const creativeHandler = require('./bot/handlers/creative');
       const studioHandler = require('./bot/handlers/studio');
       const finMgrHandler = require('./bot/handlers/finance-manager');
+      const ticketsHandler = require('./bot/handlers/tickets');
 
       // Core profile & earnings
       teamBot.onText(/\/myprofile|👤 My Profile/, (msg) => profileHandler.handleMyProfile(teamBot, msg));
@@ -782,35 +504,59 @@ function initBot() {
       teamBot.onText(/\/myearnings|💰 My Earnings|💰 My Commission/, (msg) => profileHandler.handleMyEarnings(teamBot, msg));
       teamBot.onText(/\/techdiag|🛠️ Tech Diagnostics/, (msg) => adminHandler.handleTechDiagnostics(teamBot, msg));
 
-      // Tasks
-      teamBot.onText(/\/mytasks|📋 My Tasks/, (msg) => tasksHandler.handleMyTasks(teamBot, msg));
+      // Tasks & Craft Queues
+      teamBot.onText(/\/mytasks|📋 My Tasks|🖌️ My Creative Tasks/, (msg) => tasksHandler.handleMyTasks(teamBot, msg));
+      teamBot.onText(/✂️ My Edit Queue|📤 Submit for Review|🎨 My 3D Task Queue|📤 Submit Render|📤 Submit for QC|✏️ View Revisions|📤 Submit Script QC/, (msg) => creativeHandler.handleMyEditQueue(teamBot, msg));
+      teamBot.onText(/\/mytickets|🎟️ My Tickets/, (msg) => ticketsHandler.handleMyTickets(teamBot, msg));
+      teamBot.onText(/\/logdeploy|🚀 Log Deployment/, (msg) => ticketsHandler.handleDeployLog(teamBot, msg));
 
-      // Attendance
-      teamBot.onText(/\/clockin|📍 Clock-In GPS/, (msg) => attendanceHandler.handleTextClockIn(teamBot, msg));
-      teamBot.onText(/\/clockout|🚪 Clock Out/, (msg) => attendanceHandler.handleClockOut(teamBot, msg));
+      // Specialist Web Links & Tools
+      teamBot.onText(/📅 My Content Plans|🚀 Dispatch Hub|📝 Draft New Plan/, (msg) => {
+        teamBot.sendMessage(msg.chat.id,
+          `📅 *Content Planning & Dispatch Hub*\n\n` +
+          `Manage your campaigns, editorial calendars, and dispatch queues directly on the web portal:\n` +
+          `👉 https://purpleos-iota.vercel.app/crew#calendar`,
+          { parse_mode: 'Markdown' }
+        );
+      });
+      teamBot.onText(/📜 My Scripts & Copy|🤖 AI Prompt Studio/, (msg) => {
+        teamBot.sendMessage(msg.chat.id,
+          `📜 *Script & Copy Studio*\n\n` +
+          `Access AI brief summarization, copy templates, and script QC feeds:\n` +
+          `👉 https://purpleos-iota.vercel.app/crew#tasks`,
+          { parse_mode: 'Markdown' }
+        );
+      });
+
+      // Admin & Team Overview
+      teamBot.onText(/\/fullteam(?:@\w+)?|👥 Full Team Status/, (msg) => adminHandler.handleFullTeamStatus(teamBot, msg));
+
+      // Attendance (with aliases /clock_in, /clock_out)
+      teamBot.onText(/\/clockin(?:@\w+)?|\/clock_in(?:@\w+)?|📍 Clock-In GPS/, (msg) => attendanceHandler.handleTextClockIn(teamBot, msg));
+      teamBot.onText(/\/clockout(?:@\w+)?|\/clock_out(?:@\w+)?|🚪 Clock Out/, (msg) => attendanceHandler.handleClockOut(teamBot, msg));
       teamBot.on('location', (msg) => attendanceHandler.handleLocationClockIn(teamBot, msg));
-      teamBot.onText(/\/myattendance|📅 My Attendance Log|👥 HR & Attendance/, (msg) => attendanceHandler.handleMyAttendance(teamBot, msg));
+      teamBot.onText(/\/myattendance(?:@\w+)?|📅 My Attendance Log|👥 HR & Attendance/, (msg) => attendanceHandler.handleMyAttendance(teamBot, msg));
 
       // Leaves
-      teamBot.onText(/\/leave$|\/leaverequest|🌴 Leave Request/, (msg) => leavesHandler.handleInitLeave(teamBot, msg));
-      teamBot.onText(/\/leavebalance|🌴 Leave Balance/, (msg) => leavesHandler.handleLeaveBalance(teamBot, msg));
-      teamBot.onText(/\/leaveapprovals|✅ Leave Approvals/, (msg) => leavesHandler.handleManagerLeaveApprovals(teamBot, msg));
+      teamBot.onText(/\/leave(?:@\w+)?|\/leaverequest(?:@\w+)?|🌴 Leave Request/, (msg) => leavesHandler.handleInitLeave(teamBot, msg));
+      teamBot.onText(/\/leavebalance(?:@\w+)?|🌴 Leave Balance/, (msg) => leavesHandler.handleLeaveBalance(teamBot, msg));
+      teamBot.onText(/\/leaveapprovals(?:@\w+)?|✅ Leave Approvals/, (msg) => leavesHandler.handleManagerLeaveApprovals(teamBot, msg));
 
       // Creative Director & Review Room
-      teamBot.onText(/\/designqueue|🎨 Design Queue/, (msg) => creativeHandler.handleDesignQueue(teamBot, msg));
-      teamBot.onText(/\/reviewroom|👁️ Review Room/, (msg) => creativeHandler.handleReviewRoom(teamBot, msg));
-      teamBot.onText(/\/myteam|👥 My Team|👥 Design Team|👥 Content Team|👥 Strategy Team|👥 Account Team/, (msg) => creativeHandler.handleMyTeam(teamBot, msg));
+      teamBot.onText(/\/designqueue(?:@\w+)?|🎨 Design Queue/, (msg) => creativeHandler.handleDesignQueue(teamBot, msg));
+      teamBot.onText(/\/reviewroom(?:@\w+)?|👁️ Review Room/, (msg) => creativeHandler.handleReviewRoom(teamBot, msg));
+      teamBot.onText(/\/myteam(?:@\w+)?|👥 My Team|👥 Design Team|👥 Content Team|👥 Strategy Team|👥 Account Team/, (msg) => creativeHandler.handleMyTeam(teamBot, msg));
 
       // Studio Lead & Production Operations
-      teamBot.onText(/\/workload|⚡ Studio Workload|🎬 Production Queue/, (msg) => studioHandler.handleStudioWorkload(teamBot, msg));
-      teamBot.onText(/\/bottlenecks|🚧 Bottleneck Radar/, (msg) => studioHandler.handleBottleneckRadar(teamBot, msg));
-      teamBot.onText(/\/gearslots|📸 Studio & Gear Slots|🎥 Shoot Call-Sheets/, (msg) => studioHandler.handleStudioGearSlots(teamBot, msg));
-      teamBot.onText(/\/metrics|📊 Turnaround Metrics|📊 Department Report/, (msg) => studioHandler.handleTurnaroundMetrics(teamBot, msg));
+      teamBot.onText(/\/workload(?:@\w+)?|⚡ Studio Workload|🎬 Production Queue/, (msg) => studioHandler.handleStudioWorkload(teamBot, msg));
+      teamBot.onText(/\/bottlenecks(?:@\w+)?|🚧 Bottleneck Radar/, (msg) => studioHandler.handleBottleneckRadar(teamBot, msg));
+      teamBot.onText(/\/gearslots(?:@\w+)?|📸 Studio & Gear Slots|🎥 Shoot Call-Sheets|📸 Book Gear \/ Studio/, (msg) => studioHandler.handleCrewStudioRequest(teamBot, msg));
+      teamBot.onText(/\/metrics(?:@\w+)?|📊 Turnaround Metrics|📊 Department Report/, (msg) => studioHandler.handleTurnaroundMetrics(teamBot, msg));
 
       // Expenses - Role-aware dispatch for Expense Queue vs Personal Submit
-      teamBot.onText(/\/expense$|\/submitexpense|🧾 Submit Expense/, (msg) => expensesHandler.handleInitExpense(teamBot, msg));
-      teamBot.onText(/\/logexpense|🧾 Log Expense Entry/, (msg) => financeHandler.handleLogExpenseEntry(teamBot, msg));
-      teamBot.onText(/\/expensequeue|💸 Expense Queue/, async (msg) => {
+      teamBot.onText(/\/expense(?:@\w+)?|\/submitexpense(?:@\w+)?|🧾 Submit Expense/, (msg) => expensesHandler.handleInitExpense(teamBot, msg));
+      teamBot.onText(/\/logexpense(?:@\w+)?|🧾 Log Expense Entry/, (msg) => financeHandler.handleLogExpenseEntry(teamBot, msg));
+      teamBot.onText(/\/expensequeue(?:@\w+)?|💸 Expense Queue/, async (msg) => {
         try {
           const emp = await state.getEmployeeByTelegramId(msg.chat.id);
           const access = emp?.accessLevel || '';
@@ -825,68 +571,75 @@ function initBot() {
       });
 
       // Finance Manager Hubs & Invoice Tracking
-      teamBot.onText(/\/invoicetracker|📋 Invoice Tracker|🧾 Invoice Status/, (msg) => financeHandler.handleInvoiceTracker(teamBot, msg));
-      teamBot.onText(/\/paymentfollowup|💰 Payment Follow-Up/, (msg) => financeHandler.handlePaymentFollowUp(teamBot, msg));
-      teamBot.onText(/\/payroll|📊 Payroll Summary/, (msg) => finMgrHandler.handlePayrollSummary(teamBot, msg));
-      teamBot.onText(/\/bankhub|🏦 Bank & bKash Hub/, (msg) => finMgrHandler.handleBankBkashHub(teamBot, msg));
-      teamBot.onText(/\/adminteam|👥 Admin Team/, (msg) => finMgrHandler.handleAdminTeam(teamBot, msg));
+      teamBot.onText(/\/invoicetracker(?:@\w+)?|📋 Invoice Tracker|🧾 Invoice Status/, (msg) => financeHandler.handleInvoiceTracker(teamBot, msg));
+      teamBot.onText(/\/paymentfollowup(?:@\w+)?|💰 Payment Follow-Up/, (msg) => financeHandler.handlePaymentFollowUp(teamBot, msg));
+      teamBot.onText(/\/payroll(?:@\w+)?|📊 Payroll Summary/, (msg) => finMgrHandler.handlePayrollSummary(teamBot, msg));
+      teamBot.onText(/\/bankhub(?:@\w+)?|🏦 Bank & bKash Hub/, (msg) => finMgrHandler.handleBankBkashHub(teamBot, msg));
+      teamBot.onText(/\/adminteam(?:@\w+)?|👥 Admin Team/, (msg) => finMgrHandler.handleAdminTeam(teamBot, msg));
 
       // EOD
-      teamBot.onText(/\/eod$|\/submiteod|📝 EOD Report/, (msg) => eodHandler.handleInitEOD(teamBot, msg));
-      teamBot.onText(/\/myeod|📝 My EOD History/, (msg) => eodHandler.handleMyEODHistory(teamBot, msg));
+      teamBot.onText(/\/eod(?:@\w+)?|\/submiteod(?:@\w+)?|📝 EOD Report/, (msg) => eodHandler.handleInitEOD(teamBot, msg));
+      teamBot.onText(/\/myeod(?:@\w+)?|📝 My EOD History/, (msg) => eodHandler.handleMyEODHistory(teamBot, msg));
 
       // Executive briefing & status
-      teamBot.onText(/\/briefing|🌅 Morning Briefing/, (msg) => briefingHandler.handleMorningBriefing(teamBot, msg));
-      teamBot.onText(/\/snapshot|📊 Business Snapshot|🏢 Ops Dashboard/, (msg) => briefingHandler.handleBusinessSnapshot(teamBot, msg));
-      teamBot.onText(/\/finance|💰 Finance Summary/, (msg) => briefingHandler.handleFinanceSummary(teamBot, msg));
-      teamBot.onText(/\/approvals|✍️ Pending Approvals/, (msg) => approvalsHandler.handlePendingApprovals(teamBot, msg));
-      teamBot.onText(/\/clients|🎬 Client Status|🎯 My Clients|🔔 Client Updates|🚀 Client Activation|📜 Script & Copy QC|📈 Campaign Strategy|🗓️ Content Calendars|🎯 My Client Roster|🎬 Client Approvals|📢 Send Client Link|💬 Client Feedback|📡 Media Buying/, (msg) => reportsHandler.handleClientStatus(teamBot, msg));
+      teamBot.onText(/\/briefing(?:@\w+)?|🌅 Morning Briefing/, (msg) => briefingHandler.handleMorningBriefing(teamBot, msg));
+      teamBot.onText(/\/snapshot(?:@\w+)?|📊 Business Snapshot|🏢 Ops Dashboard/, (msg) => briefingHandler.handleBusinessSnapshot(teamBot, msg));
+      teamBot.onText(/\/finance(?:@\w+)?|💰 Finance Summary/, (msg) => briefingHandler.handleFinanceSummary(teamBot, msg));
+      teamBot.onText(/\/approvals(?:@\w+)?|✍️ Pending Approvals/, (msg) => approvalsHandler.handlePendingApprovals(teamBot, msg));
+      teamBot.onText(/\/clients(?:@\w+)?|🎬 Client Status|🎯 My Clients|🔔 Client Updates|🚀 Client Activation|📜 Script & Copy QC|📈 Campaign Strategy|🗓️ Content Calendars|🎯 My Client Roster|🎬 Client Approvals|📢 Send Client Link|💬 Client Feedback|📡 Media Buying/, (msg) => reportsHandler.handleClientStatus(teamBot, msg));
 
-      teamBot.onText(/\/leaderboard|🏆 Leaderboard/, (msg) => leaderboardHandler.handleLeaderboard(teamBot, msg));
-      teamBot.onText(/\/status|📊 Dashboard Status/, (msg) => mystatsHandler.handleStatus(teamBot, msg));
+      teamBot.onText(/\/leaderboard(?:@\w+)?|🏆 Leaderboard/, (msg) => leaderboardHandler.handleLeaderboard(teamBot, msg));
+      teamBot.onText(/\/status(?:@\w+)?|\/mystats(?:@\w+)?|\/my_stats(?:@\w+)?|📊 Dashboard Status|📊 My Status/, (msg) => mystatsHandler.handleStatus(teamBot, msg));
 
       // Reset PIN Command
       teamBot.onText(/\/resetpin|🔑 View My Web Login PIN/, async (msg) => {
         const chatId = msg.chat.id;
-        const emp = await state.getEmployeeByTelegramId(chatId);
+        try {
+          const emp = await state.getEmployeeByTelegramId(chatId);
 
-        if (!emp) {
-          return teamBot.sendMessage(chatId, `❌ Please verify your phone number first by tapping "Verify My Phone Number".`, { parse_mode: 'Markdown' });
+          if (!emp) {
+            return teamBot.sendMessage(chatId, `❌ Please verify your phone number first by tapping "Verify My Phone Number".`, { parse_mode: 'Markdown' });
+          }
+
+          const pinRecord = await createTempPin(emp.phone, emp.id, 'team', emp.email);
+          teamBot.sendMessage(chatId, `🔑 *New Desktop Web PIN:* \`${pinRecord.pin}\`\n\nGo to https://purpleos-iota.vercel.app/auth to log in on your laptop.`, { parse_mode: 'Markdown' });
+        } catch (err) {
+          console.error('[Bot Error: resetpin]', err.message);
+          teamBot.sendMessage(chatId, '❌ Could not generate login PIN. Please try again later.').catch(() => {});
         }
-
-        const pinRecord = await createTempPin(emp.phone, emp.id, 'team', emp.email);
-        teamBot.sendMessage(chatId, `🔑 *New Desktop Web PIN:* \`${pinRecord.pin}\`\n\nGo to https://purpleos-iota.vercel.app/auth to log in on your laptop.`, { parse_mode: 'Markdown' });
       });
-
-
-
 
       // 🎓 Orientation Command / Button
       teamBot.onText(/\/orientation|🎓 Orientation/, async (msg) => {
         const chatId = msg.chat.id;
-        await state.clearSession(chatId);
-        const emp = await state.getEmployeeByTelegramId(chatId);
-        if (!emp) return teamBot.sendMessage(chatId, `⚠️ Account not verified. Please tap *📱 Verify My Phone Number* first.`);
+        try {
+          await state.clearSession(chatId);
+          const emp = await state.getEmployeeByTelegramId(chatId);
+          if (!emp) return teamBot.sendMessage(chatId, `⚠️ Account not verified. Please tap *📱 Verify My Phone Number* first.`);
 
-        const tasks = emp.onboardingTasks || [
-          { label: '📧 Add Work Email', completed: Boolean(emp.email) },
-          { label: '🌐 Activate Web Portal (First Login)', completed: Boolean(emp.permanentPinSet) },
-          { label: '📍 Submit First GPS Clock-In', completed: Boolean(emp.status && emp.status !== 'Offline') },
-          { label: '📋 Submit First EOD Report', completed: false },
-          { label: '🌴 Submit Test Leave Request', completed: false },
-          { label: '💳 Bank & bKash Payout Setup', completed: Boolean(emp.bankInfo?.bankName || emp.bankInfo?.mfsNo) }
-        ];
+          const tasks = emp.onboardingTasks || [
+            { label: '📧 Add Work Email', completed: Boolean(emp.email) },
+            { label: '🌐 Activate Web Portal (First Login)', completed: Boolean(emp.permanentPinSet) },
+            { label: '📍 Submit First GPS Clock-In', completed: Boolean(emp.status && emp.status !== 'Offline') },
+            { label: '📋 Submit First EOD Report', completed: false },
+            { label: '🌴 Submit Test Leave Request', completed: false },
+            { label: '💳 Bank & bKash Payout Setup', completed: Boolean(emp.bankInfo?.bankName || emp.bankInfo?.mfsNo) }
+          ];
 
-        let taskText = tasks.map((t, idx) => `${t.completed ? '✅' : '⏳'} ${idx + 1}. *${t.label || t.id}*`).join('\n');
+          let taskText = tasks.map((t, idx) => `${t.completed ? '✅' : '⏳'} ${idx + 1}. *${t.label || t.id}*`).join('\n');
 
-        const text = `🎓 *PURPLEBOT ORIENTATION & ONBOARDING TRACKER*\n\n` +
-          `• Employee: *${emp.name}*\n` +
-          `• Current Rank: *${emp.badge || '🌱 Recruit'}*\n` +
-          `• Earned XP: *${emp.xp || 0} XP*\n\n` +
-          `📋 *Onboarding Checklist:*\n${taskText}\n\n` +
-          `🌐 Open Onboarding Web Portal: https://purpleos-iota.vercel.app/onboarding`;
+          const text = `🎓 *PURPLEBOT ORIENTATION & ONBOARDING TRACKER*\n\n` +
+            `• Employee: *${emp.name}*\n` +
+            `• Current Rank: *${emp.badge || '🌱 Recruit'}*\n` +
+            `• Earned XP: *${emp.xp || 0} XP*\n\n` +
+            `📋 *Onboarding Checklist:*\n${taskText}\n\n` +
+            `🌐 Open Onboarding Web Portal: https://purpleos-iota.vercel.app/onboarding`;
 
-        teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
+          teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
+        } catch (err) {
+          console.error('[Bot Error: orientation]', err.message);
+          teamBot.sendMessage(chatId, '❌ Could not load orientation tracker. Please try again.').catch(() => {});
+        }
       });
       // Refactored monolithic handlers
       require('./bot/handlers/legacy_menus').registerLegacyTeamMenus(teamBot, readDB);

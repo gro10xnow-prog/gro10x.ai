@@ -21,6 +21,7 @@ const { createTempPin } = require('../services/auth-pins');
 const { uploadFile } = require('../services/storage');
 const { normalizePhone } = require('../utils/phone');
 const { getFirstName, getPreferredName, matchesAssignee } = require('../utils/name');
+const { getBadge } = require('../utils/xp');
 
 const miniAppLimiter = rateLimit({
   windowMs: 60 * 1000,
@@ -279,7 +280,7 @@ router.get('/snapshot', async (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 // GET /api/team/roster   ← Mini App roster page
 // ─────────────────────────────────────────────────────────────────────────────
-router.get('/roster', async (req, res) => {
+router.get('/roster', requireAuth, async (req, res) => {
   try {
     let team = [];
     if (supabase) {
@@ -301,7 +302,7 @@ router.get('/roster', async (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 // GET /api/team/tasks?telegramId=xxx   ← Mini App tasks page
 // ─────────────────────────────────────────────────────────────────────────────
-router.get('/tasks', async (req, res) => {
+router.get('/tasks', requireMiniAppAuth, async (req, res) => {
   try {
     const { telegramId } = req.query;
     if (!telegramId) return res.status(400).json({ error: 'telegramId required' });
@@ -336,7 +337,7 @@ router.get('/tasks', async (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 // GET /api/team/daily-activity   ← Phase 2: Mini App EOD Auto-fill
 // ─────────────────────────────────────────────────────────────────────────────
-router.get('/daily-activity', async (req, res) => {
+router.get('/daily-activity', requireMiniAppAuth, async (req, res) => {
   try {
     const { telegramId } = req.query;
     if (!telegramId) return res.status(400).json({ error: 'telegramId required' });
@@ -502,14 +503,11 @@ router.post('/survey', miniAppLimiter, requireMiniAppAuth, async (req, res) => {
 
     // XP awarded per part
     const XP_PER_PART = { 1: 100, 2: 150, 3: 200, 4: 100 };
-    const xpEarned = XP_PER_PART[part] || 50;
-    const currentXP = (emp.xp || 0) + xpEarned;
+    const xpEarned = XP_PER_PART[part] || 0;
+    const currentXP = (Number(emp.xp) || 0) + xpEarned;
 
     // Determine badge based on total XP
-    let badge = '🌱 Recruit';
-    if (currentXP >= 500) badge = '⭐ Rising Star';
-    if (currentXP >= 1000) badge = '🔥 Performer';
-    if (currentXP >= 2000) badge = '💜 Champion';
+    const badge = getBadge(currentXP);
 
     // Build Supabase profile update based on part
     const profileUpdate = { xp: currentXP, badge, updated_at: new Date().toISOString() };
@@ -733,6 +731,8 @@ router.get('/', requireAuth, async (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 router.get('/tg/:telegramId', async (req, res) => {
   try {
+    res.setHeader('Deprecation', 'true');
+    res.setHeader('Link', '</api/team/me>; rel="successor-version"');
     const { telegramId } = req.params;
 
     const found = await findEmpByTelegramId(telegramId);
@@ -840,12 +840,15 @@ router.get('/leaves', requireAuth, async (req, res) => {
 // GET /api/team/eod
 router.get('/eod', requireAuth, async (req, res) => {
   try {
-    const { data, error } = await supabase.from('eod_reports').select('*').order('created_at', { ascending: false });
-    if (error) throw error;
-    let rows = data || [];
-    const empId = req.query.employeeId || req.query.empId;
-    if (empId) {
-      rows = rows.filter(e => e.employee_id === empId || e.employeeId === empId);
+    const empId = req.query.employeeId || req.query.empId || req.query.emp_code;
+    let rows = [];
+    if (supabase) {
+      let query = supabase.from('eod_reports').select('*').order('created_at', { ascending: false });
+      if (empId) {
+        query = query.or(`employee_id.eq.${empId},employee_id.ilike.%${empId}%`);
+      }
+      const { data, error } = await query;
+      if (!error && data) rows = data;
     }
     res.json(rows);
   } catch (err) {
@@ -857,20 +860,20 @@ router.get('/eod', requireAuth, async (req, res) => {
 // POST /api/team/leaves
 router.post('/leaves', requireAuth, async (req, res) => {
   try {
-    const { count } = await supabase.from('leaves').select('*', { count: 'exact', head: true });
-    const newId = `LEV-${String((count || 0) + 1).padStart(3, '0')}`;
+    const { randomUUID } = require('crypto');
+    const newId = `LVE-${randomUUID ? randomUUID().split('-')[0].toUpperCase() : Date.now().toString().slice(-6)}`;
 
     const payload = {
       id: newId,
-      employee_id: req.user.linkedId || req.user.id || 'PBD-001',
-      employee_name: req.user.profile?.name || req.user.name || 'Team Member',
+      employee_id: req.body.staffId || req.body.employeeId || req.user.empCode || req.user.emp_code || req.user.linkedId || req.user.id || 'PBD-001',
+      employee_name: req.body.staffName || req.body.employeeName || req.user.profile?.name || req.user.name || 'Team Member',
       leave_type: req.body.type || req.body.leaveType || 'Casual Leave',
       start_date: req.body.fromDate || req.body.startDate || new Date().toISOString().split('T')[0],
       end_date: req.body.toDate || req.body.endDate || new Date().toISOString().split('T')[0],
-      total_days: Number(req.body.totalDays) || 1,
+      total_days: Number(req.body.totalDays || req.body.total_days || req.body.days) || 1,
       reason: req.body.reason || 'Personal work',
       status: 'Pending',
-      submitted_via: 'web_portal'
+      submitted_via: req.body.submitted_via || 'web_portal'
     };
 
     const { data: newLeave, error } = await supabase.from('leaves').insert([payload]).select().single();
@@ -900,8 +903,38 @@ router.put('/leaves/:id', requireAuth, requireManager, async (req, res) => {
     const { id } = req.params;
     const updates = { ...req.body, reviewed_by: req.user.name, updated_at: new Date().toISOString() };
 
+    // Fetch existing leave request to check if approving
+    let leaveReq = null;
+    if (supabase) {
+      const { data } = await supabase.from('leaves').select('*').eq('id', id).maybeSingle();
+      leaveReq = data;
+    }
+
     const { data: leave, error } = await supabase.from('leaves').update(updates).eq('id', id).select().single();
     if (error) throw error;
+
+    // Deduct leave balance upon Approval if profiles table columns exist
+    if (supabase && req.body.status === 'Approved' && leaveReq && leaveReq.employee_id) {
+      try {
+        const days = Number(leaveReq.total_days || leaveReq.days) || 1;
+        const isSick = (leaveReq.leave_type || '').toLowerCase().includes('sick');
+        const usedCol = isSick ? 'sick_leaves_used' : 'casual_leaves_used';
+
+        const { data: profile } = await supabase.from('profiles').select(usedCol).eq('emp_code', leaveReq.employee_id).maybeSingle();
+        if (profile && profile[usedCol] !== undefined) {
+          const currentUsed = profile[usedCol] || 0;
+          await supabase.from('profiles').update({ [usedCol]: currentUsed + days }).eq('emp_code', leaveReq.employee_id);
+        } else {
+          const { data: profileId } = await supabase.from('profiles').select(usedCol).eq('id', leaveReq.employee_id).maybeSingle();
+          if (profileId && profileId[usedCol] !== undefined) {
+            const currentUsed = profileId[usedCol] || 0;
+            await supabase.from('profiles').update({ [usedCol]: currentUsed + days }).eq('id', leaveReq.employee_id);
+          }
+        }
+      } catch (balErr) {
+        console.warn('[Team Leaves API] Leave balance decrement skipped:', balErr.message);
+      }
+    }
 
     const { data: allLeaves } = await supabase.from('leaves').select('*').order('created_at', { ascending: false });
     broadcastTeamEvent('leave_update', allLeaves || []);
@@ -922,7 +955,7 @@ router.post('/', requireAuth, requireManager, async (req, res) => {
     }
 
     const normalizedPhone = normalizePhone(phone);
-    const { data: countData } = await supabase.from('team_members').select('id');
+    const { data: countData } = await supabase.from('profiles').select('id');
     const newEmpCode = `PBD-${String((countData?.length || 0) + 1).padStart(3, '0')}`;
 
     const payload = {
@@ -938,7 +971,7 @@ router.post('/', requireAuth, requireManager, async (req, res) => {
       created_at: new Date().toISOString()
     };
 
-    const { data, error } = await supabase.from('team_members').insert([payload]).select().single();
+    const { data, error } = await supabase.from('profiles').insert([payload]).select().single();
     if (error) throw error;
 
     // Register login credentials immediately (phone + PIN) for /crew portal access
@@ -948,7 +981,7 @@ router.post('/', requireAuth, requireManager, async (req, res) => {
       pinRecord = await createTempPin(normalizedPhone, newEmpCode, 'team', '');
       // If a specific PIN was provided, update it immediately
       if (providedPin && pinRecord) {
-        await supabase.from('pins').update({ pin: providedPin, is_permanent: true })
+        await supabase.from('auth_pins').update({ pin: providedPin, is_permanent: true })
           .eq('phone', normalizedPhone);
         pinRecord.pin = providedPin;
       }
@@ -957,7 +990,7 @@ router.post('/', requireAuth, requireManager, async (req, res) => {
     }
 
     const member = mapProfile(data);
-    const { data: allTeam } = await supabase.from('team_members').select('*').order('created_at', { ascending: false });
+    const { data: allTeam } = await supabase.from('profiles').select('*').order('created_at', { ascending: false });
     broadcastTeamEvent('team_update', (allTeam || []).map(mapProfile));
 
     res.json({
@@ -983,7 +1016,7 @@ router.post('/:empCode/reset-pin', requireAuth, async (req, res) => {
     let targetPhone = '';
 
     if (supabase) {
-      const { data } = await supabase.from('team_members').select('phone').eq('emp_code', empCode).maybeSingle();
+      const { data } = await supabase.from('profiles').select('phone').eq('emp_code', empCode).maybeSingle();
       if (data && data.phone) targetPhone = data.phone;
     }
 
@@ -991,7 +1024,7 @@ router.post('/:empCode/reset-pin', requireAuth, async (req, res) => {
     try {
       pinRecord = await createTempPin(targetPhone || '01700000000', empCode, 'team', '');
       if (customPin && pinRecord && supabase) {
-        await supabase.from('pins').update({ pin: customPin, is_permanent: true }).eq('phone', targetPhone).catch(() => {});
+        await supabase.from('auth_pins').update({ pin: customPin, is_permanent: true }).eq('phone', targetPhone).catch(() => {});
         pinRecord.pin = customPin;
       }
     } catch (e) {
@@ -1132,6 +1165,12 @@ router.put('/:id', requireAuth, async (req, res) => {
     if (body.emergency_contact !== undefined) updates.emergency_contact = body.emergency_contact;
     if (body.bank_info !== undefined) updates.bank_info = body.bank_info;
     if (body.avatar_url !== undefined || body.avatarUrl !== undefined) updates.avatar_url = body.avatar_url || body.avatarUrl;
+    if (body.tshirt_size !== undefined || body.tshirtSize !== undefined) updates.tshirt_size = body.tshirt_size || body.tshirtSize;
+    if (body.dietary_pref !== undefined || body.dietaryPref !== undefined) updates.dietary_pref = body.dietary_pref || body.dietaryPref;
+    if (body.secondary_skill !== undefined || body.secondarySkill !== undefined) updates.secondary_skill = body.secondary_skill || body.secondarySkill;
+    if (body.portfolio_url !== undefined || body.portfolioUrl !== undefined) updates.portfolio_url = body.portfolio_url || body.portfolioUrl;
+    if (body.laptop_serial !== undefined || body.laptopSerial !== undefined) updates.laptop_serial = body.laptop_serial || body.laptopSerial;
+    if (body.studio_gear !== undefined || body.studioGear !== undefined) updates.studio_gear = body.studio_gear || body.studioGear;
     if (body.onboarding_complete !== undefined) updates.onboarding_complete = Boolean(body.onboarding_complete);
     if (body.survey_complete !== undefined) updates.survey_complete = Boolean(body.survey_complete);
 
@@ -1139,14 +1178,18 @@ router.put('/:id', requireAuth, async (req, res) => {
 
     let updatedProfile = null;
     if (supabase) {
-      const { data, error } = await supabase.from('profiles').update(updates).eq('emp_code', id).select().single();
-      if (error && error.code !== 'PGRST116') {
-        // Try falling back to 'id' if emp_code fails
-        const fallback = await supabase.from('profiles').update(updates).eq('id', id).select().single();
-        if (fallback.error) throw fallback.error;
-        updatedProfile = fallback.data;
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+      if (isUUID) {
+        const { data, error } = await supabase.from('profiles').update(updates).eq('id', id).select().maybeSingle();
+        if (!error && data) updatedProfile = data;
       } else {
-        updatedProfile = data;
+        const { data, error } = await supabase.from('profiles').update(updates).eq('emp_code', id).select().maybeSingle();
+        if (!error && data) {
+          updatedProfile = data;
+        } else {
+          const fallback = await supabase.from('profiles').update(updates).eq('id', id).select().maybeSingle();
+          if (fallback.data) updatedProfile = fallback.data;
+        }
       }
     }
 
@@ -1195,6 +1238,292 @@ router.post('/avatar', requireAuth, async (req, res) => {
   } catch (err) {
     console.error('POST /team/avatar error:', err.message);
     res.status(500).json({ error: err.message });
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// POST /api/team/upload-deliverable — Upload Deliverable and auto-advance to Internal QC
+// ─────────────────────────────────────────────────────────────────────────────
+router.post('/upload-deliverable', miniAppLimiter, requireMiniAppAuth, async (req, res) => {
+  try {
+    const { taskId, fileName, mimeType, base64, versionNote, employeeId } = req.body;
+    if (!taskId || !base64) {
+      return res.status(400).json({ error: 'taskId and base64 are required' });
+    }
+
+    let fileUrl = null;
+    try {
+      const cleanFileName = (fileName || 'deliverable.mp4').replace(/[^a-zA-Z0-9._-]/g, '_');
+      const base64Data = base64.replace(/^data:\w+\/\w+;base64,/, '');
+      const buffer = Buffer.from(base64Data, 'base64');
+      const uploadPath = `deliverables/${taskId}/${Date.now()}-${cleanFileName}`;
+      const uploadResult = await uploadFile('deliverables', uploadPath, buffer, mimeType || 'video/mp4');
+      fileUrl = uploadResult?.publicUrl || uploadResult?.url || null;
+    } catch (upErr) {
+      console.warn('[Upload Deliverable] Storage upload warning:', upErr.message);
+      return res.status(500).json({ error: 'File upload to storage failed. Please retry.', detail: upErr.message });
+    }
+
+    if (!fileUrl) {
+      return res.status(500).json({ error: 'File storage URL could not be generated. Please retry.' });
+    }
+
+    if (supabase) {
+      const { data: existing } = await supabase.from('tasks').select('custom_fields, title, assignee_id').eq('id', taskId).maybeSingle();
+      const existingFields = existing?.custom_fields || {};
+      const deliverables = [...(existingFields.deliverables || []), {
+        url: fileUrl,
+        fileName: fileName || 'deliverable',
+        versionNote: versionNote || '',
+        submittedBy: employeeId || req.user?.id || 'Crew Member',
+        submittedAt: new Date().toISOString()
+      }];
+
+      await supabase.from('tasks').update({
+        custom_fields: { ...existingFields, deliverables },
+        stage: 'Internal QC',
+        custom_status: 'Internal QC',
+        updated_at: new Date().toISOString()
+      }).eq('id', taskId);
+
+      broadcast('task_update', [{ id: taskId, stage: 'Internal QC' }]);
+    }
+
+    return res.json({ success: true, fileUrl, stage: 'Internal QC' });
+  } catch (err) {
+    console.error('POST /team/upload-deliverable error:', err.message);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GET /api/team/payslip — Return printable HTML payslip (Print to PDF)
+// ─────────────────────────────────────────────────────────────────────────────
+router.get('/payslip', requireMiniAppAuth, async (req, res) => {
+  try {
+    const empCode = req.user?.emp_code || req.user?.id || req.query.empCode;
+    const month = req.query.month || new Date().toISOString().slice(0, 7);
+
+    let emp = null;
+    if (supabase && empCode) {
+      const { data } = await supabase.from('profiles').select('*').or(`emp_code.eq.${empCode},id.eq.${empCode}`).maybeSingle();
+      emp = data;
+    }
+    if (!emp) {
+      emp = req.user || { name: 'Specialist Staff', emp_code: empCode || 'PBD-001', role: 'Production Specialist', department: 'Production' };
+    }
+
+    const baseSalary = Number(emp.base_salary || emp.salary || 35000);
+    const commissions = Number(emp.earned_commissions || emp.earnedCommissions || 0);
+    const total = baseSalary + commissions;
+    const monthDate = new Date(month + '-01');
+    const monthLabel = isNaN(monthDate.getTime())
+      ? new Date().toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
+      : monthDate.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payslip — ${emp.name} — ${monthLabel}</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: #f8fafc;
+      color: #0f172a;
+      padding: 40px 20px;
+    }
+    .sheet {
+      background: #ffffff;
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 48px;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05), 0 8px 10px -6px rgba(0,0,0,0.01);
+      border: 1px solid #e2e8f0;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 2px solid #8b5cf6;
+      padding-bottom: 24px;
+      margin-bottom: 28px;
+    }
+    .logo-area h1 {
+      font-size: 22px;
+      font-weight: 900;
+      color: #7c3aed;
+      letter-spacing: -0.02em;
+    }
+    .logo-area .sub {
+      font-size: 13px;
+      color: #64748b;
+      margin-top: 4px;
+    }
+    .meta-box {
+      text-align: right;
+      font-size: 13px;
+      color: #475569;
+      line-height: 1.6;
+    }
+    .meta-box strong { color: #0f172a; }
+    .section-title {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #7c3aed;
+      margin-bottom: 12px;
+    }
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px 24px;
+      background: #f8fafc;
+      padding: 16px;
+      border-radius: 10px;
+      margin-bottom: 28px;
+    }
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+    }
+    .info-label { color: #64748b; }
+    .info-val { font-weight: 600; color: #0f172a; }
+    .earnings-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 28px;
+    }
+    .earnings-table th {
+      background: #f1f5f9;
+      color: #475569;
+      font-size: 12px;
+      font-weight: 700;
+      text-align: left;
+      padding: 12px 16px;
+      border-top: 1px solid #e2e8f0;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .earnings-table td {
+      padding: 14px 16px;
+      font-size: 13.5px;
+      color: #1e293b;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .earnings-table tr.total-row td {
+      font-weight: 800;
+      font-size: 15px;
+      color: #7c3aed;
+      background: #faf5ff;
+      border-top: 2px solid #8b5cf6;
+      border-bottom: 2px solid #8b5cf6;
+    }
+    .action-bar {
+      text-align: center;
+      margin-top: 24px;
+      margin-bottom: 24px;
+    }
+    .print-btn {
+      background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+      color: #ffffff;
+      border: none;
+      padding: 12px 28px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(139,92,246,0.3);
+      transition: all 0.2s ease;
+    }
+    .print-btn:hover { opacity: 0.95; transform: translateY(-1px); }
+    .footer {
+      border-top: 1px solid #e2e8f0;
+      padding-top: 20px;
+      font-size: 11.5px;
+      color: #94a3b8;
+      text-align: center;
+      line-height: 1.6;
+    }
+    @media print {
+      body { background: #fff; padding: 0; }
+      .sheet { box-shadow: none; border: none; padding: 20px; max-width: 100%; }
+      .action-bar { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="sheet">
+    <div class="header">
+      <div class="logo-area">
+        <h1>🟣 Purplebot Digital</h1>
+        <div class="sub">Official Monthly Earnings Statement &bull; ${monthLabel}</div>
+      </div>
+      <div class="meta-box">
+        <div>Employee ID: <strong>${emp.emp_code || emp.id}</strong></div>
+        <div>Date Issued: <strong>${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</strong></div>
+        <div>Status: <strong style="color:#059669;">Disbursed / Verified</strong></div>
+      </div>
+    </div>
+
+    <div class="section-title">Specialist Identification</div>
+    <div class="info-grid">
+      <div class="info-row"><span class="info-label">Full Name</span><span class="info-val">${emp.name}</span></div>
+      <div class="info-row"><span class="info-label">Department</span><span class="info-val">${emp.department || 'Production'}</span></div>
+      <div class="info-row"><span class="info-label">Designation</span><span class="info-val">${emp.role || 'Specialist'}</span></div>
+      <div class="info-row"><span class="info-label">Payout bKash / Acc</span><span class="info-val">${emp.bank_info?.mfsNo || emp.phone || 'Connected'}</span></div>
+    </div>
+
+    <div class="section-title">Earnings & Compensation Breakdown</div>
+    <table class="earnings-table">
+      <thead>
+        <tr>
+          <th>Compensation Item</th>
+          <th>Description</th>
+          <th style="text-align:right;">Amount (BDT)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Base Monthly Salary</strong></td>
+          <td style="color:#64748b;">Fixed specialist remuneration</td>
+          <td style="text-align:right; font-weight:600;">৳${baseSalary.toLocaleString()}</td>
+        </tr>
+        <tr>
+          <td><strong>Project Commissions & Bonuses</strong></td>
+          <td style="color:#64748b;">Production milestone deliverables accrued</td>
+          <td style="text-align:right; font-weight:600; color:#059669;">+৳${commissions.toLocaleString()}</td>
+        </tr>
+        <tr class="total-row">
+          <td><strong>Total Net Disbursed</strong></td>
+          <td style="color:#7c3aed; font-size:12px;">Electronic Payout (bKash / Bank Wire)</td>
+          <td style="text-align:right;">৳${total.toLocaleString()}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="action-bar">
+      <button class="print-btn" onclick="window.print()">🖨️ Print / Save as PDF</button>
+    </div>
+
+    <div class="footer">
+      Purplebot Digital Ltd. &bull; Creative & Engineering Production Network<br>
+      This document is electronically generated and digitally stamped by PurpleOS Finance Core.
+    </div>
+  </div>
+</body>
+</html>`;
+
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    return res.send(html);
+  } catch (err) {
+    console.error('GET /team/payslip error:', err.message);
+    return res.status(500).send('<p>Payslip generation error: ' + err.message + '</p>');
   }
 });
 
@@ -1342,7 +1671,7 @@ router.post('/eod', miniAppLimiter, requireMiniAppAuth, async (req, res) => {
       if (empCode) {
         try {
           const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(empCode);
-          let pQuery = supabase.from('profiles').select('xp');
+          let pQuery = supabase.from('profiles').select('xp, badge, telegram_id, custom_fields');
           if (isUUID) {
             pQuery = pQuery.eq('id', empCode);
           } else {
@@ -1351,12 +1680,26 @@ router.post('/eod', miniAppLimiter, requireMiniAppAuth, async (req, res) => {
           const { data: prof } = await pQuery.maybeSingle();
           if (prof) {
             const newXP = (prof.xp || 0) + 10;
-            let badge = '🌱 Recruit';
-            if (newXP >= 500) badge = '⭐ Rising Star';
-            if (newXP >= 1000) badge = '🔥 Performer';
-            if (newXP >= 2000) badge = '💜 Champion';
+            const oldBadge = prof.badge || '🌱 Recruit';
+            const badge = getBadge(newXP);
+            const leveledUp = badge !== oldBadge;
 
-            let uQuery = supabase.from('profiles').update({ xp: newXP, badge, updated_at: new Date().toISOString() });
+            const existingLog = prof.custom_fields?.xp_log || [];
+            const xpLog = [...existingLog.slice(-49), {
+              event: 'eod_submit',
+              delta: 10,
+              total: newXP,
+              badge,
+              ts: new Date().toISOString()
+            }];
+            const customFields = { ...(prof.custom_fields || {}), xp_log: xpLog };
+
+            let uQuery = supabase.from('profiles').update({
+              xp: newXP,
+              badge,
+              custom_fields: customFields,
+              updated_at: new Date().toISOString()
+            });
             if (isUUID) {
               uQuery = uQuery.eq('id', empCode);
             } else {
@@ -1364,6 +1707,23 @@ router.post('/eod', miniAppLimiter, requireMiniAppAuth, async (req, res) => {
             }
             await uQuery;
             broadcastTeamEvent('team_update', [{ emp_code: empCode, xp: newXP, badge }]);
+
+            if (leveledUp && prof.telegram_id) {
+              try {
+                const { sendTelegramNotification } = require('../services/bot');
+                await sendTelegramNotification(prof.telegram_id,
+                  `🏆 *YOU LEVELED UP!*\n\n` +
+                  `Daily EOD submitted! You've advanced to a new specialist rank:\n\n` +
+                  `🎖️ *Rank:* ${badge}\n` +
+                  `⭐ *Total XP:* ${newXP.toLocaleString()} XP\n\n` +
+                  `_Keep up the great work! 🚀_`,
+                  null,
+                  true
+                );
+              } catch (notifErr) {
+                console.warn('[EOD XP Level-Up] Notification warning:', notifErr.message);
+              }
+            }
           }
         } catch (xpErr) {
           console.warn('EOD XP update warning:', xpErr.message);
@@ -1388,7 +1748,7 @@ router.post('/eod', miniAppLimiter, requireMiniAppAuth, async (req, res) => {
 });
 
 // GET /api/team/payroll/summary — Mini App payroll summary data
-router.get('/payroll/summary', async (req, res) => {
+router.get('/payroll/summary', requireMiniAppAuth, async (req, res) => {
   try {
     const telegramId = req.query.telegramId;
     let emp = null;
@@ -1443,7 +1803,7 @@ router.get('/me/stats', requireAuth, async (req, res) => {
       const { data: tasks } = await supabase.from('tasks')
         .select('id, stage')
         .or(`assignee_id.eq.${empCode},assignee.ilike.%${firstName}%`)
-        .or('stage.eq.Done,stage.eq.Completed');
+        .in('stage', ['Done', 'Completed']);
       tasksCompleted = (tasks || []).length;
 
       // Attendance days this month
@@ -1542,7 +1902,7 @@ router.get('/invitation-status', requireAuth, async (req, res) => {
       role: p.role,
       department: p.department || 'General',
       phone: p.phone || '',
-      telegramLinked: p.emp_code !== 'PBD-006',
+      telegramLinked: p.emp_code !== (process.env.QC_REVIEWER_CODE || 'PBD-006'),
       hasPIN: true,
       pinIsTemp: false,
       surveyComplete: true,

@@ -145,9 +145,8 @@ router.post('/', requireAuth, async (req, res) => {
     const formatted = mapTicket(payload);
 
     if (supabase) {
-      supabase.from('tickets').insert([payload]).then(null, e => {
-        console.warn('[Tickets API] Supabase insert note:', e.message);
-      });
+      const { error: dbErr } = await supabase.from('tickets').insert([payload]);
+      if (dbErr) console.warn('[Tickets API] insert note:', dbErr.message);
     }
 
     try { broadcast('ticket_update', inMemoryTickets.map(mapTicket)); } catch (e) {}
@@ -201,7 +200,8 @@ router.put('/:id', requireAuth, async (req, res) => {
     const formatted = mapTicket(inMemoryTickets[memIdx] || { id, ...updates });
 
     if (supabase) {
-      supabase.from('tickets').update(updates).eq('id', id).then(null, () => {});
+      const { error: dbErr } = await supabase.from('tickets').update(updates).eq('id', id);
+      if (dbErr) console.warn('[Tickets API] update note:', dbErr.message);
     }
 
     try { broadcast('ticket_update', inMemoryTickets.map(mapTicket)); } catch (e) {}
@@ -246,7 +246,8 @@ router.patch(['/:id', '/:id/status'], requireAuth, async (req, res) => {
     const formatted = mapTicket(inMemoryTickets[memIdx] || { id, ...updates });
 
     if (supabase) {
-      supabase.from('tickets').update(updates).eq('id', id).then(null, () => {});
+      const { error: dbErr } = await supabase.from('tickets').update(updates).eq('id', id);
+      if (dbErr) console.warn('[Tickets API] patch note:', dbErr.message);
     }
 
     try { broadcast('ticket_update', inMemoryTickets.map(mapTicket)); } catch (e) {}
@@ -276,7 +277,8 @@ router.delete('/:id', requireAuth, async (req, res) => {
     inMemoryTickets = inMemoryTickets.filter(t => t.id !== id);
 
     if (supabase) {
-      supabase.from('tickets').delete().eq('id', id).then(null, () => {});
+      const { error: dbErr } = await supabase.from('tickets').delete().eq('id', id);
+      if (dbErr) console.warn('[Tickets API] delete note:', dbErr.message);
     }
 
     try { broadcast('ticket_update', inMemoryTickets.map(mapTicket)); } catch (e) {}

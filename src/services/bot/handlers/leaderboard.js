@@ -37,9 +37,21 @@ async function handleLeaderboard(teamBot, msg) {
       boardMsg += `${rankIcon} *${p.name}*${isSelf}\n   └ ${xpVal.toLocaleString()} XP • ${badge}\n\n`;
     });
 
-    boardMsg += `_Earn XP by completing tasks (+15 XP) and submitting daily EODs (+10 XP)!_`;
+    boardMsg += `_Earn XP: Complete Tasks (+15 XP) · Submit EOD (+10 XP) · Onboarding Milestones (+100–200 XP)_\n\n` +
+      `🔥 _Open the Web Leaderboard for live EOD streaks and department filters!_`;
 
-    teamBot.sendMessage(chatId, boardMsg, { parse_mode: 'Markdown' });
+    const options = {
+      parse_mode: 'Markdown',
+      reply_markup: {
+        inline_keyboard: [
+          [
+            { text: '🏆 Full Agency Leaderboard', web_app: { url: 'https://purpleos-iota.vercel.app/crew#leaderboard' } }
+          ]
+        ]
+      }
+    };
+
+    teamBot.sendMessage(chatId, boardMsg, options);
   } catch (err) {
     console.error('[Leaderboard Bot] handleLeaderboard error:', err.message);
     teamBot.sendMessage(chatId, '⚠️ Could not fetch team leaderboard.');

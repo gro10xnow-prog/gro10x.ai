@@ -286,9 +286,76 @@ function getRoleKeyboard(accessLevel, isVerified = false, emp = null) {
     };
   }
 
+  // Video Editor / Post-Production / Motion Graphics / Animator
+  if (
+    userRole.includes('video editor') ||
+    userRole.includes('video production') ||
+    userRole.includes('post production') ||
+    userRole.includes('motion graphic') ||
+    userRole.includes('animator') ||
+    userRole.includes('vfx')
+  ) {
+    return {
+      keyboard: [
+        [{ text: '✂️ My Edit Queue' }, { text: '📤 Submit for Review' }],
+        [{ text: '📸 Book Gear / Studio' }, { text: '📝 EOD Report' }],
+        [{ text: '🧾 Submit Expense' }, { text: '🌴 Leave Request' }],
+        [{ text: '👤 My Profile' }, { text: '💳 Bank & bKash' }],
+        [{ text: '📊 My Status' }],
+        [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
+      ],
+      resize_keyboard: true
+    };
+  }
+
+  // 3D Artist / Renderer / CGI
+  if (
+    userRole.includes('3d artist') ||
+    userRole.includes('3d') ||
+    userRole.includes('3d modell') ||
+    userRole.includes('renderer') ||
+    userRole.includes('cgi')
+  ) {
+    return {
+      keyboard: [
+        [{ text: '🎨 My 3D Task Queue' }, { text: '📤 Submit Render' }],
+        [{ text: '📝 EOD Report' }, { text: '🧾 Submit Expense' }],
+        [{ text: '🌴 Leave Request' }, { text: '📊 My Status' }],
+        [{ text: '👤 My Profile' }, { text: '💳 Bank & bKash' }],
+        [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
+      ],
+      resize_keyboard: true
+    };
+  }
+
+  // Full-Stack Developer / Software Engineer / Tech
+  if (
+    userRole.includes('developer') ||
+    userRole.includes('full-stack') ||
+    userRole.includes('fullstack') ||
+    userRole.includes('backend') ||
+    userRole.includes('frontend') ||
+    userRole.includes('web dev') ||
+    userRole.includes('software engineer')
+  ) {
+    return {
+      keyboard: [
+        [{ text: '🎟️ My Tickets' }, { text: '🚀 Log Deployment' }],
+        [{ text: '📝 EOD Report' }, { text: '🧾 Submit Expense' }],
+        [{ text: '🌴 Leave Request' }, { text: '📊 My Status' }],
+        [{ text: '👤 My Profile' }, { text: '💳 Bank & bKash' }],
+        [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
+      ],
+      resize_keyboard: true
+    };
+  }
+
+  // Default: Specialist / Crew
   return {
     keyboard: [
       [{ text: '📋 My Tasks' }, { text: '💰 My Earnings' }],
+      [{ text: '📝 EOD Report' }, { text: '🧾 Submit Expense' }],
+      [{ text: '🌴 Leave Request' }, { text: '📊 My Status' }],
       [{ text: '👤 My Profile' }, { text: '💳 Bank & bKash' }],
       [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
     ],

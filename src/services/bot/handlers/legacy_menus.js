@@ -10,6 +10,8 @@ const state = require('../../state');
 const { supabase } = require('../../supabase');
 const { broadcast } = require('../../sse');
 const { sendTelegramNotification, sendAgreementNotification } = require('../notifications');
+const { getRoleKeyboard } = require('../keyboards');
+const { getBadge } = require('../../../utils/xp');
 
 function registerLegacyTeamMenus(teamBot, readDB) {
   // Handle Telegram 1-Tap Button Click Callbacks (callback_query)
@@ -52,7 +54,6 @@ function registerLegacyTeamMenus(teamBot, readDB) {
 
         await state.clearSession(chatId);
 
-        const { getRoleKeyboard } = require('../keyboards');
         return teamBot.sendMessage(chatId,
           `✅ *EOD Report Submitted!* (+10 XP)\n\n` +
           `📅 ${new Date().toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}\n` +
@@ -102,9 +103,12 @@ function registerLegacyTeamMenus(teamBot, readDB) {
         await supabase.from('tasks').update({ stage: 'Internal QC', updated_at: new Date().toISOString() }).eq('id', taskId);
         broadcast('task_update', [{ id: taskId, stage: 'Internal QC' }]);
 
-        const ruhul = await state.getEmployeeByTelegramId('PBD-006');
-        if (ruhul?.telegramId) {
-          sendTelegramNotification(ruhul.telegramId,
+        const qcCode = process.env.QC_REVIEWER_CODE || 'PBD-006';
+        const ruhul = (typeof state.getEmployeeByIdOrCode === 'function')
+          ? await state.getEmployeeByIdOrCode(qcCode)
+          : await state.getEmployeeByTelegramId(qcCode);
+        if (ruhul?.telegramId || ruhul?.telegram_id) {
+          sendTelegramNotification(ruhul.telegramId || ruhul.telegram_id,
             `🔍 *Internal QC Review Required*\n\n• Task: *${taskId}*\n\nPlease review and either approve for client delivery or send back for revision.`,
             [
               [{ text: '✅ QC Approve → Client Review', url: `https://purpleos-iota.vercel.app/admin?tab=tasks&action=qc-approve&id=${taskId}` }],
@@ -220,9 +224,53 @@ function registerLegacyTeamMenus(teamBot, readDB) {
           }
         }
 
+        // Award +15 XP if task is moved to a completion stage
+        if (['Done', 'Completed', 'Approved', 'Published'].includes(targetStage) && task?.assignee_id) {
+          try {
+            const { data: prof } = await supabase.from('profiles').select('xp, badge, telegram_id, custom_fields').eq('emp_code', task.assignee_id).maybeSingle();
+            if (prof) {
+              const newXP = (prof.xp || 0) + 15;
+              const oldBadge = prof.badge || '🌱 Recruit';
+              const badge = getBadge(newXP);
+              const leveledUp = badge !== oldBadge;
+
+              const existingLog = prof.custom_fields?.xp_log || [];
+              const xpLog = [...existingLog.slice(-49), {
+                event: 'task_complete',
+                delta: 15,
+                total: newXP,
+                badge,
+                taskId,
+                ts: new Date().toISOString()
+              }];
+              const customFields = { ...(prof.custom_fields || {}), xp_log: xpLog };
+
+              await supabase.from('profiles').update({
+                xp: newXP,
+                badge,
+                custom_fields: customFields,
+                updated_at: new Date().toISOString()
+              }).eq('emp_code', task.assignee_id);
+
+              if (leveledUp && prof.telegram_id) {
+                sendTelegramNotification(prof.telegram_id,
+                  `🏆 *YOU LEVELED UP!*\n\n` +
+                  `Task completed! You've advanced to a new specialist rank:\n\n` +
+                  `🎖️ *Rank:* ${badge}\n` +
+                  `⭐ *Total XP:* ${newXP.toLocaleString()} XP\n\n` +
+                  `_Keep up the momentum! 🚀_`,
+                  null,
+                  true
+                ).catch(() => {});
+              }
+            }
+          } catch(xpE) {}
+        }
+
         if (targetStage === 'Internal QC') {
           try {
-            const { data: ruhul } = await supabase.from('profiles').select('*').eq('emp_code', 'PBD-006').maybeSingle();
+            const qcCode = process.env.QC_REVIEWER_CODE || 'PBD-006';
+            const { data: ruhul } = await supabase.from('profiles').select('*').eq('emp_code', qcCode).maybeSingle();
             if (ruhul?.telegram_id) {
               sendTelegramNotification(ruhul.telegram_id,
                 `🔍 *Internal QC Review Required*\n\n• Task ID: *${taskId}*\n• Submitted by: *${emp.name}*\n\nPlease review and either approve for client delivery or send back for revision.`,
@@ -236,6 +284,127 @@ function registerLegacyTeamMenus(teamBot, readDB) {
           } catch(e) {}
         }
 
+      // ─── 1B. TICKET STATUS & DEPLOYMENT ────────────────────────────────────────
+      } else if (data.startsWith('ticket_status:')) {
+        const [, ticketId, newStatus] = data.split(':');
+        if (supabase) {
+          await supabase.from('tickets').update({
+            status: newStatus,
+            resolved_at: newStatus === 'Resolved' ? new Date().toISOString() : null,
+            updated_at: new Date().toISOString()
+          }).eq('id', ticketId).catch(() => {});
+        }
+        alertMsg = `✅ Ticket marked as ${newStatus}!`;
+        teamBot.sendMessage(chatId, `✅ *Ticket Updated!*\n\nTicket \`${ticketId}\` is now *${newStatus}*.`, { parse_mode: 'Markdown' });
+
+      } else if (data.startsWith('deploy_env:')) {
+        const env = data.split(':')[1];
+        await state.setSession(chatId, {
+          action: 'await_deploy_notes',
+          deployEnv: env,
+          empId: emp.emp_code || emp.id,
+          empName: emp.name
+        });
+        alertMsg = `Target: ${env}`;
+        teamBot.sendMessage(chatId, `🚀 *DEPLOY TO ${env.toUpperCase()}*\n\nPlease reply with a brief summary of what was deployed (branch/PR/features):`, { parse_mode: 'Markdown' });
+
+      // ─── 1C. AI BRIEF PARSER ───────────────────────────────────────────────────
+      } else if (data.startsWith('ai_brief:')) {
+        const taskId = data.split(':')[1];
+        alertMsg = '🤖 Generating AI Summary...';
+        
+        let task = null;
+        if (supabase) {
+          const { data: tData } = await supabase.from('tasks').select('title, description, client, stage').eq('id', taskId).maybeSingle();
+          task = tData;
+        }
+
+        const briefText = task?.description || '';
+        const taskTitle = task?.title || 'Production Task';
+
+        teamBot.sendMessage(chatId, `🤖 *AI Brief Summary — Generating...*\n_Analyzing task brief for "${taskTitle}"..._`, { parse_mode: 'Markdown' });
+
+        const key = process.env.GEMINI_API_KEY;
+        const prompt =
+          `You are a creative production lead summarizing a task brief for a specialist.\n\n` +
+          `Task: "${taskTitle}"\n` +
+          `Brief: "${briefText.slice(0, 1500)}"\n\n` +
+          `Summarize this task into EXACTLY 3 actionable bullet points. Start each with "•". Output ONLY the 3 bullet lines.`;
+
+        let summary = null;
+        if (key && briefText.length > 10) {
+          const https = require('https');
+          const payload = JSON.stringify({
+            contents: [{ role: 'user', parts: [{ text: prompt }] }],
+            generationConfig: { maxOutputTokens: 250, temperature: 0.5 }
+          });
+
+          summary = await new Promise((resolve) => {
+            const req = https.request({
+              hostname: 'generativelanguage.googleapis.com',
+              path: `/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) }
+            }, (res) => {
+              let d = '';
+              res.on('data', c => d += c);
+              res.on('end', () => {
+                try {
+                  const j = JSON.parse(d);
+                  const text = (j.candidates?.[0]?.content?.parts || []).map(p => p.text || '').join('');
+                  resolve(text || null);
+                } catch { resolve(null); }
+              });
+            });
+            req.on('error', () => resolve(null));
+            req.setTimeout(8000, () => { req.destroy(); resolve(null); });
+            req.write(payload); req.end();
+          });
+        }
+
+        const bullets = (summary || '')
+          .split('\n')
+          .filter(l => l.trim().startsWith('•') || l.trim().startsWith('-') || /^\d+\./.test(l.trim()))
+          .map(l => l.replace(/^[•\-\d\.]\s*/, '• ').trim())
+          .join('\n') ||
+          `• Review the creative scope and deliverable specs for ${taskTitle}.\n• Complete production checkpoints and stage advances step-by-step.\n• Upload deliverable and submit for Internal QC approval.`;
+
+        teamBot.sendMessage(chatId,
+          `🤖 *AI Brief: ${taskTitle}*\n\n${bullets}\n\n_📌 Current Stage: ${task?.stage || 'In Progress'} &bull; 🏢 Client: ${task?.client || 'Agency'}_`,
+          { parse_mode: 'Markdown' }
+        );
+
+      // ─── 1D. SMART EOD AUTOFILL ────────────────────────────────────────────────
+      } else if (data.startsWith('eod_autofill:')) {
+        const choice = data.split(':')[1];
+        const sess = await state.getSession(chatId);
+        if (choice === 'yes' && sess?.autoSummary) {
+          await state.setSession(chatId, {
+            ...sess,
+            action: 'await_eod_blockers',
+            summary: sess.autoSummary
+          });
+          alertMsg = '✅ Summary pre-filled!';
+          teamBot.sendMessage(chatId,
+            `📝 *END-OF-DAY REPORT (Step 2/3)*\n\n` +
+            `✅ *Summary auto-filled:*\n_${sess.autoSummary}_\n\n` +
+            `Any blockers or challenges faced today? (Reply with text, or reply **none** if clear):`,
+            { parse_mode: 'Markdown' }
+          );
+        } else {
+          await state.setSession(chatId, {
+            action: 'await_eod_summary',
+            empId: emp.emp_code || emp.id,
+            empName: emp.name
+          });
+          alertMsg = 'Opening manual EOD...';
+          teamBot.sendMessage(chatId,
+            `📝 *END-OF-DAY REPORT (Step 1/3)*\n\n` +
+            `Please reply with a brief summary of what you accomplished today:`,
+            { parse_mode: 'Markdown' }
+          );
+        }
+
       // ─── 2. LEAVE APPROVAL CHAIN ──────────────────────────────────────────────
       } else if (data.startsWith('approve_leave:')) {
         const leaveId = data.split(':')[1];
@@ -246,6 +415,8 @@ function registerLegacyTeamMenus(teamBot, readDB) {
           manager_reviewed_by: emp.name,
           manager_approved_at: new Date().toISOString()
         }).eq('id', leaveId);
+
+        broadcast('leave_update', [{ id: leaveId, status: 'Manager Approved' }]);
 
         alertMsg = `✅ Leave ${leaveId} Manager Approved!`;
         statusBadge = `✅ Approved by Manager (${emp.name})`;
@@ -260,7 +431,7 @@ function registerLegacyTeamMenus(teamBot, readDB) {
         }
 
         // Forward to Owner (Managing Director / Owner) for T2 sign-off
-        const { data: owner } = await supabase.from('profiles').select('telegram_id').eq('access_level', 'Owner').maybeSingle();
+        const { data: owner } = await supabase.from('profiles').select('telegram_id').ilike('access_level', '%owner%').maybeSingle();
         if (owner?.telegram_id) {
           sendTelegramNotification(owner.telegram_id,
             `🌴 *LEAVE: Manager Approved → Owner Final Sign-Off*\n\n` +
@@ -283,6 +454,8 @@ function registerLegacyTeamMenus(teamBot, readDB) {
           status: 'Declined',
           manager_reviewed_by: emp.name
         }).eq('id', leaveId);
+
+        broadcast('leave_update', [{ id: leaveId, status: 'Declined' }]);
 
         alertMsg = `❌ Leave ${leaveId} Rejected.`;
         statusBadge = `❌ Rejected by ${emp.name}`;
@@ -334,6 +507,8 @@ function registerLegacyTeamMenus(teamBot, readDB) {
           status: 'Tier 1 Approved'
         }).eq('id', expId);
 
+        broadcast('expense_update', [{ id: expId, status: 'Tier 1 Approved' }]);
+
         alertMsg = `✅ Expense T1 Approved!`;
         statusBadge = `✅ T1 Approved (${emp.name})`;
         teamBot.sendMessage(chatId, `✅ *Expense ${expId} Line-Manager Approved!*\nForwarded to Finance for verification.`, { parse_mode: 'Markdown' });
@@ -362,12 +537,14 @@ function registerLegacyTeamMenus(teamBot, readDB) {
           status: 'Finance Verified'
         }).eq('id', expId);
 
+        broadcast('expense_update', [{ id: expId, status: 'Finance Verified' }]);
+
         alertMsg = `✅ Finance Verified! Forwarded to Owner.`;
         statusBadge = `✅ Finance Verified (${emp.name})`;
         teamBot.sendMessage(chatId, `✅ *Expense ${expId} Finance-Verified!*\nForwarded to Owner for T2 approval.`, { parse_mode: 'Markdown' });
 
         // Dynamic Role Lookup for Owner / Admin
-        const { data: owner } = await supabase.from('profiles').select('telegram_id').eq('access_level', 'Owner').maybeSingle();
+        const { data: owner } = await supabase.from('profiles').select('telegram_id').ilike('access_level', '%owner%').maybeSingle();
         if (owner?.telegram_id) {
           sendTelegramNotification(owner.telegram_id,
             `💼 *EXPENSE: Finance-Verified → Owner Approval Required*\n\n` +
@@ -523,13 +700,55 @@ function registerLegacyTeamMenus(teamBot, readDB) {
         alertMsg = `❌ Payment ${payId} Proof Rejected!`;
         statusBadge = `❌ Payment Rejected by ${emp.name}`;
         teamBot.sendMessage(chatId, `❌ *Payment ${payId} Rejected.* Invoice reverted to Pending.`, { parse_mode: 'Markdown' });
+
+      // ─── 5. EXPENSE DECLINE / REJECTION HANDLER ────────────────────────────────
+      } else if (data.startsWith('reject_expense_t1:') || data.startsWith('reject_expense:')) {
+        const expId = data.split(':')[1];
+        const { data: exp } = await supabase.from('expenses').select('*').eq('id', expId).maybeSingle();
+
+        await supabase.from('expenses').update({
+          status: 'Rejected',
+          rejection_reason: `Rejected by ${emp.name}`,
+          updated_at: new Date().toISOString()
+        }).eq('id', expId);
+
+        broadcast('expense_update', [{ id: expId, status: 'Rejected' }]);
+
+        alertMsg = `❌ Expense claim declined.`;
+        statusBadge = `❌ Declined (${emp.name})`;
+        teamBot.sendMessage(chatId, `❌ *Expense ${expId} has been declined.*`, { parse_mode: 'Markdown' });
+
+        if (exp?.employee_id) {
+          const { data: empProf } = await supabase.from('profiles').select('telegram_id').eq('emp_code', exp.employee_id).maybeSingle();
+          if (empProf?.telegram_id) {
+            teamBot.sendMessage(empProf.telegram_id,
+              `❌ *Expense Claim Update*\n\nYour expense claim for *BDT ${(exp?.amount || 0).toLocaleString()}* (${exp?.category || 'General'}) was declined by your manager (${emp.name}).`,
+              { parse_mode: 'Markdown' }
+            ).catch(() => {});
+          }
+        }
       }
 
-      // Update inline button text to badge
+      // Update inline button text to badge (preserving remaining buttons if in a batch list)
       try {
-        await teamBot.editMessageReplyMarkup({
-          inline_keyboard: [[{ text: statusBadge, callback_data: 'noop' }]]
-        }, { chat_id: chatId, message_id: messageId });
+        const existingMarkup = query.message?.reply_markup?.inline_keyboard;
+        if (Array.isArray(existingMarkup) && existingMarkup.length > 1) {
+          const updatedKeyboard = existingMarkup.map(row => {
+            return row.map(btn => {
+              if (btn.callback_data === data) {
+                return { text: statusBadge, callback_data: 'noop' };
+              }
+              return btn;
+            });
+          });
+          await teamBot.editMessageReplyMarkup({
+            inline_keyboard: updatedKeyboard
+          }, { chat_id: chatId, message_id: messageId });
+        } else {
+          await teamBot.editMessageReplyMarkup({
+            inline_keyboard: [[{ text: statusBadge, callback_data: 'noop' }]]
+          }, { chat_id: chatId, message_id: messageId });
+        }
       } catch (e) {}
 
     } catch (err) {

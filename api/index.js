@@ -15,6 +15,16 @@ try { initBot(); } catch (e) {}
 try { startScheduledJobs(readDB, writeDB, broadcast); } catch (e) {}
 
 app.use(cors());
+
+// Security Response Headers (B-P3-1)
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  next();
+});
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -37,11 +47,11 @@ app.get(['/api/bot-status', '/bot-status'], (req, res) => {
 
 // Telegram Webhook Endpoint for Production Updates
 app.post(['/api/webhooks/telegram', '/webhooks/telegram'], async (req, res) => {
-  // const secretHeader = req.headers['x-telegram-bot-api-secret-token'];
-  // if (process.env.WEBHOOK_SECRET && secretHeader !== process.env.WEBHOOK_SECRET) {
-  //   console.warn('⚠️ Webhook request rejected: Invalid secret token');
-  //   return res.status(403).json({ error: 'Forbidden' });
-  // }
+  const secretHeader = req.headers['x-telegram-bot-api-secret-token'];
+  if (process.env.WEBHOOK_SECRET && secretHeader !== process.env.WEBHOOK_SECRET) {
+    console.warn('⚠️ Webhook request rejected: Invalid secret token');
+    return res.status(403).json({ error: 'Forbidden' });
+  }
 
   const botType = req.query.bot || 'team';
   let targetBot = botType === 'client' ? getClientBot() : getTeamBot();

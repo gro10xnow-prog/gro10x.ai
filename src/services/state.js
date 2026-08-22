@@ -8,14 +8,9 @@
  */
 
 const { supabase } = require('./supabase');
+const { broadcast } = require('./sse');
 const { normalizePhone } = require('../utils/phone');
-
-function calcBadge(xp) {
-  if (xp >= 2000) return '💜 Champion';
-  if (xp >= 1000) return '🔥 Performer';
-  if (xp >= 500)  return '⭐ Rising Star';
-  return '🌱 Recruit';
-}
+const { getBadge, calcBadge } = require('../utils/xp');
 
 function mapProfile(p) {
   if (!p) return null;
@@ -38,7 +33,8 @@ function mapProfile(p) {
     reportsTo: p.reports_to || '',
     email: p.email || p.personal_email || '',
     emergencyContact: p.emergency_contact || '',
-    address: p.address || ''
+    address: p.address || '',
+    bankInfo: p.bank_info || {}
   };
 }
 
@@ -85,6 +81,26 @@ async function getEmployeeByTelegramId(chatId) {
         if (data) return mapProfile(data);
       } catch (e) {
         console.warn('state.getEmployeeByTelegramId Supabase err:', e.message);
+      }
+    }
+    return null;
+  }, 60000);
+}
+
+async function getEmployeeByCode(empCode) {
+  if (!empCode) return null;
+  const str = String(empCode).trim();
+  return getCached(`emp_code_${str}`, async () => {
+    if (supabase) {
+      try {
+        const { data } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('emp_code', str)
+          .maybeSingle();
+        if (data) return mapProfile(data);
+      } catch (e) {
+        console.warn('state.getEmployeeByCode Supabase err:', e.message);
       }
     }
     return null;
@@ -153,7 +169,10 @@ async function setOnboardingComplete(empCode) {
 }
 
 async function awardXP(empCode, xpAmount) {
-  const emp = await getEmployeeByTelegramId(empCode) || await getEmployeeByPhone(empCode);
+  const isEmpCode = /^PBD-\d+/i.test(String(empCode));
+  const emp = isEmpCode
+    ? await getEmployeeByCode(empCode)
+    : (await getEmployeeByTelegramId(empCode) || await getEmployeeByPhone(empCode));
   if (!emp) return;
 
   const newXP = (emp.xp || 0) + Number(xpAmount);
@@ -170,10 +189,19 @@ async function awardXP(empCode, xpAmount) {
   return { newXP, badge };
 }
 
+function getBroadcast() {
+  try {
+    return require('./sse').broadcast;
+  } catch (e) {
+    return () => {};
+  }
+}
+
 async function updateStatus(empCode, status) {
   if (supabase) {
     try {
       await supabase.from('profiles').update({ status, updated_at: new Date().toISOString() }).eq('emp_code', empCode);
+      getBroadcast()('team_update', [{ emp_code: empCode, employee_id: empCode, status }]);
     } catch (e) {
       console.warn('state.updateStatus Supabase err:', e.message);
     }
@@ -189,20 +217,26 @@ async function clockIn(empCode, empName, location = 'Niketon Studio') {
   const nowTime = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
 
   if (supabase) {
-    try {
-      await supabase.from('attendance').upsert({
-        employee_id: empCode,
-        name: empName,
-        status: 'In Studio',
-        clock_in_time: nowTime,
-        location,
-        date: today
-      }, { onConflict: 'employee_id,date' });
+    const { error: upsertErr } = await supabase.from('attendance').upsert({
+      employee_id: empCode,
+      name: empName,
+      status: 'In Studio',
+      clock_in_time: nowTime,
+      location,
+      date: today
+    }, { onConflict: 'employee_id,date' });
 
-      await supabase.from('profiles').update({ status: 'In Studio' }).eq('emp_code', empCode);
-    } catch (e) {
-      console.warn('state.clockIn Supabase err:', e.message);
+    if (upsertErr) {
+      console.warn('state.clockIn Supabase upsert err:', upsertErr.message);
+      throw upsertErr;
     }
+
+    try {
+      await supabase.from('profiles').update({ status: 'In Studio' }).eq('emp_code', empCode);
+    } catch (e) {}
+
+    getBroadcast()('attendance_update', [{ employee_id: empCode, name: empName, status: 'In Studio', clock_in_time: nowTime, clockInTime: nowTime, date: today }]);
+    getBroadcast()('team_update', [{ emp_code: empCode, employee_id: empCode, status: 'In Studio' }]);
   }
   return { time: nowTime, status: 'In Studio', location };
 }
@@ -212,12 +246,18 @@ async function clockOut(empCode) {
   const nowTime = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
 
   if (supabase) {
-    try {
-      await supabase.from('attendance').update({ status: 'Clocked Out', clock_out_time: nowTime }).eq('employee_id', empCode).eq('date', today);
-      await supabase.from('profiles').update({ status: 'Offline' }).eq('emp_code', empCode);
-    } catch (e) {
-      console.warn('state.clockOut Supabase err:', e.message);
+    const { error: updateErr } = await supabase.from('attendance').update({ status: 'Clocked Out', clock_out_time: nowTime }).eq('employee_id', empCode).eq('date', today);
+    if (updateErr) {
+      console.warn('state.clockOut Supabase update err:', updateErr.message);
+      throw updateErr;
     }
+
+    try {
+      await supabase.from('profiles').update({ status: 'Offline' }).eq('emp_code', empCode);
+    } catch (e) {}
+
+    getBroadcast()('attendance_update', [{ employee_id: empCode, status: 'Clocked Out', clock_out_time: nowTime, clockOutTime: nowTime, date: today }]);
+    getBroadcast()('team_update', [{ emp_code: empCode, employee_id: empCode, status: 'Offline' }]);
   }
   return { time: nowTime, status: 'Offline' };
 }
@@ -248,17 +288,19 @@ async function submitLeave(empCode, empName, leaveData) {
     leave_type: leaveData.leaveType || leaveData.type || 'Casual Leave',
     start_date: leaveData.startDate || leaveData.fromDate || new Date().toISOString().split('T')[0],
     end_date: leaveData.endDate || leaveData.toDate || new Date().toISOString().split('T')[0],
-    total_days: Number(leaveData.totalDays) || 1,
+    total_days: Number(leaveData.totalDays || leaveData.total_days || leaveData.days) || 1,
     reason: leaveData.reason || '',
-    status: 'Pending Line Review',
+    status: 'Pending',
     submitted_via: 'telegram_bot'
   };
 
   if (supabase) {
     const { data, error } = await supabase.from('leaves').insert([payload]).select().single();
     if (error) throw new Error(`Leave DB error: ${error.message}`);
+    try { broadcast('leave_update', data || payload); } catch (e) {}
     if (data) return data;
   }
+  try { broadcast('leave_update', payload); } catch (e) {}
   return payload;
 }
 
@@ -284,6 +326,9 @@ async function submitExpense(empCode, empName, expenseData) {
     amount: Number(expenseData.amount) || 0,
     date: expenseData.date || new Date().toISOString().split('T')[0],
     logged_by: empName || 'Team Member',
+    submitted_by: empName || 'Team Member',
+    submitted_by_id: empCode || null,
+    employee_id: empCode || null,
     submitted_via: 'telegram_bot',
     currency: 'BDT',
     created_at: new Date().toISOString()
@@ -292,8 +337,10 @@ async function submitExpense(empCode, empName, expenseData) {
   if (supabase) {
     const { data, error } = await supabase.from('expenses').insert([payload]).select().single();
     if (error) throw new Error(`Expense DB error: ${error.message}`);
+    try { broadcast('expense_update', data || payload); } catch (e) {}
     if (data) return data;
   }
+  try { broadcast('expense_update', payload); } catch (e) {}
   return payload;
 }
 
@@ -301,7 +348,13 @@ async function getMyExpenses(empCode, empName = '') {
   if (supabase) {
     try {
       let query = supabase.from('expenses').select('*').order('created_at', { ascending: false });
-      if (empName) query = query.ilike('logged_by', `%${empName}%`);
+      if (empCode && empName) {
+        query = query.or(`submitted_by_id.eq.${empCode},employee_id.eq.${empCode},logged_by.ilike.%${empName}%`);
+      } else if (empCode) {
+        query = query.or(`submitted_by_id.eq.${empCode},employee_id.eq.${empCode}`);
+      } else if (empName) {
+        query = query.ilike('logged_by', `%${empName}%`);
+      }
       const { data } = await query;
       if (data) return data;
     } catch (e) {
@@ -334,8 +387,10 @@ async function submitEOD(empCode, empName, eodData) {
   if (supabase) {
     const { data, error } = await supabase.from('eod_reports').upsert(payload, { onConflict: 'employee_id,report_date' }).select().single();
     if (error) throw new Error(`EOD DB error: ${error.message}`);
+    try { broadcast('eod_update', data || payload); } catch (e) {}
     if (data) return data;
   }
+  try { broadcast('eod_update', payload); } catch (e) {}
   return payload;
 }
 
@@ -428,6 +483,7 @@ async function getTeamSnapshot() {
 
 module.exports = {
   getEmployeeByTelegramId,
+  getEmployeeByCode,
   getEmployeeByPhone,
   getAllTeam,
   linkTelegramId,
@@ -447,5 +503,8 @@ module.exports = {
   setSession,
   clearSession,
   getTeamSnapshot,
-  normalizePhone
+  normalizePhone,
+  invalidateCache,
+  calcBadge,
+  getBadge
 };

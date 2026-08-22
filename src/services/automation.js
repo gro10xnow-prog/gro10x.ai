@@ -26,6 +26,30 @@ function recordAutomationLog(db, logEntry) {
 }
 
 /**
+ * Find a team member by employee_id/emp_code first, then fall back to name matching.
+ * Avoids silent delivery failures from name collisions or nicknames.
+ */
+function findStaffMember(db, { employeeId, empCode, name } = {}) {
+  const team = db?.team || [];
+  const targetId = employeeId || empCode;
+  if (targetId) {
+    const byId = team.find(t => t.id === targetId || t.emp_code === targetId || t.empCode === targetId);
+    if (byId) return byId;
+  }
+  if (name) {
+    const cleanName = name.trim().toLowerCase();
+    const exact = team.find(t => (t.name || '').toLowerCase() === cleanName);
+    if (exact) return exact;
+    const firstName = cleanName.split(' ')[0];
+    if (firstName && firstName.length > 1) {
+      const byFirst = team.find(t => (t.name || '').toLowerCase().includes(firstName));
+      if (byFirst) return byFirst;
+    }
+  }
+  return null;
+}
+
+/**
  * âš¡ PURPLEOS WORKFLOW AUTOMATION ENGINE (Module C8)
  */
 function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
@@ -36,10 +60,9 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
     // TRIGGER 1: Task Stage Changed to Editing -> Notify Editor via Telegram
     if (eventType === 'task_stage_change' && eventData.stage === 'Editing') {
       const task = eventData.task;
-      const assigneeName = (task.assignee || '').split(' ')[0].toLowerCase();
-      const editor = (db.team || []).find(t => (t.name || '').toLowerCase().includes(assigneeName));
+      const editor = findStaffMember(db, { employeeId: task.assignee_id || task.assigneeId, name: task.assignee });
 
-      const message = `ðŸŽ¬ *Task Ready for Editing!*\n\nProject: *${task.title}*\nClient: *${task.client}*\nPriority: *${task.priority}*\nDue: *${task.dueDate || 'Soon'}*`;
+      const message = `🎬 *Task Ready for Editing!*\n\nProject: *${task.title}*\nClient: *${task.client}*\nPriority: *${task.priority}*\nDue: *${task.dueDate || 'Soon'}*`;
 
       if (editor && editor.telegramId) {
         sendTelegramNotification(editor.telegramId, message, null, true);
@@ -328,8 +351,10 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
     // TRIGGER 9: Expense Disbursed -> Notify Staff Member (AUT-010)
     if (eventType === 'expense_disbursed') {
       const expense = eventData.expense;
-      const staffName = (expense.submittedBy || '').split(' ')[0].toLowerCase();
-      const staff = (db.team || []).find(t => (t.name || '').toLowerCase().includes(staffName));
+      const staff = findStaffMember(db, {
+        employeeId: expense.submitted_by_id || expense.employee_id || expense.submittedById || expense.employeeId,
+        name: expense.submittedBy || expense.loggedBy || expense.submitted_by
+      });
 
       const msgText = `ðŸŽ‰ *EXPENSE CLAIM DISBURSED & PAID!*\n\n` +
         `ðŸ“‹ Claim ID: *${expense.id}*\n` +
@@ -346,7 +371,7 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
         id: `LOG-${Date.now()}`,
         rule: 'AUT-010 (Expense Disbursed Alert)',
         event: eventType,
-        target: `${expense.submittedBy} - ${expense.id}`,
+        target: `${expense.submittedBy || expense.submitted_by || 'Staff'} - ${expense.id}`,
         status: 'Executed',
         timestamp: new Date().toISOString()
       });
@@ -355,15 +380,17 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
     // TRIGGER 10: Leave Request Decision Alert (AUT-011)
     if (eventType === 'leave_decision') {
       const leave = eventData.leave;
-      const staffName = (leave.staffName || '').split(' ')[0].toLowerCase();
-      const staff = (db.team || []).find(t => (t.name || '').toLowerCase().includes(staffName));
+      const staff = findStaffMember(db, {
+        employeeId: leave.employee_id || leave.employeeId || leave.staffId,
+        name: leave.staffName || leave.employeeName || leave.employee_name
+      });
 
-      const icon = leave.status === 'Approved' ? 'âœ…' : 'âŒ';
+      const icon = leave.status === 'Approved' ? 'âœ…' : 'â Œ';
       const msgText = `${icon} *LEAVE REQUEST ${leave.status.toUpperCase()}*\n\n` +
-        `ðŸ‘¤ Staff: *${leave.staffName}*\n` +
-        `ðŸŒ´ Type: *${leave.type}*\n` +
-        `ðŸ“… Dates: *${leave.startDate} to ${leave.endDate}* (${leave.totalDays || 1} Days)\n` +
-        `âœï¸ Reviewed By: *${leave.reviewedBy || 'Manager'}*\n\n` +
+        `ðŸ‘¤ Staff: *${leave.staffName || leave.employeeName || 'Staff'}*\n` +
+        `ðŸŒ´ Type: *${leave.type || leave.leaveType || 'Leave'}*\n` +
+        `ðŸ“… Dates: *${leave.startDate || leave.start_date} to ${leave.endDate || leave.end_date}* (${leave.totalDays || leave.total_days || 1} Days)\n` +
+        `âœ ï¸  Reviewed By: *${leave.reviewedBy || leave.reviewed_by || 'Manager'}*\n\n` +
         `Your attendance calendar has been updated.`;
 
       if (staff && staff.telegramId) {
@@ -374,7 +401,7 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
         id: `LOG-${Date.now()}`,
         rule: 'AUT-011 (Leave Decision Alert)',
         event: eventType,
-        target: `${leave.staffName} (${leave.status})`,
+        target: `${leave.staffName || leave.employeeName || 'Staff'} (${leave.status})`,
         status: 'Executed',
         timestamp: new Date().toISOString()
       });
@@ -387,7 +414,7 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
         `1. Tasks completed today\n` +
         `2. Tasks in progress\n` +
         `3. Blockers / help needed\n\n` +
-        `ðŸŒ Open Crew Portal: https://purpleos-iota.vercel.app/team`;
+        `ðŸŒ  Open Crew Portal: https://purpleos-iota.vercel.app/team`;
 
       (db.team || []).forEach(staff => {
         if (staff.telegramId) {
@@ -410,15 +437,17 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
     // TRIGGER 12: Support Ticket Resolved Alert (AUT-013)
     if (eventType === 'ticket_resolved') {
       const ticket = eventData.ticket;
-      const staffName = (ticket.loggedBy || '').split(' ')[0].toLowerCase();
-      const staff = (db.team || []).find(t => (t.name || '').toLowerCase().includes(staffName));
+      const staff = findStaffMember(db, {
+        employeeId: ticket.submitted_by_id || ticket.submittedById || ticket.employee_id || ticket.employeeId,
+        name: ticket.loggedBy || ticket.logged_by || ticket.submittedBy
+      });
 
       const msgText = `ðŸ”§ *SUPPORT TICKET RESOLVED!*\n\n` +
         `ðŸŽ« Ticket ID: *${ticket.id}*\n` +
         `ðŸ“‚ Category: *${ticket.category}*\n` +
         `ðŸ“Œ Title: *${ticket.title}*\n` +
         `âœ… Status: *Resolved*\n` +
-        `âœï¸ Resolved By: *${ticket.resolvedBy || 'Maintenance Lead'}*\n\n` +
+        `âœ ï¸  Resolved By: *${ticket.resolvedBy || ticket.resolved_by || 'Maintenance Lead'}*\n\n` +
         `Your support ticket has been closed.`;
 
       if (staff && staff.telegramId) {
@@ -559,18 +588,26 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
 
     // TRIGGER 17: Specialist Personal Daily Task Briefing (AUT-018)
     if (eventType === 'specialist_daily_briefing') {
-      (db.team || []).forEach(staff => {
+      const crewOnly = (db.team || []).filter(staff => {
+        const role = (staff.role || staff.position || '').toLowerCase();
+        const access = (staff.accessLevel || staff.access_level || '').toLowerCase();
+        const isLeadership = ['owner', 'founder', 'ceo', 'chairman', 'managing director', 'finance manager', 'head of'].some(kw => role.includes(kw) || access.includes(kw));
+        return !isLeadership;
+      });
+
+      crewOnly.forEach(staff => {
         const firstName = staff.name.split(' ')[0].toLowerCase();
         const staffTasks = (db.tasks || []).filter(t => {
           if (t.assignees && Array.isArray(t.assignees)) {
             return t.assignees.some(a => a.toLowerCase().includes(firstName));
           }
-          return (t.assignee || '').toLowerCase().includes(firstName);
+          return (t.assignee || '').toLowerCase().includes(firstName) || 
+                 (t.assignee_id && (t.assignee_id === staff.id || t.assignee_id === staff.emp_code));
         });
 
         let taskListText = 'No specific deliverables assigned for today.';
         if (staffTasks.length > 0) {
-          taskListText = staffTasks.map((t, idx) => `${idx + 1}. *${t.title}* (${t.client})\n   Stage: ${t.stage} | Deadline: ${t.dueDate || 'Today'}`).join('\n');
+          taskListText = staffTasks.map((t, idx) => `${idx + 1}. *${t.title}* (${t.client || 'Internal'})\n   Stage: ${t.stage} | Deadline: ${t.dueDate || t.due_date || 'Today'}`).join('\n');
         }
 
         const msgText = `☀️ *GOOD MORNING ${staff.name.toUpperCase()}!*\n` +
@@ -590,7 +627,7 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
         id: `LOG-${Date.now()}`,
         rule: 'AUT-018 (Specialist Personal Daily Task Briefing)',
         event: eventType,
-        target: 'All Team Specialists',
+        target: 'Crew Specialists',
         status: 'Executed',
         timestamp: new Date().toISOString()
       });
@@ -912,6 +949,33 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
       });
     }
 
+    // TRIGGER 24: Client Onboarded -> Notify Production Lead (AUT-022)
+    if (eventType === 'client_onboarded') {
+      const client = eventData.client || eventData || {};
+      const clientName = client.clientName || client.name || client.company || 'New Client';
+      const contact = client.contactPerson || client.contact_person || client.name || 'Client Lead';
+      const lead = (db.team || []).find(t => t.id === 'PBD-001') || (db.team || [])[0];
+
+      if (lead?.telegramId) {
+        sendTelegramNotification(lead.telegramId,
+          `🎉 *NEW CLIENT ONBOARDED*\n\n` +
+          `👤 Client: *${clientName}*\n` +
+          `📞 Contact: *${contact}*\n\n` +
+          `Please ensure project onboarding and specialist assignment are set up in the portal.`,
+          null, true
+        );
+      }
+
+      recordAutomationLog(db, {
+        id: `LOG-${Date.now()}`,
+        rule: 'AUT-022 (Client Onboarded Alert)',
+        event: eventType,
+        target: clientName,
+        status: 'Executed',
+        timestamp: new Date().toISOString()
+      });
+    }
+
     const logs = db.automationLogs || [];
     if (logs.length > 50) db.automationLogs = logs.slice(0, 50);
 
@@ -1088,7 +1152,8 @@ function buildChairmanBriefing(db) {
   const activeEmployees = team.filter(t => t.id !== 'PBD-000').length;
   const pendingAgreements = team.filter(t => t.agreementStage && t.agreementStage < 3 && !t.agreementComplete).length;
   const onLeave = team.filter(t => t.status === 'On Leave').length;
-  const pendingLeaves = (db.leaveRequests || []).filter(l => l.status === 'Pending Manager Approval').length;
+  const allLeaves = db.leaveRequests || db.leaves || [];
+  const pendingLeaves = allLeaves.filter(l => l.status === 'Pending' || l.status === 'Pending Manager Approval' || l.status === 'Pending Line Review').length;
 
   // BD Pipeline
   const leads = db.leads || [];
@@ -1149,8 +1214,8 @@ function startScheduledJobs(readDB, writeDB, broadcast) {
       );
       if (!owners.length) return;
 
-      // â”€â”€ Morning Briefing: 9:15 AM BD (Monâ€“Sat, skip Friday)
-      if (h === 9 && m === 15 && bd.getDay() !== 5 && _lastMorningFired !== todayKey) {
+      // ── Morning Briefing: 9:15 AM BD (Mon–Thu & Sun, skip Friday & Saturday)
+      if (h === 9 && m === 15 && bd.getDay() !== 5 && bd.getDay() !== 6 && _lastMorningFired !== todayKey) {
         _lastMorningFired = todayKey;
         const { sendTelegramNotification } = require('./bot');
         owners.forEach(owner => {
@@ -1162,8 +1227,8 @@ function startScheduledJobs(readDB, writeDB, broadcast) {
         });
       }
 
-      // â”€â”€ EOD Summary: 8:00 PM BD (Monâ€“Sat, skip Friday)
-      if (h === 20 && m === 0 && bd.getDay() !== 5 && _lastEODFired !== todayKey) {
+      // ── EOD Summary: 8:00 PM BD (Mon–Thu & Sun, skip Friday & Saturday)
+      if (h === 20 && m === 0 && bd.getDay() !== 5 && bd.getDay() !== 6 && _lastEODFired !== todayKey) {
         _lastEODFired = todayKey;
         const { sendTelegramNotification } = require('./bot');
         const eodMsg = buildEODSummary(db);
@@ -1181,15 +1246,16 @@ const automation = {
   trigger: async (eventType, eventData) => {
     try {
       const { supabase, isSupabaseConfigured } = require('./supabase');
-      let dbSnapshot = { team: [], clients: [], tasks: [], expenses: [], leaves: [], eod_reports: [] };
+      let dbSnapshot = { team: [], clients: [], tasks: [], expenses: [], leaves: [], eod_reports: [], eodReports: [] };
       if (isSupabaseConfigured()) {
         try {
-          const [pRes, cRes, tRes, expRes, lRes] = await Promise.all([
+          const [pRes, cRes, tRes, expRes, lRes, eodRes] = await Promise.all([
             supabase.from('profiles').select('*').limit(500),
             supabase.from('clients').select('*').limit(500),
             supabase.from('tasks').select('*').limit(500),
             supabase.from('expenses').select('*').limit(500),
-            supabase.from('leaves').select('*').limit(500)
+            supabase.from('leaves').select('*').limit(500),
+            supabase.from('eod_reports').select('*').order('created_at', { ascending: false }).limit(200)
           ]);
           dbSnapshot.team = (pRes?.data || []).map(p => ({
             ...p,
@@ -1204,6 +1270,8 @@ const automation = {
           dbSnapshot.tasks = tRes?.data || [];
           dbSnapshot.expenses = expRes?.data || [];
           dbSnapshot.leaves = lRes?.data || [];
+          dbSnapshot.eod_reports = eodRes?.data || [];
+          dbSnapshot.eodReports = eodRes?.data || [];
         } catch (dbErr) {
           console.warn('[Automation] Snapshot fetch note:', dbErr.message);
         }

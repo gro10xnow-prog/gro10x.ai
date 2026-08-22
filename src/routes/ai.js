@@ -91,6 +91,71 @@ router.post('/generate-message', requireAuth, requireManager, async (req, res) =
   return res.json({ success: true, message, stage, generatedBy, member: { name, role, department, empCode } });
 });
 
+// POST /api/ai/summarize-brief — Gemini brief TL;DR for specialists
+router.post('/summarize-brief', requireAuth, async (req, res) => {
+  const { briefText, taskTitle, taskId } = req.body;
+  if (!briefText || briefText.trim().length < 10) {
+    return res.status(400).json({ error: 'briefText is required (minimum 10 characters)' });
+  }
+
+  const key = process.env.GEMINI_API_KEY;
+  if (!key) {
+    return res.json({
+      success: true,
+      summary: [
+        `Complete task: ${taskTitle || 'Production task'}.`,
+        'Review brief materials and prepare deliverables.',
+        'Submit for QC when ready.'
+      ],
+      generatedBy: 'fallback'
+    });
+  }
+
+  const prompt =
+    `You are a senior creative producer summarizing a task brief for a specialist at a digital agency in Dhaka.\n\n` +
+    `Task: "${taskTitle || 'Production Task'}"\n` +
+    `Brief: "${briefText.slice(0, 2000)}"\n\n` +
+    `Summarize this brief into EXACTLY 3 bullet points. Each bullet must:\n` +
+    `- Start with an action verb\n` +
+    `- Be concise (max 15 words)\n` +
+    `- Be directly actionable for the specialist\n\n` +
+    `Output format — ONLY these 3 lines, nothing else:\n` +
+    `• [bullet 1]\n• [bullet 2]\n• [bullet 3]`;
+
+  try {
+    let summaryText = null;
+    for (const model of MODELS) {
+      try {
+        summaryText = await callSingle(model, prompt, key);
+        if (summaryText) break;
+      } catch (e) {
+        console.warn('[AI Brief] Skip model ' + model + ':', e.message);
+      }
+    }
+
+    const bullets = (summaryText || '')
+      .split('\n')
+      .filter(l => l.trim().startsWith('•') || l.trim().startsWith('-') || /^\d+\./.test(l.trim()))
+      .map(l => l.replace(/^[•\-\d\.]\s*/, '').trim())
+      .filter(Boolean)
+      .slice(0, 3);
+
+    if (bullets.length === 0) throw new Error('No bullets extracted');
+
+    return res.json({ success: true, summary: bullets, generatedBy: 'gemini' });
+  } catch (err) {
+    return res.json({
+      success: true,
+      summary: [
+        `Review requirements for ${(taskTitle || 'task').substring(0, 35)}.`,
+        'Prepare all necessary assets according to the project specifications.',
+        'Upload final deliverable to Internal QC review pipeline.'
+      ],
+      generatedBy: 'fallback'
+    });
+  }
+});
+
 router.get('/status', requireAuth, (req, res) => res.json({ success: true, configured: !!process.env.GEMINI_API_KEY, models: MODELS }));
 
 module.exports = router;

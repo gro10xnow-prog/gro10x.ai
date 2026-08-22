@@ -225,8 +225,83 @@ async function handleMyTeam(teamBot, msg) {
   }
 }
 
+/**
+ * Handle "✂️ My Edit Queue" / "🎨 My 3D Task Queue"
+ * Shows individual specialist's active video/3D tasks with 1-tap QC submit
+ */
+async function handleMyEditQueue(teamBot, msg) {
+  const chatId = msg.chat.id;
+  try {
+    const emp = await state.getEmployeeByTelegramId(chatId);
+    if (!emp) {
+      return teamBot.sendMessage(chatId, '⚠️ Account not verified. Please verify your phone number first.');
+    }
+
+    const firstName = (emp.name || '').split(' ')[0];
+    const empCode = emp.emp_code || emp.id;
+
+    let tasks = [];
+    if (supabase) {
+      const { data, error } = await supabase
+        .from('tasks')
+        .select('*')
+        .or(`assignee_id.eq.${empCode},assignee.ilike.%${firstName}%`)
+        .not('stage', 'in', '("Approved","Done","Completed","Published","Cancelled")')
+        .order('created_at', { ascending: false })
+        .limit(8);
+
+      if (error) throw error;
+      tasks = data || [];
+    }
+
+    if (tasks.length === 0) {
+      return teamBot.sendMessage(chatId, `✂️ *My Edit Queue*\n\n✅ No active tasks in your queue right now! All caught up.`, {
+        parse_mode: 'Markdown',
+        reply_markup: {
+          inline_keyboard: [
+            [{ text: '📱 Open Web Workspace', web_app: { url: 'https://purpleos-iota.vercel.app/crew#tasks' } }]
+          ]
+        }
+      });
+    }
+
+    teamBot.sendMessage(chatId, `✂️ *MY PRODUCTION QUEUE (${tasks.length} Active)*\n_Tap Submit for QC when a draft or render is complete:_`, { parse_mode: 'Markdown' });
+
+    for (const [idx, t] of tasks.entries()) {
+      const stage = t.stage || 'Editing';
+      let card = `${idx + 1}. *${t.title}*\n`;
+      card += `   🏢 Client: *${t.client || 'Agency'}*\n`;
+      card += `   📌 Stage: *${stage}* | 📅 Due: \`${t.due_date || t.dueDate || 'ASAP'}\``;
+
+      const inlineKeyboard = [
+        [
+          { text: '📤 Submit for QC Review', callback_data: `task_advance:${t.id}:Internal QC` },
+          { text: '📱 Open Deliverables', web_app: { url: `https://purpleos-iota.vercel.app/crew#deliverables` } }
+        ]
+      ];
+
+      teamBot.sendMessage(chatId, card, {
+        parse_mode: 'Markdown',
+        reply_markup: { inline_keyboard: inlineKeyboard }
+      }).catch(() => {});
+    }
+  } catch (err) {
+    console.error('[Creative Bot] handleMyEditQueue error:', err.message);
+    teamBot.sendMessage(chatId, '⚠️ Error fetching edit queue.');
+  }
+}
+
+/**
+ * Handle "📤 Submit for Review" / "📤 Submit Render"
+ */
+async function handleSubmitForReview(teamBot, msg) {
+  return handleMyEditQueue(teamBot, msg);
+}
+
 module.exports = {
   handleDesignQueue,
   handleReviewRoom,
-  handleMyTeam
+  handleMyTeam,
+  handleMyEditQueue,
+  handleSubmitForReview
 };

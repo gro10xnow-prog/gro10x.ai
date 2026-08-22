@@ -4,21 +4,33 @@
 window.CREW_MODULES = window.CREW_MODULES || {};
 window.CREW_MODULES.leaves = async function(container) {
   let myLeaves = [];
-  const me = await CREW_API.get('/auth/me').catch(() => ({}));
+  const me = await CREW_API.getMe().catch(() => ({}));
   const user = me.user || {};
 
   async function loadLeaves() {
     const all = await CREW_API.get('/leaves').catch(() => []);
-    myLeaves = (all || []).filter(l => (l.employeeName || l.staffName || '').toLowerCase().includes((user.name || '').toLowerCase()) || l.employeeId === user.id);
+    const uName = (user.name || '').trim().toLowerCase();
+    const uId = user.emp_code || user.employee_id || user.empCode || user.id || '';
+    myLeaves = (all || []).filter(l => {
+      if (uId && (l.employeeId === uId || l.employee_id === uId || l.emp_code === uId || l.staffId === uId)) return true;
+      if (uName.length > 1 && (l.employeeName || l.staffName || '').toLowerCase().includes(uName)) return true;
+      return false;
+    });
     renderLeaves();
   }
 
   function renderLeaves() {
     const approvedLeaves = myLeaves.filter(l => l.status === 'Approved');
-    const casualUsed = (user.casual_leaves_used !== undefined) ? user.casual_leaves_used : approvedLeaves.filter(l => (l.leaveType || '').includes('Casual')).length * 1;
-    const sickUsed = (user.sick_leaves_used !== undefined) ? user.sick_leaves_used : approvedLeaves.filter(l => (l.leaveType || '').includes('Sick')).length * 1;
-    const casualAllowed = user.casual_leaves_allowed || 14;
-    const sickAllowed = user.sick_leaves_allowed || 10;
+    const casualUsed = (user.casual_leaves_used !== undefined && user.casual_leaves_used !== null) 
+      ? Number(user.casual_leaves_used) 
+      : approvedLeaves.filter(l => (l.leaveType || l.type || '').toLowerCase().includes('casual'))
+          .reduce((sum, l) => sum + (Number(l.total_days || l.totalDays || l.days) || 1), 0);
+    const sickUsed = (user.sick_leaves_used !== undefined && user.sick_leaves_used !== null) 
+      ? Number(user.sick_leaves_used) 
+      : approvedLeaves.filter(l => (l.leaveType || l.type || '').toLowerCase().includes('sick'))
+          .reduce((sum, l) => sum + (Number(l.total_days || l.totalDays || l.days) || 1), 0);
+    const casualAllowed = Number(user.casual_leaves_allowed) || 14;
+    const sickAllowed = Number(user.sick_leaves_allowed) || 10;
     const casualRem = Math.max(0, casualAllowed - casualUsed);
     const sickRem = Math.max(0, sickAllowed - sickUsed);
 
@@ -81,6 +93,7 @@ window.CREW_MODULES.leaves = async function(container) {
               <option value="Casual Leave">Casual Leave</option>
               <option value="Sick Leave">Sick Leave</option>
               <option value="Earned Leave">Earned Leave</option>
+              <option value="Unpaid Leave">Unpaid Leave</option>
             </select>
           </div>
 
@@ -151,19 +164,57 @@ window.CREW_MODULES.leaves = async function(container) {
       const endDate = document.getElementById('crLeaveEnd').value;
       const reason = document.getElementById('crLeaveReason').value.trim();
       const totalDays = this.calcDays();
+      const submitBtn = document.querySelector('#crLeaveModal button.btn-primary');
 
-      if (!startDate || !endDate) return alert('Please select start and end dates.');
-      if (totalDays <= 0) return alert('Total working days must be greater than zero (select non-weekend dates).');
+      if (!startDate || !endDate) {
+        if (typeof window.showCrewToast === 'function') {
+          window.showCrewToast('Please select start and end dates.', 'warning');
+        }
+        return;
+      }
+      if (totalDays <= 0) {
+        if (typeof window.showCrewToast === 'function') {
+          window.showCrewToast('Total working days must be > 0 (select non-weekend dates).', 'warning');
+        }
+        return;
+      }
+
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '⏳ Submitting...';
+      }
 
       try {
-        const res = await CREW_API.post('/leaves', { leaveType, startDate, endDate, reason, totalDays });
-        if (res.success || res.leave) {
+        const res = await CREW_API.post('/leaves', {
+          employeeId: user.emp_code || user.id,
+          employeeName: user.name,
+          leaveType,
+          type: leaveType,
+          startDate,
+          fromDate: startDate,
+          endDate,
+          toDate: endDate,
+          reason,
+          totalDays
+        });
+        if (res && (res.success || res.leave || !res.error)) {
           this.closeModal();
-          showCrewToast('Leave request submitted! 🌴');
+          if (typeof window.showCrewToast === 'function') {
+            window.showCrewToast('Leave request submitted! 🌴');
+          }
           loadLeaves();
+        } else {
+          throw new Error(res?.error || 'Failed to submit');
         }
       } catch (e) {
-        showCrewToast('Failed to submit leave request', 'error');
+        if (typeof window.showCrewToast === 'function') {
+          window.showCrewToast(`Failed to submit leave: ${e.message}`, 'error');
+        }
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = '🚀 Submit Leave Request';
+        }
       }
     }
   };

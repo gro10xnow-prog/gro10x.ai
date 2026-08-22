@@ -1,4 +1,5 @@
 const express = require('express');
+const { randomUUID } = require('crypto');
 const router = express.Router();
 const { requireAuth } = require('../middleware/auth');
 const { requireManager } = require('../middleware/rbac');
@@ -110,7 +111,7 @@ router.get('/', requireAuth, async (req, res) => {
 // POST Log Expense Claim
 router.post('/', requireAuth, async (req, res) => {
   try {
-    const newId = `EXP-${String(inMemoryExpenses.length + 1).padStart(3, '0')}`;
+    const newId = `EXP-${randomUUID().slice(0, 8).toUpperCase()}`;
 
     let receiptUrl = req.body.receiptUrl || '';
     if (req.body.receiptBase64) {
@@ -131,9 +132,10 @@ router.post('/', requireAuth, async (req, res) => {
       category: req.body.category || 'Production Supplies',
       amount: Number(req.body.amount) || 0,
       date: req.body.date || new Date().toISOString().split('T')[0],
-      logged_by: req.body.submittedBy || req.user?.name || 'Team Member',
-      submitted_by: req.body.submittedBy || req.user?.name || 'Team Member',
-      submitted_by_id: req.body.submittedById || req.user?.empCode || req.user?.id || null,
+      logged_by: req.body.submittedBy || req.body.employeeName || req.body.staffName || req.user?.name || 'Team Member',
+      submitted_by: req.body.submittedBy || req.body.employeeName || req.body.staffName || req.user?.name || 'Team Member',
+      submitted_by_id: req.body.submittedById || req.body.employeeId || req.body.staffId || req.user?.empCode || req.user?.emp_code || req.user?.id || null,
+      employee_id: req.body.submittedById || req.body.employeeId || req.body.staffId || req.user?.empCode || req.user?.emp_code || req.user?.id || null,
       submitted_via: 'web_portal',
       currency: 'BDT',
       status: 'Tier 1 Pending',
@@ -141,14 +143,16 @@ router.post('/', requireAuth, async (req, res) => {
       created_at: new Date().toISOString()
     };
 
+    if (supabase) {
+      const { error: dbErr } = await supabase.from('expenses').insert([payload]);
+      if (dbErr) {
+        console.error('[Expenses API] Supabase insert error:', dbErr.message);
+        return res.status(500).json({ error: 'Failed to save expense. Please try again.' });
+      }
+    }
+
     inMemoryExpenses.unshift(payload);
     const expense = mapExpense(payload);
-
-    if (supabase) {
-      supabase.from('expenses').insert([payload]).then(null, e => {
-        console.warn('[Expenses API] Supabase insert note:', e.message);
-      });
-    }
 
     try { broadcast('expense_update', inMemoryExpenses.map(mapExpense)); } catch (e) {}
 
@@ -210,7 +214,7 @@ router.put('/:id/approve', requireAuth, requireManager, async (req, res) => {
 });
 
 // POST /api/expenses/:id/approve-tier1 (Manager Portal endpoint)
-router.post('/:id/approve-tier1', requireAuth, async (req, res) => {
+router.post('/:id/approve-tier1', requireAuth, requireManager, async (req, res) => {
   try {
     const { id } = req.params;
     const approver = req.body.approvedBy || req.user.name || 'Line Manager';
@@ -248,7 +252,7 @@ router.post('/:id/approve-tier1', requireAuth, async (req, res) => {
 });
 
 // POST /api/expenses/:id/approve-tier2 (Manager Portal endpoint)
-router.post('/:id/approve-tier2', requireAuth, async (req, res) => {
+router.post('/:id/approve-tier2', requireAuth, requireManager, async (req, res) => {
   try {
     const { id } = req.params;
     const approver = req.body.approvedBy || req.user.name || 'Finance Lead';
@@ -286,7 +290,7 @@ router.post('/:id/approve-tier2', requireAuth, async (req, res) => {
 });
 
 // PATCH /api/expenses/:id
-router.patch('/:id', requireAuth, async (req, res) => {
+router.patch('/:id', requireAuth, requireManager, async (req, res) => {
   try {
     const { id } = req.params;
     const { status } = req.body;

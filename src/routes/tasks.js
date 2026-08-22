@@ -15,6 +15,8 @@ function broadcastTaskEvent(eventType, data) {
 
 const { readDB, writeDB } = require('../services/db');
 const { isSupabaseConfigured } = require('../services/supabase');
+const { getBadge } = require('../utils/xp');
+const { sendTelegramNotification } = require('../services/bot');
 
 function mapTask(t) {
   if (!t) return null;
@@ -86,7 +88,7 @@ router.get('/', requireAuth, async (req, res) => {
           query = query.or(`department.ilike.%${dept}%,category.ilike.%${dept}%`);
         }
         if (assignee) {
-          query = query.ilike('assignee', `%${assignee}%`);
+          query = query.or(`assignee.ilike.%${assignee}%,assignee_id.eq.${assignee},assignee_id.ilike.%${assignee}%`);
         }
         if (parentId) {
           query = query.eq('parent_task_id', parentId);
@@ -269,6 +271,32 @@ router.post('/', requireAuth, async (req, res) => {
     // Fire SSE broadcast non-blockingly
     try {
       broadcastTaskEvent('task_update', [task]);
+
+      // Telegram push to assignee if assigned
+      const targetAssigneeId = task.assigneeId || rawAssigneeId;
+      if (targetAssigneeId && supabase && isSupabaseConfigured()) {
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(targetAssigneeId);
+        let q = supabase.from('profiles').select('name, telegram_id');
+        if (isUUID) q = q.eq('id', targetAssigneeId);
+        else q = q.eq('emp_code', targetAssigneeId);
+
+        q.maybeSingle().then(({ data: prof }) => {
+          if (prof?.telegram_id) {
+            const { sendTelegramNotification } = require('../services/bot');
+            sendTelegramNotification(
+              prof.telegram_id,
+              `📋 *New Task Assigned to You!*\n\n` +
+              `🎯 *${task.title}*\n` +
+              `🏢 Client: ${task.client || 'Agency'}\n` +
+              `📅 Due: ${task.dueDate || 'ASAP'}\n` +
+              `⚡ Priority: *${task.priority || 'Medium'}*\n` +
+              `📌 Starting Stage: *${task.stage || 'Briefing'}*\n\n` +
+              `_Open your bot menu or web panel to view and progress your task._`,
+              null, true
+            );
+          }
+        }).catch(err => console.warn('[Tasks API] Telegram notification warning:', err.message));
+      }
     } catch (e) {}
 
     return res.status(201).json({ success: true, task });
@@ -317,15 +345,30 @@ router.put('/:id', requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
     const updates = { updated_at: new Date().toISOString() };
+    let data = null;
 
-    if (req.body.title) updates.title = req.body.title;
-    if (req.body.stage) updates.stage = req.body.stage;
-    if (req.body.priority) updates.priority = req.body.priority;
-    if (req.body.assignee) updates.assignee = req.body.assignee;
-    if (req.body.dueDate) updates.due_date = req.body.dueDate;
+    if (supabase && isSupabaseConfigured()) {
+      try {
+        const updates = { ...req.body, updated_at: new Date().toISOString() };
+        delete updates.id;
+        const { data: updated, error } = await supabase.from('tasks').update(updates).eq('id', id).select().maybeSingle();
+        if (!error && updated) data = updated;
+      } catch (dbErr) {
+        console.warn('[Tasks API] PUT note:', dbErr.message);
+      }
+    }
 
-    const { data, error } = await supabase.from('tasks').update(updates).eq('id', id).select().single();
-    if (error) throw error;
+    if (!data) {
+      const db = await readDB();
+      const idx = (db.tasks || []).findIndex(t => t.id === id);
+      if (idx !== -1) {
+        db.tasks[idx] = { ...db.tasks[idx], ...req.body, updatedAt: new Date().toISOString() };
+        data = db.tasks[idx];
+        await writeDB(db);
+      }
+    }
+
+    if (!data) return res.status(404).json({ error: 'Task not found' });
 
     const task = mapTask(data);
     const { data: allTasks } = await supabase.from('tasks').select('*').order('created_at', { ascending: false });
@@ -334,8 +377,8 @@ router.put('/:id', requireAuth, async (req, res) => {
     // QC Gate Notification if moved to Internal QC
     if (req.body.stage === 'Internal QC') {
       try {
-        const { sendTelegramNotification } = require('../services/bot/notifications');
-        const { data: ruhul } = await supabase.from('profiles').select('*').eq('emp_code', 'PBD-006').maybeSingle();
+        const qcCode = process.env.QC_REVIEWER_CODE || 'PBD-006';
+        const { data: ruhul } = await supabase.from('profiles').select('*').eq('emp_code', qcCode).maybeSingle();
         if (ruhul?.telegram_id) {
           sendTelegramNotification(ruhul.telegram_id,
             `🔍 *Internal QC Review Required*\n\n• Task: *${task.title}*\n• Client: *${task.client || 'Agency'}*\n• Submitted by: *${task.assignee || 'Visualizer'}*\n\nPlease review and either approve for client delivery or send back for revision.`,
@@ -379,6 +422,13 @@ router.patch(['/:id', '/:id/stage'], requireAuth, async (req, res) => {
         }
 
         const updates = { stage: newStage, custom_status: newStage, updated_at: new Date().toISOString() };
+        if (req.body.custom_fields) {
+          const mergedCustom = typeof existing?.custom_fields === 'object' && existing.custom_fields !== null
+            ? { ...existing.custom_fields, ...req.body.custom_fields }
+            : req.body.custom_fields;
+          updates.custom_fields = mergedCustom;
+        }
+
         const { data: updated, error } = await supabase.from('tasks').update(updates).eq('id', id).select().maybeSingle();
         if (!error && updated) data = updated;
       } catch (dbErr) {
@@ -392,36 +442,76 @@ router.patch(['/:id', '/:id/stage'], requireAuth, async (req, res) => {
       if (idx !== -1) {
         db.tasks[idx].stage = newStage;
         db.tasks[idx].custom_status = newStage;
+        if (req.body.custom_fields) {
+          db.tasks[idx].custom_fields = { ...(db.tasks[idx].custom_fields || {}), ...req.body.custom_fields };
+        }
         data = db.tasks[idx];
         await writeDB(db);
       } else {
-        data = { id, stage: newStage, custom_status: newStage, title: 'Task' };
+        data = { id, stage: newStage, custom_status: newStage, custom_fields: req.body.custom_fields || null, title: 'Task' };
       }
     }
 
     const task = mapTask(data);
 
-    // Award +15 XP on task completion
-    if ((stage === 'Done' || stage === 'Completed' || stage === 'Approved' || stage === 'Published') && data.assignee_id) {
+    // Award +15 XP on task completion (only once — if transitioning from an incomplete stage)
+    const completedStages = ['done', 'completed', 'approved', 'published'];
+    const wasDone = completedStages.includes((existing?.stage || '').toLowerCase());
+    const isNowDone = completedStages.includes((stage || '').toLowerCase());
+
+    if (isNowDone && !wasDone && data.assignee_id) {
       try {
         const empCode = data.assignee_id;
         const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(empCode);
-        let pQuery = supabase.from('profiles').select('xp');
+        let pQuery = supabase.from('profiles').select('xp, badge, telegram_id, custom_fields');
         if (isUUID) pQuery = pQuery.eq('id', empCode);
         else pQuery = pQuery.eq('emp_code', empCode);
         const { data: prof } = await pQuery.maybeSingle();
         if (prof) {
           const newXP = (prof.xp || 0) + 15;
-          let badge = '🌱 Recruit';
-          if (newXP >= 500) badge = '⭐ Rising Star';
-          if (newXP >= 1000) badge = '🔥 Performer';
-          if (newXP >= 2000) badge = '💜 Champion';
+          const oldBadge = prof.badge || '🌱 Recruit';
+          const badge = getBadge(newXP);
+          const leveledUp = badge !== oldBadge;
 
-          let uQuery = supabase.from('profiles').update({ xp: newXP, badge, updated_at: new Date().toISOString() });
+          const existingLog = prof.custom_fields?.xp_log || [];
+          const xpLog = [...existingLog.slice(-49), {
+            event: 'task_complete',
+            delta: 15,
+            total: newXP,
+            badge,
+            taskId: id,
+            ts: new Date().toISOString()
+          }];
+
+          const customFields = { ...(prof.custom_fields || {}), xp_log: xpLog };
+
+          let uQuery = supabase.from('profiles').update({
+            xp: newXP,
+            badge,
+            custom_fields: customFields,
+            updated_at: new Date().toISOString()
+          });
           if (isUUID) uQuery = uQuery.eq('id', empCode);
           else uQuery = uQuery.eq('emp_code', empCode);
           await uQuery;
           broadcastTaskEvent('team_update', [{ emp_code: empCode, xp: newXP, badge }]);
+
+          if (leveledUp && prof.telegram_id) {
+            try {
+              const { sendTelegramNotification } = require('../services/bot');
+              await sendTelegramNotification(prof.telegram_id,
+                `🏆 *YOU LEVELED UP!*\n\n` +
+                `Congratulations! You've advanced to a new specialist rank:\n\n` +
+                `🎖️ *Rank:* ${badge}\n` +
+                `⭐ *Total XP:* ${newXP.toLocaleString()} XP\n\n` +
+                `_Keep delivering outstanding work to reach the next tier! 🚀_`,
+                null,
+                true
+              );
+            } catch (notifErr) {
+              console.warn('[Tasks XP Level-Up] Notification warning:', notifErr.message);
+            }
+          }
         }
       } catch (xpErr) {
         console.warn('Task completion XP update warning:', xpErr.message);
@@ -802,9 +892,12 @@ router.post('/:id/log-time', requireAuth, async (req, res) => {
     }
 
     // Update tasks table
-    const { data: existing } = await supabase.from('tasks').select('logged_hours').eq('id', id).single();
+    const { data: existing } = await supabase.from('tasks').select('logged_hours').eq('id', id).maybeSingle();
+    if (!existing) {
+      return res.status(404).json({ error: 'Task not found' });
+    }
     const newLogged = (Number(existing?.logged_hours) || 0) + logged;
-    const { data, error } = await supabase.from('tasks').update({ logged_hours: newLogged, updated_at: new Date().toISOString() }).eq('id', id).select().single();
+    const { data, error } = await supabase.from('tasks').update({ logged_hours: newLogged, updated_at: new Date().toISOString() }).eq('id', id).select().maybeSingle();
     if (error) throw error;
 
     broadcastTaskEvent('task_time_logged', { taskId: id, log: logEntry });

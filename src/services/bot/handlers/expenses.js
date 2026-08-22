@@ -55,14 +55,31 @@ async function handleExpenseWizardStep(teamBot, msg, wizardState, emp) {
       const nextState = { ...wizardState, amount, action: 'await_expense_category' };
       await state.setSession(chatId, nextState);
       return teamBot.sendMessage(chatId,
-        `💰 Amount: *BDT ${amount.toLocaleString()}*\n\nNow please reply with the *category*:\n\n` +
-        `1️⃣ Transport\n2️⃣ Food & Meals\n3️⃣ Office Supplies\n4️⃣ Client Entertainment\n5️⃣ Other\n\nReply with \`1\`-\`5\` or type custom category`,
+        `💰 Amount: *BDT ${amount.toLocaleString()}*\n\nNow please select or reply with the *category* (1-8):\n\n` +
+        `1️⃣ Transport / Ride Share\n` +
+        `2️⃣ Meals & Team Food\n` +
+        `3️⃣ Studio & Shoot Supplies\n` +
+        `4️⃣ Hardware / Gear Rental\n` +
+        `5️⃣ Internet / Mobile Data\n` +
+        `6️⃣ Software / AI Tools\n` +
+        `7️⃣ Client Hospitality\n` +
+        `8️⃣ Other Operating Expense\n\n` +
+        `_Reply with number (1-8) or type category name:_`,
         { parse_mode: 'Markdown' }
       );
     }
 
     if (wizardState.action === 'await_expense_category') {
-      const categories = { '1': 'Transport', '2': 'Food & Meals', '3': 'Office Supplies', '4': 'Client Entertainment', '5': 'Other' };
+      const categories = {
+        '1': 'Transport / Ride Share',
+        '2': 'Meals & Team Food',
+        '3': 'Studio & Shoot Supplies',
+        '4': 'Hardware / Gear Rental',
+        '5': 'Internet / Mobile Data',
+        '6': 'Software / AI Tools',
+        '7': 'Client Hospitality',
+        '8': 'Other Operating Expense'
+      };
       const category = categories[text] || text;
 
       const submittedExpense = await state.submitExpense(emp.emp_code, emp.name, {
@@ -76,20 +93,30 @@ async function handleExpenseWizardStep(teamBot, msg, wizardState, emp) {
 
       // Notify Line Manager / Finance Lead via Telegram DM
       try {
-        const manager = await state.getEmployeeByTelegramId(emp.reportsTo || 'PBD-029');
-        if (manager && manager.telegramId) {
-          teamBot.sendMessage(manager.telegramId,
+        const managerIdOrCode = emp.reportsTo || 'PBD-029';
+        const manager = (typeof state.getEmployeeByIdOrCode === 'function')
+          ? await state.getEmployeeByIdOrCode(managerIdOrCode)
+          : (typeof state.getEmployeeByCode === 'function' && managerIdOrCode.startsWith('PBD'))
+            ? await state.getEmployeeByCode(managerIdOrCode)
+            : await state.getEmployeeByTelegramId(managerIdOrCode);
+
+        if (manager && (manager.telegramId || manager.telegram_id)) {
+          const targetTgId = manager.telegramId || manager.telegram_id;
+          teamBot.sendMessage(targetTgId,
             `💸 *NEW EXPENSE CLAIM SUBMITTED*\n\n` +
             `• From: *${emp.name}*\n` +
             `• Amount: *৳${wizardState.amount.toLocaleString()} BDT*\n` +
             `• Category: *${category}*\n` +
             `• Status: *Pending Tier-1 Line Review*\n\n` +
-            `_Tap below for 1-click approval:_`,
+            `_Tap below for 1-click review:_`,
             {
               parse_mode: 'Markdown',
               reply_markup: {
                 inline_keyboard: [
-                  [{ text: `✅ Line Approve ৳${wizardState.amount.toLocaleString()}`, callback_data: `approve_expense_t1:${submittedExpense?.id || ''}` }]
+                  [
+                    { text: `✅ Line Approve ৳${wizardState.amount.toLocaleString()}`, callback_data: `approve_expense_t1:${submittedExpense?.id || ''}` },
+                    { text: `❌ Decline`, callback_data: `reject_expense_t1:${submittedExpense?.id || ''}` }
+                  ]
                 ]
               }
             }

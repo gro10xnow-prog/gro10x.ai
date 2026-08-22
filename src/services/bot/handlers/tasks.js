@@ -7,19 +7,7 @@
 
 const { supabase } = require('../../supabase');
 const state = require('../../state');
-
-const WORKFLOW_MAP = {
-  'social': ['Draft', 'Graphic Design', 'Copy Review', 'Scheduled', 'Published'],
-  'branding': ['Strategy', 'Concepts', 'Client Refinement', 'Master Delivered'],
-  'video': ['Briefing', 'Scripting', 'Shooting', 'Editing', 'Internal QC', 'Client Review', 'Approved']
-};
-
-function getTaskStages(task) {
-  const category = (task.category || task.workflow_type || task.department || task.title || '').toLowerCase();
-  if (category.includes('social') || category.includes('posm')) return WORKFLOW_MAP['social'];
-  if (category.includes('brand') || category.includes('identity')) return WORKFLOW_MAP['branding'];
-  return WORKFLOW_MAP['video'];
-}
+const { WORKFLOW_MAP, getTaskStages } = require('../../../utils/workflows');
 
 async function handleMyTasks(teamBot, msg) {
   const chatId = msg.chat.id;
@@ -83,9 +71,12 @@ async function handleMyTasks(teamBot, msg) {
       }
       inlineRow.push({ text: '📱 Details', web_app: { url: `https://purpleos-iota.vercel.app/team-miniapp?tab=tasks&taskId=${t.id}` } });
 
+      const inlineRows = [inlineRow];
+      inlineRows.push([{ text: '🤖 AI Brief Summary', callback_data: `ai_brief:${t.id}` }]);
+
       teamBot.sendMessage(chatId, cardText, {
         parse_mode: 'Markdown',
-        reply_markup: { inline_keyboard: [inlineRow] }
+        reply_markup: { inline_keyboard: inlineRows }
       });
     }
   } catch (err) {

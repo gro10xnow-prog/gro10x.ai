@@ -21,6 +21,8 @@ function mapLeave(l) {
     toDate: l.end_date,
     reason: l.reason,
     status: l.status || 'Pending',
+    totalDays: Number(l.total_days || l.days) || 1,
+    total_days: Number(l.total_days || l.days) || 1,
     reviewedBy: l.manager_reviewed_by || l.reviewed_by || null,
     ownerApprovedAt: l.owner_approved_at || null,
     createdAt: l.created_at,
@@ -104,6 +106,54 @@ router.get('/', requireAuth, async (req, res) => {
   }
 });
 
+// GET /api/leaves/balance (B-P2-6)
+router.get('/balance', requireAuth, async (req, res) => {
+  try {
+    const empCode = req.query.empCode || req.query.employeeId || req.user?.emp_code || req.user?.empCode || req.user?.id || '';
+    let casualAllowed = 14;
+    let sickAllowed = 10;
+    let casualUsed = 0;
+    let sickUsed = 0;
+
+    if (supabase) {
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(empCode);
+      let pQuery = supabase.from('profiles').select('casual_leaves_allowed, sick_leaves_allowed, casual_leaves_used, sick_leaves_used');
+      if (isUUID) pQuery = pQuery.eq('id', empCode);
+      else pQuery = pQuery.eq('emp_code', empCode);
+      const { data: prof } = await pQuery.maybeSingle();
+
+      if (prof) {
+        casualAllowed = prof.casual_leaves_allowed ?? 14;
+        sickAllowed = prof.sick_leaves_allowed ?? 10;
+        if (prof.casual_leaves_used !== undefined && prof.casual_leaves_used !== null) casualUsed = Number(prof.casual_leaves_used);
+        if (prof.sick_leaves_used !== undefined && prof.sick_leaves_used !== null) sickUsed = Number(prof.sick_leaves_used);
+      }
+
+      if (casualUsed === 0 && sickUsed === 0) {
+        const { data: leaves } = await supabase.from('leaves').select('leave_type, total_days, status').eq('employee_id', empCode);
+        const approved = (leaves || []).filter(l => l.status === 'Approved');
+        casualUsed = approved.filter(l => (l.leave_type || '').toLowerCase().includes('casual'))
+          .reduce((sum, l) => sum + (Number(l.total_days) || 1), 0);
+        sickUsed = approved.filter(l => (l.leave_type || '').toLowerCase().includes('sick'))
+          .reduce((sum, l) => sum + (Number(l.total_days) || 1), 0);
+      }
+    }
+
+    return res.json({
+      success: true,
+      casualAllowed,
+      sickAllowed,
+      casualUsed,
+      sickUsed,
+      casualRemaining: Math.max(0, casualAllowed - casualUsed),
+      sickRemaining: Math.max(0, sickAllowed - sickUsed)
+    });
+  } catch (err) {
+    console.error('Leaves /balance error:', err.message);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 // POST Submit a Leave Request
 router.post('/', requireAuth, async (req, res) => {
   try {
@@ -111,13 +161,15 @@ router.post('/', requireAuth, async (req, res) => {
     const newId = `LVE-${randomUUID ? randomUUID().split('-')[0].toUpperCase() : Date.now().toString().slice(-6)}`;
     const payload = {
       id: newId,
-      employee_id: req.body.staffId || req.body.employeeId || req.user.id || 'PBD-001',
+      employee_id: req.body.staffId || req.body.employeeId || req.user.empCode || req.user.emp_code || req.user.id || 'PBD-001',
       employee_name: req.body.staffName || req.body.employeeName || req.user.name || 'Staff Member',
       leave_type: req.body.leaveType || req.body.type || 'Casual Leave',
       start_date: req.body.startDate || req.body.fromDate || new Date().toISOString().split('T')[0],
       end_date: req.body.endDate || req.body.toDate || new Date().toISOString().split('T')[0],
+      total_days: Number(req.body.totalDays || req.body.total_days || req.body.days) || 1,
       reason: req.body.reason || '',
       status: 'Pending',
+      submitted_via: req.body.submitted_via || 'web_portal',
       created_at: new Date().toISOString()
     };
 
@@ -125,9 +177,11 @@ router.post('/', requireAuth, async (req, res) => {
     const leave = mapLeave(payload);
 
     if (supabase) {
-      supabase.from('leaves').insert([payload]).then(null, e => {
-        console.warn('[Leaves API] Supabase insert note:', e.message);
-      });
+      try {
+        await supabase.from('leaves').insert([payload]);
+      } catch (dbErr) {
+        console.warn('[Leaves API] Supabase insert warning:', dbErr.message);
+      }
     }
 
     try { broadcast('leave_update', inMemoryLeaves.map(mapLeave)); } catch (e) {}
@@ -154,7 +208,7 @@ router.post('/', requireAuth, async (req, res) => {
 });
 
 // POST /:id/approve & /:id/manager-approve
-router.post(['/:id/approve', '/:id/manager-approve'], requireAuth, async (req, res) => {
+router.post(['/:id/approve', '/:id/manager-approve'], requireAuth, requireManager, async (req, res) => {
   try {
     const { id } = req.params;
     const approver = req.body.reviewedBy || req.user?.name || 'Department Manager';
@@ -178,7 +232,7 @@ router.post(['/:id/approve', '/:id/manager-approve'], requireAuth, async (req, r
         try {
           const start = new Date(leaveReq.start_date);
           const end = new Date(leaveReq.end_date);
-          let days = Math.round((end - start) / (1000 * 60 * 60 * 24)) + 1;
+          let days = Number(leaveReq.total_days || leaveReq.days) || Math.max(1, Math.round((end - start) / (1000 * 60 * 60 * 24)) + 1);
           if (days < 1) days = 1;
 
           const isSick = (leaveReq.leave_type || '').toLowerCase().includes('sick');
@@ -245,6 +299,29 @@ router.post(['/:id/approve', '/:id/manager-approve'], requireAuth, async (req, r
       }
     } catch (e) {}
 
+    // Push Telegram DM to the applicant
+    if (supabase && leave.employeeId) {
+      try {
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(leave.employeeId);
+        let q = supabase.from('profiles').select('name, telegram_id');
+        if (isUUID) q = q.eq('id', leave.employeeId);
+        else q = q.eq('emp_code', leave.employeeId);
+
+        q.maybeSingle().then(({ data: prof }) => {
+          if (prof?.telegram_id) {
+            const { sendTelegramNotification } = require('../services/bot');
+            sendTelegramNotification(
+              prof.telegram_id,
+              `✅ *Leave Request APPROVED!*\n\n` +
+              `Your *${leave.leaveType || 'Leave'}* from *${leave.startDate}* to *${leave.endDate}* has been approved by *${updates.manager_reviewed_by}*.\n\n` +
+              `_Enjoy your time off! 🌴_`,
+              null, true
+            );
+          }
+        }).catch(err => console.warn('[Leaves API] Telegram approval notification warning:', err.message));
+      } catch (e) {}
+    }
+
     return res.json({ success: true, leave });
   } catch (err) {
     console.error('Leave approve error:', err.message);
@@ -253,7 +330,7 @@ router.post(['/:id/approve', '/:id/manager-approve'], requireAuth, async (req, r
 });
 
 // POST /:id/reject
-router.post('/:id/reject', requireAuth, async (req, res) => {
+router.post('/:id/reject', requireAuth, requireManager, async (req, res) => {
   try {
     const { id } = req.params;
     const reviewer = req.body.reviewedBy || req.user?.name || 'Department Manager';
@@ -297,6 +374,29 @@ router.post('/:id/reject', requireAuth, async (req, res) => {
         }).catch(() => {});
       }
     } catch (e) {}
+
+    // Push Telegram DM to the applicant
+    if (supabase && leave.employeeId) {
+      try {
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(leave.employeeId);
+        let q = supabase.from('profiles').select('name, telegram_id');
+        if (isUUID) q = q.eq('id', leave.employeeId);
+        else q = q.eq('emp_code', leave.employeeId);
+
+        q.maybeSingle().then(({ data: prof }) => {
+          if (prof?.telegram_id) {
+            const { sendTelegramNotification } = require('../services/bot');
+            sendTelegramNotification(
+              prof.telegram_id,
+              `❌ *Leave Request Declined*\n\n` +
+              `Your *${leave.leaveType || 'Leave'}* request for *${leave.startDate}* to *${leave.endDate}* was declined by *${updates.manager_reviewed_by}*.\n\n` +
+              `_Please check in with your department lead for details._`,
+              null, true
+            );
+          }
+        }).catch(err => console.warn('[Leaves API] Telegram rejection notification warning:', err.message));
+      } catch (e) {}
+    }
 
     return res.json({ success: true, leave });
   } catch (err) {
