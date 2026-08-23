@@ -121,4 +121,11 @@ describe('Admin Bulk Import Projects & Tasks Test Suite', () => {
     expect(cleaned[0].dueDate).toBe('2026-09-15');
     expect(cleaned[0].workflowType).toBe('video');
   });
+
+  afterAll(async () => {
+    const { supabase, isSupabaseConfigured } = require('../src/services/supabase');
+    if (isSupabaseConfigured()) {
+      await supabase.from('tasks').delete().ilike('title', 'Hero Commercial Cut 1%');
+    }
+  });
 });

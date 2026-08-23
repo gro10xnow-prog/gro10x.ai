@@ -64,7 +64,7 @@ function findStaffMember(db, { employeeId, empCode, name } = {}) {
 }
 
 /**
- * âš¡ PURPLEOS WORKFLOW AUTOMATION ENGINE (Module C8)
+ * ⚡ PURPLEOS WORKFLOW AUTOMATION ENGINE (Module C8)
  */
 function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
   const sendTelegramNotification = getSendTelegram();
@@ -250,16 +250,16 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
       const portalUrl = `https://purpleos-iota.vercel.app/admin?tab=social&dispatchId=${post.id}`;
       const targetUrl = post.targetUrl || 'https://facebook.com';
 
-      const msgText = `ðŸ“± *1-CLICK SOCIAL DISPATCH DUE NOW!*\n\n` +
-        `ðŸ‘¤ Client: *${post.clientName}*\n` +
-        `ðŸ“Œ Platform: *${post.platform}*\n` +
-        `ðŸ“ Topic: *${post.title}*\n\n` +
-        `ðŸ”— Direct Target Link:\n${targetUrl}\n\n` +
-        `ðŸ“² Open 1-Click Dispatch Hub to copy caption & download media assets:`;
+      const msgText = `📱 *1-CLICK SOCIAL DISPATCH DUE NOW!*\n\n` +
+        `👤 Client: *${post.clientName}*\n` +
+        `📌 Platform: *${post.platform}*\n` +
+        `📌 Topic: *${post.title}*\n\n` +
+        `🔗 Direct Target Link:\n${targetUrl}\n\n` +
+        `📲 Open 1-Click Dispatch Hub to copy caption & download media assets:`;
 
       const buttons = [
-        [{ text: 'ðŸš€ Launch Target Page', url: targetUrl }],
-        [{ text: 'ðŸ“‹ Open 1-Click Dispatch Hub', url: portalUrl }]
+        [{ text: '🚀 Launch Target Page', url: targetUrl }],
+        [{ text: '📋 Open 1-Click Dispatch Hub', url: portalUrl }]
       ];
 
       if (publisher && publisher.telegramId) {
@@ -298,9 +298,9 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
       if (financeUser && financeUser.telegramId) {
         sendTelegramNotification(financeUser.telegramId, msgText, [
           [
-            { text: 'ðŸ’° Verify Tier 2', callback_data: `approve_expense_t2:${expense.id}` }
+            { text: '💰 Verify Tier 2', callback_data: `approve_expense_t2:${expense.id}` }
           ],
-          [{ text: 'ðŸ” Inspect in Finance Portal', url: portalUrl }]
+          [{ text: '🔍 Inspect in Finance Portal', url: portalUrl }]
         ], true);
       }
 
@@ -318,37 +318,37 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
     if (eventType === 'expense_tier2_approved') {
       const expense = eventData.expense;
       const portalUrl = `https://purpleos-iota.vercel.app/admin?tab=expenses&expenseId=${expense.id}`;
-      const msgText = `ðŸ‘‘ *EXPENSE TIER 2 VERIFIED â€” AWAITING OWNER DISBURSEMENT*\n\n` +
-        `ðŸ“‹ Claim ID: *${expense.id}*\n` +
-        `ðŸ‘¤ Submitted By: *${expense.submittedBy}*\n` +
-        `ðŸ“‚ Category: *${expense.category}*\n` +
-        `ðŸ’µ Amount: *BDT ${(Number(expense.amount) || 0).toLocaleString()}*\n` +
-        `âœ… Tier 1 (Manager): *${expense.tier1.approvedBy}*\n` +
-        `âœ… Tier 2 (Finance): *${expense.tier2.approvedBy}*\n\n` +
+      const msgText = `👑 *EXPENSE TIER 2 VERIFIED — AWAITING OWNER DISBURSEMENT*\n\n` +
+        `📋 Claim ID: *${expense.id}*\n` +
+        `👤 Submitted By: *${expense.submittedBy}*\n` +
+        `📁 Category: *${expense.category}*\n` +
+        `💵 Amount: *BDT ${(Number(expense.amount) || 0).toLocaleString()}*\n` +
+        `✅ Tier 1 (Manager): *${expense.tier1.approvedBy}*\n` +
+        `✅ Tier 2 (Finance): *${expense.tier2.approvedBy}*\n\n` +
         `Click below to approve final disbursement release.`;
 
       const owner = (db.team || []).find(t => (t.role || '').toLowerCase().includes('owner'));
       if (owner && owner.telegramId) {
         sendTelegramNotification(owner.telegramId, msgText, [
           [
-            { text: 'ðŸ’¸ Release Disbursement', callback_data: `disburse_expense_t3:${expense.id}` }
+            { text: '💸 Release Disbursement', callback_data: `disburse_expense_t3:${expense.id}` }
           ],
-          [{ text: 'ðŸ” Inspect in Admin Portal', url: portalUrl }]
+          [{ text: '🔍 Inspect in Admin Portal', url: portalUrl }]
         ], true);
       }
 
-      // Large expense threshold â€” BDT 25,000+ triggers Chairman notification
+      // Large expense threshold — BDT 25,000+ triggers Chairman notification
       const LARGE_EXP_THRESHOLD = 25000;
       if (Number(expense.amount) >= LARGE_EXP_THRESHOLD) {
         const chairman = (db.team || []).find(t => t.id === 'PBD-002');
         if (chairman?.telegramId) {
           sendTelegramNotification(chairman.telegramId,
-            `âš ï¸ *Large Expense â€” Chairman Oversight*\n\n` +
-            `â€¢ Claim ID: *${expense.id}*\n` +
-            `â€¢ By: *${expense.submittedBy}*\n` +
-            `â€¢ Category: *${expense.category}*\n` +
-            `â€¢ Amount: *BDT ${Number(expense.amount).toLocaleString()}* _(above BDT 25,000 threshold)_\n` +
-            `â€¢ Tier 1 âœ…  Tier 2 âœ…  Awaiting Owner disbursement\n\n` +
+            `⚠️ *Large Expense — Chairman Oversight*\n\n` +
+            `• Claim ID: *${expense.id}*\n` +
+            `• By: *${expense.submittedBy}*\n` +
+            `• Category: *${expense.category}*\n` +
+            `• Amount: *BDT ${Number(expense.amount).toLocaleString()}* _(above BDT 25,000 threshold)_\n` +
+            `• Tier 1 ✅  Tier 2 ✅  Awaiting Owner disbursement\n\n` +
             `This has been flagged to you as Chairman per the financial oversight policy.`,
             null, true
           );
@@ -373,11 +373,11 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
         name: expense.submittedBy || expense.loggedBy || expense.submitted_by
       });
 
-      const msgText = `ðŸŽ‰ *EXPENSE CLAIM DISBURSED & PAID!*\n\n` +
-        `ðŸ“‹ Claim ID: *${expense.id}*\n` +
-        `ðŸ’µ Amount Disbursed: *BDT ${(Number(expense.amount) || 0).toLocaleString()}*\n` +
-        `ðŸ“‚ Category: *${expense.category}*\n` +
-        `ðŸ“… Date: *${expense.disbursedAt ? expense.disbursedAt.split('T')[0] : new Date().toISOString().split('T')[0]}*\n\n` +
+      const msgText = `🎉 *EXPENSE CLAIM DISBURSED & PAID!*\n\n` +
+        `📋 Claim ID: *${expense.id}*\n` +
+        `💵 Amount Disbursed: *BDT ${(Number(expense.amount) || 0).toLocaleString()}*\n` +
+        `📁 Category: *${expense.category}*\n` +
+        `📅 Date: *${expense.disbursedAt ? expense.disbursedAt.split('T')[0] : new Date().toISOString().split('T')[0]}*\n\n` +
         `The funds have been released by agency management. Thank you!`;
 
       if (staff && staff.telegramId) {
@@ -402,12 +402,12 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
         name: leave.staffName || leave.employeeName || leave.employee_name
       });
 
-      const icon = leave.status === 'Approved' ? 'âœ…' : 'â Œ';
+      const icon = leave.status === 'Approved' ? '✅' : '❌';
       const msgText = `${icon} *LEAVE REQUEST ${leave.status.toUpperCase()}*\n\n` +
-        `ðŸ‘¤ Staff: *${leave.staffName || leave.employeeName || 'Staff'}*\n` +
-        `ðŸŒ´ Type: *${leave.type || leave.leaveType || 'Leave'}*\n` +
-        `ðŸ“… Dates: *${leave.startDate || leave.start_date} to ${leave.endDate || leave.end_date}* (${leave.totalDays || leave.total_days || 1} Days)\n` +
-        `âœ ï¸  Reviewed By: *${leave.reviewedBy || leave.reviewed_by || 'Manager'}*\n\n` +
+        `👤 Staff: *${leave.staffName || leave.employeeName || 'Staff'}*\n` +
+        `🌴 Type: *${leave.type || leave.leaveType || 'Leave'}*\n` +
+        `📅 Dates: *${leave.startDate || leave.start_date} to ${leave.endDate || leave.end_date}* (${leave.totalDays || leave.total_days || 1} Days)\n` +
+        `✍️ Reviewed By: *${leave.reviewedBy || leave.reviewed_by || 'Manager'}*\n\n` +
         `Your attendance calendar has been updated.`;
 
       if (staff && staff.telegramId) {
@@ -426,17 +426,17 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
 
     // TRIGGER 11: 7:00 PM Daily EOD Report Prompt (AUT-012)
     if (eventType === 'eod_daily_prompt') {
-      const msgText = `ðŸ“‹ *TIME FOR YOUR DAILY EOD REPORT! (7:00 PM)*\n\n` +
+      const msgText = `📋 *TIME FOR YOUR DAILY EOD REPORT! (7:00 PM)*\n\n` +
         `Hello team! Please reply to this message or log into the Crew Portal with:\n` +
         `1. Tasks completed today\n` +
         `2. Tasks in progress\n` +
         `3. Blockers / help needed\n\n` +
-        `ðŸŒ  Open Crew Portal: https://purpleos-iota.vercel.app/team`;
+        `🌐 Open Crew Portal: https://purpleos-iota.vercel.app/team`;
 
       (db.team || []).forEach(staff => {
         if (staff.telegramId) {
           sendTelegramNotification(staff.telegramId, msgText, [
-            [{ text: 'ðŸ“‹ Submit EOD in Portal', url: 'https://purpleos-iota.vercel.app/team' }]
+            [{ text: '📋 Submit EOD in Portal', url: 'https://purpleos-iota.vercel.app/team' }]
           ], true);
         }
       });
@@ -459,12 +459,12 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
         name: ticket.loggedBy || ticket.logged_by || ticket.submittedBy
       });
 
-      const msgText = `ðŸ”§ *SUPPORT TICKET RESOLVED!*\n\n` +
-        `ðŸŽ« Ticket ID: *${ticket.id}*\n` +
-        `ðŸ“‚ Category: *${ticket.category}*\n` +
-        `ðŸ“Œ Title: *${ticket.title}*\n` +
-        `âœ… Status: *Resolved*\n` +
-        `âœ ï¸  Resolved By: *${ticket.resolvedBy || ticket.resolved_by || 'Maintenance Lead'}*\n\n` +
+      const msgText = `🔧 *SUPPORT TICKET RESOLVED!*\n\n` +
+        `🎫 Ticket ID: *${ticket.id}*\n` +
+        `📁 Category: *${ticket.category}*\n` +
+        `📌 Title: *${ticket.title}*\n` +
+        `✅ Status: *Resolved*\n` +
+        `✍️ Resolved By: *${ticket.resolvedBy || ticket.resolved_by || 'Maintenance Lead'}*\n\n` +
         `Your support ticket has been closed.`;
 
       if (staff && staff.telegramId) {
@@ -488,13 +488,13 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
       const pendingExp = (db.expenses || []).filter(e => e.status !== 'Disbursed' && e.status !== 'Rejected').length;
       const activeStaff = (db.team || []).length;
 
-      const msgText = `â˜€ï¸ *PURPLEBOT 9:00 AM MORNING EXECUTIVE BRIEFING*\n` +
-        `ðŸ“… Date: *${todayStr}*\n\n` +
-        `ðŸŽ¬ *Active Campaigns & Shoots:* ${openTasks} Open Workflows\n` +
-        `ðŸ‘¥ *Team Capacity:* ${activeStaff} Specialists Active\n` +
-        `ðŸ§¾ *Pending Approvals:* ${pendingExp} Expense Claims Awaiting Release\n` +
-        `ðŸ“± *Social Dispatches:* Check 1-Click Social Dispatch Hub\n\n` +
-        `ðŸŒ Open Admin Dashboard: https://purpleos-iota.vercel.app/admin`;
+      const msgText = `☀️ *PURPLEBOT 9:00 AM MORNING EXECUTIVE BRIEFING*\n` +
+        `📅 Date: *${todayStr}*\n\n` +
+        `🎬 *Active Campaigns & Shoots:* ${openTasks} Open Workflows\n` +
+        `👥 *Team Capacity:* ${activeStaff} Specialists Active\n` +
+        `🧾 *Pending Approvals:* ${pendingExp} Expense Claims Awaiting Release\n` +
+        `📱 *Social Dispatches:* Check 1-Click Social Dispatch Hub\n\n` +
+        `🌐 Open Admin Dashboard: https://purpleos-iota.vercel.app/admin`;
 
       const leaders = (db.team || []).filter(t => (t.role || '').toLowerCase().includes('director') || (t.role || '').toLowerCase().includes('founder') || (t.role || '').toLowerCase().includes('owner'));
       leaders.forEach(l => {
@@ -600,12 +600,12 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
     if (eventType === 'team_broadcast_notice') {
       const { title, message, targetGroup, senderName, urgent } = eventData;
 
-      const prefix = urgent ? 'ðŸš¨ *URGENT TEAM BROADCAST NOTICE*' : 'ðŸ“¢ *TEAM BROADCAST NOTICE*';
+      const prefix = urgent ? '🚨 *URGENT TEAM BROADCAST NOTICE*' : '📢 *TEAM BROADCAST NOTICE*';
       const msgText = `${prefix}\n` +
-        `ðŸ“Œ *Title:* ${title || 'Notice'}\n` +
-        `ðŸ‘¤ *From:* ${senderName || 'Agency Leadership'}\n\n` +
+        `📌 *Title:* ${title || 'Notice'}\n` +
+        `👤 *From:* ${senderName || 'Agency Leadership'}\n\n` +
         `${message}\n\n` +
-        `ðŸŒ Open Crew Portal: https://purpleos-iota.vercel.app/team`;
+        `🌐 Open Crew Portal: https://purpleos-iota.vercel.app/team`;
 
       (db.team || []).forEach(staff => {
         if (staff.telegramId) {
@@ -658,7 +658,7 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
           `🎯 *YOUR DAILY ACTION PLAN & TASK BRIEFING (9:00 AM)*\n\n` +
           `📋 *Assigned Tasks & Deliverables:*\n${taskListText}\n\n` +
           `⏰ Please remember to clock in when starting studio work.\n` +
-          `🌐 Open Crew Portal: https://purpleos-iota.vercel.app/team`;
+        `🌐 Open Crew Portal: https://purpleos-iota.vercel.app/team`;
 
         if (staff.telegramId) {
           sendTelegramNotification(staff.telegramId, msgText, [
@@ -748,8 +748,8 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
 
         const targetId = borhan?.telegramId || '1708459008';
         sendTelegramNotification(targetId, msgText, [
-          [{ text: 'ðŸ’° Verify T2 (Finance)', callback_data: `approve_expense_t2:${expense.id}` }],
-          [{ text: 'ðŸ” Inspect in Admin Portal', url: `https://purpleos-iota.vercel.app/admin` }]
+          [{ text: '💰 Verify T2 (Finance)', callback_data: `approve_expense_t2:${expense.id}` }],
+        [{ text: '🔍 Inspect in Admin Portal', url: `https://purpleos-iota.vercel.app/admin` }]
         ], true);
       }
     }
@@ -760,17 +760,17 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
       const borhan = (db.team || []).find(t => t.id === 'PBD-029' || (t.role || '').toLowerCase().includes('finance manager'));
       expense.status = 'Tier 2 Pending';
 
-      const msgText = `ðŸ’° *HIGH-VALUE EXPENSE TIER 1.5 OPS APPROVED â€” AWAITING FINANCE VERIFICATION*\n\n` +
-        `ðŸ“‹ Claim ID: *${expense.id}*\n` +
-        `ðŸ‘¤ Submitted By: *${expense.submittedBy}*\n` +
-        `ðŸ’µ Amount: *BDT ${(Number(expense.amount) || 0).toLocaleString()}*\n` +
-        `âœï¸ Ops Approved By: *${expense.tier1_5?.approvedBy || 'Kafil Mahmud (Head of Ops)'}*\n\n` +
+      const msgText = `💰 *HIGH-VALUE EXPENSE TIER 1.5 OPS APPROVED — AWAITING FINANCE VERIFICATION*\n\n` +
+        `📋 Claim ID: *${expense.id}*\n` +
+        `👤 Submitted By: *${expense.submittedBy}*\n` +
+        `💵 Amount: *BDT ${(Number(expense.amount) || 0).toLocaleString()}*\n` +
+        `✍️ Ops Approved By: *${expense.tier1_5?.approvedBy || 'Kafil Mahmud (Head of Ops)'}*\n\n` +
         `Click below to verify for final disbursement.`;
 
       const targetId = borhan?.telegramId || '1708459008';
       sendTelegramNotification(targetId, msgText, [
-        [{ text: 'ðŸ’° Verify T2 (Finance)', callback_data: `approve_expense_t2:${expense.id}` }],
-        [{ text: 'ðŸ” Inspect in Admin Portal', url: `https://purpleos-iota.vercel.app/admin` }]
+        [{ text: '💰 Verify T2 (Finance)', callback_data: `approve_expense_t2:${expense.id}` }],
+        [{ text: '🔍 Inspect in Admin Portal', url: `https://purpleos-iota.vercel.app/admin` }]
       ], true);
     }
 
@@ -915,11 +915,11 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
 
       managers.forEach(mgr => {
         const dept = mgr.department || 'Operations';
-        const msgText = `ðŸ“‹ *PURPLEBOT 7:30 PM DEPARTMENT EOD DIGEST*\n` +
-          `ðŸ“ Department: *${dept}*\n\n` +
-          `âœ… *Reports Logged Today:* ${todayEods.length} Submissions\n` +
-          `ðŸ”´ *Blockers Flagged:* ${blockersCount} Action Item(s)\n\n` +
-          `ðŸŒ Open Manager Portal: https://purpleos-iota.vercel.app/manager`;
+        const msgText = `📋 *PURPLEBOT 7:30 PM DEPARTMENT EOD DIGEST*\n` +
+          `🏢 Department: *${dept}*\n\n` +
+          `✅ *Reports Logged Today:* ${todayEods.length} Submissions\n` +
+          `🔴 *🔴 Blockers Flagged:* ${blockersCount} Action Item(s)\n\n` +
+          `🌐 Open Manager Portal: https://purpleos-iota.vercel.app/manager`;
 
         const targetId = mgr.telegramId || '1708459008';
         sendTelegramNotification(targetId, msgText, null, true);
@@ -1057,10 +1057,10 @@ async function checkScheduledSocialDispatches(db, writeDB, broadcast) {
 }
 
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-// SCHEDULED JOBS â€” Morning Briefing & EOD Summary
+// ══════════════════════════════════════════════════════════════════════════════
+// SCHEDULED JOBS — Morning Briefing & EOD Summary
 // Runs inside the server process via setInterval (no cron lib needed)
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════════════════════════════════════════
 
 let _schedulerDb = null;
 let _schedulerWriteDB = null;
@@ -1098,29 +1098,45 @@ function buildMorningBriefing(db) {
   const now = getBDTime().bd;
   const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-  let msg = `â˜€ï¸ *Good morning, this is your ${dayNames[now.getDay()]} briefing!*\n`;
-  msg += `â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n\n`;
+  let msg = `☀️ *Good morning, this is your ${dayNames[now.getDay()]} briefing!*
+`;
+  msg += `────────────────────────
 
-  msg += `ðŸ“ *Team Live (${now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })} BD)*\n`;
-  msg += `  ðŸŸ¢ ${inStudio} In Studio  `;
-  msg += `ðŸŽ¬ ${onShoot} On Shoot  `;
-  msg += `ðŸŒ´ ${onLeave} Leave  `;
-  msg += `â¬› ${offline} Offline\n\n`;
+`;
+
+  msg += `📊 *Team Live (${now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })} BD)*
+`;
+  msg += `  🟢 ${inStudio} In Studio  `;
+  msg += `🎬 ${onShoot} On Shoot  `;
+  msg += `🌴 ${onLeave} Leave  `;
+  msg += `⬛ ${offline} Offline
+
+`;
 
   if (pendingAgreements > 0 || pendingExpenses > 0) {
-    msg += `âœï¸ *Pending Your Approval*\n`;
-    if (pendingAgreements > 0) msg += `  â€¢ ${pendingAgreements} Employment Agreement(s) awaiting final seal\n`;
-    if (pendingExpenses > 0) msg += `  â€¢ ${pendingExpenses} Expense(s) â€” BDT ${pendingExpAmt.toLocaleString()} to disburse\n`;
-    msg += `\n`;
+    msg += `✍️ *Pending Your Approval*
+`;
+    if (pendingAgreements > 0) msg += `  • ${pendingAgreements} Employment Agreement(s) awaiting final seal
+`;
+    if (pendingExpenses > 0) msg += `  • ${pendingExpenses} Expense(s) — BDT ${pendingExpAmt.toLocaleString()} to disburse
+`;
+    msg += `
+`;
   }
 
-  msg += `ðŸ’° *Finance Snapshot*\n`;
-  msg += `  â€¢ Outstanding Invoices: ${pendingInvoices.length} (BDT ${pendingInvAmt.toLocaleString()})\n\n`;
+  msg += `💰 *Finance Snapshot*
+`;
+  msg += `  • Outstanding Invoices: ${pendingInvoices.length} (BDT ${pendingInvAmt.toLocaleString()})
 
-  msg += `ðŸŽ¬ *Campaign Pipeline*\n`;
-  msg += `  â€¢ ${clientsInReview} deliverable(s) in Client Review\n`;
-  msg += `  â€¢ ${clientsInEdit} in Editing / Post Production\n`;
-  msg += `â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”`;
+`;
+
+  msg += `🎬 *Campaign Pipeline*
+`;
+  msg += `  • ${clientsInReview} deliverable(s) in Client Review
+`;
+  msg += `  • ${clientsInEdit} in Editing / Post Production
+`;
+  msg += `────────────────────────`;
 
   return msg;
 }
@@ -1144,40 +1160,56 @@ function buildEODSummary(db) {
     e.date === todayStr || e.createdAt?.startsWith(todayStr)
   );
 
-  let msg = `ðŸŒ™ *Evening Summary â€” End of Day*\n`;
-  msg += `â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n\n`;
+  let msg = `🌙 *Evening Summary — End of Day*
+`;
+  msg += `────────────────────────
 
-  msg += `ðŸ“ *Attendance Today*\n`;
-  msg += `  â€¢ ${clockedToday.length} team member(s) clocked in\n`;
+`;
+
+  msg += `📊 *Attendance Today*
+`;
+  msg += `  • ${clockedToday.length} team member(s) clocked in
+`;
   if (team.length - clockedToday.length > 0) {
-    msg += `  â€¢ ${team.length - clockedToday.length} did not log attendance\n`;
+    msg += `  • ${team.length - clockedToday.length} did not log attendance
+`;
   }
-  msg += `\n`;
+  msg += `
+`;
 
-  msg += `ðŸ“ *EOD Reports*\n`;
+  msg += `📋 *EOD Reports*
+`;
   if (eodToday.length > 0) {
-    msg += `  â€¢ ${eodToday.length} report(s) submitted today\n`;
+    msg += `  • ${eodToday.length} report(s) submitted today
+`;
     eodToday.slice(0, 3).forEach(r => {
-      msg += `  â€” ${r.employeeName || 'Team Member'}: ${(r.summary || r.tasks || '').slice(0, 60)}...\n`;
+      msg += `  — ${r.employeeName || 'Team Member'}: ${(r.summary || r.tasks || '').slice(0, 60)}...
+`;
     });
   } else {
-    msg += `  â€¢ No EOD reports received today\n`;
+    msg += `  • No EOD reports received today
+`;
   }
-  msg += `\n`;
+  msg += `
+`;
 
   if (expToday.length > 0) {
     const expTotal = expToday.reduce((s, e) => s + (e.amount || 0), 0);
-    msg += `ðŸ§¾ *Expenses Filed Today*\n`;
-    msg += `  â€¢ ${expToday.length} claim(s) â€” BDT ${expTotal.toLocaleString()} total\n\n`;
+    msg += `🧾 *Expenses Filed Today*
+`;
+    msg += `  • ${expToday.length} claim(s) — BDT ${expTotal.toLocaleString()} total
+
+`;
   }
 
-  msg += `â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n`;
-  msg += `_Have a great evening! See you tomorrow._ ðŸ’œ`;
+  msg += `────────────────────────
+`;
+  msg += `_Have a great evening! See you tomorrow._ 💜`;
 
   return msg;
 }
 
-// â”€â”€â”€ Chairman's Strategic Briefing (board-level, different from MD's operational view) â”€â”€â”€
+// ─── Chairman's Strategic Briefing (board-level, different from MD's operational view) ───
 function buildChairmanBriefing(db) {
   const team = db.team || [];
   const now = getBDTime().bd;
@@ -1210,29 +1242,51 @@ function buildChairmanBriefing(db) {
   const activeClients = clients.filter(c => c.status === 'Active Retainer').length;
   const inReview = (db.tasks || []).filter(t => t.stage === 'Client Review').length;
 
-  let msg = `ðŸ›ï¸ *Chairman's ${dayNames[now.getDay()]} Board Briefing*\n`;
-  msg += `â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n\n`;
+  let msg = `🏛️ *Chairman's ${dayNames[now.getDay()]} Board Briefing*
+`;
+  msg += `────────────────────────
 
-  msg += `ðŸ’° *Financial Health*\n`;
-  msg += `  â€¢ Revenue (this month): BDT ${revThisMonth.toLocaleString()}\n`;
-  msg += `  â€¢ Outstanding invoices: ${pendingInvoices.length} â€” BDT ${pendingInvAmt.toLocaleString()}\n`;
-  msg += `  â€¢ Monthly payroll commitment: BDT ${salaryTotal.toLocaleString()}\n\n`;
+`;
 
-  msg += `ðŸ‘¥ *HR Status*\n`;
-  msg += `  â€¢ Active employees: ${activeEmployees}\n`;
-  if (pendingAgreements > 0) msg += `  â€¢ âš ï¸ ${pendingAgreements} agreement(s) pending completion\n`;
-  if (pendingLeaves > 0) msg += `  â€¢ ðŸŒ´ ${pendingLeaves} leave request(s) pending approval\n`;
-  msg += `  â€¢ ${onLeave} on leave today\n\n`;
+  msg += `💰 *Financial Health*
+`;
+  msg += `  • Revenue (this month): BDT ${revThisMonth.toLocaleString()}
+`;
+  msg += `  • Outstanding invoices: ${pendingInvoices.length} — BDT ${pendingInvAmt.toLocaleString()}
+`;
+  msg += `  • Monthly payroll commitment: BDT ${salaryTotal.toLocaleString()}
 
-  msg += `ðŸ“Š *Business Development*\n`;
-  msg += `  â€¢ Active leads in pipeline: ${activeLeads}\n`;
-  if (pipelineValue > 0) msg += `  â€¢ Estimated pipeline value: BDT ${pipelineValue.toLocaleString()}\n`;
-  if (wonThisMonth > 0) msg += `  â€¢ Deals won this month: ${wonThisMonth}\n\n`;
+`;
 
-  msg += `ðŸŽ¬ *Client Health*\n`;
-  msg += `  â€¢ Active retainers: ${activeClients}\n`;
-  msg += `  â€¢ Deliverables in client review: ${inReview}\n`;
-  msg += `â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”`;
+  msg += `👥 *HR Status*
+`;
+  msg += `  • Active employees: ${activeEmployees}
+`;
+  if (pendingAgreements > 0) msg += `  • ⚠️ ${pendingAgreements} agreement(s) pending completion
+`;
+  if (pendingLeaves > 0) msg += `  • 🌴 ${pendingLeaves} leave request(s) pending approval
+`;
+  msg += `  • ${onLeave} on leave today
+
+`;
+
+  msg += `📈 *Business Development*
+`;
+  msg += `  • Active leads in pipeline: ${activeLeads}
+`;
+  if (pipelineValue > 0) msg += `  • Estimated pipeline value: BDT ${pipelineValue.toLocaleString()}
+`;
+  if (wonThisMonth > 0) msg += `  • Deals won this month: ${wonThisMonth}
+
+`;
+
+  msg += `🎬 *Client Health*
+`;
+  msg += `  • Active retainers: ${activeClients}
+`;
+  msg += `  • Deliverables in client review: ${inReview}
+`;
+  msg += `────────────────────────`;
 
   return msg;
 }
@@ -1281,7 +1335,7 @@ function startScheduledJobs(readDB, writeDB, broadcast) {
         });
       }
     } catch (e) {
-      // Silent fail â€” scheduler must never crash the server
+      // Silent fail — scheduler must never crash the server
     }
   }, 60 * 1000);
 }

@@ -12,7 +12,7 @@ jest.spyOn(https, 'request').mockImplementation((options, callback) => {
   req.write = jest.fn();
   req.end = jest.fn(() => {
     const res = new EventEmitter();
-    callback(res);
+    if (typeof callback === 'function') callback(res);
     const mockReply = JSON.stringify({
       candidates: [{
         content: {
