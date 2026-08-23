@@ -67,6 +67,77 @@ router.get('/version', (req, res) => {
   return ok(res, { version: pkg.version });
 });
 
+// System Health Dashboard API & Deep Telemetry
+router.get(['/system-health', '/system-health/detailed'], asyncHandler(async (req, res) => {
+  const { getActiveClientsCount } = require('../services/sse');
+  const cache = require('../services/cache');
+  const pkg = require('../../package.json');
+  const { getTeamBot, getClientBot } = require('../services/bot');
+  
+  let dbStatus = 'Offline';
+  let dbLatencyMs = null;
+  let agencyStats = {
+    totalStaff: 0,
+    openTasks: 0,
+    urgentTasks: 0,
+    overdueTasks: 0
+  };
+
+  if (isSupabaseConfigured()) {
+    const dbStart = Date.now();
+    try {
+      const [profRes, taskRes] = await Promise.all([
+        supabase.from('profiles').select('id, emp_code, status').limit(100),
+        supabase.from('tasks').select('id, priority, due_date, stage').limit(200)
+      ]);
+      dbLatencyMs = Date.now() - dbStart;
+      dbStatus = (profRes.error || taskRes.error) ? 'Degraded' : 'Connected';
+
+      if (profRes.data) {
+        agencyStats.totalStaff = profRes.data.length;
+      }
+      if (taskRes.data) {
+        const todayStr = new Date().toISOString().split('T')[0];
+        agencyStats.openTasks = taskRes.data.filter(t => !['Approved', 'Published', 'Completed'].includes(t.stage)).length;
+        agencyStats.urgentTasks = taskRes.data.filter(t => t.priority === 'Urgent').length;
+        agencyStats.overdueTasks = taskRes.data.filter(t => t.due_date && t.due_date < todayStr && !['Approved', 'Published', 'Completed'].includes(t.stage)).length;
+      }
+    } catch (e) {
+      dbStatus = 'Error';
+      dbLatencyMs = Date.now() - dbStart;
+    }
+  }
+
+  let team = null;
+  let client = null;
+  try {
+    team = getTeamBot();
+    client = getClientBot();
+  } catch (e) {}
+
+  const isHealthy = dbStatus === 'Connected' && (team !== null || !process.env.TELEGRAM_BOT_TOKEN_TEAM);
+
+  return res.json({
+    status: isHealthy ? 'healthy' : 'degraded',
+    version: pkg.version || '0.9.0.0',
+    environment: process.env.NODE_ENV || 'production',
+    dbConnection: dbStatus,
+    dbLatencyMs: dbLatencyMs !== null ? dbLatencyMs : 0,
+    sseClients: getActiveClientsCount ? getActiveClientsCount() : 0,
+    botStatus: {
+      teamBot: team ? 'active' : 'null',
+      teamBotMode: process.env.RENDER || process.env.NODE_ENV === 'production' ? 'webhook' : 'polling',
+      clientBot: client ? 'active' : 'null',
+      clientBotMode: process.env.RENDER || process.env.NODE_ENV === 'production' ? 'webhook' : 'polling'
+    },
+    uptimeSeconds: Math.floor(process.uptime()),
+    memoryMB: Math.round(process.memoryUsage().rss / 1024 / 1024 * 100) / 100,
+    cacheStats: cache.getStats ? cache.getStats() : { activeKeys: 0, hits: 0, misses: 0, hitRatePercent: 100 },
+    agencyTelemetry: agencyStats,
+    timestamp: new Date().toISOString()
+  });
+}));
+
 // Canonical Sub-Router Mounting
 router.use('/auth', authRoutes);
 router.use('/clients', clientsRoutes);
