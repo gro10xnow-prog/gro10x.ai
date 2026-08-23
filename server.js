@@ -55,6 +55,21 @@ if (process.env.SENTRY_DSN) {
   }
 }
 
+// Global Process Crash Prevention & Telemetry
+process.on('uncaughtException', (err) => {
+  console.error('🔥 UNCAUGHT EXCEPTION:', err?.stack || err?.message || err);
+  if (Sentry) {
+    try { Sentry.captureException(err); } catch (_) {}
+  }
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('⚠️ UNHANDLED PROMISE REJECTION:', reason?.stack || reason?.message || reason);
+  if (Sentry && reason instanceof Error) {
+    try { Sentry.captureException(reason); } catch (_) {}
+  }
+});
+
 // Initialize Telegram Bot & Webhooks
 try { initBot(); } catch (e) { console.warn('Bot init note:', e.message); }
 
@@ -108,7 +123,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(subdomainRouter);
 
 // SSE Endpoint for real-time synchronization
-app.get(['/api/sync', '/sync'], requireAuth, sseHandler);
+app.get(['/api/sync', '/sync', '/api/events'], requireAuth, sseHandler);
 
 // Bot Status Health Check
 app.get(['/api/bot-status', '/bot-status'], (req, res) => {
@@ -124,8 +139,8 @@ app.get(['/api/bot-status', '/bot-status'], (req, res) => {
   });
 });
 
-// System Health Dashboard API & Deep Telemetry
-app.get(['/api/system-health', '/api/system-health/detailed'], requireAuth, async (req, res) => {
+// System Health Dashboard API & Deep Telemetry (Public health & liveness probe)
+app.get(['/api/system-health', '/api/system-health/detailed'], async (req, res) => {
   const { supabase, isSupabaseConfigured } = require('./src/services/supabase');
   const { getActiveClientsCount } = require('./src/services/sse');
   const cache = require('./src/services/cache');
@@ -267,7 +282,11 @@ app.get(['/team', '/crew', '/staff'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public/crew/index.html'));
 });
 
-app.get(['/partners', '/client', '/portal'], (req, res) => {
+app.get(['/partners', '/partners.html'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/partners.html'));
+});
+
+app.get(['/client', '/portal'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public/client/index.html'));
 });
 

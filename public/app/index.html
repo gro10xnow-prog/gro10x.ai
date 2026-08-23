@@ -261,20 +261,29 @@
 
     // ──────── OPS HEALTH TELEMETRY FUNCTIONS ────────
     async function fetchOpsHealthData() {
+      const pill = document.getElementById('opsHealthPill');
       const pillText = document.getElementById('opsHealthPillText');
       const content = document.getElementById('opsHealthContent');
       const badge = document.getElementById('opsModalStatusBadge');
       const updated = document.getElementById('opsHealthLastUpdated');
 
       try {
-        const res = await fetch('/api/system-health');
+        const token = localStorage.getItem('sb-access-token') || localStorage.getItem('purpleos_pin_token') || localStorage.getItem('purple_token') || '';
+        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+        const res = await fetch('/api/system-health', { headers });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
 
         // Update Header Status Pill
         if (pillText) {
           const lat = data.dbLatencyMs ? `${data.dbLatencyMs}ms` : '32ms';
-          pillText.innerHTML = `🟢 Live | ⚡ ${lat}`;
+          const isHealthy = data.status === 'healthy';
+          pillText.innerHTML = isHealthy ? `🟢 Live | ⚡ ${lat}` : `🟡 Degraded | ⚡ ${lat}`;
+          if (pill) {
+            pill.style.background = isHealthy ? 'rgba(16,185,129,0.1)' : 'rgba(245,158,11,0.1)';
+            pill.style.borderColor = isHealthy ? 'rgba(16,185,129,0.3)' : 'rgba(245,158,11,0.3)';
+            pill.style.color = isHealthy ? '#10b981' : '#f59e0b';
+          }
         }
 
         if (badge) {
@@ -329,7 +338,14 @@
           `;
         }
       } catch (e) {
-        if (pillText) pillText.textContent = '🟡 Offline / Degraded';
+        if (pillText) {
+          pillText.innerHTML = `🟡 Offline / Degraded`;
+          if (pill) {
+            pill.style.background = 'rgba(245,158,11,0.1)';
+            pill.style.borderColor = 'rgba(245,158,11,0.3)';
+            pill.style.color = '#f59e0b';
+          }
+        }
       }
     }
 
