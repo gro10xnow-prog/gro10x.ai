@@ -1068,11 +1068,36 @@ let _schedulerBroadcast = null;
 let _schedulerStarted = false;
 
 function getBDTime() {
-  // Bangladesh Standard Time = UTC+6
+  // Bangladesh Standard Time (BST) = Asia/Dhaka (UTC+6)
   const now = new Date();
-  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
-  const bd = new Date(utc + 6 * 3600000);
-  return { h: bd.getHours(), m: bd.getMinutes(), day: bd.getDay(), bd };
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Dhaka',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: 'numeric',
+    minute: 'numeric',
+    second: 'numeric',
+    hour12: false,
+    weekday: 'short'
+  });
+  const parts = Object.fromEntries(formatter.formatToParts(now).map(p => [p.type, p.value]));
+
+  const h = parseInt(parts.hour, 10);
+  const m = parseInt(parts.minute, 10);
+  const dayMap = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+  const day = dayMap[parts.weekday] !== undefined ? dayMap[parts.weekday] : now.getDay();
+  const dayName = parts.weekday;
+  const dateKey = `${parts.year}-${parts.month}-${parts.day}`;
+
+  const timeString = now.toLocaleTimeString('en-US', {
+    timeZone: 'Asia/Dhaka',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
+  });
+
+  return { h, m, day, dayName, timeString, dateKey, now };
 }
 
 function buildMorningBriefing(db) {
@@ -1095,16 +1120,15 @@ function buildMorningBriefing(db) {
   const clientsInEdit = (db.tasks || []).filter(t => t.stage === 'Editing' || t.stage === 'Post Production').length;
   const pendingAgreements = (db.team || []).filter(t => t.agreementStage === 2 || t.agreement_stage === 2).length;
 
-  const now = getBDTime().bd;
-  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const { timeString, dayName } = getBDTime();
 
-  let msg = `☀️ *Good morning, this is your ${dayNames[now.getDay()]} briefing!*
+  let msg = `☀️ *Good morning, this is your ${dayName} briefing!*
 `;
   msg += `────────────────────────
 
 `;
 
-  msg += `📊 *Team Live (${now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })} BD)*
+  msg += `📊 *Team Live (${timeString} BD)*
 `;
   msg += `  🟢 ${inStudio} In Studio  `;
   msg += `🎬 ${onShoot} On Shoot  `;
@@ -1212,12 +1236,11 @@ function buildEODSummary(db) {
 // ─── Chairman's Strategic Briefing (board-level, different from MD's operational view) ───
 function buildChairmanBriefing(db) {
   const team = db.team || [];
-  const now = getBDTime().bd;
-  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const { timeString, dayName } = getBDTime();
 
   // Finance
   const invoices = db.invoices || [];
-  const monthStr = now.toISOString().slice(0, 7);
+  const monthStr = new Date().toISOString().slice(0, 7);
   const paidThisMonth = invoices.filter(i => i.status === 'Paid' && (i.paidAt || i.issueDate || '').startsWith(monthStr));
   const revThisMonth = paidThisMonth.reduce((s, i) => s + (i.amount || 0), 0);
   const pendingInvoices = invoices.filter(i => i.status !== 'Paid' && i.status !== 'Draft');
@@ -1242,7 +1265,7 @@ function buildChairmanBriefing(db) {
   const activeClients = clients.filter(c => c.status === 'Active Retainer').length;
   const inReview = (db.tasks || []).filter(t => t.stage === 'Client Review').length;
 
-  let msg = `🏛️ *Chairman's ${dayNames[now.getDay()]} Board Briefing*
+  let msg = `🏛️ *Chairman's ${dayName} Board Briefing (${timeString} BD)*
 `;
   msg += `────────────────────────
 
