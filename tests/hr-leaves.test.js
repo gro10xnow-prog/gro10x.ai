@@ -76,4 +76,11 @@ describe('HR Leaves API Integration Tests', () => {
     expect(res.statusCode).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
   });
+
+  afterAll(async () => {
+    const { supabase, isSupabaseConfigured } = require('../src/services/supabase');
+    if (isSupabaseConfigured()) {
+      await supabase.from('leaves').delete().eq('employee_id', 'PBD-005');
+    }
+  });
 });

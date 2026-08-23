@@ -75,4 +75,11 @@ describe('CRM Clients API Integration Tests', () => {
     expect(res.body.success).toBe(true);
     expect(res.body.client.name).toBe('Square Pharmaceuticals');
   });
+
+  afterAll(async () => {
+    const { supabase, isSupabaseConfigured } = require('../src/services/supabase');
+    if (isSupabaseConfigured()) {
+      await supabase.from('clients').delete().ilike('name', '%Square Pharmaceuticals%');
+    }
+  });
 });

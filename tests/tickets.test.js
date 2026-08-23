@@ -63,4 +63,11 @@ describe('Support Tickets API Integration Tests', () => {
     expect(res.body.ticket).toBeDefined();
     expect(res.body.ticket.status).toBe('Open');
   });
+
+  afterAll(async () => {
+    const { supabase, isSupabaseConfigured } = require('../src/services/supabase');
+    if (isSupabaseConfigured()) {
+      await supabase.from('tickets').delete().ilike('title', 'Update color palette%');
+    }
+  });
 });

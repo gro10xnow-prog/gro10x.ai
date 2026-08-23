@@ -78,4 +78,11 @@ describe('Finance Expenses API Integration Tests', () => {
     expect(res.body.success).toBe(true);
     expect(res.body.expense.tier1.approved).toBe(true);
   });
+
+  afterAll(async () => {
+    const { supabase, isSupabaseConfigured } = require('../src/services/supabase');
+    if (isSupabaseConfigured()) {
+      await supabase.from('expenses').delete().ilike('title', '%Color Gel Filters%');
+    }
+  });
 });

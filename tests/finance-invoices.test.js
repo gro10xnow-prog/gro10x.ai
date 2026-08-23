@@ -90,4 +90,11 @@ describe('Finance Invoices API Integration Tests', () => {
     expect(res.statusCode).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
   });
+
+  afterAll(async () => {
+    const { supabase, isSupabaseConfigured } = require('../src/services/supabase');
+    if (isSupabaseConfigured()) {
+      await supabase.from('invoices').delete().ilike('client_name', '%Acme Corp%');
+    }
+  });
 });

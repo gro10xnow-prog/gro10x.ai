@@ -60,4 +60,11 @@ describe('CRM Leads API Integration Tests', () => {
     expect(res.body.success).toBe(true);
     expect(res.body.magicLink).toBeDefined();
   });
+
+  afterAll(async () => {
+    const { supabase, isSupabaseConfigured } = require('../src/services/supabase');
+    if (isSupabaseConfigured()) {
+      await supabase.from('leads').delete().ilike('company', '%Unilever Bangladesh%');
+    }
+  });
 });
