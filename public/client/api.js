@@ -48,6 +48,9 @@ window.CLIENT_API = {
       
       if (method === 'GET') {
         this._cache[url] = { data, timestamp: Date.now() };
+      } else {
+        // Automatically invalidate cache on state mutations
+        this.invalidateCache(endpoint);
       }
       
       return data;
@@ -57,10 +60,28 @@ window.CLIENT_API = {
     }
   },
 
+  invalidateCache(endpoint = '') {
+    if (!endpoint) {
+      this._cache = {};
+      return;
+    }
+    const clean = endpoint.split('/')[1] || '';
+    Object.keys(this._cache).forEach(k => {
+      if (clean && k.includes(clean)) {
+        delete this._cache[k];
+      }
+    });
+  },
+
+  clearCache() {
+    this._cache = {};
+  },
+
   get(ep) { return this.request(ep, { method: 'GET' }); },
   post(ep, body) { return this.request(ep, { method: 'POST', body }); },
   put(ep, body) { return this.request(ep, { method: 'PUT', body }); },
   patch(ep, body) { return this.request(ep, { method: 'PATCH', body }); },
+  delete(ep) { return this.request(ep, { method: 'DELETE' }); },
   async fetchRaw(endpoint, options = {}) {
     const url = endpoint.startsWith('/api') ? endpoint : `/api${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
     const token = this.getToken();

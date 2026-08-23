@@ -5,11 +5,11 @@
   <meta name="color-scheme" content="dark">
   <script src="/js/theme.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PurpleOS - Workspace Authentication Portal</title>
-  <meta name="description" content="Secure login portal for Purplebot Digital clients and crew.">
+  <title>Client & Partner Portal — Purplebot Digital</title>
+  <meta name="description" content="Secure Client & Partner Portal for Purplebot Digital deliverables, creative reviews, and campaign invoices.">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="PurpleOS - Workspace Authentication Portal">
-  <meta property="og:description" content="Secure login portal for Purplebot Digital clients and crew.">
+  <meta property="og:title" content="Client & Partner Portal — Purplebot Digital">
+  <meta property="og:description" content="Secure Client & Partner Portal for Purplebot Digital deliverables, creative reviews, and campaign invoices.">
   <meta property="og:image" content="https://purpleos-iota.vercel.app/images/mascot.webp">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -244,10 +244,10 @@
 
     <div class="auth-brand">
       <div class="auth-badge">
-        <span>🔑 Phone + PIN Security</span>
+        <span>🔑 Verified Client & Partner Access</span>
       </div>
-      <h1>PurpleOS Workspace</h1>
-      <p>Enter your verified phone number & 4-digit PIN</p>
+      <h1>Client & Partner Portal</h1>
+      <p>Enter your registered phone number & 4-digit PIN</p>
     </div>
 
     <!-- Alert Box -->
@@ -257,32 +257,32 @@
     <form id="form-pin-login" onsubmit="handlePinLogin(event)">
       <input type="hidden" id="email" value="">
       <div class="form-group">
-        <label for="phone">Verified Phone Number</label>
+        <label for="phone">Registered Phone Number</label>
         <input type="tel" id="phone" class="form-input" placeholder="+880 1700-000000" required>
       </div>
 
       <div class="form-group">
         <label for="pin">4-Digit Access PIN</label>
         <div style="position:relative;">
-          <input type="password" id="pin" class="form-input" placeholder="••••" maxlength="4" required style="letter-spacing: 0.3em; font-size: 1.2rem; text-align: center; padding-right: 2.8rem; color: #0f172a; font-weight: 700; background: #ffffff;">
+          <input type="password" id="pin" class="form-input" placeholder="••••" maxlength="4" required style="letter-spacing: 0.3em; font-size: 1.2rem; text-align: center; padding-right: 2.8rem; color: #f8fafc; font-weight: 700; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(139, 92, 246, 0.35);">
           <button type="button" onclick="togglePinVisibility('pin', this)" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:1.1rem;" title="Toggle PIN visibility">👁️</button>
         </div>
       </div>
 
       <button type="submit" id="btn-pin-submit" class="btn-submit">
-        <span id="btn-text">Sign In to Workspace</span>
+        <span id="btn-text">Sign In to Client Portal</span>
         <span id="btn-arrow">→</span>
       </button>
     </form>
 
     <div class="bot-help-box">
-      🤖 Don't have a PIN or forgot it?<br>
-      • Crew: <a href="https://t.me/purplemanosbot?start=join_crew" target="_blank">@purplemanosbot</a><br>
-      • Client: <a href="https://t.me/purpleosbot?start=join_client" target="_blank">@purpleosbot</a>
+      🤖 Need access or forgot your 4-digit PIN?<br>
+      • Get instant PIN via Telegram: <a href="https://t.me/purpleosbot?start=portal_login" target="_blank">@purpleosbot</a><br>
+      <span style="font-size:0.75rem; color:var(--text-muted); display:inline-block; margin-top:0.35rem;">Purplebot Digital Limited • Agency Client Workspace</span>
     </div>
 
     <div class="form-footer">
-      <p>Purplebot Digital Agency Operating System</p>
+      <p>Purplebot Digital Client & Campaign Portal</p>
     </div>
   </div>
 

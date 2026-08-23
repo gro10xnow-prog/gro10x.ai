@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { requireAuth } = require('../middleware/auth');
-const { requireAdmin } = require('../middleware/rbac');
+const { requireAdmin, requireManager } = require('../middleware/rbac');
 const { supabase, isSupabaseConfigured } = require('../services/supabase');
 const { processAutomationEvent } = require('../services/automation');
 const { broadcast, getClientCount } = require('../services/sse');
@@ -209,7 +209,7 @@ router.get('/rules', requireAuth, async (req, res) => {
 });
 
 // POST Create Automation Rule
-router.post('/rules', requireAuth, async (req, res) => {
+router.post('/rules', requireAuth, requireAdmin, async (req, res) => {
   try {
     const { rule_name, trigger_event, condition_field, condition_value, action_type, action_target } = req.body;
     if (!rule_name || !trigger_event || !action_type) {
@@ -240,7 +240,7 @@ router.post('/rules', requireAuth, async (req, res) => {
 });
 
 // PUT Toggle / Update Automation Rule
-router.put('/rules/:id', requireAuth, async (req, res) => {
+router.put('/rules/:id', requireAuth, requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const updates = {};
@@ -267,7 +267,7 @@ router.put('/rules/:id', requireAuth, async (req, res) => {
 });
 
 // DELETE Remove Automation Rule
-router.delete('/rules/:id', requireAuth, async (req, res) => {
+router.delete('/rules/:id', requireAuth, requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     inMemoryRules = inMemoryRules.filter(r => r.id !== id);
@@ -285,7 +285,7 @@ router.delete('/rules/:id', requireAuth, async (req, res) => {
 // ──────── MANUAL TRIGGER ────────
 
 // POST Manual Trigger Simulation (Admin test)
-router.post('/trigger', requireAuth, async (req, res) => {
+router.post('/trigger', requireAuth, requireManager, async (req, res) => {
   const { eventType, eventData } = req.body;
   const logEntry = {
     id: `LOG-${Date.now().toString().slice(-6)}`,
@@ -306,7 +306,7 @@ router.post('/trigger', requireAuth, async (req, res) => {
 });
 
 // POST Manual Cron Trigger (Admin can fire all cron jobs at once)
-router.post('/cron-trigger', requireAuth, async (req, res) => {
+router.post('/cron-trigger', requireAuth, requireManager, async (req, res) => {
   try {
     const logEntry = {
       id: `LOG-${Date.now().toString().slice(-6)}`,

@@ -2,8 +2,19 @@ const crypto = require('crypto');
 
 const { getJwtSecret } = require('../utils/env');
 
+const revokedTokenJtis = new Set();
+
 function getSecret() {
   return getJwtSecret();
+}
+
+function revokeToken(jti) {
+  if (jti) revokedTokenJtis.add(String(jti));
+}
+
+function isTokenRevoked(jti) {
+  if (!jti) return false;
+  return revokedTokenJtis.has(String(jti));
 }
 
 function base64UrlEncode(str) {
@@ -30,6 +41,7 @@ function signToken(payload, expiresInSeconds = 7 * 24 * 60 * 60) {
   const now = Math.floor(Date.now() / 1000);
   const fullPayload = {
     ...payload,
+    jti: payload?.jti || crypto.randomUUID(),
     iat: now,
     exp: now + expiresInSeconds
   };
@@ -79,6 +91,10 @@ function verifyToken(token) {
       return null; // Expired token
     }
 
+    if (payload.jti && isTokenRevoked(payload.jti)) {
+      return null; // Revoked token
+    }
+
     return payload;
   } catch (err) {
     return null;
@@ -87,5 +103,7 @@ function verifyToken(token) {
 
 module.exports = {
   signToken,
-  verifyToken
+  verifyToken,
+  revokeToken,
+  isTokenRevoked
 };

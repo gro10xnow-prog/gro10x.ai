@@ -1,10 +1,25 @@
 const { broadcast } = require('./sse');
+const { supabase, isSupabaseConfigured } = require('./supabase');
 
-// Lazy require to break the circular dependency:
-// bot.js → automation.js → bot.js (sendTelegramNotification)
-// By deferring the require to call-time, both modules finish initialising first.
+// Break circular dependency safely by referencing bot export after module initialization
+let _cachedSendTelegram = null;
+try {
+  const botMod = require('./bot');
+  if (botMod && typeof botMod.sendTelegramNotification === 'function') {
+    _cachedSendTelegram = botMod.sendTelegramNotification;
+  }
+} catch (e) {}
+
 function getSendTelegram() {
-  return require('./bot').sendTelegramNotification;
+  if (_cachedSendTelegram) return _cachedSendTelegram;
+  try {
+    const botMod = require('./bot');
+    if (botMod && typeof botMod.sendTelegramNotification === 'function') {
+      _cachedSendTelegram = botMod.sendTelegramNotification;
+      return _cachedSendTelegram;
+    }
+  } catch (e) {}
+  return _cachedSendTelegram || (() => Promise.resolve());
 }
 
 function recordAutomationLog(db, logEntry) {
@@ -12,8 +27,7 @@ function recordAutomationLog(db, logEntry) {
   db.automationLogs.unshift(logEntry);
 
   try {
-    const { supabase, isSupabaseConfigured } = require('./supabase');
-    if (isSupabaseConfigured()) {
+    if (isSupabaseConfigured && isSupabaseConfigured()) {
       supabase.from('automation_logs').insert([{
         id: logEntry.id,
         rule: logEntry.rule,
@@ -114,15 +128,14 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
     if (eventType === 'task_stage_change' && eventData.stage === 'Client Review') {
       const task = eventData.task;
       const clientObj = (db.clients || []).find(c => (c.name || '').toLowerCase().includes((task.client || '').toLowerCase()));
+      const targetTelegramId = clientObj?.telegramId || clientObj?.telegram_id;
 
-      if (clientObj && clientObj.telegramId) {
-        // Deep link to the review room using the review_id if available, else partner portal
+      if (targetTelegramId) {
+        const BASE_URL = process.env.BASE_URL || 'https://purpleos-iota.vercel.app';
         const reviewId = eventData.reviewId || null;
-        const reviewUrl = reviewId
-          ? `https://purpleos-iota.vercel.app/reviewroom.html?id=${reviewId}`
-          : `https://purpleos-iota.vercel.app/partners?client=${encodeURIComponent(clientObj.name)}`;
-        const msgText = `🎬 *Deliverable Ready for Review!*\n\nProject: *${task.title}*\nClient: *${task.client}*\n\nYour interactive Review Room is live. Stream the cut, leave timecoded feedback, and sign off:\n🔗 ${reviewUrl}`;
-        sendTelegramNotification(clientObj.telegramId, msgText, [
+        const reviewUrl = `${BASE_URL}/client#review`;
+        const msgText = `🎬 *Deliverable Ready for Review!*\n\nProject: *${task.title}*\nClient: *${task.client}*\n\nYour creative deliverable cut is ready. Stream the cut, leave timecoded feedback, and sign off:\n🔗 ${reviewUrl}`;
+        sendTelegramNotification(targetTelegramId, msgText, [
           [{ text: '🎬 Open Review Room', url: reviewUrl }]
         ], false);
       }
@@ -177,12 +190,15 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
 
     // TRIGGER 4: Invoice Marked Paid -> Notify Client via Telegram
     if (eventType === 'invoice_paid') {
-      const invoice = eventData.invoice;
-      const clientObj = (db.clients || []).find(c => c.id === invoice.clientId || (c.name || '').toLowerCase().includes((invoice.clientName || '').toLowerCase()));
+      const invoice = eventData.invoice || {};
+      const invClientId = invoice.clientId || invoice.client_id;
+      const invClientName = (invoice.clientName || invoice.client_name || '').toLowerCase();
+      const clientObj = (db.clients || []).find(c => (invClientId && c.id === invClientId) || (invClientName && (c.name || '').toLowerCase().includes(invClientName)));
+      const clientTg = clientObj?.telegramId || clientObj?.telegram_id;
 
-      if (clientObj && clientObj.telegramId) {
-        const msgText = `âœ… *Payment Received & Verified!*\n\nInvoice: *${invoice.id}*\nAmount: *$${invoice.amount} USD*\nDate: *${invoice.paidDate || new Date().toISOString().split('T')[0]}*\n\nThank you for partnering with Purplebot Digital!`;
-        sendTelegramNotification(clientObj.telegramId, msgText, null, false);
+      if (clientTg) {
+        const msgText = `✅ *Payment Received & Verified!*\n\nInvoice: *${invoice.id}*\nAmount: *BDT ${Number(invoice.amount || 0).toLocaleString()}*\nDate: *${invoice.paidDate || invoice.paid_date || new Date().toISOString().split('T')[0]}*\n\nThank you for partnering with Purplebot Digital!`;
+        sendTelegramNotification(clientTg, msgText, null, false);
       }
 
       recordAutomationLog(db, {
@@ -197,21 +213,22 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
 
     // TRIGGER 5: Social Post Approved by Client -> Alert Assigned Publisher (AUT-006)
     if (eventType === 'social_post_approved') {
-      const post = eventData.post;
-      const publisherName = (post.assignedPublisher || '').split(' ')[0].toLowerCase();
+      const post = eventData.post || {};
+      const publisherName = (post.assignedPublisher || post.assigned_publisher || '').split(' ')[0].toLowerCase();
       const publisher = (db.team || []).find(t => (t.name || '').toLowerCase().includes(publisherName));
+      const pubTg = publisher?.telegramId || publisher?.telegram_id;
       const portalUrl = `https://purpleos-iota.vercel.app/admin?tab=social`;
 
-      const msgText = `âœ… *SOCIAL POST APPROVED BY CLIENT*\n\n` +
-        `ðŸ‘¤ Client: *${post.clientName}*\n` +
-        `ðŸ“± Platform: *${post.platform}*\n` +
-        `ðŸ“Œ Topic: *${post.title}*\n` +
-        `ðŸ“… Scheduled Date: *${post.scheduledDate} ${post.scheduledTime || ''}*\n\n` +
+      const msgText = `✅ *SOCIAL POST APPROVED BY CLIENT*\n\n` +
+        `👤 Client: *${post.clientName || post.client_name || 'Client'}*\n` +
+        `📱 Platform: *${post.platform}*\n` +
+        `📌 Topic: *${post.title || post.caption || 'Post Asset'}*\n` +
+        `📅 Scheduled Date: *${post.scheduledDate || post.scheduled_date || 'Scheduled'} ${post.scheduledTime || post.scheduled_time || ''}*\n\n` +
         `The client has approved this post. It is queued for 1-Click Dispatch.`;
 
-      if (publisher && publisher.telegramId) {
-        sendTelegramNotification(publisher.telegramId, msgText, [
-          [{ text: 'ðŸ“± Open Social Planner', url: portalUrl }]
+      if (pubTg) {
+        sendTelegramNotification(pubTg, msgText, [
+          [{ text: '📱 Open Social Planner', url: portalUrl }]
         ], true);
       }
 
@@ -502,12 +519,12 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
       const eodCount = (db.eod_reports || []).filter(e => (e.date || '').startsWith(todayStr) || (e.submittedAt || '').startsWith(todayStr)).length;
       const openTickets = (db.tickets || []).filter(t => t.status !== 'Resolved').length;
 
-      const msgText = `ðŸŒ™ *PURPLEBOT 8:30 PM EVENING EXECUTIVE DIGEST*\n\n` +
-        `ðŸ“Š *Financial Summary:*\n` +
-        `  â€¢ Total Revenue Collected: *$${paidRev.toLocaleString()} USD*\n` +
-        `  â€¢ Disbursed Operational Expenses: *BDT ${disbursedExp.toLocaleString()}*\n\n` +
-        `ðŸ“‹ *Team EOD Submission Rate:* ${eodCount} Reports Logged Today\n` +
-        `ðŸ”§ *Active Support Tickets:* ${openTickets} Open Ticket(s)\n\n` +
+      const msgText = `🌙 *PURPLEBOT 8:30 PM EVENING EXECUTIVE DIGEST*\n\n` +
+        `📊 *Financial Summary:*\n` +
+        `  • Total Revenue Collected: *BDT ${paidRev.toLocaleString()}*\n` +
+        `  • Disbursed Operational Expenses: *BDT ${disbursedExp.toLocaleString()}*\n\n` +
+        `📋 *Team EOD Submission Rate:* ${eodCount} Reports Logged Today\n` +
+        `🔧 *Active Support Tickets:* ${openTickets} Open Ticket(s)\n\n` +
         `_Generated automatically by PurpleOS Core_`;
 
       const leaders = (db.team || []).filter(t => (t.role || '').toLowerCase().includes('director') || (t.role || '').toLowerCase().includes('founder') || (t.role || '').toLowerCase().includes('owner'));
@@ -531,10 +548,10 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
       const clientCount = (db.clients || []).length;
       const taskCount = (db.tasks || []).length;
 
-      const msgText = `ðŸ“ˆ *PURPLEBOT WEEKLY EXECUTIVE KPI SUMMARY*\n\n` +
-        `ðŸ’° Total Portfolio Revenue: *$${totalRev.toLocaleString()} USD*\n` +
-        `ðŸ¢ Active Brand Retainers: *${clientCount} Clients*\n` +
-        `ðŸš€ Total Campaign Workflows: *${taskCount} Production Shoots*\n\n` +
+      const msgText = `📈 *PURPLEBOT WEEKLY EXECUTIVE KPI SUMMARY*\n\n` +
+        `💰 Total Portfolio Revenue: *BDT ${totalRev.toLocaleString()}*\n` +
+        `🏢 Active Brand Retainers: *${clientCount} Clients*\n` +
+        `🚀 Total Campaign Workflows: *${taskCount} Production Shoots*\n\n` +
         `Check full BI Analytics tab on Admin Portal.`;
 
       const owner = (db.team || []).find(t => (t.role || '').toLowerCase().includes('owner') || (t.role || '').toLowerCase().includes('founder'));
@@ -547,6 +564,33 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
         rule: 'AUT-016 (Weekly Executive KPI Summary)',
         event: eventType,
         target: 'Agency Owner',
+        status: 'Executed',
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    // TRIGGER: Invoice Due Reminder -> Notify Client via Client Bot
+    if (eventType === 'invoice_due_reminder') {
+      const invoice = eventData.invoice || {};
+      const invClientId = invoice.clientId || invoice.client_id;
+      const client = (db.clients || []).find(c => (invClientId && c.id === invClientId) || (invoice.clientName && c.name && c.name.toLowerCase().includes(invoice.clientName.toLowerCase())));
+      const clientTg = client?.telegramId || client?.telegram_id;
+
+      if (clientTg) {
+        const msgText = `💳 *INVOICE DUE REMINDER*\n\n` +
+          `Dear *${client.name || 'Brand Partner'}*,\n` +
+          `Invoice *${invoice.id || 'INV'}* of *BDT ${(Number(invoice.amount) || 0).toLocaleString()}* is due on *${invoice.dueDate || invoice.due_date || 'Soon'}*.\n\n` +
+          `To complete payment and upload transaction proof, please open your Client Portal below.`;
+        sendTelegramNotification(clientTg, msgText, [
+          [{ text: '💳 Open Client Portal', url: 'https://purpleos-iota.vercel.app/client#invoices' }]
+        ], false);
+      }
+
+      recordAutomationLog(db, {
+        id: `LOG-${Date.now()}`,
+        rule: 'AUT-005 (Invoice Due Reminder)',
+        event: eventType,
+        target: `${invoice.id || 'INV'} (${client?.name || 'Client'})`,
         status: 'Executed',
         timestamp: new Date().toISOString()
       });
@@ -1245,9 +1289,8 @@ function startScheduledJobs(readDB, writeDB, broadcast) {
 const automation = {
   trigger: async (eventType, eventData) => {
     try {
-      const { supabase, isSupabaseConfigured } = require('./supabase');
       let dbSnapshot = { team: [], clients: [], tasks: [], expenses: [], leaves: [], eod_reports: [], eodReports: [] };
-      if (isSupabaseConfigured()) {
+      if (isSupabaseConfigured && isSupabaseConfigured()) {
         try {
           const [pRes, cRes, tRes, expRes, lRes, eodRes] = await Promise.all([
             supabase.from('profiles').select('*').limit(500),

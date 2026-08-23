@@ -84,6 +84,12 @@ router.get('/', requireAuth, async (req, res) => {
       try {
         let query = supabase.from('tasks').select('*').order('created_at', { ascending: false }).range(offset, offset + limit - 1);
 
+        // ── MULTI-TENANT CLIENT SCOPING ─────────────────────────────
+        if (req.user?.linkedType === 'client' && req.user?.linkedId) {
+          query = query.or(`client_id.eq.${req.user.linkedId},client.ilike.%${req.user.company || req.user.name || req.user.linkedId}%`);
+        }
+        // ─────────────────────────────────────────────────────────────
+
         if (dept) {
           query = query.or(`department.ilike.%${dept}%,category.ilike.%${dept}%`);
         }
@@ -105,7 +111,12 @@ router.get('/', requireAuth, async (req, res) => {
 
     if (tasks.length === 0) {
       const db = await readDB();
-      tasks = (db.tasks || []).slice(offset, offset + limit);
+      let rawTasks = db.tasks || [];
+      if (req.user?.linkedType === 'client' && req.user?.linkedId) {
+        const cName = (req.user.company || req.user.name || '').toLowerCase();
+        rawTasks = rawTasks.filter(t => t.clientId === req.user.linkedId || (cName && (t.client || '').toLowerCase().includes(cName)));
+      }
+      tasks = rawTasks.slice(offset, offset + limit);
     }
 
     // Load labels & custom field values for tasks

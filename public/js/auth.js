@@ -1,6 +1,7 @@
 // PurpleOS Phone + 4-Digit PIN Authentication Script
 
 let currentPhone = '';
+let tempAuthToken = '';
 
 function initAuth() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -53,7 +54,8 @@ async function handlePinLogin(event) {
     const res = await fetch('/api/auth/pin/verify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ phone, pin, portal })
+      body: JSON.stringify({ phone, pin, portal }),
+      signal: AbortSignal.timeout(15000)
     });
 
     const data = await res.json();
@@ -146,21 +148,29 @@ function saveSessionAndRedirect(user, linkedType, email, realToken) {
     accessLevel: user?.accessLevel || (linkedType === 'client' ? 'Client' : 'Specialist / Crew')
   };
 
-  localStorage.setItem('purple_user', JSON.stringify(userObj));
-  localStorage.setItem('purple_user_phone', cleanPhone);
-  if (email || userObj.email) localStorage.setItem('purple_user_email', email || userObj.email);
-  if (userObj.name) localStorage.setItem('purple_user_name', userObj.name);
-  if (userObj.company) localStorage.setItem('purple_user_company', userObj.company);
-  if (userObj.pocRole) localStorage.setItem('purple_user_poc_role', userObj.pocRole);
-  if (userObj.role) localStorage.setItem('purple_user_role', userObj.role);
-  if (userObj.accessLevel) localStorage.setItem('purple_user_access', userObj.accessLevel);
-  if (userObj.id) localStorage.setItem('purple_user_id', userObj.id);
+  try {
+    localStorage.setItem('purple_user', JSON.stringify(userObj));
+    localStorage.setItem('purple_user_phone', cleanPhone);
+    if (email || userObj.email) localStorage.setItem('purple_user_email', email || userObj.email);
+    if (userObj.name) localStorage.setItem('purple_user_name', userObj.name);
+    if (userObj.company) localStorage.setItem('purple_user_company', userObj.company);
+    if (userObj.pocRole) localStorage.setItem('purple_user_poc_role', userObj.pocRole);
+    if (userObj.role) localStorage.setItem('purple_user_role', userObj.role);
+    if (userObj.accessLevel) localStorage.setItem('purple_user_access', userObj.accessLevel);
+    if (userObj.id) localStorage.setItem('purple_user_id', userObj.id);
 
-  // Use the real signed JWT from the server
-  const token = realToken || user?.token || '';
-  if (token) {
-    localStorage.setItem('sb-access-token', token);
-    document.cookie = `sb-access-token=${token}; Path=/; SameSite=Lax; max-age=604800`;
+    // Use the real signed JWT from the server
+    const token = realToken || user?.token || '';
+    if (token) {
+      localStorage.setItem('sb-access-token', token);
+      document.cookie = `sb-access-token=${token}; Path=/; SameSite=Lax; max-age=604800`;
+    }
+  } catch (storageErr) {
+    console.warn('[auth] localStorage unavailable, continuing with cookie only:', storageErr.message);
+    const token = realToken || user?.token || '';
+    if (token) {
+      document.cookie = `sb-access-token=${token}; Path=/; SameSite=Lax; max-age=604800`;
+    }
   }
 
   showAlert('✅ Authentication successful! Launching workspace...', 'success');

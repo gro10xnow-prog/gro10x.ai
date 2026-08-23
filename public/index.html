@@ -62,6 +62,9 @@
       </nav>
 
       <div class="pb-nav-actions">
+        <a href="/auth" class="pb-btn-secondary" style="text-decoration:none; padding:0.55rem 1rem; font-size:0.85rem; font-weight:700; color:#c084fc; background:rgba(168,85,247,0.12); border:1px solid rgba(168,85,247,0.3); border-radius:12px; display:inline-flex; align-items:center; gap:0.35rem; transition:all 0.2s;" onmouseover="this.style.background='rgba(168,85,247,0.22)'" onmouseout="this.style.background='rgba(168,85,247,0.12)'">
+          🔐 Client Portal
+        </a>
         <button onclick="openPurpleBot('Get Started')" class="pb-btn-primary" style="padding:0.6rem 1.25rem; font-size:0.9rem;">
           💜 Get Started
         </button>
@@ -81,7 +84,10 @@
         <a href="#how" class="pb-mobile-link" onclick="closeMobileMenu()">How We Work</a>
         <a href="#pricing" class="pb-mobile-link" onclick="closeMobileMenu()">Pricing</a>
         <a href="#contact" class="pb-mobile-link" onclick="closeMobileMenu()">Contact Us</a>
-        <div class="pb-mobile-actions">
+        <div class="pb-mobile-actions" style="display:flex; flex-direction:column; gap:0.6rem;">
+          <a href="/auth" class="pb-btn-secondary" style="text-decoration:none; text-align:center; padding:0.75rem; font-size:0.9rem; font-weight:700; color:#c084fc; background:rgba(168,85,247,0.12); border:1px solid rgba(168,85,247,0.3); border-radius:12px; display:block;">
+            🔐 Client Partner Portal
+          </a>
           <button onclick="openPurpleBot('Get Started'); closeMobileMenu();" class="pb-btn-primary" style="width:100%;">
             🚀 Get Started Now
           </button>

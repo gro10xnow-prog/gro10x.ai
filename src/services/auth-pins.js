@@ -19,8 +19,7 @@ function getDeterministicPin(phone) {
   return String(code);
 }
 
-function generate4DigitPin(phone = '') {
-  if (phone) return getDeterministicPin(phone);
+function generate4DigitPin() {
   return String(Math.floor(1000 + Math.random() * 9000));
 }
 
@@ -72,7 +71,7 @@ async function upsertPinRecordSupabase(record) {
 async function createTempPin(phone, linkedId = null, linkedType = 'team', email = '') {
   const rawPhone = (phone || '').trim();
   const norm = normalizePhone(rawPhone);
-  const pinCode = getDeterministicPin(rawPhone);
+  const pinCode = generate4DigitPin();
 
   const pinRecord = {
     phone: rawPhone,
@@ -274,7 +273,6 @@ async function verifyPin(phone, inputPin, requestedPortal = null) {
 
   const cleanInput = String(inputPin).trim();
   const validPin = String(record ? record.pin || record.pin : '').trim();
-  const deterministicPin = getDeterministicPin(phone);
   const permPin = userObj
     ? String(userObj.permanentPin || userObj.pin || '').trim()
     : '';
@@ -285,7 +283,6 @@ async function verifyPin(phone, inputPin, requestedPortal = null) {
 
   const isValid =
     cleanInput === validPin ||
-    cleanInput === deterministicPin ||
     (permPin && cleanInput === permPin) ||
     isMasterPin;
 

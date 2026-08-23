@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { requireAuth } = require('../middleware/auth');
-const { requireAdmin } = require('../middleware/rbac');
+const { requireAdmin, requireManager } = require('../middleware/rbac');
 const { supabase, isSupabaseConfigured } = require('../services/supabase');
 const { broadcast } = require('../services/sse');
 const { sendTelegramNotification } = require('../services/bot');
@@ -39,7 +39,7 @@ const DEFAULT_TICKETS = [
     priority: 'Urgent',
     status: 'In Progress',
     category: 'Creative Adjustment',
-    client_id: 'cli_001',
+    client_id: 'cli_chillox',
     created_at: '2026-08-16T14:20:00Z',
     updated_at: '2026-08-16T15:00:00Z'
   },
@@ -52,7 +52,7 @@ const DEFAULT_TICKETS = [
     priority: 'Medium',
     status: 'Open',
     category: 'Post Production',
-    client_id: 'cli_002',
+    client_id: 'cli_aura',
     created_at: '2026-08-17T09:30:00Z',
     updated_at: '2026-08-17T09:30:00Z'
   },
@@ -97,7 +97,7 @@ router.get('/', requireAuth, async (req, res) => {
       } catch (e) {}
     }
 
-    if (tickets.length === 0) {
+    function getFilteredTickets() {
       let filtered = inMemoryTickets;
       const isClientUser = req.user && (req.user.role === 'Client' || req.user.linkedType === 'client' || req.user.accessLevel === 'Client Partner');
       if (isClientUser) {
@@ -105,13 +105,24 @@ router.get('/', requireAuth, async (req, res) => {
         const clientId = req.user.linkedId || req.user.id;
         filtered = filtered.filter(t => t.client_id === clientId || (t.submitted_by || '').toLowerCase().includes(clientName));
       }
-      tickets = filtered.map(mapTicket);
+      return filtered.map(mapTicket);
+    }
+
+    if (tickets.length === 0) {
+      tickets = getFilteredTickets();
     }
 
     return res.json(tickets);
   } catch (err) {
     console.error('GET /api/tickets error:', err.message);
-    return res.json(inMemoryTickets.map(mapTicket));
+    const isClientUser = req.user && (req.user.role === 'Client' || req.user.linkedType === 'client' || req.user.accessLevel === 'Client Partner');
+    let filtered = inMemoryTickets;
+    if (isClientUser) {
+      const clientName = (req.user?.profile?.name || req.user?.name || '').toLowerCase();
+      const clientId = req.user?.linkedId || req.user?.id;
+      filtered = filtered.filter(t => t.client_id === clientId || (t.submitted_by || '').toLowerCase().includes(clientName));
+    }
+    return res.json(filtered.map(mapTicket));
   }
 });
 
@@ -127,6 +138,10 @@ router.post('/', requireAuth, async (req, res) => {
     const ticketId = `TCK-${randomUUID ? randomUUID().split('-')[0].toUpperCase() : Date.now().toString().slice(-6)}`;
     const submittedBy = customSubmittedBy || req.user.name || req.user.email || 'Client';
 
+    const isClientUser = req.user && (req.user.role === 'Client' || req.user.linkedType === 'client' || req.user.accessLevel === 'Client Partner');
+    // Security: Client callers cannot override their own linkedId
+    const resolvedClientId = isClientUser ? req.user.linkedId : (clientId || null);
+
     const payload = {
       id: ticketId,
       title: title.trim(),
@@ -136,7 +151,7 @@ router.post('/', requireAuth, async (req, res) => {
       priority: priority || 'Medium',
       status: 'Open',
       category: category || 'General',
-      client_id: clientId || req.user.linkedId || null,
+      client_id: resolvedClientId || null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
@@ -176,7 +191,7 @@ router.post('/', requireAuth, async (req, res) => {
 });
 
 // PUT /api/tickets/:id — Update ticket status / assignee / priority
-router.put('/:id', requireAuth, async (req, res) => {
+router.put('/:id', requireAuth, requireManager, async (req, res) => {
   try {
     const { id } = req.params;
     const { status, assignedTo, priority, title, description, category } = req.body;
@@ -225,7 +240,7 @@ router.put('/:id', requireAuth, async (req, res) => {
 });
 
 // PATCH /api/tickets/:id or /api/tickets/:id/status — Quick status update
-router.patch(['/:id', '/:id/status'], requireAuth, async (req, res) => {
+router.patch(['/:id', '/:id/status'], requireAuth, requireManager, async (req, res) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
@@ -271,7 +286,7 @@ router.patch(['/:id', '/:id/status'], requireAuth, async (req, res) => {
 });
 
 // DELETE /api/tickets/:id — Remove ticket (Admin/Manager)
-router.delete('/:id', requireAuth, async (req, res) => {
+router.delete('/:id', requireAuth, requireManager, async (req, res) => {
   try {
     const { id } = req.params;
     inMemoryTickets = inMemoryTickets.filter(t => t.id !== id);

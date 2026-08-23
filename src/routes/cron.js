@@ -55,15 +55,15 @@ async function fetchSupabaseSnapshot() {
     clientsRes,
     leaveRes
   ] = await Promise.all([
-    supabase.from('profiles').select('*'),
-    supabase.from('expenses').select('*'),
-    supabase.from('invoices').select('*'),
-    supabase.from('tasks').select('*'),
-    supabase.from('attendance').select('*'),
-    supabase.from('eod_reports').select('*'),
-    supabase.from('leads').select('*'),
-    supabase.from('clients').select('*'),
-    supabase.from('leaves').select('*')
+    supabase.from('profiles').select('*').limit(200),
+    supabase.from('expenses').select('*').order('created_at', { ascending: false }).limit(300),
+    supabase.from('invoices').select('*').order('created_at', { ascending: false }).limit(300),
+    supabase.from('tasks').select('*').order('created_at', { ascending: false }).limit(300),
+    supabase.from('attendance').select('*').order('created_at', { ascending: false }).limit(500),
+    supabase.from('eod_reports').select('*').order('created_at', { ascending: false }).limit(100),
+    supabase.from('leads').select('*').order('created_at', { ascending: false }).limit(200),
+    supabase.from('clients').select('*').limit(200),
+    supabase.from('leaves').select('*').order('created_at', { ascending: false }).limit(100)
   ]);
 
   const team = (profilesRes.data || []).map(t => ({
@@ -587,9 +587,39 @@ router.get('/invoice-due-reminder', authorizeCron, async (req, res) => {
       }
     }
 
+    // Also notify linked Client Partners directly via client bot
+    for (const inv of upcomingInvoices) {
+      const invClientId = inv.client_id || inv.clientId;
+      const client = (db.clients || []).find(c => (invClientId && c.id === invClientId) || (c.name && inv.client_name && c.name.toLowerCase() === inv.client_name.toLowerCase()));
+      const clientTg = client?.telegram_id || client?.telegramId;
+      if (clientTg) {
+        const clientMsg =
+          `💳 *INVOICE DUE REMINDER*\n\n` +
+          `Dear *${client.name || 'Brand Partner'}*,\n` +
+          `Your invoice *${inv.id}* for *BDT ${Number(inv.amount || 0).toLocaleString()}* is due on *${inv.due_date || inv.dueDate || 'Soon'}*.\n\n` +
+          `You can view details or submit payment confirmation directly in your Client Portal below.`;
+        const keyboard = [[{ text: '💳 Open Client Portal', web_app: { url: 'https://purpleos-iota.vercel.app/client#invoices' } }]];
+        await sendTelegramNotification(clientTg, clientMsg, keyboard, false);
+      }
+    }
+
     return res.json({ success: true, message: `Invoice due reminders sent to ${sentCount} recipient(s)`, count: upcomingInvoices.length, timestamp: new Date().toISOString() });
   } catch (error) {
     console.error('Invoice due reminder cron error:', error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/cron/social-dispatch — Daily check for approved posts due for 1-click dispatch
+router.get('/social-dispatch', authorizeCron, async (req, res) => {
+  try {
+    const { checkScheduledSocialDispatches } = require('../services/automation');
+    const { broadcast } = require('../services/sse');
+    const db = await fetchSupabaseSnapshot();
+    await checkScheduledSocialDispatches(db, null, broadcast);
+    return res.json({ success: true, message: 'Scheduled social dispatches checked', timestamp: new Date().toISOString() });
+  } catch (error) {
+    console.error('Social dispatch cron error:', error);
     return res.status(500).json({ error: error.message });
   }
 });

@@ -1,0 +1,66 @@
+{
+  "timestamp": "2026-08-23T18:24:20.076Z",
+  "totalTests": 3,
+  "totalPassed": 2,
+  "totalFailed": 1,
+  "passRate": 67,
+  "totalDurationMs": 4449,
+  "phases": [
+    {
+      "phase": "Phase 6: HR Ops & Hardware Assets",
+      "total": 3,
+      "passed": 2,
+      "failed": 1,
+      "duration": 4449,
+      "results": [
+        {
+          "id": "6.1.2",
+          "title": "Load HR Roster & Verify Staff Directory",
+          "status": "PASSED",
+          "duration": 1834,
+          "error": null
+        },
+        {
+          "id": "6.1.3",
+          "title": "Open Staff Profile Drawer & Verify 1-Tap PIN Reset Action",
+          "status": "FAILED",
+          "duration": 822,
+          "error": "Assertion Failed: Staff profile drawer should open"
+        },
+        {
+          "id": "6.2.1",
+          "title": "Load Hardware Assets Catalog",
+          "status": "PASSED",
+          "duration": 1793,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "consoleAudit": [
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"current-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/dashboard.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/hr.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/assets.js"
+    }
+  ]
+}

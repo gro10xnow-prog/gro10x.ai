@@ -18,6 +18,14 @@ const authLimiter = rateLimit({
   message: { error: 'Too many auth attempts. Please wait 15 minutes before trying again.' }
 });
 
+const pinVerifyLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many PIN verification attempts. Please wait 15 minutes before trying again.' }
+});
+
 // Health Check
 router.get('/health',  async (req, res) => {
   res.json({
@@ -214,8 +222,11 @@ router.post('/pin/generate', authLimiter, requireAuth, requireManager, async (re
       `• Temp 4-Digit PIN: \`${pinRecord.pin}\`\n\n` +
       `🌐 Direct Portal Access: ${portalUrl}`;
 
+    const btnText = targetType === 'team' ? '🚀 Open Crew Workspace' : '🌐 Launch Client Portal';
+    const appUrl = targetType === 'team' ? 'https://purpleos-iota.vercel.app/team-miniapp' : 'https://purpleos-iota.vercel.app/client';
+
     sendTelegramNotification(userObj.telegramId, pushMsg, [
-      [{ text: '🚀 Open Workspace App', web_app: { url: 'https://purpleos-iota.vercel.app/team-miniapp' } }]
+      [{ text: btnText, web_app: { url: appUrl } }]
     ], targetType === 'team');
     telegramPushed = true;
   }
@@ -232,7 +243,7 @@ router.post('/pin/generate', authLimiter, requireAuth, requireManager, async (re
 });
 
 // 🔐 Verify PIN & Issue Signed JWT
-router.post('/pin/verify', authLimiter, async (req, res) => {
+router.post('/pin/verify', pinVerifyLimiter, async (req, res) => {
   const { phone, pin, portal } = req.body;
   if (!phone || !pin) {
     return res.status(400).json({ error: 'Phone number and PIN are required' });
@@ -337,6 +348,36 @@ router.post('/pin/set', requireAuth, async (req, res) => {
     }
   }
   res.json(result);
+});
+
+// POST /api/auth/refresh — Refresh active session token
+router.post('/refresh', requireAuth, (req, res) => {
+  const { signToken, revokeToken } = require('../services/jwt');
+  if (req.user?.jti) {
+    revokeToken(req.user.jti);
+  }
+  const newToken = signToken({
+    id: req.user.id,
+    name: req.user.name,
+    phone: req.user.phone,
+    email: req.user.email,
+    role: req.user.role,
+    accessLevel: req.user.accessLevel,
+    linkedId: req.user.linkedId,
+    linkedType: req.user.linkedType
+  });
+  res.cookie('sb-access-token', newToken, { path: '/', sameSite: 'Lax', maxAge: 604800000 });
+  return res.json({ success: true, token: newToken });
+});
+
+// POST /api/auth/logout — Invalidate current session token
+router.post('/logout', requireAuth, (req, res) => {
+  const { revokeToken } = require('../services/jwt');
+  if (req.user?.jti) {
+    revokeToken(req.user.jti);
+  }
+  res.clearCookie('sb-access-token', { path: '/' });
+  return res.json({ success: true, message: 'Logged out successfully' });
 });
 
 module.exports = router;

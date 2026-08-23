@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { requireAuth } = require('../middleware/auth');
+const { requireManager } = require('../middleware/rbac');
 const { supabase } = require('../services/supabase');
 const { broadcast } = require('../services/sse');
 const { randomUUID } = require('crypto');
@@ -27,6 +28,57 @@ function mapPost(p) {
     createdAt: p.created_at,
     updatedAt: p.updated_at
   };
+}
+
+async function requirePostOwnership(req, res, next) {
+  const user = req.user;
+  if (!user) return res.status(401).json({ error: 'Unauthorized: Authentication required' });
+
+  const access = (user.profile?.accessLevel || user.accessLevel || '').toLowerCase();
+  const role = (user.profile?.role || user.role || '').toLowerCase();
+  const isAdminOrManager =
+    access.includes('admin') || access.includes('owner') || access.includes('director') || access.includes('manager') ||
+    role.includes('admin') || role.includes('owner') || role.includes('director') || role.includes('manager');
+
+  if (isAdminOrManager) {
+    return next();
+  }
+
+  const linkedType = user.linkedType || user.profile?.linkedType || '';
+  const userLinkedId = user.linkedId || user.profile?.linkedId || user.id;
+  const userName = (user.profile?.name || user.name || user.company || '').toLowerCase();
+
+  if (linkedType === 'client' && (userLinkedId || userName)) {
+    if (supabase) {
+      const { data: post } = await supabase
+        .from('social_posts')
+        .select('client_id, client_name')
+        .eq('id', req.params.id)
+        .maybeSingle();
+
+      if (!post) {
+        const memPost = inMemoryPosts.find(p => p.id === req.params.id);
+        if (!memPost) return res.status(404).json({ error: 'Post not found' });
+        const matchId = memPost.client_id && userLinkedId && String(memPost.client_id).toLowerCase() === String(userLinkedId).toLowerCase();
+        const matchName = memPost.client_name && userName && (memPost.client_name.toLowerCase().includes(userName) || userName.includes(memPost.client_name.toLowerCase()));
+        if (matchId || matchName || !memPost.client_id) return next();
+        return res.status(403).json({ error: 'Forbidden: You do not have access to this social post' });
+      }
+
+      const pClientId = post.client_id;
+      const pClientName = (post.client_name || '').toLowerCase();
+
+      const matchId = pClientId && userLinkedId && String(pClientId).toLowerCase() === String(userLinkedId).toLowerCase();
+      const matchName = pClientName && userName && (pClientName.includes(userName) || userName.includes(pClientName));
+
+      if (matchId || matchName || !pClientId) {
+        return next();
+      }
+      return res.status(403).json({ error: 'Forbidden: You do not have access to this social post' });
+    }
+  }
+
+  next();
 }
 
 const DEFAULT_POSTS = [
@@ -85,17 +137,26 @@ let inMemoryPosts = [...DEFAULT_POSTS];
 
 // GET All Social Posts
 router.get('/', requireAuth, async (req, res) => {
+  const isClientUser = req.user.role === 'Client' || req.user.linkedType === 'client' || req.user.accessLevel === 'Client Partner';
+  const clientName = (req.user.profile?.name || req.user.name || '').toLowerCase();
+  const clientId = req.user.linkedId || req.user.id;
+
+  function getFilteredPosts() {
+    let list = inMemoryPosts;
+    if (isClientUser) {
+      list = list.filter(p => (p.client_id && p.client_id === clientId) || ((p.client_name || p.clientName || '').toLowerCase().includes(clientName)));
+    }
+    return list.map(mapPost);
+  }
+
   try {
     let posts = [];
     if (supabase) {
       try {
         let query = supabase.from('social_posts').select('*').order('created_at', { ascending: false });
 
-        const isClientUser = req.user.role === 'Client' || req.user.linkedType === 'client' || req.user.accessLevel === 'Client Partner';
-        const clientName = req.user.profile?.name || req.user.name;
-
         if (isClientUser && clientName) {
-          query = query.or(`client_id.eq.${req.user.linkedId || req.user.id},client_name.ilike.%${clientName}%`);
+          query = query.or(`client_id.eq.${clientId},client_name.ilike.%${clientName}%`);
         }
 
         const { data, error } = await query;
@@ -108,13 +169,13 @@ router.get('/', requireAuth, async (req, res) => {
     }
 
     if (posts.length === 0) {
-      posts = inMemoryPosts.map(mapPost);
+      posts = getFilteredPosts();
     }
 
     res.json(posts);
   } catch (err) {
     console.error('Social Posts GET error:', err.message);
-    res.json(inMemoryPosts.map(mapPost));
+    res.json(getFilteredPosts());
   }
 });
 
@@ -203,7 +264,7 @@ router.post('/', requireAuth, async (req, res) => {
 });
 
 // PUT Update Post
-router.put('/:id', requireAuth, async (req, res) => {
+router.put('/:id', requireAuth, requirePostOwnership, async (req, res) => {
   try {
     const { id } = req.params;
     const updates = { updated_at: new Date().toISOString() };
@@ -276,8 +337,8 @@ const handleApprovePost = async (req, res) => {
   }
 };
 
-router.post('/:id/approve', requireAuth, handleApprovePost);
-router.patch('/:id/approve', requireAuth, handleApprovePost);
+router.post('/:id/approve', requireAuth, requirePostOwnership, handleApprovePost);
+router.patch('/:id/approve', requireAuth, requirePostOwnership, handleApprovePost);
 
 // POST/PATCH Reject Post (Client Feedback)
 const handleRejectPost = async (req, res) => {
@@ -307,11 +368,11 @@ const handleRejectPost = async (req, res) => {
   }
 };
 
-router.post('/:id/reject', requireAuth, handleRejectPost);
-router.patch('/:id/reject', requireAuth, handleRejectPost);
+router.post('/:id/reject', requireAuth, requirePostOwnership, handleRejectPost);
+router.patch('/:id/reject', requireAuth, requirePostOwnership, handleRejectPost);
 
 // PATCH Update Post Status
-router.patch('/:id/status', requireAuth, async (req, res) => {
+router.patch('/:id/status', requireAuth, requirePostOwnership, async (req, res) => {
   try {
     const { id } = req.params;
     const { status, feedback } = req.body;
@@ -344,7 +405,7 @@ router.patch('/:id/status', requireAuth, async (req, res) => {
 });
 
 // DELETE Post
-router.delete('/:id', requireAuth, async (req, res) => {
+router.delete('/:id', requireAuth, requireManager, async (req, res) => {
   try {
     const { id } = req.params;
     if (supabase) {

@@ -668,7 +668,7 @@ function registerLegacyTeamMenus(teamBot, readDB) {
 
         // Notify Client via Client Bot
         try {
-          const { getClientBot } = require('../bot');
+          const { getClientBot } = require('../../bot');
           const clientBot = getClientBot();
           if (clientBot && payLog?.client_id) {
             const { data: clientObj } = await supabase.from('clients').select('telegram_id').eq('id', payLog.client_id).maybeSingle();
@@ -700,6 +700,21 @@ function registerLegacyTeamMenus(teamBot, readDB) {
         alertMsg = `❌ Payment ${payId} Proof Rejected!`;
         statusBadge = `❌ Payment Rejected by ${emp.name}`;
         teamBot.sendMessage(chatId, `❌ *Payment ${payId} Rejected.* Invoice reverted to Pending.`, { parse_mode: 'Markdown' });
+
+        // Notify Client via Client Bot of payment proof rejection
+        try {
+          const { getClientBot } = require('../../bot');
+          const clientBot = getClientBot();
+          if (clientBot && payLog?.client_id) {
+            const { data: clientObj } = await supabase.from('clients').select('telegram_id').eq('id', payLog.client_id).maybeSingle();
+            if (clientObj?.telegram_id) {
+              clientBot.sendMessage(clientObj.telegram_id,
+                `⚠️ *Payment Proof Rejected*\n\nYour payment submission for Invoice *${payLog.invoice_id}* could not be verified (TrxID mismatch or unconfirmed transfer).\n\nPlease check your transaction details and resubmit proof via the portal or reach out to your Account Manager.`,
+                { parse_mode: 'Markdown' }
+              ).catch(() => {});
+            }
+          }
+        } catch (e) {}
 
       // ─── 5. EXPENSE DECLINE / REJECTION HANDLER ────────────────────────────────
       } else if (data.startsWith('reject_expense_t1:') || data.startsWith('reject_expense:')) {

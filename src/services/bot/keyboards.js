@@ -367,9 +367,9 @@ function getClientKeyboard(client) {
   return {
     keyboard: [
       [{ text: '🎬 Review Room' }, { text: '📋 Campaign Status' }],
-      [{ text: '💳 My Invoices' }, { text: '🎨 Our Services' }],
-      [{ text: '📞 Contact AM' }, { text: '📁 Portfolio' }],
-      [{ text: '📱 Open App', web_app: { url: 'https://purpleos-iota.vercel.app/client-miniapp' } }]
+      [{ text: '📊 Monthly Digest' }, { text: '📝 Submit Brief' }],
+      [{ text: '💳 My Invoices' }, { text: '📞 Contact AM' }],
+      [{ text: '📱 Open Client Portal', web_app: { url: 'https://purpleos-iota.vercel.app/client' } }]
     ],
     resize_keyboard: true
   };

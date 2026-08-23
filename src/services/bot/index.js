@@ -17,6 +17,8 @@ module.exports = {
   sendTelegramNotification: notifications.sendTelegramNotification,
   sendToGroup: notifications.sendToGroup,
   sendAgreementNotification: notifications.sendAgreementNotification,
+  sendClientDeliverableNotification: notifications.sendClientDeliverableNotification,
+  sendClientInvoiceNotification: notifications.sendClientInvoiceNotification,
   getRoleKeyboard: keyboards.getRoleKeyboard,
   getClientKeyboard: keyboards.getClientKeyboard
 };

@@ -43,10 +43,18 @@
   </style>
   <script>
     (function() {
-      const savedPhone = localStorage.getItem('purple_user_phone');
-      const token = localStorage.getItem('sb-access-token');
-      if (!savedPhone || !token) {
-        window.location.href = '/auth';
+      try {
+        const hasPhone = localStorage.getItem('purple_user_phone') ||
+                         localStorage.getItem('purple_user');
+        const hasToken = localStorage.getItem('sb-access-token') ||
+                         localStorage.getItem('purpleos_pin_token') ||
+                         localStorage.getItem('purple_token');
+        if (!hasPhone || !hasToken) {
+          window.location.href = '/auth?portal=client';
+        }
+      } catch (e) {
+        // localStorage unavailable (sandboxed webview) — redirect to auth
+        window.location.href = '/auth?portal=client';
       }
     })();
   </script>
@@ -186,7 +194,7 @@
       <div style="background: #0f172a; border: 1px solid rgba(168,85,247,0.3); border-radius: 16px; padding: 1.75rem; width: 100%; max-width: 520px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
           <h2 style="font-size: 1.2rem; font-weight: 700; color: #f8fafc; margin: 0;">📋 Submit New Campaign Brief</h2>
-          <button onclick="closePartnerBriefModal()" style="background: none; border: none; color: #94a3b8; font-size: 1.2rem; cursor: pointer;">✕</button>
+          <button onclick="closePartnerBriefModal()" aria-label="Close modal" style="background: none; border: none; color: #94a3b8; font-size: 1.2rem; cursor: pointer;">✕</button>
         </div>
         <form onsubmit="submitPartnerCampaignBrief(event)">
           <div style="display: flex; flex-direction: column; gap: 0.85rem;">
@@ -236,7 +244,7 @@
       <div style="background: #0f172a; border: 1px solid rgba(52,211,153,0.3); border-radius: 16px; padding: 1.75rem; width: 100%; max-width: 500px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
           <h2 style="font-size: 1.2rem; font-weight: 700; color: #f8fafc; margin: 0;">💳 Verify Invoice Payment</h2>
-          <button onclick="closePartnerPaymentModal()" style="background: none; border: none; color: #94a3b8; font-size: 1.2rem; cursor: pointer;">✕</button>
+          <button onclick="closePartnerPaymentModal()" aria-label="Close modal" style="background: none; border: none; color: #94a3b8; font-size: 1.2rem; cursor: pointer;">✕</button>
         </div>
         <form onsubmit="submitPartnerPayment(event)">
           <input type="hidden" id="payModalInvoiceId">

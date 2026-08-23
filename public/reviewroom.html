@@ -84,8 +84,8 @@
             <option value="">Loading Review Cuts...</option>
           </select>
 
-          <!-- Back to Dashboard / Portal Link -->
-          <a href="/admin#reviews" id="rrBackLink" class="rr-btn rr-btn-secondary" style="text-decoration: none;">👑 Back to Dashboard</a>
+          <!-- Back to Portal / Dashboard Link -->
+          <a href="/client" id="rrBackLink" class="rr-btn rr-btn-secondary" style="text-decoration: none;">← Client Portal</a>
         </div>
       </div>
 
@@ -214,8 +214,8 @@
         if (userRaw) {
           const user = JSON.parse(userRaw);
           if (user.linkedType === 'client' || (user.role && user.role.toLowerCase().includes('client')) || user.accessLevel === 'Client Partner') {
-            link.href = '/portal';
-            link.innerText = '💼 Back to Partner Portal';
+            link.href = '/client';
+            link.innerText = '← Client Portal';
             return;
           }
           if (user.role && (user.role.toLowerCase().includes('crew') || user.role.toLowerCase().includes('specialist'))) {

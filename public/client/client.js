@@ -5,8 +5,10 @@
 (function initClientApp() {
   const ROUTES = {
     '#home':     { module: 'home.js',     title: 'Account Overview', icon: '🏠' },
+    '#retainer': { module: 'retainer.js', title: 'Retainer Health & Quota', icon: '⚡' },
     '#review':   { module: 'review.js',   title: 'Content Review Room', icon: '🎬' },
     '#campaign': { module: 'campaign.js', title: 'Campaign Schedule', icon: '📋' },
+    '#brief':    { module: 'brief.js',    title: 'Submit Campaign Brief', icon: '📝' },
     '#invoices': { module: 'invoices.js', title: 'Billing & Invoices', icon: '💳' },
     '#tickets':  { module: 'tickets.js',  title: 'Support Requests', icon: '🎟️' },
     '#account':  { module: 'account.js',  title: 'My Account & Contacts', icon: '👤' }
@@ -24,14 +26,22 @@
       const rawUser = localStorage.getItem('purple_user');
       if (rawUser) {
         const user = JSON.parse(rawUser);
+        const displayName = user.company || user.name || 'Client Partner';
+        const initial = (displayName.charAt(0) || 'P').toUpperCase();
+
         const nameEl = document.getElementById('clientHeaderName');
         const subEl = document.getElementById('clientHeaderSub');
-        if (nameEl) {
-          nameEl.textContent = user.name || user.company || 'Client Partner';
-        }
-        if (subEl) {
-          subEl.textContent = `${user.pocRole ? user.pocRole.toUpperCase() + ' · ' : ''}${user.company ? user.company.toUpperCase() : 'PURPLEOS CLIENT PORTAL'}`;
-        }
+        const deskNameEl = document.getElementById('deskClientName');
+        const deskSubEl = document.getElementById('deskClientSub');
+        const deskLogo = document.getElementById('deskBrandLogo');
+        const mobLogo = document.getElementById('mobBrandLogo');
+
+        if (nameEl) nameEl.textContent = displayName;
+        if (deskNameEl) deskNameEl.textContent = displayName;
+        if (subEl) subEl.textContent = `${user.pocRole ? user.pocRole.toUpperCase() + ' · ' : ''}${user.company ? user.company.toUpperCase() : 'PURPLEOS CLIENT'}`;
+        if (deskSubEl) deskSubEl.textContent = `${user.pocRole ? user.pocRole.toUpperCase() + ' · ' : ''}VERIFIED WORKSPACE`;
+        if (deskLogo) deskLogo.textContent = initial;
+        if (mobLogo) mobLogo.textContent = initial;
       }
     } catch (e) {}
   }
@@ -47,6 +57,16 @@
 
     const routeInfo = ROUTES[hash];
 
+    // Sync Desktop Sidebar Links
+    document.querySelectorAll('.desktop-nav-link').forEach(link => {
+      if (link.getAttribute('href') === hash) {
+        link.classList.add('active');
+      } else {
+        link.classList.remove('active');
+      }
+    });
+
+    // Sync Mobile Bottom Nav Items
     document.querySelectorAll('.bottom-nav-item').forEach(link => {
       if (link.getAttribute('href') === hash) {
         link.classList.add('active');
@@ -59,9 +79,9 @@
     if (!viewContainer) return;
 
     viewContainer.innerHTML = `
-      <div style="display:flex; flex-direction:column; gap:1rem; padding:1rem;">
-        <div class="skeleton" style="height:140px; width:100%;"></div>
-        <div class="skeleton" style="height:250px; width:100%;"></div>
+      <div style="display:flex; flex-direction:column; gap:1.25rem; padding:1.5rem 0;">
+        <div class="skeleton" style="height:120px; width:100%; border-radius:16px;"></div>
+        <div class="skeleton" style="height:260px; width:100%; border-radius:16px;"></div>
       </div>
     `;
 
@@ -76,6 +96,7 @@
 
       if (typeof renderFn === 'function') {
         viewContainer.innerHTML = '';
+        viewContainer.className = 'client-main-content content-area view-fade-in';
         await renderFn(viewContainer);
       }
     } catch (err) {
@@ -92,10 +113,16 @@
 
   function loadModuleScript(file) {
     return new Promise((resolve, reject) => {
+      const scriptId = `script-mod-${file.replace('.js', '')}`;
+      const existing = document.getElementById(scriptId);
+      if (existing) {
+        return resolve();
+      }
       const script = document.createElement('script');
-      script.src = `/client/modules/${file}`;
+      script.id = scriptId;
+      script.src = `/client/modules/${file}?v=2.0`;
       script.onload = resolve;
-      script.onerror = () => reject(new Error(`Could not load ${file}`));
+      script.onerror = () => reject(new Error(`Could not load module: ${file}`));
       document.body.appendChild(script);
     });
   }

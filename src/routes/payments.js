@@ -77,11 +77,14 @@ router.post('/', requireAuth, async (req, res) => {
       return res.status(400).json({ error: 'Transaction ID (TrxID) is required' });
     }
 
+    const isClientUser = req.user.role === 'Client' || req.user.linkedType === 'client' || req.user.accessLevel === 'Client Partner';
+    const resolvedClientId = clientId || (isClientUser ? req.user.linkedId : null);
+
     const paymentId = `PAY-${Date.now().toString().slice(-6)}`;
     const payload = {
       id: paymentId,
       invoice_id: invoiceId || null,
-      client_id: clientId || req.user.linkedId || null,
+      client_id: resolvedClientId || null,
       client_name: clientName || req.user.name || 'Client',
       amount: Number(amount) || 0,
       currency: 'BDT',
@@ -199,6 +202,23 @@ router.post('/:id/reject', requireAuth, requireManager, async (req, res) => {
 
     broadcast('payment_update', [{ id, rejected: true }]);
     broadcast('invoice_update', [{ id: log.invoice_id, status: 'Pending' }]);
+
+    // Notify Client via Telegram of rejection
+    if (log.client_id) {
+      try {
+        const { data: clientObj } = await supabase.from('clients').select('telegram_id, name').eq('id', log.client_id).maybeSingle();
+        if (clientObj?.telegram_id) {
+          const rejectMsg =
+            `⚠️ *Payment Proof Not Verified*\n\n` +
+            `Your payment submission for Invoice *${log.invoice_id}* (TrxID: \`${log.trx_id}\`) could not be verified.\n` +
+            `• Reason: _${reason}_\n\n` +
+            `Please check your transaction details and resubmit proof in the client portal, or contact your Account Manager.`;
+          sendTelegramNotification(clientObj.telegram_id, rejectMsg, null, false);
+        }
+      } catch (tgErr) {
+        console.warn('Failed to send payment rejection Telegram alert:', tgErr.message);
+      }
+    }
 
     res.json({ success: true, message: 'Payment proof rejected.' });
   } catch (err) {

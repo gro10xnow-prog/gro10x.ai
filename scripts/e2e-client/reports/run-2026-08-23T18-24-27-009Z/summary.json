@@ -1,0 +1,814 @@
+{
+  "timestamp": "2026-08-23T18:24:27.011Z",
+  "stakeholder": "Client Partner (Brands, Retainer Clients, Enterprise Accounts)",
+  "totalTests": 60,
+  "totalPassed": 60,
+  "totalFailed": 0,
+  "passRate": 100,
+  "totalDurationMs": 82379,
+  "phases": [
+    {
+      "phase": "Phase T1: Auth Gate & Session Integrity",
+      "total": 8,
+      "passed": 8,
+      "failed": 0,
+      "duration": 15910,
+      "tests": [
+        {
+          "id": "T1.1.1",
+          "title": "Navigate to /auth — page loads without JS errors",
+          "status": "PASSED",
+          "duration": 1470,
+          "error": null
+        },
+        {
+          "id": "T1.1.2",
+          "title": "Empty submit validation on /auth",
+          "status": "PASSED",
+          "duration": 693,
+          "error": null
+        },
+        {
+          "id": "T1.2.1",
+          "title": "Unauthenticated access to /partners redirects to /auth",
+          "status": "PASSED",
+          "duration": 1427,
+          "error": null
+        },
+        {
+          "id": "T1.2.2",
+          "title": "Unauthenticated access to /client/ redirects to /auth",
+          "status": "PASSED",
+          "duration": 1268,
+          "error": null
+        },
+        {
+          "id": "T1.2.3",
+          "title": "Access /client-miniapp.html without Telegram initData loads with graceful fallback",
+          "status": "PASSED",
+          "duration": 3108,
+          "error": null
+        },
+        {
+          "id": "T1.3.1",
+          "title": "Load /partners with Valid Client JWT Session",
+          "status": "PASSED",
+          "duration": 2736,
+          "error": null
+        },
+        {
+          "id": "T1.3.2",
+          "title": "Load /client/ SPA with Valid Client JWT Session",
+          "status": "PASSED",
+          "duration": 2639,
+          "error": null
+        },
+        {
+          "id": "T1.4.1",
+          "title": "Sign Out on /partners clears session and redirects to /auth",
+          "status": "PASSED",
+          "duration": 2568,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Phase T2: Telegram Mini App",
+      "total": 11,
+      "passed": 11,
+      "failed": 0,
+      "duration": 17151,
+      "tests": [
+        {
+          "id": "T2.1.1",
+          "title": "Load Mini App and Verify Hero Brand & Version",
+          "status": "PASSED",
+          "duration": 2298,
+          "error": null
+        },
+        {
+          "id": "T2.2.1",
+          "title": "Switch to Review Room tab (#navReview)",
+          "status": "PASSED",
+          "duration": 992,
+          "error": null
+        },
+        {
+          "id": "T2.2.2",
+          "title": "Switch to Campaign Progress tab (#navCampaign)",
+          "status": "PASSED",
+          "duration": 704,
+          "error": null
+        },
+        {
+          "id": "T2.2.3",
+          "title": "Switch to Payment tab (#navPayment)",
+          "status": "PASSED",
+          "duration": 809,
+          "error": null
+        },
+        {
+          "id": "T2.2.4",
+          "title": "Switch to Contact & Support tab (#navContact)",
+          "status": "PASSED",
+          "duration": 750,
+          "error": null
+        },
+        {
+          "id": "T2.2.5",
+          "title": "Switch back to Home tab (#navHome)",
+          "status": "PASSED",
+          "duration": 436,
+          "error": null
+        },
+        {
+          "id": "T2.3.1",
+          "title": "Verify Quick Actions Grid and Stage Pipeline on Home",
+          "status": "PASSED",
+          "duration": 69,
+          "error": null
+        },
+        {
+          "id": "T2.4.1",
+          "title": "Open Brief Modal, validate and submit a new brief",
+          "status": "PASSED",
+          "duration": 3647,
+          "error": null
+        },
+        {
+          "id": "T2.5.1",
+          "title": "Test 2-click Cut Approval & Revision Feedback in Review Room",
+          "status": "PASSED",
+          "duration": 3453,
+          "error": null
+        },
+        {
+          "id": "T2.7.1",
+          "title": "Test Payment Method Switcher (bKash/Nagad/Bank/Rocket)",
+          "status": "PASSED",
+          "duration": 1783,
+          "error": null
+        },
+        {
+          "id": "T2.8.1",
+          "title": "Submit Support Ticket in Mini App",
+          "status": "PASSED",
+          "duration": 2209,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Phase T3: Web Partner Portal (/partners)",
+      "total": 9,
+      "passed": 9,
+      "failed": 0,
+      "duration": 18116,
+      "tests": [
+        {
+          "id": "T3.1.1",
+          "title": "Load /partners with authenticated client session",
+          "status": "PASSED",
+          "duration": 10266,
+          "error": null
+        },
+        {
+          "id": "T3.2.1",
+          "title": "Verify Client Workspace Header and Scoping",
+          "status": "PASSED",
+          "duration": 6,
+          "error": null
+        },
+        {
+          "id": "T3.3.1",
+          "title": "Verify Video Review Room, Project Select, and Comments",
+          "status": "PASSED",
+          "duration": 650,
+          "error": null
+        },
+        {
+          "id": "T3.3.2",
+          "title": "Add Timecoded Feedback Comment to Video Review",
+          "status": "PASSED",
+          "duration": 1474,
+          "error": null
+        },
+        {
+          "id": "T3.3.3",
+          "title": "Test 2-click Confirmation on Deliverable Cut Approval",
+          "status": "PASSED",
+          "duration": 1015,
+          "error": null
+        },
+        {
+          "id": "T3.4.1",
+          "title": "Verify Social Media Post Approval Grid & Badges",
+          "status": "PASSED",
+          "duration": 550,
+          "error": null
+        },
+        {
+          "id": "T3.5.1",
+          "title": "Verify Invoices Table & Statement of Account",
+          "status": "PASSED",
+          "duration": 514,
+          "error": null
+        },
+        {
+          "id": "T3.5.2",
+          "title": "Open and Test Invoice Payment Verification Modal",
+          "status": "PASSED",
+          "duration": 1933,
+          "error": null
+        },
+        {
+          "id": "T3.6.1",
+          "title": "Open and Submit Campaign Brief Modal on /partners",
+          "status": "PASSED",
+          "duration": 1708,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Phase T4: Client SPA (/client/)",
+      "total": 10,
+      "passed": 10,
+      "failed": 0,
+      "duration": 17554,
+      "tests": [
+        {
+          "id": "T4.1.1",
+          "title": "Load Client SPA and Verify Desktop Sidebar & Brand Hydration",
+          "status": "PASSED",
+          "duration": 3524,
+          "error": null
+        },
+        {
+          "id": "T4.3.1",
+          "title": "Verify #home Overview & KPI Tiles",
+          "status": "PASSED",
+          "duration": 1209,
+          "error": null
+        },
+        {
+          "id": "T4.4.1",
+          "title": "Verify #retainer Health Dashboard & Quota",
+          "status": "PASSED",
+          "duration": 1274,
+          "error": null
+        },
+        {
+          "id": "T4.5.1",
+          "title": "Verify #review Content Review Room & Video Hotkeys",
+          "status": "PASSED",
+          "duration": 1967,
+          "error": null
+        },
+        {
+          "id": "T4.6.1",
+          "title": "Verify #campaign Campaign Calendar Grid",
+          "status": "PASSED",
+          "duration": 1331,
+          "error": null
+        },
+        {
+          "id": "T4.7.1",
+          "title": "Verify #brief 3-Step Briefing Wizard & Stepper",
+          "status": "PASSED",
+          "duration": 1260,
+          "error": null
+        },
+        {
+          "id": "T4.8.1",
+          "title": "Verify #invoices Invoices List & Copy Chips",
+          "status": "PASSED",
+          "duration": 1307,
+          "error": null
+        },
+        {
+          "id": "T4.9.1",
+          "title": "Verify #tickets Support Requests & Escalation",
+          "status": "PASSED",
+          "duration": 1336,
+          "error": null
+        },
+        {
+          "id": "T4.10.1",
+          "title": "Verify #account Account Team & POC Roster",
+          "status": "PASSED",
+          "duration": 1297,
+          "error": null
+        },
+        {
+          "id": "T4.2.1",
+          "title": "Test Mobile Viewport (<900px) and Bottom Sheet Drawer",
+          "status": "PASSED",
+          "duration": 3045,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Phase T5: Telegram Client Bot",
+      "total": 8,
+      "passed": 8,
+      "failed": 0,
+      "duration": 1603,
+      "tests": [
+        {
+          "id": "T5.1.1",
+          "title": "Verify Canonical getClientKeyboard() structure",
+          "status": "PASSED",
+          "duration": 0,
+          "error": null
+        },
+        {
+          "id": "T5.3.1",
+          "title": "Execute handleReviewRoom() handler",
+          "status": "PASSED",
+          "duration": 229,
+          "error": null
+        },
+        {
+          "id": "T5.4.1",
+          "title": "Execute handleCampaignStatus() handler",
+          "status": "PASSED",
+          "duration": 227,
+          "error": null
+        },
+        {
+          "id": "T5.5.1",
+          "title": "Execute handleClientDigest() handler (/digest)",
+          "status": "PASSED",
+          "duration": 258,
+          "error": null
+        },
+        {
+          "id": "T5.6.1",
+          "title": "Execute handleSubmitBrief() handler",
+          "status": "PASSED",
+          "duration": 0,
+          "error": null
+        },
+        {
+          "id": "T5.7.1",
+          "title": "Execute handleInvoices() handler (/invoices)",
+          "status": "PASSED",
+          "duration": 221,
+          "error": null
+        },
+        {
+          "id": "T5.8.1",
+          "title": "Execute handleContactAM() handler",
+          "status": "PASSED",
+          "duration": 224,
+          "error": null
+        },
+        {
+          "id": "T5.10.1",
+          "title": "Execute handleServices() and handlePortfolio() handlers",
+          "status": "PASSED",
+          "duration": 443,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Phase T6: SSE Real-Time Events",
+      "total": 3,
+      "passed": 3,
+      "failed": 0,
+      "duration": 10,
+      "tests": [
+        {
+          "id": "T6.1.1",
+          "title": "Verify unauthenticated SSE connection to /api/sync returns 401",
+          "status": "PASSED",
+          "duration": 6,
+          "error": null
+        },
+        {
+          "id": "T6.1.2",
+          "title": "Connect to /api/sync with valid Client JWT Token",
+          "status": "PASSED",
+          "duration": 3,
+          "error": null
+        },
+        {
+          "id": "T6.5.1",
+          "title": "Verify broadcastToClient() function exists and scopes events",
+          "status": "PASSED",
+          "duration": 1,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Phase T7: Edge Cases & Security (IDOR)",
+      "total": 4,
+      "passed": 4,
+      "failed": 0,
+      "duration": 234,
+      "tests": [
+        {
+          "id": "T7.5.1",
+          "title": "Verify unauthenticated GET /api/clients/me returns 401",
+          "status": "PASSED",
+          "duration": 5,
+          "error": null
+        },
+        {
+          "id": "T7.5.2",
+          "title": "Verify unauthenticated POST /api/payments returns 401",
+          "status": "PASSED",
+          "duration": 6,
+          "error": null
+        },
+        {
+          "id": "T7.3.1",
+          "title": "Verify Client token is scoped to its own linkedId",
+          "status": "PASSED",
+          "duration": 220,
+          "error": null
+        },
+        {
+          "id": "T7.4.1",
+          "title": "Verify Client role cannot create or tamper with automation rules",
+          "status": "PASSED",
+          "duration": 2,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Phase T8: Responsiveness & Viewports",
+      "total": 3,
+      "passed": 3,
+      "failed": 0,
+      "duration": 5398,
+      "tests": [
+        {
+          "id": "T8.1.1",
+          "title": "Verify Desktop Viewport (1440x900) Sidebar Layout",
+          "status": "PASSED",
+          "duration": 1197,
+          "error": null
+        },
+        {
+          "id": "T8.2.1",
+          "title": "Verify Tablet Viewport (768x1024) Responsive Collapse",
+          "status": "PASSED",
+          "duration": 2111,
+          "error": null
+        },
+        {
+          "id": "T8.3.1",
+          "title": "Verify Mobile Viewport (390x844) Touch Navigation",
+          "status": "PASSED",
+          "duration": 1939,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Phase T9: Cross-Surface Console & Integrity Audit",
+      "total": 4,
+      "passed": 4,
+      "failed": 0,
+      "duration": 6403,
+      "tests": [
+        {
+          "id": "T9.1.1",
+          "title": "Audit /auth for zero uncaught JavaScript errors",
+          "status": "PASSED",
+          "duration": 1288,
+          "error": null
+        },
+        {
+          "id": "T9.1.2",
+          "title": "Audit /partners for zero uncaught JavaScript errors",
+          "status": "PASSED",
+          "duration": 1540,
+          "error": null
+        },
+        {
+          "id": "T9.1.3",
+          "title": "Audit /client/ SPA for zero uncaught JavaScript errors",
+          "status": "PASSED",
+          "duration": 1834,
+          "error": null
+        },
+        {
+          "id": "T9.1.4",
+          "title": "Audit /client-miniapp.html for zero uncaught JavaScript errors",
+          "status": "PASSED",
+          "duration": 1740,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "consoleAudit": [
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"current-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"current-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"current-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"current-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"current-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"current-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "log",
+      "text": "[Telegram.WebView] > postEvent web_app_set_header_color [object Object]"
+    },
+    {
+      "type": "log",
+      "text": "[Telegram.WebView] > postEvent web_app_set_bottom_bar_color [object Object]"
+    },
+    {
+      "type": "log",
+      "text": "[Telegram.WebView] > postEvent web_app_request_theme "
+    },
+    {
+      "type": "log",
+      "text": "[Telegram.WebView] > postEvent web_app_request_viewport "
+    },
+    {
+      "type": "log",
+      "text": "[Telegram.WebView] > postEvent web_app_request_safe_area "
+    },
+    {
+      "type": "log",
+      "text": "[Telegram.WebView] > postEvent web_app_request_content_safe_area "
+    },
+    {
+      "type": "log",
+      "text": "[Telegram.WebView] > postEvent web_app_expand "
+    },
+    {
+      "type": "log",
+      "text": "[Telegram.WebView] > postEvent web_app_ready "
+    },
+    {
+      "type": "warn",
+      "text": "[Telegram.WebApp] Header color is not supported in version 6.0"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"current-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "log",
+      "text": "[Telegram.WebView] > postEvent web_app_set_header_color [object Object]"
+    },
+    {
+      "type": "log",
+      "text": "[Telegram.WebView] > postEvent web_app_set_bottom_bar_color [object Object]"
+    },
+    {
+      "type": "log",
+      "text": "[Telegram.WebView] > postEvent web_app_request_theme "
+    },
+    {
+      "type": "log",
+      "text": "[Telegram.WebView] > postEvent web_app_request_viewport "
+    },
+    {
+      "type": "log",
+      "text": "[Telegram.WebView] > postEvent web_app_request_safe_area "
+    },
+    {
+      "type": "log",
+      "text": "[Telegram.WebView] > postEvent web_app_request_content_safe_area "
+    },
+    {
+      "type": "log",
+      "text": "[Telegram.WebView] > postEvent web_app_expand "
+    },
+    {
+      "type": "log",
+      "text": "[Telegram.WebView] > postEvent web_app_ready "
+    },
+    {
+      "type": "warn",
+      "text": "[Telegram.WebApp] Header color is not supported in version 6.0"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "warn",
+      "text": "[Telegram.WebApp] HapticFeedback is not supported in version 6.0"
+    },
+    {
+      "type": "warn",
+      "text": "[Telegram.WebApp] HapticFeedback is not supported in version 6.0"
+    },
+    {
+      "type": "warn",
+      "text": "[Telegram.WebApp] HapticFeedback is not supported in version 6.0"
+    },
+    {
+      "type": "warn",
+      "text": "[Telegram.WebApp] HapticFeedback is not supported in version 6.0"
+    },
+    {
+      "type": "warn",
+      "text": "[Telegram.WebApp] HapticFeedback is not supported in version 6.0"
+    },
+    {
+      "type": "warn",
+      "text": "[Telegram.WebApp] HapticFeedback is not supported in version 6.0"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"current-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"current-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"current-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"current-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "type": "log",
+      "text": "[Telegram.WebView] > postEvent web_app_set_header_color [object Object]"
+    },
+    {
+      "type": "log",
+      "text": "[Telegram.WebView] > postEvent web_app_set_bottom_bar_color [object Object]"
+    },
+    {
+      "type": "log",
+      "text": "[Telegram.WebView] > postEvent web_app_request_theme "
+    },
+    {
+      "type": "log",
+      "text": "[Telegram.WebView] > postEvent web_app_request_viewport "
+    },
+    {
+      "type": "log",
+      "text": "[Telegram.WebView] > postEvent web_app_request_safe_area "
+    },
+    {
+      "type": "log",
+      "text": "[Telegram.WebView] > postEvent web_app_request_content_safe_area "
+    },
+    {
+      "type": "log",
+      "text": "[Telegram.WebView] > postEvent web_app_expand "
+    },
+    {
+      "type": "log",
+      "text": "[Telegram.WebView] > postEvent web_app_ready "
+    },
+    {
+      "type": "warn",
+      "text": "[Telegram.WebApp] Header color is not supported in version 6.0"
+    }
+  ]
+}

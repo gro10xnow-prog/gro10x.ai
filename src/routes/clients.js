@@ -88,36 +88,41 @@ router.get('/me', requireAuth, async (req, res) => {
 
   const db = await readDB();
   const client = (db.clients || []).find(c => c.id === clientId || (c.name || '').toLowerCase().includes((req.user.name || '').toLowerCase()));
-  res.json({ success: true, client: mapClient(client || db.clients[0]) });
+  if (client) {
+    return res.json({ success: true, client: mapClient(client) });
+  }
+
+  // Safe fallback to current user's profile rather than another tenant's data
+  return res.json({
+    success: true,
+    client: mapClient({
+      id: clientId || req.user.id || 'cli_current',
+      name: req.user.name || 'Client Partner',
+      status: 'Active Retainer',
+      category: 'General Marketing',
+      phone: req.user.phone || ''
+    })
+  });
 });
 
-// GET /api/clients/dashboard — Supports ?telegramId= or JWT auth for Client Mini App
-router.get('/dashboard', async (req, res) => {
+// GET /api/clients/dashboard — Supports authenticated JWT or verified Telegram Session
+router.get('/dashboard', requireAuth, async (req, res) => {
   try {
-    const telegramId = req.query.telegramId;
     let client = null;
-    if (telegramId && supabase && isSupabaseConfigured()) {
-      const { data } = await supabase.from('clients').select('*').eq('telegram_id', String(telegramId)).maybeSingle();
+    const targetClientId = req.user.linkedId || req.user.id;
+
+    if (supabase && isSupabaseConfigured()) {
+      const { data } = await supabase.from('clients').select('*').or(`id.eq.${targetClientId},name.ilike.%${req.user.name}%`).maybeSingle();
       if (data) client = data;
     }
-    if (!client && req.headers.authorization) {
-      const { verifyToken } = require('../services/jwt');
-      const token = req.headers.authorization.replace('Bearer ', '');
-      const decoded = verifyToken(token);
-      if (decoded && decoded.linkedId) {
-        const { data } = await supabase.from('clients').select('*').eq('id', decoded.linkedId).maybeSingle();
-        if (data) client = data;
-      }
-    }
+
     if (!client) {
-      if (supabase && isSupabaseConfigured()) {
-        const { data } = await supabase.from('clients').select('*').limit(1).maybeSingle();
-        client = data;
-      }
+      const db = await readDB();
+      client = (db.clients || []).find(c => c.id === targetClientId || (c.name || '').toLowerCase().includes((req.user.name || '').toLowerCase()));
     }
 
-    const clientName = client?.name || 'Chillox Bangladesh';
-    const clientId = client?.id || 'CLI-001';
+    const clientName = client?.name || req.user.name || 'Client Partner';
+    const clientId = client?.id || targetClientId;
 
     let activeCampaign = null;
     let latestInvoice = null;
@@ -173,16 +178,25 @@ router.get('/dashboard', async (req, res) => {
   }
 });
 
-// GET /api/clients/campaigns — Client campaign listing for Telegram Mini App
-router.get('/campaigns', async (req, res) => {
+// GET /api/clients/campaigns — Client campaign listing for Telegram Mini App & Portal
+router.get('/campaigns', requireAuth, async (req, res) => {
   try {
-    const telegramId = req.query.telegramId;
-    let client = null;
-    if (telegramId && supabase && isSupabaseConfigured()) {
-      const { data } = await supabase.from('clients').select('*').eq('telegram_id', String(telegramId)).maybeSingle();
-      client = data;
+    let clientName = '';
+    const linkedId = req.user?.linkedId || req.user?.id;
+    const linkedType = req.user?.linkedType || '';
+
+    if (linkedType === 'client' && linkedId && supabase && isSupabaseConfigured()) {
+      const { data } = await supabase.from('clients').select('name').eq('id', linkedId).maybeSingle();
+      clientName = data?.name || req.user?.company || req.user?.name || '';
+    } else if (req.query.telegramId && supabase && isSupabaseConfigured()) {
+      const { data } = await supabase.from('clients').select('name').eq('telegram_id', String(req.query.telegramId)).maybeSingle();
+      clientName = data?.name || '';
+    } else if (req.user?.company || req.user?.name) {
+      clientName = req.user.company || req.user.name;
     }
-    const clientName = client?.name || 'Chillox';
+
+    if (!clientName) return res.json([]);
+
     let tasks = [];
     if (supabase && isSupabaseConfigured()) {
       const { data } = await supabase.from('tasks').select('*').ilike('client', `%${clientName}%`).order('created_at', { ascending: false });
@@ -386,7 +400,7 @@ router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
 });
 
 // GET /api/clients/:id/timeline (CRM Activity Timeline)
-router.get('/:id/timeline', requireAuth, async (req, res) => {
+router.get('/:id/timeline', requireAuth, requireClientOwnership, async (req, res) => {
   const { id } = req.params;
   
   if (isSupabaseConfigured()) {
@@ -396,8 +410,8 @@ router.get('/:id/timeline', requireAuth, async (req, res) => {
       // Fetch related records
       const [tasksRes, invoicesRes, reviewsRes, meetingsRes] = await Promise.all([
         supabase.from('tasks').select('id, title, status, stage, created_at, updated_at').eq('client_id', id),
-        supabase.from('invoices').select('id, project_name, amount, status, issue_date').eq('client_id', id),
-        supabase.from('reviews').select('id, video_title, status, created_at').eq('client_id', id),
+        supabase.from('invoices').select('id, project_name, amount, status, date, created_at').eq('client_id', id),
+        supabase.from('reviews').select('id, project_name, status, created_at').eq('client_id', id),
         supabase.from('client_meetings').select('*').eq('client_id', id).order('meeting_date', { ascending: false })
       ]);
 
@@ -419,7 +433,7 @@ router.get('/:id/timeline', requireAuth, async (req, res) => {
           type: 'invoice',
           title: `Invoice Generated: BDT ${i.amount}`,
           description: `Project: ${i.project_name || 'N/A'} - Status: ${i.status}`,
-          date: i.issue_date,
+          date: i.date || i.issue_date || i.created_at,
           icon: '💳',
           color: 'var(--emerald-accent)'
         });
@@ -428,7 +442,7 @@ router.get('/:id/timeline', requireAuth, async (req, res) => {
       (reviewsRes.data || []).forEach(r => {
         timeline.push({
           type: 'review',
-          title: `Deliverable Review: ${r.video_title}`,
+          title: `Deliverable Review: ${r.project_name || r.video_title || 'Video Cut'}`,
           description: `Status: ${r.status}`,
           date: r.created_at,
           icon: '🎬',
@@ -497,7 +511,7 @@ router.get('/:id/timeline', requireAuth, async (req, res) => {
 });
 
 // POST /api/clients/:id/meetings
-router.post('/:id/meetings', requireAuth, async (req, res) => {
+router.post('/:id/meetings', requireAuth, requireClientOwnership, async (req, res) => {
   const { id } = req.params;
   const { meeting_date, notes, action_items } = req.body;
 

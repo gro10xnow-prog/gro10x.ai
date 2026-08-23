@@ -58,18 +58,22 @@ async function requireAuth(req, res, next) {
           .or(`id.eq.${user.id},email.eq.${user.email}`)
           .maybeSingle();
 
+        const isClient = (profile?.role === 'Client' || profile?.accessLevel === 'Client Partner' || profile?.access_level === 'Client Partner' || profile?.linked_type === 'client' || profile?.linkedType === 'client' || user.user_metadata?.role === 'Client');
+        const resolvedLinkedType = isClient ? 'client' : (profile?.linked_type || profile?.linkedType || 'team');
+        const resolvedLinkedId = isClient ? (profile?.client_id || profile?.linked_id || user.id) : (profile?.emp_code || user.id);
+
         req.user = {
           id: user.id,
           email: user.email,
-          role: profile?.role || 'Specialist',
-          accessLevel: profile?.accessLevel || 'Specialist / Crew',
-          department: profile?.department || 'Production',
-          linkedType: 'team',
-          linkedId: profile?.emp_code || user.id,
+          role: profile?.role || (isClient ? 'Client' : 'Specialist'),
+          accessLevel: profile?.accessLevel || profile?.access_level || (isClient ? 'Client Partner' : 'Specialist / Crew'),
+          department: profile?.department || (isClient ? 'Client Accounts' : 'Production'),
+          linkedType: resolvedLinkedType,
+          linkedId: resolvedLinkedId,
           profile: profile || {
             name: user.user_metadata?.full_name || user.email.split('@')[0],
-            role: user.user_metadata?.role || 'Specialist',
-            department: 'Production'
+            role: user.user_metadata?.role || (isClient ? 'Client' : 'Specialist'),
+            department: isClient ? 'Client Accounts' : 'Production'
           }
         };
         return next();

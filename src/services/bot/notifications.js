@@ -132,8 +132,50 @@ async function sendAgreementNotification(stage, emp, dbData) {
   }
 }
 
+function sendClientDeliverableNotification(chatId, deliverable = {}) {
+  const title = deliverable.project_name || deliverable.projectName || deliverable.title || 'Video Cut';
+  const version = deliverable.active_version || deliverable.version || 'v1';
+  const reviewId = deliverable.id;
+  const reviewUrl = `https://purpleos-iota.vercel.app/reviewroom.html?id=${reviewId}`;
+
+  const text = `🎬 *New Creative Deliverable Ready for Review!*\n\n` +
+    `Project: *${title}*\n` +
+    `Version: *${version}*\n\n` +
+    `Your production team has uploaded a new cut for your feedback and approval.\n\n` +
+    `Tap the button below to stream and leave timecoded notes:`;
+
+  const inlineKeyboard = [
+    [{ text: '▶ Review & Approve Cut', url: reviewUrl }],
+    [{ text: '📱 Open Client Portal', web_app: { url: 'https://purpleos-iota.vercel.app/client' } }]
+  ];
+
+  return sendTelegramNotification(chatId, text, inlineKeyboard, false);
+}
+
+function sendClientInvoiceNotification(chatId, invoice = {}) {
+  const invId = invoice.id || 'INV-001';
+  const amount = Number(invoice.amount || 0).toLocaleString();
+  const due = invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString('en-GB') : 'Due on receipt';
+  const scope = invoice.projectName || invoice.description || 'Monthly Retainer';
+
+  const text = `💳 *New Invoice Issued*\n\n` +
+    `Invoice: *${invId}*\n` +
+    `Scope: *${scope}*\n` +
+    `Total Payable: *BDT ${amount}*\n` +
+    `Due Date: *${due}*\n\n` +
+    `You can view invoice details, download PDF, or submit payment proof directly in the Client Portal.`;
+
+  const inlineKeyboard = [
+    [{ text: '💳 Pay / View Invoice', web_app: { url: 'https://purpleos-iota.vercel.app/client' } }]
+  ];
+
+  return sendTelegramNotification(chatId, text, inlineKeyboard, false);
+}
+
 module.exports = {
   sendTelegramNotification,
   sendToGroup,
-  sendAgreementNotification
+  sendAgreementNotification,
+  sendClientDeliverableNotification,
+  sendClientInvoiceNotification
 };

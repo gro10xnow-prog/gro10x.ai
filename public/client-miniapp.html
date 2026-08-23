@@ -1001,12 +1001,20 @@
       const token = sessionStorage.getItem('jwt_token');
       const headers = { 'Content-Type': 'application/json' };
       if (token) headers['Authorization'] = `Bearer ${token}`;
-      await fetch(`/api/reviews/${activeClientReviewId}/approve`, {
+      const res = await fetch(`/api/reviews/${activeClientReviewId}/approve`, {
         method: 'POST',
         headers,
         body: JSON.stringify({ telegramId: tgUser?.id || 'debug' })
       });
-    } catch(e) {}
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        showSuccess('❌', 'Approval Failed', data.error || 'Failed to approve deliverable. Please try again.');
+        return;
+      }
+    } catch(e) {
+      showSuccess('❌', 'Network Error', 'Unable to connect to server. Please check your connection.');
+      return;
+    }
 
     document.getElementById('revApproveSection').innerHTML = `
       <div style="text-align:center;padding:1rem;background:var(--green-bg);border-radius:14px;border:1px solid rgba(5,150,105,0.2);">
@@ -1027,12 +1035,20 @@
       const token = sessionStorage.getItem('jwt_token');
       const headers = { 'Content-Type': 'application/json' };
       if (token) headers['Authorization'] = `Bearer ${token}`;
-      await fetch(`/api/reviews/${activeClientReviewId}/request-revisions`, {
+      const res = await fetch(`/api/reviews/${activeClientReviewId}/request-revisions`, {
         method: 'POST',
         headers,
         body: JSON.stringify({ telegramId: tgUser?.id || 'debug', feedback: val })
       });
-    } catch(e) {}
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        showSuccess('❌', 'Revision Failed', data.error || 'Failed to submit feedback.');
+        return;
+      }
+    } catch(e) {
+      showSuccess('❌', 'Network Error', 'Unable to send feedback. Please try again.');
+      return;
+    }
     document.getElementById('fbInput').value = '';
     showSuccess('💬', 'Feedback Sent!', 'Your revision notes have been shared with the production team. Expect an update within 24–48 hours.');
   }
@@ -1148,7 +1164,7 @@
     if (!file) { showSuccess('⚠️', 'Missing Screenshot', 'Please upload your payment screenshot proof.'); return; }
 
     try {
-      await fetch('/api/payments', {
+      const res = await fetch('/api/payments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -1159,7 +1175,15 @@
           notes: `Submitted via Client Telegram Mini App (Date: ${date})`
         })
       });
-    } catch(e) {}
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        showSuccess('❌', 'Payment Failed', data.error || 'Failed to record payment proof.');
+        return;
+      }
+    } catch(e) {
+      showSuccess('❌', 'Network Error', 'Payment submission failed. Please try again.');
+      return;
+    }
 
     showSuccess('✅', 'Payment Submitted!', 'Your payment proof is under review. Finance team will confirm within 2–4 hours. You\'ll get a Telegram notification.');
   }
@@ -1306,7 +1330,7 @@
   <div style="background:var(--surface); width:100%; max-width:480px; border-radius:24px 24px 0 0; padding:1.5rem; border-top:1px solid var(--border); box-shadow:0 -10px 40px rgba(0,0,0,0.2);">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.2rem;">
       <div style="font-size:1.1rem; font-weight:800; color:var(--text);">📝 Submit Campaign Brief</div>
-      <button onclick="closeBriefModal()" style="background:none; border:none; font-size:1.4rem; cursor:pointer; color:var(--muted);">✕</button>
+      <button onclick="closeBriefModal()" aria-label="Close dialog" style="background:none; border:none; font-size:1.4rem; cursor:pointer; color:var(--muted);">✕</button>
     </div>
     <form onsubmit="submitMiniBrief(event)">
       <div style="margin-bottom:1rem;">

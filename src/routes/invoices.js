@@ -2,23 +2,12 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const path = require('path');
-const fs = require('fs');
 
-// Ensure uploads directory exists (use /tmp on Vercel because of read-only filesystem)
-const uploadDir = process.env.VERCEL ? '/tmp/uploads' : path.join(__dirname, '../../public/uploads');
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, uploadDir);
-  },
-  filename: function (req, file, cb) {
-    cb(null, 'payment-' + Date.now() + path.extname(file.originalname));
-  }
+// Use memory storage — files uploaded directly to Supabase Storage, avoiding ephemeral disk
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 } // 10 MB limit
 });
-const upload = multer({ storage: storage });
 
 const { requireAuth } = require('../middleware/auth');
 const { requireAdmin, requireManager } = require('../middleware/rbac');
@@ -148,16 +137,26 @@ let inMemoryQuotes = [...DEFAULT_QUOTES];
 
 // GET Invoices
 router.get('/', requireAuth, async (req, res) => {
+  const isClientUser = req.user.role === 'Client' || req.user.linkedType === 'client' || req.user.accessLevel === 'Client Partner';
+  const clientName = (req.user.profile?.name || req.user.name || '').toLowerCase();
+  const clientId = req.user.linkedId || req.user.id;
+
+  function getFilteredFallback() {
+    let list = inMemoryInvoices;
+    if (isClientUser) {
+      list = list.filter(i => (i.client_id && i.client_id === clientId) || ((i.client_name || i.clientName || '').toLowerCase().includes(clientName)));
+    }
+    return list.map(mapInvoice);
+  }
+
   try {
     let invoices = [];
     if (supabase) {
       try {
         let query = supabase.from('invoices').select('*').order('created_at', { ascending: false });
-        const isClientUser = req.user.role === 'Client' || req.user.linkedType === 'client' || req.user.accessLevel === 'Client Partner';
-        const clientName = req.user.profile?.name || req.user.name;
 
         if (isClientUser && clientName) {
-          query = query.or(`client_id.eq.${req.user.linkedId || req.user.id},client_name.ilike.%${clientName}%`);
+          query = query.or(`client_id.eq.${clientId},client_name.ilike.%${clientName}%`);
         }
 
         const { data, error } = await query;
@@ -168,13 +167,13 @@ router.get('/', requireAuth, async (req, res) => {
     }
 
     if (invoices.length === 0) {
-      invoices = inMemoryInvoices.map(mapInvoice);
+      invoices = getFilteredFallback();
     }
 
     return res.json(invoices);
   } catch (err) {
     console.error('Invoices GET error:', err.message);
-    return res.json(inMemoryInvoices.map(mapInvoice));
+    return res.json(getFilteredFallback());
   }
 });
 
@@ -186,9 +185,10 @@ router.post('/', requireAuth, requireManager, async (req, res) => {
 
     const payload = {
       id: newId,
-      client_id: req.body.clientId || 'CLI-0001',
-      client_name: req.body.clientName || 'General Client',
-      project_name: req.body.projectName || '',
+      client_id: req.body.clientId || req.body.client_id || (req.user?.linkedType === 'client' ? req.user.linkedId : null),
+      client_name: req.body.clientName || req.body.client_name || 'General Client',
+      project_name: req.body.projectName || req.body.project_name || '',
+      project_ref: req.body.projectRef || req.body.project_ref || null,
       date: req.body.date || new Date().toISOString().split('T')[0],
       due_date: req.body.dueDate || new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0],
       amount: Number(req.body.amount) || 0,
@@ -196,6 +196,7 @@ router.post('/', requireAuth, requireManager, async (req, res) => {
       discount: Number(req.body.discount) || 0,
       status: req.body.status || 'Pending',
       items: req.body.items || [],
+      notes: req.body.notes || '',
       created_at: new Date().toISOString()
     };
 
@@ -217,7 +218,7 @@ router.post('/', requireAuth, requireManager, async (req, res) => {
 });
 
 // PUT Update Invoice / Mark Paid
-router.put('/:id', requireAuth, async (req, res) => {
+router.put('/:id', requireAuth, requireManager, async (req, res) => {
   try {
     const { id } = req.params;
     const updates = {};
@@ -290,7 +291,31 @@ router.post('/:id/pay', requireAuth, upload.single('screenshot'), async (req, re
   try {
     const { id } = req.params;
     const { trxId, method, amount } = req.body;
-    const screenshotUrl = req.file ? `/uploads/${req.file.filename}` : null;
+    let screenshotUrl = null;
+
+    if (req.file && supabase) {
+      try {
+        const ext = path.extname(req.file.originalname) || '.jpg';
+        const filename = `payment-${Date.now()}${ext}`;
+        const { data: uploadData, error: uploadErr } = await supabase.storage
+          .from('payment-proofs')
+          .upload(filename, req.file.buffer, {
+            contentType: req.file.mimetype,
+            upsert: false
+          });
+
+        if (!uploadErr && uploadData) {
+          const { data: publicData } = supabase.storage
+            .from('payment-proofs')
+            .getPublicUrl(filename);
+          screenshotUrl = publicData?.publicUrl || null;
+        } else if (uploadErr) {
+          console.warn('[invoices] Supabase storage upload failed:', uploadErr.message);
+        }
+      } catch (storageErr) {
+        console.warn('[invoices] Screenshot storage error:', storageErr.message);
+      }
+    }
 
     const inv = inMemoryInvoices.find(i => i.id === id);
     const invoiceAmount = amount || (inv ? inv.amount : 0);
@@ -364,7 +389,7 @@ router.post('/:id/pay', requireAuth, upload.single('screenshot'), async (req, re
 });
 
 // QUOTATIONS API
-router.get('/quotes', requireAuth, async (req, res) => {
+router.get('/quotes', requireAuth, requireManager, async (req, res) => {
   try {
     let quotes = [];
     if (supabase) {
@@ -387,7 +412,7 @@ router.get('/quotes', requireAuth, async (req, res) => {
   }
 });
 
-router.post('/quotes', requireAuth, async (req, res) => {
+router.post('/quotes', requireAuth, requireManager, async (req, res) => {
   try {
     const newId = `QTE-2026-${String(inMemoryQuotes.length + 1).padStart(3, '0')}`;
 
@@ -420,7 +445,7 @@ router.post('/quotes', requireAuth, async (req, res) => {
   }
 });
 
-router.put('/quotes/:id', requireAuth, async (req, res) => {
+router.put('/quotes/:id', requireAuth, requireManager, async (req, res) => {
   try {
     const { id } = req.params;
     const updates = { updated_at: new Date().toISOString() };
@@ -445,7 +470,7 @@ router.put('/quotes/:id', requireAuth, async (req, res) => {
   }
 });
 
-router.post('/quotes/:id/convert', requireAuth, async (req, res) => {
+router.post('/quotes/:id/convert', requireAuth, requireManager, async (req, res) => {
   try {
     const { id } = req.params;
     const quoteIdx = inMemoryQuotes.findIndex(q => q.id === id);
@@ -457,7 +482,7 @@ router.post('/quotes/:id/convert', requireAuth, async (req, res) => {
 
     const newInvoice = {
       id: `INV-2026-${String(inMemoryInvoices.length + 1).padStart(3, '0')}`,
-      client_id: 'CLI-0001',
+      client_id: quoteData.client_id || quoteData.clientId || null,
       client_name: quoteData.client_name,
       date: new Date().toISOString().split('T')[0],
       due_date: quoteData.valid_until || new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0],

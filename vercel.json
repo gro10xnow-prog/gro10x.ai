@@ -63,6 +63,10 @@
     {
       "path": "/api/cron/eod-evening-digest",
       "schedule": "30 13 * * 0,1,2,3,4,6"
+    },
+    {
+      "path": "/api/cron/social-dispatch",
+      "schedule": "0 4 * * *"
     }
   ],
   "headers": [

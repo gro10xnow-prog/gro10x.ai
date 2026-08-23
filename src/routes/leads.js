@@ -312,12 +312,12 @@ router.post('/bulk', requireAuth, async (req, res) => {
   }
 
   const leadsToInsert = [];
-  const startId = parseInt((await nextLeadId()).replace('LD-', ''), 10);
+  const startId = parseInt((await nextLeadId()).replace(/^(LED|LD)-/, ''), 10);
   let idCounter = isNaN(startId) ? 1 : startId;
 
   for (const l of leads) {
     const newLead = {
-      id: `LD-${String(idCounter++).padStart(4, '0')}`,
+      id: `LED-${String(idCounter++).padStart(3, '0')}`,
       stage: 'New Inquiry',
       created_at: new Date().toISOString(),
       company: l.company || l.clientName || 'Unknown',

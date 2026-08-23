@@ -48,6 +48,9 @@ function handlePartnerLogout() {
   localStorage.removeItem('purple_user_role');
   localStorage.removeItem('purple_user_access');
   localStorage.removeItem('sb-access-token');
+  localStorage.removeItem('purpleos_pin_token');
+  localStorage.removeItem('purple_token');
+  sessionStorage.removeItem('jwt_token');
   document.cookie = "sb-access-token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
   window.location.href = '/auth';
 }
@@ -57,18 +60,21 @@ let partnerAuthUser = null;
 
 async function initPartnerPortal() {
   try {
+    const token = localStorage.getItem('sb-access-token') || localStorage.getItem('purple_token');
+    const authHeaders = token ? { 'Authorization': `Bearer ${token}` } : {};
+
     // Fetch authenticated user profile
-    const authRes = await fetch('/api/auth/me');
-    let userClientName = 'Chillox Fast Food Chain';
-    let userClientId = 'CLI-0001';
+    const authRes = await fetch('/api/auth/me', { headers: authHeaders });
+    let userClientName = 'Brand Partner Workspace';
+    let userClientId = null;
     let isAdminUser = false;
 
     if (authRes.ok) {
       const authData = await authRes.json();
       if (authData.user) {
         partnerAuthUser = authData.user;
-        userClientName = partnerAuthUser.profile?.name || partnerAuthUser.name || userClientName;
-        userClientId = partnerAuthUser.linkedId || userClientId;
+        userClientName = partnerAuthUser.company || partnerAuthUser.profile?.name || partnerAuthUser.name || 'Brand Partner Workspace';
+        userClientId = partnerAuthUser.linkedId || null;
 
         isAdminUser = (
           partnerAuthUser.accessLevel === 'Owner / Admin' ||
@@ -78,6 +84,10 @@ async function initPartnerPortal() {
           partnerAuthUser.role === 'Manager'
         );
       }
+    } else {
+      console.warn('[partners] Invalid or expired session, redirecting to login');
+      window.location.href = '/auth?portal=client';
+      return;
     }
 
     const urlParams = new URLSearchParams(window.location.search);
@@ -101,7 +111,7 @@ async function initPartnerPortal() {
 
     // Securely Fetch Isolated Client Workspace Data via RBAC Endpoint
     try {
-      const dashRes = await fetch(`/api/clients/${userClientId}/dashboard`);
+      const dashRes = await fetch(`/api/clients/${userClientId}/dashboard`, { headers: authHeaders });
       if (dashRes.ok) {
         const dashData = await dashRes.json();
         partnerReviews = dashData.reviews || [];
@@ -114,9 +124,9 @@ async function initPartnerPortal() {
       } else {
         // Fallback to isolated query parameters if direct endpoint degrades
         const [revRes, invRes, postRes] = await Promise.all([
-          fetch(`/api/reviews?clientId=${userClientId}`),
-          fetch(`/api/invoices?clientId=${userClientId}`),
-          fetch(`/api/posts?clientId=${userClientId}`)
+          fetch(`/api/reviews?clientId=${userClientId}`, { headers: authHeaders }),
+          fetch(`/api/invoices?clientId=${userClientId}`, { headers: authHeaders }),
+          fetch(`/api/posts?clientId=${userClientId}`, { headers: authHeaders })
         ]);
         if (revRes.ok) partnerReviews = await revRes.json();
         if (invRes.ok) partnerInvoices = await invRes.json();
@@ -235,7 +245,7 @@ function renderPartnerView() {
               </div>
 
               <div style="position:relative; background:#000; border-radius:8px; overflow:hidden; margin-bottom:0.8rem; height:140px;">
-                <img src="${mediaUrl}" style="width:100%; height:100%; object-fit:cover;" alt="Asset Preview">
+                <img src="${mediaUrl}" loading="lazy" decoding="async" style="width:100%; height:100%; object-fit:cover;" alt="Asset Preview">
               </div>
 
               <div style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.06); padding:0.8rem; border-radius:8px; max-height:100px; overflow-y:auto; font-size:0.82rem; color:#cbd5e1; white-space:pre-wrap;">${post.caption}</div>

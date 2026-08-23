@@ -55,17 +55,76 @@ function mapComment(c) {
   };
 }
 
+async function requireReviewOwnership(req, res, next) {
+  const user = req.user;
+  if (!user) return res.status(401).json({ error: 'Unauthorized: Authentication required' });
+
+  const access = (user.profile?.accessLevel || user.accessLevel || '').toLowerCase();
+  const role = (user.profile?.role || user.role || '').toLowerCase();
+  const isAdminOrManager =
+    access.includes('admin') || access.includes('owner') || access.includes('director') || access.includes('manager') ||
+    role.includes('admin') || role.includes('owner') || role.includes('director') || role.includes('manager');
+
+  if (isAdminOrManager) {
+    return next();
+  }
+
+  const linkedType = user.linkedType || user.profile?.linkedType || '';
+  const userLinkedId = user.linkedId || user.profile?.linkedId || user.id;
+  const userName = (user.profile?.name || user.name || user.company || '').toLowerCase();
+
+  if (linkedType === 'client' && (userLinkedId || userName)) {
+    if (isSupabaseConfigured()) {
+      const { data: review } = await supabase
+        .from('reviews')
+        .select('client_id, client')
+        .eq('id', req.params.id)
+        .maybeSingle();
+
+      if (!review) return res.status(404).json({ error: 'Review project not found' });
+      
+      const revClientId = review.client_id;
+      const revClientName = (review.client || '').toLowerCase();
+
+      const matchId = revClientId && userLinkedId && String(revClientId).toLowerCase() === String(userLinkedId).toLowerCase();
+      const matchName = revClientName && userName && (revClientName.includes(userName) || userName.includes(revClientName));
+
+      if (matchId || matchName || !revClientId) {
+        return next();
+      }
+      return res.status(403).json({ error: 'Forbidden: You do not have permission to modify this review deliverable' });
+    }
+  }
+
+  next();
+}
+
 // GET Review Projects
 router.get('/', requireAuth, async (req, res) => {
   try {
     let query = supabase.from('reviews').select('*').order('created_at', { ascending: false });
 
     const isClientUser = req.user.role === 'Client' || req.user.linkedType === 'client' || req.user.accessLevel === 'Client Partner';
-    if (isClientUser && req.user.name) {
-      query = query.ilike('client', `%${req.user.name}%`);
+    const clientName = req.user.profile?.name || req.user.name || '';
+    const clientId = req.user.linkedId || req.user.id || '';
+
+    if (isClientUser) {
+      if (clientId && clientName) {
+        query = query.or(`client_id.eq.${clientId},client.ilike.%${clientName}%`);
+      } else if (clientId) {
+        query = query.eq('client_id', clientId);
+      } else if (clientName) {
+        query = query.ilike('client', `%${clientName}%`);
+      }
     }
 
-    const { data, error } = await query;
+    let { data, error } = await query;
+    if (error && error.message && error.message.includes('client_id') && isClientUser && clientName) {
+      // Fallback query if client_id column is not yet present on remote DB instance
+      const fallback = await supabase.from('reviews').select('*').ilike('client', `%${clientName}%`).order('created_at', { ascending: false });
+      data = fallback.data;
+      error = fallback.error;
+    }
     if (error) throw error;
 
     res.json((data || []).map(mapReview));
@@ -82,6 +141,22 @@ router.get('/:id', requireAuth, async (req, res) => {
 
     const { data: reviewData, error: rErr } = await supabase.from('reviews').select('*').eq('id', id).single();
     if (rErr || !reviewData) return res.status(404).json({ error: 'Review project not found' });
+
+    // IDOR security check: If user is a Client, ensure they own this review project
+    const isClientUser = req.user.role === 'Client' || req.user.linkedType === 'client' || req.user.accessLevel === 'Client Partner';
+    if (isClientUser) {
+      const clientName = (req.user.profile?.name || req.user.name || '').toLowerCase();
+      const clientId = req.user.linkedId || req.user.id;
+      const reviewClient = (reviewData.client || '').toLowerCase();
+      const reviewClientId = reviewData.client_id;
+
+      const isOwner = (reviewClientId && reviewClientId === clientId) || 
+                      (clientName && reviewClient.includes(clientName)) || 
+                      (clientName && clientName.includes(reviewClient));
+      if (!isOwner) {
+        return res.status(403).json({ error: 'Forbidden: You do not have permission to access this deliverable' });
+      }
+    }
 
     const { data: commentsData } = await supabase.from('review_comments').select('*').eq('review_id', id).order('created_at', { ascending: true });
 
@@ -107,6 +182,8 @@ router.post('/', requireAuth, async (req, res) => {
       project_id: req.body.projectId || req.body.taskId || newId,
       project_name: req.body.projectName || req.body.title || 'Untitled Creative Project',
       client: req.body.client || 'Agency Client',
+      client_id: req.body.clientId || req.body.client_id || (req.user?.linkedType === 'client' ? req.user.linkedId : null),
+      task_id: req.body.taskId || req.body.task_id || null,
       active_version: req.body.activeVersion || 'v1',
       versions: req.body.versions || ['v1'],
       media_type: req.body.mediaType || req.body.media_type || 'video',
@@ -132,7 +209,7 @@ router.post('/', requireAuth, async (req, res) => {
 });
 
 // POST Upload Asset (image/PDF) to Supabase Storage
-router.post('/:id/upload', requireAuth, upload.single('asset'), async (req, res) => {
+router.post('/:id/upload', requireAuth, requireReviewOwnership, upload.single('asset'), async (req, res) => {
   try {
     const { id } = req.params;
     if (!req.file) return res.status(400).json({ error: 'No file provided' });
@@ -158,8 +235,10 @@ router.post('/:id/upload', requireAuth, upload.single('asset'), async (req, res)
       poster_url: mediaType === 'image' ? publicUrl : ''
     }).eq('id', id);
 
-    const { data: updatedReview } = await supabase.from('reviews').select('*').eq('id', id).single();
-    broadcast('review_update', [mapReview(updatedReview)]);
+    const { data: updatedReview } = await supabase.from('reviews').select('*').eq('id', id).maybeSingle();
+    if (updatedReview) {
+      broadcast('review_update', [mapReview(updatedReview)]);
+    }
 
     res.json({ success: true, url: publicUrl, mediaType });
   } catch (err) {
@@ -169,7 +248,7 @@ router.post('/:id/upload', requireAuth, upload.single('asset'), async (req, res)
 });
 
 // POST Add Timecoded Comment to Video Cut
-router.post('/:id/comments', requireAuth, async (req, res) => {
+router.post('/:id/comments', requireAuth, requireReviewOwnership, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -233,7 +312,7 @@ router.put('/comments/:commentId/resolve', requireAuth, async (req, res) => {
 });
 
 // GET /:id/drawings — Load all drawings for a review video
-router.get('/:id/drawings', requireAuth, async (req, res) => {
+router.get('/:id/drawings', requireAuth, requireReviewOwnership, async (req, res) => {
   try {
     const { id } = req.params;
     const { data, error } = await supabase.from('review_drawings').select('*').eq('review_id', id);
@@ -246,7 +325,7 @@ router.get('/:id/drawings', requireAuth, async (req, res) => {
 });
 
 // POST /:id/drawings — Save drawing at a specific timestamp
-router.post('/:id/drawings', requireAuth, async (req, res) => {
+router.post('/:id/drawings', requireAuth, requireReviewOwnership, async (req, res) => {
   try {
     const { id } = req.params;
     const { timestampSec, drawingData } = req.body;
@@ -275,7 +354,7 @@ router.post('/:id/drawings', requireAuth, async (req, res) => {
 });
 
 // POST /:id/approve — Client formal sign-off (cascades to task stage + automation)
-router.post('/:id/approve', requireAuth, async (req, res) => {
+router.post('/:id/approve', requireAuth, requireReviewOwnership, async (req, res) => {
   try {
     const { id } = req.params;
     const { data: reviewData, error: fetchErr } = await supabase.from('reviews').select('*').eq('id', id).single();
@@ -349,7 +428,7 @@ router.post('/:id/approve', requireAuth, async (req, res) => {
 });
 
 // POST /:id/request-revisions — Client formal revision request
-router.post('/:id/request-revisions', requireAuth, async (req, res) => {
+router.post('/:id/request-revisions', requireAuth, requireReviewOwnership, async (req, res) => {
   try {
     const { id } = req.params;
     const { feedback, notes } = req.body;

@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Client Partner E2E Master Test Report — 8/23/2026, 10:43:21 PM</title>
+  <style>
+    :root {
+      --bg: #0d0d14;
+      --card: #181824;
+      --border: #2e2e3e;
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --green: #10b981;
+      --red: #ef4444;
+      --purple: #8b5cf6;
+      --pink: #ec4899;
+    }
+    * { box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      margin: 0;
+      padding: 2rem;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .kpi-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+    }
+    .kpi-label { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; }
+    .kpi-val { font-size: 1.8rem; font-weight: 800; margin-top: 0.25rem; }
+    .phase-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 1.5rem;
+      overflow: hidden;
+    }
+    .phase-header {
+      padding: 1rem 1.25rem;
+      background: rgba(255,255,255,0.02);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .test-list {
+      padding: 0.5rem 1.25rem;
+    }
+    .test-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.65rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      font-size: 0.9rem;
+    }
+    .test-row:last-child { border-bottom: none; }
+    .badge {
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+    .badge-pass { background: rgba(16,185,129,0.15); color: var(--green); border: 1px solid rgba(16,185,129,0.3); }
+    .badge-fail { background: rgba(239,68,68,0.15); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+    .error-box {
+      font-size: 0.8rem;
+      color: #fca5a5;
+      background: rgba(239,68,68,0.1);
+      padding: 0.5rem 0.75rem;
+      border-radius: 6px;
+      margin-top: 0.25rem;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      <h1 style="margin:0; font-size:1.6rem; font-weight:800;">🤝 Client Partner Stakeholder E2E Master Report</h1>
+      <div style="color:var(--text-muted); font-size:0.85rem; margin-top:0.25rem;">
+        Brands · Retainer Clients · Enterprise Accounts — Full Touchpoint Browser Verification
+      </div>
+    </div>
+    <div style="text-align:right;">
+      <div style="font-size:0.85rem; color:var(--text-muted);">8/23/2026, 10:43:21 PM</div>
+      <div style="font-size:0.85rem; color:var(--purple); font-weight:700;">PurpleOS Master Suite v2.5</div>
+    </div>
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi-card">
+      <div class="kpi-label">Pass Rate</div>
+      <div class="kpi-val" style="color: var(--red)">85%</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Total Tests</div>
+      <div class="kpi-val">60</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Passed</div>
+      <div class="kpi-val" style="color:var(--green)">51</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Failed</div>
+      <div class="kpi-val" style="color:var(--red)">9</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Total Duration</div>
+      <div class="kpi-val">69.40s</div>
+    </div>
+  </div>
+
+  
+    <div class="phase-card">
+      <div class="phase-header">
+        <div>
+          <strong style="font-size:1.05rem;">Phase T1: Auth Gate & Session Integrity</strong>
+          <span style="font-size:0.8rem; color:var(--text-muted); margin-left:0.5rem;">(8/8 passed in 17.51s)</span>
+        </div>
+        <span class="badge badge-pass">
+          ALL PASSED
+        </span>
+      </div>
+      <div class="test-list">
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T1.1.1] Navigate to /auth — page loads without JS errors</span>
+              
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">1783ms</span>
+              <span class="badge badge-pass">PASSED</span>
+            </div>
+          </div>
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T1.1.2] Empty submit validation on /auth</span>
+              
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">696ms</span>
+              <span class="badge badge-pass">PASSED</span>
+            </div>
+          </div>
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T1.2.1] Unauthenticated access to /partners redirects to /auth</span>
+              
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">1280ms</span>
+              <span class="badge badge-pass">PASSED</span>
+            </div>
+          </div>
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T1.2.2] Unauthenticated access to /client/ redirects to /auth</span>
+              
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">1270ms</span>
+              <span class="badge badge-pass">PASSED</span>
+            </div>
+          </div>
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T1.2.3] Access /client-miniapp.html without Telegram initData loads with graceful fallback</span>
+              
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">3829ms</span>
+              <span class="badge badge-pass">PASSED</span>
+            </div>
+          </div>
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T1.3.1] Load /partners with Valid Client JWT Session</span>
+              
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">2716ms</span>
+              <span class="badge badge-pass">PASSED</span>
+            </div>
+          </div>
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T1.3.2] Load /client/ SPA with Valid Client JWT Session</span>
+              
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">3222ms</span>
+              <span class="badge badge-pass">PASSED</span>
+            </div>
+          </div>
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T1.4.1] Sign Out on /partners clears session and redirects to /auth</span>
+              
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">2717ms</span>
+              <span class="badge badge-pass">PASSED</span>
+            </div>
+          </div>
+        
+      </div>
+    </div>
+  
+    <div class="phase-card">
+      <div class="phase-header">
+        <div>
+          <strong style="font-size:1.05rem;">Phase T2: Telegram Mini App</strong>
+          <span style="font-size:0.8rem; color:var(--text-muted); margin-left:0.5rem;">(10/11 passed in 15.71s)</span>
+        </div>
+        <span class="badge badge-fail">
+          1 FAILED
+        </span>
+      </div>
+      <div class="test-list">
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T2.1.1] Load Mini App and Verify Hero Brand & Version</span>
+              
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">1900ms</span>
+              <span class="badge badge-pass">PASSED</span>
+            </div>
+          </div>
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T2.2.1] Switch to Review Room tab (#navReview)</span>
+              
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">1002ms</span>
+              <span class="badge badge-pass">PASSED</span>
+            </div>
+          </div>
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T2.2.2] Switch to Campaign Progress tab (#navCampaign)</span>
+              
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">672ms</span>
+              <span class="badge badge-pass">PASSED</span>
+            </div>
+          </div>
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T2.2.3] Switch to Payment tab (#navPayment)</span>
+              
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">773ms</span>
+              <span class="badge badge-pass">PASSED</span>
+            </div>
+          </div>
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T2.2.4] Switch to Contact & Support tab (#navContact)</span>
+              
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">734ms</span>
+              <span class="badge badge-pass">PASSED</span>
+            </div>
+          </div>
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T2.2.5] Switch back to Home tab (#navHome)</span>
+              
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">429ms</span>
+              <span class="badge badge-pass">PASSED</span>
+            </div>
+          </div>
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T2.3.1] Verify Quick Actions Grid and Stage Pipeline on Home</span>
+              
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">15ms</span>
+              <span class="badge badge-pass">PASSED</span>
+            </div>
+          </div>
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T2.4.1] Open Brief Modal, validate and submit a new brief</span>
+              <div class="error-box">❌ Assertion Failed: Brief overlay modal should close after submit</div>
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">2376ms</span>
+              <span class="badge badge-fail">FAILED</span>
+            </div>
+          </div>
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T2.5.1] Test 2-click Cut Approval & Revision Feedback in Review Room</span>
+              
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">3482ms</span>
+              <span class="badge badge-pass">PASSED</span>
+            </div>
+          </div>
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T2.7.1] Test Payment Method Switcher (bKash/Nagad/Bank/Rocket)</span>
+              
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">2137ms</span>
+              <span class="badge badge-pass">PASSED</span>
+            </div>
+          </div>
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T2.8.1] Submit Support Ticket in Mini App</span>
+              
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">2186ms</span>
+              <span class="badge badge-pass">PASSED</span>
+            </div>
+          </div>
+        
+      </div>
+    </div>
+  
+    <div class="phase-card">
+      <div class="phase-header">
+        <div>
+          <strong style="font-size:1.05rem;">Phase T3: Web Partner Portal (/partners)</strong>
+          <span style="font-size:0.8rem; color:var(--text-muted); margin-left:0.5rem;">(1/9 passed in 4.40s)</span>
+        </div>
+        <span class="badge badge-fail">
+          8 FAILED
+        </span>
+      </div>
+      <div class="test-list">
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T3.1.1] Load /partners with authenticated client session</span>
+              <div class="error-box">❌ Error: failed to find element matching selector "#partnerClientTitle"</div>
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">3568ms</span>
+              <span class="badge badge-fail">FAILED</span>
+            </div>
+          </div>
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T3.2.1] Verify Client Workspace Header and Scoping</span>
+              <div class="error-box">❌ Error: failed to find element matching selector "#partnerHeaderName"</div>
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">1ms</span>
+              <span class="badge badge-fail">FAILED</span>
+            </div>
+          </div>
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T3.3.1] Verify Video Review Room, Project Select, and Comments</span>
+              <div class="error-box">❌ Assertion Failed: #partnerVideo must exist</div>
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">1ms</span>
+              <span class="badge badge-fail">FAILED</span>
+            </div>
+          </div>
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T3.3.2] Add Timecoded Feedback Comment to Video Review</span>
+              <div class="error-box">❌ No element found for selector: #partnerNewComment</div>
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">2ms</span>
+              <span class="badge badge-fail">FAILED</span>
+            </div>
+          </div>
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T3.3.3] Test 2-click Confirmation on Deliverable Cut Approval</span>
+              
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">1ms</span>
+              <span class="badge badge-pass">PASSED</span>
+            </div>
+          </div>
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T3.4.1] Verify Social Media Post Approval Grid & Badges</span>
+              <div class="error-box">❌ Assertion Failed: #partnerSocialBadge must exist</div>
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">1ms</span>
+              <span class="badge badge-fail">FAILED</span>
+            </div>
+          </div>
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T3.5.1] Verify Invoices Table & Statement of Account</span>
+              <div class="error-box">❌ Assertion Failed: #partnerInvoicesTbody must exist</div>
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">1ms</span>
+              <span class="badge badge-fail">FAILED</span>
+            </div>
+          </div>
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T3.5.2] Open and Test Invoice Payment Verification Modal</span>
+              <div class="error-box">❌ Error: failed to find element matching selector "#partnerPaymentModal"</div>
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">407ms</span>
+              <span class="badge badge-fail">FAILED</span>
+            </div>
+          </div>
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T3.6.1] Open and Submit Campaign Brief Modal on /partners</span>
+              <div class="error-box">❌ Error: failed to find element matching selector "#partnerBriefModal"</div>
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">418ms</span>
+              <span class="badge badge-fail">FAILED</span>
+            </div>
+          </div>
+        
+      </div>
+    </div>
+  
+    <div class="phase-card">
+      <div class="phase-header">
+        <div>
+          <strong style="font-size:1.05rem;">Phase T4: Client SPA (/client/)</strong>
+          <span style="font-size:0.8rem; color:var(--text-muted); margin-left:0.5rem;">(10/10 passed in 16.16s)</span>
+        </div>
+        <span class="badge badge-pass">
+          ALL PASSED
+        </span>
+      </div>
+      <div class="test-list">
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T4.1.1] Load Client SPA and Verify Desktop Sidebar & Brand Hydration</span>
+              
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">2815ms</span>
+              <span class="badge badge-pass">PASSED</span>
+            </div>
+          </div>
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T4.3.1] Verify #home Overview & KPI Tiles</span>
+              
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">1198ms</span>
+              <span class="badge badge-pass">PASSED</span>
+            </div>
+          </div>
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T4.4.1] Verify #retainer Health Dashboard & Quota</span>
+              
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">1336ms</span>
+              <span class="badge badge-pass">PASSED</span>
+            </div>
+          </div>
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T4.5.1] Verify #review Content Review Room & Video Hotkeys</span>
+              
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">1925ms</span>
+              <span class="badge badge-pass">PASSED</span>
+            </div>
+          </div>
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T4.6.1] Verify #campaign Campaign Calendar Grid</span>
+              
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">1263ms</span>
+              <span class="badge badge-pass">PASSED</span>
+            </div>
+          </div>
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T4.7.1] Verify #brief 3-Step Briefing Wizard & Stepper</span>
+              
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">1218ms</span>
+              <span class="badge badge-pass">PASSED</span>
+            </div>
+          </div>
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T4.8.1] Verify #invoices Invoices List & Copy Chips</span>
+              
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">1185ms</span>
+              <span class="badge badge-pass">PASSED</span>
+            </div>
+          </div>
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T4.9.1] Verify #tickets Support Requests & Escalation</span>
+              
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">1223ms</span>
+              <span class="badge badge-pass">PASSED</span>
+            </div>
+          </div>
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T4.10.1] Verify #account Account Team & POC Roster</span>
+              
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">1275ms</span>
+              <span class="badge badge-pass">PASSED</span>
+            </div>
+          </div>
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T4.2.1] Test Mobile Viewport (<900px) and Bottom Sheet Drawer</span>
+              
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">2721ms</span>
+              <span class="badge badge-pass">PASSED</span>
+            </div>
+          </div>
+        
+      </div>
+    </div>
+  
+    <div class="phase-card">
+      <div class="phase-header">
+        <div>
+          <strong style="font-size:1.05rem;">Phase T5: Telegram Client Bot</strong>
+          <span style="font-size:0.8rem; color:var(--text-muted); margin-left:0.5rem;">(8/8 passed in 2.58s)</span>
+        </div>
+        <span class="badge badge-pass">
+          ALL PASSED
+        </span>
+      </div>
+      <div class="test-list">
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T5.1.1] Verify Canonical getClientKeyboard() structure</span>
+              
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">0ms</span>
+              <span class="badge badge-pass">PASSED</span>
+            </div>
+          </div>
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T5.3.1] Execute handleReviewRoom() handler</span>
+              
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">228ms</span>
+              <span class="badge badge-pass">PASSED</span>
+            </div>
+          </div>
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T5.4.1] Execute handleCampaignStatus() handler</span>
+              
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">223ms</span>
+              <span class="badge badge-pass">PASSED</span>
+            </div>
+          </div>
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T5.5.1] Execute handleClientDigest() handler (/digest)</span>
+              
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">508ms</span>
+              <span class="badge badge-pass">PASSED</span>
+            </div>
+          </div>
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T5.6.1] Execute handleSubmitBrief() handler</span>
+              
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">1ms</span>
+              <span class="badge badge-pass">PASSED</span>
+            </div>
+          </div>
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T5.7.1] Execute handleInvoices() handler (/invoices)</span>
+              
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">506ms</span>
+              <span class="badge badge-pass">PASSED</span>
+            </div>
+          </div>
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T5.8.1] Execute handleContactAM() handler</span>
+              
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">221ms</span>
+              <span class="badge badge-pass">PASSED</span>
+            </div>
+          </div>
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T5.10.1] Execute handleServices() and handlePortfolio() handlers</span>
+              
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">893ms</span>
+              <span class="badge badge-pass">PASSED</span>
+            </div>
+          </div>
+        
+      </div>
+    </div>
+  
+    <div class="phase-card">
+      <div class="phase-header">
+        <div>
+          <strong style="font-size:1.05rem;">Phase T6: SSE Real-Time Events</strong>
+          <span style="font-size:0.8rem; color:var(--text-muted); margin-left:0.5rem;">(3/3 passed in 0.02s)</span>
+        </div>
+        <span class="badge badge-pass">
+          ALL PASSED
+        </span>
+      </div>
+      <div class="test-list">
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T6.1.1] Verify unauthenticated SSE connection to /api/sync returns 401</span>
+              
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">17ms</span>
+              <span class="badge badge-pass">PASSED</span>
+            </div>
+          </div>
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T6.1.2] Connect to /api/sync with valid Client JWT Token</span>
+              
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">4ms</span>
+              <span class="badge badge-pass">PASSED</span>
+            </div>
+          </div>
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T6.5.1] Verify broadcastToClient() function exists and scopes events</span>
+              
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">0ms</span>
+              <span class="badge badge-pass">PASSED</span>
+            </div>
+          </div>
+        
+      </div>
+    </div>
+  
+    <div class="phase-card">
+      <div class="phase-header">
+        <div>
+          <strong style="font-size:1.05rem;">Phase T7: Edge Cases & Security (IDOR)</strong>
+          <span style="font-size:0.8rem; color:var(--text-muted); margin-left:0.5rem;">(4/4 passed in 0.33s)</span>
+        </div>
+        <span class="badge badge-pass">
+          ALL PASSED
+        </span>
+      </div>
+      <div class="test-list">
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T7.5.1] Verify unauthenticated GET /api/clients/me returns 401</span>
+              
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">6ms</span>
+              <span class="badge badge-pass">PASSED</span>
+            </div>
+          </div>
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T7.5.2] Verify unauthenticated POST /api/payments returns 401</span>
+              
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">4ms</span>
+              <span class="badge badge-pass">PASSED</span>
+            </div>
+          </div>
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T7.3.1] Verify Client token is scoped to its own linkedId</span>
+              
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">314ms</span>
+              <span class="badge badge-pass">PASSED</span>
+            </div>
+          </div>
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T7.4.1] Verify Client role cannot create or tamper with automation rules</span>
+              
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">4ms</span>
+              <span class="badge badge-pass">PASSED</span>
+            </div>
+          </div>
+        
+      </div>
+    </div>
+  
+    <div class="phase-card">
+      <div class="phase-header">
+        <div>
+          <strong style="font-size:1.05rem;">Phase T8: Responsiveness & Viewports</strong>
+          <span style="font-size:0.8rem; color:var(--text-muted); margin-left:0.5rem;">(3/3 passed in 5.18s)</span>
+        </div>
+        <span class="badge badge-pass">
+          ALL PASSED
+        </span>
+      </div>
+      <div class="test-list">
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T8.1.1] Verify Desktop Viewport (1440x900) Sidebar Layout</span>
+              
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">1044ms</span>
+              <span class="badge badge-pass">PASSED</span>
+            </div>
+          </div>
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T8.2.1] Verify Tablet Viewport (768x1024) Responsive Collapse</span>
+              
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">1964ms</span>
+              <span class="badge badge-pass">PASSED</span>
+            </div>
+          </div>
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T8.3.1] Verify Mobile Viewport (390x844) Touch Navigation</span>
+              
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">2101ms</span>
+              <span class="badge badge-pass">PASSED</span>
+            </div>
+          </div>
+        
+      </div>
+    </div>
+  
+    <div class="phase-card">
+      <div class="phase-header">
+        <div>
+          <strong style="font-size:1.05rem;">Phase T9: Cross-Surface Console & Integrity Audit</strong>
+          <span style="font-size:0.8rem; color:var(--text-muted); margin-left:0.5rem;">(4/4 passed in 7.50s)</span>
+        </div>
+        <span class="badge badge-pass">
+          ALL PASSED
+        </span>
+      </div>
+      <div class="test-list">
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T9.1.1] Audit /auth for zero uncaught JavaScript errors</span>
+              
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">1238ms</span>
+              <span class="badge badge-pass">PASSED</span>
+            </div>
+          </div>
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T9.1.2] Audit /partners for zero uncaught JavaScript errors</span>
+              
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">2656ms</span>
+              <span class="badge badge-pass">PASSED</span>
+            </div>
+          </div>
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T9.1.3] Audit /client/ SPA for zero uncaught JavaScript errors</span>
+              
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">2145ms</span>
+              <span class="badge badge-pass">PASSED</span>
+            </div>
+          </div>
+        
+          <div class="test-row">
+            <div style="flex:1;">
+              <span style="font-weight:600; color:#fff;">[T9.1.4] Audit /client-miniapp.html for zero uncaught JavaScript errors</span>
+              
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">1465ms</span>
+              <span class="badge badge-pass">PASSED</span>
+            </div>
+          </div>
+        
+      </div>
+    </div>
+  
+
+</body>
+</html>

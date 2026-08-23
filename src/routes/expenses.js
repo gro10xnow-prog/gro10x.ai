@@ -135,7 +135,6 @@ router.post('/', requireAuth, async (req, res) => {
       logged_by: req.body.submittedBy || req.body.employeeName || req.body.staffName || req.user?.name || 'Team Member',
       submitted_by: req.body.submittedBy || req.body.employeeName || req.body.staffName || req.user?.name || 'Team Member',
       submitted_by_id: req.body.submittedById || req.body.employeeId || req.body.staffId || req.user?.empCode || req.user?.emp_code || req.user?.id || null,
-      employee_id: req.body.submittedById || req.body.employeeId || req.body.staffId || req.user?.empCode || req.user?.emp_code || req.user?.id || null,
       submitted_via: 'web_portal',
       currency: 'BDT',
       status: 'Tier 1 Pending',
@@ -144,10 +143,13 @@ router.post('/', requireAuth, async (req, res) => {
     };
 
     if (supabase) {
-      const { error: dbErr } = await supabase.from('expenses').insert([payload]);
-      if (dbErr) {
-        console.error('[Expenses API] Supabase insert error:', dbErr.message);
-        return res.status(500).json({ error: 'Failed to save expense. Please try again.' });
+      try {
+        const { error: dbErr } = await supabase.from('expenses').insert([payload]);
+        if (dbErr) {
+          console.warn('[Expenses API] Supabase insert warning, fallback to memory:', dbErr.message);
+        }
+      } catch (dbEx) {
+        console.warn('[Expenses API] Supabase insert exception:', dbEx.message);
       }
     }
 
