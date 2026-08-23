@@ -41,6 +41,15 @@ async function main() {
   const phaseResults = [];
 
   try {
+    if (targetPhase && targetPhase > 1) {
+      const { injectAdminSession } = require('./auth');
+      const { APP_URL } = require('./utils');
+      await page.goto(APP_URL, { waitUntil: 'domcontentloaded' });
+      await injectAdminSession(page);
+      await page.goto(APP_URL + '#dashboard', { waitUntil: 'networkidle2' });
+      await wait(1500);
+    }
+
     if (!targetPhase || targetPhase === 1) {
       phaseResults.push(await runPhase1(page));
     }

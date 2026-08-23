@@ -1,0 +1,1419 @@
+{
+  "clients": [
+    {
+      "id": "CLI-0001",
+      "name": "United Commercial Bank (UCB)",
+      "contactPerson": "Mr. Tanvir Hasan",
+      "email": "tanvir@ucb.com.bd",
+      "phone": "+8801711223344",
+      "whatsapp": "+8801711223344",
+      "status": "Active Retainer",
+      "category": "Bank & Financial",
+      "totalSpent": "$14,500",
+      "activeCampaigns": [
+        "UCB One App Launch",
+        "Sticker Card Launch",
+        "Eid Creative Campaign"
+      ]
+    },
+    {
+      "id": "CLI-0002",
+      "name": "Clear Men (Unilever)",
+      "contactPerson": "Saima Rahman",
+      "email": "saima.rahman@unilever.com",
+      "phone": "+8801819887766",
+      "whatsapp": "+8801819887766",
+      "status": "Active Retainer",
+      "category": "FMCG",
+      "totalSpent": "$22,000",
+      "activeCampaigns": [
+        "Monthly 30 Short-Form Reels",
+        "Social-First Content Hub"
+      ]
+    },
+    {
+      "id": "CLI-0003",
+      "name": "bKash Limited",
+      "contactPerson": "Rakib Chowdhury",
+      "email": "rakib@bkash.com",
+      "phone": "+8801715556677",
+      "whatsapp": "+8801715556677",
+      "status": "Campaign Retainer",
+      "category": "Fintech / MFS",
+      "totalSpent": "$18,200",
+      "activeCampaigns": [
+        "bKash Amazing Deals Reels Series"
+      ]
+    },
+    {
+      "id": "CLI-0004",
+      "name": "Chillox Fast Food Chain",
+      "contactPerson": "Arman Hossain",
+      "email": "arman@chillox.com",
+      "phone": "+8801911998877",
+      "whatsapp": "+8801911998877",
+      "status": "Active Retainer",
+      "category": "Food & Hospitality",
+      "totalSpent": "$35,000",
+      "activeCampaigns": [
+        "23 Outlets Branding",
+        "8 Years Celebration Vlog & AR"
+      ]
+    },
+    {
+      "id": "CLI-0005",
+      "name": "Pran-RFL Group",
+      "contactPerson": "Nusrat Jahan",
+      "email": "nusrat@pranrfl.com",
+      "phone": "+8801730001122",
+      "whatsapp": "+8801730001122",
+      "status": "Active Retainer",
+      "category": "Consumer Goods",
+      "totalSpent": "$48,000",
+      "activeCampaigns": [
+        "10+ Brands Retainer (60 Statics, 40 Motion, 20 Reels/mo)"
+      ]
+    },
+    {
+      "id": "CLI-0006",
+      "name": "Taptap Send UK",
+      "contactPerson": "David Miller",
+      "email": "dmiller@taptapsend.com",
+      "phone": "+447700900077",
+      "whatsapp": "+447700900077",
+      "status": "Project Based",
+      "category": "Tech & Remittance",
+      "totalSpent": "$12,500",
+      "activeCampaigns": [
+        "Diaspora Remittance TVC Series"
+      ]
+    },
+    {
+      "id": "CLI-0007",
+      "name": "Bangladesh Army",
+      "contactPerson": "Major Farhan",
+      "email": "farhan@army.mil.bd",
+      "phone": "+8801700112233",
+      "whatsapp": "+8801700112233",
+      "status": "Completed",
+      "category": "Government & Defense",
+      "totalSpent": "$16,000",
+      "activeCampaigns": [
+        "Commissioned Officers Recruitment Drive"
+      ]
+    }
+  ],
+  "services": [
+    {
+      "id": "SRV-001",
+      "title": "Social Media Retainer & Content Hub",
+      "category": "Digital & Content Marketing",
+      "price": "$1,500 / month",
+      "description": "Full end-to-end strategy, content calendar, graphic post design, copy, community management, and monthly performance report.",
+      "includedFeatures": [
+        "30 Visual Assets",
+        "Community Response SLA < 15m",
+        "Monthly Analytics Matrix"
+      ],
+      "public": true
+    },
+    {
+      "id": "SRV-002",
+      "title": "Short-Form Video & Reels Production",
+      "category": "AV Production",
+      "price": "$800 / package (10 Reels)",
+      "description": "Trend-driven short video creation tailored for TikTok, IG Reels, and FB Shorts including script, shoot, and motion edit.",
+      "includedFeatures": [
+        "1080x1920 Vertical Delivery",
+        "Color Grading & Sound FX",
+        "Licensed Music Track"
+      ],
+      "public": true
+    },
+    {
+      "id": "SRV-003",
+      "title": "TVC & OVC Commercial Production",
+      "category": "AV Production",
+      "price": "$3,500 / project",
+      "description": "High-production video commercial with creative storyboard, director, cinema crew, talent casting, and master edit.",
+      "includedFeatures": [
+        "4K Master Render",
+        "Voiceover & Audio Mix",
+        "Color Grading"
+      ],
+      "public": true
+    },
+    {
+      "id": "SRV-004",
+      "title": "360-Degree Brand Identity System",
+      "category": "Branding & Graphic Design",
+      "price": "$1,200 / project",
+      "description": "Complete corporate identity system including logo design, color palette, brand guidelines book, merchandise, and POSM templates.",
+      "includedFeatures": [
+        "Vector Source Files",
+        "Brand Book PDF",
+        "Print Production Ready"
+      ],
+      "public": true
+    },
+    {
+      "id": "SRV-005",
+      "title": "Custom Website & Portal Development",
+      "category": "Website & Tech Solutions",
+      "price": "$2,500 / project",
+      "description": "Responsive high-performance website or client portal built with modern web tech, SEO optimizations, and CMS.",
+      "includedFeatures": [
+        "Responsive UI/UX",
+        "CMS Panel Integration",
+        "SEO Architecture"
+      ],
+      "public": false
+    }
+  ],
+  "team": [
+    {
+      "id": "PBD-000",
+      "emp_code": "PBD-000",
+      "name": "Firoz Uddin Ahmed",
+      "role": "Technology Admin",
+      "department": "Tech & AI",
+      "status": "Offline",
+      "phone": "+8801708459008",
+      "baseSalary": 50000,
+      "commissionRate": 3,
+      "accessLevel": "Owner / Admin",
+      "badge": "⭐ Rising Star",
+      "xp": 550
+    },
+    {
+      "id": "PBD-001",
+      "emp_code": "PBD-001",
+      "name": "H. M. Ifteker Mahmud",
+      "role": "Managing Director",
+      "department": "Top Management",
+      "status": "Offline",
+      "phone": "+8801612309290",
+      "baseSalary": 50000,
+      "commissionRate": 3,
+      "accessLevel": "Owner / Admin",
+      "badge": "🌱 Recruit",
+      "xp": 100
+    },
+    {
+      "id": "PBD-002",
+      "emp_code": "PBD-002",
+      "name": "S M Tariful Islam",
+      "role": "Chairman",
+      "department": "Top Management",
+      "status": "Offline",
+      "phone": "+8801708455081",
+      "baseSalary": 50000,
+      "commissionRate": 3,
+      "accessLevel": "Owner / Admin",
+      "badge": "Recruit",
+      "xp": 1200
+    },
+    {
+      "id": "PBD-003",
+      "emp_code": "PBD-003",
+      "name": "MD Mehedi Bin Jayed",
+      "role": "Head of Client & Growth",
+      "department": "Leadership",
+      "status": "Offline",
+      "phone": "+8801874079687",
+      "baseSalary": 50000,
+      "commissionRate": 3,
+      "accessLevel": "Director / Manager",
+      "badge": "Recruit",
+      "xp": 1200
+    },
+    {
+      "id": "PBD-004",
+      "emp_code": "PBD-004",
+      "name": "Kafil Uddin Mahmud",
+      "role": "Head of Business Operations",
+      "department": "Leadership",
+      "status": "Offline",
+      "phone": "+8801612309290",
+      "baseSalary": 50000,
+      "commissionRate": 3,
+      "accessLevel": "Director / Manager",
+      "badge": "Recruit",
+      "xp": 1200
+    },
+    {
+      "id": "PBD-005",
+      "emp_code": "PBD-005",
+      "name": "Md. Zahin Khandaker",
+      "role": "Head of Internal Operations",
+      "department": "Leadership",
+      "status": "Offline",
+      "phone": "+8801627737348",
+      "baseSalary": 50000,
+      "commissionRate": 3,
+      "accessLevel": "Director / Manager",
+      "badge": "Recruit",
+      "xp": 1200
+    },
+    {
+      "id": "PBD-006",
+      "emp_code": "PBD-006",
+      "name": "Ruhul Amin Rupom",
+      "role": "Art Director",
+      "department": "Design & Post-Production",
+      "status": "Offline",
+      "phone": "+8801711413766",
+      "baseSalary": 50000,
+      "commissionRate": 3,
+      "accessLevel": "Director / Manager",
+      "badge": "Recruit",
+      "xp": 1200
+    },
+    {
+      "id": "PBD-007",
+      "emp_code": "PBD-007",
+      "name": "Mahmudul Hasan Shuvo",
+      "role": "Senior Visualizer",
+      "department": "Design & Post-Production",
+      "status": "Offline",
+      "phone": "+8801622926502",
+      "baseSalary": 50000,
+      "commissionRate": 3,
+      "accessLevel": "Specialist / Crew",
+      "badge": "Recruit",
+      "xp": 1200
+    },
+    {
+      "id": "PBD-008",
+      "emp_code": "PBD-008",
+      "name": "Shahjalal Badsha Arif",
+      "role": "Senior Visualizer",
+      "department": "Design & Post-Production",
+      "status": "Offline",
+      "phone": "+8801980341566",
+      "baseSalary": 50000,
+      "commissionRate": 3,
+      "accessLevel": "Specialist / Crew",
+      "badge": "Recruit",
+      "xp": 1200
+    },
+    {
+      "id": "PBD-009",
+      "emp_code": "PBD-009",
+      "name": "Asmaul Husna Kamona",
+      "role": "Visualizer",
+      "department": "Design & Post-Production",
+      "status": "Offline",
+      "phone": "+8801794054015",
+      "baseSalary": 50000,
+      "commissionRate": 3,
+      "accessLevel": "Specialist / Crew",
+      "badge": "Recruit",
+      "xp": 1200
+    },
+    {
+      "id": "PBD-010",
+      "emp_code": "PBD-010",
+      "name": "Omar Faruq Rony",
+      "role": "Visualizer",
+      "department": "Design & Post-Production",
+      "status": "Offline",
+      "phone": "+8801623851701",
+      "baseSalary": 50000,
+      "commissionRate": 3,
+      "accessLevel": "Specialist / Crew",
+      "badge": "Recruit",
+      "xp": 1200
+    },
+    {
+      "id": "PBD-011",
+      "emp_code": "PBD-011",
+      "name": "Shalmir Rahman Shihab",
+      "role": "Associate Visualizer",
+      "department": "Design & Post-Production",
+      "status": "Offline",
+      "phone": "+8801798274976",
+      "baseSalary": 50000,
+      "commissionRate": 3,
+      "accessLevel": "Specialist / Crew",
+      "badge": "Recruit",
+      "xp": 1200
+    },
+    {
+      "id": "PBD-012",
+      "emp_code": "PBD-012",
+      "name": "Anik Saha",
+      "role": "Associate Visualizer",
+      "department": "Design & Post-Production",
+      "status": "Offline",
+      "phone": "+8801786681030",
+      "baseSalary": 50000,
+      "commissionRate": 3,
+      "accessLevel": "Specialist / Crew",
+      "badge": "Recruit",
+      "xp": 1200
+    },
+    {
+      "id": "PBD-013",
+      "emp_code": "PBD-013",
+      "name": "Nasir Ullah Khan Al Nahian",
+      "role": "Head of Production",
+      "department": "Content Production",
+      "status": "Offline",
+      "phone": "+8801685662296",
+      "baseSalary": 50000,
+      "commissionRate": 3,
+      "accessLevel": "Director / Manager",
+      "badge": "Recruit",
+      "xp": 1200
+    },
+    {
+      "id": "PBD-014",
+      "emp_code": "PBD-014",
+      "name": "S. M. Masud Ur Rahman Pial",
+      "role": "Senior Copywriter",
+      "department": "Content Production",
+      "status": "Offline",
+      "phone": "+8801911571156",
+      "baseSalary": 50000,
+      "commissionRate": 3,
+      "accessLevel": "Specialist / Crew",
+      "badge": "Recruit",
+      "xp": 1200
+    },
+    {
+      "id": "PBD-015",
+      "emp_code": "PBD-015",
+      "name": "Md. Shadly Benzadid Arefin",
+      "role": "AI Prompt Engineer",
+      "department": "Content Production",
+      "status": "Offline",
+      "phone": "+8801680066637",
+      "baseSalary": 50000,
+      "commissionRate": 3,
+      "accessLevel": "Specialist / Crew",
+      "badge": "Recruit",
+      "xp": 1200
+    },
+    {
+      "id": "PBD-016",
+      "emp_code": "PBD-016",
+      "name": "Tasin Kabir",
+      "role": "Senior Manager, Client Services",
+      "department": "Client Services",
+      "status": "Offline",
+      "phone": "+8801709952672",
+      "baseSalary": 50000,
+      "commissionRate": 3,
+      "accessLevel": "Director / Manager",
+      "badge": "Recruit",
+      "xp": 1200
+    },
+    {
+      "id": "PBD-017",
+      "emp_code": "PBD-017",
+      "name": "Sayed Ashraf",
+      "role": "Assistant Manager, Client Services",
+      "department": "Client Services",
+      "status": "Offline",
+      "phone": "+8801617410967",
+      "baseSalary": 50000,
+      "commissionRate": 3,
+      "accessLevel": "Director / Manager",
+      "badge": "Recruit",
+      "xp": 1200
+    },
+    {
+      "id": "PBD-018",
+      "emp_code": "PBD-018",
+      "name": "Rimjhim Rashid",
+      "role": "Assistant Manager, Client Services",
+      "department": "Client Services",
+      "status": "Offline",
+      "phone": "+8801759768962",
+      "baseSalary": 50000,
+      "commissionRate": 3,
+      "accessLevel": "Director / Manager",
+      "badge": "Recruit",
+      "xp": 1200
+    },
+    {
+      "id": "PBD-019",
+      "emp_code": "PBD-019",
+      "name": "Shafket Hossan Pranto",
+      "role": "Assistant Manager, Strategy & Planning",
+      "department": "Strategy & Planning",
+      "status": "Offline",
+      "phone": "+8801804217607",
+      "baseSalary": 50000,
+      "commissionRate": 3,
+      "accessLevel": "Director / Manager",
+      "badge": "Recruit",
+      "xp": 1200
+    },
+    {
+      "id": "PBD-020",
+      "emp_code": "PBD-020",
+      "name": "Syeda Wahida Sabrina",
+      "role": "Strategy Associate",
+      "department": "Strategy & Planning",
+      "status": "Offline",
+      "phone": "+8801796587832",
+      "baseSalary": 50000,
+      "commissionRate": 3,
+      "accessLevel": "Specialist / Crew",
+      "badge": "Recruit",
+      "xp": 1200
+    },
+    {
+      "id": "PBD-021",
+      "emp_code": "PBD-021",
+      "name": "Faiyaz Amin Rahin",
+      "role": "Strategy Associate",
+      "department": "Strategy & Planning",
+      "status": "Offline",
+      "phone": "+8801975089893",
+      "baseSalary": 50000,
+      "commissionRate": 3,
+      "accessLevel": "Specialist / Crew",
+      "badge": "Recruit",
+      "xp": 1200
+    },
+    {
+      "id": "PBD-022",
+      "emp_code": "PBD-022",
+      "name": "Farhat Lamisa Hossain",
+      "role": "Digital Marketing Associate",
+      "department": "Strategy & Planning",
+      "status": "Offline",
+      "phone": "+8801757378806",
+      "baseSalary": 50000,
+      "commissionRate": 3,
+      "accessLevel": "Specialist / Crew",
+      "badge": "Recruit",
+      "xp": 1200
+    },
+    {
+      "id": "PBD-023",
+      "emp_code": "PBD-023",
+      "name": "Zaima Zahin",
+      "role": "Digital Marketing Associate",
+      "department": "Strategy & Client Services",
+      "status": "Offline",
+      "phone": "+8801774619700",
+      "baseSalary": 50000,
+      "commissionRate": 3,
+      "accessLevel": "Specialist / Crew",
+      "badge": "Recruit",
+      "xp": 1200
+    },
+    {
+      "id": "PBD-024",
+      "emp_code": "PBD-024",
+      "name": "Arib Shahran Hassan",
+      "role": "Digital Marketing Associate",
+      "department": "Strategy & Client Services",
+      "status": "Offline",
+      "phone": "+8801929290000",
+      "baseSalary": 50000,
+      "commissionRate": 3,
+      "accessLevel": "Specialist / Crew",
+      "badge": "Recruit",
+      "xp": 1200
+    },
+    {
+      "id": "PBD-025",
+      "emp_code": "PBD-025",
+      "name": "Rafin Islam Awnon",
+      "role": "Digital Marketing Associate",
+      "department": "Strategy & Client Services",
+      "status": "Offline",
+      "phone": "+8801835045407",
+      "baseSalary": 50000,
+      "commissionRate": 3,
+      "accessLevel": "Specialist / Crew",
+      "badge": "Recruit",
+      "xp": 1200
+    },
+    {
+      "id": "PBD-026",
+      "emp_code": "PBD-026",
+      "name": "Mahin Islam",
+      "role": "Digital Marketing Associate",
+      "department": "Strategy & Client Services",
+      "status": "Offline",
+      "phone": "+8801516766605",
+      "baseSalary": 50000,
+      "commissionRate": 3,
+      "accessLevel": "Specialist / Crew",
+      "badge": "Recruit",
+      "xp": 1200
+    },
+    {
+      "id": "PBD-027",
+      "emp_code": "PBD-027",
+      "name": "Md. Arefin Islam",
+      "role": "Digital Marketing Associate",
+      "department": "Website, Tech & AI",
+      "status": "Offline",
+      "phone": "+8801331401450",
+      "baseSalary": 50000,
+      "commissionRate": 3,
+      "accessLevel": "Specialist / Crew",
+      "badge": "Recruit",
+      "xp": 1200
+    },
+    {
+      "id": "PBD-028",
+      "emp_code": "PBD-028",
+      "name": "Rayeem Jawad Rythm",
+      "role": "Digital Marketing Associate",
+      "department": "Client Services",
+      "status": "Offline",
+      "phone": "+8801634763885",
+      "baseSalary": 50000,
+      "commissionRate": 3,
+      "accessLevel": "Specialist / Crew",
+      "badge": "Recruit",
+      "xp": 1200
+    },
+    {
+      "id": "PBD-029",
+      "emp_code": "PBD-029",
+      "name": "Md. Borhan Siddique",
+      "role": "Manager, Finance & Admin",
+      "department": "Finance & Admin",
+      "status": "Offline",
+      "phone": "+8801688495740",
+      "baseSalary": 50000,
+      "commissionRate": 3,
+      "accessLevel": "Finance Manager",
+      "badge": "Recruit",
+      "xp": 1200
+    },
+    {
+      "id": "PBD-030",
+      "emp_code": "PBD-030",
+      "name": "SK Mukit Hassan",
+      "role": "Junior Executive, Finance & Admin",
+      "department": "Finance & Admin",
+      "status": "Offline",
+      "phone": "+8801754696129",
+      "baseSalary": 50000,
+      "commissionRate": 3,
+      "accessLevel": "Specialist / Crew",
+      "badge": "Recruit",
+      "xp": 1200
+    },
+    {
+      "id": "PBD-031",
+      "emp_code": "PBD-031",
+      "name": "Mohammad Shanto",
+      "role": "Office Assistant",
+      "department": "Administration",
+      "status": "Offline",
+      "phone": "+8801799580967",
+      "baseSalary": 50000,
+      "commissionRate": 3,
+      "accessLevel": "Office Staff",
+      "badge": "Recruit",
+      "xp": 1200
+    },
+    {
+      "id": "PBD-032",
+      "emp_code": "PBD-032",
+      "name": "Mst. Sapia Khatun",
+      "role": "Office Assistant",
+      "department": "Administration",
+      "status": "Offline",
+      "phone": "+8801701614916",
+      "baseSalary": 50000,
+      "commissionRate": 3,
+      "accessLevel": "Office Staff",
+      "badge": "Recruit",
+      "xp": 1200
+    }
+  ],
+  "tasks": [
+    {
+      "id": "TSK-101",
+      "title": "Clear Men - July Short-Form Reels Batch (10 Clips)",
+      "client": "Clear Men (Unilever)",
+      "stage": "Editing",
+      "priority": "High",
+      "assignee": "Farhan Ahmed",
+      "dueDate": "2026-07-30",
+      "assignees": [
+        "Farhan Ahmed"
+      ]
+    },
+    {
+      "id": "TSK-102",
+      "title": "UCB Sticker Card - Promotional Poster Adaptation",
+      "client": "United Commercial Bank (UCB)",
+      "stage": "Editing",
+      "priority": "Medium",
+      "assignee": "Raihan Kabir",
+      "dueDate": "2026-07-29",
+      "assignees": [
+        "Raihan Kabir"
+      ]
+    },
+    {
+      "id": "TSK-103",
+      "title": "Chillox 8-Year Anniversary Vlog Cut & Markup Review",
+      "client": "Chillox Fast Food Chain",
+      "stage": "Approved",
+      "priority": "Urgent",
+      "assignee": "Sabrin Akhtar",
+      "dueDate": "2026-07-28",
+      "assignees": [
+        "Sabrin Akhtar"
+      ]
+    },
+    {
+      "id": "TSK-104",
+      "title": "Pran-RFL Vision QLED Tech Statics & Social Banner",
+      "client": "Pran-RFL Group",
+      "stage": "Approved",
+      "priority": "Low",
+      "assignee": "Raihan Kabir",
+      "dueDate": "2026-07-26",
+      "assignees": [
+        "Raihan Kabir"
+      ]
+    },
+    {
+      "id": "TSK-105",
+      "title": "Taptap Send Diaspora Campaign Scripting",
+      "client": "Taptap Send UK",
+      "stage": "Scripting",
+      "priority": "Medium",
+      "assignee": "Naimur Rahman",
+      "dueDate": "2026-08-02",
+      "assignees": [
+        "Naimur Rahman"
+      ]
+    }
+  ],
+  "reviews": [
+    {
+      "id": "REV-001",
+      "projectId": "PRJ-CHILLOX-8Y",
+      "projectName": "Chillox 8 Years Anniversary Vlog (v2 Cut)",
+      "client": "Chillox Fast Food Chain",
+      "activeVersion": "v3 (Approved)",
+      "versions": [
+        "v1",
+        "v2",
+        "v3"
+      ],
+      "mediaType": "video",
+      "mediaUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+      "posterUrl": "",
+      "resolvedCount": 2,
+      "totalCount": 4,
+      "comments": [
+        {
+          "id": "COM-1",
+          "author": "Arman Hossain (Chillox)",
+          "authorRole": "Client POC",
+          "timestamp": "00:04",
+          "timeSeconds": 4,
+          "text": "Please brighten up the lighting on the double cheeseburger shot and sharpen the text overlay.",
+          "resolved": true,
+          "createdAt": "2026-07-27 10:15",
+          "drawings": [
+            {
+              "type": "circle",
+              "x": 960,
+              "y": 540,
+              "radius": 150,
+              "color": "#ec4899"
+            }
+          ],
+          "replies": [
+            {
+              "author": "Sabrin Akhtar (Editor)",
+              "text": "Color corrected and sharpened in v2 cut!",
+              "createdAt": "2026-07-27 10:45"
+            }
+          ]
+        },
+        {
+          "id": "COM-2",
+          "author": "Arman Hossain (Chillox)",
+          "authorRole": "Client POC",
+          "timestamp": "00:09",
+          "timeSeconds": 9,
+          "text": "At this timestamp, please raise the Chillox neon badge slightly higher so it doesn't overlap the character.",
+          "resolved": false,
+          "createdAt": "2026-07-27 11:30",
+          "drawings": [
+            {
+              "type": "arrow",
+              "startX": 960,
+              "startY": 700,
+              "endX": 960,
+              "endY": 350,
+              "color": "#a855f7"
+            }
+          ],
+          "replies": []
+        },
+        {
+          "id": "COM-3",
+          "author": "Mahmudul Hasan (Purplebot Admin)",
+          "authorRole": "Agency Lead",
+          "timestamp": "00:14",
+          "timeSeconds": 14,
+          "text": "Audio level on the background track balanced to -14 LUFS.",
+          "resolved": true,
+          "createdAt": "2026-07-27 12:00",
+          "drawings": [],
+          "replies": []
+        },
+        {
+          "id": "COM-1785140745518",
+          "review_id": "REV-001",
+          "author": "Arman Hossain (Chillox)",
+          "author_role": "Client POC",
+          "timestamp": "00:18",
+          "time_seconds": 18,
+          "text": "Final audio balance verified. Ready for approval.",
+          "resolved": false,
+          "drawings": [],
+          "replies": [],
+          "authorRole": "Client POC",
+          "timeSeconds": 18,
+          "createdAt": "02:25 PM"
+        }
+      ]
+    },
+    {
+      "id": "REV-002",
+      "projectId": "PRJ-CLEARMEN-JULY",
+      "projectName": "Clear Men July Short-Form Reels Batch (10 Clips)",
+      "client": "Clear Men (Unilever)",
+      "activeVersion": "v1 (Rough Cut)",
+      "versions": [
+        "v1"
+      ],
+      "mediaType": "video",
+      "mediaUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4",
+      "posterUrl": "",
+      "resolvedCount": 1,
+      "totalCount": 2,
+      "comments": [
+        {
+          "id": "COM-201",
+          "author": "Samiul Alam (Clear Men POC)",
+          "authorRole": "Client POC",
+          "timestamp": "00:06",
+          "timeSeconds": 6,
+          "text": "Add Clear Men anti-dandruff logo watermark in top-right corner.",
+          "resolved": false,
+          "createdAt": "2026-07-27 11:00",
+          "drawings": [],
+          "replies": []
+        },
+        {
+          "id": "COM-202",
+          "author": "Farhan Ahmed (Lead Director)",
+          "authorRole": "AV Production",
+          "timestamp": "00:12",
+          "timeSeconds": 12,
+          "text": "Transition velocity ramped at 0:12 clip.",
+          "resolved": true,
+          "createdAt": "2026-07-27 11:30",
+          "drawings": [],
+          "replies": []
+        }
+      ]
+    },
+    {
+      "id": "REV-003",
+      "projectId": "PRJ-UCB-APP",
+      "projectName": "UCB One App Launch Teaser Video",
+      "client": "United Commercial Bank (UCB)",
+      "activeVersion": "v2 (Color Graded)",
+      "versions": [
+        "v1",
+        "v2"
+      ],
+      "mediaType": "video",
+      "mediaUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
+      "posterUrl": "",
+      "resolvedCount": 0,
+      "totalCount": 1,
+      "comments": [
+        {
+          "id": "COM-301",
+          "author": "Tanvir Hasan (UCB Bank)",
+          "authorRole": "Client POC",
+          "timestamp": "00:08",
+          "timeSeconds": 8,
+          "text": "Ensure App Store and Google Play badges are visible at end frame.",
+          "resolved": false,
+          "createdAt": "2026-07-27 12:15",
+          "drawings": [],
+          "replies": []
+        }
+      ]
+    }
+  ],
+  "invoices": [
+    {
+      "id": "INV-2026-001",
+      "clientId": "CLI-0001",
+      "clientName": "United Commercial Bank (UCB)",
+      "date": "2026-07-15",
+      "dueDate": "2026-07-30",
+      "amount": 4500,
+      "taxRate": 15,
+      "discount": 200,
+      "status": "Paid",
+      "items": [
+        {
+          "description": "UCB One App Launch Campaign Production",
+          "qty": 1,
+          "rate": 3000
+        },
+        {
+          "description": "Sticker Card Launch Creative Adaptations",
+          "qty": 1,
+          "rate": 1500
+        }
+      ]
+    },
+    {
+      "id": "INV-2026-002",
+      "clientId": "CLI-0002",
+      "clientName": "Clear Men (Unilever)",
+      "date": "2026-07-20",
+      "dueDate": "2026-08-05",
+      "amount": 2800,
+      "taxRate": 15,
+      "discount": 0,
+      "status": "Pending",
+      "items": [
+        {
+          "description": "July Short-Form Reels Content Retainer (30 Reels)",
+          "qty": 1,
+          "rate": 2800
+        }
+      ]
+    },
+    {
+      "id": "INV-2026-003",
+      "clientId": "CLI-0004",
+      "clientName": "Chillox Fast Food Chain",
+      "date": "2026-07-25",
+      "dueDate": "2026-08-10",
+      "amount": 1600,
+      "taxRate": 15,
+      "discount": 100,
+      "status": "Draft",
+      "items": [
+        {
+          "description": "8 Years Anniversary Vlog & AR Video Activation",
+          "qty": 1,
+          "rate": 1700
+        }
+      ]
+    }
+  ],
+  "expenses": [
+    {
+      "id": "EXP-001",
+      "title": "Sony FX3 Camera Gear Rental",
+      "category": "Equipment",
+      "amount": 450,
+      "date": "2026-07-10",
+      "loggedBy": "Farhan Ahmed",
+      "status": "Approved"
+    },
+    {
+      "id": "EXP-002",
+      "title": "Adobe CC & Frame.io Licenses",
+      "category": "Software",
+      "amount": 220,
+      "date": "2026-07-01",
+      "loggedBy": "Mahmudul Hasan",
+      "status": "Approved"
+    },
+    {
+      "id": "EXP-003",
+      "title": "Niketon Studio Rent & Utilities",
+      "category": "Rent & Facilities",
+      "amount": 1200,
+      "date": "2026-07-02",
+      "loggedBy": "Mahmudul Hasan",
+      "status": "Approved"
+    },
+    {
+      "id": "EXP-004",
+      "title": "Clear Men Shoot Crew Refreshments & Transport",
+      "category": "Shooting Logistics",
+      "amount": 180,
+      "date": "2026-07-18",
+      "loggedBy": "Farhan Ahmed",
+      "status": "Approved"
+    }
+  ],
+  "assets": [
+    {
+      "id": "AST-001",
+      "name": "Sony FX3 Cinema Line Camera",
+      "serial": "SN-FX3-9921",
+      "category": "Camera Gear",
+      "purchasePrice": 3900,
+      "monthlyDepreciation": 65,
+      "condition": "Excellent",
+      "assignedTo": "Farhan Ahmed"
+    },
+    {
+      "id": "AST-002",
+      "name": "Aputure 600d Pro LED Light Kit",
+      "serial": "SN-AP-600D",
+      "category": "Lighting",
+      "purchasePrice": 1800,
+      "monthlyDepreciation": 30,
+      "condition": "Good",
+      "assignedTo": "Farhan Ahmed"
+    },
+    {
+      "id": "AST-003",
+      "name": "Apple MacBook Pro 16\" M3 Max",
+      "serial": "SN-MBP-M3M",
+      "category": "Editing Workstation",
+      "purchasePrice": 3400,
+      "monthlyDepreciation": 85,
+      "condition": "Excellent",
+      "assignedTo": "Sabrin Akhtar"
+    }
+  ],
+  "attendance": [
+    {
+      "employeeId": "EMP-001",
+      "name": "Mahmudul Hasan",
+      "status": "In Studio",
+      "clockInTime": "09:30 AM",
+      "location": "Gulshan Studio"
+    },
+    {
+      "employeeId": "EMP-002",
+      "name": "Farhan Ahmed",
+      "status": "In Studio",
+      "clockInTime": "08:15 AM",
+      "location": "Chillox Outlet (Badda)"
+    },
+    {
+      "employeeId": "EMP-003",
+      "name": "Sabrin Akhtar",
+      "status": "In Studio",
+      "clockInTime": "09:45 AM",
+      "location": "Gulshan Studio"
+    },
+    {
+      "employeeId": "EMP-004",
+      "name": "Raihan Kabir",
+      "status": "In Studio",
+      "clockInTime": "10:00 AM",
+      "location": "Gulshan Studio"
+    },
+    {
+      "employeeId": "EMP-005",
+      "name": "Naimur Rahman",
+      "status": "Clocked Out",
+      "clockInTime": "09:00 AM",
+      "location": "Office"
+    }
+  ],
+  "leads": [
+    {
+      "id": "LED-001",
+      "company": "Summit Pharmaceuticals",
+      "contactPerson": "Dr. Anisur Rahman",
+      "email": "anis@summitpharma.com",
+      "phone": "+8801700998877",
+      "whatsapp": "+8801700998877",
+      "source": "Referral",
+      "category": "Healthcare & Pharma",
+      "service": "360-Degree Brand Identity System",
+      "value": "$12,000",
+      "stage": "Proposal Sent",
+      "notes": "Looking for complete rebranding for new cardio drug line launch.",
+      "createdAt": "2026-07-22"
+    },
+    {
+      "id": "LED-002",
+      "company": "Kazi Farms Group",
+      "contactPerson": "Tanvir Kazi",
+      "email": "tanvir@kazifarms.com",
+      "phone": "+8801811223344",
+      "whatsapp": "+8801811223344",
+      "source": "Website",
+      "category": "Agro & Food",
+      "service": "Short-Form Video & Reels Production",
+      "value": "$8,500",
+      "stage": "Qualified",
+      "notes": "Requested 20 recipes/vlog reels for organic chicken brand.",
+      "createdAt": "2026-07-24"
+    },
+    {
+      "id": "LED-003",
+      "company": "Pathao Food Campaign",
+      "contactPerson": "Shirin Sultana",
+      "email": "shirin@pathao.com",
+      "phone": "+8801911334455",
+      "whatsapp": "+8801911334455",
+      "source": "Instagram DM",
+      "category": "Tech & Delivery",
+      "service": "Social Media Retainer & Content Hub",
+      "value": "$15,000",
+      "stage": "Negotiation",
+      "notes": "Q3-Q4 food festival campaign content strategy.",
+      "createdAt": "2026-07-20"
+    },
+    {
+      "id": "LED-004",
+      "company": "Aarong Dairy",
+      "contactPerson": "Mahfuz Alam",
+      "email": "mahfuz@aarong.com",
+      "phone": "+8801722334455",
+      "whatsapp": "+8801722334455",
+      "source": "Direct",
+      "category": "FMCG",
+      "service": "TVC & OVC Commercial Production",
+      "value": "$6,000",
+      "stage": "New Inquiry",
+      "notes": "Inquired about 30s festive TVC shoot.",
+      "createdAt": "2026-07-27"
+    }
+  ],
+  "quotes": [
+    {
+      "id": "QTE-2026-001",
+      "clientName": "Summit Pharmaceuticals",
+      "date": "2026-07-25",
+      "validUntil": "2026-08-15",
+      "amount": 12000,
+      "taxRate": 15,
+      "discount": 0,
+      "status": "Sent",
+      "terms": "50% advance upon contract signing, 50% upon final delivery handover.",
+      "items": [
+        {
+          "description": "360-Degree Brand Identity System & Guidelines Book",
+          "qty": 1,
+          "rate": 7000
+        },
+        {
+          "description": "Product Launch Creative Packaging & POSM Adaptations",
+          "qty": 1,
+          "rate": 5000
+        }
+      ]
+    },
+    {
+      "id": "QTE-2026-002",
+      "clientName": "Pathao Food Campaign",
+      "date": "2026-07-22",
+      "validUntil": "2026-08-10",
+      "amount": 15000,
+      "taxRate": 15,
+      "discount": 500,
+      "status": "Approved",
+      "terms": "Monthly retainer billing at the start of each month.",
+      "items": [
+        {
+          "description": "Q3 Food Festival Short-Form Reels Package (30 Clips)",
+          "qty": 1,
+          "rate": 15500
+        }
+      ]
+    },
+    {
+      "id": "QTE-2026-003",
+      "clientName": "Kazi Farms Group",
+      "date": "2026-07-26",
+      "validUntil": "2026-08-20",
+      "amount": 8500,
+      "taxRate": 15,
+      "discount": 0,
+      "status": "Draft",
+      "terms": "Net 15 days upon invoice submission.",
+      "items": [
+        {
+          "description": "Organic Chicken Recipe Video Package (20 Reels)",
+          "qty": 1,
+          "rate": 8500
+        }
+      ]
+    }
+  ],
+  "posts": [
+    {
+      "id": "PST-101",
+      "client": "Clear Men (Unilever)",
+      "platform": "Instagram",
+      "format": "Reel / Short Video",
+      "title": "Summer Scalp Care Tips Reel #3",
+      "caption": "Stay fresh under the sun with Clear Men Cool Sport Menthol! ❄️ #ClearMen #FreshAllDay",
+      "scheduledDate": "2026-07-28",
+      "scheduledTime": "18:00",
+      "status": "Scheduled",
+      "mediaUrl": ""
+    },
+    {
+      "id": "PST-102",
+      "client": "Chillox Fast Food Chain",
+      "platform": "Facebook",
+      "format": "Static Banner",
+      "title": "Chillox Badda Outlet Opening Offer",
+      "caption": "Buy 1 Get 1 Burger at our new Badda outlet! Valid July 29-31. 🍔 #Chillox",
+      "scheduledDate": "2026-07-29",
+      "scheduledTime": "12:00",
+      "status": "Scheduled",
+      "mediaUrl": ""
+    },
+    {
+      "id": "PST-103",
+      "client": "United Commercial Bank (UCB)",
+      "platform": "LinkedIn",
+      "format": "Carousel",
+      "title": "UCB Sticker Card Tap & Go Guide",
+      "caption": "Tap & Go with UCB Sticker Card. Pay instantly anywhere! 💳 #UCBBank",
+      "scheduledDate": "2026-07-30",
+      "scheduledTime": "10:00",
+      "status": "Scheduled",
+      "mediaUrl": ""
+    },
+    {
+      "id": "PST-104",
+      "client": "Pran-RFL Group",
+      "platform": "TikTok",
+      "format": "Reel / Short Video",
+      "title": "Vision QLED Smart TV 120Hz Demo",
+      "caption": "Level up your gaming setup with 120Hz refresh rate! 🎮 #VisionQLED",
+      "scheduledDate": "2026-07-31",
+      "scheduledTime": "20:00",
+      "status": "Draft",
+      "mediaUrl": ""
+    }
+  ],
+  "chats": [
+    {
+      "id": "CHT-001",
+      "clientId": "CLI-0004",
+      "clientName": "Chillox Fast Food Chain",
+      "channel": "WhatsApp",
+      "unreadCount": 1,
+      "lastUpdated": "10:45 AM",
+      "messages": [
+        {
+          "id": "MSG-1",
+          "sender": "Arman Hossain (Chillox)",
+          "role": "Client POC",
+          "text": "Hi Naimur, when can we expect the 8-Year Anniversary Vlog cut?",
+          "timestamp": "10:15 AM",
+          "isAgency": false
+        },
+        {
+          "id": "MSG-2",
+          "sender": "Naimur Rahman (Purplebot)",
+          "role": "Account Lead",
+          "text": "Hey Arman! Sabrin is finalizing color grading. It will be uploaded to Review Room V2 by 2 PM today.",
+          "timestamp": "10:30 AM",
+          "isAgency": true
+        },
+        {
+          "id": "MSG-3",
+          "sender": "Arman Hossain (Chillox)",
+          "role": "Client POC",
+          "text": "Awesome, please let us know once it's up!",
+          "timestamp": "10:45 AM",
+          "isAgency": false
+        }
+      ]
+    },
+    {
+      "id": "CHT-002",
+      "clientId": "CLI-0002",
+      "clientName": "Clear Men (Unilever)",
+      "channel": "Telegram",
+      "unreadCount": 0,
+      "lastUpdated": "Yesterday",
+      "messages": [
+        {
+          "id": "MSG-10",
+          "sender": "Samiul Alam (Clear Men)",
+          "role": "Client POC",
+          "text": "Thanks for sending Invoice INV-2026-002. Finance team has processed payment.",
+          "timestamp": "Yesterday 4:30 PM",
+          "isAgency": false
+        },
+        {
+          "id": "MSG-11",
+          "sender": "Mahmudul Hasan (Purplebot)",
+          "role": "Agency Director",
+          "text": "Thank you Samiul! We will log the payment verification once cleared.",
+          "timestamp": "Yesterday 4:45 PM",
+          "isAgency": true
+        }
+      ]
+    },
+    {
+      "id": "CHT-003",
+      "clientId": "CLI-0001",
+      "clientName": "United Commercial Bank (UCB)",
+      "channel": "Portal",
+      "unreadCount": 2,
+      "lastUpdated": "09:05 AM",
+      "messages": [
+        {
+          "id": "MSG-20",
+          "sender": "Tanvir Hasan (UCB)",
+          "role": "Bank Director",
+          "text": "Need 2 static banner variations for the Sticker Card promo by tomorrow morning.",
+          "timestamp": "09:00 AM",
+          "isAgency": false
+        },
+        {
+          "id": "MSG-21",
+          "sender": "Tanvir Hasan (UCB)",
+          "role": "Bank Director",
+          "text": "Also ensure the blue hex code matches our corporate brand guidelines.",
+          "timestamp": "09:05 AM",
+          "isAgency": false
+        }
+      ]
+    }
+  ],
+  "botConfig": {
+    "clientBot": {
+      "name": "Purplebot Client Assistant",
+      "persona": "You are Purplebot, an AI agency assistant for Purplebot Digital. You help prospective clients book services, check invoice status, and view creative portfolios.",
+      "tone": "Empathetic & Creative",
+      "greeting": "Welcome to Purplebot Digital Agency! 🚀 How can we assist your brand today?",
+      "fallback": "I'm not sure about that specific request. Let me connect you with an Account Lead right away!"
+    },
+    "teamBot": {
+      "name": "Purplebot Crew Operations Bot",
+      "persona": "You are Purplebot Ops, an automated dispatch bot for shoot crews and video editors. You handle shoot assignments, earnings logs, and time tracking.",
+      "tone": "Fast & Casual",
+      "greeting": "Purplebot Ops Active! Type /mybookings to check your shoot schedule or /myearnings for payroll details.",
+      "fallback": "Command not recognized. Type /help to see available crew commands."
+    },
+    "knowledgeBase": [
+      {
+        "id": "KB-1",
+        "question": "What are your standard turnaround times for short-form Reels?",
+        "answer": "Our standard delivery for a batch of 10 Reels is 5 business days from shoot completion.",
+        "category": "Production"
+      },
+      {
+        "id": "KB-2",
+        "question": "What payment methods do you accept?",
+        "answer": "We accept Bank Transfers (UCB, City Bank), Wire Transfer, bKash, and Nagad merchant payments.",
+        "category": "Billing"
+      }
+    ],
+    "videoTutorials": [
+      {
+        "id": "VID-1",
+        "title": "How to Use Review Room V2 for Video Approvals",
+        "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+        "category": "Client Onboarding"
+      }
+    ]
+  },
+  "webhookLogs": [
+    {
+      "id": "WHK-101",
+      "channel": "Telegram",
+      "type": "inbound_update",
+      "sender": "Arman Hossain (Chillox)",
+      "payload": "Hi Naimur, when can we expect the 8-Year Anniversary Vlog cut?",
+      "status": "200 OK",
+      "timestamp": "10:15 AM"
+    },
+    {
+      "id": "WHK-102",
+      "channel": "Telegram",
+      "type": "outbound_push",
+      "sender": "Purplebot Bot Engine",
+      "payload": "Push Alert: Review Room V2 cut uploaded for UCB Bank",
+      "status": "200 Delivered",
+      "timestamp": "10:30 AM"
+    }
+  ],
+  "attendanceLog": [
+    {
+      "id": "LOG-101",
+      "employeeId": "EMP-002",
+      "name": "Farhan Ahmed",
+      "action": "Clock In",
+      "timestamp": "2026-07-28 08:15 AM",
+      "location": "Chillox Outlet (Badda)",
+      "date": "2026-07-28"
+    },
+    {
+      "id": "LOG-102",
+      "employeeId": "EMP-001",
+      "name": "Mahmudul Hasan",
+      "action": "Clock In",
+      "timestamp": "2026-07-28 09:30 AM",
+      "location": "Gulshan Studio",
+      "date": "2026-07-28"
+    },
+    {
+      "id": "LOG-103",
+      "employeeId": "EMP-003",
+      "name": "Sabrin Akhtar",
+      "action": "Clock In",
+      "timestamp": "2026-07-28 09:45 AM",
+      "location": "Gulshan Studio",
+      "date": "2026-07-28"
+    },
+    {
+      "id": "LOG-104",
+      "employeeId": "EMP-004",
+      "name": "Raihan Kabir",
+      "action": "Clock In",
+      "timestamp": "2026-07-28 10:00 AM",
+      "location": "Gulshan Studio",
+      "date": "2026-07-28"
+    },
+    {
+      "id": "LOG-105",
+      "employeeId": "EMP-005",
+      "name": "Naimur Rahman",
+      "action": "Clock Out",
+      "timestamp": "2026-07-28 06:00 PM",
+      "location": "Office",
+      "date": "2026-07-28"
+    }
+  ],
+  "checkoutLog": [
+    {
+      "id": "CHK-001",
+      "assetId": "AST-001",
+      "assetName": "Sony FX3 Cinema Line Camera",
+      "borrower": "Farhan Ahmed",
+      "checkoutDate": "2026-07-25",
+      "returnDate": null,
+      "status": "Checked Out"
+    },
+    {
+      "id": "CHK-002",
+      "assetId": "AST-002",
+      "assetName": "Aputure 600d Pro Light Kit",
+      "borrower": "Raihan Kabir",
+      "checkoutDate": "2026-07-20",
+      "returnDate": "2026-07-22",
+      "status": "Returned"
+    }
+  ]
+}

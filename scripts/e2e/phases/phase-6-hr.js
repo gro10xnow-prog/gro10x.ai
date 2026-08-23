@@ -25,10 +25,10 @@ async function runPhase6(page) {
       }
     });
     await wait(800);
-    const drawerOpen = await page.$eval('#staffProfileDrawer, .profile-drawer, .modal-overlay', el => el.style.display !== 'none' || el.classList.contains('open'));
+    const drawerOpen = await page.$eval('#hrProfileDrawer', el => el.classList.contains('active') || el.style.display !== 'none');
     tracker.assert(drawerOpen, 'Staff profile drawer should open');
 
-    const drawerText = await page.$eval('#staffProfileDrawer, .profile-drawer, #app-view', el => el.textContent);
+    const drawerText = await page.$eval('#hrProfileDrawer', el => el.textContent);
     tracker.assert(drawerText.includes('PBD-003') || drawerText.includes('Jayed'), 'Profile should display correct staff details');
     tracker.assert(drawerText.includes('Reset 6-Digit PIN'), 'Profile should display Reset 6-Digit PIN action');
     await tracker.screenshot(page, '6.1.3.7_staff_profile_drawer.png');
