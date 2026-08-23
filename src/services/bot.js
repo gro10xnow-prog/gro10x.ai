@@ -8,6 +8,8 @@ const { createTempPin } = require('./auth-pins');
 const state = require('./state');
 const { readDB } = require('./db');
 
+const { getRoleKeyboard, getClientKeyboard } = require('./bot/keyboards');
+
 let teamBot = null;
 let clientBot = null;
 
@@ -24,23 +26,6 @@ module.exports = {
   getClientKeyboard,
   sendAgreementNotification
 };
-const { getRoleKeyboard } = require('./bot/keyboards');
-
-
-// ══════════════════════════════════════════
-// CLIENT BOT KEYBOARD
-// ══════════════════════════════════════════
-function getClientKeyboard(client) {
-  return {
-    keyboard: [
-      [{ text: '🎬 Review Room' }, { text: '📋 Campaign Status' }],
-      [{ text: '💳 My Invoices' }, { text: '🎨 Our Services' }],
-      [{ text: '📞 Contact AM' }, { text: '📁 Portfolio' }],
-      [{ text: '📱 Open App', web_app: { url: 'https://purpleos-iota.vercel.app/client-miniapp' } }]
-    ],
-    resize_keyboard: true
-  };
-}
 
 // ══════════════════════════════════════════
 // AGREEMENT STAGE NOTIFICATIONS
@@ -154,74 +139,9 @@ function initBot() {
       if (usePolling) {
         teamBot.deleteWebHook().catch(e => console.error('Error deleting webhook:', e));
         console.log('✅ Local polling enabled for teamBot (Webhook deleted)');
-      } else {
-        const expectedUrl = `${baseUrl}/api/webhooks/telegram?bot=team`;
-        const webhookBody = { url: expectedUrl };
-        if (process.env.WEBHOOK_SECRET) webhookBody.secret_token = process.env.WEBHOOK_SECRET;
-
-        // Smart check: fetch current webhook info before re-registering
-        fetch(`https://api.telegram.org/bot${teamToken}/getWebhookInfo`)
-          .then(res => res.json())
-          .then(info => {
-            if (info.result && info.result.url === expectedUrl) {
-              console.log(`✅ Team Bot webhook already registered to ${expectedUrl} — skipping setWebhook`);
-            } else {
-              fetch(`https://api.telegram.org/bot${teamToken}/setWebhook`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(webhookBody)
-              }).then(res => res.json()).then(data => {
-                console.log(`📡 Team Bot Webhook status (${baseUrl}):`, data);
-              }).catch(e => console.error('Error setting team webhook:', e));
-            }
-          })
-          .catch(() => {
-            // Fallback direct setWebhook
-            fetch(`https://api.telegram.org/bot${teamToken}/setWebhook`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(webhookBody)
-            }).catch(e => console.error('Error setting team webhook:', e));
-          });
       }
 
       // Global bot error handlers — DM Firoz on unhandled errors
-      teamBot.on('polling_error', (err) => {
-        console.error('🔴 Team Bot polling_error:', err.message);
-      });
-
-      teamBot.on('error', (err) => {
-        const FIROZ_TG_ID = process.env.TECH_ADMIN_TELEGRAM_ID || '1708459008';
-        console.error('🔴 Team Bot unhandled error:', err.message);
-        teamBot.sendMessage(FIROZ_TG_ID,
-          `⚠️ *PurpleOS Bot Exception*\n\n\`${err.message}\`\n\n_${new Date().toISOString()}_`,
-          { parse_mode: 'Markdown' }
-        ).catch(() => {});
-      });
-
-      // Register native command menu
-      teamBot.setMyCommands([
-        { command: 'start', description: '🚀 Verify identity & launch menu' },
-        { command: 'help', description: '📖 Show all available commands' },
-        { command: 'cancel', description: '🚫 Cancel active wizard session' },
-        { command: 'myprofile', description: '👤 View & edit employee profile' },
-        { command: 'mybank', description: '💳 Bank & bKash payout details' },
-        { command: 'mytasks', description: '📋 See assigned tasks' },
-        { command: 'myearnings', description: '💰 Salary & commission summary' },
-        { command: 'resetpin', description: '🔑 Get new web portal login PIN' },
-        { command: 'clockin', description: '📍 GPS clock-in to studio' },
-        { command: 'clockout', description: '🚪 Clock-out & log hours' },
-        { command: 'leave', description: '🌴 Apply for leave' },
-        { command: 'leavebalance', description: '🌴 Check remaining leave balance' },
-        { command: 'expense', description: '🧾 Submit expense claim' },
-        { command: 'eod', description: '📝 Submit EOD report' },
-        { command: 'myeod', description: '📝 View your submitted EOD history' },
-        { command: 'myattendance', description: '📅 View your monthly attendance log' },
-        { command: 'leaderboard', description: '🏆 View team XP rankings' },
-        { command: 'status', description: '📊 Quick personal dashboard' },
-        { command: 'orientation', description: '🎓 Employee onboarding survey' },
-        { command: 'techdiag', description: '🛠️ System diagnostics (Admin)' }
-      ]).catch(e => {});
 
       // /cancel command handler
       teamBot.onText(/\/cancel|❌ Cancel/, async (msg) => {
@@ -657,42 +577,7 @@ function initBot() {
       if (usePolling) {
         clientBot.deleteWebHook().catch(e => console.error('Error deleting client webhook:', e));
         console.log('✅ Local polling enabled for clientBot (Webhook deleted)');
-      } else {
-        const webhookBody = { url: `${baseUrl}/api/webhooks/telegram?bot=client` };
-        if (process.env.WEBHOOK_SECRET) webhookBody.secret_token = process.env.WEBHOOK_SECRET;
-
-        fetch(`https://api.telegram.org/bot${clientToken}/setWebhook`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(webhookBody)
-        }).then(res => res.json()).then(data => {
-          console.log(`📡 Client Bot Webhook status (${baseUrl}):`, data);
-        }).catch(e => console.error('Error setting client webhook:', e));
       }
-
-      // Register native command menu
-      clientBot.setMyCommands([
-        { command: 'start', description: '🚀 Open client portal & verify' },
-        { command: 'help', description: '📖 Show all available client options' },
-        { command: 'services', description: '🎨 View agency services & packages' },
-        { command: 'portfolio', description: '📁 Explore agency portfolio' },
-        { command: 'review', description: '🎬 Access Video Review Room' },
-        { command: 'campaign', description: '📋 Track active campaign status' },
-        { command: 'invoices', description: '💳 View billing & pay invoices' }
-      ]).catch(e => {});
-
-      // Register persistent Chat Menu Button (Open App)
-      fetch(`https://api.telegram.org/bot${clientToken}/setChatMenuButton`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          menu_button: {
-            type: 'web_app',
-            text: 'Open App',
-            web_app: { url: 'https://purpleos-iota.vercel.app/client-miniapp' }
-          }
-        })
-      }).catch(e => {});
 
       // 🔍 TELEGRAM INLINE QUERY HANDLER (@clientBot invoice & service search)
       clientBot.on('inline_query', async (query) => {
@@ -820,15 +705,33 @@ function initBot() {
 
         const pinRecord = await createTempPin(normPhone, client.id, 'client', poc.email || client.email || '');
 
-        const welcome = `✅ *Account Linked — Welcome, ${poc.name}!*\n\n` +
-          `🏢 Organization: *${client.name}*\n` +
-          `👤 Designation: *${poc.role || 'Authorized Representative'}*\n` +
-          `🔑 Web Portal PIN: \`${pinRecord.pin}\`\n\n` +
+        let amName = client.accountManager || client.account_manager || 'Tasin Kabir';
+        let amPhone = '+880 1709-952672';
+        if (amName.toLowerCase().includes('sayed')) {
+          amName = 'Sayed Ashraf';
+          amPhone = '+880 1617-410967';
+        } else if (amName.toLowerCase().includes('rimjhim')) {
+          amName = 'Rimjhim Rashid';
+          amPhone = '+880 1759-768962';
+        } else if (amName.toLowerCase().includes('mehedi')) {
+          amName = 'MD Mehedi Bin Jayed';
+          amPhone = '+880 1874-079687';
+        }
+
+        const welcome = `🎉 *Welcome to Purplebot Digital, ${poc.name}!* \n\n` +
+          `🏢 *Organization:* ${client.name}\n` +
+          `👤 *Authorized POC:* ${poc.role || 'Brand Representative'}\n` +
+          `⚡ *Retainer Status:* ${client.status || 'Active Retainer'}\n` +
+          `🔑 *Your Web Portal PIN:* \`${pinRecord.pin}\`\n\n` +
           `━━━━━━━━━━━━━━━━━━━━\n` +
-          `📌 *Quick Access Actions:*\n` +
-          `1. Tap *🎬 Review Room* to preview your latest creative deliverables\n` +
-          `2. Tap *📋 Campaign Status* to track active production workflows\n` +
-          `3. Tap *Open App* anytime for your full client portal workspace!`;
+          `🤝 *Your Dedicated Account Manager:*\n` +
+          `• *${amName}* (Client Services)\n` +
+          `• Direct Line: \`${amPhone}\`\n\n` +
+          `📌 *Workspace Quick Menu:*\n` +
+          `• Tap *🎬 Review Room* to stream & approve video cuts\n` +
+          `• Tap *📋 Campaign Status* to track your production pipeline\n` +
+          `• Tap *📝 Submit Brief* to launch a new campaign\n` +
+          `• Tap *Open Client Portal* anytime for full web analytics!`;
 
         clientBot.sendMessage(chatId, welcome, { parse_mode: 'Markdown', reply_markup: getClientKeyboard(client) });
       }
@@ -874,6 +777,49 @@ function initBot() {
       clientBot.onText(/\/campaign|📋 Campaign Status/, (msg) => clientHandler.handleCampaignStatus(clientBot, msg));
       clientBot.onText(/\/invoices|💳 My Invoices/, (msg) => clientHandler.handleInvoices(clientBot, msg));
       clientBot.onText(/📞 Contact AM/, (msg) => clientHandler.handleContactAM(clientBot, msg));
+      clientBot.onText(/\/brief|📝 Submit Brief/, (msg) => clientHandler.handleSubmitBrief(clientBot, msg));
+      clientBot.onText(/\/digest|📊 Monthly Digest/, (msg) => clientHandler.handleClientDigest(clientBot, msg));
+
+      // ── Client Bot Callback Query Handler ──────────────────────────────────
+      // Required: Telegram will show infinite spinner if answerCallbackQuery()
+      // is never called. This handler resolves all inline button presses.
+      clientBot.on('callback_query', async (query) => {
+        const queryId = query.id;
+        const data = query.data || '';
+
+        try {
+          if (data.startsWith('open_portal')) {
+            await clientBot.answerCallbackQuery(queryId, {
+              text: '🌐 Opening your client portal...',
+              url: `${process.env.BASE_URL || 'https://purpleos-iota.vercel.app'}/client`
+            });
+          } else if (data.startsWith('open_review')) {
+            await clientBot.answerCallbackQuery(queryId, {
+              text: '🎬 Opening Review Room...',
+              url: `${process.env.BASE_URL || 'https://purpleos-iota.vercel.app'}/client#review`
+            });
+          } else if (data.startsWith('open_invoice')) {
+            await clientBot.answerCallbackQuery(queryId, {
+              text: '💳 Opening invoices...',
+              url: `${process.env.BASE_URL || 'https://purpleos-iota.vercel.app'}/client#invoices`
+            });
+          } else {
+            // Generic acknowledgement — dismiss spinner
+            await clientBot.answerCallbackQuery(queryId, { text: '✅ Received' });
+          }
+        } catch (e) {
+          console.warn('[clientBot] callback_query error:', e.message);
+          try { await clientBot.answerCallbackQuery(queryId, { text: '' }); } catch (_) {}
+        }
+      });
+
+      // ── Client Bot Error Handler ────────────────────────────────────────────
+      clientBot.on('error', (err) => {
+        console.error('[clientBot] polling/webhook error:', err.message || err);
+      });
+      clientBot.on('polling_error', (err) => {
+        console.error('[clientBot] polling_error:', err.message || err);
+      });
     } catch (err) {
       console.warn('⚠️ Client Bot Init Warning:', err.message);
     }
@@ -881,16 +827,31 @@ function initBot() {
 }
 
 function sendTelegramNotification(chatId, text, inlineKeyboard = null, isTeam = false) {
-  let targetBot = isTeam ? (teamBot || clientBot) : (clientBot || teamBot);
+  let targetBot = isTeam ? teamBot : clientBot;
 
   if (!targetBot) {
-    const token = process.env.TEAM_BOT_TOKEN || process.env.CLIENT_BOT_TOKEN || null?.teamBot?.token;
-    if (token && token.trim() !== '' && !token.includes('your_token')) {
-      try {
-        teamBot = new TelegramBot(token, { polling: false });
-        targetBot = teamBot;
-      } catch (e) {}
+    if (isTeam) {
+      const token = process.env.TEAM_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN;
+      if (token && token.trim() !== '' && !token.includes('your_token')) {
+        try {
+          teamBot = new TelegramBot(token, { polling: false });
+          targetBot = teamBot;
+        } catch (e) {}
+      }
+    } else {
+      const token = process.env.CLIENT_BOT_TOKEN || process.env.TEAM_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN;
+      if (token && token.trim() !== '' && !token.includes('your_token')) {
+        try {
+          clientBot = new TelegramBot(token, { polling: false });
+          targetBot = clientBot;
+        } catch (e) {}
+      }
     }
+  }
+
+  // Final fallback to whatever bot is available
+  if (!targetBot) {
+    targetBot = teamBot || clientBot;
   }
 
   if (!targetBot) return false;
@@ -920,5 +881,6 @@ module.exports = {
   getClientBot,
   sendTelegramNotification,
   sendToGroup,
-  getRoleKeyboard
+  getRoleKeyboard,
+  getClientKeyboard
 };
