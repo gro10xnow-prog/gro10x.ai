@@ -8,6 +8,7 @@
     "dev": "node --watch server.js",
     "test": "jest --runInBand --detectOpenHandles --forceExit",
     "test:e2e": "node scripts/e2e/runner.js",
+    "test:e2e:client": "node scripts/e2e-client/runner.js",
     "db:seed": "node scripts/seed-supabase.js",
     "db:prod-reset": "node scripts/prepare-production-db.js",
     "register-webhook": "node register-webhook.js"
@@ -30,8 +31,7 @@
     "express": "^4.19.2",
     "express-rate-limit": "^8.6.1",
     "multer": "^2.2.0",
-    "node-telegram-bot-api": "^0.66.0",
-    "sharp": "^0.35.3"
+    "node-telegram-bot-api": "^0.66.0"
   },
   "devDependencies": {
     "jest": "^30.4.2",
