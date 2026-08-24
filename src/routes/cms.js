@@ -8,40 +8,34 @@ const { DEFAULT_SERVICES } = require('../constants/services');
 
 const defaultCMSContent = {
   agencyInfo: {
-    heroTitle: "Digital. Design. Tech.",
-    heroSubtitle: "Expert solutions tailored to your brand. We combine data-driven marketing, viral short-form content, and cutting-edge tech to deliver measurable business growth.",
-    email: "contact@purplebot.digital",
-    phone: "+88 01711 019550",
-    whatsapp: "+8801711019550",
-    registeredAddress: "Plot 7, Road 17, Flat 2/C, Rupsha Tower, Banani C/A, Dhaka - 1213",
-    operatingAddress: "Flat A5-B5-A4, House 9, Road 1, Block B, Niketon, Gulshan-1, Dhaka - 1212",
-    stats: { years: "8+", clients: "100+", creatives: "20,000+", reach: "10M+" }
+    heroTitle: "AI-First Growth Agency & Multi-Engine Ecosystem",
+    heroSubtitle: "Build smart AI mobile apps, automate marketing, create synthetic media, and scale 10x faster through custom automation pipelines and intelligent agents.",
+    email: "gro10xnow@gmail.com",
+    phone: "+8801708459008",
+    whatsapp: "+8801708459008",
+    registeredAddress: "Dhaka, Bangladesh (BST / UTC+6)",
+    operatingAddress: "Global Remote Operations & Dhaka Hub",
+    stats: { years: "5+", clients: "50+", creatives: "10,000+", reach: "5M+" }
   },
   clientMarquee: [
-    "LG Electronics", "Chillox", "BAT Global",
-    "Taptap Send", "Mortein", "Harpic", "Yatai Japanese", "UCB Bank"
+    "AI Startups", "E-Commerce Brands", "Creator Networks",
+    "Digital Agencies", "SaaS Founders", "Fintech Ventures"
   ],
   whyUs: [
-    { icon: "🎯", title: "Seth Godin 'Purple Cow' Ethos", description: "Founded by IBA graduates Ayman Rahman & Ifteker Mahmud. We build remarkable, impossible-to-ignore brand content." },
-    { icon: "🎬", title: "Full-Scale In-House Studio", description: "From 4K commercial TVCs to viral TikToks and reels, our dedicated production crew handles end-to-end execution." },
-    { icon: "🤖", title: "PurpleOS Bot Workflows", description: "Proprietary AI task dispatching, real-time client review portals, and frame-accurate feedback rooms." }
+    { icon: "⚡", title: "5-Engine Revenue Ecosystem", description: "Diversified, high-margin revenue model spanning Micro-SaaS, Freelance, Etsy Assets, Retainers, and Media." },
+    { icon: "🤖", title: "Autonomous AI Workflows", description: "From ComfyUI studio pipelines to custom RAG bots and fine-tuned models delivering 10x output speed." },
+    { icon: "🛡️", title: "65% Net Margin Architecture", description: "Ultra-lean, high-efficiency operations keeping fixed overhead under $35k to maximize net profitability." }
   ],
   services: DEFAULT_SERVICES,
   portfolioShowcase: [
-    { id: "PORT-001", title: "LG Electronics Bangladesh", subtitle: "3+ Years Retainer • Digital Branding & 500k+ Audience Growth", category: "Electronics & Tech", metric: "📱 500,000+ Social Community", image: "/images/portfolio/lg.webp" },
-    { id: "PORT-002", title: "InterContinental Dhaka", subtitle: "Official Digital Marketing & 360° Creative Support Agency", category: "Hospitality & Luxury", metric: "🏨 2+ Years Full Content Support", image: "/images/portfolio/intercontinental.webp" },
-    { id: "PORT-003", title: "United Commercial Bank (UCB)", subtitle: "Annual Financial Report Video & Digital Launch Campaign", category: "Corporate Financial", metric: "💼 100% On-Time Delivery", image: "/images/portfolio/ucb.webp" },
-    { id: "PORT-004", title: "Chillox Burger Chain", subtitle: "Full Social Media Retainer & Viral Short-Form Video Reels", category: "FMCG & Food", metric: "🍔 2.4M+ Organic Reel Views", image: "/images/portfolio/chillox.webp" },
-    { id: "PORT-005", title: "Mortein Protection (Reckitt)", subtitle: "Digital TVC Commercial & Social Protection Awareness Campaign", category: "Health & FMCG", metric: "🛡️ 1.8M Campaign Reach", image: "/images/portfolio/mortein.webp" },
-    { id: "PORT-006", title: "Harpik Hygiene (Reckitt)", subtitle: "National Sanitation Awareness Video Series & Motion Graphics", category: "Home Care & FMCG", metric: "✨ 3.2M Impressions", image: "/images/portfolio/harpic.webp" },
-    { id: "PORT-007", title: "BAT Global (British American Tobacco)", subtitle: "Corporate Event Digital Motion & Video Retainer", category: "Corporate Enterprise", metric: "⚡ Executive Asset Delivery", image: "/images/portfolio/bat.webp" },
-    { id: "PORT-008", title: "Taptap Send Remittance App", subtitle: "Bangladesh Market Launch & User Acquisition Campaign", category: "Fintech & Mobile", metric: "💸 +45% App Installs", image: "/images/portfolio/taptap.webp" },
-    { id: "PORT-009", title: "Yatai Japanese Dining", subtitle: "Restaurant Launch & Authentic Japanese Food Social Reels", category: "Restaurant & Dining", metric: "🍣 850k Local Reach", image: "/images/portfolio/yatai.webp" }
+    { id: "PORT-001", title: "Autonomous AI Chatbot Network", subtitle: "24/7 Multi-Language Customer Acquisition & Qualification", category: "AI & Automation", metric: "🤖 10,000+ Monthly Leads", image: "/images/portfolio/bot.webp" },
+    { id: "PORT-002", title: "Studio ComfyUI Image Pipeline", subtitle: "Automated Commercial Product Photo Generation", category: "Synthetic Media", metric: "⚡ 500+ Images / Hour", image: "/images/portfolio/comfy.webp" },
+    { id: "PORT-003", title: "Micro-SaaS Utility Platform", subtitle: "Next.js & Supabase Cloud Architecture with Stripe Billing", category: "SaaS & Web", metric: "💻 99.99% Uptime", image: "/images/portfolio/saas.webp" }
   ],
   pricingPackages: [
-    { id: "PKG-001", name: "Lite Plan", tier: "STARTUP", price: "৳45,000", period: "/ month", featured: false, features: ["10 Total Content Items", "8 Image Based Content", "2 Motion or Carousel Content", "Monthly Content Plan & Captions", "Monthly Analytics Reporting", "Shared Account Manager"] },
-    { id: "PKG-002", name: "Essential Plan", tier: "GROWTH", price: "৳75,000", period: "/ month", featured: true, features: ["16 Total Content Items", "12 Image Based Content", "4 Short-Form Video Reels", "Dedicated Copywriter & Designer", "Bi-Weekly Performance Meetings", "Dedicated Account Manager"] },
-    { id: "PKG-003", name: "Advanced Plan", tier: "ENTERPRISE", price: "৳120,000", period: "/ month", featured: false, features: ["24 Total Content Items", "16 Image Based Content", "8 Short-Form Video Reels / TVCs", "Paid Ad Campaign Management", "Weekly Strategy & Shoot Dispatch", "Senior Lead Account Director"] }
+    { id: "PKG-001", name: "AI Sprint Setup", tier: "STARTUP", price: "$1,500", period: "/ one-time", featured: false, features: ["Custom AI Bot or Workflow Build", "Direct API & CRM Integrations", "Full Source Code Handover", "14 Days Launch Support"] },
+    { id: "PKG-002", name: "Growth Retainer", tier: "GROWTH", price: "$500", period: "/ month", featured: true, features: ["Dedicated AI Engineering Team", "Weekly Content & Asset Batches", "Continuous Prompt Optimization", "Direct WhatsApp & Slack Channel"] },
+    { id: "PKG-003", name: "Micro-SaaS Tier", tier: "SCALE", price: "$49", period: "/ month", featured: false, features: ["Full Access to GRO10X Tool Suite", "Cloud Hosted Vector Database", "Automated Daily Backups", "Community & Prompt Library Access"] }
   ]
 };
 

@@ -399,8 +399,13 @@ window.APP_MODULES.leads = async function(container) {
 
         <!-- Service + Source tags -->
         <div style="display:flex; gap:0.3rem; flex-wrap:wrap; margin-bottom:0.5rem;">
-          ${lead.service ? `<span style="font-size:0.66rem; background:rgba(139,92,246,0.15); color:#c084fc; padding:0.1rem 0.35rem; border-radius:4px; font-weight:700;">${escapeHTML(lead.service)}</span>` : ''}
+          ${lead.service || lead.service_interest ? `<span style="font-size:0.66rem; background:rgba(0,223,137,0.15); color:#00df89; padding:0.1rem 0.35rem; border-radius:4px; font-weight:700;">${escapeHTML(lead.service || lead.service_interest)}</span>` : ''}
           ${lead.source ? `<span style="font-size:0.66rem; background:rgba(255,255,255,0.06); color:var(--text-muted); padding:0.1rem 0.35rem; border-radius:4px;">${escapeHTML(lead.source.split(' ')[0])}</span>` : ''}
+          ${(lead.phone || lead.whatsapp) ? `
+            <a href="https://wa.me/${String(lead.phone || lead.whatsapp).replace(/[^0-9]/g, '')}" target="_blank" onclick="event.stopPropagation()" style="font-size:0.66rem; background:rgba(16,185,129,0.2); color:#34d399; padding:0.1rem 0.35rem; border-radius:4px; font-weight:700; text-decoration:none;">
+              💬 WhatsApp
+            </a>
+          ` : ''}
         </div>
 
         <!-- Follow-up alert -->

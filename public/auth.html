@@ -6,29 +6,28 @@
   <script src="/js/theme.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex, nofollow">
-  <title>Client & Partner Portal — Purplebot Digital</title>
-  <meta name="description" content="Secure Client & Partner Portal for Purplebot Digital deliverables, creative reviews, and campaign invoices.">
+  <title>Stakeholder & Client Portal — GRO10X</title>
+  <meta name="description" content="Secure Client & Stakeholder Portal for GRO10X deliverables, AI sprint reviews, and campaign invoices.">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="Client & Partner Portal — Purplebot Digital">
-  <meta property="og:description" content="Secure Client & Partner Portal for Purplebot Digital deliverables, creative reviews, and campaign invoices.">
-  <meta property="og:image" content="https://gro10x-ai.vercel.app/images/mascot.webp">
+  <meta property="og:title" content="Stakeholder & Client Portal — GRO10X">
+  <meta property="og:description" content="Secure Client & Stakeholder Portal for GRO10X deliverables, AI sprint reviews, and campaign invoices.">
+  <meta property="og:image" content="https://gro10x-ai.vercel.app/images/logo.webp">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/tokens.css">
   <style>
-    /* Force dark mode always — auth page is designed for dark backgrounds */
     :root, body {
-      --bg-light:        #0d0d14;
-      --card-bg:         #121218;
-      --card-border:     rgba(139, 92, 246, 0.25);
-      --primary-purple:  #7c3aed;
-      --primary-pink:    #ec4899;
-      --text-main:       #e2e8f0;
+      --bg-light:        #070b12;
+      --card-bg:         #0f172a;
+      --card-border:     rgba(0, 223, 137, 0.25);
+      --primary-brand:   #00df89;
+      --primary-cyan:    #06b6d4;
+      --text-main:       #f8fafc;
       --text-muted:      #94a3b8;
-      --input-bg:        rgba(255, 255, 255, 0.06);
-      --input-border:    rgba(139, 92, 246, 0.25);
+      --input-bg:        rgba(255, 255, 255, 0.05);
+      --input-border:    rgba(0, 223, 137, 0.25);
     }
 
     * {
@@ -54,7 +53,7 @@
       position: absolute;
       width: 500px;
       height: 500px;
-      background: radial-gradient(circle, rgba(139, 92, 246, 0.35) 0%, rgba(0, 0, 0, 0) 70%);
+      background: radial-gradient(circle, rgba(0, 223, 137, 0.2) 0%, rgba(0, 0, 0, 0) 70%);
       top: -100px;
       left: -100px;
       border-radius: 50%;
@@ -68,7 +67,7 @@
       position: absolute;
       width: 450px;
       height: 450px;
-      background: radial-gradient(circle, rgba(236, 72, 153, 0.25) 0%, rgba(0, 0, 0, 0) 70%);
+      background: radial-gradient(circle, rgba(6, 182, 212, 0.18) 0%, rgba(0, 0, 0, 0) 70%);
       bottom: -100px;
       right: -100px;
       border-radius: 50%;
@@ -91,7 +90,7 @@
       border-radius: 24px;
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 30px rgba(168, 85, 247, 0.15);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 30px rgba(0, 223, 137, 0.12);
       z-index: 10;
       position: relative;
     }
@@ -106,12 +105,12 @@
       align-items: center;
       gap: 0.5rem;
       padding: 0.35rem 0.85rem;
-      background: rgba(139, 92, 246, 0.12);
-      border: 1px solid rgba(139, 92, 246, 0.3);
+      background: rgba(0, 223, 137, 0.12);
+      border: 1px solid rgba(0, 223, 137, 0.3);
       border-radius: 999px;
       font-size: 0.75rem;
-      font-weight: 600;
-      color: #c084fc;
+      font-weight: 700;
+      color: var(--primary-brand);
       margin-bottom: 1rem;
       text-transform: uppercase;
       letter-spacing: 0.05em;
@@ -119,9 +118,9 @@
 
     .auth-brand h1 {
       font-size: 1.85rem;
-      font-weight: 800;
+      font-weight: 900;
       letter-spacing: -0.02em;
-      background: linear-gradient(135deg, #ffffff 0%, #a855f7 100%);
+      background: linear-gradient(135deg, #ffffff 0%, #00df89 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       margin-bottom: 0.5rem;
@@ -139,7 +138,7 @@
     .form-group label {
       display: block;
       font-size: 0.8rem;
-      font-weight: 600;
+      font-weight: 700;
       color: #d4d4d8;
       margin-bottom: 0.4rem;
     }
@@ -157,24 +156,24 @@
     }
 
     .form-input:focus {
-      border-color: var(--primary-purple);
-      box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.25);
-      background: #ffffff;
-      color: var(--text-main, #0f172a);
+      border-color: var(--primary-brand);
+      box-shadow: 0 0 0 3px rgba(0, 223, 137, 0.2);
+      background: rgba(255, 255, 255, 0.08);
+      color: #ffffff;
     }
 
     .btn-submit {
       width: 100%;
       padding: 0.85rem;
-      background: linear-gradient(135deg, var(--primary-purple) 0%, var(--primary-pink) 100%);
-      color: #ffffff;
-      font-weight: 700;
+      background: linear-gradient(135deg, var(--primary-brand) 0%, var(--primary-cyan) 100%);
+      color: #070b12;
+      font-weight: 800;
       font-size: 0.95rem;
       border: none;
       border-radius: 12px;
       cursor: pointer;
       transition: all 0.3s ease;
-      box-shadow: 0 4px 20px rgba(139, 92, 246, 0.4);
+      box-shadow: 0 4px 20px rgba(0, 223, 137, 0.3);
       margin-top: 0.5rem;
       display: flex;
       align-items: center;
@@ -184,7 +183,7 @@
 
     .btn-submit:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(236, 72, 153, 0.5);
+      box-shadow: 0 8px 25px rgba(0, 223, 137, 0.45);
     }
 
     .btn-submit:active {
@@ -206,16 +205,16 @@
     }
 
     .alert-success {
-      background: rgba(34, 197, 94, 0.15);
-      border: 1px solid rgba(34, 197, 94, 0.3);
-      color: #86efac;
+      background: rgba(0, 223, 137, 0.15);
+      border: 1px solid rgba(0, 223, 137, 0.3);
+      color: #00df89;
     }
 
     .bot-help-box {
       margin-top: 1.2rem;
       padding: 0.85rem;
-      background: rgba(139, 92, 246, 0.1);
-      border: 1px dashed rgba(168, 85, 247, 0.3);
+      background: rgba(0, 223, 137, 0.08);
+      border: 1px dashed rgba(0, 223, 137, 0.3);
       border-radius: 12px;
       font-size: 0.8rem;
       color: var(--text-muted);
@@ -223,7 +222,7 @@
     }
 
     .bot-help-box a {
-      color: #c084fc;
+      color: var(--primary-brand);
       font-weight: 700;
       text-decoration: none;
     }
@@ -239,82 +238,61 @@
 <body>
 
   <div class="auth-container">
-    <a href="/" style="display:inline-flex; align-items:center; gap:0.4rem; color:var(--text-muted); font-size:0.8rem; font-weight:600; text-decoration:none; margin-bottom:1.25rem; transition:color 0.2s;" onmouseover="this.style.color='#c084fc'" onmouseout="this.style.color='var(--text-muted)'">
-      ← Back to purplebot.digital
+    <a href="/" style="display:inline-flex; align-items:center; gap:0.4rem; color:var(--text-muted); font-size:0.8rem; font-weight:700; text-decoration:none; margin-bottom:1.25rem; transition:color 0.2s;" onmouseover="this.style.color='var(--primary-brand)'" onmouseout="this.style.color='var(--text-muted)'">
+      ← Back to gro10x.ai
     </a>
 
     <div class="auth-brand">
       <div class="auth-badge">
-        <span>🔑 Verified Client & Partner Access</span>
+        <span>⚡ Verified Stakeholder Access</span>
       </div>
-      <h1>Client & Partner Portal</h1>
-      <p>Enter your registered phone number & 4-digit PIN</p>
+      <h1>GRO10X Portal</h1>
+      <p>Enter your phone number and PIN to access command center.</p>
     </div>
 
-    <!-- Alert Box -->
-    <div id="alert-box" class="alert"></div>
+    <div id="alertBox" class="alert"></div>
 
-    <!-- Main Phone + PIN Login Form -->
-    <form id="form-pin-login" onsubmit="handlePinLogin(event)">
-      <input type="hidden" id="email" value="">
+    <form id="authForm" onsubmit="handleAuth(event)">
       <div class="form-group">
         <label for="phone">Registered Phone Number</label>
-        <input type="tel" id="phone" class="form-input" placeholder="+880 1700-000000" required>
+        <input 
+          type="tel" 
+          id="phone" 
+          class="form-input" 
+          placeholder="+880 17... or +1 555..." 
+          required 
+          autocomplete="tel"
+        >
       </div>
 
       <div class="form-group">
         <label for="pin">4-Digit Access PIN</label>
-        <div style="position:relative;">
-          <input type="password" id="pin" class="form-input" placeholder="••••" maxlength="4" required style="letter-spacing: 0.3em; font-size: 1.2rem; text-align: center; padding-right: 2.8rem; color: #f8fafc; font-weight: 700; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(139, 92, 246, 0.35);">
-          <button type="button" onclick="togglePinVisibility('pin', this)" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:1.1rem;" title="Toggle PIN visibility">👁️</button>
-        </div>
+        <input 
+          type="password" 
+          id="pin" 
+          class="form-input" 
+          placeholder="••••" 
+          maxlength="6" 
+          required 
+          autocomplete="current-password"
+        >
       </div>
 
-      <button type="submit" id="btn-pin-submit" class="btn-submit">
-        <span id="btn-text">Sign In to Client Portal</span>
-        <span id="btn-arrow">→</span>
+      <button type="submit" id="submitBtn" class="btn-submit">
+        <span>Sign In to GRO10X</span>
+        <span>→</span>
       </button>
     </form>
 
     <div class="bot-help-box">
-      🤖 Need client access or forgot your 4-digit PIN?<br>
-      • Get instant PIN via Telegram: <a href="https://t.me/purpleosbot?start=portal_login" target="_blank">@purpleosbot</a><br>
-      • Not a client yet? <a href="/#contact" style="color: #34d399; font-weight: 700; text-decoration: underline;">Request a Proposal & Consultation →</a><br>
-      <span style="font-size:0.75rem; color:var(--text-muted); display:inline-block; margin-top:0.35rem;">Purplebot Digital Limited • Agency Client Workspace</span>
+      <span>Need access or forgot your PIN?</span><br>
+      <span>Contact Tech Support at <a href="mailto:gro10xnow@gmail.com">gro10xnow@gmail.com</a> or WhatsApp <a href="https://wa.me/8801708459008" target="_blank">+880 1708-459008</a></span>
     </div>
 
     <div class="form-footer">
-      <p>Purplebot Digital Client & Campaign Portal</p>
+      <p>© 2026 GRO10X. All rights reserved.</p>
     </div>
   </div>
-
-  <!-- First-Time PIN Setup Modal -->
-  <div id="setup-pin-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(16px); z-index: 9999; align-items: center; justify-content: center; padding: 1rem;">
-    <div style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 20px; max-width: 420px; width: 100%; max-height: 95vh; overflow-y: auto; padding: 1.5rem; text-align: left; box-shadow: 0 20px 50px rgba(0,0,0,0.8);">
-      <div style="font-size: 0.8rem; color: #c084fc; font-weight: 700; text-transform: uppercase; margin-bottom: 0.4rem;">🔑 FIRST-TIME LOGIN DETECTED</div>
-      <h2 style="font-size: 1.25rem; color: #fff; margin-bottom: 0.5rem;">Set Your Permanent 4-Digit PIN</h2>
-      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem;">You logged in with a temporary PIN. Create your personal 4-digit PIN for future sign-ins.</p>
-
-      <form onsubmit="submitPermanentPinSetup(event)">
-        <div class="form-group">
-          <label>New 4-Digit PIN</label>
-          <input type="password" id="new-perm-pin" class="form-input" placeholder="••••" maxlength="4" required style="letter-spacing: 0.3em; font-size: 1.2rem; text-align: center;">
-        </div>
-        <div class="form-group">
-          <label>Confirm 4-Digit PIN</label>
-          <input type="password" id="confirm-perm-pin" class="form-input" placeholder="••••" maxlength="4" required style="letter-spacing: 0.3em; font-size: 1.2rem; text-align: center;">
-        </div>
-        <div class="form-group">
-          <label>Work Email Address</label>
-          <input type="email" id="perm-email" class="form-input" placeholder="Primary communication email...">
-        </div>
-        <button type="submit" class="btn-submit" style="margin-top: 1rem;">
-          <span>💾 Save Permanent PIN & Launch</span>
-        </button>
-      </form>
-    </div>
-  </div>
-
 
   <script src="/js/auth.js"></script>
 </body>

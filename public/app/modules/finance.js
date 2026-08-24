@@ -17,14 +17,14 @@ window.generateInvoicePDF = function(invoice) {
   // Header details
   doc.setFont("helvetica", "bold");
   doc.setFontSize(22);
-  doc.setTextColor(124, 58, 237); // Purple
-  doc.text("PURPLEBOT DIGITAL", 14, 20);
+  doc.setTextColor(0, 223, 137); // Cyber Emerald
+  doc.text("GRO10X AI AGENCY", 14, 20);
   
   doc.setFontSize(10);
   doc.setTextColor(100, 100, 100);
   doc.setFont("helvetica", "normal");
-  doc.text("Plot 7, Road 17, Banani C/A, Dhaka - 1213", 14, 28);
-  doc.text("contact@purplebot.digital | +880 1711 019550", 14, 33);
+  doc.text("Dhaka, Bangladesh · BST (UTC+6) / Global Remote Ops", 14, 28);
+  doc.text("gro10xnow@gmail.com | +880 1708-459008", 14, 33);
   
   // Title
   doc.setFont("helvetica", "bold");
@@ -50,9 +50,9 @@ window.generateInvoicePDF = function(invoice) {
   
   // Table Header
   let yPos = 80;
-  doc.setFillColor(124, 58, 237);
+  doc.setFillColor(0, 223, 137);
   doc.rect(14, yPos - 6, 180, 10, 'F');
-  doc.setTextColor(255, 255, 255);
+  doc.setTextColor(7, 11, 18);
   doc.setFont("helvetica", "bold");
   doc.text("Description", 16, yPos);
   doc.text("Amount", 150, yPos);
@@ -67,12 +67,12 @@ window.generateInvoicePDF = function(invoice) {
   }
   
   if (items.length === 0) {
-    items = [{ description: invoice.description || 'Agency Creative & Growth Services', amount: invoice.amount }];
+    items = [{ description: invoice.description || 'AI Engineering & Growth Services', amount: invoice.amount }];
   }
   
   items.forEach(item => {
     doc.text(item.description || 'Service', 16, yPos);
-    doc.text(`BDT ${Number(item.amount || 0).toLocaleString()}`, 150, yPos);
+    doc.text(`$${Number(item.amount || 0).toLocaleString()} (৳${Math.round(Number(item.amount || 0) * 118).toLocaleString()})`, 150, yPos);
     yPos += 10;
   });
   
@@ -83,14 +83,14 @@ window.generateInvoicePDF = function(invoice) {
   
   doc.setFontSize(14);
   doc.text("Total:", 120, yPos);
-  doc.setTextColor(124, 58, 237);
-  doc.text(`BDT ${Number(invoice.amount || 0).toLocaleString()}`, 150, yPos);
+  doc.setTextColor(0, 223, 137);
+  doc.text(`$${Number(invoice.amount || 0).toLocaleString()}`, 150, yPos);
   
   // Footer
   doc.setFontSize(10);
   doc.setTextColor(100, 100, 100);
   doc.setFont("helvetica", "italic");
-  doc.text("Thank you for your business! — Purplebot Digital", 105, 270, null, null, "center");
+  doc.text("Thank you for scaling with GRO10X! — https://gro10x-ai.vercel.app", 105, 270, null, null, "center");
   
   doc.save(`${invoice.id || 'Document'}.pdf`);
 };
