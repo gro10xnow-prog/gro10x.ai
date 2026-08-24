@@ -1,0 +1,200 @@
+{
+  "timestamp": "2026-08-24T19:28:22.049Z",
+  "totalTests": 9,
+  "totalPassed": 9,
+  "totalFailed": 0,
+  "passRate": 100,
+  "totalDurationMs": 6188,
+  "phases": [
+    {
+      "phase": "Suite D - Phase D1: Client MiniApp Auth",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 4163,
+      "results": [
+        {
+          "id": "D1.1",
+          "title": "Load Client MiniApp with URL JWT Token",
+          "status": "PASSED",
+          "duration": 4162,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite D - Phase D2: Home Dashboard",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 260,
+      "results": [
+        {
+          "id": "D2.1",
+          "title": "Verify Client Dashboard Summary & Navigation Chips",
+          "status": "PASSED",
+          "duration": 258,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite D - Phase D3: Campaigns Tab",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 257,
+      "results": [
+        {
+          "id": "D3.1",
+          "title": "Verify Active Campaign Stages and Timeline",
+          "status": "PASSED",
+          "duration": 257,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite D - Phase D4: Review Room Tab",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 251,
+      "results": [
+        {
+          "id": "D4.1",
+          "title": "Verify Review Cuts and 1-Tap Approval Action",
+          "status": "PASSED",
+          "duration": 251,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite D - Phase D5: Invoices & Payments",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 232,
+      "results": [
+        {
+          "id": "D5.1",
+          "title": "Verify Invoices and Payment Method Chips (bKash/MoMo/Bank)",
+          "status": "PASSED",
+          "duration": 232,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite D - Phase D6: Brief Submission",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 235,
+      "results": [
+        {
+          "id": "D6.1",
+          "title": "Verify Project Brief Submission Form",
+          "status": "PASSED",
+          "duration": 235,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite D - Phase D7: Support Tickets",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 239,
+      "results": [
+        {
+          "id": "D7.1",
+          "title": "Verify Support Ticket Submission and Status",
+          "status": "PASSED",
+          "duration": 239,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite D - Phase D8: Contact & POCs",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 271,
+      "results": [
+        {
+          "id": "D8.1",
+          "title": "Verify Dedicated Account Manager & POC Contacts",
+          "status": "PASSED",
+          "duration": 271,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite D - Phase D9: Real-Time SSE Stream",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 280,
+      "results": [
+        {
+          "id": "D9.1",
+          "title": "Verify Client MiniApp SSE Initialized",
+          "status": "PASSED",
+          "duration": 280,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "consoleAudit": [
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "log",
+      "text": "[Telegram.WebView] > postEvent web_app_set_header_color [object Object]"
+    },
+    {
+      "type": "log",
+      "text": "[Telegram.WebView] > postEvent web_app_set_bottom_bar_color [object Object]"
+    },
+    {
+      "type": "log",
+      "text": "[Telegram.WebView] > postEvent web_app_request_theme "
+    },
+    {
+      "type": "log",
+      "text": "[Telegram.WebView] > postEvent web_app_request_viewport "
+    },
+    {
+      "type": "log",
+      "text": "[Telegram.WebView] > postEvent web_app_request_safe_area "
+    },
+    {
+      "type": "log",
+      "text": "[Telegram.WebView] > postEvent web_app_request_content_safe_area "
+    },
+    {
+      "type": "log",
+      "text": "[Telegram.WebView] > postEvent web_app_expand "
+    },
+    {
+      "type": "log",
+      "text": "[Telegram.WebView] > postEvent web_app_ready "
+    },
+    {
+      "type": "warn",
+      "text": "[Telegram.WebApp] Header color is not supported in version 6.0"
+    }
+  ]
+}

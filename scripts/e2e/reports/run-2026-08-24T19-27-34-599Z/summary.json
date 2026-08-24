@@ -1,0 +1,159 @@
+{
+  "timestamp": "2026-08-24T19:27:34.600Z",
+  "totalTests": 8,
+  "totalPassed": 7,
+  "totalFailed": 1,
+  "passRate": 88,
+  "totalDurationMs": 6278,
+  "phases": [
+    {
+      "phase": "Suite B - Phase B1: Manager Auth & Role Access",
+      "total": 2,
+      "passed": 1,
+      "failed": 1,
+      "duration": 4920,
+      "results": [
+        {
+          "id": "B1.1",
+          "title": "Unauthenticated visitor redirects to /auth",
+          "status": "PASSED",
+          "duration": 1739,
+          "error": null
+        },
+        {
+          "id": "B1.2",
+          "title": "Inject Manager JWT Session and Load Portal",
+          "status": "FAILED",
+          "duration": 3179,
+          "error": "Assertion Failed: Manager portal should load, got http://localhost:3000/team"
+        }
+      ]
+    },
+    {
+      "phase": "Suite B - Phase B2: Manager Dashboard",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 364,
+      "results": [
+        {
+          "id": "B2.1",
+          "title": "Verify Manager KPIs and Department Counts",
+          "status": "PASSED",
+          "duration": 364,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite B - Phase B3: Manager Task Operations",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 204,
+      "results": [
+        {
+          "id": "B3.1",
+          "title": "Verify Task List & Stage Progress Controls",
+          "status": "PASSED",
+          "duration": 204,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite B - Phase B4: Team Operations",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 227,
+      "results": [
+        {
+          "id": "B4.1",
+          "title": "Verify Attendance Roster and Leave Requests",
+          "status": "PASSED",
+          "duration": 227,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite B - Phase B5: Finance & Expenses",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 186,
+      "results": [
+        {
+          "id": "B5.1",
+          "title": "Verify Expense Approval Queue",
+          "status": "PASSED",
+          "duration": 186,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite B - Phase B6: Department Tickets",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 184,
+      "results": [
+        {
+          "id": "B6.1",
+          "title": "Verify Ticket Queue and Assignment Options",
+          "status": "PASSED",
+          "duration": 184,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite B - Phase B7: Real-Time SSE Stream",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 193,
+      "results": [
+        {
+          "id": "B7.1",
+          "title": "Verify Manager SSE Connection Initialized",
+          "status": "PASSED",
+          "duration": 193,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "consoleAudit": [
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "log",
+      "text": "ℹ️ Specialist user detected at /manager. Redirecting to /team..."
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    },
+    {
+      "type": "error",
+      "text": "[Crew Router] Error loading #home: TypeError: (attendance || []).find is not a function"
+    }
+  ]
+}

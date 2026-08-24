@@ -13,7 +13,9 @@ window.APP_API = {
   getToken() {
     return localStorage.getItem('sb-access-token') ||
            localStorage.getItem('purpleos_pin_token') ||
-           localStorage.getItem('purple_token') || '';
+           localStorage.getItem('purple_token') ||
+           localStorage.getItem('gro10x_token') ||
+           localStorage.getItem('jwt_token') || '';
   },
 
   getHeaders() {

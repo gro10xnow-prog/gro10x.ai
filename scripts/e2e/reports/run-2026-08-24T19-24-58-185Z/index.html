@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PurpleOS E2E Test Report — 8/25/2026, 1:24:58 AM</title>
+  <style>
+    :root {
+      --bg: #0d0d14;
+      --card: #181824;
+      --border: #2e2e3e;
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --green: #10b981;
+      --red: #ef4444;
+      --purple: #8b5cf6;
+      --pink: #ec4899;
+    }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      margin: 0;
+      padding: 2rem;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .kpi-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+    }
+    .kpi-label { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; }
+    .kpi-val { font-size: 1.8rem; font-weight: 800; margin-top: 0.25rem; }
+    .phase-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 1.5rem;
+      overflow: hidden;
+    }
+    .phase-header {
+      padding: 1rem 1.25rem;
+      background: rgba(255,255,255,0.02);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .test-list { list-style: none; padding: 0; margin: 0; }
+    .test-item {
+      padding: 0.75rem 1.25rem;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.9rem;
+    }
+    .badge {
+      padding: 0.2rem 0.55rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+    .badge-pass { background: rgba(16,185,129,0.15); color: var(--green); border: 1px solid rgba(16,185,129,0.3); }
+    .badge-fail { background: rgba(239,68,68,0.15); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      <h1 style="margin:0; font-size:1.6rem; color:var(--pink);">⚡ PurpleOS Browser Automation Report</h1>
+      <p style="margin:0.25rem 0 0; color:var(--text-muted); font-size:0.85rem;">Generated on 8/25/2026, 1:24:58 AM · Automated E2E Regression Suite</p>
+    </div>
+    <div class="badge badge-fail" style="font-size:1rem; padding:0.4rem 1rem;">
+      🚨 2 TESTS FAILED
+    </div>
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi-card">
+      <div class="kpi-label">Total Test Assertions</div>
+      <div class="kpi-val" style="color:var(--purple);">38</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Passed</div>
+      <div class="kpi-val" style="color:var(--green);">36</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Failed</div>
+      <div class="kpi-val" style="color:var(--red);">2</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Pass Rate</div>
+      <div class="kpi-val" style="color:var(--pink);">95%</div>
+    </div>
+  </div>
+
+  <h2>🧪 Phase Test Breakdown</h2>
+  
+    <div class="phase-card">
+      <div class="phase-header">
+        <h3 style="margin:0; font-size:1.05rem;">Phase 1: Global Shell & Navigation</h3>
+        <div>
+          <span class="badge badge-pass">8/8 Passed (23235ms)</span>
+        </div>
+      </div>
+      <ul class="test-list">
+        
+          <li class="test-item">
+            <div>
+              <strong>[1.1.1]</strong> Redirect unauthenticated users to /auth
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (1889ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[1.1.3]</strong> Load App with Valid Admin JWT Session
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (4530ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[1.1.4]</strong> Verify Admin Profile Badge Display
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (25ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[1.2.1]</strong> Verify Live Dhaka BST Clock in Header
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (352ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[1.3.1]</strong> Open and Verify Ops Health Modal
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (2088ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[1.6.1]</strong> Open Command Palette (Ctrl+K) & Search
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (2000ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[1.7.1]</strong> Verify Theme Toggle Switch (Dark/Light)
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (587ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[1.5.2]</strong> Verify 14 Sidebar Tabs Navigation & Content Rendering
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (11762ms)</span>
+            </div>
+          </li>
+        
+      </ul>
+    </div>
+  
+    <div class="phase-card">
+      <div class="phase-header">
+        <h3 style="margin:0; font-size:1.05rem;">Phase 2: Executive Dashboard & Analytics</h3>
+        <div>
+          <span class="badge badge-fail">5/6 Passed (4071ms)</span>
+        </div>
+      </div>
+      <ul class="test-list">
+        
+          <li class="test-item">
+            <div>
+              <strong>[2.1.1]</strong> Load Executive Dashboard & Verify Hero Section
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (1816ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[2.1.2]</strong> Verify 1-Tap Executive Action Center & Sign-Off Buttons
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (213ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[2.1.3]</strong> Verify Financial Oversight Gauges & BDT Notation
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (199ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[2.1.4]</strong> Verify Overdue Deliverables Radar
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (1ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[2.1.5]</strong> Verify Real-Time Studio Attendance Pulse
+              <div style="color:var(--red); font-size:0.8rem; margin-top:0.3rem;">⚠️ Assertion Failed: Attendance pulse section should render</div>
+            </div>
+            <div>
+              <span class="badge badge-fail">FAILED (1ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[2.2.1]</strong> Navigate to Analytics & Verify Metrics
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (1839ms)</span>
+            </div>
+          </li>
+        
+      </ul>
+    </div>
+  
+    <div class="phase-card">
+      <div class="phase-header">
+        <h3 style="margin:0; font-size:1.05rem;">Phase 3: Client Intelligence (Leads & CRM)</h3>
+        <div>
+          <span class="badge badge-pass">3/3 Passed (3583ms)</span>
+        </div>
+      </div>
+      <ul class="test-list">
+        
+          <li class="test-item">
+            <div>
+              <strong>[3.1.1]</strong> Load Leads Pipeline Board & Verify Columns
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (1779ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[3.2.1]</strong> Load Client CRM Grid & Verify Records
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (1799ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[3.2.2]</strong> Test Client CRM Search & KPI Rendering
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (5ms)</span>
+            </div>
+          </li>
+        
+      </ul>
+    </div>
+  
+    <div class="phase-card">
+      <div class="phase-header">
+        <h3 style="margin:0; font-size:1.05rem;">Phase 4: Production Hub (Kanban, Reviews, Social, CMS)</h3>
+        <div>
+          <span class="badge badge-pass">8/8 Passed (11131ms)</span>
+        </div>
+      </div>
+      <ul class="test-list">
+        
+          <li class="test-item">
+            <div>
+              <strong>[4.1.1]</strong> Load Kanban Pipeline Hub & Verify Workspaces
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (1736ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[4.1.3]</strong> Test Kanban View Switcher (Board/List/Calendar/Dashboard)
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (1076ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[4.1.4]</strong> Verify Column Workload Headers & Hour Badges
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (15ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[4.1.7]</strong> Open & Verify New Task Modal
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (1384ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[4.1.8]</strong> Test Bulk Import CSV & AI Auto-Clean Action
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (1581ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[4.2.1]</strong> Navigate to Review Room Proofing
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (1745ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[4.3.1]</strong> Navigate to Social Planner
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (1835ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[4.4.1]</strong> Navigate to Services & CMS Catalog
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (1759ms)</span>
+            </div>
+          </li>
+        
+      </ul>
+    </div>
+  
+    <div class="phase-card">
+      <div class="phase-header">
+        <h3 style="margin:0; font-size:1.05rem;">Phase 5: Finance & Expenses Command Center</h3>
+        <div>
+          <span class="badge badge-pass">5/5 Passed (8375ms)</span>
+        </div>
+      </div>
+      <ul class="test-list">
+        
+          <li class="test-item">
+            <div>
+              <strong>[5.1.1]</strong> Load Finance Hub & Verify KPI Summary Cards
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (1794ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[5.1.3]</strong> Test Subtab Navigation (Invoices / Verifications / Expenses / Quotes)
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (2450ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[5.1.4]</strong> Test Invoice Status Filter Chips (All/Overdue/Pending/Paid)
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (1433ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[5.1.5]</strong> Open & Verify Create Invoice Modal
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (1345ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[5.1.7]</strong> Open & Verify Log Expense Claim Modal
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (1353ms)</span>
+            </div>
+          </li>
+        
+      </ul>
+    </div>
+  
+    <div class="phase-card">
+      <div class="phase-header">
+        <h3 style="margin:0; font-size:1.05rem;">Phase 6: HR Ops & Hardware Assets</h3>
+        <div>
+          <span class="badge badge-fail">2/3 Passed (4322ms)</span>
+        </div>
+      </div>
+      <ul class="test-list">
+        
+          <li class="test-item">
+            <div>
+              <strong>[6.1.2]</strong> Load HR Roster & Verify Staff Directory
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (1766ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[6.1.3]</strong> Open Staff Profile Drawer & Verify 1-Tap PIN Reset Action
+              <div style="color:var(--red); font-size:0.8rem; margin-top:0.3rem;">⚠️ Assertion Failed: Profile should display correct staff details</div>
+            </div>
+            <div>
+              <span class="badge badge-fail">FAILED (815ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[6.2.1]</strong> Load Hardware Assets Catalog
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (1738ms)</span>
+            </div>
+          </li>
+        
+      </ul>
+    </div>
+  
+    <div class="phase-card">
+      <div class="phase-header">
+        <h3 style="margin:0; font-size:1.05rem;">Phase 7: System & Support (Tickets, Automation, Settings)</h3>
+        <div>
+          <span class="badge badge-pass">3/3 Passed (5379ms)</span>
+        </div>
+      </div>
+      <ul class="test-list">
+        
+          <li class="test-item">
+            <div>
+              <strong>[7.1.1]</strong> Load Support Desk Tickets & Verify Triage Queue
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (1734ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[7.2.1]</strong> Load Bot & Automation Engine Logs Feed
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (1777ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[7.3.2]</strong> Load Settings & Verify Real-Time Telemetry & PIN Updater
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (1868ms)</span>
+            </div>
+          </li>
+        
+      </ul>
+    </div>
+  
+    <div class="phase-card">
+      <div class="phase-header">
+        <h3 style="margin:0; font-size:1.05rem;">Phase 8: Cross-Module Integration</h3>
+        <div>
+          <span class="badge badge-pass">1/1 Passed (1029ms)</span>
+        </div>
+      </div>
+      <ul class="test-list">
+        
+          <li class="test-item">
+            <div>
+              <strong>[8.5.1]</strong> Verify Sidebar Attention Badges & Real-Time Counter Sync
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (1029ms)</span>
+            </div>
+          </li>
+        
+      </ul>
+    </div>
+  
+    <div class="phase-card">
+      <div class="phase-header">
+        <h3 style="margin:0; font-size:1.05rem;">Phase 9: Console Health & Network Audit</h3>
+        <div>
+          <span class="badge badge-pass">1/1 Passed (1ms)</span>
+        </div>
+      </div>
+      <ul class="test-list">
+        
+          <li class="test-item">
+            <div>
+              <strong>[9.1.1]</strong> Audit Browser Console Logs for Runtime Exceptions
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (0ms)</span>
+            </div>
+          </li>
+        
+      </ul>
+    </div>
+  
+
+</body>
+</html>

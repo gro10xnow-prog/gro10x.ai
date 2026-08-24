@@ -1,0 +1,59 @@
+{
+  "timestamp": "2026-08-24T19:28:54.227Z",
+  "totalTests": 3,
+  "totalPassed": 3,
+  "totalFailed": 0,
+  "passRate": 100,
+  "totalDurationMs": 6075,
+  "phases": [
+    {
+      "phase": "Suite G - Phase G1: Public Navigation",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 3396,
+      "results": [
+        {
+          "id": "G1.1",
+          "title": "Load Public Landing Page and Verify Hero & Services",
+          "status": "PASSED",
+          "duration": 3395,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite G - Phase G2: Lead Capture Form",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 407,
+      "results": [
+        {
+          "id": "G2.1",
+          "title": "Verify Proposal Inquiry Form Accessibility",
+          "status": "PASSED",
+          "duration": 407,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite G - Phase G3: Service Detail",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 2272,
+      "results": [
+        {
+          "id": "G3.1",
+          "title": "Load Service Detail Page & Inspect Showcase Media",
+          "status": "PASSED",
+          "duration": 2272,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "consoleAudit": []
+}

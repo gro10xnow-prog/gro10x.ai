@@ -176,9 +176,18 @@ function generateReport(suiteResults, consoleAudit = []) {
 </body>
 </html>`;
 
-  fs.writeFileSync(path.join(runReportDir, 'index.html'), html);
-  // Also copy to latest index.html
-  fs.writeFileSync(path.join(REPORTS_DIR, 'latest-report.html'), html);
+  try {
+    fs.writeFileSync(path.join(runReportDir, 'index.html'), html);
+  } catch (e) {
+    console.warn('[Report] Warning writing index.html:', e.message);
+  }
+
+  try {
+    fs.writeFileSync(path.join(REPORTS_DIR, 'latest-report.html'), html);
+  } catch (e) {
+    console.warn('[Report] Warning writing latest-report.html:', e.message);
+  }
+
   console.log(`📊 Report generated at: ${path.join(runReportDir, 'index.html')}`);
   return { jsonSummary, reportPath: path.join(runReportDir, 'index.html') };
 }

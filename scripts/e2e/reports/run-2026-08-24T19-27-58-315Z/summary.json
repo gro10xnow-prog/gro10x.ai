@@ -1,0 +1,155 @@
+{
+  "timestamp": "2026-08-24T19:27:58.315Z",
+  "totalTests": 8,
+  "totalPassed": 8,
+  "totalFailed": 0,
+  "passRate": 100,
+  "totalDurationMs": 7479,
+  "phases": [
+    {
+      "phase": "Suite B - Phase B1: Manager Auth & Role Access",
+      "total": 2,
+      "passed": 2,
+      "failed": 0,
+      "duration": 4579,
+      "results": [
+        {
+          "id": "B1.1",
+          "title": "Unauthenticated visitor redirects to /auth",
+          "status": "PASSED",
+          "duration": 1722,
+          "error": null
+        },
+        {
+          "id": "B1.2",
+          "title": "Inject Manager JWT Session and Load Portal",
+          "status": "PASSED",
+          "duration": 2854,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite B - Phase B2: Manager Dashboard",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 581,
+      "results": [
+        {
+          "id": "B2.1",
+          "title": "Verify Manager KPIs and Department Counts",
+          "status": "PASSED",
+          "duration": 581,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite B - Phase B3: Manager Task Operations",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 522,
+      "results": [
+        {
+          "id": "B3.1",
+          "title": "Verify Task List & Stage Progress Controls",
+          "status": "PASSED",
+          "duration": 521,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite B - Phase B4: Team Operations",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 446,
+      "results": [
+        {
+          "id": "B4.1",
+          "title": "Verify Attendance Roster and Leave Requests",
+          "status": "PASSED",
+          "duration": 445,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite B - Phase B5: Finance & Expenses",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 465,
+      "results": [
+        {
+          "id": "B5.1",
+          "title": "Verify Expense Approval Queue",
+          "status": "PASSED",
+          "duration": 465,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite B - Phase B6: Department Tickets",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 436,
+      "results": [
+        {
+          "id": "B6.1",
+          "title": "Verify Ticket Queue and Assignment Options",
+          "status": "PASSED",
+          "duration": 436,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite B - Phase B7: Real-Time SSE Stream",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 450,
+      "results": [
+        {
+          "id": "B7.1",
+          "title": "Verify Manager SSE Connection Initialized",
+          "status": "PASSED",
+          "duration": 450,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "consoleAudit": [
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "log",
+      "text": "📌 Manager Portal: Switched to tab 'dashboard'"
+    },
+    {
+      "type": "log",
+      "text": "🚀 PurpleOS Manager Portal JS Initialized"
+    }
+  ]
+}

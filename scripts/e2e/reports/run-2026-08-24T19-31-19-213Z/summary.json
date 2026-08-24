@@ -1,0 +1,444 @@
+{
+  "timestamp": "2026-08-24T19:31:19.215Z",
+  "totalTests": 33,
+  "totalPassed": 33,
+  "totalFailed": 0,
+  "passRate": 100,
+  "totalDurationMs": 56467,
+  "phases": [
+    {
+      "phase": "Suite A - Phase A1: Shell, Auth & Navigation",
+      "total": 8,
+      "passed": 8,
+      "failed": 0,
+      "duration": 21730,
+      "results": [
+        {
+          "id": "A1.1",
+          "title": "Redirect unauthenticated visitor to /auth",
+          "status": "PASSED",
+          "duration": 1501,
+          "error": null
+        },
+        {
+          "id": "A1.2",
+          "title": "Expired JWT triggers 401 redirect to /auth?expired=1",
+          "status": "PASSED",
+          "duration": 2428,
+          "error": null
+        },
+        {
+          "id": "A1.3",
+          "title": "Load Admin OS with Valid Owner Session",
+          "status": "PASSED",
+          "duration": 4592,
+          "error": null
+        },
+        {
+          "id": "A1.4",
+          "title": "Verify Live Dhaka BST Clock in Header",
+          "status": "PASSED",
+          "duration": 349,
+          "error": null
+        },
+        {
+          "id": "A1.5",
+          "title": "Verify all 14 Sidebar Tabs render active content without JS error",
+          "status": "PASSED",
+          "duration": 8823,
+          "error": null
+        },
+        {
+          "id": "A1.6",
+          "title": "Open Command Palette, Search and Close",
+          "status": "PASSED",
+          "duration": 1861,
+          "error": null
+        },
+        {
+          "id": "A1.7",
+          "title": "Toggle Theme (Dark <-> Light)",
+          "status": "PASSED",
+          "duration": 578,
+          "error": null
+        },
+        {
+          "id": "A1.8",
+          "title": "Open Ops Health Telemetry Modal & Refresh",
+          "status": "PASSED",
+          "duration": 1594,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite A - Phase A2: Executive Dashboard & 5-Engine",
+      "total": 4,
+      "passed": 4,
+      "failed": 0,
+      "duration": 2221,
+      "results": [
+        {
+          "id": "A2.1",
+          "title": "Load Executive Dashboard & Verify KPI Summary Cards",
+          "status": "PASSED",
+          "duration": 1824,
+          "error": null
+        },
+        {
+          "id": "A2.2",
+          "title": "Verify 5-Engine Growth Ecosystem Table Rows",
+          "status": "PASSED",
+          "duration": 200,
+          "error": null
+        },
+        {
+          "id": "A2.3",
+          "title": "Toggle Currency Format (BDT <-> USD)",
+          "status": "PASSED",
+          "duration": 1,
+          "error": null
+        },
+        {
+          "id": "A2.4",
+          "title": "Action Center Quick Navigation Buttons",
+          "status": "PASSED",
+          "duration": 196,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite A - Phase A3: Leads & CRM Intelligence",
+      "total": 4,
+      "passed": 4,
+      "failed": 0,
+      "duration": 5680,
+      "results": [
+        {
+          "id": "A3.1.1",
+          "title": "Load Leads Pipeline & Verify Stage Columns",
+          "status": "PASSED",
+          "duration": 1736,
+          "error": null
+        },
+        {
+          "id": "A3.1.2",
+          "title": "Open and Verify Add Lead Modal",
+          "status": "PASSED",
+          "duration": 998,
+          "error": null
+        },
+        {
+          "id": "A3.2.1",
+          "title": "Load CRM Directory & Search Filtering",
+          "status": "PASSED",
+          "duration": 1839,
+          "error": null
+        },
+        {
+          "id": "A3.2.2",
+          "title": "Open and Verify Add Client Modal",
+          "status": "PASSED",
+          "duration": 1106,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite A - Phase A4: Production Hub",
+      "total": 7,
+      "passed": 7,
+      "failed": 0,
+      "duration": 10643,
+      "results": [
+        {
+          "id": "A4.1.1",
+          "title": "Load Kanban Board & Verify Workspaces",
+          "status": "PASSED",
+          "duration": 1795,
+          "error": null
+        },
+        {
+          "id": "A4.1.2",
+          "title": "Test Kanban View Switcher (Board / List / Calendar)",
+          "status": "PASSED",
+          "duration": 886,
+          "error": null
+        },
+        {
+          "id": "A4.1.3",
+          "title": "Open & Verify New Task Modal",
+          "status": "PASSED",
+          "duration": 1300,
+          "error": null
+        },
+        {
+          "id": "A4.1.4",
+          "title": "Test Bulk CSV Import & Auto-Parser",
+          "status": "PASSED",
+          "duration": 1397,
+          "error": null
+        },
+        {
+          "id": "A4.2.1",
+          "title": "Load Review Room Proofing Studio",
+          "status": "PASSED",
+          "duration": 1711,
+          "error": null
+        },
+        {
+          "id": "A4.3.1",
+          "title": "Load Social Planner & Post Calendar",
+          "status": "PASSED",
+          "duration": 1774,
+          "error": null
+        },
+        {
+          "id": "A4.4.1",
+          "title": "Load Agency CMS & Service Catalog",
+          "status": "PASSED",
+          "duration": 1779,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite A - Phase A5: Financial Operations",
+      "total": 4,
+      "passed": 4,
+      "failed": 0,
+      "duration": 6211,
+      "results": [
+        {
+          "id": "A5.1.1",
+          "title": "Load Finance Hub & Verify Summary Cards",
+          "status": "PASSED",
+          "duration": 1746,
+          "error": null
+        },
+        {
+          "id": "A5.1.2",
+          "title": "Test Subtab Switching (Invoices / Expenses / Quotes / Verifications)",
+          "status": "PASSED",
+          "duration": 1670,
+          "error": null
+        },
+        {
+          "id": "A5.1.3",
+          "title": "Open & Verify Create Invoice Modal",
+          "status": "PASSED",
+          "duration": 1345,
+          "error": null
+        },
+        {
+          "id": "A5.1.4",
+          "title": "Open & Verify Log Expense Claim Modal",
+          "status": "PASSED",
+          "duration": 1450,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite A - Phase A6: HR Operations & Team",
+      "total": 3,
+      "passed": 3,
+      "failed": 0,
+      "duration": 4719,
+      "results": [
+        {
+          "id": "A6.1.1",
+          "title": "Load HR Roster & Staff Directory",
+          "status": "PASSED",
+          "duration": 1838,
+          "error": null
+        },
+        {
+          "id": "A6.1.2",
+          "title": "Open Staff Profile Drawer & Verify 1-Tap PIN Reset Action",
+          "status": "PASSED",
+          "duration": 1106,
+          "error": null
+        },
+        {
+          "id": "A6.2.1",
+          "title": "Load Hardware Assets Catalog",
+          "status": "PASSED",
+          "duration": 1775,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite A - Phase A7: Support Tickets",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 1711,
+      "results": [
+        {
+          "id": "A7.1.1",
+          "title": "Load Support Tickets Queue",
+          "status": "PASSED",
+          "duration": 1711,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite A - Phase A8: Automation Engine",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 1749,
+      "results": [
+        {
+          "id": "A8.1.1",
+          "title": "Load Automation Engine & Event Log Timeline",
+          "status": "PASSED",
+          "duration": 1748,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite A - Phase A9: Settings & Telemetry",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 1803,
+      "results": [
+        {
+          "id": "A9.1.1",
+          "title": "Load Settings Configuration & Telemetry",
+          "status": "PASSED",
+          "duration": 1802,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "consoleAudit": [
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "type": "warn",
+      "text": "[PurpleOS API] 401 Unauthorized — Redirecting to login..."
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/dashboard.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/analytics.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/leads.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/crm.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/kanban.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/reviews.js"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    },
+    {
+      "type": "error",
+      "text": "[PurpleOS API] Error fetching /api/reviews: Error: Could not find the table 'public.reviews' in the schema cache"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/social.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/cms.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/finance.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/hr.js"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    },
+    {
+      "type": "error",
+      "text": "[PurpleOS API] Error fetching /api/team/attendance: Error: Could not find the table 'public.attendance' in the schema cache"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/assets.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/tickets.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/automation.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/settings.js"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    },
+    {
+      "type": "error",
+      "text": "[PurpleOS API] Error fetching /api/reviews: Error: Could not find the table 'public.reviews' in the schema cache"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    },
+    {
+      "type": "error",
+      "text": "[PurpleOS API] Error fetching /api/team/attendance: Error: Could not find the table 'public.attendance' in the schema cache"
+    }
+  ]
+}

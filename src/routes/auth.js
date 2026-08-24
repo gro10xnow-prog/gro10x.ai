@@ -60,7 +60,7 @@ router.get('/me', requireAuth, async (req, res) => {
       empCode: empCode,
       name: name,
       role: u.role || prof.role || 'Specialist',
-      accessLevel: u.accessLevel || prof.accessLevel || 'Specialist / Crew',
+      accessLevel: u.accessLevel || u.access_level || prof.accessLevel || prof.access_level || 'Specialist / Crew',
       department: u.department || prof.department || 'Production',
       profile: {
         ...prof,

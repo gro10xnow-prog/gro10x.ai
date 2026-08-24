@@ -117,6 +117,74 @@ class TestTracker {
   }
 }
 
+async function waitForToast(page, expectedText = '', timeout = 4000) {
+  const start = Date.now();
+  while (Date.now() - start < timeout) {
+    const toastText = await page.evaluate(() => {
+      const container = document.getElementById('gro10xToastContainer') || document.querySelector('.toast-container, .toast, [role="alert"]');
+      return container ? container.textContent : '';
+    });
+    if (toastText && (!expectedText || toastText.toLowerCase().includes(expectedText.toLowerCase()))) {
+      return toastText;
+    }
+    await wait(150);
+  }
+  return null;
+}
+
+async function interceptApiCall(page, urlPattern, actionFn, timeout = 5000) {
+  let capturedReq = null;
+  let capturedRes = null;
+
+  const responsePromise = page.waitForResponse(response => {
+    const match = typeof urlPattern === 'string' 
+      ? response.url().includes(urlPattern)
+      : urlPattern.test(response.url());
+    return match;
+  }, { timeout }).catch(() => null);
+
+  await actionFn();
+  capturedRes = await responsePromise;
+  return capturedRes;
+}
+
+async function assertModalOpen(page, modalSelector) {
+  const isOpen = await page.evaluate((sel) => {
+    const el = document.querySelector(sel);
+    if (!el) return false;
+    const style = window.getComputedStyle(el);
+    return style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0';
+  }, modalSelector);
+  if (!isOpen) {
+    throw new Error(`Modal "${modalSelector}" was expected to be open, but is hidden or absent.`);
+  }
+  return true;
+}
+
+async function assertModalClosed(page, modalSelector) {
+  const isClosed = await page.evaluate((sel) => {
+    const el = document.querySelector(sel);
+    if (!el) return true;
+    const style = window.getComputedStyle(el);
+    return style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0' || !el.classList.contains('active');
+  }, modalSelector);
+  if (!isClosed) {
+    throw new Error(`Modal "${modalSelector}" was expected to be closed, but is visible.`);
+  }
+  return true;
+}
+
+async function assertTableRowCount(page, tableSelector, minCount = 1) {
+  const rowCount = await page.evaluate((sel) => {
+    const rows = document.querySelectorAll(`${sel} tr, ${sel} .table-row, ${sel} .grid-card`);
+    return rows.length;
+  }, tableSelector);
+  if (rowCount < minCount) {
+    throw new Error(`Expected at least ${minCount} items in "${tableSelector}", found ${rowCount}`);
+  }
+  return rowCount;
+}
+
 module.exports = {
   PORT,
   BASE_URL,
@@ -127,5 +195,11 @@ module.exports = {
   startServerIfNeeded,
   launchBrowser,
   wait,
+  waitForToast,
+  interceptApiCall,
+  assertModalOpen,
+  assertModalClosed,
+  assertTableRowCount,
   TestTracker
 };
+

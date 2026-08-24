@@ -29,19 +29,24 @@ async function requireAuth(req, res, next) {
         id: decodedPayload.userId || decodedPayload.id || 'USER-001',
         email: decodedPayload.email || '',
         role: decodedPayload.role || 'Specialist',
-        accessLevel: decodedPayload.accessLevel || 'Specialist / Crew',
+        accessLevel: decodedPayload.accessLevel || decodedPayload.access_level || 'Specialist / Crew',
         department: decodedPayload.department || 'Production',
-        linkedType: decodedPayload.linkedType || 'team',
-        linkedId: decodedPayload.linkedId || decodedPayload.userId || 'EMP-001',
+        linkedType: decodedPayload.linkedType || decodedPayload.type || 'team',
+        linkedId: decodedPayload.linkedId || decodedPayload.emp_code || decodedPayload.userId || decodedPayload.id || 'EMP-001',
         profile: decodedPayload.profile || {
-          emp_code: decodedPayload.linkedId || decodedPayload.userId || 'EMP-001',
+          emp_code: decodedPayload.linkedId || decodedPayload.emp_code || decodedPayload.userId || decodedPayload.id || 'EMP-001',
           name: decodedPayload.name || 'User',
           role: decodedPayload.role || 'Specialist',
-          accessLevel: decodedPayload.accessLevel || 'Specialist / Crew',
+          accessLevel: decodedPayload.accessLevel || decodedPayload.access_level || 'Specialist / Crew',
           department: decodedPayload.department || 'Production'
         }
       };
       return next();
+    }
+
+    // If token was explicitly provided as a JWT (3 dot-separated parts) but failed verification (expired or invalid), reject immediately with 401
+    if (typeof token === 'string' && token.split('.').length === 3) {
+      return res.status(401).json({ error: 'Unauthorized: Session token is expired or invalid', expired: true });
     }
   }
 

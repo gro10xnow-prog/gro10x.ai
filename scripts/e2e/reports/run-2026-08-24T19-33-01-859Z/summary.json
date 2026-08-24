@@ -1,0 +1,1266 @@
+{
+  "timestamp": "2026-08-24T19:33:01.862Z",
+  "totalTests": 78,
+  "totalPassed": 78,
+  "totalFailed": 0,
+  "passRate": 100,
+  "totalDurationMs": 86712,
+  "phases": [
+    {
+      "phase": "Suite A - Phase A1: Shell, Auth & Navigation",
+      "total": 8,
+      "passed": 8,
+      "failed": 0,
+      "duration": 20376,
+      "results": [
+        {
+          "id": "A1.1",
+          "title": "Redirect unauthenticated visitor to /auth",
+          "status": "PASSED",
+          "duration": 1409,
+          "error": null
+        },
+        {
+          "id": "A1.2",
+          "title": "Expired JWT triggers 401 redirect to /auth?expired=1",
+          "status": "PASSED",
+          "duration": 2299,
+          "error": null
+        },
+        {
+          "id": "A1.3",
+          "title": "Load Admin OS with Valid Owner Session",
+          "status": "PASSED",
+          "duration": 3559,
+          "error": null
+        },
+        {
+          "id": "A1.4",
+          "title": "Verify Live Dhaka BST Clock in Header",
+          "status": "PASSED",
+          "duration": 349,
+          "error": null
+        },
+        {
+          "id": "A1.5",
+          "title": "Verify all 14 Sidebar Tabs render active content without JS error",
+          "status": "PASSED",
+          "duration": 8812,
+          "error": null
+        },
+        {
+          "id": "A1.6",
+          "title": "Open Command Palette, Search and Close",
+          "status": "PASSED",
+          "duration": 1821,
+          "error": null
+        },
+        {
+          "id": "A1.7",
+          "title": "Toggle Theme (Dark <-> Light)",
+          "status": "PASSED",
+          "duration": 582,
+          "error": null
+        },
+        {
+          "id": "A1.8",
+          "title": "Open Ops Health Telemetry Modal & Refresh",
+          "status": "PASSED",
+          "duration": 1545,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite A - Phase A2: Executive Dashboard & 5-Engine",
+      "total": 4,
+      "passed": 4,
+      "failed": 0,
+      "duration": 2176,
+      "results": [
+        {
+          "id": "A2.1",
+          "title": "Load Executive Dashboard & Verify KPI Summary Cards",
+          "status": "PASSED",
+          "duration": 1787,
+          "error": null
+        },
+        {
+          "id": "A2.2",
+          "title": "Verify 5-Engine Growth Ecosystem Table Rows",
+          "status": "PASSED",
+          "duration": 189,
+          "error": null
+        },
+        {
+          "id": "A2.3",
+          "title": "Toggle Currency Format (BDT <-> USD)",
+          "status": "PASSED",
+          "duration": 2,
+          "error": null
+        },
+        {
+          "id": "A2.4",
+          "title": "Action Center Quick Navigation Buttons",
+          "status": "PASSED",
+          "duration": 198,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite A - Phase A3: Leads & CRM Intelligence",
+      "total": 4,
+      "passed": 4,
+      "failed": 0,
+      "duration": 5602,
+      "results": [
+        {
+          "id": "A3.1.1",
+          "title": "Load Leads Pipeline & Verify Stage Columns",
+          "status": "PASSED",
+          "duration": 1716,
+          "error": null
+        },
+        {
+          "id": "A3.1.2",
+          "title": "Open and Verify Add Lead Modal",
+          "status": "PASSED",
+          "duration": 991,
+          "error": null
+        },
+        {
+          "id": "A3.2.1",
+          "title": "Load CRM Directory & Search Filtering",
+          "status": "PASSED",
+          "duration": 1859,
+          "error": null
+        },
+        {
+          "id": "A3.2.2",
+          "title": "Open and Verify Add Client Modal",
+          "status": "PASSED",
+          "duration": 1035,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite A - Phase A4: Production Hub",
+      "total": 7,
+      "passed": 7,
+      "failed": 0,
+      "duration": 10651,
+      "results": [
+        {
+          "id": "A4.1.1",
+          "title": "Load Kanban Board & Verify Workspaces",
+          "status": "PASSED",
+          "duration": 1759,
+          "error": null
+        },
+        {
+          "id": "A4.1.2",
+          "title": "Test Kanban View Switcher (Board / List / Calendar)",
+          "status": "PASSED",
+          "duration": 873,
+          "error": null
+        },
+        {
+          "id": "A4.1.3",
+          "title": "Open & Verify New Task Modal",
+          "status": "PASSED",
+          "duration": 1297,
+          "error": null
+        },
+        {
+          "id": "A4.1.4",
+          "title": "Test Bulk CSV Import & Auto-Parser",
+          "status": "PASSED",
+          "duration": 1442,
+          "error": null
+        },
+        {
+          "id": "A4.2.1",
+          "title": "Load Review Room Proofing Studio",
+          "status": "PASSED",
+          "duration": 1726,
+          "error": null
+        },
+        {
+          "id": "A4.3.1",
+          "title": "Load Social Planner & Post Calendar",
+          "status": "PASSED",
+          "duration": 1787,
+          "error": null
+        },
+        {
+          "id": "A4.4.1",
+          "title": "Load Agency CMS & Service Catalog",
+          "status": "PASSED",
+          "duration": 1767,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite A - Phase A5: Financial Operations",
+      "total": 4,
+      "passed": 4,
+      "failed": 0,
+      "duration": 6001,
+      "results": [
+        {
+          "id": "A5.1.1",
+          "title": "Load Finance Hub & Verify Summary Cards",
+          "status": "PASSED",
+          "duration": 1771,
+          "error": null
+        },
+        {
+          "id": "A5.1.2",
+          "title": "Test Subtab Switching (Invoices / Expenses / Quotes / Verifications)",
+          "status": "PASSED",
+          "duration": 1617,
+          "error": null
+        },
+        {
+          "id": "A5.1.3",
+          "title": "Open & Verify Create Invoice Modal",
+          "status": "PASSED",
+          "duration": 1319,
+          "error": null
+        },
+        {
+          "id": "A5.1.4",
+          "title": "Open & Verify Log Expense Claim Modal",
+          "status": "PASSED",
+          "duration": 1292,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite A - Phase A6: HR Operations & Team",
+      "total": 3,
+      "passed": 3,
+      "failed": 0,
+      "duration": 4628,
+      "results": [
+        {
+          "id": "A6.1.1",
+          "title": "Load HR Roster & Staff Directory",
+          "status": "PASSED",
+          "duration": 1752,
+          "error": null
+        },
+        {
+          "id": "A6.1.2",
+          "title": "Open Staff Profile Drawer & Verify 1-Tap PIN Reset Action",
+          "status": "PASSED",
+          "duration": 1116,
+          "error": null
+        },
+        {
+          "id": "A6.2.1",
+          "title": "Load Hardware Assets Catalog",
+          "status": "PASSED",
+          "duration": 1758,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite A - Phase A7: Support Tickets",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 1732,
+      "results": [
+        {
+          "id": "A7.1.1",
+          "title": "Load Support Tickets Queue",
+          "status": "PASSED",
+          "duration": 1731,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite A - Phase A8: Automation Engine",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 1731,
+      "results": [
+        {
+          "id": "A8.1.1",
+          "title": "Load Automation Engine & Event Log Timeline",
+          "status": "PASSED",
+          "duration": 1730,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite A - Phase A9: Settings & Telemetry",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 1858,
+      "results": [
+        {
+          "id": "A9.1.1",
+          "title": "Load Settings Configuration & Telemetry",
+          "status": "PASSED",
+          "duration": 1858,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite B - Phase B1: Manager Auth & Role Access",
+      "total": 2,
+      "passed": 2,
+      "failed": 0,
+      "duration": 3846,
+      "results": [
+        {
+          "id": "B1.1",
+          "title": "Unauthenticated visitor redirects to /auth",
+          "status": "PASSED",
+          "duration": 1028,
+          "error": null
+        },
+        {
+          "id": "B1.2",
+          "title": "Inject Manager JWT Session and Load Portal",
+          "status": "PASSED",
+          "duration": 2818,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite B - Phase B2: Manager Dashboard",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 455,
+      "results": [
+        {
+          "id": "B2.1",
+          "title": "Verify Manager KPIs and Department Counts",
+          "status": "PASSED",
+          "duration": 455,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite B - Phase B3: Manager Task Operations",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 436,
+      "results": [
+        {
+          "id": "B3.1",
+          "title": "Verify Task List & Stage Progress Controls",
+          "status": "PASSED",
+          "duration": 435,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite B - Phase B4: Team Operations",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 438,
+      "results": [
+        {
+          "id": "B4.1",
+          "title": "Verify Attendance Roster and Leave Requests",
+          "status": "PASSED",
+          "duration": 438,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite B - Phase B5: Finance & Expenses",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 466,
+      "results": [
+        {
+          "id": "B5.1",
+          "title": "Verify Expense Approval Queue",
+          "status": "PASSED",
+          "duration": 465,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite B - Phase B6: Department Tickets",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 476,
+      "results": [
+        {
+          "id": "B6.1",
+          "title": "Verify Ticket Queue and Assignment Options",
+          "status": "PASSED",
+          "duration": 476,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite B - Phase B7: Real-Time SSE Stream",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 436,
+      "results": [
+        {
+          "id": "B7.1",
+          "title": "Verify Manager SSE Connection Initialized",
+          "status": "PASSED",
+          "duration": 436,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite C - Phase C1: Partner Portal Auth",
+      "total": 2,
+      "passed": 2,
+      "failed": 0,
+      "duration": 3652,
+      "results": [
+        {
+          "id": "C1.1",
+          "title": "Unauthenticated visitor redirects to /auth",
+          "status": "PASSED",
+          "duration": 983,
+          "error": null
+        },
+        {
+          "id": "C1.2",
+          "title": "Inject Partner JWT and Load Partners Portal",
+          "status": "PASSED",
+          "duration": 2669,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite C - Phase C2: Partner Dashboard",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 478,
+      "results": [
+        {
+          "id": "C2.1",
+          "title": "Verify Partner Dashboard Metrics and Campaign List",
+          "status": "PASSED",
+          "duration": 478,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite C - Phase C3: Partner Review Room",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 412,
+      "results": [
+        {
+          "id": "C3.1",
+          "title": "Verify Review Room Player & Cut Approval Controls",
+          "status": "PASSED",
+          "duration": 412,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite C - Phase C4: Invoices & Payments",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 399,
+      "results": [
+        {
+          "id": "C4.1",
+          "title": "Verify Invoice List and Pay Now Payment Flow",
+          "status": "PASSED",
+          "duration": 399,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite C - Phase C5: Social Approvals",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 449,
+      "results": [
+        {
+          "id": "C5.1",
+          "title": "Verify Social Post Approvals Interface",
+          "status": "PASSED",
+          "duration": 449,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite C - Phase C6: Brief Submission",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 531,
+      "results": [
+        {
+          "id": "C6.1",
+          "title": "Verify New Brief Submission Modal Form",
+          "status": "PASSED",
+          "duration": 531,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite C - Phase C7: Real-Time SSE Stream",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 504,
+      "results": [
+        {
+          "id": "C7.1",
+          "title": "Verify Partner SSE Listener Initialized",
+          "status": "PASSED",
+          "duration": 504,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite D - Phase D1: Client MiniApp Auth",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 3399,
+      "results": [
+        {
+          "id": "D1.1",
+          "title": "Load Client MiniApp with URL JWT Token",
+          "status": "PASSED",
+          "duration": 3398,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite D - Phase D2: Home Dashboard",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 233,
+      "results": [
+        {
+          "id": "D2.1",
+          "title": "Verify Client Dashboard Summary & Navigation Chips",
+          "status": "PASSED",
+          "duration": 233,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite D - Phase D3: Campaigns Tab",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 243,
+      "results": [
+        {
+          "id": "D3.1",
+          "title": "Verify Active Campaign Stages and Timeline",
+          "status": "PASSED",
+          "duration": 242,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite D - Phase D4: Review Room Tab",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 277,
+      "results": [
+        {
+          "id": "D4.1",
+          "title": "Verify Review Cuts and 1-Tap Approval Action",
+          "status": "PASSED",
+          "duration": 277,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite D - Phase D5: Invoices & Payments",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 255,
+      "results": [
+        {
+          "id": "D5.1",
+          "title": "Verify Invoices and Payment Method Chips (bKash/MoMo/Bank)",
+          "status": "PASSED",
+          "duration": 255,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite D - Phase D6: Brief Submission",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 273,
+      "results": [
+        {
+          "id": "D6.1",
+          "title": "Verify Project Brief Submission Form",
+          "status": "PASSED",
+          "duration": 273,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite D - Phase D7: Support Tickets",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 285,
+      "results": [
+        {
+          "id": "D7.1",
+          "title": "Verify Support Ticket Submission and Status",
+          "status": "PASSED",
+          "duration": 285,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite D - Phase D8: Contact & POCs",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 301,
+      "results": [
+        {
+          "id": "D8.1",
+          "title": "Verify Dedicated Account Manager & POC Contacts",
+          "status": "PASSED",
+          "duration": 301,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite D - Phase D9: Real-Time SSE Stream",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 305,
+      "results": [
+        {
+          "id": "D9.1",
+          "title": "Verify Client MiniApp SSE Initialized",
+          "status": "PASSED",
+          "duration": 305,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite E - Phase E1: Team MiniApp Auth",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 2342,
+      "results": [
+        {
+          "id": "E1.1",
+          "title": "Load Team MiniApp with Staff JWT Token",
+          "status": "PASSED",
+          "duration": 2341,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite E - Phase E2: Staff Shift Status",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 109,
+      "results": [
+        {
+          "id": "E2.1",
+          "title": "Verify Staff Shift Status and Clock Controls",
+          "status": "PASSED",
+          "duration": 109,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite E - Phase E3: Attendance Logging",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 130,
+      "results": [
+        {
+          "id": "E3.1",
+          "title": "Verify Clock-In / Clock-Out and Studio Status",
+          "status": "PASSED",
+          "duration": 130,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite E - Phase E4: My Assigned Tasks",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 110,
+      "results": [
+        {
+          "id": "E4.1",
+          "title": "Verify Assigned Tasks and Submit for QC Action",
+          "status": "PASSED",
+          "duration": 109,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite E - Phase E5: EOD Reports",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 118,
+      "results": [
+        {
+          "id": "E5.1",
+          "title": "Verify Daily EOD Report Form & Tasks Completed",
+          "status": "PASSED",
+          "duration": 118,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite E - Phase E6: Expense Claims",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 106,
+      "results": [
+        {
+          "id": "E6.1",
+          "title": "Verify Expense Claim Form & Category Selector",
+          "status": "PASSED",
+          "duration": 106,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite E - Phase E7: Leave Requests",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 117,
+      "results": [
+        {
+          "id": "E7.1",
+          "title": "Verify Leave Request Form and Balance Display",
+          "status": "PASSED",
+          "duration": 117,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite E - Phase E8: Admin Action Panel",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 118,
+      "results": [
+        {
+          "id": "E8.1",
+          "title": "Verify Admin Quick API Trigger Buttons",
+          "status": "PASSED",
+          "duration": 118,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite E - Phase E9: Real-Time SSE Stream",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 99,
+      "results": [
+        {
+          "id": "E9.1",
+          "title": "Verify Team MiniApp SSE Initialized",
+          "status": "PASSED",
+          "duration": 99,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite F - Phase F1: Investors Page Load",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 2704,
+      "results": [
+        {
+          "id": "F1.1",
+          "title": "Load Public Investors Portal without Auth Wall",
+          "status": "PASSED",
+          "duration": 2703,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite F - Phase F2: Financial Intelligence",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 163,
+      "results": [
+        {
+          "id": "F2.1",
+          "title": "Verify Financial Breakdown Table and Runway Metrics",
+          "status": "PASSED",
+          "duration": 163,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite F - Phase F3: Leadership & Roadmap",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 157,
+      "results": [
+        {
+          "id": "F3.1",
+          "title": "Verify Founders, Team & Growth Roadmap Sections",
+          "status": "PASSED",
+          "duration": 157,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite G - Phase G1: Public Navigation",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 2457,
+      "results": [
+        {
+          "id": "G1.1",
+          "title": "Load Public Landing Page and Verify Hero & Services",
+          "status": "PASSED",
+          "duration": 2457,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite G - Phase G2: Lead Capture Form",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 319,
+      "results": [
+        {
+          "id": "G2.1",
+          "title": "Verify Proposal Inquiry Form Accessibility",
+          "status": "PASSED",
+          "duration": 319,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite G - Phase G3: Service Detail",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 2171,
+      "results": [
+        {
+          "id": "G3.1",
+          "title": "Load Service Detail Page & Inspect Showcase Media",
+          "status": "PASSED",
+          "duration": 2170,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite X - Phase X1: SSE Real-Time Chain",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 1,
+      "results": [
+        {
+          "id": "X1.1",
+          "title": "Verify SSE Event Broadcast and Multi-Portal Listener Handlers",
+          "status": "PASSED",
+          "duration": 1,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite X - Phase X2: Notification Delivery Chain",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 1,
+      "results": [
+        {
+          "id": "X2.1",
+          "title": "Verify Email Service Simulation and Fallback Handling",
+          "status": "PASSED",
+          "duration": 1,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite X - Phase X3: Multi-Tenant Isolation",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 0,
+      "results": [
+        {
+          "id": "X3.1",
+          "title": "Verify Tenant Scoping Middleware and Isolation Logic",
+          "status": "PASSED",
+          "duration": 0,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite X - Phase X4: Session Expiry Handling",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 2181,
+      "results": [
+        {
+          "id": "X4.1",
+          "title": "Expired Session Interceptor Redirects to /auth",
+          "status": "PASSED",
+          "duration": 2181,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite X - Phase X5: Edge Cron Schedulers",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 5,
+      "results": [
+        {
+          "id": "X5.1",
+          "title": "Verify Cron Routes Structure and Security Guard",
+          "status": "PASSED",
+          "duration": 4,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "consoleAudit": [
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "type": "warn",
+      "text": "[PurpleOS API] 401 Unauthorized — Redirecting to login..."
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/dashboard.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/analytics.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/leads.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/crm.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/kanban.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/reviews.js"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    },
+    {
+      "type": "error",
+      "text": "[PurpleOS API] Error fetching /api/reviews: Error: Could not find the table 'public.reviews' in the schema cache"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/social.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/cms.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/finance.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/hr.js"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    },
+    {
+      "type": "error",
+      "text": "[PurpleOS API] Error fetching /api/team/attendance: Error: Could not find the table 'public.attendance' in the schema cache"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/assets.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/tickets.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/automation.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/settings.js"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    },
+    {
+      "type": "error",
+      "text": "[PurpleOS API] Error fetching /api/reviews: Error: Could not find the table 'public.reviews' in the schema cache"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    },
+    {
+      "type": "error",
+      "text": "[PurpleOS API] Error fetching /api/team/attendance: Error: Could not find the table 'public.attendance' in the schema cache"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "log",
+      "text": "📌 Manager Portal: Switched to tab 'dashboard'"
+    },
+    {
+      "type": "log",
+      "text": "🚀 PurpleOS Manager Portal JS Initialized"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "log",
+      "text": "[Telegram.WebView] > postEvent web_app_set_header_color [object Object]"
+    },
+    {
+      "type": "log",
+      "text": "[Telegram.WebView] > postEvent web_app_set_bottom_bar_color [object Object]"
+    },
+    {
+      "type": "log",
+      "text": "[Telegram.WebView] > postEvent web_app_request_theme "
+    },
+    {
+      "type": "log",
+      "text": "[Telegram.WebView] > postEvent web_app_request_viewport "
+    },
+    {
+      "type": "log",
+      "text": "[Telegram.WebView] > postEvent web_app_request_safe_area "
+    },
+    {
+      "type": "log",
+      "text": "[Telegram.WebView] > postEvent web_app_request_content_safe_area "
+    },
+    {
+      "type": "log",
+      "text": "[Telegram.WebView] > postEvent web_app_expand "
+    },
+    {
+      "type": "log",
+      "text": "[Telegram.WebView] > postEvent web_app_ready "
+    },
+    {
+      "type": "warn",
+      "text": "[Telegram.WebApp] Header color is not supported in version 6.0"
+    },
+    {
+      "type": "log",
+      "text": "[Telegram.WebView] > postEvent web_app_set_header_color [object Object]"
+    },
+    {
+      "type": "log",
+      "text": "[Telegram.WebView] > postEvent web_app_set_bottom_bar_color [object Object]"
+    },
+    {
+      "type": "log",
+      "text": "[Telegram.WebView] > postEvent web_app_request_theme "
+    },
+    {
+      "type": "log",
+      "text": "[Telegram.WebView] > postEvent web_app_request_viewport "
+    },
+    {
+      "type": "log",
+      "text": "[Telegram.WebView] > postEvent web_app_request_safe_area "
+    },
+    {
+      "type": "log",
+      "text": "[Telegram.WebView] > postEvent web_app_request_content_safe_area "
+    },
+    {
+      "type": "log",
+      "text": "[Telegram.WebView] > postEvent web_app_expand "
+    },
+    {
+      "type": "log",
+      "text": "[Telegram.WebView] > postEvent web_app_ready "
+    },
+    {
+      "type": "warn",
+      "text": "[Telegram.WebApp] Header color is not supported in version 6.0"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "type": "warn",
+      "text": "[PurpleOS API] 401 Unauthorized — Redirecting to login..."
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    }
+  ]
+}

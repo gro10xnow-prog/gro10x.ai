@@ -1,0 +1,130 @@
+{
+  "timestamp": "2026-08-24T19:26:38.017Z",
+  "totalTests": 8,
+  "totalPassed": 4,
+  "totalFailed": 4,
+  "passRate": 50,
+  "totalDurationMs": 501,
+  "phases": [
+    {
+      "phase": "Suite B - Phase B1: Manager Auth & Role Access",
+      "total": 2,
+      "passed": 0,
+      "failed": 2,
+      "duration": 13,
+      "results": [
+        {
+          "id": "B1.1",
+          "title": "Unauthenticated visitor redirects to /auth",
+          "status": "FAILED",
+          "duration": 7,
+          "error": "SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+        },
+        {
+          "id": "B1.2",
+          "title": "Inject Manager JWT Session and Load Portal",
+          "status": "FAILED",
+          "duration": 5,
+          "error": "SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+        }
+      ]
+    },
+    {
+      "phase": "Suite B - Phase B2: Manager Dashboard",
+      "total": 1,
+      "passed": 0,
+      "failed": 1,
+      "duration": 22,
+      "results": [
+        {
+          "id": "B2.1",
+          "title": "Verify Manager KPIs and Department Counts",
+          "status": "FAILED",
+          "duration": 22,
+          "error": "Assertion Failed: Manager dashboard should render KPI panels"
+        }
+      ]
+    },
+    {
+      "phase": "Suite B - Phase B3: Manager Task Operations",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 119,
+      "results": [
+        {
+          "id": "B3.1",
+          "title": "Verify Task List & Stage Progress Controls",
+          "status": "PASSED",
+          "duration": 118,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite B - Phase B4: Team Operations",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 108,
+      "results": [
+        {
+          "id": "B4.1",
+          "title": "Verify Attendance Roster and Leave Requests",
+          "status": "PASSED",
+          "duration": 107,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite B - Phase B5: Finance & Expenses",
+      "total": 1,
+      "passed": 0,
+      "failed": 1,
+      "duration": 7,
+      "results": [
+        {
+          "id": "B5.1",
+          "title": "Verify Expense Approval Queue",
+          "status": "FAILED",
+          "duration": 7,
+          "error": "Assertion Failed: Finance & expense view should render"
+        }
+      ]
+    },
+    {
+      "phase": "Suite B - Phase B6: Department Tickets",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 118,
+      "results": [
+        {
+          "id": "B6.1",
+          "title": "Verify Ticket Queue and Assignment Options",
+          "status": "PASSED",
+          "duration": 118,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite B - Phase B7: Real-Time SSE Stream",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 114,
+      "results": [
+        {
+          "id": "B7.1",
+          "title": "Verify Manager SSE Connection Initialized",
+          "status": "PASSED",
+          "duration": 114,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "consoleAudit": []
+}

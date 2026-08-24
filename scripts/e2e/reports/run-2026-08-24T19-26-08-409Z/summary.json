@@ -1,0 +1,467 @@
+{
+  "timestamp": "2026-08-24T19:26:08.411Z",
+  "totalTests": 38,
+  "totalPassed": 36,
+  "totalFailed": 2,
+  "passRate": 95,
+  "totalDurationMs": 61099,
+  "phases": [
+    {
+      "phase": "Phase 1: Global Shell & Navigation",
+      "total": 8,
+      "passed": 8,
+      "failed": 0,
+      "duration": 23351,
+      "results": [
+        {
+          "id": "1.1.1",
+          "title": "Redirect unauthenticated users to /auth",
+          "status": "PASSED",
+          "duration": 1824,
+          "error": null
+        },
+        {
+          "id": "1.1.3",
+          "title": "Load App with Valid Admin JWT Session",
+          "status": "PASSED",
+          "duration": 4648,
+          "error": null
+        },
+        {
+          "id": "1.1.4",
+          "title": "Verify Admin Profile Badge Display",
+          "status": "PASSED",
+          "duration": 63,
+          "error": null
+        },
+        {
+          "id": "1.2.1",
+          "title": "Verify Live Dhaka BST Clock in Header",
+          "status": "PASSED",
+          "duration": 402,
+          "error": null
+        },
+        {
+          "id": "1.3.1",
+          "title": "Open and Verify Ops Health Modal",
+          "status": "PASSED",
+          "duration": 2131,
+          "error": null
+        },
+        {
+          "id": "1.6.1",
+          "title": "Open Command Palette (Ctrl+K) & Search",
+          "status": "PASSED",
+          "duration": 1982,
+          "error": null
+        },
+        {
+          "id": "1.7.1",
+          "title": "Verify Theme Toggle Switch (Dark/Light)",
+          "status": "PASSED",
+          "duration": 598,
+          "error": null
+        },
+        {
+          "id": "1.5.2",
+          "title": "Verify 14 Sidebar Tabs Navigation & Content Rendering",
+          "status": "PASSED",
+          "duration": 11699,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Phase 2: Executive Dashboard & Analytics",
+      "total": 6,
+      "passed": 5,
+      "failed": 1,
+      "duration": 4120,
+      "results": [
+        {
+          "id": "2.1.1",
+          "title": "Load Executive Dashboard & Verify Hero Section",
+          "status": "PASSED",
+          "duration": 1812,
+          "error": null
+        },
+        {
+          "id": "2.1.2",
+          "title": "Verify 1-Tap Executive Action Center & Sign-Off Buttons",
+          "status": "PASSED",
+          "duration": 252,
+          "error": null
+        },
+        {
+          "id": "2.1.3",
+          "title": "Verify Financial Oversight Gauges & BDT Notation",
+          "status": "PASSED",
+          "duration": 198,
+          "error": null
+        },
+        {
+          "id": "2.1.4",
+          "title": "Verify Overdue Deliverables Radar",
+          "status": "PASSED",
+          "duration": 1,
+          "error": null
+        },
+        {
+          "id": "2.1.5",
+          "title": "Verify Real-Time Studio Attendance Pulse",
+          "status": "FAILED",
+          "duration": 2,
+          "error": "Assertion Failed: Attendance pulse section should render"
+        },
+        {
+          "id": "2.2.1",
+          "title": "Navigate to Analytics & Verify Metrics",
+          "status": "PASSED",
+          "duration": 1855,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Phase 3: Client Intelligence (Leads & CRM)",
+      "total": 3,
+      "passed": 3,
+      "failed": 0,
+      "duration": 3541,
+      "results": [
+        {
+          "id": "3.1.1",
+          "title": "Load Leads Pipeline Board & Verify Columns",
+          "status": "PASSED",
+          "duration": 1741,
+          "error": null
+        },
+        {
+          "id": "3.2.1",
+          "title": "Load Client CRM Grid & Verify Records",
+          "status": "PASSED",
+          "duration": 1795,
+          "error": null
+        },
+        {
+          "id": "3.2.2",
+          "title": "Test Client CRM Search & KPI Rendering",
+          "status": "PASSED",
+          "duration": 5,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Phase 4: Production Hub (Kanban, Reviews, Social, CMS)",
+      "total": 8,
+      "passed": 8,
+      "failed": 0,
+      "duration": 11089,
+      "results": [
+        {
+          "id": "4.1.1",
+          "title": "Load Kanban Pipeline Hub & Verify Workspaces",
+          "status": "PASSED",
+          "duration": 1738,
+          "error": null
+        },
+        {
+          "id": "4.1.3",
+          "title": "Test Kanban View Switcher (Board/List/Calendar/Dashboard)",
+          "status": "PASSED",
+          "duration": 1078,
+          "error": null
+        },
+        {
+          "id": "4.1.4",
+          "title": "Verify Column Workload Headers & Hour Badges",
+          "status": "PASSED",
+          "duration": 16,
+          "error": null
+        },
+        {
+          "id": "4.1.7",
+          "title": "Open & Verify New Task Modal",
+          "status": "PASSED",
+          "duration": 1359,
+          "error": null
+        },
+        {
+          "id": "4.1.8",
+          "title": "Test Bulk Import CSV & AI Auto-Clean Action",
+          "status": "PASSED",
+          "duration": 1584,
+          "error": null
+        },
+        {
+          "id": "4.2.1",
+          "title": "Navigate to Review Room Proofing",
+          "status": "PASSED",
+          "duration": 1754,
+          "error": null
+        },
+        {
+          "id": "4.3.1",
+          "title": "Navigate to Social Planner",
+          "status": "PASSED",
+          "duration": 1777,
+          "error": null
+        },
+        {
+          "id": "4.4.1",
+          "title": "Navigate to Services & CMS Catalog",
+          "status": "PASSED",
+          "duration": 1781,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Phase 5: Finance & Expenses Command Center",
+      "total": 5,
+      "passed": 5,
+      "failed": 0,
+      "duration": 8378,
+      "results": [
+        {
+          "id": "5.1.1",
+          "title": "Load Finance Hub & Verify KPI Summary Cards",
+          "status": "PASSED",
+          "duration": 1757,
+          "error": null
+        },
+        {
+          "id": "5.1.3",
+          "title": "Test Subtab Navigation (Invoices / Verifications / Expenses / Quotes)",
+          "status": "PASSED",
+          "duration": 2426,
+          "error": null
+        },
+        {
+          "id": "5.1.4",
+          "title": "Test Invoice Status Filter Chips (All/Overdue/Pending/Paid)",
+          "status": "PASSED",
+          "duration": 1484,
+          "error": null
+        },
+        {
+          "id": "5.1.5",
+          "title": "Open & Verify Create Invoice Modal",
+          "status": "PASSED",
+          "duration": 1348,
+          "error": null
+        },
+        {
+          "id": "5.1.7",
+          "title": "Open & Verify Log Expense Claim Modal",
+          "status": "PASSED",
+          "duration": 1360,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Phase 6: HR Ops & Hardware Assets",
+      "total": 3,
+      "passed": 2,
+      "failed": 1,
+      "duration": 4304,
+      "results": [
+        {
+          "id": "6.1.2",
+          "title": "Load HR Roster & Verify Staff Directory",
+          "status": "PASSED",
+          "duration": 1729,
+          "error": null
+        },
+        {
+          "id": "6.1.3",
+          "title": "Open Staff Profile Drawer & Verify 1-Tap PIN Reset Action",
+          "status": "FAILED",
+          "duration": 818,
+          "error": "Assertion Failed: Profile should display correct staff details"
+        },
+        {
+          "id": "6.2.1",
+          "title": "Load Hardware Assets Catalog",
+          "status": "PASSED",
+          "duration": 1756,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Phase 7: System & Support (Tickets, Automation, Settings)",
+      "total": 3,
+      "passed": 3,
+      "failed": 0,
+      "duration": 5268,
+      "results": [
+        {
+          "id": "7.1.1",
+          "title": "Load Support Desk Tickets & Verify Triage Queue",
+          "status": "PASSED",
+          "duration": 1725,
+          "error": null
+        },
+        {
+          "id": "7.2.1",
+          "title": "Load Bot & Automation Engine Logs Feed",
+          "status": "PASSED",
+          "duration": 1721,
+          "error": null
+        },
+        {
+          "id": "7.3.2",
+          "title": "Load Settings & Verify Real-Time Telemetry & PIN Updater",
+          "status": "PASSED",
+          "duration": 1822,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Phase 8: Cross-Module Integration",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 1048,
+      "results": [
+        {
+          "id": "8.5.1",
+          "title": "Verify Sidebar Attention Badges & Real-Time Counter Sync",
+          "status": "PASSED",
+          "duration": 1048,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Phase 9: Console Health & Network Audit",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 0,
+      "results": [
+        {
+          "id": "9.1.1",
+          "title": "Audit Browser Console Logs for Runtime Exceptions",
+          "status": "PASSED",
+          "duration": 0,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "consoleAudit": [
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/dashboard.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/analytics.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/leads.js"
+    },
+    {
+      "type": "error",
+      "text": "[Analytics Module Error]: TypeError: Cannot set properties of null (setting 'textContent')"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/crm.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/kanban.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/reviews.js"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    },
+    {
+      "type": "error",
+      "text": "[PurpleOS API] Error fetching /api/reviews: Error: Could not find the table 'public.reviews' in the schema cache"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/social.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/cms.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/finance.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/hr.js"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    },
+    {
+      "type": "error",
+      "text": "[PurpleOS API] Error fetching /api/team/attendance: Error: Could not find the table 'public.attendance' in the schema cache"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/assets.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/tickets.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/automation.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/settings.js"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    },
+    {
+      "type": "error",
+      "text": "[PurpleOS API] Error fetching /api/reviews: Error: Could not find the table 'public.reviews' in the schema cache"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    },
+    {
+      "type": "error",
+      "text": "[PurpleOS API] Error fetching /api/team/attendance: Error: Could not find the table 'public.attendance' in the schema cache"
+    }
+  ]
+}

@@ -1,0 +1,200 @@
+{
+  "timestamp": "2026-08-24T19:28:32.883Z",
+  "totalTests": 9,
+  "totalPassed": 9,
+  "totalFailed": 0,
+  "passRate": 100,
+  "totalDurationMs": 5182,
+  "phases": [
+    {
+      "phase": "Suite E - Phase E1: Team MiniApp Auth",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 4077,
+      "results": [
+        {
+          "id": "E1.1",
+          "title": "Load Team MiniApp with Staff JWT Token",
+          "status": "PASSED",
+          "duration": 4075,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite E - Phase E2: Staff Shift Status",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 214,
+      "results": [
+        {
+          "id": "E2.1",
+          "title": "Verify Staff Shift Status and Clock Controls",
+          "status": "PASSED",
+          "duration": 214,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite E - Phase E3: Attendance Logging",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 143,
+      "results": [
+        {
+          "id": "E3.1",
+          "title": "Verify Clock-In / Clock-Out and Studio Status",
+          "status": "PASSED",
+          "duration": 143,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite E - Phase E4: My Assigned Tasks",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 140,
+      "results": [
+        {
+          "id": "E4.1",
+          "title": "Verify Assigned Tasks and Submit for QC Action",
+          "status": "PASSED",
+          "duration": 140,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite E - Phase E5: EOD Reports",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 132,
+      "results": [
+        {
+          "id": "E5.1",
+          "title": "Verify Daily EOD Report Form & Tasks Completed",
+          "status": "PASSED",
+          "duration": 132,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite E - Phase E6: Expense Claims",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 122,
+      "results": [
+        {
+          "id": "E6.1",
+          "title": "Verify Expense Claim Form & Category Selector",
+          "status": "PASSED",
+          "duration": 122,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite E - Phase E7: Leave Requests",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 124,
+      "results": [
+        {
+          "id": "E7.1",
+          "title": "Verify Leave Request Form and Balance Display",
+          "status": "PASSED",
+          "duration": 124,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite E - Phase E8: Admin Action Panel",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 119,
+      "results": [
+        {
+          "id": "E8.1",
+          "title": "Verify Admin Quick API Trigger Buttons",
+          "status": "PASSED",
+          "duration": 119,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite E - Phase E9: Real-Time SSE Stream",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 111,
+      "results": [
+        {
+          "id": "E9.1",
+          "title": "Verify Team MiniApp SSE Initialized",
+          "status": "PASSED",
+          "duration": 111,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "consoleAudit": [
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "log",
+      "text": "[Telegram.WebView] > postEvent web_app_set_header_color [object Object]"
+    },
+    {
+      "type": "log",
+      "text": "[Telegram.WebView] > postEvent web_app_set_bottom_bar_color [object Object]"
+    },
+    {
+      "type": "log",
+      "text": "[Telegram.WebView] > postEvent web_app_request_theme "
+    },
+    {
+      "type": "log",
+      "text": "[Telegram.WebView] > postEvent web_app_request_viewport "
+    },
+    {
+      "type": "log",
+      "text": "[Telegram.WebView] > postEvent web_app_request_safe_area "
+    },
+    {
+      "type": "log",
+      "text": "[Telegram.WebView] > postEvent web_app_request_content_safe_area "
+    },
+    {
+      "type": "log",
+      "text": "[Telegram.WebView] > postEvent web_app_expand "
+    },
+    {
+      "type": "log",
+      "text": "[Telegram.WebView] > postEvent web_app_ready "
+    },
+    {
+      "type": "warn",
+      "text": "[Telegram.WebApp] Header color is not supported in version 6.0"
+    }
+  ]
+}

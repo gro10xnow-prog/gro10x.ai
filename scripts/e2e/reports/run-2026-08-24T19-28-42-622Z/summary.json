@@ -1,0 +1,59 @@
+{
+  "timestamp": "2026-08-24T19:28:42.623Z",
+  "totalTests": 3,
+  "totalPassed": 3,
+  "totalFailed": 0,
+  "passRate": 100,
+  "totalDurationMs": 3712,
+  "phases": [
+    {
+      "phase": "Suite F - Phase F1: Investors Page Load",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 3370,
+      "results": [
+        {
+          "id": "F1.1",
+          "title": "Load Public Investors Portal without Auth Wall",
+          "status": "PASSED",
+          "duration": 3370,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite F - Phase F2: Financial Intelligence",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 164,
+      "results": [
+        {
+          "id": "F2.1",
+          "title": "Verify Financial Breakdown Table and Runway Metrics",
+          "status": "PASSED",
+          "duration": 164,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite F - Phase F3: Leadership & Roadmap",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 178,
+      "results": [
+        {
+          "id": "F3.1",
+          "title": "Verify Founders, Team & Growth Roadmap Sections",
+          "status": "PASSED",
+          "duration": 178,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "consoleAudit": []
+}

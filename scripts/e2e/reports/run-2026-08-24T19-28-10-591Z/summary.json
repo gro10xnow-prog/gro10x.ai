@@ -1,0 +1,147 @@
+{
+  "timestamp": "2026-08-24T19:28:10.591Z",
+  "totalTests": 8,
+  "totalPassed": 8,
+  "totalFailed": 0,
+  "passRate": 100,
+  "totalDurationMs": 6884,
+  "phases": [
+    {
+      "phase": "Suite C - Phase C1: Partner Portal Auth",
+      "total": 2,
+      "passed": 2,
+      "failed": 0,
+      "duration": 4296,
+      "results": [
+        {
+          "id": "C1.1",
+          "title": "Unauthenticated visitor redirects to /auth",
+          "status": "PASSED",
+          "duration": 1430,
+          "error": null
+        },
+        {
+          "id": "C1.2",
+          "title": "Inject Partner JWT and Load Partners Portal",
+          "status": "PASSED",
+          "duration": 2865,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite C - Phase C2: Partner Dashboard",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 444,
+      "results": [
+        {
+          "id": "C2.1",
+          "title": "Verify Partner Dashboard Metrics and Campaign List",
+          "status": "PASSED",
+          "duration": 444,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite C - Phase C3: Partner Review Room",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 382,
+      "results": [
+        {
+          "id": "C3.1",
+          "title": "Verify Review Room Player & Cut Approval Controls",
+          "status": "PASSED",
+          "duration": 381,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite C - Phase C4: Invoices & Payments",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 387,
+      "results": [
+        {
+          "id": "C4.1",
+          "title": "Verify Invoice List and Pay Now Payment Flow",
+          "status": "PASSED",
+          "duration": 387,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite C - Phase C5: Social Approvals",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 476,
+      "results": [
+        {
+          "id": "C5.1",
+          "title": "Verify Social Post Approvals Interface",
+          "status": "PASSED",
+          "duration": 476,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite C - Phase C6: Brief Submission",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 483,
+      "results": [
+        {
+          "id": "C6.1",
+          "title": "Verify New Brief Submission Modal Form",
+          "status": "PASSED",
+          "duration": 483,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite C - Phase C7: Real-Time SSE Stream",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 416,
+      "results": [
+        {
+          "id": "C7.1",
+          "title": "Verify Partner SSE Listener Initialized",
+          "status": "PASSED",
+          "duration": 416,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "consoleAudit": [
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    }
+  ]
+}

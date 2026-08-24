@@ -1,0 +1,91 @@
+{
+  "timestamp": "2026-08-24T19:29:16.240Z",
+  "totalTests": 5,
+  "totalPassed": 1,
+  "totalFailed": 4,
+  "passRate": 20,
+  "totalDurationMs": 11,
+  "phases": [
+    {
+      "phase": "Suite X - Phase X1: SSE Real-Time Chain",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 5,
+      "results": [
+        {
+          "id": "X1.1",
+          "title": "Verify SSE Event Broadcast and Multi-Portal Listener Handlers",
+          "status": "PASSED",
+          "duration": 4,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite X - Phase X2: Notification Delivery Chain",
+      "total": 1,
+      "passed": 0,
+      "failed": 1,
+      "duration": 0,
+      "results": [
+        {
+          "id": "X2.1",
+          "title": "Verify Email Service Simulation and Fallback Handling",
+          "status": "FAILED",
+          "duration": 0,
+          "error": "Cannot find module '../../../src/services/resend'\nRequire stack:\n- C:\\Users\\LeNoVo\\Documents\\GRO10X Business\\Gro10x.ai\\scripts\\e2e\\suites\\suite-x-cross-portal\\phase-X2-notifications.js\n- C:\\Users\\LeNoVo\\Documents\\GRO10X Business\\Gro10x.ai\\scripts\\e2e\\runner.js"
+        }
+      ]
+    },
+    {
+      "phase": "Suite X - Phase X3: Multi-Tenant Isolation",
+      "total": 1,
+      "passed": 0,
+      "failed": 1,
+      "duration": 0,
+      "results": [
+        {
+          "id": "X3.1",
+          "title": "Verify Tenant Scoping Middleware and Isolation Logic",
+          "status": "FAILED",
+          "duration": 0,
+          "error": "Cannot find module '../../../src/middleware/auth'\nRequire stack:\n- C:\\Users\\LeNoVo\\Documents\\GRO10X Business\\Gro10x.ai\\scripts\\e2e\\suites\\suite-x-cross-portal\\phase-X3-tenant-isolation.js\n- C:\\Users\\LeNoVo\\Documents\\GRO10X Business\\Gro10x.ai\\scripts\\e2e\\runner.js"
+        }
+      ]
+    },
+    {
+      "phase": "Suite X - Phase X4: Session Expiry Handling",
+      "total": 1,
+      "passed": 0,
+      "failed": 1,
+      "duration": 5,
+      "results": [
+        {
+          "id": "X4.1",
+          "title": "Expired Session Interceptor Redirects to /auth",
+          "status": "FAILED",
+          "duration": 5,
+          "error": "SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+        }
+      ]
+    },
+    {
+      "phase": "Suite X - Phase X5: Edge Cron Schedulers",
+      "total": 1,
+      "passed": 0,
+      "failed": 1,
+      "duration": 1,
+      "results": [
+        {
+          "id": "X5.1",
+          "title": "Verify Cron Routes Structure and Security Guard",
+          "status": "FAILED",
+          "duration": 0,
+          "error": "Cannot find module '../../../vercel.json'\nRequire stack:\n- C:\\Users\\LeNoVo\\Documents\\GRO10X Business\\Gro10x.ai\\scripts\\e2e\\suites\\suite-x-cross-portal\\phase-X5-cron-routes.js\n- C:\\Users\\LeNoVo\\Documents\\GRO10X Business\\Gro10x.ai\\scripts\\e2e\\runner.js"
+        }
+      ]
+    }
+  ],
+  "consoleAudit": []
+}
