@@ -1,7 +1,7 @@
 /**
  * public/css/tokens.css
  * ─────────────────────────────────────────────────────────────────────────────
- * PurpleOS Unified Design Tokens v3.0 (Dark-First SaaS Architecture)
+ * GRO10X Unified Design Tokens v4.0 (Cyber-Stealth AI Agency Architecture)
  * Central design token repository for surfaces, brand palette, typography,
  * borders, glows, animations, and elevation.
  * ─────────────────────────────────────────────────────────────────────────────
@@ -11,33 +11,36 @@
   /* ── color-scheme enforcement (also set via theme.js) ── */
   color-scheme: dark;
 
-  /* Surface Hierarchy (Dark Canvas) */
-  --surface-0: #09090d;          /* Base canvas / background */
-  --surface-1: #121218;          /* Primary cards & panels */
-  --surface-2: #181822;          /* Elevated cards & hover states */
-  --surface-3: #222230;          /* Inputs, active items, sub-containers */
-  --surface-4: #2d2d3e;          /* Tooltips, dropdown menus, popovers */
+  /* Surface Hierarchy (Stealth Obsidian Dark Canvas) */
+  --surface-0: #070b12;          /* Base canvas / obsidian background */
+  --surface-1: #0f172a;          /* Primary cards, sidebar & panels */
+  --surface-2: #162032;          /* Elevated cards & hover states */
+  --surface-3: #1e293b;          /* Inputs, active items, sub-containers */
+  --surface-4: #283548;          /* Tooltips, dropdown menus, popovers */
 
-  /* Brand Colors & Gradients */
-  --purple-brand: #7c3aed;
-  --purple-light: #a78bfa;
-  --purple-dark: #5b21b6;
-  --purple-glow: rgba(124, 58, 237, 0.4);
+  /* GRO10X AI Brand Colors & Neon Accents */
+  --brand-primary: #00df89;      /* GRO10X Signature Neon Mint Emerald */
+  --brand-secondary: #00c9a7;    /* Deep Teal Accent */
+  --brand-accent: #06b6d4;       /* Cyber Cyan Accent */
+  --brand-glow: rgba(0, 223, 137, 0.35);
+  --brand-cyan-glow: rgba(6, 182, 212, 0.35);
 
-  --pink-brand: #ec4899;
-  --pink-light: #f472b6;
-  --pink-glow: rgba(236, 72, 153, 0.4);
+  --emerald-brand: #00df89;
+  --emerald-light: #34d399;
+  --emerald-dark: #059669;
 
-  --rose-brand: #be185d;
-  --amber-brand: #f59e0b;
-  --emerald-brand: #10b981;
   --cyan-brand: #06b6d4;
+  --cyan-light: #38bdf8;
+  --cyan-dark: #0284c7;
+
+  --amber-brand: #f59e0b;
   --red-brand: #ef4444;
+  --rose-brand: #f43f5e;
 
   /* Gradients */
-  --gradient-brand: linear-gradient(135deg, var(--purple-brand) 0%, var(--pink-brand) 100%);
-  --gradient-rose: linear-gradient(135deg, var(--rose-brand) 0%, var(--pink-brand) 100%);
-  --gradient-emerald: linear-gradient(135deg, #059669 0%, #34d399 100%);
+  --gradient-brand: linear-gradient(135deg, #00df89 0%, #06b6d4 100%);
+  --gradient-emerald: linear-gradient(135deg, #00df89 0%, #00a86b 100%);
+  --gradient-cyan: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
   --gradient-amber: linear-gradient(135deg, #d97706 0%, #fbbf24 100%);
   --gradient-surface: linear-gradient(145deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
 
@@ -46,20 +49,22 @@
   --text-secondary: #cbd5e1;
   --text-muted: #94a3b8;
   --text-dim: #64748b;
-  --text-on-brand: #ffffff;
+  --text-on-brand: #070b12;
 
   /* Borders & Dividers */
   --border-subtle: rgba(255, 255, 255, 0.08);
-  --border-medium: rgba(255, 255, 255, 0.14);
-  --border-active: rgba(168, 85, 247, 0.4);
-  --border-glow: rgba(236, 72, 153, 0.35);
+  --border-medium: rgba(0, 223, 137, 0.2);
+  --border-active: rgba(0, 223, 137, 0.55);
+  --border-glow: rgba(6, 182, 212, 0.4);
 
   /* Shadows & Elevation */
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
-  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.5);
-  --shadow-elevated: 0 12px 40px rgba(0, 0, 0, 0.7);
-  --shadow-glow-purple: 0 0 24px rgba(124, 58, 237, 0.25);
-  --shadow-glow-pink: 0 0 24px rgba(236, 72, 153, 0.25);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.6);
+  --shadow-elevated: 0 12px 40px rgba(0, 0, 0, 0.8);
+  --shadow-glow-brand: 0 0 24px rgba(0, 223, 137, 0.3);
+  --shadow-glow-cyan: 0 0 24px rgba(6, 182, 212, 0.3);
+  --shadow-glow-purple: 0 0 24px rgba(0, 223, 137, 0.25);
+  --shadow-glow-pink: 0 0 24px rgba(6, 182, 212, 0.25);
 
   /* Layout & Spacing */
   --header-height: 64px;
@@ -84,33 +89,42 @@
   --z-toast-notification: 3000;
   --z-command-center: 4000;
 
-  /* ── Backward-Compat Aliases (used by legacy modules & design-tokens.css) ── */
+  /* ── Backward-Compat Aliases (used across legacy modules & design-tokens.css) ── */
+  --purple-brand:       var(--brand-primary);
+  --purple-light:       var(--emerald-light);
+  --purple-dark:        var(--emerald-dark);
+  --purple-glow:        var(--brand-glow);
+
+  --pink-brand:         var(--brand-accent);
+  --pink-light:         var(--cyan-light);
+  --pink-glow:          var(--brand-cyan-glow);
+
   --text-main:          var(--text-primary);
   --bg-card:            var(--surface-1);
   --bg-card-elevated:   var(--surface-2);
   --bg-light:           var(--surface-0);
-  --purple-main:        var(--purple-brand);
-  --purple-primary:     var(--purple-brand);
+  --purple-main:        var(--brand-primary);
+  --purple-primary:     var(--brand-primary);
   --amber-accent:       var(--amber-brand);
   --emerald-accent:     var(--emerald-brand);
   --text-error:         var(--red-brand);
 
   /* design-tokens.css aliases */
-  --brand-purple:       var(--purple-brand);
-  --brand-purple-mid:   var(--purple-light);
-  --brand-purple-soft:  rgba(124, 58, 237, 0.15);
-  --brand-pink:         var(--pink-brand);
+  --brand-purple:       var(--brand-primary);
+  --brand-purple-mid:   var(--emerald-light);
+  --brand-purple-soft:  rgba(0, 223, 137, 0.15);
+  --brand-pink:         var(--brand-accent);
   --brand-gradient:     var(--gradient-brand);
   --surface-border:     var(--border-subtle);
   --text-heading:       var(--text-primary);
   --text-body:          var(--text-secondary);
   --success:            var(--emerald-brand);
-  --success-bg:         rgba(16, 185, 129, 0.15);
+  --success-bg:         rgba(0, 223, 137, 0.15);
   --warning:            var(--amber-brand);
   --warning-bg:         rgba(245, 158, 11, 0.15);
   --danger:             var(--red-brand);
   --danger-bg:          var(--danger-bg-color, rgba(239, 68, 68, 0.15));
-  --shadow-cta:         var(--shadow-glow-purple);
+  --shadow-cta:         var(--shadow-glow-brand);
   --font-family:        var(--font-heading);
 }
 
@@ -122,17 +136,18 @@
   --surface-3: #e2e8f0;
   --surface-4: #cbd5e1;
 
-  --text-primary: #0f172a;
+  --text-primary: #070b12;
   --text-secondary: #334155;
   --text-muted: #64748b;
   --text-dim: #94a3b8;
+  --text-on-brand: #ffffff;
 
-  --border-subtle: rgba(15, 23, 42, 0.08);
-  --border-medium: rgba(15, 23, 42, 0.15);
-  --border-active: rgba(124, 58, 237, 0.5);
-  --border-glow: rgba(236, 72, 153, 0.3);
+  --border-subtle: rgba(7, 11, 18, 0.08);
+  --border-medium: rgba(0, 201, 167, 0.25);
+  --border-active: rgba(0, 201, 167, 0.6);
+  --border-glow: rgba(6, 182, 212, 0.35);
 
-  --shadow-sm: 0 2px 8px rgba(124, 58, 237, 0.06);
-  --shadow-card: 0 4px 20px rgba(124, 58, 237, 0.08);
-  --shadow-elevated: 0 12px 40px rgba(124, 58, 237, 0.15);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.08);
+  --shadow-elevated: 0 12px 40px rgba(0, 0, 0, 0.15);
 }

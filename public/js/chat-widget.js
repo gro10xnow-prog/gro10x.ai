@@ -16,18 +16,18 @@ var WIDGET_CSS = `
   #purple-widget-btn {
     position: fixed; bottom: 24px; right: 24px;
     width: 64px; height: 64px; border-radius: 50%;
-    background: linear-gradient(135deg, #7c3aed, #ec4899);
-    box-shadow: 0 10px 25px rgba(124,58,237,0.45);
-    color: #fff; display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, #00df89, #06b6d4);
+    box-shadow: 0 10px 25px rgba(0,223,137,0.45);
+    color: #070b12; display: flex; align-items: center; justify-content: center;
     font-size: 1.8rem; cursor: pointer; z-index: 999999; border: none; outline: none;
     transition: transform 0.3s cubic-bezier(0.175,0.885,0.32,1.275), box-shadow 0.3s ease;
   }
-  #purple-widget-btn:hover { transform: scale(1.1); box-shadow: 0 14px 30px rgba(124,58,237,0.6); }
+  #purple-widget-btn:hover { transform: scale(1.1); box-shadow: 0 14px 30px rgba(0,223,137,0.6); }
 
   #purple-widget-badge {
     position: absolute; top: -2px; right: -2px;
-    width: 16px; height: 16px; background: #10b981;
-    border: 2px solid #fff; border-radius: 50%; display: none;
+    width: 16px; height: 16px; background: #00df89;
+    border: 2px solid #070b12; border-radius: 50%; display: none;
     animation: badgePulse 2s infinite;
   }
   @keyframes badgePulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.25);} }
@@ -36,10 +36,11 @@ var WIDGET_CSS = `
     position: fixed; bottom: 98px; right: 24px;
     width: 380px; max-width: calc(100vw - 32px);
     height: 540px; max-height: calc(100vh - 120px);
-    background: #fff; border: 1px solid rgba(124,58,237,0.2);
-    border-radius: 24px; box-shadow: 0 20px 50px rgba(15,23,42,0.18);
+    background: #0f172a; border: 1px solid rgba(0,223,137,0.3);
+    border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.8);
     display: none; flex-direction: column; z-index: 999999;
     overflow: hidden; font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    color: #f8fafc;
   }
   #purple-widget-box.is-open { display: flex; animation: widgetSlideUp 0.3s cubic-bezier(0.16,1,0.3,1) forwards; }
   #purple-widget-box.is-closing { animation: widgetSlideDown 0.25s ease forwards; }
@@ -49,14 +50,15 @@ var WIDGET_CSS = `
 
   #purple-widget-header {
     padding: 1rem 1.25rem;
-    background: linear-gradient(135deg, #7c3aed, #6b21a8);
+    background: linear-gradient(135deg, #070b12, #162032);
     color: #fff; display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid rgba(0,223,137,0.2);
     flex-shrink: 0;
   }
   #purple-widget-feed {
     flex: 1; padding: 1.25rem 1rem; overflow-y: auto;
     display: flex; flex-direction: column; gap: 0.85rem;
-    background: #f8fafc; scroll-behavior: smooth;
+    background: #070b12; scroll-behavior: smooth;
   }
   .pb-w-msg {
     max-width: 86%; padding: 0.75rem 1rem; border-radius: 18px;
@@ -64,18 +66,18 @@ var WIDGET_CSS = `
   }
   @keyframes msgFadeIn { from{opacity:0;transform:translateY(6px);} to{opacity:1;transform:translateY(0);} }
   .pb-w-bot {
-    background: #fff; border: 1px solid rgba(124,58,237,0.15);
-    color: #1e293b; align-self: flex-start; border-bottom-left-radius: 4px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    background: #162032; border: 1px solid rgba(0,223,137,0.25);
+    color: #f8fafc; align-self: flex-start; border-bottom-left-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
   }
   .pb-w-user {
-    background: linear-gradient(135deg, #7c3aed, #ec4899);
-    color: #fff; align-self: flex-end; border-bottom-right-radius: 4px;
-    box-shadow: 0 4px 12px rgba(124,58,237,0.25);
+    background: linear-gradient(135deg, #00df89, #06b6d4);
+    color: #070b12; font-weight: 700; align-self: flex-end; border-bottom-right-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0,223,137,0.3);
   }
   .pb-typing-indicator { display:inline-flex; align-items:center; gap:4px; padding:0.75rem 1.1rem; }
   .pb-typing-dot {
-    width:6px; height:6px; border-radius:50%; background:#7c3aed;
+    width:6px; height:6px; border-radius:50%; background:#00df89;
     animation: typingBounce 1.4s infinite ease-in-out both;
   }
   .pb-typing-dot:nth-child(1){animation-delay:0s;}
@@ -85,28 +87,28 @@ var WIDGET_CSS = `
 
   .pb-chips-container { display:flex; flex-wrap:wrap; gap:0.4rem; margin-top:0.5rem; }
   .pb-chip {
-    background: #f1f5f9; border: 1px solid #cbd5e1; color: #334155;
+    background: #162032; border: 1px solid rgba(0,223,137,0.3); color: #cbd5e1;
     padding: 0.4rem 0.8rem; border-radius: 20px; font-size: 0.78rem;
     font-weight: 700; cursor: pointer; transition: all 0.15s ease;
   }
-  .pb-chip:hover { background: #7c3aed; color: #fff; border-color: #7c3aed; }
+  .pb-chip:hover { background: #00df89; color: #070b12; border-color: #00df89; }
 
   #purple-widget-input-area {
-    padding: 0.85rem; background: #fff; border-top: 1px solid #e2e8f0;
+    padding: 0.85rem; background: #0f172a; border-top: 1px solid rgba(255,255,255,0.08);
     display: flex; gap: 0.6rem; flex-shrink: 0;
   }
   #purpleWidgetInput {
-    flex: 1; padding: 0.65rem 1rem; background: #f8fafc;
-    border: 1px solid #cbd5e1; border-radius: 12px;
-    color: #0f172a; font-size: 0.88rem; outline: none;
+    flex: 1; padding: 0.65rem 1rem; background: #162032;
+    border: 1px solid rgba(255,255,255,0.12); border-radius: 12px;
+    color: #f8fafc; font-size: 0.88rem; outline: none;
     transition: border-color 0.2s ease; font-family: inherit;
   }
-  #purpleWidgetInput:focus { border-color: #7c3aed; background: #fff; }
+  #purpleWidgetInput:focus { border-color: #00df89; background: #1e293b; }
   #purpleWidgetInput:disabled { opacity: 0.6; cursor: not-allowed; }
   #purpleWidgetSendBtn {
     width: 42px; height: 42px;
-    background: linear-gradient(135deg, #7c3aed, #ec4899);
-    border: none; border-radius: 12px; color: #fff;
+    background: linear-gradient(135deg, #00df89, #06b6d4);
+    border: none; border-radius: 12px; color: #070b12; font-weight: 900;
     display: flex; align-items: center; justify-content: center;
     cursor: pointer; transition: transform 0.15s ease, opacity 0.15s ease;
     flex-shrink: 0;
@@ -117,18 +119,18 @@ var WIDGET_CSS = `
 
 // ─── WIDGET HTML ──────────────────────────────────────────────────────────────
 var WIDGET_HTML = `
-  <button id="purple-widget-btn" aria-label="Chat with Purple Bot" aria-expanded="false" aria-controls="purple-widget-box">
-    🤖
+  <button id="purple-widget-btn" aria-label="Chat with GRO10X AI" aria-expanded="false" aria-controls="purple-widget-box">
+    ⚡
     <div id="purple-widget-badge"></div>
   </button>
 
-  <div id="purple-widget-box" role="dialog" aria-modal="true" aria-label="Purple Bot AI Assistant">
+  <div id="purple-widget-box" role="dialog" aria-modal="true" aria-label="GRO10X AI Assistant">
     <div id="purple-widget-header">
       <div style="display:flex;align-items:center;gap:0.65rem;">
-        <div style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:1.2rem;">🦉</div>
+        <div style="width:36px;height:36px;border-radius:10px;background:var(--gradient-brand);display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:#070b12;font-weight:900;">⚡</div>
         <div>
-          <div style="font-weight:800;font-size:0.95rem;">Purple Bot AI</div>
-          <div style="font-size:0.72rem;color:#fbcfe8;">🟢 Online • Typically replies in minutes</div>
+          <div style="font-weight:800;font-size:0.95rem;">GRO10X AI Assistant</div>
+          <div style="font-size:0.72rem;color:#00df89;">🟢 Online • Instant Response</div>
         </div>
       </div>
       <button id="purple-widget-close-btn" style="background:none;border:none;color:#fff;font-size:1.4rem;cursor:pointer;opacity:0.85;padding:4px;" aria-label="Close Chat Window">✕</button>
@@ -279,7 +281,7 @@ function initBotState() {
     }
   } catch (err) {}
 
-  feed.innerHTML = '<div class="pb-w-msg pb-w-bot">👋 Hello! Welcome to <strong>Purplebot Digital Agency</strong>. I\'m <strong>Purple Bot</strong>!<br><br>Whether you\'re looking for social media growth, video reels, or custom software — I\'m here to help.<br><br>May I have your <strong>Name</strong> to get started?</div>';
+  feed.innerHTML = '<div class="pb-w-msg pb-w-bot">👋 Hello! Welcome to <strong>GRO10X AI Agency</strong>. I\'m the <strong>GRO10X AI Assistant</strong>!<br><br>Whether you\'re looking for custom AI apps, ComfyUI visual workflows, video avatars, or business automation — I\'m here to help.<br><br>May I have your <strong>Name</strong> to get started?</div>';
   botState = { step: 'ASK_NAME', name: '', company: '', service: '', phone: '' };
   updateInputPlaceholder();
   saveBotSession();

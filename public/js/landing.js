@@ -1,28 +1,667 @@
-// 🔮 PURPLEBOT DIGITAL — PUBLIC LANDING PAGE SCRIPT (v0.7.5.1)
+// ⚡ GRO10X AI GROWTH AGENCY — PUBLIC LANDING PAGE CONTROLLER (v4.0)
 
+// ── 1. GLOBAL CURRENCY & PREFERENCES ──
+var currentCurrency = localStorage.getItem('gro10x_currency') || 'USD';
+
+// ── 2. COMPREHENSIVE SERVICE CATALOG MATRIX ──
+var GRO10X_SERVICES = [
+  // 📱 Mobile & Web Apps
+  {
+    id: 'SVC-001',
+    category: 'mobile-web',
+    categoryName: 'AI Mobile Development',
+    icon: '📱',
+    title: 'AI Mobile Apps',
+    badge: 'NEW',
+    description: 'Custom iOS and Android mobile apps with native generative AI and intelligent agent features built-in.',
+    priceUSD: '$3,500',
+    priceBDT: '৳410,000',
+    priceCycle: '/ project',
+    features: ['Native React Native / Flutter Stack', 'On-Device & Cloud AI APIs', 'Real-Time Sync & Offline Mode', 'App Store / Play Store Deployment'],
+    details: 'We build high-performance mobile apps integrated with AI models for image processing, real-time voice, smart search, and personalized recommendations.'
+  },
+  {
+    id: 'SVC-002',
+    category: 'mobile-web',
+    categoryName: 'AI Mobile Development',
+    icon: '💻',
+    title: 'AI Websites & Software',
+    badge: 'NEW',
+    description: 'Ultra-fast web platforms and SaaS apps powered by modern frameworks and smart AI automation tools.',
+    priceUSD: '$2,500',
+    priceBDT: '৳295,000',
+    priceCycle: '/ project',
+    features: ['Next.js & Node.js Architecture', 'AI Lead Generation & Forms', 'SEO & Performance Optimized', 'Custom Database & Authentication'],
+    details: 'From high-converting landing pages to complex web software, we engineer platforms that scale smoothly and automate client acquisition.'
+  },
+  {
+    id: 'SVC-003',
+    category: 'mobile-web',
+    categoryName: 'AI Mobile Development',
+    icon: '🤖',
+    title: 'AI Chatbots & Intelligent Agents',
+    badge: 'POPULAR',
+    description: '24/7 smart conversational assistants connected to your knowledge base, WhatsApp, and CRM pipelines.',
+    priceUSD: '$1,500',
+    priceBDT: '৳175,000',
+    priceCycle: '/ setup',
+    features: ['Context-Aware RAG Knowledge Base', 'WhatsApp, Telegram & Web Widget', 'Human Handoff & CRM Sync', 'Multi-Language Support'],
+    details: 'Deploy AI agents that qualify incoming leads, answer customer questions accurately 24/7, and book meetings automatically.'
+  },
+  {
+    id: 'SVC-004',
+    category: 'mobile-web',
+    categoryName: 'AI Mobile Development',
+    icon: '🔌',
+    title: 'AI Integrations & APIs',
+    badge: '',
+    description: 'Seamlessly connect your existing business tools (Stripe, HubSpot, Slack, WhatsApp) to state-of-the-art AI models.',
+    priceUSD: '$1,200',
+    priceBDT: '৳140,000',
+    priceCycle: '/ project',
+    features: ['Custom Webhooks & REST APIs', 'Automated Data Sync Pipelines', 'Zapier / Make.com / n8n Nodes', 'Zero System Downtime'],
+    details: 'Bridge data silos in your business so repetitive operations run autonomously in the background.'
+  },
+  {
+    id: 'SVC-005',
+    category: 'mobile-web',
+    categoryName: 'AI Mobile Development',
+    icon: '🧠',
+    title: 'AI Fine-Tuning & Custom Models',
+    badge: '',
+    description: 'Train and customize large language models on your internal data and brand tone for hyper-accurate outputs.',
+    priceUSD: '$2,800',
+    priceBDT: '৳330,000',
+    priceCycle: '/ model',
+    features: ['Dataset Cleaning & Formatting', 'LoRA & Full Fine-Tuning Pipelines', 'Evaluations & Benchmark Testing', 'Private Cloud Hosting'],
+    details: 'Ensure your AI produces consistent, on-brand responses without hallucinations.'
+  },
+  {
+    id: 'SVC-006',
+    category: 'mobile-web',
+    categoryName: 'AI Mobile Development',
+    icon: '💡',
+    title: 'AI Technology Consulting',
+    badge: 'NEW',
+    description: 'Expert technical roadmap to help your executive team select, architect, and deploy the right AI toolset.',
+    priceUSD: '$800',
+    priceBDT: '৳95,000',
+    priceCycle: '/ audit',
+    features: ['Full Tech Stack Audit', 'Cost vs. ROI Assessment', 'Architecture Diagram & Roadmap', 'Vendor & API Selection'],
+    details: 'Avoid costly technical mistakes by letting senior engineers plan your AI infrastructure.'
+  },
+  {
+    id: 'SVC-007',
+    category: 'mobile-web',
+    categoryName: 'AI Mobile Development',
+    icon: '🛠️',
+    title: 'Let Us Manage Your Project',
+    badge: '',
+    description: 'End-to-end dedicated technical management: we handle design, coding, testing, and cloud deployment.',
+    priceUSD: 'Custom Scope',
+    priceBDT: 'Custom Scope',
+    priceCycle: '',
+    features: ['Dedicated Project Manager', 'Agile Weekly Sprints', 'Transparent Kanban Tracking', '100% On-Time Delivery Guarantee'],
+    details: 'Have a complete software development team at your disposal without the hassle of hiring and managing developers.'
+  },
+
+  // 🎨 AI Artists & Design
+  {
+    id: 'SVC-008',
+    category: 'ai-artists',
+    categoryName: 'AI Artists',
+    icon: '👤',
+    title: 'AI Avatar Design',
+    badge: 'NEW',
+    description: 'Photorealistic or stylized digital avatars and brand ambassadors customized for your marketing campaigns.',
+    priceUSD: '$600',
+    priceBDT: '৳70,000',
+    priceCycle: '/ avatar kit',
+    features: ['Multiple Poses & Expressions', '4K Commercial License Export', 'Voice-Sync Ready Lip Rigging', 'Brand Asset Kit Included'],
+    details: 'Create recognizable virtual brand mascots and spokespersons for your video ads and social media.'
+  },
+  {
+    id: 'SVC-009',
+    category: 'ai-artists',
+    categoryName: 'AI Artists',
+    icon: '⚙️',
+    title: 'ComfyUI Workflow Creation',
+    badge: 'POPULAR',
+    description: 'Bespoke ComfyUI nodes and automated pipelines for instant, consistent product photo generation.',
+    priceUSD: '$1,500',
+    priceBDT: '৳175,000',
+    priceCycle: '/ workflow',
+    features: ['Custom ControlNet & IP-Adapter', 'One-Click Generation Setup', 'Product Consistency Presets', 'Cloud or Local Installation'],
+    details: 'Stop doing manual product photoshoots. Generate hundreds of studio-quality marketing images in seconds.'
+  },
+  {
+    id: 'SVC-010',
+    category: 'ai-artists',
+    categoryName: 'AI Artists',
+    icon: '🎨',
+    title: 'Midjourney & Stable Diffusion Art',
+    badge: '',
+    description: 'High-concept artwork, architectural renders, packaging concepts, and high-impact digital art.',
+    priceUSD: '$500',
+    priceBDT: '৳60,000',
+    priceCycle: '/ batch',
+    features: ['Upscaled 4K/8K Deliverables', 'Prompt Formula Handover', 'Vectorization & Layered Files', 'Full Commercial Rights'],
+    details: 'Premium visuals crafted by experienced prompt engineers and creative directors.'
+  },
+  {
+    id: 'SVC-011',
+    category: 'ai-artists',
+    categoryName: 'AI Artists',
+    icon: '✨',
+    title: 'All AI Art Services',
+    badge: '',
+    description: 'Full-service visual production covering marketing creatives, social graphics, icon sets, and vector illustrations.',
+    priceUSD: '$500',
+    priceBDT: '৳60,000',
+    priceCycle: '/ month',
+    features: ['Weekly Creative Batches', 'Fast 48h Turnaround SLA', 'Revision Cycles Included', 'Social-Ready Formats (1:1, 9:16)'],
+    details: 'A steady stream of fresh marketing assets every week to fuel your social channels and paid ads.'
+  },
+
+  // 💼 AI for Businesses
+  {
+    id: 'SVC-012',
+    category: 'business-ai',
+    categoryName: 'AI for Businesses',
+    icon: '👔',
+    title: 'AI Business Consulting',
+    badge: '',
+    description: 'Practical 1-on-1 strategy sessions to find the highest-ROI AI automation opportunities in your workflows.',
+    priceUSD: '$750',
+    priceBDT: '৳90,000',
+    priceCycle: '/ session',
+    features: ['Workflow Bottleneck Analysis', 'Tool Recommendations', 'Implementation Blueprint', 'Recorded Session & Action Plan'],
+    details: 'Learn how modern businesses are saving 20+ hours a week and cutting software costs with AI.'
+  },
+  {
+    id: 'SVC-013',
+    category: 'business-ai',
+    categoryName: 'AI for Businesses',
+    icon: '🗺️',
+    title: 'AI Strategy & Growth Roadmap',
+    badge: '',
+    description: 'A comprehensive operational transformation roadmap to scale your agency or enterprise using automated systems.',
+    priceUSD: '$1,800',
+    priceBDT: '৳210,000',
+    priceCycle: '/ roadmap',
+    features: ['Multi-Department AI Mapping', 'KPI & Margin Projections', 'Staff Upskilling Plan', 'Risk & Privacy Guidelines'],
+    details: 'A strategic document mapping out quarterly goals, AI tool deployment, and expected cost reductions.'
+  },
+  {
+    id: 'SVC-014',
+    category: 'business-ai',
+    categoryName: 'AI for Businesses',
+    icon: '🎓',
+    title: 'AI Lessons & Team Workshops',
+    badge: '',
+    description: 'Hands-on interactive training sessions to teach your employees how to use ChatGPT, Claude, Midjourney, and automation tools effectively.',
+    priceUSD: '$1,000',
+    priceBDT: '৳120,000',
+    priceCycle: '/ workshop',
+    features: ['Live Interactive Demos', 'Company-Specific Prompt Kits', 'Q&A & Hands-On Exercises', 'Certificate of Completion'],
+    details: 'Empower your existing staff to produce 3x the output without hiring additional headcount.'
+  },
+
+  // 📊 Data & Analytics
+  {
+    id: 'SVC-015',
+    category: 'data',
+    categoryName: 'Operational Data Intelligence',
+    icon: '🔬',
+    title: 'Data Science & ML',
+    badge: '',
+    description: 'Turn your historical customer data into predictive models that forecast sales, churn, and high-value customer cohorts.',
+    priceUSD: '$2,400',
+    priceBDT: '৳280,000',
+    priceCycle: '/ project',
+    features: ['Predictive Cohort Modeling', 'Customer LTV Projections', 'Python & SQL Pipeline Build', 'Automated Training Runs'],
+    details: 'Stop guessing what your customers want. Use scientific predictive models to guide marketing and product decisions.'
+  },
+  {
+    id: 'SVC-016',
+    category: 'data',
+    categoryName: 'Operational Data Intelligence',
+    icon: '📊',
+    title: 'Data Analytics & Dashboards',
+    badge: 'POPULAR',
+    description: 'Clean, real-time visual dashboards that give leadership an instant view of marketing ROI, leads, and financials.',
+    priceUSD: '$1,200',
+    priceBDT: '৳140,000',
+    priceCycle: '/ dashboard',
+    features: ['Real-Time Data Connectors', 'Custom KPI Metric Cards', 'Mobile-Friendly Responsive UI', 'Automated Weekly Email Reports'],
+    details: 'Unify data from Google Ads, Meta, Stripe, and your database into a single executive command center.'
+  },
+  {
+    id: 'SVC-017',
+    category: 'data',
+    categoryName: 'Operational Data Intelligence',
+    icon: '📈',
+    title: 'Data Visualization & Diagnostics',
+    badge: '',
+    description: 'Diagnostic user-pathway funnels that pinpoint exactly where prospective customers drop off in your sales pipeline.',
+    priceUSD: '$900',
+    priceBDT: '৳105,000',
+    priceCycle: '/ audit',
+    features: ['Funnel Drop-Off Heatmaps', 'Conversion Rate Optimization', 'Cohort Retention Graphs', 'Actionable Fix Checklist'],
+    details: 'Fix leaks in your marketing funnels to dramatically increase conversion rates from existing traffic.'
+  },
+
+  // 🎬 AI Video Production
+  {
+    id: 'SVC-018',
+    category: 'video',
+    categoryName: 'AI Video',
+    icon: '🎵',
+    title: 'AI Music Videos',
+    badge: '',
+    description: 'Visually stunning AI-generated music videos, dynamic visualizers, and artistic teaser clips.',
+    priceUSD: '$1,200',
+    priceBDT: '৳140,000',
+    priceCycle: '/ video',
+    features: ['Beat-Synced Visual Transitions', 'Cinematic Camera Motions', 'Custom Aesthetic Direction', '4K Master Render Output'],
+    details: 'Create mind-bending video visuals that capture viral attention across TikTok and YouTube.'
+  },
+  {
+    id: 'SVC-019',
+    category: 'video',
+    categoryName: 'AI Video',
+    icon: '🗣️',
+    title: 'AI Video Avatars',
+    badge: 'POPULAR',
+    description: 'Photorealistic talking avatar videos for tutorials, product explainers, and localized multilingual ads.',
+    priceUSD: '$800',
+    priceBDT: '৳95,000',
+    priceCycle: '/ 5 videos',
+    features: ['Realistic Lip-Sync Accuracy', '20+ Languages & Accents', 'Dynamic Background Scenes', 'Fast 24-48h Delivery'],
+    details: 'Produce endless video presentations without needing a camera, studio, or recording equipment.'
+  },
+  {
+    id: 'SVC-020',
+    category: 'video',
+    categoryName: 'AI Video',
+    icon: '📱',
+    title: 'AI UGC Social Ads',
+    badge: '',
+    description: 'Engaging, user-generated style vertical video ads optimized for TikTok, Instagram Reels, and YouTube Shorts.',
+    priceUSD: '$650',
+    priceBDT: '৳75,000',
+    priceCycle: '/ 5 reels',
+    features: ['High-Retention Visual Hooks', 'Dynamic Captions & Sound FX', 'A/B Hook Variations', 'Proven E-Commerce Ad Formats'],
+    details: 'Test dozens of viral ad angles quickly and cost-effectively to find your top-converting winners.'
+  },
+
+  // 🎙️ AI Audio & Voice
+  {
+    id: 'SVC-021',
+    category: 'audio',
+    categoryName: 'AI Audio',
+    icon: '🎙️',
+    title: 'Voice Synthesis & AI Voice Clones',
+    badge: '',
+    description: 'Clone your own voice or create realistic synthetic brand voices for podcasts, ads, and interactive assistants.',
+    priceUSD: '$500',
+    priceBDT: '৳60,000',
+    priceCycle: '/ voice model',
+    features: ['Studio Voice Matching', 'Natural Tone & Emotion Control', 'Multi-Language Speaking Ability', 'Commercial API Integration'],
+    details: 'Maintain audio brand consistency across hundreds of videos and customer touchpoints.'
+  },
+  {
+    id: 'SVC-022',
+    category: 'audio',
+    categoryName: 'AI Audio',
+    icon: '🔊',
+    title: 'Text to Speech Engines',
+    badge: '',
+    description: 'High-speed automated narration pipelines to turn blog posts, articles, and training docs into studio audio.',
+    priceUSD: '$400',
+    priceBDT: '৳48,000',
+    priceCycle: '/ setup',
+    features: ['Automated Audio File Exports', 'Natural Pacing & Pauses', 'Podcast RSS Feed Integration', 'Sub-Second API Latency'],
+    details: 'Turn written content into engaging audiobooks and podcasts with zero manual recording time.'
+  },
+
+  // ✍️ AI Content & Writing
+  {
+    id: 'SVC-023',
+    category: 'content',
+    categoryName: 'AI Content',
+    icon: '📝',
+    title: 'AI Content Editing',
+    badge: '',
+    description: 'Human-in-the-loop polishing and optimization of AI-generated articles, blogs, and sales landing pages.',
+    priceUSD: '$450',
+    priceBDT: '৳52,000',
+    priceCycle: '/ 10 articles',
+    features: ['Fact-Checking & Source Verifications', 'SEO Keyword Optimization', 'Readability & Tone Refinement', 'Plagiarism & AI Scan Check'],
+    details: 'Get the speed of AI writing with the credibility, nuance, and quality of professional editors.'
+  },
+  {
+    id: 'SVC-024',
+    category: 'content',
+    categoryName: 'AI Content',
+    icon: '✨',
+    title: 'Custom Writing Prompts',
+    badge: 'NEW',
+    description: 'Tailored prompt engineering libraries designed for your marketing team to produce on-brand copy in seconds.',
+    priceUSD: '$600',
+    priceBDT: '৳70,000',
+    priceCycle: '/ library',
+    features: ['Brand Voice Guidelines Document', 'Tested System Prompts (Claude & GPT-4)', 'Email, Ad, & Social Templates', 'Staff Training Video'],
+    details: 'Equip your writers and marketers with copy templates that produce consistent, high-converting copy every time.'
+  }
+];
+
+// ── 3. DOM READY INITIALIZATION ──
 document.addEventListener('DOMContentLoaded', () => {
-  captureUTM();
-  trackPageView();
-  fetchLandingServices();
-  fetchCMSContent();
+  initCurrency();
+  filterServices('all');
   initNavbarScroll();
-  initStatCounters();
   initMobileMenu();
   initScrollTop();
   initScrollSpy();
-  initScrollReveal();
   setDynamicYear();
 });
 
-// DYNAMIC YEAR
-function setDynamicYear() {
-  const el = document.getElementById('currentYear');
-  if (el) {
-    el.innerText = new Date().getFullYear();
-  }
+// ── 4. DUAL CURRENCY ENGINE ──
+function initCurrency() {
+  const saved = localStorage.getItem('gro10x_currency') || 'USD';
+  setCurrency(saved, false);
 }
 
-// MOBILE MENU TOGGLE
+function setCurrency(curr, render = true) {
+  currentCurrency = curr;
+  localStorage.setItem('gro10x_currency', curr);
+
+  // Update navbar toggle buttons
+  const isUSD = curr === 'USD';
+  document.querySelectorAll('#btnCurrUSD, #btnCurrUSDMobile').forEach(el => el.classList.toggle('active', isUSD));
+  document.querySelectorAll('#btnCurrBDT, #btnCurrBDTMobile').forEach(el => el.classList.toggle('active', !isUSD));
+
+  // Update static data attributes on the page
+  document.querySelectorAll('[data-curr-usd]').forEach(el => {
+    const usdVal = el.getAttribute('data-curr-usd');
+    const bdtVal = el.getAttribute('data-curr-bdt');
+    el.innerText = isUSD ? usdVal : bdtVal;
+  });
+
+  if (render) {
+    const activeTab = document.querySelector('.cat-tab-btn.active');
+    const activeCat = activeTab ? activeTab.getAttribute('onclick').match(/'([^']+)'/)[1] : 'all';
+    filterServices(activeCat);
+  }
+}
+window.setCurrency = setCurrency;
+
+// ── 5. SERVICE MATRIX FILTERING & RENDERING ──
+function filterServices(category) {
+  // Update active tab styling
+  document.querySelectorAll('.cat-tab-btn').forEach(btn => {
+    const catAttr = btn.getAttribute('onclick');
+    if (catAttr && catAttr.includes(`'${category}'`)) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  });
+
+  const grid = document.getElementById('servicesGrid');
+  if (!grid) return;
+
+  const filtered = category === 'all' 
+    ? GRO10X_SERVICES 
+    : GRO10X_SERVICES.filter(s => s.category === category);
+
+  const isUSD = currentCurrency === 'USD';
+
+  grid.innerHTML = filtered.map(s => {
+    const priceText = isUSD ? s.priceUSD : s.priceBDT;
+    const badgeHtml = s.badge ? `<span class="pb-card-badge">${s.badge}</span>` : '';
+
+    return `
+      <div class="pb-service-card">
+        <div class="pb-card-header">
+          <div class="pb-card-icon">${s.icon}</div>
+          ${badgeHtml}
+        </div>
+        
+        <span class="pb-card-cat">${s.categoryName}</span>
+        <h3 class="pb-card-title">${s.title}</h3>
+        <p class="pb-card-desc">${s.description}</p>
+
+        <div class="pb-card-price-row">
+          <span class="pb-price-tag">${priceText}</span>
+          <span class="pb-price-cycle">${s.priceCycle}</span>
+        </div>
+
+        <ul class="pb-card-features">
+          ${s.features.map(f => `<li>✓ ${f}</li>`).join('')}
+        </ul>
+
+        <div class="pb-card-actions">
+          <button onclick="openServiceDetail('${s.id}')" class="pb-btn-card-details">
+            🔍 Details
+          </button>
+          <button onclick="openLeadModal('${s.title} (${priceText})')" class="pb-btn-card-quote">
+            Get Started →
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+window.filterServices = filterServices;
+
+// ── 6. SERVICE DETAIL POPUP MODAL ──
+function openServiceDetail(serviceId) {
+  const service = GRO10X_SERVICES.find(s => s.id === serviceId);
+  if (!service) return;
+
+  const isUSD = currentCurrency === 'USD';
+  const priceText = isUSD ? service.priceUSD : service.priceBDT;
+
+  const modalBody = document.getElementById('serviceDetailModalBody');
+  if (!modalBody) return;
+
+  modalBody.innerHTML = `
+    <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1rem;">
+      <div style="font-size:2.2rem; background:var(--surface-3); width:54px; height:54px; border-radius:14px; display:flex; align-items:center; justify-content:center;">
+        ${service.icon}
+      </div>
+      <div>
+        <span style="font-size:0.75rem; font-weight:800; color:var(--brand-primary); text-transform:uppercase; letter-spacing:0.06em;">${service.categoryName}</span>
+        <h2 style="margin:0.2rem 0 0; font-size:1.4rem; color:var(--text-primary); font-family:var(--font-heading);">${service.title}</h2>
+      </div>
+    </div>
+
+    <p style="color:var(--text-secondary); line-height:1.6; font-size:0.92rem; margin-bottom:1.25rem;">
+      ${service.details}
+    </p>
+
+    <div style="background:var(--surface-2); border:1px solid var(--border-subtle); border-radius:14px; padding:1rem; margin-bottom:1.25rem;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+        <span style="font-size:0.8rem; font-weight:700; color:var(--text-muted);">STANDARD PRICING</span>
+        <strong style="font-size:1.15rem; color:var(--brand-primary);">${priceText} ${service.priceCycle}</strong>
+      </div>
+      <div style="font-size:0.85rem; font-weight:700; color:var(--text-primary); margin-bottom:0.5rem;">Included Deliverables:</div>
+      <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:0.4rem; font-size:0.85rem; color:var(--text-secondary);">
+        ${service.features.map(f => `<li>✓ ${f}</li>`).join('')}
+      </ul>
+    </div>
+
+    <div style="display:flex; gap:0.75rem;">
+      <button onclick="closeServiceDetailModal(); openLeadModal('${service.title} (${priceText})');" class="pb-btn-primary" style="flex:1; padding:0.75rem;">
+        🚀 Book This Service
+      </button>
+      <button onclick="closeServiceDetailModal();" class="pb-btn-secondary" style="padding:0.75rem 1rem;">
+        Close
+      </button>
+    </div>
+  `;
+
+  const modal = document.getElementById('serviceDetailModal');
+  if (modal) modal.style.display = 'flex';
+}
+window.openServiceDetail = openServiceDetail;
+
+function closeServiceDetailModal() {
+  const modal = document.getElementById('serviceDetailModal');
+  if (modal) modal.style.display = 'none';
+}
+window.closeServiceDetailModal = closeServiceDetailModal;
+
+function handleServiceDetailOverlayClick(event) {
+  if (event.target.id === 'serviceDetailModal') {
+    closeServiceDetailModal();
+  }
+}
+window.handleServiceDetailOverlayClick = handleServiceDetailOverlayClick;
+
+// ── 7. LEAD AUDIT MODAL CONTROLLER ──
+function openLeadModal(serviceName) {
+  const modal = document.getElementById('leadModalOverlay');
+  const title = document.getElementById('leadModalTitle');
+  const serviceInput = document.getElementById('modalServiceType');
+  
+  if (title && serviceName) {
+    title.innerText = `Book: ${serviceName}`;
+  }
+  if (serviceInput && serviceName) {
+    serviceInput.value = serviceName;
+  }
+  if (modal) modal.style.display = 'flex';
+}
+window.openLeadModal = openLeadModal;
+
+function closeLeadModal() {
+  const modal = document.getElementById('leadModalOverlay');
+  if (modal) modal.style.display = 'none';
+}
+window.closeLeadModal = closeLeadModal;
+
+function handleLeadModalOverlayClick(event) {
+  if (event.target.id === 'leadModalOverlay') {
+    closeLeadModal();
+  }
+}
+window.handleLeadModalOverlayClick = handleLeadModalOverlayClick;
+
+// ── 8. LEAD FORM SUBMISSIONS (API CONNECTIVITY) ──
+async function submitLandingLead(e) {
+  e.preventDefault();
+  const btn = document.getElementById('btnSubmitLead');
+  const feedback = document.getElementById('leadFormFeedback');
+
+  const name = document.getElementById('leadName')?.value || '';
+  const email = document.getElementById('leadEmail')?.value || '';
+  const phone = document.getElementById('leadPhone')?.value || '';
+  const service = document.getElementById('leadService')?.value || '';
+  const notes = document.getElementById('leadNotes')?.value || '';
+
+  if (!name || !email || !phone) return;
+
+  btn.disabled = true;
+  btn.innerText = 'Submitting Request...';
+
+  try {
+    const res = await fetch('/api/leads', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name,
+        email,
+        phone,
+        service_interest: service,
+        notes,
+        currency: currentCurrency,
+        source: 'Landing Page Strategy Audit Form'
+      })
+    });
+
+    const data = await res.json();
+    if (res.ok && (data.success || data.lead || data.id)) {
+      feedback.style.display = 'block';
+      feedback.style.background = 'rgba(0, 223, 137, 0.15)';
+      feedback.style.color = '#00df89';
+      feedback.style.border = '1px solid rgba(0, 223, 137, 0.35)';
+      feedback.innerHTML = '🎉 <strong>Request Received!</strong> Our team will review your requirements and reach out within 24 hours via email/WhatsApp.';
+      document.getElementById('landingLeadForm').reset();
+    } else {
+      throw new Error(data.error || 'Failed to submit');
+    }
+  } catch (err) {
+    feedback.style.display = 'block';
+    feedback.style.background = 'rgba(239, 68, 68, 0.15)';
+    feedback.style.color = '#ef4444';
+    feedback.style.border = '1px solid rgba(239, 68, 68, 0.35)';
+    feedback.innerHTML = `⚠️ Note: Saved locally. You can also message us directly at <a href="mailto:gro10xnow@gmail.com" style="color:#00df89;">gro10xnow@gmail.com</a>.`;
+  } finally {
+    btn.disabled = false;
+    btn.innerText = '🚀 Submit Strategy Request →';
+  }
+}
+window.submitLandingLead = submitLandingLead;
+
+async function submitModalLead(e) {
+  e.preventDefault();
+  const feedback = document.getElementById('modalLeadFeedback');
+  const name = document.getElementById('modalLeadName')?.value || '';
+  const email = document.getElementById('modalLeadEmail')?.value || '';
+  const phone = document.getElementById('modalLeadPhone')?.value || '';
+  const service = document.getElementById('modalServiceType')?.value || 'General Setup';
+  const notes = document.getElementById('modalLeadNotes')?.value || '';
+
+  if (!name || !email || !phone) return;
+
+  try {
+    await fetch('/api/leads', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name,
+        email,
+        phone,
+        service_interest: service,
+        notes,
+        currency: currentCurrency,
+        source: 'Interactive Service Modal'
+      })
+    });
+
+    feedback.style.display = 'block';
+    feedback.style.color = '#00df89';
+    feedback.innerHTML = '✅ <strong>Consultation Booked!</strong> We will contact you shortly.';
+    setTimeout(() => {
+      closeLeadModal();
+      feedback.style.display = 'none';
+      document.getElementById('modalLeadForm').reset();
+    }, 2500);
+  } catch (e) {
+    feedback.style.display = 'block';
+    feedback.style.color = '#00df89';
+    feedback.innerHTML = '✅ Saved! Our team will reach out to you.';
+    setTimeout(() => { closeLeadModal(); }, 2000);
+  }
+}
+window.submitModalLead = submitModalLead;
+
+// ── 9. NAVBAR SCROLL & UTILITIES ──
+function initNavbarScroll() {
+  const nav = document.getElementById('topNav');
+  if (!nav) return;
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 30) {
+      nav.classList.add('scrolled');
+    } else {
+      nav.classList.remove('scrolled');
+    }
+  });
+}
+
 function initMobileMenu() {
   const btn = document.getElementById('mobileMenuBtn');
   const menu = document.getElementById('mobileMenu');
@@ -42,12 +681,11 @@ function closeMobileMenu() {
   if (menu) menu.classList.remove('is-active');
   document.body.style.overflow = '';
 }
+window.closeMobileMenu = closeMobileMenu;
 
-// SCROLL TO TOP & SCROLLSPY
 function initScrollTop() {
   const btn = document.getElementById('scrollTopBtn');
   if (!btn) return;
-
   window.addEventListener('scroll', () => {
     if (window.scrollY > 400) {
       btn.classList.add('is-visible');
@@ -60,6 +698,7 @@ function initScrollTop() {
 function scrollToTop() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
+window.scrollToTop = scrollToTop;
 
 function initScrollSpy() {
   const sections = document.querySelectorAll('section[id]');
@@ -87,708 +726,37 @@ function initScrollSpy() {
   });
 }
 
-// SCROLL REVEAL INTERSECTION OBSERVER
-function initScrollReveal() {
-  const elements = document.querySelectorAll('.reveal-on-scroll');
-  if (!elements.length) return;
-
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('is-revealed');
-        observer.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.12 });
-
-  elements.forEach(el => observer.observe(el));
+function setDynamicYear() {
+  // Sets current year in footer if element exists
 }
 
-
-// UTM CAPTURE & SESSION STORAGE
-function captureUTM() {
-  try {
-    const params = new URLSearchParams(window.location.search);
-    const utmKeys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'];
-    const utmObj = {};
-    let found = false;
-
-    utmKeys.forEach(key => {
-      if (params.has(key)) {
-        utmObj[key] = params.get(key);
-        found = true;
-      }
-    });
-
-    if (found) {
-      sessionStorage.setItem('utm', JSON.stringify(utmObj));
-    }
-  } catch (err) {}
-}
-
-// CLICK & PAGE EVENT TRACKING
-function trackPageView() {
-  try {
-    fetch('/api/analytics/track', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        event: 'page_view',
-        label: window.location.pathname,
-        referrer: document.referrer,
-        utm: sessionStorage.getItem('utm') || ''
-      })
-    }).catch(e => {});
-  } catch (err) {}
-}
-
-function trackClick(label) {
-  try {
-    fetch('/api/analytics/track', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        event: 'cta_click',
-        label: label || 'Button Click',
-        referrer: document.referrer
-      })
-    }).catch(e => {});
-  } catch (err) {}
-}
-
-function formatPriceToBDT(priceStr) {
-  if (!priceStr) return '৳75,000 / month';
-  if (priceStr.includes('৳')) return priceStr;
-  
-  if (priceStr.includes('1,500') || priceStr.includes('1500')) return '৳75,000 / month';
-  if (priceStr.includes('800')) return '৳45,000 / 10 Reels';
-  if (priceStr.includes('3,500') || priceStr.includes('3500')) return '৳180,000 / project';
-  if (priceStr.includes('1,200') || priceStr.includes('1200')) return '৳65,000 / project';
-  if (priceStr.includes('750')) return '৳45,000 / month';
-  if (priceStr.includes('1,000') || priceStr.includes('1000')) return '৳75,000 / month';
-  if (priceStr.includes('1,250') || priceStr.includes('1250')) return '৳120,000 / month';
-
-  return priceStr.replace(/\$/g, '৳');
-}
-
-function getCanonicalServiceId(s, idx) {
-  if (s && s.id && String(s.id).toUpperCase().startsWith('SVC-')) {
-    return String(s.id).toUpperCase();
+// ── 10. CHAT BOT TRIGGER HELPER ──
+function openPurpleBot(topic) {
+  if (window.openWidgetBox) {
+    window.openWidgetBox();
+  } else {
+    openLeadModal(topic || 'AI Inquiry');
   }
-  const cat = (s.category || '').toLowerCase();
-  const title = (s.title || '').toLowerCase();
-  if (title.includes('digital') || cat.includes('growth') || cat.includes('marketing')) return 'SVC-001';
-  if (title.includes('short-form') || title.includes('reels')) return 'SVC-002';
-  if (title.includes('tvc') || title.includes('commercial') || title.includes('film')) return 'SVC-003';
-  if (cat.includes('brand') || title.includes('brand') || title.includes('graphics')) return 'SVC-004';
-  if (cat.includes('dev') || cat.includes('web') || title.includes('website')) return 'SVC-005';
-  if (cat.includes('tech') || title.includes('tech') || title.includes('software')) return 'SVC-006';
-  
-  const fallback = ['SVC-001', 'SVC-002', 'SVC-003', 'SVC-004', 'SVC-005', 'SVC-006'];
-  return fallback[idx % fallback.length];
 }
+window.openPurpleBot = openPurpleBot;
+window.openGroBot = openPurpleBot;
 
-const FALLBACK_PUBLIC_SERVICES = [
-  {
-    id: 'SVC-001',
-    category: 'Digital Marketing',
-    title: 'Digital Marketing & Growth',
-    description: '360° social media management, data-backed paid ad campaigns (Meta & Google), and community engagement designed to scale brand reach.',
-    price: '৳75,000 / month'
-  },
-  {
-    id: 'SVC-002',
-    category: 'Video Production',
-    title: 'Short-Form Video Reels & TikToks',
-    description: 'High-converting viral reels, TikToks, and YouTube Shorts. Complete with storyboard, studio shoot, fast color grading, and dynamic captions.',
-    price: '৳45,000 / 10 Reels'
-  },
-  {
-    id: 'SVC-003',
-    category: 'Video Production',
-    title: 'Commercial TVC & Brand Films',
-    description: 'Cinematic 4K brand commercials, product hero videos, and corporate documentaries with high-end lighting, voiceover, and sound design.',
-    price: '৳180,000 / project'
-  },
-  {
-    id: 'SVC-004',
-    category: 'Branding & Graphics',
-    title: 'Brand Identity & Visual Positioning',
-    description: 'Comprehensive branding packages: logo suites, color psychology, 50-page brand guidelines, stationery, packaging, and digital asset kits.',
-    price: '৳65,000 / project'
-  },
-  {
-    id: 'SVC-005',
-    category: 'Website & Tech',
-    title: 'Modern Web & UI/UX Development',
-    description: 'High-speed, SEO-optimized business websites, landing pages, and interactive web applications built on modern web stacks with sub-2s load time.',
-    price: '৳120,000 / project'
-  },
-  {
-    id: 'SVC-006',
-    category: 'Custom Tech',
-    title: 'Custom Tech, Telegram Bots & AI Systems',
-    description: 'Proprietary enterprise tooling, automated Telegram bot workflows, CRM integrations, and generative AI-assisted business solutions.',
-    price: 'Custom Scope'
-  }
-];
-
-// FETCH & RENDER PUBLIC SERVICES
-async function fetchLandingServices() {
-  const container = document.getElementById('landingServicesGrid');
-  if (!container) return;
-
-  const categoryIcons = {
-    'Digital Marketing': '📱',
-    'Video Production': '🎬',
-    'Video Editing & Animation': '🎬',
-    'Branding & Graphics': '🎨',
-    'Branding': '🎨',
-    'Website & Tech': '💻',
-    'Tech & Web': '💻',
-    'Custom Tech': '⚡'
-  };
-
-  function renderServices(servicesList) {
-    container.innerHTML = servicesList.map((s, index) => {
-      const canonicalId = getCanonicalServiceId(s, index);
-      return `
-        <div class="pb-service-card">
-          <div>
-            <div class="pb-svc-icon">${categoryIcons[s.category] || '⚡'}</div>
-            <div class="pb-svc-badge-row">
-              <span class="pb-svc-category">${s.category}</span>
-              <span class="pb-svc-price">${formatPriceToBDT(s.price)}</span>
-            </div>
-            <h3><a href="/service-detail.html?id=${canonicalId}" class="pb-svc-title-link">${s.title}</a></h3>
-            <p>${s.description}</p>
-          </div>
-
-          <div style="display:flex; flex-direction:column; gap:0.6rem; margin-top:1.25rem; width:100%;">
-            <a href="/service-detail.html?id=${canonicalId}" class="pb-svc-details-link">
-              🔍 View Full Details & Features →
-            </a>
-            <button onclick="openPurpleBot('${s.title}')" class="pb-btn-svc">
-              Get Custom Quote →
-            </button>
-          </div>
-        </div>
-      `;
-    }).join('');
-  }
-
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
-    const res = await fetch('/api/cms', { signal: controller.signal });
-    clearTimeout(timeoutId);
-
-    const cmsData = await res.json();
-    const services = (cmsData.content && cmsData.content.services) || cmsData.services || [];
-    const publicServices = (services || []).filter(s => s.public !== false && s.is_public !== false);
-
-    if (publicServices.length > 0) {
-      renderServices(publicServices);
-      return;
-    }
-  } catch (err) {
-    console.warn('CMS services fetch timed out or failed, falling back to static catalogue:', err.message);
-  }
-
-  // Fallback to static catalogue
-  renderServices(FALLBACK_PUBLIC_SERVICES);
-}
-
-// FAQ ACCORDION INTERACTION
+// FAQ Accordion
 function toggleFAQ(button) {
   const item = button.closest('.pb-faq-item');
   if (!item) return;
   const isOpen = item.classList.contains('is-open');
 
-  // Accordion behavior: close others
-  document.querySelectorAll('.pb-faq-item').forEach(el => {
+  document.querySelectorAll('.pb-faq-list .pb-faq-item').forEach(el => {
     el.classList.remove('is-open');
-    const qBtn = el.querySelector('.pb-faq-question');
-    if (qBtn) qBtn.setAttribute('aria-expanded', 'false');
+    const icon = el.querySelector('.faq-icon');
+    if (icon) icon.innerText = '+';
   });
 
   if (!isOpen) {
     item.classList.add('is-open');
-    button.setAttribute('aria-expanded', 'true');
+    const icon = item.querySelector('.faq-icon');
+    if (icon) icon.innerText = '−';
   }
 }
 window.toggleFAQ = toggleFAQ;
-
-// PRICING CATEGORY TABS
-function switchPricingTab(tabKey, button) {
-  document.querySelectorAll('.pb-pricing-tab-btn').forEach(btn => {
-    btn.classList.remove('active');
-    btn.setAttribute('aria-selected', 'false');
-  });
-  if (button) {
-    button.classList.add('active');
-    button.setAttribute('aria-selected', 'true');
-  }
-
-  document.querySelectorAll('.pb-pricing-tab-content').forEach(content => {
-    content.classList.remove('is-active');
-  });
-  const activeContent = document.getElementById(`pricing-tab-${tabKey}`);
-  if (activeContent) {
-    activeContent.classList.add('is-active');
-  }
-  trackClick(`Pricing Tab: ${tabKey}`);
-}
-window.switchPricingTab = switchPricingTab;
-
-function selectServiceCategory(category) {
-  const inquirySec = document.getElementById('services');
-  if (inquirySec) {
-    inquirySec.scrollIntoView({ behavior: 'smooth' });
-  }
-}
-
-// NAVBAR SCROLL EFFECT
-function initNavbarScroll() {
-  const nav = document.getElementById('topNav');
-  if (!nav) return;
-
-  window.addEventListener('scroll', () => {
-    if (window.scrollY > 40) {
-      nav.classList.add('scrolled');
-    } else {
-      nav.classList.remove('scrolled');
-    }
-  });
-}
-
-// STAT COUNTER ANIMATION
-function initStatCounters() {
-  const statElements = document.querySelectorAll('.pb-stat-num');
-  if (!statElements || statElements.length === 0) return;
-
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        const el = entry.target;
-        const target = parseInt(el.getAttribute('data-target') || '0', 10);
-        if (target > 0) {
-          animateCount(el, target);
-        }
-        observer.unobserve(el);
-      }
-    });
-  }, { threshold: 0.5 });
-
-  statElements.forEach(el => observer.observe(el));
-}
-
-function animateCount(el, target) {
-  let current = 0;
-  const increment = Math.ceil(target / 40);
-  const timer = setInterval(() => {
-    current += increment;
-    if (current >= target) {
-      current = target;
-      clearInterval(timer);
-    }
-    
-    if (target === 8) el.innerText = current + '+';
-    else if (target === 100) el.innerText = current + '+';
-    else if (target === 20000) el.innerText = current.toLocaleString() + '+';
-    else if (target === 10) el.innerText = current + 'M+';
-    else el.innerText = current + '+';
-  }, 40);
-}
-
-// NEWSLETTER SUBMISSION
-async function handleNewsletterSubmit(e) {
-  e.preventDefault();
-  const input = document.getElementById('newsEmail');
-  if (!input || !input.value) return;
-
-  const email = input.value.trim();
-
-  try {
-    const res = await fetch('/api/leads', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        clientName: 'Newsletter Subscriber',
-        contactPerson: 'Subscriber',
-        contactEmail: email,
-        service: 'Monthly Newsletter',
-        source: 'Landing Page Newsletter'
-      })
-    });
-
-    const data = await res.json();
-    if (data.success) {
-      showLandingToast(`🎉 Thank you! ${email} has been subscribed to the Purplebot Digital Newsletter.`, 'success');
-      input.value = '';
-      trackClick('Newsletter Subscribed');
-    }
-  } catch (err) {
-    showLandingToast('⚠️ Could not subscribe right now. Please try again later or message us on WhatsApp!', 'error');
-  }
-}
-
-// CONTACT PROPOSAL FORM SUBMISSION
-async function handleLeadFormSubmit(e) {
-  e.preventDefault();
-  const nameInput = document.getElementById('leadName');
-  const phoneInput = document.getElementById('leadPhone');
-  const emailInput = document.getElementById('leadEmail');
-  const serviceInput = document.getElementById('leadService');
-  const notesInput = document.getElementById('leadNotes');
-  const submitBtn = document.getElementById('leadSubmitBtn');
-
-  if (!nameInput || !phoneInput) return;
-
-  const name = nameInput.value.trim();
-  const phone = phoneInput.value.trim();
-  const email = emailInput ? emailInput.value.trim() : '';
-  const service = serviceInput ? serviceInput.value : 'General Proposal Request';
-  const notes = notesInput ? notesInput.value.trim() : '';
-
-  if (!name || !phone) {
-    showLandingToast('⚠️ Please provide your Name and WhatsApp/Phone number.', 'error');
-    return;
-  }
-
-  if (submitBtn) {
-    submitBtn.disabled = true;
-    submitBtn.innerText = '⏳ Submitting Request...';
-  }
-
-  try {
-    const utmRaw = sessionStorage.getItem('utm');
-    const utm = utmRaw ? JSON.parse(utmRaw) : {};
-
-    const res = await fetch('/api/leads', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        clientName: name + ' (Direct Web Form)',
-        contactPerson: name,
-        contactEmail: email,
-        phone: phone,
-        service: service,
-        notes: notes,
-        source: utm.utm_source ? `UTM: ${utm.utm_source}` : 'Landing Page Contact Section Form',
-        utm_source: utm.utm_source || '',
-        utm_medium: utm.utm_medium || '',
-        utm_campaign: utm.utm_campaign || ''
-      })
-    });
-
-    const data = await res.json();
-    if (data.isDuplicate) {
-      showLandingToast(`ℹ️ We already have your proposal request on file, ${name}! Our account director will follow up with you within 2 business hours.`, 'success');
-      nameInput.value = '';
-      phoneInput.value = '';
-      if (emailInput) emailInput.value = '';
-      if (serviceInput) serviceInput.selectedIndex = 0;
-      if (notesInput) notesInput.value = '';
-      trackClick('Proposal Request Form Submitted (Duplicate)');
-    } else if (data.success || data.id) {
-      const emailNote = (email && email.includes('@')) ? ' A confirmation email has been sent.' : '';
-      showLandingToast(`🎉 Thank you ${name}! Your proposal request for "${service}" has been logged.${emailNote} Our account director will WhatsApp you within 2 hours.`, 'success');
-      nameInput.value = '';
-      phoneInput.value = '';
-      if (emailInput) emailInput.value = '';
-      if (serviceInput) serviceInput.selectedIndex = 0;
-      if (notesInput) notesInput.value = '';
-      trackClick('Proposal Request Form Submitted');
-    } else {
-      showLandingToast('⚠️ There was an issue submitting your proposal request. Please WhatsApp us directly at +88 01711 019550.', 'error');
-    }
-  } catch (err) {
-    showLandingToast('⚠️ Form submission error. Please contact us via WhatsApp at +88 01711 019550.', 'error');
-  } finally {
-    if (submitBtn) {
-      submitBtn.disabled = false;
-      submitBtn.innerText = '🚀 Submit Proposal Request →';
-    }
-  }
-}
-
-window.handleLeadFormSubmit = handleLeadFormSubmit;
-
-function showLandingToast(message, type = 'success') {
-  let container = document.getElementById('landingToastContainer');
-  if (!container) {
-    container = document.createElement('div');
-    container.id = 'landingToastContainer';
-    container.style.cssText = 'position: fixed; bottom: 2rem; right: 2rem; z-index: 99999; display: flex; flex-direction: column; gap: 0.5rem;';
-    document.body.appendChild(container);
-  }
-  const toast = document.createElement('div');
-  toast.style.cssText = 'background: #0f172a; border: 1px solid #7c3aed; color: #fff; padding: 0.85rem 1.25rem; border-radius: 12px; font-size: 0.9rem; box-shadow: 0 10px 25px rgba(124, 58, 237, 0.3); font-family: var(--font-family); display: flex; justify-content: space-between; align-items: center; gap: 1rem;';
-  toast.innerHTML = `<span>${message}</span><button onclick="this.parentElement.remove()" style="background:none; border:none; color:rgba(255,255,255,0.7); cursor:pointer; font-size:1.1rem; padding:0;">✕</button>`;
-  container.appendChild(toast);
-  setTimeout(() => {
-    if (toast.parentElement) toast.remove();
-  }, 4000);
-}
-
-// FETCH & RENDER PUBLIC CMS CONTENT
-async function fetchCMSContent() {
-  try {
-    const res = await fetch('/api/cms');
-    const cms = await res.json();
-    if (!cms) return;
-
-    // 1. Client Marquee
-    if (cms.clientMarquee && cms.clientMarquee.length > 0) {
-      const marqueeContainer = document.getElementById('clientMarquee');
-      if (marqueeContainer) {
-        const clientLogosMap = {
-          'UCB Bank': '/images/clients/ucb.webp',
-          'Chillox': '/images/clients/chillox.webp',
-          'Chillox Burgers': '/images/clients/chillox.webp',
-          'BAT Global': '/images/clients/bat.webp',
-          'LG Electronics': '/images/clients/lg.webp',
-          'Taptap Send': '/images/clients/taptap.webp',
-          'Mortein': '/images/clients/mortein.webp',
-          'Harpic': '/images/clients/harpic.webp',
-          'Yatai Japanese': '/images/clients/yatai.webp'
-        };
-
-        const activeBrands = cms.clientMarquee.filter(b => !b.toLowerCase().includes('fortress'));
-        const pillsHtml = activeBrands.map(brand => `
-          <div class="pb-client-pill">
-            ${clientLogosMap[brand] ? `<img src="${clientLogosMap[brand]}" alt="${brand}" class="pb-client-logo-img">` : ''}
-            <span>${brand}</span>
-          </div>
-        `).join('');
-
-        marqueeContainer.innerHTML = pillsHtml + pillsHtml;
-      }
-    }
-
-    // 2. Portfolio Showcase
-    if (cms.portfolioShowcase && cms.portfolioShowcase.length > 0) {
-      const portGrid = document.querySelector('.pb-portfolio-grid');
-      if (portGrid) {
-        portGrid.innerHTML = cms.portfolioShowcase.map(p => `
-          <div class="pb-portfolio-card">
-            <div class="pb-portfolio-thumb" style="background-image: url('${p.image}');">
-              <span class="pb-category-tag">${p.category}</span>
-            </div>
-            <div class="pb-portfolio-info">
-              <h3>${p.title}</h3>
-              <p>${p.subtitle}</p>
-              <div class="pb-portfolio-metric">${p.metric}</div>
-            </div>
-          </div>
-        `).join('');
-      }
-    }
-
-    // 3. Pricing Packages
-    if (cms.pricingPackages && cms.pricingPackages.length > 0) {
-      const priceGrid = document.querySelector('.pb-pricing-grid');
-      if (priceGrid) {
-        priceGrid.innerHTML = cms.pricingPackages.map(pkg => `
-          <div class="pb-pricing-card ${pkg.featured ? 'pb-featured-plan' : ''}">
-            ${pkg.featured ? '<div class="pb-featured-tag">MOST POPULAR</div>' : ''}
-            <div class="pb-price-header">
-              <span class="pb-plan-badge">${pkg.tier || 'PACKAGE'}</span>
-              <h3>${pkg.name}</h3>
-              <div class="pb-price-tag">${pkg.price} <span>${pkg.period || '/ month'}</span></div>
-            </div>
-            <ul class="pb-price-features">
-              ${(pkg.features || []).map(f => `<li>✓ ${f}</li>`).join('')}
-            </ul>
-            <button onclick="openPurpleBot('${pkg.name} (${pkg.price})')" class="pb-btn-plan ${pkg.featured ? 'pb-btn-plan-featured' : ''}">
-              Select ${pkg.name}
-            </button>
-          </div>
-        `).join('');
-      }
-    }
-  } catch (err) {
-    console.error('Error loading public CMS content:', err);
-  }
-}
-
-// INTERACTIVE WORKFLOW STEP SWITCHER (HOW WE WORK SECTION)
-function switchWorkStep(stepNum) {
-  const tabs = document.querySelectorAll('.pb-work-tab');
-  const cards = document.querySelectorAll('.pb-work-card');
-
-  tabs.forEach((tab, index) => {
-    if (index + 1 === stepNum) {
-      tab.classList.add('active');
-    } else {
-      tab.classList.remove('active');
-    }
-  });
-
-  cards.forEach((card, index) => {
-    if (index + 1 === stepNum) {
-      card.classList.add('active');
-    } else {
-      card.classList.remove('active');
-    }
-  });
-}
-
-// INTERACTIVE PORTFOLIO CASE STUDY CONTROLLER
-const PORTFOLIO_CASE_STUDIES = {
-  lg: {
-    client: 'LG Electronics Bangladesh',
-    category: 'Electronics & Tech • 3+ Years Retainer',
-    heroImg: '/images/portfolio/lg.webp',
-    metric: '📱 500,000+ Social Community Growth',
-    challenge: 'LG required a unified digital agency partner to elevate social brand affinity, launch new consumer electronic lineups, and manage customer community interactions with sub-15 minute response times.',
-    solution: 'Purplebot deployed an integrated 360 retainer comprising monthly product launch reels, high-end motion graphic ads, Facebook/Instagram page moderation, and high-ROI conversion funnels.',
-    deliverables: ['16x Monthly Content Items', '4K Product Commercial Reels', 'Sub-15min DM/Comment Response SLA', 'Meta Pixel Performance Campaigns'],
-    results: 'Grew organic Facebook & Instagram following to 500,000+ active followers with consistent 4.2% engagement rate.'
-  },
-  intercontinental: {
-    client: 'InterContinental Dhaka',
-    category: 'Luxury Hospitality • 2+ Years Creative Retainer',
-    heroImg: '/images/portfolio/intercontinental.webp',
-    metric: '🏨 2+ Years Full Content Support',
-    challenge: 'Showcase luxury dining experiences, corporate event venues, and seasonal promotions while maintaining five-star international brand guidelines.',
-    solution: 'Designed multi-tier social calendars, cinematic 4K video walkthroughs, and VIP dining event motion graphics reviewed collaboratively via PurpleOS.',
-    deliverables: ['Cinematic 4K Venue Walkthroughs', 'Seasonal Dining Social Campaigns', 'Executive Print & Digital Menus', 'VIP Event Coverage'],
-    results: 'Supported 120+ sold-out luxury dining promotions and sustained premium brand positioning across Bangladesh.'
-  },
-  ucb: {
-    client: 'United Commercial Bank (UCB)',
-    category: 'Corporate Financial & Banking',
-    heroImg: '/images/portfolio/ucb.webp',
-    metric: '💼 100% On-Time Board Delivery',
-    challenge: 'Produce a comprehensive, broadcast-ready Annual Financial Report video and executive milestone highlights for board stakeholders on strict regulatory deadlines.',
-    solution: 'Executed full scriptwriting, motion infographic visualization of corporate balance sheets, and bilingual executive voiceover.',
-    deliverables: ['Annual Financial Video Master', 'Infographic Motion Graphics', 'Corporate Board Presentations', 'Bilingual Voiceover Suite'],
-    results: 'Delivered 100% on-time with zero revisions required on board presentation day.'
-  },
-  chillox: {
-    client: 'Chillox Burger Chain',
-    category: 'Food & FMCG Retainer',
-    heroImg: '/images/portfolio/chillox.webp',
-    metric: '🍔 2.4M+ Organic Short-Form Views',
-    challenge: 'Drive youth foot traffic to 15+ branches across Dhaka and build viral engagement with burger releases.',
-    solution: 'Produced weekly viral TikTok/Reels batches featuring rapid ASMR audio cuts, mouth-watering macro close-ups, and influencer collabs.',
-    deliverables: ['8x Monthly Viral Video Reels', 'ASMR Audio & Dynamic Captions', 'Branch Opening Campaign Suites', 'Meta Ad Retargeting'],
-    results: 'Surpassed 2.4M organic video views with a +38% documented surge in weekend store visits.'
-  },
-  mortein: {
-    client: 'Mortein Protection (Reckitt)',
-    category: 'Health & Home Care FMCG',
-    heroImg: '/images/portfolio/mortein.webp',
-    metric: '🛡️ 1.8M Campaign Reach',
-    challenge: 'Communicate seasonal monsoon pest protection and Dengue prevention awareness across mass demographic segments.',
-    solution: 'Crafted dynamic 3D mosquito animation, high-impact digital TVCs, and targeted vernacular social messaging.',
-    deliverables: ['Digital Commercial TVC (15s & 30s)', '3D CGI Product Visuals', 'Dengue Awareness Carousel Series', 'Meta Video Ads Engine'],
-    results: 'Achieved 1.8M verified reach with 74% video completion rate on Meta and YouTube.'
-  },
-  harpic: {
-    client: 'Harpic Hygiene (Reckitt)',
-    category: 'Home Care & FMCG Awareness',
-    heroImg: '/images/portfolio/harpic.webp',
-    metric: '✨ 3.2M National Impressions',
-    challenge: 'Educate urban households on deep sanitation and product efficacy with high-clarity motion graphics.',
-    solution: 'Produced an educational animated awareness series combining relatable household scenarios and scientific cleaning visuals.',
-    deliverables: ['National Awareness Video Series', 'Multi-Language Explainer Motion Graphics', 'Digital Display Ad Kits', 'Social Distribution Plan'],
-    results: 'Delivered 3.2M impressions and reinforced Harpic as the #1 household sanitation authority.'
-  },
-  bat: {
-    client: 'BAT Global',
-    category: 'Corporate Enterprise Motion Production',
-    heroImg: '/images/portfolio/bat.webp',
-    metric: '⚡ Executive Asset Delivery',
-    challenge: 'Execute internal corporate event motion graphics, award opener stings, and confidential leadership video packages.',
-    solution: 'Dispatched dedicated senior motion designers under strict NDA workflows via PurpleOS secure asset pipelines.',
-    deliverables: ['Event Opener 3D Motion Stings', 'Leadership Milestone Videos', 'Audio Mastering & SFX', 'Confidential Cloud Review Access'],
-    results: 'Executed 12 consecutive enterprise events with zero operational hitches.'
-  },
-  taptap: {
-    client: 'Taptap Send Remittance App',
-    category: 'Fintech & Cross-Border Mobile',
-    heroImg: '/images/portfolio/taptap.webp',
-    metric: '💸 +45% Verified App Installs',
-    challenge: 'Acquire cross-border remittance senders across UK, EU, and USA sending money to Bangladesh bank accounts and mobile wallets.',
-    solution: 'Deployed high-converting vernacular video ads, social proof testimonials from diaspora creators, and performance ad retargeting.',
-    deliverables: ['Diaspora Creator Video Ads', 'App Store Creative Optimizations', 'Meta & TikTok Performance Campaigns', 'Real-Time ROAS Telemetry'],
-    results: 'Increased app installs by +45% while reducing cost-per-acquisition (CPA) by 28%.'
-  },
-  yatai: {
-    client: 'Yatai Japanese Dining',
-    category: 'Dining & Restaurant Launch',
-    heroImg: '/images/portfolio/yatai.webp',
-    metric: '🍣 850k Local Foodie Reach',
-    challenge: 'Launch a premium authentic Japanese dining spot in Dhaka and establish immediate buzz among food enthusiasts.',
-    solution: 'Shot authentic sushi preparation reels, ambiance moodfilms, and coordinated top foodie creator launch visits.',
-    deliverables: ['Launch Moodfilms & Reels', 'Foodie Creator Coordination', 'Google Maps & Local SEO Setup', 'Instagram Page Aesthetic Kit'],
-    results: 'Generated 850k local reach within 30 days and sustained full weekend table bookings.'
-  }
-};
-
-function openCaseStudy(id) {
-  const cs = PORTFOLIO_CASE_STUDIES[id];
-  const modal = document.getElementById('caseStudyModal');
-  const container = document.getElementById('caseStudyModalContent');
-  if (!cs || !modal || !container) return;
-
-  container.innerHTML = `
-    <div style="margin-bottom:1.25rem;">
-      <span style="font-size:0.75rem; font-weight:700; color:#c084fc; text-transform:uppercase; letter-spacing:0.05em;">${cs.category}</span>
-      <h2 style="font-size:1.6rem; color:#fff; margin:0.35rem 0 0.5rem; font-weight:800;">${cs.client}</h2>
-      <div style="display:inline-block; background:rgba(16,185,129,0.15); color:#34d399; border:1px solid rgba(16,185,129,0.3); border-radius:999px; padding:0.3rem 0.85rem; font-size:0.85rem; font-weight:700;">
-        ${cs.metric}
-      </div>
-    </div>
-
-    <div style="border-radius:14px; overflow:hidden; margin-bottom:1.5rem; border:1px solid rgba(255,255,255,0.1);">
-      <img src="${cs.heroImg}" alt="${cs.client}" style="width:100%; max-height:280px; object-fit:cover; display:block;">
-    </div>
-
-    <div style="display:flex; flex-direction:column; gap:1rem; font-size:0.9rem; line-height:1.65; color:#cbd5e1; margin-bottom:1.75rem;">
-      <div>
-        <strong style="color:#fff; display:block; margin-bottom:0.25rem;">🎯 The Challenge:</strong>
-        <p style="margin:0;">${cs.challenge}</p>
-      </div>
-      <div>
-        <strong style="color:#fff; display:block; margin-bottom:0.25rem;">💡 Our Solution:</strong>
-        <p style="margin:0;">${cs.solution}</p>
-      </div>
-      <div>
-        <strong style="color:#fff; display:block; margin-bottom:0.4rem;">📦 Deliverables Executed:</strong>
-        <ul style="margin:0; padding-left:1.25rem; display:flex; flex-direction:column; gap:0.35rem;">
-          ${cs.deliverables.map(d => `<li>${d}</li>`).join('')}
-        </ul>
-      </div>
-      <div style="background:rgba(168,85,247,0.1); border:1px solid rgba(168,85,247,0.25); border-radius:12px; padding:0.9rem;">
-        <strong style="color:#c084fc; display:block; margin-bottom:0.2rem;">📈 Verified Impact:</strong>
-        <p style="margin:0; color:#f8fafc; font-weight:600;">${cs.results}</p>
-      </div>
-    </div>
-
-    <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
-      <button onclick="closeCaseStudyModal(); openPurpleBot('${cs.client} Case Study Inquiry');" class="pb-btn-primary" style="flex:1;">
-        🚀 Request Similar Campaign for Your Brand →
-      </button>
-    </div>
-  `;
-
-  modal.style.display = 'flex';
-  document.body.style.overflow = 'hidden';
-}
-
-function closeCaseStudyModal() {
-  const modal = document.getElementById('caseStudyModal');
-  if (modal) modal.style.display = 'none';
-  document.body.style.overflow = '';
-}
-
-function handleCaseStudyOverlayClick(event) {
-  if (event.target && event.target.id === 'caseStudyModal') {
-    closeCaseStudyModal();
-  }
-}
-
