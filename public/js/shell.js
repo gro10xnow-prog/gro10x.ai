@@ -60,19 +60,19 @@ function renderHeader() {
   headerContainer.className = 'top-header';
   headerContainer.innerHTML = `
     <div style="display: flex; align-items: center; gap: 0.8rem;">
-      <a href="/pages/dashboard.html" class="brand-container">
-        <div class="brand-logo">PB</div>
+      <a href="/pages/dashboard.html" class="brand-container" style="display:flex; align-items:center; gap:0.6rem; text-decoration:none;">
+        <div class="brand-logo" style="background:var(--brand-primary, #00df89); color:#070b12; font-weight:900; width:34px; height:34px; border-radius:10px; display:flex; align-items:center; justify-content:center;">⚡</div>
         <div>
-          <div class="brand-title">PurpleOS</div>
-          <div style="font-size: 0.68rem; color: var(--pink-accent); font-weight: 700; letter-spacing: 0.05em;">DIGITAL OPERATING SYSTEM</div>
+          <div class="brand-title" style="font-family:var(--font-heading); font-weight:900; font-size:1.1rem; color:var(--text-primary, #f8fafc); line-height:1;">GRO10X</div>
+          <div style="font-size: 0.65rem; color: var(--brand-primary, #00df89); font-weight: 800; letter-spacing: 0.06em;">AI GROWTH AGENCY</div>
         </div>
       </a>
     </div>
 
     <!-- Quick Search Command Trigger -->
-    <div class="cmd-trigger-btn" onclick="toggleCommandCenter()" style="display: flex; align-items: center; gap: 0.6rem; padding: 0.45rem 1rem; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 12px; cursor: pointer; color: var(--text-muted); font-size: 0.82rem; font-weight: 500;">
+    <div class="cmd-trigger-btn" onclick="toggleCommandCenter()" style="display: flex; align-items: center; gap: 0.6rem; padding: 0.45rem 1rem; background: var(--surface-1, #0f172a); border: 1px solid var(--border-subtle, #1e293b); border-radius: 12px; cursor: pointer; color: var(--text-muted); font-size: 0.82rem; font-weight: 500;">
       <span>🔍 Quick Search or Command...</span>
-      <span style="padding: 0.15rem 0.45rem; background: var(--border-glow); border-radius: 6px; font-size: 0.72rem; font-weight: 800; color: var(--text-main);">Ctrl + K</span>
+      <span style="padding: 0.15rem 0.45rem; background: rgba(0,223,137,0.15); border-radius: 6px; font-size: 0.72rem; font-weight: 800; color: var(--brand-primary, #00df89);">Ctrl + K</span>
     </div>
 
     <div style="display: flex; align-items: center; gap: 0.85rem;">
@@ -83,10 +83,10 @@ function renderHeader() {
 
       <!-- User Profile Badge (Clickable link to profile page) -->
       <a href="/pages/profile.html" class="user-profile-badge" title="Manage Profile & PIN">
-        <div class="user-avatar" id="userAvatar">PB</div>
+        <div class="user-avatar" id="userAvatar" style="background:var(--brand-primary, #00df89); color:#070b12; font-weight:800;">GX</div>
         <div class="user-info">
-          <span class="user-name" id="userName">Staff User</span>
-          <span class="user-role-tag" id="userRoleTag">Team Member</span>
+          <span class="user-name" id="userName">Admin</span>
+          <span class="user-role-tag" id="userRoleTag">Owner</span>
         </div>
       </a>
 

@@ -3,17 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PurpleOS — Executive Command Dashboard</title>
+  <title>GRO10X — Executive Command Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/tokens.css">
   <link rel="stylesheet" href="/css/styles.css">
   <link rel="stylesheet" href="/css/shell.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     .welcome-hero {
-      background: linear-gradient(135deg, rgba(190, 24, 93, 0.16), rgba(147, 51, 234, 0.12));
-      border: 1px solid var(--border-glow);
+      background: linear-gradient(135deg, rgba(0, 223, 137, 0.12), rgba(6, 182, 212, 0.08));
+      border: 1px solid rgba(0, 223, 137, 0.25);
       border-radius: 20px;
       padding: 1.5rem 1.75rem;
       margin-bottom: 1.5rem;
@@ -21,7 +22,7 @@
       align-items: center;
       justify-content: space-between;
       backdrop-filter: blur(12px);
-      box-shadow: var(--card-shadow);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
       flex-wrap: wrap;
       gap: 1rem;
     }
@@ -45,37 +46,37 @@
       margin-bottom: 1.5rem;
     }
     .kpi-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
+      background: var(--surface-1, #0f172a);
+      border: 1px solid var(--border-subtle, #1e293b);
       border-radius: 16px;
       padding: 1.1rem;
       display: flex;
       flex-direction: column;
       gap: 0.35rem;
       backdrop-filter: blur(12px);
-      box-shadow: var(--card-shadow);
+      box-shadow: var(--shadow-card);
       transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .kpi-card:hover {
-      border-color: var(--pink-accent);
+      border-color: var(--brand-primary, #00df89);
       transform: translateY(-2px);
     }
     .kpi-title {
       font-size: 0.72rem;
       font-weight: 800;
-      color: var(--text-dim);
+      color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.06em;
     }
     .kpi-val {
       font-size: 1.6rem;
       font-weight: 900;
-      color: var(--text-main);
-      font-family: 'Outfit', sans-serif;
+      color: var(--text-primary);
+      font-family: var(--font-heading);
     }
     .kpi-sub {
       font-size: 0.75rem;
-      color: #10b981;
+      color: #00df89;
       font-weight: 700;
     }
     .kpi-sub.warning { color: #f59e0b; }
@@ -102,8 +103,8 @@
       cursor: pointer;
     }
     .quick-act-btn:hover {
-      background: rgba(168, 85, 247, 0.2);
-      border-color: var(--purple-accent);
+      background: rgba(0, 223, 137, 0.2);
+      border-color: var(--brand-primary);
       color: #fff;
     }
 
@@ -118,11 +119,11 @@
     }
 
     .panel-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
+      background: var(--surface-1, #0f172a);
+      border: 1px solid var(--border-subtle, #1e293b);
       border-radius: 20px;
       padding: 1.35rem;
-      box-shadow: var(--card-shadow);
+      box-shadow: var(--shadow-card);
       display: flex;
       flex-direction: column;
     }
@@ -137,58 +138,38 @@
     .panel-title {
       font-size: 1rem;
       font-weight: 800;
-      font-family: 'Outfit', sans-serif;
-      color: var(--text-main);
+      font-family: var(--font-heading);
+      color: var(--text-primary);
       display: flex;
       align-items: center;
       gap: 0.5rem;
     }
 
-    /* Pipeline Bars */
-    .stage-bar-item {
-      margin-bottom: 0.75rem;
+    /* Engine Rows */
+    .engine-progress-row {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      margin-bottom: 0.85rem;
     }
-    .stage-bar-header {
+    .engine-row-header {
       display: flex;
       justify-content: space-between;
-      font-size: 0.78rem;
+      font-size: 0.82rem;
       font-weight: 700;
-      margin-bottom: 0.25rem;
     }
-    .stage-progress-bg {
+    .engine-bar-track {
       width: 100%;
       height: 8px;
       background: rgba(255, 255, 255, 0.08);
       border-radius: 999px;
       overflow: hidden;
     }
-    .stage-progress-fill {
+    .engine-bar-fill {
       height: 100%;
       border-radius: 999px;
+      background: linear-gradient(90deg, #00df89, #06b6d4);
       transition: width 0.4s ease;
-    }
-
-    /* Feed List */
-    .feed-item {
-      display: flex;
-      align-items: center;
-      gap: 0.85rem;
-      padding: 0.65rem 0;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-      font-size: 0.82rem;
-    }
-    .feed-item:last-child { border-bottom: none; }
-    .feed-badge {
-      width: 32px;
-      height: 32px;
-      border-radius: 10px;
-      background: rgba(236, 72, 153, 0.12);
-      border: 1px solid var(--border-glow);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.9rem;
-      flex-shrink: 0;
     }
 
     /* Mini Table */
@@ -219,10 +200,10 @@
       font-weight: 700;
       display: inline-block;
     }
-    .badge-green { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .badge-green { background: rgba(0, 223, 137, 0.15); color: #00df89; border: 1px solid rgba(0, 223, 137, 0.3); }
     .badge-amber { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
     .badge-red { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
-    .badge-purple { background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); }
+    .badge-cyan { background: rgba(6, 182, 212, 0.15); color: #06b6d4; border: 1px solid rgba(6, 182, 212, 0.3); }
   </style>
 </head>
 <body>
@@ -240,113 +221,157 @@
       <!-- Welcome Hero Banner -->
       <div class="welcome-hero">
         <div>
-          <h1 style="font-size: 1.5rem; font-weight: 900; font-family: 'Outfit', sans-serif; margin: 0 0 0.25rem; color: var(--text-main);" id="greetingHeader">
-            Good Morning, Executive 👋
+          <h1 style="font-size: 1.5rem; font-weight: 900; font-family: var(--font-heading); margin: 0 0 0.25rem; color: var(--text-primary);" id="greetingHeader">
+            Good Morning, Leader 👋
           </h1>
-          <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">
-            Live agency command center · Financials, operations, client health & roster status.
+          <div style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 500;">
+            GRO10X Multi-Engine Executive Command · $100,000 Target & 65% Net Margin Model
           </div>
         </div>
 
         <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem;">
           <div style="display: flex; gap: 0.6rem; align-items: center;">
-            <span style="font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--pink-accent);" id="currentDateBadge">TODAY</span>
-            <span style="font-size: 0.78rem; color: #10b981; font-weight: 700;">🟢 All Systems Live</span>
+            <!-- Currency Toggle -->
+            <div class="currency-toggle-wrapper" style="display:flex; background:rgba(0,0,0,0.3); border:1px solid var(--border-subtle); border-radius:10px; padding:2px;">
+              <button type="button" class="curr-btn active" id="dashCurrUSD" onclick="setDashboardCurrency('USD')" style="background:none; border:none; color:#fff; font-size:0.75rem; font-weight:800; padding:0.2rem 0.5rem; border-radius:6px; cursor:pointer;">USD ($)</button>
+              <button type="button" class="curr-btn" id="dashCurrBDT" onclick="setDashboardCurrency('BDT')" style="background:none; border:none; color:var(--text-muted); font-size:0.75rem; font-weight:800; padding:0.2rem 0.5rem; border-radius:6px; cursor:pointer;">BDT (৳)</button>
+            </div>
+            <span style="font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--brand-primary);" id="currentDateBadge">TODAY</span>
+            <span style="font-size: 0.78rem; color: #00df89; font-weight: 700;">🟢 Live</span>
           </div>
           <div class="action-btn-bar">
             <a href="/pages/projects.html" class="quick-act-btn">📋 New Task</a>
             <a href="/pages/finance.html" class="quick-act-btn">🧾 New Invoice</a>
-            <a href="/pages/team-admin.html" class="quick-act-btn">👥 Manage Team</a>
+            <a href="/pages/clients.html" class="quick-act-btn">🎯 View Leads</a>
           </div>
         </div>
       </div>
 
-      <!-- ROW 1: FINANCIAL COMMAND STRIP -->
-      <div class="kpi-row-title">💵 Financial Command Summary</div>
-      <div class="kpi-grid-5">
-        <div class="kpi-card">
-          <div class="kpi-title">Monthly Revenue</div>
-          <div class="kpi-val" id="kpiRevenueVal">BDT 0</div>
-          <div class="kpi-sub">💰 Settled Invoices</div>
-        </div>
+      <!-- ── SECTION 1: 5-ENGINE GROWTH MODEL TRACKER ── -->
+      <div class="kpi-row-title">⚡ 5-Engine Revenue Ecosystem ($100k Annual Target)</div>
+      <div class="panel-card" style="margin-bottom: 1.5rem; border: 1px solid rgba(0, 223, 137, 0.25);">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem;">
+          
+          <!-- Engine 1 -->
+          <div class="engine-progress-row">
+            <div class="engine-row-header">
+              <span style="color:var(--text-primary);">💻 1. Micro-SaaS (35%)</span>
+              <strong style="color:var(--brand-primary);" id="e1Target">$35,000</strong>
+            </div>
+            <div class="engine-bar-track"><div class="engine-bar-fill" style="width: 35%;"></div></div>
+            <div style="display:flex; justify-content:space-between; font-size:0.72rem; color:var(--text-muted);">
+              <span>Target: $2,916/mo</span>
+              <span style="color:#00df89;">35% Share</span>
+            </div>
+          </div>
 
-        <div class="kpi-card">
-          <div class="kpi-title">Outstanding Receivables</div>
-          <div class="kpi-val" id="kpiReceivablesVal">BDT 0</div>
-          <div class="kpi-sub warning">⏳ Pending Invoices</div>
-        </div>
+          <!-- Engine 2 -->
+          <div class="engine-progress-row">
+            <div class="engine-row-header">
+              <span style="color:var(--text-primary);">🛠️ 2. Freelance (25%)</span>
+              <strong style="color:var(--cyan-brand, #06b6d4);" id="e2Target">$25,000</strong>
+            </div>
+            <div class="engine-bar-track"><div class="engine-bar-fill" style="width: 25%; background:linear-gradient(90deg, #06b6d4, #3b82f6);"></div></div>
+            <div style="display:flex; justify-content:space-between; font-size:0.72rem; color:var(--text-muted);">
+              <span>Target: $2,083/mo</span>
+              <span style="color:#06b6d4;">25% Share</span>
+            </div>
+          </div>
 
-        <div class="kpi-card">
-          <div class="kpi-title">Overdue Invoices</div>
-          <div class="kpi-val" id="kpiOverdueVal">0</div>
-          <div class="kpi-sub alert" id="kpiOverdueSub">🔴 All Clear</div>
-        </div>
+          <!-- Engine 3 -->
+          <div class="engine-progress-row">
+            <div class="engine-row-header">
+              <span style="color:var(--text-primary);">🛍️ 3. Etsy Assets (20%)</span>
+              <strong style="color:#f59e0b;" id="e3Target">$20,000</strong>
+            </div>
+            <div class="engine-bar-track"><div class="engine-bar-fill" style="width: 20%; background:linear-gradient(90deg, #f59e0b, #ec4899);"></div></div>
+            <div style="display:flex; justify-content:space-between; font-size:0.72rem; color:var(--text-muted);">
+              <span>Target: $1,666/mo</span>
+              <span style="color:#f59e0b;">20% Share</span>
+            </div>
+          </div>
 
-        <div class="kpi-card">
-          <div class="kpi-title">Pending Expense Claims</div>
-          <div class="kpi-val" id="kpiPendingExpVal">0</div>
-          <div class="kpi-sub warning" id="kpiPendingExpSub">BDT 0 Awaiting Approval</div>
-        </div>
+          <!-- Engine 4 -->
+          <div class="engine-progress-row">
+            <div class="engine-row-header">
+              <span style="color:var(--text-primary);">🤝 4. Retainers (15%)</span>
+              <strong style="color:#8b5cf6;" id="e4Target">$15,000</strong>
+            </div>
+            <div class="engine-bar-track"><div class="engine-bar-fill" style="width: 15%; background:linear-gradient(90deg, #8b5cf6, #00df89);"></div></div>
+            <div style="display:flex; justify-content:space-between; font-size:0.72rem; color:var(--text-muted);">
+              <span>Target: $1,250/mo</span>
+              <span style="color:#8b5cf6;">15% Share</span>
+            </div>
+          </div>
 
-        <div class="kpi-card">
-          <div class="kpi-title">Invoice Collection Rate</div>
-          <div class="kpi-val" id="kpiCollectionRate">0%</div>
-          <div class="kpi-sub">📈 Paid vs Total Billed</div>
+          <!-- Engine 5 -->
+          <div class="engine-progress-row">
+            <div class="engine-row-header">
+              <span style="color:var(--text-primary);">🎥 5. YouTube (5%)</span>
+              <strong style="color:#ef4444;" id="e5Target">$5,000</strong>
+            </div>
+            <div class="engine-bar-track"><div class="engine-bar-fill" style="width: 5%; background:#ef4444;"></div></div>
+            <div style="display:flex; justify-content:space-between; font-size:0.72rem; color:var(--text-muted);">
+              <span>Target: $416/mo</span>
+              <span style="color:#ef4444;">5% Share</span>
+            </div>
+          </div>
+
         </div>
       </div>
 
-      <!-- ROW 2: OPERATIONS COMMAND STRIP -->
-      <div class="kpi-row-title">⚙️ Operations & Capacity Summary</div>
+      <!-- ── SECTION 2: FINANCIAL STRIP & 65% MARGIN KPI CARDS ── -->
+      <div class="kpi-row-title">💵 Lean Financial & Profit Margins (65% Target)</div>
       <div class="kpi-grid-5">
         <div class="kpi-card">
-          <div class="kpi-title">Team On Duty Today</div>
-          <div class="kpi-val" id="kpiTeamDuty">0 / 0</div>
-          <div class="kpi-sub">🟢 Live Clocked-In Roster</div>
+          <div class="kpi-title">Gross Revenue Target</div>
+          <div class="kpi-val" id="kpiGrossTarget">$100,000</div>
+          <div class="kpi-sub" id="kpiGrossSub">৳1.18 Crore BDT</div>
         </div>
 
         <div class="kpi-card">
-          <div class="kpi-title">EOD Report Submissions</div>
-          <div class="kpi-val" id="kpiEodSubmitted">0</div>
-          <div class="kpi-sub" id="kpiEodSub">📋 Submitted Today</div>
+          <div class="kpi-title">Lean Expense Cap (35%)</div>
+          <div class="kpi-val" id="kpiExpenseCap">$35,000</div>
+          <div class="kpi-sub warning" id="kpiExpenseSub">৳41.3 Lakh BDT Cap</div>
         </div>
 
         <div class="kpi-card">
-          <div class="kpi-title">Active Production Tasks</div>
-          <div class="kpi-val" id="kpiActiveTasks">0</div>
-          <div class="kpi-sub">🎬 Open Workflows</div>
+          <div class="kpi-title">Target Net Profit</div>
+          <div class="kpi-val" id="kpiNetProfit">$65,000</div>
+          <div class="kpi-sub" id="kpiProfitSub">৳76.7 Lakh BDT Profit</div>
         </div>
 
         <div class="kpi-card">
-          <div class="kpi-title">Pending Leave Requests</div>
-          <div class="kpi-val" id="kpiPendingLeaves">0</div>
-          <div class="kpi-sub warning">🏖️ Awaiting Review</div>
+          <div class="kpi-title">Gross Margin Target</div>
+          <div class="kpi-val" style="color:#00df89;">65.0%</div>
+          <div class="kpi-sub">High-Margin AI Operations</div>
         </div>
 
         <div class="kpi-card">
-          <div class="kpi-title">Pipeline Lead Value</div>
-          <div class="kpi-val" id="kpiLeadValue">BDT 0</div>
-          <div class="kpi-sub">🚀 CRM Sales Funnel</div>
+          <div class="kpi-title">Pipeline Leads Value</div>
+          <div class="kpi-val" id="kpiLeadValue">$0</div>
+          <div class="kpi-sub">🚀 Active CRM Funnel</div>
         </div>
       </div>
 
-      <!-- MAIN GRID SECTION 1: FINANCIAL & SALES PIPELINE -->
+      <!-- ── SECTION 3: OPERATIONS & CRM SPLIT ── -->
       <div class="dashboard-grid-2">
         <!-- Revenue Collections Overview -->
         <div class="panel-card">
           <div class="panel-header">
-            <h2 class="panel-title">💳 Financials & Invoices Summary</h2>
-            <a href="/pages/finance.html" style="font-size: 0.8rem; font-weight: 700; color: var(--pink-accent); text-decoration: none;">View Finance Hub →</a>
+            <h2 class="panel-title">💳 Settled Invoices & Cash Flow</h2>
+            <a href="/pages/finance.html" style="font-size: 0.8rem; font-weight: 700; color: var(--brand-primary); text-decoration: none;">View Finance Hub →</a>
           </div>
           <div id="invoiceSummaryBox">
             <div style="color: var(--text-muted); padding: 1rem; text-align: center;">Loading financial data...</div>
           </div>
         </div>
 
-        <!-- CRM Lead Funnel -->
+        <!-- CRM Lead Acquisition -->
         <div class="panel-card">
           <div class="panel-header">
-            <h2 class="panel-title">🎯 Lead Acquisition Funnel</h2>
-            <a href="/pages/clients.html" style="font-size: 0.8rem; font-weight: 700; color: var(--pink-accent); text-decoration: none;">View CRM →</a>
+            <h2 class="panel-title">🎯 Live Leads & Prospect Inquiries</h2>
+            <a href="/pages/clients.html" style="font-size: 0.8rem; font-weight: 700; color: var(--brand-primary); text-decoration: none;">View CRM Pipeline →</a>
           </div>
           <div id="leadFunnelBox">
             <div style="color: var(--text-muted); padding: 1rem; text-align: center;">Loading CRM leads...</div>
@@ -354,24 +379,24 @@
         </div>
       </div>
 
-      <!-- MAIN GRID SECTION 2: PRODUCTION PIPELINE & TEAM ROSTER -->
+      <!-- ── SECTION 4: PRODUCTION & TEAM STATUS ── -->
       <div class="dashboard-grid-2">
         <!-- Production Stage Pipeline -->
         <div class="panel-card">
           <div class="panel-header">
-            <h2 class="panel-title">🎬 Production Pipeline by Stage</h2>
-            <a href="/pages/projects.html" style="font-size: 0.8rem; font-weight: 700; color: var(--pink-accent); text-decoration: none;">Project Hub →</a>
+            <h2 class="panel-title">🎬 AI Project Pipeline & Tasks</h2>
+            <a href="/pages/projects.html" style="font-size: 0.8rem; font-weight: 700; color: var(--brand-primary); text-decoration: none;">Project Hub →</a>
           </div>
           <div id="productionPipelineBox">
             <div style="color: var(--text-muted); padding: 1rem; text-align: center;">Loading production tasks...</div>
           </div>
         </div>
 
-        <!-- Live Team Roster & Attendance Status -->
+        <!-- Live Team Status -->
         <div class="panel-card">
           <div class="panel-header">
-            <h2 class="panel-title">👥 Team Live Duty & EOD Status</h2>
-            <a href="/pages/team-admin.html" style="font-size: 0.8rem; font-weight: 700; color: var(--pink-accent); text-decoration: none;">Team Ops →</a>
+            <h2 class="panel-title">👥 Team Roster & Duty Status</h2>
+            <a href="/pages/team-admin.html" style="font-size: 0.8rem; font-weight: 700; color: var(--brand-primary); text-decoration: none;">Team Ops →</a>
           </div>
           <div id="teamRosterStatusBox">
             <div style="color: var(--text-muted); padding: 1rem; text-align: center;">Loading team status...</div>
@@ -379,36 +404,11 @@
         </div>
       </div>
 
-      <!-- MAIN GRID SECTION 3: CLIENT PORTFOLIO & EXPENSE APPROVALS -->
-      <div class="dashboard-grid-2">
-        <!-- Client Portfolio Health -->
-        <div class="panel-card">
-          <div class="panel-header">
-            <h2 class="panel-title">🏢 Client Accounts Portfolio</h2>
-            <a href="/pages/clients.html" style="font-size: 0.8rem; font-weight: 700; color: var(--pink-accent); text-decoration: none;">Client Hub →</a>
-          </div>
-          <div id="clientPortfolioBox">
-            <div style="color: var(--text-muted); padding: 1rem; text-align: center;">Loading client portfolio...</div>
-          </div>
-        </div>
-
-        <!-- Pending Expenses & Action Center -->
-        <div class="panel-card">
-          <div class="panel-header">
-            <h2 class="panel-title">🧾 Pending Expense Claims</h2>
-            <a href="/pages/finance.html" style="font-size: 0.8rem; font-weight: 700; color: var(--pink-accent); text-decoration: none;">Finance →</a>
-          </div>
-          <div id="pendingExpensesBox">
-            <div style="color: var(--text-muted); padding: 1rem; text-align: center;">Loading expense claims...</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- MAIN GRID SECTION 4: LIVE INTELLIGENCE FEED -->
+      <!-- ── SECTION 5: LIVE ACTIVITY FEED ── -->
       <div class="panel-card" style="margin-bottom: 1.5rem;">
         <div class="panel-header">
-          <h2 class="panel-title">⚡ Live Executive Activity Feed</h2>
-          <span style="font-size: 0.78rem; color: var(--text-muted);">Real-time stream of EODs, Attendance, Leaves & Finance</span>
+          <h2 class="panel-title">⚡ Live Executive Stream</h2>
+          <span style="font-size: 0.78rem; color: var(--text-muted);">Real-time stream of inquiries, invoices, and operations</span>
         </div>
         <div id="executiveActivityFeed">
           <div style="color: var(--text-muted); padding: 1.5rem; text-align: center;">Loading real-time executive feed...</div>
@@ -420,8 +420,11 @@
 
   <script src="/js/shell.js"></script>
   <script>
+    var currentDashCurr = localStorage.getItem('gro10x_currency') || 'USD';
+
     document.addEventListener('DOMContentLoaded', async () => {
       initGreeting();
+      initDashboardCurrency();
       loadExecutiveDashboard();
     });
 
@@ -433,8 +436,8 @@
       else if (hours >= 17) timeOfDay = 'Evening';
 
       try {
-        const rawUser = localStorage.getItem('purple_user');
-        const userName = rawUser ? (JSON.parse(rawUser).name || 'Executive') : 'Executive';
+        const rawUser = localStorage.getItem('purple_user') || localStorage.getItem('gro10x_user');
+        const userName = rawUser ? (JSON.parse(rawUser).name || 'Leader') : 'Leader';
         const greetingEl = document.getElementById('greetingHeader');
         if (greetingEl) greetingEl.textContent = `Good ${timeOfDay}, ${userName} 👋`;
       } catch(e) {}
@@ -445,14 +448,48 @@
       }
     }
 
+    function initDashboardCurrency() {
+      setDashboardCurrency(currentDashCurr);
+    }
+
+    function setDashboardCurrency(curr) {
+      currentDashCurr = curr;
+      localStorage.setItem('gro10x_currency', curr);
+
+      const isUSD = curr === 'USD';
+      const btnUSD = document.getElementById('dashCurrUSD');
+      const btnBDT = document.getElementById('dashCurrBDT');
+      if (btnUSD) {
+        btnUSD.style.color = isUSD ? '#00df89' : 'var(--text-muted)';
+        btnUSD.style.background = isUSD ? 'rgba(0, 223, 137, 0.15)' : 'none';
+      }
+      if (btnBDT) {
+        btnBDT.style.color = !isUSD ? '#00df89' : 'var(--text-muted)';
+        btnBDT.style.background = !isUSD ? 'rgba(0, 223, 137, 0.15)' : 'none';
+      }
+
+      // Update Engine Targets
+      document.getElementById('e1Target').textContent = isUSD ? '$35,000' : '৳41.3L';
+      document.getElementById('e2Target').textContent = isUSD ? '$25,000' : '৳29.5L';
+      document.getElementById('e3Target').textContent = isUSD ? '$20,000' : '৳23.6L';
+      document.getElementById('e4Target').textContent = isUSD ? '$15,000' : '৳17.7L';
+      document.getElementById('e5Target').textContent = isUSD ? '$5,000' : '৳5.9L';
+
+      // Update Margin Targets
+      document.getElementById('kpiGrossTarget').textContent = isUSD ? '$100,000' : '৳1.18 Cr';
+      document.getElementById('kpiGrossSub').textContent = isUSD ? '৳1.18 Crore BDT' : '$100,000 USD';
+
+      document.getElementById('kpiExpenseCap').textContent = isUSD ? '$35,000' : '৳41.3 Lakh';
+      document.getElementById('kpiExpenseSub').textContent = isUSD ? '৳41.3 Lakh BDT Cap' : '$35,000 USD Cap';
+
+      document.getElementById('kpiNetProfit').textContent = isUSD ? '$65,000' : '৳76.7 Lakh';
+      document.getElementById('kpiProfitSub').textContent = isUSD ? '৳76.7 Lakh BDT Profit' : '$65,000 USD Profit';
+    }
+
     async function loadExecutiveDashboard() {
       try {
         const [
           teamRes,
-          attRes,
-          leaveRes,
-          eodRes,
-          workloadRes,
           taskRes,
           invRes,
           expRes,
@@ -460,10 +497,6 @@
           leadRes
         ] = await Promise.all([
           fetch('/api/team').then(r => r.json()).catch(() => []),
-          fetch('/api/team/attendance').then(r => r.json()).catch(() => []),
-          fetch('/api/team/leaves').then(r => r.json()).catch(() => []),
-          fetch('/api/team/eod').then(r => r.json()).catch(() => []),
-          fetch('/api/team/workload').then(r => r.json()).catch(() => []),
           fetch('/api/tasks').then(r => r.json()).catch(() => []),
           fetch('/api/invoices').then(r => r.json()).catch(() => []),
           fetch('/api/expenses').then(r => r.json()).catch(() => []),
@@ -471,267 +504,43 @@
           fetch('/api/leads').then(r => r.json()).catch(() => [])
         ]);
 
-        const team = teamRes || [];
-        const attendance = attRes || [];
-        const leaves = leaveRes || [];
-        const eods = eodRes || [];
-        const workload = workloadRes || [];
-        const tasks = taskRes || [];
-        const invoices = invRes || [];
-        const expenses = expRes || [];
-        const clients = clientRes || [];
-        const leads = leadRes || [];
+        const team = Array.isArray(teamRes) ? teamRes : (teamRes.data || []);
+        const tasks = Array.isArray(taskRes) ? taskRes : (taskRes.data || []);
+        const invoices = Array.isArray(invRes) ? invRes : (invRes.data || []);
+        const expenses = Array.isArray(expRes) ? expRes : (expRes.data || []);
+        const clients = Array.isArray(clientRes) ? clientRes : (clientRes.data || []);
+        const leads = Array.isArray(leadRes) ? leadRes : (leadRes.data || []);
 
-        // ════════════════════════════════════════════
-        // 1. FINANCIAL STRIP COMPUTATIONS
-        // ════════════════════════════════════════════
-        const paidInvoices = invoices.filter(i => (i.status || '').toLowerCase() === 'paid');
-        const paidTotal = paidInvoices.reduce((sum, i) => sum + Number(i.amount || 0), 0);
-        
-        const pendingInvoices = invoices.filter(i => (i.status || '').toLowerCase() === 'sent' || (i.status || '').toLowerCase() === 'pending');
-        const pendingTotal = pendingInvoices.reduce((sum, i) => sum + Number(i.amount || 0), 0);
+        // 1. Leads calculation
+        const isUSD = currentDashCurr === 'USD';
+        const totalLeadVal = leads.reduce((sum, l) => sum + (Number(l.value) || 1500), 0);
+        document.getElementById('kpiLeadValue').textContent = isUSD ? `$${totalLeadVal.toLocaleString()}` : `৳${Math.round(totalLeadVal * 118).toLocaleString()}`;
 
-        const overdueInvoices = invoices.filter(i => (i.status || '').toLowerCase() === 'overdue');
-        const overdueTotal = overdueInvoices.reduce((sum, i) => sum + Number(i.amount || 0), 0);
-
-        const totalBilled = invoices.reduce((sum, i) => sum + Number(i.amount || 0), 0);
-        const collectionRate = totalBilled > 0 ? Math.round((paidTotal / totalBilled) * 100) : 100;
-
-        document.getElementById('kpiRevenueVal').textContent = `BDT ${paidTotal.toLocaleString()}`;
-        document.getElementById('kpiReceivablesVal').textContent = `BDT ${pendingTotal.toLocaleString()}`;
-        document.getElementById('kpiOverdueVal').textContent = overdueInvoices.length;
-        document.getElementById('kpiOverdueSub').textContent = overdueInvoices.length > 0 ? `🔴 BDT ${overdueTotal.toLocaleString()} Overdue` : '🟢 All Clear';
-        document.getElementById('kpiCollectionRate').textContent = `${collectionRate}%`;
-
-        // Expenses
-        const pendingExps = expenses.filter(e => {
-          const st = (e.status || '').toLowerCase();
-          return st.includes('pending') || !e.tier1?.approved || !e.tier2?.approved;
-        });
-        const pendingExpTotal = pendingExps.reduce((sum, e) => sum + Number(e.amount || 0), 0);
-        document.getElementById('kpiPendingExpVal').textContent = pendingExps.length;
-        document.getElementById('kpiPendingExpSub').textContent = `BDT ${pendingExpTotal.toLocaleString()} Awaiting Review`;
-
-        // ════════════════════════════════════════════
-        // 2. OPERATIONS STRIP COMPUTATIONS
-        // ════════════════════════════════════════════
-        const inStudioCount = team.filter(t => t.status === 'In Studio' || attendance.some(a => a.employee_id === (t.emp_code || t.id) && a.status === 'In Studio')).length;
-        document.getElementById('kpiTeamDuty').textContent = `${inStudioCount} / ${team.length}`;
-
-        const todayStr = new Date().toISOString().split('T')[0];
-        const todayEods = eods.filter(e => (e.report_date || '').startsWith(todayStr) || (e.created_at || '').startsWith(todayStr));
-        document.getElementById('kpiEodSubmitted').textContent = `${todayEods.length} / ${team.length}`;
-        document.getElementById('kpiEodSub').textContent = `📋 ${todayEods.length} Reports Submitted Today`;
-
-        const openTasks = tasks.filter(t => t.stage !== 'Approved' && t.stage !== 'Published' && t.stage !== 'Completed');
-        document.getElementById('kpiActiveTasks').textContent = openTasks.length;
-
-        const pendingLeavesList = leaves.filter(l => (l.status || '').toLowerCase().includes('pending'));
-        document.getElementById('kpiPendingLeaves').textContent = pendingLeavesList.length;
-
-        const totalLeadVal = leads.reduce((sum, l) => {
-          const val = parseFloat(String(l.value || '0').replace(/[^0-9.]/g, '')) || 0;
-          return sum + val;
-        }, 0);
-        document.getElementById('kpiLeadValue').textContent = `BDT ${totalLeadVal.toLocaleString()}`;
-
-        // ════════════════════════════════════════════
-        // 3. RENDER FINANCIAL SUMMARY BOX
-        // ════════════════════════════════════════════
+        // 2. Render Invoices
         const invBox = document.getElementById('invoiceSummaryBox');
         if (invoices.length === 0) {
-          invBox.innerHTML = `<div style="color: var(--text-muted); padding: 1rem; text-align: center;">No invoices logged in system.</div>`;
+          invBox.innerHTML = `
+            <div style="padding:1.5rem; text-align:center; color:var(--text-muted);">
+              <div>🧾 No unsettled invoices found</div>
+              <div style="font-size:0.75rem; margin-top:0.35rem;">Generate invoices from the Finance Hub</div>
+            </div>
+          `;
         } else {
           invBox.innerHTML = `
             <table class="mini-table">
               <thead>
                 <tr>
-                  <th>Invoice ID</th>
-                  <th>Client</th>
+                  <th>Client / Invoice</th>
                   <th>Amount</th>
                   <th>Status</th>
                 </tr>
               </thead>
               <tbody>
-                ${invoices.slice(0, 5).map(i => {
-                  let badgeClass = 'badge-amber';
-                  if ((i.status || '').toLowerCase() === 'paid') badgeClass = 'badge-green';
-                  if ((i.status || '').toLowerCase() === 'overdue') badgeClass = 'badge-red';
-                  return `
-                    <tr>
-                      <td><strong>${i.id}</strong></td>
-                      <td>${i.clientName || i.client || 'Client'}</td>
-                      <td><strong>BDT ${(Number(i.amount) || 0).toLocaleString()}</strong></td>
-                      <td><span class="badge-pill ${badgeClass}">${i.status || 'Pending'}</span></td>
-                    </tr>
-                  `;
-                }).join('')}
-              </tbody>
-            </table>
-          `;
-        }
-
-        // ════════════════════════════════════════════
-        // 4. RENDER LEAD ACQUISITION FUNNEL
-        // ════════════════════════════════════════════
-        const leadBox = document.getElementById('leadFunnelBox');
-        if (leads.length === 0) {
-          leadBox.innerHTML = `<div style="color: var(--text-muted); padding: 1rem; text-align: center;">No CRM leads captured yet.</div>`;
-        } else {
-          const stagesMap = {
-            'New Inquiry': leads.filter(l => l.stage === 'New Inquiry').length,
-            'Contacted': leads.filter(l => l.stage === 'Contacted').length,
-            'Proposal Sent': leads.filter(l => l.stage === 'Proposal Sent' || l.stage === 'Meeting Scheduled').length,
-            'Won': leads.filter(l => l.stage === 'Won' || l.stage === 'Closed Won').length
-          };
-
-          const maxLeads = Math.max(1, leads.length);
-
-          leadBox.innerHTML = Object.entries(stagesMap).map(([stName, count]) => {
-            const pct = Math.round((count / maxLeads) * 100);
-            return `
-              <div class="stage-bar-item">
-                <div class="stage-bar-header">
-                  <span>${stName}</span>
-                  <span style="color: var(--pink-accent);">${count} leads (${pct}%)</span>
-                </div>
-                <div class="stage-progress-bg">
-                  <div class="stage-progress-fill" style="width: ${pct}%; background: linear-gradient(90deg, var(--purple-accent), var(--pink-accent));"></div>
-                </div>
-              </div>
-            `;
-          }).join('');
-        }
-
-        // ════════════════════════════════════════════
-        // 5. RENDER PRODUCTION PIPELINE STAGES
-        // ════════════════════════════════════════════
-        const prodBox = document.getElementById('productionPipelineBox');
-        if (tasks.length === 0) {
-          prodBox.innerHTML = `<div style="color: var(--text-muted); padding: 1rem; text-align: center;">No production tasks in system.</div>`;
-        } else {
-          const stageCounts = {
-            'Briefing & Strategy': tasks.filter(t => (t.stage || '').includes('Brief') || (t.stage || '').includes('Strategy')).length,
-            'In Execution (Shoot/Edit/Dev)': tasks.filter(t => ['Scripting','Shooting','Editing','Design','Development','Draft'].some(s => (t.stage || '').includes(s))).length,
-            'Review & QC': tasks.filter(t => (t.stage || '').includes('Review') || (t.stage || '').includes('QC') || (t.stage || '').includes('Testing')).length,
-            'Approved & Delivered': tasks.filter(t => t.stage === 'Approved' || t.stage === 'Published' || t.stage === 'Completed').length
-          };
-
-          const maxTasks = Math.max(1, tasks.length);
-
-          prodBox.innerHTML = Object.entries(stageCounts).map(([stName, count]) => {
-            const pct = Math.round((count / maxTasks) * 100);
-            return `
-              <div class="stage-bar-item">
-                <div class="stage-bar-header">
-                  <span>${stName}</span>
-                  <span>${count} tasks (${pct}%)</span>
-                </div>
-                <div class="stage-progress-bg">
-                  <div class="stage-progress-fill" style="width: ${pct}%; background: #34d399;"></div>
-                </div>
-              </div>
-            `;
-          }).join('');
-        }
-
-        // ════════════════════════════════════════════
-        // 6. RENDER TEAM LIVE ROSTER & EOD STATUS
-        // ════════════════════════════════════════════
-        const rosterBox = document.getElementById('teamRosterStatusBox');
-        if (team.length === 0) {
-          rosterBox.innerHTML = `<div style="color: var(--text-muted); padding: 1rem; text-align: center;">No team members found.</div>`;
-        } else {
-          rosterBox.innerHTML = `
-            <table class="mini-table">
-              <thead>
-                <tr>
-                  <th>Member</th>
-                  <th>Role</th>
-                  <th>Status</th>
-                  <th>EOD Submitted</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${team.slice(0, 6).map(m => {
-                  const empCode = m.emp_code || m.id;
-                  const isOnline = m.status === 'In Studio' || attendance.some(a => a.employee_id === empCode && a.status === 'In Studio');
-                  const hasEod = eods.some(e => (e.employee_id === empCode || e.employee_name === m.name) && ((e.report_date || '').startsWith(todayStr) || (e.created_at || '').startsWith(todayStr)));
-
-                  return `
-                    <tr>
-                      <td><strong>${m.name}</strong></td>
-                      <td style="color: var(--text-muted);">${m.role || 'Team'}</td>
-                      <td><span class="badge-pill ${isOnline ? 'badge-green' : 'badge-amber'}">${isOnline ? '🟢 In Studio' : '⚫ Offline'}</span></td>
-                      <td><span class="badge-pill ${hasEod ? 'badge-purple' : 'badge-amber'}">${hasEod ? '✓ Done' : '⏳ Pending'}</span></td>
-                    </tr>
-                  `;
-                }).join('')}
-              </tbody>
-            </table>
-          `;
-        }
-
-        // ════════════════════════════════════════════
-        // 7. RENDER CLIENT ACCOUNTS PORTFOLIO
-        // ════════════════════════════════════════════
-        const clientBox = document.getElementById('clientPortfolioBox');
-        if (clients.length === 0) {
-          clientBox.innerHTML = `<div style="color: var(--text-muted); padding: 1rem; text-align: center;">No clients in portfolio.</div>`;
-        } else {
-          clientBox.innerHTML = `
-            <table class="mini-table">
-              <thead>
-                <tr>
-                  <th>Client Name</th>
-                  <th>Category</th>
-                  <th>Total Billed</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${clients.slice(0, 5).map(c => {
-                  const clientInvoices = invoices.filter(i => i.clientName === c.name || i.client === c.name || i.clientId === c.id);
-                  const totalSpent = clientInvoices.reduce((sum, i) => sum + Number(i.amount || 0), 0);
-
-                  return `
-                    <tr>
-                      <td><strong>${c.name}</strong></td>
-                      <td style="color: var(--text-muted);">${c.category || c.industry || 'General'}</td>
-                      <td><strong>BDT ${totalSpent.toLocaleString()}</strong></td>
-                      <td><span class="badge-pill badge-green">${c.status || 'Active Retainer'}</span></td>
-                    </tr>
-                  `;
-                }).join('')}
-              </tbody>
-            </table>
-          `;
-        }
-
-        // ════════════════════════════════════════════
-        // 8. RENDER PENDING EXPENSE CLAIMS
-        // ════════════════════════════════════════════
-        const expBox = document.getElementById('pendingExpensesBox');
-        if (pendingExps.length === 0) {
-          expBox.innerHTML = `<div style="color: #34d399; padding: 1rem; text-align: center; font-weight: 700;">✅ No pending expense approvals!</div>`;
-        } else {
-          expBox.innerHTML = `
-            <table class="mini-table">
-              <thead>
-                <tr>
-                  <th>Title</th>
-                  <th>Submitted By</th>
-                  <th>Amount</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${pendingExps.slice(0, 5).map(e => `
+                ${invoices.slice(0, 5).map(inv => `
                   <tr>
-                    <td><strong>${e.title}</strong></td>
-                    <td>${e.submittedBy || e.loggedBy || 'Crew Member'}</td>
-                    <td><strong>BDT ${(Number(e.amount) || 0).toLocaleString()}</strong></td>
-                    <td><span class="badge-pill badge-amber">${e.status || 'Pending Approval'}</span></td>
+                    <td><strong>${inv.id || 'INV'}</strong><br><span style="color:var(--text-muted); font-size:0.72rem;">${inv.client_id || 'Client'}</span></td>
+                    <td><strong>$${Number(inv.amount || 0).toLocaleString()}</strong></td>
+                    <td><span class="badge-pill ${inv.status === 'paid' ? 'badge-green' : 'badge-amber'}">${inv.status || 'Pending'}</span></td>
                   </tr>
                 `).join('')}
               </tbody>
@@ -739,56 +548,104 @@
           `;
         }
 
-        // ════════════════════════════════════════════
-        // 9. RENDER LIVE EXECUTIVE ACTIVITY FEED
-        // ════════════════════════════════════════════
-        const feedBox = document.getElementById('executiveActivityFeed');
-        const activityEvents = [];
-
-        eods.forEach(e => {
-          activityEvents.push({
-            icon: '📋',
-            title: `${e.employee_name || 'Team Member'} submitted EOD Report`,
-            sub: `Mood: ${e.mood || '😊'} · Hours: ${e.hours_worked || 8}h · Tasks: ${e.tasks_completed || 'Done'}`,
-            time: e.report_date || e.created_at
-          });
-        });
-
-        attendance.forEach(a => {
-          activityEvents.push({
-            icon: '⏱️',
-            title: `${a.name || 'Team Member'} clocked in (${a.status})`,
-            sub: `Time: ${a.clock_in_time || 'Just now'} · Location: ${a.location || 'Studio'}`,
-            time: a.date
-          });
-        });
-
-        leaves.forEach(l => {
-          activityEvents.push({
-            icon: '🏖️',
-            title: `${l.staff_name || 'Staff'} requested ${l.type || 'Leave'}`,
-            sub: `Dates: ${l.start_date || ''} to ${l.end_date || ''} · Reason: ${l.reason || '-'}`,
-            time: l.created_at
-          });
-        });
-
-        if (activityEvents.length === 0) {
-          feedBox.innerHTML = `<div style="color: var(--text-muted); padding: 1rem; text-align: center;">No activity recorded today.</div>`;
-        } else {
-          feedBox.innerHTML = activityEvents.slice(0, 6).map(act => `
-            <div class="feed-item">
-              <div class="feed-badge">${act.icon}</div>
-              <div style="flex: 1;">
-                <div style="font-weight: 700; color: var(--text-main);">${act.title}</div>
-                <div style="font-size: 0.78rem; color: var(--text-muted);">${act.sub}</div>
-              </div>
-              <span style="font-size: 0.72rem; color: var(--text-muted);">${act.time ? new Date(act.time).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'Today'}</span>
+        // 3. Render Leads
+        const leadBox = document.getElementById('leadFunnelBox');
+        if (leads.length === 0) {
+          leadBox.innerHTML = `
+            <div style="padding:1.5rem; text-align:center; color:var(--text-muted);">
+              <div>🎯 0 leads in queue</div>
+              <div style="font-size:0.75rem; margin-top:0.35rem;">Inquiries from the landing page & service pages will appear here in real time.</div>
             </div>
-          `).join('');
+          `;
+        } else {
+          leadBox.innerHTML = `
+            <table class="mini-table">
+              <thead>
+                <tr>
+                  <th>Prospect</th>
+                  <th>Service</th>
+                  <th>Contact</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${leads.slice(0, 5).map(l => `
+                  <tr>
+                    <td><strong>${l.name || 'Prospect'}</strong><br><span style="color:var(--text-muted); font-size:0.72rem;">${l.email || ''}</span></td>
+                    <td><span class="badge-pill badge-cyan">${l.service_interest || 'General'}</span></td>
+                    <td><a href="https://wa.me/${(l.phone || '').replace(/[^0-9]/g, '')}" target="_blank" style="color:var(--brand-primary); text-decoration:none; font-weight:700;">💬 WhatsApp</a></td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          `;
         }
 
-      } catch(e) {
-        console.error('Executive dashboard load err:', e);
+        // 4. Render Tasks
+        const taskBox = document.getElementById('productionPipelineBox');
+        if (tasks.length === 0) {
+          taskBox.innerHTML = `
+            <div style="padding:1.5rem; text-align:center; color:var(--text-muted);">
+              <div>🎬 0 active tasks</div>
+              <div style="font-size:0.75rem; margin-top:0.35rem;">Create sprint tasks in the Project Hub.</div>
+            </div>
+          `;
+        } else {
+          taskBox.innerHTML = `
+            <table class="mini-table">
+              <thead>
+                <tr>
+                  <th>Task Title</th>
+                  <th>Priority</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${tasks.slice(0, 5).map(t => `
+                  <tr>
+                    <td><strong>${t.title || 'Task'}</strong></td>
+                    <td><span class="badge-pill ${t.priority === 'urgent' ? 'badge-red' : 'badge-amber'}">${t.priority || 'Medium'}</span></td>
+                    <td><span class="badge-pill badge-green">${t.status || 'To-Do'}</span></td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          `;
+        }
+
+        // 5. Render Team
+        const teamBox = document.getElementById('teamRosterStatusBox');
+        teamBox.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:0.75rem; background:rgba(255,255,255,0.03); border-radius:12px; margin-bottom:0.75rem;">
+            <div>
+              <strong style="color:var(--text-primary);">Firoz Uddin Ahmed</strong>
+              <div style="font-size:0.72rem; color:var(--text-muted);">Tech Admin / Agency Owner</div>
+            </div>
+            <span class="badge-pill badge-green">🟢 Active</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:0.75rem; background:rgba(255,255,255,0.03); border-radius:12px;">
+            <div>
+              <strong style="color:var(--text-primary);">GRO10X Autonomous AI Bot</strong>
+              <div style="font-size:0.72rem; color:var(--text-muted);">Telegram & Web Assistant</div>
+            </div>
+            <span class="badge-pill badge-cyan">🤖 24/7 Live</span>
+          </div>
+        `;
+
+        // 6. Live Activity Feed
+        const feedBox = document.getElementById('executiveActivityFeed');
+        feedBox.innerHTML = `
+          <div style="display:flex; flex-direction:column; gap:0.5rem;">
+            <div style="display:flex; align-items:center; gap:0.6rem; font-size:0.82rem; padding:0.4rem 0;">
+              <span>⚡</span> <span><strong>System Initialized:</strong> GRO10X Production Operating System deployed on Vercel</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:0.6rem; font-size:0.82rem; padding:0.4rem 0;">
+              <span>🎯</span> <span><strong>Service Catalog:</strong> 24 AI Services active across 7 operational verticals</span>
+            </div>
+          </div>
+        `;
+
+      } catch (err) {
+        console.warn('Dashboard load error:', err);
       }
     }
   </script>
