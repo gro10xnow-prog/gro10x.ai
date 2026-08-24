@@ -5,14 +5,14 @@
   <meta name="color-scheme" content="dark">
   <script src="/js/theme.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Purplebot Digital — Client & Partner Workspace</title>
-  <meta name="description" content="Purplebot Client & Partner Workspace — Stream latest video cuts, approve creative assets, and verify campaign invoices.">
+  <title>GRO10X — Client & Brand Partner Workspace</title>
+  <meta name="description" content="GRO10X Client & Partner Workspace — Stream AI deliverables, approve creative assets, and verify sprint invoices.">
   
   <!-- Open Graph & Social Cards -->
   <meta property="og:type" content="website">
-  <meta property="og:title" content="Purplebot Digital — Client & Partner Workspace">
-  <meta property="og:description" content="Stream live video cuts, leave timecoded feedback, approve campaign deliverables, and manage invoices.">
-  <meta property="og:image" content="https://gro10x-ai.vercel.app/images/mascot.webp">
+  <meta property="og:title" content="GRO10X — Client & Brand Partner Workspace">
+  <meta property="og:description" content="Stream live AI deliverables, leave timecoded feedback, approve campaign assets, and manage invoices.">
+  <meta property="og:image" content="https://gro10x-ai.vercel.app/images/logo.webp">
   <meta property="og:url" content="https://gro10x-ai.vercel.app/partners">
   <meta name="twitter:card" content="summary_large_image">
 
@@ -24,15 +24,15 @@
   <link rel="stylesheet" href="/css/landing.css">
   <style>
     .glass-panel, .glass-card {
-      background: var(--surface-1);
-      border: 1px solid var(--surface-border);
+      background: var(--surface-1, #0f172a);
+      border: 1px solid var(--border-subtle, #1e293b);
       border-radius: 16px;
       box-shadow: var(--shadow-card);
       transition: all 0.25s ease;
       padding: 1.5rem;
     }
     .glass-panel:hover, .glass-card:hover {
-      border-color: var(--brand-purple);
+      border-color: var(--brand-primary, #00df89);
       box-shadow: var(--shadow-elevated);
     }
     @media (max-width: 900px) {
@@ -45,36 +45,37 @@
     (function() {
       try {
         const hasPhone = localStorage.getItem('purple_user_phone') ||
+                         localStorage.getItem('gro10x_user_phone') ||
                          localStorage.getItem('purple_user');
         const hasToken = localStorage.getItem('sb-access-token') ||
                          localStorage.getItem('purpleos_pin_token') ||
-                         localStorage.getItem('purple_token');
+                         localStorage.getItem('purple_token') ||
+                         localStorage.getItem('gro10x_token');
         if (!hasPhone || !hasToken) {
           window.location.href = '/auth?portal=client';
         }
       } catch (e) {
-        // localStorage unavailable (sandboxed webview) — redirect to auth
         window.location.href = '/auth?portal=client';
       }
     })();
   </script>
 </head>
-<body style="background:#0f172a; color:#e2e8f0; min-height:100vh;">
+<body style="background:#070b12; color:#f8fafc; min-height:100vh;">
 
   <!-- TOP HEADER BAR -->
-  <header style="background:rgba(15,23,42,0.9); border-bottom:1px solid rgba(255,255,255,0.08); padding:1rem 2rem; display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; z-index:100; backdrop-filter:blur(12px);">
+  <header style="background:rgba(11,15,25,0.95); border-bottom:1px solid rgba(0,223,137,0.2); padding:1rem 2rem; display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; z-index:100; backdrop-filter:blur(12px);">
     <div style="display:flex; align-items:center; gap:0.8rem;">
       <a href="/" style="text-decoration:none;" class="pb-brand-logo">
-        <div class="pb-logo-badge" style="width:36px; height:36px; font-size:1.1rem;">🦉</div>
+        <div class="pb-logo-badge" style="width:36px; height:36px; font-size:1.1rem; background:var(--brand-primary, #00df89); color:#070b12; font-weight:900; border-radius:10px; display:flex; align-items:center; justify-content:center;">⚡</div>
       </a>
       <div>
-        <h1 style="font-size:1.15rem; color:#fff; margin:0; font-weight:800; letter-spacing:0.02em;">PURPLEBOT CLIENT PORTAL</h1>
-        <div style="font-size:0.75rem; color:var(--emerald-accent); font-weight:600;">🤝 Brand Partner Workspace • Frame.io Review Engine</div>
+        <h1 style="font-size:1.15rem; color:#fff; margin:0; font-weight:900; letter-spacing:0.02em; font-family:var(--font-heading);">GRO10X CLIENT & PARTNER PORTAL</h1>
+        <div style="font-size:0.75rem; color:var(--brand-primary, #00df89); font-weight:700;">🤝 Enterprise & Retainer Workspace • AI Sprint Reviews</div>
       </div>
     </div>
 
     <div style="display:flex; align-items:center; gap:1rem;">
-      <span style="font-size:0.85rem; color:#c084fc; font-weight:700;" id="partnerHeaderName">🏢 Verified Client Workspace</span>
+      <span style="font-size:0.85rem; color:var(--brand-primary, #00df89); font-weight:700;" id="partnerHeaderName">🏢 Verified Client Workspace</span>
       <a href="/" class="btn-secondary" style="font-size:0.8rem; padding:0.4rem 0.8rem; text-decoration:none;">🌐 Main Website</a>
       <button onclick="handlePartnerLogout()" class="btn-secondary" style="font-size:0.8rem; padding:0.4rem 0.8rem; background:rgba(239,68,68,0.15); color:#fca5a5; border:1px solid rgba(239,68,68,0.3); cursor:pointer;">🔒 Sign Out</button>
     </div>
@@ -84,14 +85,14 @@
   <main style="max-width:1240px; margin:2rem auto; padding:0 1.5rem;">
 
     <!-- CLIENT WELCOME STRIP -->
-    <div class="glass-panel" style="margin-bottom:2rem; background:linear-gradient(135deg, rgba(168,85,247,0.15), rgba(16,185,129,0.1)); border:1px solid rgba(168,85,247,0.3);">
+    <div class="glass-panel" style="margin-bottom:2rem; background:linear-gradient(135deg, rgba(0,223,137,0.12), rgba(6,182,212,0.08)); border:1px solid rgba(0,223,137,0.25);">
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
         <div>
-          <span class="badge badge-emerald" id="partnerStatusBadge">Active Account</span>
-          <h2 style="font-size:1.6rem; color:#fff; margin:0.4rem 0 0.2rem;" id="partnerClientTitle">Loading Client Account...</h2>
+          <span class="badge" style="background:rgba(0,223,137,0.15); color:#00df89;" id="partnerStatusBadge">Active Account</span>
+          <h2 style="font-size:1.6rem; color:#fff; margin:0.4rem 0 0.2rem; font-family:var(--font-heading);" id="partnerClientTitle">Loading Client Account...</h2>
           <p style="color:var(--text-muted); margin:0; font-size:0.88rem;" id="partnerClientSub">Campaign deliverables, cut approvals, and commercial invoices</p>
         </div>
-        <button class="btn-purple" onclick="openPartnerBriefModal()">+ Submit New Campaign Brief</button>
+        <button class="pb-btn-primary" onclick="openPartnerBriefModal()">+ Submit Campaign Brief</button>
       </div>
     </div>
 
