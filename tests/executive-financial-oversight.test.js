@@ -10,6 +10,8 @@ app.use(express.json());
 app.use('/api/payments', paymentRoutes);
 app.use(errorHandler);
 
+const state = require('../src/services/state');
+
 describe('Phase 1: Executive Financial Oversight & Intelligence Test Suite', () => {
   const adminToken = signToken({
     userId: 'EMP-001',
@@ -22,6 +24,15 @@ describe('Phase 1: Executive Financial Oversight & Intelligence Test Suite', () 
 
   // 1. Telegram Financial Intelligence Handler Test
   test('handleFinanceSummary: sends formatted BDT currency and Net Cash Position', async () => {
+    jest.spyOn(state, 'getEmployeeByTelegramId').mockResolvedValue({
+      id: 'PBD-001',
+      emp_code: 'PBD-001',
+      name: 'H. M. Ifteker Mahmud',
+      role: 'Managing Director',
+      accessLevel: 'Managing Director',
+      department: 'Top Management'
+    });
+
     let capturedChatId = null;
     let capturedText = null;
     let capturedOptions = null;
