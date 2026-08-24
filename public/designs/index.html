@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GRO10X — Stitch Design System & Screen Gallery</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #070b12;
+      --surface: #0f172a;
+      --border: rgba(0, 223, 137, 0.2);
+      --primary: #00df89;
+      --cyan: #06b6d4;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+    body { background: var(--bg); color: var(--text); min-height: 100vh; padding: 2rem; }
+    .header { max-width: 1280px; margin: 0 auto 2.5rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
+    .title { font-family: 'Outfit', sans-serif; font-size: 1.8rem; font-weight: 900; color: #fff; display: flex; align-items: center; gap: 0.75rem; }
+    .badge { background: rgba(0,223,137,0.15); color: var(--primary); font-size: 0.75rem; padding: 0.3rem 0.8rem; border-radius: 999px; font-weight: 700; }
+    .grid { max-width: 1280px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 1.75rem; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; overflow: hidden; transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s; display: flex; flex-direction: column; }
+    .card:hover { transform: translateY(-4px); border-color: var(--primary); box-shadow: 0 12px 30px rgba(0,223,137,0.15); }
+    .card-img-wrap { width: 100%; height: 220px; background: #000; overflow: hidden; position: relative; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .card-img { width: 100%; height: 100%; object-fit: cover; object-position: top; transition: transform 0.3s; }
+    .card:hover .card-img { transform: scale(1.03); }
+    .card-body { padding: 1.25rem; display: flex; flex-direction: column; flex: 1; }
+    .card-title { font-family: 'Outfit', sans-serif; font-size: 1.15rem; font-weight: 800; color: #fff; margin-bottom: 0.35rem; }
+    .card-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.5; margin-bottom: 1.25rem; flex: 1; }
+    .card-actions { display: flex; gap: 0.6rem; }
+    .btn { flex: 1; padding: 0.55rem 0.85rem; border-radius: 10px; font-size: 0.82rem; font-weight: 700; text-align: center; text-decoration: none; transition: all 0.2s; }
+    .btn-primary { background: linear-gradient(135deg, var(--primary), var(--cyan)); color: #070b12; }
+    .btn-secondary { background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.12); }
+    .btn-secondary:hover { background: rgba(255,255,255,0.1); border-color: var(--primary); }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <div>
+      <div class="title">
+        <span style="background:var(--primary); color:#070b12; width:36px; height:36px; border-radius:10px; display:inline-flex; align-items:center; justify-content:center;">⚡</span>
+        GRO10X Design System Gallery
+      </div>
+      <div style="font-size:0.85rem; color:var(--muted); margin-top:0.25rem;">
+        Google Stitch UI Design Export & Architectural Blueprint (Cyber Obsidian Design System)
+      </div>
+    </div>
+    <div style="display:flex; gap:0.75rem; align-items:center;">
+      <a href="/" class="btn btn-secondary">🌐 Live Website</a>
+      <a href="/app" class="btn btn-primary">👑 Admin Portal</a>
+    </div>
+  </header>
+
+  <main class="grid">
+
+    <!-- Card 1 -->
+    <div class="card">
+      <div class="card-img-wrap">
+        <img src="/designs/stitch_gro10x_ai_growth_ecosystem/gro10x_futuristic_ai_agency/screen.png" class="card-img" alt="Landing Page">
+      </div>
+      <div class="card-body">
+        <div class="card-title">1. Futuristic AI Growth Agency</div>
+        <div class="card-desc">Public landing page, 5-engine growth model, 24-service catalog, and AI ROI calculator.</div>
+        <div class="card-actions">
+          <a href="/designs/stitch_gro10x_ai_growth_ecosystem/gro10x_futuristic_ai_agency/code.html" target="_blank" class="btn btn-primary">👁️ View Stitch Screen</a>
+          <a href="/" class="btn btn-secondary">⚡ Live Site</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 2 -->
+    <div class="card">
+      <div class="card-img-wrap">
+        <img src="/designs/stitch_gro10x_ai_growth_ecosystem/gro10x_executive_command_center/screen.png" class="card-img" alt="Executive Command Center">
+      </div>
+      <div class="card-body">
+        <div class="card-title">2. Executive Command Center</div>
+        <div class="card-desc">Master admin dashboard, $100k revenue target telemetry, 65% net margin meter, and 1-tap action center.</div>
+        <div class="card-actions">
+          <a href="/designs/stitch_gro10x_ai_growth_ecosystem/gro10x_executive_command_center/code.html" target="_blank" class="btn btn-primary">👁️ View Stitch Screen</a>
+          <a href="/app" class="btn btn-secondary">⚡ Live Portal</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 3 -->
+    <div class="card">
+      <div class="card-img-wrap">
+        <img src="/designs/stitch_gro10x_ai_growth_ecosystem/gro10x_ai_review_room_v2/screen.png" class="card-img" alt="AI Review Room">
+      </div>
+      <div class="card-body">
+        <div class="card-title">3. Multi-Format AI Review Room</div>
+        <div class="card-desc">Client partner review room with video annotations, ComfyUI image comparator, and voice playback.</div>
+        <div class="card-actions">
+          <a href="/designs/stitch_gro10x_ai_growth_ecosystem/gro10x_ai_review_room_v2/code.html" target="_blank" class="btn btn-primary">👁️ View Stitch Screen</a>
+          <a href="/reviewroom.html" class="btn btn-secondary">⚡ Live Room</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 4 -->
+    <div class="card">
+      <div class="card-img-wrap">
+        <img src="/designs/stitch_gro10x_ai_growth_ecosystem/gro10x_executive_crm_pipeline/screen.png" class="card-img" alt="CRM Pipeline">
+      </div>
+      <div class="card-body">
+        <div class="card-title">4. Executive CRM Pipeline</div>
+        <div class="card-desc">Leads management pipeline with lead scoring, deal stages, and 1-click WhatsApp quick actions.</div>
+        <div class="card-actions">
+          <a href="/designs/stitch_gro10x_ai_growth_ecosystem/gro10x_executive_crm_pipeline/code.html" target="_blank" class="btn btn-primary">👁️ View Stitch Screen</a>
+          <a href="/app#leads" class="btn btn-secondary">⚡ Live CRM</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 5 -->
+    <div class="card">
+      <div class="card-img-wrap">
+        <img src="/designs/stitch_gro10x_ai_growth_ecosystem/gro10x_ai_engineering_creative_sprint_board/screen.png" class="card-img" alt="Sprint Kanban">
+      </div>
+      <div class="card-body">
+        <div class="card-title">5. AI Sprint Kanban Board</div>
+        <div class="card-desc">24-service task matrix with GPU compute tags, SLA timers, and blueprint checklist presets.</div>
+        <div class="card-actions">
+          <a href="/designs/stitch_gro10x_ai_growth_ecosystem/gro10x_ai_engineering_creative_sprint_board/code.html" target="_blank" class="btn btn-primary">👁️ View Stitch Screen</a>
+          <a href="/app#kanban" class="btn btn-secondary">⚡ Live Kanban</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 6 -->
+    <div class="card">
+      <div class="card-img-wrap">
+        <img src="/designs/stitch_gro10x_ai_growth_ecosystem/gro10x_financial_intelligence_invoicing/screen.png" class="card-img" alt="Financial Intelligence">
+      </div>
+      <div class="card-body">
+        <div class="card-title">6. Financial Intelligence & Invoices</div>
+        <div class="card-desc">65% margin meter, $35k overhead burn ceiling, 5-engine revenue charts, and PDF invoicing.</div>
+        <div class="card-actions">
+          <a href="/designs/stitch_gro10x_ai_growth_ecosystem/gro10x_financial_intelligence_invoicing/code.html" target="_blank" class="btn btn-primary">👁️ View Stitch Screen</a>
+          <a href="/app#finance" class="btn btn-secondary">⚡ Live Finance</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 7 -->
+    <div class="card">
+      <div class="card-img-wrap">
+        <img src="/designs/stitch_gro10x_ai_growth_ecosystem/gro10x_team_operations_hr_management/screen.png" class="card-img" alt="Team Operations">
+      </div>
+      <div class="card-body">
+        <div class="card-title">7. Team Operations & HR Management</div>
+        <div class="card-desc">Specialist roster across 7 AI verticals, live shift attendance, EOD feed, and GPU compute claims.</div>
+        <div class="card-actions">
+          <a href="/designs/stitch_gro10x_ai_growth_ecosystem/gro10x_team_operations_hr_management/code.html" target="_blank" class="btn btn-primary">👁️ View Stitch Screen</a>
+          <a href="/app#hr" class="btn btn-secondary">⚡ Live HR</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 8 -->
+    <div class="card">
+      <div class="card-img-wrap">
+        <img src="/designs/stitch_gro10x_ai_growth_ecosystem/gro10x_crew_specialist_desktop_portal/screen.png" class="card-img" alt="Crew Desktop">
+      </div>
+      <div class="card-body">
+        <div class="card-title">8. Crew Specialist Desktop Portal</div>
+        <div class="card-desc">Desktop workspace for team engineers to view tasks, submit daily EODs, and log project expenses.</div>
+        <div class="card-actions">
+          <a href="/designs/stitch_gro10x_ai_growth_ecosystem/gro10x_crew_specialist_desktop_portal/code.html" target="_blank" class="btn btn-primary">👁️ View Stitch Screen</a>
+          <a href="/team.html" class="btn btn-secondary">⚡ Live Crew</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 9 -->
+    <div class="card">
+      <div class="card-img-wrap">
+        <img src="/designs/stitch_gro10x_ai_growth_ecosystem/gro10x_crew_specialist_mobile_portal/screen.png" class="card-img" alt="Crew MiniApp">
+      </div>
+      <div class="card-body">
+        <div class="card-title">9. Crew Telegram MiniApp Portal</div>
+        <div class="card-desc">Mobile-first Telegram MiniApp for on-the-go shift clocking, EOD submissions, and sprint tracking.</div>
+        <div class="card-actions">
+          <a href="/designs/stitch_gro10x_ai_growth_ecosystem/gro10x_crew_specialist_mobile_portal/code.html" target="_blank" class="btn btn-primary">👁️ View Stitch Screen</a>
+          <a href="/team-miniapp.html" class="btn btn-secondary">⚡ Live MiniApp</a>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+</body>
+</html>

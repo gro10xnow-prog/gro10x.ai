@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>GRO10X AI - Executive Command Center</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Montserrat:wght@600;700;800&amp;family=Geist:wght@600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-container": "#005d36",
+                        "on-background": "#dfe2ed",
+                        "secondary": "#4cd7f6",
+                        "surface-bright": "#353941",
+                        "error-container": "#93000a",
+                        "on-surface": "#dfe2ed",
+                        "tertiary-fixed-dim": "#b8c4ff",
+                        "on-primary-fixed": "#002110",
+                        "on-primary": "#00391f",
+                        "on-error": "#690005",
+                        "surface-variant": "#31353d",
+                        "tertiary-container": "#b4c0ff",
+                        "tertiary": "#d9ddff",
+                        "on-secondary": "#003640",
+                        "on-secondary-fixed": "#001f26",
+                        "background": "#0f141b",
+                        "on-secondary-container": "#00424e",
+                        "primary": "#46fca3",
+                        "on-primary-fixed-variant": "#00522f",
+                        "secondary-fixed-dim": "#4cd7f6",
+                        "outline-variant": "#3b4a3f",
+                        "on-tertiary-fixed": "#001354",
+                        "surface-container-highest": "#31353d",
+                        "secondary-fixed": "#acedff",
+                        "on-error-container": "#ffdad6",
+                        "surface-container-lowest": "#0a0e15",
+                        "inverse-surface": "#dfe2ed",
+                        "surface-container": "#1c2027",
+                        "primary-fixed": "#56ffa8",
+                        "secondary-container": "#03b5d3",
+                        "surface-tint": "#12e28c",
+                        "on-surface-variant": "#bacbbc",
+                        "error": "#ffb4ab",
+                        "primary-container": "#00df89",
+                        "on-secondary-fixed-variant": "#004e5c",
+                        "on-tertiary": "#1a2b6a",
+                        "on-tertiary-container": "#3d4c8c",
+                        "surface-container-high": "#262a32",
+                        "outline": "#859588",
+                        "tertiary-fixed": "#dde1ff",
+                        "surface-container-low": "#181c23",
+                        "primary-fixed-dim": "#12e28c",
+                        "surface": "#0f141b",
+                        "surface-dim": "#0f141b",
+                        "inverse-primary": "#006d40",
+                        "on-tertiary-fixed-variant": "#334282",
+                        "inverse-on-surface": "#2c3139"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-desktop": "80px",
+                        "section-gap": "120px",
+                        "container-max": "1280px",
+                        "gutter": "24px",
+                        "margin-mobile": "20px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "headline-lg": ["Montserrat"],
+                        "body-lg": ["Inter"],
+                        "headline-lg-mobile": ["Montserrat"],
+                        "display-lg": ["Montserrat"],
+                        "headline-md": ["Montserrat"],
+                        "label-sm": ["Geist"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "headline-lg": ["48px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["32px", { "lineHeight": "1.2", "fontWeight": "700" }],
+                        "display-lg": ["72px", { "lineHeight": "1.1", "letterSpacing": "-0.04em", "fontWeight": "800" }],
+                        "headline-md": ["32px", { "lineHeight": "1.3", "fontWeight": "600" }],
+                        "label-sm": ["12px", { "lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: #070B12; color: #dfe2ed; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .glow-button {
+            box-shadow: 0 0 20px rgba(0, 223, 137, 0.3);
+            transition: all 0.3s ease;
+        }
+        .glow-button:hover {
+            box-shadow: 0 0 30px rgba(0, 223, 137, 0.5);
+        }
+        .chart-ring {
+            stroke-dasharray: 251.2; /* 2 * pi * 40 */
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+    </style>
+</head>
+<body class="font-body-md text-body-md bg-background antialiased selection:bg-primary/30 selection:text-primary">
+<!-- SideNavBar (Predicted Component) -->
+<nav class="fixed left-0 top-0 h-full w-64 bg-surface-container-low/50 backdrop-blur-2xl border-r border-white/10 z-40 flex flex-col py-8 px-4 hidden md:flex">
+<div class="mb-10 px-4">
+<h1 class="font-headline-md text-headline-md text-primary font-bold">GRO10X AI</h1>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-1">Revenue Intelligence</p>
+</div>
+<ul class="flex flex-col gap-2 flex-grow">
+<!-- Active Tab: Dashboard -->
+<li>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-primary bg-primary/10 border-r-4 border-primary font-body-md text-body-md active:translate-x-1 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span>Overview</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-primary transition-all font-body-md text-body-md active:translate-x-1 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="account_tree">account_tree</span>
+<span>Pipeline</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-primary transition-all font-body-md text-body-md active:translate-x-1 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="psychology">psychology</span>
+<span>Intelligence</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-primary transition-all font-body-md text-body-md active:translate-x-1 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="verified_user">verified_user</span>
+<span>Approvals</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-primary transition-all font-body-md text-body-md active:translate-x-1 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span>Settings</span>
+</a>
+</li>
+</ul>
+<div class="mt-auto flex flex-col gap-4 px-4">
+<button class="w-full bg-surface-container-high border border-primary/30 text-primary py-2 rounded-lg font-label-sm text-label-sm hover:bg-primary/10 transition-colors">Upgrade Plan</button>
+<div class="border-t border-white/10 pt-4 flex flex-col gap-2">
+<a class="flex items-center gap-4 py-2 text-on-surface-variant hover:text-primary transition-colors font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined text-sm" data-icon="help">help</span>
+<span>Help</span>
+</a>
+<a class="flex items-center gap-4 py-2 text-on-surface-variant hover:text-primary transition-colors font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined text-sm" data-icon="logout">logout</span>
+<span>Logout</span>
+</a>
+</div>
+</div>
+</nav>
+<!-- TopNavBar (Predicted Component) -->
+<header class="fixed top-0 w-full z-30 bg-background/80 backdrop-blur-xl border-b border-white/10 shadow-lg shadow-primary/5 hidden md:block pl-64">
+<div class="flex items-center justify-between px-8 py-4 w-full h-20">
+<!-- Left: Search (from JSON, search_bar on_left) -->
+<div class="flex-1 max-w-md flex items-center relative">
+<span class="material-symbols-outlined absolute left-3 text-on-surface-variant">search</span>
+<input class="w-full bg-[#0F172A] border border-white/10 rounded-lg pl-10 pr-4 py-2 text-on-surface focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary/50 transition-all font-body-md" placeholder="Search operations..." type="text"/>
+</div>
+<!-- Navigation Links from JSON -->
+<nav class="hidden lg:flex items-center gap-6 mx-8">
+<a class="text-primary border-b-2 border-primary pb-1 font-body-md text-body-md active:scale-95 duration-100" href="#">Dashboard</a>
+<a class="text-on-surface-variant hover:text-on-surface transition-colors font-body-md text-body-md hover:bg-white/5 px-2 py-1 rounded active:scale-95 duration-100" href="#">Action Center</a>
+<a class="text-on-surface-variant hover:text-on-surface transition-colors font-body-md text-body-md hover:bg-white/5 px-2 py-1 rounded active:scale-95 duration-100" href="#">CRM Pipeline</a>
+<a class="text-on-surface-variant hover:text-on-surface transition-colors font-body-md text-body-md hover:bg-white/5 px-2 py-1 rounded active:scale-95 duration-100" href="#">Telemetry</a>
+</nav>
+<!-- Right Actions -->
+<div class="flex items-center gap-6">
+<!-- Currency Toggle -->
+<div class="flex bg-[#0F172A] rounded-full p-1 border border-white/10">
+<button class="px-3 py-1 rounded-full bg-secondary/20 text-secondary font-label-sm text-label-sm">USD</button>
+<button class="px-3 py-1 rounded-full text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm">BDT</button>
+</div>
+<button class="bg-primary-container text-on-primary-container px-4 py-2 rounded-lg font-label-sm text-label-sm glow-button">Create Report</button>
+<div class="flex items-center gap-3">
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+</div>
+<div class="w-10 h-10 rounded-full bg-primary/20 border border-primary flex items-center justify-center text-primary font-bold overflow-hidden">
+                    GX
+                </div>
+</div>
+</div>
+</header>
+<!-- Main Layout Area -->
+<main class="md:pl-64 pt-20 min-h-screen">
+<div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-12 flex flex-col gap-section-gap">
+<!-- Dashboard Header -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+<div>
+<h2 class="font-headline-lg-mobile md:font-headline-lg text-on-surface">Executive Telemetry</h2>
+<p class="font-body-lg text-on-surface-variant mt-2">Real-time revenue intelligence and operational throughput.</p>
+</div>
+<div class="text-right">
+<p class="font-label-sm text-label-sm text-secondary tracking-widest uppercase">System Status</p>
+<div class="flex items-center gap-2 mt-1">
+<span class="w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_#00DF89] animate-pulse"></span>
+<span class="font-body-md text-primary">All Systems Nominal</span>
+</div>
+</div>
+</div>
+<!-- KPI Telemetry Row (Bento Grid) -->
+<section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter">
+<!-- KPI 1: Revenue Target -->
+<div class="glass-card rounded-xl p-6 flex flex-col justify-between relative overflow-hidden group">
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-full -mr-16 -mt-16 transition-transform group-hover:scale-110"></div>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-primary" data-icon="trending_up">trending_up</span>
+                            Gross Revenue Target
+                        </p>
+<h3 class="font-headline-md text-on-surface mt-2">$100,000</h3>
+<p class="font-body-md text-on-surface-variant/70 text-sm">৳1.18 Crore Goal</p>
+</div>
+<div class="mt-6 flex items-center gap-4">
+<div class="relative w-16 h-16">
+<svg class="w-16 h-16" viewbox="0 0 100 100">
+<circle class="text-white/10 stroke-current" cx="50" cy="50" fill="transparent" r="40" stroke-width="8"></circle>
+<circle class="text-primary stroke-current chart-ring transition-all duration-1000 ease-out" cx="50" cy="50" fill="transparent" r="40" stroke-dashoffset="87.92" stroke-linecap="round" stroke-width="8"></circle> <!-- 65% of 251.2 -->
+</svg>
+<div class="absolute inset-0 flex items-center justify-center font-label-sm text-primary">65%</div>
+</div>
+<div class="font-body-md text-sm text-on-surface-variant leading-tight">
+                            Pacing ahead<br/>of Q3 forecast.
+                        </div>
+</div>
+</div>
+<!-- KPI 2: Net Profit -->
+<div class="glass-card rounded-xl p-6 flex flex-col justify-between">
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-secondary" data-icon="monetization_on">monetization_on</span>
+                            Net Profit YTD
+                        </p>
+<h3 class="font-headline-md text-on-surface mt-2">$65,000</h3>
+</div>
+<div class="mt-6">
+<div class="flex justify-between font-label-sm text-sm mb-2">
+<span class="text-on-surface-variant">Margin</span>
+<span class="text-secondary">65.0%</span>
+</div>
+<div class="h-2 bg-white/10 rounded-full overflow-hidden">
+<div class="h-full bg-secondary w-[65%] rounded-full relative">
+<div class="absolute inset-0 bg-gradient-to-r from-transparent to-white/30"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- KPI 3: Expense Cap -->
+<div class="glass-card rounded-xl p-6 flex flex-col justify-between">
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-error" data-icon="account_balance_wallet">account_balance_wallet</span>
+                            12-Mo Expense Cap
+                        </p>
+<h3 class="font-headline-md text-on-surface mt-2">$35,000</h3>
+</div>
+<div class="mt-6">
+<div class="flex justify-between items-end mb-2">
+<div class="font-body-md text-sm text-on-surface-variant"><span class="text-error font-semibold">$8,200</span> spent</div>
+<div class="font-label-sm text-xs text-primary bg-primary/10 px-2 py-1 rounded">$26.8k headroom</div>
+</div>
+<div class="flex gap-1 h-2">
+<div class="h-full bg-error/80 w-[23%] rounded-l-full"></div>
+<div class="h-full bg-white/10 flex-grow rounded-r-full"></div>
+</div>
+</div>
+</div>
+<!-- KPI 4: Active Sprints -->
+<div class="glass-card rounded-xl p-6 flex flex-col justify-between bg-gradient-to-br from-[#0F172A] to-surface-container">
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-tertiary" data-icon="bolt">bolt</span>
+                            Active Sprints
+                        </p>
+<h3 class="font-headline-md text-on-surface mt-2 flex items-baseline gap-2">
+                            14 <span class="font-body-md text-lg text-on-surface-variant">In-Progress</span>
+</h3>
+</div>
+<div class="mt-6 flex flex-wrap gap-2">
+<span class="px-3 py-1 rounded-full bg-secondary/10 text-secondary border border-secondary/20 font-label-sm text-xs">SaaS</span>
+<span class="px-3 py-1 rounded-full bg-secondary/10 text-secondary border border-secondary/20 font-label-sm text-xs">E-Comm</span>
+<span class="px-3 py-1 rounded-full bg-secondary/10 text-secondary border border-secondary/20 font-label-sm text-xs">+5 Verticals</span>
+</div>
+</div>
+</section>
+<!-- Middle Section: Revenue & Actions -->
+<section class="grid grid-cols-1 lg:grid-cols-3 gap-gutter">
+<!-- Left Column: Revenue Chart & Sprints -->
+<div class="lg:col-span-2 flex flex-col gap-gutter">
+<!-- Revenue Engine Donut (Simulated via flex layout for elegance) -->
+<div class="glass-card rounded-xl p-6 md:p-8">
+<h3 class="font-headline-md text-on-surface mb-6 text-xl">Growth Engine Distribution</h3>
+<div class="flex flex-col md:flex-row gap-8 items-center">
+<!-- Simulated Chart -->
+<div class="relative w-48 h-48 flex-shrink-0">
+<svg class="w-full h-full transform -rotate-90" viewbox="0 0 100 100">
+<!-- Micro-SaaS 35% -->
+<circle class="text-primary stroke-current" cx="50" cy="50" fill="transparent" r="40" stroke-dasharray="88 251.2" stroke-dashoffset="0" stroke-width="15"></circle>
+<!-- Retainers 25% -->
+<circle class="text-secondary stroke-current" cx="50" cy="50" fill="transparent" r="40" stroke-dasharray="62.8 251.2" stroke-dashoffset="-88" stroke-width="15"></circle>
+<!-- Sprints 20% -->
+<circle class="text-tertiary stroke-current" cx="50" cy="50" fill="transparent" r="40" stroke-dasharray="50.2 251.2" stroke-dashoffset="-150.8" stroke-width="15"></circle>
+<!-- Etsy 12% -->
+<circle class="text-outline stroke-current" cx="50" cy="50" fill="transparent" r="40" stroke-dasharray="30.1 251.2" stroke-dashoffset="-201" stroke-width="15"></circle>
+<!-- YouTube 8% -->
+<circle class="text-white/20 stroke-current" cx="50" cy="50" fill="transparent" r="40" stroke-dasharray="20 251.2" stroke-dashoffset="-231.1" stroke-width="15"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="font-headline-md text-xl text-on-surface">5</span>
+<span class="font-label-sm text-on-surface-variant text-xs">Engines</span>
+</div>
+</div>
+<!-- Legend -->
+<div class="flex-grow grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
+<div class="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/5 hover:bg-white/10 transition-colors">
+<div class="flex items-center gap-3">
+<div class="w-3 h-3 rounded-full bg-primary"></div>
+<span class="font-body-md text-on-surface text-sm">Micro-SaaS</span>
+</div>
+<span class="font-label-sm text-primary">35%</span>
+</div>
+<div class="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/5 hover:bg-white/10 transition-colors">
+<div class="flex items-center gap-3">
+<div class="w-3 h-3 rounded-full bg-secondary"></div>
+<span class="font-body-md text-on-surface text-sm">Retainers</span>
+</div>
+<span class="font-label-sm text-secondary">25%</span>
+</div>
+<div class="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/5 hover:bg-white/10 transition-colors">
+<div class="flex items-center gap-3">
+<div class="w-3 h-3 rounded-full bg-tertiary"></div>
+<span class="font-body-md text-on-surface text-sm">Sprints</span>
+</div>
+<span class="font-label-sm text-tertiary">20%</span>
+</div>
+<div class="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/5 hover:bg-white/10 transition-colors">
+<div class="flex items-center gap-3">
+<div class="w-3 h-3 rounded-full bg-outline"></div>
+<span class="font-body-md text-on-surface text-sm">Etsy</span>
+</div>
+<span class="font-label-sm text-outline">12%</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Action Center -->
+<div class="glass-card rounded-xl p-6 md:p-8 flex flex-col h-full bg-[#0F172A]/80">
+<div class="flex items-center justify-between mb-6">
+<h3 class="font-headline-md text-on-surface text-xl">Action Center</h3>
+<span class="bg-error/20 text-error font-label-sm px-2 py-1 rounded-full text-xs">2 Pending</span>
+</div>
+<div class="flex flex-col gap-4 flex-grow">
+<!-- Action Card 1 -->
+<div class="bg-surface-container border border-error/30 p-4 rounded-lg relative overflow-hidden group">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-error"></div>
+<div class="flex justify-between items-start">
+<div>
+<p class="font-label-sm text-error mb-1">Approval Required</p>
+<h4 class="font-body-md text-on-surface font-medium">Compute Reimbursements</h4>
+<p class="font-body-md text-sm text-on-surface-variant mt-1">OpenAI API, Midjourney Pro</p>
+</div>
+<span class="font-headline-md text-lg text-on-surface">$420</span>
+</div>
+<div class="mt-4 flex gap-2">
+<button class="flex-1 bg-error/10 hover:bg-error/20 text-error border border-error/30 py-1.5 rounded font-label-sm transition-colors">Reject</button>
+<button class="flex-1 bg-primary/20 hover:bg-primary/30 text-primary border border-primary/30 py-1.5 rounded font-label-sm transition-colors">Approve</button>
+</div>
+</div>
+<!-- Action Card 2 -->
+<div class="bg-surface-container border border-secondary/30 p-4 rounded-lg relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-secondary"></div>
+<div>
+<p class="font-label-sm text-secondary mb-1">HR Request</p>
+<h4 class="font-body-md text-on-surface font-medium">Specialist Leave Request</h4>
+<p class="font-body-md text-sm text-on-surface-variant mt-1">Sarah J. (AI Engineer) - 3 Days</p>
+</div>
+<div class="mt-4 flex gap-2">
+<button class="flex-1 bg-surface border border-white/10 hover:bg-white/5 text-on-surface py-1.5 rounded font-label-sm transition-colors">Review</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- CRM Pipeline Table -->
+<section class="glass-card rounded-xl overflow-hidden">
+<div class="p-6 md:p-8 border-b border-white/10 flex justify-between items-center">
+<div>
+<h3 class="font-headline-md text-on-surface text-xl">Leads CRM Pipeline</h3>
+<p class="font-body-md text-sm text-on-surface-variant mt-1">Active opportunities awaiting conversion.</p>
+</div>
+<button class="flex items-center gap-2 text-primary hover:text-primary-fixed transition-colors font-label-sm">
+                        View All <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-white/5 font-label-sm text-on-surface-variant text-xs uppercase tracking-wider">
+<th class="p-4 pl-6 md:pl-8 font-medium">Lead Name</th>
+<th class="p-4 font-medium">Vertical / Service</th>
+<th class="p-4 font-medium">Intent Score</th>
+<th class="p-4 font-medium">Status</th>
+<th class="p-4 pr-6 md:pr-8 font-medium text-right">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-white/5">
+<tr class="hover:bg-white/[0.02] transition-colors group">
+<td class="p-4 pl-6 md:pl-8">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-tertiary/20 text-tertiary flex items-center justify-center font-bold text-xs">TC</div>
+<span class="font-body-md text-on-surface font-medium">TechCorp Inc.</span>
+</div>
+</td>
+<td class="p-4 text-on-surface-variant font-body-md text-sm">AI Infrastructure Sprint</td>
+<td class="p-4">
+<div class="flex items-center gap-2">
+<div class="w-16 h-1.5 bg-white/10 rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[92%] rounded-full shadow-[0_0_5px_#00DF89]"></div>
+</div>
+<span class="font-label-sm text-primary">92</span>
+</div>
+</td>
+<td class="p-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary/10 text-secondary border border-secondary/20">
+                                        In Review
+                                    </span>
+</td>
+<td class="p-4 pr-6 md:pr-8 text-right">
+<button class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-500/20 text-green-400 hover:bg-green-500/30 transition-colors" title="Contact via WhatsApp">
+<span class="material-symbols-outlined text-sm" data-icon="forum">forum</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-white/[0.02] transition-colors group">
+<td class="p-4 pl-6 md:pl-8">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-xs">NL</div>
+<span class="font-body-md text-on-surface font-medium">Nexus Logistics</span>
+</div>
+</td>
+<td class="p-4 text-on-surface-variant font-body-md text-sm">Predictive Routing (Micro-SaaS)</td>
+<td class="p-4">
+<div class="flex items-center gap-2">
+<div class="w-16 h-1.5 bg-white/10 rounded-full overflow-hidden">
+<div class="h-full bg-secondary w-[75%] rounded-full"></div>
+</div>
+<span class="font-label-sm text-secondary">75</span>
+</div>
+</td>
+<td class="p-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-outline/20 text-outline border border-outline/30">
+                                        Negotiation
+                                    </span>
+</td>
+<td class="p-4 pr-6 md:pr-8 text-right">
+<button class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-500/20 text-green-400 hover:bg-green-500/30 transition-colors" title="Contact via WhatsApp">
+<span class="material-symbols-outlined text-sm" data-icon="forum">forum</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-white/[0.02] transition-colors group opacity-60">
+<td class="p-4 pl-6 md:pl-8">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-white/10 text-white/50 flex items-center justify-center font-bold text-xs">AR</div>
+<span class="font-body-md text-on-surface font-medium">Alpha Retail</span>
+</div>
+</td>
+<td class="p-4 text-on-surface-variant font-body-md text-sm">E-commerce Automation</td>
+<td class="p-4">
+<div class="flex items-center gap-2">
+<div class="w-16 h-1.5 bg-white/10 rounded-full overflow-hidden">
+<div class="h-full bg-primary/50 w-[100%] rounded-full"></div>
+</div>
+<span class="font-label-sm text-primary/50">100</span>
+</div>
+</td>
+<td class="p-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-white/5 text-on-surface-variant border border-white/10">
+                                        Closed Won
+                                    </span>
+</td>
+<td class="p-4 pr-6 md:pr-8 text-right">
+<button class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-white/5 text-white/30 cursor-not-allowed">
+<span class="material-symbols-outlined text-sm" data-icon="check">check</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</div>
+</main>
+</body></html>

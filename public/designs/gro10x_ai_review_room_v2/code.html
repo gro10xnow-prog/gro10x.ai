@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>GRO10X AI Review Room V2</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&amp;family=Inter:wght@400;500;600&amp;family=Geist:wght@600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface": "#0f141b",
+                      "secondary-container": "#03b5d3",
+                      "on-tertiary-fixed-variant": "#334282",
+                      "on-tertiary-container": "#3d4c8c",
+                      "on-tertiary": "#1a2b6a",
+                      "tertiary-container": "#b4c0ff",
+                      "surface-bright": "#353941",
+                      "secondary-fixed-dim": "#4cd7f6",
+                      "on-surface-variant": "#bacbbc",
+                      "background": "#0f141b",
+                      "on-secondary": "#003640",
+                      "on-error": "#690005",
+                      "error": "#ffb4ab",
+                      "secondary-fixed": "#acedff",
+                      "inverse-primary": "#006d40",
+                      "on-primary-container": "#005d36",
+                      "primary": "#46fca3",
+                      "on-surface": "#dfe2ed",
+                      "surface-variant": "#31353d",
+                      "on-background": "#dfe2ed",
+                      "on-secondary-fixed": "#001f26",
+                      "surface-container-high": "#262a32",
+                      "outline-variant": "#3b4a3f",
+                      "on-error-container": "#ffdad6",
+                      "primary-container": "#00df89",
+                      "tertiary-fixed-dim": "#b8c4ff",
+                      "on-tertiary-fixed": "#001354",
+                      "on-secondary-fixed-variant": "#004e5c",
+                      "surface-container": "#1c2027",
+                      "tertiary": "#d9ddff",
+                      "outline": "#859588",
+                      "on-secondary-container": "#00424e",
+                      "inverse-on-surface": "#2c3139",
+                      "surface-container-low": "#181c23",
+                      "surface-dim": "#0f141b",
+                      "surface-tint": "#12e28c",
+                      "inverse-surface": "#dfe2ed",
+                      "primary-fixed-dim": "#12e28c",
+                      "on-primary-fixed": "#002110",
+                      "tertiary-fixed": "#dde1ff",
+                      "on-primary": "#00391f",
+                      "secondary": "#4cd7f6",
+                      "surface-container-highest": "#31353d",
+                      "error-container": "#93000a",
+                      "surface-container-lowest": "#0a0e15",
+                      "on-primary-fixed-variant": "#00522f",
+                      "primary-fixed": "#56ffa8"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "margin-mobile": "20px",
+                      "section-gap": "120px",
+                      "margin-desktop": "80px",
+                      "gutter": "24px",
+                      "container-max": "1280px"
+              },
+              "fontFamily": {
+                      "headline-lg": [
+                              "Montserrat"
+                      ],
+                      "headline-md": [
+                              "Montserrat"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "display-lg": [
+                              "Montserrat"
+                      ],
+                      "headline-lg-mobile": [
+                              "Montserrat"
+                      ],
+                      "label-sm": [
+                              "Geist"
+                      ]
+              },
+              "fontSize": {
+                      "headline-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-md": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-lg": [
+                              "72px",
+                              {
+                                      "lineHeight": "1.1",
+                                      "letterSpacing": "-0.04em",
+                                      "fontWeight": "800"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "1",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        body {
+            background-color: #070B12;
+            color: #dfe2ed;
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .glow-button {
+            box-shadow: 0 0 20px rgba(0, 223, 137, 0.3);
+            transition: box-shadow 0.3s ease, transform 0.1s ease;
+        }
+        
+        .glow-button:hover {
+            box-shadow: 0 0 30px rgba(0, 223, 137, 0.5);
+        }
+        
+        .glow-button:active {
+            transform: scale(0.98);
+        }
+        
+        .input-field {
+            background-color: #0F172A;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .input-field:focus {
+            outline: none;
+            border-color: #03b5d3;
+            box-shadow: inset 0 0 10px rgba(3, 181, 211, 0.2);
+        }
+        
+        .scrub-bar-progress {
+            background-color: #00DF89;
+            box-shadow: 0 0 10px rgba(0, 223, 137, 0.5);
+        }
+        
+        /* Hide scrollbar for clean look */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body class="h-screen w-full flex overflow-hidden antialiased">
+<!-- Side Navigation (Suppressed for Context: Active Review Screen, but provided as structural shell anchor based on JSON) -->
+<nav class="bg-surface dark:bg-surface h-screen w-64 fixed left-0 top-0 border-r border-white/10 backdrop-blur-xl shadow-lg shadow-primary/5 flex flex-col h-full py-8 z-50">
+<div class="px-6 mb-12">
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary leading-tight">CyberReview</h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">AI Creative Studio</p>
+</div>
+<div class="flex-1 px-4 space-y-2">
+<!-- Tabs -->
+<a class="flex items-center space-x-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-primary transition-colors active:scale-95 transition-transform group" href="#">
+<span class="material-symbols-outlined" data-icon="folder_open">folder_open</span>
+<span class="font-body-md text-body-md group-hover:font-medium">Projects</span>
+</a>
+<a class="flex items-center space-x-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-primary transition-colors active:scale-95 transition-transform group" href="#">
+<span class="material-symbols-outlined" data-icon="movie">movie</span>
+<span class="font-body-md text-body-md group-hover:font-medium">Assets</span>
+</a>
+<!-- Active Tab -->
+<a class="flex items-center space-x-3 px-4 py-3 rounded-lg text-primary font-bold border-r-2 border-primary bg-white/5 active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="rate_review" data-weight="fill" style="font-variation-settings: 'FILL' 1;">rate_review</span>
+<span class="font-body-md text-body-md">Review</span>
+</a>
+<a class="flex items-center space-x-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-primary transition-colors active:scale-95 transition-transform group" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span class="font-body-md text-body-md group-hover:font-medium">Team</span>
+</a>
+<a class="flex items-center space-x-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-primary transition-colors active:scale-95 transition-transform group" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-body-md text-body-md group-hover:font-medium">Settings</span>
+</a>
+</div>
+<div class="px-6 mt-auto">
+<button class="w-full py-3 px-4 rounded-lg bg-surface-variant border border-white/10 text-on-surface flex items-center justify-center space-x-2 hover:bg-white/10 transition-colors active:scale-95">
+<span class="material-symbols-outlined text-[20px]">add</span>
+<span class="font-label-sm text-label-sm uppercase tracking-widest">New Asset</span>
+</button>
+<div class="mt-6 flex items-center space-x-3 p-3 glass-card rounded-xl">
+<div class="w-10 h-10 rounded-full bg-surface-container-high overflow-hidden border border-white/10">
+<img class="w-full h-full object-cover" data-alt="A macro photography style close-up of a futuristic cybernetic avatar eye, glowing with a soft neon cyan and emerald light against deep obsidian armor plates, highly detailed, 8k resolution, photorealistic, cinematic dark mode lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuACsSwNjxwMYwrAHjohc6-1iLEHU4m1gcK20FX05vBAnUJbiisrlKPLymCwwzsmPXN-se1FqTHsupW67m3EyZS0wthZI_JKdioUP3nxWidLCd5T7HLbSPLVWcU9WhUkRLPNbXXAM-cGjkgdfD8AUIRF9VcKkpUGiU76HfFe0tILARn85oCAaJ3kjhGBgVsaqXzY5y8QxH39OlLS317odenPwy7KVdhei22HkqQY8GZr4KtuZ2WK4-tAAw"/>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface">Alex Chen</p>
+<p class="text-[10px] text-on-surface-variant mt-0.5">Admin Workspace</p>
+</div>
+</div>
+</div>
+</nav>
+<!-- Top Navigation -->
+<header class="bg-surface/80 dark:bg-surface/80 fixed top-0 right-0 left-64 h-16 border-b border-white/10 backdrop-blur-2xl flex items-center justify-between px-8 w-[calc(100%-16rem)] z-40 transition-all">
+<div class="flex items-center space-x-6">
+<h2 class="font-headline-md text-[20px] font-black text-primary">Asset Review Console</h2>
+<nav class="hidden lg:flex items-center space-x-1 ml-8">
+<a class="px-4 py-2 font-body-md text-[14px] text-on-surface-variant hover:text-secondary transition-all cursor-pointer active:opacity-80 rounded-md hover:bg-white/5" href="#">Versions</a>
+<a class="px-4 py-2 font-body-md text-[14px] text-primary border-b-2 border-primary pb-1 cursor-pointer active:opacity-80 font-medium" href="#">Comparing</a>
+<a class="px-4 py-2 font-body-md text-[14px] text-on-surface-variant hover:text-secondary transition-all cursor-pointer active:opacity-80 rounded-md hover:bg-white/5" href="#">History</a>
+</nav>
+</div>
+<div class="flex items-center space-x-4">
+<div class="relative group">
+<button class="p-2 text-on-surface-variant hover:text-secondary transition-colors rounded-full hover:bg-white/5">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-primary-container shadow-[0_0_8px_rgba(0,223,137,0.8)]"></span>
+</div>
+<button class="p-2 text-on-surface-variant hover:text-secondary transition-colors rounded-full hover:bg-white/5">
+<span class="material-symbols-outlined" data-icon="share">share</span>
+</button>
+<div class="h-6 w-px bg-white/10 mx-2"></div>
+<button class="bg-white/5 border border-white/10 hover:border-primary/50 text-on-surface px-4 py-1.5 rounded-lg font-label-sm text-label-sm transition-all hover:bg-white/10" onclick="document.getElementById('signoff-modal').classList.remove('hidden')">
+                Sign-off Summary
+            </button>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="ml-64 mt-16 flex w-[calc(100%-16rem)] h-[calc(100vh-4rem)]">
+<!-- Left Stage (75%) -->
+<section class="w-3/4 flex flex-col border-r border-white/10 relative bg-[#05080c]">
+<!-- Stage Header -->
+<div class="px-8 py-6 flex justify-between items-start shrink-0">
+<div>
+<div class="flex items-center space-x-3 mb-2">
+<span class="px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 font-label-sm text-[10px] tracking-wider uppercase flex items-center space-x-1">
+<span>v2</span>
+<span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span>Active</span>
+</span>
+<h3 class="font-body-md text-on-surface-variant text-[14px]">Alpha Ventures</h3>
+</div>
+<h1 class="font-headline-lg text-[32px] text-white">Fintech Mobile App AI Video Avatar V2</h1>
+</div>
+<!-- Format Tabs -->
+<div class="flex bg-surface-container-low p-1 rounded-lg border border-white/5">
+<button class="px-4 py-2 rounded-md bg-white/10 text-primary font-label-sm text-[12px] shadow-sm border border-white/5 transition-all">Video MP4</button>
+<button class="px-4 py-2 rounded-md text-on-surface-variant hover:text-white font-label-sm text-[12px] transition-all hover:bg-white/5">Image Comparison</button>
+<button class="px-4 py-2 rounded-md text-on-surface-variant hover:text-white font-label-sm text-[12px] transition-all hover:bg-white/5">Audio Waveform</button>
+<button class="px-4 py-2 rounded-md text-on-surface-variant hover:text-white font-label-sm text-[12px] transition-all hover:bg-white/5 flex items-center space-x-1">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary-container"></span>
+<span>Live Prototype</span>
+</button>
+</div>
+</div>
+<!-- Central Viewport -->
+<div class="flex-1 px-8 pb-4 flex flex-col justify-center relative min-h-0">
+<!-- Video Player Container -->
+<div class="relative w-full aspect-video rounded-xl overflow-hidden glass-card shadow-2xl group">
+<!-- Video Placeholder Background -->
+<div class="absolute inset-0 bg-cover bg-center" data-alt="A highly realistic cinematic wide shot of a professional female AI avatar standing in a sleek, modern fintech office environment. The avatar has subtle neon cyan accents on her tailored blazer. Soft volumetric lighting streams through floor-to-ceiling windows, creating a premium corporate aesthetic. Shot on Arri Alexa, 8k resolution, dark mode aesthetic with deep shadows and vibrant cyber emerald and cyan highlights." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAvG0wbIdQEKKq0krPDCbmGbBmTu6dObqqT-iHi2K6dMvUwod0O1WssGMXUxEArHRyDA_fVIIV-8yFNKR5R-ITiBwd76i3o9onOf1aOv0J19fd6sKPsTjguWmYrIzbrk-tebhLq233R_wLRF5VHqIkBCTjQhW6E16gHV4_1VyIZtxCu70_qZ5UU9oUAaPhrswjbis7ANzg3aCgggTqjR3j4bN1i7GlAI6eb4yrqvuVeNjU7pVJngJLpIA')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20"></div>
+<!-- Floating Draw Button -->
+<button class="absolute top-6 right-6 bg-surface-container/80 backdrop-blur-md border border-white/20 text-white px-4 py-2 rounded-lg font-label-sm text-[12px] flex items-center space-x-2 hover:bg-white/20 transition-colors opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 duration-300">
+<span class="material-symbols-outlined text-[16px]">draw</span>
+<span>Draw Feedback on Frame</span>
+</button>
+<!-- Playback Controls Overlay -->
+<div class="absolute bottom-0 left-0 right-0 p-6 flex flex-col space-y-4 transform translate-y-4 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-300">
+<!-- Custom Scrub Bar -->
+<div class="w-full h-1.5 bg-white/20 rounded-full cursor-pointer relative">
+<div class="absolute left-0 top-0 bottom-0 w-[35%] scrub-bar-progress rounded-full relative">
+<div class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-3 h-3 bg-white rounded-full shadow-[0_0_10px_rgba(255,255,255,0.8)] cursor-grab"></div>
+</div>
+<!-- Feedback Markers on Timeline -->
+<div class="absolute left-[20%] top-1/2 -translate-y-1/2 w-1.5 h-3 bg-secondary-container rounded-full shadow-[0_0_5px_#03b5d3]"></div>
+<div class="absolute left-[65%] top-1/2 -translate-y-1/2 w-1.5 h-3 bg-secondary-container rounded-full shadow-[0_0_5px_#03b5d3]"></div>
+</div>
+<!-- Control Buttons & Timestamps -->
+<div class="flex items-center justify-between">
+<div class="flex items-center space-x-4">
+<button class="text-white hover:text-primary transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</button>
+<button class="text-white hover:text-primary transition-colors">
+<span class="material-symbols-outlined">volume_up</span>
+</button>
+<span class="font-label-sm text-white/80 text-[13px] tracking-widest font-mono">
+<span class="text-white font-medium">00:24</span> / 01:15
+                                </span>
+</div>
+<div class="flex items-center space-x-3">
+<button class="text-white/70 hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]">closed_caption</span>
+</button>
+<button class="text-white/70 hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+</button>
+<button class="text-white/70 hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]">fullscreen</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer Action Bar -->
+<div class="px-8 py-6 border-t border-white/5 bg-surface-container-lowest flex items-center justify-between shrink-0">
+<button class="px-6 py-3 rounded-lg border border-error/50 text-error hover:bg-error/10 hover:border-error transition-all font-label-sm text-[13px] flex items-center space-x-2">
+<span class="w-2 h-2 rounded-full bg-error"></span>
+<span>Request Revision</span>
+</button>
+<button class="px-8 py-3 rounded-lg bg-primary-container text-on-primary-container font-label-sm text-[14px] font-bold uppercase tracking-wider flex items-center space-x-2 glow-button">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span>Approve Final Deliverable &amp; Release Invoice</span>
+</button>
+</div>
+</section>
+<!-- Right Feedback Panel (25%) -->
+<aside class="w-1/4 bg-surface-dim flex flex-col h-full border-l border-white/5 relative z-10">
+<!-- Header -->
+<div class="px-6 py-5 border-b border-white/10 shrink-0 bg-surface/50 backdrop-blur-md">
+<h3 class="font-body-md text-[16px] font-medium text-white flex items-center space-x-2">
+<span class="material-symbols-outlined text-secondary-container text-[18px]">chat</span>
+<span>Timestamped Notes</span>
+</h3>
+<p class="font-label-sm text-[11px] text-on-surface-variant mt-1 opacity-80">Total: 4 | Open: 1</p>
+</div>
+<!-- Comment List -->
+<div class="flex-1 overflow-y-auto p-4 space-y-4">
+<!-- Comment Card 1 -->
+<div class="glass-card rounded-lg p-4 relative group">
+<div class="flex items-start justify-between mb-2">
+<div class="flex items-center space-x-2">
+<div class="w-6 h-6 rounded-full bg-surface-variant overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A small avatar portrait of a corporate executive wearing minimal dark clothing against a slate gray background, subtle lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBgDMNsz9eatJguvoHa9RlmQ8qEihxx-6pMiqONh6c2pEj_SrJaa1EhPj-kKfbucR6y3MIsdjWRFy5BViG4_0ZOm7np8xZIJfXVhZ89a54EhqjDIW6OaJlEn3p-qVOm3coD347IxE_9DKsiirirHrbmZfSQunkeJPPNa8k9i9nuRuLhXDXtHhRSct82Iy_F3wnCmvfCUBVvqyrQI_JRk1SpjoMzFpvY0ddF2GNXqRZUcHzVKU0Eb55cfQ"/>
+</div>
+<span class="font-label-sm text-[12px] text-on-surface">Sarah J.</span>
+</div>
+<button class="text-secondary-container hover:text-white font-mono text-[11px] px-2 py-0.5 rounded bg-secondary-container/10 border border-secondary-container/20 transition-colors">
+                            00:14
+                        </button>
+</div>
+<p class="font-body-md text-[13px] text-on-surface-variant leading-relaxed">
+                        Make avatar voice tone slightly more energetic during the hook.
+                    </p>
+<!-- Resolved Badge -->
+<div class="absolute -top-2 -right-2 bg-surface border border-white/10 rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer hover:bg-white/5">
+<span class="material-symbols-outlined text-[14px] text-primary">check</span>
+</div>
+</div>
+<!-- Comment Card 2 -->
+<div class="glass-card rounded-lg p-4 border-l-2 border-l-secondary-container relative">
+<div class="flex items-start justify-between mb-2">
+<div class="flex items-center space-x-2">
+<div class="w-6 h-6 rounded-full bg-surface-variant overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A small avatar portrait of a creative director with stylish glasses against a dark background, soft blue rim light." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCZvYWoPwi9zb-OKVeleZUpNBXOLHbdrQucRscPDCI0_1cttAwgH2yh8RpQZsDVZ4ONh4MYggjwzOhZhSXz-IWIjlVEqiXVlgAyFCi84o_HPxut5nryUZD8OR3kWwT2-itA9-w9S_qxvbmxPeYncYmFEm2cti6FvaGaY4Zea-HZbMAm-NvV8zywhGsRfvUp-ygNnuSONr_zWB_XudIoyeB7Cn7jVPrM_xK5hRYC1Ceoh1eD2qtPdLzceg"/>
+</div>
+<span class="font-label-sm text-[12px] text-white font-medium">David K.</span>
+</div>
+<button class="text-secondary-container hover:text-white font-mono text-[11px] px-2 py-0.5 rounded bg-secondary-container/10 border border-secondary-container/20 transition-colors">
+                            00:42
+                        </button>
+</div>
+<p class="font-body-md text-[13px] text-white leading-relaxed">
+                        Adjust background glow to brand cyan (#03b5d3) when the logo appears.
+                    </p>
+<div class="mt-3 flex items-center space-x-2">
+<div class="w-4 h-4 rounded bg-[#03b5d3] border border-white/20"></div>
+<span class="font-label-sm text-[10px] text-on-surface-variant">Brand Color</span>
+</div>
+</div>
+<!-- Comment Card 3 (Resolved) -->
+<div class="glass-card rounded-lg p-4 opacity-50">
+<div class="flex items-start justify-between mb-2">
+<div class="flex items-center space-x-2">
+<div class="w-6 h-6 rounded-full bg-surface-variant flex items-center justify-center">
+<span class="font-label-sm text-[10px]">SJ</span>
+</div>
+<span class="font-label-sm text-[12px] text-on-surface line-through decoration-white/30">Sarah J.</span>
+</div>
+<div class="flex items-center space-x-1">
+<span class="material-symbols-outlined text-[12px] text-primary">check_circle</span>
+<span class="font-mono text-[11px] text-on-surface-variant">00:05</span>
+</div>
+</div>
+<p class="font-body-md text-[13px] text-on-surface-variant leading-relaxed line-through decoration-white/30">
+                        Remove the awkward pause before she starts speaking.
+                    </p>
+</div>
+</div>
+<!-- Input Area -->
+<div class="p-4 border-t border-white/10 bg-surface-container-low shrink-0">
+<div class="flex items-center justify-between mb-2 px-1">
+<label class="flex items-center space-x-2 cursor-pointer group">
+<div class="relative w-8 h-4 rounded-full bg-surface-container-highest border border-white/10 transition-colors group-hover:border-primary/50">
+<!-- Toggle Handle -->
+<div class="absolute left-0.5 top-0.5 w-3 h-3 rounded-full bg-primary transform translate-x-4 transition-transform shadow-[0_0_5px_rgba(70,252,163,0.5)]"></div>
+</div>
+<span class="font-label-sm text-[11px] text-on-surface-variant group-hover:text-white transition-colors">Capture Timestamp</span>
+</label>
+<span class="font-mono text-[12px] text-primary">00:24</span>
+</div>
+<textarea class="w-full input-field rounded-lg p-3 font-body-md text-[13px] text-white placeholder:text-on-surface-variant/50 resize-none mb-3" placeholder="Type your feedback here..." rows="3"></textarea>
+<button class="w-full py-2.5 rounded-lg border border-primary text-primary hover:bg-primary hover:text-black transition-all font-label-sm text-[13px] font-bold flex items-center justify-center space-x-2 group">
+<span class="material-symbols-outlined text-[16px]">send</span>
+<span>Post Feedback Note</span>
+</button>
+</div>
+</aside>
+</main>
+<!-- Sign-Off Modal (Initially Hidden, toggled via JS placeholder logic) -->
+<!-- Add 'hidden' class to conceal by default. Kept visible for UI design evaluation if needed, but semantically should be an overlay -->
+<div class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm" id="signoff-modal">
+<div class="glass-card w-full max-w-md rounded-xl border border-white/20 shadow-2xl overflow-hidden animate-[fadeIn_0.3s_ease-out]">
+<!-- Header -->
+<div class="p-6 border-b border-white/10 bg-surface/80">
+<div class="flex justify-between items-start">
+<div>
+<h2 class="font-headline-md text-[24px] text-white mb-1">Sign-Off Summary</h2>
+<p class="font-body-md text-[14px] text-on-surface-variant">Review deliverables and release payment.</p>
+</div>
+<button class="text-white/50 hover:text-white" onclick="document.getElementById('signoff-modal').classList.add('hidden')">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+</div>
+<!-- Content -->
+<div class="p-6 bg-[#0B1018]">
+<!-- Invoice Total -->
+<div class="flex items-center justify-between mb-6 p-4 rounded-lg bg-surface border border-white/5 shadow-inner">
+<span class="font-label-sm text-[12px] uppercase text-on-surface-variant tracking-wider">Invoice Total</span>
+<div class="text-right">
+<div class="font-headline-md text-[24px] text-primary">$1,500</div>
+<div class="font-body-md text-[12px] text-on-surface-variant">৳175,000</div>
+</div>
+</div>
+<!-- Checklist -->
+<h4 class="font-label-sm text-[11px] text-on-surface-variant uppercase tracking-widest mb-3">Included Deliverables</h4>
+<ul class="space-y-3 mb-8">
+<li class="flex items-center space-x-3 text-white">
+<span class="material-symbols-outlined text-primary text-[18px]">check_circle</span>
+<span class="font-body-md text-[14px]">4K Video Export (ProRes 422)</span>
+</li>
+<li class="flex items-center space-x-3 text-white">
+<span class="material-symbols-outlined text-primary text-[18px]">check_circle</span>
+<span class="font-body-md text-[14px]">ComfyUI Render Workflow</span>
+</li>
+<li class="flex items-center space-x-3 text-white">
+<span class="material-symbols-outlined text-primary text-[18px]">check_circle</span>
+<span class="font-body-md text-[14px]">Custom Voice Clone Model (.pth)</span>
+</li>
+</ul>
+<!-- Payment Actions -->
+<div class="space-y-3">
+<button class="w-full py-3 rounded-lg bg-[#635BFF] hover:bg-[#5249ea] text-white font-label-sm text-[14px] font-bold transition-colors shadow-[0_0_15px_rgba(99,91,255,0.3)] flex items-center justify-center space-x-2">
+<span class="material-symbols-outlined text-[18px]">credit_card</span>
+<span>Pay with Stripe</span>
+</button>
+<button class="w-full py-3 rounded-lg bg-white/5 border border-[#E2136E]/30 text-[#E2136E] hover:bg-[#E2136E]/10 hover:border-[#E2136E] font-label-sm text-[14px] font-bold transition-colors flex items-center justify-center space-x-2">
+<span class="material-symbols-outlined text-[18px]">qr_code_scanner</span>
+<span>bKash QR</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+    </style>
+</body></html>

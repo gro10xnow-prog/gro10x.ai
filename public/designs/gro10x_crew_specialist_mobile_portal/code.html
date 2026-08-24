@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>GRO10X Crew - Mobile App</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Montserrat:wght@400;500;600;700;800&amp;family=Geist:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "tertiary-container": "#b4c0ff",
+                      "surface-container-highest": "#31353d",
+                      "on-primary-container": "#005d36",
+                      "surface-variant": "#31353d",
+                      "on-surface": "#dfe2ed",
+                      "surface-container-low": "#181c23",
+                      "surface-tint": "#12e28c",
+                      "on-error": "#690005",
+                      "outline": "#859588",
+                      "on-tertiary-fixed-variant": "#334282",
+                      "background": "#0f141b",
+                      "on-tertiary": "#1a2b6a",
+                      "on-error-container": "#ffdad6",
+                      "surface": "#0f141b",
+                      "secondary": "#4cd7f6",
+                      "tertiary-fixed-dim": "#b8c4ff",
+                      "secondary-container": "#03b5d3",
+                      "error-container": "#93000a",
+                      "on-primary-fixed": "#002110",
+                      "surface-bright": "#353941",
+                      "surface-container-lowest": "#0a0e15",
+                      "on-background": "#dfe2ed",
+                      "outline-variant": "#3b4a3f",
+                      "primary-fixed": "#56ffa8",
+                      "surface-dim": "#0f141b",
+                      "tertiary-fixed": "#dde1ff",
+                      "inverse-primary": "#006d40",
+                      "on-primary": "#00391f",
+                      "on-tertiary-fixed": "#001354",
+                      "tertiary": "#d9ddff",
+                      "on-secondary-fixed-variant": "#004e5c",
+                      "inverse-on-surface": "#2c3139",
+                      "secondary-fixed-dim": "#4cd7f6",
+                      "surface-container": "#1c2027",
+                      "error": "#ffb4ab",
+                      "on-secondary": "#003640",
+                      "on-secondary-container": "#00424e",
+                      "on-tertiary-container": "#3d4c8c",
+                      "on-secondary-fixed": "#001f26",
+                      "on-surface-variant": "#bacbbc",
+                      "primary-container": "#00df89",
+                      "inverse-surface": "#dfe2ed",
+                      "surface-container-high": "#262a32",
+                      "primary": "#46fca3",
+                      "on-primary-fixed-variant": "#00522f",
+                      "primary-fixed-dim": "#12e28c",
+                      "secondary-fixed": "#acedff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "1.125rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "container-max": "1280px",
+                      "margin-mobile": "20px",
+                      "margin-desktop": "80px",
+                      "gutter": "24px",
+                      "section-gap": "120px"
+              },
+              "fontFamily": {
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "headline-lg-mobile": [
+                              "Montserrat"
+                      ],
+                      "headline-md": [
+                              "Montserrat"
+                      ],
+                      "display-lg": [
+                              "Montserrat"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "headline-lg": [
+                              "Montserrat"
+                      ],
+                      "label-sm": [
+                              "Geist"
+                      ]
+              },
+              "fontSize": {
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-md": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-lg": [
+                              "72px",
+                              {
+                                      "lineHeight": "1.1",
+                                      "letterSpacing": "-0.04em",
+                                      "fontWeight": "800"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "1",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        body {
+            background-color: #070B12;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .glow-btn {
+            box-shadow: 0 0 20px rgba(70, 252, 163, 0.2);
+            transition: all 0.3s ease;
+        }
+        .glow-btn:active {
+            box-shadow: 0 0 30px rgba(70, 252, 163, 0.4);
+            transform: scale(0.98);
+        }
+        .cyan-glow {
+            box-shadow: 0 0 15px rgba(76, 215, 246, 0.3);
+        }
+        /* Custom scrollbar hide for horizontal lists */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+    </style>
+</head>
+<body class="text-on-surface font-body-md min-h-screen flex flex-col pb-24 md:hidden">
+<!-- Top App Bar (Mobile Nav) -->
+<header class="sticky top-0 z-50 w-full glass-card border-b-0 border-x-0 border-t-0 shadow-lg shadow-black/50 py-4 px-margin-mobile flex justify-between items-center">
+<div class="font-headline-md text-headline-md font-bold text-primary tracking-tight">GRO10X</div>
+<div class="flex items-center gap-3">
+<button class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center border border-white/10 active:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-on-surface" style="font-variation-settings: 'FILL' 0;">notifications</span>
+</button>
+<button class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center border border-white/10 active:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-on-surface" style="font-variation-settings: 'FILL' 0;">settings</span>
+</button>
+</div>
+</header>
+<main class="flex-1 px-margin-mobile pt-6 flex flex-col gap-8">
+<!-- Specialist Hero Card -->
+<section class="glass-card rounded-xl p-5 flex flex-col gap-4 relative overflow-hidden">
+<!-- Subtle background accent -->
+<div class="absolute -top-10 -right-10 w-32 h-32 bg-primary/20 blur-[50px] rounded-full pointer-events-none"></div>
+<div class="flex items-center gap-4 relative z-10">
+<div class="w-16 h-16 rounded-full bg-surface-container-high border-2 border-primary/50 flex items-center justify-center flex-shrink-0">
+<span class="font-headline-md text-[24px] font-bold text-primary">GX</span>
+</div>
+<div>
+<h1 class="font-headline-md text-[20px] font-bold text-on-surface mb-1">Senior ComfyUI &amp; Pipeline Engineer</h1>
+<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container-low border border-primary/30">
+<div class="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+<span class="font-label-sm text-label-sm text-primary uppercase tracking-wider">Sprint In Progress (04h 32m)</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Quick Actions Row (Horizontal Scroll) -->
+<section>
+<h2 class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-3 pl-1">Quick Actions</h2>
+<div class="flex overflow-x-auto gap-4 pb-4 no-scrollbar -mx-margin-mobile px-margin-mobile">
+<!-- Action 1: Clock In -->
+<button class="flex-shrink-0 w-36 glass-card rounded-xl p-4 flex flex-col items-center justify-center gap-3 active:scale-95 transition-transform">
+<div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20 text-primary">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">bolt</span>
+</div>
+<div class="text-center">
+<span class="font-body-md text-sm font-semibold text-on-surface block">Clock Out</span>
+<span class="font-label-sm text-label-sm text-primary">04:32:15</span>
+</div>
+</button>
+<!-- Action 2: EOD -->
+<button class="flex-shrink-0 w-36 glass-card rounded-xl p-4 flex flex-col items-center justify-center gap-3 active:scale-95 transition-transform">
+<div class="w-12 h-12 rounded-full bg-secondary/10 flex items-center justify-center border border-secondary/20 text-secondary">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">assignment</span>
+</div>
+<div class="text-center">
+<span class="font-body-md text-sm font-semibold text-on-surface block">Daily EOD</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Submit</span>
+</div>
+</button>
+<!-- Action 3: Expense -->
+<button class="flex-shrink-0 w-36 glass-card rounded-xl p-4 flex flex-col items-center justify-center gap-3 active:scale-95 transition-transform">
+<div class="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center border border-white/10 text-on-surface">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">payments</span>
+</div>
+<div class="text-center">
+<span class="font-body-md text-sm font-semibold text-on-surface block">GPU Expense</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Claim</span>
+</div>
+</button>
+<!-- Action 4: Leave -->
+<button class="flex-shrink-0 w-36 glass-card rounded-xl p-4 flex flex-col items-center justify-center gap-3 active:scale-95 transition-transform">
+<div class="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center border border-white/10 text-on-surface">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">beach_access</span>
+</div>
+<div class="text-center">
+<span class="font-body-md text-sm font-semibold text-on-surface block">Request Leave</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">PTO/Sick</span>
+</div>
+</button>
+</div>
+</section>
+<!-- Active Sprint Task Board -->
+<section class="flex flex-col gap-4">
+<div class="flex justify-between items-end pl-1">
+<h2 class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Active Sprint Tasks</h2>
+<button class="text-primary font-label-sm text-label-sm uppercase tracking-wider flex items-center gap-1">
+                    View All <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</button>
+</div>
+<!-- Task Card 1 -->
+<div class="glass-card rounded-xl p-5 flex flex-col gap-4 border-l-2 border-l-secondary">
+<div class="flex justify-between items-start gap-2">
+<div class="inline-flex px-2 py-1 bg-secondary/10 border border-secondary/20 rounded text-secondary font-label-sm text-[10px] uppercase tracking-widest cyan-glow">
+                        [SVC-009 ComfyUI Pipeline]
+                    </div>
+<div class="inline-flex px-2 py-1 bg-error-container/20 border border-error/30 rounded text-error font-label-sm text-[10px] uppercase tracking-widest">
+                        High Priority
+                    </div>
+</div>
+<h3 class="font-body-md text-base font-medium text-on-surface leading-tight">Optimize VAE decoding for SDXL inferences on A100 nodes.</h3>
+<div class="flex items-center gap-3 text-on-surface-variant mt-1">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">schedule</span>
+<span class="font-label-sm text-[11px] tracking-wider">48H DEADLINE</span>
+</div>
+<div class="flex items-center gap-1.5 ml-auto text-secondary">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-label-sm text-[11px] font-bold">3/5 TASKS</span>
+</div>
+</div>
+<!-- Progress Bar -->
+<div class="w-full bg-surface-container-highest rounded-full h-1.5 mt-1 overflow-hidden">
+<div class="bg-secondary h-1.5 rounded-full" style="width: 60%"></div>
+</div>
+</div>
+<!-- Task Card 2 (Secondary) -->
+<div class="glass-card rounded-xl p-5 flex flex-col gap-4 border-l-2 border-l-surface-variant opacity-80">
+<div class="flex justify-between items-start gap-2">
+<div class="inline-flex px-2 py-1 bg-white/5 border border-white/10 rounded text-on-surface-variant font-label-sm text-[10px] uppercase tracking-widest">
+                        [API-042 Gateway]
+                    </div>
+<div class="inline-flex px-2 py-1 bg-white/5 border border-white/10 rounded text-on-surface-variant font-label-sm text-[10px] uppercase tracking-widest">
+                        Normal
+                    </div>
+</div>
+<h3 class="font-body-md text-base font-medium text-on-surface leading-tight">Implement rate limiting for web-ui API endpoints.</h3>
+<div class="flex items-center gap-3 text-on-surface-variant mt-1">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">schedule</span>
+<span class="font-label-sm text-[11px] tracking-wider">5D DEADLINE</span>
+</div>
+<div class="flex items-center gap-1.5 ml-auto text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]">radio_button_unchecked</span>
+<span class="font-label-sm text-[11px] font-bold">0/2 TASKS</span>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 w-full glass-card border-t-0 border-x-0 border-b-0 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] z-50 px-6 py-4 pb-6 flex justify-between items-center rounded-t-3xl">
+<!-- Active Tab: Home -->
+<button class="flex flex-col items-center gap-1 text-primary relative">
+<div class="absolute -top-2 w-8 h-1 bg-primary rounded-full blur-[2px]"></div>
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="font-label-sm text-[10px] tracking-wider">Home</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-on-surface-variant hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined text-2xl">checklist</span>
+<span class="font-label-sm text-[10px] tracking-wider">Tasks</span>
+</button>
+<!-- FAB-style Center Button -->
+<div class="relative -top-6">
+<button class="w-14 h-14 rounded-full bg-primary flex items-center justify-center glow-btn text-on-primary">
+<span class="material-symbols-outlined text-3xl font-bold">add</span>
+</button>
+</div>
+<button class="flex flex-col items-center gap-1 text-on-surface-variant hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined text-2xl">assignment_turned_in</span>
+<span class="font-label-sm text-[10px] tracking-wider">EOD</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-on-surface-variant hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined text-2xl">person</span>
+<span class="font-label-sm text-[10px] tracking-wider">Profile</span>
+</button>
+</nav>
+</body></html>

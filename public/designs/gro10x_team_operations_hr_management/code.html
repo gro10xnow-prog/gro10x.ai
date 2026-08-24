@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>GRO10X AI Agency - Specialist Roster</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;600&amp;family=Inter:wght@400;500;600&amp;family=Montserrat:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary-fixed-dim": "#4cd7f6",
+                    "surface-variant": "#31353d",
+                    "tertiary-fixed-dim": "#b8c4ff",
+                    "surface-container-low": "#181c23",
+                    "on-secondary-container": "#00424e",
+                    "surface-dim": "#0f141b",
+                    "surface-tint": "#12e28c",
+                    "error": "#ffb4ab",
+                    "on-secondary-fixed": "#001f26",
+                    "on-surface-variant": "#bacbbc",
+                    "on-secondary-fixed-variant": "#004e5c",
+                    "tertiary-fixed": "#dde1ff",
+                    "primary-fixed": "#56ffa8",
+                    "surface-bright": "#353941",
+                    "inverse-surface": "#dfe2ed",
+                    "primary": "#46fca3",
+                    "primary-fixed-dim": "#12e28c",
+                    "surface-container-high": "#262a32",
+                    "secondary-container": "#03b5d3",
+                    "on-primary-fixed": "#002110",
+                    "primary-container": "#00df89",
+                    "surface": "#0f141b",
+                    "on-tertiary-fixed-variant": "#334282",
+                    "on-error": "#690005",
+                    "surface-container-lowest": "#0a0e15",
+                    "on-primary-container": "#005d36",
+                    "on-primary-fixed-variant": "#00522f",
+                    "secondary-fixed": "#acedff",
+                    "on-tertiary-container": "#3d4c8c",
+                    "outline": "#859588",
+                    "on-background": "#dfe2ed",
+                    "tertiary": "#d9ddff",
+                    "error-container": "#93000a",
+                    "on-secondary": "#003640",
+                    "on-primary": "#00391f",
+                    "inverse-primary": "#006d40",
+                    "secondary": "#4cd7f6",
+                    "on-surface": "#dfe2ed",
+                    "inverse-on-surface": "#2c3139",
+                    "on-error-container": "#ffdad6",
+                    "surface-container": "#1c2027",
+                    "on-tertiary-fixed": "#001354",
+                    "tertiary-container": "#b4c0ff",
+                    "background": "#0f141b",
+                    "on-tertiary": "#1a2b6a",
+                    "surface-container-highest": "#31353d",
+                    "outline-variant": "#3b4a3f"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "margin-mobile": "20px",
+                    "margin-desktop": "80px",
+                    "gutter": "24px",
+                    "section-gap": "120px",
+                    "container-max": "1280px"
+            },
+            "fontFamily": {
+                    "body-md": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "headline-lg-mobile": ["Montserrat"],
+                    "headline-lg": ["Montserrat"],
+                    "label-sm": ["Geist"],
+                    "display-lg": ["Montserrat"],
+                    "headline-md": ["Montserrat"]
+            },
+            "fontSize": {
+                    "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "headline-lg-mobile": ["32px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                    "headline-lg": ["48px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-sm": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "display-lg": ["72px", {"lineHeight": "1.1", "letterSpacing": "-0.04em", "fontWeight": "800"}],
+                    "headline-md": ["32px", {"lineHeight": "1.3", "fontWeight": "600"}]
+            }
+          },
+        }
+      }
+    </script>
+<style>
+        /* Base Glassmorphism Class */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Interactive Glows */
+        .glow-primary {
+            box-shadow: 0 0 20px rgba(0, 223, 137, 0.15);
+            transition: box-shadow 0.3s ease;
+        }
+        .glow-primary:hover {
+            box-shadow: 0 0 30px rgba(0, 223, 137, 0.3);
+        }
+        
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md text-body-md antialiased min-h-screen flex selection:bg-primary selection:text-on-primary">
+<!-- SideNavBar -->
+<nav class="bg-surface-container-lowest dark:bg-surface-container-lowest fixed left-0 top-0 h-full flex flex-col py-8 w-64 border-r border-white/10 z-50">
+<!-- Header -->
+<div class="px-6 mb-10 flex items-center gap-4">
+<div class="w-10 h-10 rounded-lg overflow-hidden border border-white/10 shrink-0">
+<img class="w-full h-full object-cover" data-alt="A highly detailed, ultra-minimalist vector logo for an AI agency named Core Ops. The logo features sharp, futuristic geometric lines in deep obsidian and vibrant cyber emerald. The background is a solid, dark futuristic void. The overall vibe is high-tech, corporate, and cutting-edge." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDzLU38HXkWPYnbqvVkZshF_zsGmbGGWv1Uel-CLw0JsyLbmgb2upLIKLp0ZXkHAGxspRpMTQAV5_k5eegiDSr6_P9fphh1bpPrbOeRiht4vR_zCiueYb2UwjNtFxkOIuZVSS7d2_tPj_RdssmIq7MoC66QQZ21EUlj8ivzSEaAyDB1v-rkbYwCJwAa1YKeZOWfL1ALdeXJegxHwl-XEXLMvhibm8IRmFO-JuHB2eIKPMjpyM4QFCuC9w"/>
+</div>
+<div>
+<h1 class="font-headline-md text-[20px] leading-tight text-primary">Core Ops</h1>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-1">AI Agency Executive</p>
+</div>
+</div>
+<!-- Navigation Links -->
+<div class="flex-1 flex flex-col gap-2 px-4">
+<a class="flex items-center gap-3 text-on-surface-variant hover:text-secondary px-4 py-3 hover:bg-white/5 transition-colors scale-98 on click rounded-lg" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">dashboard</span>
+<span class="font-label-sm text-label-sm">Overview</span>
+</a>
+<!-- Active State for Personnel -->
+<a class="flex items-center gap-3 text-primary bg-primary/10 rounded-lg px-4 py-3 hover:bg-white/5 transition-colors scale-98 on click" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">groups</span>
+<span class="font-label-sm text-label-sm">Personnel</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant hover:text-secondary px-4 py-3 hover:bg-white/5 transition-colors scale-98 on click rounded-lg" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">payments</span>
+<span class="font-label-sm text-label-sm">Financials</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant hover:text-secondary px-4 py-3 hover:bg-white/5 transition-colors scale-98 on click rounded-lg" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">monitoring</span>
+<span class="font-label-sm text-label-sm">Analytics</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant hover:text-secondary px-4 py-3 hover:bg-white/5 transition-colors scale-98 on click rounded-lg" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">help_center</span>
+<span class="font-label-sm text-label-sm">Support</span>
+</a>
+</div>
+<!-- CTA -->
+<div class="px-4 mt-auto">
+<button class="w-full bg-primary-container text-on-primary-container font-label-sm text-label-sm py-3 rounded-lg glow-primary flex items-center justify-center gap-2 transition-all duration-300 hover:scale-[0.98]">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                New Request
+            </button>
+</div>
+</nav>
+<!-- Main Canvas -->
+<main class="ml-64 flex-1 flex flex-col min-h-screen relative">
+<!-- TopNavBar -->
+<header class="bg-surface/80 backdrop-blur-xl dark:bg-surface/80 flex justify-between items-center w-full px-margin-desktop h-20 docked full-width top-0 sticky border-b border-white/10 shadow-[0_0_20px_rgba(0,223,137,0.1)] z-40">
+<!-- Brand -->
+<div class="font-headline-md text-headline-md font-extrabold text-primary dark:text-primary tracking-tight">
+                Nexus HR Command
+            </div>
+<!-- Nav Links -->
+<nav class="flex items-center gap-8 h-full">
+<a class="h-full flex items-center text-on-surface-variant dark:text-on-surface-variant hover:text-secondary font-label-sm text-label-sm hover:bg-white/5 transition-all duration-300 active:scale-95 px-4" href="#">Dashboard</a>
+<!-- Active State for Roster -->
+<a class="h-full flex items-center text-primary dark:text-primary border-b-2 border-primary pb-1 font-label-sm text-label-sm hover:bg-white/5 transition-all duration-300 active:scale-95 px-4" href="#">Roster</a>
+<a class="h-full flex items-center text-on-surface-variant dark:text-on-surface-variant hover:text-secondary font-label-sm text-label-sm hover:bg-white/5 transition-all duration-300 active:scale-95 px-4" href="#">Reimbursements</a>
+<a class="h-full flex items-center text-on-surface-variant dark:text-on-surface-variant hover:text-secondary font-label-sm text-label-sm hover:bg-white/5 transition-all duration-300 active:scale-95 px-4" href="#">EOD Feed</a>
+</nav>
+<!-- Actions -->
+<div class="flex items-center gap-6">
+<!-- Search (Implicit on right based on JSON) -->
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">search</span>
+</button>
+<div class="flex items-center gap-4 border-l border-white/10 pl-6">
+<button class="text-on-surface-variant hover:text-primary transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-0 right-0 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-white/20 ml-2">
+<img alt="Executive Profile" class="w-full h-full object-cover" data-alt="A professional headshot of a corporate executive in a sleek, minimalist dark office environment. Lighting is dramatic, with subtle neon cyan reflections on the face. High resolution, hyper-realistic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCJw9amdJ3vKunQcpTFJJc0dGuWgmU1R45mZx9g1DiRvZQAqqEyXsAGPVcm7XJcyhHFNpnE_z2ezWPBXNp7ty2lOsp2wJyKp3kmdlEMXQrRGbE7Q3lyUQlz7b27ije2N9SQhhMtvkSBQC4jdd5kmY9s-ykP0MF0vcXyr5JRuyLHJf29-NiMve2mB3oI7_koKsJakf9arfyjOUfQt59G7YgZzEPlKleHwVXO8-xxehGfbSQw9YqBcn2dGQ"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Content Area -->
+<div class="px-margin-desktop py-12 flex-1 flex flex-col gap-16">
+<!-- Page Header & Telemetry -->
+<section class="flex flex-col gap-8">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">GRO10X Agency Roster</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-2 max-w-2xl">Manage AI specialist allocation, monitor real-time compute burns, and review daily progress pipelines.</p>
+</div>
+<!-- Telemetry Strip -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- Stat 1 -->
+<div class="glass-panel rounded-lg p-6 flex items-start justify-between relative overflow-hidden group">
+<div class="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+<div class="relative z-10 flex flex-col gap-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Active on Shift</span>
+<div class="font-headline-md text-[40px] leading-none text-on-surface font-bold">12<span class="text-primary text-[20px] ml-1">/18</span></div>
+</div>
+<div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary relative z-10">
+<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 1;">group</span>
+</div>
+</div>
+<!-- Stat 2 -->
+<div class="glass-panel rounded-lg p-6 flex items-start justify-between relative overflow-hidden group">
+<div class="absolute inset-0 bg-gradient-to-br from-secondary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+<div class="relative z-10 flex flex-col gap-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Daily Hours Logged</span>
+<div class="font-headline-md text-[40px] leading-none text-on-surface font-bold">68.5<span class="text-secondary text-[20px] ml-1">hrs</span></div>
+</div>
+<div class="w-12 h-12 rounded-full bg-secondary/10 flex items-center justify-center text-secondary relative z-10">
+<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 1;">schedule</span>
+</div>
+</div>
+<!-- Stat 3 -->
+<div class="glass-panel rounded-lg p-6 flex items-start justify-between relative overflow-hidden group">
+<div class="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+<div class="relative z-10 flex flex-col gap-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Pending EOD Reports</span>
+<div class="font-headline-md text-[40px] leading-none text-on-surface font-bold">2</div>
+</div>
+<div class="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center text-on-surface-variant relative z-10">
+<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 1;">pending_actions</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Main Layout: Grid + Side Panel -->
+<section class="grid grid-cols-1 xl:grid-cols-12 gap-gutter">
+<!-- Specialist Roster Grid (Left 8 Cols) -->
+<div class="xl:col-span-8 flex flex-col gap-6">
+<div class="flex justify-between items-end">
+<h3 class="font-headline-md text-[24px] text-on-surface">Active Deployment</h3>
+<div class="flex items-center gap-3">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Currency view:</span>
+<div class="glass-panel rounded-full p-1 flex items-center">
+<button class="px-4 py-1.5 rounded-full bg-surface-bright text-on-surface font-label-sm text-label-sm transition-colors">USD</button>
+<button class="px-4 py-1.5 rounded-full text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm transition-colors">BDT</button>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Specialist Card 1 -->
+<div class="glass-panel rounded-xl p-6 flex flex-col gap-6 relative group overflow-hidden">
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-full -mr-16 -mt-16 transition-transform group-hover:scale-110"></div>
+<div class="flex items-start gap-4 relative z-10">
+<div class="w-14 h-14 rounded-full overflow-hidden border-2 border-primary/30">
+<img class="w-full h-full object-cover" data-alt="A portrait of a young asian male tech specialist wearing a dark hoodie. Minimalist cyber aesthetic with soft green neon rim light on the side of his face. Deep black background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCr_501BRyvk_L_-WyTI1zjFJ1nzGAXPFzPPM_6sfpDPtEeVsA_op8VkcDKJQqPIMIDmq8gRrpZh1MjGgpaMLIJQgHWHt2n1h_ygNrZxoHcxIP-qV1yg7dTmFUNQmBVyF5j2pR-07a-QR12Oansjw-YZBhYRcUXugRExHzE12XUAbSeMOFIK5R1Txo7aRUnBiOyPXxZ4sOrM7yBV5K9rXzMajD4iTDoDo8DXpEcQeCE18D8D4MOZWKVbw"/>
+</div>
+<div class="flex-1">
+<h4 class="font-body-lg text-on-surface font-semibold">Tarik Rahman</h4>
+<p class="font-label-sm text-secondary mt-1">Senior ComfyUI Lead</p>
+</div>
+<!-- Status Pill -->
+<div class="flex items-center gap-2 bg-primary/10 border border-primary/20 px-3 py-1.5 rounded-full shrink-0">
+<div class="w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_#00df89] animate-pulse"></div>
+<span class="font-label-sm text-primary text-[10px]">Clocked In (05h 22m)</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4 border-t border-white/5 pt-4 relative z-10">
+<div>
+<span class="font-label-sm text-on-surface-variant block mb-1">Sprint Load</span>
+<span class="font-body-md text-on-surface font-medium">4 Active Tasks</span>
+</div>
+<div>
+<span class="font-label-sm text-on-surface-variant block mb-1">Base Salary</span>
+<span class="font-body-md text-on-surface font-medium">$2,400 / mo</span>
+</div>
+</div>
+</div>
+<!-- Specialist Card 2 -->
+<div class="glass-panel rounded-xl p-6 flex flex-col gap-6 relative group overflow-hidden opacity-75 hover:opacity-100 transition-opacity">
+<div class="flex items-start gap-4 relative z-10">
+<div class="w-14 h-14 rounded-full overflow-hidden border-2 border-white/10 grayscale group-hover:grayscale-0 transition-all">
+<img class="w-full h-full object-cover" data-alt="A portrait of an asian female UI designer in a sleek black turtleneck. Dark futuristic studio lighting with a subtle blue rim light. Serious expression. Hyper detailed." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB6neIwG7TwI8sigAE-pqipAHSX0PqQWmr3fPr4HOVhDcw-zNl3xWoL9CxCvPTWndfexKIfKWGJuHpACVfY5zW-HfX0CRNCVYv4aG6ofM_eyW9Igp57OyWWVTggCAkZIJ68X_ySE_w6809v3PzDyu5-khEjyXeTtmK5XQ0CqyJ1uWdob-MFMOX6xybaBUuTZQiHkJWiwJUO0B8Cmjc5MMNJRWHdKGQVCSwsqeLtVp1aYWXgv1z8IkTdQA"/>
+</div>
+<div class="flex-1">
+<h4 class="font-body-lg text-on-surface font-semibold">Nusrat Jahan</h4>
+<p class="font-label-sm text-secondary mt-1">LLM Data Engineer</p>
+</div>
+<!-- Status Pill -->
+<div class="flex items-center gap-2 bg-white/5 border border-white/10 px-3 py-1.5 rounded-full shrink-0">
+<div class="w-2 h-2 rounded-full bg-surface-variant"></div>
+<span class="font-label-sm text-on-surface-variant text-[10px]">Offline (Last seen 8h ago)</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4 border-t border-white/5 pt-4 relative z-10">
+<div>
+<span class="font-label-sm text-on-surface-variant block mb-1">Sprint Load</span>
+<span class="font-body-md text-on-surface font-medium">2 Active Tasks</span>
+</div>
+<div>
+<span class="font-label-sm text-on-surface-variant block mb-1">Base Salary</span>
+<span class="font-body-md text-on-surface font-medium">$1,800 / mo</span>
+</div>
+</div>
+</div>
+<!-- Specialist Card 3 -->
+<div class="glass-panel rounded-xl p-6 flex flex-col gap-6 relative group overflow-hidden">
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-full -mr-16 -mt-16 transition-transform group-hover:scale-110"></div>
+<div class="flex items-start gap-4 relative z-10">
+<div class="w-14 h-14 rounded-full overflow-hidden border-2 border-primary/30">
+<img class="w-full h-full object-cover" data-alt="A portrait of a male full stack developer wearing glasses. Dark minimalist environment. Intense cyber green light reflecting on his glasses. Cinematic and professional." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDoYdTx2IDYh_LBNp5ZGCepcG2-GUAUl4LPi0QwsRZgclp09nomw_O6-Cu_2RgMOFepGJB5OZNZjCEW0MDwpEezbeONdZvqXeTy_8_SlEkNNJrr4d5VJke17J8Ix65Yf4MhGSXTRYBoeLs4RQhlhyNjE-vENejTmLUO96Kug-QIxHvC5tZI5AsNxHpTsgWWxDBbV9RRPTj5dNnlcVe7WrM_qC_uF10XoOgPWvw0potLNoBcG3G4QUl_tg"/>
+</div>
+<div class="flex-1">
+<h4 class="font-body-lg text-on-surface font-semibold">Fahim Ahmed</h4>
+<p class="font-label-sm text-secondary mt-1">API Integrations</p>
+</div>
+<!-- Status Pill -->
+<div class="flex items-center gap-2 bg-primary/10 border border-primary/20 px-3 py-1.5 rounded-full shrink-0">
+<div class="w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_#00df89] animate-pulse"></div>
+<span class="font-label-sm text-primary text-[10px]">Clocked In (02h 10m)</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4 border-t border-white/5 pt-4 relative z-10">
+<div>
+<span class="font-label-sm text-on-surface-variant block mb-1">Sprint Load</span>
+<span class="font-body-md text-on-surface font-medium">6 Active Tasks</span>
+</div>
+<div>
+<span class="font-label-sm text-on-surface-variant block mb-1">Base Salary</span>
+<span class="font-body-md text-on-surface font-medium">$2,100 / mo</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Daily EOD Stream (Right 4 Cols) -->
+<div class="xl:col-span-4 flex flex-col gap-6">
+<h3 class="font-headline-md text-[24px] text-on-surface">Live EOD Stream</h3>
+<div class="glass-panel rounded-xl p-2 h-[500px] flex flex-col">
+<div class="flex-1 overflow-y-auto pr-2 space-y-2 p-2">
+<!-- Feed Item 1 -->
+<div class="bg-surface-container-low/50 hover:bg-surface-container-highest/50 transition-colors p-4 rounded-lg border border-white/5">
+<div class="flex items-center gap-3 mb-3">
+<div class="w-8 h-8 rounded-full overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A small avatar of a female professional. Cyberpunk lighting aesthetic. Dark background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCiX6wq4bzKcbSvuAmyJ03CJhrdHDK8gXWSdpQd2oFVweshDGmEHFI899a-rb7x6N6tF4dhyjcHRJK2kdykAIRDZmweUup1XP6yDI2cUAf4QL-ap6TWGBADUH5AjjAAdIvqXMWL-cfMxui_N_DP1eoGXQfiPbmBMBYM5b9TpuDLtms_soBrQXuj4IXVSZLzpW5PfxrWBl5c43nNs8bGFcY_H-01ulWr_fap7nuuqAHd_Iw7iMaeg0mh7A"/>
+</div>
+<div>
+<div class="font-body-md font-medium text-on-surface text-sm">Sara Haque</div>
+<div class="font-label-sm text-on-surface-variant text-[10px]">2 mins ago</div>
+</div>
+</div>
+<div class="space-y-3">
+<div>
+<span class="font-label-sm text-secondary block mb-1">Completed Features:</span>
+<p class="font-body-md text-on-surface/80 text-sm">Finalized custom LoRA training pipeline for Client X. Reduced generation time by 15%.</p>
+</div>
+<div>
+<span class="font-label-sm text-error block mb-1">Blockers:</span>
+<p class="font-body-md text-on-surface/80 text-sm">Awaiting RunPod instance quota increase from ops team.</p>
+</div>
+</div>
+</div>
+<!-- Feed Item 2 -->
+<div class="bg-surface-container-low/50 hover:bg-surface-container-highest/50 transition-colors p-4 rounded-lg border border-white/5">
+<div class="flex items-center gap-3 mb-3">
+<div class="w-8 h-8 rounded-full overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A small avatar of a male developer. Cool cyan lighting aesthetic. Dark background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD0uofuulLFfmEYinXbcc9Ya8cnNKKX91huuONKrQGJVDGLr3AAE8bW63kAsJiHalolL8n4vLAV5k8f48HEiigE5HWQZP8b9i3eVAUJJegIFetd8XsKIFMDPp-k4C_DWGBBctkFbY3vL-wuy8qAtRKe4Shs3hunaF6dQlw11-qRa7itNIgVBQm-JPsGym5wouY2ngPGnDuT1SAkgztS83SF2wxF0jKiK3hGgBp86T5IU-5IIA1KoJEMwA"/>
+</div>
+<div>
+<div class="font-body-md font-medium text-on-surface text-sm">Zayed Khan</div>
+<div class="font-label-sm text-on-surface-variant text-[10px]">1 hr ago</div>
+</div>
+</div>
+<div class="space-y-3">
+<div>
+<span class="font-label-sm text-secondary block mb-1">Tomorrow's Targets:</span>
+<p class="font-body-md text-on-surface/80 text-sm">Implement multi-agent routing logic using LangChain. Deploy staging server.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Reimbursement Claims Table -->
+<section class="flex flex-col gap-6">
+<div class="flex justify-between items-end">
+<h3 class="font-headline-md text-[24px] text-on-surface">Compute &amp; Tool Reimbursements</h3>
+<button class="font-label-sm text-primary hover:text-white transition-colors flex items-center gap-1">
+                        View All History <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</button>
+</div>
+<div class="glass-panel rounded-xl overflow-hidden w-full">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-white/10 bg-surface-bright/20">
+<th class="py-4 px-6 font-label-sm text-on-surface-variant font-medium">Specialist Name</th>
+<th class="py-4 px-6 font-label-sm text-on-surface-variant font-medium">Tool / Category</th>
+<th class="py-4 px-6 font-label-sm text-on-surface-variant font-medium">Receipt</th>
+<th class="py-4 px-6 font-label-sm text-on-surface-variant font-medium">Claim Amount</th>
+<th class="py-4 px-6 font-label-sm text-on-surface-variant font-medium text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-white/5">
+<tr class="hover:bg-white/[0.02] transition-colors group">
+<td class="py-4 px-6">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">TR</div>
+<span class="font-body-md text-on-surface font-medium">Tarik Rahman</span>
+</div>
+</td>
+<td class="py-4 px-6">
+<div class="inline-flex items-center px-2.5 py-0.5 rounded-full font-label-sm text-secondary bg-secondary/10 border border-secondary/20">
+                                        RunPod GPU Compute
+                                    </div>
+</td>
+<td class="py-4 px-6">
+<a class="flex items-center gap-1 text-on-surface-variant hover:text-primary transition-colors font-body-md text-sm" href="#">
+<span class="material-symbols-outlined text-[18px]">receipt_long</span> inv_992.pdf
+                                    </a>
+</td>
+<td class="py-4 px-6 font-body-md text-on-surface font-semibold">$145.50</td>
+<td class="py-4 px-6 text-right">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="px-3 py-1.5 rounded border border-white/10 text-on-surface-variant hover:text-error hover:border-error hover:bg-error/10 font-label-sm transition-all">Reject</button>
+<button class="px-3 py-1.5 rounded bg-primary/20 text-primary border border-primary/30 hover:bg-primary hover:text-on-primary font-label-sm glow-primary transition-all">Approve</button>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-white/[0.02] transition-colors group">
+<td class="py-4 px-6">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-secondary/10 flex items-center justify-center text-secondary font-bold text-xs">SH</div>
+<span class="font-body-md text-on-surface font-medium">Sara Haque</span>
+</div>
+</td>
+<td class="py-4 px-6">
+<div class="inline-flex items-center px-2.5 py-0.5 rounded-full font-label-sm text-tertiary-fixed-dim bg-tertiary-fixed-dim/10 border border-tertiary-fixed-dim/20">
+                                        Midjourney Pro Plan
+                                    </div>
+</td>
+<td class="py-4 px-6">
+<a class="flex items-center gap-1 text-on-surface-variant hover:text-primary transition-colors font-body-md text-sm" href="#">
+<span class="material-symbols-outlined text-[18px]">receipt_long</span> sub_mj_oct.pdf
+                                    </a>
+</td>
+<td class="py-4 px-6 font-body-md text-on-surface font-semibold">$60.00</td>
+<td class="py-4 px-6 text-right">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="px-3 py-1.5 rounded border border-white/10 text-on-surface-variant hover:text-error hover:border-error hover:bg-error/10 font-label-sm transition-all">Reject</button>
+<button class="px-3 py-1.5 rounded bg-primary/20 text-primary border border-primary/30 hover:bg-primary hover:text-on-primary font-label-sm glow-primary transition-all">Approve</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</div>
+</main>
+</body></html>

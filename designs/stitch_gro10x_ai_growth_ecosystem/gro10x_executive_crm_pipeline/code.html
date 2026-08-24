@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>GRO10X Admin Web Panel - CRM Pipeline</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Montserrat:wght@600;700;800&amp;family=Geist:wght@600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "secondary-fixed": "#acedff",
+                      "on-primary-fixed-variant": "#00522f",
+                      "secondary": "#4cd7f6",
+                      "outline": "#859588",
+                      "on-primary-fixed": "#002110",
+                      "surface-container": "#1c2027",
+                      "on-primary-container": "#005d36",
+                      "surface-container-high": "#262a32",
+                      "surface-tint": "#12e28c",
+                      "surface-container-low": "#181c23",
+                      "primary": "#46fca3",
+                      "on-background": "#dfe2ed",
+                      "error": "#ffb4ab",
+                      "on-tertiary-fixed": "#001354",
+                      "secondary-fixed-dim": "#4cd7f6",
+                      "error-container": "#93000a",
+                      "tertiary-container": "#b4c0ff",
+                      "tertiary-fixed": "#dde1ff",
+                      "on-primary": "#00391f",
+                      "on-tertiary-fixed-variant": "#334282",
+                      "surface-bright": "#353941",
+                      "surface-container-lowest": "#0a0e15",
+                      "secondary-container": "#03b5d3",
+                      "surface-container-highest": "#31353d",
+                      "inverse-on-surface": "#2c3139",
+                      "background": "#070B12",
+                      "surface-variant": "#31353d",
+                      "surface": "#070B12",
+                      "on-surface-variant": "#bacbbc",
+                      "on-secondary-fixed": "#001f26",
+                      "on-error-container": "#ffdad6",
+                      "tertiary": "#d9ddff",
+                      "on-secondary": "#003640",
+                      "on-error": "#690005",
+                      "primary-container": "#00df89",
+                      "on-secondary-fixed-variant": "#004e5c",
+                      "surface-dim": "#070B12",
+                      "on-surface": "#dfe2ed",
+                      "on-tertiary": "#1a2b6a",
+                      "on-secondary-container": "#00424e",
+                      "inverse-primary": "#006d40",
+                      "outline-variant": "#3b4a3f",
+                      "tertiary-fixed-dim": "#b8c4ff",
+                      "primary-fixed": "#56ffa8",
+                      "inverse-surface": "#dfe2ed",
+                      "primary-fixed-dim": "#12e28c",
+                      "on-tertiary-container": "#3d4c8c"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.5rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "margin-mobile": "20px",
+                      "section-gap": "120px",
+                      "container-max": "1280px",
+                      "margin-desktop": "80px",
+                      "gutter": "24px"
+              },
+              "fontFamily": {
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "headline-lg": [
+                              "Montserrat"
+                      ],
+                      "display-lg": [
+                              "Montserrat"
+                      ],
+                      "headline-lg-mobile": [
+                              "Montserrat"
+                      ],
+                      "headline-md": [
+                              "Montserrat"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "label-sm": [
+                              "Geist"
+                      ]
+              },
+              "fontSize": {
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "display-lg": [
+                              "72px",
+                              {
+                                      "lineHeight": "1.1",
+                                      "letterSpacing": "-0.04em",
+                                      "fontWeight": "800"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-md": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "1",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .glow-button {
+            box-shadow: 0 0 20px rgba(0, 223, 137, 0.3);
+            transition: all 0.3s ease;
+        }
+        .glow-button:hover {
+            box-shadow: 0 0 30px rgba(0, 223, 137, 0.5);
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+      </style>
+</head>
+<body class="bg-background text-on-surface font-body-lg min-h-screen">
+<!-- TopNavBar -->
+<nav class="bg-background/80 backdrop-blur-xl fixed top-0 w-full z-50 shadow-lg shadow-primary/5">
+<div class="flex items-center justify-between px-margin-desktop py-4 w-full max-w-container-max mx-auto border-b border-white/10">
+<div class="flex items-center gap-8">
+<div class="font-headline-md text-headline-md font-bold text-primary">
+                    GRO10X AI
+                </div>
+<!-- Search Bar -->
+<div class="hidden md:flex relative group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="bg-[#0F172A] border border-white/10 rounded-lg pl-10 pr-4 py-2 text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-secondary focus:shadow-[inset_0_0_10px_rgba(3,181,211,0.2)] transition-all w-64" placeholder="Search leads, clients..." type="text"/>
+</div>
+</div>
+<!-- Navigation Links -->
+<div class="hidden md:flex items-center gap-6">
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-on-surface transition-colors hover:bg-white/5 px-3 py-2 rounded-md duration-200" href="#">Dashboard</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-on-surface transition-colors hover:bg-white/5 px-3 py-2 rounded-md duration-200" href="#">Action Center</a>
+<a class="font-body-md text-body-md text-primary border-b-2 border-primary pb-1 px-3 py-2" href="#">CRM Pipeline</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-on-surface transition-colors hover:bg-white/5 px-3 py-2 rounded-md duration-200" href="#">Telemetry</a>
+</div>
+<!-- Trailing Actions -->
+<div class="flex items-center gap-4">
+<button class="hidden md:flex items-center gap-2 bg-primary text-background font-label-sm text-label-sm px-4 py-2 rounded-lg glow-button active:scale-95 duration-100">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                    Create Report
+                </button>
+<div class="flex items-center gap-2">
+<button class="text-on-surface-variant hover:text-on-surface hover:bg-white/5 p-2 rounded-full transition-all duration-200 active:scale-95">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:text-on-surface hover:bg-white/5 p-2 rounded-full transition-all duration-200 active:scale-95">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="w-10 h-10 rounded-full overflow-hidden border border-white/10 ml-2">
+<img alt="Executive User Profile" class="w-full h-full object-cover" data-alt="A highly detailed close-up portrait of a professional executive user profile picture, modern corporate lighting, dark moody background with subtle neon green edge light, sharp focus, professional photography style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCJ8aIjFZwTvzV94REqMoAe96pZtkEUK8NsIVZDuuevOEfAxnDJ_Igy0D8Oom8RID2JhiwB5aGFL_YU1FIj-ICGSNqUU-k5ieCnSHzCVzxAxdCdUL4VvJWyxRd8Kt-euzpbHliJVGtOJSJ1HJc6TCh6MDeZGhcdzdqRJO4axM549AGzAZJ5fPscJpxhVhR66ouKlnXfRr3M66AfkekA5pxLWAWJKVX9tkhrYn3-Up7eggZXvmG9bQ0H6Q"/>
+</div>
+</div>
+</div>
+</div>
+</nav>
+<!-- Main Content -->
+<main class="pt-32 pb-section-gap px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto">
+<!-- Header & Summary Cards -->
+<div class="mb-12">
+<div class="flex justify-between items-end mb-8">
+<div>
+<h1 class="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface mb-2">CRM Pipeline</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Manage and accelerate your high-value client engagements.</p>
+</div>
+<button class="md:hidden bg-primary text-background font-label-sm text-label-sm px-4 py-2 rounded-lg glow-button">
+<span class="material-symbols-outlined text-[18px] align-middle mr-1">add</span> New Lead
+                </button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+<!-- Card 1 -->
+<div class="glass-card p-6 rounded-xl flex flex-col justify-between">
+<div class="flex justify-between items-center mb-4">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Total Inquiries</span>
+<span class="material-symbols-outlined text-secondary">group</span>
+</div>
+<div>
+<div class="font-headline-md text-headline-md text-on-surface">48</div>
+<div class="font-body-md text-body-md text-on-surface-variant mt-1">Leads this month</div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="glass-card p-6 rounded-xl flex flex-col justify-between relative overflow-hidden group">
+<div class="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<div class="flex justify-between items-center mb-4 relative z-10">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">High-Intent Leads</span>
+<span class="material-symbols-outlined text-primary shadow-[0_0_15px_rgba(70,252,163,0.5)] rounded-full bg-primary/10">verified</span>
+</div>
+<div class="relative z-10">
+<div class="font-headline-md text-headline-md text-primary">18 <span class="text-lg text-primary/70">Qualified</span></div>
+<div class="font-body-md text-body-md text-on-surface-variant mt-1">&gt;75 Score</div>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="glass-card p-6 rounded-xl flex flex-col justify-between">
+<div class="flex justify-between items-center mb-4">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Projected Pipeline</span>
+<span class="material-symbols-outlined text-secondary">trending_up</span>
+</div>
+<div>
+<div class="font-headline-md text-headline-md text-on-surface">$32,500</div>
+<div class="font-body-md text-body-md text-on-surface-variant mt-1">৳38.3 Lakh</div>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="glass-card p-6 rounded-xl flex flex-col justify-between">
+<div class="flex justify-between items-center mb-4">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Win Rate</span>
+<span class="material-symbols-outlined text-secondary">check_circle</span>
+</div>
+<div>
+<div class="font-headline-md text-headline-md text-on-surface">38.5%</div>
+<div class="font-body-md text-body-md text-on-surface-variant mt-1">Conversion</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Toolbar -->
+<div class="flex flex-col md:flex-row gap-4 justify-between items-center mb-8 glass-card p-4 rounded-xl">
+<div class="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+<!-- Search -->
+<div class="relative w-full sm:w-64">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">search</span>
+<input class="w-full bg-[#0F172A] border border-white/10 rounded-lg pl-9 pr-4 py-2 text-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-secondary focus:shadow-[inset_0_0_10px_rgba(3,181,211,0.2)] transition-all" placeholder="Search pipeline..." type="text"/>
+</div>
+<!-- Filters -->
+<select class="bg-[#0F172A] border border-white/10 rounded-lg px-4 py-2 text-sm text-on-surface focus:outline-none focus:border-secondary transition-all appearance-none pr-8 relative">
+<option value="">All Verticals</option>
+<option value="v1">Retail AI</option>
+<option value="v2">Fintech AI</option>
+<option value="v3">Healthcare AI</option>
+</select>
+<select class="bg-[#0F172A] border border-white/10 rounded-lg px-4 py-2 text-sm text-on-surface focus:outline-none focus:border-secondary transition-all appearance-none pr-8">
+<option value="">Intent Score</option>
+<option value="high">High (&gt;75)</option>
+<option value="med">Medium (50-75)</option>
+</select>
+</div>
+<div class="flex items-center gap-4 w-full md:w-auto justify-end">
+<!-- Currency Toggle -->
+<div class="flex bg-[#0F172A] border border-white/10 rounded-lg p-1">
+<button class="px-3 py-1 rounded-md bg-secondary/20 text-secondary text-sm font-medium">USD</button>
+<button class="px-3 py-1 rounded-md text-on-surface-variant hover:text-on-surface text-sm font-medium">BDT</button>
+</div>
+<!-- Quick Intake FAB (Desktop) -->
+<button class="hidden md:flex items-center gap-2 bg-primary text-background font-label-sm text-label-sm px-4 py-2.5 rounded-lg glow-button active:scale-95 duration-100">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                    Quick Intake
+                </button>
+</div>
+</div>
+<!-- Kanban Board -->
+<div class="flex overflow-x-auto pb-8 gap-6 scrollbar-hide h-[600px]">
+<!-- Column 1: New Inquiries -->
+<div class="min-w-[320px] w-[320px] flex flex-col gap-4">
+<div class="flex items-center justify-between border-b border-white/10 pb-3">
+<h3 class="font-label-sm text-label-sm text-on-surface uppercase tracking-widest flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+                        New Inquiries
+                        <span class="bg-white/5 px-2 py-0.5 rounded text-on-surface-variant">12</span>
+</h3>
+</div>
+<!-- Deal Card -->
+<div class="glass-card p-4 rounded-xl cursor-grab hover:border-secondary/50 transition-colors">
+<div class="flex justify-between items-start mb-3">
+<h4 class="font-headline-md text-body-lg text-on-surface font-semibold">Nexus Retail Group</h4>
+<button class="text-on-surface-variant hover:text-on-surface"><span class="material-symbols-outlined text-sm">more_horiz</span></button>
+</div>
+<div class="inline-block bg-secondary/10 text-secondary border border-secondary/20 px-2 py-1 rounded-full text-xs font-medium mb-4">
+                        [SVC-001: Mobile AI App]
+                    </div>
+<div class="flex justify-between items-end mb-4">
+<div>
+<div class="font-body-md text-sm text-on-surface">$12,000</div>
+<div class="text-xs text-on-surface-variant">৳14.1 Lakh</div>
+</div>
+<div class="text-right">
+<div class="text-xs text-on-surface-variant mb-1">Score</div>
+<div class="w-16 h-1.5 bg-white/10 rounded-full overflow-hidden">
+<div class="w-[45%] h-full bg-yellow-500 rounded-full"></div>
+</div>
+</div>
+</div>
+<div class="flex gap-2 pt-3 border-t border-white/5">
+<button class="flex-1 flex items-center justify-center gap-1 bg-white/5 hover:bg-white/10 text-on-surface-variant py-1.5 rounded-md text-xs transition-colors">
+<span class="material-symbols-outlined text-[14px]">chat</span> WhatsApp
+                        </button>
+<button class="flex-1 flex items-center justify-center gap-1 bg-white/5 hover:bg-white/10 text-on-surface-variant py-1.5 rounded-md text-xs transition-colors">
+<span class="material-symbols-outlined text-[14px]">mail</span> Email
+                        </button>
+</div>
+</div>
+<!-- Deal Card -->
+<div class="glass-card p-4 rounded-xl cursor-grab hover:border-secondary/50 transition-colors">
+<div class="flex justify-between items-start mb-3">
+<h4 class="font-headline-md text-body-lg text-on-surface font-semibold">Apex Logistics</h4>
+<button class="text-on-surface-variant hover:text-on-surface"><span class="material-symbols-outlined text-sm">more_horiz</span></button>
+</div>
+<div class="inline-block bg-primary/10 text-primary border border-primary/20 px-2 py-1 rounded-full text-xs font-medium mb-4">
+                        [SVC-003: Predictive Analytics]
+                    </div>
+<div class="flex justify-between items-end mb-4">
+<div>
+<div class="font-body-md text-sm text-on-surface">$25,000</div>
+<div class="text-xs text-on-surface-variant">৳29.5 Lakh</div>
+</div>
+<div class="text-right">
+<div class="text-xs text-on-surface-variant mb-1">Score</div>
+<div class="w-16 h-1.5 bg-white/10 rounded-full overflow-hidden">
+<div class="w-[85%] h-full bg-primary rounded-full shadow-[0_0_5px_rgba(70,252,163,0.5)]"></div>
+</div>
+</div>
+</div>
+<div class="flex gap-2 pt-3 border-t border-white/5">
+<button class="flex-1 flex items-center justify-center gap-1 bg-white/5 hover:bg-white/10 text-on-surface-variant py-1.5 rounded-md text-xs transition-colors">
+<span class="material-symbols-outlined text-[14px]">chat</span> WhatsApp
+                        </button>
+<button class="flex-1 flex items-center justify-center gap-1 bg-white/5 hover:bg-white/10 text-on-surface-variant py-1.5 rounded-md text-xs transition-colors">
+<span class="material-symbols-outlined text-[14px]">mail</span> Email
+                        </button>
+</div>
+</div>
+</div>
+<!-- Column 2: Strategy Audit -->
+<div class="min-w-[320px] w-[320px] flex flex-col gap-4">
+<div class="flex items-center justify-between border-b border-white/10 pb-3">
+<h3 class="font-label-sm text-label-sm text-on-surface uppercase tracking-widest flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-blue-400"></span>
+                        Strategy Audit
+                        <span class="bg-white/5 px-2 py-0.5 rounded text-on-surface-variant">5</span>
+</h3>
+</div>
+<!-- Deal Card -->
+<div class="glass-card p-4 rounded-xl cursor-grab hover:border-secondary/50 transition-colors">
+<div class="flex justify-between items-start mb-3">
+<h4 class="font-headline-md text-body-lg text-on-surface font-semibold">Vertex Health</h4>
+<button class="text-on-surface-variant hover:text-on-surface"><span class="material-symbols-outlined text-sm">more_horiz</span></button>
+</div>
+<div class="inline-block bg-purple-500/10 text-purple-400 border border-purple-500/20 px-2 py-1 rounded-full text-xs font-medium mb-4">
+                        [SVC-002: NLP Data Parser]
+                    </div>
+<div class="flex justify-between items-end mb-4">
+<div>
+<div class="font-body-md text-sm text-on-surface">$8,500</div>
+<div class="text-xs text-on-surface-variant">৳10.0 Lakh</div>
+</div>
+<div class="text-right">
+<div class="text-xs text-on-surface-variant mb-1">Score</div>
+<div class="w-16 h-1.5 bg-white/10 rounded-full overflow-hidden">
+<div class="w-[60%] h-full bg-blue-400 rounded-full"></div>
+</div>
+</div>
+</div>
+<div class="flex gap-2 pt-3 border-t border-white/5">
+<button class="flex-1 flex items-center justify-center gap-1 bg-white/5 hover:bg-white/10 text-on-surface-variant py-1.5 rounded-md text-xs transition-colors">
+<span class="material-symbols-outlined text-[14px]">chat</span> WhatsApp
+                        </button>
+<button class="flex-1 flex items-center justify-center gap-1 bg-white/5 hover:bg-white/10 text-on-surface-variant py-1.5 rounded-md text-xs transition-colors">
+<span class="material-symbols-outlined text-[14px]">mail</span> Email
+                        </button>
+</div>
+</div>
+</div>
+<!-- Column 3: Proposal Sent -->
+<div class="min-w-[320px] w-[320px] flex flex-col gap-4">
+<div class="flex items-center justify-between border-b border-white/10 pb-3">
+<h3 class="font-label-sm text-label-sm text-on-surface uppercase tracking-widest flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-purple-400"></span>
+                        Proposal Sent
+                        <span class="bg-white/5 px-2 py-0.5 rounded text-on-surface-variant">3</span>
+</h3>
+</div>
+<!-- Deal Card -->
+<div class="glass-card p-4 rounded-xl cursor-grab border-l-2 border-l-primary/50 hover:border-secondary/50 transition-colors">
+<div class="flex justify-between items-start mb-3">
+<h4 class="font-headline-md text-body-lg text-on-surface font-semibold">Orion FinTech</h4>
+<button class="text-on-surface-variant hover:text-on-surface"><span class="material-symbols-outlined text-sm">more_horiz</span></button>
+</div>
+<div class="inline-block bg-primary/10 text-primary border border-primary/20 px-2 py-1 rounded-full text-xs font-medium mb-4">
+                        [SVC-004: Fraud Detection AI]
+                    </div>
+<div class="flex justify-between items-end mb-4">
+<div>
+<div class="font-body-md text-sm text-on-surface">$42,000</div>
+<div class="text-xs text-on-surface-variant">৳49.5 Lakh</div>
+</div>
+<div class="text-right">
+<div class="text-xs text-on-surface-variant mb-1">Score</div>
+<div class="w-16 h-1.5 bg-white/10 rounded-full overflow-hidden">
+<div class="w-[92%] h-full bg-primary rounded-full shadow-[0_0_8px_rgba(70,252,163,0.8)]"></div>
+</div>
+</div>
+</div>
+<div class="flex gap-2 pt-3 border-t border-white/5">
+<button class="flex-1 flex items-center justify-center gap-1 bg-white/5 hover:bg-white/10 text-on-surface-variant py-1.5 rounded-md text-xs transition-colors">
+<span class="material-symbols-outlined text-[14px]">chat</span> WhatsApp
+                        </button>
+<button class="flex-1 flex items-center justify-center gap-1 bg-white/5 hover:bg-white/10 text-on-surface-variant py-1.5 rounded-md text-xs transition-colors">
+<span class="material-symbols-outlined text-[14px]">mail</span> Email
+                        </button>
+</div>
+</div>
+</div>
+<!-- Column 4: Client Review -->
+<div class="min-w-[320px] w-[320px] flex flex-col gap-4">
+<div class="flex items-center justify-between border-b border-white/10 pb-3">
+<h3 class="font-label-sm text-label-sm text-on-surface uppercase tracking-widest flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-orange-400"></span>
+                        Client Review
+                        <span class="bg-white/5 px-2 py-0.5 rounded text-on-surface-variant">2</span>
+</h3>
+</div>
+<!-- Empty State -->
+<div class="border border-dashed border-white/10 rounded-xl p-6 text-center text-on-surface-variant text-sm">
+                    No deals in review
+                 </div>
+</div>
+<!-- Column 5: Won & Closed -->
+<div class="min-w-[320px] w-[320px] flex flex-col gap-4">
+<div class="flex items-center justify-between border-b border-white/10 pb-3">
+<h3 class="font-label-sm text-label-sm text-on-surface uppercase tracking-widest flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+                        Won &amp; Closed
+                        <span class="bg-white/5 px-2 py-0.5 rounded text-on-surface-variant">8</span>
+</h3>
+</div>
+<!-- Deal Card (Won) -->
+<div class="glass-card p-4 rounded-xl cursor-default opacity-80">
+<div class="flex justify-between items-start mb-3">
+<h4 class="font-headline-md text-body-lg text-on-surface font-semibold line-through decoration-white/30">Lumina Corp</h4>
+<span class="material-symbols-outlined text-primary text-sm">check_circle</span>
+</div>
+<div class="inline-block bg-secondary/10 text-secondary border border-secondary/20 px-2 py-1 rounded-full text-xs font-medium mb-4">
+                        [SVC-001: Mobile AI App]
+                    </div>
+<div class="flex justify-between items-end">
+<div>
+<div class="font-body-md text-sm text-on-surface">$15,000</div>
+<div class="text-xs text-on-surface-variant">৳17.7 Lakh</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>
