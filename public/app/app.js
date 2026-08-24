@@ -10,6 +10,7 @@
 (function initAdminApp() {
   const ROUTES = {
     '#dashboard':  { module: 'dashboard.js',  title: 'Executive Overview', icon: '📊' },
+    '#engines':    { module: 'engines.js',    title: '5-Engine Growth Operations', icon: '🚀' },
     '#analytics':  { module: 'analytics.js',  title: 'Agency Analytics & Scorecards', icon: '📈' },
     '#crm':        { module: 'crm.js',        title: 'Client Intelligence & CRM', icon: '👥' },
     '#kanban':     { module: 'kanban.js',     title: 'Production Pipeline Hub', icon: '📋' },
@@ -348,6 +349,7 @@
     cmdPaletteItems = [
       // Navigation
       { type: 'Navigation', icon: '📊', title: 'Executive Overview', hash: '#dashboard' },
+      { type: 'Navigation', icon: '🚀', title: '5-Engine Growth Operations Cockpit', hash: '#engines' },
       { type: 'Navigation', icon: '📈', title: 'Agency Analytics & Scorecards', hash: '#analytics' },
       { type: 'Navigation', icon: '🎯', title: 'Leads Pipeline Hub', hash: '#leads' },
       { type: 'Navigation', icon: '👥', title: 'Client CRM Directory', hash: '#crm' },
@@ -359,6 +361,7 @@
       { type: 'Navigation', icon: '🎟️', title: 'Support Desk Triaging', hash: '#tickets' },
       { type: 'Navigation', icon: '⚙️', title: 'Workspace Settings & API', hash: '#settings' },
       // Quick Actions
+      { type: 'Action', icon: '💼', title: 'Open Investor & Capital Partner Hub', action: () => window.open('/investors.html', '_blank') },
       { type: 'Action', icon: '📥', title: 'Bulk Import Tasks & Projects (CSV)', action: () => { window.location.hash = '#kanban'; setTimeout(() => window.KANBAN_MODULE?.openImportModal(), 400); } },
       { type: 'Action', icon: '✨', title: 'Open Live Ops Health Center', action: () => window.openOpsHealthModal() },
       { type: 'Action', icon: '🧾', title: 'Create New Client Invoice', action: () => { window.location.hash = '#finance'; setTimeout(() => window.FINANCE_MODULE?.openNewInvoiceModal?.(), 400); } }

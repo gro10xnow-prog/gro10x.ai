@@ -11,6 +11,8 @@ Disallow: /client
 Disallow: /client-miniapp.html
 Disallow: /onboarding.html
 Disallow: /partners.html
+Disallow: /investors.html
+Disallow: /investors
 Disallow: /uploads/
 Disallow: /api/
 

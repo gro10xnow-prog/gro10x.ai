@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="color-scheme" content="dark">
+  <script src="/js/theme.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Investor &amp; Capital Partner Intelligence — GRO10X</title>
+  <meta name="description" content="GRO10X Autonomous Multi-Engine Growth Ecosystem — 12-Month Financial Model, 65% Net Margin Architecture, and $100k ARR Roadmap.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Investor &amp; Capital Partner Intelligence — GRO10X">
+  <meta property="og:description" content="12-Month Financial Blueprint, 65% Net Margin Model, and Multi-Engine Revenue Pipelines.">
+  <meta property="og:image" content="https://gro10x-ai.vercel.app/images/logo.webp">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/landing.css">
+  <style>
+    .investor-hero {
+      padding: 5rem 0 2.5rem;
+      text-align: center;
+      position: relative;
+    }
+    .investor-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.4rem 1rem;
+      background: rgba(0, 223, 137, 0.12);
+      border: 1px solid rgba(0, 223, 137, 0.35);
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: var(--brand-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 1.25rem;
+    }
+    .investor-title {
+      font-size: 2.75rem;
+      font-weight: 900;
+      font-family: var(--font-heading);
+      background: linear-gradient(135deg, #ffffff 0%, #00df89 60%, #06b6d4 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1.15;
+      margin-bottom: 1rem;
+      max-width: 900px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .investor-subtitle {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      max-width: 740px;
+      margin: 0 auto 2.5rem;
+      line-height: 1.6;
+    }
+    .econ-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.25rem;
+      margin-top: 1.5rem;
+    }
+    .econ-card {
+      background: var(--surface-2);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 1.5rem;
+      text-align: left;
+    }
+    .econ-card h4 {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.5rem;
+    }
+    .econ-val {
+      font-size: 1.8rem;
+      font-weight: 900;
+      font-family: var(--font-heading);
+      color: var(--brand-primary);
+      margin-bottom: 0.4rem;
+    }
+    .econ-desc {
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      line-height: 1.45;
+    }
+    .investor-cta-card {
+      background: linear-gradient(145deg, rgba(0, 223, 137, 0.12), rgba(6, 182, 212, 0.08));
+      border: 1px solid rgba(0, 223, 137, 0.35);
+      border-radius: 24px;
+      padding: 2.5rem;
+      text-align: center;
+      margin-top: 3rem;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER NAVBAR -->
+  <header class="pb-header" id="header">
+    <div class="pb-nav-container">
+      <a href="/" class="pb-brand-logo">
+        <div class="pb-logo-badge">
+          <span>⚡</span>
+        </div>
+        <div class="pb-logo-text">
+          <span class="pb-brand-title">GRO10X</span>
+          <span class="pb-brand-sub" style="color:var(--brand-primary);">INVESTOR PORTAL</span>
+        </div>
+      </a>
+
+      <nav class="pb-nav-links" id="desktopNavLinks">
+        <a href="#telemetry" class="pb-nav-link">Targets</a>
+        <a href="#engines" class="pb-nav-link">5 Growth Engines</a>
+        <a href="#roadmap" class="pb-nav-link">12-Month Model</a>
+        <a href="#economics" class="pb-nav-link">Unit Economics</a>
+        <a href="#contact" class="pb-nav-link">Connect</a>
+      </nav>
+
+      <div class="pb-nav-actions">
+        <!-- Live Currency Switcher -->
+        <div class="currency-toggle-wrapper" title="Switch Currency (USD / BDT)">
+          <button type="button" class="curr-btn active" id="btnCurrUSD" onclick="setCurrency('USD')">🇺🇸 USD ($)</button>
+          <button type="button" class="curr-btn" id="btnCurrBDT" onclick="setCurrency('BDT')">🇧🇩 BDT (৳)</button>
+        </div>
+
+        <a href="/" class="pb-btn-portal" style="border-color:rgba(255,255,255,0.2);">
+          ← Client Site
+        </a>
+        <a href="#contact" class="pb-btn-primary">
+          💼 Request Deck
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN INVESTOR CONTENT -->
+  <main>
+
+    <!-- HERO SECTION -->
+    <section class="investor-hero" id="telemetry">
+      <div class="pb-container">
+        
+        <div class="investor-badge">
+          <span>⚡ Capital Partner &amp; Strategic Investor Briefing</span>
+        </div>
+
+        <h1 class="investor-title">
+          The Autonomous Multi-Engine Generative AI Architecture
+        </h1>
+        
+        <p class="investor-subtitle">
+          Engineered for <strong>65% net operating margins</strong>, zero traditional sales overhead, and a disciplined <strong>$100,000 Year 1 ARR target</strong> across 5 compounding revenue streams.
+        </p>
+
+        <!-- TOP TELEMETRY STRIP (Image 1 Model) -->
+        <div class="pb-metrics-strip" style="margin-top: 1.5rem;">
+          <div class="pb-metric-item">
+            <span class="pb-metric-val" data-curr-usd="$100,000" data-curr-bdt="৳1.18 Crore">$100,000</span>
+            <span class="pb-metric-label">Annual Revenue Target</span>
+          </div>
+          <div class="pb-metric-item">
+            <span class="pb-metric-val pb-color-emerald">65% Net Margin</span>
+            <span class="pb-metric-label"><span data-curr-usd="$65,000" data-curr-bdt="৳76.7 Lakh">$65,000</span> Net Profit Goal</span>
+          </div>
+          <div class="pb-metric-item">
+            <span class="pb-metric-val" data-curr-usd="$35,000" data-curr-bdt="৳41.3 Lakh">$35,000</span>
+            <span class="pb-metric-label">Lean Operational Expense Cap</span>
+          </div>
+          <div class="pb-metric-item">
+            <span class="pb-metric-val pb-color-cyan">5 Growth Engines</span>
+            <span class="pb-metric-label">Integrated Autonomous Pipelines</span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- SECTION 1: 5 MULTI-ENGINE REVENUE ARCHITECTURE (Image 3 Model) -->
+    <section class="pb-section pb-section-dark" id="engines">
+      <div class="pb-container">
+        
+        <div class="pb-section-header">
+          <span class="pb-pill-tag">REVENUE ARCHITECTURE</span>
+          <h2 class="pb-section-title">The 5 Multi-Engine Growth Distribution</h2>
+          <p class="pb-section-desc">
+            We don't rely on just one channel. We combine 5 powerful, automated income streams into one unified compounding system.
+          </p>
+        </div>
+
+        <div class="pb-engines-grid">
+          
+          <!-- Engine 1 -->
+          <div class="pb-engine-card pb-engine-highlight">
+            <div class="pb-engine-top">
+              <span class="pb-engine-icon">💻</span>
+              <span class="pb-engine-share">35% Share • <span data-curr-usd="$35,000" data-curr-bdt="৳41.3 Lakh">$35,000</span></span>
+            </div>
+            <h3>Proprietary Micro-SaaS Software</h3>
+            <p>
+              We convert our internal automation workflows into easy-to-use software tools for developers and marketers worldwide.
+            </p>
+            <ul class="pb-engine-features">
+              <li>✓ Ready-to-use AI generation tools</li>
+              <li>✓ Automated code &amp; design scripts</li>
+              <li>✓ Feeds users directly into agency retainers</li>
+            </ul>
+          </div>
+
+          <!-- Engine 2 -->
+          <div class="pb-engine-card">
+            <div class="pb-engine-top">
+              <span class="pb-engine-icon">🚀</span>
+              <span class="pb-engine-share">25% Share • <span data-curr-usd="$25,000" data-curr-bdt="৳29.5 Lakh">$25,000</span></span>
+            </div>
+            <h3>High-Intent Freelancing Engines</h3>
+            <p>
+              Capturing international clients through rapid transactional setups on Fiverr and high-value strategic consulting on Upwork.
+            </p>
+            <ul class="pb-engine-features">
+              <li>✓ Fast ComfyUI &amp; Custom GPT installations</li>
+              <li>✓ Enterprise AI roadmap consulting</li>
+              <li>✓ Zero traditional sales overhead</li>
+            </ul>
+          </div>
+
+          <!-- Engine 3 -->
+          <div class="pb-engine-card">
+            <div class="pb-engine-top">
+              <span class="pb-engine-icon">📦</span>
+              <span class="pb-engine-share">20% Share • <span data-curr-usd="$20,000" data-curr-bdt="৳23.6 Lakh">$20,000</span></span>
+            </div>
+            <h3>Automated Digital Asset Sales</h3>
+            <p>
+              Programmatic sales of high-quality AI prompt bundles, e-books, graphics, and design templates via our automated Etsy store.
+            </p>
+            <ul class="pb-engine-features">
+              <li>✓ Continuous passive income margins</li>
+              <li>✓ AI-generated design lists &amp; templates</li>
+              <li>✓ Captures warm buyer search traffic</li>
+            </ul>
+          </div>
+
+          <!-- Engine 4 -->
+          <div class="pb-engine-card">
+            <div class="pb-engine-top">
+              <span class="pb-engine-icon">⭐</span>
+              <span class="pb-engine-share">15% Share • <span data-curr-usd="$15,000" data-curr-bdt="৳17.7 Lakh">$15,000</span></span>
+            </div>
+            <h3>Core Agency Retainers</h3>
+            <p>
+              Ongoing monthly partnerships with businesses for continuous AI optimization, weekly visual outputs, and technical support.
+            </p>
+            <ul class="pb-engine-features">
+              <li>✓ <span data-curr-usd="$500 / month" data-curr-bdt="৳60,000 / month">$500 / month</span> dedicated growth retainers</li>
+              <li>✓ Weekly marketing creatives &amp; social loops</li>
+              <li>✓ Priority engineering SLA</li>
+            </ul>
+          </div>
+
+          <!-- Engine 5 -->
+          <div class="pb-engine-card">
+            <div class="pb-engine-top">
+              <span class="pb-engine-icon">🎥</span>
+              <span class="pb-engine-share">5% Share • <span data-curr-usd="$5,000" data-curr-bdt="৳5.9 Lakh">$5,000</span></span>
+            </div>
+            <h3>Programmatic AI Video Scale</h3>
+            <p>
+              Automated YouTube content channel publishing software walkthroughs and AI motion assets to drive free organic inbound leads.
+            </p>
+            <ul class="pb-engine-features">
+              <li>✓ Automated video publishing pipeline</li>
+              <li>✓ Zero paid ad spend required</li>
+              <li>✓ YouTube partner ad revenue &amp; sponsorships</li>
+            </ul>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: 12-MONTH LAUNCH ROADMAP & OVERHEAD MAP (Image 2 Model) -->
+    <section class="pb-section" id="roadmap">
+      <div class="pb-container">
+        
+        <div class="pb-section-header">
+          <span class="pb-pill-tag">FINANCIAL BLUEPRINT</span>
+          <h2 class="pb-section-title">12-Month Launch Roadmap &amp; Lean Model</h2>
+          <p class="pb-section-desc">
+            A clear quarterly execution plan engineered for maximum operational efficiency and 65% net margins.
+          </p>
+        </div>
+
+        <!-- Timeline Grid -->
+        <div class="pb-roadmap-grid">
+          
+          <div class="pb-roadmap-step">
+            <div class="step-badge">Q1</div>
+            <h4>Build &amp; Launch</h4>
+            <p>Set up automated Etsy listings, launch Fiverr &amp; Upwork client pipelines, and start the automated YouTube channel.</p>
+          </div>
+
+          <div class="pb-roadmap-step">
+            <div class="step-badge">Q2</div>
+            <h4>Validate &amp; Optimize</h4>
+            <p>Incorporate client feedback, optimize digital asset sales patterns, and refine custom AI chatbot and agent flows.</p>
+          </div>
+
+          <div class="pb-roadmap-step">
+            <div class="step-badge">Q3</div>
+            <h4>Deploy Micro-SaaS</h4>
+            <p>Package internal design automation tools and launch standalone micro-SaaS software tools online.</p>
+          </div>
+
+          <div class="pb-roadmap-step">
+            <div class="step-badge">Q4</div>
+            <h4>Compound &amp; Scale</h4>
+            <p>Cross-promote software users into high-margin capability setups, reaching our full <span data-curr-usd="$100,000" data-curr-bdt="৳1.18 Crore">$100,000</span> annual target.</p>
+          </div>
+
+        </div>
+
+        <!-- Lean Expense & Profit Breakdown Box -->
+        <div class="pb-financial-card">
+          <div class="pb-fin-left">
+            <div class="pb-margin-circle">
+              <span class="margin-percent">65%</span>
+              <span class="margin-label">Net Profit Margin</span>
+            </div>
+            <div class="pb-fin-summary">
+              <h3>Lean &amp; Highly Profitable</h3>
+              <p>
+                By building automated workflows and reusable software components from day one, we eliminate classical agency bottlenecks.
+              </p>
+              <div class="pb-fin-numbers">
+                <div>
+                  <span class="num-label">Gross Revenue Target</span>
+                  <span class="num-val pb-color-emerald" data-curr-usd="$100,000" data-curr-bdt="৳1.18 Crore">$100,000</span>
+                </div>
+                <div>
+                  <span class="num-label">12-Month Expense Cap</span>
+                  <span class="num-val pb-color-amber" data-curr-usd="$35,000" data-curr-bdt="৳41.3 Lakh">$35,000</span>
+                </div>
+                <div>
+                  <span class="num-label">Projected Net Profit</span>
+                  <span class="num-val pb-color-cyan" data-curr-usd="$65,000" data-curr-bdt="৳76.7 Lakh">$65,000</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="pb-fin-right">
+            <h4>12-Month Overhead Cost Map</h4>
+            <div class="pb-cost-row">
+              <span>🤖 AI APIs (OpenAI, Claude, Pinecone)</span>
+              <strong data-curr-usd="$12,000" data-curr-bdt="৳14.1 Lakh">$12,000</strong>
+            </div>
+            <div class="pb-cost-row">
+              <span>☁️ Cloud Compute (ComfyUI servers, Midjourney)</span>
+              <strong data-curr-usd="$8,000" data-curr-bdt="৳9.4 Lakh">$8,000</strong>
+            </div>
+            <div class="pb-cost-row">
+              <span>🛠️ Platform Tools (Make.com, Etsy, Upwork)</span>
+              <strong data-curr-usd="$6,000" data-curr-bdt="৳7.1 Lakh">$6,000</strong>
+            </div>
+            <div class="pb-cost-row">
+              <span>👥 Strategic Freelance Talent Pool</span>
+              <strong data-curr-usd="$9,000" data-curr-bdt="৳10.6 Lakh">$9,000</strong>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- SECTION 3: UNIT ECONOMICS & METRICS -->
+    <section class="pb-section pb-section-dark" id="economics">
+      <div class="pb-container">
+        
+        <div class="pb-section-header">
+          <span class="pb-pill-tag">CAPITAL EFFICIENCY</span>
+          <h2 class="pb-section-title">Unit Economics &amp; Arbitrage Moat</h2>
+          <p class="pb-section-desc">
+            Why GRO10X operates at 4x the profitability of legacy service firms.
+          </p>
+        </div>
+
+        <div class="econ-grid">
+          <div class="econ-card">
+            <h4>Customer Acquisition (CAC)</h4>
+            <div class="econ-val pb-color-emerald">~$0</div>
+            <p class="econ-desc">Organic inbound generated via high-ranking Etsy digital assets, YouTube technical walkthroughs, and platform marketplace intent.</p>
+          </div>
+
+          <div class="econ-card">
+            <h4>Gross Margin Profile</h4>
+            <div class="econ-val pb-color-cyan">85%+</div>
+            <p class="econ-desc">Pure software automation, templated ComfyUI nodes, and pre-trained prompt pipelines reduce COGS to raw API tokens.</p>
+          </div>
+
+          <div class="econ-card">
+            <h4>Payback Period</h4>
+            <div class="econ-val pb-color-emerald">&lt; 7 Days</div>
+            <p class="econ-desc">Immediate milestone revenue recognition upon 48-hour deliverable approvals in the interactive Review Room portal.</p>
+          </div>
+
+          <div class="econ-card">
+            <h4>Year 2 Scaled Target</h4>
+            <div class="econ-val" style="color:#ffffff;" data-curr-usd="$500,000" data-curr-bdt="৳5.9 Crore">$500,000</div>
+            <p class="econ-desc">Compounding SaaS subscriptions and enterprise retainers scaling across global markets with near-zero marginal headcount cost.</p>
+          </div>
+        </div>
+
+        <!-- INVESTOR CALL TO ACTION -->
+        <div class="investor-cta-card" id="contact">
+          <span class="investor-badge" style="background:rgba(0,223,137,0.2);">🚀 CAPITAL PARTNERSHIP</span>
+          <h3 style="font-size:2rem; font-weight:900; font-family:var(--font-heading); color:#fff; margin:0.75rem 0 0.5rem;">
+            Invest in the Autonomous AI Growth Ecosystem
+          </h3>
+          <p style="color:var(--text-secondary); max-width:620px; margin:0 auto 1.75rem; font-size:0.95rem;">
+            Review our confidential investment deck, cap table, and current sprint metrics. Connect directly with the founder for a technical deep-dive.
+          </p>
+          <div style="display:flex; justify-content:center; gap:1rem; flex-wrap:wrap;">
+            <a href="https://wa.me/8801708459008?text=Hi%20Firoz!%20I'm%20reviewing%20the%20GRO10X%20Investor%20Deck%20and%20would%20like%20to%20discuss%20a%20capital%20partnership." target="_blank" class="pb-btn-primary pb-btn-lg" style="text-decoration:none;">
+              💬 WhatsApp Founder Directly
+            </a>
+            <a href="mailto:gro10xnow@gmail.com?subject=GRO10X%20Investor%20Inquiry%20%E2%80%94%20Executive%20Briefing" class="pb-btn-secondary pb-btn-lg" style="text-decoration:none;">
+              📧 Email Investor Relations
+            </a>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="pb-footer">
+    <div class="pb-footer-container">
+      <div class="pb-footer-brand">
+        <a href="/" class="pb-brand-logo">
+          <div class="pb-logo-badge">⚡</div>
+          <span class="pb-brand-title">GRO10X</span>
+        </a>
+        <p style="color:var(--text-muted); font-size:0.88rem; margin:0.75rem 0 1.25rem;">
+          Confidential Executive &amp; Investor Intelligence Portal.
+        </p>
+        <p class="pb-copy-note">© 2026 GRO10X AI Agency. All rights reserved.</p>
+      </div>
+
+      <div class="pb-footer-col">
+        <h4>Navigation</h4>
+        <a href="/">Client Platform</a>
+        <a href="#telemetry">Revenue Targets</a>
+        <a href="#engines">5 Growth Engines</a>
+        <a href="#roadmap">12-Month Model</a>
+      </div>
+
+      <div class="pb-footer-col">
+        <h4>Portals</h4>
+        <a href="/app">Admin Command Center</a>
+        <a href="/manager">Manager Portal</a>
+        <a href="/partners.html">Client Review Portal</a>
+        <a href="/auth">Stakeholder Login</a>
+      </div>
+
+      <div class="pb-footer-col">
+        <h4>Founder Contact</h4>
+        <span>📧 gro10xnow@gmail.com</span>
+        <span>📱 +8801708459008</span>
+        <span>🌐 gro10x.ai</span>
+        <span>📍 Dhaka, Bangladesh &amp; Global Remote</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/js/auth-session.js"></script>
+  <script src="/js/landing.js"></script>
+</body>
+</html>
