@@ -54,7 +54,7 @@ async function handleInitEOD(teamBot, msg) {
                 { text: '✏️ Type manually', callback_data: 'eod_autofill:no' }
               ],
               [
-                { text: '📱 Open EOD Form (Mini App)', web_app: { url: 'https://purpleos-iota.vercel.app/team-miniapp?tab=eod&action=new' } }
+                { text: '📱 Open EOD Form (Mini App)', web_app: { url: 'https://gro10x-ai.vercel.app/team-miniapp?tab=eod&action=new' } }
               ]
             ]
           }
@@ -70,7 +70,7 @@ async function handleInitEOD(teamBot, msg) {
       reply_markup: {
         inline_keyboard: [
           [
-            { text: '📱 Open EOD Report Form (Mini App)', web_app: { url: 'https://purpleos-iota.vercel.app/team-miniapp?tab=eod&action=new' } }
+            { text: '📱 Open EOD Report Form (Mini App)', web_app: { url: 'https://gro10x-ai.vercel.app/team-miniapp?tab=eod&action=new' } }
           ]
         ]
       }

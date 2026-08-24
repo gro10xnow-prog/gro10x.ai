@@ -41,8 +41,8 @@ async function handleMyTasks(teamBot, msg) {
         reply_markup: {
           inline_keyboard: [
             [
-              { text: '📱 Open Task Board', web_app: { url: 'https://purpleos-iota.vercel.app/team-miniapp?tab=tasks' } },
-              { text: '➕ Create Task', web_app: { url: 'https://purpleos-iota.vercel.app/team-miniapp?tab=tasks&action=new' } }
+              { text: '📱 Open Task Board', web_app: { url: 'https://gro10x-ai.vercel.app/team-miniapp?tab=tasks' } },
+              { text: '➕ Create Task', web_app: { url: 'https://gro10x-ai.vercel.app/team-miniapp?tab=tasks&action=new' } }
             ]
           ]
         }
@@ -69,7 +69,7 @@ async function handleMyTasks(teamBot, msg) {
       if (nextStage) {
         inlineRow.push({ text: `→ Move to ${nextStage}`, callback_data: `task_advance:${t.id}:${nextStage}` });
       }
-      inlineRow.push({ text: '📱 Details', web_app: { url: `https://purpleos-iota.vercel.app/team-miniapp?tab=tasks&taskId=${t.id}` } });
+      inlineRow.push({ text: '📱 Details', web_app: { url: `https://gro10x-ai.vercel.app/team-miniapp?tab=tasks&taskId=${t.id}` } });
 
       const inlineRows = [inlineRow];
       inlineRows.push([{ text: '🤖 AI Brief Summary', callback_data: `ai_brief:${t.id}` }]);

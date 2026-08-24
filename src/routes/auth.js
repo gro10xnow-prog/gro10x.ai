@@ -194,7 +194,7 @@ router.post('/pin/generate', authLimiter, requireAuth, requireManager, async (re
 
   const portalPath = targetType === 'team' ? '/crew' : '/client';
   const botUsername = targetType === 'team' ? 'purplemanosbot' : 'purpleosbot';
-  const portalUrl = `https://purpleos-iota.vercel.app${portalPath}?phone=${encodeURIComponent(cleanPhone)}`;
+  const portalUrl = `https://gro10x-ai.vercel.app${portalPath}?phone=${encodeURIComponent(cleanPhone)}`;
 
   const inviteCardText = targetType === 'team'
     ? `🟣 *PURPLEBOT DIGITAL — WORKSPACE ACTIVATION*\n\n` +
@@ -223,7 +223,7 @@ router.post('/pin/generate', authLimiter, requireAuth, requireManager, async (re
       `🌐 Direct Portal Access: ${portalUrl}`;
 
     const btnText = targetType === 'team' ? '🚀 Open Crew Workspace' : '🌐 Launch Client Portal';
-    const appUrl = targetType === 'team' ? 'https://purpleos-iota.vercel.app/team-miniapp' : 'https://purpleos-iota.vercel.app/client';
+    const appUrl = targetType === 'team' ? 'https://gro10x-ai.vercel.app/team-miniapp' : 'https://gro10x-ai.vercel.app/client';
 
     sendTelegramNotification(userObj.telegramId, pushMsg, [
       [{ text: btnText, web_app: { url: appUrl } }]
@@ -336,7 +336,7 @@ router.post('/pin/set', requireAuth, async (req, res) => {
           [
             { 
               text: '🎓 Open Profile Survey', 
-              web_app: { url: 'https://purpleos-iota.vercel.app/team-miniapp' } 
+              web_app: { url: 'https://gro10x-ai.vercel.app/team-miniapp' } 
             }
           ]
         ];

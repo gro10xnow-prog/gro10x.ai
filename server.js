@@ -21,7 +21,7 @@ const envOrigins = (process.env.ALLOWED_ORIGINS || process.env.CORS_ORIGINS || '
   .filter(Boolean);
 
 const ALLOWED_ORIGINS = Array.from(new Set([
-  'https://purpleos-iota.vercel.app',
+  'https://gro10x-ai.vercel.app',
   'https://purplebot.digital',
   'https://www.purplebot.digital',
   'http://localhost:3000',

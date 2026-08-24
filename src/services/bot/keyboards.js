@@ -24,7 +24,7 @@ function getRoleKeyboard(accessLevel, isVerified = false, emp = null) {
   if (!emp.onboardingComplete) {
     return {
       keyboard: [
-        [{ text: '🎓 Complete My Profile Survey', web_app: { url: 'https://purpleos-iota.vercel.app/team-miniapp' } }],
+        [{ text: '🎓 Complete My Profile Survey', web_app: { url: 'https://gro10x-ai.vercel.app/team-miniapp' } }],
         [{ text: '🔑 View My Web Login PIN' }]
       ],
       resize_keyboard: true
@@ -369,7 +369,7 @@ function getClientKeyboard(client) {
       [{ text: '🎬 Review Room' }, { text: '📋 Campaign Status' }],
       [{ text: '📊 Monthly Digest' }, { text: '📝 Submit Brief' }],
       [{ text: '💳 My Invoices' }, { text: '📞 Contact AM' }],
-      [{ text: '📱 Open Client Portal', web_app: { url: 'https://purpleos-iota.vercel.app/client' } }]
+      [{ text: '📱 Open Client Portal', web_app: { url: 'https://gro10x-ai.vercel.app/client' } }]
     ],
     resize_keyboard: true
   };

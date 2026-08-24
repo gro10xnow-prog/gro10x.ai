@@ -131,7 +131,7 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
       const targetTelegramId = clientObj?.telegramId || clientObj?.telegram_id;
 
       if (targetTelegramId) {
-        const BASE_URL = process.env.BASE_URL || 'https://purpleos-iota.vercel.app';
+        const BASE_URL = process.env.BASE_URL || 'https://gro10x-ai.vercel.app';
         const reviewId = eventData.reviewId || null;
         const reviewUrl = `${BASE_URL}/client#review`;
         const msgText = `🎬 *Deliverable Ready for Review!*\n\nProject: *${task.title}*\nClient: *${task.client}*\n\nYour creative deliverable cut is ready. Stream the cut, leave timecoded feedback, and sign off:\n🔗 ${reviewUrl}`;
@@ -217,7 +217,7 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
       const publisherName = (post.assignedPublisher || post.assigned_publisher || '').split(' ')[0].toLowerCase();
       const publisher = (db.team || []).find(t => (t.name || '').toLowerCase().includes(publisherName));
       const pubTg = publisher?.telegramId || publisher?.telegram_id;
-      const portalUrl = `https://purpleos-iota.vercel.app/admin?tab=social`;
+      const portalUrl = `https://gro10x-ai.vercel.app/admin?tab=social`;
 
       const msgText = `✅ *SOCIAL POST APPROVED BY CLIENT*\n\n` +
         `👤 Client: *${post.clientName || post.client_name || 'Client'}*\n` +
@@ -247,7 +247,7 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
       const post = eventData.post;
       const publisherName = (post.assignedPublisher || '').split(' ')[0].toLowerCase();
       const publisher = (db.team || []).find(t => (t.name || '').toLowerCase().includes(publisherName));
-      const portalUrl = `https://purpleos-iota.vercel.app/admin?tab=social&dispatchId=${post.id}`;
+      const portalUrl = `https://gro10x-ai.vercel.app/admin?tab=social&dispatchId=${post.id}`;
       const targetUrl = post.targetUrl || 'https://facebook.com';
 
       const msgText = `📱 *1-CLICK SOCIAL DISPATCH DUE NOW!*\n\n` +
@@ -284,7 +284,7 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
     // TRIGGER 7: Expense Tier 1 Approved -> Notify Finance Lead (AUT-008)
     if (eventType === 'expense_tier1_approved') {
       const expense = eventData.expense || eventData || {};
-      const portalUrl = `https://purpleos-iota.vercel.app/admin?tab=expenses&expenseId=${expense.id || ''}`;
+      const portalUrl = `https://gro10x-ai.vercel.app/admin?tab=expenses&expenseId=${expense.id || ''}`;
       const lineManager = expense.tier1?.approvedBy || expense.approvedBy || 'Line Manager';
       const msgText = `💰 *EXPENSE TIER 1 APPROVED — READY FOR FINANCE VERIFICATION*\n\n` +
         `📋 Claim ID: *${expense.id || 'N/A'}*\n` +
@@ -317,7 +317,7 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
     // TRIGGER 8: Expense Tier 2 Verified -> Notify Owner (AUT-009)
     if (eventType === 'expense_tier2_approved') {
       const expense = eventData.expense;
-      const portalUrl = `https://purpleos-iota.vercel.app/admin?tab=expenses&expenseId=${expense.id}`;
+      const portalUrl = `https://gro10x-ai.vercel.app/admin?tab=expenses&expenseId=${expense.id}`;
       const msgText = `👑 *EXPENSE TIER 2 VERIFIED — AWAITING OWNER DISBURSEMENT*\n\n` +
         `📋 Claim ID: *${expense.id}*\n` +
         `👤 Submitted By: *${expense.submittedBy}*\n` +
@@ -431,12 +431,12 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
         `1. Tasks completed today\n` +
         `2. Tasks in progress\n` +
         `3. Blockers / help needed\n\n` +
-        `🌐 Open Crew Portal: https://purpleos-iota.vercel.app/team`;
+        `🌐 Open Crew Portal: https://gro10x-ai.vercel.app/team`;
 
       (db.team || []).forEach(staff => {
         if (staff.telegramId) {
           sendTelegramNotification(staff.telegramId, msgText, [
-            [{ text: '📋 Submit EOD in Portal', url: 'https://purpleos-iota.vercel.app/team' }]
+            [{ text: '📋 Submit EOD in Portal', url: 'https://gro10x-ai.vercel.app/team' }]
           ], true);
         }
       });
@@ -494,7 +494,7 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
         `👥 *Team Capacity:* ${activeStaff} Specialists Active\n` +
         `🧾 *Pending Approvals:* ${pendingExp} Expense Claims Awaiting Release\n` +
         `📱 *Social Dispatches:* Check 1-Click Social Dispatch Hub\n\n` +
-        `🌐 Open Admin Dashboard: https://purpleos-iota.vercel.app/admin`;
+        `🌐 Open Admin Dashboard: https://gro10x-ai.vercel.app/admin`;
 
       const leaders = (db.team || []).filter(t => (t.role || '').toLowerCase().includes('director') || (t.role || '').toLowerCase().includes('founder') || (t.role || '').toLowerCase().includes('owner'));
       leaders.forEach(l => {
@@ -582,7 +582,7 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
           `Invoice *${invoice.id || 'INV'}* of *BDT ${(Number(invoice.amount) || 0).toLocaleString()}* is due on *${invoice.dueDate || invoice.due_date || 'Soon'}*.\n\n` +
           `To complete payment and upload transaction proof, please open your Client Portal below.`;
         sendTelegramNotification(clientTg, msgText, [
-          [{ text: '💳 Open Client Portal', url: 'https://purpleos-iota.vercel.app/client#invoices' }]
+          [{ text: '💳 Open Client Portal', url: 'https://gro10x-ai.vercel.app/client#invoices' }]
         ], false);
       }
 
@@ -605,7 +605,7 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
         `📌 *Title:* ${title || 'Notice'}\n` +
         `👤 *From:* ${senderName || 'Agency Leadership'}\n\n` +
         `${message}\n\n` +
-        `🌐 Open Crew Portal: https://purpleos-iota.vercel.app/team`;
+        `🌐 Open Crew Portal: https://gro10x-ai.vercel.app/team`;
 
       (db.team || []).forEach(staff => {
         if (staff.telegramId) {
@@ -658,11 +658,11 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
           `🎯 *YOUR DAILY ACTION PLAN & TASK BRIEFING (9:00 AM)*\n\n` +
           `📋 *Assigned Tasks & Deliverables:*\n${taskListText}\n\n` +
           `⏰ Please remember to clock in when starting studio work.\n` +
-        `🌐 Open Crew Portal: https://purpleos-iota.vercel.app/team`;
+        `🌐 Open Crew Portal: https://gro10x-ai.vercel.app/team`;
 
         if (staff.telegramId) {
           sendTelegramNotification(staff.telegramId, msgText, [
-            [{ text: '🟢 Clock In Studio', url: 'https://purpleos-iota.vercel.app/team' }]
+            [{ text: '🟢 Clock In Studio', url: 'https://gro10x-ai.vercel.app/team' }]
           ], true);
         }
       });
@@ -697,7 +697,7 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
       if (targetManager && targetManager.telegramId) {
         sendTelegramNotification(targetManager.telegramId, msgText, [
           [{ text: '✅ Approve T1 (Manager)', callback_data: `approve_expense_t1:${expense.id}` }],
-          [{ text: '🔍 Inspect in Manager Portal', url: `https://purpleos-iota.vercel.app/manager` }]
+          [{ text: '🔍 Inspect in Manager Portal', url: `https://gro10x-ai.vercel.app/manager` }]
         ], true);
       }
 
@@ -731,7 +731,7 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
         const targetId = kafil?.telegramId || '1708459008';
         sendTelegramNotification(targetId, msgText, [
           [{ text: '✅ Approve T1.5 (Ops Head)', callback_data: `approve_expense_t1_5:${expense.id}` }],
-          [{ text: '🔍 Inspect in Portal', url: `https://purpleos-iota.vercel.app/admin` }]
+          [{ text: '🔍 Inspect in Portal', url: `https://gro10x-ai.vercel.app/admin` }]
         ], true);
       } else {
         // Standard Claim (<= 10k) -> Route directly to Borhan Siddique (Finance Manager) for Tier 2
@@ -748,7 +748,7 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
         const targetId = borhan?.telegramId || '1708459008';
         sendTelegramNotification(targetId, msgText, [
           [{ text: '💰 Verify T2 (Finance)', callback_data: `approve_expense_t2:${expense.id}` }],
-        [{ text: '🔍 Inspect in Admin Portal', url: `https://purpleos-iota.vercel.app/admin` }]
+        [{ text: '🔍 Inspect in Admin Portal', url: `https://gro10x-ai.vercel.app/admin` }]
         ], true);
       }
     }
@@ -769,7 +769,7 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
       const targetId = borhan?.telegramId || '1708459008';
       sendTelegramNotification(targetId, msgText, [
         [{ text: '💰 Verify T2 (Finance)', callback_data: `approve_expense_t2:${expense.id}` }],
-        [{ text: '🔍 Inspect in Admin Portal', url: `https://purpleos-iota.vercel.app/admin` }]
+        [{ text: '🔍 Inspect in Admin Portal', url: `https://gro10x-ai.vercel.app/admin` }]
       ], true);
     }
 
@@ -799,7 +799,7 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
           { text: '✅ Approve Leave', callback_data: `approve_leave:${leave.id}` },
           { text: '❌ Reject Leave', callback_data: `reject_leave:${leave.id}` }
         ],
-        [{ text: '🔍 Inspect in Manager Portal', url: `https://purpleos-iota.vercel.app/manager` }]
+        [{ text: '🔍 Inspect in Manager Portal', url: `https://gro10x-ai.vercel.app/manager` }]
       ], true);
 
       recordAutomationLog(db, {
@@ -829,7 +829,7 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
       const buttons = [
         [{ text: '👑 Final Leave Sign-off', callback_data: `approve_leave_owner:${leave.id}` }],
         [{ text: '❌ Decline Leave', callback_data: `reject_leave:${leave.id}` }],
-        [{ text: '🔍 Inspect in Admin Portal', url: `https://purpleos-iota.vercel.app/admin` }]
+        [{ text: '🔍 Inspect in Admin Portal', url: `https://gro10x-ai.vercel.app/admin` }]
       ];
 
       if (iftekhar && iftekhar.telegramId) {
@@ -918,7 +918,7 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
           `🏢 Department: *${dept}*\n\n` +
           `✅ *Reports Logged Today:* ${todayEods.length} Submissions\n` +
           `🔴 *🔴 Blockers Flagged:* ${blockersCount} Action Item(s)\n\n` +
-          `🌐 Open Manager Portal: https://purpleos-iota.vercel.app/manager`;
+          `🌐 Open Manager Portal: https://gro10x-ai.vercel.app/manager`;
 
         const targetId = mgr.telegramId || '1708459008';
         sendTelegramNotification(targetId, msgText, null, true);

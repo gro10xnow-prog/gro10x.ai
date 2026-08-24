@@ -3,7 +3,7 @@
 > **Version**: `0.9.0.0` (Department Manager Stakeholder Handover Release)
 > **Go-Live Date**: September 1, 2026
 > **Primary Stakeholder / Tech Admin**: Md. Zahin Khandaker (`PBD-004`)
-> **Production URL**: https://purpleos-iota.vercel.app
+> **Production URL**: https://gro10x-ai.vercel.app
 
 ---
 
@@ -129,7 +129,7 @@ Copy `.env.example` to `.env` and fill in all values before running locally.
 | `JWT_SECRET` | YES | Secret for signing HMAC-SHA256 JWTs |
 | `TELEGRAM_BOT_TOKEN_TEAM` | YES | Team management bot token |
 | `TELEGRAM_BOT_TOKEN_CLIENT` | YES | Client-facing bot token |
-| `BASE_URL` | YES | Production base URL (https://purpleos-iota.vercel.app) |
+| `BASE_URL` | YES | Production base URL (https://gro10x-ai.vercel.app) |
 | `GEMINI_API_KEY` | YES | Google Gemini API key for AI features |
 | `SENTRY_DSN` | Optional | Sentry DSN for error tracking |
 | `NODE_ENV` | Optional | production or development |
@@ -300,9 +300,9 @@ git push origin main
 ```
 
 Post-Deployment Verification (within 5 minutes):
-  [ ] GET https://purpleos-iota.vercel.app/api/system-health --> status: "healthy"
-  [ ] GET https://purpleos-iota.vercel.app/api/bot-status --> both bots "active"
-  [ ] Admin panel loads at https://purpleos-iota.vercel.app/app/index.html
+  [ ] GET https://gro10x-ai.vercel.app/api/system-health --> status: "healthy"
+  [ ] GET https://gro10x-ai.vercel.app/api/bot-status --> both bots "active"
+  [ ] Admin panel loads at https://gro10x-ai.vercel.app/app/index.html
   [ ] Telegram Team Bot responds to /status command
 
 To update environment variables:
@@ -333,7 +333,7 @@ Cause: Webhook cleared (can happen after running local scripts)
 Fix:
   node register-webhook.js
 Or call directly:
-  https://api.telegram.org/bot<TOKEN>/setWebhook?url=https://purpleos-iota.vercel.app/api/webhooks/telegram?bot=team
+  https://api.telegram.org/bot<TOKEN>/setWebhook?url=https://gro10x-ai.vercel.app/api/webhooks/telegram?bot=team
 
 ### Cron jobs not firing
 Fix:
@@ -406,7 +406,7 @@ RLS Policy Note:
 
 ## 12. Admin Panel User Guide
 
-URL: https://purpleos-iota.vercel.app/app/index.html
+URL: https://gro10x-ai.vercel.app/app/index.html
 Access: Use your 6-digit Admin PIN at /auth
 Access Level: Tech Admin (PBD-004)
 

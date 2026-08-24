@@ -49,7 +49,7 @@ async function handleMorningBriefing(teamBot, msg) {
     parse_mode: 'Markdown',
     reply_markup: {
       inline_keyboard: [[
-        { text: '📊 Command Dashboard', url: 'https://purpleos-iota.vercel.app/app' },
+        { text: '📊 Command Dashboard', url: 'https://gro10x-ai.vercel.app/app' },
         { text: '✍️ Pending Approvals', callback_data: 'cmd_approvals' }
       ]]
     }
@@ -155,13 +155,13 @@ async function handleFinanceSummary(teamBot, msg) {
     `• Monthly Fixed Payroll: *৳${monthlyPayroll.toLocaleString()} BDT*\n\n` +
     `📊 *Net Operational Cash Position:*\n` +
     `• Estimated Balance: *${netSign}${Math.abs(netCashPosition).toLocaleString()} BDT*\n\n` +
-    `🌐 [Open Financial Command Center](https://purpleos-iota.vercel.app/app#finance)`;
+    `🌐 [Open Financial Command Center](https://gro10x-ai.vercel.app/app#finance)`;
 
   teamBot.sendMessage(chatId, text, {
     parse_mode: 'Markdown',
     reply_markup: {
       inline_keyboard: [[
-        { text: '🧾 View Invoices', url: 'https://purpleos-iota.vercel.app/app#finance' },
+        { text: '🧾 View Invoices', url: 'https://gro10x-ai.vercel.app/app#finance' },
         { text: '💸 Expense Queue', callback_data: 'view_expenses_queue' }
       ]]
     }
@@ -214,13 +214,13 @@ async function handleOpsHealthSummary(teamBot, msg) {
     `📋 *Agency Pipeline Health:*\n` +
     `• Active In-Progress Tasks: *${openTasks} tasks*\n` +
     `• Overdue Deliverables: *${overdueTasks > 0 ? `🚨 ${overdueTasks} OVERDUE` : '✅ 0 Overdue'}*\n\n` +
-    `🌐 [Open Live Health Center](https://purpleos-iota.vercel.app/app)`;
+    `🌐 [Open Live Health Center](https://gro10x-ai.vercel.app/app)`;
 
   teamBot.sendMessage(chatId, text, {
     parse_mode: 'Markdown',
     reply_markup: {
       inline_keyboard: [[
-        { text: '🖥️ Web Admin OS', url: 'https://purpleos-iota.vercel.app/app' },
+        { text: '🖥️ Web Admin OS', url: 'https://gro10x-ai.vercel.app/app' },
         { text: '🔄 Refresh Status', callback_data: 'cmd_health_refresh' }
       ]]
     }

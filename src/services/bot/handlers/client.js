@@ -26,7 +26,7 @@ async function handleServices(clientBot, msg) {
 
 async function handlePortfolio(clientBot, msg) {
   const chatId = msg.chat.id;
-  const text = `📁 *Purplebot Digital — Creative Portfolio & Showcase*\n\nExplore our latest commercial campaigns, TVCs, and digital brand transformations:\n🔗 https://purpleos-iota.vercel.app/#portfolio\n\n_Delivering high-impact creative production and commercial growth for leading brands._`;
+  const text = `📁 *Purplebot Digital — Creative Portfolio & Showcase*\n\nExplore our latest commercial campaigns, TVCs, and digital brand transformations:\n🔗 https://gro10x-ai.vercel.app/#portfolio\n\n_Delivering high-impact creative production and commercial growth for leading brands._`;
   clientBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
 }
 
@@ -47,7 +47,7 @@ async function handleReviewRoom(clientBot, msg) {
       pendingReview.forEach((r, i) => {
         text += `${i+1}. *${r.project_name || r.projectName || 'Video Cut'}*\n`;
         text += `   Version: *${r.active_version || 'v1'}* | Status: *${r.status || 'Client Review'}*\n`;
-        text += `   🔗 Review & Approve: https://purpleos-iota.vercel.app/client#review\n\n`;
+        text += `   🔗 Review & Approve: https://gro10x-ai.vercel.app/client#review\n\n`;
       });
       text += `Tap any link above to stream live cuts and submit feedback.`;
     } else {
@@ -195,7 +195,7 @@ async function handleSubmitBrief(clientBot, msg) {
     `Your assigned Account Manager will review and schedule your kickoff within 24 hours. 🚀`;
 
   const inlineKeyboard = [[
-    { text: '🌐 Launch Client Portal', web_app: { url: 'https://purpleos-iota.vercel.app/client' } }
+    { text: '🌐 Launch Client Portal', web_app: { url: 'https://gro10x-ai.vercel.app/client' } }
   ]];
 
   clientBot.sendMessage(chatId, text, { parse_mode: 'Markdown', reply_markup: { inline_keyboard: inlineKeyboard } });
@@ -242,8 +242,8 @@ async function handleClientDigest(clientBot, msg) {
       `Tap below to access your live Retainer Health & Intelligence Dashboard:`;
 
     const inlineKeyboard = [
-      [{ text: '⚡ Launch Retainer Health Dashboard', web_app: { url: 'https://purpleos-iota.vercel.app/client#retainer' } }],
-      [{ text: '🎬 Review Active Video Cuts', web_app: { url: 'https://purpleos-iota.vercel.app/client#review' } }]
+      [{ text: '⚡ Launch Retainer Health Dashboard', web_app: { url: 'https://gro10x-ai.vercel.app/client#retainer' } }],
+      [{ text: '🎬 Review Active Video Cuts', web_app: { url: 'https://gro10x-ai.vercel.app/client#review' } }]
     ];
 
     clientBot.sendMessage(chatId, text, { parse_mode: 'Markdown', reply_markup: { inline_keyboard: inlineKeyboard } });

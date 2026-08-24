@@ -39,7 +39,7 @@ async function handleLogExpenseEntry(teamBot, msg) {
       `• Pending Approval: *${pendingCount}*\n` +
       `• Logged Today: *${todayCount}*\n\n` +
       `_Use the web portal to log new entries:_\n` +
-      `🌐 https://purpleos-iota.vercel.app/admin`;
+      `🌐 https://gro10x-ai.vercel.app/admin`;
     teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
   } catch (err) {
     console.error('Error in handleLogExpenseEntry:', err);

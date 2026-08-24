@@ -71,7 +71,7 @@ function registerLegacyTeamMenus(teamBot, readDB) {
         const { data: client } = await supabase.from('clients').select('*').eq('id', clientId).maybeSingle();
         const clientName = client?.name || 'Client';
         const token = `TOK-${Date.now()}`;
-        const magicLink = `https://purpleos-iota.vercel.app/partners?client=${encodeURIComponent(clientName)}&token=${token}`;
+        const magicLink = `https://gro10x-ai.vercel.app/partners?client=${encodeURIComponent(clientName)}&token=${token}`;
         const cardMsg = `📋 *PURPLEBOT PARTNER PORTAL LINK*\n\n` +
           `🏢 Client: *${clientName}*\n` +
           `👤 Contact: ${client?.contact_person || 'Brand Manager'}\n\n` +
@@ -91,7 +91,7 @@ function registerLegacyTeamMenus(teamBot, readDB) {
         if (nasir?.telegramId) {
           sendTelegramNotification(nasir.telegramId,
             `📜 *Script QC Review Required*\n\n• Task: *${taskId}*\n\nPlease review script draft and sign off.`,
-            [[{ text: '🌐 Review Script in Portal', url: `https://purpleos-iota.vercel.app/admin?tab=tasks&id=${taskId}` }]],
+            [[{ text: '🌐 Review Script in Portal', url: `https://gro10x-ai.vercel.app/admin?tab=tasks&id=${taskId}` }]],
             true
           );
         }
@@ -111,8 +111,8 @@ function registerLegacyTeamMenus(teamBot, readDB) {
           sendTelegramNotification(ruhul.telegramId || ruhul.telegram_id,
             `🔍 *Internal QC Review Required*\n\n• Task: *${taskId}*\n\nPlease review and either approve for client delivery or send back for revision.`,
             [
-              [{ text: '✅ QC Approve → Client Review', url: `https://purpleos-iota.vercel.app/admin?tab=tasks&action=qc-approve&id=${taskId}` }],
-              [{ text: '✏️ Send Back for Revision', url: `https://purpleos-iota.vercel.app/admin?tab=tasks&action=qc-reject&id=${taskId}` }]
+              [{ text: '✅ QC Approve → Client Review', url: `https://gro10x-ai.vercel.app/admin?tab=tasks&action=qc-approve&id=${taskId}` }],
+              [{ text: '✏️ Send Back for Revision', url: `https://gro10x-ai.vercel.app/admin?tab=tasks&action=qc-reject&id=${taskId}` }]
             ],
             true
           );
@@ -275,8 +275,8 @@ function registerLegacyTeamMenus(teamBot, readDB) {
               sendTelegramNotification(ruhul.telegram_id,
                 `🔍 *Internal QC Review Required*\n\n• Task ID: *${taskId}*\n• Submitted by: *${emp.name}*\n\nPlease review and either approve for client delivery or send back for revision.`,
                 [
-                  [{ text: '✅ QC Approve → Client Review', url: `https://purpleos-iota.vercel.app/admin?tab=tasks&action=qc-approve&id=${taskId}` }],
-                  [{ text: '✏️ Send Back for Revision', url: `https://purpleos-iota.vercel.app/admin?tab=tasks&action=qc-reject&id=${taskId}` }]
+                  [{ text: '✅ QC Approve → Client Review', url: `https://gro10x-ai.vercel.app/admin?tab=tasks&action=qc-approve&id=${taskId}` }],
+                  [{ text: '✏️ Send Back for Revision', url: `https://gro10x-ai.vercel.app/admin?tab=tasks&action=qc-reject&id=${taskId}` }]
                 ],
                 true
               );

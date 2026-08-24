@@ -53,8 +53,8 @@ async function handleDesignQueue(teamBot, msg) {
         reply_markup: {
           inline_keyboard: [
             [
-              { text: '📱 Open Task Board', web_app: { url: 'https://purpleos-iota.vercel.app/team-miniapp?tab=tasks' } },
-              { text: '➕ Create Creative Task', web_app: { url: 'https://purpleos-iota.vercel.app/team-miniapp?tab=tasks&action=new' } }
+              { text: '📱 Open Task Board', web_app: { url: 'https://gro10x-ai.vercel.app/team-miniapp?tab=tasks' } },
+              { text: '➕ Create Creative Task', web_app: { url: 'https://gro10x-ai.vercel.app/team-miniapp?tab=tasks&action=new' } }
             ]
           ]
         }
@@ -81,8 +81,8 @@ async function handleDesignQueue(teamBot, msg) {
 
       const inlineKeyboard = [
         [
-          { text: '👁️ Review Deliverable', web_app: { url: `https://purpleos-iota.vercel.app/reviewroom?taskId=${t.id}` } },
-          { text: '📋 Task Card', web_app: { url: `https://purpleos-iota.vercel.app/team-miniapp?tab=tasks&taskId=${t.id}` } }
+          { text: '👁️ Review Deliverable', web_app: { url: `https://gro10x-ai.vercel.app/reviewroom?taskId=${t.id}` } },
+          { text: '📋 Task Card', web_app: { url: `https://gro10x-ai.vercel.app/team-miniapp?tab=tasks&taskId=${t.id}` } }
         ]
       ];
 
@@ -138,10 +138,10 @@ async function handleReviewRoom(teamBot, msg) {
       reply_markup: {
         inline_keyboard: [
           [
-            { text: '🎬 Open Interactive Review Room', web_app: { url: 'https://purpleos-iota.vercel.app/reviewroom' } }
+            { text: '🎬 Open Interactive Review Room', web_app: { url: 'https://gro10x-ai.vercel.app/reviewroom' } }
           ],
           [
-            { text: '🌐 Open Manager Portal', web_app: { url: 'https://purpleos-iota.vercel.app/manager#tasks' } }
+            { text: '🌐 Open Manager Portal', web_app: { url: 'https://gro10x-ai.vercel.app/manager#tasks' } }
           ]
         ]
       }
@@ -212,7 +212,7 @@ async function handleMyTeam(teamBot, msg) {
         inline_keyboard: [
           [
             { text: '🌴 Review Department Leaves', callback_data: 'cmd_mgr_leaves' },
-            { text: '📊 Full Roster (Web)', web_app: { url: 'https://purpleos-iota.vercel.app/manager#team' } }
+            { text: '📊 Full Roster (Web)', web_app: { url: 'https://gro10x-ai.vercel.app/manager#team' } }
           ]
         ]
       }
@@ -259,7 +259,7 @@ async function handleMyEditQueue(teamBot, msg) {
         parse_mode: 'Markdown',
         reply_markup: {
           inline_keyboard: [
-            [{ text: '📱 Open Web Workspace', web_app: { url: 'https://purpleos-iota.vercel.app/crew#tasks' } }]
+            [{ text: '📱 Open Web Workspace', web_app: { url: 'https://gro10x-ai.vercel.app/crew#tasks' } }]
           ]
         }
       });
@@ -276,7 +276,7 @@ async function handleMyEditQueue(teamBot, msg) {
       const inlineKeyboard = [
         [
           { text: '📤 Submit for QC Review', callback_data: `task_advance:${t.id}:Internal QC` },
-          { text: '📱 Open Deliverables', web_app: { url: `https://purpleos-iota.vercel.app/crew#deliverables` } }
+          { text: '📱 Open Deliverables', web_app: { url: `https://gro10x-ai.vercel.app/crew#deliverables` } }
         ]
       ];
 

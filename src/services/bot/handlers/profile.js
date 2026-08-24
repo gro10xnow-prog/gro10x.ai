@@ -29,7 +29,7 @@ async function handleMyProfile(teamBot, msg) {
       reply_markup: {
         inline_keyboard: [
           [
-            { text: '📱 Open Profile Card (Mini App)', web_app: { url: 'https://purpleos-iota.vercel.app/team-miniapp?tab=profile' } }
+            { text: '📱 Open Profile Card (Mini App)', web_app: { url: 'https://gro10x-ai.vercel.app/team-miniapp?tab=profile' } }
           ]
         ]
       }
@@ -62,7 +62,7 @@ async function handleMyEarnings(teamBot, msg) {
         inline_keyboard: [
           [
             { text: '💳 View/Update Bank Details', callback_data: 'cmd_mybank' },
-            { text: '📱 Open Pay Portal', web_app: { url: 'https://purpleos-iota.vercel.app/team-miniapp?tab=pay' } }
+            { text: '📱 Open Pay Portal', web_app: { url: 'https://gro10x-ai.vercel.app/team-miniapp?tab=pay' } }
           ]
         ]
       }
@@ -95,7 +95,7 @@ async function handleMyBank(teamBot, msg) {
       reply_markup: {
         inline_keyboard: [
           [
-            { text: '📱 Edit Bank / bKash Info', web_app: { url: 'https://purpleos-iota.vercel.app/team-miniapp?tab=bank' } }
+            { text: '📱 Edit Bank / bKash Info', web_app: { url: 'https://gro10x-ai.vercel.app/team-miniapp?tab=bank' } }
           ]
         ]
       }

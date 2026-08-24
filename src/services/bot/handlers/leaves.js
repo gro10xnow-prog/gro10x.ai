@@ -31,7 +31,7 @@ async function handleInitLeave(teamBot, msg) {
       reply_markup: {
         inline_keyboard: [
           [
-            { text: '📱 Open Leave Request Form (Mini App)', web_app: { url: 'https://purpleos-iota.vercel.app/team-miniapp?tab=leave&action=new' } }
+            { text: '📱 Open Leave Request Form (Mini App)', web_app: { url: 'https://gro10x-ai.vercel.app/team-miniapp?tab=leave&action=new' } }
           ]
         ]
       }
@@ -269,7 +269,7 @@ async function handleManagerLeaveApprovals(teamBot, msg) {
     }
 
     inlineKeyboard.push([
-      { text: '🌐 Open Web Manager Portal', url: 'https://purpleos-iota.vercel.app/manager' }
+      { text: '🌐 Open Web Manager Portal', url: 'https://gro10x-ai.vercel.app/manager' }
     ]);
 
     teamBot.sendMessage(chatId, text, {

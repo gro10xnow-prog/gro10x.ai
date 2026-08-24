@@ -109,7 +109,7 @@ async function handlePendingApprovals(teamBot, msg) {
 
   // Add Portal Deep Link
   inlineKeyboard.push([
-    { text: '🌐 Open Web Admin Hub', url: 'https://purpleos-iota.vercel.app/app' }
+    { text: '🌐 Open Web Admin Hub', url: 'https://gro10x-ai.vercel.app/app' }
   ]);
 
   teamBot.sendMessage(chatId, text, {

@@ -154,7 +154,7 @@ async function sendLeadConfirmationEmail({ contactPerson, email, service, compan
 
         <p style="color: #94a3b8; font-size: 13px;">Meanwhile, feel free to explore our latest campaigns and client showreels:</p>
         <div style="text-align: center; margin-top: 20px;">
-          <a href="https://purpleos-iota.vercel.app/#portfolio" style="background: linear-gradient(135deg, #7c3aed, #ec4899); color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
+          <a href="https://gro10x-ai.vercel.app/#portfolio" style="background: linear-gradient(135deg, #7c3aed, #ec4899); color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
             🚀 Explore Our Work & Case Studies
           </a>
         </div>
@@ -205,7 +205,7 @@ async function sendLeadFollowUpEmail({ contactPerson, email, service, company })
           <a href="https://wa.me/8801711019550?text=Hi%20Purplebot%20Team!%20Following%20up%20on%20my%20inquiry%20for%20${encodeURIComponent(svc)}" style="background: linear-gradient(135deg, #10b981, #059669); color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block; margin-right: 8px; margin-bottom: 8px;">
             📱 Chat on WhatsApp
           </a>
-          <a href="https://purpleos-iota.vercel.app/#portfolio" style="background: linear-gradient(135deg, #7c3aed, #ec4899); color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block; margin-bottom: 8px;">
+          <a href="https://gro10x-ai.vercel.app/#portfolio" style="background: linear-gradient(135deg, #7c3aed, #ec4899); color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block; margin-bottom: 8px;">
             🚀 See Our Showreels
           </a>
         </div>

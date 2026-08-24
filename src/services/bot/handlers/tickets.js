@@ -43,7 +43,7 @@ async function handleMyTickets(teamBot, msg) {
         parse_mode: 'Markdown',
         reply_markup: {
           inline_keyboard: [
-            [{ text: '🌐 Open Ticket Board', web_app: { url: 'https://purpleos-iota.vercel.app/crew#tickets' } }]
+            [{ text: '🌐 Open Ticket Board', web_app: { url: 'https://gro10x-ai.vercel.app/crew#tickets' } }]
           ]
         }
       });

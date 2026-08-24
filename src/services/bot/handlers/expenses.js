@@ -23,7 +23,7 @@ async function handleInitExpense(teamBot, msg) {
       reply_markup: {
         inline_keyboard: [
           [
-            { text: '📱 Open Expense Form (Mini App)', web_app: { url: 'https://purpleos-iota.vercel.app/team-miniapp?tab=expense&action=new' } }
+            { text: '📱 Open Expense Form (Mini App)', web_app: { url: 'https://gro10x-ai.vercel.app/team-miniapp?tab=expense&action=new' } }
           ]
         ]
       }

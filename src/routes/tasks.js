@@ -394,8 +394,8 @@ router.put('/:id', requireAuth, async (req, res) => {
           sendTelegramNotification(ruhul.telegram_id,
             `🔍 *Internal QC Review Required*\n\n• Task: *${task.title}*\n• Client: *${task.client || 'Agency'}*\n• Submitted by: *${task.assignee || 'Visualizer'}*\n\nPlease review and either approve for client delivery or send back for revision.`,
             [
-              [{ text: '✅ QC Approve → Client Review', url: `https://purpleos-iota.vercel.app/admin?tab=tasks&action=qc-approve&id=${task.id}` }],
-              [{ text: '✏️ Send Back for Revision', url: `https://purpleos-iota.vercel.app/admin?tab=tasks&action=qc-reject&id=${task.id}` }]
+              [{ text: '✅ QC Approve → Client Review', url: `https://gro10x-ai.vercel.app/admin?tab=tasks&action=qc-approve&id=${task.id}` }],
+              [{ text: '✏️ Send Back for Revision', url: `https://gro10x-ai.vercel.app/admin?tab=tasks&action=qc-reject&id=${task.id}` }]
             ],
             true
           );

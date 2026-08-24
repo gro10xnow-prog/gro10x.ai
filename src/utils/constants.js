@@ -6,7 +6,7 @@
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
-const BASE_URL = process.env.APP_BASE_URL || 'https://purpleos-iota.vercel.app';
+const BASE_URL = process.env.APP_BASE_URL || 'https://gro10x-ai.vercel.app';
 
 const PORTAL_URLS = {
   BASE: BASE_URL,

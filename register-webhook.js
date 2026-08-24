@@ -13,7 +13,7 @@
 require('dotenv').config();
 const https = require('https');
 
-const BASE_URL = process.env.BASE_URL || 'https://purpleos-iota.vercel.app';
+const BASE_URL = process.env.BASE_URL || 'https://gro10x-ai.vercel.app';
 const TEAM_BOT_TOKEN = process.env.TEAM_BOT_TOKEN;
 const CLIENT_BOT_TOKEN = process.env.CLIENT_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN;
 
@@ -103,7 +103,7 @@ async function main() {
   console.log('\n━'.repeat(50));
   console.log('🎉 Done! The bot should now respond in Telegram within seconds.');
   console.log('   If it still doesn\'t reply, check Vercel logs:');
-  console.log('   npx vercel logs purpleos-iota.vercel.app --limit 20\n');
+  console.log('   npx vercel logs gro10x-ai.vercel.app --limit 20\n');
 }
 
 main().catch(console.error);

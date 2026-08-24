@@ -1991,7 +1991,7 @@ router.post('/:code/push-reminder', requireAuth, requireManager, async (req, res
     sendTelegramNotification(
       profile.telegram_id,
       formattedMessage,
-      [[{ text: '🚀 Open Workspace App', web_app: { url: 'https://purpleos-iota.vercel.app/team-miniapp' } }]],
+      [[{ text: '🚀 Open Workspace App', web_app: { url: 'https://gro10x-ai.vercel.app/team-miniapp' } }]],
       true
     );
 

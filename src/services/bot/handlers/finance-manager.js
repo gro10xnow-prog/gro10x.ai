@@ -68,7 +68,7 @@ async function handleExpenseQueueFinance(teamBot, msg) {
     }
 
     inlineKeyboard.push([
-      { text: '🌐 Open Web Finance Hub', web_app: { url: 'https://purpleos-iota.vercel.app/manager#finance' } },
+      { text: '🌐 Open Web Finance Hub', web_app: { url: 'https://gro10x-ai.vercel.app/manager#finance' } },
       { text: '📊 Payroll Summary', callback_data: 'cmd_payroll_summary' }
     ]);
 
@@ -128,7 +128,7 @@ async function handlePayrollSummary(teamBot, msg) {
             { text: '💸 Expense Queue', callback_data: 'cmd_expense_queue_fin' }
           ],
           [
-            { text: '🌐 Open Pay Portal', url: 'https://purpleos-iota.vercel.app/app#finance' }
+            { text: '🌐 Open Pay Portal', url: 'https://gro10x-ai.vercel.app/app#finance' }
           ]
         ]
       }
@@ -187,7 +187,7 @@ async function handleBankBkashHub(teamBot, msg) {
         inline_keyboard: [
           [
             { text: '📊 Payroll Summary', callback_data: 'cmd_payroll_summary' },
-            { text: '🌐 Full Bank Hub (Web)', url: 'https://purpleos-iota.vercel.app/app#finance' }
+            { text: '🌐 Full Bank Hub (Web)', url: 'https://gro10x-ai.vercel.app/app#finance' }
           ]
         ]
       }

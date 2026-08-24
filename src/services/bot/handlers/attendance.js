@@ -22,7 +22,7 @@ async function handleLocationClockIn(teamBot, msg) {
       reply_markup: {
         inline_keyboard: [
           [
-            { text: '📍 Open Attendance Board (Mini App)', web_app: { url: 'https://purpleos-iota.vercel.app/team-miniapp?tab=attendance' } }
+            { text: '📍 Open Attendance Board (Mini App)', web_app: { url: 'https://gro10x-ai.vercel.app/team-miniapp?tab=attendance' } }
           ]
         ]
       }
@@ -48,7 +48,7 @@ async function handleTextClockIn(teamBot, msg) {
       reply_markup: {
         inline_keyboard: [
           [
-            { text: '📍 Open Attendance Board (Mini App)', web_app: { url: 'https://purpleos-iota.vercel.app/team-miniapp?tab=attendance' } }
+            { text: '📍 Open Attendance Board (Mini App)', web_app: { url: 'https://gro10x-ai.vercel.app/team-miniapp?tab=attendance' } }
           ]
         ]
       }
@@ -74,7 +74,7 @@ async function handleClockOut(teamBot, msg) {
       reply_markup: {
         inline_keyboard: [
           [
-            { text: '📱 View Shift Log (Mini App)', web_app: { url: 'https://purpleos-iota.vercel.app/team-miniapp?tab=attendance' } }
+            { text: '📱 View Shift Log (Mini App)', web_app: { url: 'https://gro10x-ai.vercel.app/team-miniapp?tab=attendance' } }
           ]
         ]
       }

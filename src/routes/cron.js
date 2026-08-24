@@ -344,7 +344,7 @@ router.get('/lead-followups', authorizeCron, async (req, res) => {
       const owners = db.team.filter(t => (t.accessLevel === 'Owner / Admin' || t.role === 'Sales') && t.telegramId);
       for (const owner of owners) {
         await sendTelegramNotification(owner.telegramId, staleMsg, [
-          [{ text: '📊 Open CRM Leads', url: 'https://purpleos-iota.vercel.app/admin?tab=leads' }]
+          [{ text: '📊 Open CRM Leads', url: 'https://gro10x-ai.vercel.app/admin?tab=leads' }]
         ], true);
         staleAlertsSent++;
       }
@@ -506,7 +506,7 @@ router.get('/eod-reminder', authorizeCron, async (req, res) => {
       const firstName = getFirstName(emp.name);
       await sendTelegramNotification(emp.telegramId,
         `📝 *EOD REPORT REMINDER*\n\nHey ${firstName}! It's past 6 PM and your End-of-Day report for today hasn't been submitted yet.\n\nPlease submit your summary via bot or web workspace:`,
-        [[{ text: '📱 Open EOD Form', url: 'https://purpleos-iota.vercel.app/crew#eod' }]],
+        [[{ text: '📱 Open EOD Form', url: 'https://gro10x-ai.vercel.app/crew#eod' }]],
         true
       );
       sentCount++;
@@ -554,7 +554,7 @@ router.get('/late-clockin-alert', authorizeCron, async (req, res) => {
       const firstName = getFirstName(emp.name);
       await sendTelegramNotification(emp.telegramId,
         `⏰ *ATTENDANCE REMINDER (10:00 AM)*\n\nHey ${firstName}! You haven't clocked in for studio work today yet.\n\nPlease clock in using the Mini App below:`,
-        [[{ text: '📍 Clock In Studio', url: 'https://purpleos-iota.vercel.app/team-miniapp?tab=attendance' }]],
+        [[{ text: '📍 Clock In Studio', url: 'https://gro10x-ai.vercel.app/team-miniapp?tab=attendance' }]],
         true
       );
       sentCount++;
@@ -599,7 +599,7 @@ router.get('/approval-expiry', authorizeCron, async (req, res) => {
     let sentCount = 0;
     for (const mgr of managers) {
       if (mgr.telegramId) {
-        await sendTelegramNotification(mgr.telegramId, msg, [[{ text: '🌐 Open Manager Portal', url: 'https://purpleos-iota.vercel.app/manager' }]], true);
+        await sendTelegramNotification(mgr.telegramId, msg, [[{ text: '🌐 Open Manager Portal', url: 'https://gro10x-ai.vercel.app/manager' }]], true);
         sentCount++;
       }
     }
@@ -654,7 +654,7 @@ router.get('/invoice-due-reminder', authorizeCron, async (req, res) => {
           `Dear *${client.name || 'Brand Partner'}*,\n` +
           `Your invoice *${inv.id}* for *BDT ${Number(inv.amount || 0).toLocaleString()}* is due on *${inv.due_date || inv.dueDate || 'Soon'}*.\n\n` +
           `You can view details or submit payment confirmation directly in your Client Portal below.`;
-        const keyboard = [[{ text: '💳 Open Client Portal', web_app: { url: 'https://purpleos-iota.vercel.app/client#invoices' } }]];
+        const keyboard = [[{ text: '💳 Open Client Portal', web_app: { url: 'https://gro10x-ai.vercel.app/client#invoices' } }]];
         await sendTelegramNotification(clientTg, clientMsg, keyboard, false);
       }
     }
@@ -798,13 +798,13 @@ router.get('/lead-pipeline-summary', authorizeCron, async (req, res) => {
       msg += `⚠️ *Attention:* *${staleCount}* lead(s) uncontacted for >48h\n\n`;
     }
 
-    msg += `🌐 Open CRM Leads: https://purpleos-iota.vercel.app/admin?tab=leads`;
+    msg += `🌐 Open CRM Leads: https://gro10x-ai.vercel.app/admin?tab=leads`;
 
     const owners = db.team.filter(t => (t.accessLevel === 'Owner / Admin' || t.role === 'Sales') && t.telegramId);
     let sentCount = 0;
     for (const owner of owners) {
       await sendTelegramNotification(owner.telegramId, msg, [
-        [{ text: '📊 Open CRM Leads Pipeline', url: 'https://purpleos-iota.vercel.app/admin?tab=leads' }]
+        [{ text: '📊 Open CRM Leads Pipeline', url: 'https://gro10x-ai.vercel.app/admin?tab=leads' }]
       ], true);
       sentCount++;
     }

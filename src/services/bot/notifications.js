@@ -136,7 +136,7 @@ function sendClientDeliverableNotification(chatId, deliverable = {}) {
   const title = deliverable.project_name || deliverable.projectName || deliverable.title || 'Video Cut';
   const version = deliverable.active_version || deliverable.version || 'v1';
   const reviewId = deliverable.id;
-  const reviewUrl = `https://purpleos-iota.vercel.app/reviewroom.html?id=${reviewId}`;
+  const reviewUrl = `https://gro10x-ai.vercel.app/reviewroom.html?id=${reviewId}`;
 
   const text = `🎬 *New Creative Deliverable Ready for Review!*\n\n` +
     `Project: *${title}*\n` +
@@ -146,7 +146,7 @@ function sendClientDeliverableNotification(chatId, deliverable = {}) {
 
   const inlineKeyboard = [
     [{ text: '▶ Review & Approve Cut', url: reviewUrl }],
-    [{ text: '📱 Open Client Portal', web_app: { url: 'https://purpleos-iota.vercel.app/client' } }]
+    [{ text: '📱 Open Client Portal', web_app: { url: 'https://gro10x-ai.vercel.app/client' } }]
   ];
 
   return sendTelegramNotification(chatId, text, inlineKeyboard, false);
@@ -166,7 +166,7 @@ function sendClientInvoiceNotification(chatId, invoice = {}) {
     `You can view invoice details, download PDF, or submit payment proof directly in the Client Portal.`;
 
   const inlineKeyboard = [
-    [{ text: '💳 Pay / View Invoice', web_app: { url: 'https://purpleos-iota.vercel.app/client' } }]
+    [{ text: '💳 Pay / View Invoice', web_app: { url: 'https://gro10x-ai.vercel.app/client' } }]
   ];
 
   return sendTelegramNotification(chatId, text, inlineKeyboard, false);

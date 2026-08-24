@@ -236,7 +236,7 @@ router.post('/', leadSubmitLimiter, async (req, res) => {
         row.push({ text: '📞 WhatsApp Now', url: `https://wa.me/${waPhone}` });
       }
       if (score >= 75) {
-        row.push({ text: '👁 View in CRM', url: 'https://purpleos-iota.vercel.app/admin?tab=leads' });
+        row.push({ text: '👁 View in CRM', url: 'https://gro10x-ai.vercel.app/admin?tab=leads' });
       }
       if (row.length > 0) buttons.push(row);
 
@@ -299,7 +299,7 @@ router.post('/:id/onboard', requireAuth, async (req, res) => {
   const clientName = lead ? (lead.company || lead.contact_person || lead.name || 'Client') : 'Client';
   const email = lead ? (lead.email || 'client@agency.com') : 'client@agency.com';
   const token = `TOK-${Date.now()}`;
-  const magicLink = `https://purpleos-iota.vercel.app/partners?client=${encodeURIComponent(clientName)}&token=${token}`;
+  const magicLink = `https://gro10x-ai.vercel.app/partners?client=${encodeURIComponent(clientName)}&token=${token}`;
 
   let emailResult = { success: false };
   if (email && email.includes('@') && !email.includes('lead.com')) {

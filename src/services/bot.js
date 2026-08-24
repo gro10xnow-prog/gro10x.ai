@@ -128,7 +128,7 @@ function initBot() {
 
   const teamToken = process.env.TEAM_BOT_TOKEN || null?.teamBot?.token;
   const clientToken = process.env.CLIENT_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN || null?.clientBot?.token;
-  const baseUrl = process.env.BASE_URL || 'https://purpleos-iota.vercel.app';
+  const baseUrl = process.env.BASE_URL || 'https://gro10x-ai.vercel.app';
 
   // 1. Initialize Team Bot (Purple Man)
   if (teamToken && teamToken.trim() !== '' && !teamToken.includes('your_token')) {
@@ -167,7 +167,7 @@ function initBot() {
           menu_button: {
             type: 'web_app',
             text: 'Open App',
-            web_app: { url: 'https://purpleos-iota.vercel.app/team-miniapp' }
+            web_app: { url: 'https://gro10x-ai.vercel.app/team-miniapp' }
           }
         })
       }).catch(e => {});
@@ -204,7 +204,7 @@ function initBot() {
                 `*Priority:* ${t.priority || 'Normal'}\n` +
                 `*Assignee:* ${t.assignee || 'Unassigned'}\n` +
                 `*Due Date:* ${t.due_date || t.dueDate || 'N/A'}\n\n` +
-                `🌐 [Open Team Portal](https://purpleos-iota.vercel.app/team)`,
+                `🌐 [Open Team Portal](https://gro10x-ai.vercel.app/team)`,
               parse_mode: 'Markdown'
             }
           }));
@@ -244,7 +244,7 @@ function initBot() {
             `• Department: *${emp.department}*\n` +
             `• Access Level: *${emp.accessLevel}*\n\n` +
             `🔑 *Desktop Web PIN:* \`${pinRecord.pin}\`\n` +
-            `🌐 Portal: https://purpleos-iota.vercel.app/auth\n\n` +
+            `🌐 Portal: https://gro10x-ai.vercel.app/auth\n\n` +
             `━━━━━━━━━━━━━━━━━━━━\n` +
             `🚀 *Your full dashboard is now unlocked!*\n` +
             `Use the menu below or tap *Open App* for the full portal.`;
@@ -435,7 +435,7 @@ function initBot() {
         teamBot.sendMessage(msg.chat.id,
           `📅 *Content Planning & Dispatch Hub*\n\n` +
           `Manage your campaigns, editorial calendars, and dispatch queues directly on the web portal:\n` +
-          `👉 https://purpleos-iota.vercel.app/crew#calendar`,
+          `👉 https://gro10x-ai.vercel.app/crew#calendar`,
           { parse_mode: 'Markdown' }
         );
       });
@@ -443,7 +443,7 @@ function initBot() {
         teamBot.sendMessage(msg.chat.id,
           `📜 *Script & Copy Studio*\n\n` +
           `Access AI brief summarization, copy templates, and script QC feeds:\n` +
-          `👉 https://purpleos-iota.vercel.app/crew#tasks`,
+          `👉 https://gro10x-ai.vercel.app/crew#tasks`,
           { parse_mode: 'Markdown' }
         );
       });
@@ -522,7 +522,7 @@ function initBot() {
           }
 
           const pinRecord = await createTempPin(emp.phone, emp.id, 'team', emp.email);
-          teamBot.sendMessage(chatId, `🔑 *New Desktop Web PIN:* \`${pinRecord.pin}\`\n\nGo to https://purpleos-iota.vercel.app/auth to log in on your laptop.`, { parse_mode: 'Markdown' });
+          teamBot.sendMessage(chatId, `🔑 *New Desktop Web PIN:* \`${pinRecord.pin}\`\n\nGo to https://gro10x-ai.vercel.app/auth to log in on your laptop.`, { parse_mode: 'Markdown' });
         } catch (err) {
           console.error('[Bot Error: resetpin]', err.message);
           teamBot.sendMessage(chatId, '❌ Could not generate login PIN. Please try again later.').catch(() => {});
@@ -553,7 +553,7 @@ function initBot() {
             `• Current Rank: *${emp.badge || '🌱 Recruit'}*\n` +
             `• Earned XP: *${emp.xp || 0} XP*\n\n` +
             `📋 *Onboarding Checklist:*\n${taskText}\n\n` +
-            `🌐 Open Onboarding Web Portal: https://purpleos-iota.vercel.app/onboarding`;
+            `🌐 Open Onboarding Web Portal: https://gro10x-ai.vercel.app/onboarding`;
 
           teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
         } catch (err) {
@@ -610,7 +610,7 @@ function initBot() {
                 `*Amount:* BDT ${(Number(inv.amount) || 0).toLocaleString()}\n` +
                 `*Status:* ${inv.status || 'Pending'}\n` +
                 `*Due Date:* ${inv.due_date || inv.dueDate || 'N/A'}\n\n` +
-                `🌐 [Open Partner Portal](https://purpleos-iota.vercel.app/partners)`,
+                `🌐 [Open Partner Portal](https://gro10x-ai.vercel.app/partners)`,
               parse_mode: 'Markdown'
             }
           }));
@@ -751,7 +751,7 @@ function initBot() {
           `• Timeline: *${timeline}*\n\n` +
           `Our Account Director will review your requirements and reach out via WhatsApp at \`${cleanPhone}\` within 2 business hours with a custom proposal! 🚀\n\n` +
           `📞 *Direct Priority Line:* \`+880 1711-019550\`\n` +
-          `🌐 *Agency Website:* ${process.env.PUBLIC_URL || 'https://purpleos-iota.vercel.app'}`;
+          `🌐 *Agency Website:* ${process.env.PUBLIC_URL || 'https://gro10x-ai.vercel.app'}`;
 
         clientBot.sendMessage(chatId, successMsg, { parse_mode: 'Markdown', reply_markup: getProspectKeyboard() });
       }
@@ -1087,17 +1087,17 @@ function initBot() {
           if (data.startsWith('open_portal')) {
             await clientBot.answerCallbackQuery(queryId, {
               text: '🌐 Opening your client portal...',
-              url: `${process.env.BASE_URL || 'https://purpleos-iota.vercel.app'}/client`
+              url: `${process.env.BASE_URL || 'https://gro10x-ai.vercel.app'}/client`
             });
           } else if (data.startsWith('open_review')) {
             await clientBot.answerCallbackQuery(queryId, {
               text: '🎬 Opening Review Room...',
-              url: `${process.env.BASE_URL || 'https://purpleos-iota.vercel.app'}/client#review`
+              url: `${process.env.BASE_URL || 'https://gro10x-ai.vercel.app'}/client#review`
             });
           } else if (data.startsWith('open_invoice')) {
             await clientBot.answerCallbackQuery(queryId, {
               text: '💳 Opening invoices...',
-              url: `${process.env.BASE_URL || 'https://purpleos-iota.vercel.app'}/client#invoices`
+              url: `${process.env.BASE_URL || 'https://gro10x-ai.vercel.app'}/client#invoices`
             });
           } else {
             // Generic acknowledgement — dismiss spinner

@@ -21,4 +21,4 @@ Allow: /css/
 Allow: /js/
 Allow: /images/
 
-Sitemap: https://purpleos-iota.vercel.app/sitemap.xml
+Sitemap: https://gro10x-ai.vercel.app/sitemap.xml

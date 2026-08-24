@@ -5,7 +5,7 @@ const { requireAuth } = require('../middleware/auth');
 const { requireManager } = require('../middleware/rbac');
 const { getFirstName } = require('../utils/name');
 
-const PORTAL = 'https://purpleos-iota.vercel.app';
+const PORTAL = 'https://gro10x-ai.vercel.app';
 
 const STEPS = {
   no_pin:           'Visit the PurpleOS portal and log in with your phone number to receive your temporary access PIN.',

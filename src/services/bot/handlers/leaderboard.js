@@ -45,7 +45,7 @@ async function handleLeaderboard(teamBot, msg) {
       reply_markup: {
         inline_keyboard: [
           [
-            { text: '🏆 Full Agency Leaderboard', web_app: { url: 'https://purpleos-iota.vercel.app/crew#leaderboard' } }
+            { text: '🏆 Full Agency Leaderboard', web_app: { url: 'https://gro10x-ai.vercel.app/crew#leaderboard' } }
           ]
         ]
       }
