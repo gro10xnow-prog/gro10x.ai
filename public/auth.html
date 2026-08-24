@@ -294,6 +294,35 @@
     </div>
   </div>
 
+  <!-- Modal for setting permanent PIN on first login / temp PIN -->
+  <div id="setup-pin-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:100; align-items:center; justify-content:center; padding:1.5rem; backdrop-filter:blur(8px);">
+    <div style="background:var(--card-bg); border:1px solid var(--primary-brand); border-radius:20px; padding:2rem; max-width:400px; width:100%; box-shadow:0 20px 50px rgba(0,223,137,0.2);">
+      <div style="text-align:center; margin-bottom:1.5rem;">
+        <div class="auth-badge"><span>🔒 Permanent PIN Setup</span></div>
+        <h2 style="font-size:1.4rem; font-weight:800; color:#fff; margin-top:0.5rem;">Secure Your Account</h2>
+        <p style="color:var(--text-muted); font-size:0.85rem; margin-top:0.25rem;">You logged in with a temporary PIN. Please create your permanent 4-digit PIN.</p>
+      </div>
+      <form onsubmit="submitPermanentPinSetup(event)">
+        <div class="form-group">
+          <label for="perm-email">Email Address</label>
+          <input type="email" id="perm-email" class="form-input" placeholder="you@company.com" required>
+        </div>
+        <div class="form-group">
+          <label for="new-perm-pin">New 4-Digit PIN</label>
+          <input type="password" id="new-perm-pin" class="form-input" placeholder="••••" maxlength="6" required>
+        </div>
+        <div class="form-group">
+          <label for="confirm-perm-pin">Confirm New PIN</label>
+          <input type="password" id="confirm-perm-pin" class="form-input" placeholder="••••" maxlength="6" required>
+        </div>
+        <button type="submit" class="btn-submit" style="margin-top:1rem;">
+          <span>Save Permanent PIN & Enter</span>
+          <span>→</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
   <script src="/js/auth.js"></script>
 </body>
 </html>

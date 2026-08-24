@@ -145,8 +145,11 @@ async function fetchSupabaseSnapshot() {
   };
 }
 
+// 🛡️ Global Cron Authorization Guard for all /api/cron/* routes
+router.use(authorizeCron);
+
 // GET /api/cron/morning-briefing
-router.get('/morning-briefing', authorizeCron, async (req, res) => {
+router.get('/morning-briefing', async (req, res) => {
   try {
     const db = await fetchSupabaseSnapshot();
     const owners = db.team.filter(t => t.accessLevel === 'Owner / Admin' && t.telegramId);

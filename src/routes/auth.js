@@ -86,7 +86,7 @@ router.post('/telegram', async (req, res) => {
 
     if (isSupabaseConfigured() && tgId) {
       // 1. Try finding team member by telegram_id
-      const { data: teamUser } = await supabase.from('team').select('*').eq('telegram_id', tgId).maybeSingle();
+      const { data: teamUser } = await supabase.from('profiles').select('*').eq('telegram_id', tgId).maybeSingle();
       if (teamUser) {
         resolvedUser = teamUser;
         linkedType = 'team';

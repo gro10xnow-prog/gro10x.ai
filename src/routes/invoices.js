@@ -189,6 +189,7 @@ router.post('/', requireAuth, requireManager, async (req, res) => {
       client_name: req.body.clientName || req.body.client_name || 'General Client',
       project_name: req.body.projectName || req.body.project_name || '',
       project_ref: req.body.projectRef || req.body.project_ref || null,
+      engine_tag: req.body.engineTag || req.body.engine_tag || 'engine2',
       date: req.body.date || new Date().toISOString().split('T')[0],
       due_date: req.body.dueDate || new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0],
       amount: Number(req.body.amount) || 0,
@@ -227,6 +228,7 @@ router.put('/:id', requireAuth, requireManager, async (req, res) => {
     if (req.body.amount !== undefined) updates.amount = Number(req.body.amount);
     if (req.body.dueDate) updates.due_date = req.body.dueDate;
     if (req.body.notes !== undefined) updates.notes = req.body.notes;
+    if (req.body.engineTag || req.body.engine_tag) updates.engine_tag = req.body.engineTag || req.body.engine_tag;
     if (req.body.status === 'Paid') updates.paid_date = new Date().toISOString().split('T')[0];
     updates.updated_at = new Date().toISOString();
 

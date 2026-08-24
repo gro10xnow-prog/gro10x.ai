@@ -1,0 +1,63 @@
+-- =============================================================================
+-- ⚡ GRO10X MIGRATION v2.8 — MISSING COLUMNS & SCHEMA ALIGNMENT
+-- Adds missing columns across tasks, leads, expenses, invoices, and profiles
+-- =============================================================================
+
+-- 1. TASKS EXTENDED COLUMNS
+ALTER TABLE public.tasks
+  ADD COLUMN IF NOT EXISTS revisions_count INTEGER DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS blocked_by TEXT,
+  ADD COLUMN IF NOT EXISTS client TEXT,
+  ADD COLUMN IF NOT EXISTS department TEXT,
+  ADD COLUMN IF NOT EXISTS category TEXT;
+
+-- 2. LEADS EXTENDED COLUMNS
+ALTER TABLE public.leads
+  ADD COLUMN IF NOT EXISTS follow_up_date DATE,
+  ADD COLUMN IF NOT EXISTS utm_source TEXT,
+  ADD COLUMN IF NOT EXISTS utm_medium TEXT,
+  ADD COLUMN IF NOT EXISTS utm_campaign TEXT,
+  ADD COLUMN IF NOT EXISTS contact_person TEXT,
+  ADD COLUMN IF NOT EXISTS company TEXT,
+  ADD COLUMN IF NOT EXISTS stage TEXT DEFAULT 'new';
+
+-- 3. EXPENSES EXTENDED COLUMNS
+ALTER TABLE public.expenses
+  ADD COLUMN IF NOT EXISTS employee_id TEXT,
+  ADD COLUMN IF NOT EXISTS submitted_by_id TEXT,
+  ADD COLUMN IF NOT EXISTS submitted_by TEXT,
+  ADD COLUMN IF NOT EXISTS logged_by TEXT,
+  ADD COLUMN IF NOT EXISTS tier1_approved BOOLEAN DEFAULT false,
+  ADD COLUMN IF NOT EXISTS tier1_approved_by TEXT,
+  ADD COLUMN IF NOT EXISTS tier1_approved_at TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS tier2_approved BOOLEAN DEFAULT false,
+  ADD COLUMN IF NOT EXISTS tier2_approved_by TEXT,
+  ADD COLUMN IF NOT EXISTS tier2_approved_at TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS finance_verified BOOLEAN DEFAULT false,
+  ADD COLUMN IF NOT EXISTS finance_verified_by TEXT,
+  ADD COLUMN IF NOT EXISTS finance_verified_at TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS disbursed BOOLEAN DEFAULT false,
+  ADD COLUMN IF NOT EXISTS disbursed_by TEXT,
+  ADD COLUMN IF NOT EXISTS disbursed_at TIMESTAMPTZ;
+
+-- 4. INVOICES EXTENDED COLUMNS
+ALTER TABLE public.invoices
+  ADD COLUMN IF NOT EXISTS paid_at TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS paid_date DATE,
+  ADD COLUMN IF NOT EXISTS project_name TEXT,
+  ADD COLUMN IF NOT EXISTS project_ref TEXT,
+  ADD COLUMN IF NOT EXISTS client_name TEXT,
+  ADD COLUMN IF NOT EXISTS tax_rate NUMERIC DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS discount NUMERIC DEFAULT 0;
+
+-- 5. PROFILES EXTENDED COLUMNS
+ALTER TABLE public.profiles
+  ADD COLUMN IF NOT EXISTS casual_leaves_allowed INTEGER DEFAULT 10,
+  ADD COLUMN IF NOT EXISTS casual_leaves_used INTEGER DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS sick_leaves_allowed INTEGER DEFAULT 14,
+  ADD COLUMN IF NOT EXISTS sick_leaves_used INTEGER DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS weekly_capacity_hours NUMERIC DEFAULT 40,
+  ADD COLUMN IF NOT EXISTS agreement_stage TEXT,
+  ADD COLUMN IF NOT EXISTS agreement_signed_at TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS employee_signature TEXT,
+  ADD COLUMN IF NOT EXISTS survey_complete BOOLEAN DEFAULT false;

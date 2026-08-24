@@ -61,6 +61,7 @@ const workflowsRoutes = require('./workflows');
 const aiRoutes = require('./ai');
 const exportRoutes = require('./export');
 const eodRoutes = require('./eod');
+const enginesRoutes = require('./engines');
 
 // System Version Endpoint
 router.get('/version', (req, res) => {
@@ -118,6 +119,8 @@ router.get(['/system-health', '/system-health/detailed'], asyncHandler(async (re
 
   const isHealthy = dbStatus === 'Connected' && (team !== null || !process.env.TELEGRAM_BOT_TOKEN_TEAM);
 
+  const hasAuth = !!(req.headers.authorization || (req.headers.cookie && req.headers.cookie.includes('sb-access-token')));
+
   return res.json({
     status: isHealthy ? 'healthy' : 'degraded',
     version: pkg.version || '0.9.0.0',
@@ -134,7 +137,7 @@ router.get(['/system-health', '/system-health/detailed'], asyncHandler(async (re
     uptimeSeconds: Math.floor(process.uptime()),
     memoryMB: Math.round(process.memoryUsage().rss / 1024 / 1024 * 100) / 100,
     cacheStats: cache.getStats ? cache.getStats() : { activeKeys: 0, hits: 0, misses: 0, hitRatePercent: 100 },
-    agencyTelemetry: agencyStats,
+    ...(hasAuth ? { agencyTelemetry: agencyStats } : {}),
     timestamp: new Date().toISOString()
   });
 }));
@@ -168,6 +171,7 @@ router.use('/chat', chatRoutes);
 router.use('/ai', aiRoutes);
 router.use('/export', exportRoutes);
 router.use('/eod', eodRoutes);
+router.use('/engines', enginesRoutes);
 
 // Public Client Phone Check (used by chat widget — rate-limited & safe)
 router.get('/public/client-check', asyncHandler(async (req, res) => {

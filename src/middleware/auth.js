@@ -58,7 +58,18 @@ async function requireAuth(req, res, next) {
           .or(`id.eq.${user.id},email.eq.${user.email}`)
           .maybeSingle();
 
-        const isClient = (profile?.role === 'Client' || profile?.accessLevel === 'Client Partner' || profile?.access_level === 'Client Partner' || profile?.linked_type === 'client' || profile?.linkedType === 'client' || user.user_metadata?.role === 'Client');
+        const isClient = (
+          profile?.role === 'Client' ||
+          profile?.role === 'Client Partner' ||
+          profile?.role === 'Client Representative' ||
+          profile?.accessLevel === 'Client Partner' ||
+          profile?.access_level === 'Client Partner' ||
+          profile?.accessLevel === 'Client' ||
+          profile?.access_level === 'Client' ||
+          profile?.linked_type === 'client' ||
+          profile?.linkedType === 'client' ||
+          user.user_metadata?.role === 'Client'
+        );
         const resolvedLinkedType = isClient ? 'client' : (profile?.linked_type || profile?.linkedType || 'team');
         const resolvedLinkedId = isClient ? (profile?.client_id || profile?.linked_id || user.id) : (profile?.emp_code || user.id);
 
@@ -91,7 +102,7 @@ async function requireAuth(req, res, next) {
       const emp = (dbData.team || []).find(t => t.id === pinUser.linkedId || t.phone === pinUser.phone);
       if (emp) {
         req.user = {
-          id: emp.id || 'EMP-001',
+          id: emp.id || 'GRO-001',
           email: emp.email || '',
           name: emp.name || 'Team Member',
           role: emp.role || 'Specialist',
@@ -112,28 +123,28 @@ async function requireAuth(req, res, next) {
     }
   }
 
-  // 4. Development / Test Fallback ONLY when NODE_ENV is not production (strictly disabled in production)
-  if ((process.env.NODE_ENV === 'test' || (process.env.NODE_ENV !== 'production' && !process.env.FORCE_SUPABASE)) && req.headers['x-disable-dev-auth'] !== 'true') {
+  // 4. Development / Test Fallback ONLY when explicitly in development or test mode (never active on Vercel preview/production)
+  if ((process.env.NODE_ENV === 'test' || (process.env.NODE_ENV === 'development' && !process.env.VERCEL && !process.env.FORCE_SUPABASE)) && req.headers['x-disable-dev-auth'] !== 'true') {
     const db = await readDB();
-    const defaultEmp = (db.team && db.team[0]) || { name: 'Mahmudul Hasan', role: 'Agency Director' };
+    const defaultEmp = (db.team && db.team[0]) || { name: 'Firoz Uddin Ahmed', role: 'Agency Founder & Master Owner' };
 
     req.user = {
-      id: defaultEmp.id || 'EMP-001',
-      email: 'owner@purplebot.digital',
+      id: defaultEmp.id || 'GRO-001',
+      email: defaultEmp.email || 'gro10xnow@gmail.com',
       role: defaultEmp.role || 'Agency Founder & Master Owner',
       accessLevel: 'Owner / Admin',
-      department: defaultEmp.department || 'Management',
+      department: defaultEmp.department || 'Executive Leadership',
       linkedType: 'team',
-      linkedId: defaultEmp.id || 'EMP-001',
+      linkedId: defaultEmp.id || 'GRO-001',
       profile: {
-        emp_code: defaultEmp.id || 'EMP-001',
-        name: defaultEmp.name || 'Mahmudul Hasan',
-        email: 'owner@purplebot.digital',
+        emp_code: defaultEmp.id || 'GRO-001',
+        name: defaultEmp.name || 'Firoz Uddin Ahmed',
+        email: defaultEmp.email || 'gro10xnow@gmail.com',
         role: defaultEmp.role || 'Agency Founder & Master Owner',
         accessLevel: 'Owner / Admin',
-        phone: defaultEmp.phone || '+8801700000000',
-        department: defaultEmp.department || 'Management',
-        status: defaultEmp.status || 'In Studio'
+        phone: defaultEmp.phone || '+8801708459008',
+        department: defaultEmp.department || 'Executive Leadership',
+        status: defaultEmp.status || 'Active'
       }
     };
     return next();

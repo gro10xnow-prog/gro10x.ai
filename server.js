@@ -171,6 +171,8 @@ app.get(['/api/system-health', '/api/system-health/detailed'], async (req, res) 
 
     const isHealthy = dbStatus === 'Connected' && (team !== null || !process.env.TELEGRAM_BOT_TOKEN_TEAM);
 
+    const hasAuth = !!(req.headers.authorization || (req.headers.cookie && req.headers.cookie.includes('sb-access-token')));
+
     return res.json({
       status: isHealthy ? 'healthy' : 'degraded',
       version: pkg.version || '0.9.0.0',
@@ -187,7 +189,7 @@ app.get(['/api/system-health', '/api/system-health/detailed'], async (req, res) 
       uptimeSeconds: Math.round(process.uptime()),
       memoryMB: Math.round((process.memoryUsage().rss / 1024 / 1024) * 100) / 100,
       cacheStats: cache.stats ? cache.stats() : { activeKeys: cache.size() },
-      agencyTelemetry: agencyStats,
+      ...(hasAuth ? { agencyTelemetry: agencyStats } : {}),
       timestamp: new Date().toISOString()
     });
   } catch (err) {

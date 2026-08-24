@@ -17,13 +17,16 @@ function requireAdmin(req, res, next) {
   const empId = req.user.profile?.emp_code || req.user.id || '';
 
   const isOwnerAdmin =
-    ['PBD-000', 'PBD-001', 'PBD-002'].includes(empId) ||
+    ['GRO-001', 'GRO-000', 'PBD-000', 'PBD-001', 'PBD-002'].includes(empId) ||
     access.includes('owner') ||
     access.includes('admin') ||
+    access.includes('executive') ||
     role.includes('owner') ||
+    role.includes('founder') ||
     role.includes('managing director') ||
     role.includes('chairman') ||
-    role.includes('technology admin');
+    role.includes('technology admin') ||
+    role.includes('executive');
 
   if (!isOwnerAdmin) {
     return res.status(403).json({ error: 'Forbidden: Owner / Admin privileges required' });
@@ -46,14 +49,19 @@ function requireManager(req, res, next) {
   const empId = req.user.profile?.emp_code || req.user.id || '';
 
   const isManagerOrAdmin =
-    ['PBD-000', 'PBD-001', 'PBD-002'].includes(empId) ||
+    ['GRO-001', 'GRO-000', 'PBD-000', 'PBD-001', 'PBD-002'].includes(empId) ||
     access.includes('owner') ||
     access.includes('admin') ||
     access.includes('director') ||
     access.includes('manager') ||
+    access.includes('executive') ||
+    access.includes('leadership') ||
     role.includes('director') ||
     role.includes('manager') ||
-    role.includes('head');
+    role.includes('head') ||
+    role.includes('lead') ||
+    role.includes('owner') ||
+    role.includes('founder');
 
   if (!isManagerOrAdmin) {
     return res.status(403).json({ error: 'Forbidden: Department Manager privileges required' });

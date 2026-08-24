@@ -76,29 +76,40 @@ function calculateLeadScore(lead) {
 
 // GET all leads (Internal Team/Admin, Supports ?limit=, ?page=)
 router.get('/', requireAuth, async (req, res) => {
-  const limit = Math.min(parseInt(req.query.limit) || 200, 500);
-  const page = Math.max(parseInt(req.query.page) || 0, 0);
-  const offset = page * limit;
-  const cacheKey = `leads:list:${limit}:${page}`;
+  try {
+    const limit = Math.min(parseInt(req.query.limit) || 200, 500);
+    const page = Math.max(parseInt(req.query.page) || 0, 0);
+    const offset = page * limit;
+    const cacheKey = `leads:list:${limit}:${page}`;
 
-  const cached = cache.get(cacheKey);
-  if (cached) {
-    return res.json(cached);
-  }
-
-  if (isSupabaseConfigured()) {
-    const { data, error } = await supabase.from('leads').select('*').order('created_at', { ascending: false }).range(offset, offset + limit - 1);
-    if (!error) {
-      const leads = (data || []).map(l => ({ ...l, score: calculateLeadScore(l) }));
-      cache.set(cacheKey, leads, 60000);
-      return res.json(leads);
+    const cached = cache.get(cacheKey);
+    if (cached) {
+      return res.json(cached);
     }
+
+    if (isSupabaseConfigured()) {
+      const { data, error } = await supabase.from('leads').select('*').order('created_at', { ascending: false }).range(offset, offset + limit - 1);
+      if (!error) {
+        const leads = (data || []).map(l => ({ ...l, score: calculateLeadScore(l) }));
+        cache.set(cacheKey, leads, 60000);
+        return res.json(leads);
+      }
+    }
+    res.json([]);
+  } catch (err) {
+    console.error('[Leads GET Error]:', err.message);
+    res.status(500).json({ error: err.message });
   }
-  res.json([]);
 });
 
 // POST Public Lead Capture (Chat widget, newsletter, landing page form)
 router.post('/', leadSubmitLimiter, async (req, res) => {
+  // Honeypot anti-spam check (if automated bot fills hidden field, silently drop)
+  const honeypot = (req.body.website_url || req.body.hp_field || req.body.bot_check || '').trim();
+  if (honeypot) {
+    return res.status(200).json({ success: true, message: 'Inquiry received' });
+  }
+
   const email = (req.body.contactEmail || req.body.email || '').trim();
   const phone = (req.body.phone || req.body.whatsapp || '').trim();
   const company = (req.body.clientName || req.body.company || '').trim();
@@ -251,194 +262,224 @@ router.post('/', leadSubmitLimiter, async (req, res) => {
 
 // PUT Update Lead Stage / Notes (Admin)
 router.put('/:id', requireAuth, async (req, res) => {
-  const { id } = req.params;
+  try {
+    const { id } = req.params;
 
-  if (isSupabaseConfigured()) {
-    const { data: existing } = await supabase.from('leads').select('*').eq('id', id).maybeSingle();
-    if (!existing) return res.status(404).json({ error: 'Lead not found' });
+    if (isSupabaseConfigured()) {
+      const { data: existing } = await supabase.from('leads').select('*').eq('id', id).maybeSingle();
+      if (!existing) return res.status(404).json({ error: 'Lead not found' });
 
-    const updatedLead = { ...existing, ...req.body, updated_at: new Date().toISOString() };
-    await supabase.from('leads').update(updatedLead).eq('id', id);
-    
-    updatedLead.score = calculateLeadScore(updatedLead);
-    broadcastLeadEvent('lead_update', [updatedLead]);
-    return res.json({ success: true, lead: updatedLead });
+      const updatedLead = { ...existing, ...req.body, updated_at: new Date().toISOString() };
+      await supabase.from('leads').update(updatedLead).eq('id', id);
+      
+      updatedLead.score = calculateLeadScore(updatedLead);
+      broadcastLeadEvent('lead_update', [updatedLead]);
+      return res.json({ success: true, lead: updatedLead });
+    }
+
+    res.status(503).json({ error: 'Database unavailable' });
+  } catch (err) {
+    console.error('[Leads PUT Error]:', err.message);
+    res.status(500).json({ error: err.message });
   }
-
-  res.status(503).json({ error: 'Database unavailable' });
 });
 
 // DELETE Lead (Admin only)
 router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
-  const { id } = req.params;
+  try {
+    const { id } = req.params;
 
-  if (isSupabaseConfigured()) {
-    await supabase.from('leads').delete().eq('id', id);
-    broadcastLeadEvent('lead_update', [{ id, deleted: true }]);
-    return res.json({ success: true });
+    if (isSupabaseConfigured()) {
+      await supabase.from('leads').delete().eq('id', id);
+      broadcastLeadEvent('lead_update', [{ id, deleted: true }]);
+      return res.json({ success: true });
+    }
+
+    res.status(503).json({ error: 'Database unavailable' });
+  } catch (err) {
+    console.error('[Leads DELETE Error]:', err.message);
+    res.status(500).json({ error: err.message });
   }
-
-  res.status(503).json({ error: 'Database unavailable' });
 });
 
 // POST Magic Link Onboarding & Resend Email Trigger
 router.post('/:id/onboard', requireAuth, async (req, res) => {
-  const { id } = req.params;
-  let lead = null;
+  try {
+    const { id } = req.params;
+    let lead = null;
 
-  if (isSupabaseConfigured()) {
-    const { data: l } = await supabase.from('leads').select('*').eq('id', id).maybeSingle();
-    if (!l) {
-      const { data: c } = await supabase.from('clients').select('*').eq('id', id).maybeSingle();
-      lead = c;
-    } else {
-      lead = l;
+    if (isSupabaseConfigured()) {
+      const { data: l } = await supabase.from('leads').select('*').eq('id', id).maybeSingle();
+      if (!l) {
+        const { data: c } = await supabase.from('clients').select('*').eq('id', id).maybeSingle();
+        lead = c;
+      } else {
+        lead = l;
+      }
     }
+
+    const clientName = lead ? (lead.company || lead.contact_person || lead.name || 'Client') : 'Client';
+    const email = lead ? (lead.email || 'client@agency.com') : 'client@agency.com';
+    const token = `TOK-${Date.now()}`;
+    const magicLink = `https://gro10x-ai.vercel.app/partners?client=${encodeURIComponent(clientName)}&token=${token}`;
+
+    let emailResult = { success: false };
+    if (email && email.includes('@') && !email.includes('lead.com')) {
+      emailResult = await sendClientOnboardingEmail({ clientName, email, magicLink });
+    }
+
+    res.json({ success: true, clientName, email, magicLink, emailSent: emailResult.success });
+  } catch (err) {
+    console.error('[Leads Onboard Error]:', err.message);
+    res.status(500).json({ error: err.message });
   }
-
-  const clientName = lead ? (lead.company || lead.contact_person || lead.name || 'Client') : 'Client';
-  const email = lead ? (lead.email || 'client@agency.com') : 'client@agency.com';
-  const token = `TOK-${Date.now()}`;
-  const magicLink = `https://gro10x-ai.vercel.app/partners?client=${encodeURIComponent(clientName)}&token=${token}`;
-
-  let emailResult = { success: false };
-  if (email && email.includes('@') && !email.includes('lead.com')) {
-    emailResult = await sendClientOnboardingEmail({ clientName, email, magicLink });
-  }
-
-  res.json({ success: true, clientName, email, magicLink, emailSent: emailResult.success });
 });
 
 // POST Convert Lead to Active Client CRM
 router.post('/:id/convert', requireAuth, async (req, res) => {
-  const { id } = req.params;
+  try {
+    const { id } = req.params;
 
-  if (!isSupabaseConfigured()) return res.status(503).json({ error: 'Database unavailable' });
+    if (!isSupabaseConfigured()) return res.status(503).json({ error: 'Database unavailable' });
 
-  const { data: lead } = await supabase.from('leads').select('*').eq('id', id).maybeSingle();
-  if (!lead) return res.status(404).json({ error: 'Lead not found' });
+    const { data: lead } = await supabase.from('leads').select('*').eq('id', id).maybeSingle();
+    if (!lead) return res.status(404).json({ error: 'Lead not found' });
 
-  const clientName = lead.company || lead.contact_person || 'New Client';
-  const { data: existingClient } = await supabase.from('clients').select('id').ilike('name', clientName).maybeSingle();
+    const clientName = lead.company || lead.contact_person || 'New Client';
+    const { data: existingClient } = await supabase.from('clients').select('id').ilike('name', clientName).maybeSingle();
 
-  let clientRecord = existingClient;
+    let clientRecord = existingClient;
 
-  if (!existingClient) {
-    const { count } = await supabase.from('clients').select('id', { count: 'exact', head: true });
-    const newClientId = `CLI-${String((count || 0) + 1).padStart(4, '0')}`;
-    const clientPayload = {
-      id: newClientId,
-      name: clientName,
-      contact_person: lead.contact_person || 'Brand Lead',
-      email: lead.email || '',
-      phone: lead.phone || '',
-      whatsapp: lead.whatsapp || lead.phone || '',
-      status: 'Active Retainer',
-      category: lead.category || 'General',
-      total_spent: '$0',
-      active_campaigns: [lead.service || 'New Campaign']
-    };
-    await supabase.from('clients').insert([clientPayload]);
-    clientRecord = clientPayload;
-    broadcastLeadEvent('client_update', [clientPayload]);
+    if (!existingClient) {
+      const { count } = await supabase.from('clients').select('id', { count: 'exact', head: true });
+      const newClientId = `CLI-${String((count || 0) + 1).padStart(4, '0')}`;
+      const clientPayload = {
+        id: newClientId,
+        name: clientName,
+        contact_person: lead.contact_person || 'Brand Lead',
+        email: lead.email || '',
+        phone: lead.phone || '',
+        whatsapp: lead.whatsapp || lead.phone || '',
+        status: 'Active Retainer',
+        category: lead.category || 'General',
+        total_spent: '$0',
+        active_campaigns: [lead.service || 'New Campaign']
+      };
+      await supabase.from('clients').insert([clientPayload]);
+      clientRecord = clientPayload;
+      broadcastLeadEvent('client_update', [clientPayload]);
+    }
+
+    // Update lead with won status and client_id back-reference
+    await supabase.from('leads').update({
+      stage: 'Won / Closed',
+      client_id: clientRecord.id,
+      updated_at: new Date().toISOString()
+    }).eq('id', id);
+
+    broadcastLeadEvent('lead_update', [{ id, stage: 'Won / Closed', client_id: clientRecord.id }]);
+    res.json({ success: true, client: clientRecord, lead });
+  } catch (err) {
+    console.error('[Leads Convert Error]:', err.message);
+    res.status(500).json({ error: err.message });
   }
-
-  // Update lead with won status and client_id back-reference
-  await supabase.from('leads').update({
-    stage: 'Won / Closed',
-    client_id: clientRecord.id,
-    updated_at: new Date().toISOString()
-  }).eq('id', id);
-
-  broadcastLeadEvent('lead_update', [{ id, stage: 'Won / Closed', client_id: clientRecord.id }]);
-  res.json({ success: true, client: clientRecord, lead });
 });
 
 // POST Public Web Consultation Booking
 router.post('/book', leadSubmitLimiter, async (req, res) => {
-  const newLead = {
-    id: await nextLeadId(),
-    company: req.body.company || req.body.contactPerson || 'Web Lead',
-    contact_person: req.body.contactPerson || 'Prospective Client',
-    email: req.body.email || '',
-    phone: req.body.phone || '',
-    whatsapp: req.body.whatsapp || req.body.phone || '',
-    source: 'Website Booking',
-    category: req.body.category || 'General',
-    service: req.body.service || 'Agency Services',
-    value: req.body.value || '$1,000 - $3,000',
-    stage: 'New Inquiry',
-    notes: `Timeline: ${req.body.timeline || 'Flexible'}. Notes: ${req.body.notes || 'No extra notes.'}`,
-    created_at: new Date().toISOString()
-  };
-
-  if (isSupabaseConfigured()) {
-    await supabase.from('leads').insert([newLead]);
-  }
-
-  broadcastLeadEvent('lead_update', [newLead]);
-
-  // Telegram alert to agency owner
   try {
-    const ownerChatId = process.env.OWNER_TELEGRAM_ID;
-    if (ownerChatId) {
-      sendTelegramNotification(ownerChatId,
-        `📅 *New Campaign Consultation Booked!*\n\n` +
-        `👤 *${newLead.contact_person}* — ${newLead.company}\n` +
-        `📞 Phone: \`${newLead.phone || newLead.whatsapp || 'N/A'}\`\n` +
-        `🎯 Service: *${newLead.service}*\n` +
-        `⏱️ Timeline: ${req.body.timeline || 'Flexible'}\n` +
-        `📝 Notes: ${req.body.notes || 'N/A'}`, null, false
-      );
-    }
-  } catch (err) {
-    console.warn('Telegram booking alert failed:', err.message);
-  }
+    const newLead = {
+      id: await nextLeadId(),
+      company: req.body.company || req.body.contactPerson || 'Web Lead',
+      contact_person: req.body.contactPerson || 'Prospective Client',
+      email: req.body.email || '',
+      phone: req.body.phone || '',
+      whatsapp: req.body.whatsapp || req.body.phone || '',
+      source: 'Website Booking',
+      category: req.body.category || 'General',
+      service: req.body.service || 'Agency Services',
+      value: req.body.value || '$1,000 - $3,000',
+      stage: 'New Inquiry',
+      notes: `Timeline: ${req.body.timeline || 'Flexible'}. Notes: ${req.body.notes || 'No extra notes.'}`,
+      created_at: new Date().toISOString()
+    };
 
-  res.json({ success: true, lead: newLead });
+    if (isSupabaseConfigured()) {
+      await supabase.from('leads').insert([newLead]);
+    }
+
+    broadcastLeadEvent('lead_update', [newLead]);
+
+    // Telegram alert to agency owner
+    try {
+      const ownerChatId = process.env.OWNER_TELEGRAM_ID;
+      if (ownerChatId) {
+        sendTelegramNotification(ownerChatId,
+          `📅 *New Campaign Consultation Booked!*\n\n` +
+          `👤 *${newLead.contact_person}* — ${newLead.company}\n` +
+          `📞 Phone: \`${newLead.phone || newLead.whatsapp || 'N/A'}\`\n` +
+          `🎯 Service: *${newLead.service}*\n` +
+          `⏱️ Timeline: ${req.body.timeline || 'Flexible'}\n` +
+          `📝 Notes: ${req.body.notes || 'N/A'}`, null, false
+        );
+      }
+    } catch (err) {
+      console.warn('Telegram booking alert failed:', err.message);
+    }
+
+    res.json({ success: true, lead: newLead });
+  } catch (err) {
+    console.error('[Leads Book Error]:', err.message);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // POST /api/leads/bulk (CSV Import)
 router.post('/bulk', requireAuth, async (req, res) => {
-  const { leads } = req.body;
-  if (!leads || !Array.isArray(leads) || leads.length === 0) {
-    return res.status(400).json({ error: 'No leads provided' });
+  try {
+    const { leads } = req.body;
+    if (!leads || !Array.isArray(leads) || leads.length === 0) {
+      return res.status(400).json({ error: 'No leads provided' });
+    }
+
+    const leadsToInsert = [];
+    const startId = parseInt((await nextLeadId()).replace(/^(LED|LD)-/, ''), 10);
+    let idCounter = isNaN(startId) ? 1 : startId;
+
+    for (const l of leads) {
+      const newLead = {
+        id: `LED-${String(idCounter++).padStart(3, '0')}`,
+        stage: 'New Inquiry',
+        created_at: new Date().toISOString(),
+        company: l.company || l.clientName || 'Unknown',
+        contact_person: l.contactPerson || l.name || '',
+        email: l.email || '',
+        phone: l.phone || l.whatsapp || '',
+        whatsapp: l.whatsapp || l.phone || '',
+        source: l.source || 'Bulk Import',
+        category: l.category || 'General',
+        service: l.service || 'General',
+        value: l.value || '',
+        notes: l.notes || 'Imported via CSV',
+        utm_source: '',
+        utm_medium: '',
+        utm_campaign: ''
+      };
+      newLead.score = calculateLeadScore(newLead);
+      leadsToInsert.push(newLead);
+    }
+
+    if (isSupabaseConfigured()) {
+      const { error } = await supabase.from('leads').insert(leadsToInsert);
+      if (error) return res.status(500).json({ error: 'Database insert failed: ' + error.message });
+    }
+
+    broadcastLeadEvent('lead_update', leadsToInsert);
+    res.json({ success: true, count: leadsToInsert.length });
+  } catch (err) {
+    console.error('[Leads Bulk Error]:', err.message);
+    res.status(500).json({ error: err.message });
   }
-
-  const leadsToInsert = [];
-  const startId = parseInt((await nextLeadId()).replace(/^(LED|LD)-/, ''), 10);
-  let idCounter = isNaN(startId) ? 1 : startId;
-
-  for (const l of leads) {
-    const newLead = {
-      id: `LED-${String(idCounter++).padStart(3, '0')}`,
-      stage: 'New Inquiry',
-      created_at: new Date().toISOString(),
-      company: l.company || l.clientName || 'Unknown',
-      contact_person: l.contactPerson || l.name || '',
-      email: l.email || '',
-      phone: l.phone || l.whatsapp || '',
-      whatsapp: l.whatsapp || l.phone || '',
-      source: l.source || 'Bulk Import',
-      category: l.category || 'General',
-      service: l.service || 'General',
-      value: l.value || '',
-      notes: l.notes || 'Imported via CSV',
-      utm_source: '',
-      utm_medium: '',
-      utm_campaign: ''
-    };
-    newLead.score = calculateLeadScore(newLead);
-    leadsToInsert.push(newLead);
-  }
-
-  if (isSupabaseConfigured()) {
-    const { error } = await supabase.from('leads').insert(leadsToInsert);
-    if (error) return res.status(500).json({ error: 'Database insert failed: ' + error.message });
-  }
-
-  broadcastLeadEvent('lead_update', leadsToInsert);
-  res.json({ success: true, count: leadsToInsert.length });
 });
 
 module.exports = router;

@@ -90,6 +90,24 @@ function saveState(state) {
 
 async function renderEnginesView(container) {
   const state = getStoredState();
+  let isLive = false;
+
+  try {
+    if (window.APP_API && typeof window.APP_API.get === 'function') {
+      const apiData = await window.APP_API.get('/engines/summary');
+      if (apiData && apiData.success && apiData.engines) {
+        isLive = true;
+        if (apiData.engines.engine1) state.saas.current = Math.max(state.saas.current, apiData.engines.engine1.current || 0);
+        if (apiData.engines.engine2) state.retainers.current = Math.max(state.retainers.current, apiData.engines.engine2.current || 0);
+        if (apiData.engines.engine3) state.assets.current = Math.max(state.assets.current, apiData.engines.engine3.current || 0);
+        if (apiData.engines.engine4) state.sprints.current = Math.max(state.sprints.current, apiData.engines.engine4.current || 0);
+        if (apiData.engines.engine5) state.video.current = Math.max(state.video.current, apiData.engines.engine5.current || 0);
+      }
+    }
+  } catch (e) {
+    console.log('[Engines] Using local fallback state:', e.message);
+  }
+
   const totalTarget = 100000;
   const totalCurrent = state.saas.current + state.sprints.current + state.assets.current + state.retainers.current + state.video.current;
   const totalPercent = Math.min(100, Math.round((totalCurrent / totalTarget) * 100));
@@ -98,9 +116,14 @@ async function renderEnginesView(container) {
   container.innerHTML = `
     <div class="view-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem;">
       <div>
-        <h1 style="font-size:1.6rem; font-weight:900; font-family:var(--font-heading); color:var(--text-primary); margin:0 0 0.25rem;">
-          🚀 5-Engine Growth Operations Cockpit
-        </h1>
+        <div style="display:flex; align-items:center; gap:0.6rem; margin-bottom:0.25rem;">
+          <h1 style="font-size:1.6rem; font-weight:900; font-family:var(--font-heading); color:var(--text-primary); margin:0;">
+            🚀 5-Engine Growth Operations Cockpit
+          </h1>
+          <span style="font-size:0.7rem; font-weight:800; padding:0.2rem 0.5rem; border-radius:999px; background:${isLive ? 'rgba(0,223,137,0.15)' : 'rgba(255,255,255,0.08)'}; color:${isLive ? '#00df89' : 'var(--text-muted)'}; border:1px solid ${isLive ? 'rgba(0,223,137,0.3)' : 'rgba(255,255,255,0.15)'};">
+            ${isLive ? '🟢 Live Supabase Synced' : '💾 Local Workspace'}
+          </span>
+        </div>
         <p style="color:var(--text-secondary); font-size:0.88rem; margin:0;">
           Track, operate, and compound the 5 autonomous growth engines towards the <strong>$100,000 Year 1 ARR</strong> goal.
         </p>
@@ -416,6 +439,16 @@ function openLogRevenueModal() {
   else if (engine === '5') state.video.current += amount;
 
   saveState(state);
+
+  // Sync to backend Supabase if API available
+  if (window.APP_API && typeof window.APP_API.post === 'function') {
+    window.APP_API.post('/engines/log', {
+      engineId: 'engine' + engine,
+      amount: amount,
+      note: 'Manual operational logger input'
+    }).catch(e => console.log('[Engines] Background log sync note:', e.message));
+  }
+
   if (window.GRO10XAuth && window.GRO10XAuth.toast) {
     window.GRO10XAuth.toast('✅ Logged $' + amount + ' to Engine ' + engine + ' successfully!', 'success');
   }

@@ -766,7 +766,7 @@ router.get('/', requireAuth, async (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 // GET /api/team/tg/:telegramId   ← Legacy route (keep for backwards compat)
 // ─────────────────────────────────────────────────────────────────────────────
-router.get('/tg/:telegramId', async (req, res) => {
+router.get('/tg/:telegramId', requireMiniAppAuth, async (req, res) => {
   try {
     res.setHeader('Deprecation', 'true');
     res.setHeader('Link', '</api/team/me>; rel="successor-version"');

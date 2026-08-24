@@ -467,6 +467,17 @@ window.APP_MODULES.finance = async function(container) {
             <input type="text" id="fnInvDesc" class="input-text" placeholder="e.g. 3-Month Retainer (Social Media)">
           </div>
 
+          <div class="form-group">
+            <label class="form-label">Attributed Growth Engine</label>
+            <select id="fnInvEngine" class="input-text">
+              <option value="engine2" selected>🚀 Engine 2: Dedicated Client Retainers (25%)</option>
+              <option value="engine1">⚡ Engine 1: Freelance & Enterprise AI Scale (35%)</option>
+              <option value="engine3">📦 Engine 3: Digital AI Products & Templates (20%)</option>
+              <option value="engine4">🤝 Engine 4: Affiliate & Partnership Ecosystem (15%)</option>
+              <option value="engine5">🎬 Engine 5: Studio & Micro Media Lab (5%)</option>
+            </select>
+          </div>
+
           <div style="display:flex; gap:1rem;">
             <div class="form-group" style="flex:1;">
               <label class="form-label">Subtotal (BDT) *</label>
@@ -1149,6 +1160,8 @@ window.APP_MODULES.finance = async function(container) {
       const discount = Number(document.getElementById('fnInvDisc').value) || 0;
       const total = amt + (amt * (taxRate / 100)) - discount;
 
+      const engineTag = document.getElementById('fnInvEngine') ? document.getElementById('fnInvEngine').value : 'engine2';
+
       if (!clientName || !amt) {
         if (window.showToast) window.showToast('Client account and amount are required.', 'error');
         return;
@@ -1158,6 +1171,8 @@ window.APP_MODULES.finance = async function(container) {
         await APP_API.post('/invoices', {
           clientId,
           clientName,
+          engineTag,
+          engine_tag: engineTag,
           items: [{ description: desc, amount: total }],
           amount: total,
           taxRate,
