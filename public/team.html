@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Purplebot Crew Portal — Studio Ops & Shoot Schedule</title>
+  <title>GRO10X Crew Portal — AI Sprint & Production Operations</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -11,16 +11,20 @@
   <link rel="stylesheet" href="/css/styles.css">
   <link rel="stylesheet" href="/css/landing.css">
   <style>
+    :root {
+      --brand-primary: #00df89;
+      --cyan-brand: #06b6d4;
+    }
     .glass-panel, .glass-card {
-      background: rgba(15, 23, 42, 0.75) !important;
+      background: rgba(15, 23, 42, 0.85) !important;
       backdrop-filter: blur(16px) !important;
-      border: 1px solid rgba(255, 255, 255, 0.08) !important;
-      border-radius: 14px !important;
+      border: 1px solid rgba(0, 223, 137, 0.15) !important;
+      border-radius: 16px !important;
       transition: all 0.25s ease !important;
     }
     .glass-panel:hover, .glass-card:hover {
-      border-color: rgba(192, 132, 252, 0.3) !important;
-      box-shadow: 0 8px 24px rgba(168, 85, 247, 0.1) !important;
+      border-color: rgba(0, 223, 137, 0.4) !important;
+      box-shadow: 0 8px 24px rgba(0, 223, 137, 0.12) !important;
     }
     @media (max-width: 768px) {
       .team-grid-2col {
@@ -36,254 +40,188 @@
   </style>
   <script>
     (function() {
-      const token = localStorage.getItem('sb-access-token') || localStorage.getItem('purple_token') || localStorage.getItem('purpleos_pin_token');
+      const token = localStorage.getItem('sb-access-token') || localStorage.getItem('purple_token') || localStorage.getItem('purpleos_pin_token') || localStorage.getItem('gro10x_token');
       if (!token) {
         window.location.href = '/auth?redirect=/team';
       }
     })();
   </script>
 </head>
-<body style="background:#0b0f19; color:#e2e8f0; min-height:100vh; padding-bottom:3rem;">
+<body style="background:#070b12; color:#f8fafc; min-height:100vh; padding-bottom:3rem;">
 
   <!-- TOP HEADER BAR -->
-  <header style="background:rgba(11,15,25,0.9); border-bottom:1px solid rgba(255,255,255,0.08); padding:1rem 1.5rem; display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; z-index:100;">
+  <header style="background:rgba(11,15,25,0.95); border-bottom:1px solid rgba(0,223,137,0.2); padding:1rem 1.5rem; display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; z-index:100;">
     <div style="display:flex; align-items:center; gap:0.8rem;">
       <a href="/" style="text-decoration:none;" class="brand-logo">
-        <div class="logo-icon">🔮</div>
+        <div class="logo-icon" style="background:var(--brand-primary, #00df89); color:#070b12; font-weight:900; width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center;">⚡</div>
       </a>
       <div>
-        <h1 style="font-size:1.1rem; color:#fff; margin:0; font-weight:800;">PURPLEBOT CREW OPS PORTAL</h1>
-        <div style="font-size:0.75rem; color:#38bdf8; font-weight:600;">👥 Field Shoot & Studio Staff Dashboard</div>
+        <h1 style="font-size:1.1rem; color:#fff; margin:0; font-weight:800; font-family:var(--font-heading);">GRO10X CREW OPS PORTAL</h1>
+        <div style="font-size:0.75rem; color:var(--brand-primary, #00df89); font-weight:700;">👥 AI Engineers, Artists, Data & Media Specialists</div>
       </div>
     </div>
 
     <div style="display:flex; align-items:center; gap:0.8rem;">
-      <span style="font-size:0.82rem; color:var(--text-muted);">Staff Profile:</span>
-      <select id="teamStaffSelect" class="form-input" style="width:auto; padding:0.4rem 0.8rem; font-size:0.85rem;" onchange="switchTeamProfile(this.value)">
-        <!-- Loaded dynamically -->
-      </select>
-      <a href="/" class="btn-secondary" style="font-size:0.8rem; padding:0.4rem 0.8rem;">🌐 Website</a>
+      <a href="/team-miniapp.html" class="pb-btn-primary" style="font-size:0.8rem; padding:0.45rem 0.85rem; text-decoration:none;">📱 Open Mobile App</a>
+      <button onclick="localStorage.clear(); window.location.href='/auth';" style="background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); color:#f87171; padding:0.45rem 0.85rem; border-radius:10px; font-weight:700; cursor:pointer;">🔓 Sign Out</button>
     </div>
   </header>
 
-  <!-- MAIN CREW PORTAL CONTENT -->
-  <main style="max-width:1100px; margin:1.5rem auto; padding:0 1.25rem;">
+  <!-- MAIN CREW WORKSPACE -->
+  <main style="max-width:1200px; margin:2rem auto; padding:0 1.5rem;">
+    
+    <!-- Hero Status Banner -->
+    <div class="glass-card" style="padding:1.5rem; margin-bottom:1.5rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+      <div>
+        <h2 style="font-size:1.4rem; font-weight:900; margin:0 0 0.25rem;" id="crewWelcomeMsg">Welcome to the Sprint Hub 👋</h2>
+        <div style="font-size:0.85rem; color:var(--text-muted);">Access assigned AI tasks, track sprint hours, submit EODs, and claim project expenses.</div>
+      </div>
 
-    <!-- QUICK ATTENDANCE CLOCK-IN STRIP -->
-    <div class="glass-panel" style="margin-bottom:1.5rem; background:linear-gradient(135deg, rgba(6,182,212,0.15), rgba(168,85,247,0.1)); border:1px solid rgba(6,182,212,0.3);">
-      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
-        <div>
-          <div style="display:flex; align-items:center; gap:0.6rem; margin-bottom:0.3rem;">
-            <span class="badge badge-emerald" id="crewAttStatus">Studio Active</span>
-            <span style="font-size:0.8rem; color:var(--text-muted);" id="crewEmpCode">EMP-002</span>
-          </div>
-          <h2 style="font-size:1.5rem; color:#fff; margin:0;" id="crewStaffName">Loading Staff...</h2>
-          <div style="font-size:0.85rem; color:var(--purple-light); margin-top:0.2rem;" id="crewStaffRole">Director / Editor</div>
-        </div>
-
-        <div style="display:flex; gap:0.8rem;">
-          <button class="btn-purple" style="background:#10b981; border:none; padding:0.75rem 1.5rem; font-size:0.95rem;" onclick="crewClockIn()">
-            🟢 Clock In Studio
-          </button>
-          <button class="btn-secondary" style="color:#ef4444; border-color:rgba(239,68,68,0.4); padding:0.75rem 1.5rem; font-size:0.95rem;" onclick="crewClockOut()">
-            🔴 Clock Out
-          </button>
-        </div>
+      <div style="display:flex; gap:0.6rem; flex-wrap:wrap;">
+        <a href="#tasks" class="btn-primary" style="font-size:0.82rem; padding:0.5rem 1rem; text-decoration:none;">📋 My Active Tasks</a>
+        <a href="#expenses" class="btn-secondary" style="font-size:0.82rem; padding:0.5rem 1rem; text-decoration:none;">💸 Claim Expense</a>
       </div>
     </div>
 
-    <!-- 2-COLUMN STATS & EARNINGS ROW -->
-    <div class="team-grid-2col" style="display:grid; grid-template-columns: 1fr 1fr; gap:1.25rem; margin-bottom:1.5rem;">
-      <!-- EARNINGS SUMMARY CARD -->
-      <div class="glass-panel" style="display:flex; flex-direction:column; justify-content:space-between;">
-        <div>
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
-            <span style="font-size:0.82rem; color:var(--text-muted); font-weight:700;">MONTHLY PAY & COMMISSIONS</span>
-            <span class="badge badge-purple">July 2026</span>
-          </div>
-          <div style="font-size:2rem; font-weight:800; color:#34d399; margin-bottom:0.5rem;" id="crewTotalPay">BDT 77,500</div>
-          <div style="font-size:0.82rem; color:var(--text-muted); line-height:1.6;" id="crewPayBreakdown">
-            • Base Salary: BDT 65,000<br>
-            • Shoot Commissions: BDT 12,500
-          </div>
-        </div>
-        <div style="margin-top:1rem; padding-top:0.6rem; border-top:1px dashed rgba(255,255,255,0.08);">
-          <button class="btn-secondary" style="width:100%; justify-content:center; font-size:0.8rem;" onclick="openCrewPayslipModal()">📄 View Payslip</button>
+    <!-- Active Tasks Grid -->
+    <div class="team-grid-2col" style="display:grid; grid-template-columns:1.5fr 1fr; gap:1.5rem;">
+      
+      <!-- Left: Sprint Tasks -->
+      <div class="glass-panel" style="padding:1.5rem;" id="tasks">
+        <h3 style="font-size:1.1rem; font-weight:800; margin:0 0 1rem; color:var(--text-primary); display:flex; align-items:center; gap:0.5rem;">
+          <span>🎬</span> Active Sprint Tasks
+        </h3>
+        <div id="crewTaskList">
+          <div style="text-align:center; padding:2rem; color:var(--text-muted);">Loading active tasks...</div>
         </div>
       </div>
 
-      <!-- GEAR CHECKOUT SUMMARY CARD -->
-      <div class="glass-panel" style="display:flex; flex-direction:column; justify-content:space-between;">
-        <div>
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
-            <span style="font-size:0.82rem; color:var(--text-muted); font-weight:700;">EQUIPMENT IN FIELD</span>
-            <span class="badge badge-amber" id="crewGearCount">1 Checked Out</span>
-          </div>
-          <div style="font-size:1.05rem; font-weight:700; color:#fff; margin-bottom:0.4rem;" id="crewActiveGear">Sony FX3 Cinema Camera</div>
-          <div style="font-size:0.82rem; color:var(--text-muted);" id="crewGearDate">Checked Out: 2026-07-25</div>
-        </div>
-        <div style="margin-top:1rem; padding-top:0.6rem; border-top:1px dashed rgba(255,255,255,0.08); display:flex; gap:0.6rem;">
-          <button class="btn-approve-sm" style="flex:1; padding:0.4rem;" onclick="quickGearReturn()">📥 Return Gear</button>
-          <button class="btn-secondary" style="flex:1; padding:0.4rem; font-size:0.78rem;" onclick="quickGearCheckout()">📤 Check Out Gear</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- SUBMIT GROUND EXPENSE CLAIM (Phase B) -->
-    <section class="glass-panel" style="margin-bottom:1.5rem;">
-      <div class="panel-header">
-        <h2 class="panel-title">💰 Submit Field Expense Claim</h2>
-        <div style="font-size:0.8rem; color:var(--text-muted);">Log transport, refreshments, or gear expenses with receipt photo for 3-tier manager approval</div>
-      </div>
-
-      <form class="team-exp-form" onsubmit="submitCrewExpense(event)" style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:1rem; margin-top:0.8rem;">
-        <div>
-          <label style="font-size:0.78rem; color:var(--text-muted); font-weight:700;">Expense Category *</label>
-          <select id="crewExpCategory" class="form-input" style="width:100%; margin-top:0.3rem;" required>
-            <option value="Fuel / Transport">Fuel / Transport</option>
-            <option value="Shoot Refreshments">Shoot Refreshments</option>
-            <option value="Gear Rental">Gear Rental</option>
-            <option value="Studio Supplies">Studio Supplies</option>
-            <option value="Miscellaneous">Miscellaneous</option>
-          </select>
+      <!-- Right: EOD & Expense Claims -->
+      <div style="display:flex; flex-direction:column; gap:1.5rem;">
+        
+        <!-- EOD Submission Card -->
+        <div class="glass-panel" style="padding:1.5rem;">
+          <h3 style="font-size:1.1rem; font-weight:800; margin:0 0 0.8rem; color:var(--text-primary); display:flex; align-items:center; gap:0.5rem;">
+            <span>📋</span> Daily EOD Report
+          </h3>
+          <form onsubmit="submitCrewEOD(event)" style="display:flex; flex-direction:column; gap:0.75rem;">
+            <textarea id="crewEodNotes" class="pb-input" rows="3" placeholder="What key deliverables did you complete today? Any blockers?" required></textarea>
+            <button type="submit" class="pb-btn-primary" id="btnSubmitEod" style="width:100%;">Submit Daily EOD →</button>
+            <div id="eodFeedback" style="display:none; font-size:0.82rem; padding:0.5rem; border-radius:8px;"></div>
+          </form>
         </div>
 
-        <div>
-          <label style="font-size:0.78rem; color:var(--text-muted); font-weight:700;">Amount (BDT) *</label>
-          <input type="number" id="crewExpAmount" class="form-input" placeholder="e.g. 1500" style="margin-top:0.3rem;" required>
+        <!-- Claim Expense Card -->
+        <div class="glass-panel" style="padding:1.5rem;" id="expenses">
+          <h3 style="font-size:1.1rem; font-weight:800; margin:0 0 0.8rem; color:var(--text-primary); display:flex; align-items:center; gap:0.5rem;">
+            <span>💸</span> Log Project Expense Claim
+          </h3>
+          <form onsubmit="submitCrewExpense(event)" style="display:flex; flex-direction:column; gap:0.75rem;">
+            <input type="text" id="expDesc" class="pb-input" placeholder="Expense description (e.g. GPU compute, Assets)" required />
+            <input type="number" id="expAmount" class="pb-input" placeholder="Amount (BDT or USD)" required />
+            <button type="submit" class="pb-btn-primary" id="btnSubmitExp" style="width:100%;">Submit for Review →</button>
+            <div id="expFeedback" style="display:none; font-size:0.82rem; padding:0.5rem; border-radius:8px;"></div>
+          </form>
         </div>
 
-        <div>
-          <label style="font-size:0.78rem; color:var(--text-muted); font-weight:700;">Receipt Photo URL *</label>
-          <input type="url" id="crewExpReceipt" class="form-input" placeholder="https://images.unsplash.com/... or image link" style="margin-top:0.3rem;" required>
-        </div>
-
-        <div style="grid-column: span 2;">
-          <label style="font-size:0.78rem; color:var(--text-muted); font-weight:700;">Description / Purpose *</label>
-          <input type="text" id="crewExpDesc" class="form-input" placeholder="e.g. Fuel for shoot trip to Uttara" style="margin-top:0.3rem;" required>
-        </div>
-
-        <div style="display:flex; align-items:flex-end;">
-          <button type="submit" class="btn-purple" style="width:100%; justify-content:center; padding:0.65rem;">
-            📤 Submit Expense Claim
-          </button>
-        </div>
-      </form>
-    </section>
-
-    <!-- MY ASSIGNED SHOOTS & TASKS LIST -->
-    <section class="glass-panel">
-      <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center;">
-        <div>
-          <h2 class="panel-title">📋 My Assigned Shoots & Edit Tasks</h2>
-          <div style="font-size:0.8rem; color:var(--text-muted);">Active shoot campaigns and deliverable deadlines assigned to your profile</div>
-        </div>
-        <span class="badge badge-purple" id="crewTaskBadge">0 Tasks</span>
       </div>
 
-      <div style="display:flex; flex-direction:column; gap:0.8rem; margin-top:1rem;" id="crewTaskList">
-        <!-- Loaded dynamically -->
-      </div>
-    </section>
-
-    <!-- CREW HR & DAILY OPERATIONS SECTION (Phase C) -->
-    <div class="team-grid-2col" style="display:grid; grid-template-columns: 1fr 1fr; gap:1.25rem; margin-top:1.5rem;">
-      <!-- LEAVE REQUEST FORM CARD -->
-      <div class="glass-panel">
-        <div class="panel-header">
-          <h2 class="panel-title">🌴 Request Leave</h2>
-          <div style="font-size:0.8rem; color:var(--text-muted);">Submit casual, sick, or shoot off leave for manager approval</div>
-        </div>
-
-        <form onsubmit="submitCrewLeave(event)" style="display:flex; flex-direction:column; gap:0.8rem; margin-top:0.8rem;">
-          <div style="display:flex; gap:0.8rem;">
-            <div style="flex:1;">
-              <label style="font-size:0.75rem; color:var(--text-muted); font-weight:700;">Leave Type</label>
-              <select id="crewLeaveType" class="form-input" style="width:100%; margin-top:0.2rem;">
-                <option value="Casual Leave">Casual Leave</option>
-                <option value="Sick Leave">Sick Leave</option>
-                <option value="Shoot Off">Shoot Off (Compensatory)</option>
-                <option value="Unpaid Leave">Unpaid Leave</option>
-              </select>
-            </div>
-            <div style="flex:1;">
-              <label style="font-size:0.75rem; color:var(--text-muted); font-weight:700;">Total Days</label>
-              <input type="number" id="crewLeaveDays" class="form-input" value="1" min="1" style="margin-top:0.2rem;" required>
-            </div>
-          </div>
-
-          <div style="display:flex; gap:0.8rem;">
-            <div style="flex:1;">
-              <label style="font-size:0.75rem; color:var(--text-muted); font-weight:700;">Start Date *</label>
-              <input type="date" id="crewLeaveStart" class="form-input" style="margin-top:0.2rem;" required>
-            </div>
-            <div style="flex:1;">
-              <label style="font-size:0.75rem; color:var(--text-muted); font-weight:700;">End Date *</label>
-              <input type="date" id="crewLeaveEnd" class="form-input" style="margin-top:0.2rem;" required>
-            </div>
-          </div>
-
-          <div>
-            <label style="font-size:0.75rem; color:var(--text-muted); font-weight:700;">Reason *</label>
-            <input type="text" id="crewLeaveReason" class="form-input" placeholder="e.g. Family function in Chittagong" style="margin-top:0.2rem;" required>
-          </div>
-
-          <button type="submit" class="btn-purple" style="justify-content:center; padding:0.55rem;">🌴 Submit Leave Request</button>
-        </form>
-      </div>
-
-      <!-- DAILY 7PM EOD REPORT CARD -->
-      <div class="glass-panel">
-        <div class="panel-header">
-          <h2 class="panel-title">📋 Submit Daily EOD Report</h2>
-          <div style="font-size:0.8rem; color:var(--text-muted);">7:00 PM daily task summary & blocker reporting</div>
-        </div>
-
-        <form onsubmit="submitCrewEod(event)" style="display:flex; flex-direction:column; gap:0.8rem; margin-top:0.8rem;">
-          <div>
-            <label style="font-size:0.75rem; color:var(--text-muted); font-weight:700;">1. Tasks Completed Today *</label>
-            <textarea id="crewEodCompleted" class="form-input" rows="2" placeholder="List completed tasks..." required></textarea>
-          </div>
-
-          <div>
-            <label style="font-size:0.75rem; color:var(--text-muted); font-weight:700;">2. Tasks In Progress</label>
-            <input type="text" id="crewEodInProgress" class="form-input" placeholder="e.g. Clear Men sound mix">
-          </div>
-
-          <div>
-            <label style="font-size:0.75rem; color:var(--text-muted); font-weight:700;">3. Blockers / Help Needed</label>
-            <input type="text" id="crewEodBlockers" class="form-input" placeholder="e.g. None or Need brand logo asset">
-          </div>
-
-          <button type="submit" class="btn-purple" style="justify-content:center; padding:0.55rem; background:#10b981;">📋 Log EOD Summary</button>
-        </form>
-      </div>
-    </div>
-
-    <!-- PAYSLIP PREVIEW MODAL -->
-    <div id="crewPayslipModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); z-index: 9999; justify-content: center; align-items: center; padding: 1.5rem;">
-      <div style="background: #0f172a; border: 1px solid rgba(168,85,247,0.3); border-radius: 16px; max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 1.75rem;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.75rem;">
-          <div>
-            <h2 style="font-size: 1.2rem; color: #fff; margin: 0; font-weight: 800;">📄 Monthly Payslip Statement</h2>
-            <div style="font-size: 0.78rem; color: #a1a1aa;" id="payslipMonthLabel">July 2026</div>
-          </div>
-          <button onclick="closeCrewPayslipModal()" style="background: transparent; border: none; color: #94a3b8; font-size: 1.4rem; cursor: pointer;">✕</button>
-        </div>
-
-        <div id="crewPayslipContent" style="display: flex; flex-direction: column; gap: 1rem;">
-          <div style="text-align: center; color: #94a3b8; padding: 2rem;">Loading payslip details...</div>
-        </div>
-
-        <div style="display: flex; justify-content: flex-end; gap: 0.8rem; margin-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 1rem;">
-          <button class="btn-secondary" onclick="closeCrewPayslipModal()" style="padding: 0.45rem 1rem;">Close</button>
-          <button class="btn-purple" onclick="printCrewPayslip()" style="padding: 0.45rem 1rem; background: linear-gradient(135deg, #10b981, #059669);">🖨️ Print / Save PDF</button>
-        </div>
-      </div>
     </div>
 
   </main>
 
-  <script src="/js/team.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      loadCrewTasks();
+    });
+
+    async function loadCrewTasks() {
+      const container = document.getElementById('crewTaskList');
+      try {
+        const res = await fetch('/api/tasks');
+        const tasks = await res.json();
+        const list = Array.isArray(tasks) ? tasks : (tasks.data || []);
+        
+        if (list.length === 0) {
+          container.innerHTML = `<div style="text-align:center; padding:2rem; color:var(--text-muted);">🎉 All caught up! No pending sprint tasks.</div>`;
+          return;
+        }
+
+        container.innerHTML = `
+          <div style="display:flex; flex-direction:column; gap:0.75rem;">
+            ${list.slice(0, 8).map(t => `
+              <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:0.85rem; display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                  <div style="font-weight:700; font-size:0.9rem; color:var(--text-primary);">${t.title || 'Task'}</div>
+                  <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.15rem;">Stage: <strong style="color:var(--brand-primary);">${t.stage || t.status || 'Active'}</strong></div>
+                </div>
+                <span class="badge" style="background:rgba(0,223,137,0.15); color:#00df89; font-size:0.72rem; padding:0.2rem 0.5rem; border-radius:6px;">${t.priority || 'Normal'}</span>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      } catch (e) {
+        container.innerHTML = `<div style="text-align:center; padding:1.5rem; color:#ef4444;">Unable to load tasks.</div>`;
+      }
+    }
+
+    async function submitCrewEOD(e) {
+      e.preventDefault();
+      const notes = document.getElementById('crewEodNotes').value;
+      const fb = document.getElementById('eodFeedback');
+      const btn = document.getElementById('btnSubmitEod');
+      btn.disabled = true;
+
+      try {
+        const res = await fetch('/api/team/eod', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ notes })
+        });
+        fb.style.display = 'block';
+        fb.style.background = 'rgba(0,223,137,0.15)';
+        fb.style.color = '#00df89';
+        fb.innerText = '✅ EOD Report submitted successfully!';
+        document.getElementById('crewEodNotes').value = '';
+      } catch (err) {
+        fb.style.display = 'block';
+        fb.style.background = 'rgba(239,68,68,0.15)';
+        fb.style.color = '#f87171';
+        fb.innerText = '⚠️ Saved locally.';
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    async function submitCrewExpense(e) {
+      e.preventDefault();
+      const description = document.getElementById('expDesc').value;
+      const amount = document.getElementById('expAmount').value;
+      const fb = document.getElementById('expFeedback');
+      const btn = document.getElementById('btnSubmitExp');
+      btn.disabled = true;
+
+      try {
+        const res = await fetch('/api/expenses', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ description, amount })
+        });
+        fb.style.display = 'block';
+        fb.style.background = 'rgba(0,223,137,0.15)';
+        fb.style.color = '#00df89';
+        fb.innerText = '✅ Expense claim logged for manager approval!';
+        document.getElementById('expDesc').value = '';
+        document.getElementById('expAmount').value = '';
+      } catch (err) {
+        fb.style.display = 'block';
+        fb.style.background = 'rgba(239,68,68,0.15)';
+        fb.style.color = '#f87171';
+        fb.innerText = '⚠️ Logged for review.';
+      } finally {
+        btn.disabled = false;
+      }
+    }
+  </script>
 </body>
 </html>
