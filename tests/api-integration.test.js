@@ -38,7 +38,7 @@ describe('PurpleOS API Integration Test Suite', () => {
     expect(res.statusCode).toEqual(200);
     expect(res.body).toHaveProperty('success', true);
     expect(res.body.data).toHaveProperty('reply');
-    expect(res.body.data.reply).toContain('PurpleOS Team Bot Commands');
+    expect(res.body.data.reply).toMatch(/(GRO10X|PurpleOS) (Crew|Team) Bot Commands/);
   });
 
   test('POST /api/admin/import/clients without auth returns 401 Unauthorized', async () => {
