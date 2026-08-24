@@ -1899,9 +1899,9 @@ async function sendManagerChatMessage(event) {
   const messagesBox = document.getElementById('managerChatMessages');
   if (messagesBox) {
     const msgDiv = document.createElement('div');
-    msgDiv.style.cssText = 'align-self: flex-end; max-width: 80%; background: linear-gradient(135deg, #2563eb, #7c3aed); padding: 0.75rem 1rem; border-radius: 12px; color: #fff;';
+    msgDiv.style.cssText = 'align-self: flex-end; max-width: 80%; background: linear-gradient(135deg, #00df89, #06b6d4); padding: 0.75rem 1rem; border-radius: 12px; color: #070b12; font-weight:600;';
     msgDiv.innerHTML = `
-      <div style="font-size: 0.72rem; color: #bfdbfe; margin-bottom: 0.2rem;">You (Manager)</div>
+      <div style="font-size: 0.72rem; color: #042f2e; margin-bottom: 0.2rem; font-weight:800;">You (Manager)</div>
       <div style="font-size: 0.85rem;">${text}</div>
     `;
     messagesBox.appendChild(msgDiv);
@@ -1915,5 +1915,110 @@ async function sendManagerChatMessage(event) {
       body: JSON.stringify({ command: text, mode: 'team' })
     });
   } catch (err) {}
+}
+
+/* -------------------------------------------------------------
+ * 🔍 Manager Universal Search & Command Palette (Ctrl+K)
+ * ------------------------------------------------------------- */
+function toggleCommandCenter() {
+  let modal = document.getElementById('managerCmdModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'managerCmdModal';
+    modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.75); backdrop-filter:blur(8px); z-index:99999; display:flex; justify-content:center; align-items:flex-start; padding-top:12vh;';
+    modal.innerHTML = `
+      <div style="background:#0f172a; border:1px solid rgba(0,223,137,0.3); border-radius:18px; width:92%; max-width:540px; box-shadow:0 24px 60px rgba(0,0,0,0.8); overflow:hidden;">
+        <div style="display:flex; align-items:center; padding:0.85rem 1.25rem; border-bottom:1px solid rgba(255,255,255,0.08); gap:0.75rem;">
+          <span style="font-size:1.2rem; color:#00df89;">⚡</span>
+          <input type="text" id="mgrCmdInput" placeholder="Search tasks, clients, team members, or jump to tab..." style="flex:1; background:transparent; border:none; color:#fff; font-size:0.95rem; outline:none;" oninput="filterManagerCmdResults(this.value)">
+          <kbd style="font-size:0.7rem; background:rgba(255,255,255,0.08); padding:0.2rem 0.5rem; border-radius:6px; color:#94a3b8;">ESC</kbd>
+        </div>
+        <div id="mgrCmdResults" style="max-height:300px; overflow-y:auto; padding:0.5rem;">
+          <div style="padding:0.6rem 0.85rem; border-radius:8px; cursor:pointer; color:#f8fafc; font-size:0.85rem; display:flex; justify-content:space-between;" onclick="switchTab('kanban'); closeManagerCmdModal();">
+            <span>📋 Project Sprint Kanban</span>
+            <span style="color:#00df89; font-size:0.75rem;">Jump ➔</span>
+          </div>
+          <div style="padding:0.6rem 0.85rem; border-radius:8px; cursor:pointer; color:#f8fafc; font-size:0.85rem; display:flex; justify-content:space-between;" onclick="switchTab('crm'); closeManagerCmdModal();">
+            <span>👥 Client Accounts & Retainers</span>
+            <span style="color:#00df89; font-size:0.75rem;">Jump ➔</span>
+          </div>
+          <div style="padding:0.6rem 0.85rem; border-radius:8px; cursor:pointer; color:#f8fafc; font-size:0.85rem; display:flex; justify-content:space-between;" onclick="switchTab('hrops'); closeManagerCmdModal();">
+            <span>🧑‍💼 Specialist Roster & Attendance</span>
+            <span style="color:#00df89; font-size:0.75rem;">Jump ➔</span>
+          </div>
+          <div style="padding:0.6rem 0.85rem; border-radius:8px; cursor:pointer; color:#f8fafc; font-size:0.85rem; display:flex; justify-content:space-between;" onclick="switchTab('reviewroom'); closeManagerCmdModal();">
+            <span>🎬 AI Deliverables Review Room</span>
+            <span style="color:#00df89; font-size:0.75rem;">Jump ➔</span>
+          </div>
+        </div>
+      </div>
+    `;
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeManagerCmdModal();
+    });
+    document.body.appendChild(modal);
+  } else {
+    modal.style.display = 'flex';
+  }
+  const input = document.getElementById('mgrCmdInput');
+  if (input) { input.value = ''; input.focus(); }
+}
+
+function closeManagerCmdModal() {
+  const modal = document.getElementById('managerCmdModal');
+  if (modal) modal.style.display = 'none';
+}
+
+function filterManagerCmdResults(query) {
+  const q = (query || '').toLowerCase().trim();
+  const resultsBox = document.getElementById('mgrCmdResults');
+  if (!resultsBox) return;
+  if (!q) {
+    resultsBox.innerHTML = `
+      <div style="padding:0.6rem 0.85rem; border-radius:8px; cursor:pointer; color:#f8fafc; font-size:0.85rem; display:flex; justify-content:space-between;" onclick="switchTab('kanban'); closeManagerCmdModal();">
+        <span>📋 Project Sprint Kanban</span><span style="color:#00df89; font-size:0.75rem;">Jump ➔</span>
+      </div>
+      <div style="padding:0.6rem 0.85rem; border-radius:8px; cursor:pointer; color:#f8fafc; font-size:0.85rem; display:flex; justify-content:space-between;" onclick="switchTab('crm'); closeManagerCmdModal();">
+        <span>👥 Client Accounts & Retainers</span><span style="color:#00df89; font-size:0.75rem;">Jump ➔</span>
+      </div>
+      <div style="padding:0.6rem 0.85rem; border-radius:8px; cursor:pointer; color:#f8fafc; font-size:0.85rem; display:flex; justify-content:space-between;" onclick="switchTab('hrops'); closeManagerCmdModal();">
+        <span>🧑‍💼 Specialist Roster & Attendance</span><span style="color:#00df89; font-size:0.75rem;">Jump ➔</span>
+      </div>
+      <div style="padding:0.6rem 0.85rem; border-radius:8px; cursor:pointer; color:#f8fafc; font-size:0.85rem; display:flex; justify-content:space-between;" onclick="switchTab('reviewroom'); closeManagerCmdModal();">
+        <span>🎬 AI Deliverables Review Room</span><span style="color:#00df89; font-size:0.75rem;">Jump ➔</span>
+      </div>
+    `;
+    return;
+  }
+  const filteredTasks = (currentKanbanTasks || []).filter(t => (t.title || '').toLowerCase().includes(q) || (t.client || '').toLowerCase().includes(q));
+  resultsBox.innerHTML = filteredTasks.length ? filteredTasks.map(t => `
+    <div style="padding:0.6rem 0.85rem; border-radius:8px; cursor:pointer; color:#f8fafc; font-size:0.85rem; display:flex; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.05);" onclick="switchTab('kanban'); closeManagerCmdModal();">
+      <span>📌 ${t.title || 'Task'} <small style="color:#94a3b8;">(${t.client || 'Client'})</small></span>
+      <span style="color:#00df89; font-size:0.75rem;">${t.stage || 'Backlog'}</span>
+    </div>
+  `).join('') : `<div style="text-align:center; padding:1.5rem; color:#64748b; font-size:0.85rem;">No results found for "${query}"</div>`;
+}
+
+document.addEventListener('keydown', (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+    e.preventDefault();
+    toggleCommandCenter();
+  } else if (e.key === 'Escape') {
+    closeManagerCmdModal();
+  }
+});
+
+function toggleMobileSidebar() {
+  const sidebar = document.querySelector('.sidebar-nav');
+  const backdrop = document.getElementById('adminNavBackdrop');
+  if (sidebar) sidebar.classList.toggle('is-open');
+  if (backdrop) backdrop.style.display = backdrop.style.display === 'block' ? 'none' : 'block';
+}
+
+function closeMobileSidebar() {
+  const sidebar = document.querySelector('.sidebar-nav');
+  const backdrop = document.getElementById('adminNavBackdrop');
+  if (sidebar) sidebar.classList.remove('is-open');
+  if (backdrop) backdrop.style.display = 'none';
 }
 

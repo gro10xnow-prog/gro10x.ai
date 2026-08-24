@@ -286,7 +286,10 @@ function renderPartnerView() {
         <td>${inv.projectName || inv.projectRef || 'Campaign Handover'}</td>
         <td>${inv.date || '2026-07-28'}</td>
         <td>${inv.dueDate || '2026-08-04'}</td>
-        <td style="font-weight:700; color:#34d399;">$${(Number(inv.amount) || 0).toLocaleString()}</td>
+        <td style="font-weight:700; color:#00df89;">
+          $${(Number(inv.amount) || 0).toLocaleString()}
+          <div style="font-size:0.75rem; color:#94a3b8; font-weight:500;">৳${Math.round((Number(inv.amount) || 0) * 118).toLocaleString()}</div>
+        </td>
         <td><span class="badge ${inv.status === 'Paid' ? 'badge-emerald' : 'badge-amber'}">${inv.status}</span></td>
         <td style="text-align:right;">
           <div style="display:flex; justify-content:flex-end; gap:0.4rem;">

@@ -69,7 +69,7 @@
 
   function hydrateUserBadge() {
     try {
-      const rawUser = localStorage.getItem('purple_user');
+      const rawUser = localStorage.getItem('gro10x_user') || localStorage.getItem('purple_user');
       if (rawUser) {
         const user = JSON.parse(rawUser);
         const avatarEl = document.getElementById('userAvatar');
@@ -79,14 +79,14 @@
         const firstName = getPreferredFirstName(user.name);
 
         if (avatarEl) {
-          const initials = (user.name || 'PB')
+          const initials = (user.name || 'GX')
             .split(' ')
             .filter(Boolean)
             .map(w => w[0])
             .join('')
             .substring(0, 2)
             .toUpperCase();
-          avatarEl.textContent = initials || 'PB';
+          avatarEl.textContent = initials || 'GX';
         }
         if (nameEl) nameEl.textContent = user.name || 'Admin User';
         if (roleEl) roleEl.textContent = user.role || user.accessLevel || 'Owner';

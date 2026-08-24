@@ -14,11 +14,11 @@ window.APP_MODULES.leads = async function(container) {
   const STAGE_COLORS = {
     'New Inquiry':        { bg: '#f59e0b22', border: '#f59e0b', badge: 'badge-amber' },
     'Contacted':          { bg: '#3b82f622', border: '#3b82f6', badge: 'badge-blue' },
-    'Proposal Sent':      { bg: '#8b5cf622', border: '#8b5cf6', badge: 'badge-purple' },
+    'Proposal Sent':      { bg: '#06b6d422', border: '#06b6d4', badge: 'badge-info' },
     'Meeting Scheduled':  { bg: '#ec489922', border: '#ec4899', badge: 'badge-pink' },
-    'Won / Closed':       { bg: '#10b98122', border: '#10b981', badge: 'badge-emerald' },
+    'Won / Closed':       { bg: '#00df8922', border: '#00df89', badge: 'badge-emerald' },
     'Lost':               { bg: '#ef444422', border: '#ef4444', badge: 'badge-pink' },
-    'Spam':               { bg: '#6b728022', border: '#6b7280', badge: 'badge-purple' },
+    'Spam':               { bg: '#6b728022', border: '#6b7280', badge: 'badge-muted' },
   };
 
   let leadsData = [];

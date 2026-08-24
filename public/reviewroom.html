@@ -40,11 +40,23 @@
 
       <!-- APPROVAL CONFIRMATION MODAL -->
       <div class="rr-modal-overlay" id="rrApproveModal">
-        <div class="rr-modal-box">
-          <h3 style="font-size: 1.25rem; font-weight: 800; margin-top: 0; color: #ffffff;">🎉 Approve Final Deliverable?</h3>
-          <p style="font-size: 0.88rem; color: #a1a1aa; line-height: 1.5; margin-bottom: 1.5rem;">
-            Approving will mark the creative review as complete, notify the production team, and release the client invoice automatically.
+        <div class="rr-modal-box" style="border: 1px solid rgba(0,223,137,0.3); box-shadow: 0 20px 60px rgba(0,0,0,0.8);">
+          <div style="font-size: 2rem; margin-bottom: 0.5rem;">🎉</div>
+          <h3 style="font-size: 1.25rem; font-weight: 800; margin-top: 0; color: #ffffff;">Approve Final Deliverable?</h3>
+          <p style="font-size: 0.88rem; color: #a1a1aa; line-height: 1.5; margin-bottom: 1.25rem;">
+            Approving will mark the creative sprint as complete, notify the engineering & creative team, and release the commercial milestone invoice.
           </p>
+
+          <!-- Milestone Invoice Preview -->
+          <div style="background: rgba(0,223,137,0.08); border: 1px solid rgba(0,223,137,0.25); border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem; text-align: left;">
+            <div style="font-size: 0.75rem; color: #00df89; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem;">Milestone Commercial Invoice</div>
+            <div style="display: flex; justify-content: space-between; align-items: baseline;">
+              <span style="font-size: 1.4rem; font-weight: 900; color: #ffffff;" id="modalInvoiceUsd">$1,500 USD</span>
+              <span style="font-size: 0.95rem; font-weight: 700; color: #34d399;" id="modalInvoiceBdt">৳176,250 BDT</span>
+            </div>
+            <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 0.4rem;">Includes high-resolution master asset delivery & commercial IP transfer.</div>
+          </div>
+
           <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
             <button class="rr-btn rr-btn-secondary" onclick="closeApproveModal()">Cancel</button>
             <button class="rr-btn rr-btn-approve" onclick="executeCutApproval()">✅ Confirm & Release Invoice</button>
@@ -70,18 +82,21 @@
       <!-- HEADER NAVBAR -->
       <div class="rr-header">
         <div>
-          <div class="rr-brand-sub">PURPLEBOT DIGITAL LIMITED</div>
-          <h1 class="rr-title">Interactive Creative Review Room</h1>
+          <div class="rr-brand-sub" style="color: var(--brand-primary, #00df89); font-weight: 800; letter-spacing: 0.06em;">GRO10X AI GROWTH AGENCY</div>
+          <h1 class="rr-title">Interactive Deliverables Review Room</h1>
         </div>
         
-        <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+        <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
           <!-- Active Project Selector -->
           <select id="reviewProjectSelector" class="rr-input" style="width: auto; min-width: 220px;" onchange="loadSelectedReview(this.value)">
             <option value="">Loading Review Cuts...</option>
           </select>
 
+          <!-- Share Link Button -->
+          <button class="rr-btn rr-btn-secondary" onclick="copyReviewShareLink()" title="Copy direct link to this review">🔗 Share</button>
+
           <!-- Back to Portal / Dashboard Link -->
-          <a href="/client" id="rrBackLink" class="rr-btn rr-btn-secondary" style="text-decoration: none;">← Client Portal</a>
+          <a href="/partners.html" id="rrBackLink" class="rr-btn rr-btn-secondary" style="text-decoration: none;">← Partner Portal</a>
         </div>
       </div>
 
@@ -705,6 +720,19 @@
         }
       } catch (err) {
         showToast('Error approving cut: ' + err.message, 'error');
+      }
+    }
+
+    function copyReviewShareLink() {
+      const url = window.location.origin + window.location.pathname + (activeReviewData?.id ? `?id=${activeReviewData.id}` : '');
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(url).then(() => {
+          showToast('🔗 Review Room link copied to clipboard!', 'success');
+        }).catch(() => {
+          showToast('Link: ' + url, 'info');
+        });
+      } else {
+        showToast('Link: ' + url, 'info');
       }
     }
 

@@ -161,10 +161,10 @@ window.APP_MODULES.dashboard = async function(container) {
             <div>
               <div style="display:flex; justify-content:space-between; font-size:0.82rem; font-weight:700; margin-bottom:0.35rem;">
                 <span style="color:var(--text-primary);">🤝 4. Retainers (15%)</span>
-                <strong style="color:#8b5cf6;">${isUSD ? '$15,000' : '৳17.7L'}</strong>
+                <strong style="color:#06b6d4;">${isUSD ? '$15,000' : '৳17.7L'}</strong>
               </div>
               <div style="width:100%; height:8px; background:rgba(255,255,255,0.08); border-radius:999px; overflow:hidden;">
-                <div style="height:100%; width:15%; background:linear-gradient(90deg, #8b5cf6, #00df89); border-radius:999px;"></div>
+                <div style="height:100%; width:15%; background:linear-gradient(90deg, #06b6d4, #00df89); border-radius:999px;"></div>
               </div>
               <div style="font-size:0.72rem; color:var(--text-muted); margin-top:0.25rem;">Target: ${isUSD ? '$1,250/mo' : '৳1.47L/mo'}</div>
             </div>

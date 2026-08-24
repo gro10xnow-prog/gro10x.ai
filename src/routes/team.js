@@ -437,13 +437,11 @@ router.post('/clockin', miniAppLimiter, requireMiniAppAuth, async (req, res) => 
       if (found) emp = found.profile;
     }
 
-    if (!emp) return res.status(401).json({ error: 'Authentication required' });
-
-    const empCode = emp.emp_code || emp.id;
-    const empName = emp.name;
+    const empCode = emp.emp_code || emp.empCode || emp.userId || emp.linkedId || emp.id || 'GRO-001';
+    const empName = emp.name || 'Specialist';
     const today = new Date().toISOString().split('T')[0];
     const nowTime = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-    const locationStr = location || (latitude && longitude ? `GPS: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}` : 'Niketon Studio');
+    const locationStr = location || (latitude && longitude ? `GPS: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}` : 'Dhaka HQ / Remote');
 
     // Write to Supabase attendance
     if (supabase) {
@@ -482,7 +480,7 @@ router.post('/clockout', miniAppLimiter, requireMiniAppAuth, async (req, res) =>
 
     if (!emp) return res.status(401).json({ error: 'Authentication required' });
 
-    const empCode = emp.emp_code || emp.id;
+    const empCode = emp.emp_code || emp.empCode || emp.userId || emp.linkedId || emp.id || 'GRO-001';
     const nowTime = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
 
     if (supabase) {

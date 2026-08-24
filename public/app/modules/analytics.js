@@ -235,7 +235,7 @@ window.APP_MODULES.analytics = async function(container) {
           datasets: [{
             label: 'Tasks Completed',
             data: tasks.length ? tasks : [0],
-            backgroundColor: '#8b5cf6',
+            backgroundColor: '#00df89',
             borderRadius: 6
           }]
         },
@@ -258,7 +258,7 @@ window.APP_MODULES.analytics = async function(container) {
         labels: labels.length ? labels : ['Organic / Direct'],
         datasets: [{
           data: data.length ? data : [1],
-          backgroundColor: ['#8b5cf6', '#ec4899', '#3b82f6', '#10b981', '#f59e0b', '#374151'],
+          backgroundColor: ['#00df89', '#06b6d4', '#3b82f6', '#10b981', '#f59e0b', '#374151'],
           borderWidth: 0
         }]
       },

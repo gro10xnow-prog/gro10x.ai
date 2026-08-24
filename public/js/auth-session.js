@@ -169,7 +169,41 @@
       });
     },
 
-    // ── 4. AUTHORIZED API FETCH HELPER ──
+    // ── 4. GLOBAL TOAST NOTIFICATION SYSTEM ──
+    toast: function(message, type, duration) {
+      type = type || 'info';
+      duration = duration || 3500;
+      var container = document.getElementById('gro10xToastContainer');
+      if (!container) {
+        container = document.createElement('div');
+        container.id = 'gro10xToastContainer';
+        container.style.cssText = 'position:fixed; bottom:20px; right:20px; z-index:99999; display:flex; flex-direction:column; gap:8px; pointer-events:none;';
+        document.body.appendChild(container);
+      }
+
+      var toast = document.createElement('div');
+      var icon = type === 'success' ? '✅' : type === 'error' ? '❌' : type === 'warning' ? '⚠️' : '⚡';
+      var borderCol = type === 'success' ? '#00df89' : type === 'error' ? '#ef4444' : type === 'warning' ? '#f59e0b' : '#06b6d4';
+      
+      toast.style.cssText = 'background:#0f172a; border:1px solid ' + borderCol + '; color:#f8fafc; padding:10px 16px; border-radius:12px; font-size:0.85rem; font-weight:600; box-shadow:0 12px 30px rgba(0,0,0,0.6); display:flex; align-items:center; gap:8px; pointer-events:auto; transition:all 0.25s ease; transform:translateY(10px); opacity:0; font-family:sans-serif;';
+      toast.innerHTML = '<span>' + icon + '</span><span>' + message + '</span>';
+      container.appendChild(toast);
+
+      requestAnimationFrame(function() {
+        toast.style.transform = 'translateY(0)';
+        toast.style.opacity = '1';
+      });
+
+      setTimeout(function() {
+        toast.style.transform = 'translateY(-10px)';
+        toast.style.opacity = '0';
+        setTimeout(function() {
+          if (toast.parentNode) toast.parentNode.removeChild(toast);
+        }, 300);
+      }, duration);
+    },
+
+    // ── 5. AUTHORIZED API FETCH HELPER ──
     fetch: function(url, options) {
       options = options || {};
       options.headers = options.headers || {};
