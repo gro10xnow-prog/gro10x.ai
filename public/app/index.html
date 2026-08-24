@@ -3,16 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PurpleOS — Admin Portal & Command Center</title>
+  <title>GRO10X — Admin Command Center</title>
+  <script src="/js/auth-session.js"></script>
   <script>
     (function() {
-      var token = localStorage.getItem('sb-access-token') ||
-                  localStorage.getItem('purpleos_pin_token') ||
-                  localStorage.getItem('purple_token');
-      if (!token) {
-        window.location.replace('/auth?redirect=' + encodeURIComponent(window.location.pathname + window.location.hash));
-      }
-      var theme = localStorage.getItem('purple_theme') || 'dark';
+      GRO10XAuth.requireAuth({ portal: 'admin' });
+      var theme = localStorage.getItem('gro10x_theme') || localStorage.getItem('purple_theme') || 'dark';
       document.documentElement.setAttribute('data-theme', theme);
     })();
   </script>

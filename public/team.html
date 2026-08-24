@@ -38,12 +38,10 @@
       }
     }
   </style>
+  <script src="/js/auth-session.js"></script>
   <script>
     (function() {
-      const token = localStorage.getItem('sb-access-token') || localStorage.getItem('purple_token') || localStorage.getItem('purpleos_pin_token') || localStorage.getItem('gro10x_token');
-      if (!token) {
-        window.location.href = '/auth?redirect=/team';
-      }
+      GRO10XAuth.requireAuth({ portal: 'crew' });
     })();
   </script>
 </head>

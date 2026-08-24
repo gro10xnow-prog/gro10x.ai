@@ -139,16 +139,18 @@ function saveSessionAndRedirect(user, linkedType, email, realToken) {
   const userObj = {
     id: user?.id || 'USR-001',
     pocId: user?.pocId || 'poc_1',
-    name: user?.name || 'PurpleOS User',
+    name: user?.name || 'GRO10X Specialist',
     company: user?.company || user?.name || '',
     pocRole: user?.pocRole || '',
-    role: user?.role || user?.accessLevel || (linkedType === 'client' ? 'Client Representative' : 'Specialist'),
+    role: user?.role || user?.accessLevel || (linkedType === 'client' ? 'Client Representative' : 'AI Specialist'),
     phone: cleanPhone,
     email: email || user?.email || '',
     accessLevel: user?.accessLevel || (linkedType === 'client' ? 'Client' : 'Specialist / Crew')
   };
 
   try {
+    localStorage.setItem('gro10x_user', JSON.stringify(userObj));
+    localStorage.setItem('gro10x_user_phone', cleanPhone);
     localStorage.setItem('purple_user', JSON.stringify(userObj));
     localStorage.setItem('purple_user_phone', cleanPhone);
     if (email || userObj.email) localStorage.setItem('purple_user_email', email || userObj.email);
@@ -162,6 +164,7 @@ function saveSessionAndRedirect(user, linkedType, email, realToken) {
     // Use the real signed JWT from the server
     const token = realToken || user?.token || '';
     if (token) {
+      localStorage.setItem('gro10x_token', token);
       localStorage.setItem('sb-access-token', token);
       document.cookie = `sb-access-token=${token}; Path=/; SameSite=Lax; max-age=604800`;
     }

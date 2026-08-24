@@ -16,14 +16,10 @@
   <link rel="stylesheet" href="/css/tokens.css">
   <link rel="stylesheet" href="/css/styles.css">
   <link rel="stylesheet" href="/css/shell.css">
+  <script src="/js/auth-session.js"></script>
   <script>
     (function() {
-      const token = localStorage.getItem('sb-access-token') || localStorage.getItem('purple_token') || localStorage.getItem('purpleos_pin_token') || sessionStorage.getItem('jwt_token');
-      const savedPhone = localStorage.getItem('purple_user_phone');
-      const user = localStorage.getItem('purple_user');
-      if (!token && !savedPhone && !user) {
-        window.location.replace('/auth?redirect=/reviewroom');
-      }
+      GRO10XAuth.requireAuth({ portal: 'client' });
     })();
   </script>
 </head>

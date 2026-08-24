@@ -41,22 +41,10 @@
       }
     }
   </style>
+  <script src="/js/auth-session.js"></script>
   <script>
     (function() {
-      try {
-        const hasPhone = localStorage.getItem('purple_user_phone') ||
-                         localStorage.getItem('gro10x_user_phone') ||
-                         localStorage.getItem('purple_user');
-        const hasToken = localStorage.getItem('sb-access-token') ||
-                         localStorage.getItem('purpleos_pin_token') ||
-                         localStorage.getItem('purple_token') ||
-                         localStorage.getItem('gro10x_token');
-        if (!hasPhone || !hasToken) {
-          window.location.href = '/auth?portal=client';
-        }
-      } catch (e) {
-        window.location.href = '/auth?portal=client';
-      }
+      GRO10XAuth.requireAuth({ portal: 'client' });
     })();
   </script>
 </head>
