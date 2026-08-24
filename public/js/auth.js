@@ -176,6 +176,13 @@ function saveSessionAndRedirect(user, linkedType, email, realToken) {
   showAlert('✅ Authentication successful! Launching workspace...', 'success');
 
   setTimeout(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const targetRedirect = urlParams.get('redirect') || urlParams.get('return');
+    if (targetRedirect && targetRedirect.startsWith('/') && !targetRedirect.startsWith('//')) {
+      window.location.href = targetRedirect;
+      return;
+    }
+
     const role = (user?.role || '').toLowerCase();
     const access = (user?.accessLevel || '').toLowerCase();
 

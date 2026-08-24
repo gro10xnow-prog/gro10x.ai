@@ -14,14 +14,21 @@ const { requireAuth } = require('./src/middleware/auth');
 
 const PORT = process.env.PORT || 3000;
 
-// Allowed origins — restrict to known production & preview domains
-const ALLOWED_ORIGINS = [
+// Allowed origins — dynamic config supporting production, preview, and custom domains
+const envOrigins = (process.env.ALLOWED_ORIGINS || process.env.CORS_ORIGINS || '')
+  .split(',')
+  .map(s => s.trim())
+  .filter(Boolean);
+
+const ALLOWED_ORIGINS = Array.from(new Set([
   'https://purpleos-iota.vercel.app',
   'https://purplebot.digital',
   'https://www.purplebot.digital',
   'http://localhost:3000',
-  'http://localhost:3001'
-];
+  'http://localhost:3001',
+  ...(process.env.VERCEL_URL ? [`https://${process.env.VERCEL_URL}`] : []),
+  ...envOrigins
+]));
 
 const app = express();
 
@@ -83,7 +90,13 @@ app.use(cors({
   origin: (origin, callback) => {
     // Allow requests with no origin (Telegram Mini App, mobile apps, curl)
     if (!origin) return callback(null, true);
-    if (ALLOWED_ORIGINS.includes(origin)) return callback(null, true);
+    if (
+      ALLOWED_ORIGINS.includes(origin) ||
+      (origin.startsWith('https://purpleos-') && origin.endsWith('.vercel.app')) ||
+      (process.env.NODE_ENV !== 'production' && /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin))
+    ) {
+      return callback(null, true);
+    }
     callback(new Error(`CORS policy: origin ${origin} not allowed`));
   },
   credentials: true
@@ -113,87 +126,94 @@ app.get(['/api/bot-status', '/bot-status'], (req, res) => {
 
 // System Health Dashboard API & Deep Telemetry (Public health & liveness probe)
 app.get(['/api/system-health', '/api/system-health/detailed'], async (req, res) => {
-  const { supabase, isSupabaseConfigured } = require('./src/services/supabase');
-  const { getActiveClientsCount } = require('./src/services/sse');
-  const cache = require('./src/services/cache');
-  const pkg = require('./package.json');
-  
-  let dbStatus = 'Offline';
-  let dbLatencyMs = null;
-  let agencyStats = {
-    totalStaff: 0,
-    openTasks: 0,
-    urgentTasks: 0,
-    overdueTasks: 0
-  };
+  try {
+    const { supabase, isSupabaseConfigured } = require('./src/services/supabase');
+    const { getActiveClientsCount } = require('./src/services/sse');
+    const cache = require('./src/services/cache');
+    const pkg = require('./package.json');
+    
+    let dbStatus = 'Offline';
+    let dbLatencyMs = null;
+    let agencyStats = {
+      totalStaff: 0,
+      openTasks: 0,
+      urgentTasks: 0,
+      overdueTasks: 0
+    };
 
-  if (isSupabaseConfigured()) {
-    const dbStart = Date.now();
-    try {
-      const [profRes, taskRes] = await Promise.all([
-        supabase.from('profiles').select('id, emp_code, status').limit(100),
-        supabase.from('tasks').select('id, priority, due_date, stage').limit(200)
-      ]);
-      dbLatencyMs = Date.now() - dbStart;
-      dbStatus = (profRes.error || taskRes.error) ? 'Degraded' : 'Connected';
+    if (isSupabaseConfigured()) {
+      const dbStart = Date.now();
+      try {
+        const [profRes, taskRes] = await Promise.all([
+          supabase.from('profiles').select('id, emp_code, status').limit(100),
+          supabase.from('tasks').select('id, priority, due_date, stage').limit(200)
+        ]);
+        dbLatencyMs = Date.now() - dbStart;
+        dbStatus = (profRes.error || taskRes.error) ? 'Degraded' : 'Connected';
 
-      if (profRes.data) {
-        agencyStats.totalStaff = profRes.data.length;
+        if (profRes.data) {
+          agencyStats.totalStaff = profRes.data.length;
+        }
+        if (taskRes.data) {
+          const todayStr = new Date().toISOString().split('T')[0];
+          agencyStats.openTasks = taskRes.data.filter(t => !['Approved', 'Published', 'Completed'].includes(t.stage)).length;
+          agencyStats.urgentTasks = taskRes.data.filter(t => t.priority === 'Urgent').length;
+          agencyStats.overdueTasks = taskRes.data.filter(t => t.due_date && t.due_date < todayStr && !['Approved', 'Published', 'Completed'].includes(t.stage)).length;
+        }
+      } catch (e) {
+        dbStatus = 'Error';
+        dbLatencyMs = Date.now() - dbStart;
       }
-      if (taskRes.data) {
-        const todayStr = new Date().toISOString().split('T')[0];
-        agencyStats.openTasks = taskRes.data.filter(t => !['Approved', 'Published', 'Completed'].includes(t.stage)).length;
-        agencyStats.urgentTasks = taskRes.data.filter(t => t.priority === 'Urgent').length;
-        agencyStats.overdueTasks = taskRes.data.filter(t => t.due_date && t.due_date < todayStr && !['Approved', 'Published', 'Completed'].includes(t.stage)).length;
-      }
-    } catch (e) {
-      dbStatus = 'Error';
-      dbLatencyMs = Date.now() - dbStart;
     }
+
+    const team = getTeamBot();
+    const client = getClientBot();
+
+    const isHealthy = dbStatus === 'Connected' && (team !== null || !process.env.TELEGRAM_BOT_TOKEN_TEAM);
+
+    return res.json({
+      status: isHealthy ? 'healthy' : 'degraded',
+      version: pkg.version || '0.9.0.0',
+      environment: process.env.NODE_ENV || 'production',
+      dbConnection: dbStatus,
+      dbLatencyMs: dbLatencyMs !== null ? dbLatencyMs : 0,
+      sseClients: getActiveClientsCount ? getActiveClientsCount() : 0,
+      botStatus: {
+        teamBot: team ? 'active' : 'null',
+        teamBotMode: process.env.RENDER || process.env.NODE_ENV === 'production' ? 'webhook' : 'polling',
+        clientBot: client ? 'active' : 'null',
+        clientBotMode: process.env.RENDER || process.env.NODE_ENV === 'production' ? 'webhook' : 'polling'
+      },
+      uptimeSeconds: Math.round(process.uptime()),
+      memoryMB: Math.round((process.memoryUsage().rss / 1024 / 1024) * 100) / 100,
+      cacheStats: cache.stats ? cache.stats() : { activeKeys: cache.size() },
+      agencyTelemetry: agencyStats,
+      timestamp: new Date().toISOString()
+    });
+  } catch (err) {
+    console.error('System health check error:', err.message);
+    return res.status(500).json({ status: 'error', message: 'Health probe exception' });
   }
-
-  const team = getTeamBot();
-  const client = getClientBot();
-
-  const isHealthy = dbStatus === 'Connected' && (team !== null || !process.env.TELEGRAM_BOT_TOKEN_TEAM);
-
-  res.json({
-    status: isHealthy ? 'healthy' : 'degraded',
-    version: pkg.version || '0.9.0.0',
-    environment: process.env.NODE_ENV || 'production',
-    dbConnection: dbStatus,
-    dbLatencyMs: dbLatencyMs !== null ? dbLatencyMs : 0,
-    sseClients: getActiveClientsCount ? getActiveClientsCount() : 0,
-    botStatus: {
-      teamBot: team ? 'active' : 'null',
-      teamBotMode: process.env.RENDER || process.env.NODE_ENV === 'production' ? 'webhook' : 'polling',
-      clientBot: client ? 'active' : 'null',
-      clientBotMode: process.env.RENDER || process.env.NODE_ENV === 'production' ? 'webhook' : 'polling'
-    },
-    uptimeSeconds: Math.round(process.uptime()),
-    memoryMB: Math.round((process.memoryUsage().rss / 1024 / 1024) * 100) / 100,
-    cacheStats: cache.stats ? cache.stats() : { activeKeys: cache.size() },
-    agencyTelemetry: agencyStats,
-    timestamp: new Date().toISOString()
-  });
 });
 
 // Telegram Webhook Endpoint for Production Updates
 app.post(['/api/webhooks/telegram', '/webhooks/telegram'], async (req, res) => {
+  const botType = req.query.bot || 'team';
   const secretHeader = req.headers['x-telegram-bot-api-secret-token'];
-  const expectedSecret = process.env.WEBHOOK_SECRET_TOKEN || process.env.WEBHOOK_SECRET;
+  const expectedSecret = botType === 'client'
+    ? (process.env.WEBHOOK_SECRET_CLIENT || process.env.WEBHOOK_SECRET_TOKEN || process.env.WEBHOOK_SECRET)
+    : (process.env.WEBHOOK_SECRET_TEAM || process.env.WEBHOOK_SECRET_TOKEN || process.env.WEBHOOK_SECRET);
   
   if (expectedSecret) {
     if (!secretHeader || secretHeader !== expectedSecret) {
-      console.warn('⚠️ Webhook request rejected: Invalid or missing secret token');
+      console.warn(`⚠️ Webhook request rejected (${botType}): Invalid or missing secret token`);
       return res.status(403).json({ error: 'Forbidden: Invalid secret token' });
     }
   } else if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
-    console.warn('⚠️ Webhook request rejected: WEBHOOK_SECRET required in production');
+    console.warn(`⚠️ Webhook request rejected (${botType}): Webhook secret required in production`);
     return res.status(403).json({ error: 'Forbidden: Webhook secret configuration required in production' });
   }
 
-  const botType = req.query.bot || 'team';
   let targetBot = botType === 'client' ? getClientBot() : getTeamBot();
 
   // Cold start fallback: Ensure bot instance is ready
@@ -208,13 +228,23 @@ app.post(['/api/webhooks/telegram', '/webhooks/telegram'], async (req, res) => {
 
   if (targetBot && req.body) {
     try {
-      console.log(`Webhook received payload (server.js):`, JSON.stringify(req.body));
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(`Webhook received payload (${botType}):`, JSON.stringify(req.body));
+      } else {
+        console.log(`[Webhook] Processing update (${botType}) update_id:`, req.body?.update_id);
+      }
       await targetBot.processUpdate(req.body);
+      return res.status(200).json({ ok: true });
     } catch (err) {
       console.error(`Telegram webhook update processing error (${botType}):`, err.message);
+      return res.status(500).json({ error: 'Processing error' });
     }
   } else if (!targetBot) {
-    console.warn(`⚠️ Target bot (${botType}) is null during webhook processing`);
+    if (process.env.NODE_ENV === 'test') {
+      return res.status(200).json({ ok: true, simulated: true });
+    }
+    console.warn(`⚠️ Target bot (${botType}) is null during webhook processing. Returning 503 for Telegram retry.`);
+    return res.status(503).json({ error: 'Bot service not ready. Telegram will retry.' });
   }
   return res.status(200).json({ ok: true });
 });

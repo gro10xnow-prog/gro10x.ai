@@ -204,9 +204,10 @@ router.post('/', requireAuth, requireManager, async (req, res) => {
     const invoice = mapInvoice(payload);
 
     if (supabase) {
-      supabase.from('invoices').insert([payload]).then(null, e => {
-        console.warn('[Invoices API] Supabase insert note:', e.message);
-      });
+      const { error: insErr } = await supabase.from('invoices').insert([payload]);
+      if (insErr) {
+        console.warn('[Invoices API] Supabase insert note:', insErr.message);
+      }
     }
 
     try { broadcast('invoice_update', inMemoryInvoices.map(mapInvoice)); } catch (e) {}
@@ -236,7 +237,10 @@ router.put('/:id', requireAuth, requireManager, async (req, res) => {
     const invoice = mapInvoice(inMemoryInvoices[memIdx] || { id, ...updates });
 
     if (supabase) {
-      supabase.from('invoices').update(updates).eq('id', id).then(null, () => {});
+      const { error: updErr } = await supabase.from('invoices').update(updates).eq('id', id);
+      if (updErr) {
+        console.warn('[Invoices API] Supabase update note:', updErr.message);
+      }
     }
 
     try { broadcast('invoice_update', inMemoryInvoices.map(mapInvoice)); } catch (e) {}
@@ -293,6 +297,34 @@ router.post('/:id/pay', requireAuth, upload.single('screenshot'), async (req, re
     const { trxId, method, amount } = req.body;
     let screenshotUrl = null;
 
+    // Fetch invoice from Supabase or memory to verify existence & tenant ownership
+    let inv = null;
+    if (supabase) {
+      const { data } = await supabase.from('invoices').select('*').eq('id', id).maybeSingle();
+      if (data) inv = data;
+    }
+    if (!inv) {
+      inv = inMemoryInvoices.find(i => i.id === id);
+    }
+    if (!inv) {
+      return res.status(404).json({ error: 'Invoice not found' });
+    }
+
+    // IDOR Tenant Ownership Protection
+    const isClientUser = req.user.role === 'Client' || req.user.linkedType === 'client' || req.user.accessLevel === 'Client Partner';
+    const userClientId = req.user.linkedId || req.user.clientId || req.user.id;
+    const userClientName = (req.user.profile?.name || req.user.name || '').toLowerCase();
+
+    if (isClientUser) {
+      const invoiceClientId = inv.client_id || inv.clientId;
+      const invoiceClientName = (inv.client_name || inv.clientName || '').toLowerCase();
+      const hasMatch = (invoiceClientId && userClientId && invoiceClientId === userClientId) ||
+                       (invoiceClientName && userClientName && invoiceClientName.includes(userClientName));
+      if (!hasMatch) {
+        return res.status(403).json({ error: 'Forbidden: You do not have permission to pay this invoice.' });
+      }
+    }
+
     if (req.file && supabase) {
       try {
         const ext = path.extname(req.file.originalname) || '.jpg';
@@ -317,7 +349,6 @@ router.post('/:id/pay', requireAuth, upload.single('screenshot'), async (req, re
       }
     }
 
-    const inv = inMemoryInvoices.find(i => i.id === id);
     const invoiceAmount = amount || (inv ? inv.amount : 0);
 
     const paymentId = `PAY-${Date.now().toString().slice(-6)}`;
@@ -335,7 +366,7 @@ router.post('/:id/pay', requireAuth, upload.single('screenshot'), async (req, re
     };
     
     if (supabase) {
-      supabase.from('payment_logs').insert([paymentPayload]).then(null, () => {});
+      await supabase.from('payment_logs').insert([paymentPayload]);
     }
 
     const updates = {
@@ -350,7 +381,7 @@ router.post('/:id/pay', requireAuth, upload.single('screenshot'), async (req, re
     const invoice = mapInvoice(inMemoryInvoices[memIdx] || { id, ...updates });
 
     if (supabase) {
-      supabase.from('invoices').update(updates).eq('id', id).then(null, () => {});
+      await supabase.from('invoices').update(updates).eq('id', id);
     }
 
     try { broadcast('invoice_update', inMemoryInvoices.map(mapInvoice)); } catch (e) {}
@@ -434,7 +465,8 @@ router.post('/quotes', requireAuth, requireManager, async (req, res) => {
     const quote = mapQuote(payload);
 
     if (supabase) {
-      supabase.from('quotes').insert([payload]).then(null, () => {});
+      const { error: qInsErr } = await supabase.from('quotes').insert([payload]);
+      if (qInsErr) console.warn('[Quotes API] Supabase insert note:', qInsErr.message);
     }
 
     try { broadcast('quote_update', inMemoryQuotes.map(mapQuote)); } catch (e) {}
@@ -459,7 +491,8 @@ router.put('/quotes/:id', requireAuth, requireManager, async (req, res) => {
     const quote = mapQuote(inMemoryQuotes[memIdx] || { id, ...updates });
 
     if (supabase) {
-      supabase.from('quotes').update(updates).eq('id', id).then(null, () => {});
+      const { error: qUpdErr } = await supabase.from('quotes').update(updates).eq('id', id);
+      if (qUpdErr) console.warn('[Quotes API] Supabase update note:', qUpdErr.message);
     }
 
     try { broadcast('quote_update', inMemoryQuotes.map(mapQuote)); } catch (e) {}
@@ -498,8 +531,8 @@ router.post('/quotes/:id/convert', requireAuth, requireManager, async (req, res)
     inMemoryInvoices.unshift(newInvoice);
 
     if (supabase) {
-      supabase.from('quotes').update({ status: 'Converted' }).eq('id', id).then(null, () => {});
-      supabase.from('invoices').insert([newInvoice]).then(null, () => {});
+      await supabase.from('quotes').update({ status: 'Converted' }).eq('id', id);
+      await supabase.from('invoices').insert([newInvoice]);
     }
 
     const invoice = mapInvoice(newInvoice);

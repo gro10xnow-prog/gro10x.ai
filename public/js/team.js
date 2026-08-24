@@ -234,15 +234,23 @@ function renderCrewView() {
 
 async function crewClockIn() {
   const staff = crewStaffList.find(e => (e.emp_code || e.id) === currentCrewEmpCode) || crewStaffList[0];
+  const token = localStorage.getItem('sb-access-token') || localStorage.getItem('purple_token') || localStorage.getItem('purpleos_pin_token');
   try {
-    const res = await fetch('/api/telegram-simulator', {
+    const res = await fetch('/api/team/clockin', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ command: '/clockin', text: `/clockin ${staff.emp_code}` })
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      },
+      body: JSON.stringify({ employeeId: staff.emp_code || staff.id, location: 'Niketon Studio' })
     });
     const data = await res.json();
-    showTeamToast(`🟢 Clock In Recorded for ${staff.name}! Studio attendance updated.`, 'success');
-    initCrewPortal();
+    if (res.ok && data.success) {
+      showTeamToast(`🟢 Clock In Recorded for ${staff.name}! Studio attendance updated.`, 'success');
+      initCrewPortal();
+    } else {
+      showTeamToast('Clock-in failed: ' + (data.error || 'Unknown error'), 'error');
+    }
   } catch (err) {
     showTeamToast('Clock-in error: ' + err.message, 'error');
   }
@@ -250,15 +258,23 @@ async function crewClockIn() {
 
 async function crewClockOut() {
   const staff = crewStaffList.find(e => (e.emp_code || e.id) === currentCrewEmpCode) || crewStaffList[0];
+  const token = localStorage.getItem('sb-access-token') || localStorage.getItem('purple_token') || localStorage.getItem('purpleos_pin_token');
   try {
-    const res = await fetch('/api/telegram-simulator', {
+    const res = await fetch('/api/team/clockout', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ command: '/clockout', text: `/clockout ${staff.emp_code}` })
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      },
+      body: JSON.stringify({ employeeId: staff.emp_code || staff.id })
     });
     const data = await res.json();
-    showTeamToast(`🔴 Clock Out Recorded for ${staff.name}. Have a great rest of your day!`, 'info');
-    initCrewPortal();
+    if (res.ok && data.success) {
+      showTeamToast(`🔴 Clock Out Recorded for ${staff.name}. Have a great rest of your day!`, 'info');
+      initCrewPortal();
+    } else {
+      showTeamToast('Clock-out failed: ' + (data.error || 'Unknown error'), 'error');
+    }
   } catch (err) {
     showTeamToast('Clock-out error: ' + err.message, 'error');
   }
@@ -328,6 +344,7 @@ async function quickGearReturn() {
 async function submitCrewExpense(event) {
   event.preventDefault();
   const staff = crewStaffList.find(e => (e.emp_code || e.id) === currentCrewEmpCode) || crewStaffList[0];
+  const token = localStorage.getItem('sb-access-token') || localStorage.getItem('purple_token') || localStorage.getItem('purpleos_pin_token');
 
   const payload = {
     submittedBy: staff ? staff.name : 'Crew Specialist',
@@ -342,7 +359,10 @@ async function submitCrewExpense(event) {
   try {
     const res = await fetch('/api/expenses', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      },
       body: JSON.stringify(payload)
     });
     const data = await res.json();
@@ -361,6 +381,7 @@ async function submitCrewExpense(event) {
 async function submitCrewLeave(event) {
   event.preventDefault();
   const staff = crewStaffList.find(e => (e.emp_code || e.id) === currentCrewEmpCode) || crewStaffList[0];
+  const token = localStorage.getItem('sb-access-token') || localStorage.getItem('purple_token') || localStorage.getItem('purpleos_pin_token');
 
   const payload = {
     staffId: currentCrewEmpCode,
@@ -375,7 +396,10 @@ async function submitCrewLeave(event) {
   try {
     const res = await fetch('/api/leaves', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      },
       body: JSON.stringify(payload)
     });
     const data = await res.json();
@@ -392,10 +416,11 @@ async function submitCrewLeave(event) {
 async function submitCrewEod(event) {
   event.preventDefault();
   const staff = crewStaffList.find(e => (e.emp_code || e.id) === currentCrewEmpCode) || crewStaffList[0];
+  const token = localStorage.getItem('sb-access-token') || localStorage.getItem('purple_token') || localStorage.getItem('purpleos_pin_token');
 
   const payload = {
-    staffId: currentCrewEmpCode,
-    staffName: staff ? staff.name : 'Crew Specialist',
+    employeeId: currentCrewEmpCode,
+    name: staff ? staff.name : 'Crew Specialist',
     date: new Date().toISOString().split('T')[0],
     tasksCompleted: document.getElementById('crewEodCompleted').value.trim(),
     tasksInProgress: document.getElementById('crewEodInProgress').value.trim() || 'None',
@@ -405,16 +430,21 @@ async function submitCrewEod(event) {
   try {
     const res = await fetch('/api/eod', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      },
       body: JSON.stringify(payload)
     });
     const data = await res.json();
     if (data.success) {
-      showTeamToast(`📋 Daily EOD report logged for ${payload.staffName}!`, 'success');
+      showTeamToast(`📋 Daily EOD report logged for ${payload.name}!`, 'success');
       document.getElementById('crewEodCompleted').value = '';
       document.getElementById('crewEodInProgress').value = '';
       document.getElementById('crewEodBlockers').value = '';
       initCrewPortal();
+    } else {
+      showTeamToast('Error submitting EOD report: ' + (data.error || 'Unknown error'), 'error');
     }
   } catch (err) {
     showTeamToast('Error submitting EOD report: ' + err.message, 'error');
@@ -439,3 +469,63 @@ function setupTeamSSE() {
 document.addEventListener('DOMContentLoaded', () => {
   setupTeamSSE();
 });
+
+/**
+ * 📄 Crew Payslip Modal Handlers
+ */
+async function openCrewPayslipModal() {
+  const modal = document.getElementById('crewPayslipModal');
+  const content = document.getElementById('crewPayslipContent');
+  if (!modal || !content) return;
+
+  modal.style.display = 'flex';
+  const staff = crewStaffList.find(e => (e.emp_code || e.id) === currentCrewEmpCode) || crewStaffList[0];
+  const baseSalary = Number(staff?.baseSalary || staff?.salary || 45000);
+  const commissions = Number(staff?.earnedCommissions || 10000);
+  const grossPay = baseSalary + commissions;
+  const taxDeduction = Math.round(grossPay * 0.05);
+  const netPay = grossPay - taxDeduction;
+
+  const monthLabel = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  const monthEl = document.getElementById('payslipMonthLabel');
+  if (monthEl) monthEl.innerText = `${monthLabel} — ${staff?.name || 'Staff'}`;
+
+  content.innerHTML = `
+    <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 1.25rem;">
+      <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.6rem; margin-bottom: 0.6rem;">
+        <span style="color: #94a3b8; font-size: 0.85rem;">Employee</span>
+        <strong style="color: #fff; font-size: 0.9rem;">${staff?.name || 'Specialist'} (${staff?.emp_code || staff?.id})</strong>
+      </div>
+      <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.6rem; margin-bottom: 0.6rem;">
+        <span style="color: #94a3b8; font-size: 0.85rem;">Designation</span>
+        <span style="color: #cbd5e1; font-size: 0.85rem;">${staff?.role || 'Production Specialist'}</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.6rem; margin-bottom: 0.6rem;">
+        <span style="color: #94a3b8; font-size: 0.85rem;">Base Monthly Salary</span>
+        <span style="color: #e2e8f0; font-size: 0.85rem;">BDT ৳${baseSalary.toLocaleString()}</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.6rem; margin-bottom: 0.6rem;">
+        <span style="color: #94a3b8; font-size: 0.85rem;">Shoot & Edit Commissions</span>
+        <span style="color: #34d399; font-size: 0.85rem; font-weight: 700;">+ BDT ৳${commissions.toLocaleString()}</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.6rem; margin-bottom: 0.6rem;">
+        <span style="color: #94a3b8; font-size: 0.85rem;">Statutory Deductions (AIT 5%)</span>
+        <span style="color: #f87171; font-size: 0.85rem;">- BDT ৳${taxDeduction.toLocaleString()}</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; padding-top: 0.4rem;">
+        <strong style="color: #fff; font-size: 1rem;">Net Take-Home Pay</strong>
+        <strong style="color: #34d399; font-size: 1.25rem;">BDT ৳${netPay.toLocaleString()}</strong>
+      </div>
+    </div>
+    <div style="font-size: 0.72rem; color: #64748b; text-align: center;">Disbursed via automated BEFTN / bKash merchant payroll on 1st of next month.</div>
+  `;
+}
+
+function closeCrewPayslipModal() {
+  const modal = document.getElementById('crewPayslipModal');
+  if (modal) modal.style.display = 'none';
+}
+
+function printCrewPayslip() {
+  window.print();
+}

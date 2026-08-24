@@ -18,11 +18,11 @@
   <link rel="stylesheet" href="/css/shell.css">
   <script>
     (function() {
+      const token = localStorage.getItem('sb-access-token') || localStorage.getItem('purple_token') || localStorage.getItem('purpleos_pin_token') || sessionStorage.getItem('jwt_token');
       const savedPhone = localStorage.getItem('purple_user_phone');
-      const token = localStorage.getItem('sb-access-token');
       const user = localStorage.getItem('purple_user');
       if (!token && !savedPhone && !user) {
-        window.location.replace('/auth');
+        window.location.replace('/auth?redirect=/reviewroom');
       }
     })();
   </script>
@@ -94,7 +94,7 @@
     <!-- LEFT COLUMN: VIDEO PLAYER & METADATA -->
     <div class="rr-card">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
-        <h3 style="font-size: 1.2rem; font-weight: 800; margin: 0;" id="assetTitle">Chillox TVC Master Commercial Cut (v2.4)</h3>
+        <h3 style="font-size: 1.2rem; font-weight: 800; margin: 0;" id="assetTitle">Campaign Deliverable Preview</h3>
         <span class="badge" id="assetCategoryBadge" style="background: rgba(168,85,247,0.2); color: #c084fc; padding: 0.4rem 0.85rem; border-radius: 999px; font-size: 0.78rem; font-weight: 700;">AV Production</span>
       </div>
 
@@ -134,8 +134,8 @@
       <div id="drawingToolbar" style="display: flex; gap: 0.5rem; margin-top: 0.5rem; align-items: center; flex-wrap:wrap;">
         <button class="rr-btn" id="btnToggleDraw" style="background: rgba(255,255,255,0.1); padding: 0.4rem 0.8rem; font-size: 0.85rem;">🖍️ Enable Drawing</button>
         <span style="font-size: 0.75rem; color: var(--text-muted);">Draw on the video to add visual feedback at the current timestamp.</span>
-        <label for="assetUploadInput" class="rr-btn" style="background:rgba(255,255,255,0.08); padding:0.4rem 0.8rem; font-size:0.85rem; cursor:pointer;">📤 Upload New Version</label>
-        <input type="file" id="assetUploadInput" accept="video/*,image/*,.pdf" style="display:none;" onchange="handleAssetUpload(event)">
+        <label for="assetUploadVersionInput" class="rr-btn" style="background:rgba(255,255,255,0.08); padding:0.4rem 0.8rem; font-size:0.85rem; cursor:pointer;">📤 Upload New Version</label>
+        <input type="file" id="assetUploadVersionInput" accept="video/*,image/*,.pdf" style="display:none;" onchange="handleAssetUpload(event)">
       </div>
 
       <!-- Client & Action Footer -->
@@ -258,9 +258,28 @@
     }
 
     function showNoProjectsState() {
-      document.getElementById('assetTitle').innerText = 'No Active Review Projects';
-      document.getElementById('noAssetPlaceholder').style.display = 'flex';
-      document.getElementById('videoPlayer').style.display = 'none';
+      const titleEl = document.getElementById('assetTitle');
+      if (titleEl) titleEl.innerText = 'No Active Deliverables in Review';
+      const placeholder = document.getElementById('noAssetPlaceholder');
+      if (placeholder) {
+        placeholder.style.display = 'flex';
+        placeholder.style.flexDirection = 'column';
+        placeholder.style.alignItems = 'center';
+        placeholder.innerHTML = `
+          <div style="font-size:3rem; margin-bottom:0.75rem;">🎬</div>
+          <div style="font-weight:800; color:#fff; font-size:1.1rem; margin-bottom:0.4rem;">No Cuts Pending Review</div>
+          <div style="font-size:0.88rem; color:#cbd5e1; max-width:440px; margin-bottom:1.5rem; line-height:1.5;">
+            All campaign deliverables are up to date. Once your production team uploads your rough cut or revision, you can stream, draw, and approve it here.
+          </div>
+          <a href="/" style="display:inline-flex; align-items:center; gap:0.5rem; text-decoration:none; padding:0.6rem 1.25rem; font-size:0.88rem; font-weight:700; border-radius:12px; background:linear-gradient(135deg, #7c3aed, #ec4899); color:#fff;">
+            🌐 Return to Main Website
+          </a>
+        `;
+      }
+      const vid = document.getElementById('videoPlayer');
+      if (vid) vid.style.display = 'none';
+      const pills = document.getElementById('rrVersionPills');
+      if (pills) pills.style.display = 'none';
     }
 
     function populateProjectSelector(list, preloadId) {

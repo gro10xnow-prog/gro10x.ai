@@ -1,6 +1,6 @@
 {
   "name": "purplebot-core",
-  "version": "0.9.2.0",
+  "version": "0.9.3.0",
   "description": "Purplebot Digital Core Agency OS API & App",
   "main": "server.js",
   "scripts": {
@@ -9,6 +9,7 @@
     "test": "jest --runInBand --detectOpenHandles --forceExit",
     "test:e2e": "node scripts/e2e/runner.js",
     "test:e2e:client": "node scripts/e2e-client/runner.js",
+    "test:e2e:prospect": "node scripts/e2e-prospect/runner.js",
     "db:seed": "node scripts/seed-supabase.js",
     "db:prod-reset": "node scripts/prepare-production-db.js",
     "register-webhook": "node register-webhook.js"

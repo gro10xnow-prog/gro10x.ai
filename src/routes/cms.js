@@ -4,6 +4,7 @@ const { requireAuth } = require('../middleware/auth');
 const { requireAdmin } = require('../middleware/rbac');
 const { supabase, isSupabaseConfigured } = require('../services/supabase');
 const { broadcast } = require('../services/sse');
+const { DEFAULT_SERVICES } = require('../constants/services');
 
 const defaultCMSContent = {
   agencyInfo: {
@@ -25,12 +26,7 @@ const defaultCMSContent = {
     { icon: "🎬", title: "Full-Scale In-House Studio", description: "From 4K commercial TVCs to viral TikToks and reels, our dedicated production crew handles end-to-end execution." },
     { icon: "🤖", title: "PurpleOS Bot Workflows", description: "Proprietary AI task dispatching, real-time client review portals, and frame-accurate feedback rooms." }
   ],
-  services: [
-    { id: "SVC-001", icon: "📢", title: "Digital Marketing & Growth", category: "Growth & Ads", price: "৳75,000 / month", description: "Data-driven social media management, paid advertising, and conversion rate optimization.", features: ["Paid Meta & Google Ads", "Social Media Strategy", "Audience Retargeting", "Monthly Growth Analytics"] },
-    { id: "SVC-002", icon: "🎥", title: "Video Production & Editing", category: "Content & Film", price: "৳45,000 / 10 Reels", description: "High-impact commercial TVCs, viral Reels/TikToks, and full post-production color grading.", features: ["Commercial TVC Shoots", "Short-Form Reels & TikToks", "Color Grading & Sound FX", "Frame.io Review Workflows"] },
-    { id: "SVC-003", icon: "🎨", title: "Branding & Motion Design", category: "Design & Brand", price: "৳65,000 / project", description: "Brand identity systems, 3D motion graphics, packaging, and high-converting ad creative.", features: ["Brand Guidelines & Logos", "3D & 2D Motion Graphics", "Social Media Creative Kits", "Packaging & Print Design"] },
-    { id: "SVC-004", icon: "💻", title: "Website & Tech Development", category: "Development", price: "৳120,000 / project", description: "Custom web applications, responsive landing pages, e-commerce, and bot integrations.", features: ["Custom React / Next.js Apps", "High-Converting Landing Pages", "Telegram & WhatsApp Bots", "API & CRM Integration"] }
-  ],
+  services: DEFAULT_SERVICES,
   portfolioShowcase: [
     { id: "PORT-001", title: "LG Electronics Bangladesh", subtitle: "3+ Years Retainer • Digital Branding & 500k+ Audience Growth", category: "Electronics & Tech", metric: "📱 500,000+ Social Community", image: "/images/portfolio/lg.webp" },
     { id: "PORT-002", title: "InterContinental Dhaka", subtitle: "Official Digital Marketing & 360° Creative Support Agency", category: "Hospitality & Luxury", metric: "🏨 2+ Years Full Content Support", image: "/images/portfolio/intercontinental.webp" },

@@ -16,8 +16,11 @@ function errorHandler(err, req, res, next) {
     return next(err);
   }
 
+  const isProd = process.env.NODE_ENV === 'production';
   const statusCode = err.status || err.statusCode || 500;
-  const message = err.message || 'An unexpected internal server error occurred.';
+  const message = (isProd && statusCode >= 500)
+    ? 'An unexpected internal server error occurred.'
+    : (err.message || 'An unexpected internal server error occurred.');
   const code = err.code || 'INTERNAL_SERVER_ERROR';
 
   return fail(res, statusCode, message, code);

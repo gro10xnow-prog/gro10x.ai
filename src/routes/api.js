@@ -60,6 +60,7 @@ const adminImportRoutes = require('./admin-import');
 const workflowsRoutes = require('./workflows');
 const aiRoutes = require('./ai');
 const exportRoutes = require('./export');
+const eodRoutes = require('./eod');
 
 // System Version Endpoint
 router.get('/version', (req, res) => {
@@ -166,6 +167,7 @@ router.use('/task-templates', taskTemplatesRoutes);
 router.use('/chat', chatRoutes);
 router.use('/ai', aiRoutes);
 router.use('/export', exportRoutes);
+router.use('/eod', eodRoutes);
 
 // Public Client Phone Check (used by chat widget — rate-limited & safe)
 router.get('/public/client-check', asyncHandler(async (req, res) => {
@@ -174,19 +176,14 @@ router.get('/public/client-check', asyncHandler(async (req, res) => {
   const norm = normalizePhone(phone);
   if (isSupabaseConfigured() && norm.length >= 6) {
     try {
-      const { data } = await supabase.from('clients').select('id,name,phone').ilike('phone', `%${norm}%`).maybeSingle();
-      if (data) return ok(res, { found: true, name: data.name });
+      const { data } = await supabase.from('clients').select('id,phone').ilike('phone', `%${norm}%`).maybeSingle();
+      if (data) return ok(res, { found: true });
     } catch (e) {}
   }
   return ok(res, { found: false });
 }));
 
-const DEFAULT_SERVICES = [
-  { id: "SVC-001", icon: "📢", title: "Digital Marketing & Growth", category: "Digital Marketing", price: "৳75,000 / month", description: "Data-driven social media management, paid advertising, and conversion rate optimization.", features: ["Paid Meta & Google Ads", "Social Media Strategy", "Audience Retargeting", "Monthly Growth Analytics"], includedFeatures: ["Paid Meta & Google Ads", "Social Media Strategy", "Audience Retargeting", "Monthly Growth Analytics"], public: true },
-  { id: "SVC-002", icon: "🎥", title: "Video Production & Editing", category: "Video Production", price: "৳45,000 / 10 Reels", description: "High-impact commercial TVCs, viral Reels/TikToks, and full post-production color grading.", features: ["Commercial TVC Shoots", "Short-Form Reels & TikToks", "Color Grading & Sound FX", "Frame.io Review Workflows"], includedFeatures: ["Commercial TVC Shoots", "Short-Form Reels & TikToks", "Color Grading & Sound FX", "Frame.io Review Workflows"], public: true },
-  { id: "SVC-003", icon: "🎨", title: "Branding & Motion Design", category: "Branding & Graphics", price: "৳65,000 / project", description: "Brand identity systems, 3D motion graphics, packaging, and high-converting ad creative.", features: ["Brand Guidelines & Logos", "3D & 2D Motion Graphics", "Social Media Creative Kits", "Packaging & Print Design"], includedFeatures: ["Brand Guidelines & Logos", "3D & 2D Motion Graphics", "Social Media Creative Kits", "Packaging & Print Design"], public: true },
-  { id: "SVC-004", icon: "💻", title: "Website & Tech Development", category: "Website Development", price: "৳120,000 / project", description: "Custom web applications, responsive landing pages, e-commerce, and bot integrations.", features: ["Custom React / Next.js Apps", "High-Converting Landing Pages", "Telegram & WhatsApp Bots", "API & CRM Integration"], includedFeatures: ["Custom React / Next.js Apps", "High-Converting Landing Pages", "Telegram & WhatsApp Bots", "API & CRM Integration"], public: true }
-];
+const { DEFAULT_SERVICES } = require('../constants/services');
 
 // Public Services Catalog Endpoint
 router.get('/services', asyncHandler(async (req, res) => {

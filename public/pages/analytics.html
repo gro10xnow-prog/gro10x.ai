@@ -307,14 +307,37 @@
       `).join('');
     }
 
-    function exportAnalyticsReport() {
-      const table = prompt('Which data would you like to export?\n(tasks, clients, invoices, leads, attendance, expenses)', 'tasks');
-      const validTables = ['tasks', 'clients', 'invoices', 'leads', 'attendance', 'expenses'];
+    async function exportAnalyticsReport() {
+      const table = prompt('Which data would you like to export?\n(tasks, clients, invoices, leads, attendance, expenses, leaves, team)', 'tasks');
+      const validTables = ['tasks', 'clients', 'invoices', 'leads', 'attendance', 'expenses', 'leaves', 'team'];
       if (table) {
-        if (validTables.includes(table.toLowerCase().trim())) {
-          window.location.href = '/api/export/' + table.toLowerCase().trim();
-        } else {
+        const cleanTable = table.toLowerCase().trim();
+        if (!validTables.includes(cleanTable)) {
           alert('Invalid table. Please choose from: ' + validTables.join(', '));
+          return;
+        }
+        try {
+          const token = localStorage.getItem('sb-access-token') || localStorage.getItem('purple_token') || localStorage.getItem('purpleos_pin_token');
+          const res = await fetch(`/api/export/${cleanTable}`, {
+            headers: {
+              ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+            }
+          });
+          if (!res.ok) {
+            alert('Export failed. Ensure you have Manager or Admin permissions.');
+            return;
+          }
+          const blob = await res.blob();
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `${cleanTable}_export_${new Date().toISOString().split('T')[0]}.csv`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          window.URL.revokeObjectURL(url);
+        } catch (err) {
+          alert('Export network error: ' + err.message);
         }
       }
     }

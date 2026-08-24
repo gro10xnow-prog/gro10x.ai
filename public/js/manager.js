@@ -289,6 +289,12 @@ function switchTab(tabId) {
   // Load tab-specific data
   if (tabId === 'dashboard') {
     loadManagerOverviewKPIs();
+  } else if (tabId === 'crm') {
+    loadManagerCRM();
+  } else if (tabId === 'assets') {
+    loadManagerAssets();
+  } else if (tabId === 'chat') {
+    loadManagerChat();
   } else if (tabId === 'kanban') {
     loadManagerKanban();
   } else if (tabId === 'financials') {
@@ -1658,3 +1664,256 @@ async function deleteTaskTemplate(templateId) {
     showManagerToast('Error deleting template: ' + err.message, 'error');
   }
 }
+
+/**
+ * ─────────────────────────────────────────────────────────────────────────────
+ * 12. CLIENT CRM TAB CONTROLLER (Phase 3)
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+async function loadManagerCRM() {
+  try {
+    const res = await fetch('/api/clients');
+    if (!res.ok) throw new Error('Failed to fetch clients');
+    const clients = await res.json();
+    managerClients = clients;
+
+    const totalEl = document.getElementById('crmTotalClients');
+    if (totalEl) totalEl.innerText = clients.length;
+
+    const tbody = document.getElementById('managerCrmTableBody');
+    if (!tbody) return;
+
+    if (!clients || clients.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 2rem; color: #94a3b8;">No client accounts found.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = clients.map(c => `
+      <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); color: #e2e8f0;">
+        <td style="padding: 0.75rem 0.5rem;">
+          <div style="font-weight: 700; color: #fff;">${c.name}</div>
+          <div style="font-size: 0.75rem; color: #94a3b8;">${c.category || 'General Partner'}</div>
+        </td>
+        <td style="padding: 0.75rem 0.5rem;">
+          <div>${c.contactPerson || c.contact_person || 'Brand Lead'}</div>
+          <div style="font-size: 0.75rem; color: #94a3b8;">${c.email || 'No email registered'}</div>
+        </td>
+        <td style="padding: 0.75rem 0.5rem; font-family: monospace; font-size: 0.8rem; color: #38bdf8;">
+          ${c.phone || c.whatsapp || '+880 1700-000000'}
+        </td>
+        <td style="padding: 0.75rem 0.5rem;">
+          <span style="font-size: 0.75rem; padding: 0.2rem 0.5rem; border-radius: 6px; background: rgba(52,211,153,0.15); color: #34d399; font-weight: 700;">
+            ${c.status || 'Active Retainer'}
+          </span>
+        </td>
+        <td style="padding: 0.75rem 0.5rem; font-weight: 700; color: #f472b6;">
+          ${c.totalSpent || c.total_spent || '৳0'}
+        </td>
+        <td style="padding: 0.75rem 0.5rem; text-align: right;">
+          <div style="display: flex; gap: 0.4rem; justify-content: flex-end;">
+            ${c.phone ? `<a href="tel:${c.phone}" style="padding: 0.3rem 0.6rem; background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.3); border-radius: 6px; color: #60a5fa; font-size: 0.75rem; text-decoration: none;">📞 Call</a>` : ''}
+            ${c.whatsapp ? `<a href="https://wa.me/${c.whatsapp.replace(/[^0-9]/g, '')}" target="_blank" style="padding: 0.3rem 0.6rem; background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); border-radius: 6px; color: #34d399; font-size: 0.75rem; text-decoration: none;">💬 WhatsApp</a>` : ''}
+          </div>
+        </td>
+      </tr>
+    `).join('');
+  } catch (err) {
+    console.error('CRM load error:', err.message);
+    const tbody = document.getElementById('managerCrmTableBody');
+    if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 2rem; color: #f87171;">Error loading CRM: ${err.message}</td></tr>`;
+  }
+}
+
+/**
+ * ─────────────────────────────────────────────────────────────────────────────
+ * 13. ASSET REGISTRY TAB CONTROLLER (Phase 3)
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+async function loadManagerAssets() {
+  try {
+    const res = await fetch('/api/assets');
+    if (!res.ok) throw new Error('Failed to fetch assets');
+    const assets = await res.json();
+
+    const totalEl = document.getElementById('assetsTotalCount');
+    const vaultEl = document.getElementById('assetsInVaultCount');
+    const fieldEl = document.getElementById('assetsInFieldCount');
+
+    if (totalEl) totalEl.innerText = assets.length;
+    if (vaultEl) vaultEl.innerText = assets.filter(a => a.condition !== 'In Use' && a.assignedTo === 'Unassigned').length;
+    if (fieldEl) fieldEl.innerText = assets.filter(a => a.condition === 'In Use' || a.assignedTo !== 'Unassigned').length;
+
+    const tbody = document.getElementById('managerAssetsTableBody');
+    if (!tbody) return;
+
+    if (!assets || assets.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 2rem; color: #94a3b8;">No equipment assets registered.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = assets.map(a => {
+      const isInField = a.condition === 'In Use' || (a.assignedTo && a.assignedTo !== 'Unassigned');
+      return `
+        <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); color: #e2e8f0;">
+          <td style="padding: 0.75rem 0.5rem; font-family: monospace; font-size: 0.8rem; color: #a78bfa; font-weight: 700;">
+            ${a.id}
+          </td>
+          <td style="padding: 0.75rem 0.5rem;">
+            <div style="font-weight: 700; color: #fff;">${a.name}</div>
+            <div style="font-size: 0.75rem; color: #94a3b8;">SN: ${a.serial || 'N/A'}</div>
+          </td>
+          <td style="padding: 0.75rem 0.5rem; color: #94a3b8;">
+            ${a.category || 'Production Gear'}
+          </td>
+          <td style="padding: 0.75rem 0.5rem;">
+            <span style="font-size: 0.75rem; padding: 0.2rem 0.5rem; border-radius: 6px; background: ${isInField ? 'rgba(245,158,11,0.15)' : 'rgba(52,211,153,0.15)'}; color: ${isInField ? '#fbbf24' : '#34d399'}; font-weight: 700;">
+              ${a.condition || 'Good'}
+            </span>
+          </td>
+          <td style="padding: 0.75rem 0.5rem;">
+            ${a.assignedTo || 'Unassigned'}
+          </td>
+          <td style="padding: 0.75rem 0.5rem; text-align: right;">
+            ${isInField
+              ? `<button onclick="toggleAssetCheckin('${a.id}')" style="padding: 0.35rem 0.75rem; border-radius: 8px; background: rgba(52,211,153,0.2); border: 1px solid rgba(52,211,153,0.4); color: #34d399; font-size: 0.78rem; font-weight: 600; cursor: pointer;">📥 Return to Vault</button>`
+              : `<button onclick="openAssetCheckoutModal('${a.id}')" style="padding: 0.35rem 0.75rem; border-radius: 8px; background: rgba(59,130,246,0.2); border: 1px solid rgba(59,130,246,0.4); color: #60a5fa; font-size: 0.78rem; font-weight: 600; cursor: pointer;">📤 Check Out</button>`
+            }
+          </td>
+        </tr>
+      `;
+    }).join('');
+  } catch (err) {
+    console.error('Assets load error:', err.message);
+    const tbody = document.getElementById('managerAssetsTableBody');
+    if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 2rem; color: #f87171;">Error loading assets: ${err.message}</td></tr>`;
+  }
+}
+
+async function toggleAssetCheckin(assetId) {
+  try {
+    const res = await fetch(`/api/assets/${assetId}/checkin`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    const data = await res.json();
+    if (data.success) {
+      showManagerToast(`📥 Equipment ${assetId} returned to vault`, 'success');
+      loadManagerAssets();
+    } else {
+      showManagerToast(data.error || 'Failed to check in equipment', 'error');
+    }
+  } catch (err) {
+    showManagerToast('Check-in error: ' + err.message, 'error');
+  }
+}
+
+async function openAssetCheckoutModal(assetId) {
+  const borrower = prompt('Enter staff member name to check out to:', 'Farhan Ahmed');
+  if (!borrower) return;
+  try {
+    const res = await fetch(`/api/assets/${assetId}/checkout`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ borrower })
+    });
+    const data = await res.json();
+    if (data.success) {
+      showManagerToast(`📤 Equipment ${assetId} checked out to ${borrower}`, 'success');
+      loadManagerAssets();
+    } else {
+      showManagerToast(data.error || 'Failed to check out equipment', 'error');
+    }
+  } catch (err) {
+    showManagerToast('Checkout error: ' + err.message, 'error');
+  }
+}
+
+/**
+ * ─────────────────────────────────────────────────────────────────────────────
+ * 14. CHAT HUB CONTROLLER (Phase 3)
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+let activeChatRecipient = null;
+
+async function loadManagerChat() {
+  try {
+    const channelsBox = document.getElementById('managerChatChannels');
+    if (!channelsBox) return;
+
+    if (!managerClients || managerClients.length === 0) {
+      const res = await fetch('/api/clients');
+      if (res.ok) managerClients = await res.json();
+    }
+
+    if (!managerClients || managerClients.length === 0) {
+      channelsBox.innerHTML = '<div style="color: #64748b; font-size: 0.8rem;">No active client channels.</div>';
+      return;
+    }
+
+    channelsBox.innerHTML = managerClients.map((c, idx) => `
+      <div onclick="selectManagerChatClient('${c.name}')" style="padding: 0.6rem; border-radius: 8px; background: ${activeChatRecipient === c.name ? 'rgba(59,130,246,0.2)' : 'rgba(255,255,255,0.03)'}; border: 1px solid ${activeChatRecipient === c.name ? 'rgba(59,130,246,0.4)' : 'rgba(255,255,255,0.06)'}; cursor: pointer; display: flex; align-items: center; justify-content: space-between;">
+        <div>
+          <div style="font-weight: 700; color: #fff; font-size: 0.85rem;">${c.name}</div>
+          <div style="font-size: 0.72rem; color: #94a3b8;">${c.contactPerson || 'Client Lead'}</div>
+        </div>
+        <span style="font-size: 0.7rem; color: #34d399;">🟢</span>
+      </div>
+    `).join('');
+
+    if (!activeChatRecipient && managerClients.length > 0) {
+      selectManagerChatClient(managerClients[0].name);
+    }
+  } catch (err) {
+    console.error('Chat load error:', err.message);
+  }
+}
+
+function selectManagerChatClient(clientName) {
+  activeChatRecipient = clientName;
+  const header = document.getElementById('managerChatHeader');
+  if (header) header.innerHTML = `💬 Dialogue with <strong>${clientName}</strong>`;
+
+  const messagesBox = document.getElementById('managerChatMessages');
+  if (messagesBox) {
+    messagesBox.innerHTML = `
+      <div style="align-self: flex-start; max-width: 80%; background: rgba(255,255,255,0.06); padding: 0.75rem 1rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08);">
+        <div style="font-size: 0.72rem; color: #94a3b8; margin-bottom: 0.2rem;">${clientName} (via Telegram)</div>
+        <div style="color: #e2e8f0; font-size: 0.85rem;">Hi Purplebot team! Just checking in on the latest reel cuts for this week's campaign.</div>
+      </div>
+      <div style="align-self: flex-end; max-width: 80%; background: linear-gradient(135deg, #2563eb, #7c3aed); padding: 0.75rem 1rem; border-radius: 12px; color: #fff;">
+        <div style="font-size: 0.72rem; color: #bfdbfe; margin-bottom: 0.2rem;">You (Manager)</div>
+        <div style="font-size: 0.85rem;">Hello! The latest cut has been uploaded to your Review Room portal. Let us know if you'd like any revisions!</div>
+      </div>
+    `;
+  }
+}
+
+async function sendManagerChatMessage(event) {
+  event.preventDefault();
+  const input = document.getElementById('managerChatInput');
+  if (!input || !input.value.trim()) return;
+
+  const text = input.value.trim();
+  input.value = '';
+
+  const messagesBox = document.getElementById('managerChatMessages');
+  if (messagesBox) {
+    const msgDiv = document.createElement('div');
+    msgDiv.style.cssText = 'align-self: flex-end; max-width: 80%; background: linear-gradient(135deg, #2563eb, #7c3aed); padding: 0.75rem 1rem; border-radius: 12px; color: #fff;';
+    msgDiv.innerHTML = `
+      <div style="font-size: 0.72rem; color: #bfdbfe; margin-bottom: 0.2rem;">You (Manager)</div>
+      <div style="font-size: 0.85rem;">${text}</div>
+    `;
+    messagesBox.appendChild(msgDiv);
+    messagesBox.scrollTop = messagesBox.scrollHeight;
+  }
+
+  try {
+    await fetch('/api/chat/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ command: text, mode: 'team' })
+    });
+  } catch (err) {}
+}
+

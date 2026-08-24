@@ -8,7 +8,7 @@ const { createTempPin } = require('./auth-pins');
 const state = require('./state');
 const { readDB } = require('./db');
 
-const { getRoleKeyboard, getClientKeyboard } = require('./bot/keyboards');
+const { getRoleKeyboard, getClientKeyboard, getProspectKeyboard } = require('./bot/keyboards');
 
 let teamBot = null;
 let clientBot = null;
@@ -621,52 +621,6 @@ function initBot() {
         }
       });
 
-      // /start handler
-      clientBot.onText(/\/start/, async (msg) => {
-        const chatId = msg.chat.id;
-        const dbData = await readDB();
-        const client = (dbData.clients || []).find(c => String(c.telegramId) === String(chatId));
-
-        if (client) {
-          const pendingCount = (dbData.tasks || []).filter(t => t.client === client.name && t.stage === 'Client Review').length;
-          const welcome = `👋 *Welcome back, ${client.name || client.contactPerson}!*\n\n` +
-            `📋 *${pendingCount} deliverable(s)* awaiting your review.\n` +
-            `💳 Monthly Retainer: *BDT ${(client.retainerValue || 0).toLocaleString()}*\n\n` +
-            `Tap any menu button below or hit *Open App* for your client portal.`;
-          const keyboard = getClientKeyboard(client);
-          clientBot.sendMessage(chatId, welcome, { parse_mode: 'Markdown', reply_markup: keyboard });
-        } else {
-          const welcome = `🎨 *Purplebot Digital — Brand Partner Portal*\n\n` +
-            `Your creative agency assistant for:\n` +
-            `• 🎬 Reviewing video & TVC deliverables\n` +
-            `• 📋 Live campaign progress tracking\n` +
-            `• 💳 Invoice & bKash payment verification\n` +
-            `• 📞 Direct line to your Account Manager\n\n` +
-            `━━━━━━━━━━━━━━━━━━━━\n` +
-            `📌 *To get started:* Tap *📱 Share My Phone to Get Started* below.`;
-          const keyboard = {
-            keyboard: [[{ text: '📱 Share My Phone to Get Started', request_contact: true }]],
-            resize_keyboard: true
-          };
-          clientBot.sendMessage(chatId, welcome, { parse_mode: 'Markdown', reply_markup: keyboard });
-        }
-      });
-
-      // /help handler
-      clientBot.onText(/\/help/, async (msg) => {
-        const chatId = msg.chat.id;
-        const helpText = `📖 *PURPLEOS CLIENT BOT — QUICK GUIDE*\n\n` +
-          `• \`/start\` — Open portal & link account\n` +
-          `• \`/help\` — Show available options & commands\n` +
-          `• \`/review\` — Access Video Review Room for active cuts\n` +
-          `• \`/campaign\` — Track live campaign production progress\n` +
-          `• \`/invoices\` — View billing & payment history\n` +
-          `• \`/services\` — Explore agency services & pricing\n` +
-          `• \`/portfolio\` — View agency creative portfolio\n\n` +
-          `💡 *Tip:* Tap the persistent *Open App* button at any time for full web portal access!`;
-        clientBot.sendMessage(chatId, helpText, { parse_mode: 'Markdown' });
-      });
-
       // ─── Helper: find client by phone (checks main phone + pocs array) ───
       async function findClientAndPoc(normPhone) {
         const { findClientAndPocByPhone } = require('./auth-pins');
@@ -736,47 +690,389 @@ function initBot() {
         clientBot.sendMessage(chatId, welcome, { parse_mode: 'Markdown', reply_markup: getClientKeyboard(client) });
       }
 
+      // ─── Helper: Complete Prospect Quote Wizard ───
+      async function handleProspectQuoteCompletion(msg, session, phoneInput) {
+        const chatId = msg.chat.id;
+        const cleanPhone = (phoneInput || '').trim();
+        const contactPerson = session.data?.fullName || [session.data?.firstName, session.data?.lastName].filter(Boolean).join(' ') || session.data?.company || 'Telegram Prospect';
+        const company = session.data?.company || 'Prospect Brand';
+        const service = session.data?.service || 'General Inquiry';
+        const budget = session.data?.budget || 'Not Specified';
+        const timeline = session.data?.timeline || 'Immediate';
+
+        const newLead = {
+          id: `LED-${Date.now().toString().slice(-6)}`,
+          stage: 'New Inquiry',
+          created_at: new Date().toISOString(),
+          company: company,
+          contact_person: contactPerson,
+          phone: cleanPhone,
+          whatsapp: cleanPhone,
+          service: service,
+          value: (budget.includes('300,000') || budget.includes('300k')) ? 300000
+               : (budget.includes('150,000') || budget.includes('150k')) ? 150000
+               : (budget.includes('75,000') || budget.includes('75k')) ? 75000
+               : 45000,
+          notes: `Captured via Telegram Bot (@purpleosbot). Budget: ${budget} | Timeline: ${timeline} | TG User: ${session.data?.telegramUser || 'N/A'}, Chat ID: ${chatId}`,
+          source: 'Telegram Bot — @purpleosbot'
+        };
+
+        if (supabase) {
+          try {
+            await supabase.from('leads').insert([newLead]);
+          } catch (e) {
+            console.warn('[Bot] Lead insert error from telegram bot:', e.message);
+          }
+        }
+
+        await state.clearSession(chatId);
+
+        // Send telegram alert to owner / sales
+        try {
+          const ownerChatId = process.env.OWNER_TELEGRAM_ID;
+          if (ownerChatId) {
+            sendTelegramNotification(ownerChatId,
+              `🔔 *New Qualified Lead from Telegram Bot (@purpleosbot)!*\n\n` +
+              `👤 *${contactPerson}* (${company})\n` +
+              `📞 Phone: \`${cleanPhone}\`\n` +
+              `🎯 Service: *${service}*\n` +
+              `💰 Budget Range: *${budget}*\n` +
+              `⏱️ Timeline: *${timeline}*\n` +
+              `💬 TG User: ${session.data?.telegramUser || 'N/A'}\n` +
+              `📍 Source: ${newLead.source}`, null, true
+            );
+          }
+        } catch (err) {}
+
+        const successMsg = `✅ *Thank you, ${contactPerson}!* \n\n` +
+          `Your campaign request for *${company}* has been received:\n` +
+          `• Service: *${service}*\n` +
+          `• Target Budget: *${budget}*\n` +
+          `• Timeline: *${timeline}*\n\n` +
+          `Our Account Director will review your requirements and reach out via WhatsApp at \`${cleanPhone}\` within 2 business hours with a custom proposal! 🚀\n\n` +
+          `📞 *Direct Priority Line:* \`+880 1711-019550\`\n` +
+          `🌐 *Agency Website:* ${process.env.PUBLIC_URL || 'https://purpleos-iota.vercel.app'}`;
+
+        clientBot.sendMessage(chatId, successMsg, { parse_mode: 'Markdown', reply_markup: getProspectKeyboard() });
+      }
+
+      // /start handler
+      clientBot.onText(/\/start/, async (msg) => {
+        const chatId = msg.chat.id;
+        const dbData = await readDB();
+        const client = (dbData.clients || []).find(c => String(c.telegramId) === String(chatId));
+
+        if (client) {
+          const pendingCount = (dbData.tasks || []).filter(t => t.client === client.name && t.stage === 'Client Review').length;
+          const welcome = `👋 *Welcome back, ${client.name || client.contactPerson}!*\n\n` +
+            `📋 *${pendingCount} deliverable(s)* awaiting your review.\n` +
+            `💳 Monthly Retainer: *BDT ${(client.retainerValue || 0).toLocaleString()}*\n\n` +
+            `Tap any menu button below or hit *Open App* for your client portal.`;
+          const keyboard = getClientKeyboard(client);
+          clientBot.sendMessage(chatId, welcome, { parse_mode: 'Markdown', reply_markup: keyboard });
+        } else {
+          const welcome = `💜 *Welcome to Purplebot Digital!*\n\n` +
+            `We are Bangladesh's premier creative production, digital marketing, and tech agency — trusted by *LG, InterContinental, BAT, Reckitt (Mortein/Harpic), Chillox, UCB*, and 100+ high-growth brands.\n\n` +
+            `🎯 *How can we help your brand today?*\n\n` +
+            `• 💬 *Get a Custom Quote* — 1-minute tailored campaign proposal\n` +
+            `• 📅 *Book a Strategy Call* — 15-min discovery consultation\n` +
+            `• 💰 *Service Pricing & Plans* — Transparent package rates from ৳40k/mo\n` +
+            `• 📁 *See Portfolio* — Review award-winning TVCs and reels\n\n` +
+            `👇 *Select an option below to get started:*`;
+          const keyboard = getProspectKeyboard();
+          clientBot.sendMessage(chatId, welcome, { parse_mode: 'Markdown', reply_markup: keyboard });
+        }
+      });
+
+      // /help handler
+      clientBot.onText(/\/help/, async (msg) => {
+        const chatId = msg.chat.id;
+        const helpText = `📖 *PURPLEOS CLIENT BOT — QUICK GUIDE*\n\n` +
+          `• \`/start\` — Open portal & main menu\n` +
+          `• \`/help\` — Show available options & commands\n` +
+          `• \`/quote\` — Request a tailored campaign proposal\n` +
+          `• \`/book\` — Schedule a 15-minute strategy call\n` +
+          `• \`/pricing\` — View transparent service package rates\n` +
+          `• \`/services\` — Explore agency capabilities\n` +
+          `• \`/portfolio\` — View creative showreels & case studies\n` +
+          `• \`/review\` — Access Video Review Room for active deliverables\n` +
+          `• \`/campaign\` — Track live campaign production pipeline\n` +
+          `• \`/invoices\` — View billing & payment history\n\n` +
+          `💡 *Tip:* Tap *Open Client Portal* anytime for full dashboard access!`;
+        clientBot.sendMessage(chatId, helpText, { parse_mode: 'Markdown' });
+      });
+
+      // ─── Prospect Pricing & Plans Handler ───
+      clientBot.onText(/\/pricing|💰 Service Pricing & Plans|💰 Service Pricing/, async (msg) => {
+        const chatId = msg.chat.id;
+        const pricingText = `💰 *PURPLEBOT DIGITAL — SERVICE PACKAGES & PRICING*\n\n` +
+          `📱 *Social Media Retainers:*\n` +
+          `• Lite Plan: *BDT 45,000/mo* (~$410)\n` +
+          `• Essential Plan (Popular): *BDT 75,000/mo* (~$680)\n` +
+          `• Advanced Plan: *BDT 120,000/mo* (~$1,090)\n\n` +
+          `🎬 *Video Production & TVCs:*\n` +
+          `• Viral Reels Batch (8x): *BDT 40,000/batch* (~$360)\n` +
+          `• Commercial Brand Film: *BDT 250,000/project* (~$2,270)\n\n` +
+          `🎨 *Branding & Identity:*\n` +
+          `• Brand Starter Kit: *BDT 80,000* (~$730)\n` +
+          `• Corporate Rebrand 360: *BDT 200,000* (~$1,820)\n\n` +
+          `💻 *Website & Custom Tech:*\n` +
+          `• Business Landing Site: *BDT 150,000* (~$1,360)\n` +
+          `• Custom Store & Portal: *BDT 250,000* (~$2,270)\n\n` +
+          `Ready to start? Tap *💬 Get a Custom Quote* below! 👇`;
+        clientBot.sendMessage(chatId, pricingText, { parse_mode: 'Markdown', reply_markup: getProspectKeyboard() });
+      });
+
+      // ─── Prospect Book Strategy Call Handler ───
+      clientBot.onText(/\/book|📅 Book a Strategy Call|📅 Book Consultation|📅 Book Call/, async (msg) => {
+        const chatId = msg.chat.id;
+        const bookText = `📅 *BOOK A 15-MINUTE STRATEGY CONSULTATION*\n\n` +
+          `Schedule a 1-on-1 discovery call with our Account Director to discuss your brand's growth goals, video production scope, or tech requirements.\n\n` +
+          `🕒 *Consultation Hours:* Sat – Thu (10:00 AM – 7:00 PM BST)\n` +
+          `📍 *Format:* Google Meet, Zoom, or In-Person (Banani Studio)\n\n` +
+          `💬 *Instant WhatsApp Booking:* [Chat Directly with Account Director](https://wa.me/8801711019550?text=Hi%20Purplebot%20Digital,%20I'd%20like%20to%20book%20a%2015-min%20strategy%20consultation.)\n` +
+          `📞 *Direct Line:* \`+880 1711-019550\`\n\n` +
+          `Prefer a written quote first? Tap *💬 Get a Custom Quote* below! 👇`;
+        clientBot.sendMessage(chatId, bookText, { parse_mode: 'Markdown', reply_markup: getProspectKeyboard() });
+      });
+
+      // ─── Prospect Quote Wizard Trigger ───
+      clientBot.onText(/\/quote|💬 Get a Custom Quote|💬 Get a Quote/, async (msg) => {
+        const chatId = msg.chat.id;
+        const defaultName = [msg.from?.first_name, msg.from?.last_name].filter(Boolean).join(' ') || '';
+        await state.setSession(chatId, {
+          action: 'await_prospect_quote',
+          step: 1,
+          data: {
+            telegramUser: msg.from?.username ? `@${msg.from.username}` : '',
+            firstName: msg.from?.first_name || '',
+            lastName: msg.from?.last_name || '',
+            fullName: defaultName
+          }
+        });
+
+        const text = `💬 *Get a Tailored Proposal & Quote*\n\n` +
+          `Let's understand your campaign requirements in a few quick steps.\n\n` +
+          `*Step 1 of 5:* What is your *Full Name*?` + (defaultName ? `\n_(Or tap your name below)_` : '');
+        const keyboard = {
+          keyboard: [
+            ...(defaultName ? [[{ text: defaultName }]] : []),
+            [{ text: '❌ Cancel' }]
+          ],
+          resize_keyboard: true
+        };
+        clientBot.sendMessage(chatId, text, { parse_mode: 'Markdown', reply_markup: keyboard });
+      });
+
+      // ─── Existing Client Login Intent ───
+      clientBot.onText(/🔐 I'm an Existing Client →|🔐 Client Login/, async (msg) => {
+        const chatId = msg.chat.id;
+        const promptText = `🔐 *Client Partner Verification*\n\n` +
+          `To access your active campaign dashboard, video review room, and invoices, please share your registered phone number below:`;
+        const keyboard = {
+          keyboard: [
+            [{ text: '📱 Share My Phone to Verify', request_contact: true }],
+            [{ text: '🔙 Back to Main Menu' }]
+          ],
+          resize_keyboard: true
+        };
+        clientBot.sendMessage(chatId, promptText, { parse_mode: 'Markdown', reply_markup: keyboard });
+      });
+
+      // ─── Back to Main Menu ───
+      clientBot.onText(/🔙 Back to Main Menu/, async (msg) => {
+        const chatId = msg.chat.id;
+        await state.clearSession(chatId);
+        const dbData = await readDB();
+        const client = (dbData.clients || []).find(c => String(c.telegramId) === String(chatId));
+        const keyboard = client ? getClientKeyboard(client) : getProspectKeyboard();
+        clientBot.sendMessage(chatId, `👋 *Main Menu*`, { parse_mode: 'Markdown', reply_markup: keyboard });
+      });
+
       // ─── Client phone verification via shared contact ───
       clientBot.on('contact', async (msg) => {
         const chatId = msg.chat.id;
         const contact = msg.contact;
         if (!contact || !contact.phone_number) return;
+
+        // Check if user is in the Quote Wizard (Final Step)
+        const session = await state.getSession(chatId);
+        if (session && session.action === 'await_prospect_quote' && session.step >= 5) {
+          return handleProspectQuoteCompletion(msg, session, contact.phone_number);
+        }
+
         const normPhone = normalizePhone(contact.phone_number);
         const client = await findClientAndPoc(normPhone);
         if (!client) {
           return clientBot.sendMessage(chatId,
-            `🔒 *Phone not found in our client database.*\n\nIf you are an active Purplebot Digital client, please contact your Account Manager to register your phone number.`,
-            { parse_mode: 'Markdown' }
+            `👋 *Hi there!*\n\nThe phone number *+${normPhone}* is not registered in our active client database yet.\n\n` +
+            `Looking to scale your brand with Purplebot Digital? Tap *💬 Get a Custom Quote* below to get started! 💜`,
+            { parse_mode: 'Markdown', reply_markup: getProspectKeyboard() }
           );
         }
         await sendClientWelcome(chatId, client, normPhone);
       });
 
-      // ─── Manual phone number typed as text ───
+      // ─── Message router for wizard steps & manual phone input ───
       clientBot.on('message', async (msg) => {
         const chatId = msg.chat.id;
         const text = (msg.text || '').trim();
-        if (msg.contact) return; // handled above
-        if (!/^[\+\d][\d\s\-]{7,14}$/.test(text)) return; // must look like a phone number
-        const normPhone = normalizePhone(text);
-        if (!normPhone || normPhone.length < 8) return;
-        const client = await findClientAndPoc(normPhone);
-        if (!client) {
-          return clientBot.sendMessage(chatId,
-            `🔒 *Phone not found in our client database.*\n\nIf you are an active Purplebot Digital client, please contact your Account Manager to register your phone number.`,
-            { parse_mode: 'Markdown' }
+        if (msg.contact) return; // Handled in contact event
+
+        // Global /cancel
+        if (text === '/cancel' || text === '❌ Cancel') {
+          const session = await state.getSession(chatId);
+          if (session && session.action === 'await_prospect_quote') {
+            await state.clearSession(chatId);
+            return clientBot.sendMessage(chatId, `🚫 Proposal wizard cancelled. Tap any button below to continue.`, { reply_markup: getProspectKeyboard() });
+          }
+        }
+
+        // Active Wizard Session Routing
+        const session = await state.getSession(chatId);
+        if (session && session.action === 'await_prospect_quote') {
+          const KNOWN_MENUS = [
+            '🎨 Our Services', '📁 See Portfolio', '📁 Portfolio', '💬 Get a Custom Quote',
+            '💬 Get a Quote', '📞 Talk to an Expert', '📞 Contact AM', '🔐 I\'m an Existing Client →',
+            '🔙 Back to Main Menu', '💰 Service Pricing & Plans', '📅 Book a Strategy Call',
+            '/start', '/help', '/services', '/portfolio', '/quote', '/book', '/pricing'
+          ];
+          if (KNOWN_MENUS.some(m => text === m || text.startsWith(m))) {
+            await state.clearSession(chatId);
+            return; // Let onText listener handle it
+          }
+
+          if (session.step === 1) {
+            session.data.fullName = text;
+            session.step = 2;
+            await state.setSession(chatId, session);
+
+            const replyText = `Nice to meet you, *${text}*! 👋\n\n` +
+              `*Step 2 of 5:* What is your *Company or Brand Name*?`;
+            const keyboard = {
+              keyboard: [[{ text: '❌ Cancel' }]],
+              resize_keyboard: true
+            };
+            return clientBot.sendMessage(chatId, replyText, { parse_mode: 'Markdown', reply_markup: keyboard });
+          }
+
+          if (session.step === 2) {
+            session.data.company = text;
+            session.step = 3;
+            await state.setSession(chatId, session);
+
+            const replyText = `Great, *${text}*! 🎯\n\n` +
+              `*Step 3 of 5:* Which service are you most interested in?`;
+            const keyboard = {
+              keyboard: [
+                [{ text: '📱 Digital Marketing & Growth' }, { text: '🎬 Video Reels & TVC' }],
+                [{ text: '🎨 Branding & Motion Design' }, { text: '💻 Website & Tech Development' }],
+                [{ text: '⚡ 360 Full Campaign' }, { text: '❌ Cancel' }]
+              ],
+              resize_keyboard: true
+            };
+            return clientBot.sendMessage(chatId, replyText, { parse_mode: 'Markdown', reply_markup: keyboard });
+          }
+
+          if (session.step === 3) {
+            session.data.service = text;
+            session.step = 4;
+            await state.setSession(chatId, session);
+
+            const replyText = `Got it! 🚀\n\n` +
+              `*Step 4 of 5:* What is your *Estimated Monthly Budget*?`;
+            const keyboard = {
+              keyboard: [
+                [{ text: '৳45,000 – ৳75,000 / mo' }, { text: '৳75,000 – ৳150,000 / mo' }],
+                [{ text: '৳150,000 – ৳300,000 / mo' }, { text: '৳300,000+ Enterprise' }],
+                [{ text: '❌ Cancel' }]
+              ],
+              resize_keyboard: true
+            };
+            return clientBot.sendMessage(chatId, replyText, { parse_mode: 'Markdown', reply_markup: keyboard });
+          }
+
+          if (session.step === 4) {
+            session.data.budget = text;
+            session.step = 5;
+            await state.setSession(chatId, session);
+
+            const replyText = `Understood! ⏱️\n\n` +
+              `*Step 5 of 5:* When do you plan to launch this project?`;
+            const keyboard = {
+              keyboard: [
+                [{ text: '🚀 Immediately (This Week)' }, { text: '📅 Within 2–4 Weeks' }],
+                [{ text: '🔍 Planning / Q3-Q4' }, { text: '❌ Cancel' }]
+              ],
+              resize_keyboard: true
+            };
+            return clientBot.sendMessage(chatId, replyText, { parse_mode: 'Markdown', reply_markup: keyboard });
+          }
+
+          if (session.step === 5) {
+            session.data.timeline = text;
+            session.step = 6;
+            await state.setSession(chatId, session);
+
+            const replyText = `Almost done! ✨\n\n` +
+              `*Final Step:* What is your *WhatsApp or Phone Number* so our Account Director can send your proposal?`;
+            const keyboard = {
+              keyboard: [
+                [{ text: '📱 Share My Phone', request_contact: true }],
+                [{ text: '❌ Cancel' }]
+              ],
+              resize_keyboard: true
+            };
+            return clientBot.sendMessage(chatId, replyText, { parse_mode: 'Markdown', reply_markup: keyboard });
+          }
+
+          if (session.step === 6) {
+            const digits = text.replace(/[^0-9]/g, '');
+            if (digits.length < 7) {
+              return clientBot.sendMessage(chatId, `⚠️ Please enter a valid WhatsApp/phone number with at least 7 digits (or tap 📱 Share My Phone):`);
+            }
+            return handleProspectQuoteCompletion(msg, session, text);
+          }
+        }
+
+        // Manual phone number typed outside wizard
+        if (/^[\+\d][\d\s\-]{7,14}$/.test(text)) {
+          const normPhone = normalizePhone(text);
+          if (normPhone && normPhone.length >= 8) {
+            const client = await findClientAndPoc(normPhone);
+            if (!client) {
+              return clientBot.sendMessage(chatId,
+                `👋 *Hi there!*\n\nThe phone number *+${normPhone}* is not registered in our active client database yet.\n\n` +
+                `Looking to scale your brand with Purplebot Digital? Tap *💬 Get a Custom Quote* below to get started! 💜`,
+                { parse_mode: 'Markdown', reply_markup: getProspectKeyboard() }
+              );
+            }
+            return sendClientWelcome(chatId, client, normPhone);
+          }
+        }
+
+        // Friendly guidance for unregistered users sending unexpected text
+        const isClient = (await readDB()).clients?.some(c => String(c.telegramId) === String(chatId));
+        if (!isClient && !text.startsWith('/')) {
+          clientBot.sendMessage(chatId,
+            `👋 *Hi there! I received your message.*\n\n` +
+            `I'm the PurpleOS Virtual Assistant. How can we assist your brand today?\n\n` +
+            `• Tap *💬 Get a Custom Quote* to request a proposal\n` +
+            `• Tap *📅 Book a Strategy Call* to schedule a consultation\n` +
+            `• Tap *💰 Service Pricing & Plans* to view rates\n` +
+            `• Or call our team directly at \`+880 1711-019550\` 📞`,
+            { parse_mode: 'Markdown', reply_markup: getProspectKeyboard() }
           );
         }
-        await sendClientWelcome(chatId, client, normPhone);
       });
 
       const clientHandler = require('./bot/handlers/client');
       clientBot.onText(/\/services|🎨 Our Services/, (msg) => clientHandler.handleServices(clientBot, msg));
-      clientBot.onText(/\/portfolio|📁 Portfolio/, (msg) => clientHandler.handlePortfolio(clientBot, msg));
+      clientBot.onText(/\/portfolio|📁 Portfolio|📁 See Portfolio/, (msg) => clientHandler.handlePortfolio(clientBot, msg));
       clientBot.onText(/\/review|🎬 Review Room/, (msg) => clientHandler.handleReviewRoom(clientBot, msg));
       clientBot.onText(/\/campaign|📋 Campaign Status/, (msg) => clientHandler.handleCampaignStatus(clientBot, msg));
       clientBot.onText(/\/invoices|💳 My Invoices/, (msg) => clientHandler.handleInvoices(clientBot, msg));
-      clientBot.onText(/📞 Contact AM/, (msg) => clientHandler.handleContactAM(clientBot, msg));
+      clientBot.onText(/📞 Contact AM|📞 Talk to an Expert/, (msg) => clientHandler.handleContactAM(clientBot, msg));
       clientBot.onText(/\/brief|📝 Submit Brief/, (msg) => clientHandler.handleSubmitBrief(clientBot, msg));
       clientBot.onText(/\/digest|📊 Monthly Digest/, (msg) => clientHandler.handleClientDigest(clientBot, msg));
 

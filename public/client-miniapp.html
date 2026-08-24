@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Purple Bot — Client Portal</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <!-- jsPDF for Invoice generation -->
@@ -611,14 +611,14 @@
       <div class="card-title">🎬 Deliverable Review Room</div>
       <div style="font-size:0.92rem;font-weight:800;color:var(--text);margin-bottom:0.65rem;" id="reviewVideoTitle">Current Cut Preview</div>
       <div class="video-container">
-        <video id="revVideoPlayer" controls poster="https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=800">
-          <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" type="video/mp4">
+        <video id="revVideoPlayer" controls poster="/images/mascot.webp">
+          <source src="" type="video/mp4">
         </video>
         <div class="video-overlay-label">4K Preview</div>
       </div>
 
       <div id="revApproveSection">
-        <button class="btn-approve" onclick="handleApproveCut()">
+        <button class="btn-approve" onclick="handleApproveCut(this)">
           ✅ Approve This Cut
         </button>
         <div style="font-size:0.72rem;color:var(--muted);text-align:center;margin-top:0.3rem;">
@@ -795,7 +795,7 @@
       <div style="font-size:0.85rem;color:var(--text-2);line-height:1.7;">
         🏢 <strong>Purplebot Digital Limited</strong><br>
         📍 Gulshan, Dhaka, Bangladesh<br>
-        📧 contact@purpleos.agency<br>
+        📧 contact@purplebot.digital<br>
         🕐 Sun–Thu · 9:00 AM – 7:00 PM
       </div>
     </div>
@@ -1164,16 +1164,22 @@
     if (!file) { showSuccess('⚠️', 'Missing Screenshot', 'Please upload your payment screenshot proof.'); return; }
 
     try {
+      const token = sessionStorage.getItem('jwt_token') || localStorage.getItem('purple_token') || localStorage.getItem('sb-access-token');
+      const formData = new FormData();
+      formData.append('invoiceId', selectedInvoiceId || 'INV-2026-001');
+      formData.append('paymentMethod', selectedPayMethod || 'bKash');
+      formData.append('trxId', txn);
+      formData.append('amount', amt);
+      formData.append('notes', `Submitted via Client Telegram Mini App (Date: ${date})`);
+      formData.append('screenshot', file);
+
+      const headers = {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
       const res = await fetch('/api/payments', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          invoiceId: selectedInvoiceId || 'INV-2026-001',
-          paymentMethod: selectedPayMethod,
-          trxId: txn,
-          amount: amt,
-          notes: `Submitted via Client Telegram Mini App (Date: ${date})`
-        })
+        headers,
+        body: formData
       });
       const data = await res.json();
       if (!res.ok || !data.success) {
@@ -1275,9 +1281,13 @@
 
     try {
       const tgUser = tg?.initDataUnsafe?.user;
-      await fetch('/api/tasks', {
+      const token = sessionStorage.getItem('jwt_token') || localStorage.getItem('purple_token') || localStorage.getItem('sb-access-token');
+      const headers = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      const res = await fetch('/api/tasks', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
           title: `[Brief] ${title}`,
           client: clientData?.name || 'Brand Partner',
@@ -1288,7 +1298,15 @@
           telegramId: tgUser?.id || 'debug'
         })
       });
-    } catch(e) {}
+      const data = await res.json();
+      if (!res.ok) {
+        showSuccess('❌', 'Submission Error', data.error || 'Failed to submit campaign brief. Please try again.');
+        return;
+      }
+    } catch(e) {
+      showSuccess('❌', 'Network Error', 'Could not reach server. Please check your connection.');
+      return;
+    }
 
     closeBriefModal();
     document.getElementById('briefTitle').value = '';

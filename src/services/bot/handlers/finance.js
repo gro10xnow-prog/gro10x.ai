@@ -1,8 +1,28 @@
 const { supabase } = require('../../supabase');
+const state = require('../../state');
+
+async function isFinanceAuthorized(chatId) {
+  const emp = await state.getEmployeeByTelegramId(chatId);
+  if (!emp) return false;
+  const role = (emp.role || '').toLowerCase();
+  const access = (emp.accessLevel || emp.access_level || '').toLowerCase();
+  return (
+    access.includes('owner') ||
+    access.includes('admin') ||
+    access.includes('manager') ||
+    role.includes('finance') ||
+    role.includes('managing director') ||
+    role.includes('chairman')
+  );
+}
 
 async function handleLogExpenseEntry(teamBot, msg) {
   const chatId = msg.chat.id;
   try {
+    if (!(await isFinanceAuthorized(chatId))) {
+      return teamBot.sendMessage(chatId, '🔒 *Access Denied:* Expense tracking is restricted to Finance & Management.', { parse_mode: 'Markdown' });
+    }
+
     const { data: expenses, error } = await supabase.from('expenses').select('*');
     if (error) throw error;
     
@@ -30,6 +50,10 @@ async function handleLogExpenseEntry(teamBot, msg) {
 async function handleInvoiceTracker(teamBot, msg) {
   const chatId = msg.chat.id;
   try {
+    if (!(await isFinanceAuthorized(chatId))) {
+      return teamBot.sendMessage(chatId, '🔒 *Access Denied:* Invoicing is restricted to Finance & Management.', { parse_mode: 'Markdown' });
+    }
+
     const { data: invoices, error } = await supabase.from('invoices').select('*').order('created_at', { ascending: false });
     if (error) throw error;
     
@@ -60,6 +84,10 @@ async function handleInvoiceTracker(teamBot, msg) {
 async function handlePaymentFollowUp(teamBot, msg) {
   const chatId = msg.chat.id;
   try {
+    if (!(await isFinanceAuthorized(chatId))) {
+      return teamBot.sendMessage(chatId, '🔒 *Access Denied:* Payment tracking is restricted to Finance & Management.', { parse_mode: 'Markdown' });
+    }
+
     const { data: invoices, error } = await supabase.from('invoices').select('*').neq('status', 'Paid');
     if (error) throw error;
     

@@ -191,13 +191,25 @@ router.get('/me', requireMiniAppAuth, async (req, res) => {
     const telegramId = req.telegramUser ? String(req.telegramUser.id) : req.query.telegramId;
     let found = telegramId ? await findEmpByTelegramId(telegramId) : null;
 
-    // JWT web fallback: look up by linkedId (emp_code) from the JWT payload
+    // JWT web fallback: look up by linkedId (emp_code), id, or phone from the JWT payload
     if (!found && req.user) {
-      const uid = req.user.linkedId || req.user.id;
-      if (uid && supabase) {
-        const { data } = await supabase.from('profiles').select('*')
-          .or(`emp_code.eq.${uid},id.eq.${uid}`).maybeSingle();
+      const uid = req.user.linkedId || req.user.id || req.user.emp_code;
+      const phone = req.user.phone || req.query.phone;
+      if (supabase) {
+        let query = supabase.from('profiles').select('*');
+        if (uid && phone) {
+          query = query.or(`emp_code.eq.${uid},id.eq.${uid},phone.eq.${phone}`);
+        } else if (uid) {
+          query = query.or(`emp_code.eq.${uid},id.eq.${uid}`);
+        } else if (phone) {
+          query = query.eq('phone', phone);
+        }
+        const { data } = await query.maybeSingle();
         if (data) found = { source: 'supabase', profile: mapProfile(data) };
+      }
+      if (!found) {
+        const def = DEFAULT_TEAM.find(t => (uid && (t.emp_code === uid || t.id === uid)) || (phone && (t.phone === phone || t.phone.replace(/\D/g, '').endsWith(phone.replace(/\D/g, '').slice(-10)))));
+        if (def) found = { source: 'default', profile: mapProfile(def) };
       }
     }
 

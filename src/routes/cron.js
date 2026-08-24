@@ -264,42 +264,98 @@ router.get('/lead-followups', authorizeCron, async (req, res) => {
   try {
     const db = await fetchSupabaseSnapshot();
     const now = new Date();
+    const { sendLeadFollowUpEmail } = require('../services/resend');
     
-    // Find active leads with follow_up_date <= today
+    // === BLOCK 1: MANUAL SCHEDULED FOLLOW-UPS (follow_up_date <= now) ===
     const followUpLeads = db.leads.filter(lead => {
       if (lead.stage === 'Won / Closed' || lead.stage === 'Lost' || lead.stage === 'Spam') return false;
       if (!lead.follow_up_date) return false;
       const followUpDate = new Date(lead.follow_up_date);
-      // Check if it's today or in the past
       return followUpDate <= now;
     });
 
-    if (!followUpLeads.length) {
-      return res.json({ success: true, message: 'No lead follow-ups due.', sentCount: 0 });
+    let manualSentCount = 0;
+    if (followUpLeads.length > 0) {
+      let msg = `🔥 *Lead Follow-up Reminders*\n\n`;
+      msg += `You have *${followUpLeads.length}* lead(s) with scheduled follow-ups due today:\n\n`;
+      
+      followUpLeads.forEach(lead => {
+        msg += `• *${lead.company || lead.contact_person}*\n`;
+        msg += `   Service: ${lead.service}\n`;
+        msg += `   Stage: ${lead.stage}\n`;
+        msg += `   Phone: \`${lead.phone || 'N/A'}\`\n\n`;
+      });
+
+      const owners = db.team.filter(t => (t.accessLevel === 'Owner / Admin' || t.role === 'Sales') && t.telegramId);
+      for (const owner of owners) {
+        await sendTelegramNotification(owner.telegramId, msg, null, true);
+        manualSentCount++;
+      }
     }
 
-    let msg = `🔥 *Lead Follow-up Reminders*\n\n`;
-    msg += `You have *${followUpLeads.length}* lead(s) to follow up with today:\n\n`;
-    
-    followUpLeads.forEach(lead => {
-      msg += `• *${lead.company || lead.contact_person}*\n`;
-      msg += `   Service: ${lead.service}\n`;
-      msg += `   Stage: ${lead.stage}\n`;
-      msg += `   Phone: \`${lead.phone || 'N/A'}\`\n\n`;
+    // === BLOCK 2: 24h AUTOMATED PROSPECT EMAIL FOLLOW-UP ===
+    const twentyHoursAgo = new Date(now.getTime() - 20 * 60 * 60 * 1000);
+    const thirtyTwoHoursAgo = new Date(now.getTime() - 32 * 60 * 60 * 1000);
+
+    const followUpEmailCandidates = db.leads.filter(lead => {
+      if (lead.stage !== 'New Inquiry') return false;
+      if (!lead.email || !lead.email.includes('@') || lead.email.includes('lead.com')) return false;
+      const created = new Date(lead.created_at || lead.createdAt || 0);
+      return created <= twentyHoursAgo && created >= thirtyTwoHoursAgo;
     });
 
-    const owners = db.team.filter(t => (t.accessLevel === 'Owner / Admin' || t.role === 'Sales') && t.telegramId);
-    let sentCount = 0;
+    let emailsSent = 0;
+    for (const lead of followUpEmailCandidates) {
+      try {
+        await sendLeadFollowUpEmail({
+          contactPerson: lead.contact_person || lead.contactPerson,
+          email: lead.email,
+          service: lead.service,
+          company: lead.company
+        });
+        emailsSent++;
+      } catch (e) {
+        console.warn(`[Cron] 24h follow-up email failed for lead ${lead.id}:`, e.message);
+      }
+    }
 
-    for (const owner of owners) {
-      await sendTelegramNotification(owner.telegramId, msg, null, true);
-      sentCount++;
+    // === BLOCK 3: 48h STALE LEAD BATCH TELEGRAM ALERT ===
+    const fortyEightHoursAgo = new Date(now.getTime() - 48 * 60 * 60 * 1000);
+    const staleLeads = db.leads.filter(lead => {
+      if (lead.stage !== 'New Inquiry') return false;
+      const created = new Date(lead.created_at || lead.createdAt || 0);
+      return created < fortyEightHoursAgo;
+    });
+
+    let staleAlertsSent = 0;
+    if (staleLeads.length > 0) {
+      let staleMsg = `⚠️ *STALE LEAD ALERT — ACTION REQUIRED*\n\n`;
+      staleMsg += `There are *${staleLeads.length}* lead(s) in "New Inquiry" uncontacted for 48+ hours:\n\n`;
+      staleLeads.slice(0, 8).forEach(lead => {
+        const dateStr = (lead.created_at || lead.createdAt || '').split('T')[0];
+        staleMsg += `• *${lead.company || lead.contact_person || 'Lead'}* — ${lead.service || 'General'}\n`;
+        staleMsg += `  📞 \`${lead.phone || lead.whatsapp || 'No Phone'}\` | Created: ${dateStr}\n\n`;
+      });
+      if (staleLeads.length > 8) {
+        staleMsg += `_...and ${staleLeads.length - 8} more in CRM_\n\n`;
+      }
+      staleMsg += `Please reach out to these prospects or update their pipeline stage.`;
+
+      const owners = db.team.filter(t => (t.accessLevel === 'Owner / Admin' || t.role === 'Sales') && t.telegramId);
+      for (const owner of owners) {
+        await sendTelegramNotification(owner.telegramId, staleMsg, [
+          [{ text: '📊 Open CRM Leads', url: 'https://purpleos-iota.vercel.app/admin?tab=leads' }]
+        ], true);
+        staleAlertsSent++;
+      }
     }
 
     return res.json({
       success: true,
-      message: `Lead follow-up reminders sent to ${sentCount} recipient(s)`,
-      followUpCount: followUpLeads.length,
+      manualFollowUps: followUpLeads.length,
+      emailsSent,
+      staleLeadsCount: staleLeads.length,
+      staleAlertsSent,
       timestamp: new Date().toISOString()
     });
   } catch (error) {
@@ -689,5 +745,85 @@ router.get('/weekly-kpi-summary', authorizeCron, async (req, res) => {
   }
 });
 
+// GET /api/cron/lead-pipeline-summary — Sunday 9:00 AM BD Weekly Lead Pipeline Report
+router.get('/lead-pipeline-summary', authorizeCron, async (req, res) => {
+  try {
+    const db = await fetchSupabaseSnapshot();
+    const now = new Date();
+    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const fortyEightHoursAgo = new Date(now.getTime() - 48 * 60 * 60 * 1000);
+
+    const allLeads = db.leads || [];
+    const weeklyNewLeads = allLeads.filter(l => new Date(l.created_at || l.createdAt || 0) >= oneWeekAgo);
+
+    // Stage breakdown
+    const newInquiryCount = allLeads.filter(l => l.stage === 'New Inquiry').length;
+    const contactedCount = allLeads.filter(l => l.stage === 'Contacted' || l.stage === 'Meeting Scheduled').length;
+    const proposalSentCount = allLeads.filter(l => l.stage === 'Proposal Sent').length;
+    const wonThisWeek = allLeads.filter(l => (l.stage === 'Won / Closed' || l.stage === 'Won') && new Date(l.updated_at || l.wonAt || l.created_at || 0) >= oneWeekAgo).length;
+    const lostCount = allLeads.filter(l => l.stage === 'Lost' || l.stage === 'Spam').length;
+
+    // Stale leads > 48h in New Inquiry
+    const staleCount = allLeads.filter(l => l.stage === 'New Inquiry' && new Date(l.created_at || l.createdAt || 0) < fortyEightHoursAgo).length;
+
+    // Top requested services
+    const serviceCounts = {};
+    weeklyNewLeads.forEach(l => {
+      const svc = l.service || 'General Inquiries';
+      serviceCounts[svc] = (serviceCounts[svc] || 0) + 1;
+    });
+    const sortedServices = Object.entries(serviceCounts).sort((a, b) => b[1] - a[1]).slice(0, 3);
+
+    const dateRangeStr = `${oneWeekAgo.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} – ${now.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`;
+
+    let msg = `📊 *PURPLEOS WEEKLY LEAD PIPELINE REPORT*\n`;
+    msg += `🗓️ *Period:* ${dateRangeStr}\n\n`;
+    msg += `📥 *New Inquiries This Week:* *${weeklyNewLeads.length}*\n`;
+    msg += `📞 *Active Uncontacted:* *${newInquiryCount}*\n`;
+    msg += `🤝 *In Conversation / Discovery:* *${contactedCount}*\n`;
+    msg += `📋 *Proposals In Review:* *${proposalSentCount}*\n`;
+    msg += `🏆 *Deals Closed / Won (7d):* *${wonThisWeek}*\n`;
+    if (lostCount > 0) msg += `❌ *Lost / Disqualified:* ${lostCount}\n`;
+    msg += `\n`;
+
+    if (sortedServices.length > 0) {
+      msg += `🔥 *Top Requested Services:*\n`;
+      sortedServices.forEach(([svc, count]) => {
+        msg += `  • ${svc}: *${count} inquiries*\n`;
+      });
+      msg += `\n`;
+    }
+
+    if (staleCount > 0) {
+      msg += `⚠️ *Attention:* *${staleCount}* lead(s) uncontacted for >48h\n\n`;
+    }
+
+    msg += `🌐 Open CRM Leads: https://purpleos-iota.vercel.app/admin?tab=leads`;
+
+    const owners = db.team.filter(t => (t.accessLevel === 'Owner / Admin' || t.role === 'Sales') && t.telegramId);
+    let sentCount = 0;
+    for (const owner of owners) {
+      await sendTelegramNotification(owner.telegramId, msg, [
+        [{ text: '📊 Open CRM Leads Pipeline', url: 'https://purpleos-iota.vercel.app/admin?tab=leads' }]
+      ], true);
+      sentCount++;
+    }
+
+    return res.json({
+      success: true,
+      weeklyNewLeads: weeklyNewLeads.length,
+      newInquiryCount,
+      wonThisWeek,
+      staleCount,
+      sentCount,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Lead pipeline summary cron error:', error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;
+
 

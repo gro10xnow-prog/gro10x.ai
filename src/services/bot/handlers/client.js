@@ -1,20 +1,22 @@
 const { supabase } = require('../../supabase');
-const { getClientKeyboard } = require('../keyboards');
+const { getClientKeyboard, getProspectKeyboard } = require('../keyboards');
+const { DEFAULT_SERVICES } = require('../../../constants/services');
 
 async function handleServices(clientBot, msg) {
   const chatId = msg.chat.id;
   try {
     const { data: servicesData, error } = await supabase.from('services').select('*').eq('is_public', true);
-    let text = `🎨 *Purplebot Digital — Core Agency Services:*\n\n`;
+    let text = `🎨 *PURPLEBOT DIGITAL — CORE SERVICES & PACKAGES:*\n\n`;
     
-    if (servicesData && servicesData.length) {
-      servicesData.forEach(s => { text += `• *${s.title}* (${s.category})\n  Rate: ${s.price}\n  ${s.description}\n\n`; });
-    } else {
-      text += `• *Social Media Content Retainer* — BDT 50,000–1,50,000/month\n• *TVC & Commercial Production* — End-to-end production\n• *Commercial Photography & Lookbooks* — Per-shoot packages\n• *3D, CGI & Motion Graphics* — Project-based\n• *Brand Identity & Strategic Positioning* — Full campaign suite\n• *Custom Web & Tech Development* — Interactive experiences\n\n📞 Tap *Contact AM* or *Submit Brief* for customized scope.`;
-    }
+    const activeList = (servicesData && servicesData.length) ? servicesData : DEFAULT_SERVICES;
+    activeList.forEach(s => {
+      text += `• *${s.title}* (${s.category || 'Core Agency Service'})\n  Starting at: *${s.price}*\n  ${s.description}\n\n`;
+    });
+    
+    text += `💡 *Need a custom scope or retainer?* Tap *💬 Get a Custom Quote* or *📅 Book a Strategy Call* below!`;
     
     const { data: cData } = await supabase.from('clients').select('*').eq('telegram_id', String(chatId)).maybeSingle();
-    const keyboard = cData ? getClientKeyboard(cData) : undefined;
+    const keyboard = cData ? getClientKeyboard(cData) : getProspectKeyboard();
     clientBot.sendMessage(chatId, text, { parse_mode: 'Markdown', reply_markup: keyboard });
   } catch (err) {
     console.error('Error in handleServices:', err);
@@ -175,7 +177,8 @@ async function handleContactAM(clientBot, msg) {
       `⏰ *Office Hours:* Sun–Thu · 9:30 AM – 6:30 PM\n\n` +
       `_Feel free to call or WhatsApp your AM directly during business hours for campaign adjustments._`;
 
-    clientBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
+    const keyboard = cData ? getClientKeyboard(cData) : getProspectKeyboard();
+    clientBot.sendMessage(chatId, text, { parse_mode: 'Markdown', reply_markup: keyboard });
   } catch (err) {
     console.error('Error in handleContactAM:', err);
     clientBot.sendMessage(chatId, '❌ Error fetching Account Manager details.');

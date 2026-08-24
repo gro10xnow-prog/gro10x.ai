@@ -375,8 +375,26 @@ function getClientKeyboard(client) {
   };
 }
 
+/**
+ * Keyboard for prospective clients / new unregistered visitors.
+ * Surfaces discovery & lead capture actions — no client-only features.
+ */
+function getProspectKeyboard() {
+  return {
+    keyboard: [
+      [{ text: '💬 Get a Custom Quote' }, { text: '📅 Book a Strategy Call' }],
+      [{ text: '💰 Service Pricing & Plans' }, { text: '🎨 Our Services' }],
+      [{ text: '📁 See Portfolio' }, { text: '📞 Talk to an Expert' }],
+      [{ text: '🔐 I\'m an Existing Client →' }]
+    ],
+    resize_keyboard: true,
+    one_time_keyboard: false
+  };
+}
+
 module.exports = {
   getRoleKeyboard,
   getClientKeyboard,
+  getProspectKeyboard,
   normalizePhone
 };

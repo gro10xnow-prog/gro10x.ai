@@ -1,10 +1,12 @@
 const express = require('express');
 const router = express.Router();
+const crypto = require('crypto');
 const { requireAuth } = require('../middleware/auth');
 const { requireAdmin, requireManager, requireClientOwnership } = require('../middleware/rbac');
 const { readDB, writeDB } = require('../services/db');
 const { broadcast } = require('../services/sse');
 const { supabase, isSupabaseConfigured } = require('../services/supabase');
+const { ok, fail } = require('../utils/response');
 
 function mapClient(c) {
   if (!c) return null;
@@ -306,12 +308,11 @@ router.get('/:id', requireAuth, requireClientOwnership, async (req, res) => {
 // POST Create new client (Manager+ — heads, directors, admins)
 router.post('/', requireAuth, requireManager, async (req, res) => {
   const newClient = req.body;
+  const uniqueSuffix = crypto.randomBytes(3).toString('hex').toUpperCase();
+  const newId = newClient.id || `CLI-${Date.now().toString(36).toUpperCase()}-${uniqueSuffix}`;
+  newClient.id = newId;
 
   if (isSupabaseConfigured()) {
-    const { data: countData } = await supabase.from('clients').select('id');
-    const newId = `CLI-${String((countData?.length || 0) + 1).padStart(4, '0')}`;
-    newClient.id = newId;
-
     const payload = {
       id: newId,
       name: newClient.name,
@@ -321,7 +322,7 @@ router.post('/', requireAuth, requireManager, async (req, res) => {
       whatsapp: newClient.whatsapp || '',
       status: newClient.status || 'Active Retainer',
       category: newClient.category || 'General',
-      total_spent: '$0',
+      total_spent: '৳0',
       active_campaigns: newClient.activeCampaigns || [],
       pocs: newClient.pocs || []
     };
@@ -337,8 +338,7 @@ router.post('/', requireAuth, requireManager, async (req, res) => {
   }
 
   const db = await readDB();
-  newClient.id = `CLI-${String((db.clients.length || 0) + 1).padStart(4, '0')}`;
-  newClient.totalSpent = '$0';
+  newClient.totalSpent = '৳0';
   db.clients.push(newClient);
   try { writeDB(db); } catch (e) { console.warn('Local writeDB skipped:', e.message); }
   broadcast('client_update', db.clients);

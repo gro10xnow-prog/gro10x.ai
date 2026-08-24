@@ -535,9 +535,85 @@
             }).join('')}
           </div>
         `;
-      } else {
-        container.innerHTML = `<div style="color: var(--text-muted); padding: 2rem; text-align: center;">📅 Calendar View — Showing ${tasks.length} active tasks scheduled on due dates.</div>`;
+      } else if (currentView === 'calendar') {
+        renderProjectsCalendarView(tasks, container);
       }
+    }
+
+    let calYear = new Date().getFullYear();
+    let calMonth = new Date().getMonth();
+
+    function changeProjectsCalMonth(delta) {
+      calMonth += delta;
+      if (calMonth > 11) { calMonth = 0; calYear++; }
+      else if (calMonth < 0) { calMonth = 11; calYear--; }
+      renderActiveView();
+    }
+
+    function resetProjectsCalToday() {
+      calYear = new Date().getFullYear();
+      calMonth = new Date().getMonth();
+      renderActiveView();
+    }
+
+    function renderProjectsCalendarView(tasks, container) {
+      const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+      const firstDay = new Date(calYear, calMonth, 1).getDay();
+      const totalDays = new Date(calYear, calMonth + 1, 0).getDate();
+      const todayStr = new Date().toISOString().split('T')[0];
+
+      let daysHtml = '';
+      for (let i = 0; i < firstDay; i++) {
+        daysHtml += `<div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.03); min-height: 90px; border-radius: 8px;"></div>`;
+      }
+
+      for (let d = 1; d <= totalDays; d++) {
+        const dateStr = `${calYear}-${String(calMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        const isToday = dateStr === todayStr;
+        const dayTasks = tasks.filter(t => (t.dueDate || t.due_date || '').startsWith(dateStr));
+
+        daysHtml += `
+          <div style="background: ${isToday ? 'rgba(168,85,247,0.1)' : 'rgba(9,9,11,0.6)'}; border: 1px solid ${isToday ? 'rgba(168,85,247,0.4)' : 'rgba(255,255,255,0.06)'}; border-radius: 10px; padding: 0.5rem; min-height: 95px; display: flex; flex-direction: column; gap: 0.3rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.2rem;">
+              <span style="font-size: 0.78rem; font-weight: ${isToday ? '800' : '600'}; color: ${isToday ? '#a855f7' : '#cbd5e1'}; ${isToday ? 'background: rgba(168,85,247,0.25); padding: 0.1rem 0.4rem; border-radius: 6px;' : ''}">${d}</span>
+              ${dayTasks.length ? `<span style="font-size: 0.68rem; color: #a1a1aa;">${dayTasks.length} ${dayTasks.length === 1 ? 'task' : 'tasks'}</span>` : ''}
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 0.25rem; overflow-y: auto; max-height: 80px;">
+              ${dayTasks.map(t => {
+                const isUrgent = t.priority === 'Urgent' || t.priority === 'High';
+                return `
+                  <div onclick="openTaskDrawer('${t.id}')" style="background: ${isUrgent ? 'rgba(239,68,68,0.2)' : 'rgba(59,130,246,0.2)'}; border: 1px solid ${isUrgent ? 'rgba(239,68,68,0.4)' : 'rgba(59,130,246,0.4)'}; border-radius: 6px; padding: 0.25rem 0.4rem; font-size: 0.72rem; cursor: pointer; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${t.title} (${t.client || ''})">
+                    ${isUrgent ? '🔴' : '🟣'} <strong>${t.title}</strong>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      container.innerHTML = `
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(9,9,11,0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 0.75rem 1.25rem;">
+            <div style="font-size: 1.15rem; font-weight: 800; color: #fff;">
+              📅 ${monthNames[calMonth]} ${calYear}
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+              <button class="btn-secondary" onclick="changeProjectsCalMonth(-1)" style="padding: 0.35rem 0.75rem; font-size: 0.8rem;">◀ Prev</button>
+              <button class="btn-secondary" onclick="resetProjectsCalToday()" style="padding: 0.35rem 0.75rem; font-size: 0.8rem;">Today</button>
+              <button class="btn-secondary" onclick="changeProjectsCalMonth(1)" style="padding: 0.35rem 0.75rem; font-size: 0.8rem;">Next ▶</button>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.5rem; text-align: center; font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">
+            <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.5rem;">
+            ${daysHtml}
+          </div>
+        </div>
+      `;
     }
 
     /* Drag & Drop Handlers */

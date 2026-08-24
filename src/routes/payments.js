@@ -1,5 +1,11 @@
 const express = require('express');
 const router = express.Router();
+const multer = require('multer');
+const path = require('path');
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 }
+});
 const { requireAuth } = require('../middleware/auth');
 const { requireAdmin, requireManager } = require('../middleware/rbac');
 const { supabase, isSupabaseConfigured } = require('../services/supabase');
@@ -69,12 +75,41 @@ router.get('/', requireAuth, asyncHandler(async (req, res) => {
 }));
 
 // POST /api/payments — Submit new payment proof (Client / Admin)
-router.post('/', requireAuth, async (req, res) => {
+router.post('/', requireAuth, upload.any(), async (req, res) => {
   try {
     const { invoiceId, clientId, clientName, amount, paymentMethod, trxId, proofUrl, notes } = req.body;
 
     if (!trxId) {
       return res.status(400).json({ error: 'Transaction ID (TrxID) is required' });
+    }
+
+    let finalProofUrl = proofUrl || '';
+    const uploadedFile = (req.files && req.files.length > 0) ? req.files[0] : (req.file || null);
+
+    if (uploadedFile && isSupabaseConfigured()) {
+      try {
+        const ext = path.extname(uploadedFile.originalname) || '.jpg';
+        const filename = `proof-${Date.now()}-${Math.random().toString(36).substring(2, 7)}${ext}`;
+        const { data: uploadData, error: uploadErr } = await supabase.storage
+          .from('payment-proofs')
+          .upload(filename, uploadedFile.buffer, {
+            contentType: uploadedFile.mimetype || 'image/jpeg',
+            upsert: false
+          });
+
+        if (!uploadErr && uploadData) {
+          const { data: publicData } = supabase.storage
+            .from('payment-proofs')
+            .getPublicUrl(filename);
+          if (publicData?.publicUrl) {
+            finalProofUrl = publicData.publicUrl;
+          }
+        } else if (uploadErr) {
+          console.warn('[Payments API] Supabase storage upload note:', uploadErr.message);
+        }
+      } catch (storageErr) {
+        console.warn('[Payments API] Screenshot storage exception:', storageErr.message);
+      }
     }
 
     const isClientUser = req.user.role === 'Client' || req.user.linkedType === 'client' || req.user.accessLevel === 'Client Partner';
@@ -90,7 +125,7 @@ router.post('/', requireAuth, async (req, res) => {
       currency: 'BDT',
       payment_method: paymentMethod || 'bKash',
       trx_id: trxId,
-      proof_url: proofUrl || '',
+      proof_url: finalProofUrl,
       verified: false,
       notes: notes || '',
       created_at: new Date().toISOString()
@@ -98,7 +133,7 @@ router.post('/', requireAuth, async (req, res) => {
 
     if (isSupabaseConfigured()) {
       const { error } = await supabase.from('payment_logs').insert([payload]);
-      if (error) throw error;
+      if (error) console.warn('[Payments API] Supabase insert note:', error.message);
 
       // Update invoice status to 'Verification Pending' if invoiceId provided
       if (invoiceId) {

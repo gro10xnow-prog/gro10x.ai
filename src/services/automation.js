@@ -680,8 +680,7 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
     // TRIGGER 19: New Expense Claim Submitted -> Alert Line Manager (AUT-019)
     if (eventType === 'expense_submitted') {
       const expense = eventData?.expense || eventData || {};
-      const staffName = (expense.submittedBy || expense.loggedBy || '').split(' ')[0].toLowerCase();
-      const staffObj = (db.team || []).find(t => (t.name || '').toLowerCase().includes(staffName));
+      const staffObj = findStaffMember(db, { employeeId: expense.employeeId || expense.emp_code || expense.empCode, name: expense.submittedBy || expense.loggedBy });
       
       const targetManager = (staffObj && staffObj.reportsTo)
         ? (db.team || []).find(t => t.id === staffObj.reportsTo)

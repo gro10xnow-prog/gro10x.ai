@@ -250,11 +250,12 @@
       }
     }
 
-    function updatePin(e) {
+    async function updatePin(e) {
       e.preventDefault();
       const currentPin = document.getElementById('inpCurrentPin').value.trim();
       const newPin = document.getElementById('inpNewPin').value.trim();
       const confirmPin = document.getElementById('inpConfirmPin').value.trim();
+      const submitBtn = e.target.querySelector('button[type="submit"]');
 
       if (newPin.length !== 4 || isNaN(newPin)) {
         if (window.showShellToast) window.showShellToast('New PIN must be exactly 4 digits!', 'error');
@@ -265,10 +266,36 @@
         return;
       }
 
-      // Save PIN token update
-      localStorage.setItem('purpleos_pin_token', 'pin_active_' + Date.now());
-      if (window.showShellToast) window.showShellToast('Security PIN updated successfully! 🔒', 'success');
-      document.getElementById('pinForm').reset();
+      try {
+        if (submitBtn) submitBtn.disabled = true;
+        const rawUser = localStorage.getItem('purple_user');
+        const user = rawUser ? JSON.parse(rawUser) : {};
+        const phone = user.phone || localStorage.getItem('purple_user_phone') || '';
+        const email = user.email || '';
+        const token = localStorage.getItem('sb-access-token') || localStorage.getItem('purple_token') || localStorage.getItem('purpleos_pin_token');
+
+        const res = await fetch('/api/auth/pin/set', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          },
+          body: JSON.stringify({ phone, newPin, email })
+        });
+
+        const data = await res.json();
+        if (res.ok && data.success) {
+          localStorage.setItem('purpleos_pin_token', 'pin_active_' + Date.now());
+          if (window.showShellToast) window.showShellToast('Security PIN updated successfully! 🔒', 'success');
+          document.getElementById('pinForm').reset();
+        } else {
+          if (window.showShellToast) window.showShellToast(data.error || 'Failed to update PIN', 'error');
+        }
+      } catch (err) {
+        if (window.showShellToast) window.showShellToast('Network error updating PIN: ' + err.message, 'error');
+      } finally {
+        if (submitBtn) submitBtn.disabled = false;
+      }
     }
   </script>
 </body>

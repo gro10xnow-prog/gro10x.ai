@@ -539,8 +539,11 @@ async function checkClientAndSubmitLead() {
         contactEmail: '',
         phone: botState.phone,
         service: botState.service || 'General Inquiry',
-        notes: 'Submitted via Purple Bot AI Chat Widget. UTM: ' + JSON.stringify(utm),
-        source: 'Purple Bot — Website Widget'
+        notes: 'Submitted via Purple Bot AI Chat Widget.',
+        source: 'Purple Bot — Website Widget',
+        utm_source: utm.utm_source || utm.source || '',
+        utm_medium: utm.utm_medium || utm.medium || '',
+        utm_campaign: utm.utm_campaign || utm.campaign || ''
       })
     });
 
@@ -552,7 +555,7 @@ async function checkClientAndSubmitLead() {
       appendBotMsg('⚠️ There was a slight issue saving your brief. Please WhatsApp us directly at <strong>+88 01711 019550</strong>.');
     }
   } catch (err) {
-    appendBotMsg('✅ <strong>Thank you ' + botState.name + '!</strong> Your request has been recorded. Our team will reach out shortly!');
+    appendBotMsg('⚠️ <strong>Something went wrong connecting to our servers.</strong><br><br>Please reach out directly via WhatsApp at <strong>+88 01711 019550</strong> or email <strong>contact@purplebot.digital</strong> and our team will prepare your proposal immediately. 🙏');
   }
 
   botState.step = 'FINISHED';
@@ -563,7 +566,7 @@ async function checkClientAndSubmitLead() {
 // ─── TRACKING ─────────────────────────────────────────────────────────────────
 function trackEvent(eventType, label) {
   try {
-    fetch('/api/track', {
+    fetch('/api/analytics/track', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ event: eventType, label: label || '', referrer: document.referrer, utm: sessionStorage.getItem('utm') || '' })

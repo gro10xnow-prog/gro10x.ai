@@ -1,18 +1,29 @@
 const express = require('express');
 const router = express.Router();
+const rateLimit = require('express-rate-limit');
 const { requireAuth } = require('../middleware/auth');
 const { requireAdmin } = require('../middleware/rbac');
 const { supabase, isSupabaseConfigured } = require('../services/supabase');
-const { broadcast } = require('../services/sse');
+const { broadcast, broadcastToRole } = require('../services/sse');
 const { processAutomationEvent } = require('../services/automation');
 const { sendTelegramNotification } = require('../services/bot');
-const { sendClientOnboardingEmail } = require('../services/resend');
+const { sendClientOnboardingEmail, sendLeadConfirmationEmail } = require('../services/resend');
 const cache = require('../services/cache');
+
+// Rate limiter for public lead submissions (10 submissions per 15 min per IP)
+const leadSubmitLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req) => process.env.NODE_ENV === 'test',
+  message: { error: 'Too many submissions from this IP. Please try again later or contact us directly at +880 1711-019550.' }
+});
 
 function broadcastLeadEvent(eventType, data) {
   cache.delByPrefix('leads:');
   try {
-    return broadcast(eventType, data);
+    return broadcastToRole(eventType, data, ['owner', 'admin', 'manager', 'specialist', 'team']);
   } catch (e) {}
 }
 
@@ -87,9 +98,19 @@ router.get('/', requireAuth, async (req, res) => {
 });
 
 // POST Public Lead Capture (Chat widget, newsletter, landing page form)
-router.post('/', async (req, res) => {
-  const email = req.body.contactEmail || req.body.email || '';
-  const phone = req.body.phone || '';
+router.post('/', leadSubmitLimiter, async (req, res) => {
+  const email = (req.body.contactEmail || req.body.email || '').trim();
+  const phone = (req.body.phone || req.body.whatsapp || '').trim();
+  const company = (req.body.clientName || req.body.company || '').trim();
+  const contactPerson = (req.body.contactPerson || req.body.name || '').trim();
+
+  // Validate at least one contact channel is present
+  if (!email && !phone) {
+    return res.status(400).json({
+      success: false,
+      error: 'Please provide at least a phone number or email address so our team can follow up.'
+    });
+  }
 
   if (isSupabaseConfigured()) {
     if (email || phone) {
@@ -104,7 +125,12 @@ router.post('/', async (req, res) => {
       
       const { data: existing } = await query;
       if (existing && existing.length > 0) {
-        return res.status(409).json({ success: false, error: 'A lead with this email or phone already exists.', duplicateIds: existing.map(e => e.id) });
+        return res.status(200).json({
+          success: true,
+          isDuplicate: true,
+          message: 'We already have your inquiry on file! Our Account Director will follow up with you shortly.',
+          duplicateIds: existing.map(e => e.id)
+        });
       }
     }
   }
@@ -113,8 +139,8 @@ router.post('/', async (req, res) => {
     id: await nextLeadId(),
     stage: 'New Inquiry',
     created_at: new Date().toISOString(),
-    company: req.body.clientName || req.body.company || '',
-    contact_person: req.body.contactPerson || '',
+    company: company,
+    contact_person: contactPerson,
     email,
     phone,
     whatsapp: req.body.whatsapp || phone,
@@ -128,25 +154,93 @@ router.post('/', async (req, res) => {
     utm_campaign: req.body.utm_campaign || ''
   };
 
+  newLead.score = calculateLeadScore(newLead);
+
   if (isSupabaseConfigured()) {
     const { error } = await supabase.from('leads').insert([newLead]);
-    if (error) console.warn('Lead insert error:', error.message);
+    if (error) {
+      console.warn('[Leads API] Full schema insert warning:', error.message);
+      // Fallback insert with core base columns in case migrations are pending in target DB
+      if (error.message && (error.message.includes('column') || error.message.includes('schema'))) {
+        const baseLead = {
+          id: newLead.id,
+          stage: newLead.stage,
+          created_at: newLead.created_at,
+          company: newLead.company,
+          contact_person: newLead.contact_person,
+          email: newLead.email,
+          phone: newLead.phone,
+          whatsapp: newLead.whatsapp,
+          source: newLead.source,
+          category: newLead.category,
+          service: newLead.service,
+          value: newLead.value,
+          notes: newLead.notes
+        };
+        const { error: retryErr } = await supabase.from('leads').insert([baseLead]);
+        if (retryErr) {
+          console.error('[Leads API] Fallback insert error:', retryErr.message);
+        } else {
+          console.log('✅ [Leads API] Persisted lead with base schema fallback');
+        }
+      }
+    }
   }
 
-  newLead.score = calculateLeadScore(newLead);
-  broadcast('lead_update', [newLead]);
+  broadcastLeadEvent('lead_update', [newLead]);
 
-  // Telegram alert to agency owner
+  // Send automated confirmation email to prospect if email provided
+  if (email && email.includes('@')) {
+    try {
+      const emailResult = await sendLeadConfirmationEmail({
+        contactPerson: newLead.contact_person,
+        email: newLead.email,
+        service: newLead.service,
+        company: newLead.company
+      });
+      if (emailResult && !emailResult.success && !emailResult.simulated) {
+        console.warn('[Leads API] Lead confirmation email delivery note:', emailResult.error);
+      }
+    } catch (err) {
+      console.warn('[Leads API] Confirmation email exception:', err.message);
+    }
+  }
+
+  // Tiered Telegram alert to agency owner with dynamic priority & WhatsApp CTA
   try {
     const ownerChatId = process.env.OWNER_TELEGRAM_ID;
     if (ownerChatId) {
-      sendTelegramNotification(ownerChatId,
-        `🔔 *New Lead from Purple Bot Website!*\n\n` +
-        `👤 *${newLead.contact_person || newLead.company}* — ${newLead.company || 'Brand'}\n` +
+      const score = newLead.score || 50;
+      let header = `🔔 *New Lead from Purplebot Digital!*\n🏅 Score: *${score}/100*`;
+      if (score >= 75) {
+        header = `🔥 *PRIORITY LEAD — HIGH CONVERSION POTENTIAL!*\n🏅 Score: *${score}/100* — _Fast response recommended (<30m)_`;
+      } else if (score < 50) {
+        header = `📝 *New Lead Inquiry (Low Priority)*\n🏅 Score: *${score}/100*`;
+      }
+
+      const alertMsg =
+        `${header}\n\n` +
+        `👤 *${newLead.contact_person || newLead.company || 'Prospective Client'}* — ${newLead.company || 'Brand'}\n` +
         `📞 Phone: \`${newLead.phone || newLead.whatsapp || 'N/A'}\`\n` +
+        `📧 Email: \`${newLead.email || 'N/A'}\`\n` +
         `🎯 Interested Service: *${newLead.service}*\n` +
-        `📍 Source: ${newLead.source}`, null, false
-      );
+        `📍 Source: ${newLead.source}` +
+        (newLead.notes ? `\n📝 Notes: _${newLead.notes}_` : '');
+
+      const cleanPhone = (newLead.phone || newLead.whatsapp || '').replace(/\D/g, '');
+      const buttons = [];
+      const row = [];
+
+      if (cleanPhone && cleanPhone.length >= 8) {
+        const waPhone = cleanPhone.startsWith('880') ? cleanPhone : (cleanPhone.startsWith('0') ? `88${cleanPhone}` : cleanPhone);
+        row.push({ text: '📞 WhatsApp Now', url: `https://wa.me/${waPhone}` });
+      }
+      if (score >= 75) {
+        row.push({ text: '👁 View in CRM', url: 'https://purpleos-iota.vercel.app/admin?tab=leads' });
+      }
+      if (row.length > 0) buttons.push(row);
+
+      sendTelegramNotification(ownerChatId, alertMsg, buttons.length > 0 ? buttons : null, false);
     }
   } catch (err) {
     console.warn('Telegram alert failed:', err.message);
@@ -261,7 +355,7 @@ router.post('/:id/convert', requireAuth, async (req, res) => {
 });
 
 // POST Public Web Consultation Booking
-router.post('/book', async (req, res) => {
+router.post('/book', leadSubmitLimiter, async (req, res) => {
   const newLead = {
     id: await nextLeadId(),
     company: req.body.company || req.body.contactPerson || 'Web Lead',

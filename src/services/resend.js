@@ -126,8 +126,108 @@ async function sendInvoiceEmail({ invoice }) {
   return sendEmail({ to: email, subject, html });
 }
 
+/**
+ * Send Proposal Request Confirmation Email to Prospect
+ */
+async function sendLeadConfirmationEmail({ contactPerson, email, service, company }) {
+  if (!email || !email.includes('@') || email.includes('lead.com')) {
+    return { success: false, reason: 'Invalid or placeholder email' };
+  }
+  const subject = `We've received your proposal request — Purplebot Digital`;
+  const name = contactPerson || company || 'there';
+  const html = `
+    <div style="font-family: Arial, sans-serif; background: #0f172a; color: #f8fafc; padding: 30px; border-radius: 12px; max-width: 600px; margin: 0 auto; line-height: 1.6;">
+      <div style="text-align: center; margin-bottom: 24px;">
+        <span style="font-size: 32px;">💜</span>
+        <h1 style="color: #c084fc; margin: 8px 0 0 0; font-size: 24px;">Purplebot Digital</h1>
+        <p style="color: #94a3b8; font-size: 13px; margin: 4px 0 0 0;">Award-Winning Digital Marketing & Tech Agency</p>
+      </div>
+
+      <div style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(168, 85, 247, 0.2); border-radius: 12px; padding: 24px; margin-bottom: 24px;">
+        <h2 style="color: #f8fafc; font-size: 18px; margin-top: 0;">Proposal Request Received ✅</h2>
+        <p style="color: #cbd5e1; font-size: 15px;">Hi <strong>${name}</strong>,</p>
+        <p style="color: #94a3b8; font-size: 14px;">Thank you for reaching out to Purplebot Digital. We have received your inquiry for <strong>${service || 'Agency Services'}</strong>${company ? ` on behalf of <strong>${company}</strong>` : ''}.</p>
+        
+        <div style="background: rgba(168, 85, 247, 0.08); border-left: 3px solid #c084fc; padding: 12px 16px; margin: 18px 0; border-radius: 4px;">
+          <p style="margin: 0; font-size: 13px; color: #e2e8f0;">⚡ <strong>Next Step:</strong> Our Account Director will review your requirements and reach out via WhatsApp/Call within <strong>2 business hours</strong>.</p>
+        </div>
+
+        <p style="color: #94a3b8; font-size: 13px;">Meanwhile, feel free to explore our latest campaigns and client showreels:</p>
+        <div style="text-align: center; margin-top: 20px;">
+          <a href="https://purpleos-iota.vercel.app/#portfolio" style="background: linear-gradient(135deg, #7c3aed, #ec4899); color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
+            🚀 Explore Our Work & Case Studies
+          </a>
+        </div>
+      </div>
+
+      <div style="font-size: 13px; color: #64748b; text-align: center;">
+        <p style="margin: 4px 0;">Need immediate assistance? Reach our client desk:</p>
+        <p style="margin: 4px 0;">📱 WhatsApp: <a href="https://wa.me/8801711019550" style="color: #c084fc; text-decoration: none;">+88 01711 019550</a> | 📧 Email: <a href="mailto:contact@purplebot.digital" style="color: #c084fc; text-decoration: none;">contact@purplebot.digital</a></p>
+        <hr style="border: 0; border-top: 1px solid #1e293b; margin: 20px 0;">
+        <p style="font-size: 11px; margin: 0;">Purplebot Digital Limited • Banani & Niketon, Dhaka, Bangladesh</p>
+      </div>
+    </div>
+  `;
+
+  return sendEmail({ to: email, subject, html });
+}
+
+/**
+ * Send 24-Hour Warm Follow-Up Email to Prospect
+ */
+async function sendLeadFollowUpEmail({ contactPerson, email, service, company }) {
+  if (!email || !email.includes('@') || email.includes('lead.com')) {
+    return { success: false, reason: 'Invalid or placeholder email' };
+  }
+  const svc = service || 'your marketing campaign';
+  const subject = `Still thinking about ${svc}? We're here when you're ready — Purplebot Digital`;
+  const name = contactPerson || company || 'there';
+  const html = `
+    <div style="font-family: Arial, sans-serif; background: #0f172a; color: #f8fafc; padding: 30px; border-radius: 12px; max-width: 600px; margin: 0 auto; line-height: 1.6;">
+      <div style="text-align: center; margin-bottom: 24px;">
+        <span style="font-size: 32px;">💜</span>
+        <h1 style="color: #c084fc; margin: 8px 0 0 0; font-size: 24px;">Purplebot Digital</h1>
+        <p style="color: #94a3b8; font-size: 13px; margin: 4px 0 0 0;">Award-Winning Digital Marketing & Tech Agency</p>
+      </div>
+
+      <div style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(168, 85, 247, 0.2); border-radius: 12px; padding: 24px; margin-bottom: 24px;">
+        <h2 style="color: #f8fafc; font-size: 18px; margin-top: 0;">Checking In on Your Project 🎯</h2>
+        <p style="color: #cbd5e1; font-size: 15px;">Hi <strong>${name}</strong>,</p>
+        <p style="color: #94a3b8; font-size: 14px;">We wanted to quickly follow up on your recent inquiry regarding <strong>${svc}</strong>${company ? ` for <strong>${company}</strong>` : ''}.</p>
+        
+        <p style="color: #94a3b8; font-size: 14px;">Whether you're looking for commercial TVCs, viral short-form reels, a full brand overhaul, or tech development — our production and strategy teams are ready to craft a tailored execution roadmap for your budget.</p>
+
+        <div style="background: rgba(168, 85, 247, 0.08); border-left: 3px solid #c084fc; padding: 12px 16px; margin: 18px 0; border-radius: 4px;">
+          <p style="margin: 0; font-size: 13px; color: #e2e8f0;">💬 <strong>Quick Consultation:</strong> Have 10 minutes to discuss your timeline or request custom package pricing?</p>
+        </div>
+
+        <div style="text-align: center; margin-top: 24px;">
+          <a href="https://wa.me/8801711019550?text=Hi%20Purplebot%20Team!%20Following%20up%20on%20my%20inquiry%20for%20${encodeURIComponent(svc)}" style="background: linear-gradient(135deg, #10b981, #059669); color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block; margin-right: 8px; margin-bottom: 8px;">
+            📱 Chat on WhatsApp
+          </a>
+          <a href="https://purpleos-iota.vercel.app/#portfolio" style="background: linear-gradient(135deg, #7c3aed, #ec4899); color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block; margin-bottom: 8px;">
+            🚀 See Our Showreels
+          </a>
+        </div>
+      </div>
+
+      <div style="font-size: 13px; color: #64748b; text-align: center;">
+        <p style="margin: 4px 0;">Direct Contact: <a href="tel:+8801711019550" style="color: #c084fc; text-decoration: none;">+88 01711 019550</a> | <a href="mailto:contact@purplebot.digital" style="color: #c084fc; text-decoration: none;">contact@purplebot.digital</a></p>
+        <hr style="border: 0; border-top: 1px solid #1e293b; margin: 20px 0;">
+        <p style="font-size: 11px; margin: 0;">Purplebot Digital Limited • Banani & Niketon, Dhaka, Bangladesh</p>
+      </div>
+    </div>
+  `;
+
+  return sendEmail({ to: email, subject, html });
+}
+
 module.exports = {
   sendEmail,
   sendClientOnboardingEmail,
-  sendInvoiceEmail
+  sendInvoiceEmail,
+  sendLeadConfirmationEmail,
+  sendLeadFollowUpEmail
 };
+
+

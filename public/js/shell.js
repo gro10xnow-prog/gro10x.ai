@@ -210,7 +210,7 @@ function hydrateUserInfo() {
     if (!role) role = 'Team Member';
 
     // Store normalized user object back to localStorage
-    const userObj = { name, role, phone: cleanPhone, email: localStorage.getItem('purple_user_email') || 'contact@purpleos.agency' };
+    const userObj = { name, role, phone: cleanPhone, email: localStorage.getItem('purple_user_email') || 'contact@purplebot.digital' };
     localStorage.setItem('purple_user', JSON.stringify(userObj));
 
     // Hydrate UI elements

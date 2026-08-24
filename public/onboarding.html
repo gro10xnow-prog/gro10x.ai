@@ -6,10 +6,11 @@
   <script src="/js/theme.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PurpleOS — Employee Onboarding Survey</title>
+  <link rel="stylesheet" href="/css/tokens.css">
   <link rel="stylesheet" href="/css/styles.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg-dark: #09090b;
@@ -19,7 +20,7 @@
       --text-main: #f4f4f5;
       --text-muted: #a1a1aa;
     }
-    body { background: var(--bg-dark); color: var(--text-main); font-family: 'Plus Jakarta Sans', sans-serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem; }
+    body { background: var(--bg-dark); color: var(--text-main); font-family: 'Outfit', sans-serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem; }
     .onboarding-container { background: var(--card-bg); border: 1px solid var(--border-purple); border-radius: 24px; padding: 3rem; width: 100%; max-width: 600px; box-shadow: 0 10px 40px rgba(168, 85, 247, 0.1); }
     
     .progress-bar { display: flex; gap: 0.5rem; margin-bottom: 2.5rem; }
@@ -49,10 +50,10 @@
   </style>
   <script>
     const savedPhone = localStorage.getItem('purple_user_phone');
-    const token = localStorage.getItem('sb-access-token');
-    let empId = localStorage.getItem('purple_user_id') || localStorage.getItem('purple_emp_code'); // Try both
+    const token = localStorage.getItem('sb-access-token') || localStorage.getItem('purple_token') || localStorage.getItem('purpleos_pin_token');
+    let empId = localStorage.getItem('purple_user_id') || localStorage.getItem('purple_emp_code');
 
-    if (!savedPhone || !token) {
+    if (!token) {
       window.location.href = '/auth';
     }
 
@@ -61,15 +62,21 @@
 
     async function loadData() {
       try {
-        const res = await fetch('/api/team', { headers: { 'Authorization': `Bearer ${token}` } });
-        const roster = await res.json();
-        const me = roster.find(r => r.phone === savedPhone || r.phone.includes(savedPhone.slice(-10)));
-        if (!me) {
-          alert('Employee record not found for your phone number. Contact Admin.');
+        const res = await fetch('/api/team/me', { headers: { 'Authorization': `Bearer ${token}` } });
+        if (!res.ok) {
+          console.warn('Failed to load authenticated employee profile');
+          alert('Employee record not found for your session. Please log in again.');
           window.location.href = '/auth';
           return;
         }
-        empId = me.id;
+        const data = await res.json();
+        const me = data.profile || data;
+        if (!me) {
+          alert('Employee record not found. Please contact Admin.');
+          window.location.href = '/auth';
+          return;
+        }
+        empId = me.emp_code || me.id;
         employeeData = me;
 
         if (me.surveyComplete || me.survey_complete || me.onboardingComplete) {
@@ -123,24 +130,66 @@
       const payload = {};
       
       if (step === 1) {
+        const email = document.getElementById('personal_email').value.trim();
+        const emergency = document.getElementById('emergency_contact').value.trim();
+        if (email && (!email.includes('@') || !email.includes('.'))) {
+          alert('Please enter a valid email address.');
+          return;
+        }
+        if (!emergency || emergency.length < 8) {
+          alert('Please provide a valid emergency contact number (at least 8 digits).');
+          return;
+        }
         payload.blood_group = document.getElementById('blood_group').value;
-        payload.personal_email = document.getElementById('personal_email').value;
-        payload.address = document.getElementById('address').value;
-        payload.emergency_contact = document.getElementById('emergency_contact').value;
+        payload.personal_email = email;
+        payload.address = document.getElementById('address').value.trim();
+        payload.emergency_contact = emergency;
       } else if (step === 2) {
-        payload.nid_no = document.getElementById('nid_no').value;
-        payload.permanent_address = document.getElementById('permanent_address').value;
+        const nid = document.getElementById('nid_no').value.trim();
+        if (!nid || nid.length < 10) {
+          alert('Please enter a valid 10 or 17 digit NID number.');
+          return;
+        }
+        payload.nid_no = nid;
+        payload.permanent_address = document.getElementById('permanent_address').value.trim();
       } else if (step === 3) {
+        const bankName = document.getElementById('bankName').value.trim();
+        const accNo = document.getElementById('accNo').value.trim();
+        const mfsNo = document.getElementById('mfsNo').value.trim();
+        if (!mfsNo && (!bankName || !accNo)) {
+          alert('Please provide either bank account details or a bKash/Nagad number.');
+          return;
+        }
         payload.bank_info = {
-          bankName: document.getElementById('bankName').value,
-          accountTitle: document.getElementById('accountTitle').value,
-          accNo: document.getElementById('accNo').value,
-          branch: document.getElementById('branch').value,
-          mfsNo: document.getElementById('mfsNo').value
+          bankName,
+          accountTitle: document.getElementById('accountTitle').value.trim(),
+          accNo,
+          branch: document.getElementById('branch').value.trim(),
+          mfsNo
         };
       } else if (step === 4) {
-        payload.primary_skill = document.getElementById('primary_skill').value;
+        const skill = document.getElementById('primary_skill').value.trim();
+        const pin = (document.getElementById('onboarding_pin') ? document.getElementById('onboarding_pin').value.trim() : '');
+        if (!skill) {
+          alert('Please enter your primary skill or core expertise.');
+          return;
+        }
+        if (pin && (pin.length !== 4 || isNaN(pin))) {
+          alert('Security PIN must be exactly 4 digits.');
+          return;
+        }
+        payload.primary_skill = skill;
         payload.survey_complete = true;
+
+        if (pin && userData?.phone) {
+          fetch('/api/auth/pin/set', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ phone: userData.phone, newPin: pin, email: userData.personal_email || userData.email })
+          }).then(r => r.json()).then(d => {
+            if (d.success) localStorage.setItem('purpleos_pin_token', 'pin_active_' + Date.now());
+          }).catch(() => {});
+        }
       }
 
       try {
@@ -288,10 +337,14 @@
 
       <!-- Step 4: Skills -->
       <div class="step-content" id="step4">
-        <h3 style="margin-bottom: 1.5rem; font-weight: 700;">4. Skills & Specialization</h3>
+        <h3 style="margin-bottom: 1.5rem; font-weight: 700;">4. Skills & Security PIN</h3>
         <div class="form-group">
-          <label class="form-label">Primary Skill / Tool</label>
-          <input type="text" id="primary_skill" class="form-input" placeholder="e.g. Premiere Pro, React, Copywriting">
+          <label class="form-label">Primary Skill / Tool *</label>
+          <input type="text" id="primary_skill" class="form-input" placeholder="e.g. Premiere Pro, React, Cinematography" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Set Your 4-Digit Login PIN (Optional for Web & Mini App)</label>
+          <input type="password" id="onboarding_pin" class="form-input" placeholder="4-digit PIN (e.g. 1234)" maxlength="4" style="letter-spacing: 0.3em; font-family: monospace; font-size: 1.1rem;">
         </div>
         <div class="btn-row">
           <button class="btn btn-secondary" onclick="prevStep()">← Back</button>

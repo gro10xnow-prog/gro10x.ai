@@ -38,6 +38,14 @@
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+  <script>
+    (function() {
+      const token = localStorage.getItem('sb-access-token') || localStorage.getItem('purple_token') || localStorage.getItem('purpleos_pin_token');
+      if (!token) {
+        window.location.replace('/auth?redirect=/manager');
+      }
+    })();
+  </script>
 </head>
 <body>
 
@@ -195,12 +203,41 @@
 
       <!-- 2. CRM -->
       <section id="tab-crm" class="tab-pane" style="display: none;">
-        <div class="section-header">
-          <h1 class="page-title">👥 Client CRM (Account Manager)</h1>
-          <p class="page-subtitle">Manage client retainers, contacts, and account health.</p>
+        <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+          <div>
+            <h1 class="page-title">👥 Client CRM & Partner Accounts</h1>
+            <p class="page-subtitle">Manage client retainers, key contacts, and communication channels.</p>
+          </div>
+          <button class="btn-primary" onclick="loadManagerCRM()" style="padding: 0.5rem 1rem; border-radius: 8px;">🔄 Refresh CRM</button>
         </div>
-        <div style="padding: 2rem; background: rgba(17,24,39,0.7); border-radius: 14px; border: 1px solid rgba(255,255,255,0.08); color: #9ca3af;">
-          Client CRM view accessible for Account Leads & Operations Director.
+
+        <div class="kpi-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+          <div class="kpi-card" style="background: rgba(17,24,39,0.7); border: 1px solid rgba(59,130,246,0.3); border-radius: 14px; padding: 1rem;">
+            <div style="font-size: 0.78rem; color: #9ca3af; font-weight: 500;">Total Active Clients</div>
+            <div style="font-size: 1.6rem; font-weight: 800; color: #60a5fa; margin-top: 0.2rem;" id="crmTotalClients">0</div>
+          </div>
+          <div class="kpi-card" style="background: rgba(17,24,39,0.7); border: 1px solid rgba(16,185,129,0.3); border-radius: 14px; padding: 1rem;">
+            <div style="font-size: 0.78rem; color: #9ca3af; font-weight: 500;">Retainer Health</div>
+            <div style="font-size: 1.6rem; font-weight: 800; color: #34d399; margin-top: 0.2rem;" id="crmRetainerRate">100%</div>
+          </div>
+        </div>
+
+        <div style="background: rgba(17,24,39,0.7); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 1.25rem; overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;">
+            <thead>
+              <tr style="border-bottom: 1px solid rgba(255,255,255,0.1); color: #94a3b8; font-weight: 600;">
+                <th style="padding: 0.75rem 0.5rem;">Client / Brand</th>
+                <th style="padding: 0.75rem 0.5rem;">Contact Person</th>
+                <th style="padding: 0.75rem 0.5rem;">Phone / WhatsApp</th>
+                <th style="padding: 0.75rem 0.5rem;">Status</th>
+                <th style="padding: 0.75rem 0.5rem;">Total Spent</th>
+                <th style="padding: 0.75rem 0.5rem; text-align: right;">Quick Actions</th>
+              </tr>
+            </thead>
+            <tbody id="managerCrmTableBody">
+              <tr><td colspan="6" style="text-align: center; padding: 2rem; color: #94a3b8;">Loading client accounts...</td></tr>
+            </tbody>
+          </table>
         </div>
       </section>
 
@@ -744,23 +781,80 @@
 
       <!-- 8. ASSETS -->
       <section id="tab-assets" class="tab-pane" style="display: none;">
-        <div class="section-header">
-          <h1 class="page-title">🔧 Equipment Asset Registry</h1>
-          <p class="page-subtitle">Camera, audio, and lighting gear checkout logs.</p>
+        <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+          <div>
+            <h1 class="page-title">🔧 Studio Equipment & Asset Registry</h1>
+            <p class="page-subtitle">Track camera rigs, audio kits, lighting gear, and specialist checkouts.</p>
+          </div>
+          <button class="btn-primary" onclick="loadManagerAssets()" style="padding: 0.5rem 1rem; border-radius: 8px;">🔄 Refresh Assets</button>
         </div>
-        <div style="padding: 2rem; background: rgba(17,24,39,0.7); border-radius: 14px; border: 1px solid rgba(255,255,255,0.08); color: #9ca3af;">
-          Equipment Registry view: check out gear to specialists.
+
+        <div class="kpi-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+          <div class="kpi-card" style="background: rgba(17,24,39,0.7); border: 1px solid rgba(59,130,246,0.3); border-radius: 14px; padding: 1rem;">
+            <div style="font-size: 0.78rem; color: #9ca3af; font-weight: 500;">Total Assets</div>
+            <div style="font-size: 1.6rem; font-weight: 800; color: #60a5fa; margin-top: 0.2rem;" id="assetsTotalCount">0</div>
+          </div>
+          <div class="kpi-card" style="background: rgba(17,24,39,0.7); border: 1px solid rgba(16,185,129,0.3); border-radius: 14px; padding: 1rem;">
+            <div style="font-size: 0.78rem; color: #9ca3af; font-weight: 500;">In Vault / Available</div>
+            <div style="font-size: 1.6rem; font-weight: 800; color: #34d399; margin-top: 0.2rem;" id="assetsInVaultCount">0</div>
+          </div>
+          <div class="kpi-card" style="background: rgba(17,24,39,0.7); border: 1px solid rgba(245,158,11,0.3); border-radius: 14px; padding: 1rem;">
+            <div style="font-size: 0.78rem; color: #9ca3af; font-weight: 500;">In Field / Checked Out</div>
+            <div style="font-size: 1.6rem; font-weight: 800; color: #fbbf24; margin-top: 0.2rem;" id="assetsInFieldCount">0</div>
+          </div>
+        </div>
+
+        <div style="background: rgba(17,24,39,0.7); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 1.25rem; overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;">
+            <thead>
+              <tr style="border-bottom: 1px solid rgba(255,255,255,0.1); color: #94a3b8; font-weight: 600;">
+                <th style="padding: 0.75rem 0.5rem;">Asset ID</th>
+                <th style="padding: 0.75rem 0.5rem;">Equipment Name</th>
+                <th style="padding: 0.75rem 0.5rem;">Category</th>
+                <th style="padding: 0.75rem 0.5rem;">Condition</th>
+                <th style="padding: 0.75rem 0.5rem;">Assigned To</th>
+                <th style="padding: 0.75rem 0.5rem; text-align: right;">Status Action</th>
+              </tr>
+            </thead>
+            <tbody id="managerAssetsTableBody">
+              <tr><td colspan="6" style="text-align: center; padding: 2rem; color: #94a3b8;">Loading studio assets...</td></tr>
+            </tbody>
+          </table>
         </div>
       </section>
 
       <!-- 9. CHAT HUB -->
       <section id="tab-chat" class="tab-pane" style="display: none;">
-        <div class="section-header">
-          <h1 class="page-title">💬 Client Chat Hub</h1>
-          <p class="page-subtitle">Telegram client messages and thread management.</p>
+        <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+          <div>
+            <h1 class="page-title">💬 Client Telegram Chat Hub</h1>
+            <p class="page-subtitle">Live communications with brand partners, consultation leads, and account reps.</p>
+          </div>
+          <button class="btn-primary" onclick="loadManagerChat()" style="padding: 0.5rem 1rem; border-radius: 8px;">🔄 Refresh Chat</button>
         </div>
-        <div style="padding: 2rem; background: rgba(17,24,39,0.7); border-radius: 14px; border: 1px solid rgba(255,255,255,0.08); color: #9ca3af;">
-          Client Chat Hub view: reply to client queries from Telegram.
+
+        <div style="display: grid; grid-template-columns: 300px 1fr; gap: 1.25rem; background: rgba(17,24,39,0.7); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 1.25rem; min-height: 480px;">
+          <!-- Conversations Sidebar -->
+          <div style="border-right: 1px solid rgba(255,255,255,0.08); padding-right: 1rem; display: flex; flex-direction: column; gap: 0.6rem;">
+            <div style="font-size: 0.78rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;">Active Dialogues</div>
+            <div id="managerChatChannels" style="display: flex; flex-direction: column; gap: 0.4rem; overflow-y: auto;">
+              <!-- Populated dynamically -->
+            </div>
+          </div>
+
+          <!-- Message Thread Window -->
+          <div style="display: flex; flex-direction: column; justify-content: space-between;">
+            <div id="managerChatHeader" style="padding-bottom: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.08); font-weight: 700; color: #fff;">
+              Select a conversation to view thread
+            </div>
+            <div id="managerChatMessages" style="flex: 1; padding: 1rem 0; display: flex; flex-direction: column; gap: 0.75rem; overflow-y: auto; max-height: 320px;">
+              <div style="text-align: center; color: #64748b; margin-top: 3rem;">No dialogue selected.</div>
+            </div>
+            <form onsubmit="sendManagerChatMessage(event)" style="display: flex; gap: 0.6rem; padding-top: 0.75rem; border-top: 1px solid rgba(255,255,255,0.08);">
+              <input type="text" id="managerChatInput" placeholder="Type a message to the client..." style="flex: 1; padding: 0.55rem 0.85rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; color: #fff; font-size: 0.85rem;">
+              <button type="submit" class="btn-primary" style="padding: 0.55rem 1rem; border-radius: 10px; font-weight: 600;">Send ✈️</button>
+            </form>
+          </div>
         </div>
       </section>
 

@@ -7,6 +7,7 @@ const SERVICE_DATABASE = {
     heroTitle: 'Digital Marketing & <br><span class="pb-gradient-text">Brand Growth</span>',
     subtitle: 'Strategic social media management, targeted paid ads, content creation, SEO, and community management built to drive high-converting ROI.',
     metaDesc: 'Scale your revenue with Purplebot Digital performance marketing, social media retainers, Meta & Google ads, and SEO.',
+    startingPrice: '৳45,000 / month (~$410)',
     statCard1: { icon: '🎯', title: 'Meta & Google ROI', desc: 'Data-driven conversion funnels' },
     statCard2: { icon: '📈', title: '3.8x Avg ROAS', desc: 'Verified performance metrics' },
     pills: [
@@ -43,6 +44,7 @@ const SERVICE_DATABASE = {
     heroTitle: 'Video Production & <br><span class="pb-gradient-text">Reels & TVC</span>',
     subtitle: 'From viral short-form reels to 2D/3D animated explainers, motion graphics, sound design, color grading, and commercial TVCs.',
     metaDesc: 'Engage your audience with viral video reels, 2D/3D explainers, TVC commercials, color grading, and motion graphics by Purplebot Digital.',
+    startingPrice: '৳40,000 / batch (~$360)',
     statCard1: { icon: '🎬', title: '4K Commercial Cut', desc: 'Frame-accurate editing & FX' },
     statCard2: { icon: '⚡', title: '48hr Turnaround', desc: 'Fast delivery for social reels' },
     pills: [
@@ -81,6 +83,7 @@ const SERVICE_DATABASE = {
     heroTitle: 'TVC & OVC Commercial <br><span class="pb-gradient-text">Video Production</span>',
     subtitle: 'High-production video commercials with creative storyboarding, cinema director, 4K camera crew, talent casting, and broadcast master edit.',
     metaDesc: 'Broadcast commercial TVCs and online video commercials (OVC) produced by Purplebot Digital.',
+    startingPrice: '৳250,000 / project (~$2,270)',
     statCard1: { icon: '🎬', title: '4K Cinema Cut', desc: 'Broadcast color grading & FX' },
     statCard2: { icon: '🏆', title: '100% SLA Record', desc: 'On-time TVC delivery' },
     pills: [
@@ -115,6 +118,7 @@ const SERVICE_DATABASE = {
     heroTitle: 'Brand Identity & <br><span class="pb-gradient-text">Graphics Design</span>',
     subtitle: 'Cut through the clutter with unique logo design, complete brand books, packaging, and high-impact marketing collaterals.',
     metaDesc: 'Craft an unforgettable brand identity with Purplebot Digital logo design, packaging, brand guidelines, and POSM marketing collaterals.',
+    startingPrice: '৳65,000 / project (~$590)',
     statCard1: { icon: '🎨', title: '360° Identity System', desc: 'Logos, guidelines & toolkits' },
     statCard2: { icon: '📦', title: 'Print & POSM Ready', desc: 'Vector assets for print & packaging' },
     pills: [
@@ -150,6 +154,7 @@ const SERVICE_DATABASE = {
     heroTitle: 'Website Development & <br><span class="pb-gradient-text">Custom Web Apps</span>',
     subtitle: 'Sleek corporate portfolio sites, dynamic e-commerce platforms, custom-coded web apps, fast loading speed, and mobile optimization.',
     metaDesc: 'Build high-converting websites, e-commerce stores, custom Web apps, and responsive mobile interfaces with Purplebot Digital.',
+    startingPrice: '৳120,000 / project (~$1,090)',
     statCard1: { icon: '🌐', title: 'Sub-Second Speed', desc: 'Optimized lighthouse score 95+' },
     statCard2: { icon: '🔒', title: 'Enterprise Guard', desc: 'SSL, API protection & backup' },
     pills: [
@@ -186,6 +191,7 @@ const SERVICE_DATABASE = {
     heroTitle: 'Custom Tech & <br><span class="pb-gradient-text">Enterprise Systems</span>',
     subtitle: 'Innovative technology solutions designed to streamline business operations, automate workflows, and empower teams.',
     metaDesc: 'Automate business operations with custom ERPs, CRMs, inventory managers, mobile PWAs, and full-stack software by Purplebot Digital.',
+    startingPrice: 'Custom Enterprise Scope',
     statCard1: { icon: '👥', title: 'Custom CRM & ERP', desc: 'Tailored for your business workflows' },
     statCard2: { icon: '🤖', title: 'AI & Automation', desc: 'Bots, APIs & SSE integrations' },
     pills: [
@@ -222,7 +228,7 @@ document.addEventListener('DOMContentLoaded', () => {
   renderServiceDetailPage();
 });
 
-function renderServiceDetailPage() {
+async function renderServiceDetailPage() {
   const ID_TO_KEY = {
     // SVC-001 / Digital Marketing
     'svc-001': 'digital-marketing',
@@ -266,47 +272,46 @@ function renderServiceDetailPage() {
   const urlParams = new URLSearchParams(window.location.search);
   const rawId = (urlParams.get('id') || urlParams.get('service') || '').trim();
 
-  // Try API lookup first for dynamic CMS services
-  if (rawId) {
-    try {
-      const apiRes = await fetch(`/api/cms/services/${encodeURIComponent(rawId)}`);
-      if (apiRes.ok) {
-        const apiData = await apiRes.json();
-        if (apiData.success && apiData.service) {
-          const s = apiData.service;
-          // Dynamically populate page from API service payload
-          document.title = `${s.title} — Purplebot Digital`;
-          const titleEl = document.getElementById('svcTitle');
-          const categoryEl = document.getElementById('svcCategory');
-          const priceEl = document.getElementById('svcPrice');
-          const descEl = document.getElementById('svcDesc');
-          const featuresContainer = document.getElementById('svcFeaturesContainer');
-          
-          if (titleEl) titleEl.textContent = s.title;
-          if (categoryEl) categoryEl.textContent = s.category || 'Service';
-          if (priceEl) priceEl.textContent = s.price || 'Contact for Quote';
-          if (descEl) descEl.textContent = s.description || '';
-          
-          const feats = s.includedFeatures || s.features || [];
-          if (featuresContainer && Array.isArray(feats) && feats.length > 0) {
-            featuresContainer.innerHTML = feats.map(f => `
-              <div style="display:flex; align-items:center; gap:0.5rem; background:rgba(255,255,255,0.04); padding:0.6rem 1rem; border-radius:8px; border:1px solid rgba(255,255,255,0.08); font-size:0.88rem; color:#fff;">
-                <span style="color:#10b981;">✓</span> ${String(f).replace(/</g,'&lt;')}
-              </div>
-            `).join('');
-          }
-          return; // Successfully rendered dynamic service
-        }
-      }
-    } catch (e) {
-      console.warn('Dynamic service fetch failed, falling back to static database:', e);
-    }
-  }
-
-  // Fallback to static ID mapping for legacy routes
+  // Static ID mapping for canonical agency routes
   const key = ID_TO_KEY[rawId.toLowerCase()];
 
   if (!key) {
+    // Try dynamic API lookup for custom CMS services
+    if (rawId) {
+      try {
+        const apiRes = await fetch(`/api/cms/services/${encodeURIComponent(rawId)}`);
+        if (apiRes.ok) {
+          const apiData = await apiRes.json();
+          if (apiData.success && apiData.service) {
+            const s = apiData.service;
+            document.title = `${s.title} — Purplebot Digital`;
+            const titleEl = document.getElementById('svcTitle');
+            const categoryEl = document.getElementById('svcCategory');
+            const priceEl = document.getElementById('svcPrice');
+            const descEl = document.getElementById('svcDesc');
+            const featuresContainer = document.getElementById('svcFeaturesContainer');
+            
+            if (titleEl) titleEl.textContent = s.title;
+            if (categoryEl) categoryEl.textContent = s.category || 'Service';
+            if (priceEl) priceEl.textContent = s.price || 'Contact for Quote';
+            if (descEl) descEl.textContent = s.description || '';
+            
+            const feats = s.includedFeatures || s.features || [];
+            if (featuresContainer && Array.isArray(feats) && feats.length > 0) {
+              featuresContainer.innerHTML = feats.map(f => `
+                <div style="display:flex; align-items:center; gap:0.5rem; background:rgba(255,255,255,0.04); padding:0.6rem 1rem; border-radius:8px; border:1px solid rgba(255,255,255,0.08); font-size:0.88rem; color:#fff;">
+                  <span style="color:#10b981;">✓</span> ${String(f).replace(/</g,'&lt;')}
+                </div>
+              `).join('');
+            }
+            return;
+          }
+        }
+      } catch (e) {
+        console.warn('Dynamic service fetch failed:', e);
+      }
+    }
+
     document.title = 'Service Not Found — Purplebot Digital';
     const mainContent = document.getElementById('mainContent');
     if (mainContent) mainContent.style.display = 'none';
@@ -360,6 +365,17 @@ function renderServiceDetailPage() {
 
   const subtitle = document.getElementById('svcSubtitle');
   if (subtitle) subtitle.innerText = data.subtitle;
+
+  // Starting Price Callout Chip
+  const priceCallout = document.getElementById('svcStartingPriceCallout');
+  if (priceCallout && data.startingPrice) {
+    priceCallout.innerHTML = `
+      <div style="display:inline-flex; align-items:center; gap:0.65rem; background:rgba(168,85,247,0.12); border:1px solid rgba(168,85,247,0.3); border-radius:12px; padding:0.55rem 1.15rem; margin:1rem 0; flex-wrap:wrap;">
+        <span style="color:#cbd5e1; font-size:0.88rem; font-weight:600;">💰 Rates start at: <strong style="color:#34d399; font-size:1.02rem;">${data.startingPrice}</strong></span>
+        <a href="/#pricing" style="color:#c084fc; font-weight:700; text-decoration:underline; font-size:0.85rem;">View Full Plans & Pricing →</a>
+      </div>
+    `;
+  }
 
   // Mascot Floating Card 2
   const mascotCard2 = document.getElementById('svcMascotCard2');

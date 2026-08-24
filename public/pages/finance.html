@@ -319,9 +319,13 @@
       if (!title || !amount) return alert('Please fill title and amount.');
 
       try {
+        const token = localStorage.getItem('sb-access-token') || localStorage.getItem('purple_token') || localStorage.getItem('purpleos_pin_token');
         const res = await fetch('/api/expenses', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          },
           body: JSON.stringify({ title, category, amount })
         });
         const data = await res.json();

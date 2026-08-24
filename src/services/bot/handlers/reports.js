@@ -1,8 +1,31 @@
 const { supabase } = require('../../supabase');
+const state = require('../../state');
 
 async function handleClientStatus(teamBot, msg) {
   const chatId = msg.chat.id;
   try {
+    const emp = await state.getEmployeeByTelegramId(chatId);
+    if (!emp) {
+      return teamBot.sendMessage(chatId, `❌ Please verify your phone number first.`);
+    }
+
+    const role = (emp.role || '').toLowerCase();
+    const access = (emp.accessLevel || emp.access_level || '').toLowerCase();
+    const isAuth = (
+      access.includes('owner') ||
+      access.includes('admin') ||
+      access.includes('manager') ||
+      role.includes('client services') ||
+      role.includes('growth') ||
+      role.includes('finance') ||
+      role.includes('managing director') ||
+      role.includes('chairman')
+    );
+
+    if (!isAuth) {
+      return teamBot.sendMessage(chatId, `🔒 *Access Denied:* Client portfolio reporting is restricted to Account Managers & Leadership.`, { parse_mode: 'Markdown' });
+    }
+
     const [
       { data: clients },
       { data: tasks },

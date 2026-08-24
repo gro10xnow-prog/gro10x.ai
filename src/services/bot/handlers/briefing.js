@@ -79,6 +79,26 @@ async function handleBusinessSnapshot(teamBot, msg) {
 async function handleFinanceSummary(teamBot, msg) {
   const chatId = msg.chat.id;
 
+  const emp = await state.getEmployeeByTelegramId(chatId);
+  if (!emp) {
+    return teamBot.sendMessage(chatId, `❌ Please verify your phone number first.`);
+  }
+
+  const role = (emp.role || '').toLowerCase();
+  const access = (emp.accessLevel || emp.access_level || '').toLowerCase();
+  const isAuth = (
+    access.includes('owner') ||
+    access.includes('admin') ||
+    access.includes('manager') ||
+    role.includes('finance') ||
+    role.includes('managing director') ||
+    role.includes('chairman')
+  );
+
+  if (!isAuth) {
+    return teamBot.sendMessage(chatId, `🔒 *Access Denied:* Financial Intelligence is restricted to Executive & Finance leadership.`, { parse_mode: 'Markdown' });
+  }
+
   let paid = 0;
   let draft = 0;
   let pendingExpenses = 0;

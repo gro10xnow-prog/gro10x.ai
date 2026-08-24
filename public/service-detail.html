@@ -43,20 +43,22 @@
         <div class="pb-nav-dropdown">
           <a href="#capabilities" class="pb-nav-link pb-dropdown-trigger">All Services <span class="chevron">▾</span></a>
           <div class="pb-dropdown-menu">
-            <a href="/services/digital-marketing">Digital Marketing</a>
-            <a href="/services/video-editing">Video Production & Reels</a>
-            <a href="/services/branding-graphics">Branding & Identity</a>
-            <a href="/services/website-development">Website Development</a>
-            <a href="/services/custom-tech">Custom Tech Solutions</a>
+            <a href="/service-detail.html?id=SVC-001">Digital Marketing & Growth</a>
+            <a href="/service-detail.html?id=SVC-002">Video Production & Reels</a>
+            <a href="/service-detail.html?id=SVC-003">TVC & Commercial Films</a>
+            <a href="/service-detail.html?id=SVC-004">Branding & Identity</a>
+            <a href="/service-detail.html?id=SVC-005">Website Development</a>
+            <a href="/service-detail.html?id=SVC-006">Custom Tech Solutions</a>
           </div>
         </div>
         <a href="/#portfolio" class="pb-nav-link">Our Work</a>
         <a href="/#pricing" class="pb-nav-link">Plans & Pricing</a>
+        <a href="/#contact" class="pb-nav-link">Contact</a>
       </nav>
 
       <div class="pb-nav-actions">
         <button onclick="openPurpleBot('Service Consultation')" class="pb-btn-quote">
-          💬 Talk to Purple Bot
+          💬 Request a Quote / Chat
         </button>
         <button class="pb-hamburger" id="mobileMenuBtn" aria-label="Toggle navigation menu">
           <span></span>
@@ -117,6 +119,8 @@
             Tailored digital solutions built to drive measurable market share, viral engagement, and long-term brand equity for your business.
           </p>
 
+          <div id="svcStartingPriceCallout"></div>
+
           <div class="pb-hero-cta-group">
             <button onclick="triggerServiceQuote()" class="pb-btn-primary" id="svcCtaBtn">
               🚀 Book Campaign Consultation
@@ -129,7 +133,7 @@
 
         <div class="pb-hero-visual">
           <div class="pb-mascot-wrapper">
-            <img src="/images/mascot.webp" alt="Purplebot Service Visual" class="pb-hero-mascot-img" width="400" height="400">
+            <img src="/images/mascot.webp" alt="Purplebot Service Visual" class="pb-hero-mascot-img" width="400" height="400" fetchpriority="high" loading="eager">
             <div class="pb-mascot-card pb-mascot-card-1">
               <span class="card-icon">🎯</span>
               <div>
@@ -232,11 +236,12 @@
       <div class="pb-footer-quick">
         <h4>Quick Links</h4>
         <a href="/">Home</a>
-        <a href="/services/digital-marketing">Digital Marketing</a>
-        <a href="/services/video-editing">Video Editing & Animation</a>
-        <a href="/services/branding-graphics">Branding & Graphics</a>
-        <a href="/services/website-development">Website Development</a>
-        <a href="/services/custom-tech">Custom Tech Solutions</a>
+        <a href="/service-detail.html?id=SVC-001">Digital Marketing</a>
+        <a href="/service-detail.html?id=SVC-002">Video Production & Reels</a>
+        <a href="/service-detail.html?id=SVC-004">Branding & Graphics</a>
+        <a href="/service-detail.html?id=SVC-005">Website & UI/UX</a>
+        <a href="/service-detail.html?id=SVC-006">Custom Tech & Bots</a>
+        <a href="/#contact">Contact Agency</a>
       </div>
     </div>
   </footer>
