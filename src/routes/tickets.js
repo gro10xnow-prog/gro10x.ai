@@ -83,11 +83,23 @@ router.get('/', requireAuth, async (req, res) => {
         let query = supabase.from('tickets').select('*').order('created_at', { ascending: false });
 
         // Client user restriction: only see own submitted tickets
-        const isClientUser = req.user && (req.user.role === 'Client' || req.user.linkedType === 'client' || req.user.accessLevel === 'Client Partner');
+        const isClientUser = req.user && (
+          req.user.role === 'Client' || req.user.role === 'client' ||
+          req.user.linkedType === 'client' ||
+          (req.user.accessLevel && String(req.user.accessLevel).toLowerCase().includes('client'))
+        );
         if (isClientUser) {
           const clientName = req.user.profile?.name || req.user.name;
-          const clientId = req.user.linkedId || req.user.id;
-          query = query.or(`client_id.eq.${clientId},submitted_by.ilike.%${clientName}%`);
+          const clientId = req.user.clientId || req.user.linkedId || req.user.id;
+          if (clientId && clientName) {
+            query = query.or(`client_id.eq.${clientId},submitted_by.eq.${clientName},submitted_by.eq.${clientId}`);
+          } else if (clientId) {
+            query = query.or(`client_id.eq.${clientId},submitted_by.eq.${clientId}`);
+          } else if (clientName) {
+            query = query.eq('submitted_by', clientName);
+          } else {
+            return res.json([]);
+          }
         }
 
         const { data, error } = await query;
@@ -99,11 +111,15 @@ router.get('/', requireAuth, async (req, res) => {
 
     function getFilteredTickets() {
       let filtered = inMemoryTickets;
-      const isClientUser = req.user && (req.user.role === 'Client' || req.user.linkedType === 'client' || req.user.accessLevel === 'Client Partner');
+      const isClientUser = req.user && (
+        req.user.role === 'Client' || req.user.role === 'client' ||
+        req.user.linkedType === 'client' ||
+        (req.user.accessLevel && String(req.user.accessLevel).toLowerCase().includes('client'))
+      );
       if (isClientUser) {
         const clientName = (req.user.profile?.name || req.user.name || '').toLowerCase();
-        const clientId = req.user.linkedId || req.user.id;
-        filtered = filtered.filter(t => t.client_id === clientId || (t.submitted_by || '').toLowerCase().includes(clientName));
+        const clientId = req.user.clientId || req.user.linkedId || req.user.id;
+        filtered = filtered.filter(t => (clientId && t.client_id === clientId) || (clientName && (t.submitted_by || '').toLowerCase() === clientName));
       }
       return filtered.map(mapTicket);
     }
@@ -223,13 +239,34 @@ router.put('/:id', requireAuth, requireManager, async (req, res) => {
 
     if (status === 'Resolved' || status === 'Closed') {
       try {
-        const { automation } = require('../services/automation');
-        if (automation && automation.trigger) {
-          automation.trigger('ticket_resolved', { ticket: formatted }).catch(() => {});
-        } else if (processAutomationEvent) {
-          processAutomationEvent('ticket_resolved', { ticket: formatted }).catch(() => {});
-        }
+        const { processAutomationEvent } = require('../services/automation');
+        const { readDB } = require('../services/db');
+        const db = await readDB().catch(() => ({ clients: [], team: [] }));
+        processAutomationEvent('ticket_resolved', { ticket: formatted }, db, null, broadcast);
       } catch (ae) {}
+
+      // Send resolution email to client/submitter
+      try {
+        const { sendTicketResolutionEmail } = require('../services/resend');
+        let clientEmail = formatted.client_email || formatted.clientEmail;
+        let clientName = formatted.submitted_by || formatted.submittedBy || 'Valued Partner';
+        if (!clientEmail && formatted.client_id && supabase) {
+          const { data: cData } = await supabase.from('clients').select('email, contact_email, name').eq('id', formatted.client_id).maybeSingle();
+          if (cData) {
+            clientEmail = cData.email || cData.contact_email;
+            if (cData.name) clientName = cData.name;
+          }
+        }
+        if (clientEmail) {
+          sendTicketResolutionEmail({
+            clientEmail,
+            clientName,
+            ticketTitle: formatted.title,
+            ticketId: formatted.id,
+            resolutionNotes: description || 'Your support ticket has been resolved by our team.'
+          }).catch(() => {});
+        }
+      } catch (emErr) {}
     }
 
     return res.json({ success: true, ticket: formatted });

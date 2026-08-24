@@ -1268,7 +1268,9 @@ function logoutManager() {
 
 function setupManagerSSE() {
   try {
-    const es = new EventSource('/api/events');
+    const token = localStorage.getItem('gro10x_token') || localStorage.getItem('sb-access-token') || sessionStorage.getItem('sb-access-token') || '';
+    const sseUrl = token ? `/api/events?role=manager&token=${encodeURIComponent(token)}` : '/api/events?role=manager';
+    const es = new EventSource(sseUrl);
     es.onmessage = (e) => {
       try {
         const msg = JSON.parse(e.data);
@@ -1277,9 +1279,25 @@ function setupManagerSSE() {
         if (msg.type === 'leave_update' && typeof loadManagerHROps === 'function') loadManagerHROps();
         if (msg.type === 'post_update' && typeof loadManagerSocialPlanner === 'function') loadManagerSocialPlanner();
         if (msg.type === 'attendance_update' && typeof loadManagerOverviewKPIs === 'function') loadManagerOverviewKPIs();
+        if (msg.type === 'eod_update' && typeof loadManagerOverviewKPIs === 'function') loadManagerOverviewKPIs();
+        if (msg.type === 'ticket_update' && typeof loadManagerTickets === 'function') loadManagerTickets();
       } catch (err) {}
     };
-    es.onerror = () => es.close();
+    ['task_update', 'expense_update', 'leave_update', 'post_update', 'attendance_update', 'eod_update', 'ticket_update'].forEach(evt => {
+      es.addEventListener(evt, () => {
+        if (evt === 'task_update' && typeof loadManagerKanban === 'function') loadManagerKanban();
+        if (evt === 'expense_update' && typeof loadManagerExpenses === 'function') loadManagerExpenses();
+        if (evt === 'leave_update' && typeof loadManagerHROps === 'function') loadManagerHROps();
+        if (evt === 'post_update' && typeof loadManagerSocialPlanner === 'function') loadManagerSocialPlanner();
+        if (evt === 'attendance_update' && typeof loadManagerOverviewKPIs === 'function') loadManagerOverviewKPIs();
+        if (evt === 'eod_update' && typeof loadManagerOverviewKPIs === 'function') loadManagerOverviewKPIs();
+        if (evt === 'ticket_update' && typeof loadManagerTickets === 'function') loadManagerTickets();
+      });
+    });
+    es.onerror = () => {
+      es.close();
+      setTimeout(setupManagerSSE, 5000);
+    };
   } catch (err) {}
 }
 

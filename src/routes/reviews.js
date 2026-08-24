@@ -104,17 +104,23 @@ router.get('/', requireAuth, async (req, res) => {
   try {
     let query = supabase.from('reviews').select('*').order('created_at', { ascending: false });
 
-    const isClientUser = req.user.role === 'Client' || req.user.linkedType === 'client' || req.user.accessLevel === 'Client Partner';
+    const isClientUser = req.user && (
+      req.user.role === 'Client' || req.user.role === 'client' ||
+      req.user.linkedType === 'client' ||
+      (req.user.accessLevel && String(req.user.accessLevel).toLowerCase().includes('client'))
+    );
     const clientName = req.user.profile?.name || req.user.name || '';
-    const clientId = req.user.linkedId || req.user.id || '';
+    const clientId = req.user.clientId || req.user.linkedId || req.user.id || '';
 
     if (isClientUser) {
       if (clientId && clientName) {
-        query = query.or(`client_id.eq.${clientId},client.ilike.%${clientName}%`);
+        query = query.or(`client_id.eq.${clientId},client.eq.${clientName},client.eq.${clientId}`);
       } else if (clientId) {
-        query = query.eq('client_id', clientId);
+        query = query.or(`client_id.eq.${clientId},client.eq.${clientId}`);
       } else if (clientName) {
-        query = query.ilike('client', `%${clientName}%`);
+        query = query.eq('client', clientName);
+      } else {
+        return res.json([]);
       }
     }
 
@@ -274,6 +280,7 @@ router.post('/:id/comments', requireAuth, requireReviewOwnership, async (req, re
     await supabase.from('reviews').update({ total_count: newTotal }).eq('id', id);
 
     const comment = mapComment(insertedComment);
+    broadcast('review_comment_update', { reviewId: id, comment });
     broadcast('comment_update', { reviewId: id, comment });
 
     res.json({ success: true, comment });
@@ -302,6 +309,7 @@ router.put('/comments/:commentId/resolve', requireAuth, async (req, res) => {
     await supabase.from('reviews').update({ resolved_count: resolvedCount }).eq('id', reviewId);
 
     const comment = mapComment(commentData);
+    broadcast('review_comment_update', { reviewId, comment });
     broadcast('comment_update', { reviewId, comment });
 
     res.json({ success: true, comment });

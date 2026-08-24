@@ -85,8 +85,24 @@ router.get('/', requireAuth, async (req, res) => {
         let query = supabase.from('tasks').select('*').order('created_at', { ascending: false }).range(offset, offset + limit - 1);
 
         // ── MULTI-TENANT CLIENT SCOPING ─────────────────────────────
-        if (req.user?.linkedType === 'client' && req.user?.linkedId) {
-          query = query.or(`client_id.eq.${req.user.linkedId},client.ilike.%${req.user.company || req.user.name || req.user.linkedId}%`);
+        const isClientUser = req.user && (
+          req.user.role === 'Client' || req.user.role === 'client' ||
+          req.user.linkedType === 'client' ||
+          (req.user.accessLevel && String(req.user.accessLevel).toLowerCase().includes('client'))
+        );
+
+        if (isClientUser) {
+          const clientId = req.user.clientId || req.user.linkedId;
+          const clientName = req.user.profile?.name || req.user.name || req.user.company;
+          if (clientId && clientName) {
+            query = query.or(`client_id.eq.${clientId},client.eq.${clientName},client.eq.${clientId}`);
+          } else if (clientId) {
+            query = query.or(`client_id.eq.${clientId},client.eq.${clientId}`);
+          } else if (clientName) {
+            query = query.eq('client', clientName);
+          } else {
+            return res.json([]);
+          }
         }
         // ─────────────────────────────────────────────────────────────
 
@@ -589,6 +605,33 @@ router.patch(['/:id', '/:id/stage'], requireAuth, async (req, res) => {
       console.warn('Automation event skipped (non-fatal):', autoErr.message);
     }
 
+    // Send email notification to client if deliverable is in Client Review
+    if (stage === 'Client Review') {
+      try {
+        const { sendDeliverableReadyEmail } = require('../services/resend');
+        let clientEmail = null;
+        let clientName = task.client || 'Valued Partner';
+        if (supabase && isSupabaseConfigured()) {
+          const { data: cData } = await supabase.from('clients')
+            .select('email, contact_email, name')
+            .or(`id.eq.${task.client_id || task.client},name.ilike.%${task.client}%`)
+            .maybeSingle();
+          if (cData) {
+            clientEmail = cData.email || cData.contact_email;
+            if (cData.name) clientName = cData.name;
+          }
+        }
+        if (clientEmail) {
+          sendDeliverableReadyEmail({
+            clientEmail,
+            clientName,
+            taskTitle: task.title,
+            reviewUrl: `https://gro10x-ai.vercel.app/client#review`
+          }).catch(() => {});
+        }
+      } catch (e) {}
+    }
+
     res.json({ success: true, task, reviewId: autoReviewId });
   } catch (err) {
     console.error('Task PATCH stage error:', err.message);
@@ -664,6 +707,13 @@ router.post('/:id/qc-reject', requireAuth, async (req, res) => {
     const { data: allTasks } = await supabase.from('tasks').select('*').order('created_at', { ascending: false });
     broadcastTaskEvent('task_update', (allTasks || []).map(mapTask));
 
+    // Trigger automation event to alert assignee via Telegram
+    try {
+      const { processAutomationEvent } = require('../services/automation');
+      const { data: teamProfiles } = await supabase.from('profiles').select('*');
+      processAutomationEvent('task_qc_rejected', { task, feedback: updates.qc_feedback }, { team: teamProfiles || [], tasks: allTasks || [] }, () => {}, broadcastTaskEvent);
+    } catch (e) {}
+
     res.json({ success: true, task });
   } catch (err) {
     console.error('Task QC Reject error:', err.message);
@@ -688,6 +738,13 @@ router.post('/:id/reassign', requireAuth, async (req, res) => {
     const task = mapTask(data);
     const { data: allTasks } = await supabase.from('tasks').select('*').order('created_at', { ascending: false });
     broadcastTaskEvent('task_update', (allTasks || []).map(mapTask));
+
+    // Trigger automation event to alert new assignee via Telegram
+    try {
+      const { processAutomationEvent } = require('../services/automation');
+      const { data: teamProfiles } = await supabase.from('profiles').select('*');
+      processAutomationEvent('task_reassigned', { task, newAssignee: updates.assignee }, { team: teamProfiles || [], tasks: allTasks || [] }, () => {}, broadcastTaskEvent);
+    } catch (e) {}
 
     res.json({ success: true, task });
   } catch (err) {

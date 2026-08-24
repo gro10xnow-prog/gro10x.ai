@@ -206,6 +206,25 @@ router.post('/:id/verify', requireAuth, requireManager, async (req, res) => {
       console.warn('Payment verification automation event error:', autoErr.message);
     }
 
+    // Send email payment receipt to client
+    try {
+      const { sendPaymentReceiptEmail } = require('../services/resend');
+      let clientEmail = null;
+      if (log.client_id && supabase) {
+        const { data: cData } = await supabase.from('clients').select('email, contact_email').eq('id', log.client_id).maybeSingle();
+        if (cData) clientEmail = cData.email || cData.contact_email;
+      }
+      if (clientEmail) {
+        sendPaymentReceiptEmail({
+          clientEmail,
+          clientName: log.client_name,
+          invoiceId: log.invoice_id,
+          amount: log.amount,
+          transactionId: log.trx_id
+        }).catch(() => {});
+      }
+    } catch (e) {}
+
     res.json({ success: true, message: 'Payment verified and invoice marked as Paid.' });
   } catch (err) {
     console.error('Verify payment error:', err.message);

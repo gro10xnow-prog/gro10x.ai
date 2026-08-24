@@ -53,7 +53,8 @@ async function fetchSupabaseSnapshot() {
     eodRes,
     leadsRes,
     clientsRes,
-    leaveRes
+    leaveRes,
+    telegramGroupsRes
   ] = await Promise.all([
     supabase.from('profiles').select('*').limit(200),
     supabase.from('expenses').select('*').order('created_at', { ascending: false }).limit(300),
@@ -63,7 +64,8 @@ async function fetchSupabaseSnapshot() {
     supabase.from('eod_reports').select('*').order('created_at', { ascending: false }).limit(100),
     supabase.from('leads').select('*').order('created_at', { ascending: false }).limit(200),
     supabase.from('clients').select('*').limit(200),
-    supabase.from('leaves').select('*').order('created_at', { ascending: false }).limit(100)
+    supabase.from('leaves').select('*').order('created_at', { ascending: false }).limit(100),
+    supabase.from('telegram_groups').select('*').limit(100)
   ]);
 
   const team = (profilesRes.data || []).map(t => ({
@@ -132,6 +134,13 @@ async function fetchSupabaseSnapshot() {
     status: l.status
   }));
 
+  const telegramGroups = (telegramGroupsRes?.data || []).map(g => ({
+    ...g,
+    chatId: g.chat_id || g.chatId,
+    department: g.department,
+    name: g.name
+  }));
+
   return {
     team,
     expenses,
@@ -141,7 +150,9 @@ async function fetchSupabaseSnapshot() {
     eodReports,
     leads,
     clients,
-    leaveRequests
+    leaveRequests,
+    telegramGroups,
+    groups: telegramGroups
   };
 }
 

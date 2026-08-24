@@ -453,16 +453,26 @@ async function submitCrewEod(event) {
 
 function setupTeamSSE() {
   try {
-    const es = new EventSource('/api/events');
+    const token = localStorage.getItem('gro10x_token') || localStorage.getItem('sb-access-token') || sessionStorage.getItem('sb-access-token') || '';
+    const sseUrl = token ? `/api/events?role=team&token=${encodeURIComponent(token)}` : '/api/events?role=team';
+    const es = new EventSource(sseUrl);
     es.onmessage = (e) => {
       try {
         const msg = JSON.parse(e.data);
-        if (['task_update', 'attendance_update', 'leave_update'].includes(msg.type)) {
+        if (['task_update', 'attendance_update', 'leave_update', 'expense_update', 'team_update', 'eod_update'].includes(msg.type)) {
           if (typeof initCrewPortal === 'function') initCrewPortal();
         }
       } catch (err) {}
     };
-    es.onerror = () => es.close();
+    ['task_update', 'attendance_update', 'leave_update', 'expense_update', 'team_update', 'eod_update'].forEach(evt => {
+      es.addEventListener(evt, () => {
+        if (typeof initCrewPortal === 'function') initCrewPortal();
+      });
+    });
+    es.onerror = () => {
+      es.close();
+      setTimeout(setupTeamSSE, 5000);
+    };
   } catch (err) {}
 }
 

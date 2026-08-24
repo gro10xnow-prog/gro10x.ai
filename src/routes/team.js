@@ -331,10 +331,19 @@ router.get('/roster', requireAuth, async (req, res) => {
       } catch (e) {}
     }
     if (team.length === 0) team = DEFAULT_TEAM;
-    return res.json(team.map(mapProfile));
+
+    const access = (req.user?.accessLevel || req.user?.role || '').toLowerCase();
+    const isExecutiveOrFinance = access.includes('admin') || access.includes('owner') || access.includes('finance') || access.includes('executive') || access.includes('founder') || (req.user?.role || '').toLowerCase().includes('finance');
+    const isDeptManager = access.includes('manager') || access.includes('director') || access.includes('lead') || access.includes('technology');
+
+    return res.json(team.map(p => {
+      if (isExecutiveOrFinance) return mapProfile(p);
+      if (isDeptManager) return mapDepartmentManagerProfile(p);
+      return mapPublicProfile(p);
+    }));
   } catch (err) {
     console.error('GET /team/roster error:', err.message);
-    return res.json(DEFAULT_TEAM.map(mapProfile));
+    return res.json(DEFAULT_TEAM.map(mapPublicProfile));
   }
 });
 

@@ -99,3 +99,93 @@ window.APP_API = {
     return this.request(endpoint, { method: 'DELETE' });
   }
 };
+
+window.APP_SSE = {
+  _source: null,
+  _listeners: {},
+  _anyListeners: [],
+
+  init() {
+    if (!window.EventSource || this._source) return;
+    try {
+      const token = window.APP_API?.getToken() || localStorage.getItem('gro10x_token') || localStorage.getItem('sb-access-token') || '';
+      const sseUrl = token ? `/api/sync?token=${encodeURIComponent(token)}&role=admin` : '/api/sync?role=admin';
+      this._source = new EventSource(sseUrl);
+
+      this._source.onmessage = (e) => {
+        try {
+          const payload = JSON.parse(e.data);
+          const evtType = payload.type || 'message';
+          this._dispatch(evtType, payload.data || payload);
+        } catch (err) {}
+      };
+
+      const eventNames = [
+        'task_update', 'subtask_update', 'lead_update', 'client_update',
+        'invoice_update', 'payment_update', 'expense_update', 'leave_update',
+        'team_update', 'attendance_update', 'eod_update', 'review_update',
+        'review_comment_update', 'post_update', 'social_post_update',
+        'ticket_update', 'project_update', 'quote_update', 'cms_update',
+        'workflow_update', 'custom_field_update', 'label_update', 'template_update'
+      ];
+
+      eventNames.forEach(evt => {
+        this._source.addEventListener(evt, (e) => {
+          try {
+            const data = JSON.parse(e.data);
+            this._dispatch(evt, data);
+          } catch (err) {}
+        });
+      });
+
+      this._source.onerror = () => {
+        if (this._source) {
+          this._source.close();
+          this._source = null;
+        }
+        setTimeout(() => this.init(), 5000);
+      };
+    } catch (err) {
+      console.warn('[Admin SSE] Connection error:', err);
+    }
+  },
+
+  _dispatch(eventType, data) {
+    if (window.APP_API && window.APP_API._cache) {
+      window.APP_API._cache = {};
+    }
+    
+    if (this._listeners[eventType]) {
+      this._listeners[eventType].forEach(fn => {
+        try { fn(data); } catch (e) {}
+      });
+    }
+    this._anyListeners.forEach(fn => {
+      try { fn(eventType, data); } catch (e) {}
+    });
+  },
+
+  subscribe(eventType, callback) {
+    if (!this._listeners[eventType]) {
+      this._listeners[eventType] = [];
+    }
+    this._listeners[eventType].push(callback);
+    if (!this._source) this.init();
+
+    return () => {
+      this._listeners[eventType] = (this._listeners[eventType] || []).filter(fn => fn !== callback);
+    };
+  },
+
+  onAny(callback) {
+    this._anyListeners.push(callback);
+    if (!this._source) this.init();
+    return () => {
+      this._anyListeners = this._anyListeners.filter(fn => fn !== callback);
+    };
+  }
+};
+
+if (typeof window !== 'undefined') {
+  setTimeout(() => window.APP_SSE.init(), 300);
+}

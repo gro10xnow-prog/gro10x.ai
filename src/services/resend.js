@@ -222,12 +222,97 @@ async function sendLeadFollowUpEmail({ contactPerson, email, service, company })
   return sendEmail({ to: email, subject, html });
 }
 
+/**
+ * Send Deliverable Ready for Review Email to Client Partner
+ */
+async function sendDeliverableReadyEmail({ clientEmail, clientName, taskTitle, reviewUrl }) {
+  if (!clientEmail || !clientEmail.includes('@')) {
+    return { success: false, reason: 'No valid client email' };
+  }
+  const url = reviewUrl || 'https://gro10x-ai.vercel.app/client#review';
+  const subject = `Creative Deliverable Ready for Review: ${taskTitle} — Purplebot Digital`;
+  const html = `
+    <div style="font-family: Arial, sans-serif; background: #0f172a; color: #f8fafc; padding: 30px; border-radius: 12px; max-width: 600px; margin: 0 auto; line-height: 1.6;">
+      <h1 style="color: #c084fc; margin-top:0;">🎬 Deliverable Ready for Review</h1>
+      <p style="font-size: 16px; color: #cbd5e1;">Dear <strong>${clientName || 'Valued Partner'}</strong>,</p>
+      <p style="font-size: 15px; color: #94a3b8;">Your creative cut for <strong>${taskTitle}</strong> is now live in your Review Room.</p>
+      <p style="font-size: 14px; color: #94a3b8;">You can stream the 4K cut, leave timecoded feedback directly on the video player canvas, or give final 1-click approval.</p>
+      
+      <div style="margin: 25px 0; text-align: center;">
+        <a href="${url}" style="background: linear-gradient(135deg, #7c3aed, #ec4899); color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
+          👁️ Open Review Room
+        </a>
+      </div>
+
+      <hr style="border: 0; border-top: 1px solid #334155; margin: 20px 0;">
+      <p style="font-size: 12px; color: #64748b;">Purplebot Digital Limited • Banani & Niketon, Dhaka, Bangladesh</p>
+    </div>
+  `;
+  return sendEmail({ to: clientEmail, subject, html });
+}
+
+/**
+ * Send Payment Verified Confirmation Receipt Email
+ */
+async function sendPaymentReceiptEmail({ clientEmail, clientName, invoiceId, amount, transactionId }) {
+  if (!clientEmail || !clientEmail.includes('@')) {
+    return { success: false, reason: 'No valid client email' };
+  }
+  const amtStr = Number(amount || 0).toLocaleString();
+  const subject = `Payment Confirmation Receipt — Invoice ${invoiceId || ''}`;
+  const html = `
+    <div style="font-family: Arial, sans-serif; background: #0f172a; color: #f8fafc; padding: 30px; border-radius: 12px; max-width: 600px; margin: 0 auto; line-height: 1.6;">
+      <h1 style="color: #10b981; margin-top:0;">✅ Payment Verified & Received</h1>
+      <p style="font-size: 16px; color: #cbd5e1;">Dear <strong>${clientName || 'Valued Partner'}</strong>,</p>
+      <p style="font-size: 15px; color: #94a3b8;">We have verified and recorded your payment for Invoice <strong>${invoiceId || 'N/A'}</strong>.</p>
+      
+      <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin: 20px 0;">
+        <div style="margin-bottom: 8px;"><strong>Invoice:</strong> ${invoiceId || 'N/A'}</div>
+        <div style="margin-bottom: 8px;"><strong>Transaction / TrxID:</strong> ${transactionId || 'Verified'}</div>
+        <div style="font-size: 18px; color: #10b981; margin-top: 10px;"><strong>Amount Paid: BDT ৳${amtStr}</strong></div>
+      </div>
+
+      <p style="font-size: 14px; color: #94a3b8;">Your account status has been updated in your Client Portal.</p>
+      <hr style="border: 0; border-top: 1px solid #334155; margin: 20px 0;">
+      <p style="font-size: 12px; color: #64748b;">Purplebot Digital Limited • Banani & Niketon, Dhaka, Bangladesh</p>
+    </div>
+  `;
+  return sendEmail({ to: clientEmail, subject, html });
+}
+
+/**
+ * Send Support Ticket Resolved Email
+ */
+async function sendTicketResolutionEmail({ clientEmail, clientName, ticketTitle, ticketId, resolutionNotes }) {
+  if (!clientEmail || !clientEmail.includes('@')) {
+    return { success: false, reason: 'No valid client email' };
+  }
+  const subject = `Support Ticket Resolved: ${ticketId || ''} - ${ticketTitle}`;
+  const html = `
+    <div style="font-family: Arial, sans-serif; background: #0f172a; color: #f8fafc; padding: 30px; border-radius: 12px; max-width: 600px; margin: 0 auto; line-height: 1.6;">
+      <h1 style="color: #c084fc; margin-top:0;">🔧 Support Ticket Resolved</h1>
+      <p style="font-size: 16px; color: #cbd5e1;">Dear <strong>${clientName || 'Partner'}</strong>,</p>
+      <p style="font-size: 15px; color: #94a3b8;">Your support request <strong>"${ticketTitle}"</strong> (${ticketId || ''}) has been marked as resolved.</p>
+      
+      ${resolutionNotes ? `<div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; margin: 15px 0;"><strong>Resolution Notes:</strong> ${resolutionNotes}</div>` : ''}
+
+      <p style="font-size: 14px; color: #94a3b8;">If you need any further assistance, feel free to reply directly to this email or reach out to your Account Manager.</p>
+      <hr style="border: 0; border-top: 1px solid #334155; margin: 20px 0;">
+      <p style="font-size: 12px; color: #64748b;">Purplebot Digital Limited • Banani & Niketon, Dhaka, Bangladesh</p>
+    </div>
+  `;
+  return sendEmail({ to: clientEmail, subject, html });
+}
+
 module.exports = {
   sendEmail,
   sendClientOnboardingEmail,
   sendInvoiceEmail,
   sendLeadConfirmationEmail,
-  sendLeadFollowUpEmail
+  sendLeadFollowUpEmail,
+  sendDeliverableReadyEmail,
+  sendPaymentReceiptEmail,
+  sendTicketResolutionEmail
 };
 
 

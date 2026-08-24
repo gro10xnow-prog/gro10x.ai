@@ -511,16 +511,26 @@ async function submitPartnerCampaignBrief(event) {
 
 function setupPartnerSSE() {
   try {
-    const es = new EventSource('/api/events');
+    const token = localStorage.getItem('gro10x_token') || localStorage.getItem('sb-access-token') || sessionStorage.getItem('sb-access-token') || '';
+    const sseUrl = token ? `/api/events?role=client&token=${encodeURIComponent(token)}` : '/api/events?role=client';
+    const es = new EventSource(sseUrl);
     es.onmessage = (e) => {
       try {
         const msg = JSON.parse(e.data);
-        if (['review_update', 'comment_update', 'invoice_update', 'post_update'].includes(msg.type)) {
+        if (['review_update', 'comment_update', 'review_comment_update', 'invoice_update', 'payment_update', 'post_update', 'task_update'].includes(msg.type)) {
           if (typeof initPartnerPortal === 'function') initPartnerPortal();
         }
       } catch (err) {}
     };
-    es.onerror = () => es.close();
+    ['review_update', 'comment_update', 'review_comment_update', 'invoice_update', 'payment_update', 'post_update', 'task_update'].forEach(evt => {
+      es.addEventListener(evt, () => {
+        if (typeof initPartnerPortal === 'function') initPartnerPortal();
+      });
+    });
+    es.onerror = () => {
+      es.close();
+      setTimeout(setupPartnerSSE, 5000);
+    };
   } catch (err) {}
 }
 

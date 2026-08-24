@@ -411,9 +411,9 @@ router.post('/broadcast', requireAuth, requireAdmin, async (req, res) => {
   const { target, title, message } = req.body;
   if (!message) return res.status(400).json({ error: 'message is required' });
 
-  const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+  const TELEGRAM_BOT_TOKEN = process.env.TEAM_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN;
   if (!TELEGRAM_BOT_TOKEN) {
-    return res.status(503).json({ error: 'Telegram bot not configured. Set TELEGRAM_BOT_TOKEN env var.' });
+    return res.status(503).json({ error: 'Telegram bot not configured. Set TEAM_BOT_TOKEN or TELEGRAM_BOT_TOKEN env var.' });
   }
 
   try {

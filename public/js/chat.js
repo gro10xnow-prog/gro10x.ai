@@ -11,7 +11,9 @@ function initWebChat() {
 }
 
 function setupSSE() {
-  const evtSource = new EventSource('/api/sync');
+  const token = localStorage.getItem('gro10x_token') || localStorage.getItem('sb-access-token') || '';
+  const sseUrl = token ? `/api/sync?token=${encodeURIComponent(token)}` : '/api/sync';
+  const evtSource = new EventSource(sseUrl);
   evtSource.onmessage = (e) => {
     try {
       const payload = JSON.parse(e.data);
@@ -20,6 +22,14 @@ function setupSSE() {
       }
     } catch (err) {}
   };
+  evtSource.addEventListener('chat_message', (e) => {
+    try {
+      const data = JSON.parse(e.data);
+      if (data && data.mode === currentChatMode) {
+        appendMessage(data.text, data.sender || 'bot');
+      }
+    } catch (err) {}
+  });
 }
 
 function switchChatMode(mode) {

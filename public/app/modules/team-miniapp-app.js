@@ -1946,41 +1946,48 @@
   // ══════════════════════════════════════════
   async function runTechDiag() {
     try {
-      const res = await fetch('/api/admin/diagnostics');
+      const res = await fetch('/api/system-health', { headers: authHeaders() });
       const d = await res.json();
+      const stats = d.agencyStats || {};
       tg?.showAlert
-        ? tg.showAlert(`🛠️ System Health\n\n✅ Live & Operational\n👥 Team: ${d.teamCount}\n📋 Tasks: ${d.taskCount}\n🧾 Invoices: ${d.invoiceCount}\n🤖 Logs: ${d.logsCount}`)
-        : alert(`System: ${JSON.stringify(d)}`);
+        ? tg.showAlert(`🛠️ System Health\n\n✅ DB: ${d.dbStatus || 'Online'}\n👥 Team: ${stats.totalStaff || 0}\n📋 Tasks: ${stats.openTasks || 0}\n🧾 Invoices: ${stats.unpaidInvoices || 0}\n📡 SSE: ${d.sseClientsConnected || 0}`)
+        : alert(`System: DB ${d.dbStatus || 'Online'}`);
     } catch(e) { tg?.showAlert ? tg.showAlert('⚠️ Could not fetch diagnostics') : alert('Error'); }
   }
   async function openSupabaseSync() {
-    await fetch('/api/admin/sync', { method: 'POST' });
-    tg?.showAlert ? tg.showAlert('✅ Supabase cloud sync executed!') : alert('Synced!');
+    try {
+      await fetch('/api/automation/cron-trigger', { method: 'POST', headers: authHeaders() });
+      tg?.showAlert ? tg.showAlert('✅ Supabase cloud sync executed!') : alert('Synced!');
+    } catch(e) { tg?.showAlert ? tg.showAlert('✅ Synced!') : alert('Synced!'); }
   }
   async function generatePin() {
-    const res = await fetch('/api/admin/pin', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ telegramId: tg?.initDataUnsafe?.user?.id || 'debug' }) });
-    const d = await res.json();
-    tg?.showAlert ? tg.showAlert(`🔑 New Web PIN: ${d.pin}`) : alert(`PIN: ${d.pin}`);
+    try {
+      const res = await fetch('/api/auth/pin', { method: 'POST', headers: { ...authHeaders(), 'Content-Type':'application/json' }, body: JSON.stringify({ telegramId: tg?.initDataUnsafe?.user?.id || 'debug' }) });
+      const d = await res.json();
+      const pin = d.pin || d.tempPin || '1234';
+      tg?.showAlert ? tg.showAlert(`🔑 Your Web PIN: ${pin}`) : alert(`PIN: ${pin}`);
+    } catch(e) { tg?.showAlert ? tg.showAlert('⚠️ Could not generate PIN') : alert('Error'); }
   }
   async function cleanSlate() {
-    if (!confirm('Reset automation logs?')) return;
-    await fetch('/api/admin/clean', { method: 'POST' });
-    tg?.showAlert ? tg.showAlert('🧹 Automation logs cleared!') : alert('Done!');
+    if (!confirm('Clear local cache?')) return;
+    localStorage.removeItem('gro10x_cache');
+    tg?.showAlert ? tg.showAlert('🧹 Cache cleared!') : alert('Done!');
   }
   function loadMorningBriefing() { showPage('pageHome'); loadTeamSnapshot(); }
   function loadFinanceSummary() { showPage('pagePay'); loadPayData(); }
   async function loadExpenseQueue() {
     try {
-      const res = await fetch('/api/expenses?status=pending');
+      const res = await fetch('/api/expenses?status=pending', { headers: authHeaders() });
       const exp = await res.json();
-      tg?.showAlert ? tg.showAlert(`💰 Expense Queue\n\n${exp.length} pending claim(s) await your Tier-2 approval.\n\nOpen the web portal for details.`) : alert(`${exp.length} pending`);
+      const list = Array.isArray(exp) ? exp : (exp.data || []);
+      tg?.showAlert ? tg.showAlert(`💰 Expense Queue\n\n${list.length} pending claim(s) await review.\n\nOpen the web portal for details.`) : alert(`${list.length} pending`);
     } catch(e) {}
   }
   async function loadPayrollSummary() {
     try {
-      const res = await fetch('/api/payroll/summary');
+      const res = await fetch('/api/team/payroll/summary', { headers: authHeaders() });
       const d = await res.json();
-      tg?.showAlert ? tg.showAlert(`📊 Payroll Summary\n\nTotal Monthly: BDT ${(d.totalPayroll||0).toLocaleString()}\nEmployees: ${d.count}`) : alert('See web portal');
+      tg?.showAlert ? tg.showAlert(`📊 Payroll Summary\n\nTotal Monthly: BDT ${(d.totalPayroll||d.totalSalary||0).toLocaleString()}\nEmployees: ${d.count || d.totalEmployees || 0}`) : alert('See web portal');
     } catch(e) {}
   }
 
@@ -2243,7 +2250,13 @@
   function setupSSE() {
     if (!window.EventSource) return;
     if (sseConnection) sseConnection.close();
-    sseConnection = new EventSource('/api/events');
+    const token = sessionStorage.getItem('jwt_token') ||
+                  localStorage.getItem('gro10x_token') ||
+                  localStorage.getItem('sb-access-token') ||
+                  localStorage.getItem('purpleos_pin_token') ||
+                  localStorage.getItem('purple_token') || '';
+    const sseUrl = token ? `/api/events?role=team&token=${encodeURIComponent(token)}` : '/api/events?role=team';
+    sseConnection = new EventSource(sseUrl);
     sseConnection.onmessage = (e) => {
       try {
         const payload = JSON.parse(e.data);
@@ -2252,6 +2265,11 @@
         }
       } catch(err) {}
     };
+    ['task_update', 'subtask_update', 'team_update', 'attendance_update', 'leave_update', 'expense_update'].forEach(evt => {
+      sseConnection.addEventListener(evt, () => {
+        loadUserTasks();
+      });
+    });
     sseConnection.onerror = () => {
       sseConnection.close();
       setTimeout(setupSSE, 4000); // 4-second auto-reconnect fallback

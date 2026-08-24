@@ -934,7 +934,9 @@
     try {
       const tgUser = tg?.initDataUnsafe?.user;
       const telegramId = tgUser?.id || 'debug';
-      const res = await fetch(`/api/clients/dashboard?telegramId=${telegramId}`);
+      const token = sessionStorage.getItem('jwt_token') || localStorage.getItem('gro10x_token') || localStorage.getItem('sb-access-token');
+      const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+      const res = await fetch(`/api/clients/dashboard?telegramId=${telegramId}`, { headers });
       const data = await res.json();
 
       if (data.activeReview && data.activeReview.id) {
@@ -1321,13 +1323,24 @@
   function setupSSE() {
     if (!window.EventSource) return;
     if (sseConnection) sseConnection.close();
-    sseConnection = new EventSource('/api/events');
+    const token = sessionStorage.getItem('jwt_token') || localStorage.getItem('gro10x_token') || localStorage.getItem('sb-access-token') || '';
+    const sseUrl = token ? `/api/events?role=client&token=${encodeURIComponent(token)}` : '/api/events?role=client';
+    sseConnection = new EventSource(sseUrl);
     sseConnection.onmessage = (e) => {
       try {
         const payload = JSON.parse(e.data);
-        if (payload.type === 'task_update') loadCampaigns();
+        if (payload.type === 'task_update' || payload.type === 'review_update') {
+          loadCampaigns();
+          loadHomeData();
+        }
       } catch(err) {}
     };
+    ['task_update', 'review_update', 'payment_update', 'invoice_update'].forEach(evt => {
+      sseConnection.addEventListener(evt, () => {
+        loadCampaigns();
+        loadHomeData();
+      });
+    });
     sseConnection.onerror = () => {
       sseConnection.close();
       setTimeout(setupSSE, 4000); // 4-second auto-reconnect fallback

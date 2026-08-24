@@ -92,6 +92,54 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
       });
     }
 
+    // TRIGGER 1.1: Task QC Rejected -> Notify Assignee with feedback
+    if (eventType === 'task_qc_rejected') {
+      const task = eventData.task || eventData;
+      const feedback = eventData.feedback || task.qc_feedback || task.feedback || 'Please check feedback notes in task board.';
+      const assignee = findStaffMember(db, { employeeId: task.assignee_id || task.assigneeId, name: task.assignee });
+
+      const message = `⚠️ *Task QC Revision Required!*\n\nProject: *${task.title}*\nClient: *${task.client}*\nFeedback: _${feedback}_\n\nPlease update your deliverable cut and re-submit for review.`;
+
+      if (assignee && assignee.telegramId) {
+        sendTelegramNotification(assignee.telegramId, message, [
+          [{ text: '📋 View Task in Crew Portal', url: 'https://gro10x-ai.vercel.app/crew#tasks' }]
+        ], true);
+      }
+
+      recordAutomationLog(db, {
+        id: `LOG-${Date.now()}`,
+        rule: 'AUT-001.1 (QC Rejection Alert)',
+        event: eventType,
+        target: task.title,
+        status: 'Executed',
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    // TRIGGER 1.2: Task Reassigned -> Notify New Assignee
+    if (eventType === 'task_reassigned') {
+      const task = eventData.task || eventData;
+      const newAssigneeName = eventData.newAssignee || task.assignee;
+      const newAssignee = findStaffMember(db, { employeeId: task.assignee_id || task.assigneeId, name: newAssigneeName });
+
+      const message = `📋 *Task Assigned to You!*\n\nProject: *${task.title}*\nClient: *${task.client}*\nPriority: *${task.priority || 'Normal'}*\nStage: *${task.stage || 'Briefing'}*\nDue: *${task.dueDate || task.due_date || 'TBD'}*`;
+
+      if (newAssignee && newAssignee.telegramId) {
+        sendTelegramNotification(newAssignee.telegramId, message, [
+          [{ text: '📋 View Task in Crew Portal', url: 'https://gro10x-ai.vercel.app/crew#tasks' }]
+        ], true);
+      }
+
+      recordAutomationLog(db, {
+        id: `LOG-${Date.now()}`,
+        rule: 'AUT-001.2 (Task Reassignment Alert)',
+        event: eventType,
+        target: task.title,
+        status: 'Executed',
+        timestamp: new Date().toISOString()
+      });
+    }
+
     // TRIGGER 2: Lead Marked Won -> Auto-Create Client Account + Initial Project
     if (eventType === 'lead_won') {
       const lead = eventData.lead;
@@ -459,16 +507,27 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
         name: ticket.loggedBy || ticket.logged_by || ticket.submittedBy
       });
 
+      let targetTelegramId = staff?.telegramId;
+      if (!targetTelegramId && db.clients) {
+        const clientObj = (db.clients || []).find(c =>
+          c.id === ticket.client_id || c.id === ticket.clientId ||
+          (c.name && (ticket.submitted_by || ticket.submittedBy || '').toLowerCase().includes(c.name.toLowerCase()))
+        );
+        if (clientObj?.telegramId || clientObj?.telegram_id) {
+          targetTelegramId = clientObj.telegramId || clientObj.telegram_id;
+        }
+      }
+
       const msgText = `🔧 *SUPPORT TICKET RESOLVED!*\n\n` +
         `🎫 Ticket ID: *${ticket.id}*\n` +
-        `📁 Category: *${ticket.category}*\n` +
+        `📁 Category: *${ticket.category || 'General'}*\n` +
         `📌 Title: *${ticket.title}*\n` +
         `✅ Status: *Resolved*\n` +
-        `✍️ Resolved By: *${ticket.resolvedBy || ticket.resolved_by || 'Maintenance Lead'}*\n\n` +
+        `✍️ Resolved By: *${ticket.resolvedBy || ticket.resolved_by || 'Support Lead'}*\n\n` +
         `Your support ticket has been closed.`;
 
-      if (staff && staff.telegramId) {
-        sendTelegramNotification(staff.telegramId, msgText, null, true);
+      if (targetTelegramId) {
+        sendTelegramNotification(targetTelegramId, msgText, null, true);
       }
 
       recordAutomationLog(db, {
@@ -728,11 +787,13 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
           `✍️ T1 Approved By: *${expense.tier1?.approvedBy || 'Line Manager'}*\n\n` +
           `Requires Head of Business Operations sign-off before Finance disbursement.`;
 
-        const targetId = kafil?.telegramId || '1708459008';
-        sendTelegramNotification(targetId, msgText, [
-          [{ text: '✅ Approve T1.5 (Ops Head)', callback_data: `approve_expense_t1_5:${expense.id}` }],
-          [{ text: '🔍 Inspect in Portal', url: `https://gro10x-ai.vercel.app/admin` }]
-        ], true);
+        const targetId = kafil?.telegramId || process.env.OWNER_TELEGRAM_ID;
+        if (targetId) {
+          sendTelegramNotification(targetId, msgText, [
+            [{ text: '✅ Approve T1.5 (Ops Head)', callback_data: `approve_expense_t1_5:${expense.id}` }],
+            [{ text: '🔍 Inspect in Portal', url: `https://gro10x-ai.vercel.app/admin` }]
+          ], true);
+        }
       } else {
         // Standard Claim (<= 10k) -> Route directly to Borhan Siddique (Finance Manager) for Tier 2
         const borhan = (db.team || []).find(t => t.id === 'PBD-029' || (t.role || '').toLowerCase().includes('finance manager'));
@@ -745,11 +806,13 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
           `✍️ T1 Approved By: *${expense.tier1?.approvedBy || 'Line Manager'}*\n\n` +
           `Click below to verify for final disbursement.`;
 
-        const targetId = borhan?.telegramId || '1708459008';
-        sendTelegramNotification(targetId, msgText, [
-          [{ text: '💰 Verify T2 (Finance)', callback_data: `approve_expense_t2:${expense.id}` }],
-        [{ text: '🔍 Inspect in Admin Portal', url: `https://gro10x-ai.vercel.app/admin` }]
-        ], true);
+        const targetId = borhan?.telegramId || process.env.OWNER_TELEGRAM_ID;
+        if (targetId) {
+          sendTelegramNotification(targetId, msgText, [
+            [{ text: '💰 Verify T2 (Finance)', callback_data: `approve_expense_t2:${expense.id}` }],
+            [{ text: '🔍 Inspect in Admin Portal', url: `https://gro10x-ai.vercel.app/admin` }]
+          ], true);
+        }
       }
     }
 
@@ -766,11 +829,13 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
         `✍️ Ops Approved By: *${expense.tier1_5?.approvedBy || 'Kafil Mahmud (Head of Ops)'}*\n\n` +
         `Click below to verify for final disbursement.`;
 
-      const targetId = borhan?.telegramId || '1708459008';
-      sendTelegramNotification(targetId, msgText, [
-        [{ text: '💰 Verify T2 (Finance)', callback_data: `approve_expense_t2:${expense.id}` }],
-        [{ text: '🔍 Inspect in Admin Portal', url: `https://gro10x-ai.vercel.app/admin` }]
-      ], true);
+      const targetId = borhan?.telegramId || process.env.OWNER_TELEGRAM_ID;
+      if (targetId) {
+        sendTelegramNotification(targetId, msgText, [
+          [{ text: '💰 Verify T2 (Finance)', callback_data: `approve_expense_t2:${expense.id}` }],
+          [{ text: '🔍 Inspect in Admin Portal', url: `https://gro10x-ai.vercel.app/admin` }]
+        ], true);
+      }
     }
 
     // TRIGGER 20: New Leave Request Submitted -> Alert Line Manager (AUT-020)
@@ -793,14 +858,16 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
         `📝 Reason: *${leave.reason || 'Not specified'}*\n\n` +
         `Click below to review leave request.`;
 
-      const targetId = targetManager?.telegramId || '1708459008';
-      sendTelegramNotification(targetId, msgText, [
-        [
-          { text: '✅ Approve Leave', callback_data: `approve_leave:${leave.id}` },
-          { text: '❌ Reject Leave', callback_data: `reject_leave:${leave.id}` }
-        ],
-        [{ text: '🔍 Inspect in Manager Portal', url: `https://gro10x-ai.vercel.app/manager` }]
-      ], true);
+      const targetId = targetManager?.telegramId || process.env.OWNER_TELEGRAM_ID;
+      if (targetId) {
+        sendTelegramNotification(targetId, msgText, [
+          [
+            { text: '✅ Approve Leave', callback_data: `approve_leave:${leave.id}` },
+            { text: '❌ Reject Leave', callback_data: `reject_leave:${leave.id}` }
+          ],
+          [{ text: '🔍 Inspect in Manager Portal', url: `https://gro10x-ai.vercel.app/manager` }]
+        ], true);
+      }
 
       recordAutomationLog(db, {
         id: `LOG-${Date.now()}`,
@@ -920,8 +987,10 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
           `🔴 *🔴 Blockers Flagged:* ${blockersCount} Action Item(s)\n\n` +
           `🌐 Open Manager Portal: https://gro10x-ai.vercel.app/manager`;
 
-        const targetId = mgr.telegramId || '1708459008';
-        sendTelegramNotification(targetId, msgText, null, true);
+        const targetId = mgr.telegramId || process.env.OWNER_TELEGRAM_ID;
+        if (targetId) {
+          sendTelegramNotification(targetId, msgText, null, true);
+        }
       });
 
       recordAutomationLog(db, {
@@ -1096,7 +1165,7 @@ function getBDTime() {
     hour12: true
   });
 
-  return { h, m, day, dayName, timeString, dateKey, now };
+  return { h, m, day, dayName, timeString, dateKey, now, bd: now };
 }
 
 function buildMorningBriefing(db) {
@@ -1121,45 +1190,24 @@ function buildMorningBriefing(db) {
 
   const { timeString, dayName } = getBDTime();
 
-  let msg = `☀️ *Good morning, this is your ${dayName} briefing!*
-`;
-  msg += `────────────────────────
-
-`;
-
-  msg += `📊 *Team Live (${timeString} BD)*
-`;
-  msg += `  🟢 ${inStudio} In Studio  `;
-  msg += `🎬 ${onShoot} On Shoot  `;
-  msg += `🌴 ${onLeave} Leave  `;
-  msg += `⬛ ${offline} Offline
-
-`;
+  let msg = `☀️ *Good morning, this is your ${dayName} briefing!*\n` +
+    `────────────────────────\n\n` +
+    `📊 *Team Live (${timeString} BD)*\n` +
+    `  🟢 ${inStudio} In Studio  🎬 ${onShoot} On Shoot  🌴 ${onLeave} Leave  ⬛ ${offline} Offline\n\n`;
 
   if (pendingAgreements > 0 || pendingExpenses > 0) {
-    msg += `✍️ *Pending Your Approval*
-`;
-    if (pendingAgreements > 0) msg += `  • ${pendingAgreements} Employment Agreement(s) awaiting final seal
-`;
-    if (pendingExpenses > 0) msg += `  • ${pendingExpenses} Expense(s) — BDT ${pendingExpAmt.toLocaleString()} to disburse
-`;
-    msg += `
-`;
+    msg += `✍️ *Pending Your Approval*\n`;
+    if (pendingAgreements > 0) msg += `  • ${pendingAgreements} Employment Agreement(s) awaiting final seal\n`;
+    if (pendingExpenses > 0) msg += `  • ${pendingExpenses} Expense(s) — BDT ${pendingExpAmt.toLocaleString()} to disburse\n`;
+    msg += `\n`;
   }
 
-  msg += `💰 *Finance Snapshot*
-`;
-  msg += `  • Outstanding Invoices: ${pendingInvoices.length} (BDT ${pendingInvAmt.toLocaleString()})
-
-`;
-
-  msg += `🎬 *Campaign Pipeline*
-`;
-  msg += `  • ${clientsInReview} deliverable(s) in Client Review
-`;
-  msg += `  • ${clientsInEdit} in Editing / Post Production
-`;
-  msg += `────────────────────────`;
+  msg += `💰 *Finance Snapshot*\n` +
+    `  • Outstanding Invoices: ${pendingInvoices.length} (BDT ${pendingInvAmt.toLocaleString()})\n\n` +
+    `🎬 *Campaign Pipeline*\n` +
+    `  • ${clientsInReview} deliverable(s) in Client Review\n` +
+    `  • ${clientsInEdit} in Editing / Post Production\n` +
+    `────────────────────────`;
 
   return msg;
 }
@@ -1167,20 +1215,28 @@ function buildMorningBriefing(db) {
 function buildEODSummary(db) {
   const team = db.team || [];
   const todayStr = new Date().toLocaleDateString('en-CA');
+  const todayISO = new Date().toISOString().split('T')[0];
 
   // Who clocked in today
-  const clockedToday = (db.attendance || []).filter(a =>
-    a.clockInTime && (a.date === todayStr || !a.date)
+  const attendance = db.attendance || [];
+  const clockedToday = attendance.filter(a =>
+    (a.clockInTime || a.clock_in_time) && (a.date === todayStr || a.date === todayISO || !a.date)
   );
 
   // EOD reports submitted today
-  const eodToday = (db.eodReports || []).filter(r =>
-    r.date === todayStr || r.submittedAt?.startsWith(todayStr)
+  const eodReports = db.eodReports || db.eod_reports || [];
+  const eodToday = eodReports.filter(r =>
+    r.date === todayStr || r.date === todayISO ||
+    (r.submittedAt && (r.submittedAt.startsWith(todayStr) || r.submittedAt.startsWith(todayISO))) ||
+    (r.created_at && (r.created_at.startsWith(todayStr) || r.created_at.startsWith(todayISO)))
   );
 
   // Expenses submitted today
-  const expToday = (db.expenses || []).filter(e =>
-    e.date === todayStr || e.createdAt?.startsWith(todayStr)
+  const expenses = db.expenses || [];
+  const expToday = expenses.filter(e =>
+    e.date === todayStr || e.date === todayISO ||
+    (e.createdAt && (e.createdAt.startsWith(todayStr) || e.createdAt.startsWith(todayISO))) ||
+    (e.created_at && (e.created_at.startsWith(todayStr) || e.created_at.startsWith(todayISO)))
   );
 
   let msg = `🌙 *Evening Summary — End of Day*

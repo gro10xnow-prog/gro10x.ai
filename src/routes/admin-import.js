@@ -95,7 +95,10 @@ router.post('/clients', requireAuth, requireAdmin, asyncHandler(async (req, res)
     imported = validPayloads;
   }
 
-  if (imported.length > 0) broadcast('clients_update', imported);
+  if (imported.length > 0) {
+    broadcast('client_update', imported);
+    broadcast('clients_update', imported);
+  }
 
   return ok(res, {
     success: true,

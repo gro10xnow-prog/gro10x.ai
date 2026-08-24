@@ -10,6 +10,9 @@ let realtimeChannel = null;
 let isRealtimeSubscribed = false;
 const instanceId = `node_${Math.random().toString(36).slice(2, 9)}_${Date.now()}`;
 
+let reconnectAttempts = 0;
+let reconnectTimer = null;
+
 function sseHandler(req, res) {
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
@@ -27,7 +30,7 @@ function sseHandler(req, res) {
   initRealtimePubSub();
 
   // Initial connection handshake
-  res.write(`data: ${JSON.stringify({ type: 'connected', clientId, role })}\n\n`);
+  res.write(`event: connected\ndata: ${JSON.stringify({ type: 'connected', clientId, role })}\n\n`);
 
   // 25-second keepalive heartbeat ping for serverless / edge environments
   const heartbeat = setInterval(() => {
@@ -66,7 +69,17 @@ function initRealtimePubSub() {
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
           isRealtimeSubscribed = true;
+          reconnectAttempts = 0;
           console.log('📡 SSE Multi-Instance Realtime Sync connected via Supabase');
+        } else if (status === 'CHANNEL_ERROR' || status === 'CLOSED' || status === 'TIMED_OUT') {
+          isRealtimeSubscribed = false;
+          realtimeChannel = null;
+          if (reconnectAttempts < 6) {
+            const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000);
+            reconnectAttempts++;
+            clearTimeout(reconnectTimer);
+            reconnectTimer = setTimeout(() => initRealtimePubSub(), delay);
+          }
         }
       });
   } catch (err) {
@@ -97,8 +110,12 @@ function deliverLocally(eventType, data, filterType = 'all', filterArgs = null) 
           return false;
         }
 
+        const sendMsg = () => {
+          c.res.write(`event: ${eventType}\ndata: ${payload}\n\n`);
+        };
+
         if (filterType === 'all') {
-          c.res.write(`data: ${payload}\n\n`);
+          sendMsg();
           return true;
         }
 
@@ -107,7 +124,7 @@ function deliverLocally(eventType, data, filterType = 'all', filterArgs = null) 
           const clientRole = String(c.role || '').toLowerCase();
           const matches = clientRole === 'all' || roleList.includes(clientRole) || roleList.some(r => clientRole.includes(r));
           if (matches) {
-            c.res.write(`data: ${payload}\n\n`);
+            sendMsg();
           }
           return true;
         }
@@ -116,7 +133,7 @@ function deliverLocally(eventType, data, filterType = 'all', filterArgs = null) 
           const codes = (Array.isArray(filterArgs) ? filterArgs : [filterArgs]).map(code => String(code).toLowerCase());
           const clientCode = String(c.empCode || '').toLowerCase();
           if (clientCode && codes.includes(clientCode)) {
-            c.res.write(`data: ${payload}\n\n`);
+            sendMsg();
           }
           return true;
         }
@@ -128,13 +145,13 @@ function deliverLocally(eventType, data, filterType = 'all', filterArgs = null) 
           const isStaff = ['owner', 'admin', 'manager', 'specialist', 'team'].some(r => clientRole.includes(r));
           const matches = isStaff || !targetId || idList.includes(targetId) || idList.some(id => targetId.includes(id));
           if (matches) {
-            c.res.write(`data: ${payload}\n\n`);
+            sendMsg();
           }
           return true;
         }
 
         // Default: broadcast to all
-        c.res.write(`data: ${payload}\n\n`);
+        sendMsg();
         return true;
       } catch (e) {
         return false;

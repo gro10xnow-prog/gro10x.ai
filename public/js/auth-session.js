@@ -211,7 +211,17 @@
       if (token && !options.headers['Authorization']) {
         options.headers['Authorization'] = 'Bearer ' + token;
       }
-      return fetch(url, options);
+      return fetch(url, options).then(function(res) {
+        if (res.status === 401) {
+          var isAuthPage = typeof window !== 'undefined' && window.location.pathname.includes('/auth');
+          if (!isAuthPage && typeof window !== 'undefined') {
+            console.warn('[GRO10XAuth] 401 Unauthorized — Session expired');
+            GRO10XAuth.clearSession();
+            window.location.href = '/auth?expired=1';
+          }
+        }
+        return res;
+      });
     }
   };
 

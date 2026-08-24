@@ -1,0 +1,487 @@
+{
+  "timestamp": "2026-08-24T01:02:42.175Z",
+  "totalTests": 38,
+  "totalPassed": 38,
+  "totalFailed": 0,
+  "passRate": 100,
+  "totalDurationMs": 61127,
+  "phases": [
+    {
+      "phase": "Phase 1: Global Shell & Navigation",
+      "total": 8,
+      "passed": 8,
+      "failed": 0,
+      "duration": 22439,
+      "results": [
+        {
+          "id": "1.1.1",
+          "title": "Redirect unauthenticated users to /auth",
+          "status": "PASSED",
+          "duration": 1929,
+          "error": null
+        },
+        {
+          "id": "1.1.3",
+          "title": "Load App with Valid Admin JWT Session",
+          "status": "PASSED",
+          "duration": 3808,
+          "error": null
+        },
+        {
+          "id": "1.1.4",
+          "title": "Verify Admin Profile Badge Display",
+          "status": "PASSED",
+          "duration": 65,
+          "error": null
+        },
+        {
+          "id": "1.2.1",
+          "title": "Verify Live Dhaka BST Clock in Header",
+          "status": "PASSED",
+          "duration": 311,
+          "error": null
+        },
+        {
+          "id": "1.3.1",
+          "title": "Open and Verify Ops Health Modal",
+          "status": "PASSED",
+          "duration": 2036,
+          "error": null
+        },
+        {
+          "id": "1.6.1",
+          "title": "Open Command Palette (Ctrl+K) & Search",
+          "status": "PASSED",
+          "duration": 2003,
+          "error": null
+        },
+        {
+          "id": "1.7.1",
+          "title": "Verify Theme Toggle Switch (Dark/Light)",
+          "status": "PASSED",
+          "duration": 629,
+          "error": null
+        },
+        {
+          "id": "1.5.2",
+          "title": "Verify 14 Sidebar Tabs Navigation & Content Rendering",
+          "status": "PASSED",
+          "duration": 11658,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Phase 2: Executive Dashboard & Analytics",
+      "total": 6,
+      "passed": 6,
+      "failed": 0,
+      "duration": 4146,
+      "results": [
+        {
+          "id": "2.1.1",
+          "title": "Load Executive Dashboard & Verify Hero Section",
+          "status": "PASSED",
+          "duration": 1810,
+          "error": null
+        },
+        {
+          "id": "2.1.2",
+          "title": "Verify 1-Tap Executive Action Center & Sign-Off Buttons",
+          "status": "PASSED",
+          "duration": 241,
+          "error": null
+        },
+        {
+          "id": "2.1.3",
+          "title": "Verify Financial Oversight Gauges & BDT Notation",
+          "status": "PASSED",
+          "duration": 289,
+          "error": null
+        },
+        {
+          "id": "2.1.4",
+          "title": "Verify Overdue Deliverables Radar",
+          "status": "PASSED",
+          "duration": 2,
+          "error": null
+        },
+        {
+          "id": "2.1.5",
+          "title": "Verify Real-Time Studio Attendance Pulse",
+          "status": "PASSED",
+          "duration": 1,
+          "error": null
+        },
+        {
+          "id": "2.2.1",
+          "title": "Navigate to Analytics & Verify Metrics",
+          "status": "PASSED",
+          "duration": 1803,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Phase 3: Client Intelligence (Leads & CRM)",
+      "total": 3,
+      "passed": 3,
+      "failed": 0,
+      "duration": 3493,
+      "results": [
+        {
+          "id": "3.1.1",
+          "title": "Load Leads Pipeline Board & Verify Columns",
+          "status": "PASSED",
+          "duration": 1739,
+          "error": null
+        },
+        {
+          "id": "3.2.1",
+          "title": "Load Client CRM Grid & Verify Records",
+          "status": "PASSED",
+          "duration": 1750,
+          "error": null
+        },
+        {
+          "id": "3.2.2",
+          "title": "Test Client CRM Search & KPI Rendering",
+          "status": "PASSED",
+          "duration": 4,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Phase 4: Production Hub (Kanban, Reviews, Social, CMS)",
+      "total": 8,
+      "passed": 8,
+      "failed": 0,
+      "duration": 11091,
+      "results": [
+        {
+          "id": "4.1.1",
+          "title": "Load Kanban Pipeline Hub & Verify Workspaces",
+          "status": "PASSED",
+          "duration": 1729,
+          "error": null
+        },
+        {
+          "id": "4.1.3",
+          "title": "Test Kanban View Switcher (Board/List/Calendar/Dashboard)",
+          "status": "PASSED",
+          "duration": 1062,
+          "error": null
+        },
+        {
+          "id": "4.1.4",
+          "title": "Verify Column Workload Headers & Hour Badges",
+          "status": "PASSED",
+          "duration": 14,
+          "error": null
+        },
+        {
+          "id": "4.1.7",
+          "title": "Open & Verify New Task Modal",
+          "status": "PASSED",
+          "duration": 1341,
+          "error": null
+        },
+        {
+          "id": "4.1.8",
+          "title": "Test Bulk Import CSV & AI Auto-Clean Action",
+          "status": "PASSED",
+          "duration": 1576,
+          "error": null
+        },
+        {
+          "id": "4.2.1",
+          "title": "Navigate to Review Room Proofing",
+          "status": "PASSED",
+          "duration": 1739,
+          "error": null
+        },
+        {
+          "id": "4.3.1",
+          "title": "Navigate to Social Planner",
+          "status": "PASSED",
+          "duration": 1868,
+          "error": null
+        },
+        {
+          "id": "4.4.1",
+          "title": "Navigate to Services & CMS Catalog",
+          "status": "PASSED",
+          "duration": 1762,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Phase 5: Finance & Expenses Command Center",
+      "total": 5,
+      "passed": 5,
+      "failed": 0,
+      "duration": 8339,
+      "results": [
+        {
+          "id": "5.1.1",
+          "title": "Load Finance Hub & Verify KPI Summary Cards",
+          "status": "PASSED",
+          "duration": 1753,
+          "error": null
+        },
+        {
+          "id": "5.1.3",
+          "title": "Test Subtab Navigation (Invoices / Verifications / Expenses / Quotes)",
+          "status": "PASSED",
+          "duration": 2485,
+          "error": null
+        },
+        {
+          "id": "5.1.4",
+          "title": "Test Invoice Status Filter Chips (All/Overdue/Pending/Paid)",
+          "status": "PASSED",
+          "duration": 1416,
+          "error": null
+        },
+        {
+          "id": "5.1.5",
+          "title": "Open & Verify Create Invoice Modal",
+          "status": "PASSED",
+          "duration": 1347,
+          "error": null
+        },
+        {
+          "id": "5.1.7",
+          "title": "Open & Verify Log Expense Claim Modal",
+          "status": "PASSED",
+          "duration": 1338,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Phase 6: HR Ops & Hardware Assets",
+      "total": 3,
+      "passed": 3,
+      "failed": 0,
+      "duration": 5278,
+      "results": [
+        {
+          "id": "6.1.2",
+          "title": "Load HR Roster & Verify Staff Directory",
+          "status": "PASSED",
+          "duration": 1826,
+          "error": null
+        },
+        {
+          "id": "6.1.3",
+          "title": "Open Staff Profile Drawer & Verify 1-Tap PIN Reset Action",
+          "status": "PASSED",
+          "duration": 1659,
+          "error": null
+        },
+        {
+          "id": "6.2.1",
+          "title": "Load Hardware Assets Catalog",
+          "status": "PASSED",
+          "duration": 1793,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Phase 7: System & Support (Tickets, Automation, Settings)",
+      "total": 3,
+      "passed": 3,
+      "failed": 0,
+      "duration": 5310,
+      "results": [
+        {
+          "id": "7.1.1",
+          "title": "Load Support Desk Tickets & Verify Triage Queue",
+          "status": "PASSED",
+          "duration": 1731,
+          "error": null
+        },
+        {
+          "id": "7.2.1",
+          "title": "Load Bot & Automation Engine Logs Feed",
+          "status": "PASSED",
+          "duration": 1736,
+          "error": null
+        },
+        {
+          "id": "7.3.2",
+          "title": "Load Settings & Verify Real-Time Telemetry & PIN Updater",
+          "status": "PASSED",
+          "duration": 1843,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Phase 8: Cross-Module Integration",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 1031,
+      "results": [
+        {
+          "id": "8.5.1",
+          "title": "Verify Sidebar Attention Badges & Real-Time Counter Sync",
+          "status": "PASSED",
+          "duration": 1031,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Phase 9: Console Health & Network Audit",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 0,
+      "results": [
+        {
+          "id": "9.1.1",
+          "title": "Audit Browser Console Logs for Runtime Exceptions",
+          "status": "PASSED",
+          "duration": 0,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "consoleAudit": [
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"current-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"current-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/dashboard.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/analytics.js"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "text": "[PurpleOS API] Error fetching /api/analytics/time-series?days=30: Error: Forbidden: Department Manager privileges required"
+    },
+    {
+      "type": "error",
+      "text": "[PurpleOS API] Error fetching /api/analytics/scorecards?days=30: Error: Forbidden: Department Manager privileges required"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/leads.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/crm.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/kanban.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/reviews.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/social.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/cms.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/finance.js"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "text": "[PurpleOS API] Error fetching /api/invoices/quotes: Error: Forbidden: Department Manager privileges required"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/hr.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/assets.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/tickets.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/automation.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/settings.js"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "text": "[PurpleOS API] Error fetching /api/analytics/time-series?days=30: Error: Forbidden: Department Manager privileges required"
+    },
+    {
+      "type": "error",
+      "text": "[PurpleOS API] Error fetching /api/analytics/scorecards?days=30: Error: Forbidden: Department Manager privileges required"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "text": "[PurpleOS API] Error fetching /api/invoices/quotes: Error: Forbidden: Department Manager privileges required"
+    }
+  ]
+}

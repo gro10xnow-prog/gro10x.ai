@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>GRO10X AI - Crew Portal</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Montserrat:wght@600;700;800&amp;family=Geist:wght@600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "tertiary-container": "#b4c0ff",
+                      "surface-container-highest": "#31353d",
+                      "on-primary-container": "#005d36",
+                      "surface-variant": "#31353d",
+                      "on-surface": "#dfe2ed",
+                      "surface-container-low": "#181c23",
+                      "surface-tint": "#12e28c",
+                      "on-error": "#690005",
+                      "outline": "#859588",
+                      "on-tertiary-fixed-variant": "#334282",
+                      "background": "#0f141b",
+                      "on-tertiary": "#1a2b6a",
+                      "on-error-container": "#ffdad6",
+                      "surface": "#0f141b",
+                      "secondary": "#4cd7f6",
+                      "tertiary-fixed-dim": "#b8c4ff",
+                      "secondary-container": "#03b5d3",
+                      "error-container": "#93000a",
+                      "on-primary-fixed": "#002110",
+                      "surface-bright": "#353941",
+                      "surface-container-lowest": "#0a0e15",
+                      "on-background": "#dfe2ed",
+                      "outline-variant": "#3b4a3f",
+                      "primary-fixed": "#56ffa8",
+                      "surface-dim": "#0f141b",
+                      "tertiary-fixed": "#dde1ff",
+                      "inverse-primary": "#006d40",
+                      "on-primary": "#00391f",
+                      "on-tertiary-fixed": "#001354",
+                      "tertiary": "#d9ddff",
+                      "on-secondary-fixed-variant": "#004e5c",
+                      "inverse-on-surface": "#2c3139",
+                      "secondary-fixed-dim": "#4cd7f6",
+                      "surface-container": "#1c2027",
+                      "error": "#ffb4ab",
+                      "on-secondary": "#003640",
+                      "on-secondary-container": "#00424e",
+                      "on-tertiary-container": "#3d4c8c",
+                      "on-secondary-fixed": "#001f26",
+                      "on-surface-variant": "#bacbbc",
+                      "primary-container": "#00df89",
+                      "inverse-surface": "#dfe2ed",
+                      "surface-container-high": "#262a32",
+                      "primary": "#46fca3",
+                      "on-primary-fixed-variant": "#00522f",
+                      "primary-fixed-dim": "#12e28c",
+                      "secondary-fixed": "#acedff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "container-max": "1280px",
+                      "margin-mobile": "20px",
+                      "margin-desktop": "80px",
+                      "gutter": "24px",
+                      "section-gap": "120px"
+              },
+              "fontFamily": {
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "headline-lg-mobile": [
+                              "Montserrat"
+                      ],
+                      "headline-md": [
+                              "Montserrat"
+                      ],
+                      "display-lg": [
+                              "Montserrat"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "headline-lg": [
+                              "Montserrat"
+                      ],
+                      "label-sm": [
+                              "Geist"
+                      ]
+              },
+              "fontSize": {
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-md": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-lg": [
+                              "72px",
+                              {
+                                      "lineHeight": "1.1",
+                                      "letterSpacing": "-0.04em",
+                                      "fontWeight": "800"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "1",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+            }
+          }
+        }
+      </script>
+<style>
+        body {
+            background-color: #070B12; /* Deep Obsidian Black override */
+            color: theme('colors.on-surface');
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .glow-button {
+            box-shadow: 0 0 15px rgba(0, 223, 137, 0.2);
+            transition: all 0.3s ease;
+        }
+        .glow-button:hover {
+            box-shadow: 0 0 25px rgba(0, 223, 137, 0.4);
+        }
+        .input-glow:focus {
+            box-shadow: inset 0 0 8px rgba(76, 215, 246, 0.2);
+            border-color: theme('colors.secondary');
+        }
+        
+        /* Custom scrollbar for Kanban */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+      </style>
+</head>
+<body class="font-body-md text-body-md bg-background antialiased selection:bg-primary selection:text-on-primary min-h-screen flex">
+<!-- SideNavBar -->
+<aside class="hidden md:flex flex-col h-full py-8 px-4 bg-surface-container-low/50 backdrop-blur-2xl text-secondary font-body-md text-body-md font-headline-md text-headline-md text-primary fixed left-0 top-0 h-full w-64 border-r border-white/10 z-40 transition-transform duration-300">
+<div class="mb-12 px-2 flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center font-bold text-on-primary">
+                GX
+            </div>
+<div>
+<h1 class="font-headline-md text-[20px] font-bold text-primary tracking-tight leading-none">GRO10X AI</h1>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-1">Revenue Intelligence</p>
+</div>
+</div>
+<nav class="flex-1 flex flex-col gap-2">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-primary bg-primary/10 border-r-4 border-primary font-body-md text-body-md font-medium transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+                Action Center
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-primary transition-all duration-200 font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined text-[20px]">account_tree</span>
+                Pipeline
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-primary transition-all duration-200 font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined text-[20px]">psychology</span>
+                Intelligence
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-primary transition-all duration-200 font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined text-[20px]">verified_user</span>
+                Approvals
+            </a>
+</nav>
+<div class="mt-auto flex flex-col gap-2 pt-6 border-t border-white/5">
+<a class="flex items-center gap-3 px-4 py-2 rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-primary transition-all duration-200 font-label-sm text-label-sm" href="#">
+<span class="material-symbols-outlined text-[18px]">help</span>
+                Help
+            </a>
+<a class="flex items-center gap-3 px-4 py-2 rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-error transition-all duration-200 font-label-sm text-label-sm" href="#">
+<span class="material-symbols-outlined text-[18px]">logout</span>
+                Logout
+            </a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col w-full md:ml-64 min-h-screen relative">
+<!-- TopNavBar -->
+<header class="flex items-center justify-between px-margin-desktop py-4 w-full mx-auto bg-background/80 backdrop-blur-xl text-primary font-body-md text-body-md font-headline-md text-headline-md font-bold text-primary sticky top-0 w-full z-30 border-b border-white/10 shadow-lg shadow-primary/5">
+<div class="flex items-center gap-6">
+<!-- Mobile Menu Trigger (hidden on desktop) -->
+<button class="md:hidden text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h2 class="font-headline-md text-[24px] text-on-surface hidden md:block">Action Center</h2>
+</div>
+<div class="flex items-center gap-4">
+<div class="hidden md:flex gap-2">
+<button class="p-2 text-on-surface-variant hover:bg-white/5 hover:text-primary rounded-full transition-all duration-200">
+<span class="material-symbols-outlined" data-weight="fill">notifications</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-white/5 hover:text-primary rounded-full transition-all duration-200">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+<button class="bg-primary text-on-primary px-6 py-2 rounded-lg font-label-sm text-label-sm font-bold glow-button hover:bg-primary-fixed flex items-center gap-2 active:scale-95 duration-100">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                    Create Report
+                </button>
+<div class="w-9 h-9 rounded-full bg-surface-container-high border border-white/10 overflow-hidden ml-2 cursor-pointer border hover:border-primary transition-colors">
+<img class="w-full h-full object-cover" data-alt="Close up portrait of a futuristic AI engineer in a dimly lit neon server room, wearing sleek augmented reality glasses reflecting green data streams, dark moody lighting, cinematic cyberpunk aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBk6IFi9JLEFoO1rRKR7veBlB-Xj0Hv6lKLul-aFdZoYnaYN6jYXZjFoSvG2EHvWvew9itkkNZ1JlQPQK2TBmPkQgNn25BbjqMySH4I4cQs0MbHHb4S_d9FuknjGXreSfQeO0WWEK9h9Oz1OAzgC1Xx_qNP7cp3FjIXpVHMv_w4evU_Hu8mBmCol-6i_hR-anDsZwAUTyWrI7-W3OFRI3bgH3mZH6p0NLsXtbbpav8Hg3qy9KaysJrUnQ"/>
+</div>
+</div>
+</header>
+<!-- Content Canvas -->
+<div class="flex-1 p-gutter md:px-margin-desktop py-8 max-w-container-max mx-auto w-full flex flex-col gap-8">
+<!-- Top Section: Profile & Quick Actions -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+<!-- Specialist Profile Hero -->
+<div class="lg:col-span-4 glass-card rounded-xl p-6 relative overflow-hidden group">
+<div class="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-50 z-0"></div>
+<div class="relative z-10 flex items-start gap-4">
+<div class="w-16 h-16 rounded-xl bg-surface-container-high border border-primary/30 flex-shrink-0 overflow-hidden relative">
+<img class="w-full h-full object-cover" data-alt="Avatar portrait of a professional AI specialist with subtle glowing neural network patterns on their cheek, neon emerald and deep shadow lighting, high-tech corporate headshot style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDb9cgT50Ik---2OYKDIfLZbmAAGkSo0tToYQzNDjvPQBYQDN2Y6RguBQzvKImgVW4voQ5QzJYGIrzdwlR2YCiydp1fufXG1vr7zUJu8bHe-RtUTh_C_yXxJa4rmL-GiAqHx7s46MCrvsLa4aGz6poXmv-PFvdDlaMBD8wCZuAt-EejbXWnSaiviPRLcPgMaYwUY_PzuEgCK_Mmf0US7lS42fzGxQ2nCHyHdbt4OX2VPaAgbDSVpYXEfQ"/>
+<div class="absolute bottom-0 right-0 w-3 h-3 bg-primary rounded-full border-2 border-background animate-pulse"></div>
+</div>
+<div>
+<h3 class="font-headline-md text-[20px] text-on-surface font-semibold tracking-tight">GX Specialist</h3>
+<p class="font-body-md text-[14px] text-secondary mt-1">Senior ComfyUI Engineer</p>
+<div class="mt-4 inline-flex items-center gap-2 bg-surface-container-high/80 px-3 py-1.5 rounded-md border border-white/5">
+<span class="material-symbols-outlined text-primary text-[16px]">timer</span>
+<span class="font-label-sm text-label-sm text-on-surface tabular-nums" id="shift-timer">04:22:15</span>
+<span class="text-[10px] text-on-surface-variant uppercase ml-1">Active Shift</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Operations Grid -->
+<div class="lg:col-span-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
+<!-- Action Card 1 -->
+<button class="glass-card rounded-xl p-5 flex flex-col justify-between hover:bg-white/5 transition-colors group text-left h-full">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-secondary mb-4 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined">summarize</span>
+</div>
+<div>
+<h4 class="font-body-md text-body-md text-on-surface font-medium">EOD Report</h4>
+<p class="font-label-sm text-[12px] text-on-surface-variant mt-1">Submit daily metrics</p>
+</div>
+</button>
+<!-- Action Card 2 -->
+<button class="glass-card rounded-xl p-5 flex flex-col justify-between hover:bg-white/5 transition-colors group text-left h-full border-primary/20">
+<div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-4 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined">receipt_long</span>
+</div>
+<div>
+<h4 class="font-body-md text-body-md text-on-surface font-medium">GPU Expenses</h4>
+<p class="font-label-sm text-[12px] text-on-surface-variant mt-1">RunPod, OpenAI Claims</p>
+</div>
+</button>
+<!-- Action Card 3 -->
+<button class="glass-card rounded-xl p-5 flex flex-col justify-between hover:bg-white/5 transition-colors group text-left h-full">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-secondary mb-4 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined">event_busy</span>
+</div>
+<div>
+<h4 class="font-body-md text-body-md text-on-surface font-medium">Leave Request</h4>
+<p class="font-label-sm text-[12px] text-on-surface-variant mt-1">Manage PTO &amp; Sick</p>
+</div>
+</button>
+</div>
+</div>
+</div>
+</main>
+<script>
+        // Simple timer logic for visual flair
+        let seconds = 15735; // Start time in seconds (4h 22m 15s)
+        const timerEl = document.getElementById('shift-timer');
+        
+        setInterval(() => {
+            seconds++;
+            const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
+            const m = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
+            const s = (seconds % 60).toString().padStart(2, '0');
+            if(timerEl) timerEl.textContent = `${h}:${m}:${s}`;
+        }, 1000);
+    </script>
+</body></html>

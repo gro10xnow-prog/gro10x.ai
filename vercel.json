@@ -71,6 +71,22 @@
     {
       "path": "/api/cron/lead-pipeline-summary",
       "schedule": "0 3 * * 0"
+    },
+    {
+      "path": "/api/cron/eod-daily-prompt",
+      "schedule": "0 13 * * 0,1,2,3,4,6"
+    },
+    {
+      "path": "/api/cron/morning-executive-briefing",
+      "schedule": "0 3 * * 0,1,2,3,4,6"
+    },
+    {
+      "path": "/api/cron/evening-digest",
+      "schedule": "30 14 * * 0,1,2,3,4,6"
+    },
+    {
+      "path": "/api/cron/weekly-kpi-summary",
+      "schedule": "0 3 * * 1"
     }
   ],
   "headers": [
