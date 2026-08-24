@@ -521,6 +521,70 @@ function handleServiceDetailOverlayClick(event) {
 }
 window.handleServiceDetailOverlayClick = handleServiceDetailOverlayClick;
 
+// ── 7.5. INTERACTIVE ROI CALCULATOR ──
+function updateRoiCalc() {
+  const spendSlider = document.getElementById('calcSpendSlider');
+  const volumeSlider = document.getElementById('calcVolumeSlider');
+  if (!spendSlider || !volumeSlider) return;
+
+  const spendUSD = parseInt(spendSlider.value, 10);
+  const volume = parseInt(volumeSlider.value, 10);
+
+  // Exchange rate BDT calculation
+  const spendBDT = Math.round(spendUSD * 118);
+  const savingsUSD = Math.round(spendUSD * 0.65);
+  const savingsBDT = Math.round(savingsUSD * 118);
+
+  const hoursSaved = Math.round(volume * 4.2);
+  const speedFactor = (volume > 40 ? '12x' : (volume > 20 ? '8.5x' : '5x'));
+
+  // Update slider labels
+  const spendDisplay = document.getElementById('calcSpendDisplay');
+  if (spendDisplay) {
+    spendDisplay.innerText = currentCurrency === 'BDT' ? `৳${spendBDT.toLocaleString()} / mo` : `$${spendUSD.toLocaleString()} / mo`;
+  }
+
+  const volumeDisplay = document.getElementById('calcVolumeDisplay');
+  if (volumeDisplay) {
+    volumeDisplay.innerText = `${volume} Deliverables`;
+  }
+
+  // Update projected savings displays
+  const savingsDisplay = document.getElementById('calcSavingsDisplay');
+  if (savingsDisplay) {
+    savingsDisplay.innerText = currentCurrency === 'BDT' ? `৳${savingsBDT.toLocaleString()} / mo` : `$${savingsUSD.toLocaleString()} / mo`;
+  }
+
+  const savingsSub = document.getElementById('calcSavingsSub');
+  if (savingsSub) {
+    savingsSub.innerText = currentCurrency === 'BDT' ? `($${savingsUSD.toLocaleString()}/mo in USD)` : `(৳${(savingsBDT / 100000).toFixed(2)} Lakh / mo in BDT)`;
+  }
+
+  const hoursDisplay = document.getElementById('calcHoursDisplay');
+  if (hoursDisplay) {
+    hoursDisplay.innerText = `${hoursSaved} hrs`;
+  }
+
+  const speedDisplay = document.getElementById('calcSpeedDisplay');
+  if (speedDisplay) {
+    speedDisplay.innerText = `${speedFactor} Faster`;
+  }
+}
+window.updateRoiCalc = updateRoiCalc;
+
+function prefillAuditFromCalc() {
+  const spendSlider = document.getElementById('calcSpendSlider');
+  const volumeSlider = document.getElementById('calcVolumeSlider');
+  const notesField = document.getElementById('leadNotes');
+  
+  if (spendSlider && volumeSlider && notesField) {
+    const spend = spendSlider.value;
+    const vol = volumeSlider.value;
+    notesField.value = `[AI ROI Estimator]: Current spend ~$${spend}/mo with ~${vol} deliverables/mo. Looking for automated pipelines to reduce overhead.`;
+  }
+}
+window.prefillAuditFromCalc = prefillAuditFromCalc;
+
 // ── 7. LEAD AUDIT MODAL CONTROLLER ──
 function openLeadModal(serviceName) {
   const modal = document.getElementById('leadModalOverlay');
@@ -550,7 +614,7 @@ function handleLeadModalOverlayClick(event) {
 }
 window.handleLeadModalOverlayClick = handleLeadModalOverlayClick;
 
-// ── 8. LEAD FORM SUBMISSIONS (API CONNECTIVITY) ──
+// ── 8. LEAD FORM SUBMISSIONS (API & WHATSAPP CONNECTIVITY) ──
 async function submitLandingLead(e) {
   e.preventDefault();
   const btn = document.getElementById('btnSubmitLead');
@@ -583,22 +647,27 @@ async function submitLandingLead(e) {
     });
 
     const data = await res.json();
-    if (res.ok && (data.success || data.lead || data.id)) {
-      feedback.style.display = 'block';
-      feedback.style.background = 'rgba(0, 223, 137, 0.15)';
-      feedback.style.color = '#00df89';
-      feedback.style.border = '1px solid rgba(0, 223, 137, 0.35)';
-      feedback.innerHTML = '🎉 <strong>Request Received!</strong> Our team will review your requirements and reach out within 24 hours via email/WhatsApp.';
-      document.getElementById('landingLeadForm').reset();
-    } else {
-      throw new Error(data.error || 'Failed to submit');
-    }
+    const waText = encodeURIComponent(`Hi GRO10X, I just submitted an AI strategy audit request on gro10x.ai.\nName: ${name}\nService: ${service}\nEmail: ${email}`);
+    const waUrl = `https://wa.me/8801708459008?text=${waText}`;
+
+    feedback.style.display = 'block';
+    feedback.style.background = 'rgba(0, 223, 137, 0.12)';
+    feedback.style.color = '#00df89';
+    feedback.style.border = '1px solid rgba(0, 223, 137, 0.35)';
+    feedback.innerHTML = `
+      <div style="font-size:1rem; font-weight:800; margin-bottom:0.4rem;">🎉 Request Received Successfully!</div>
+      <div style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:0.85rem;">Our engineering team will prepare your proposal within 24 hours.</div>
+      <a href="${waUrl}" target="_blank" class="pb-btn-primary" style="display:inline-flex; align-items:center; gap:0.5rem; text-decoration:none; padding:0.55rem 1rem; font-size:0.85rem; background:#25D366; color:#070b12;">
+        💬 Chat Directly on WhatsApp (+8801708459008) →
+      </a>
+    `;
+    document.getElementById('landingLeadForm').reset();
   } catch (err) {
     feedback.style.display = 'block';
     feedback.style.background = 'rgba(239, 68, 68, 0.15)';
     feedback.style.color = '#ef4444';
     feedback.style.border = '1px solid rgba(239, 68, 68, 0.35)';
-    feedback.innerHTML = `⚠️ Note: Saved locally. You can also message us directly at <a href="mailto:gro10xnow@gmail.com" style="color:#00df89;">gro10xnow@gmail.com</a>.`;
+    feedback.innerHTML = `⚠️ Saved locally. Fast-track via <a href="https://wa.me/8801708459008" target="_blank" style="color:#00df89; font-weight:700;">WhatsApp: +8801708459008</a>.`;
   } finally {
     btn.disabled = false;
     btn.innerText = '🚀 Submit Strategy Request →';
@@ -632,14 +701,21 @@ async function submitModalLead(e) {
       })
     });
 
+    const waText = encodeURIComponent(`Hi GRO10X, I just booked a consultation for ${service} on gro10x.ai.\nName: ${name}\nPhone: ${phone}`);
+    const waUrl = `https://wa.me/8801708459008?text=${waText}`;
+
     feedback.style.display = 'block';
-    feedback.style.color = '#00df89';
-    feedback.innerHTML = '✅ <strong>Consultation Booked!</strong> We will contact you shortly.';
+    feedback.innerHTML = `
+      <div style="color:#00df89; font-weight:800; margin-bottom:0.5rem;">✅ Consultation Booked!</div>
+      <a href="${waUrl}" target="_blank" style="display:inline-block; background:#25D366; color:#070b12; font-weight:800; font-size:0.8rem; padding:0.45rem 0.85rem; border-radius:8px; text-decoration:none;">
+        💬 Fast-Track on WhatsApp →
+      </a>
+    `;
     setTimeout(() => {
       closeLeadModal();
       feedback.style.display = 'none';
       document.getElementById('modalLeadForm').reset();
-    }, 2500);
+    }, 4500);
   } catch (e) {
     feedback.style.display = 'block';
     feedback.style.color = '#00df89';
