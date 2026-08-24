@@ -1,494 +1,952 @@
-// 🔮 PURPLEBOT DIGITAL — SERVICE DETAIL PAGE CONTROLLER (v0.8.0 - Phase 6 Overhaul)
+// ⚡ GRO10X AI GROWTH AGENCY — SERVICE DETAIL PAGE CONTROLLER (v4.0)
 
-const SERVICE_DATABASE = {
-  'digital-marketing': {
-    title: 'Digital Marketing',
-    category: 'PERFORMANCE & GROWTH',
-    heroTitle: 'Digital Marketing & <br><span class="pb-gradient-text">Brand Growth</span>',
-    subtitle: 'Strategic social media management, targeted paid ads, content creation, SEO, and community management built to drive high-converting ROI.',
-    metaDesc: 'Scale your revenue with Purplebot Digital performance marketing, social media retainers, Meta & Google ads, and SEO.',
-    startingPrice: '৳45,000 / month (~$410)',
-    statCard1: { icon: '🎯', title: 'Meta & Google ROI', desc: 'Data-driven conversion funnels' },
-    statCard2: { icon: '📈', title: '3.8x Avg ROAS', desc: 'Verified performance metrics' },
-    pills: [
-      '📱 Social Media Marketing',
-      '📈 Meta & Google Paid Ads',
-      '🔍 Search Engine Optimization (SEO)',
-      '✍️ Content Strategy & Copywriting',
-      '💬 Community & Page Management',
-      '📊 Performance Analytics & ROI Reports'
-    ],
+// ── 1. GLOBAL CURRENCY & STATE ──
+var currentCurrency = localStorage.getItem('gro10x_currency') || 'USD';
+var activeService = null;
+
+// ── 2. CANONICAL SERVICE CATALOG ──
+var GRO10X_CATALOG = [
+  {
+    id: "SVC-001",
+    slug: "ai-mobile-apps",
+    category: "mobile-web",
+    categoryName: "AI Mobile Development",
+    icon: "📱",
+    title: "AI Mobile Apps",
+    badge: "NEW",
+    description: "Custom iOS and Android mobile apps with native generative AI and intelligent agent features built-in.",
+    priceUSD: "$3,500",
+    priceBDT: "৳410,000",
+    priceCycle: "/ project",
+    deliveryTime: "3-4 Weeks",
     features: [
-      { icon: '📱', title: 'Social Media Strategy & Retainers', desc: 'Monthly content plans, creative graphic posts, captions, and publishing calendar tailored to your target demographic.' },
-      { icon: '🎯', title: 'Meta & Google Ads Engine', desc: 'Precision audience targeting, retargeting pixels, A/B ad creative testing, and conversion funnel optimization.' },
-      { icon: '💬', title: 'Community Response SLA < 15m', desc: 'Dedicated page moderators ensuring customer inquiries, DMs, and comments are answered rapidly around the clock.' },
-      { icon: '🔍', title: 'Search Engine Optimization (SEO)', desc: 'On-page SEO, technical audits, keyword research, and high-authority link building for long-term organic leads.' },
-      { icon: '✍️', title: 'Copywriting & Content Strategy', desc: 'High-converting ad copy, landing page content, brand storytelling, and weekly campaign scripts.' },
-      { icon: '📊', title: 'Performance Analytics & Reports', desc: 'Transparent weekly and monthly dashboard reports detailing reach, cost-per-lead, conversion rates, and ROI.' }
+      "Native React Native / Flutter Stack",
+      "On-Device & Cloud AI Model Integration",
+      "Real-Time Sync & Offline Mode Support",
+      "App Store & Play Store Deployment Setup"
     ],
-    process: [
-      { num: '01', icon: '🔍', title: 'Audit & Benchmark', desc: 'We analyze your brand footprint, competitor strategies, and customer demographics to set KPIs.' },
-      { num: '02', icon: '✍️', title: 'Content & Campaign Setup', desc: 'Our copywriters and graphic designers build campaign funnels, ad creatives, and posting schedules.' },
-      { num: '03', icon: '🚀', title: 'Launch & A/B Testing', desc: 'Campaigns go live with continuous budget optimization and dynamic ad set testing.' },
-      { num: '04', icon: '📈', title: 'Scale & Monthly ROI Reports', desc: 'We double down on top-performing assets and provide clear weekly/monthly ROI statements.' }
+    includedFeatures: [
+      "UX/UI Mobile Prototype in Figma",
+      "Full Source Code & GitHub Repository Handover",
+      "Cloud Infrastructure & Database Setup",
+      "30 Days Post-Launch Maintenance & Bug Fixes"
     ],
-    portfolio: [
-      { title: 'Chillox Burger Chain Social Scale', client: 'Chillox BD', category: 'Social Media & Paid Ads', metric: '+240% Sales Leads', bg: '#0f172a' },
-      { title: 'Crave BD E-Commerce Ad Campaign', client: 'Crave BD', category: 'Meta Ads & Funnels', metric: '4.2x ROAS Delivered', bg: '#1e1b4b' },
-      { title: 'Secret Recipe Ramadan Marketing', client: 'Secret Recipe', category: 'Seasonal Campaign', metric: '+1.5M Local Impressions', bg: '#311042' }
+    details: "We engineer production-ready iOS and Android applications embedded with OpenAI, Claude, and on-device machine learning models. Perfect for AI startups, productivity apps, voice companions, and smart business utilities.",
+    faq: [
+      { q: "Which platforms do you support?", a: "We build cross-platform apps using React Native and Flutter, ensuring seamless performance on both iOS and Android with a single unified codebase." },
+      { q: "Can we integrate our custom AI models?", a: "Yes. We connect via REST APIs, WebSockets, or on-device CoreML / TensorFlow Lite models depending on latency and privacy needs." },
+      { q: "Who owns the intellectual property and code?", a: "You do. 100% of the source code, design assets, and intellectual property are transferred to your repository upon completion." }
     ]
   },
-  'video-editing': {
-    title: 'Video Editing & Animation',
-    category: 'AV PRODUCTION & ANIMATION',
-    heroTitle: 'Video Production & <br><span class="pb-gradient-text">Reels & TVC</span>',
-    subtitle: 'From viral short-form reels to 2D/3D animated explainers, motion graphics, sound design, color grading, and commercial TVCs.',
-    metaDesc: 'Engage your audience with viral video reels, 2D/3D explainers, TVC commercials, color grading, and motion graphics by Purplebot Digital.',
-    startingPrice: '৳40,000 / batch (~$360)',
-    statCard1: { icon: '🎬', title: '4K Commercial Cut', desc: 'Frame-accurate editing & FX' },
-    statCard2: { icon: '⚡', title: '48hr Turnaround', desc: 'Fast delivery for social reels' },
-    pills: [
-      '🎬 Scriptwriting & Storyboarding',
-      '🎥 2D/3D Explainer Video',
-      '📢 2D/3D Infomercial Video',
-      '✨ Motion Graphics',
-      '🕶️ AR Video Production',
-      '🔊 Sound Design & SFX',
-      '🎨 Color Grading & Correction',
-      '✂️ Multi-Cam TVC Editing'
-    ],
+  {
+    id: "SVC-002",
+    slug: "ai-websites-software",
+    category: "mobile-web",
+    categoryName: "AI Mobile Development",
+    icon: "💻",
+    title: "AI Websites & Software",
+    badge: "NEW",
+    description: "Ultra-fast web platforms and SaaS apps powered by modern frameworks and smart AI automation tools.",
+    priceUSD: "$2,500",
+    priceBDT: "৳295,000",
+    priceCycle: "/ project",
+    deliveryTime: "2-3 Weeks",
     features: [
-      { icon: '🎬', title: 'Animated AV & 2D/3D Explainers', desc: 'Infographics, storyboarding, character design, and 2D/3D animation for complex product features and company presentations.' },
-      { icon: '✂️', title: 'Commercial TVC & Product Cut', desc: 'Multi-cam edits, licensed audio composition, broadcast color grading, and high-impact visual cuts for television and web.' },
-      { icon: '📱', title: 'Viral Short-Form Reels & Shorts', desc: 'High-retention vertical cut reels with dynamic captions, sound FX, and hooks optimized for TikTok, Instagram, and YouTube Shorts.' },
-      { icon: '✨', title: 'Motion Graphics & Visual Effects', desc: 'Custom lower thirds, logo intros, typography animations, particle effects, and green-screen background keying.' },
-      { icon: '🔊', title: 'Sound Engineering & Voiceover', desc: 'Studio voiceover recording in English and Bengali, sound effects layering, noise reduction, and final audio mastering.' },
-      { icon: '🎨', title: 'Color Grading & Finishing', desc: 'Professional Davinci Resolve color grading, mood matching, skin-tone correction, and final 4K export master rendering.' }
+      "Next.js & Node.js Scalable Architecture",
+      "AI Lead Generation & Dynamic Forms",
+      "SEO & Core Web Vitals 95+ Optimized",
+      "Custom Database & User Authentication"
     ],
-    process: [
-      { num: '01', icon: '📜', title: 'Script & Storyboard', desc: 'We write compelling video scripts and frame-by-frame visual storyboards for your approval.' },
-      { num: '02', icon: '🎥', title: 'Animation & Assembly', desc: 'Animators and editors construct the rough cut, keyframes, transitions, and scene pacing.' },
-      { num: '03', icon: '🔊', title: 'Sound FX & Color Grade', desc: 'We apply voiceovers, licensed music tracks, custom SFX, and professional color grading.' },
-      { num: '04', icon: '✨', title: 'Review Room Approval', desc: 'You preview the cut in our interactive Review Room, leave timestamped notes, and approve the final master.' }
+    includedFeatures: [
+      "Custom Responsive Design System",
+      "Stripe / SSLCommerz Payment Gateway Integration",
+      "Admin Analytics Dashboard",
+      "Serverless Vercel Cloud Hosting Setup"
     ],
-    portfolio: [
-      { title: 'Chillox TVC Master Commercial Cut', client: 'Chillox Fast Food', category: 'Broadcast Commercial TVC', metric: 'v2.4 Approved Master', bg: '#09090b' },
-      { title: 'Hero MotoCorp 2D Explainer Video', client: 'Hero Bangladesh', category: '2D Animated Explainer', metric: '500K Organic Views', bg: '#18181b' },
-      { title: 'Foodpanda Viral Reel Series', client: 'Foodpanda BD', category: 'Short-Form Video Reels', metric: '1.2M Total Retention', bg: '#27272a' }
+    details: "From high-converting landing pages to complex multi-tenant SaaS platforms, we design and code web experiences that turn visitors into paying customers on autopilot.",
+    faq: [
+      { q: "Is the website SEO-ready?", a: "Yes, every page is built with semantic HTML, automated sitemaps, structured schema data, and fast load speeds to ensure top Google rankings." },
+      { q: "Can we add user accounts and subscriptions?", a: "Yes, we integrate authentication (Supabase / NextAuth) and payment billing (Stripe) out of the box." }
     ]
   },
-  'tvc-production': {
-    title: 'TVC & OVC Commercial Production',
-    category: 'COMMERCIAL TVC & FILM',
-    heroTitle: 'TVC & OVC Commercial <br><span class="pb-gradient-text">Video Production</span>',
-    subtitle: 'High-production video commercials with creative storyboarding, cinema director, 4K camera crew, talent casting, and broadcast master edit.',
-    metaDesc: 'Broadcast commercial TVCs and online video commercials (OVC) produced by Purplebot Digital.',
-    startingPrice: '৳250,000 / project (~$2,270)',
-    statCard1: { icon: '🎬', title: '4K Cinema Cut', desc: 'Broadcast color grading & FX' },
-    statCard2: { icon: '🏆', title: '100% SLA Record', desc: 'On-time TVC delivery' },
-    pills: [
-      '🎬 Creative Storyboarding',
-      '🎥 4K Cinema Camera Crew',
-      '🎭 Professional Talent Casting',
-      '🔊 Custom Music & Sound Design',
-      '🎨 DaVinci Color Grading',
-      '📺 TVC Broadcast Master Cuts'
-    ],
+  {
+    id: "SVC-003",
+    slug: "ai-chatbots-agents",
+    category: "mobile-web",
+    categoryName: "AI Mobile Development",
+    icon: "🤖",
+    title: "AI Chatbots & Intelligent Agents",
+    badge: "POPULAR",
+    description: "24/7 smart conversational assistants connected to your knowledge base, WhatsApp, and CRM pipelines.",
+    priceUSD: "$1,500",
+    priceBDT: "৳175,000",
+    priceCycle: "/ setup",
+    deliveryTime: "7-10 Days",
     features: [
-      { icon: '🎬', title: 'Commercial TVC & OVC Shoots', desc: 'End-to-end commercial video production featuring 4K cinema cameras, professional lighting setups, and experienced directors.' },
-      { icon: '🎭', title: 'Talent Casting & Location Scouting', desc: 'Casting professional actors, models, and voiceover artists alongside scouting premium filming locations.' },
-      { icon: '🎨', title: 'Broadcast Color Grading & Mastering', desc: 'DaVinci Resolve color grading, audio mastering, and broadcast-ready delivery cuts for TV and digital media.' },
-      { icon: '🔊', title: 'Original Jingle & Sound Composition', desc: 'Custom background scores, jingles, sound effects, and multi-lingual voiceover recording.' }
+      "Context-Aware RAG Knowledge Base",
+      "WhatsApp, Telegram & Web Widget Sync",
+      "Human Handoff & CRM Auto-Recording",
+      "Multi-Language Automatic Translation"
     ],
-    process: [
-      { num: '01', icon: '📜', title: 'Concept & Scripting', desc: 'We draft the creative concept, TVC script, and visual storyboard for your brand.' },
-      { num: '02', icon: '🎥', title: 'Production Shoot', desc: 'Our cinema crew handles multi-camera filming, lighting, and sound on set.' },
-      { num: '03', icon: '✂️', title: 'Post-Production & Grading', desc: 'Editors refine the cut, apply color grading, visual effects, and custom sound design.' },
-      { num: '04', icon: '📺', title: 'Broadcast Handover', desc: 'Final 4K master files delivered for TV broadcast and digital ad campaigns.' }
+    includedFeatures: [
+      "Document Ingestion (PDFs, Notion, FAQs)",
+      "Lead Qualification & Booking Engine",
+      "Prompt Optimization & Anti-Hallucination Guardrails",
+      "1 Year Cloud Vector Database Hosting"
     ],
-    portfolio: [
-      { title: 'Chillox TVC Commercial Master Cut', client: 'Chillox BD', category: 'Broadcast TVC', metric: '2.4M Organic Reach', bg: '#09090b' },
-      { title: 'UCB Financial Report Launch Video', client: 'UCB Bank', category: 'Corporate TVC', metric: '100% On-Time Delivery', bg: '#18181b' },
-      { title: 'InterContinental Luxury Promo OVC', client: 'InterContinental', category: 'Hotel Promo Film', metric: '+1.8M Impressions', bg: '#27272a' }
+    details: "Replace static web forms and slow customer service with intelligent AI agents that qualify leads, answer detailed product questions, and book sales calls 24/7.",
+    faq: [
+      { q: "How accurate is the chatbot?", a: "Using Retrieval-Augmented Generation (RAG) and strict guardrails, the bot only responds based on your verified business documents, preventing hallucinations." }
     ]
   },
-  'branding-graphics': {
-    title: 'Branding & Graphics Design',
-    category: 'BRAND IDENTITY & CREATIVE',
-    heroTitle: 'Brand Identity & <br><span class="pb-gradient-text">Graphics Design</span>',
-    subtitle: 'Cut through the clutter with unique logo design, complete brand books, packaging, and high-impact marketing collaterals.',
-    metaDesc: 'Craft an unforgettable brand identity with Purplebot Digital logo design, packaging, brand guidelines, and POSM marketing collaterals.',
-    startingPrice: '৳65,000 / project (~$590)',
-    statCard1: { icon: '🎨', title: '360° Identity System', desc: 'Logos, guidelines & toolkits' },
-    statCard2: { icon: '📦', title: 'Print & POSM Ready', desc: 'Vector assets for print & packaging' },
-    pills: [
-      '🎨 Logo & Brand Identity',
-      '📦 Packaging & Label Design',
-      '📐 Brand Guidelines & Toolkits',
-      '🖼️ Graphic Design & POSM',
-      '👕 Merchandise & Apparel Design',
-      '✨ 3D Packaging Renderings'
-    ],
+  {
+    id: "SVC-004",
+    slug: "ai-integrations-apis",
+    category: "mobile-web",
+    categoryName: "AI Mobile Development",
+    icon: "🔌",
+    title: "AI Integrations & APIs",
+    badge: "",
+    description: "Seamlessly connect your existing business tools (Stripe, HubSpot, Slack, WhatsApp) to state-of-the-art AI models.",
+    priceUSD: "$1,200",
+    priceBDT: "৳140,000",
+    priceCycle: "/ project",
+    deliveryTime: "5-7 Days",
     features: [
-      { icon: '🎨', title: '360° Brand Identity System', desc: 'Primary & secondary logos, color palette codes, typography hierarchy, brand voice guide, and vector logo assets.' },
-      { icon: '📦', title: 'Product & Packaging Design', desc: 'Retail packaging boxes, bottle labels, unboxing experience graphics, and photorealistic 3D product mockups.' },
-      { icon: '📐', title: 'POSM & Retail Marketing Collaterals', desc: 'Banners, standees, flyers, brochures, menu cards, social post templates, and billboard advertising graphics.' },
-      { icon: '📘', title: 'Brand Guidelines & Standards Book', desc: 'A comprehensive brand rulebook ensuring consistent visual presentation across print, web, and social channels.' },
-      { icon: '✨', title: 'Social Media Graphic Templates', desc: 'Custom Figma & Photoshop templates for promotional posts, stories, banners, and announcement cards.' }
+      "Custom Webhooks & REST API Middleware",
+      "Automated Data Sync Pipelines",
+      "Zapier / Make.com / n8n Automation Nodes",
+      "Zero Downtime Architecture"
     ],
-    process: [
-      { num: '01', icon: '💡', title: 'Brand Discovery', desc: 'We explore your target market, brand personality, mood boards, and aesthetic direction.' },
-      { num: '02', icon: '🎨', title: 'Concept Creation', desc: 'Designers draft multiple distinct logo directions and visual identity concepts.' },
-      { num: '03', icon: '📐', title: 'Refinement & Collaterals', desc: 'We refine the chosen direction and build packaging, POSM, and graphic toolkits.' },
-      { num: '04', icon: '📦', title: 'Asset Handover', desc: 'You receive vector SVG, AI, EPS, print-ready PDFs, and the master brand book.' }
+    includedFeatures: [
+      "API Error Handling & Retry Queues",
+      "Rate-Limiting & Cost Monitoring",
+      "Secure Environment Secrets Management",
+      "Technical Documentation & Runbook"
     ],
-    portfolio: [
-      { title: 'Niketon Bistro Brand Identity System', client: 'Niketon Hospitality', category: 'Brand Guidelines & POSM', metric: 'Complete Rebrand', bg: '#1c1917' },
-      { title: 'Apex Footwear Campaign POSM Design', client: 'Apex BD', category: 'Retail POSM & Banners', metric: 'Deployed 80+ Stores', bg: '#292524' },
-      { title: 'Artisan Gourmet Coffee Packaging', client: 'Artisan Roasters', category: '3D Package & Label Design', metric: 'International Award Winner', bg: '#44403c' }
+    details: "Unify your fragmented tools. We build custom API bridges that automate repetitive data entry, customer notifications, and internal team operations.",
+    faq: [
+      { q: "Do you support no-code tools like Make.com?", a: "Yes, we build both custom Node.js/Python microservices and n8n/Make/Zapier automated workflows depending on your preference." }
     ]
   },
-  'website-development': {
-    title: 'Website Development',
-    category: 'WEB ENGINE & DESIGN',
-    heroTitle: 'Website Development & <br><span class="pb-gradient-text">Custom Web Apps</span>',
-    subtitle: 'Sleek corporate portfolio sites, dynamic e-commerce platforms, custom-coded web apps, fast loading speed, and mobile optimization.',
-    metaDesc: 'Build high-converting websites, e-commerce stores, custom Web apps, and responsive mobile interfaces with Purplebot Digital.',
-    startingPrice: '৳120,000 / project (~$1,090)',
-    statCard1: { icon: '🌐', title: 'Sub-Second Speed', desc: 'Optimized lighthouse score 95+' },
-    statCard2: { icon: '🔒', title: 'Enterprise Guard', desc: 'SSL, API protection & backup' },
-    pills: [
-      '🌐 WordPress Custom Themes',
-      '💻 React / Next.js Web Apps',
-      '🏢 Corporate Portfolio Portals',
-      '🛒 E-Commerce Solutions',
-      '🛠️ Maintenance & Hosting',
-      '📱 Mobile UX Optimization'
-    ],
+  {
+    id: "SVC-005",
+    slug: "ai-fine-tuning-custom-models",
+    category: "mobile-web",
+    categoryName: "AI Mobile Development",
+    icon: "🧠",
+    title: "AI Fine-Tuning & Custom Models",
+    badge: "",
+    description: "Train and customize large language models on your internal data and brand tone for hyper-accurate outputs.",
+    priceUSD: "$2,800",
+    priceBDT: "৳330,000",
+    priceCycle: "/ model",
+    deliveryTime: "2-3 Weeks",
     features: [
-      { icon: '🌐', title: 'WordPress & Custom Web Sites', desc: 'Fast, secure, search-engine-friendly corporate websites built with custom themes or lightweight page builders.' },
-      { icon: '🛒', title: 'E-Commerce Storefronts', desc: 'Shopping cart integration, payment gateways (bKash, Nagad, Visa), inventory sync, and order notifications.' },
-      { icon: '⚡', title: 'Mobile & Device Optimization', desc: 'Flawless responsive design, touch-friendly UI components, and fluid layout adjustments across all screen resolutions.' },
-      { icon: '🚀', title: 'Speed & Technical SEO Audit', desc: 'Image compression, code minification, CDN setup, and structured schema markup for top search engine rankings.' },
-      { icon: '💻', title: 'Headless Web App Architecture', desc: 'Modern React/Vite/Next.js frontend applications connected to scalable REST and GraphQL APIs.' },
-      { icon: '🛡️', title: 'Web Maintenance & SLA Support', desc: 'Routine security patches, automated database backups, speed monitoring, and content updates.' }
+      "Dataset Cleaning, Formatting & Synthetic Data",
+      "LoRA & Full Fine-Tuning Pipelines",
+      "Automated Benchmark & Evals Testing",
+      "Private Secure Cloud Hosting"
     ],
-    process: [
-      { num: '01', icon: '🎨', title: 'Wireframes & UX Mockup', desc: 'We map out user flows, section hierarchy, and interactive prototypes for design approval.' },
-      { num: '02', icon: '💻', title: 'Frontend & Backend Coding', desc: 'Developers write clean, responsive code integrated with secure CMS or custom database backends.' },
-      { num: '03', icon: '🧪', title: 'Performance & QA Audit', desc: 'We test cross-browser compatibility, page speed scores, SSL certificates, and mobile responsiveness.' },
-      { num: '04', icon: '🚀', title: 'Launch & Training', desc: 'Site goes live on production server with full admin training and 30-day post-launch warranty.' }
+    includedFeatures: [
+      "Training Loss & Accuracy Reports",
+      "Inference API Endpoint Setup",
+      "Model Weight Export & Archive",
+      "Quarterly Retraining Protocol"
     ],
-    portfolio: [
-      { title: 'GRO10X Business Enterprise Portal', client: 'GRO10X Group', category: 'Custom Web Application', metric: '0.4s Page Load Speed', bg: '#064e3b' },
-      { title: 'Rupsha Tower Corporate Website', client: 'Rupsha Real Estate', category: 'Corporate Portfolio Web', metric: '+180% Web Inquiries', bg: '#022c22' },
-      { title: 'Lifestyle Fashion E-Commerce Store', client: 'Urban Threads', category: 'E-Commerce & bKash Pay', metric: '$120K Monthly GMV', bg: '#134e4a' }
+    details: "When off-the-shelf models are not specialized enough, we fine-tune open-weight models (Llama 3, Mistral, Gemma) or OpenAI models on your proprietary datasets.",
+    faq: [
+      { q: "Is our data kept secure and private?", a: "Absolutely. All training runs are conducted in isolated private environments and your data is never used to train public models." }
     ]
   },
-  'custom-tech': {
-    title: 'Custom Tech Solutions',
-    category: 'ENTERPRISE TECH & SYSTEMS',
-    heroTitle: 'Custom Tech & <br><span class="pb-gradient-text">Enterprise Systems</span>',
-    subtitle: 'Innovative technology solutions designed to streamline business operations, automate workflows, and empower teams.',
-    metaDesc: 'Automate business operations with custom ERPs, CRMs, inventory managers, mobile PWAs, and full-stack software by Purplebot Digital.',
-    startingPrice: 'Custom Enterprise Scope',
-    statCard1: { icon: '👥', title: 'Custom CRM & ERP', desc: 'Tailored for your business workflows' },
-    statCard2: { icon: '🤖', title: 'AI & Automation', desc: 'Bots, APIs & SSE integrations' },
-    pills: [
-      '🛒 E-commerce & Inventory System',
-      '👥 CRM Sales Pipeline Portal',
-      '🍔 Restaurant & Order Delivery App',
-      '📋 HR & Operations Management System',
-      '⚙️ Enterprise ERP Custom Software',
-      '💻 Tech Talent Outsourcing'
-    ],
+  {
+    id: "SVC-006",
+    slug: "ai-technology-consulting",
+    category: "mobile-web",
+    categoryName: "AI Mobile Development",
+    icon: "💡",
+    title: "AI Technology Consulting",
+    badge: "NEW",
+    description: "Expert technical roadmap to help your executive team select, architect, and deploy the right AI toolset.",
+    priceUSD: "$800",
+    priceBDT: "৳95,000",
+    priceCycle: "/ audit",
+    deliveryTime: "3-5 Days",
     features: [
-      { icon: '👥', title: 'Custom CRM & ERP Engines', desc: 'Tailor-made portals for sales pipelines, automated invoicing, lead tracking, inventory control, and executive reporting.' },
-      { icon: '🍔', title: 'Industry Operations Systems', desc: 'Specialized management platforms for restaurants, delivery dispatch, real estate, clinics, and retail chains.' },
-      { icon: '🤖', title: 'Automation & Chatbot Integration', desc: 'Telegram/WhatsApp business bots, automated client onboarding, instant lead routing, and workflow webhooks.' },
-      { icon: '💻', title: 'Dedicated Tech Resource Deployment', desc: 'Senior full-stack developers, UI/UX designers, and QA engineers integrated directly into your operating team.' },
-      { icon: '🔄', title: 'Real-Time Sync & Analytics', desc: 'Server-Sent Events (SSE) and WebSockets for real-time dashboard updates without page refreshing.' },
-      { icon: '🔑', title: 'Role-Based Access & Security', desc: 'Bank-grade authentication, session tokens, audit logging, and granual permission controls for team members.' }
+      "Complete Tech Stack Architecture Audit",
+      "Cost vs. ROI Evaluation Matrix",
+      "Technical Architecture Diagram & Blueprints",
+      "Vendor & Foundation Model Selection"
     ],
-    process: [
-      { num: '01', icon: '📋', title: 'System Architecture', desc: 'We map system entities, database schemas, API contracts, and user role permission matrices.' },
-      { num: '02', icon: '⚙️', title: 'Sprint Development', desc: 'Agile 2-week coding sprints with active staging preview links for client testing.' },
-      { num: '03', icon: '🔐', title: 'Security & Penetration Audit', desc: 'We conduct security audits, database indexing, stress tests, and API token validation.' },
-      { num: '04', icon: '🏢', title: 'Deployment & Support', desc: 'Production deployment with full database backup scripts, SLA support, and team onboarding.' }
+    includedFeatures: [
+      "2 x 90-Minute Executive Advisory Calls",
+      "Written 15-Page Technical Roadmap PDF",
+      "Security & Data Compliance Review",
+      "Implementation Vendor RFP Template"
     ],
-    portfolio: [
-      { title: 'PurpleOS Agency ERP Platform', client: 'Purplebot Digital', category: 'Internal Operating System', metric: 'Powers Entire Agency', bg: '#3b0764' },
-      { title: 'Chillox Kitchen Order Dispatch System', client: 'Chillox BD', category: 'Real-Time Restaurant Tech', metric: 'Handles 5K+ Daily Orders', bg: '#4c1d95' },
-      { title: 'Banani Logistics Fleet Tracker', client: 'Banani Express', category: 'Logistics & Inventory App', metric: '99.98% Uptime Record', bg: '#581c87' }
+    details: "Avoid costly mistakes by having senior AI software architects evaluate your technology strategy, cost models, and infrastructure before writing code.",
+    faq: [
+      { q: "Who is this suitable for?", a: "Founders, CTOs, and agency owners planning new AI products who want clear architectural direction and risk mitigation." }
+    ]
+  },
+  {
+    id: "SVC-007",
+    slug: "project-management",
+    category: "mobile-web",
+    categoryName: "AI Mobile Development",
+    icon: "🛠️",
+    title: "Let Us Manage Your Project",
+    badge: "",
+    description: "End-to-end dedicated technical management: we handle design, coding, testing, and cloud deployment.",
+    priceUSD: "Custom Scope",
+    priceBDT: "Custom Scope",
+    priceCycle: "",
+    deliveryTime: "Custom SLA",
+    features: [
+      "Dedicated Technical Project Lead",
+      "Agile Weekly Sprints & Daily Standups",
+      "Transparent Real-Time Kanban Tracking",
+      "100% On-Time Delivery Guarantee"
+    ],
+    includedFeatures: [
+      "Full Product Lifecycle Ownership",
+      "Automated CI/CD Deployment Pipelines",
+      "QA Testing & Code Review Audits",
+      "Weekly Video Briefings & Demos"
+    ],
+    details: "Have an entire dedicated engineering and design team at your disposal. We turn your product vision into reality without the friction of hiring and managing developers.",
+    faq: [
+      { q: "How do we track progress?", a: "You get direct real-time access to our GRO10X Command Center Kanban board, weekly sprint demos, and Slack/Telegram channels." }
+    ]
+  },
+  {
+    id: "SVC-008",
+    slug: "ai-avatar-design",
+    category: "ai-artists",
+    categoryName: "AI Artists",
+    icon: "👤",
+    title: "AI Avatar Design",
+    badge: "NEW",
+    description: "Photorealistic or stylized digital avatars and brand ambassadors customized for your marketing campaigns.",
+    priceUSD: "$600",
+    priceBDT: "৳70,000",
+    priceCycle: "/ avatar kit",
+    deliveryTime: "3-5 Days",
+    features: [
+      "Multiple Character Poses & Facial Expressions",
+      "4K Ultra-HD Commercial License Export",
+      "Voice-Sync Ready Lip Rigging Assets",
+      "Complete Brand Asset Kit Included"
+    ],
+    includedFeatures: [
+      "Character Consistency Prompt Bible",
+      "Transparent PNG & Layered Master Files",
+      "3 Revision Cycles",
+      "Social Media Avatar Presets"
+    ],
+    details: "Create recognizable virtual brand mascots and spokespersons for your video ads, product demonstrations, and social media channels without expensive actor fees.",
+    faq: [
+      { q: "Can we use the avatar in video?", a: "Yes, our avatar asset kits are formatted for direct lip-syncing in HeyGen, SadTalker, and custom video pipelines." }
+    ]
+  },
+  {
+    id: "SVC-009",
+    slug: "comfyui-workflow-creation",
+    category: "ai-artists",
+    categoryName: "AI Artists",
+    icon: "⚙️",
+    title: "ComfyUI Workflow Creation",
+    badge: "POPULAR",
+    description: "Bespoke ComfyUI nodes and automated pipelines for instant, consistent product photo generation.",
+    priceUSD: "$1,500",
+    priceBDT: "৳175,000",
+    priceCycle: "/ workflow",
+    deliveryTime: "7-10 Days",
+    features: [
+      "Custom ControlNet & IP-Adapter Pipelines",
+      "One-Click Automated Generation Setup",
+      "Product Consistency Presets & Seed Controls",
+      "Cloud (RunPod / Modal) or Local Installation"
+    ],
+    includedFeatures: [
+      "Exportable .json Node Graph Handover",
+      "Model Checkpoint & LoRA Recommendations",
+      "Step-by-Step Loom Video Walkthrough",
+      "14 Days Technical Workflow Support"
+    ],
+    details: "Stop doing manual product photoshoots. Generate hundreds of studio-quality marketing images in any setting, angle, or lighting in seconds.",
+    faq: [
+      { q: "Can I run this on my own computer?", a: "Yes, if you have an NVIDIA GPU (8GB+ VRAM), or we can set it up on cloud serverless GPUs for pennies per generation." }
+    ]
+  },
+  {
+    id: "SVC-010",
+    slug: "midjourney-stable-diffusion-art",
+    category: "ai-artists",
+    categoryName: "AI Artists",
+    icon: "🎨",
+    title: "Midjourney & Stable Diffusion Art",
+    badge: "",
+    description: "High-concept artwork, architectural renders, packaging concepts, and high-impact digital art.",
+    priceUSD: "$500",
+    priceBDT: "৳60,000",
+    priceCycle: "/ batch",
+    deliveryTime: "3-5 Days",
+    features: [
+      "Upscaled 4K / 8K Master Deliverables",
+      "Prompt Formula & Seed Handover",
+      "Vectorization & Layered Files Support",
+      "Full Unrestricted Commercial Rights"
+    ],
+    includedFeatures: [
+      "25 Curated High-Concept Visuals",
+      "Color Grading & Post-Processing in Photoshop",
+      "Multiple Aspect Ratios (16:9, 9:16, 1:1)",
+      "2 Rounds of Detailed Revisions"
+    ],
+    details: "Premium visuals crafted by experienced creative directors and prompt engineers for ad campaigns, website headers, packaging, and digital publications.",
+    faq: [
+      { q: "Do we get full copyright?", a: "Yes, all deliverables come with complete commercial usage rights for unlimited marketing and product packaging." }
+    ]
+  },
+  {
+    id: "SVC-011",
+    slug: "all-ai-art-services",
+    category: "ai-artists",
+    categoryName: "AI Artists",
+    icon: "✨",
+    title: "All AI Art Services",
+    badge: "",
+    description: "Full-service visual production covering marketing creatives, social graphics, icon sets, and vector illustrations.",
+    priceUSD: "$500",
+    priceBDT: "৳60,000",
+    priceCycle: "/ month",
+    deliveryTime: "Ongoing Retainer",
+    features: [
+      "Weekly Creative Design Batches",
+      "Fast 48-Hour Turnaround SLA",
+      "Unlimited Revision Cycles on Active Requests",
+      "Social-Ready Formats (1:1, 9:16, 16:9)"
+    ],
+    includedFeatures: [
+      "Dedicated Slack/Telegram Channel",
+      "Shared Figma Asset Library",
+      "Brand Style Guide Alignment",
+      "Cancel Anytime Monthly Retainer"
+    ],
+    details: "A steady stream of fresh marketing assets every week to fuel your social channels, paid ads, blog posts, and marketing campaigns.",
+    faq: [
+      { q: "How many assets can we request?", a: "You can submit unlimited requests to your queue, and we work on them sequentially with 48-hour turnarounds." }
+    ]
+  },
+  {
+    id: "SVC-012",
+    slug: "ai-business-consulting",
+    category: "business-ai",
+    categoryName: "AI for Businesses",
+    icon: "👔",
+    title: "AI Business Consulting",
+    badge: "",
+    description: "Practical 1-on-1 strategy sessions to find the highest-ROI AI automation opportunities in your workflows.",
+    priceUSD: "$750",
+    priceBDT: "৳90,000",
+    priceCycle: "/ session",
+    deliveryTime: "2 Days",
+    features: [
+      "Workflow Bottleneck Deep-Dive Analysis",
+      "Curated AI Tool Stack Recommendations",
+      "Step-by-Step Implementation Blueprint",
+      "Recorded Session & Executive Action Plan"
+    ],
+    includedFeatures: [
+      "2-Hour Deep-Dive Strategy Call",
+      "Custom Automation Architecture Document",
+      "Cost vs. Time Savings Calculator",
+      "14 Days Follow-Up Q&A Support"
+    ],
+    details: "Learn how modern agencies and enterprises are cutting 20+ hours of manual work every week and scaling operations without growing headcount.",
+    faq: [
+      { q: "What should we prepare before the call?", a: "A list of your repetitive business tasks, current software tools, and your primary operational goals for the quarter." }
+    ]
+  },
+  {
+    id: "SVC-013",
+    slug: "ai-strategy-growth-roadmap",
+    category: "business-ai",
+    categoryName: "AI for Businesses",
+    icon: "🗺️",
+    title: "AI Strategy & Growth Roadmap",
+    badge: "",
+    description: "A comprehensive operational transformation roadmap to scale your agency or enterprise using automated systems.",
+    priceUSD: "$1,800",
+    priceBDT: "৳210,000",
+    priceCycle: "/ roadmap",
+    deliveryTime: "10-14 Days",
+    features: [
+      "Multi-Department Operational AI Mapping",
+      "Financial KPI & Margin Growth Projections",
+      "Staff Upskilling & Tool Rollout Plan",
+      "Risk, Security & Privacy Policy Guidelines"
+    ],
+    includedFeatures: [
+      "3 Comprehensive Advisory Interviews",
+      "25-Page Custom Transformation Playbook",
+      "Technology Vendor Selection Matrix",
+      "Quarterly Executive Milestone Plan"
+    ],
+    details: "A strategic, executive-level document mapping out quarterly milestones, AI tool deployment, team training, and targeted cost reductions.",
+    faq: [
+      { q: "Is this suitable for enterprise companies?", a: "Yes, we tailor roadmaps for teams ranging from 5 to 250+ employees across diverse industries." }
+    ]
+  },
+  {
+    id: "SVC-014",
+    slug: "ai-lessons-team-workshops",
+    category: "business-ai",
+    categoryName: "AI for Businesses",
+    icon: "🎓",
+    title: "AI Lessons & Team Workshops",
+    badge: "",
+    description: "Hands-on interactive training sessions to teach your employees how to use ChatGPT, Claude, Midjourney, and automation tools effectively.",
+    priceUSD: "$1,000",
+    priceBDT: "৳120,000",
+    priceCycle: "/ workshop",
+    deliveryTime: "1-Day Workshop",
+    features: [
+      "Live Interactive Screen-Share Demos",
+      "Company-Specific Custom Prompt Kits",
+      "Interactive Q&A & Hands-On Exercises",
+      "Certified Course Completion Badges"
+    ],
+    includedFeatures: [
+      "4-Hour Intensive Live Training",
+      "Permanent Access to Workshop Recordings",
+      "Reusable Prompt Library Handbook",
+      "Pre & Post-Training Capability Assessment"
+    ],
+    details: "Empower your existing staff to produce 3x the output. We train your team on practical, day-to-day AI workflows tailored to your specific industry.",
+    faq: [
+      { q: "Can the workshop be conducted remotely?", a: "Yes, workshops are hosted via Zoom/Google Meet with live exercises, or on-site in Dhaka upon request." }
+    ]
+  },
+  {
+    id: "SVC-015",
+    slug: "data-science-machine-learning",
+    category: "data",
+    categoryName: "Operational Data Intelligence",
+    icon: "🔬",
+    title: "Data Science & ML",
+    badge: "",
+    description: "Turn your historical customer data into predictive models that forecast sales, churn, and high-value customer cohorts.",
+    priceUSD: "$2,400",
+    priceBDT: "৳280,000",
+    priceCycle: "/ project",
+    deliveryTime: "2-3 Weeks",
+    features: [
+      "Predictive Cohort & Churn Modeling",
+      "Customer Lifetime Value (LTV) Projections",
+      "Custom Python & SQL Data Pipeline Build",
+      "Automated Scheduled Training Runs"
+    ],
+    includedFeatures: [
+      "Exploratory Data Analysis (EDA) Report",
+      "Feature Engineering Documentation",
+      "Model Accuracy Evaluation Metrics",
+      "REST API Endpoint for Real-Time Scoring"
+    ],
+    details: "Stop guessing what your customers want. Use scientific predictive machine learning models to guide marketing budgets, pricing, and product decisions.",
+    faq: [
+      { q: "What data format do we need?", a: "We can ingest data directly from PostgreSQL, MySQL, CSVs, Stripe, Google Analytics, or CRM exports." }
+    ]
+  },
+  {
+    id: "SVC-016",
+    slug: "data-analytics-dashboards",
+    category: "data",
+    categoryName: "Operational Data Intelligence",
+    icon: "📊",
+    title: "Data Analytics & Dashboards",
+    badge: "POPULAR",
+    description: "Clean, real-time visual dashboards that give leadership an instant view of marketing ROI, leads, and financials.",
+    priceUSD: "$1,200",
+    priceBDT: "৳140,000",
+    priceCycle: "/ dashboard",
+    deliveryTime: "5-7 Days",
+    features: [
+      "Real-Time Data Connectors & Live Sync",
+      "Custom KPI Metric Cards & Gauges",
+      "Mobile-Friendly Responsive Interface",
+      "Automated Weekly Email & Telegram Reports"
+    ],
+    includedFeatures: [
+      "Multi-Source Data Consolidation (Meta, Google, Stripe)",
+      "Role-Based Access Permissions",
+      "Export to PDF & CSV Functionality",
+      "Dashboard Customization Handover Call"
+    ],
+    details: "Unify data from Google Ads, Meta, Stripe, and your internal database into a single executive command center for instant visibility.",
+    faq: [
+      { q: "Can we embed the dashboard in our portal?", a: "Yes, we build standalone web dashboards or embed them directly into your existing admin panels." }
+    ]
+  },
+  {
+    id: "SVC-017",
+    slug: "data-visualization-diagnostics",
+    category: "data",
+    categoryName: "Operational Data Intelligence",
+    icon: "📈",
+    title: "Data Visualization & Diagnostics",
+    badge: "",
+    description: "Diagnostic user-pathway funnels that pinpoint exactly where prospective customers drop off in your sales pipeline.",
+    priceUSD: "$900",
+    priceBDT: "৳105,000",
+    priceCycle: "/ audit",
+    deliveryTime: "3-5 Days",
+    features: [
+      "Funnel Drop-Off Heatmaps & Analytics",
+      "Conversion Rate Optimization (CRO) Insights",
+      "Cohort Retention & Engagement Graphs",
+      "Prioritized Actionable Fix Checklist"
+    ],
+    includedFeatures: [
+      "Interactive Funnel Diagram",
+      "10-Point Conversion Leak Report",
+      "Recommended A/B Test Variations",
+      "30-Minute Diagnostic Review Call"
+    ],
+    details: "Fix hidden leaks in your acquisition funnels to dramatically increase conversion rates and customer revenue from your existing traffic.",
+    faq: [
+      { q: "How quickly do we see results?", a: "Clients usually identify 2-3 quick conversion wins within 48 hours of implementing our funnel diagnostic checklist." }
+    ]
+  },
+  {
+    id: "SVC-018",
+    slug: "ai-music-videos",
+    category: "video",
+    categoryName: "AI Video",
+    icon: "🎵",
+    title: "AI Music Videos",
+    badge: "",
+    description: "Visually stunning AI-generated music videos, dynamic visualizers, and artistic teaser clips.",
+    priceUSD: "$1,200",
+    priceBDT: "৳140,000",
+    priceCycle: "/ video",
+    deliveryTime: "7-10 Days",
+    features: [
+      "Beat-Synced Visual Transitions & Effects",
+      "Cinematic Dynamic Camera Motions",
+      "Custom Visual Aesthetic & Mood Direction",
+      "4K Ultra-HD Master Render Output"
+    ],
+    includedFeatures: [
+      "Full Length Music Video (up to 4 mins)",
+      "3 Vertical Teaser Cuts for TikTok / Shorts",
+      "Thumbnail Art Package",
+      "Full Commercial Distribution Rights"
+    ],
+    details: "Create mind-bending video visuals that capture viral attention across TikTok, YouTube, and Spotify Canvas without multi-thousand dollar camera crews.",
+    faq: [
+      { q: "Can we specify the art style?", a: "Yes, from hyper-realistic anime to 3D cyberpunk, cinematic noir, or retro-futurism, we tailor visuals to your song." }
+    ]
+  },
+  {
+    id: "SVC-019",
+    slug: "ai-video-avatars",
+    category: "video",
+    categoryName: "AI Video",
+    icon: "🗣️",
+    title: "AI Video Avatars",
+    badge: "POPULAR",
+    description: "Photorealistic talking avatar videos for tutorials, product explainers, and localized multilingual ads.",
+    priceUSD: "$800",
+    priceBDT: "৳95,000",
+    priceCycle: "/ 5 videos",
+    deliveryTime: "3-5 Days",
+    features: [
+      "Realistic Lip-Sync & Natural Gestures",
+      "20+ Languages & Native Accents",
+      "Dynamic Backgrounds & Screen Capture Inserts",
+      "Fast 24-48 Hour Delivery Turnaround"
+    ],
+    includedFeatures: [
+      "5 Custom Explainer / Ad Videos (60s each)",
+      "Dynamic Captions & Sound Effects",
+      "Script Polish & Translation",
+      "Horizontal & Vertical Deliverables"
+    ],
+    details: "Produce endless video presentations, tutorials, and localized multilingual ads without needing a camera, studio, or recording equipment.",
+    faq: [
+      { q: "Can we use our founder's likeness?", a: "Yes, with proper consent we can clone your likeness and voice into a permanent reusable video avatar." }
+    ]
+  },
+  {
+    id: "SVC-020",
+    slug: "ai-ugc-social-ads",
+    category: "video",
+    categoryName: "AI Video",
+    icon: "📱",
+    title: "AI UGC Social Ads",
+    badge: "",
+    description: "Engaging, user-generated style vertical video ads optimized for TikTok, Instagram Reels, and YouTube Shorts.",
+    priceUSD: "$650",
+    priceBDT: "৳75,000",
+    priceCycle: "/ 5 reels",
+    deliveryTime: "3-4 Days",
+    features: [
+      "High-Retention Visual Hooks & Pacing",
+      "Dynamic On-Screen Captions & Sound FX",
+      "A/B Hook Variations for Paid Testing",
+      "Proven E-Commerce & SaaS Ad Formats"
+    ],
+    includedFeatures: [
+      "5 High-Converting Short-Form Videos",
+      "3 Hook Variations per Video (15 total cuts)",
+      "High-Res MP4 Delivery Ready to Run",
+      "Full Ad Spend Commercial License"
+    ],
+    details: "Test dozens of viral ad angles quickly and cost-effectively to find your top-converting winners and lower your Customer Acquisition Cost (CAC).",
+    faq: [
+      { q: "What formats do you deliver?", a: "Standard 9:16 vertical videos formatted specifically for TikTok, Meta Reels, and YouTube Shorts." }
+    ]
+  },
+  {
+    id: "SVC-021",
+    slug: "voice-synthesis-ai-voice-clones",
+    category: "audio",
+    categoryName: "AI Audio",
+    icon: "🎙️",
+    title: "Voice Synthesis & AI Voice Clones",
+    badge: "",
+    description: "Clone your own voice or create realistic synthetic brand voices for podcasts, ads, and interactive assistants.",
+    priceUSD: "$500",
+    priceBDT: "৳60,000",
+    priceCycle: "/ voice model",
+    deliveryTime: "2-3 Days",
+    features: [
+      "Studio Quality Voice Matching & Clarity",
+      "Natural Tone, Emotion & Pacing Control",
+      "Multi-Language Speaking Capability",
+      "Commercial API Integration Ready"
+    ],
+    includedFeatures: [
+      "Custom Voice Model Training",
+      "10 Recorded Audio Sample Outputs",
+      "API Integration Documentation",
+      "Full Commercial Rights"
+    ],
+    details: "Maintain audio brand consistency across hundreds of videos, podcasts, and automated customer phone calls with ultra-realistic voice models.",
+    faq: [
+      { q: "What audio samples are needed?", a: "We require 5-10 minutes of clean, high-quality audio recording with minimal background noise." }
+    ]
+  },
+  {
+    id: "SVC-022",
+    slug: "text-to-speech-engines",
+    category: "audio",
+    categoryName: "AI Audio",
+    icon: "🔊",
+    title: "Text to Speech Engines",
+    badge: "",
+    description: "High-speed automated narration pipelines to turn blog posts, articles, and training docs into studio audio.",
+    priceUSD: "$400",
+    priceBDT: "৳48,000",
+    priceCycle: "/ setup",
+    deliveryTime: "3-5 Days",
+    features: [
+      "Automated High-Speed Audio File Export",
+      "Natural Pacing, Pauses & Pronunciation",
+      "Podcast RSS Feed Automation",
+      "Sub-Second Latency Cloud API Setup"
+    ],
+    includedFeatures: [
+      "Webhook Triggered Audio Generation",
+      "Cloudflare R2 / AWS S3 Storage Setup",
+      "Custom SSML Pronunciation Dictionary",
+      "14 Days Technical Setup Warranty"
+    ],
+    details: "Turn written content, articles, and documentation into engaging audiobooks and podcasts with zero manual recording time.",
+    faq: [
+      { q: "Which TTS engines do you use?", a: "We implement ElevenLabs, OpenAI Audio, Cartesia, and open-source models depending on your budget and latency needs." }
+    ]
+  },
+  {
+    id: "SVC-023",
+    slug: "ai-content-editing",
+    category: "content",
+    categoryName: "AI Content",
+    icon: "📝",
+    title: "AI Content Editing",
+    badge: "",
+    description: "Human-in-the-loop polishing and optimization of AI-generated articles, blogs, and sales landing pages.",
+    priceUSD: "$450",
+    priceBDT: "৳52,000",
+    priceCycle: "/ 10 articles",
+    deliveryTime: "3-5 Days",
+    features: [
+      "Fact-Checking & Source Verification",
+      "SEO Keyword Optimization & Headings",
+      "Readability, Nuance & Tone Refinement",
+      "Plagiarism & AI Detection Scanner Check"
+    ],
+    includedFeatures: [
+      "10 Polished Articles (up to 1,500 words each)",
+      "Meta Titles & Descriptions Included",
+      "Internal & External Linking Structure",
+      "CMS Direct Publishing Support"
+    ],
+    details: "Get the speed of AI writing with the credibility, tone, and depth of veteran human editors. Perfect for content scaling without sacrificing brand reputation.",
+    faq: [
+      { q: "Will this pass AI detection tools?", a: "Our human editors restructure sentences, infuse real-world nuance, and verify facts to ensure authentic, human-level readability." }
+    ]
+  },
+  {
+    id: "SVC-024",
+    slug: "custom-writing-prompts",
+    category: "content",
+    categoryName: "AI Content",
+    icon: "✨",
+    title: "Custom Writing Prompts",
+    badge: "NEW",
+    description: "Tailored prompt engineering libraries designed for your marketing team to produce on-brand copy in seconds.",
+    priceUSD: "$600",
+    priceBDT: "৳70,000",
+    priceCycle: "/ library",
+    deliveryTime: "3-5 Days",
+    features: [
+      "Brand Voice Guidelines Matrix",
+      "Tested System Prompts (Claude & GPT-4o)",
+      "Email, Ad, Blog & Social Copy Templates",
+      "Team Onboarding Video & Notion Handbook"
+    ],
+    includedFeatures: [
+      "25+ Custom-Engineered Prompts",
+      "Few-Shot Output Examples Library",
+      "Prompt Optimization Cheat-Sheet",
+      "30-Minute Team Training Call"
+    ],
+    details: "Equip your writers and marketers with bulletproof prompts that generate consistent, high-converting copy in your exact brand tone every time.",
+    faq: [
+      { q: "Do these prompts work on ChatGPT Plus?", a: "Yes, prompts are optimized for ChatGPT, Claude 3.5 Sonnet, and team AI workspaces." }
     ]
   }
-};
+];
 
+// ── 3. INITIALIZATION ──
 document.addEventListener('DOMContentLoaded', () => {
-  renderServiceDetailPage();
+  initCurrency();
+  loadServiceFromUrl();
+  renderRelatedServices();
 });
 
-async function renderServiceDetailPage() {
-  const ID_TO_KEY = {
-    // SVC-001 / Digital Marketing
-    'svc-001': 'digital-marketing',
-    '1': 'digital-marketing',
-    'srv_001': 'digital-marketing',
-    'digital-marketing': 'digital-marketing',
+// ── 4. CURRENCY LOGIC ──
+function initCurrency() {
+  const saved = localStorage.getItem('gro10x_currency') || 'USD';
+  setCurrency(saved, false);
+}
 
-    // SVC-002 / Reels
-    'svc-002': 'video-editing',
-    '2': 'video-editing',
-    'srv_002': 'video-editing',
-    'video-editing': 'video-editing',
-    'video-production': 'video-editing',
+function setCurrency(curr, rehydrate = true) {
+  currentCurrency = curr;
+  localStorage.setItem('gro10x_currency', curr);
 
-    // SVC-003 / TVC Commercial
-    'svc-003': 'tvc-production',
-    '3': 'tvc-production',
-    'srv_003': 'tvc-production',
-    'tvc-production': 'tvc-production',
+  const isUSD = curr === 'USD';
+  const btnUSD = document.getElementById('btnCurrUSD');
+  const btnBDT = document.getElementById('btnCurrBDT');
+  if (btnUSD) btnUSD.classList.toggle('active', isUSD);
+  if (btnBDT) btnBDT.classList.toggle('active', !isUSD);
 
-    // SVC-004 / Brand Identity
-    'svc-004': 'branding-graphics',
-    '4': 'branding-graphics',
-    'srv_004': 'branding-graphics',
-    'branding-graphics': 'branding-graphics',
-    'branding': 'branding-graphics',
-
-    // SVC-005 / Website Development
-    'svc-005': 'website-development',
-    '5': 'website-development',
-    'srv_005': 'website-development',
-    'website-development': 'website-development',
-
-    // SVC-006 / Custom Tech
-    'svc-006': 'custom-tech',
-    '6': 'custom-tech',
-    'srv_006': 'custom-tech',
-    'custom-tech': 'custom-tech'
-  };
-
-  const urlParams = new URLSearchParams(window.location.search);
-  const rawId = (urlParams.get('id') || urlParams.get('service') || '').trim();
-
-  // Static ID mapping for canonical agency routes
-  const key = ID_TO_KEY[rawId.toLowerCase()];
-
-  if (!key) {
-    // Try dynamic API lookup for custom CMS services
-    if (rawId) {
-      try {
-        const apiRes = await fetch(`/api/cms/services/${encodeURIComponent(rawId)}`);
-        if (apiRes.ok) {
-          const apiData = await apiRes.json();
-          if (apiData.success && apiData.service) {
-            const s = apiData.service;
-            document.title = `${s.title} — Purplebot Digital`;
-            const titleEl = document.getElementById('svcTitle');
-            const categoryEl = document.getElementById('svcCategory');
-            const priceEl = document.getElementById('svcPrice');
-            const descEl = document.getElementById('svcDesc');
-            const featuresContainer = document.getElementById('svcFeaturesContainer');
-            
-            if (titleEl) titleEl.textContent = s.title;
-            if (categoryEl) categoryEl.textContent = s.category || 'Service';
-            if (priceEl) priceEl.textContent = s.price || 'Contact for Quote';
-            if (descEl) descEl.textContent = s.description || '';
-            
-            const feats = s.includedFeatures || s.features || [];
-            if (featuresContainer && Array.isArray(feats) && feats.length > 0) {
-              featuresContainer.innerHTML = feats.map(f => `
-                <div style="display:flex; align-items:center; gap:0.5rem; background:rgba(255,255,255,0.04); padding:0.6rem 1rem; border-radius:8px; border:1px solid rgba(255,255,255,0.08); font-size:0.88rem; color:#fff;">
-                  <span style="color:#10b981;">✓</span> ${String(f).replace(/</g,'&lt;')}
-                </div>
-              `).join('');
-            }
-            return;
-          }
-        }
-      } catch (e) {
-        console.warn('Dynamic service fetch failed:', e);
-      }
-    }
-
-    document.title = 'Service Not Found — Purplebot Digital';
-    const mainContent = document.getElementById('mainContent');
-    if (mainContent) mainContent.style.display = 'none';
-    const notFoundEl = document.getElementById('notFoundContent');
-    if (notFoundEl) notFoundEl.style.display = 'block';
-    return;
+  if (activeService) {
+    const priceEl = document.getElementById('svcPriceMain');
+    if (priceEl) priceEl.innerText = isUSD ? activeService.priceUSD : activeService.priceBDT;
   }
 
-  const data = SERVICE_DATABASE[key];
-
-  // 1. UPDATE PAGE SEO & META TAGS
-  const fullTitle = `${data.title} — Purplebot Digital Agency`;
-  document.title = fullTitle;
-
-  const metaDescEl = document.getElementById('metaDescription');
-  if (metaDescEl) metaDescEl.setAttribute('content', data.metaDesc);
-
-  const ogTitleEl = document.getElementById('ogTitle');
-  if (ogTitleEl) ogTitleEl.setAttribute('content', fullTitle);
-
-  const ogDescEl = document.getElementById('ogDescription');
-  if (ogDescEl) ogDescEl.setAttribute('content', data.metaDesc);
-
-  const ogUrlEl = document.getElementById('ogUrl');
-  if (ogUrlEl) ogUrlEl.setAttribute('content', window.location.href);
-
-  const twitterTitleEl = document.getElementById('twitterTitle');
-  if (twitterTitleEl) twitterTitleEl.setAttribute('content', fullTitle);
-
-  const twitterDescEl = document.getElementById('twitterDescription');
-  if (twitterDescEl) twitterDescEl.setAttribute('content', data.metaDesc);
-
-  // Set Canonical URL
-  let canonicalEl = document.querySelector('link[rel="canonical"]');
-  if (!canonicalEl) {
-    canonicalEl = document.createElement('link');
-    canonicalEl.setAttribute('rel', 'canonical');
-    document.head.appendChild(canonicalEl);
+  if (rehydrate) {
+    renderRelatedServices();
   }
-  canonicalEl.setAttribute('href', `https://purplebot.digital/services/${key}`);
+}
+window.setCurrency = setCurrency;
 
-  // 2. RENDER BREADCRUMB
-  renderBreadcrumbs(data.title);
+// ── 5. URL SERVICE HYDRATION ──
+function loadServiceFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const serviceId = params.get('id') || params.get('service') || 'SVC-001';
+  const slug = params.get('slug');
 
-  // 3. RENDER HERO CONTENT
-  const badge = document.getElementById('svcCategoryBadge');
-  if (badge) badge.innerText = data.category;
+  activeService = GRO10X_CATALOG.find(s => s.id === serviceId || (slug && s.slug === slug)) || GRO10X_CATALOG[0];
 
-  const title = document.getElementById('svcTitle');
-  if (title) title.innerHTML = data.heroTitle;
+  hydrateServiceDOM(activeService);
+}
 
-  const subtitle = document.getElementById('svcSubtitle');
-  if (subtitle) subtitle.innerText = data.subtitle;
+function hydrateServiceDOM(service) {
+  const isUSD = currentCurrency === 'USD';
 
-  // Starting Price Callout Chip
-  const priceCallout = document.getElementById('svcStartingPriceCallout');
-  if (priceCallout && data.startingPrice) {
-    priceCallout.innerHTML = `
-      <div style="display:inline-flex; align-items:center; gap:0.65rem; background:rgba(168,85,247,0.12); border:1px solid rgba(168,85,247,0.3); border-radius:12px; padding:0.55rem 1.15rem; margin:1rem 0; flex-wrap:wrap;">
-        <span style="color:#cbd5e1; font-size:0.88rem; font-weight:600;">💰 Rates start at: <strong style="color:#34d399; font-size:1.02rem;">${data.startingPrice}</strong></span>
-        <a href="/#pricing" style="color:#c084fc; font-weight:700; text-decoration:underline; font-size:0.85rem;">View Full Plans & Pricing →</a>
-      </div>
-    `;
-  }
+  // Title & Metas
+  document.title = `${service.title} — GRO10X AI Growth Agency`;
+  const pageTitle = document.getElementById('pageTitle');
+  if (pageTitle) pageTitle.innerText = `${service.title} — GRO10X AI Agency`;
 
-  // Mascot Floating Card 2
-  const mascotCard2 = document.getElementById('svcMascotCard2');
-  if (mascotCard2 && data.statCard2) {
-    mascotCard2.className = 'pb-mascot-card pb-mascot-card-2';
-    mascotCard2.innerHTML = `
-      <span class="card-icon">${data.statCard2.icon}</span>
-      <div>
-        <strong>${data.statCard2.title}</strong>
-        <span>${data.statCard2.desc}</span>
-      </div>
-    `;
-  }
+  // Hero fields
+  document.getElementById('svcCategoryBadge').innerHTML = `<span>${service.icon}</span> <span>${service.categoryName}</span>`;
+  document.getElementById('svcTitle').innerText = service.title;
+  document.getElementById('svcDesc').innerText = service.description;
+  document.getElementById('svcDeliveryTime').innerText = service.deliveryTime;
 
-  // 4. RENDER CAPABILITY PILLS (No inline styles)
-  const pillsContainer = document.getElementById('svcPillsContainer');
-  if (pillsContainer && data.pills) {
-    pillsContainer.innerHTML = data.pills.map(p => `
-      <div class="pb-capability-pill">
-        <span>${p}</span>
-      </div>
+  // Price box
+  document.getElementById('svcPriceMain').innerText = isUSD ? service.priceUSD : service.priceBDT;
+  document.getElementById('svcPriceCycle').innerText = service.priceCycle;
+
+  // Hidden form fields
+  document.getElementById('serviceFormId').value = service.id;
+  document.getElementById('serviceFormTitle').value = service.title;
+
+  // Overview & Features
+  document.getElementById('svcFullDetails').innerText = service.details;
+  
+  const featList = document.getElementById('svcFeaturesList');
+  if (featList) {
+    featList.innerHTML = service.features.map(f => `
+      <li>
+        <span class="svc-check-icon">✓</span>
+        <span>${f}</span>
+      </li>
     `).join('');
   }
 
-  // 5. RENDER FEATURE GRID
-  const grid = document.getElementById('svcFeatureGrid');
-  if (grid && data.features) {
-    grid.innerHTML = data.features.map(f => `
-      <div class="pb-service-card">
-        <div>
-          <div class="pb-svc-icon">${f.icon}</div>
-          <h3>${f.title}</h3>
-          <p>${f.desc}</p>
-        </div>
-        <button onclick="openPurpleBot('${f.title}')" class="pb-btn-svc">
-          Inquire For ${f.title.split(' ')[0]} →
+  // Deliverables
+  const incList = document.getElementById('svcIncludedList');
+  if (incList) {
+    incList.innerHTML = service.includedFeatures.map(f => `
+      <li>
+        <span class="svc-check-icon">✓</span>
+        <span>${f}</span>
+      </li>
+    `).join('');
+  }
+
+  // FAQ Accordion
+  const faqList = document.getElementById('svcFaqList');
+  if (faqList && service.faq) {
+    faqList.innerHTML = service.faq.map(item => `
+      <div class="pb-faq-item">
+        <button class="pb-faq-question" onclick="toggleDetailFAQ(this)">
+          <span>${item.q}</span>
+          <span class="faq-icon">+</span>
         </button>
+        <div class="pb-faq-answer">
+          ${item.a}
+        </div>
       </div>
     `).join('');
   }
-
-  // 6. RENDER HOW WE WORK / PROCESS SECTION
-  renderProcessSection(data.process);
-
-  // 7. RENDER PORTFOLIO CASE STUDIES
-  renderPortfolioSection(data.portfolio);
-
-  // Set global active service for Purple Bot CTA button
-  window.activeServiceTitle = data.title;
 }
 
-function renderBreadcrumbs(serviceTitle) {
-  const container = document.getElementById('svcBreadcrumb');
-  if (!container) return;
+// ── 6. RELATED SERVICES ──
+function renderRelatedServices() {
+  const grid = document.getElementById('relatedServicesGrid');
+  if (!grid || !activeService) return;
 
-  container.className = 'pb-breadcrumb-wrap';
-  container.innerHTML = `
-    <div class="pb-breadcrumb-container">
-      <a href="/" class="pb-breadcrumb-link">🏠 Home</a>
-      <span class="pb-breadcrumb-sep">›</span>
-      <a href="/#capabilities" class="pb-breadcrumb-link">Services</a>
-      <span class="pb-breadcrumb-sep">›</span>
-      <span class="pb-breadcrumb-current">${serviceTitle}</span>
-    </div>
-  `;
-}
+  const isUSD = currentCurrency === 'USD';
+  const related = GRO10X_CATALOG
+    .filter(s => s.id !== activeService.id)
+    .slice(0, 3);
 
-function renderProcessSection(processArray) {
-  const section = document.getElementById('svcProcessSection');
-  if (!section || !processArray) return;
-
-  section.innerHTML = `
-    <div class="pb-section-container">
-      <div class="pb-section-header">
-        <span class="pb-section-badge">DELIVERY WORKFLOW</span>
-        <h2 class="pb-section-title">How We Deliver Results for You</h2>
-        <p class="pb-section-desc">Our proven 4-step process ensures transparency, speed, and guaranteed SLA execution from day one.</p>
+  grid.innerHTML = related.map(s => {
+    const priceText = isUSD ? s.priceUSD : s.priceBDT;
+    return `
+      <div class="pb-service-card">
+        <div class="pb-card-header">
+          <div class="pb-card-icon">${s.icon}</div>
+          ${s.badge ? `<span class="pb-card-badge">${s.badge}</span>` : ''}
+        </div>
+        <span class="pb-card-cat">${s.categoryName}</span>
+        <h3 class="pb-card-title">${s.title}</h3>
+        <p class="pb-card-desc">${s.description}</p>
+        <div class="pb-card-price-row">
+          <span class="pb-price-tag">${priceText}</span>
+          <span class="pb-price-cycle">${s.priceCycle}</span>
+        </div>
+        <div class="pb-card-actions">
+          <a href="/service-detail.html?id=${s.id}" class="pb-btn-card-details" style="text-align:center; text-decoration:none;">
+            🔍 View Service →
+          </a>
+        </div>
       </div>
-
-      <div class="pb-process-grid">
-        ${processArray.map(p => `
-          <div class="pb-process-card">
-            <span class="pb-step-num">${p.num}</span>
-            <div class="pb-step-icon">${p.icon}</div>
-            <h3>${p.title}</h3>
-            <p>${p.desc}</p>
-          </div>
-        `).join('')}
-      </div>
-    </div>
-  `;
+    `;
+  }).join('');
 }
 
-function renderPortfolioSection(portfolioArray) {
-  const grid = document.getElementById('svcRelatedPortfolio');
-  if (!grid || !portfolioArray) return;
+// ── 7. BOOKING FORM SUBMISSION ──
+async function submitServiceBooking(e) {
+  e.preventDefault();
+  const btn = document.getElementById('btnSubmitBooking');
+  const feedback = document.getElementById('bookingFeedback');
 
-  grid.innerHTML = portfolioArray.map(item => `
-    <div class="pb-portfolio-card">
-      <div class="pb-portfolio-thumb" style="background:${item.bg || '#0f172a'}; display:flex; flex-direction:column; justify-between; align-items:flex-start; color:#ffffff;">
-        <span class="pb-category-tag">${item.category}</span>
-        <div style="margin-top:auto; font-size:1.4rem; font-weight:800;">${item.client}</div>
-      </div>
-      <div class="pb-portfolio-info">
-        <h3>${item.title}</h3>
-        <p>Delivered by Purplebot senior creative & engineering teams.</p>
-        <span class="pb-portfolio-metric">🚀 ${item.metric}</span>
-      </div>
-    </div>
-  `).join('');
-}
+  const name = document.getElementById('bookName')?.value || '';
+  const email = document.getElementById('bookEmail')?.value || '';
+  const phone = document.getElementById('bookPhone')?.value || '';
+  const notes = document.getElementById('bookNotes')?.value || '';
+  const serviceId = document.getElementById('serviceFormId')?.value || activeService?.id;
+  const serviceTitle = document.getElementById('serviceFormTitle')?.value || activeService?.title;
 
-function triggerServiceQuote() {
-  const serviceName = window.activeServiceTitle || 'Service Consultation';
-  openPurpleBot(serviceName);
+  if (!name || !email || !phone) return;
+
+  btn.disabled = true;
+  btn.innerText = 'Submitting Booking...';
+
+  try {
+    const res = await fetch('/api/leads', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name,
+        email,
+        phone,
+        service_interest: `${serviceTitle} (${serviceId})`,
+        notes,
+        currency: currentCurrency,
+        source: `Service Detail Page: ${serviceTitle}`
+      })
+    });
+
+    const data = await res.json();
+    if (res.ok && (data.success || data.lead || data.id)) {
+      feedback.style.display = 'block';
+      feedback.style.background = 'rgba(0, 223, 137, 0.15)';
+      feedback.style.color = '#00df89';
+      feedback.style.border = '1px solid rgba(0, 223, 137, 0.35)';
+      feedback.innerHTML = `🎉 <strong>Booking Received!</strong> Our lead engineer will contact you on WhatsApp/Email within 24 hours to begin sprint onboarding.`;
+      document.getElementById('serviceBookingForm').reset();
+    } else {
+      throw new Error(data.error || 'Failed to submit');
+    }
+  } catch (err) {
+    feedback.style.display = 'block';
+    feedback.style.background = 'rgba(239, 68, 68, 0.15)';
+    feedback.style.color = '#ef4444';
+    feedback.style.border = '1px solid rgba(239, 68, 68, 0.35)';
+    feedback.innerHTML = `⚠️ Saved locally. You can also email us directly at <a href="mailto:gro10xnow@gmail.com" style="color:#00df89;">gro10xnow@gmail.com</a>.`;
+  } finally {
+    btn.disabled = false;
+    btn.innerText = 'Submit Booking Request →';
+  }
 }
+window.submitServiceBooking = submitServiceBooking;
+
+// ── 8. FAQ ACCORDION HELPER ──
+function toggleDetailFAQ(button) {
+  const item = button.closest('.pb-faq-item');
+  if (!item) return;
+  const isOpen = item.classList.contains('is-open');
+
+  document.querySelectorAll('.pb-faq-list .pb-faq-item').forEach(el => {
+    el.classList.remove('is-open');
+    const icon = el.querySelector('.faq-icon');
+    if (icon) icon.innerText = '+';
+  });
+
+  if (!isOpen) {
+    item.classList.add('is-open');
+    const icon = item.querySelector('.faq-icon');
+    if (icon) icon.innerText = '−';
+  }
+}
+window.toggleDetailFAQ = toggleDetailFAQ;

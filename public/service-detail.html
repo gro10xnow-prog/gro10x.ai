@@ -3,251 +3,439 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Service Details — Purplebot Digital Agency</title>
-  <meta name="description" id="metaDescription" content="Explore Purplebot Digital's specialized services in Digital Marketing, Video Production, Branding, Web Development, and Custom Tech Solutions.">
+  <title id="pageTitle">Service Details — GRO10X AI Growth Agency</title>
+  <meta name="description" id="metaDescription" content="Explore GRO10X's specialized AI services in Mobile Apps, Websites, ComfyUI Workflows, Data Analytics, Video Avatars, and Voice AI.">
   
   <!-- Open Graph & Social Media Metadata -->
-  <meta property="og:title" id="ogTitle" content="Service Details — Purplebot Digital Agency">
-  <meta property="og:description" id="ogDescription" content="Explore Purplebot Digital's specialized services.">
-  <meta property="og:image" id="ogImage" content="https://purpleos-iota.vercel.app/images/mascot.webp">
-  <meta property="og:url" id="ogUrl" content="https://purpleos-iota.vercel.app/service-detail">
+  <meta property="og:title" id="ogTitle" content="Service Details — GRO10X AI Growth Agency">
+  <meta property="og:description" id="ogDescription" content="Explore GRO10X's specialized AI services.">
+  <meta property="og:image" id="ogImage" content="https://gro10x.ai/images/logo.webp">
+  <meta property="og:url" id="ogUrl" content="https://gro10x.ai/service-detail">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" id="twitterTitle" content="Service Details — Purplebot Digital Agency">
-  <meta name="twitter:description" id="twitterDescription" content="Explore Purplebot Digital's specialized services.">
+  <meta name="twitter:title" id="twitterTitle" content="Service Details — GRO10X AI Growth Agency">
+  <meta name="twitter:description" id="twitterDescription" content="Explore GRO10X's specialized AI services.">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/tokens.css">
-  <link rel="stylesheet" href="/css/styles.css">
   <link rel="stylesheet" href="/css/landing.css">
+
+  <style>
+    .svc-hero-card {
+      background: var(--surface-1);
+      border: 1px solid var(--border-subtle);
+      border-radius: 24px;
+      padding: 2.5rem;
+      box-shadow: var(--shadow-card);
+      margin-bottom: 2.5rem;
+      display: grid;
+      grid-template-columns: 1.5fr 1fr;
+      gap: 2.5rem;
+      align-items: center;
+    }
+    .svc-badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: rgba(0, 223, 137, 0.12);
+      border: 1px solid rgba(0, 223, 137, 0.3);
+      color: var(--brand-primary);
+      font-size: 0.76rem;
+      font-weight: 800;
+      padding: 0.35rem 0.85rem;
+      border-radius: 20px;
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .svc-title {
+      font-family: var(--font-heading);
+      font-size: 2.4rem;
+      font-weight: 900;
+      line-height: 1.2;
+      color: var(--text-primary);
+      margin: 0 0 1rem;
+    }
+    .svc-desc {
+      font-size: 1.05rem;
+      color: var(--text-secondary);
+      line-height: 1.65;
+      margin: 0 0 1.5rem;
+    }
+    .svc-meta-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+    .svc-chip {
+      background: var(--surface-2);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 0.5rem 0.85rem;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .svc-pricing-box {
+      background: var(--surface-2);
+      border: 2px solid var(--brand-primary);
+      border-radius: 20px;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      text-align: center;
+      box-shadow: 0 0 30px rgba(0, 223, 137, 0.15);
+    }
+    .svc-price-label {
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+      margin-bottom: 0.5rem;
+    }
+    .svc-price-main {
+      font-family: var(--font-heading);
+      font-size: 2.6rem;
+      font-weight: 900;
+      color: var(--brand-primary);
+      line-height: 1;
+      margin-bottom: 0.35rem;
+    }
+    .svc-price-cycle {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+    }
+    .svc-content-grid {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 2.5rem;
+      margin-bottom: 3rem;
+    }
+    .svc-block {
+      background: var(--surface-1);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+    }
+    .svc-block h3 {
+      font-family: var(--font-heading);
+      font-size: 1.3rem;
+      font-weight: 800;
+      margin: 0 0 1rem;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .svc-check-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .svc-check-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.65rem;
+      font-size: 0.92rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+    .svc-check-icon {
+      color: var(--brand-primary);
+      font-weight: 900;
+      flex-shrink: 0;
+    }
+    .svc-timeline-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+    .svc-step-item {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+    }
+    .step-num {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--brand-primary);
+      color: #070b12;
+      font-family: var(--font-heading);
+      font-weight: 900;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    @media (max-width: 900px) {
+      .svc-hero-card { grid-template-columns: 1fr; }
+      .svc-content-grid { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
 <body class="pb-landing-body">
 
-  <!-- TOP NAVBAR -->
+  <!-- ── 1. NAVBAR ── -->
   <header class="pb-nav" id="topNav">
     <div class="pb-nav-container">
       <a href="/" class="pb-brand-logo">
-        <div class="pb-logo-badge">
-          <span class="pb-logo-owl">🦉</span>
-        </div>
+        <div class="pb-logo-badge">⚡</div>
         <div class="pb-logo-text">
-          <span class="pb-brand-title">PURPLEBOT</span>
-          <span class="pb-brand-sub">DIGITAL</span>
+          <span class="pb-brand-title">GRO10X</span>
+          <span class="pb-brand-sub">AI AGENCY</span>
         </div>
       </a>
 
       <nav class="pb-nav-links">
-        <a href="/" class="pb-nav-link">Home</a>
-        <div class="pb-nav-dropdown">
-          <a href="#capabilities" class="pb-nav-link pb-dropdown-trigger">All Services <span class="chevron">▾</span></a>
-          <div class="pb-dropdown-menu">
-            <a href="/service-detail.html?id=SVC-001">Digital Marketing & Growth</a>
-            <a href="/service-detail.html?id=SVC-002">Video Production & Reels</a>
-            <a href="/service-detail.html?id=SVC-003">TVC & Commercial Films</a>
-            <a href="/service-detail.html?id=SVC-004">Branding & Identity</a>
-            <a href="/service-detail.html?id=SVC-005">Website Development</a>
-            <a href="/service-detail.html?id=SVC-006">Custom Tech Solutions</a>
-          </div>
-        </div>
-        <a href="/#portfolio" class="pb-nav-link">Our Work</a>
-        <a href="/#pricing" class="pb-nav-link">Plans & Pricing</a>
+        <a href="/" class="pb-nav-link">← Home</a>
+        <a href="/#ecosystem" class="pb-nav-link">5 Engines</a>
+        <a href="/#services" class="pb-nav-link active">All Services</a>
+        <a href="/#pricing" class="pb-nav-link">Pricing</a>
         <a href="/#contact" class="pb-nav-link">Contact</a>
       </nav>
 
       <div class="pb-nav-actions">
-        <button onclick="openPurpleBot('Service Consultation')" class="pb-btn-quote">
-          💬 Request a Quote / Chat
-        </button>
-        <button class="pb-hamburger" id="mobileMenuBtn" aria-label="Toggle navigation menu">
-          <span></span>
-          <span></span>
-          <span></span>
-        </button>
-      </div>
-    </div>
-
-    <!-- MOBILE NAVIGATION MENU DRAWER -->
-    <div class="pb-mobile-menu" id="mobileMenu">
-      <div class="pb-mobile-menu-inner">
-        <a href="/" class="pb-mobile-link" onclick="closeMobileMenu()">Home</a>
-        <a href="#capabilities" class="pb-mobile-link" onclick="closeMobileMenu()">Capabilities</a>
-        <a href="/#portfolio" class="pb-mobile-link" onclick="closeMobileMenu()">Our Work</a>
-        <a href="/#pricing" class="pb-mobile-link" onclick="closeMobileMenu()">Plans & Pricing</a>
-        <div class="pb-mobile-actions">
-          <button onclick="openPurpleBot('Service Consultation'); closeMobileMenu();" class="pb-btn-primary" style="width:100%;">
-            💬 Talk to Purple Bot
-          </button>
+        <!-- Dual Currency Switcher -->
+        <div class="currency-toggle-wrapper" id="currencyToggle">
+          <button type="button" class="curr-btn active" id="btnCurrUSD" onclick="setCurrency('USD')">USD ($)</button>
+          <button type="button" class="curr-btn" id="btnCurrBDT" onclick="setCurrency('BDT')">BDT (৳)</button>
         </div>
+
+        <a href="#book-section" class="pb-btn-primary">
+          🚀 Book Service
+        </a>
       </div>
     </div>
   </header>
 
-  <!-- NOT FOUND STATE -->
-  <div id="notFoundContent" style="display:none; text-align:center; padding: 15vh 20px;">
-    <div style="font-size: 5rem; margin-bottom: 20px;">🔍</div>
-    <h1 style="font-size: 2.5rem; color: var(--text-heading); margin-bottom: 10px;">Service Not Found</h1>
-    <p style="color: var(--text-muted); margin-bottom: 30px; font-size: 1.1rem;">The service you're looking for doesn't exist or has been removed.</p>
-    <a href="/" class="pb-btn-primary" style="text-decoration:none; display:inline-block;">Return to Home</a>
-  </div>
+  <!-- ── 2. MAIN CONTAINER ── -->
+  <main style="padding-top: 110px; min-height: 80vh;">
+    <div class="pb-container" style="padding: 1.5rem;">
+      
+      <!-- Back Navigation Breadcrumb -->
+      <div style="margin-bottom: 1.5rem;">
+        <a href="/#services" style="color: var(--text-muted); text-decoration: none; font-size: 0.88rem; font-weight: 700; display: inline-flex; align-items: center; gap: 0.4rem;">
+          ← Back to All 24 Services
+        </a>
+      </div>
 
-  <!-- MAIN CONTENT -->
-  <main id="mainContent">
-
-  <!-- BREADCRUMB STRIP -->
-  <div id="svcBreadcrumb"></div>
-
-  <!-- SERVICE HERO SECTION -->
-  <section class="pb-hero-section reveal-on-scroll">
-    <div class="pb-hero-bg-glow"></div>
-
-    <div class="pb-hero-container">
-      <div class="pb-hero-grid">
-        <div class="pb-hero-content">
-          <div class="pb-hero-badge">
-            <span class="pb-pulse-dot"></span>
-            <span id="svcCategoryBadge">SPECIALIZED AGENCY CAPABILITY</span>
+      <!-- ── HERO DETAIL CARD ── -->
+      <div class="svc-hero-card">
+        <div>
+          <div class="svc-badge-pill" id="svcCategoryBadge">
+            <span>📱</span> <span id="svcCategoryText">AI Mobile Development</span>
           </div>
-
-          <h1 class="pb-hero-title" id="svcTitle">
-            Digital Marketing & <br>
-            <span class="pb-gradient-text">Brand Growth</span>
-          </h1>
-
-          <p class="pb-hero-subtitle" id="svcSubtitle">
-            Tailored digital solutions built to drive measurable market share, viral engagement, and long-term brand equity for your business.
+          <h1 class="svc-title" id="svcTitle">AI Mobile Apps</h1>
+          <p class="svc-desc" id="svcDesc">
+            Custom iOS and Android mobile apps with native generative AI and intelligent agent features built-in.
           </p>
 
-          <div id="svcStartingPriceCallout"></div>
-
-          <div class="pb-hero-cta-group">
-            <button onclick="triggerServiceQuote()" class="pb-btn-primary" id="svcCtaBtn">
-              🚀 Book Campaign Consultation
-            </button>
-            <a href="#capabilities" class="pb-btn-secondary">
-              Explore Capabilities ↓
-            </a>
+          <div class="svc-meta-chips">
+            <div class="svc-chip">
+              <span>⏱️ Turnaround:</span> <strong id="svcDeliveryTime">3-4 Weeks</strong>
+            </div>
+            <div class="svc-chip">
+              <span>🛡️ Guarantee:</span> <strong>100% Quality Verified</strong>
+            </div>
+            <div class="svc-chip">
+              <span>📦 Handover:</span> <strong>Full Source Code & IP</strong>
+            </div>
           </div>
         </div>
 
-        <div class="pb-hero-visual">
-          <div class="pb-mascot-wrapper">
-            <img src="/images/mascot.webp" alt="Purplebot Service Visual" class="pb-hero-mascot-img" width="400" height="400" fetchpriority="high" loading="eager">
-            <div class="pb-mascot-card pb-mascot-card-1">
-              <span class="card-icon">🎯</span>
-              <div>
-                <strong>Tailored Strategy</strong>
-                <span>Guaranteed SLA & Delivery</span>
+        <!-- Pricing Highlight Box -->
+        <div class="svc-pricing-box">
+          <span class="svc-price-label">INVESTMENT</span>
+          <div class="svc-price-main" id="svcPriceMain">$3,500</div>
+          <div class="svc-price-cycle" id="svcPriceCycle">/ project</div>
+          <a href="#book-section" class="pb-btn-primary pb-btn-lg" style="width: 100%;">
+            ⚡ Book This Service Now
+          </a>
+        </div>
+      </div>
+
+      <!-- ── CONTENT GRID: DELIVERABLES & PROCESS ── -->
+      <div class="svc-content-grid">
+        
+        <!-- Left: Scope & Deliverables -->
+        <div>
+          <div class="svc-block">
+            <h3><span>✨</span> Overview & Capabilities</h3>
+            <p id="svcFullDetails" style="color: var(--text-secondary); line-height: 1.65; font-size: 0.95rem; margin: 0 0 1.25rem;">
+              Comprehensive details loading...
+            </p>
+
+            <h4 style="font-family: var(--font-heading); font-size: 1.05rem; margin: 1.5rem 0 0.75rem; color: var(--text-primary);">
+              Core Features & Tech Stack:
+            </h4>
+            <ul class="svc-check-list" id="svcFeaturesList">
+              <!-- Dynamically populated -->
+            </ul>
+          </div>
+
+          <div class="svc-block">
+            <h3><span>📦</span> Included Deliverables</h3>
+            <ul class="svc-check-list" id="svcIncludedList">
+              <!-- Dynamically populated -->
+            </ul>
+          </div>
+
+          <!-- FAQ Accordion -->
+          <div class="svc-block">
+            <h3><span>❓</span> Frequently Asked Questions</h3>
+            <div class="pb-faq-list" id="svcFaqList">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Booking Form & Process -->
+        <div>
+          
+          <!-- How It Works -->
+          <div class="svc-block" style="margin-bottom: 2rem;">
+            <h3><span>🔄</span> How It Works</h3>
+            <div class="svc-timeline-steps">
+              <div class="svc-step-item">
+                <div class="step-num">1</div>
+                <div>
+                  <h4 style="margin: 0 0 0.2rem; font-size: 0.95rem; color: var(--text-primary);">Discovery & Scope</h4>
+                  <p style="margin: 0; font-size: 0.84rem; color: var(--text-secondary);">We align on technical requirements, deliverables, and timeline milestones.</p>
+                </div>
+              </div>
+              <div class="svc-step-item">
+                <div class="step-num">2</div>
+                <div>
+                  <h4 style="margin: 0 0 0.2rem; font-size: 0.95rem; color: var(--text-primary);">Sprint Execution</h4>
+                  <p style="margin: 0; font-size: 0.84rem; color: var(--text-secondary);">Our engineering & design team builds your solution with regular progress updates.</p>
+                </div>
+              </div>
+              <div class="svc-step-item">
+                <div class="step-num">3</div>
+                <div>
+                  <h4 style="margin: 0 0 0.2rem; font-size: 0.95rem; color: var(--text-primary);">Review & Handover</h4>
+                  <p style="margin: 0; font-size: 0.84rem; color: var(--text-secondary);">QA testing, live client walkthrough, code/asset handover, and post-launch support.</p>
+                </div>
               </div>
             </div>
-            <div id="svcMascotCard2"></div>
           </div>
+
+          <!-- ── BOOKING LEAD FORM ── -->
+          <div class="pb-contact-form-card" id="book-section" style="border: 2px solid var(--border-active);">
+            <h3 style="font-family: var(--font-heading); font-size: 1.3rem; margin: 0 0 0.4rem; color: var(--text-primary);">
+              🚀 Book This Service
+            </h3>
+            <p style="font-size: 0.86rem; color: var(--text-secondary); margin: 0 0 1.25rem;">
+              Fill out the form below to lock in your project sprint. We'll reach out within 24 hours.
+            </p>
+
+            <form id="serviceBookingForm" onsubmit="submitServiceBooking(event)">
+              <input type="hidden" id="serviceFormId" name="service_id" value="">
+              <input type="hidden" id="serviceFormTitle" name="service_title" value="">
+
+              <div class="pb-form-group">
+                <label>Your Full Name *</label>
+                <input type="text" id="bookName" class="pb-input" placeholder="e.g. Alex Morgan" required>
+              </div>
+
+              <div class="pb-form-group">
+                <label>Work Email *</label>
+                <input type="email" id="bookEmail" class="pb-input" placeholder="alex@company.com" required>
+              </div>
+
+              <div class="pb-form-group">
+                <label>WhatsApp / Phone Number *</label>
+                <input type="tel" id="bookPhone" class="pb-input" placeholder="+1 555-0199 or +880 17..." required>
+              </div>
+
+              <div class="pb-form-group">
+                <label>Project Scope or Requirements</label>
+                <textarea id="bookNotes" class="pb-input" rows="3" placeholder="Tell us about your project, goals, or desired timeline..."></textarea>
+              </div>
+
+              <div id="bookingFeedback" style="display:none; padding:0.85rem; border-radius:10px; font-size:0.88rem; margin-bottom:1rem;"></div>
+
+              <button type="submit" class="pb-btn-primary pb-btn-lg" id="btnSubmitBooking" style="width: 100%;">
+                Submit Booking Request →
+              </button>
+            </form>
+          </div>
+
         </div>
-      </div>
-    </div>
-  </section>
 
-  <!-- CAPABILITIES & SUB-SERVICE BREAKDOWN -->
-  <section class="pb-services-section" id="capabilities">
-    <div class="pb-section-container">
-      <div class="pb-section-header">
-        <span class="pb-section-badge">SERVICE CAPABILITIES</span>
-        <h2 class="pb-section-title" id="svcBreakdownHeading">Services We Offer Under This Category</h2>
-        <p class="pb-section-desc" id="svcBreakdownDesc">From ideation to final execution, we bring together senior specialists to deliver frictionless results.</p>
       </div>
 
-      <div class="pb-capabilities-pills-wrap" id="svcPillsContainer" style="display:flex; flex-wrap:wrap; justify-content:center; gap:0.85rem; margin-bottom:3rem;">
-        <!-- Dynamically rendered pills -->
-      </div>
-
-      <div class="pb-services-grid" id="svcFeatureGrid">
-        <!-- Rendered dynamically -->
-      </div>
-    </div>
-  </section>
-
-  <!-- HOW WE WORK / PROCESS SECTION -->
-  <section class="pb-process-section" id="svcProcessSection">
-    <!-- Rendered dynamically -->
-  </section>
-
-  <!-- RELATED WORK SHOWCASE -->
-  <section class="pb-portfolio-section">
-    <div class="pb-section-container">
-      <div class="pb-section-header">
-        <span class="pb-section-badge">CASE STUDIES</span>
-        <h2 class="pb-section-title">Check Out Some of Our Best Work</h2>
-        <p class="pb-section-desc">Proven results delivered for FMCG, Lifestyle, Commercial, and Financial brands.</p>
-      </div>
-
-      <div class="pb-portfolio-grid" id="svcRelatedPortfolio">
-        <!-- Rendered dynamically -->
-      </div>
-    </div>
-  </section>
-
-  <!-- CUSTOM CTA BANNER -->
-  <section class="pb-cta-banner-section">
-    <div class="pb-section-container">
-      <div class="pb-cta-banner">
-        <div class="pb-cta-content">
-          <h2>Ready to Scale Your Brand with This Service?</h2>
-          <p>Talk to Purple Bot to get an instant customized quotation and timeline target within minutes.</p>
+      <!-- ── 3. RELATED SERVICES SECTION ── -->
+      <section style="margin-top: 3rem; padding-top: 2.5rem; border-top: 1px solid var(--border-subtle);">
+        <h3 style="font-family: var(--font-heading); font-size: 1.5rem; font-weight: 800; color: var(--text-primary); margin: 0 0 1.5rem;">
+          Explore Related AI Services
+        </h3>
+        <div class="pb-services-grid" id="relatedServicesGrid">
+          <!-- Dynamically populated -->
         </div>
-        <button onclick="triggerServiceQuote()" class="pb-btn-cta-light">
-          Get Instant Quote →
-        </button>
-      </div>
-    </div>
-  </section>
+      </section>
 
+    </div>
   </main>
 
-  <!-- MAIN FOOTER -->
-  <footer class="pb-main-footer">
+  <!-- ── 4. FOOTER ── -->
+  <footer class="pb-footer" style="margin-top: 4rem;">
     <div class="pb-footer-container">
-      <div class="pb-footer-brand">
+      <div class="pb-footer-col">
         <div class="pb-brand-logo">
-          <div class="pb-logo-badge">🦉</div>
+          <div class="pb-logo-badge">⚡</div>
           <div class="pb-logo-text">
-            <span class="pb-brand-title" style="color:#fff;">PURPLEBOT</span>
-            <span class="pb-brand-sub" style="color:#c084fc;">DIGITAL</span>
+            <span class="pb-brand-title">GRO10X</span>
+            <span class="pb-brand-sub">AI AGENCY</span>
           </div>
         </div>
-        <p class="pb-legal-note">
-          Purplebot Digital Limited is a private limited company incorporated under the Companies Act XVIII of 1994 at the Joint Stock Companies and Firms of Bangladesh.
+        <p style="color: var(--text-secondary); font-size: 0.88rem; margin-top: 0.75rem;">
+          AI-First Growth Agency & Multi-Engine Operating System. Scaling modern brands with custom automation and AI pipelines.
         </p>
-        <p class="pb-copy-note">© 2024–2026 Purplebot Digital Limited. All rights reserved.</p>
+        <p class="pb-copy-note">© 2026 GRO10X. All rights reserved.</p>
       </div>
 
-      <div class="pb-footer-addresses">
-        <h4>Office Locations</h4>
-        <div class="pb-address-item">
-          <strong>📍 Registered Office:</strong>
-          <span>Plot 7, Road 17, Flat 2/C, Rupsha Tower, Banani C/A, Dhaka - 1213</span>
-        </div>
-        <div class="pb-address-item">
-          <strong>📍 Operating Office:</strong>
-          <span>Flat A5-B5-A4, House 9, Road 1, Block B, Niketon, Gulshan-1, Dhaka - 1212</span>
-        </div>
+      <div class="pb-footer-col">
+        <h4>Core AI Engines</h4>
+        <a href="/#ecosystem">Micro-SaaS Hub (35%)</a>
+        <a href="/#ecosystem">Freelance Solutions (25%)</a>
+        <a href="/#ecosystem">Etsy Digital Assets (20%)</a>
+        <a href="/#ecosystem">Agency Retainers (15%)</a>
+        <a href="/#ecosystem">YouTube Media (5%)</a>
       </div>
 
-      <div class="pb-footer-quick">
-        <h4>Quick Links</h4>
-        <a href="/">Home</a>
-        <a href="/service-detail.html?id=SVC-001">Digital Marketing</a>
-        <a href="/service-detail.html?id=SVC-002">Video Production & Reels</a>
-        <a href="/service-detail.html?id=SVC-004">Branding & Graphics</a>
-        <a href="/service-detail.html?id=SVC-005">Website & UI/UX</a>
-        <a href="/service-detail.html?id=SVC-006">Custom Tech & Bots</a>
-        <a href="/#contact">Contact Agency</a>
+      <div class="pb-footer-col">
+        <h4>Popular Services</h4>
+        <a href="/service-detail.html?id=SVC-001">AI Mobile Apps</a>
+        <a href="/service-detail.html?id=SVC-002">AI Websites & Software</a>
+        <a href="/service-detail.html?id=SVC-003">AI Chatbots & Agents</a>
+        <a href="/service-detail.html?id=SVC-009">ComfyUI Workflows</a>
+        <a href="/service-detail.html?id=SVC-019">AI Video Avatars</a>
+      </div>
+
+      <div class="pb-footer-col">
+        <h4>Direct Contact</h4>
+        <p style="margin:0;">📧 <a href="mailto:gro10xnow@gmail.com">gro10xnow@gmail.com</a></p>
+        <p style="margin:0;">📞 <a href="tel:+8801708459008">+880 1708-459008</a></p>
+        <p style="margin:0;">📍 Dhaka, Bangladesh (BST / UTC+6)</p>
       </div>
     </div>
   </footer>
 
-  <script src="/js/landing.js"></script>
-  <script src="/js/chat-widget.js"></script>
+  <!-- Scripts -->
   <script src="/js/service-detail.js"></script>
+  <script src="/js/chat-widget.js"></script>
 </body>
 </html>
