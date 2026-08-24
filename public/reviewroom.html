@@ -101,14 +101,31 @@
 
       <!-- Media Player Container -->
       <div class="rr-player-wrap" style="position: relative;">
-        <!-- VIDEO PLAYER (shown for video media type) -->
+        <!-- VIDEO PLAYER (shown for video/avatar media type) -->
         <video controls id="videoPlayer" poster="" style="width: 100%; display: block; border-radius: 12px;">
           <source id="videoSource" src="" type="video/mp4">
           Your browser does not support HTML5 video playback.
         </video>
-        <!-- IMAGE VIEWER (shown for image/graphic media type) -->
+        <!-- IMAGE VIEWER (shown for ComfyUI / Midjourney / design media type) -->
         <div id="imageViewer" style="display:none; text-align:center; background:rgba(0,0,0,0.3); border-radius:12px; overflow:hidden; min-height:300px; align-items:center; justify-content:center;">
-          <img id="imageViewerImg" src="" alt="Graphic Proof" style="max-width:100%; max-height:70vh; object-fit:contain; border-radius:12px;">
+          <img id="imageViewerImg" src="" alt="AI Graphic Deliverable" style="max-width:100%; max-height:70vh; object-fit:contain; border-radius:12px;">
+        </div>
+        <!-- AUDIO VIEWER (shown for ElevenLabs / Voice clone media type) -->
+        <div id="audioViewer" style="display:none; background:rgba(15,23,42,0.9); border:1px solid rgba(0,223,137,0.3); border-radius:16px; padding:2rem; text-align:center;">
+          <div style="font-size:2.5rem; margin-bottom:0.5rem;">🎙️</div>
+          <div style="font-weight:800; color:#fff; margin-bottom:0.25rem;">AI Synthetic Voice / Audio Deliverable</div>
+          <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:1.5rem;">Stream the synthesized audio track and leave timestamped feedback</div>
+          <audio controls id="audioPlayer" style="width:100%; max-width:500px;">
+            <source id="audioSource" src="" type="audio/mpeg">
+          </audio>
+        </div>
+        <!-- WEB / INTERACTIVE PROTOTYPE VIEWER (shown for SaaS / Web builds) -->
+        <div id="webViewer" style="display:none; background:#000; border-radius:12px; overflow:hidden;">
+          <div style="background:rgba(255,255,255,0.06); padding:0.5rem 1rem; display:flex; justify-content:space-between; align-items:center; font-size:0.8rem;">
+            <span style="color:#00df89; font-weight:700;">💻 Live Interactive Sandbox</span>
+            <a id="webExternalLink" href="#" target="_blank" style="color:#fff; text-decoration:none;">Open Fullscreen ↗</a>
+          </div>
+          <iframe id="webViewerFrame" src="" style="width:100%; height:550px; border:none;"></iframe>
         </div>
         <!-- PDF VIEWER (shown for PDF/doc media type) -->
         <div id="pdfViewer" style="display:none;">
@@ -120,7 +137,7 @@
           <div style="font-weight:700; color:#fff; margin-bottom:0.4rem;">No Asset Uploaded Yet</div>
           <div style="font-size:0.82rem; color:#a1a1aa; margin-bottom:1.25rem;">Upload the deliverable file to enable client review.</div>
           <label for="assetUploadInput" class="rr-btn rr-btn-secondary" style="cursor:pointer;">📤 Upload Asset</label>
-          <input type="file" id="assetUploadInput" accept="video/*,image/*,.pdf" style="display:none;" onchange="handleAssetUpload(event)">
+          <input type="file" id="assetUploadInput" accept="video/*,image/*,audio/*,.pdf" style="display:none;" onchange="handleAssetUpload(event)">
         </div>
         <!-- Drawing Canvas Overlay (video only) -->
         <canvas id="reviewCanvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none; border-radius: 12px;"></canvas>
@@ -330,12 +347,16 @@
       const imageViewer = document.getElementById('imageViewer');
       const pdfViewer = document.getElementById('pdfViewer');
       const noAsset = document.getElementById('noAssetPlaceholder');
+      const audioViewer = document.getElementById('audioViewer');
+      const webViewer = document.getElementById('webViewer');
       const drawingToolbar = document.getElementById('drawingToolbar');
       const canvas = document.getElementById('reviewCanvas');
 
       // Hide all first
       videoPlayer.style.display = 'none';
       imageViewer.style.display = 'none';
+      if (audioViewer) audioViewer.style.display = 'none';
+      if (webViewer) webViewer.style.display = 'none';
       pdfViewer.style.display = 'none';
       noAsset.style.display = 'none';
 
@@ -343,9 +364,27 @@
         noAsset.style.display = 'flex';
         if (drawingToolbar) drawingToolbar.style.display = 'none';
         if (canvas) canvas.style.display = 'none';
-      } else if (mediaType === 'image' || mediaType === 'graphic') {
+      } else if (mediaType === 'image' || mediaType === 'graphic' || mediaType === 'art') {
         imageViewer.style.display = 'flex';
         document.getElementById('imageViewerImg').src = mediaUrl;
+        if (drawingToolbar) drawingToolbar.style.display = 'none';
+        if (canvas) canvas.style.display = 'none';
+      } else if (mediaType === 'audio' || mediaType === 'voice' || mediaType === 'podcast') {
+        if (audioViewer) {
+          audioViewer.style.display = 'block';
+          const aSource = document.getElementById('audioSource');
+          const aPlayer = document.getElementById('audioPlayer');
+          if (aSource && aPlayer) { aSource.src = mediaUrl; aPlayer.load(); }
+        }
+        if (drawingToolbar) drawingToolbar.style.display = 'none';
+        if (canvas) canvas.style.display = 'none';
+      } else if (mediaType === 'web' || mediaType === 'saas' || mediaType === 'prototype') {
+        if (webViewer) {
+          webViewer.style.display = 'block';
+          document.getElementById('webViewerFrame').src = mediaUrl;
+          const ext = document.getElementById('webExternalLink');
+          if (ext) ext.href = mediaUrl;
+        }
         if (drawingToolbar) drawingToolbar.style.display = 'none';
         if (canvas) canvas.style.display = 'none';
       } else if (mediaType === 'pdf' || mediaType === 'doc') {
