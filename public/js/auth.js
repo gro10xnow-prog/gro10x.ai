@@ -190,20 +190,21 @@ function saveSessionAndRedirect(user, linkedType, email, realToken) {
     const access = (user?.accessLevel || '').toLowerCase();
 
     const isOwnerAdmin = access.includes('owner') || access.includes('admin') || 
+      role === 'owner' ||
       role.includes('owner') || role.includes('managing director') || 
       role.includes('chairman') || role.includes('admin') || role.includes('head');
 
-    const isManager = access.includes('director') || access.includes('manager') ||
-      role.includes('director') || role.includes('manager');
+    const isManager = !isOwnerAdmin && (access.includes('director') || access.includes('manager') ||
+      role.includes('director') || role.includes('manager'));
 
     if (isOwnerAdmin) {
       window.location.href = '/app';
     } else if (isManager) {
       window.location.href = '/manager';
     } else if (linkedType === 'client' || role.includes('client')) {
-      window.location.href = '/client';
+      window.location.href = '/partners.html';
     } else {
-      window.location.href = '/crew';
+      window.location.href = '/team.html';
     }
   }, 1000);
 }

@@ -250,9 +250,9 @@
       <p>Enter your phone number and PIN to access command center.</p>
     </div>
 
-    <div id="alertBox" class="alert"></div>
+    <div id="alert-box" class="alert"></div>
 
-    <form id="authForm" onsubmit="handleAuth(event)">
+    <form id="authForm" onsubmit="handlePinLogin(event)">
       <div class="form-group">
         <label for="phone">Registered Phone Number</label>
         <input 
@@ -278,7 +278,7 @@
         >
       </div>
 
-      <button type="submit" id="submitBtn" class="btn-submit">
+      <button type="submit" id="btn-pin-submit" class="btn-submit">
         <span>Sign In to GRO10X</span>
         <span>→</span>
       </button>
