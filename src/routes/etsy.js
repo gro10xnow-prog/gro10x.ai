@@ -491,9 +491,20 @@ router.post('/brands/:brandId/publish-all', requireAuth, requireAdmin, asyncHand
 
         const taxonomyId = prod.taxonomyId || prod.taxonomy_id || ((prod.type || prod.format || prod.category || '').toLowerCase().includes('print') ? 2078 : 12476);
 
+        // Etsy title rules: & can only appear ONCE, no | pipes, no leading special chars, max 140 chars
+        const rawTitle = (prod.seoTitle || prod.seo?.title || prod.name || '').trim();
+        const etsyTitle = rawTitle
+          .replace(/&/g, 'and')       // Replace all & with 'and' (& allowed max once, safest to replace all)
+          .replace(/\|/g, '-')         // Pipes not allowed
+          .replace(/[#@]/g, '')        // # and @ not allowed
+          .replace(/—|–/g, '-')        // Em/en dashes → hyphen
+          .replace(/\s+/g, ' ')        // Normalize whitespace
+          .trim()
+          .slice(0, 140);
+
         const listingPayload = {
           quantity: 999,
-          title: (prod.seoTitle || prod.seo?.title || prod.name).slice(0, 140),
+          title: etsyTitle,
           description: prod.seoDescription || prod.seo?.description || `Instant digital download printable template. High-resolution vector PDF layout ready for print or GoodNotes.`,
           price: priceCents / 100,
           who_made: 'i_did',
