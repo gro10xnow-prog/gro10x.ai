@@ -492,6 +492,78 @@ async function fetchFileBuffer(storagePathOrUrl) {
   return null;
 }
 
+/**
+ * 10. Upload Listing Video to Etsy (multipart/form-data)
+ * Max size: 100MB, 3-15s, .mp4 or .mov
+ */
+async function uploadListingVideo(brandId, shopId, listingId, videoBuffer, fileName = 'listing_video.mp4') {
+  const mimeType = fileName.endsWith('.mov') ? 'video/quicktime' : 'video/mp4';
+  const blob = new Blob([videoBuffer], { type: mimeType });
+  const formData = new FormData();
+  formData.append('video', blob, fileName);
+  formData.append('name', fileName);
+
+  return etsyApiCall(brandId, `/shops/${shopId}/listings/${listingId}/videos`, {
+    method: 'POST',
+    body: formData,
+    isMultipart: true
+  });
+}
+
+/**
+ * 11. Update Live Etsy Listing (PATCH)
+ */
+async function updateListing(brandId, shopId, listingId, patchData = {}) {
+  const payload = {};
+  if (patchData.title !== undefined) payload.title = patchData.title.slice(0, 140);
+  if (patchData.description !== undefined) payload.description = patchData.description;
+  if (patchData.price !== undefined) payload.price = Number(patchData.price);
+  if (patchData.tags !== undefined) payload.tags = patchData.tags.slice(0, 13).map(t => t.slice(0, 20));
+  if (patchData.state !== undefined) payload.state = patchData.state;
+  if (patchData.quantity !== undefined) payload.quantity = patchData.quantity;
+
+  return etsyApiCall(brandId, `/shops/${shopId}/listings/${listingId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload)
+  });
+}
+
+/**
+ * 12. Renew Expired / Expiring Listing (POST /v3/application/listings/{listing_id}/renew)
+ */
+async function renewListing(brandId, listingId) {
+  return etsyApiCall(brandId, `/listings/${listingId}/renew`, {
+    method: 'POST'
+  });
+}
+
+/**
+ * 13. Deactivate Listing (sets state to 'inactive')
+ */
+async function deactivateListing(brandId, shopId, listingId) {
+  return etsyApiCall(brandId, `/shops/${shopId}/listings/${listingId}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ state: 'inactive' })
+  });
+}
+
+/**
+ * 14. Reactivate Listing (sets state to 'active')
+ */
+async function reactivateListing(brandId, shopId, listingId) {
+  return etsyApiCall(brandId, `/shops/${shopId}/listings/${listingId}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ state: 'active' })
+  });
+}
+
+/**
+ * 15. Fetch Active Listings from Etsy for reconciliation
+ */
+async function getActiveListings(brandId, shopId, limit = 100, offset = 0) {
+  return etsyApiCall(brandId, `/shops/${shopId}/listings/active?limit=${limit}&offset=${offset}`);
+}
+
 module.exports = {
   ETSY_KEYSTRING,
   ETSY_SHARED_SECRET,
@@ -508,5 +580,12 @@ module.exports = {
   runProductHealthCheck,
   uploadListingImage,
   uploadListingFile,
+  uploadListingVideo,
+  updateListing,
+  renewListing,
+  deactivateListing,
+  reactivateListing,
+  getActiveListings,
   fetchFileBuffer
 };
+

@@ -484,6 +484,9 @@ window.APP_MODULES.brands = async function(container) {
         <button class="brands-tab-btn ${currentTab === 'etsy' ? 'active' : ''}" style="border: 1px solid rgba(0,223,137,0.3); background:${currentTab === 'etsy' ? 'var(--brand-primary, #00df89)' : 'rgba(0,223,137,0.08)'}; color:${currentTab === 'etsy' ? '#070b12' : '#00df89'};" onclick="window.BrandsModule.switchTab('etsy')">
           🏪 Etsy Command Center
         </button>
+        <button class="brands-tab-btn ${currentTab === 'lifecycle' ? 'active' : ''}" style="border: 1px solid rgba(251,191,36,0.3); background:${currentTab === 'lifecycle' ? '#fbbf24' : 'rgba(251,191,36,0.08)'}; color:${currentTab === 'lifecycle' ? '#070b12' : '#fbbf24'};" onclick="window.BrandsModule.switchTab('lifecycle')">
+          ⏰ Lifecycle & Fee Manager
+        </button>
       </div>
 
       <!-- TAB CONTENT AREA -->
@@ -512,6 +515,42 @@ window.APP_MODULES.brands = async function(container) {
         <div style="background:var(--surface-card, #181824); max-width:680px; width:100%; max-height:90vh; overflow-y:auto; border-radius:20px; border:1px solid rgba(0,223,137,0.4); padding:2rem; box-shadow:0 25px 60px rgba(0,0,0,0.9);" id="etsyBulkModalContent">
         </div>
       </div>
+
+      <!-- ETSY SHOP PROFILE MODAL -->
+      <div id="shopProfileModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); backdrop-filter:blur(8px); z-index:10003; align-items:center; justify-content:center; padding:1.5rem;">
+        <div style="background:var(--surface-card, #181824); max-width:620px; width:100%; max-height:90vh; overflow-y:auto; border-radius:20px; border:1px solid rgba(6,182,212,0.3); padding:2rem; box-shadow:0 20px 50px rgba(0,0,0,0.8);" id="shopProfileModalContent">
+        </div>
+      </div>
+
+      <!-- ETSY SECTIONS MODAL -->
+      <div id="sectionsModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); backdrop-filter:blur(8px); z-index:10004; align-items:center; justify-content:center; padding:1.5rem;">
+        <div style="background:var(--surface-card, #181824); max-width:620px; width:100%; max-height:90vh; overflow-y:auto; border-radius:20px; border:1px solid rgba(168,85,247,0.3); padding:2rem; box-shadow:0 20px 50px rgba(0,0,0,0.8);" id="sectionsModalContent">
+        </div>
+      </div>
+
+      <!-- EDIT LIVE LISTING MODAL -->
+      <div id="editLiveListingModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); backdrop-filter:blur(8px); z-index:10005; align-items:center; justify-content:center; padding:1.5rem;">
+        <div style="background:var(--surface-card, #181824); max-width:640px; width:100%; max-height:90vh; overflow-y:auto; border-radius:20px; border:1px solid rgba(0,223,137,0.3); padding:2rem; box-shadow:0 20px 50px rgba(0,0,0,0.8);" id="editLiveListingModalContent">
+        </div>
+      </div>
+
+      <!-- BULK PUBLISH COST CONFIRMATION MODAL -->
+      <div id="costConfirmModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(10px); z-index:10006; align-items:center; justify-content:center; padding:1.5rem;">
+        <div style="background:var(--surface-card, #181824); max-width:540px; width:100%; border-radius:20px; border:1px solid rgba(251,191,36,0.4); padding:2rem; box-shadow:0 25px 60px rgba(0,0,0,0.9);" id="costConfirmModalContent">
+        </div>
+      </div>
+
+      <!-- ADD CUSTOM BRAND MODAL -->
+      <div id="addBrandModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); backdrop-filter:blur(8px); z-index:10007; align-items:center; justify-content:center; padding:1.5rem;">
+        <div style="background:var(--surface-card, #181824); max-width:600px; width:100%; max-height:90vh; overflow-y:auto; border-radius:20px; border:1px solid rgba(0,223,137,0.3); padding:2rem; box-shadow:0 20px 50px rgba(0,0,0,0.8);" id="addBrandModalContent">
+        </div>
+      </div>
+
+      <!-- ADD CUSTOM PRODUCT MODAL -->
+      <div id="addProductModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); backdrop-filter:blur(8px); z-index:10008; align-items:center; justify-content:center; padding:1.5rem;">
+        <div style="background:var(--surface-card, #181824); max-width:600px; width:100%; max-height:90vh; overflow-y:auto; border-radius:20px; border:1px solid rgba(6,182,212,0.3); padding:2rem; box-shadow:0 20px 50px rgba(0,0,0,0.8);" id="addProductModalContent">
+        </div>
+      </div>
     `;
 
     renderTabContent(currentTab);
@@ -533,6 +572,8 @@ window.APP_MODULES.brands = async function(container) {
       renderDBMTab(tabContainer);
     } else if (tab === 'etsy') {
       renderEtsyTab(tabContainer);
+    } else if (tab === 'lifecycle') {
+      renderLifecycleTab(tabContainer);
     }
   }
 
@@ -541,6 +582,7 @@ window.APP_MODULES.brands = async function(container) {
   // ─────────────────────────────────────────────────────────────────────────
   function renderPortfolioTab(container) {
     const totalTarget = state.brands.reduce((acc, b) => acc + b.target12mo, 0);
+    const totalEtsyFees = state.brands.reduce((acc, b) => acc + (b.shopCreationFee || (b.etsyStatus === 'Active' || b.etsyStatus === 'Live' ? 26 : 0)) + (b.totalListingFeesCharged || ((b.productsLive || 0) * 0.20)), 0);
 
     container.innerHTML = `
       <div style="display:grid; grid-template-columns: 2fr 1fr; gap:1.5rem; margin-bottom:1.5rem;">
@@ -550,10 +592,10 @@ window.APP_MODULES.brands = async function(container) {
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.2rem;">
             <div>
               <h3 style="font-size:1.1rem; font-weight:800; color:#fff; margin:0;">📈 Year 1 Revenue Target Distribution</h3>
-              <span style="font-size:0.75rem; color:var(--text-muted);">13 Brands compound into $328,116 Gross Revenue</span>
+              <span style="font-size:0.75rem; color:var(--text-muted);">13 Brands compound into $328,116 Gross Revenue · Total Est. Etsy Fees: <strong style="color:#fbbf24;">$${totalEtsyFees.toFixed(2)}</strong></span>
             </div>
             <span style="font-size:0.75rem; font-weight:800; color:#00df89; background:rgba(0,223,137,0.1); padding:0.25rem 0.6rem; border-radius:8px;">
-              86.0% Net Margin
+              86.0% Net Margin Model
             </span>
           </div>
 
@@ -632,18 +674,19 @@ window.APP_MODULES.brands = async function(container) {
   function renderRosterTab(container) {
     container.innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
-        <span style="color:var(--text-secondary); font-size:0.85rem;">Showing all 13 Brands across 4 DBM Divisions:</span>
+        <span style="color:var(--text-secondary); font-size:0.85rem;">Showing all ${state.brands.length} Brands across 4 DBM Divisions:</span>
         <button class="btn-secondary btn-sm" onclick="window.BrandsModule.openAddBrandModal()">+ Add Custom Brand</button>
       </div>
 
       <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(340px, 1fr)); gap:1.25rem;">
         ${state.brands.map(b => {
           const dbm = state.dbms.find(d => d.id === b.dbmId) || { name: `DBM ${b.dbmId}` };
-          const statusBg = b.etsyStatus === 'Live' ? 'rgba(0,223,137,0.15)' : b.etsyStatus === 'In Setup' ? 'rgba(251,191,36,0.15)' : 'rgba(255,255,255,0.08)';
-          const statusColor = b.etsyStatus === 'Live' ? '#00df89' : b.etsyStatus === 'In Setup' ? '#fbbf24' : 'var(--text-muted)';
+          const statusBg = (b.etsyStatus === 'Live' || b.etsyStatus === 'Active') ? 'rgba(0,223,137,0.15)' : b.etsyStatus === 'In Setup' ? 'rgba(251,191,36,0.15)' : 'rgba(255,255,255,0.08)';
+          const statusColor = (b.etsyStatus === 'Live' || b.etsyStatus === 'Active') ? '#00df89' : b.etsyStatus === 'In Setup' ? '#fbbf24' : 'var(--text-muted)';
           const typeColor = b.type === 'Digital' ? '#00df89' : b.type === 'KDP' ? '#a855f7' : '#06b6d4';
 
           const checklistCount = Object.values(b.checklist || {}).filter(Boolean).length;
+          const feesCharged = (b.shopCreationFee || (b.etsyStatus === 'Active' || b.etsyStatus === 'Live' ? 26 : 0)) + (b.totalListingFeesCharged || ((b.productsLive || 0) * 0.20));
 
           return `
             <div class="card-glass" style="border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:1.25rem; display:flex; flex-direction:column; justify-content:space-between; position:relative; overflow:hidden;">
@@ -669,10 +712,10 @@ window.APP_MODULES.brands = async function(container) {
                 <!-- COLOR PALETTE DOTS -->
                 <div style="display:flex; align-items:center; gap:0.4rem; margin-bottom:0.85rem;">
                   <span style="font-size:0.68rem; color:var(--text-muted);">Palette:</span>
-                  ${b.palette.slice(0, 5).map(c => `
+                  ${(b.palette || []).slice(0, 5).map(c => `
                     <span style="width:14px; height:14px; border-radius:50%; background:${c}; border:1px solid rgba(255,255,255,0.2);" title="${c}"></span>
                   `).join('')}
-                  <span style="font-size:0.68rem; color:var(--text-muted); margin-left:auto;">${b.fonts}</span>
+                  <span style="font-size:0.68rem; color:var(--text-muted); margin-left:auto;">${b.fonts || 'Standard'}</span>
                 </div>
 
                 <!-- PROGRESS METRICS -->
@@ -687,19 +730,19 @@ window.APP_MODULES.brands = async function(container) {
 
                   <div style="display:flex; justify-content:space-between; font-size:0.72rem;">
                     <span>Target: <strong style="color:#00df89;">$${b.target12mo.toLocaleString()}</strong></span>
-                    <span>Net: <strong style="color:#06b6d4;">$${b.netTarget.toLocaleString()}</strong></span>
-                    <span>Launch: <strong style="color:#fbbf24;">${checklistCount}/8 Tasks</strong></span>
+                    <span>Fees: <strong style="color:#fbbf24;">$${feesCharged.toFixed(2)}</strong></span>
+                    <span>Launch: <strong style="color:#06b6d4;">${checklistCount}/8 Tasks</strong></span>
                   </div>
                 </div>
 
                 <!-- ETSY STORE STATUS & URL -->
                 <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(255,255,255,0.03); padding:0.4rem 0.6rem; border-radius:8px; font-size:0.75rem; margin-bottom:0.5rem;">
-                  <span style="color:${statusColor}; font-weight:700;">● ${b.etsyStatus}</span>
+                  <span style="color:${statusColor}; font-weight:700;">● ${b.etsyStatus || 'Not Connected'}</span>
                   ${b.etsyUrl ? `
                     <a href="${b.etsyUrl}" target="_blank" style="color:#06b6d4; text-decoration:none; font-weight:700;">🔗 View Etsy Store →</a>
                   ` : `
-                    <button class="btn-ghost btn-sm" style="font-size:0.68rem; padding:0.15rem 0.4rem;" onclick="window.BrandsModule.editEtsyUrl(${b.id})">
-                      + Add Store URL
+                    <button class="btn-ghost btn-sm" style="font-size:0.68rem; padding:0.15rem 0.4rem; color:#f97316;" onclick="window.BrandsModule.switchTab('etsy'); window.BrandsModule.changeEtsyBrand(${b.id});">
+                      🔑 Connect in Etsy Command Center →
                     </button>
                   `}
                 </div>
@@ -772,7 +815,7 @@ window.APP_MODULES.brands = async function(container) {
               <th style="padding:0.75rem;">Format</th>
               <th style="padding:0.75rem;">Price</th>
               <th style="padding:0.75rem;">Status</th>
-              <th style="padding:0.75rem; text-align:right;">Studio & SEO</th>
+              <th style="padding:0.75rem; text-align:right;">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -791,12 +834,18 @@ window.APP_MODULES.brands = async function(container) {
                     <option value="In Progress" ${p.status === 'In Progress' ? 'selected' : ''}>🛠️ Designing</option>
                     <option value="SEO Ready" ${p.status === 'SEO Ready' ? 'selected' : ''}>✍️ SEO Ready</option>
                     <option value="Live" ${p.status === 'Live' ? 'selected' : ''}>🟢 Live on Etsy</option>
+                    <option value="Inactive" ${p.status === 'Inactive' ? 'selected' : ''}>⏸ Paused</option>
                   </select>
                 </td>
                 <td style="padding:0.75rem; text-align:right;">
-                  <button class="btn-primary btn-sm" style="font-size:0.72rem; padding:0.25rem 0.6rem;" onclick="window.BrandsModule.generateLiveSEOPackage('${encodeURIComponent(p.name)}', '${brand.name}', ${brand.id})">
-                    🎨 Design & SEO Studio
-                  </button>
+                  <div style="display:inline-flex; gap:0.3rem;">
+                    <button class="btn-primary btn-sm" style="font-size:0.72rem; padding:0.25rem 0.6rem;" onclick="window.BrandsModule.generateLiveSEOPackage(${brand.id}, '${p.code}', '${encodeURIComponent(p.name)}')">
+                      🎨 Studio
+                    </button>
+                    <button class="btn-ghost btn-sm" style="font-size:0.72rem; padding:0.25rem 0.4rem; color:#ef4444;" onclick="window.BrandsModule.deleteProduct(${brand.id}, '${p.code}')" title="Delete Product">
+                      🗑️
+                    </button>
+                  </div>
                 </td>
               </tr>
             `).join('')}
@@ -810,15 +859,49 @@ window.APP_MODULES.brands = async function(container) {
   // TAB 4: P&L LEDGER
   // ─────────────────────────────────────────────────────────────────────────
   function renderPnLTab(container) {
+    const totalTarget = state.brands.reduce((acc, b) => acc + (b.target12mo || 0), 0);
+    const totalGross = state.brands.reduce((acc, b) => acc + (b.actualGross || 0), 0);
+    const totalEtsyShopFees = state.brands.reduce((acc, b) => acc + (b.shopCreationFee || (b.etsyStatus === 'Active' || b.etsyStatus === 'Live' ? 26 : 0)), 0);
+    const totalListingFees = state.brands.reduce((acc, b) => acc + (b.totalListingFeesCharged || ((b.productsLive || 0) * 0.20)), 0);
+    const totalEtsyTxFees = Math.round(totalGross * 0.065);
+    const totalEtsyCombined = totalEtsyShopFees + totalListingFees + totalEtsyTxFees;
+    const totalCogs = state.brands.reduce((acc, b) => acc + (b.type === 'POD' ? Math.round((b.actualGross || 0) * 0.58) : Math.round((b.actualGross || 0) * 0.095)), 0);
+    const totalAds = state.brands.reduce((acc, b) => acc + (b.actualAds || 0), 0);
+    const totalNetProfit = Math.max(0, totalGross - totalEtsyCombined - totalCogs - totalAds);
+
     container.innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;">
         <div>
           <h3 style="font-size:1.15rem; font-weight:800; color:#fff; margin:0;">💰 Brand P&L Settlement Ledger</h3>
-          <span style="font-size:0.75rem; color:var(--text-muted);">Real-time tracking of Gross Revenue, Etsy & Printify COGS, Ads Spend & Net Cash Profit (Auto-syncs Engine 3)</span>
+          <span style="font-size:0.75rem; color:var(--text-muted);">Real-time tracking of Gross Revenue, Etsy Direct Costs ($26 setup + $0.20/listing + 6.5% tx), COGS, Ads Spend & Net Cash Profit</span>
         </div>
         <button class="btn-primary" onclick="window.BrandsModule.openLogRevenueModal()">
           ⚡ + Log Monthly Revenue
         </button>
+      </div>
+
+      <!-- P&L SUMMARY KPI CARDS -->
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:1rem; margin-bottom:1.5rem;">
+        <div class="card-glass" style="padding:1rem; border-radius:12px; border-left:4px solid #00df89;">
+          <span style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Total Gross Revenue</span>
+          <div style="font-size:1.4rem; font-weight:900; color:#00df89; margin-top:0.2rem;">$${totalGross.toLocaleString()}</div>
+          <span style="font-size:0.7rem; color:var(--text-muted);">Target: $${totalTarget.toLocaleString()}</span>
+        </div>
+        <div class="card-glass" style="padding:1rem; border-radius:12px; border-left:4px solid #fbbf24;">
+          <span style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Etsy Fees Sink</span>
+          <div style="font-size:1.4rem; font-weight:900; color:#fbbf24; margin-top:0.2rem;">-$${totalEtsyCombined.toFixed(2)}</div>
+          <span style="font-size:0.7rem; color:var(--text-muted);">$26 shop + $0.20 listing + 6.5% tx</span>
+        </div>
+        <div class="card-glass" style="padding:1rem; border-radius:12px; border-left:4px solid #ef4444;">
+          <span style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Platform / POD COGS</span>
+          <div style="font-size:1.4rem; font-weight:900; color:#ef4444; margin-top:0.2rem;">-$${totalCogs.toLocaleString()}</div>
+          <span style="font-size:0.7rem; color:var(--text-muted);">Digital: 9.5% · POD: 58%</span>
+        </div>
+        <div class="card-glass" style="padding:1rem; border-radius:12px; border-left:4px solid #06b6d4;">
+          <span style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase;">True Net Cash Profit</span>
+          <div style="font-size:1.4rem; font-weight:900; color:#06b6d4; margin-top:0.2rem;">$${totalNetProfit.toLocaleString()}</div>
+          <span style="font-size:0.7rem; color:#00df89; font-weight:700;">After all Etsy fees & COGS</span>
+        </div>
       </div>
 
       <div class="card-glass" style="padding:1.25rem; border-radius:16px; overflow-x:auto;">
@@ -828,6 +911,7 @@ window.APP_MODULES.brands = async function(container) {
               <th style="padding:0.75rem;">Brand</th>
               <th style="padding:0.75rem;">12-Mo Target</th>
               <th style="padding:0.75rem;">Actual Gross</th>
+              <th style="padding:0.75rem;">Etsy Direct Fees</th>
               <th style="padding:0.75rem;">Platform / POD COGS</th>
               <th style="padding:0.75rem;">Ads Spend</th>
               <th style="padding:0.75rem;">Net Cash Profit</th>
@@ -837,20 +921,25 @@ window.APP_MODULES.brands = async function(container) {
           </thead>
           <tbody>
             ${state.brands.map(b => {
-              const cogs = b.type === 'POD' ? Math.round(b.actualGross * 0.58) : Math.round(b.actualGross * 0.095);
-              const net = Math.max(0, b.actualGross - cogs - (b.actualAds || 0));
+              const cogs = b.type === 'POD' ? Math.round((b.actualGross || 0) * 0.58) : Math.round((b.actualGross || 0) * 0.095);
+              const etsyShopCost = b.shopCreationFee || (b.etsyStatus === 'Active' || b.etsyStatus === 'Live' ? 26 : 0);
+              const etsyListingCost = b.totalListingFeesCharged || ((b.productsLive || 0) * 0.20);
+              const etsyTxCost = Math.round((b.actualGross || 0) * 0.065);
+              const brandEtsyFees = etsyShopCost + etsyListingCost + etsyTxCost;
+              const net = Math.max(0, (b.actualGross || 0) - cogs - (b.actualAds || 0) - brandEtsyFees);
               const health = b.actualGross > 0 ? (b.actualGross >= (b.target12mo / 12) ? '🟢 On Target' : '🟡 Scaling') : '⚪ Pending Launch';
 
               return `
                 <tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
                   <td style="padding:0.75rem;">
                     <strong style="color:#fff;">${b.name}</strong>
-                    <div style="font-size:0.7rem; color:var(--text-muted);">${b.type}</div>
+                    <div style="font-size:0.7rem; color:var(--text-muted);">${b.type} · ${b.productsLive || 0} Live</div>
                   </td>
                   <td style="padding:0.75rem; font-weight:700;">$${b.target12mo.toLocaleString()}</td>
                   <td style="padding:0.75rem; color:#00df89; font-weight:800;">$${(b.actualGross || 0).toLocaleString()}</td>
+                  <td style="padding:0.75rem; color:#fbbf24; font-weight:700;">-$${brandEtsyFees.toFixed(2)}</td>
                   <td style="padding:0.75rem; color:#ef4444;">-$${cogs.toLocaleString()}</td>
-                  <td style="padding:0.75rem; color:#fbbf24;">-$${(b.actualAds || 0).toLocaleString()}</td>
+                  <td style="padding:0.75rem; color:#f97316;">-$${(b.actualAds || 0).toLocaleString()}</td>
                   <td style="padding:0.75rem; color:#06b6d4; font-weight:900;">$${net.toLocaleString()}</td>
                   <td style="padding:0.75rem; font-size:0.75rem;">${health}</td>
                   <td style="padding:0.75rem; text-align:right;">
@@ -959,6 +1048,17 @@ window.APP_MODULES.brands = async function(container) {
     const readyCount = catalog.filter(p => ['SEO Ready', 'QA Approved', 'Staged'].includes(p.status)).length;
     const vaultCount = catalog.filter(p => Boolean(p.vault?.fileName || p.vault?.storagePath)).length;
 
+    const now = Date.now();
+    const fourteenDaysMs = 14 * 24 * 60 * 60 * 1000;
+    const expiringCount = catalog.filter(p => {
+      if (p.status !== 'Live' || !p.expiresAt) return false;
+      return (new Date(p.expiresAt).getTime() - now) <= fourteenDaysMs;
+    }).length;
+
+    const brandListingFees = b.totalListingFeesCharged || (liveCount * 0.20);
+    const brandShopFee = b.shopCreationFee || (b.etsyStatus === 'Active' || b.etsyStatus === 'Live' ? 26 : 0);
+    const brandCombinedFees = brandShopFee + brandListingFees;
+
     container.innerHTML = `
       <!-- TOP COMMAND BAR: BRAND SELECTOR + MASTER ACTIONS -->
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem;">
@@ -973,12 +1073,21 @@ window.APP_MODULES.brands = async function(container) {
           </select>
         </div>
 
-        <div style="display:flex; gap:0.6rem; flex-wrap:wrap;">
-          <button class="btn-secondary" style="border:1px solid rgba(6,182,212,0.4); color:#06b6d4;" onclick="window.BrandsModule.runAIEtsyHealthCheck(${b.id})">
-            🩺 Run AI Health Check (All 100)
+        <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+          <button class="btn-secondary btn-sm" style="border:1px solid rgba(6,182,212,0.4); color:#06b6d4;" onclick="window.BrandsModule.runAIEtsyHealthCheck(${b.id})">
+            🩺 AI Health Check (100)
           </button>
-          <button class="btn-primary" style="background:linear-gradient(135deg, #00df89, #06b6d4); font-weight:900;" onclick="window.BrandsModule.publishBulkEtsy(${b.id})">
-            🚀 Bulk Publish to Etsy
+          <button class="btn-secondary btn-sm" onclick="window.BrandsModule.openShopProfileModal(${b.id})">
+            🛍️ Shop Profile
+          </button>
+          <button class="btn-secondary btn-sm" onclick="window.BrandsModule.openSectionsModal(${b.id})">
+            📋 Sections
+          </button>
+          <button class="btn-secondary btn-sm" onclick="window.BrandsModule.syncLiveEtsyListings(${b.id})">
+            🔄 Sync Live
+          </button>
+          <button class="btn-primary btn-sm" style="background:linear-gradient(135deg, #00df89, #06b6d4); font-weight:900;" onclick="window.BrandsModule.publishBulkEtsy(${b.id})">
+            🚀 Bulk Publish ($0.20/ea)
           </button>
         </div>
       </div>
@@ -1018,38 +1127,54 @@ window.APP_MODULES.brands = async function(container) {
         </div>
       </div>
 
-      <!-- MASTER METRICS STRIP -->
-      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:1rem; margin-bottom:1.5rem;">
+      <!-- MASTER METRICS STRIP (6 CARDS) -->
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(160px, 1fr)); gap:1rem; margin-bottom:1.5rem;">
         <div class="card-glass" style="padding:1rem; border-radius:12px; border-left:4px solid #00df89;">
-          <span style="font-size:0.7rem; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Live on Etsy</span>
-          <div style="font-size:1.5rem; font-weight:900; color:#fff; margin-top:0.2rem;">
-            ${liveCount} <span style="font-size:0.85rem; color:var(--text-muted); font-weight:500;">/ 100 Live</span>
+          <span style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Live on Etsy</span>
+          <div style="font-size:1.4rem; font-weight:900; color:#fff; margin-top:0.2rem;">
+            ${liveCount} <span style="font-size:0.8rem; color:var(--text-muted); font-weight:500;">/ 100 Live</span>
           </div>
-          <span style="font-size:0.7rem; color:#00df89;">${Math.round((liveCount / 100) * 100)}% of Target</span>
+          <span style="font-size:0.68rem; color:#00df89;">${Math.round((liveCount / 100) * 100)}% of Target</span>
         </div>
 
         <div class="card-glass" style="padding:1rem; border-radius:12px; border-left:4px solid #06b6d4;">
-          <span style="font-size:0.7rem; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Cloud Vault Assets</span>
-          <div style="font-size:1.5rem; font-weight:900; color:#06b6d4; margin-top:0.2rem;">
-            ${vaultCount} <span style="font-size:0.85rem; color:var(--text-muted); font-weight:500;">/ 100 Uploaded</span>
+          <span style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Cloud Deliverables</span>
+          <div style="font-size:1.4rem; font-weight:900; color:#06b6d4; margin-top:0.2rem;">
+            ${vaultCount} <span style="font-size:0.8rem; color:var(--text-muted); font-weight:500;">/ 100 Uploaded</span>
           </div>
-          <span style="font-size:0.7rem; color:var(--text-muted);">PDF/ZIP Deliverables in Supabase</span>
+          <span style="font-size:0.68rem; color:var(--text-muted);">PDF/ZIP in Supabase</span>
         </div>
 
         <div class="card-glass" style="padding:1rem; border-radius:12px; border-left:4px solid #a855f7;">
-          <span style="font-size:0.7rem; font-weight:800; color:var(--text-muted); text-transform:uppercase;">SEO & Mockups Ready</span>
-          <div style="font-size:1.5rem; font-weight:900; color:#a855f7; margin-top:0.2rem;">
-            ${readyCount} <span style="font-size:0.85rem; color:var(--text-muted); font-weight:500;">/ 100 Staged</span>
+          <span style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase;">SEO & Mockups Ready</span>
+          <div style="font-size:1.4rem; font-weight:900; color:#a855f7; margin-top:0.2rem;">
+            ${readyCount} <span style="font-size:0.8rem; color:var(--text-muted); font-weight:500;">/ 100 Staged</span>
           </div>
-          <span style="font-size:0.7rem; color:var(--text-muted);">140-char title + 13 tags + 10 mockups</span>
+          <span style="font-size:0.68rem; color:var(--text-muted);">Title + Tags + Mockups</span>
         </div>
 
         <div class="card-glass" style="padding:1rem; border-radius:12px; border-left:4px solid #fbbf24;">
-          <span style="font-size:0.7rem; font-weight:800; color:var(--text-muted); text-transform:uppercase;">AI Health Pass Rate</span>
-          <div id="etsyPassRateBadge" style="font-size:1.5rem; font-weight:900; color:#fbbf24; margin-top:0.2rem;">
-            Pending Check
+          <span style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase;">AI Health Pass Rate</span>
+          <div id="etsyPassRateBadge" style="font-size:1.4rem; font-weight:900; color:#fbbf24; margin-top:0.2rem;">
+            Pending
           </div>
-          <span style="font-size:0.7rem; color:var(--text-muted);">10-Rule Compliance Engine</span>
+          <span style="font-size:0.68rem; color:var(--text-muted);">10-Rule Compliance</span>
+        </div>
+
+        <div class="card-glass" style="padding:1rem; border-radius:12px; border-left:4px solid #ef4444;">
+          <span style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Expiring in ≤14 Days</span>
+          <div style="font-size:1.4rem; font-weight:900; color:${expiringCount > 0 ? '#ef4444' : '#fff'}; margin-top:0.2rem;">
+            ${expiringCount} <span style="font-size:0.8rem; color:var(--text-muted); font-weight:500;">Listings</span>
+          </div>
+          <span style="font-size:0.68rem; color:${expiringCount > 0 ? '#ef4444' : 'var(--text-muted)'};">${expiringCount > 0 ? 'Action: $0.20 renewal' : 'All fresh'}</span>
+        </div>
+
+        <div class="card-glass" style="padding:1rem; border-radius:12px; border-left:4px solid #f59e0b;">
+          <span style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Brand Etsy Fees</span>
+          <div style="font-size:1.4rem; font-weight:900; color:#f59e0b; margin-top:0.2rem;">
+            $${brandCombinedFees.toFixed(2)}
+          </div>
+          <span style="font-size:0.68rem; color:var(--text-muted);">$26 shop + $0.20/ea</span>
         </div>
       </div>
 
@@ -1058,12 +1183,12 @@ window.APP_MODULES.brands = async function(container) {
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem; margin-bottom:1.25rem;">
           <div>
             <h3 style="font-size:1.1rem; font-weight:800; color:#fff; margin:0;">📦 100-Product Etsy Catalog Matrix</h3>
-            <span style="font-size:0.75rem; color:var(--text-muted);">Manage listing state, prices, vault deliverables and publish directly to Etsy</span>
+            <span style="font-size:0.75rem; color:var(--text-muted);">Manage listing state, prices, vault deliverables, media and publish directly to Etsy</span>
           </div>
 
           <div style="display:flex; gap:0.5rem; align-items:center;">
             <input type="text" id="etsyProductSearch" placeholder="Search title or code..." oninput="window.BrandsModule.filterEtsyTable(this.value)" style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); color:#fff; padding:0.4rem 0.8rem; border-radius:8px; font-size:0.8rem; width:200px;">
-            <button class="btn-ghost btn-sm" onclick="window.BrandsModule.openAddProductModal()">+ Add Product</button>
+            <button class="btn-ghost btn-sm" onclick="window.BrandsModule.openAddProductToBrandModal(${b.id})">+ Add Product</button>
           </div>
         </div>
 
@@ -1072,10 +1197,12 @@ window.APP_MODULES.brands = async function(container) {
             <thead>
               <tr style="border-bottom:1px solid rgba(255,255,255,0.1); color:var(--text-muted); font-size:0.7rem; text-transform:uppercase;">
                 <th style="padding:0.6rem;">Code / Title</th>
-                <th style="padding:0.6rem;">Section / Category</th>
+                <th style="padding:0.6rem;">Category</th>
                 <th style="padding:0.6rem;">Price ($)</th>
-                <th style="padding:0.6rem;">Cloud Deliverable</th>
-                <th style="padding:0.6rem;">AI Health Check</th>
+                <th style="padding:0.6rem;">Media (1-10 + Vid)</th>
+                <th style="padding:0.6rem;">Deliverable</th>
+                <th style="padding:0.6rem;">AI Health</th>
+                <th style="padding:0.6rem;">Expiry (120d)</th>
                 <th style="padding:0.6rem;">Etsy Status</th>
                 <th style="padding:0.6rem; text-align:right;">Actions</th>
               </tr>
@@ -1083,14 +1210,24 @@ window.APP_MODULES.brands = async function(container) {
             <tbody id="etsyProductTableBody">
               ${catalog.map((p, idx) => {
                 const isLive = p.status === 'Live';
+                const isInactive = p.status === 'Inactive';
                 const hasVault = Boolean(p.vault?.fileName || p.vault?.storagePath);
                 const hasSEO = Boolean(p.seoTitle && p.seoTags && p.seoTags.length > 0);
+                const mockupCount = Array.isArray(p.mockups) ? p.mockups.length : (Array.isArray(p.mockupUrls) ? p.mockupUrls.length : 0);
+                const hasVideo = Boolean(p.video?.fileName || p.video?.storagePath || p.video);
+
+                let expiryDisplay = '<span style="font-size:0.7rem; color:var(--text-muted);">Not Listed</span>';
+                if (isLive && p.expiresAt) {
+                  const daysLeft = Math.max(0, Math.ceil((new Date(p.expiresAt).getTime() - now) / (1000 * 60 * 60 * 24)));
+                  const expColor = daysLeft <= 14 ? '#ef4444' : '#00df89';
+                  expiryDisplay = `<span style="font-size:0.72rem; font-weight:800; color:${expColor};">${daysLeft}d left</span>`;
+                }
 
                 return `
                   <tr style="border-bottom:1px solid rgba(255,255,255,0.04);" class="etsy-prod-row" data-code="${p.code}" data-name="${p.name.toLowerCase()}">
                     <td style="padding:0.6rem;">
                       <div style="font-weight:800; color:#fff;">${p.code}</div>
-                      <div style="font-size:0.75rem; color:var(--text-secondary); max-width:260px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                      <div style="font-size:0.75rem; color:var(--text-secondary); max-width:240px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
                         ${p.seoTitle || p.name}
                       </div>
                     </td>
@@ -1101,42 +1238,68 @@ window.APP_MODULES.brands = async function(container) {
                       $${(p.price || 4.99).toFixed(2)}
                     </td>
                     <td style="padding:0.6rem;">
+                      <span style="font-size:0.72rem; ${mockupCount > 0 ? 'color:#00df89;' : 'color:var(--text-muted);'}">
+                        🖼️ ${mockupCount}/10 · ${hasVideo ? '<span style="color:#a855f7;">📹✓</span>' : '<span style="color:var(--text-muted);">📹✗</span>'}
+                      </span>
+                    </td>
+                    <td style="padding:0.6rem;">
                       ${hasVault ? `
                         <span style="display:inline-flex; align-items:center; gap:0.25rem; font-size:0.7rem; font-weight:700; color:#00df89; background:rgba(0,223,137,0.1); padding:0.15rem 0.45rem; border-radius:6px;">
-                          📁 Vault Secured
+                          📁 Secured
                         </span>
                       ` : `
-                        <span style="font-size:0.7rem; color:var(--text-muted);">⚪ Missing File</span>
+                        <span style="font-size:0.7rem; color:var(--text-muted);">⚪ Missing</span>
                       `}
                     </td>
                     <td style="padding:0.6rem;">
                       ${hasVault && hasSEO ? `
                         <span style="display:inline-flex; align-items:center; gap:0.25rem; font-size:0.7rem; font-weight:800; color:#00df89; background:rgba(0,223,137,0.15); padding:0.15rem 0.45rem; border-radius:6px; cursor:pointer;" onclick="window.BrandsModule.runSingleProductHealthCheck(${b.id}, ${idx})">
-                          🟢 100% Ready
+                          🟢 Ready
                         </span>
                       ` : `
                         <span style="display:inline-flex; align-items:center; gap:0.25rem; font-size:0.7rem; font-weight:700; color:#fbbf24; background:rgba(251,191,36,0.15); padding:0.15rem 0.45rem; border-radius:6px; cursor:pointer;" onclick="window.BrandsModule.runSingleProductHealthCheck(${b.id}, ${idx})">
-                          🟡 Pending QA
+                          🟡 QA
                         </span>
                       `}
                     </td>
                     <td style="padding:0.6rem;">
+                      ${expiryDisplay}
+                    </td>
+                    <td style="padding:0.6rem;">
                       ${isLive ? `
                         <a href="${p.etsyUrl || '#'}" target="_blank" style="font-size:0.72rem; font-weight:800; color:#00df89; text-decoration:none; display:inline-flex; align-items:center; gap:0.2rem;">
-                          🟢 Live on Etsy ↗
+                          🟢 Live ↗
                         </a>
+                      ` : isInactive ? `
+                        <span style="font-size:0.72rem; color:#fbbf24;">⏸ Paused</span>
                       ` : `
-                        <span style="font-size:0.72rem; color:var(--text-muted);">⚪ Staged (${p.status || 'Draft'})</span>
+                        <span style="font-size:0.72rem; color:var(--text-muted);">⚪ Staged</span>
                       `}
                     </td>
                     <td style="padding:0.6rem; text-align:right;">
-                      <div style="display:inline-flex; gap:0.3rem;">
-                        <button class="btn-ghost btn-sm" style="font-size:0.7rem; padding:0.2rem 0.4rem;" onclick="window.BrandsModule.generateLiveSEOPackage(${b.id}, '${p.code}', '${encodeURIComponent(p.name)}')">
+                      <div style="display:inline-flex; gap:0.25rem; flex-wrap:nowrap;">
+                        <button class="btn-ghost btn-sm" style="font-size:0.68rem; padding:0.2rem 0.4rem;" onclick="window.BrandsModule.generateLiveSEOPackage(${b.id}, '${p.code}', '${encodeURIComponent(p.name)}')">
                           ⚡ Studio
                         </button>
-                        <button class="btn-primary btn-sm" style="font-size:0.7rem; padding:0.2rem 0.4rem; background:linear-gradient(135deg, #00df89, #06b6d4);" onclick="window.BrandsModule.publishSingleProductEtsy(${b.id}, ${idx})">
-                          🚀 Publish
-                        </button>
+                        ${isLive ? `
+                          <button class="btn-secondary btn-sm" style="font-size:0.68rem; padding:0.2rem 0.4rem;" onclick="window.BrandsModule.openEditLiveListingModal(${b.id}, '${p.code}')" title="Edit Live Listing on Etsy">
+                            ✏️ Edit
+                          </button>
+                          <button class="btn-ghost btn-sm" style="font-size:0.68rem; padding:0.2rem 0.4rem; color:#f59e0b;" onclick="window.BrandsModule.renewSingleListing(${b.id}, '${p.code}')" title="Renew Listing ($0.20 fee)">
+                            🔄 Renew
+                          </button>
+                          <button class="btn-ghost btn-sm" style="font-size:0.68rem; padding:0.2rem 0.4rem; color:#ef4444;" onclick="window.BrandsModule.deactivateSingleListing(${b.id}, '${p.code}')" title="Pause / Deactivate on Etsy">
+                            ⏸ Pause
+                          </button>
+                        ` : isInactive ? `
+                          <button class="btn-primary btn-sm" style="font-size:0.68rem; padding:0.2rem 0.4rem;" onclick="window.BrandsModule.reactivateSingleListing(${b.id}, '${p.code}')">
+                            ▶️ Resume
+                          </button>
+                        ` : `
+                          <button class="btn-primary btn-sm" style="font-size:0.68rem; padding:0.2rem 0.4rem; background:linear-gradient(135deg, #00df89, #06b6d4);" onclick="window.BrandsModule.publishSingleProductEtsy(${b.id}, ${idx})">
+                            🚀 Publish
+                          </button>
+                        `}
                       </div>
                     </td>
                   </tr>
@@ -1169,6 +1332,233 @@ window.APP_MODULES.brands = async function(container) {
 
     // Asynchronously fetch live Etsy connection status & orders
     window.BrandsModule.fetchLiveEtsyStatus(b.id);
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // TAB 7: LISTING LIFECYCLE & FEE MANAGER
+  // ─────────────────────────────────────────────────────────────────────────
+  function renderLifecycleTab(container) {
+    const now = Date.now();
+    const fourteenDaysMs = 14 * 24 * 60 * 60 * 1000;
+    
+    // Gather all products across all brands
+    const allProducts = [];
+    state.brands.forEach(brand => {
+      const catalog = state.productsCatalog[brand.id] || [];
+      catalog.forEach(p => {
+        allProducts.push({ ...p, brandId: brand.id, brandName: brand.name });
+      });
+    });
+
+    const liveProducts = allProducts.filter(p => p.status === 'Live');
+    const soonExpiring = liveProducts.filter(p => {
+      if (!p.expiresAt) return false;
+      const expTime = new Date(p.expiresAt).getTime();
+      return (expTime - now) <= fourteenDaysMs;
+    });
+    const inactiveProducts = allProducts.filter(p => p.status === 'Inactive' || p.status === 'Paused');
+    
+    const totalRenewalCost = (soonExpiring.length * 0.20).toFixed(2);
+    const totalPortfolioFees = state.brands.reduce((acc, b) => {
+      const shopFee = b.shopCreationFee || (b.etsyStatus === 'Active' || b.etsyStatus === 'Live' ? 26 : 0);
+      const listingFees = b.totalListingFeesCharged || ((b.productsLive || 0) * 0.20);
+      const txFees = Math.round((b.actualGross || 0) * 0.065);
+      return acc + shopFee + listingFees + txFees;
+    }, 0);
+
+    container.innerHTML = `
+      <!-- TOP OVERVIEW HEADER -->
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem;">
+        <div>
+          <h3 style="font-size:1.25rem; font-weight:900; color:#fff; margin:0;">⏰ Etsy Listing Lifecycle & Fees Manager</h3>
+          <p style="color:var(--text-secondary); font-size:0.82rem; margin:0.2rem 0 0;">
+            Real-time monitoring of the 4-Month (120-Day) Expiry Clock, Auto-Renewal Sinks ($0.20/ea), and Total Platform Fees.
+          </p>
+        </div>
+
+        <div style="display:flex; gap:0.6rem;">
+          <button class="btn-primary btn-sm" style="background:#f59e0b; border-color:#f59e0b; font-weight:800;" onclick="window.BrandsModule.bulkRenewAllExpiring()">
+            🔄 Renew All ${soonExpiring.length} Expiring ($${totalRenewalCost})
+          </button>
+        </div>
+      </div>
+
+      <!-- LIFECYCLE METRICS STRIP -->
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:1rem; margin-bottom:1.5rem;">
+        <div class="card-glass" style="padding:1.1rem; border-radius:14px; border-left:4px solid #ef4444;">
+          <span style="font-size:0.7rem; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Expiring in ≤14 Days</span>
+          <div style="font-size:1.6rem; font-weight:900; color:#ef4444; margin-top:0.2rem;">
+            ${soonExpiring.length} <span style="font-size:0.85rem; color:var(--text-muted); font-weight:500;">Listings</span>
+          </div>
+          <span style="font-size:0.72rem; color:#ef4444; font-weight:700;">Action Required: $0.20/ea renewal</span>
+        </div>
+
+        <div class="card-glass" style="padding:1.1rem; border-radius:14px; border-left:4px solid #00df89;">
+          <span style="font-size:0.7rem; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Healthy Live Listings</span>
+          <div style="font-size:1.6rem; font-weight:900; color:#00df89; margin-top:0.2rem;">
+            ${liveProducts.length - soonExpiring.length} <span style="font-size:0.85rem; color:var(--text-muted); font-weight:500;">/ ${liveProducts.length}</span>
+          </div>
+          <span style="font-size:0.72rem; color:var(--text-muted);">>14 days remaining on 4-mo cycle</span>
+        </div>
+
+        <div class="card-glass" style="padding:1.1rem; border-radius:14px; border-left:4px solid #a855f7;">
+          <span style="font-size:0.7rem; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Paused / Inactive Listings</span>
+          <div style="font-size:1.6rem; font-weight:900; color:#a855f7; margin-top:0.2rem;">
+            ${inactiveProducts.length} <span style="font-size:0.85rem; color:var(--text-muted); font-weight:500;">Listings</span>
+          </div>
+          <span style="font-size:0.72rem; color:var(--text-muted);">Paused to avoid auto-renew costs</span>
+        </div>
+
+        <div class="card-glass" style="padding:1.1rem; border-radius:14px; border-left:4px solid #fbbf24;">
+          <span style="font-size:0.7rem; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Total Portfolio Etsy Fees</span>
+          <div style="font-size:1.6rem; font-weight:900; color:#fbbf24; margin-top:0.2rem;">
+            $${totalPortfolioFees.toFixed(2)}
+          </div>
+          <span style="font-size:0.72rem; color:var(--text-muted);">Includes $26/shop + $0.20/listing + tx</span>
+        </div>
+      </div>
+
+      <!-- PANEL A: EXPIRING SOON LISTINGS TABLE -->
+      <div class="card-glass" style="padding:1.5rem; border-radius:16px; margin-bottom:1.5rem;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+          <div>
+            <h3 style="font-size:1.1rem; font-weight:800; color:#fff; margin:0;">⚠️ Listings Expiring Soon (Next 14 Days)</h3>
+            <span style="font-size:0.75rem; color:var(--text-muted);">Etsy automatically drops unrenewed listings after 120 days. Renewing costs $0.20 for another 120 days.</span>
+          </div>
+        </div>
+
+        ${soonExpiring.length === 0 ? `
+          <div style="text-align:center; padding:2rem; color:var(--text-muted); font-size:0.85rem; background:rgba(0,223,137,0.03); border-radius:12px; border:1px dashed rgba(0,223,137,0.2);">
+            ✅ <strong>All active listings are fresh!</strong> No listings are within the 14-day expiry window.
+          </div>
+        ` : `
+          <div style="overflow-x:auto;">
+            <table style="width:100%; border-collapse:collapse; font-size:0.82rem; text-align:left;">
+              <thead>
+                <tr style="border-bottom:1px solid rgba(255,255,255,0.1); color:var(--text-muted); font-size:0.7rem; text-transform:uppercase;">
+                  <th style="padding:0.6rem;">Brand</th>
+                  <th style="padding:0.6rem;">SKU / Code</th>
+                  <th style="padding:0.6rem;">Listing Title</th>
+                  <th style="padding:0.6rem;">Listed Date</th>
+                  <th style="padding:0.6rem;">Days Remaining</th>
+                  <th style="padding:0.6rem;">Renewal Cost</th>
+                  <th style="padding:0.6rem; text-align:right;">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${soonExpiring.map(p => {
+                  const daysLeft = Math.max(0, Math.ceil((new Date(p.expiresAt).getTime() - now) / (1000 * 60 * 60 * 24)));
+                  const badgeColor = daysLeft <= 3 ? '#ef4444' : '#fbbf24';
+                  return `
+                    <tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
+                      <td style="padding:0.6rem; font-weight:700; color:#fff;">${p.brandName}</td>
+                      <td style="padding:0.6rem; font-family:monospace; color:#06b6d4;">${p.code}</td>
+                      <td style="padding:0.6rem; max-width:240px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--text-secondary);">${p.seoTitle || p.name}</td>
+                      <td style="padding:0.6rem; color:var(--text-muted);">${p.listedAt ? new Date(p.listedAt).toLocaleDateString() : 'N/A'}</td>
+                      <td style="padding:0.6rem;">
+                        <span style="background:${badgeColor}20; color:${badgeColor}; border:1px solid ${badgeColor}40; padding:0.15rem 0.5rem; border-radius:999px; font-weight:800; font-size:0.72rem;">
+                          ⏳ ${daysLeft} days left
+                        </span>
+                      </td>
+                      <td style="padding:0.6rem; font-weight:800; color:#fbbf24;">$0.20</td>
+                      <td style="padding:0.6rem; text-align:right;">
+                        <button class="btn-primary btn-sm" style="font-size:0.72rem; padding:0.25rem 0.6rem;" onclick="window.BrandsModule.renewSingleListing(${p.brandId}, '${p.code}')">
+                          🔄 Renew ($0.20)
+                        </button>
+                      </td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+        `}
+      </div>
+
+      <!-- PANEL B: INACTIVE / PAUSED LISTINGS TABLE -->
+      <div class="card-glass" style="padding:1.5rem; border-radius:16px; margin-bottom:1.5rem;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+          <div>
+            <h3 style="font-size:1.1rem; font-weight:800; color:#fff; margin:0;">⏸ Inactive & Paused Listings</h3>
+            <span style="font-size:0.75rem; color:var(--text-muted);">Listings hidden on Etsy. Reactivate whenever you are ready to put them back live.</span>
+          </div>
+        </div>
+
+        ${inactiveProducts.length === 0 ? `
+          <div style="text-align:center; padding:1.5rem; color:var(--text-muted); font-size:0.8rem;">
+            No paused or inactive listings across your portfolio.
+          </div>
+        ` : `
+          <div style="overflow-x:auto;">
+            <table style="width:100%; border-collapse:collapse; font-size:0.82rem; text-align:left;">
+              <thead>
+                <tr style="border-bottom:1px solid rgba(255,255,255,0.1); color:var(--text-muted); font-size:0.7rem; text-transform:uppercase;">
+                  <th style="padding:0.6rem;">Brand</th>
+                  <th style="padding:0.6rem;">SKU / Code</th>
+                  <th style="padding:0.6rem;">Listing Title</th>
+                  <th style="padding:0.6rem;">Status</th>
+                  <th style="padding:0.6rem; text-align:right;">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${inactiveProducts.map(p => `
+                  <tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
+                    <td style="padding:0.6rem; font-weight:700; color:#fff;">${p.brandName}</td>
+                    <td style="padding:0.6rem; font-family:monospace; color:#06b6d4;">${p.code}</td>
+                    <td style="padding:0.6rem; color:var(--text-secondary);">${p.name}</td>
+                    <td style="padding:0.6rem;"><span style="background:rgba(255,255,255,0.08); padding:0.15rem 0.45rem; border-radius:6px; font-size:0.72rem; color:var(--text-muted);">⏸ Inactive</span></td>
+                    <td style="padding:0.6rem; text-align:right;">
+                      <button class="btn-secondary btn-sm" style="font-size:0.72rem; padding:0.25rem 0.6rem;" onclick="window.BrandsModule.reactivateSingleListing(${p.brandId}, '${p.code}')">
+                        ▶️ Reactivate
+                      </button>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        `}
+      </div>
+
+      <!-- PANEL C: ETSY FEE RECONCILIATION LEDGER -->
+      <div class="card-glass" style="padding:1.5rem; border-radius:16px;">
+        <h3 style="font-size:1.1rem; font-weight:800; color:#fff; margin:0 0 0.3rem 0;">💳 Etsy Fee Breakdown by Brand</h3>
+        <span style="font-size:0.75rem; color:var(--text-muted); display:block; margin-bottom:1rem;">All fees incurred across shop registrations, listings, and sales.</span>
+
+        <div style="overflow-x:auto;">
+          <table style="width:100%; border-collapse:collapse; font-size:0.82rem; text-align:left;">
+            <thead>
+              <tr style="border-bottom:1px solid rgba(255,255,255,0.1); color:var(--text-muted); font-size:0.7rem; text-transform:uppercase;">
+                <th style="padding:0.6rem;">Brand</th>
+                <th style="padding:0.6rem;">Etsy Status</th>
+                <th style="padding:0.6rem;">Shop Setup Fee ($26)</th>
+                <th style="padding:0.6rem;">Listing & Renewal Fees ($0.20)</th>
+                <th style="padding:0.6rem;">6.5% Tx Fee (Actual)</th>
+                <th style="padding:0.6rem; text-align:right;">Total Etsy Drain</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${state.brands.map(b => {
+                const shopFee = b.shopCreationFee || (b.etsyStatus === 'Active' || b.etsyStatus === 'Live' ? 26 : 0);
+                const listingFees = b.totalListingFeesCharged || ((b.productsLive || 0) * 0.20);
+                const txFees = Math.round((b.actualGross || 0) * 0.065);
+                const total = shopFee + listingFees + txFees;
+                return `
+                  <tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
+                    <td style="padding:0.6rem; font-weight:700; color:#fff;">${b.id}. ${b.name}</td>
+                    <td style="padding:0.6rem; color:${b.etsyStatus === 'Live' || b.etsyStatus === 'Active' ? '#00df89' : 'var(--text-muted)'}; font-weight:700;">${b.etsyStatus || 'Not Connected'}</td>
+                    <td style="padding:0.6rem; color:#fbbf24;">$${shopFee.toFixed(2)}</td>
+                    <td style="padding:0.6rem; color:#06b6d4;">$${listingFees.toFixed(2)}</td>
+                    <td style="padding:0.6rem; color:#ef4444;">$${txFees.toFixed(2)}</td>
+                    <td style="padding:0.6rem; font-weight:900; color:#fbbf24; text-align:right;">$${total.toFixed(2)}</td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -1577,7 +1967,7 @@ window.APP_MODULES.brands = async function(container) {
               📦 Vault File
             </button>
             <button id="modalTabBtnMockups" type="button" onclick="window.BrandsModule.switchStudioTab('mockups')" style="flex:1; min-width:120px; background:none; border:1px solid transparent; color:var(--text-muted); font-weight:800; font-size:0.75rem; padding:0.55rem 0.4rem; border-radius:8px; cursor:pointer;">
-              🖼️ 10 Mockups
+              🖼️ Media (Photos + Video)
             </button>
             <button id="modalTabBtnAudit" type="button" onclick="window.BrandsModule.switchStudioTab('audit')" style="flex:1; min-width:130px; background:none; border:1px solid transparent; color:var(--text-muted); font-weight:800; font-size:0.75rem; padding:0.55rem 0.4rem; border-radius:8px; cursor:pointer;">
               🧠 AI Audit & Pricing
@@ -1760,16 +2150,16 @@ window.APP_MODULES.brands = async function(container) {
             </div>
           </div>
 
-          <!-- TAB 4: 10 MOCKUPS & 10-SECOND VIDEO STUDIO -->
+          <!-- TAB 4: 1-10 MOCKUPS & 10-SECOND VIDEO STUDIO -->
           <div id="studioTabMockups" style="display:none; flex-direction:column; gap:1.2rem;">
             <!-- MOCKUP IMAGES FILE PICKER & CLOUD VAULT UPLOADER -->
             <div style="background:rgba(0,223,137,0.04); border:1px solid rgba(0,223,137,0.25); padding:1.25rem; border-radius:14px;">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
                 <div>
-                  <span style="font-size:0.72rem; font-weight:800; color:#00df89; text-transform:uppercase; display:block;">📤 Upload 10 Mockup Images to Cloud Vault</span>
-                  <p style="font-size:0.78rem; color:var(--text-muted); margin:0.1rem 0 0;">Upload your 10 generated mockup JPG/PNG images to store in Cloud Vault and stream directly to Etsy.</p>
+                  <span style="font-size:0.72rem; font-weight:800; color:#00df89; text-transform:uppercase; display:block;">📤 Upload 1–10 Mockup Images to Cloud Vault</span>
+                  <p style="font-size:0.78rem; color:var(--text-muted); margin:0.1rem 0 0;">Upload 1 to 10 mockup JPG/PNG images to store in Cloud Vault and stream directly to Etsy (min 1, up to 10).</p>
                 </div>
-                <span style="font-size:0.7rem; background:rgba(255,255,255,0.08); color:var(--text-secondary); padding:0.2rem 0.5rem; border-radius:6px;">Up to 10 Images</span>
+                <span style="font-size:0.7rem; background:rgba(255,255,255,0.08); color:var(--text-secondary); padding:0.2rem 0.5rem; border-radius:6px;">1–10 Images</span>
               </div>
 
               <div style="margin-bottom:0.75rem;">
@@ -1793,7 +2183,7 @@ window.APP_MODULES.brands = async function(container) {
                   </button>
                   ${matchedProduct.etsyListingId ? `
                     <button class="btn-secondary" style="padding:0.5rem 1rem; font-size:0.8rem; border:1px solid rgba(0,223,137,0.4); color:#00df89;" onclick="window.BrandsModule.pushMockupsToEtsy(${b.id}, '${prodCode}')">
-                      🚀 Push to Live Etsy Listing (#${matchedProduct.etsyListingId})
+                      🚀 Push Photos to Live Etsy (#${matchedProduct.etsyListingId})
                     </button>
                   ` : ''}
                 </div>
@@ -1801,6 +2191,39 @@ window.APP_MODULES.brands = async function(container) {
                   ${currentMockups.length > 0 ? `
                     <span style="color:#00df89; font-weight:700;">✅ ${currentMockups.length} mockups stored</span>
                   ` : `<span style="color:var(--text-muted);">No images uploaded yet</span>`}
+                </div>
+              </div>
+            </div>
+
+            <!-- DEDICATED LISTING VIDEO FILE PICKER & UPLOADER -->
+            <div style="background:rgba(168,85,247,0.05); border:1px solid rgba(168,85,247,0.3); padding:1.25rem; border-radius:14px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+                <div>
+                  <span style="font-size:0.72rem; font-weight:800; color:#c084fc; text-transform:uppercase; display:block;">📹 Listing Video Upload (MP4 / MOV)</span>
+                  <p style="font-size:0.78rem; color:var(--text-muted); margin:0.1rem 0 0;">3–15 seconds, max 100MB, 4:5 or 9:16 portrait. Audio is automatically muted by Etsy.</p>
+                </div>
+                <span style="font-size:0.7rem; background:rgba(255,255,255,0.08); color:var(--text-secondary); padding:0.2rem 0.5rem; border-radius:6px;">Max 100MB</span>
+              </div>
+
+              <div style="margin-bottom:0.75rem;">
+                <input type="file" id="listingVideoInput" accept="video/mp4,video/quicktime,.mp4,.mov" style="width:100%; font-size:0.82rem; background:rgba(0,0,0,0.3); border:1px dashed rgba(168,85,247,0.4); padding:0.75rem; border-radius:10px; color:#fff; cursor:pointer;">
+              </div>
+
+              <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+                <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                  <button class="btn-primary" style="background:#a855f7; border-color:#a855f7; padding:0.5rem 1rem; font-size:0.8rem;" onclick="window.BrandsModule.uploadProductVideo(${b.id}, '${prodCode}')">
+                    💾 Save Video to Vault
+                  </button>
+                  ${matchedProduct.etsyListingId ? `
+                    <button class="btn-secondary" style="padding:0.5rem 1rem; font-size:0.8rem; border:1px solid rgba(168,85,247,0.4); color:#c084fc;" onclick="window.BrandsModule.pushVideoToEtsy(${b.id}, '${prodCode}')">
+                      🚀 Push Video to Live Etsy (#${matchedProduct.etsyListingId})
+                    </button>
+                  ` : ''}
+                </div>
+                <div id="videoUploadStatus" style="font-size:0.78rem;">
+                  ${matchedProduct.video?.fileName ? `
+                    <span style="color:#00df89; font-weight:700;">✅ Stored: ${matchedProduct.video.fileName}</span>
+                  ` : `<span style="color:var(--text-muted);">No video uploaded yet</span>`}
                 </div>
               </div>
             </div>
@@ -2719,7 +3142,737 @@ window.APP_MODULES.brands = async function(container) {
       modal.style.display = 'flex';
     },
 
+    async uploadProductVideo(brandId, productCode) {
+      const fileInput = document.getElementById('listingVideoInput');
+      const file = fileInput?.files?.[0];
+      if (!file) {
+        if (window.showToast) window.showToast('Please select an MP4/MOV video file first', 'warning');
+        return;
+      }
+
+      const statusEl = document.getElementById('videoUploadStatus');
+      const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+
+      try {
+        if (statusEl) statusEl.innerHTML = `<span style="color:#06b6d4; font-weight:700;">⏳ Uploading ${file.name} to Cloud Vault...</span>`;
+
+        const formData = new FormData();
+        formData.append('productCode', productCode);
+        formData.append('video', file);
+
+        const res = await fetch(`/api/brands/${brandId}/video/upload`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: formData
+        });
+
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Failed uploading video');
+
+        if (window.showToast) window.showToast(`✅ Video saved to Cloud Vault: ${file.name}!`, 'success');
+        if (statusEl) {
+          statusEl.innerHTML = `<span style="color:#00df89; font-weight:700;">✅ Stored in Vault: ${file.name}</span>`;
+        }
+
+        state = await loadBrandsStateFromAPI();
+      } catch (err) {
+        if (statusEl) statusEl.innerHTML = `<span style="color:#ef4444; font-weight:700;">❌ ${err.message}</span>`;
+        if (window.showToast) window.showToast(err.message, 'error');
+      }
+    },
+
+    async pushVideoToEtsy(brandId, productCode) {
+      const statusEl = document.getElementById('videoUploadStatus');
+      try {
+        const brandCatalog = state.productsCatalog && state.productsCatalog[brandId] ? state.productsCatalog[brandId] : [];
+        const prod = brandCatalog.find(p => p.code === productCode);
+        if (!prod || !prod.etsyListingId) {
+          throw new Error(`Product ${productCode} has not been created on Etsy yet. Click "Bulk Publish to Etsy" first.`);
+        }
+
+        const fileInput = document.getElementById('listingVideoInput');
+        const file = fileInput?.files?.[0];
+        const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+
+        if (statusEl) statusEl.innerHTML = `<span style="color:#06b6d4; font-weight:700;">🚀 Pushing video to Etsy listing #${prod.etsyListingId}...</span>`;
+
+        let res;
+        if (file) {
+          const formData = new FormData();
+          formData.append('video', file);
+          res = await fetch(`/api/etsy/brands/${brandId}/listings/${prod.etsyListingId}/upload-video`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` },
+            body: formData
+          });
+        } else if (prod.video) {
+          res = await fetch(`/api/etsy/brands/${brandId}/listings/${prod.etsyListingId}/upload-video`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify(prod.video)
+          });
+        } else {
+          throw new Error('No video file selected or found in Vault.');
+        }
+
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Video push to Etsy failed');
+
+        if (window.showToast) window.showToast(`🎉 Video is now live on Etsy listing #${prod.etsyListingId}!`, 'success');
+        if (statusEl) statusEl.innerHTML = `<span style="color:#00df89; font-weight:700;">🎉 Video Live on Etsy listing #${prod.etsyListingId}!</span>`;
+      } catch (err) {
+        if (statusEl) statusEl.innerHTML = `<span style="color:#ef4444; font-weight:700;">❌ ${err.message}</span>`;
+        if (window.showToast) window.showToast(err.message, 'error');
+      }
+    },
+
+    async openShopProfileModal(brandId) {
+      const modal = document.getElementById('shopProfileModal');
+      const content = document.getElementById('shopProfileModalContent');
+      if (!modal || !content) return;
+
+      const b = state.brands.find(x => x.id === brandId) || state.brands[0];
+      const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+
+      content.innerHTML = `
+        <div style="text-align:center; padding:2rem;">
+          <div style="font-size:2rem; animation:spin 1s linear infinite;">🔄</div>
+          <p style="color:var(--text-muted); margin-top:0.5rem;">Loading Etsy Shop Profile for ${b.name}...</p>
+        </div>
+      `;
+      modal.style.display = 'flex';
+
+      try {
+        const res = await fetch(`/api/etsy/brands/${brandId}/shop`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        const shop = data.data || {};
+
+        content.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:0.75rem;">
+            <div>
+              <h3 style="font-size:1.2rem; font-weight:900; color:#fff; margin:0;">🛍️ Etsy Shop Profile: ${b.name}</h3>
+              <span style="font-size:0.75rem; color:var(--text-secondary);">Shop ID: ${shop.shop_id || b.etsyShopId || 'Not Linked'} · Currency: ${shop.currency_code || 'USD'}</span>
+            </div>
+            <button onclick="document.getElementById('shopProfileModal').style.display='none'" style="background:none; border:none; color:var(--text-muted); font-size:1.5rem; cursor:pointer;">✕</button>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:1rem;">
+            <div>
+              <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.3rem;">Shop Title / Tagline</label>
+              <input type="text" id="shopProfileTitle" value="${shop.title || b.tagline || ''}" style="width:100%; font-size:0.85rem; padding:0.6rem; background:rgba(255,255,255,0.04); border:1px solid var(--border-subtle); border-radius:8px; color:#fff;">
+            </div>
+
+            <div>
+              <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.3rem;">Shop Announcement</label>
+              <textarea id="shopProfileAnnouncement" rows="3" style="width:100%; font-size:0.82rem; padding:0.6rem; background:rgba(255,255,255,0.04); border:1px solid var(--border-subtle); border-radius:8px; color:#fff; line-height:1.4;">${shop.announcement || ''}</textarea>
+            </div>
+
+            <div>
+              <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.3rem;">Sale Message (Receipt Note)</label>
+              <textarea id="shopProfileSaleMessage" rows="2" style="width:100%; font-size:0.82rem; padding:0.6rem; background:rgba(255,255,255,0.04); border:1px solid var(--border-subtle); border-radius:8px; color:#fff; line-height:1.4;">${shop.sale_message || ''}</textarea>
+            </div>
+
+            <div style="background:rgba(251,191,36,0.08); border:1px solid rgba(251,191,36,0.25); border-radius:8px; padding:0.75rem; font-size:0.75rem; color:#fbbf24;">
+              ℹ️ <em>Note: Shop Banner and Logo imagery must be updated directly in the Etsy Seller Dashboard due to Etsy v3 API permission policies.</em>
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:0.5rem;">
+              <button class="btn-ghost" onclick="document.getElementById('shopProfileModal').style.display='none'">Cancel</button>
+              <button class="btn-primary" onclick="window.BrandsModule.saveShopProfile(${brandId})">💾 Save Profile to Etsy</button>
+            </div>
+          </div>
+        `;
+      } catch (err) {
+        content.innerHTML = `
+          <div style="text-align:center; padding:1.5rem;">
+            <p style="color:#ef4444; font-weight:700;">Could not load shop profile: ${err.message}</p>
+            <button class="btn-secondary btn-sm" onclick="document.getElementById('shopProfileModal').style.display='none'">Close</button>
+          </div>
+        `;
+      }
+    },
+
+    async saveShopProfile(brandId) {
+      const title = document.getElementById('shopProfileTitle')?.value || '';
+      const announcement = document.getElementById('shopProfileAnnouncement')?.value || '';
+      const sale_message = document.getElementById('shopProfileSaleMessage')?.value || '';
+
+      const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+      try {
+        const res = await fetch(`/api/etsy/brands/${brandId}/shop`, {
+          method: 'PUT',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title, announcement, sale_message })
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Failed updating shop profile');
+
+        if (window.showToast) window.showToast('✅ Etsy Shop Profile updated successfully!', 'success');
+        document.getElementById('shopProfileModal').style.display = 'none';
+      } catch (err) {
+        if (window.showToast) window.showToast(`Error: ${err.message}`, 'error');
+      }
+    },
+
+    async openSectionsModal(brandId) {
+      const modal = document.getElementById('sectionsModal');
+      const content = document.getElementById('sectionsModalContent');
+      if (!modal || !content) return;
+
+      const b = state.brands.find(x => x.id === brandId) || state.brands[0];
+      const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+
+      content.innerHTML = `
+        <div style="text-align:center; padding:2rem;">
+          <div style="font-size:2rem; animation:spin 1s linear infinite;">🔄</div>
+          <p style="color:var(--text-muted); margin-top:0.5rem;">Loading Shop Sections for ${b.name}...</p>
+        </div>
+      `;
+      modal.style.display = 'flex';
+
+      try {
+        const res = await fetch(`/api/etsy/brands/${brandId}/sections`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        const sections = data.data?.results || [];
+
+        content.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:0.75rem;">
+            <div>
+              <h3 style="font-size:1.2rem; font-weight:900; color:#fff; margin:0;">📋 Shop Sections: ${b.name}</h3>
+              <span style="font-size:0.75rem; color:var(--text-secondary);">${sections.length} active sections on Etsy</span>
+            </div>
+            <button onclick="document.getElementById('sectionsModal').style.display='none'" style="background:none; border:none; color:var(--text-muted); font-size:1.5rem; cursor:pointer;">✕</button>
+          </div>
+
+          <!-- CREATE NEW SECTION -->
+          <div style="display:flex; gap:0.5rem; margin-bottom:1.25rem; background:rgba(0,0,0,0.3); padding:0.75rem; border-radius:10px;">
+            <input type="text" id="newSectionTitle" placeholder="New section name (e.g. Budget Planners)..." style="flex:1; font-size:0.82rem; padding:0.5rem 0.75rem; background:rgba(255,255,255,0.05); border:1px solid var(--border-subtle); border-radius:8px; color:#fff;">
+            <button class="btn-primary btn-sm" onclick="window.BrandsModule.createShopSection(${brandId})">+ Create Section</button>
+          </div>
+
+          <!-- SECTIONS LIST -->
+          <div style="display:flex; flex-direction:column; gap:0.5rem; max-height:280px; overflow-y:auto;">
+            ${sections.length === 0 ? `
+              <div style="text-align:center; padding:1.5rem; color:var(--text-muted); font-size:0.82rem;">No custom sections yet on this Etsy store.</div>
+            ` : sections.map(s => `
+              <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:0.6rem 0.85rem; border-radius:8px; border:1px solid rgba(255,255,255,0.05);">
+                <div>
+                  <strong style="color:#fff; font-size:0.85rem;">${s.title}</strong>
+                  <span style="font-size:0.72rem; color:var(--text-muted); margin-left:0.5rem;">Section ID: ${s.shop_section_id}</span>
+                </div>
+                <span style="font-size:0.72rem; background:rgba(0,223,137,0.15); color:#00df89; padding:0.15rem 0.5rem; border-radius:999px; font-weight:700;">
+                  ${s.active_listing_count || 0} active
+                </span>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      } catch (err) {
+        content.innerHTML = `
+          <div style="text-align:center; padding:1.5rem;">
+            <p style="color:#ef4444; font-weight:700;">Could not load sections: ${err.message}</p>
+            <button class="btn-secondary btn-sm" onclick="document.getElementById('sectionsModal').style.display='none'">Close</button>
+          </div>
+        `;
+      }
+    },
+
+    async createShopSection(brandId) {
+      const titleInput = document.getElementById('newSectionTitle');
+      const title = titleInput?.value?.trim();
+      if (!title) {
+        if (window.showToast) window.showToast('Please enter a section title', 'warning');
+        return;
+      }
+
+      const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+      try {
+        const res = await fetch(`/api/etsy/brands/${brandId}/sections`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title })
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Failed to create section');
+
+        if (window.showToast) window.showToast(`✅ Section "${title}" created on Etsy!`, 'success');
+        window.BrandsModule.openSectionsModal(brandId);
+      } catch (err) {
+        if (window.showToast) window.showToast(`Error: ${err.message}`, 'error');
+      }
+    },
+
+    async openEditLiveListingModal(brandId, productCode) {
+      const modal = document.getElementById('editLiveListingModal');
+      const content = document.getElementById('editLiveListingModalContent');
+      if (!modal || !content) return;
+
+      const catalog = state.productsCatalog[brandId] || [];
+      const prod = catalog.find(p => p.code === productCode);
+      if (!prod) return;
+
+      content.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:0.75rem;">
+          <div>
+            <h3 style="font-size:1.2rem; font-weight:900; color:#fff; margin:0;">✏️ Edit Live Etsy Listing</h3>
+            <span style="font-size:0.75rem; color:var(--text-secondary);">${prod.code} · Etsy Listing #${prod.etsyListingId || 'Pending'}</span>
+          </div>
+          <button onclick="document.getElementById('editLiveListingModal').style.display='none'" style="background:none; border:none; color:var(--text-muted); font-size:1.5rem; cursor:pointer;">✕</button>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:1rem;">
+          <div>
+            <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.3rem;">Listing Title (Max 140 chars)</label>
+            <input type="text" id="liveEditTitle" maxlength="140" value="${prod.seoTitle || prod.name || ''}" style="width:100%; font-size:0.85rem; padding:0.6rem; background:rgba(255,255,255,0.04); border:1px solid var(--border-subtle); border-radius:8px; color:#fff;">
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+            <div>
+              <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.3rem;">Price ($ USD)</label>
+              <input type="number" step="0.01" id="liveEditPrice" value="${prod.price || 4.99}" style="width:100%; font-size:0.85rem; padding:0.6rem; background:rgba(255,255,255,0.04); border:1px solid var(--border-subtle); border-radius:8px; color:#00df89; font-weight:800;">
+            </div>
+            <div>
+              <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.3rem;">Quantity Available</label>
+              <input type="number" id="liveEditQty" value="${prod.quantity || 999}" style="width:100%; font-size:0.85rem; padding:0.6rem; background:rgba(255,255,255,0.04); border:1px solid var(--border-subtle); border-radius:8px; color:#fff;">
+            </div>
+          </div>
+
+          <div>
+            <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.3rem;">Listing Description</label>
+            <textarea id="liveEditDesc" rows="4" style="width:100%; font-size:0.82rem; padding:0.6rem; background:rgba(255,255,255,0.04); border:1px solid var(--border-subtle); border-radius:8px; color:#fff; line-height:1.4;">${prod.seoDescription || ''}</textarea>
+          </div>
+
+          <div>
+            <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.3rem;">13 Etsy Tags (Comma-separated)</label>
+            <input type="text" id="liveEditTags" value="${(prod.seoTags || []).join(', ')}" style="width:100%; font-size:0.82rem; padding:0.6rem; background:rgba(255,255,255,0.04); border:1px solid var(--border-subtle); border-radius:8px; color:#06b6d4;">
+          </div>
+
+          <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:0.5rem;">
+            <button class="btn-ghost" onclick="document.getElementById('editLiveListingModal').style.display='none'">Cancel</button>
+            <button class="btn-primary" onclick="window.BrandsModule.saveEditLiveListing(${brandId}, '${productCode}')">💾 Update Live Listing</button>
+          </div>
+        </div>
+      `;
+
+      modal.style.display = 'flex';
+    },
+
+    async saveEditLiveListing(brandId, productCode) {
+      const catalog = state.productsCatalog[brandId] || [];
+      const prod = catalog.find(p => p.code === productCode);
+      if (!prod || !prod.etsyListingId) {
+        if (window.showToast) window.showToast('Listing ID missing', 'error');
+        return;
+      }
+
+      const title = document.getElementById('liveEditTitle')?.value || '';
+      const price = parseFloat(document.getElementById('liveEditPrice')?.value || '4.99');
+      const quantity = parseInt(document.getElementById('liveEditQty')?.value || '999', 10);
+      const description = document.getElementById('liveEditDesc')?.value || '';
+      const tagsStr = document.getElementById('liveEditTags')?.value || '';
+      const tags = tagsStr.split(',').map(t => t.trim().substring(0, 20)).filter(Boolean).slice(0, 13);
+
+      const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+      try {
+        const res = await fetch(`/api/etsy/brands/${brandId}/listings/${prod.etsyListingId}`, {
+          method: 'PATCH',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title, price, quantity, description, tags, productCode })
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Failed to update live listing');
+
+        if (window.showToast) window.showToast(`✅ Live Etsy listing #${prod.etsyListingId} updated!`, 'success');
+        document.getElementById('editLiveListingModal').style.display = 'none';
+        state = await loadBrandsStateFromAPI();
+        renderTabContent('etsy');
+      } catch (err) {
+        if (window.showToast) window.showToast(`Update failed: ${err.message}`, 'error');
+      }
+    },
+
+    async renewSingleListing(brandId, productCode) {
+      const catalog = state.productsCatalog[brandId] || [];
+      const prod = catalog.find(p => p.code === productCode);
+      if (!prod || !prod.etsyListingId) {
+        if (window.showToast) window.showToast('Listing is not live on Etsy yet', 'warning');
+        return;
+      }
+
+      if (!confirm(`Renewing listing ${prod.code} will cost $0.20 on Etsy and extend the listing for another 120 days. Proceed?`)) return;
+
+      const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+      try {
+        const res = await fetch(`/api/etsy/brands/${brandId}/listings/${prod.etsyListingId}/renew`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ productCode })
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Failed to renew listing');
+
+        if (window.showToast) window.showToast(`🔄 Renewed ${prod.code}! $0.20 logged. Expiry extended by 120 days.`, 'success');
+        state = await loadBrandsStateFromAPI();
+        renderTabContent(currentTab);
+      } catch (err) {
+        if (window.showToast) window.showToast(`Renew failed: ${err.message}`, 'error');
+      }
+    },
+
+    async deactivateSingleListing(brandId, productCode) {
+      const catalog = state.productsCatalog[brandId] || [];
+      const prod = catalog.find(p => p.code === productCode);
+      if (!prod || !prod.etsyListingId) return;
+
+      if (!confirm(`Deactivate listing ${prod.code} on Etsy? It will be hidden from shoppers.`)) return;
+
+      const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+      try {
+        const res = await fetch(`/api/etsy/brands/${brandId}/listings/${prod.etsyListingId}/deactivate`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ productCode })
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Failed to deactivate');
+
+        if (window.showToast) window.showToast(`⏸ Listing ${prod.code} paused on Etsy`, 'info');
+        state = await loadBrandsStateFromAPI();
+        renderTabContent(currentTab);
+      } catch (err) {
+        if (window.showToast) window.showToast(err.message, 'error');
+      }
+    },
+
+    async reactivateSingleListing(brandId, productCode) {
+      const catalog = state.productsCatalog[brandId] || [];
+      const prod = catalog.find(p => p.code === productCode);
+      if (!prod || !prod.etsyListingId) return;
+
+      const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+      try {
+        const res = await fetch(`/api/etsy/brands/${brandId}/listings/${prod.etsyListingId}/reactivate`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ productCode })
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Failed to reactivate');
+
+        if (window.showToast) window.showToast(`▶️ Listing ${prod.code} reactivated live on Etsy!`, 'success');
+        state = await loadBrandsStateFromAPI();
+        renderTabContent(currentTab);
+      } catch (err) {
+        if (window.showToast) window.showToast(err.message, 'error');
+      }
+    },
+
+    async syncLiveEtsyListings(brandId) {
+      if (window.showToast) window.showToast('🔄 Fetching active listings from Etsy API...', 'info');
+      const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+      try {
+        const res = await fetch(`/api/etsy/brands/${brandId}/listings`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Failed to sync');
+
+        const activeListings = data.data?.results || [];
+        if (window.showToast) window.showToast(`✅ Synced ${activeListings.length} active listings from Etsy!`, 'success');
+        state = await loadBrandsStateFromAPI();
+        renderTabContent('etsy');
+      } catch (err) {
+        if (window.showToast) window.showToast(`Sync error: ${err.message}`, 'error');
+      }
+    },
+
+    async bulkRenewAllExpiring() {
+      const now = Date.now();
+      const fourteenDaysMs = 14 * 24 * 60 * 60 * 1000;
+      const expiring = [];
+
+      state.brands.forEach(b => {
+        const catalog = state.productsCatalog[b.id] || [];
+        catalog.forEach(p => {
+          if (p.status === 'Live' && p.expiresAt && p.etsyListingId) {
+            if ((new Date(p.expiresAt).getTime() - now) <= fourteenDaysMs) {
+              expiring.push({ brandId: b.id, brandName: b.name, product: p });
+            }
+          }
+        });
+      });
+
+      if (expiring.length === 0) {
+        if (window.showToast) window.showToast('No listings are currently within the 14-day expiry window', 'info');
+        return;
+      }
+
+      const totalCost = (expiring.length * 0.20).toFixed(2);
+      if (!confirm(`Renewing all ${expiring.length} expiring listings will cost $${totalCost} ($0.20 per listing). Proceed?`)) return;
+
+      const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+      let renewed = 0;
+
+      for (const item of expiring) {
+        try {
+          await fetch(`/api/etsy/brands/${item.brandId}/listings/${item.product.etsyListingId}/renew`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ productCode: item.product.code })
+          });
+          renewed++;
+        } catch (e) {
+          console.warn('Renewal failed for', item.product.code);
+        }
+      }
+
+      if (window.showToast) window.showToast(`🎉 Successfully renewed ${renewed} listings! $${(renewed * 0.20).toFixed(2)} logged.`, 'success');
+      state = await loadBrandsStateFromAPI();
+      renderTabContent('lifecycle');
+    },
+
+    openAddBrandModal() {
+      const modal = document.getElementById('addBrandModal');
+      const content = document.getElementById('addBrandModalContent');
+      if (!modal || !content) return;
+
+      content.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:0.75rem;">
+          <h3 style="font-size:1.2rem; font-weight:900; color:#fff; margin:0;">🏢 Create New Brand Store</h3>
+          <button onclick="document.getElementById('addBrandModal').style.display='none'" style="background:none; border:none; color:var(--text-muted); font-size:1.5rem; cursor:pointer;">✕</button>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:1rem;">
+          <div>
+            <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.3rem;">Brand Name</label>
+            <input type="text" id="newBrandName" placeholder="e.g. ZenFlowPlanners" style="width:100%; font-size:0.85rem; padding:0.6rem; background:rgba(255,255,255,0.04); border:1px solid var(--border-subtle); border-radius:8px; color:#fff;">
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+            <div>
+              <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.3rem;">Niche</label>
+              <input type="text" id="newBrandNiche" placeholder="e.g. Mindfulness & Wellness" style="width:100%; font-size:0.85rem; padding:0.6rem; background:rgba(255,255,255,0.04); border:1px solid var(--border-subtle); border-radius:8px; color:#fff;">
+            </div>
+            <div>
+              <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.3rem;">Brand Type</label>
+              <select id="newBrandType" style="width:100%; font-size:0.85rem; padding:0.6rem; background:var(--surface-card, #181824); border:1px solid var(--border-subtle); border-radius:8px; color:#fff;">
+                <option value="Digital">Digital PDF / ZIP</option>
+                <option value="POD">Print on Demand (POD)</option>
+                <option value="Hybrid">Hybrid (Digital + POD)</option>
+                <option value="KDP">KDP Paperback / Hardcover</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.3rem;">Tagline</label>
+            <input type="text" id="newBrandTagline" placeholder="e.g. Elegant mind-body daily organizers" style="width:100%; font-size:0.85rem; padding:0.6rem; background:rgba(255,255,255,0.04); border:1px solid var(--border-subtle); border-radius:8px; color:#fff;">
+          </div>
+
+          <div>
+            <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.3rem;">12-Month Gross Revenue Target ($ USD)</label>
+            <input type="number" id="newBrandTarget" value="84000" style="width:100%; font-size:0.85rem; padding:0.6rem; background:rgba(255,255,255,0.04); border:1px solid var(--border-subtle); border-radius:8px; color:#00df89; font-weight:800;">
+          </div>
+
+          <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:0.5rem;">
+            <button class="btn-ghost" onclick="document.getElementById('addBrandModal').style.display='none'">Cancel</button>
+            <button class="btn-primary" onclick="window.BrandsModule.saveNewBrand()">✨ Create Brand</button>
+          </div>
+        </div>
+      `;
+
+      modal.style.display = 'flex';
+    },
+
+    async saveNewBrand() {
+      const name = document.getElementById('newBrandName')?.value?.trim();
+      const niche = document.getElementById('newBrandNiche')?.value?.trim();
+      const type = document.getElementById('newBrandType')?.value || 'Digital';
+      const tagline = document.getElementById('newBrandTagline')?.value?.trim() || '';
+      const target12mo = parseFloat(document.getElementById('newBrandTarget')?.value || '84000');
+
+      if (!name || !niche) {
+        if (window.showToast) window.showToast('Please provide brand name and niche', 'warning');
+        return;
+      }
+
+      const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+      try {
+        const res = await fetch('/api/brands', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, niche, type, tagline, target12mo })
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Failed creating brand');
+
+        if (window.showToast) window.showToast(`🎉 Created Brand "${name}"!`, 'success');
+        document.getElementById('addBrandModal').style.display = 'none';
+        state = await loadBrandsStateFromAPI();
+        render();
+      } catch (err) {
+        if (window.showToast) window.showToast(`Error: ${err.message}`, 'error');
+      }
+    },
+
+    openAddProductToBrandModal(brandId) {
+      const modal = document.getElementById('addProductModal');
+      const content = document.getElementById('addProductModalContent');
+      if (!modal || !content) return;
+
+      const b = state.brands.find(x => x.id === brandId) || state.brands[0];
+      const nextNum = (state.productsCatalog[b.id]?.length || 0) + 1;
+      const codePrefix = b.name.substring(0, 3).toUpperCase();
+      const defaultCode = `${codePrefix}-${nextNum.toString().padStart(2, '0')}`;
+
+      content.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:0.75rem;">
+          <h3 style="font-size:1.2rem; font-weight:900; color:#fff; margin:0;">📦 Add Product to ${b.name}</h3>
+          <button onclick="document.getElementById('addProductModal').style.display='none'" style="background:none; border:none; color:var(--text-muted); font-size:1.5rem; cursor:pointer;">✕</button>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:1rem;">
+          <div style="display:grid; grid-template-columns:1fr 2fr; gap:0.75rem;">
+            <div>
+              <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.3rem;">SKU / Code</label>
+              <input type="text" id="newProdCode" value="${defaultCode}" style="width:100%; font-size:0.85rem; padding:0.6rem; background:rgba(255,255,255,0.04); border:1px solid var(--border-subtle); border-radius:8px; color:#06b6d4; font-weight:800;">
+            </div>
+            <div>
+              <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.3rem;">Product Name</label>
+              <input type="text" id="newProdName" placeholder="e.g. 2026 Ultimate Habit Tracker" style="width:100%; font-size:0.85rem; padding:0.6rem; background:rgba(255,255,255,0.04); border:1px solid var(--border-subtle); border-radius:8px; color:#fff;">
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+            <div>
+              <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.3rem;">Category / Section</label>
+              <input type="text" id="newProdCategory" placeholder="e.g. Habit Trackers" style="width:100%; font-size:0.85rem; padding:0.6rem; background:rgba(255,255,255,0.04); border:1px solid var(--border-subtle); border-radius:8px; color:#fff;">
+            </div>
+            <div>
+              <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.3rem;">Retail Price ($ USD)</label>
+              <input type="number" step="0.01" id="newProdPrice" value="4.99" style="width:100%; font-size:0.85rem; padding:0.6rem; background:rgba(255,255,255,0.04); border:1px solid var(--border-subtle); border-radius:8px; color:#00df89; font-weight:800;">
+            </div>
+          </div>
+
+          <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:0.5rem;">
+            <button class="btn-ghost" onclick="document.getElementById('addProductModal').style.display='none'">Cancel</button>
+            <button class="btn-primary" onclick="window.BrandsModule.saveNewProduct(${b.id})">✨ Add to Catalog</button>
+          </div>
+        </div>
+      `;
+
+      modal.style.display = 'flex';
+    },
+
+    async saveNewProduct(brandId) {
+      const code = document.getElementById('newProdCode')?.value?.trim();
+      const name = document.getElementById('newProdName')?.value?.trim();
+      const category = document.getElementById('newProdCategory')?.value?.trim() || 'General';
+      const price = parseFloat(document.getElementById('newProdPrice')?.value || '4.99');
+
+      if (!code || !name) {
+        if (window.showToast) window.showToast('Please provide product code and name', 'warning');
+        return;
+      }
+
+      if (!state.productsCatalog[brandId]) state.productsCatalog[brandId] = [];
+      state.productsCatalog[brandId].push({
+        code,
+        name,
+        category,
+        price,
+        format: 'Digital PDF',
+        status: 'Pending'
+      });
+
+      saveBrandsStateLocally(state);
+      if (window.showToast) window.showToast(`✅ Added ${code}: ${name} to catalog!`, 'success');
+      document.getElementById('addProductModal').style.display = 'none';
+      renderTabContent(currentTab);
+    },
+
+    async deleteProduct(brandId, productCode) {
+      if (!confirm(`Are you sure you want to delete ${productCode} from catalog?`)) return;
+
+      const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+      try {
+        await fetch(`/api/brands/${brandId}/product/${productCode}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (state.productsCatalog[brandId]) {
+          state.productsCatalog[brandId] = state.productsCatalog[brandId].filter(p => p.code !== productCode);
+          saveBrandsStateLocally(state);
+        }
+
+        if (window.showToast) window.showToast(`Deleted ${productCode}`, 'info');
+        renderTabContent(currentTab);
+      } catch (err) {
+        if (window.showToast) window.showToast(`Error: ${err.message}`, 'error');
+      }
+    },
+
     async publishBulkEtsy(brandId) {
+      const b = state.brands.find(x => x.id === brandId) || state.brands[0];
+      const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+
+      // Step 1: Pre-flight dry-run cost estimation
+      try {
+        const dryRes = await fetch(`/api/etsy/brands/${brandId}/publish-all`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ dryRun: true })
+        });
+        const dryData = await dryRes.json();
+        const costInfo = dryData.data || { count: 0, estimatedCostUsd: '0.00' };
+
+        // Open Cost Confirmation Modal
+        const costModal = document.getElementById('costConfirmModal');
+        const costContent = document.getElementById('costConfirmModalContent');
+
+        if (costModal && costContent) {
+          costContent.innerHTML = `
+            <div style="text-align:center; padding:1.5rem;">
+              <div style="font-size:2.8rem; margin-bottom:0.5rem;">💳</div>
+              <h3 style="font-size:1.3rem; font-weight:900; color:#fff; margin:0 0 0.4rem;">Confirm Etsy Listing Fees</h3>
+              <p style="font-size:0.85rem; color:var(--text-secondary); margin:0 0 1.25rem;">
+                Publishing <strong>${costInfo.count} ready products</strong> to <strong>${b.name}</strong> on Etsy.
+              </p>
+
+              <div style="background:rgba(251,191,36,0.1); border:1px solid rgba(251,191,36,0.3); border-radius:12px; padding:1.25rem; margin-bottom:1.5rem; text-align:center;">
+                <span style="font-size:0.75rem; font-weight:800; color:#fbbf24; text-transform:uppercase;">Estimated Etsy Bill:</span>
+                <div style="font-size:2.2rem; font-weight:900; color:#fbbf24; margin:0.2rem 0;">
+                  $${costInfo.estimatedCostUsd}
+                </div>
+                <span style="font-size:0.75rem; color:var(--text-muted);">$0.20 per listing for a 120-day cycle</span>
+              </div>
+
+              <div style="display:flex; justify-content:center; gap:0.75rem;">
+                <button class="btn-ghost" onclick="document.getElementById('costConfirmModal').style.display='none'">
+                  Cancel
+                </button>
+                <button class="btn-primary" style="background:linear-gradient(135deg, #00df89, #06b6d4); font-weight:900;" onclick="document.getElementById('costConfirmModal').style.display='none'; window.BrandsModule.executeBulkPublish(${brandId})">
+                  🚀 Authorize & Publish (${costInfo.count} Products)
+                </button>
+              </div>
+            </div>
+          `;
+          costModal.style.display = 'flex';
+          return;
+        }
+      } catch (e) {
+        console.warn('Dry-run check failed, proceeding to direct publish', e);
+      }
+
+      window.BrandsModule.executeBulkPublish(brandId);
+    },
+
+    async executeBulkPublish(brandId) {
       const modal = document.getElementById('etsyBulkModal');
       const content = document.getElementById('etsyBulkModalContent');
       if (!modal || !content) return;
@@ -2737,7 +3890,8 @@ window.APP_MODULES.brands = async function(container) {
 
           <div style="background:rgba(255,255,255,0.04); border-radius:12px; padding:1rem; text-align:left; font-family:monospace; font-size:0.75rem; color:#06b6d4; max-height:220px; overflow-y:auto; line-height:1.6;" id="bulkConsoleLog">
             > Initializing Etsy v3 API throttled publisher (5 QPS cap)...<br>
-            > Verifying Cloud Vault deliverables and 10-mockup packages...<br>
+            > Verifying Cloud Vault deliverables, 1-10 mockups, and video files...<br>
+            > Deducting $0.20 listing fee ledger entry...<br>
           </div>
         </div>
       `;
@@ -2759,6 +3913,7 @@ window.APP_MODULES.brands = async function(container) {
           logEl.innerHTML += `
             > ✅ Batch completed successfully!<br>
             > Listed ${result.publishedCount} products live on Etsy.<br>
+            > Total fees charged: $${result.totalFeesCharged?.toFixed(2) || (result.publishedCount * 0.20).toFixed(2)}<br>
             > Broadcasted completion report to Telegram Bot.<br>
           `;
         }
@@ -2806,6 +3961,8 @@ window.APP_MODULES.brands = async function(container) {
       const prod = catalog[productIdx];
       if (!prod) return;
 
+      if (!confirm(`Publishing ${prod.code} to Etsy will incur a $0.20 listing fee. Proceed?`)) return;
+
       if (window.showToast) window.showToast(`🚀 Publishing ${prod.code} to Etsy...`, 'info');
       const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
 
@@ -2818,7 +3975,7 @@ window.APP_MODULES.brands = async function(container) {
         const data = await res.json();
         if (!data.success) throw new Error(data.error || 'Failed to publish single product');
 
-        if (window.showToast) window.showToast(`✅ ${prod.code} is now live on Etsy!`, 'success');
+        if (window.showToast) window.showToast(`✅ ${prod.code} is now live on Etsy! ($0.20 fee logged)`, 'success');
         state = await loadBrandsStateFromAPI();
         renderTabContent('etsy');
       } catch (e) {

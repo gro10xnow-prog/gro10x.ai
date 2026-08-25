@@ -29,16 +29,22 @@ const {
   runProductHealthCheck,
   uploadListingImage,
   uploadListingFile,
+  uploadListingVideo,
+  updateListing,
+  renewListing,
+  deactivateListing,
+  reactivateListing,
+  getActiveListings,
   fetchFileBuffer,
   ETSY_KEYSTRING,
   ETSY_SHARED_SECRET,
   ETSY_REDIRECT_URI
 } = require('../services/etsy');
 
-// Memory storage for direct image/file proxy uploads
+// Memory storage for direct image/file/video proxy uploads (up to 100MB for video)
 const etsyUpload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 50 * 1024 * 1024 }
+  limits: { fileSize: 100 * 1024 * 1024 }
 });
 
 // Helper to fetch brand and catalog from app_settings
@@ -423,7 +429,7 @@ router.post('/brands/:brandId/listings/:code/health-check', requireAuth, asyncHa
  */
 router.post('/brands/:brandId/publish-all', requireAuth, requireAdmin, asyncHandler(async (req, res) => {
   const { brandId } = req.params;
-  const { productCodes, autoActivate = true } = req.body;
+  const { productCodes, autoActivate = true, dryRun = false } = req.body;
   const { state: brandState, brand, catalog } = await getBrandData(brandId);
 
   const conn = await getConnection(brandId);
@@ -437,8 +443,31 @@ router.post('/brands/:brandId/publish-all', requireAuth, requireAdmin, asyncHand
     return fail(res, 'No products found ready for Etsy listing. Complete Studio Engine steps first.', 400);
   }
 
+  // Pre-flight cost check
+  if (dryRun) {
+    const feePerListing = 0.20;
+    const totalEstimatedFee = Number((targetProducts.length * feePerListing).toFixed(2));
+    return ok(res, {
+      dryRun: true,
+      brandId: String(brandId),
+      targetCount: targetProducts.length,
+      feePerListing,
+      totalEstimatedFee,
+      isSimulated,
+      products: targetProducts.map(p => ({
+        code: p.code || p.productCode,
+        name: p.name,
+        price: p.price || 4.99,
+        status: p.status
+      }))
+    });
+  }
+
   const published = [];
   const errors = [];
+  const now = Date.now();
+  const listedIso = new Date(now).toISOString();
+  const expiresIso = new Date(now + 120 * 86400000).toISOString(); // 120 days = 4 months
 
   for (let i = 0; i < targetProducts.length; i++) {
     const prod = targetProducts[i];
@@ -461,12 +490,17 @@ router.post('/brands/:brandId/publish-all', requireAuth, requireAdmin, asyncHand
         prod.status = 'Live';
         prod.etsyListingId = mockListingId;
         prod.etsyUrl = `https://www.etsy.com/listing/${mockListingId}/${encodeURIComponent((prod.seoTitle || prod.name).slice(0, 30))}`;
-        prod.listedAt = new Date().toISOString();
+        prod.listedAt = listedIso;
+        prod.expiresAt = expiresIso;
+        prod.listingFeeCharged = 0.20;
         published.push({
           code,
           name: prod.name,
           etsyListingId: mockListingId,
           etsyUrl: prod.etsyUrl,
+          listedAt: listedIso,
+          expiresAt: expiresIso,
+          listingFeeCharged: 0.20,
           mode: 'Staged / Simulated'
         });
       } else {
@@ -536,7 +570,26 @@ router.post('/brands/:brandId/publish-all', requireAuth, requireAdmin, asyncHand
           }
         }
 
-        // 3. Activate listing
+        // 3. Stream Video to Etsy Listing if available
+        const videoSource = prod.video?.storagePath || prod.video?.downloadUrl || prod.video?.url || (typeof prod.video === 'string' ? prod.video : null);
+        if (videoSource && listingId) {
+          try {
+            const videoBuf = await fetchFileBuffer(videoSource);
+            if (videoBuf) {
+              await uploadListingVideo(
+                brandId,
+                conn.shop_id,
+                listingId,
+                videoBuf,
+                prod.video?.fileName || `${code}_video.mp4`
+              );
+            }
+          } catch (vidErr) {
+            console.warn(`[Etsy Video Stream Note (${code})]:`, vidErr.message);
+          }
+        }
+
+        // 4. Activate listing
         if (autoActivate && listingId) {
           try {
             await etsyApiCall(brandId, `/shops/${conn.shop_id}/listings/${listingId}`, {
@@ -551,13 +604,18 @@ router.post('/brands/:brandId/publish-all', requireAuth, requireAdmin, asyncHand
         prod.status = 'Live';
         prod.etsyListingId = listingId;
         prod.etsyUrl = createRes.url || `https://www.etsy.com/listing/${listingId}`;
-        prod.listedAt = new Date().toISOString();
+        prod.listedAt = listedIso;
+        prod.expiresAt = expiresIso;
+        prod.listingFeeCharged = 0.20;
 
         published.push({
           code,
           name: prod.name,
           etsyListingId: listingId,
           etsyUrl: prod.etsyUrl,
+          listedAt: listedIso,
+          expiresAt: expiresIso,
+          listingFeeCharged: 0.20,
           mode: 'Live on Etsy'
         });
       }
@@ -573,6 +631,7 @@ router.post('/brands/:brandId/publish-all', requireAuth, requireAdmin, asyncHand
   // Update brand catalog state & persist
   if (brandState) {
     brand.productsLive = catalog.filter(p => p.status === 'Live').length;
+    brand.totalListingFeesCharged = Number(((brand.totalListingFeesCharged || 0) + (published.length * 0.20)).toFixed(2));
     const { persistBrandsState } = require('./brands');
     await persistBrandsState(brandState);
   }
@@ -761,4 +820,270 @@ router.post('/brands/:brandId/listings/:listingId/upload-file', requireAuth, ets
   }
 }));
 
+/**
+ * 15. POST /api/etsy/brands/:brandId/listings/:listingId/upload-video
+ * Accepts video file (multipart, up to 100MB) OR storagePath / downloadUrl (JSON)
+ * and streams it directly to the Etsy listing videos API.
+ */
+router.post('/brands/:brandId/listings/:listingId/upload-video', requireAuth, etsyUpload.single('video'), asyncHandler(async (req, res) => {
+  const { brandId, listingId } = req.params;
+  const file = req.file;
+  const { storagePath, downloadUrl, fileName, productCode } = req.body;
+  const conn = await getConnection(brandId);
+
+  if (!conn || !conn.shop_id || conn.status !== 'active') {
+    return fail(res, `Etsy store for Brand ${brandId} is not connected. Connect via OAuth first.`, 400);
+  }
+
+  let videoBuffer = null;
+  let name = fileName || 'listing_video.mp4';
+
+  if (file) {
+    videoBuffer = file.buffer;
+    name = file.originalname;
+  } else if (storagePath || downloadUrl) {
+    videoBuffer = await fetchFileBuffer(storagePath || downloadUrl);
+  }
+
+  if (!videoBuffer) {
+    return fail(res, 'No video file provided. Upload an MP4/MOV or provide storagePath/downloadUrl.', 400);
+  }
+
+  try {
+    const uploadRes = await uploadListingVideo(
+      brandId,
+      conn.shop_id,
+      listingId,
+      videoBuffer,
+      name
+    );
+
+    // If productCode provided, record video metadata in brand catalog state
+    if (productCode) {
+      const { state: brandState, catalog } = await getBrandData(brandId);
+      const prod = catalog?.find(p => p.code === productCode || p.productCode === productCode);
+      if (prod && brandState) {
+        prod.video = {
+          fileName: name,
+          videoId: uploadRes.video_id || null,
+          url: uploadRes.thumbnail_url || null,
+          uploadedAt: new Date().toISOString()
+        };
+        const { persistBrandsState } = require('./brands');
+        await persistBrandsState(brandState);
+      }
+    }
+
+    return ok(res, {
+      brandId,
+      listingId,
+      video: uploadRes,
+      message: 'Video uploaded and attached to Etsy listing successfully'
+    });
+  } catch (err) {
+    return fail(res, `Etsy video upload failed: ${err.message}`, 500);
+  }
+}));
+
+/**
+ * 16. PATCH /api/etsy/brands/:brandId/listings/:listingId
+ * Update live Etsy listing title, price, description, tags, state
+ */
+router.patch('/brands/:brandId/listings/:listingId', requireAuth, requireAdmin, asyncHandler(async (req, res) => {
+  const { brandId, listingId } = req.params;
+  const { title, description, price, tags, state: listingState, productCode } = req.body;
+  const conn = await getConnection(brandId);
+
+  if (!conn || !conn.shop_id || conn.status !== 'active') {
+    return fail(res, `Etsy store for Brand ${brandId} is not connected. Connect via OAuth first.`, 400);
+  }
+
+  try {
+    const result = await updateListing(brandId, conn.shop_id, listingId, {
+      title,
+      description,
+      price,
+      tags,
+      state: listingState
+    });
+
+    // Also sync updates to local product catalog state
+    if (productCode) {
+      const { state: brandState, catalog } = await getBrandData(brandId);
+      const prod = catalog?.find(p => p.code === productCode || p.productCode === productCode);
+      if (prod && brandState) {
+        if (title) prod.seoTitle = title;
+        if (description) prod.seoDescription = description;
+        if (price !== undefined) prod.price = Number(price);
+        if (tags) prod.seoTags = tags;
+        if (listingState) prod.status = listingState === 'active' ? 'Live' : 'Inactive';
+        const { persistBrandsState } = require('./brands');
+        await persistBrandsState(brandState);
+      }
+    }
+
+    return ok(res, {
+      success: true,
+      listingId,
+      listing: result,
+      message: 'Live Etsy listing updated successfully'
+    });
+  } catch (err) {
+    return fail(res, `Etsy listing update failed: ${err.message}`, 500);
+  }
+}));
+
+/**
+ * 17. POST /api/etsy/brands/:brandId/listings/:listingId/renew
+ * Renews an expired / expiring Etsy listing ($0.20 fee)
+ */
+router.post('/brands/:brandId/listings/:listingId/renew', requireAuth, requireAdmin, asyncHandler(async (req, res) => {
+  const { brandId, listingId } = req.params;
+  const { productCode } = req.body;
+  const conn = await getConnection(brandId);
+
+  if (!conn || !conn.shop_id || conn.status !== 'active') {
+    return fail(res, `Etsy store for Brand ${brandId} is not connected.`, 400);
+  }
+
+  try {
+    const renewResult = await renewListing(brandId, listingId);
+    const now = Date.now();
+    const listedIso = new Date(now).toISOString();
+    const expiresIso = new Date(now + 120 * 86400000).toISOString();
+
+    // Update catalog state & track $0.20 renewal fee
+    const { state: brandState, brand, catalog } = await getBrandData(brandId);
+    if (brandState) {
+      if (brand) {
+        brand.totalListingFeesCharged = Number(((brand.totalListingFeesCharged || 0) + 0.20).toFixed(2));
+      }
+      const prod = catalog?.find(p => p.code === productCode || p.etsyListingId === Number(listingId) || p.etsyListingId === String(listingId));
+      if (prod) {
+        prod.status = 'Live';
+        prod.listedAt = listedIso;
+        prod.expiresAt = expiresIso;
+        prod.renewalCount = (prod.renewalCount || 0) + 1;
+      }
+      const { persistBrandsState } = require('./brands');
+      await persistBrandsState(brandState);
+    }
+
+    return ok(res, {
+      success: true,
+      listingId,
+      renewalFee: 0.20,
+      expiresAt: expiresIso,
+      result: renewResult,
+      message: 'Listing renewed for 4 months ($0.20 fee logged)'
+    });
+  } catch (err) {
+    return fail(res, `Etsy listing renewal failed: ${err.message}`, 500);
+  }
+}));
+
+/**
+ * 18. POST /api/etsy/brands/:brandId/listings/:listingId/deactivate
+ * Deactivates a live listing
+ */
+router.post('/brands/:brandId/listings/:listingId/deactivate', requireAuth, requireAdmin, asyncHandler(async (req, res) => {
+  const { brandId, listingId } = req.params;
+  const { productCode } = req.body;
+  const conn = await getConnection(brandId);
+
+  if (!conn || !conn.shop_id || conn.status !== 'active') {
+    return fail(res, `Etsy store for Brand ${brandId} is not connected.`, 400);
+  }
+
+  try {
+    const result = await deactivateListing(brandId, conn.shop_id, listingId);
+    
+    // Update local state
+    const { state: brandState, brand, catalog } = await getBrandData(brandId);
+    if (brandState) {
+      const prod = catalog?.find(p => p.code === productCode || p.etsyListingId === Number(listingId) || p.etsyListingId === String(listingId));
+      if (prod) {
+        prod.status = 'Inactive';
+      }
+      if (brand) {
+        brand.productsLive = (catalog || []).filter(p => p.status === 'Live').length;
+      }
+      const { persistBrandsState } = require('./brands');
+      await persistBrandsState(brandState);
+    }
+
+    return ok(res, {
+      success: true,
+      listingId,
+      result,
+      message: 'Listing deactivated on Etsy'
+    });
+  } catch (err) {
+    return fail(res, `Etsy deactivate failed: ${err.message}`, 500);
+  }
+}));
+
+/**
+ * 19. POST /api/etsy/brands/:brandId/listings/:listingId/reactivate
+ * Reactivates an inactive listing
+ */
+router.post('/brands/:brandId/listings/:listingId/reactivate', requireAuth, requireAdmin, asyncHandler(async (req, res) => {
+  const { brandId, listingId } = req.params;
+  const { productCode } = req.body;
+  const conn = await getConnection(brandId);
+
+  if (!conn || !conn.shop_id || conn.status !== 'active') {
+    return fail(res, `Etsy store for Brand ${brandId} is not connected.`, 400);
+  }
+
+  try {
+    const result = await reactivateListing(brandId, conn.shop_id, listingId);
+
+    // Update local state
+    const { state: brandState, brand, catalog } = await getBrandData(brandId);
+    if (brandState) {
+      const prod = catalog?.find(p => p.code === productCode || p.etsyListingId === Number(listingId) || p.etsyListingId === String(listingId));
+      if (prod) {
+        prod.status = 'Live';
+      }
+      if (brand) {
+        brand.productsLive = (catalog || []).filter(p => p.status === 'Live').length;
+      }
+      const { persistBrandsState } = require('./brands');
+      await persistBrandsState(brandState);
+    }
+
+    return ok(res, {
+      success: true,
+      listingId,
+      result,
+      message: 'Listing reactivated on Etsy'
+    });
+  } catch (err) {
+    return fail(res, `Etsy reactivate failed: ${err.message}`, 500);
+  }
+}));
+
+/**
+ * 20. GET /api/etsy/brands/:brandId/listings
+ * Fetch live active listings from Etsy for reconciliation
+ */
+router.get('/brands/:brandId/listings', requireAuth, asyncHandler(async (req, res) => {
+  const { brandId } = req.params;
+  const { limit = 100, offset = 0 } = req.query;
+  const conn = await getConnection(brandId);
+
+  if (!conn || !conn.shop_id || conn.status !== 'active') {
+    return ok(res, { count: 0, results: [], isSimulated: true, message: 'Store not connected.' });
+  }
+
+  try {
+    const listings = await getActiveListings(brandId, conn.shop_id, limit, offset);
+    return ok(res, listings);
+  } catch (err) {
+    return fail(res, `Failed to fetch active listings: ${err.message}`, 500);
+  }
+}));
+
 module.exports = router;
+

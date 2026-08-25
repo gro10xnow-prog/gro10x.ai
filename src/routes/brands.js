@@ -1041,6 +1041,272 @@ router.post('/:id/products/:code/apply-price', requireAuth, async (req, res) => 
   }
 });
 
+/**
+ * POST /api/brands
+ * Creates a new custom brand
+ */
+router.post('/', requireAuth, async (req, res) => {
+  try {
+    const { name, tagline, niche, type, target12mo, netTarget, palette, fonts, voice, categories, dbmId } = req.body;
+    if (!name) return res.status(400).json({ success: false, error: 'Brand name is required' });
+
+    const state = await loadBrandsState();
+    const existingIds = state.brands.map(b => b.id);
+    const newId = existingIds.length > 0 ? Math.max(...existingIds) + 1 : 1;
+
+    const newBrand = {
+      id: newId,
+      name: name.trim(),
+      tagline: tagline?.trim() || '',
+      niche: niche?.trim() || 'General Digital',
+      type: type || 'Digital',
+      dbmId: Number(dbmId) || 1,
+      phase: 'Phase 1 (Week 1–2)',
+      etsyStatus: 'Not Created',
+      etsyUrl: '',
+      target12mo: Number(target12mo) || 20000,
+      netTarget: Number(netTarget) || Math.round((Number(target12mo) || 20000) * 0.85),
+      productsTarget: 100,
+      productsLive: 0,
+      actualGross: 0,
+      actualAds: 0,
+      palette: Array.isArray(palette) && palette.length > 0 ? palette : ['#8B5A7A', '#FAF3E8', '#7D9B76', '#C4887C', '#2E2E2E'],
+      fonts: fonts || 'Playfair Display + Lato',
+      voice: voice || 'Warm, empowering, practical',
+      categories: Array.isArray(categories) && categories.length > 0 ? categories : ['Core Planners', 'Trackers', 'Bundles', 'E-books'],
+      checklist: { 1: false, 2: false, 3: false, 4: false, 5: false, 6: false, 7: false, 8: false }
+    };
+
+    state.brands.push(newBrand);
+    if (!state.productsCatalog) state.productsCatalog = {};
+    state.productsCatalog[newId] = [];
+
+    await persistBrandsState(state);
+
+    return res.json({ success: true, brand: newBrand, message: `Brand ${newBrand.name} created successfully` });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * PATCH /api/brands/:id/product/:code
+ * Edits product properties (name, category, price, format, seoTitle, seoDescription, seoTags, status)
+ */
+router.patch('/:id/product/:code', requireAuth, async (req, res) => {
+  try {
+    const brandId = Number(req.params.id);
+    const productCode = req.params.code;
+    const { name, category, price, format, seoTitle, seoDescription, seoTags, status, hero } = req.body;
+
+    const state = await loadBrandsState();
+    const brand = state.brands?.find(b => b.id === brandId);
+    if (!brand) return res.status(404).json({ success: false, error: 'Brand not found' });
+
+    const catalog = state.productsCatalog?.[brandId] || [];
+    const prod = catalog.find(p => p.code === productCode);
+    if (!prod) return res.status(404).json({ success: false, error: `Product ${productCode} not found` });
+
+    if (name !== undefined) prod.name = name;
+    if (category !== undefined) prod.category = category;
+    if (price !== undefined) prod.price = Number(price);
+    if (format !== undefined) prod.format = format;
+    if (seoTitle !== undefined) prod.seoTitle = seoTitle;
+    if (seoDescription !== undefined) prod.seoDescription = seoDescription;
+    if (seoTags !== undefined) prod.seoTags = Array.isArray(seoTags) ? seoTags : String(seoTags).split(',').map(s => s.trim());
+    if (status !== undefined) prod.status = status;
+    if (hero !== undefined) prod.hero = Boolean(hero);
+
+    brand.productsLive = catalog.filter(p => p.status === 'Live').length;
+    await persistBrandsState(state);
+
+    return res.json({ success: true, product: prod, message: `Product ${productCode} updated` });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * DELETE /api/brands/:id/product/:code
+ * Removes a product from the brand catalog
+ */
+router.delete('/:id/product/:code', requireAuth, async (req, res) => {
+  try {
+    const brandId = Number(req.params.id);
+    const productCode = req.params.code;
+
+    const state = await loadBrandsState();
+    const brand = state.brands?.find(b => b.id === brandId);
+    if (!brand) return res.status(404).json({ success: false, error: 'Brand not found' });
+
+    if (!state.productsCatalog || !state.productsCatalog[brandId]) {
+      return res.status(404).json({ success: false, error: 'Catalog not found' });
+    }
+
+    const initialLen = state.productsCatalog[brandId].length;
+    state.productsCatalog[brandId] = state.productsCatalog[brandId].filter(p => p.code !== productCode);
+
+    if (state.productsCatalog[brandId].length === initialLen) {
+      return res.status(404).json({ success: false, error: `Product ${productCode} not found` });
+    }
+
+    brand.productsLive = state.productsCatalog[brandId].filter(p => p.status === 'Live').length;
+    await persistBrandsState(state);
+
+    return res.json({ success: true, message: `Product ${productCode} deleted from catalog` });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * GET /api/brands/:id/expiring-soon
+ * Returns products with expiresAt within 14 days
+ */
+router.get('/:id/expiring-soon', requireAuth, async (req, res) => {
+  try {
+    const brandId = Number(req.params.id);
+    const state = await loadBrandsState();
+    const catalog = state.productsCatalog?.[brandId] || [];
+
+    const now = Date.now();
+    const fourteenDaysMs = 14 * 24 * 60 * 60 * 1000;
+
+    const expiring = catalog.filter(p => {
+      if (p.status !== 'Live' || !p.expiresAt) return false;
+      const expiryTime = new Date(p.expiresAt).getTime();
+      return expiryTime - now <= fourteenDaysMs;
+    }).map(p => {
+      const daysRemaining = Math.max(0, Math.ceil((new Date(p.expiresAt).getTime() - now) / (1000 * 60 * 60 * 24)));
+      return {
+        code: p.code,
+        name: p.name,
+        etsyListingId: p.etsyListingId,
+        listedAt: p.listedAt,
+        expiresAt: p.expiresAt,
+        daysRemaining,
+        isExpired: daysRemaining === 0,
+        price: p.price
+      };
+    });
+
+    return res.json({
+      success: true,
+      brandId,
+      count: expiring.length,
+      expiring
+    });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * POST /api/brands/:id/log-shop-creation-fee
+ * Logs one-time $26 shop creation fee
+ */
+router.post('/:id/log-shop-creation-fee', requireAuth, async (req, res) => {
+  try {
+    const brandId = Number(req.params.id);
+    const state = await loadBrandsState();
+    const brand = state.brands?.find(b => b.id === brandId);
+    if (!brand) return res.status(404).json({ success: false, error: 'Brand not found' });
+
+    brand.shopCreationFee = 26.00;
+    brand.shopCreationFeeLoggedAt = new Date().toISOString();
+    await persistBrandsState(state);
+
+    return res.json({
+      success: true,
+      brandId,
+      shopCreationFee: 26.00,
+      message: 'Shop creation fee ($26.00) logged in brand financial ledger'
+    });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * POST /api/brands/:id/video/upload
+ * Uploads a video file (.mp4/.mov) to Supabase Storage 'product-vault'
+ */
+router.post('/:id/video/upload', requireAuth, vaultUpload.single('video'), async (req, res) => {
+  try {
+    const brandId = Number(req.params.id);
+    const { productCode, productName } = req.body;
+    const file = req.file;
+
+    if (!file) {
+      return res.status(400).json({ success: false, error: 'No video file provided (.mp4 or .mov, max 100MB)' });
+    }
+
+    const state = await loadBrandsState();
+    const brand = state.brands.find(b => b.id === brandId);
+    if (!brand) return res.status(404).json({ success: false, error: 'Brand not found' });
+
+    const cleanCode = (productCode || 'PROD').replace(/[^a-zA-Z0-9_-]/g, '_');
+    const safeFileName = file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const storagePath = `brands/${brandId}/${cleanCode}/video/${Date.now()}_${safeFileName}`;
+    let signedUrl = '';
+
+    if (isSupabaseConfigured()) {
+      try {
+        const { error: uploadError } = await supabase.storage
+          .from('product-vault')
+          .upload(storagePath, file.buffer, {
+            contentType: file.mimetype || 'video/mp4',
+            upsert: true
+          });
+
+        if (!uploadError) {
+          const { data: signedData } = await supabase.storage
+            .from('product-vault')
+            .createSignedUrl(storagePath, 3600 * 24 * 7); // 7 days
+          signedUrl = signedData?.signedUrl || '';
+        } else {
+          console.warn('[Video Vault Upload] Storage notice:', uploadError.message);
+        }
+      } catch (storageErr) {
+        console.warn('[Video Storage Exception]:', storageErr.message);
+      }
+    }
+
+    const videoItem = {
+      fileName: file.originalname,
+      fileSizeBytes: file.size,
+      contentType: file.mimetype,
+      storagePath: storagePath,
+      url: signedUrl,
+      uploadedAt: new Date().toISOString()
+    };
+
+    if (!state.productsCatalog) state.productsCatalog = {};
+    if (state.productsCatalog[brandId]) {
+      const prod = state.productsCatalog[brandId].find(p =>
+        (productCode && p.code === productCode) ||
+        (productName && p.name === productName)
+      );
+      if (prod) {
+        prod.video = videoItem;
+      }
+    }
+
+    await persistBrandsState(state);
+
+    return res.json({
+      success: true,
+      brandId,
+      productCode,
+      video: videoItem,
+      message: 'Video uploaded to product vault successfully'
+    });
+  } catch (err) {
+    console.error('[Video Vault Upload Error]:', err);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 router.SEED_BRANDS_DATA = SEED_BRANDS_DATA;
 router.loadBrandsState = loadBrandsState;
 router.persistBrandsState = persistBrandsState;
@@ -1049,3 +1315,4 @@ module.exports = router;
 module.exports.SEED_BRANDS_DATA = SEED_BRANDS_DATA;
 module.exports.loadBrandsState = loadBrandsState;
 module.exports.persistBrandsState = persistBrandsState;
+
