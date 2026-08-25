@@ -361,6 +361,19 @@ const STORE_LAUNCH_STEPS = [
   { id: 8, title: 'Enable Order Sync & Telegram Alerts', desc: 'Auto-sync revenue to Engine 3 P&L and receive sale alerts.' }
 ];
 
+function getStudioAuthHeaders(extra = {}) {
+  const token = (window.APP_API && window.APP_API.getToken && window.APP_API.getToken()) ||
+    localStorage.getItem('sb-access-token') ||
+    localStorage.getItem('gro10x_token') ||
+    localStorage.getItem('purpleos_pin_token') ||
+    localStorage.getItem('purple_token') || '';
+  const headers = { ...extra };
+  if (token && token.trim() !== '') {
+    headers['Authorization'] = `Bearer ${token.trim()}`;
+  }
+  return headers;
+}
+
 async function loadBrandsStateFromAPI() {
   try {
     if (window.APP_API) {
@@ -2151,49 +2164,52 @@ window.APP_MODULES.brands = async function(container) {
             </div>
             <span style="font-size:0.75rem; font-weight:800; color:#00df89; text-transform:uppercase; letter-spacing:1px;">Product Factory Onboarding</span>
             <h2 style="font-size:1.6rem; font-weight:900; color:#fff; margin:0.3rem 0 0.5rem;">Ready to build ${prodName}?</h2>
-            <p style="font-size:0.85rem; color:var(--text-secondary); max-width:520px; margin:0 auto 1.75rem; line-height:1.5;">
+            <p style="font-size:0.85rem; color:var(--text-secondary); max-width:520px; margin:0 auto 1.5rem; line-height:1.5;">
               The AI Engine will generate your <strong>Production Blueprint</strong>, <strong>10-Slot Mockup Production Brief</strong>, and <strong>CapCut Video Script</strong> for <strong>${b.name}</strong>.
             </p>
 
-            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:1rem; text-align:left; margin-bottom:1.5rem;">
-              <!-- OPTION A: CATALOG REFERENCE -->
-              <div style="background:rgba(0,223,137,0.06); border:1px solid rgba(0,223,137,0.3); border-radius:14px; padding:1.25rem; display:flex; flex-direction:column; justify-content:space-between;">
-                <div>
-                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
-                    <span style="font-size:0.75rem; font-weight:800; color:#00df89; text-transform:uppercase;">Option A · Catalog Reference</span>
-                    <span style="font-size:0.68rem; font-weight:800; background:rgba(0,223,137,0.15); color:#00df89; padding:0.15rem 0.45rem; border-radius:6px;">Recommended</span>
-                  </div>
-                  <h4 style="font-size:1rem; font-weight:800; color:#fff; margin:0 0 0.35rem;">Use Catalog Reference:</h4>
-                  <div style="background:rgba(0,0,0,0.3); padding:0.65rem 0.85rem; border-radius:8px; font-size:0.8rem; color:#e2e8f0; font-family:monospace; margin-bottom:0.75rem;">
-                    SKU: <strong>${prodCode}</strong><br>
-                    Category: <strong>${matchedProduct.category || 'Digital Life Planner'}</strong><br>
-                    Product: <strong>${prodName}</strong>
-                  </div>
-                  <p style="font-size:0.75rem; color:var(--text-muted); margin:0;">Uses brand voice (${b.voice}) and palette (${b.palette.join(', ')}).</p>
-                </div>
-                <button class="btn-primary" style="width:100%; margin-top:1.25rem; font-weight:800; padding:0.65rem;" onclick="window.BrandsModule.generateStudioBlueprintWithAI(${b.id}, '${prodCode}', false)">
-                  ⚡ Generate Blueprint from Catalog Reference
-                </button>
-              </div>
+            <!-- INLINE ERROR AREA (visible even inside modal) -->
+            <div id="blueprintErrorBanner" style="display:none; background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.4); border-radius:10px; padding:0.75rem 1rem; margin:0 auto 1rem; max-width:560px; text-align:left;">
+              <strong style="color:#ef4444; font-size:0.8rem;">⚠️ Error:</strong>
+              <span id="blueprintErrorMsg" style="color:#fca5a5; font-size:0.78rem; margin-left:0.4rem;"></span>
+            </div>
 
-              <!-- OPTION B: CUSTOM PRODUCT IDEA -->
-              <div style="background:rgba(6,182,212,0.06); border:1px solid rgba(6,182,212,0.3); border-radius:14px; padding:1.25rem; display:flex; flex-direction:column; justify-content:space-between;">
-                <div>
-                  <span style="font-size:0.75rem; font-weight:800; color:#06b6d4; text-transform:uppercase; display:block; margin-bottom:0.5rem;">Option B · Custom / New Product</span>
-                  <h4 style="font-size:1rem; font-weight:800; color:#fff; margin:0 0 0.4rem;">Describe Custom Product Idea:</h4>
-                  <textarea id="studioCustomIdeaInput" rows="2" placeholder="e.g. Weekly Meal Planner with Budget & Grocery checklist for busy moms..." style="width:100%; font-size:0.78rem; background:rgba(0,0,0,0.3); border:1px solid var(--border-subtle); border-radius:8px; color:#fff; padding:0.5rem; resize:none; margin-bottom:0.6rem;"></textarea>
-                  
-                  <label style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.25rem;">Optional Reference Image (In-Memory AI Input):</label>
-                  <input type="file" id="studioCustomRefImgInput" accept="image/*" style="width:100%; font-size:0.72rem; background:rgba(0,0,0,0.3); border:1px dashed rgba(6,182,212,0.4); padding:0.4rem; border-radius:6px; color:#fff; cursor:pointer;">
-                </div>
-                <button class="btn-secondary" style="width:100%; margin-top:1.25rem; border-color:#06b6d4; color:#06b6d4; font-weight:800; padding:0.65rem;" onclick="window.BrandsModule.generateStudioBlueprintWithAI(${b.id}, '${prodCode}', true)">
+            <!-- OPTION A: CATALOG REFERENCE (Primary - Full Width) -->
+            <div style="background:rgba(0,223,137,0.06); border:1px solid rgba(0,223,137,0.3); border-radius:14px; padding:1.25rem; max-width:560px; margin:0 auto 1rem; text-align:left;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                <span style="font-size:0.75rem; font-weight:800; color:#00df89; text-transform:uppercase;">Option A · Catalog Reference</span>
+                <span style="font-size:0.68rem; font-weight:800; background:rgba(0,223,137,0.15); color:#00df89; padding:0.15rem 0.45rem; border-radius:6px;">Recommended</span>
+              </div>
+              <div style="background:rgba(0,0,0,0.3); padding:0.65rem 0.85rem; border-radius:8px; font-size:0.8rem; color:#e2e8f0; font-family:monospace; margin-bottom:0.6rem;">
+                SKU: <strong>${prodCode}</strong><br>
+                Category: <strong>${matchedProduct.category || 'Digital Life Planner'}</strong><br>
+                Product: <strong>${prodName}</strong>
+              </div>
+              <p style="font-size:0.75rem; color:var(--text-muted); margin:0 0 1rem;">Uses brand voice (${b.voice}) and palette (${b.palette.join(', ')}).</p>
+              <button id="blueprintGenerateBtn" class="btn-primary" style="width:100%; font-weight:800; padding:0.65rem;"
+                onclick="this.disabled=true; this.textContent='⏳ Generating Blueprint...'; document.getElementById('blueprintErrorBanner').style.display='none'; window.BrandsModule.generateStudioBlueprintWithAI(${b.id}, '${prodCode}', false);">
+                ⚡ Generate Blueprint from Catalog Reference
+              </button>
+            </div>
+
+            <!-- OPTION B: CUSTOM (Collapsed by default) -->
+            <div style="max-width:560px; margin:0 auto 0.5rem;">
+              <button onclick="var p=document.getElementById('optionBPanel'); p.style.display=p.style.display==='block'?'none':'block'; this.textContent=p.style.display==='block'?'▲ Hide custom option':'▼ Want a custom blueprint instead?';" style="background:none; border:none; color:var(--text-muted); font-size:0.78rem; font-weight:700; cursor:pointer; text-decoration:underline;">
+                ▼ Want a custom blueprint instead?
+              </button>
+              <div id="optionBPanel" style="display:none; background:rgba(6,182,212,0.06); border:1px solid rgba(6,182,212,0.3); border-radius:14px; padding:1.25rem; margin-top:0.5rem; text-align:left;">
+                <span style="font-size:0.75rem; font-weight:800; color:#06b6d4; text-transform:uppercase; display:block; margin-bottom:0.5rem;">Option B · Custom Idea</span>
+                <textarea id="studioCustomIdeaInput" rows="2" placeholder="e.g. Weekly Meal Planner with Budget &amp; Grocery checklist for busy moms..." style="width:100%; font-size:0.78rem; background:rgba(0,0,0,0.3); border:1px solid var(--border-subtle); border-radius:8px; color:#fff; padding:0.5rem; resize:none; margin-bottom:0.6rem; box-sizing:border-box;"></textarea>
+                <label style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.25rem;">Optional Reference Image (In-Memory AI Input):</label>
+                <input type="file" id="studioCustomRefImgInput" accept="image/*" style="width:100%; font-size:0.72rem; background:rgba(0,0,0,0.3); border:1px dashed rgba(6,182,212,0.4); padding:0.4rem; border-radius:6px; color:#fff; cursor:pointer; margin-bottom:0.75rem; box-sizing:border-box;">
+                <button class="btn-secondary" style="width:100%; border-color:#06b6d4; color:#06b6d4; font-weight:800; padding:0.65rem;" onclick="window.BrandsModule.generateStudioBlueprintWithAI(${b.id}, '${prodCode}', true)">
                   ⚡ Generate Custom Blueprint
                 </button>
               </div>
             </div>
 
-            <button class="btn-ghost" onclick="document.getElementById('aiSeoModal').style.display='none'">
-              ✕ Cancel & Return to Catalog
+            <button class="btn-ghost" style="margin-top:0.75rem;" onclick="document.getElementById('aiSeoModal').style.display='none'">
+              ✕ Cancel &amp; Return to Catalog
             </button>
           </div>
         `;
@@ -2727,11 +2743,11 @@ window.APP_MODULES.brands = async function(container) {
       if (window.showToast) window.showToast(`🤖 Generating AI Blueprint & Media briefs for ${prod.code}...`, 'info');
 
       try {
-        const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+        const headers = getStudioAuthHeaders({ 'Content-Type': 'application/json' });
         const [bpRes, mockRes] = await Promise.all([
           fetch('/api/ai/product-blueprint', {
             method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+            headers,
             body: JSON.stringify({
               productName: prodName,
               brandName: b.name,
@@ -2741,10 +2757,14 @@ window.APP_MODULES.brands = async function(container) {
               brandFonts: b.fonts,
               type: b.type
             })
-          }).then(r => r.json()),
+          }).then(async r => {
+            const json = await r.json().catch(() => ({}));
+            if (!r.ok || json.error) throw new Error(json.error || `HTTP ${r.status} generating blueprint`);
+            return json;
+          }),
           fetch('/api/ai/mockup-prompts', {
             method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+            headers,
             body: JSON.stringify({
               productName: prodName,
               brandName: b.name,
@@ -2754,7 +2774,11 @@ window.APP_MODULES.brands = async function(container) {
               brandFonts: b.fonts,
               type: b.type
             })
-          }).then(r => r.json())
+          }).then(async r => {
+            const json = await r.json().catch(() => ({}));
+            if (!r.ok || json.error) throw new Error(json.error || `HTTP ${r.status} generating mockups`);
+            return json;
+          })
         ]);
 
         const bpData = bpRes?.blueprint || {};
@@ -2772,19 +2796,35 @@ window.APP_MODULES.brands = async function(container) {
           mockupsList: mockData.mockups || []
         };
 
-        // Immediately persist to backend so work is preserved
-        await fetch(`/api/brands/${brandId}/product/${productCode}/studio-save`, {
+        // Immediately persist to backend so work is preserved & status advances to Blueprint Ready
+        const saveRes = await fetch(`/api/brands/${brandId}/product/${productCode}/studio-save`, {
           method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          headers,
           body: JSON.stringify({ tab: 'blueprint', data: blueprintBundle })
         });
+        const saveData = await saveRes.json().catch(() => ({}));
+        if (!saveRes.ok || saveData.success === false) {
+          throw new Error(saveData.error || `Failed to save blueprint (HTTP ${saveRes.status})`);
+        }
 
         state = await loadBrandsStateFromAPI();
         if (window.showToast) window.showToast('✅ Blueprint & Mockup Briefs generated & saved!', 'success');
 
-        // Re-open Studio directly in Tab 1
+        // Re-open Studio directly in Tab 1 (Blueprint)
         window.BrandsModule.generateLiveSEOPackage(brandId, productCode, encodeURIComponent(prod.name));
       } catch (err) {
+        console.error('[Blueprint Generation Error]:', err);
+        const errBanner = document.getElementById('blueprintErrorBanner');
+        const errMsg = document.getElementById('blueprintErrorMsg');
+        if (errBanner && errMsg) {
+          errBanner.style.display = 'block';
+          errMsg.textContent = err.message || 'Blueprint generation failed';
+        }
+        const btn = document.getElementById('blueprintGenerateBtn');
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = '⚡ Retry — Generate Blueprint';
+        }
         if (window.showToast) window.showToast(`Blueprint generation failed: ${err.message}`, 'error');
       }
     },
@@ -2797,10 +2837,10 @@ window.APP_MODULES.brands = async function(container) {
       if (window.showToast) window.showToast('🤖 Generating Context-Aware Etsy SEO...', 'info');
 
       try {
-        const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+        const headers = getStudioAuthHeaders({ 'Content-Type': 'application/json' });
         const res = await fetch('/api/ai/etsy-seo', {
           method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          headers,
           body: JSON.stringify({
             productName: prod.name,
             brandName: b.name,
@@ -2842,11 +2882,11 @@ window.APP_MODULES.brands = async function(container) {
     async submitProductForReview(brandId, productCode) {
       if (!confirm(`Submit ${productCode} for Admin Review & Publication Approval?`)) return;
 
-      const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+      const headers = getStudioAuthHeaders({ 'Content-Type': 'application/json' });
       try {
         const res = await fetch(`/api/brands/${brandId}/product/${productCode}/submit-review`, {
           method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+          headers
         });
         const data = await res.json();
         if (!data.success) throw new Error(data.error || 'Submission failed');
@@ -2867,7 +2907,7 @@ window.APP_MODULES.brands = async function(container) {
         return;
       }
       const { brandId, productCode } = window._studioCtx;
-      const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+      const headers = getStudioAuthHeaders({ 'Content-Type': 'application/json' });
 
       const titleEl = document.getElementById('studioSeoTitle');
       const descEl = document.getElementById('studioSeoDescription');
@@ -2913,10 +2953,7 @@ window.APP_MODULES.brands = async function(container) {
       try {
         const res = await fetch(`/api/brands/${brandId}/product/${productCode}/studio-save`, {
           method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
+          headers,
           body: JSON.stringify(payload)
         });
         const data = await res.json();
@@ -2971,12 +3008,10 @@ window.APP_MODULES.brands = async function(container) {
       formData.append('notionTemplateUrl', notionUrl);
 
       try {
-        const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+        const uploadHeaders = getStudioAuthHeaders();
         const res = await fetch(`/api/brands/${brandId}/vault/upload`, {
           method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          },
+          headers: uploadHeaders,
           body: formData
         });
         const text = await res.text();
@@ -3156,10 +3191,10 @@ window.APP_MODULES.brands = async function(container) {
       }
 
       try {
-        const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+        const headers = getStudioAuthHeaders();
         const res = await fetch(`/api/brands/${brandId}/products/${productCode}/ai-audit`, {
           method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}` }
+          headers
         });
         const text = await res.text();
         let data;
@@ -3175,7 +3210,7 @@ window.APP_MODULES.brands = async function(container) {
           container.innerHTML = window.BrandsModule.buildAuditHtml(data.audit, brandId, productCode);
         }
 
-        // Reload state in background to update suggestedPrice
+        // Reload state in background to update suggestedPrice & auto-advanced status
         state = await loadBrandsStateFromAPI();
       } catch (err) {
         if (container) {
@@ -3192,13 +3227,10 @@ window.APP_MODULES.brands = async function(container) {
 
     async applyAuditedPrice(brandId, productCode, price) {
       try {
-        const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+        const headers = getStudioAuthHeaders({ 'Content-Type': 'application/json' });
         const res = await fetch(`/api/brands/${brandId}/products/${productCode}/apply-price`, {
           method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
+          headers,
           body: JSON.stringify({ price })
         });
         const data = await res.json();
@@ -3249,11 +3281,11 @@ window.APP_MODULES.brands = async function(container) {
       }
 
       const statusEl = document.getElementById('mockupUploadStatus');
-      const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
       let savedCount = 0;
 
       try {
         const total = Math.min(10, files.length);
+        const uploadHeaders = getStudioAuthHeaders();
         for (let i = 0; i < total; i++) {
           const file = files[i];
           if (statusEl) {
@@ -3268,7 +3300,7 @@ window.APP_MODULES.brands = async function(container) {
 
           const res = await fetch(`/api/brands/${brandId}/mockups/upload-single`, {
             method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}` },
+            headers: uploadHeaders,
             body: formData
           });
 
@@ -3311,7 +3343,6 @@ window.APP_MODULES.brands = async function(container) {
 
         const fileInput = document.getElementById('mockupFilesInput');
         const files = fileInput?.files;
-        const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
 
         let res;
         if (files && files.length > 0) {
@@ -3319,15 +3350,17 @@ window.APP_MODULES.brands = async function(container) {
           for (let i = 0; i < Math.min(10, files.length); i++) {
             formData.append('mockups', files[i]);
           }
+          const headers = getStudioAuthHeaders();
           res = await fetch(`/api/etsy/brands/${brandId}/listings/${prod.etsyListingId}/upload-images`, {
             method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}` },
+            headers,
             body: formData
           });
         } else if (prod.mockups && prod.mockups.length > 0) {
+          const headers = getStudioAuthHeaders({ 'Content-Type': 'application/json' });
           res = await fetch(`/api/etsy/brands/${brandId}/listings/${prod.etsyListingId}/upload-images`, {
             method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+            headers,
             body: JSON.stringify({ mockups: prod.mockups })
           });
         } else {
@@ -3363,10 +3396,10 @@ window.APP_MODULES.brands = async function(container) {
           throw new Error(`No file found in Vault. Upload the PDF/ZIP first.`);
         }
 
-        const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+        const headers = getStudioAuthHeaders({ 'Content-Type': 'application/json' });
         const res = await fetch(`/api/etsy/brands/${brandId}/listings/${prod.etsyListingId}/upload-file`, {
           method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          headers,
           body: JSON.stringify({
             storagePath: prod.vault.storagePath,
             downloadUrl: prod.vault.downloadUrl,
@@ -3744,7 +3777,6 @@ window.APP_MODULES.brands = async function(container) {
       }
 
       const statusEl = document.getElementById('videoUploadStatus');
-      const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
 
       try {
         if (statusEl) statusEl.innerHTML = `<span style="color:#06b6d4; font-weight:700;">⏳ Uploading ${file.name} to Cloud Vault...</span>`;
@@ -3753,9 +3785,10 @@ window.APP_MODULES.brands = async function(container) {
         formData.append('productCode', productCode);
         formData.append('video', file);
 
+        const uploadHeaders = getStudioAuthHeaders();
         const res = await fetch(`/api/brands/${brandId}/video/upload`, {
           method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}` },
+          headers: uploadHeaders,
           body: formData
         });
 
@@ -4207,14 +4240,14 @@ window.APP_MODULES.brands = async function(container) {
       const totalCost = (expiring.length * 0.20).toFixed(2);
       if (!confirm(`Renewing all ${expiring.length} expiring listings will cost $${totalCost} ($0.20 per listing). Proceed?`)) return;
 
-      const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+      const headers = getStudioAuthHeaders({ 'Content-Type': 'application/json' });
       let renewed = 0;
 
       for (const item of expiring) {
         try {
           await fetch(`/api/etsy/brands/${item.brandId}/listings/${item.product.etsyListingId}/renew`, {
             method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+            headers,
             body: JSON.stringify({ productCode: item.product.code })
           });
           renewed++;
@@ -4279,6 +4312,102 @@ window.APP_MODULES.brands = async function(container) {
       `;
 
       modal.style.display = 'flex';
+    },
+
+    openAddProductToBrandModal(brandId) {
+      const modal = document.getElementById('addProductModal');
+      const content = document.getElementById('addProductModalContent');
+      if (!modal || !content) return;
+
+      const b = state.brands.find(x => x.id === brandId) || state.brands[0];
+      const nextNum = (state.productsCatalog[b.id]?.length || 0) + 1;
+      const codePrefix = b.name.substring(0, 3).toUpperCase();
+      const defaultCode = `${codePrefix}-${nextNum.toString().padStart(2, '0')}`;
+
+      content.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:0.75rem;">
+          <h3 style="font-size:1.2rem; font-weight:900; color:#fff; margin:0;">📦 Add Custom Product to ${b.name}</h3>
+          <button onclick="document.getElementById('addProductModal').style.display='none'" style="background:none; border:none; color:var(--text-muted); font-size:1.5rem; cursor:pointer;">✕</button>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:1rem;">
+          <div style="display:grid; grid-template-columns:1fr 2fr; gap:0.75rem;">
+            <div>
+              <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.3rem;">SKU / Code</label>
+              <input type="text" id="newProdCode" value="${defaultCode}" style="width:100%; font-size:0.85rem; padding:0.6rem; background:rgba(255,255,255,0.04); border:1px solid var(--border-subtle); border-radius:8px; color:#06b6d4; font-weight:800;">
+            </div>
+            <div>
+              <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.3rem;">Product Name</label>
+              <input type="text" id="newProdName" placeholder="e.g. 2026 Ultimate Habit Tracker" style="width:100%; font-size:0.85rem; padding:0.6rem; background:rgba(255,255,255,0.04); border:1px solid var(--border-subtle); border-radius:8px; color:#fff;">
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+            <div>
+              <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.3rem;">Category / Section</label>
+              <input type="text" id="newProdCategory" placeholder="e.g. Habit Trackers" style="width:100%; font-size:0.85rem; padding:0.6rem; background:rgba(255,255,255,0.04); border:1px solid var(--border-subtle); border-radius:8px; color:#fff;">
+            </div>
+            <div>
+              <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.3rem;">Retail Price ($ USD)</label>
+              <input type="number" step="0.01" id="newProdPrice" value="4.99" style="width:100%; font-size:0.85rem; padding:0.6rem; background:rgba(255,255,255,0.04); border:1px solid var(--border-subtle); border-radius:8px; color:#00df89; font-weight:800;">
+            </div>
+          </div>
+
+          <!-- OPTION B: CUSTOM BLUEPRINT SPECIFICATION -->
+          <div style="background:rgba(6,182,212,0.06); border:1px solid rgba(6,182,212,0.25); border-radius:12px; padding:1rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+              <span style="font-size:0.75rem; font-weight:800; color:#06b6d4; text-transform:uppercase;">⚡ Custom Product Blueprint Concept (Optional)</span>
+            </div>
+            <textarea id="newProdCustomIdea" rows="2" placeholder="Describe layout idea or specific spreads (e.g., Weekly Meal Planner with Budget & Grocery checklist)..." style="width:100%; font-size:0.8rem; background:rgba(0,0,0,0.3); border:1px solid var(--border-subtle); border-radius:8px; color:#fff; padding:0.5rem; resize:none; box-sizing:border-box; margin-bottom:0.5rem;"></textarea>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.5rem;">
+            <button class="btn-ghost" onclick="document.getElementById('addProductModal').style.display='none'">Cancel</button>
+            <div style="display:flex; gap:0.5rem;">
+              <button class="btn-secondary" onclick="window.BrandsModule.saveNewProduct(${b.id}, false)">💾 Save to Catalog</button>
+              <button class="btn-primary" onclick="window.BrandsModule.saveNewProduct(${b.id}, true)">🚀 Save & Open Studio</button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      modal.style.display = 'flex';
+    },
+
+    async saveNewProduct(brandId, openStudioImmediately = false) {
+      const code = document.getElementById('newProdCode')?.value?.trim();
+      const name = document.getElementById('newProdName')?.value?.trim();
+      const category = document.getElementById('newProdCategory')?.value?.trim() || 'General';
+      const price = parseFloat(document.getElementById('newProdPrice')?.value || '4.99');
+      const customIdea = document.getElementById('newProdCustomIdea')?.value?.trim() || '';
+
+      if (!code || !name) {
+        if (window.showToast) window.showToast('Please provide product code and name', 'warning');
+        return;
+      }
+
+      if (!state.productsCatalog[brandId]) state.productsCatalog[brandId] = [];
+      const newProductObj = {
+        code,
+        name,
+        category,
+        price,
+        format: 'Digital PDF',
+        status: 'Draft',
+        customIdea: customIdea || undefined
+      };
+      state.productsCatalog[brandId].push(newProductObj);
+
+      saveBrandsStateLocally(state);
+      if (window.showToast) window.showToast(`✅ Added ${code}: ${name} to catalog!`, 'success');
+      document.getElementById('addProductModal').style.display = 'none';
+      renderTabContent(currentTab);
+
+      if (openStudioImmediately) {
+        setTimeout(() => {
+          window.BrandsModule.generateLiveSEOPackage(brandId, code, encodeURIComponent(name));
+        }, 150);
+      }
     },
 
     async saveNewBrand() {

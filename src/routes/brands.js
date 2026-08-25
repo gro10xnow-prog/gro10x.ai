@@ -723,8 +723,8 @@ router.post('/:id/vault/upload', requireAuth, vaultUpload.single('file'), async 
       );
       if (prod) {
         prod.vault = vaultData;
-        if (prod.status === 'Pending' || prod.status === 'In Progress') {
-          prod.status = 'SEO Ready';
+        if (prod.status !== 'Live' && prod.status !== 'Pending Review' && prod.status !== 'Revision Requested') {
+          prod.status = 'Vault Uploaded';
         }
       }
     }
@@ -843,6 +843,11 @@ router.post('/:id/mockups/upload', requireAuth, vaultUpload.array('mockups', 10)
         prod.mockups = uploadedMockups;
         prod.mockupUrls = uploadedMockups.map(m => m.url).filter(Boolean);
         prod.mockupsCount = uploadedMockups.length;
+        if (prod.status !== 'Live' && prod.status !== 'Pending Review' && prod.status !== 'Revision Requested') {
+          if (uploadedMockups.length >= 4 && (prod.video?.storagePath || prod.video?.fileName)) {
+            prod.status = 'Media Ready';
+          }
+        }
       }
     }
 
@@ -1212,9 +1217,19 @@ router.post('/:id/product/:code/studio-save', requireAuth, async (req, res) => {
     prod.studioPercent = progress;
     prod.updatedAt = new Date().toISOString();
 
-    // Auto-advance status if SEO and Vault are ready
-    if (hasSEO && hasVault && (prod.status === 'Pending' || prod.status === 'In Progress')) {
-      prod.status = 'SEO Ready';
+    // 3. Automatic Status Advancement Based on Studio Activity (No manual changing needed)
+    if (prod.status !== 'Live' && prod.status !== 'Pending Review' && prod.status !== 'Revision Requested') {
+      if (hasSEO && hasAudit && hasMedia && hasVault && hasBlueprint) {
+        prod.status = 'Ready for Review';
+      } else if (hasAudit && hasMedia && hasVault) {
+        prod.status = 'Audit Passed';
+      } else if (hasMedia && hasVault) {
+        prod.status = 'Media Ready';
+      } else if (hasVault) {
+        prod.status = 'Vault Uploaded';
+      } else if (hasBlueprint) {
+        prod.status = 'Blueprint Ready';
+      }
     }
 
     await persistBrandsState(state);
@@ -1395,6 +1410,11 @@ router.post('/:id/video/upload', requireAuth, vaultUpload.single('video'), async
       );
       if (prod) {
         prod.video = videoItem;
+        if (prod.status !== 'Live' && prod.status !== 'Pending Review' && prod.status !== 'Revision Requested') {
+          if ((prod.mockups?.length || prod.mockupUrls?.length || 0) >= 4) {
+            prod.status = 'Media Ready';
+          }
+        }
       }
     }
 

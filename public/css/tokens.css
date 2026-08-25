@@ -86,7 +86,7 @@
   --z-mobile-nav: 800;
   --z-drawer: 1000;
   --z-modal-overlay: 2000;
-  --z-toast-notification: 3000;
+  --z-toast-notification: 99999;
   --z-command-center: 4000;
 
   /* ── Backward-Compat Aliases (used across legacy modules & design-tokens.css) ── */
