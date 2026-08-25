@@ -118,7 +118,7 @@ async function handleReviewRoom(teamBot, msg) {
       reviewTasks = data || [];
     }
 
-    let text = `👁️ *PURPLEBOT DIGITAL — CREATIVE REVIEW ROOM*\n` +
+    let text = `👁️ *GRO10X — CREATIVE REVIEW ROOM*\n` +
       `📅 ${new Date().toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}\n\n`;
 
     if (reviewTasks.length === 0) {

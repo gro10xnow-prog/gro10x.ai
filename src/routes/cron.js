@@ -171,8 +171,8 @@ router.get('/morning-briefing', async (req, res) => {
 
     let sentCount = 0;
     for (const owner of owners) {
-      // PBD-002 (Chairman) gets board briefing, others get operational briefing
-      const msg = owner.id === 'PBD-002'
+      // GRO-002 / PBD-002 (Chairman) gets board briefing, others get operational briefing
+      const msg = (owner.id === 'GRO-002' || owner.id === 'PBD-002' || (owner.role || '').toLowerCase().includes('chairman'))
         ? buildChairmanBriefing(db)
         : buildMorningBriefing(db);
 
@@ -587,7 +587,7 @@ router.get('/approval-expiry', authorizeCron, async (req, res) => {
     const db = await fetchSupabaseSnapshot();
     const now = new Date();
     const { sendTelegramNotification } = require('../services/bot');
-    const managers = db.team.filter(t => (t.accessLevel || '').toLowerCase().includes('manager') || (t.accessLevel || '').toLowerCase().includes('owner') || (t.role || '').toLowerCase().includes('managing director') || t.id === 'PBD-001');
+    const managers = db.team.filter(t => (t.accessLevel || '').toLowerCase().includes('manager') || (t.accessLevel || '').toLowerCase().includes('owner') || (t.role || '').toLowerCase().includes('managing director') || t.id === 'GRO-001' || t.id === 'PBD-001');
 
     const staleLeaves = (db.leaveRequests || []).filter(l => {
       if (l.status !== 'Pending' && l.status !== 'Pending Line Review') return false;
@@ -648,7 +648,7 @@ router.get('/invoice-due-reminder', authorizeCron, async (req, res) => {
       msg += `  Due: *${inv.due_date || inv.dueDate}*\n\n`;
     });
 
-    const finTeam = db.team.filter(t => (t.accessLevel || '').toLowerCase().includes('finance manager') || (t.role || '').toLowerCase().includes('finance') || (t.accessLevel || '').toLowerCase().includes('owner') || t.id === 'PBD-001');
+    const finTeam = db.team.filter(t => (t.accessLevel || '').toLowerCase().includes('finance manager') || (t.role || '').toLowerCase().includes('finance') || (t.accessLevel || '').toLowerCase().includes('owner') || t.id === 'GRO-001' || t.id === 'PBD-001');
     let sentCount = 0;
     for (const fin of finTeam) {
       if (fin.telegramId) {

@@ -49,13 +49,8 @@ async function seedProfiles() {
     role: emp.role || 'Specialist',
     department: emp.department || 'Production',
     access_level: emp.accessLevel || 'Specialist / Crew',
-    status: emp.status || 'Active',
     base_salary: Number(emp.baseSalary || 0),
-    badge: emp.badge || null,
-    xp: Number(emp.xp || 0),
     is_verified: true,
-    casual_leaves_allowed: 10,
-    sick_leaves_allowed: 14,
     leaves_balance: 14,
     updated_at: new Date().toISOString()
   }));

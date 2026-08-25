@@ -25,7 +25,7 @@ async function handleMorningBriefing(teamBot, msg) {
   const onLeave = team.filter(t => t.status === 'On Leave').length;
   const offline = Math.max(0, totalStaff - (inStudio + onShoot + onLeave));
 
-  let text = `🌅 *PURPLEBOT DIGITAL — EXECUTIVE MORNING BRIEFING*\n` +
+  let text = `🌅 *GRO10X — EXECUTIVE MORNING BRIEFING*\n` +
     `📅 ${new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })}\n\n` +
     `👥 *Live Studio Headcount (${totalStaff} Total):*\n` +
     `• 🟢 In Studio: *${inStudio}*\n` +
@@ -43,7 +43,7 @@ async function handleMorningBriefing(teamBot, msg) {
     });
   }
 
-  text += `\nHave a productive and profitable day! 💜`;
+  text += `\nHave a productive and profitable day! ⚡`;
 
   teamBot.sendMessage(chatId, text, {
     parse_mode: 'Markdown',
@@ -68,7 +68,7 @@ async function handleBusinessSnapshot(teamBot, msg) {
   const clientCount = clientsRes?.count || 0;
   const taskCount = tasksRes?.count || 0;
 
-  let text = `📊 *PURPLEBOT DIGITAL BUSINESS SNAPSHOT*\n\n` +
+  let text = `📊 *GRO10X BUSINESS SNAPSHOT*\n\n` +
     `• Total Team Roster: *${team.length} Members*\n` +
     `• Active Retainer Clients: *${clientCount} Clients*\n` +
     `• Active Production Tasks: *${taskCount} Tasks*\n\n` +
@@ -144,7 +144,7 @@ async function handleFinanceSummary(teamBot, msg) {
   const netCashPosition = paid - (disbursedExpenses + monthlyPayroll);
   const netSign = netCashPosition >= 0 ? '🟢 +৳' : '🔴 -৳';
 
-  const text = `💰 *PURPLEBOT DIGITAL — EXECUTIVE FINANCIAL INTELLIGENCE*\n` +
+  const text = `💰 *GRO10X — EXECUTIVE FINANCIAL INTELLIGENCE*\n` +
     `📅 ${new Date().toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}\n\n` +
     `💵 *Revenue & Collections:*\n` +
     `• Settled Revenue: *৳${paid.toLocaleString()} BDT*\n` +
@@ -203,7 +203,7 @@ async function handleOpsHealthSummary(teamBot, msg) {
   const memoryMB = Math.round((process.memoryUsage().rss / 1024 / 1024) * 100) / 100;
   const uptimeHrs = (process.uptime() / 3600).toFixed(1);
 
-  const text = `🩺 *PURPLEBOT DIGITAL — OPS HEALTH TELEMETRY*\n` +
+  const text = `🩺 *GRO10X — OPS HEALTH TELEMETRY*\n` +
     `📅 ${new Date().toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })} | ⏱️ Uptime: *${uptimeHrs}h*\n\n` +
     `⚡ *System Diagnostics:*\n` +
     `• Database: *${dbStatus}* (⚡ ${dbLatency}ms latency)\n` +

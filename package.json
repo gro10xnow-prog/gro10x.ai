@@ -1,7 +1,7 @@
 {
-  "name": "purplebot-core",
-  "version": "0.9.3.0",
-  "description": "Purplebot Digital Core Agency OS API & App",
+  "name": "gro10x-os",
+  "version": "2.0.0",
+  "description": "GRO10X AI Growth Agency & Multi-Engine Operating System",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -15,11 +15,12 @@
     "register-webhook": "node register-webhook.js"
   },
   "keywords": [
-    "agency-ops",
-    "purplebot",
+    "gro10x",
+    "agency-os",
+    "growth-engine",
     "crm",
     "kanban",
-    "review-room",
+    "digital-brands",
     "telegram-bot"
   ],
   "author": "",

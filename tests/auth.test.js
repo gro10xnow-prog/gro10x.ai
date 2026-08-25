@@ -32,7 +32,7 @@ describe('Auth API Integration Tests', () => {
     const res = await request(app).get('/api/auth/health');
     expect(res.statusCode).toBe(200);
     expect(res.body).toHaveProperty('status', 'ok');
-    expect(res.body).toHaveProperty('app', 'PurpleOS');
+    expect(res.body).toHaveProperty('app', 'GRO10X');
   });
 
   test('GET /api/auth/config returns 200 with config properties', async () => {

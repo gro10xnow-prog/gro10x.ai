@@ -54,7 +54,7 @@ describe('Phase 1: Executive Financial Oversight & Intelligence Test Suite', () 
 
     expect(mockTeamBot.sendMessage).toHaveBeenCalled();
     expect(capturedChatId).toBe(7754769807);
-    expect(capturedText).toContain('PURPLEBOT DIGITAL — EXECUTIVE FINANCIAL INTELLIGENCE');
+    expect(capturedText).toContain('GRO10X — EXECUTIVE FINANCIAL INTELLIGENCE');
     expect(capturedText).toContain('৳');
     expect(capturedText).toContain('BDT');
     expect(capturedText).toContain('Net Operational Cash Position');

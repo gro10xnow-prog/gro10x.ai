@@ -108,13 +108,13 @@ async function sendAgreementNotification(stage, emp, dbData) {
         `🎉 *CONGRATULATIONS, ${emp.name}!*\n\n` +
         `Your Employment Agreement is fully executed and signed by all parties.\n\n` +
         `━━━━━━━━━━━━━━━━━━━━\n` +
-        `🚀 *You are now an official Purplebot Digital team member!*\n\n` +
+        `🚀 *You are now an official GRO10X team member!*\n\n` +
         `📌 *Your Next Steps:*\n` +
         `1. 📍 Do your first GPS Clock-In to go Online\n` +
         `2. 📋 Check *My Tasks* for your first assignment\n` +
         `3. 💳 Verify your *Bank & bKash* payout accounts\n` +
         `4. 👤 Review your *My Profile* — check your salary details\n\n` +
-        `Tap *Open App* to access your full dashboard. Welcome to the team! 💜`,
+        `Tap *Open App* to access your full dashboard. Welcome to the team! ⚡`,
         { parse_mode: 'Markdown', reply_markup: keyboard }
       ).catch(() => {});
     }
@@ -196,10 +196,10 @@ function initBot() {
             title: `📋 ${t.id || 'TSK'}: ${t.title || 'Task'}`,
             description: `Client: ${t.client || 'PBD'} | Stage: ${t.stage || 'General'} | Priority: ${t.priority || 'Normal'}`,
             input_message_content: {
-              message_text: `📋 *PURPLEOS TASK CARD*\n\n` +
+              message_text: `📋 *GRO10X TASK CARD*\n\n` +
                 `*Task ID:* \`${t.id || 'N/A'}\`\n` +
                 `*Title:* ${t.title || 'Untitled'}\n` +
-                `*Client:* ${t.client || 'PBD Client'}\n` +
+                `*Client:* ${t.client || 'GRO10X Partner'}\n` +
                 `*Stage:* ${t.stage || 'Active'}\n` +
                 `*Priority:* ${t.priority || 'Normal'}\n` +
                 `*Assignee:* ${t.assignee || 'Unassigned'}\n` +
@@ -226,8 +226,8 @@ function initBot() {
           const emp = await state.getEmployeeByPhone(normPhone);
 
           if (!emp) {
-            const errorMsg = `🔒 *Access Restricted — Purplebot Digital Internal Portal*\n\n` +
-              `The phone number *+${normPhone}* is not registered in the PBD employee database.\n\n` +
+            const errorMsg = `🔒 *Access Restricted — GRO10X Internal Portal*\n\n` +
+              `The phone number *+${normPhone}* is not registered in the GRO10X employee database.\n\n` +
               `If you are an authorized employee, please contact Technology Admin *Firoz Uddin Ahmed* (01708-459008) to authorize your account.`;
             return teamBot.sendMessage(chatId, errorMsg, { parse_mode: 'Markdown' });
           }
@@ -370,7 +370,7 @@ function initBot() {
           const keyboard = getRoleKeyboard(emp.accessLevel, true, emp);
           teamBot.sendMessage(chatId, welcome, { parse_mode: 'Markdown', reply_markup: keyboard });
         } else {
-          const welcome = `🟣 *PURPLEBOT DIGITAL — Team Assistant*\n\n` +
+          const welcome = `⚡ *GRO10X — Team Assistant*\n\n` +
             `Welcome to the internal team bot.\n\n` +
             `📌 *Getting Started:*\n` +
             `Tap *📱 Verify My Phone Number* below to link your account. It takes 5 seconds!`;
@@ -383,7 +383,7 @@ function initBot() {
       teamBot.onText(/\/help/, async (msg) => {
         const chatId = msg.chat.id;
         await state.clearSession(chatId);
-        const helpText = `📖 *PURPLEOS TEAM BOT — COMMAND GUIDE*\n\n` +
+        const helpText = `📖 *GRO10X TEAM BOT — COMMAND GUIDE*\n\n` +
           `• \`/start\` — Verify identity & launch menu\n` +
           `• \`/help\` — Show all available commands\n` +
           `• \`/myprofile\` — View & update employee profile\n` +
@@ -395,7 +395,7 @@ function initBot() {
           `• \`/clockout\` — Clock-out & log daily hours\n` +
           `• \`/orientation\` — Complete onboarding survey\n` +
           `• \`/techdiag\` — System diagnostics (Admin only)\n\n` +
-          `💡 *Tip:* You can also search tasks inline anywhere in Telegram by typing \`@teamBot <search_term>\`!`;
+          `💡 *Tip:* You can also search tasks inline anywhere in Telegram by typing \`@Aigeneral01bot <search_term>\`!`;
         teamBot.sendMessage(chatId, helpText, { parse_mode: 'Markdown' });
       });
 
@@ -548,7 +548,7 @@ function initBot() {
 
           let taskText = tasks.map((t, idx) => `${t.completed ? '✅' : '⏳'} ${idx + 1}. *${t.label || t.id}*`).join('\n');
 
-          const text = `🎓 *PURPLEBOT ORIENTATION & ONBOARDING TRACKER*\n\n` +
+          const text = `🎓 *GRO10X ONBOARDING TRACKER*\n\n` +
             `• Employee: *${emp.name}*\n` +
             `• Current Rank: *${emp.badge || '🌱 Recruit'}*\n` +
             `• Earned XP: *${emp.xp || 0} XP*\n\n` +
@@ -568,7 +568,7 @@ function initBot() {
     }
   }
 
-  // 2. Initialize Client Bot (Purple Bot)
+  // 2. Initialize Client Bot (B2B Client Bot)
   if (clientToken && clientToken.trim() !== '' && !clientToken.includes('your_token')) {
     try {
       const usePolling = process.env.USE_POLLING === 'true';
@@ -603,7 +603,7 @@ function initBot() {
             title: `💳 ${inv.id || 'INV'}: ${inv.project_name || inv.projectName || 'Invoice'}`,
             description: `Client: ${inv.client_name || inv.clientName || 'Client'} | Amount: BDT ${(Number(inv.amount) || 0).toLocaleString()} | Status: ${inv.status || 'Pending'}`,
             input_message_content: {
-              message_text: `💳 *PURPLEOS COMMERCIAL INVOICE CARD*\n\n` +
+              message_text: `💳 *GRO10X COMMERCIAL INVOICE CARD*\n\n` +
                 `*Invoice ID:* \`${inv.id || 'N/A'}\`\n` +
                 `*Client:* ${inv.client_name || inv.clientName || 'Brand Partner'}\n` +
                 `*Project:* ${inv.project_name || inv.projectName || 'Campaign Work'}\n` +
@@ -672,7 +672,7 @@ function initBot() {
           amPhone = '+880 1874-079687';
         }
 
-        const welcome = `🎉 *Welcome to Purplebot Digital, ${poc.name}!* \n\n` +
+        const welcome = `🎉 *Welcome to GRO10X, ${poc.name}!* \n\n` +
           `🏢 *Organization:* ${client.name}\n` +
           `👤 *Authorized POC:* ${poc.role || 'Brand Representative'}\n` +
           `⚡ *Retainer Status:* ${client.status || 'Active Retainer'}\n` +
@@ -699,6 +699,7 @@ function initBot() {
         const service = session.data?.service || 'General Inquiry';
         const budget = session.data?.budget || 'Not Specified';
         const timeline = session.data?.timeline || 'Immediate';
+        const clientBotUser = process.env.CLIENT_BOT_USERNAME || 'gro10xb2bot';
 
         const newLead = {
           id: `LED-${Date.now().toString().slice(-6)}`,
@@ -713,8 +714,8 @@ function initBot() {
                : (budget.includes('150,000') || budget.includes('150k')) ? 150000
                : (budget.includes('75,000') || budget.includes('75k')) ? 75000
                : 45000,
-          notes: `Captured via Telegram Bot (@purpleosbot). Budget: ${budget} | Timeline: ${timeline} | TG User: ${session.data?.telegramUser || 'N/A'}, Chat ID: ${chatId}`,
-          source: 'Telegram Bot — @purpleosbot'
+          notes: `Captured via Telegram Bot (@${clientBotUser}). Budget: ${budget} | Timeline: ${timeline} | TG User: ${session.data?.telegramUser || 'N/A'}, Chat ID: ${chatId}`,
+          source: `Telegram Bot — @${clientBotUser}`
         };
 
         if (supabase) {
@@ -732,7 +733,7 @@ function initBot() {
           const ownerChatId = process.env.OWNER_TELEGRAM_ID;
           if (ownerChatId) {
             sendTelegramNotification(ownerChatId,
-              `🔔 *New Qualified Lead from Telegram Bot (@purpleosbot)!*\n\n` +
+              `🔔 *New Qualified Lead from Telegram Bot (@${clientBotUser})!*\n\n` +
               `👤 *${contactPerson}* (${company})\n` +
               `📞 Phone: \`${cleanPhone}\`\n` +
               `🎯 Service: *${service}*\n` +
@@ -750,8 +751,8 @@ function initBot() {
           `• Target Budget: *${budget}*\n` +
           `• Timeline: *${timeline}*\n\n` +
           `Our Account Director will review your requirements and reach out via WhatsApp at \`${cleanPhone}\` within 2 business hours with a custom proposal! 🚀\n\n` +
-          `📞 *Direct Priority Line:* \`+880 1711-019550\`\n` +
-          `🌐 *Agency Website:* ${process.env.PUBLIC_URL || 'https://gro10x-ai.vercel.app'}`;
+          `📞 *Direct Priority Line:* \`+880 1708-459008\`\n` +
+          `🌐 *Agency Website:* ${process.env.PUBLIC_URL || 'https://gro10x.ai'}`;
 
         clientBot.sendMessage(chatId, successMsg, { parse_mode: 'Markdown', reply_markup: getProspectKeyboard() });
       }
@@ -771,13 +772,13 @@ function initBot() {
           const keyboard = getClientKeyboard(client);
           clientBot.sendMessage(chatId, welcome, { parse_mode: 'Markdown', reply_markup: keyboard });
         } else {
-          const welcome = `💜 *Welcome to Purplebot Digital!*\n\n` +
-            `We are Bangladesh's premier creative production, digital marketing, and tech agency — trusted by *LG, InterContinental, BAT, Reckitt (Mortein/Harpic), Chillox, UCB*, and 100+ high-growth brands.\n\n` +
+          const welcome = `⚡ *Welcome to GRO10X!* \n\n` +
+            `We are an AI-First Growth Agency & Multi-Engine Ecosystem scaling brands 10x faster with AI software, synthetic media pipelines, and digital products.\n\n` +
             `🎯 *How can we help your brand today?*\n\n` +
-            `• 💬 *Get a Custom Quote* — 1-minute tailored campaign proposal\n` +
+            `• 💬 *Get a Custom Quote* — 1-minute tailored growth proposal\n` +
             `• 📅 *Book a Strategy Call* — 15-min discovery consultation\n` +
-            `• 💰 *Service Pricing & Plans* — Transparent package rates from ৳40k/mo\n` +
-            `• 📁 *See Portfolio* — Review award-winning TVCs and reels\n\n` +
+            `• 💰 *Service Pricing & Plans* — Transparent package rates\n` +
+            `• 📁 *See Portfolio* — Review AI apps, media & solutions\n\n` +
             `👇 *Select an option below to get started:*`;
           const keyboard = getProspectKeyboard();
           clientBot.sendMessage(chatId, welcome, { parse_mode: 'Markdown', reply_markup: keyboard });
@@ -787,7 +788,7 @@ function initBot() {
       // /help handler
       clientBot.onText(/\/help/, async (msg) => {
         const chatId = msg.chat.id;
-        const helpText = `📖 *PURPLEOS CLIENT BOT — QUICK GUIDE*\n\n` +
+        const helpText = `📖 *GRO10X CLIENT BOT — QUICK GUIDE*\n\n` +
           `• \`/start\` — Open portal & main menu\n` +
           `• \`/help\` — Show available options & commands\n` +
           `• \`/quote\` — Request a tailored campaign proposal\n` +
@@ -805,20 +806,15 @@ function initBot() {
       // ─── Prospect Pricing & Plans Handler ───
       clientBot.onText(/\/pricing|💰 Service Pricing & Plans|💰 Service Pricing/, async (msg) => {
         const chatId = msg.chat.id;
-        const pricingText = `💰 *PURPLEBOT DIGITAL — SERVICE PACKAGES & PRICING*\n\n` +
-          `📱 *Social Media Retainers:*\n` +
-          `• Lite Plan: *BDT 45,000/mo* (~$410)\n` +
-          `• Essential Plan (Popular): *BDT 75,000/mo* (~$680)\n` +
-          `• Advanced Plan: *BDT 120,000/mo* (~$1,090)\n\n` +
-          `🎬 *Video Production & TVCs:*\n` +
-          `• Viral Reels Batch (8x): *BDT 40,000/batch* (~$360)\n` +
-          `• Commercial Brand Film: *BDT 250,000/project* (~$2,270)\n\n` +
-          `🎨 *Branding & Identity:*\n` +
-          `• Brand Starter Kit: *BDT 80,000* (~$730)\n` +
-          `• Corporate Rebrand 360: *BDT 200,000* (~$1,820)\n\n` +
-          `💻 *Website & Custom Tech:*\n` +
-          `• Business Landing Site: *BDT 150,000* (~$1,360)\n` +
-          `• Custom Store & Portal: *BDT 250,000* (~$2,270)\n\n` +
+        const pricingText = `💰 *GRO10X — SERVICE PACKAGES & PRICING*\n\n` +
+          `📱 *AI Mobile & Web Development:*\n` +
+          `• AI Mobile Apps: *From $3,500 / project* (~৳410,000)\n` +
+          `• AI Websites & SaaS: *From $2,500 / project* (~৳295,000)\n\n` +
+          `🎬 *Synthetic Media & AI Video:*\n` +
+          `• Generative Ads & Reels Batch: *From $1,800 / mo* (~৳210,000)\n` +
+          `• AI Brand Film & Avatars: *From $3,000 / project* (~৳350,000)\n\n` +
+          `⚡ *360° AI Growth Engine:*\n` +
+          `• Growth Retainer Engine: *From $4,500 / mo* (~৳530,000)\n\n` +
           `Ready to start? Tap *💬 Get a Custom Quote* below! 👇`;
         clientBot.sendMessage(chatId, pricingText, { parse_mode: 'Markdown', reply_markup: getProspectKeyboard() });
       });
@@ -829,9 +825,9 @@ function initBot() {
         const bookText = `📅 *BOOK A 15-MINUTE STRATEGY CONSULTATION*\n\n` +
           `Schedule a 1-on-1 discovery call with our Account Director to discuss your brand's growth goals, video production scope, or tech requirements.\n\n` +
           `🕒 *Consultation Hours:* Sat – Thu (10:00 AM – 7:00 PM BST)\n` +
-          `📍 *Format:* Google Meet, Zoom, or In-Person (Banani Studio)\n\n` +
-          `💬 *Instant WhatsApp Booking:* [Chat Directly with Account Director](https://wa.me/8801711019550?text=Hi%20Purplebot%20Digital,%20I'd%20like%20to%20book%20a%2015-min%20strategy%20consultation.)\n` +
-          `📞 *Direct Line:* \`+880 1711-019550\`\n\n` +
+          `📍 *Format:* Google Meet, Zoom, or In-Person (Studio)\n\n` +
+          `💬 *Instant WhatsApp Booking:* [Chat Directly with Account Director](https://wa.me/8801708459008?text=Hi%20GRO10X,%20I'd%20like%20to%20book%20a%2015-min%20strategy%20consultation.)\n` +
+          `📞 *Direct Line:* \`+880 1708-459008\`\n\n` +
           `Prefer a written quote first? Tap *💬 Get a Custom Quote* below! 👇`;
         clientBot.sendMessage(chatId, bookText, { parse_mode: 'Markdown', reply_markup: getProspectKeyboard() });
       });
@@ -906,7 +902,7 @@ function initBot() {
         if (!client) {
           return clientBot.sendMessage(chatId,
             `👋 *Hi there!*\n\nThe phone number *+${normPhone}* is not registered in our active client database yet.\n\n` +
-            `Looking to scale your brand with Purplebot Digital? Tap *💬 Get a Custom Quote* below to get started! 💜`,
+            `Looking to scale your brand with GRO10X? Tap *💬 Get a Custom Quote* below to get started! ⚡`,
             { parse_mode: 'Markdown', reply_markup: getProspectKeyboard() }
           );
         }
@@ -1043,7 +1039,7 @@ function initBot() {
             if (!client) {
               return clientBot.sendMessage(chatId,
                 `👋 *Hi there!*\n\nThe phone number *+${normPhone}* is not registered in our active client database yet.\n\n` +
-                `Looking to scale your brand with Purplebot Digital? Tap *💬 Get a Custom Quote* below to get started! 💜`,
+                `Looking to scale your brand with GRO10X? Tap *💬 Get a Custom Quote* below to get started! ⚡`,
                 { parse_mode: 'Markdown', reply_markup: getProspectKeyboard() }
               );
             }
@@ -1056,11 +1052,11 @@ function initBot() {
         if (!isClient && !text.startsWith('/')) {
           clientBot.sendMessage(chatId,
             `👋 *Hi there! I received your message.*\n\n` +
-            `I'm the PurpleOS Virtual Assistant. How can we assist your brand today?\n\n` +
+            `I'm the GRO10X Virtual Assistant. How can we assist your brand today?\n\n` +
             `• Tap *💬 Get a Custom Quote* to request a proposal\n` +
             `• Tap *📅 Book a Strategy Call* to schedule a consultation\n` +
             `• Tap *💰 Service Pricing & Plans* to view rates\n` +
-            `• Or call our team directly at \`+880 1711-019550\` 📞`,
+            `• Or call our team directly at \`+880 1708-459008\` 📞`,
             { parse_mode: 'Markdown', reply_markup: getProspectKeyboard() }
           );
         }

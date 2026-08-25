@@ -30,8 +30,8 @@ const pinVerifyLimiter = rateLimit({
 router.get('/health',  async (req, res) => {
   res.json({
     status: 'ok',
-    app: 'PurpleOS',
-    version: '1.0.0',
+    app: 'GRO10X',
+    version: '2.0.0',
     supabaseConnected: isSupabaseConfigured()
   });
 });
@@ -193,17 +193,19 @@ router.post('/pin/generate', authLimiter, requireAuth, requireManager, async (re
   const pinRecord = await createTempPin(cleanPhone, userObj?.id || linkedId, targetType, email || userObj?.email || '');
 
   const portalPath = targetType === 'team' ? '/crew' : '/client';
-  const botUsername = targetType === 'team' ? 'purplemanosbot' : 'purpleosbot';
+  const teamBotUser = process.env.TEAM_BOT_USERNAME || 'Aigeneral01bot';
+  const clientBotUser = process.env.CLIENT_BOT_USERNAME || 'gro10xb2bot';
+  const botUsername = targetType === 'team' ? teamBotUser : clientBotUser;
   const portalUrl = `https://gro10x-ai.vercel.app${portalPath}?phone=${encodeURIComponent(cleanPhone)}`;
 
   const inviteCardText = targetType === 'team'
-    ? `🟣 *PURPLEBOT DIGITAL — WORKSPACE ACTIVATION*\n\n` +
-      `Hello *${name}*! You have been invited to join the PurpleOS Workspace.\n\n` +
+    ? `⚡ *GRO10X — WORKSPACE ACTIVATION*\n\n` +
+      `Hello *${name}*! You have been invited to join the GRO10X Workspace.\n\n` +
       `📌 *Step 1:* Open our official Telegram Assistant Bot:\n` +
       `👉 https://t.me/${botUsername}?start=join_crew\n\n` +
       `📌 *Step 2:* Tap *Start* (or send /start) and press *📱 Verify My Phone Number* to link your account.\n\n` +
       `The bot will instantly verify your number and deliver your secure 4-digit PIN for Web & Mini App access! 🔑`
-    : `📋 *PURPLEOS CLIENT WORKSPACE ACCESS CARD*\n\n` +
+    : `📋 *GRO10X CLIENT WORKSPACE ACCESS CARD*\n\n` +
       `👤 Representative: *${name}* (${roleTitle})\n` +
       `🏢 Client Account: *${companyName}*\n` +
       `📱 Login Mobile: \`${cleanPhone}\`\n` +
@@ -216,7 +218,7 @@ router.post('/pin/generate', authLimiter, requireAuth, requireManager, async (re
 
   let telegramPushed = false;
   if (sendTelegram && userObj && userObj.telegramId) {
-    const pushMsg = `🔑 *Your PurpleOS Login PIN Code*\n\n` +
+    const pushMsg = `🔑 *Your GRO10X Login PIN Code*\n\n` +
       `Hello ${name}! Here is your login PIN code for the portal:\n\n` +
       `• Mobile: \`${cleanPhone}\`\n` +
       `• Temp 4-Digit PIN: \`${pinRecord.pin}\`\n\n` +

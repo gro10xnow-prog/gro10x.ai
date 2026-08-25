@@ -1,22 +1,22 @@
 {
-  "name": "PurpleOS — Digital Agency Platform",
-  "short_name": "PurpleOS",
-  "description": "Business Operating System & Review Room Platform for Purplebot Digital",
+  "name": "GRO10X — Growth Operating System",
+  "short_name": "GRO10X",
+  "description": "AI-First Growth Agency & Multi-Engine Digital Empire OS",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0b0f19",
-  "theme_color": "#0b0f19",
+  "background_color": "#070b12",
+  "theme_color": "#00df89",
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=192&q=80",
+      "src": "/images/logo.webp",
       "sizes": "192x192",
-      "type": "image/jpeg"
+      "type": "image/webp"
     },
     {
-      "src": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=512&q=80",
+      "src": "/images/logo.webp",
       "sizes": "512x512",
-      "type": "image/jpeg"
+      "type": "image/webp"
     }
   ]
 }

@@ -6,11 +6,11 @@ async function handleServices(clientBot, msg) {
   const chatId = msg.chat.id;
   try {
     const { data: servicesData, error } = await supabase.from('services').select('*').eq('is_public', true);
-    let text = `🎨 *PURPLEBOT DIGITAL — CORE SERVICES & PACKAGES:*\n\n`;
+    let text = `🎨 *GRO10X — CORE SERVICES & PACKAGES:*\n\n`;
     
     const activeList = (servicesData && servicesData.length) ? servicesData : DEFAULT_SERVICES;
     activeList.forEach(s => {
-      text += `• *${s.title}* (${s.category || 'Core Agency Service'})\n  Starting at: *${s.price}*\n  ${s.description}\n\n`;
+      text += `• *${s.title}* (${s.category || 'Growth Engine Service'})\n  Starting at: *${s.price}*\n  ${s.description}\n\n`;
     });
     
     text += `💡 *Need a custom scope or retainer?* Tap *💬 Get a Custom Quote* or *📅 Book a Strategy Call* below!`;
@@ -26,7 +26,7 @@ async function handleServices(clientBot, msg) {
 
 async function handlePortfolio(clientBot, msg) {
   const chatId = msg.chat.id;
-  const text = `📁 *Purplebot Digital — Creative Portfolio & Showcase*\n\nExplore our latest commercial campaigns, TVCs, and digital brand transformations:\n🔗 https://gro10x-ai.vercel.app/#portfolio\n\n_Delivering high-impact creative production and commercial growth for leading brands._`;
+  const text = `📁 *GRO10X — Solutions & Portfolio Showcase*\n\nExplore our latest AI apps, synthetic media workflows, and digital brand scaling cases:\n🔗 https://gro10x.ai\n\n_Scaling businesses 10x faster through software engineering and data science._`;
   clientBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
 }
 
@@ -149,23 +149,23 @@ async function handleContactAM(clientBot, msg) {
     let amName = cData?.accountManager || cData?.account_manager || 'Tasin Kabir';
     let amDesignation = 'Senior Manager, Client Services';
     let amPhone = '+880 1709-952672';
-    let amEmail = 'tasin@purplebot.digital';
+    let amEmail = 'gro10xnow@gmail.com';
 
     if (amName.toLowerCase().includes('sayed')) {
       amName = 'Sayed Ashraf';
       amDesignation = 'Assistant Manager, Client Services';
       amPhone = '+880 1617-410967';
-      amEmail = 'sayed@purplebot.digital';
+      amEmail = 'gro10xnow@gmail.com';
     } else if (amName.toLowerCase().includes('rimjhim')) {
       amName = 'Rimjhim Rashid';
       amDesignation = 'Assistant Manager, Client Services';
       amPhone = '+880 1759-768962';
-      amEmail = 'rimjhim@purplebot.digital';
+      amEmail = 'gro10xnow@gmail.com';
     } else if (amName.toLowerCase().includes('mehedi')) {
       amName = 'MD Mehedi Bin Jayed';
       amDesignation = 'Head of Client & Growth';
       amPhone = '+880 1874-079687';
-      amEmail = 'mehedi@purplebot.digital';
+      amEmail = 'gro10xnow@gmail.com';
     }
 
     const text = `📞 *Your Dedicated Account Manager*\n\n` +
@@ -173,8 +173,8 @@ async function handleContactAM(clientBot, msg) {
       `💼 *Designation:* ${amDesignation}\n` +
       `📱 *Direct Phone:* \`${amPhone}\`\n` +
       `📧 *Work Email:* \`${amEmail}\`\n\n` +
-      `🏢 *Purplebot Client Desk:* \`contact@purplebot.digital\` | \`+880 1711-019550\`\n` +
-      `⏰ *Office Hours:* Sun–Thu · 9:30 AM – 6:30 PM\n\n` +
+      `🏢 *GRO10X Client Desk:* \`gro10xnow@gmail.com\` | \`+880 1708-459008\`\n` +
+      `⏰ *Office Hours:* Sun–Thu · 9:30 AM – 6:30 PM BST\n\n` +
       `_Feel free to call or WhatsApp your AM directly during business hours for campaign adjustments._`;
 
     const keyboard = cData ? getClientKeyboard(cData) : getProspectKeyboard();
@@ -238,7 +238,7 @@ async function handleClientDigest(clientBot, msg) {
       `💳 *Billing & Financial Summary:*\n` +
       `• Outstanding Invoices: *${pendingInvoices.length}* (${pendingInvoices.length > 0 ? `BDT ${pendingInvoices.reduce((s,i)=>s+(Number(i.amount)||0),0).toLocaleString()}` : 'All Clear ✅'})\n\n` +
       `━━━━━━━━━━━━━━━━━━━━\n` +
-      `📌 *Dedicated AM:* ${cData?.accountManager || 'Tasin Kabir'} · contact@purplebot.digital\n` +
+      `📌 *Dedicated AM:* ${cData?.accountManager || 'Tasin Kabir'} · gro10xnow@gmail.com\n` +
       `Tap below to access your live Retainer Health & Intelligence Dashboard:`;
 
     const inlineKeyboard = [

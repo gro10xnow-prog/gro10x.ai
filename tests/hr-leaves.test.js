@@ -20,9 +20,9 @@ describe('HR Leaves API Integration Tests', () => {
   });
 
   const crewToken = signToken({
-    userId: 'PBD-005',
-    name: 'Asif Crew',
-    role: 'Specialist',
+    userId: 'GRO-011',
+    name: 'Shihab Visualizer',
+    role: 'Associate Visualizer',
     accessLevel: 'Specialist / Crew',
     department: 'Production',
     linkedType: 'team'

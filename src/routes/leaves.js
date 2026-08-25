@@ -161,7 +161,7 @@ router.post('/', requireAuth, async (req, res) => {
     const newId = `LVE-${randomUUID ? randomUUID().split('-')[0].toUpperCase() : Date.now().toString().slice(-6)}`;
     const payload = {
       id: newId,
-      employee_id: req.body.staffId || req.body.employeeId || req.user.empCode || req.user.emp_code || req.user.id || 'PBD-001',
+      employee_id: req.body.staffId || req.body.employeeId || req.user.empCode || req.user.emp_code || req.user.id || 'GRO-001',
       employee_name: req.body.staffName || req.body.employeeName || req.user.name || 'Staff Member',
       leave_type: req.body.leaveType || req.body.type || 'Casual Leave',
       start_date: req.body.startDate || req.body.fromDate || new Date().toISOString().split('T')[0],

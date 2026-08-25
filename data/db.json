@@ -82,8 +82,8 @@
   ],
   "team": [
     {
-      "id": "PBD-000",
-      "emp_code": "PBD-000",
+      "id": "GRO-000",
+      "emp_code": "GRO-000",
       "name": "Firoz Uddin Ahmed",
       "role": "Technology Admin",
       "department": "Tech & AI",
@@ -96,8 +96,8 @@
       "xp": 550
     },
     {
-      "id": "PBD-001",
-      "emp_code": "PBD-001",
+      "id": "GRO-001",
+      "emp_code": "GRO-001",
       "name": "H. M. Ifteker Mahmud",
       "role": "Managing Director",
       "department": "Top Management",
@@ -110,8 +110,8 @@
       "xp": 100
     },
     {
-      "id": "PBD-002",
-      "emp_code": "PBD-002",
+      "id": "GRO-002",
+      "emp_code": "GRO-002",
       "name": "S M Tariful Islam",
       "role": "Chairman",
       "department": "Top Management",
@@ -124,8 +124,8 @@
       "xp": 1200
     },
     {
-      "id": "PBD-003",
-      "emp_code": "PBD-003",
+      "id": "GRO-003",
+      "emp_code": "GRO-003",
       "name": "MD Mehedi Bin Jayed",
       "role": "Head of Client & Growth",
       "department": "Leadership",
@@ -138,8 +138,8 @@
       "xp": 1200
     },
     {
-      "id": "PBD-004",
-      "emp_code": "PBD-004",
+      "id": "GRO-004",
+      "emp_code": "GRO-004",
       "name": "Kafil Uddin Mahmud",
       "role": "Head of Business Operations",
       "department": "Leadership",
@@ -152,8 +152,8 @@
       "xp": 1200
     },
     {
-      "id": "PBD-005",
-      "emp_code": "PBD-005",
+      "id": "GRO-005",
+      "emp_code": "GRO-005",
       "name": "Md. Zahin Khandaker",
       "role": "Head of Internal Operations",
       "department": "Leadership",
@@ -166,8 +166,8 @@
       "xp": 1200
     },
     {
-      "id": "PBD-006",
-      "emp_code": "PBD-006",
+      "id": "GRO-006",
+      "emp_code": "GRO-006",
       "name": "Ruhul Amin Rupom",
       "role": "Art Director",
       "department": "Design & Post-Production",
@@ -180,8 +180,8 @@
       "xp": 1200
     },
     {
-      "id": "PBD-007",
-      "emp_code": "PBD-007",
+      "id": "GRO-007",
+      "emp_code": "GRO-007",
       "name": "Mahmudul Hasan Shuvo",
       "role": "Senior Visualizer",
       "department": "Design & Post-Production",
@@ -194,8 +194,8 @@
       "xp": 1200
     },
     {
-      "id": "PBD-008",
-      "emp_code": "PBD-008",
+      "id": "GRO-008",
+      "emp_code": "GRO-008",
       "name": "Shahjalal Badsha Arif",
       "role": "Senior Visualizer",
       "department": "Design & Post-Production",
@@ -208,8 +208,8 @@
       "xp": 1200
     },
     {
-      "id": "PBD-009",
-      "emp_code": "PBD-009",
+      "id": "GRO-009",
+      "emp_code": "GRO-009",
       "name": "Asmaul Husna Kamona",
       "role": "Visualizer",
       "department": "Design & Post-Production",
@@ -222,8 +222,8 @@
       "xp": 1200
     },
     {
-      "id": "PBD-010",
-      "emp_code": "PBD-010",
+      "id": "GRO-010",
+      "emp_code": "GRO-010",
       "name": "Omar Faruq Rony",
       "role": "Visualizer",
       "department": "Design & Post-Production",
@@ -236,8 +236,8 @@
       "xp": 1200
     },
     {
-      "id": "PBD-011",
-      "emp_code": "PBD-011",
+      "id": "GRO-011",
+      "emp_code": "GRO-011",
       "name": "Shalmir Rahman Shihab",
       "role": "Associate Visualizer",
       "department": "Design & Post-Production",
@@ -250,8 +250,8 @@
       "xp": 1200
     },
     {
-      "id": "PBD-012",
-      "emp_code": "PBD-012",
+      "id": "GRO-012",
+      "emp_code": "GRO-012",
       "name": "Anik Saha",
       "role": "Associate Visualizer",
       "department": "Design & Post-Production",
@@ -264,8 +264,8 @@
       "xp": 1200
     },
     {
-      "id": "PBD-013",
-      "emp_code": "PBD-013",
+      "id": "GRO-013",
+      "emp_code": "GRO-013",
       "name": "Nasir Ullah Khan Al Nahian",
       "role": "Head of Production",
       "department": "Content Production",
@@ -278,8 +278,8 @@
       "xp": 1200
     },
     {
-      "id": "PBD-014",
-      "emp_code": "PBD-014",
+      "id": "GRO-014",
+      "emp_code": "GRO-014",
       "name": "S. M. Masud Ur Rahman Pial",
       "role": "Senior Copywriter",
       "department": "Content Production",
@@ -292,8 +292,8 @@
       "xp": 1200
     },
     {
-      "id": "PBD-015",
-      "emp_code": "PBD-015",
+      "id": "GRO-015",
+      "emp_code": "GRO-015",
       "name": "Md. Shadly Benzadid Arefin",
       "role": "AI Prompt Engineer",
       "department": "Content Production",
@@ -306,8 +306,8 @@
       "xp": 1200
     },
     {
-      "id": "PBD-016",
-      "emp_code": "PBD-016",
+      "id": "GRO-016",
+      "emp_code": "GRO-016",
       "name": "Tasin Kabir",
       "role": "Senior Manager, Client Services",
       "department": "Client Services",
@@ -320,8 +320,8 @@
       "xp": 1200
     },
     {
-      "id": "PBD-017",
-      "emp_code": "PBD-017",
+      "id": "GRO-017",
+      "emp_code": "GRO-017",
       "name": "Sayed Ashraf",
       "role": "Assistant Manager, Client Services",
       "department": "Client Services",
@@ -334,8 +334,8 @@
       "xp": 1200
     },
     {
-      "id": "PBD-018",
-      "emp_code": "PBD-018",
+      "id": "GRO-018",
+      "emp_code": "GRO-018",
       "name": "Rimjhim Rashid",
       "role": "Assistant Manager, Client Services",
       "department": "Client Services",
@@ -348,8 +348,8 @@
       "xp": 1200
     },
     {
-      "id": "PBD-019",
-      "emp_code": "PBD-019",
+      "id": "GRO-019",
+      "emp_code": "GRO-019",
       "name": "Shafket Hossan Pranto",
       "role": "Assistant Manager, Strategy & Planning",
       "department": "Strategy & Planning",
@@ -362,8 +362,8 @@
       "xp": 1200
     },
     {
-      "id": "PBD-020",
-      "emp_code": "PBD-020",
+      "id": "GRO-020",
+      "emp_code": "GRO-020",
       "name": "Syeda Wahida Sabrina",
       "role": "Strategy Associate",
       "department": "Strategy & Planning",
@@ -376,8 +376,8 @@
       "xp": 1200
     },
     {
-      "id": "PBD-021",
-      "emp_code": "PBD-021",
+      "id": "GRO-021",
+      "emp_code": "GRO-021",
       "name": "Faiyaz Amin Rahin",
       "role": "Strategy Associate",
       "department": "Strategy & Planning",
@@ -390,8 +390,8 @@
       "xp": 1200
     },
     {
-      "id": "PBD-022",
-      "emp_code": "PBD-022",
+      "id": "GRO-022",
+      "emp_code": "GRO-022",
       "name": "Farhat Lamisa Hossain",
       "role": "Digital Marketing Associate",
       "department": "Strategy & Planning",
@@ -404,8 +404,8 @@
       "xp": 1200
     },
     {
-      "id": "PBD-023",
-      "emp_code": "PBD-023",
+      "id": "GRO-023",
+      "emp_code": "GRO-023",
       "name": "Zaima Zahin",
       "role": "Digital Marketing Associate",
       "department": "Strategy & Client Services",
@@ -418,8 +418,8 @@
       "xp": 1200
     },
     {
-      "id": "PBD-024",
-      "emp_code": "PBD-024",
+      "id": "GRO-024",
+      "emp_code": "GRO-024",
       "name": "Arib Shahran Hassan",
       "role": "Digital Marketing Associate",
       "department": "Strategy & Client Services",
@@ -432,8 +432,8 @@
       "xp": 1200
     },
     {
-      "id": "PBD-025",
-      "emp_code": "PBD-025",
+      "id": "GRO-025",
+      "emp_code": "GRO-025",
       "name": "Rafin Islam Awnon",
       "role": "Digital Marketing Associate",
       "department": "Strategy & Client Services",
@@ -446,8 +446,8 @@
       "xp": 1200
     },
     {
-      "id": "PBD-026",
-      "emp_code": "PBD-026",
+      "id": "GRO-026",
+      "emp_code": "GRO-026",
       "name": "Mahin Islam",
       "role": "Digital Marketing Associate",
       "department": "Strategy & Client Services",
@@ -460,8 +460,8 @@
       "xp": 1200
     },
     {
-      "id": "PBD-027",
-      "emp_code": "PBD-027",
+      "id": "GRO-027",
+      "emp_code": "GRO-027",
       "name": "Md. Arefin Islam",
       "role": "Digital Marketing Associate",
       "department": "Website, Tech & AI",
@@ -474,8 +474,8 @@
       "xp": 1200
     },
     {
-      "id": "PBD-028",
-      "emp_code": "PBD-028",
+      "id": "GRO-028",
+      "emp_code": "GRO-028",
       "name": "Rayeem Jawad Rythm",
       "role": "Digital Marketing Associate",
       "department": "Client Services",
@@ -488,8 +488,8 @@
       "xp": 1200
     },
     {
-      "id": "PBD-029",
-      "emp_code": "PBD-029",
+      "id": "GRO-029",
+      "emp_code": "GRO-029",
       "name": "Md. Borhan Siddique",
       "role": "Manager, Finance & Admin",
       "department": "Finance & Admin",
@@ -502,8 +502,8 @@
       "xp": 1200
     },
     {
-      "id": "PBD-030",
-      "emp_code": "PBD-030",
+      "id": "GRO-030",
+      "emp_code": "GRO-030",
       "name": "SK Mukit Hassan",
       "role": "Junior Executive, Finance & Admin",
       "department": "Finance & Admin",
@@ -516,8 +516,8 @@
       "xp": 1200
     },
     {
-      "id": "PBD-031",
-      "emp_code": "PBD-031",
+      "id": "GRO-031",
+      "emp_code": "GRO-031",
       "name": "Mohammad Shanto",
       "role": "Office Assistant",
       "department": "Administration",
@@ -530,8 +530,8 @@
       "xp": 1200
     },
     {
-      "id": "PBD-032",
-      "emp_code": "PBD-032",
+      "id": "GRO-032",
+      "emp_code": "GRO-032",
       "name": "Mst. Sapia Khatun",
       "role": "Office Assistant",
       "department": "Administration",
@@ -587,18 +587,18 @@
   "chats": [],
   "botConfig": {
     "clientBot": {
-      "name": "Purplebot Client Assistant",
-      "persona": "You are Purplebot, an AI agency assistant for Purplebot Digital. You help prospective clients book services, check invoice status, and view creative portfolios.",
-      "tone": "Empathetic & Creative",
-      "greeting": "Welcome to Purplebot Digital Agency! 🚀 How can we assist your brand today?",
-      "fallback": "I'm not sure about that specific request. Let me connect you with an Account Lead right away!"
+      "name": "GRO10X B2B Client Assistant (@gro10xb2bot)",
+      "persona": "You are the GRO10X Growth AI assistant. You help B2B clients, active retainers, and prospective partners book growth consultations, check invoice status, and access deliverables.",
+      "tone": "Strategic, Professional & Fast",
+      "greeting": "Welcome to GRO10X AI Growth Agency! 🚀 How can we accelerate your business today?",
+      "fallback": "I'm not sure about that specific inquiry. Connecting you directly with our Client & Growth Lead right away!"
     },
     "teamBot": {
-      "name": "Purplebot Crew Operations Bot",
-      "persona": "You are Purplebot Ops, an automated dispatch bot for shoot crews and video editors. You handle shoot assignments, earnings logs, and time tracking.",
-      "tone": "Fast & Casual",
-      "greeting": "Purplebot Ops Active! Type /mybookings to check your shoot schedule or /myearnings for payroll details.",
-      "fallback": "Command not recognized. Type /help to see available crew commands."
+      "name": "GRO10X Team & Ops Bot (@Aigeneral01bot)",
+      "persona": "You are GRO10X Team Bot, the internal operations and task command bot for GRO10X specialists, DBM managers, and crew.",
+      "tone": "Precise, Energetic & Helpful",
+      "greeting": "GRO10X Ops Active! Type /tasks to view your daily deliverables, /eod for end-of-day reports, or /clockin to mark attendance.",
+      "fallback": "Command not recognized. Type /help to see all available GRO10X commands."
     },
     "knowledgeBase": [
       {

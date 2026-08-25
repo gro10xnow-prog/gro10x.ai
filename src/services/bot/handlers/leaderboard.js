@@ -26,7 +26,7 @@ async function handleLeaderboard(teamBot, msg) {
       return teamBot.sendMessage(chatId, `🏆 *Team XP Leaderboard*\n\nNo profiles found.`, { parse_mode: 'Markdown' });
     }
 
-    let boardMsg = `🏆 *PURPLEBOT DIGITAL — TOP 10 LEADERBOARD*\n\n`;
+    let boardMsg = `🏆 *GRO10X — TOP 10 LEADERBOARD*\n\n`;
     const medals = ['🥇', '🥈', '🥉'];
 
     profiles.forEach((p, idx) => {

@@ -57,7 +57,7 @@ window.APP_MODULES.settings = async function(container) {
       currentUser = window.CURRENT_USER || {
         name: 'Administrator',
         role: 'Admin / Manager',
-        email: 'admin@purplebot.agency'
+        email: 'gro10xnow@gmail.com'
       };
 
       isLoading = false;
@@ -270,7 +270,7 @@ window.APP_MODULES.settings = async function(container) {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `purpleos_diagnostics_${Date.now()}.json`;
+      a.download = `gro10x_diagnostics_${Date.now()}.json`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

@@ -749,7 +749,7 @@ window.APP_MODULES.leads = async function(container) {
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.setAttribute('href', url);
-      link.setAttribute('download', 'purpleos_leads_template.csv');
+      link.setAttribute('download', 'gro10x_leads_template.csv');
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);

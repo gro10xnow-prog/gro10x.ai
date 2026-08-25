@@ -32,39 +32,39 @@ const miniAppLimiter = rateLimit({
 });
 
 const DEFAULT_TEAM = [
-  { emp_code: 'PBD-000', name: 'Firoz Uddin Ahmed', role: 'Technology Admin', department: 'Tech & AI', status: 'In Studio', phone: '+8801708459008', access_level: 'Technology Admin', base_salary: 95000, commission_rate: 5, onboarding_complete: true, survey_complete: true, xp: 2500, badge: '⚡ Tech Admin' },
-  { emp_code: 'PBD-001', name: 'H. M. Ifteker Mahmud', role: 'Managing Director', department: 'Top Management', status: 'In Studio', phone: '+8801612309290', access_level: 'Managing Director', base_salary: 140000, commission_rate: 8, onboarding_complete: true, survey_complete: true, xp: 2400, badge: '🚀 Managing Director' },
-  { emp_code: 'PBD-002', name: 'S M Tariful Islam', role: 'Chairman', department: 'Top Management', status: 'In Studio', phone: '+8801708455081', access_level: 'Owner', base_salary: 150000, commission_rate: 10, onboarding_complete: true, survey_complete: true, xp: 2600, badge: '👑 Chairman' },
-  { emp_code: 'PBD-003', name: 'MD Mehedi Bin Jayed', role: 'Head of Client & Growth', department: 'Leadership', status: 'In Studio', phone: '+8801874079687', access_level: 'Line Manager', base_salary: 90000, commission_rate: 5, onboarding_complete: true, survey_complete: true, xp: 1900, badge: '💼 Growth Lead' },
-  { emp_code: 'PBD-004', name: 'Kafil Uddin Mahmud', role: 'Head of Business Operations', department: 'Leadership', status: 'In Studio', phone: '+8801612309290', access_level: 'Line Manager', base_salary: 90000, commission_rate: 5, onboarding_complete: true, survey_complete: true, xp: 1900, badge: '⚙️ Ops Lead' },
-  { emp_code: 'PBD-005', name: 'Md. Zahin Khandaker', role: 'Head of Internal Operations', department: 'Leadership', status: 'In Studio', phone: '+8801627737348', access_level: 'Technology Admin', base_salary: 95000, commission_rate: 5, onboarding_complete: true, survey_complete: true, xp: 2100, badge: '⚡ Internal Ops Lead' },
-  { emp_code: 'PBD-006', name: 'Ruhul Amin Rupom', role: 'Art Director', department: 'Design & Post-Production', status: 'In Studio', phone: '+8801711413766', access_level: 'Line Manager', base_salary: 85000, commission_rate: 4, onboarding_complete: true, survey_complete: true, xp: 1800, badge: '🎨 Art Director' },
-  { emp_code: 'PBD-007', name: 'Mahmudul Hasan Shuvo', role: 'Senior Visualizer', department: 'Design & Post-Production', status: 'In Studio', phone: '+8801622926502', access_level: 'Specialist / Crew', base_salary: 65000, commission_rate: 3, onboarding_complete: true, survey_complete: true, xp: 1500, badge: '🖌️ Senior Visualizer' },
-  { emp_code: 'PBD-008', name: 'Shahjalal Badsha Arif', role: 'Senior Visualizer', department: 'Design & Post-Production', status: 'In Studio', phone: '+8801980341566', access_level: 'Specialist / Crew', base_salary: 65000, commission_rate: 3, onboarding_complete: true, survey_complete: true, xp: 1500, badge: '🖌️ Senior Visualizer' },
-  { emp_code: 'PBD-009', name: 'Asmaul Husna Kamona', role: 'Visualizer', department: 'Design & Post-Production', status: 'In Studio', phone: '+8801794054015', access_level: 'Specialist / Crew', base_salary: 50000, commission_rate: 2, onboarding_complete: true, survey_complete: true, xp: 1300, badge: '🎨 Visualizer' },
-  { emp_code: 'PBD-010', name: 'Omar Faruq Rony', role: 'Visualizer', department: 'Design & Post-Production', status: 'In Studio', phone: '+8801623851701', access_level: 'Specialist / Crew', base_salary: 50000, commission_rate: 2, onboarding_complete: true, survey_complete: true, xp: 1300, badge: '🎨 Visualizer' },
-  { emp_code: 'PBD-011', name: 'Shalmir Rahman Shihab', role: 'Associate Visualizer', department: 'Design & Post-Production', status: 'In Studio', phone: '+8801798274976', access_level: 'Specialist / Crew', base_salary: 40000, commission_rate: 2, onboarding_complete: true, survey_complete: true, xp: 1100, badge: '🌱 Associate Visualizer' },
-  { emp_code: 'PBD-012', name: 'Anik Saha', role: 'Associate Visualizer', department: 'Design & Post-Production', status: 'In Studio', phone: '+8801786681030', access_level: 'Specialist / Crew', base_salary: 40000, commission_rate: 2, onboarding_complete: true, survey_complete: true, xp: 1100, badge: '🌱 Associate Visualizer' },
-  { emp_code: 'PBD-013', name: 'Nasir Ullah Khan Al Nahian', role: 'Head of Production', department: 'Content Production', status: 'In Studio', phone: '+8801685662296', access_level: 'Line Manager', base_salary: 85000, commission_rate: 4, onboarding_complete: true, survey_complete: true, xp: 1800, badge: '🎬 Production Lead' },
-  { emp_code: 'PBD-014', name: 'S. M. Masud Ur Rahman Pial', role: 'Senior Copywriter', department: 'Content Production', status: 'In Studio', phone: '+8801911571156', access_level: 'Specialist / Crew', base_salary: 60000, commission_rate: 3, onboarding_complete: true, survey_complete: true, xp: 1400, badge: '✍️ Senior Copywriter' },
-  { emp_code: 'PBD-015', name: 'Md. Shadly Benzadid Arefin', role: 'AI Prompt Engineer', department: 'Content Production', status: 'In Studio', phone: '+8801680066637', access_level: 'Specialist / Crew', base_salary: 55000, commission_rate: 3, onboarding_complete: true, survey_complete: true, xp: 1350, badge: '🤖 AI Specialist' },
-  { emp_code: 'PBD-016', name: 'Tasin Kabir', role: 'Senior Manager, Client Services', department: 'Client Services', status: 'In Studio', phone: '+8801709952672', access_level: 'Line Manager', base_salary: 75000, commission_rate: 4, onboarding_complete: true, survey_complete: true, xp: 1600, badge: '💼 CS Manager' },
-  { emp_code: 'PBD-017', name: 'Sayed Ashraf', role: 'Assistant Manager, Client Services', department: 'Client Services', status: 'In Studio', phone: '+8801617410967', access_level: 'Specialist / Crew', base_salary: 50000, commission_rate: 3, onboarding_complete: true, survey_complete: true, xp: 1300, badge: '🤝 Assistant Manager' },
-  { emp_code: 'PBD-018', name: 'Rimjhim Rashid', role: 'Assistant Manager, Client Services', department: 'Client Services', status: 'In Studio', phone: '+8801759768962', access_level: 'Specialist / Crew', base_salary: 50000, commission_rate: 3, onboarding_complete: true, survey_complete: true, xp: 1300, badge: '🤝 Assistant Manager' },
-  { emp_code: 'PBD-019', name: 'Shafket Hossan Pranto', role: 'Assistant Manager, Strategy & Planning', department: 'Strategy & Planning', status: 'In Studio', phone: '+8801804217607', access_level: 'Specialist / Crew', base_salary: 50000, commission_rate: 3, onboarding_complete: true, survey_complete: true, xp: 1300, badge: '📊 Strategy AM' },
-  { emp_code: 'PBD-020', name: 'Syeda Wahida Sabrina', role: 'Strategy Associate', department: 'Strategy & Planning', status: 'In Studio', phone: '+8801796587832', access_level: 'Specialist / Crew', base_salary: 35000, commission_rate: 2, onboarding_complete: true, survey_complete: true, xp: 1000, badge: '📈 Strategy Associate' },
-  { emp_code: 'PBD-021', name: 'Faiyaz Amin Rahin', role: 'Strategy Associate', department: 'Strategy & Planning', status: 'In Studio', phone: '+8801975089893', access_level: 'Specialist / Crew', base_salary: 35000, commission_rate: 2, onboarding_complete: true, survey_complete: true, xp: 1000, badge: '📈 Strategy Associate' },
-  { emp_code: 'PBD-022', name: 'Farhat Lamisa Hossain', role: 'Digital Marketing Associate', department: 'Strategy & Planning', status: 'In Studio', phone: '+8801757378806', access_level: 'Specialist / Crew', base_salary: 35000, commission_rate: 2, onboarding_complete: true, survey_complete: true, xp: 1000, badge: '📱 Marketing Associate' },
-  { emp_code: 'PBD-023', name: 'Zaima Zahin', role: 'Digital Marketing Associate', department: 'Strategy & Client Services', status: 'In Studio', phone: '+8801774619700', access_level: 'Specialist / Crew', base_salary: 35000, commission_rate: 2, onboarding_complete: true, survey_complete: true, xp: 1000, badge: '📱 Marketing Associate' },
-  { emp_code: 'PBD-024', name: 'Arib Shahran Hassan', role: 'Digital Marketing Associate', department: 'Strategy & Client Services', status: 'In Studio', phone: '+8801929290000', access_level: 'Specialist / Crew', base_salary: 35000, commission_rate: 2, onboarding_complete: true, survey_complete: true, xp: 1000, badge: '📱 Marketing Associate' },
-  { emp_code: 'PBD-025', name: 'Rafin Islam Awnon', role: 'Digital Marketing Associate', department: 'Strategy & Client Services', status: 'In Studio', phone: '+8801835045407', access_level: 'Specialist / Crew', base_salary: 35000, commission_rate: 2, onboarding_complete: true, survey_complete: true, xp: 1000, badge: '📱 Marketing Associate' },
-  { emp_code: 'PBD-026', name: 'Mahin Islam', role: 'Digital Marketing Associate', department: 'Strategy & Client Services', status: 'In Studio', phone: '+8801516766605', access_level: 'Specialist / Crew', base_salary: 35000, commission_rate: 2, onboarding_complete: true, survey_complete: true, xp: 1000, badge: '📱 Marketing Associate' },
-  { emp_code: 'PBD-027', name: 'Md. Arefin Islam', role: 'Digital Marketing Associate', department: 'Website, Tech & AI', status: 'In Studio', phone: '+8801331401450', access_level: 'Specialist / Crew', base_salary: 35000, commission_rate: 2, onboarding_complete: true, survey_complete: true, xp: 1000, badge: '💻 Tech Associate' },
-  { emp_code: 'PBD-028', name: 'Rayeem Jawad Rythm', role: 'Digital Marketing Associate', department: 'Client Services', status: 'In Studio', phone: '+8801634763885', access_level: 'Specialist / Crew', base_salary: 35000, commission_rate: 2, onboarding_complete: true, survey_complete: true, xp: 1000, badge: '📱 Marketing Associate' },
-  { emp_code: 'PBD-029', name: 'Md. Borhan Siddique', role: 'Manager, Finance & Admin', department: 'Finance & Admin', status: 'In Studio', phone: '+8801688495740', access_level: 'Finance Manager', base_salary: 85000, commission_rate: 5, onboarding_complete: true, survey_complete: true, xp: 1850, badge: '💰 Finance Manager' },
-  { emp_code: 'PBD-030', name: 'SK Mukit Hassan', role: 'Junior Executive, Finance & Admin', department: 'Finance & Admin', status: 'In Studio', phone: '+8801754696129', access_level: 'Specialist / Crew', base_salary: 40000, commission_rate: 2, onboarding_complete: true, survey_complete: true, xp: 1150, badge: '💳 Finance Exec' },
-  { emp_code: 'PBD-031', name: 'Mohammad Shanto', role: 'Office Assistant', department: 'Administration', status: 'In Studio', phone: '+8801799580967', access_level: 'Office Staff', base_salary: 25000, commission_rate: 0, onboarding_complete: true, survey_complete: true, xp: 900, badge: '🏢 Office Assistant' },
-  { emp_code: 'PBD-032', name: 'Mst. Sapia Khatun', role: 'Office Assistant', department: 'Administration', status: 'In Studio', phone: '+8801701614916', access_level: 'Office Staff', base_salary: 25000, commission_rate: 0, onboarding_complete: true, survey_complete: true, xp: 900, badge: '🏢 Office Assistant' }
+  { emp_code: 'GRO-000', name: 'Firoz Uddin Ahmed', role: 'Technology Admin', department: 'Tech & AI', status: 'In Studio', phone: '+8801708459008', access_level: 'Technology Admin', base_salary: 95000, commission_rate: 5, onboarding_complete: true, survey_complete: true, xp: 2500, badge: '⚡ Tech Admin' },
+  { emp_code: 'GRO-001', name: 'H. M. Ifteker Mahmud', role: 'Managing Director', department: 'Top Management', status: 'In Studio', phone: '+8801612309290', access_level: 'Managing Director', base_salary: 140000, commission_rate: 8, onboarding_complete: true, survey_complete: true, xp: 2400, badge: '🚀 Managing Director' },
+  { emp_code: 'GRO-002', name: 'S M Tariful Islam', role: 'Chairman', department: 'Top Management', status: 'In Studio', phone: '+8801708455081', access_level: 'Owner', base_salary: 150000, commission_rate: 10, onboarding_complete: true, survey_complete: true, xp: 2600, badge: '👑 Chairman' },
+  { emp_code: 'GRO-003', name: 'MD Mehedi Bin Jayed', role: 'Head of Client & Growth', department: 'Leadership', status: 'In Studio', phone: '+8801874079687', access_level: 'Line Manager', base_salary: 90000, commission_rate: 5, onboarding_complete: true, survey_complete: true, xp: 1900, badge: '💼 Growth Lead' },
+  { emp_code: 'GRO-004', name: 'Kafil Uddin Mahmud', role: 'Head of Business Operations', department: 'Leadership', status: 'In Studio', phone: '+8801612309290', access_level: 'Line Manager', base_salary: 90000, commission_rate: 5, onboarding_complete: true, survey_complete: true, xp: 1900, badge: '⚙️ Ops Lead' },
+  { emp_code: 'GRO-005', name: 'Md. Zahin Khandaker', role: 'Head of Internal Operations', department: 'Leadership', status: 'In Studio', phone: '+8801627737348', access_level: 'Technology Admin', base_salary: 95000, commission_rate: 5, onboarding_complete: true, survey_complete: true, xp: 2100, badge: '⚡ Internal Ops Lead' },
+  { emp_code: 'GRO-006', name: 'Ruhul Amin Rupom', role: 'Art Director', department: 'Design & Post-Production', status: 'In Studio', phone: '+8801711413766', access_level: 'Line Manager', base_salary: 85000, commission_rate: 4, onboarding_complete: true, survey_complete: true, xp: 1800, badge: '🎨 Art Director' },
+  { emp_code: 'GRO-007', name: 'Mahmudul Hasan Shuvo', role: 'Senior Visualizer', department: 'Design & Post-Production', status: 'In Studio', phone: '+8801622926502', access_level: 'Specialist / Crew', base_salary: 65000, commission_rate: 3, onboarding_complete: true, survey_complete: true, xp: 1500, badge: '🖌️ Senior Visualizer' },
+  { emp_code: 'GRO-008', name: 'Shahjalal Badsha Arif', role: 'Senior Visualizer', department: 'Design & Post-Production', status: 'In Studio', phone: '+8801980341566', access_level: 'Specialist / Crew', base_salary: 65000, commission_rate: 3, onboarding_complete: true, survey_complete: true, xp: 1500, badge: '🖌️ Senior Visualizer' },
+  { emp_code: 'GRO-009', name: 'Asmaul Husna Kamona', role: 'Visualizer', department: 'Design & Post-Production', status: 'In Studio', phone: '+8801794054015', access_level: 'Specialist / Crew', base_salary: 50000, commission_rate: 2, onboarding_complete: true, survey_complete: true, xp: 1300, badge: '🎨 Visualizer' },
+  { emp_code: 'GRO-010', name: 'Omar Faruq Rony', role: 'Visualizer', department: 'Design & Post-Production', status: 'In Studio', phone: '+8801623851701', access_level: 'Specialist / Crew', base_salary: 50000, commission_rate: 2, onboarding_complete: true, survey_complete: true, xp: 1300, badge: '🎨 Visualizer' },
+  { emp_code: 'GRO-011', name: 'Shalmir Rahman Shihab', role: 'Associate Visualizer', department: 'Design & Post-Production', status: 'In Studio', phone: '+8801798274976', access_level: 'Specialist / Crew', base_salary: 40000, commission_rate: 2, onboarding_complete: true, survey_complete: true, xp: 1100, badge: '🌱 Associate Visualizer' },
+  { emp_code: 'GRO-012', name: 'Anik Saha', role: 'Associate Visualizer', department: 'Design & Post-Production', status: 'In Studio', phone: '+8801786681030', access_level: 'Specialist / Crew', base_salary: 40000, commission_rate: 2, onboarding_complete: true, survey_complete: true, xp: 1100, badge: '🌱 Associate Visualizer' },
+  { emp_code: 'GRO-013', name: 'Nasir Ullah Khan Al Nahian', role: 'Head of Production', department: 'Content Production', status: 'In Studio', phone: '+8801685662296', access_level: 'Line Manager', base_salary: 85000, commission_rate: 4, onboarding_complete: true, survey_complete: true, xp: 1800, badge: '🎬 Production Lead' },
+  { emp_code: 'GRO-014', name: 'S. M. Masud Ur Rahman Pial', role: 'Senior Copywriter', department: 'Content Production', status: 'In Studio', phone: '+8801911571156', access_level: 'Specialist / Crew', base_salary: 60000, commission_rate: 3, onboarding_complete: true, survey_complete: true, xp: 1400, badge: '✍️ Senior Copywriter' },
+  { emp_code: 'GRO-015', name: 'Md. Shadly Benzadid Arefin', role: 'AI Prompt Engineer', department: 'Content Production', status: 'In Studio', phone: '+8801680066637', access_level: 'Specialist / Crew', base_salary: 55000, commission_rate: 3, onboarding_complete: true, survey_complete: true, xp: 1350, badge: '🤖 AI Specialist' },
+  { emp_code: 'GRO-016', name: 'Tasin Kabir', role: 'Senior Manager, Client Services', department: 'Client Services', status: 'In Studio', phone: '+8801709952672', access_level: 'Line Manager', base_salary: 75000, commission_rate: 4, onboarding_complete: true, survey_complete: true, xp: 1600, badge: '💼 CS Manager' },
+  { emp_code: 'GRO-017', name: 'Sayed Ashraf', role: 'Assistant Manager, Client Services', department: 'Client Services', status: 'In Studio', phone: '+8801617410967', access_level: 'Specialist / Crew', base_salary: 50000, commission_rate: 3, onboarding_complete: true, survey_complete: true, xp: 1300, badge: '🤝 Assistant Manager' },
+  { emp_code: 'GRO-018', name: 'Rimjhim Rashid', role: 'Assistant Manager, Client Services', department: 'Client Services', status: 'In Studio', phone: '+8801759768962', access_level: 'Specialist / Crew', base_salary: 50000, commission_rate: 3, onboarding_complete: true, survey_complete: true, xp: 1300, badge: '🤝 Assistant Manager' },
+  { emp_code: 'GRO-019', name: 'Shafket Hossan Pranto', role: 'Assistant Manager, Strategy & Planning', department: 'Strategy & Planning', status: 'In Studio', phone: '+8801804217607', access_level: 'Specialist / Crew', base_salary: 50000, commission_rate: 3, onboarding_complete: true, survey_complete: true, xp: 1300, badge: '📊 Strategy AM' },
+  { emp_code: 'GRO-020', name: 'Syeda Wahida Sabrina', role: 'Strategy Associate', department: 'Strategy & Planning', status: 'In Studio', phone: '+8801796587832', access_level: 'Specialist / Crew', base_salary: 35000, commission_rate: 2, onboarding_complete: true, survey_complete: true, xp: 1000, badge: '📈 Strategy Associate' },
+  { emp_code: 'GRO-021', name: 'Faiyaz Amin Rahin', role: 'Strategy Associate', department: 'Strategy & Planning', status: 'In Studio', phone: '+8801975089893', access_level: 'Specialist / Crew', base_salary: 35000, commission_rate: 2, onboarding_complete: true, survey_complete: true, xp: 1000, badge: '📈 Strategy Associate' },
+  { emp_code: 'GRO-022', name: 'Farhat Lamisa Hossain', role: 'Digital Marketing Associate', department: 'Strategy & Planning', status: 'In Studio', phone: '+8801757378806', access_level: 'Specialist / Crew', base_salary: 35000, commission_rate: 2, onboarding_complete: true, survey_complete: true, xp: 1000, badge: '📱 Marketing Associate' },
+  { emp_code: 'GRO-023', name: 'Zaima Zahin', role: 'Digital Marketing Associate', department: 'Strategy & Client Services', status: 'In Studio', phone: '+8801774619700', access_level: 'Specialist / Crew', base_salary: 35000, commission_rate: 2, onboarding_complete: true, survey_complete: true, xp: 1000, badge: '📱 Marketing Associate' },
+  { emp_code: 'GRO-024', name: 'Arib Shahran Hassan', role: 'Digital Marketing Associate', department: 'Strategy & Client Services', status: 'In Studio', phone: '+8801929290000', access_level: 'Specialist / Crew', base_salary: 35000, commission_rate: 2, onboarding_complete: true, survey_complete: true, xp: 1000, badge: '📱 Marketing Associate' },
+  { emp_code: 'GRO-025', name: 'Rafin Islam Awnon', role: 'Digital Marketing Associate', department: 'Strategy & Client Services', status: 'In Studio', phone: '+8801835045407', access_level: 'Specialist / Crew', base_salary: 35000, commission_rate: 2, onboarding_complete: true, survey_complete: true, xp: 1000, badge: '📱 Marketing Associate' },
+  { emp_code: 'GRO-026', name: 'Mahin Islam', role: 'Digital Marketing Associate', department: 'Strategy & Client Services', status: 'In Studio', phone: '+8801516766605', access_level: 'Specialist / Crew', base_salary: 35000, commission_rate: 2, onboarding_complete: true, survey_complete: true, xp: 1000, badge: '📱 Marketing Associate' },
+  { emp_code: 'GRO-027', name: 'Md. Arefin Islam', role: 'Digital Marketing Associate', department: 'Website, Tech & AI', status: 'In Studio', phone: '+8801331401450', access_level: 'Specialist / Crew', base_salary: 35000, commission_rate: 2, onboarding_complete: true, survey_complete: true, xp: 1000, badge: '💻 Tech Associate' },
+  { emp_code: 'GRO-028', name: 'Rayeem Jawad Rythm', role: 'Digital Marketing Associate', department: 'Client Services', status: 'In Studio', phone: '+8801634763885', access_level: 'Specialist / Crew', base_salary: 35000, commission_rate: 2, onboarding_complete: true, survey_complete: true, xp: 1000, badge: '📱 Marketing Associate' },
+  { emp_code: 'GRO-029', name: 'Md. Borhan Siddique', role: 'Manager, Finance & Admin', department: 'Finance & Admin', status: 'In Studio', phone: '+8801688495740', access_level: 'Finance Manager', base_salary: 85000, commission_rate: 5, onboarding_complete: true, survey_complete: true, xp: 1850, badge: '💰 Finance Manager' },
+  { emp_code: 'GRO-030', name: 'SK Mukit Hassan', role: 'Junior Executive, Finance & Admin', department: 'Finance & Admin', status: 'In Studio', phone: '+8801754696129', access_level: 'Specialist / Crew', base_salary: 40000, commission_rate: 2, onboarding_complete: true, survey_complete: true, xp: 1150, badge: '💳 Finance Exec' },
+  { emp_code: 'GRO-031', name: 'Mohammad Shanto', role: 'Office Assistant', department: 'Administration', status: 'In Studio', phone: '+8801799580967', access_level: 'Office Staff', base_salary: 25000, commission_rate: 0, onboarding_complete: true, survey_complete: true, xp: 900, badge: '🏢 Office Assistant' },
+  { emp_code: 'GRO-032', name: 'Mst. Sapia Khatun', role: 'Office Assistant', department: 'Administration', status: 'In Studio', phone: '+8801701614916', access_level: 'Office Staff', base_salary: 25000, commission_rate: 0, onboarding_complete: true, survey_complete: true, xp: 900, badge: '🏢 Office Assistant' }
 ];
 
 function mapProfile(p) {
@@ -820,7 +820,7 @@ router.get('/tg/:telegramId', requireMiniAppAuth, async (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 router.post('/attendance', requireAuth, async (req, res) => {
   try {
-    const empId = req.user.linkedId || req.user.id || 'PBD-001';
+    const empId = req.user.linkedId || req.user.id || 'GRO-001';
     const name = req.user.profile?.name || req.user.name || 'Specialist';
     const today = new Date().toISOString().split('T')[0];
     const nowTime = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
@@ -911,7 +911,7 @@ router.post('/leaves', requireAuth, async (req, res) => {
 
     const payload = {
       id: newId,
-      employee_id: req.body.staffId || req.body.employeeId || req.user.empCode || req.user.emp_code || req.user.linkedId || req.user.id || 'PBD-001',
+      employee_id: req.body.staffId || req.body.employeeId || req.user.empCode || req.user.emp_code || req.user.linkedId || req.user.id || 'GRO-001',
       employee_name: req.body.staffName || req.body.employeeName || req.user.profile?.name || req.user.name || 'Team Member',
       leave_type: req.body.type || req.body.leaveType || 'Casual Leave',
       start_date: req.body.fromDate || req.body.startDate || new Date().toISOString().split('T')[0],
@@ -1002,7 +1002,7 @@ router.post('/', requireAuth, requireManager, async (req, res) => {
 
     const normalizedPhone = normalizePhone(phone);
     const { data: countData } = await supabase.from('profiles').select('id');
-    const newEmpCode = `PBD-${String((countData?.length || 0) + 1).padStart(3, '0')}`;
+    const newEmpCode = `GRO-${String((countData?.length || 0) + 1).padStart(3, '0')}`;
 
     const payload = {
       emp_code: newEmpCode,
@@ -1356,7 +1356,7 @@ router.get('/payslip', requireMiniAppAuth, async (req, res) => {
       emp = data;
     }
     if (!emp) {
-      emp = req.user || { name: 'Specialist Staff', emp_code: empCode || 'PBD-001', role: 'Production Specialist', department: 'Production' };
+      emp = req.user || { name: 'Specialist Staff', emp_code: empCode || 'GRO-001', role: 'Production Specialist', department: 'Production' };
     }
 
     const baseSalary = Number(emp.base_salary || emp.salary || 35000);
@@ -1699,7 +1699,7 @@ router.post('/eod', miniAppLimiter, requireMiniAppAuth, async (req, res) => {
 
     const payload = {
       id: `EOD-${Date.now()}`,
-      employee_id: empCode || 'PBD-000',
+      employee_id: empCode || 'GRO-000',
       employee_name: empName || req.user?.name || 'Team Member',
       report_date: new Date().toISOString().split('T')[0],
       tasks_done: text || summary || 'Daily tasks completed',
@@ -1948,7 +1948,7 @@ router.get('/invitation-status', requireAuth, async (req, res) => {
       role: p.role,
       department: p.department || 'General',
       phone: p.phone || '',
-      telegramLinked: p.emp_code !== (process.env.QC_REVIEWER_CODE || 'PBD-006'),
+      telegramLinked: p.emp_code !== (process.env.QC_REVIEWER_CODE || 'GRO-006'),
       hasPIN: true,
       pinIsTemp: false,
       surveyComplete: true,

@@ -109,7 +109,7 @@ async function handlePayrollSummary(teamBot, msg) {
       deptTotals[dept] = (deptTotals[dept] || 0) + sal;
     });
 
-    let text = `📊 *PURPLEBOT DIGITAL — MONTHLY PAYROLL SUMMARY*\n` +
+    let text = `📊 *GRO10X — MONTHLY PAYROLL SUMMARY*\n` +
       `📅 ${new Date().toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}\n\n` +
       `• Total Active Payroll: *৳${totalPayroll.toLocaleString()} BDT*\n` +
       `• Total Staff on Payroll: *${profiles.length} Members*\n\n` +
@@ -160,7 +160,7 @@ async function handleBankBkashHub(teamBot, msg) {
     }
 
     let configuredCount = 0;
-    let text = `🏦 *PURPLEBOT SALARY & bKASH DISBURSEMENT HUB*\n` +
+    let text = `🏦 *GRO10X SALARY & bKASH DISBURSEMENT HUB*\n` +
       `📅 ${new Date().toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}\n\n`;
 
     profiles.forEach(p => {

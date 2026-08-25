@@ -119,13 +119,13 @@ async function sendAgreementNotification(stage, emp, dbData) {
         `🎉 *CONGRATULATIONS, ${emp.name}!*\n\n` +
         `Your Employment Agreement is fully executed and signed by all parties.\n\n` +
         `━━━━━━━━━━━━━━━━━━━━\n` +
-        `🚀 *You are now an official Purplebot Digital team member!*\n\n` +
+        `🚀 *You are now an official GRO10X team member!*\n\n` +
         `📌 *Your Next Steps:*\n` +
         `1. 📍 Do your first GPS Clock-In to go Online\n` +
         `2. 📋 Check *My Tasks* for your first assignment\n` +
         `3. 💳 Verify your *Bank & bKash* payout accounts\n` +
         `4. 👤 Review your *My Profile* — check your salary details\n\n` +
-        `Tap *Open App* to access your full dashboard. Welcome to the team! 💜`,
+        `Tap *Open App* to access your full dashboard. Welcome to the team! ⚡`,
         { parse_mode: 'Markdown', reply_markup: keyboard }
       ).catch(() => {});
     }

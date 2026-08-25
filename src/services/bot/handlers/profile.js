@@ -15,7 +15,7 @@ async function handleMyProfile(teamBot, msg) {
       return teamBot.sendMessage(chatId, `❌ Please verify your phone number first.`);
     }
 
-    const text = `👤 *PURPLEBOT EMPLOYEE PROFILE*\n\n` +
+    const text = `👤 *GRO10X TEAM PROFILE*\n\n` +
       `• Name: *${emp.name}*\n` +
       `• Employee ID: *${emp.emp_code || emp.id}*\n` +
       `• Role: *${emp.role}*\n` +

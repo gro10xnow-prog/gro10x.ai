@@ -13,7 +13,7 @@ function mapEOD(e) {
   if (!e) return null;
   return {
     id: e.id,
-    employeeId: e.employee_id || e.employeeId || 'PBD-000',
+    employeeId: e.employee_id || e.employeeId || 'GRO-000',
     name: e.employee_name || e.name || 'Team Member',
     date: e.report_date || e.date || new Date().toISOString().split('T')[0],
     tasksCompleted: e.tasks_done || e.tasksCompleted || e.summary || '',
@@ -64,7 +64,7 @@ router.get('/', requireAuth, async (req, res) => {
 router.post('/', requireAuth, async (req, res) => {
   try {
     const { employeeId, name, text, summary, blockers, tasksTomorrow, tomorrow, mood, hours } = req.body;
-    const empCode = employeeId || req.user?.linkedId || req.user?.id || 'PBD-000';
+    const empCode = employeeId || req.user?.linkedId || req.user?.id || 'GRO-000';
     const empName = name || req.user?.name || 'Team Member';
     const today = new Date().toISOString().split('T')[0];
 
@@ -89,7 +89,7 @@ router.post('/', requireAuth, async (req, res) => {
       if (insErr) console.warn('[EOD API] Supabase insert note:', insErr.message);
 
       // Award +10 XP for daily EOD submission
-      if (empCode && empCode !== 'PBD-000') {
+      if (empCode && empCode !== 'GRO-000' && empCode !== 'PBD-000') {
         try {
           const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(empCode);
           let pQuery = supabase.from('profiles').select('xp, badge, telegram_id, custom_fields');

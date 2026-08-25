@@ -68,7 +68,7 @@ function getWebhookInfo(token, botName) {
 }
 
 async function main() {
-  console.log('\n🤖 PurpleOS Webhook Registration Tool');
+  console.log('\n🤖 GRO10X Telegram Webhook Registration Tool');
   console.log('━'.repeat(50));
   console.log(`Target: ${BASE_URL}\n`);
 
@@ -79,9 +79,9 @@ async function main() {
 
   // Step 1: Show current status
   console.log('📡 Current Webhook Status:');
-  await getWebhookInfo(TEAM_BOT_TOKEN, 'Team Bot (Purple Man)');
+  await getWebhookInfo(TEAM_BOT_TOKEN, 'Team Bot (@Aigeneral01bot)');
   if (CLIENT_BOT_TOKEN && CLIENT_BOT_TOKEN !== TEAM_BOT_TOKEN) {
-    await getWebhookInfo(CLIENT_BOT_TOKEN, 'Client Bot');
+    await getWebhookInfo(CLIENT_BOT_TOKEN, 'B2B Client Bot (@gro10xb2bot)');
   }
   
   console.log('\n🔧 Registering webhooks...');

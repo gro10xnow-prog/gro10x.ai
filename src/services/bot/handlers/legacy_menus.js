@@ -72,7 +72,7 @@ function registerLegacyTeamMenus(teamBot, readDB) {
         const clientName = client?.name || 'Client';
         const token = `TOK-${Date.now()}`;
         const magicLink = `https://gro10x-ai.vercel.app/partners?client=${encodeURIComponent(clientName)}&token=${token}`;
-        const cardMsg = `📋 *PURPLEBOT PARTNER PORTAL LINK*\n\n` +
+        const cardMsg = `📋 *GRO10X PARTNER PORTAL LINK*\n\n` +
           `🏢 Client: *${clientName}*\n` +
           `👤 Contact: ${client?.contact_person || 'Brand Manager'}\n\n` +
           `🔗 *Direct Access Magic Link:*\n${magicLink}\n\n` +

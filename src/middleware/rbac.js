@@ -1,11 +1,11 @@
 /**
- * 🛡️ PURPLEOS ROLE-BASED ACCESS CONTROL (RBAC) MIDDLEWARE
+ * 🛡️ GRO10X ROLE-BASED ACCESS CONTROL (RBAC) MIDDLEWARE
  */
 
 function requireAdmin(req, res, next) {
   // ── PERMISSION MATRIX ──────────────────────────────────────────
-  // ADMIN tier: Firoz (PBD-000), Iftekhar (PBD-001), Tariful (PBD-002)
-  //   access_level: 'Owner / Admin'
+  // ADMIN tier: Firoz (GRO-000), Iftekhar (GRO-001), Tariful (GRO-002), Zahin (GRO-005)
+  //   access_level: 'Owner / Admin', 'Technology Admin'
   //   Roles: Technology Admin, Managing Director, Chairman
   // ────────────────────────────────────────────────────────────────
   if (!req.user) {
@@ -17,7 +17,7 @@ function requireAdmin(req, res, next) {
   const empId = req.user.profile?.emp_code || req.user.id || '';
 
   const isOwnerAdmin =
-    ['GRO-001', 'GRO-000', 'PBD-000', 'PBD-001', 'PBD-002'].includes(empId) ||
+    ['GRO-000', 'GRO-001', 'GRO-002', 'GRO-005', 'PBD-000', 'PBD-001', 'PBD-002', 'PBD-005'].includes(empId) ||
     access.includes('owner') ||
     access.includes('admin') ||
     access.includes('executive') ||
@@ -49,7 +49,7 @@ function requireManager(req, res, next) {
   const empId = req.user.profile?.emp_code || req.user.id || '';
 
   const isManagerOrAdmin =
-    ['GRO-001', 'GRO-000', 'PBD-000', 'PBD-001', 'PBD-002'].includes(empId) ||
+    ['GRO-000', 'GRO-001', 'GRO-002', 'GRO-005', 'PBD-000', 'PBD-001', 'PBD-002', 'PBD-005'].includes(empId) ||
     access.includes('owner') ||
     access.includes('admin') ||
     access.includes('director') ||

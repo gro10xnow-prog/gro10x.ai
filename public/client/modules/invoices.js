@@ -17,14 +17,14 @@ window.generateInvoicePDF = function(invoice) {
   // Header details
   doc.setFont("helvetica", "bold");
   doc.setFontSize(22);
-  doc.setTextColor(124, 58, 237); // Purple
-  doc.text("PURPLEBOT DIGITAL", 14, 20);
+  doc.setTextColor(0, 223, 137); // GRO10X Emerald Primary
+  doc.text("GRO10X AI GROWTH AGENCY", 14, 20);
   
   doc.setFontSize(10);
   doc.setTextColor(100, 100, 100);
   doc.setFont("helvetica", "normal");
-  doc.text("Purplebot Digital Limited, Dhaka, Bangladesh", 14, 28);
-  doc.text("contact@purplebot.digital | +880 1711 019550", 14, 33);
+  doc.text("Dhaka, Bangladesh", 14, 28);
+  doc.text("gro10xnow@gmail.com | +880 1708 459008", 14, 33);
   
   // Invoice Title
   doc.setFont("helvetica", "bold");
@@ -194,12 +194,12 @@ window.CLIENT_MODULES.invoices = async function(container) {
           <div style="background:var(--surface-2); padding:0.85rem; border-radius:10px; font-size:0.82rem; color:var(--text-secondary); margin-bottom:1rem; border:1px solid rgba(255,255,255,0.05);">
             <strong style="color:#fff; display:block; margin-bottom:0.4rem;">Official Agency Payment Accounts:</strong>
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
-              <span>• <strong>bKash / Nagad:</strong> <code>01711-019550</code> (Merchant)</span>
-              <button type="button" class="btn-secondary btn-sm" style="padding:0.2rem 0.5rem; font-size:0.7rem;" onclick="window.CLIENT_INVOICES.copyInfo('01711019550', 'bKash Merchant Number')">📋 Copy</button>
+              <span>• <strong>bKash / Nagad:</strong> <code>01708-459008</code> (Merchant)</span>
+              <button type="button" class="btn-secondary btn-sm" style="padding:0.2rem 0.5rem; font-size:0.7rem;" onclick="window.CLIENT_INVOICES.copyInfo('01708459008', 'bKash Merchant Number')">📋 Copy</button>
             </div>
             <div style="display:flex; justify-content:space-between; align-items:center;">
-              <span>• <strong>Bank Wire:</strong> Purplebot Digital Ltd (BRAC Bank)</span>
-              <button type="button" class="btn-secondary btn-sm" style="padding:0.2rem 0.5rem; font-size:0.7rem;" onclick="window.CLIENT_INVOICES.copyInfo('Purplebot Digital Limited', 'Bank Beneficiary')">📋 Copy</button>
+              <span>• <strong>Bank Wire:</strong> GRO10X Limited (BRAC Bank)</span>
+              <button type="button" class="btn-secondary btn-sm" style="padding:0.2rem 0.5rem; font-size:0.7rem;" onclick="window.CLIENT_INVOICES.copyInfo('GRO10X Limited', 'Bank Beneficiary')">📋 Copy</button>
             </div>
           </div>
 
@@ -216,8 +216,8 @@ window.CLIENT_MODULES.invoices = async function(container) {
           <div class="form-group">
             <label class="form-label">Payment Channel</label>
             <select id="payMethod" class="form-select">
-              <option value="bKash Merchant">bKash (01711-019550)</option>
-              <option value="Nagad">Nagad (01711-019550)</option>
+              <option value="bKash Merchant">bKash (01708-459008)</option>
+              <option value="Nagad">Nagad (01708-459008)</option>
               <option value="Bank Transfer">Bank Wire / Corporate Transfer</option>
               <option value="Cash / Cheque">Corporate Cheque</option>
             </select>

@@ -19,13 +19,15 @@ async function handleTechDiagnostics(teamBot, msg) {
     return teamBot.sendMessage(chatId, `🔒 Tech Diagnostics is restricted to Admin personnel.`);
   }
 
-  const text = `🛠️ *PURPLEOS SYSTEM DIAGNOSTICS*\n\n` +
-    `• Platform Version: *v1.1*\n` +
-    `• Node Environment: *${process.env.NODE_ENV || 'production'}*\n` +
-    `• Telegram Webhook: 🟢 *Active*\n` +
-    `• SSE Stream Service: 🟢 *Active*\n` +
-    `• Primary Source of Truth: 🟢 *Supabase Postgres*\n\n` +
-    `System health is optimal. No critical errors flagged.`;
+  const text = `🛠️ *GRO10X SYSTEM DIAGNOSTICS*\n\n` +
+    `• Node.js Version: \`${process.version}\`\n` +
+    `• Server Uptime: \`${Math.round(process.uptime() / 60)} minutes\`\n` +
+    `• Memory Usage (RSS): \`${Math.round(process.memoryUsage().rss / 1024 / 1024)} MB\`\n` +
+    `• Node Heap Used: \`${Math.round(process.memoryUsage().heapUsed / 1024 / 1024)} MB\`\n` +
+    `• Supabase Status: \`${isSupabaseConfigured() ? '🟢 CONNECTED' : '🟡 LOCAL / IN-MEMORY'}\`\n` +
+    `• Server Environment: \`${process.env.NODE_ENV || 'production'}\`\n` +
+    `• Active Event Streams: \`${getClientCount()} clients connected\`\n` +
+    `• Timestamp: \`${new Date().toISOString()}\``;
 
   teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
 }
@@ -34,7 +36,7 @@ async function handleFullTeamStatus(teamBot, msg) {
   const chatId = msg.chat.id;
   const allTeam = await state.getAllTeam();
 
-  let text = `👥 *PURPLEBOT DIGITAL FULL TEAM STATUS (${allTeam.length} Members):*\n\n`;
+  let text = `👥 *GRO10X FULL TEAM STATUS (${allTeam.length} Members):*\n\n`;
   allTeam.forEach((m, idx) => {
     const statusIcon = m.status === 'In Studio' ? '🟢' : (m.status === 'On Field Shoot' ? '🎬' : (m.status === 'On Leave' ? '🌴' : '⬛'));
     text += `${idx + 1}. *${m.name}*\n   Role: ${m.role} (${m.department || 'General'})\n   ${statusIcon} Status: *${m.status || 'Offline'}*\n\n`;

@@ -325,10 +325,14 @@ router.post('/:id/onboard', requireAuth, async (req, res) => {
 
     let emailResult = { success: false };
     if (email && email.includes('@') && !email.includes('lead.com')) {
-      emailResult = await sendClientOnboardingEmail({ clientName, email, magicLink });
+      try {
+        emailResult = await sendClientOnboardingEmail({ clientName, email, magicLink });
+      } catch (emailErr) {
+        console.warn('[Leads Onboard] Email dispatch skipped/failed:', emailErr.message);
+      }
     }
 
-    res.json({ success: true, clientName, email, magicLink, emailSent: emailResult.success });
+    res.json({ success: true, clientName, email, magicLink, emailSent: Boolean(emailResult?.success) });
   } catch (err) {
     console.error('[Leads Onboard Error]:', err.message);
     res.status(500).json({ error: err.message });

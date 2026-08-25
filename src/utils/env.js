@@ -1,7 +1,7 @@
 /**
  * src/utils/env.js
  * ─────────────────────────────────────────────────────────────────────────────
- * Environment Variable Validator for PurpleOS Platform.
+ * Environment Variable Validator for GRO10X Platform.
  * Validates required configuration keys on server boot and prevents unsafe fallbacks.
  * ─────────────────────────────────────────────────────────────────────────────
  */
@@ -15,7 +15,7 @@ function getJwtSecret() {
   
   if (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY) {
     // Derive a consistent deterministic key from the Supabase service key if JWT_SECRET is not yet configured
-    return crypto.createHash('sha256').update(process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || 'purpleos-prod-fallback').digest('hex');
+    return crypto.createHash('sha256').update(process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || 'gro10x-prod-fallback').digest('hex');
   }
 
   // Generate a random session key in dev mode if missing, rather than a hardcoded fixed string

@@ -404,7 +404,7 @@ router.put('/:id', requireAuth, async (req, res) => {
     // QC Gate Notification if moved to Internal QC
     if (req.body.stage === 'Internal QC') {
       try {
-        const qcCode = process.env.QC_REVIEWER_CODE || 'PBD-006';
+        const qcCode = process.env.QC_REVIEWER_CODE || 'GRO-006';
         const { data: ruhul } = await supabase.from('profiles').select('*').eq('emp_code', qcCode).maybeSingle();
         if (ruhul?.telegram_id) {
           sendTelegramNotification(ruhul.telegram_id,

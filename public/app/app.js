@@ -1,8 +1,8 @@
 /**
  * public/app/app.js
  * ─────────────────────────────────────────────────────────────────────────────
- * PurpleOS Admin Portal Single Page Application Router & Controller v3.0
- * Manages hash navigation (#dashboard, #crm, #kanban, #social, #finance, #hr, #tickets, #settings),
+ * GRO10X Admin Command Center Single Page Application Router & Controller v3.0
+ * Manages hash navigation (#dashboard, #engines, #brands, #dbm, #crm, #kanban, etc.),
  * sidebar active states, and lazy-loaded view modules.
  * ─────────────────────────────────────────────────────────────────────────────
  */
@@ -12,7 +12,7 @@
     '#dashboard':  { module: 'dashboard.js',  title: 'Executive Overview', icon: '📊' },
     '#engines':    { module: 'engines.js',    title: '5-Engine Growth Operations', icon: '🚀' },
     '#analytics':  { module: 'analytics.js',  title: 'Agency Analytics & Scorecards', icon: '📈' },
-    '#crm':        { module: 'crm.js',        title: 'Client Intelligence & CRM', icon: '👥' },
+    '#crm':        { module: 'crm.js',        title: 'Clients & Retainers CRM', icon: '👥' },
     '#kanban':     { module: 'kanban.js',     title: 'Production Pipeline Hub', icon: '📋' },
     '#reviews':    { module: 'reviews.js',    title: 'Client Review Room Proofing', icon: '🎬' },
     '#social':     { module: 'social.js',     title: 'Social Media Planner', icon: '📱' },
@@ -43,10 +43,10 @@
     try {
       const me = await APP_API.get('/auth/me');
       if (me && me.user) {
-        localStorage.setItem('purple_user', JSON.stringify(me.user));
+        localStorage.setItem('gro10x_user', JSON.stringify(me.user));
       }
     } catch (err) {
-      console.warn('[PurpleOS Session] Server validation failed:', err);
+      console.warn('[GRO10X Session] Server validation failed:', err);
     }
   }
 

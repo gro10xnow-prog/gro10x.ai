@@ -8,10 +8,10 @@ const { getFirstName } = require('../utils/name');
 const PORTAL = 'https://gro10x-ai.vercel.app';
 
 const STEPS = {
-  no_pin:           'Visit the PurpleOS portal and log in with your phone number to receive your temporary access PIN.',
+  no_pin:           'Visit the GRO10X portal and log in with your phone number to receive your temporary access PIN.',
   temp_pin:         'Log in with your temporary PIN and set your permanent 6-digit PIN in Profile Settings.',
-  pin_no_tg:        'In PurpleOS, go to Profile then Telegram Setup and link your Telegram account to receive daily alerts.',
-  pin_tg_no_survey: 'Complete your Staff Survey and Agreement under Profile then Survey inside PurpleOS to unlock full access.',
+  pin_no_tg:        'In GRO10X, go to Profile then Telegram Setup and link your Telegram account to receive daily alerts.',
+  pin_tg_no_survey: 'Complete your Staff Survey and Agreement under Profile then Survey inside GRO10X to unlock full access.',
   fully_onboarded:  'Check your daily tasks via the Kanban board, log EOD reports, and clock in through the Team Bot.'
 };
 
@@ -22,14 +22,14 @@ function build(name, role, dept, stage) {
   const d = dept || 'the team';
   const step = STEPS[stage] || STEPS.no_pin;
   const map = {
-    no_pin:           'Hi ' + fn + '!\n\nWelcome to Purplebot Digital! We are so excited to have you join us as our ' + r + ' in ' + d + '.\n\nYour PurpleOS workspace is ready and waiting. This is where you will track your daily tasks, log your work, and stay connected with the team.',
-    temp_pin:         'Hi ' + fn + '!\n\nGreat to have you on board as our ' + r + ' in ' + d + '! You have already received your temporary PIN.\n\nYou are just one step away from securing your account and getting full access to everything inside PurpleOS.',
+    no_pin:           'Hi ' + fn + '!\n\nWelcome to GRO10X! We are so excited to have you join us as our ' + r + ' in ' + d + '.\n\nYour GRO10X workspace is ready and waiting. This is where you will track your daily tasks, log your work, and stay connected with the team.',
+    temp_pin:         'Hi ' + fn + '!\n\nGreat to have you on board as our ' + r + ' in ' + d + '! You have already received your temporary PIN.\n\nYou are just one step away from securing your account and getting full access to everything inside GRO10X.',
     pin_no_tg:        'Hi ' + fn + '!\n\nExcellent work setting your permanent PIN! You are making great progress through onboarding as our ' + r + '.\n\nThe next step is linking your Telegram account. This is how you will receive your daily task briefings, schedule updates, and team announcements directly on your phone.',
-    pin_tg_no_survey: 'Hi ' + fn + '!\n\nYou are almost fully onboarded as our ' + r + ' in ' + d + ' -- you are so close to the finish line!\n\nThe Staff Survey and Agreement is the final step. Completing it unlocks your full PurpleOS profile, payslip access, and confirms your role details in our system.',
-    fully_onboarded:  'Hi ' + fn + '!\n\nYou are officially fully onboarded as our ' + r + ' -- welcome to the Purplebot Digital family!\n\nYour PurpleOS workspace is fully unlocked and ready. Here is your recommended daily workflow to get the most out of the platform:'
+    pin_tg_no_survey: 'Hi ' + fn + '!\n\nYou are almost fully onboarded as our ' + r + ' in ' + d + ' -- you are so close to the finish line!\n\nThe Staff Survey and Agreement is the final step. Completing it unlocks your full GRO10X profile, payslip access, and confirms your role details in our system.',
+    fully_onboarded:  'Hi ' + fn + '!\n\nYou are officially fully onboarded as our ' + r + ' -- welcome to the GRO10X team!\n\nYour GRO10X workspace is fully unlocked and ready. Here is your recommended daily workflow to get the most out of the platform:'
   };
   const intro = map[stage] || map.no_pin;
-  return intro + '\n\nNext Step:\n' + step + '\n\nPortal: ' + PORTAL + '\n\nReach out to the Admin team anytime if you need help. Looking forward to doing great work together!\n\n-- Purplebot Digital Admin';
+  return intro + '\n\nNext Step:\n' + step + '\n\nPortal: ' + PORTAL + '\n\nReach out to the Admin team anytime if you need help. Looking forward to doing great work together!\n\n-- GRO10X Admin Team';
 }
 
 // Gemini with strict response validation

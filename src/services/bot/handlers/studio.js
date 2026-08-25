@@ -123,7 +123,7 @@ async function handleBottleneckRadar(teamBot, msg) {
       return isOverdue || isStuck;
     });
 
-    let text = `🚧 *PURPLEBOT BOTTLENECK RADAR*\n` +
+    let text = `🚧 *GRO10X BOTTLENECK RADAR*\n` +
       `📅 ${new Date().toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}\n\n`;
 
     if (bottlenecks.length === 0) {

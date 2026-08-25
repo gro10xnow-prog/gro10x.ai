@@ -19,26 +19,26 @@ window.CLIENT_MODULES.account = async function(container) {
   let amRole = 'Senior Manager, Client Services';
   let amPhone = '+880 1709-952672';
   let amRawPhone = '8801709952672';
-  let amEmail = 'tasin@purplebot.digital';
+  let amEmail = 'gro10xnow@gmail.com';
 
   if (amName.toLowerCase().includes('sayed')) {
     amName = 'Sayed Ashraf';
     amRole = 'Assistant Manager, Client Services';
     amPhone = '+880 1617-410967';
     amRawPhone = '8801617410967';
-    amEmail = 'sayed@purplebot.digital';
+    amEmail = 'gro10xnow@gmail.com';
   } else if (amName.toLowerCase().includes('rimjhim')) {
     amName = 'Rimjhim Rashid';
     amRole = 'Assistant Manager, Client Services';
     amPhone = '+880 1759-768962';
     amRawPhone = '8801759768962';
-    amEmail = 'rimjhim@purplebot.digital';
+    amEmail = 'gro10xnow@gmail.com';
   } else if (amName.toLowerCase().includes('mehedi')) {
     amName = 'MD Mehedi Bin Jayed';
     amRole = 'Head of Client & Growth';
     amPhone = '+880 1874-079687';
     amRawPhone = '8801874079687';
-    amEmail = 'mehedi@purplebot.digital';
+    amEmail = 'gro10xnow@gmail.com';
   }
 
   container.innerHTML = `
@@ -78,7 +78,7 @@ window.CLIENT_MODULES.account = async function(container) {
         </div>
 
         <div style="margin-top:1.25rem; padding-top:1rem; border-top:1px solid rgba(255,255,255,0.08); font-size:0.78rem; color:var(--text-muted);">
-          Contract: <strong style="color:var(--text-primary);">Purplebot Digital Service Agreement</strong>
+          Contract: <strong style="color:var(--text-primary);">GRO10X Master Service Agreement</strong>
         </div>
       </div>
 
