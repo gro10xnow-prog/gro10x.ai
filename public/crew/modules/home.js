@@ -8,11 +8,14 @@ window.CREW_MODULES.home = async function(container) {
   const user = me.user || {};
   const empCode = user.emp_code || user.id;
 
-  const [tasks, attendance, eodHistory] = await Promise.all([
+  const [tasks, attendanceRaw, eodHistory] = await Promise.all([
     CREW_API.get('/tasks').catch(() => []),
     CREW_API.get('/team/attendance').catch(() => []),
     CREW_API.get(`/team/eod?employeeId=${encodeURIComponent(empCode || '')}`).catch(() => [])
   ]);
+  // Normalize attendance — API may return array or { data: [...] } object
+  const attendance = Array.isArray(attendanceRaw) ? attendanceRaw : (Array.isArray(attendanceRaw?.data) ? attendanceRaw.data : []);
+
 
   const myTasks = (tasks || []).filter(t => 
     (t.assignee || '').toLowerCase().includes((user.name || '').toLowerCase()) ||
