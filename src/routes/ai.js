@@ -268,6 +268,290 @@ router.post('/etsy-seo', requireAuth, async (req, res) => {
   }
 });
 
+// ─────────────────────────────────────────────────────────────────────────────
+// POST /api/ai/product-blueprint — Generates Page-by-Page Product Design Blueprint & Google Flow Prompts
+// ─────────────────────────────────────────────────────────────────────────────
+router.post('/product-blueprint', requireAuth, async (req, res) => {
+  const { productName, brandName, brandNiche, brandVoice, brandPalette, brandFonts, type, category } = req.body;
+  if (!productName || !brandName) {
+    return res.status(400).json({ error: 'productName and brandName are required' });
+  }
+
+  const paletteArr = Array.isArray(brandPalette) && brandPalette.length > 0
+    ? brandPalette
+    : ['#8B5A7A', '#FAF3E8', '#7D9B76', '#C4887C', '#2E2E2E'];
+
+  const fontString = brandFonts || 'Playfair Display + Lato';
+
+  function generateDeterministicBlueprint(pName, bName, niche, voice, palette, fonts, pType) {
+    const cleanP = pName.replace(/^[A-Z]\d+\s*[-–]\s*/, '');
+    const isPlanner = cleanP.toLowerCase().includes('planner') || cleanP.toLowerCase().includes('daily') || cleanP.toLowerCase().includes('weekly');
+    const isBudget = cleanP.toLowerCase().includes('budget') || cleanP.toLowerCase().includes('financial') || cleanP.toLowerCase().includes('debt');
+    const isHabit = cleanP.toLowerCase().includes('habit') || cleanP.toLowerCase().includes('goal') || cleanP.toLowerCase().includes('vision');
+    const isTracker = cleanP.toLowerCase().includes('tracker') || cleanP.toLowerCase().includes('log') || cleanP.toLowerCase().includes('sheet');
+
+    const primaryColor = palette[0] || '#8B5A7A';
+    const bgTint = palette[1] || '#FAF3E8';
+    const secondaryColor = palette[2] || '#7D9B76';
+    const highlightColor = palette[3] || '#C4887C';
+    const textColor = palette[4] || '#2E2E2E';
+
+    const pages = [
+      {
+        pageNumber: 1,
+        section: 'Front Cover & Owner Registration',
+        title: `${cleanP} · Edition 1.0`,
+        purpose: 'Establish premium brand identity, ownership personal license attribution, and aesthetic tone.',
+        layoutSpecs: 'Full-bleed minimalist cover with 0.5 in inner safe zone. Top centered brand badge, large serif headline, subtitle banner, fillable "This Planner Belongs To:" card, and bottom personal use license declaration.',
+        elements: [
+          `Brand Header: "${bName}" in ${fonts.split('+')[0] || 'Playfair Display'} font`,
+          `Product Title: "${cleanP}" (${primaryColor})`,
+          `Subtitle: "Aesthetic Intentional System for ${niche || 'Daily Productivity'}"`,
+          'Fillable Name / Email attribution box with rounded borders and subtle drop shadow',
+          'Legal Disclaimer: "© 2026 ' + bName + '. All Rights Reserved. Personal Use License Only. Resale / Redistribution Prohibited."'
+        ]
+      },
+      {
+        pageNumber: 2,
+        section: 'Master Navigation & Year-at-a-Glance',
+        title: 'Master Index & Annual Calendar Matrix',
+        purpose: 'Provide high-level annual visibility and hyperlinked navigation jump points for digital PDF users.',
+        layoutSpecs: 'Two-column layout. Left column (60%): 12-month calendar mini-grids (Sunday start). Right column (40%): Key annual milestones, quarterly goals, and hyperlinked navigation tabs.',
+        elements: [
+          '12 Mini Month Calendar Grids with shaded weekend headers',
+          'Quarterly Focus Blocks (Q1 Jan–Mar, Q2 Apr–Jun, Q3 Jul–Sep, Q4 Oct–Dec)',
+          'Annual Important Dates & Holiday Checklist',
+          `Interactive navigation tabs styled in ${secondaryColor} with white bold labels`
+        ]
+      },
+      {
+        pageNumber: 3,
+        section: 'Monthly Master Execution Spread',
+        title: 'Monthly Intentions & Calendar Overview',
+        purpose: 'Set monthly high-level priorities, habit anchors, and key deadlines.',
+        layoutSpecs: 'Upper third: 3 Focus Cards (Top 3 Priorities, Monthly Mantra, Major Deadline). Lower two-thirds: 5-week un-dated calendar block with side-column for bills due and habit trackers.',
+        elements: [
+          'Top 3 Needle-Mover Goals (Ranked 1, 2, 3 with check-boxes)',
+          '5x7 Open Calendar Grid with un-dated date circles for universal reuse',
+          'Side Column: Upcoming Bills Due ($ Amount + Due Date checkbox)',
+          'Monthly Habit Focus Tracker (5 habits with 31-day progress bar)',
+          'Notes & Brain Dump dot-grid footer'
+        ]
+      },
+      {
+        pageNumber: 4,
+        section: 'Weekly Execution Spread (Part 1: Monday – Thursday)',
+        title: 'Weekly Master Plan & Priorities',
+        purpose: 'Structure weekly high-impact tasks and weekday schedule with time-blocking clarity.',
+        layoutSpecs: 'Top bar: Weekly Focus & Top 3 Outcomes. Body: 4 vertical day columns (Monday–Thursday) with 6:00 AM–9:00 PM hourly schedule and top priority boxes.',
+        elements: [
+          'Weekly Top 3 Non-Negotiables',
+          '4 Vertical Column Schedules (Mon, Tue, Wed, Thu) with 1-hour intervals',
+          'Top Task Checklist (3 check-boxes per day)',
+          'Daily Water Tracker (8 cup bubbles per day)',
+          'Inspirational Quote Box styled in italic serif with quote marks'
+        ]
+      },
+      {
+        pageNumber: 5,
+        section: 'Weekly Execution Spread (Part 2: Friday – Sunday & Review)',
+        title: 'Weekend Flow, Meal Plan & Weekly Reflection',
+        purpose: 'Capture weekend priorities, lifestyle planning, meal prep, and weekly win review.',
+        layoutSpecs: 'Left half: 3 vertical day columns (Friday, Saturday, Sunday). Right half: 7-day Meal Planner grid + Grocery List + Weekly Win Review card.',
+        elements: [
+          '3 Vertical Column Schedules (Fri, Sat, Sun)',
+          '7-Day Meal Planning Grid (Breakfast, Lunch, Dinner, Snacks)',
+          'Segmented Grocery Checklist (Produce, Proteins, Pantry, Essentials)',
+          'Weekly Reflection Box: "What worked well? What will I adjust next week?"',
+          'Next Week Prep Checklist'
+        ]
+      },
+      {
+        pageNumber: 6,
+        section: 'Daily Deep Work & Schedule Spread',
+        title: 'Daily Focused Execution Matrix',
+        purpose: 'Ultra-granular hourly time blocking, Eisenhower task triage, and mindfulness tracking.',
+        layoutSpecs: 'Split 2-column layout. Left column: 6:00 AM – 9:00 PM hourly timeline. Right column: Eisenhower Priority Triage (Must Do, Should Do, Could Do), Brain Dump, and Mood/Gratitude.',
+        elements: [
+          'Date, Day of Week & Daily Intention header',
+          '6:00 AM – 9:00 PM Time Blocking Schedule with 30-minute divider ticks',
+          'Eisenhower Priority Grid: Must Do (High Impact), Should Do (Medium), Could Do (Low)',
+          'Daily Gratitude & Win of the Day prompt',
+          'Water Intake Tracker (8 droplets) + Mood Selector (5 icons)'
+        ]
+      },
+      {
+        pageNumber: 7,
+        section: 'Habit Formation & Consistency Matrix',
+        title: '30-Day Habit Matrix & Streak Tracker',
+        purpose: 'Build consistent daily routines with visual gamification and milestone check-ins.',
+        layoutSpecs: 'Full-width matrix table with 20 habit rows on the left and 31 numbered circular check-bubbles across the columns. Bottom cards for reward milestones.',
+        elements: [
+          '20 Habit Rows with category tags (Morning, Health, Work, Evening)',
+          '31-Day Check Circles with shaded 7-day milestone dividers',
+          'Milestone Reward Cards (7-Day Streak, 14-Day Streak, 30-Day Perfection)',
+          'Monthly Consistency Percentage Calculator formula guide'
+        ]
+      },
+      {
+        pageNumber: 8,
+        section: 'Financial Health & Cash Flow Tracker',
+        title: 'Monthly Cash Flow, Expenses & Savings Tracker',
+        purpose: 'Track monthly income streams, fixed/variable expenses, and debt payoff progress.',
+        layoutSpecs: '3 KPI summary cards at top (Total Income, Total Expenses, Net Savings). 2 large side-by-side tables for Fixed Bills and Variable Spending logs.',
+        elements: [
+          'KPI Cards: Income ($), Expenses ($), Savings Rate (%)',
+          'Fixed Recurring Bills Checklist (Bill Name, Due Date, Budgeted, Actual, Paid)',
+          'Variable Daily Expense Log (Date, Item, Category, Amount, Payment Method)',
+          'Debt Snowball / Savings Goal Visual Progress Thermometer'
+        ]
+      },
+      {
+        pageNumber: 9,
+        section: '90-Day Goal Achievement Roadmap',
+        title: '90-Day Vision & Milestone Breakdown',
+        purpose: 'Translate high-level aspirations into actionable 3-phase OKR execution plans.',
+        layoutSpecs: 'Top: Primary 90-Day Outcome Goal + Emotional "Why". Body: 3 Milestone checkpoints (Day 30, Day 60, Day 90) with KPI targets and weekly action items.',
+        elements: [
+          'Primary Goal Declaration with target completion date',
+          '"Why This Matters To Me" Core Motivation Box',
+          '3 Milestone Cards (Month 1 Foundation, Month 2 Momentum, Month 3 Mastery)',
+          'Weekly Action Task Checklist (5 tasks per phase)',
+          'Obstacle & Solution Contingency Matrix'
+        ]
+      },
+      {
+        pageNumber: 10,
+        section: 'Creative Brain Dump & Dot Grid Notes',
+        title: 'Ideas, Mind Maps & Dot Grid Notes',
+        purpose: 'Unstructured creative thinking, meeting notes, project sketches, and brain dump.',
+        layoutSpecs: 'Clean 5mm dot grid across the entire canvas with a subtle minimalist botanical corner motif and header for Date / Subject.',
+        elements: [
+          'Header: Date, Subject & Project Tag',
+          '5mm Light Gray Dot Grid (Vector-rendered, non-intrusive #E0DCD5)',
+          'Subtle watermark logo at bottom right',
+          'Action Items summary footer'
+        ]
+      }
+    ];
+
+    const googleFlowPrompt =
+      `# 🤖 GOOGLE FLOW / GEMINI PROMPT — DIGITAL PRODUCT PDF BUILDER\n\n` +
+      `You are an elite Digital Product Architect & Publication Designer specializing in best-selling Etsy digital downloads and GoodNotes planners.\n\n` +
+      `GENERATE THE FULL, PRODUCTION-READY PRINTABLE AND DIGITAL PDF FOR:\n` +
+      `• Brand: "${bName}" (${niche})\n` +
+      `• Product Name: "${cleanP}"\n` +
+      `• Target Audience: Women 25–45, professionals, moms, students seeking organization and clarity\n` +
+      `• Format: High-Resolution Vector PDF (US Letter 8.5 x 11 in / A4, 300 DPI)\n` +
+      `• Color Palette: Primary: ${primaryColor}, Background: ${bgTint}, Secondary: ${secondaryColor}, Accent: ${highlightColor}, Text: ${textColor}\n` +
+      `• Typography Hierarchy: Header: ${fonts.split('+')[0] || 'Playfair Display'}, Body: ${fonts.split('+')[1] || 'Lato'}, Accent: Cormorant Garamond\n\n` +
+      `--- PAGE-BY-PAGE BLUEPRINT REQUIREMENTS ---\n` +
+      pages.map(p => `PAGE ${p.pageNumber}: ${p.title}\n- Purpose: ${p.purpose}\n- Layout: ${p.layoutSpecs}\n- Key Elements: ${p.elements.join(', ')}\n`).join('\n') +
+      `\n--- OUTPUT FORMAT ---\n` +
+      `Provide complete, clean, self-contained HTML5/CSS print markup using @page { size: letter; margin: 0.5in; } with embedded SVG icons and styled flex/grid tables ready to be rendered to PDF via Chrome Print, Puppeteer, or Typst vector code.\n`;
+
+    return {
+      productName: cleanP,
+      brandName: bName,
+      documentSpecs: {
+        dimensions: 'US Letter (8.5 x 11 in) / A4 Compatible (300 DPI Vector)',
+        margins: '0.5 in (12.7 mm) safe printing zone',
+        pageCount: `${pages.length} Core Master Spreads`,
+        colorSystem: {
+          primaryAccent: primaryColor,
+          backgroundTint: bgTint,
+          secondaryAccent: secondaryColor,
+          highlight: highlightColor,
+          darkText: textColor
+        },
+        typography: {
+          headingFont: fonts.split('+')[0] ? fonts.split('+')[0].trim() : 'Playfair Display',
+          bodyFont: fonts.split('+')[1] ? fonts.split('+')[1].trim() : 'Lato',
+          accentFont: 'Cormorant Garamond (Italic)'
+        }
+      },
+      pageBreakdown: pages,
+      googleFlowPrompt,
+      storageArchitecture: {
+        recommendedPath: `brands/${bName.toLowerCase().replace(/[^a-z0-9]/g, '_')}/${cleanP.toLowerCase().replace(/[^a-z0-9]/g, '_')}/v1.0/deliverable.pdf`,
+        fileType: 'PDF (Interactive & Printable)',
+        targetFileSize: '3–8 MB'
+      },
+      antiPiracyDelivery: {
+        etsyUploadItem: '1-Page Branded GRO10X Access & License Pass (PDF)',
+        deliveryPortalUrl: `https://gro10x-ai.vercel.app/delivery?brand=${encodeURIComponent(bName)}&product=${encodeURIComponent(cleanP)}`,
+        watermarkTemplate: `Exclusively Licensed to: [Buyer Name] · Order #[Etsy_Receipt_ID] · License ID: GRO-LIC-XXXX · Personal Use Only · Resale Strictly Prohibited`
+      }
+    };
+  }
+
+  const key = process.env.GEMINI_API_KEY;
+
+  if (!key) {
+    return res.json({
+      success: true,
+      blueprint: generateDeterministicBlueprint(productName, brandName, brandNiche, brandVoice, paletteArr, fontString, type),
+      generatedBy: 'smart_blueprint_engine'
+    });
+  }
+
+  const prompt =
+    `You are an elite Digital Product Architect & Publication Designer.\n` +
+    `Generate a comprehensive, page-by-page design blueprint and prompt for:\n` +
+    `Product Name: "${productName}"\n` +
+    `Brand: "${brandName}"\n` +
+    `Niche: "${brandNiche || 'Digital Products'}"\n` +
+    `Brand Voice: "${brandVoice || 'Warm, empowering, clear'}"\n` +
+    `Color Palette: ${JSON.stringify(paletteArr)}\n` +
+    `Typography: "${fontString}"\n` +
+    `Format / Category: "${type || 'Digital PDF'}" / "${category || 'General'}"\n\n` +
+    `Return strict JSON with:\n` +
+    `1. "documentSpecs": { "dimensions", "margins", "pageCount", "colorSystem": { "primaryAccent", "backgroundTint", "secondaryAccent", "highlight", "darkText" }, "typography": { "headingFont", "bodyFont", "accentFont" } }\n` +
+    `2. "pageBreakdown": Array of 8-12 objects { "pageNumber", "section", "title", "purpose", "layoutSpecs", "elements" (array of strings) }\n` +
+    `3. "googleFlowPrompt": A detailed, copy-ready prompt string formatted for Google Flow / Gemini / Claude to generate the printable PDF or HTML/CSS code.\n\n` +
+    `OUTPUT STRICT JSON ONLY. No markdown wrapper or extra text outside JSON.`;
+
+  try {
+    let resultText = null;
+    for (const model of MODELS) {
+      try {
+        resultText = await callSingle(model, prompt, key);
+        if (resultText) break;
+      } catch (e) {
+        console.warn('[Product Blueprint] Skip model ' + model + ':', e.message);
+      }
+    }
+
+    if (!resultText) throw new Error('No output from Gemini');
+
+    const cleaned = resultText.replace(/```json/gi, '').replace(/```/g, '').trim();
+    const parsed = JSON.parse(cleaned);
+
+    const baseBlueprint = generateDeterministicBlueprint(productName, brandName, brandNiche, brandVoice, paletteArr, fontString, type);
+
+    return res.json({
+      success: true,
+      blueprint: {
+        productName: parsed.productName || productName,
+        brandName: parsed.brandName || brandName,
+        documentSpecs: parsed.documentSpecs || baseBlueprint.documentSpecs,
+        pageBreakdown: parsed.pageBreakdown || baseBlueprint.pageBreakdown,
+        googleFlowPrompt: parsed.googleFlowPrompt || baseBlueprint.googleFlowPrompt,
+        storageArchitecture: baseBlueprint.storageArchitecture,
+        antiPiracyDelivery: baseBlueprint.antiPiracyDelivery
+      },
+      generatedBy: 'gemini'
+    });
+  } catch (err) {
+    console.warn('[Product Blueprint Gemini Error]:', err.message);
+    return res.json({
+      success: true,
+      blueprint: generateDeterministicBlueprint(productName, brandName, brandNiche, brandVoice, paletteArr, fontString, type),
+      generatedBy: 'smart_blueprint_engine'
+    });
+  }
+});
+
 router.get('/status', requireAuth, (req, res) => res.json({ success: true, configured: !!process.env.GEMINI_API_KEY, models: MODELS }));
 
 module.exports = router;

@@ -755,7 +755,7 @@ window.APP_MODULES.brands = async function(container) {
               <th style="padding:0.75rem;">Format</th>
               <th style="padding:0.75rem;">Price</th>
               <th style="padding:0.75rem;">Status</th>
-              <th style="padding:0.75rem; text-align:right;">AI SEO Actions</th>
+              <th style="padding:0.75rem; text-align:right;">Studio & SEO</th>
             </tr>
           </thead>
           <tbody>
@@ -778,7 +778,7 @@ window.APP_MODULES.brands = async function(container) {
                 </td>
                 <td style="padding:0.75rem; text-align:right;">
                   <button class="btn-primary btn-sm" style="font-size:0.72rem; padding:0.25rem 0.6rem;" onclick="window.BrandsModule.generateLiveSEOPackage('${encodeURIComponent(p.name)}', '${brand.name}', ${brand.id})">
-                    🤖 Generate SEO
+                    🎨 Design & SEO Studio
                   </button>
                 </td>
               </tr>
@@ -1197,56 +1197,157 @@ window.APP_MODULES.brands = async function(container) {
 
     async generateLiveSEOPackage(productNameEncoded, brandName, brandId) {
       const prodName = decodeURIComponent(productNameEncoded);
-      const b = state.brands.find(x => x.id === brandId) || { name: brandName, niche: 'Digital products', voice: 'Inspiring', type: 'Digital' };
+      const b = state.brands.find(x => x.id === brandId) || { name: brandName, niche: 'Digital products', voice: 'Inspiring', type: 'Digital', palette: ['#8B5A7A', '#FAF3E8', '#7D9B76', '#C4887C', '#2E2E2E'], fonts: 'Playfair Display + Lato' };
 
       const modal = document.getElementById('aiSeoModal');
       const modalContent = document.getElementById('aiSeoModalContent');
       if (!modal || !modalContent) return;
 
+      modalContent.style.maxWidth = '840px';
       modalContent.innerHTML = `
-        <div style="text-align:center; padding:2rem 1rem;">
-          <div style="font-size:2.5rem; margin-bottom:1rem; animation:spin 2s linear infinite;">🤖</div>
-          <h3 style="color:#fff; font-size:1.2rem; font-weight:800; margin-bottom:0.5rem;">Generating Optimized Etsy SEO Package...</h3>
-          <p style="color:var(--text-muted); font-size:0.85rem;">Using Google Gemini AI for Title (140 chars), 13 High-Rank Tags & Description for <strong>${prodName}</strong>.</p>
+        <div style="text-align:center; padding:2.5rem 1rem;">
+          <div style="font-size:2.8rem; margin-bottom:1rem; animation:spin 2s linear infinite;">🤖</div>
+          <h3 style="color:#fff; font-size:1.3rem; font-weight:800; margin-bottom:0.5rem;">Generating Product Blueprint & Etsy SEO Package...</h3>
+          <p style="color:var(--text-muted); font-size:0.88rem;">Architecting page-by-page design layout, Google Flow creation prompts, 13 SEO tags & listing description for <strong>${prodName}</strong>.</p>
         </div>
       `;
       modal.style.display = 'flex';
 
       try {
         let seoResult = null;
+        let blueprintResult = null;
+
         if (window.APP_API) {
-          seoResult = await window.APP_API.post('/ai/etsy-seo', {
-            productName: prodName,
-            brandName: b.name,
-            brandNiche: b.niche,
-            brandVoice: b.voice,
-            type: b.type
-          });
+          const [seoRes, bpRes] = await Promise.all([
+            window.APP_API.post('/ai/etsy-seo', {
+              productName: prodName,
+              brandName: b.name,
+              brandNiche: b.niche,
+              brandVoice: b.voice,
+              type: b.type
+            }).catch(() => null),
+            window.APP_API.post('/ai/product-blueprint', {
+              productName: prodName,
+              brandName: b.name,
+              brandNiche: b.niche,
+              brandVoice: b.voice,
+              brandPalette: b.palette,
+              brandFonts: b.fonts,
+              type: b.type
+            }).catch(() => null)
+          ]);
+          seoResult = seoRes;
+          blueprintResult = bpRes ? bpRes.blueprint : null;
         }
 
         if (!seoResult || !seoResult.title) {
-          throw new Error('Could not fetch SEO response');
+          throw new Error('Could not fetch SEO package from server');
         }
 
         const tagsJoined = (seoResult.tags || []).join(', ');
+        const bp = blueprintResult || {};
+        const specs = bp.documentSpecs || {
+          dimensions: 'US Letter (8.5 x 11 in) / 300 DPI Vector PDF',
+          margins: '0.5 in safe print margin',
+          pageCount: '10 Core Spreads',
+          colorSystem: { primaryAccent: '#8B5A7A', backgroundTint: '#FAF3E8', secondaryAccent: '#7D9B76', highlight: '#C4887C', darkText: '#2E2E2E' },
+          typography: { headingFont: 'Playfair Display', bodyFont: 'Lato', accentFont: 'Cormorant Garamond' }
+        };
+        const pages = bp.pageBreakdown || [];
+        const googleFlowPrompt = bp.googleFlowPrompt || '';
 
         modalContent.innerHTML = `
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:1rem;">
+          <!-- MODAL HEADER -->
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:0.85rem;">
             <div>
-              <span style="font-size:0.72rem; font-weight:800; color:#00df89; text-transform:uppercase;">Etsy SEO & Listing Package</span>
-              <h2 style="font-size:1.3rem; font-weight:900; color:#fff; margin:0.2rem 0 0;">${prodName}</h2>
+              <span style="font-size:0.72rem; font-weight:800; color:#00df89; text-transform:uppercase; letter-spacing:0.5px;">⚡ Product Factory & Studio Engine</span>
+              <h2 style="font-size:1.35rem; font-weight:900; color:#fff; margin:0.2rem 0 0;">${prodName}</h2>
             </div>
             <button onclick="document.getElementById('aiSeoModal').style.display='none'" style="background:none; border:none; color:var(--text-muted); font-size:1.5rem; cursor:pointer;">✕</button>
           </div>
 
-          <div style="display:flex; flex-direction:column; gap:1.2rem;">
+          <!-- 3-TAB SELECTOR STRIP -->
+          <div style="display:flex; gap:0.4rem; background:rgba(0,0,0,0.35); padding:0.35rem; border-radius:12px; margin-bottom:1.25rem; border:1px solid rgba(255,255,255,0.06);">
+            <button id="modalTabBtnBlueprint" type="button" onclick="window.BrandsModule.switchStudioTab('blueprint')" style="flex:1; background:rgba(0,223,137,0.15); border:1px solid rgba(0,223,137,0.3); color:#00df89; font-weight:800; font-size:0.78rem; padding:0.55rem 0.6rem; border-radius:8px; cursor:pointer;">
+              🎨 Product Blueprint & Google Flow Prompt
+            </button>
+            <button id="modalTabBtnSeo" type="button" onclick="window.BrandsModule.switchStudioTab('seo')" style="flex:1; background:none; border:1px solid transparent; color:var(--text-muted); font-weight:800; font-size:0.78rem; padding:0.55rem 0.6rem; border-radius:8px; cursor:pointer;">
+              📈 Etsy SEO & Listing Package
+            </button>
+            <button id="modalTabBtnVault" type="button" onclick="window.BrandsModule.switchStudioTab('vault')" style="flex:1; background:none; border:1px solid transparent; color:var(--text-muted); font-weight:800; font-size:0.78rem; padding:0.55rem 0.6rem; border-radius:8px; cursor:pointer;">
+              📦 Deliverable Vault & Anti-Piracy
+            </button>
+          </div>
+
+          <!-- TAB 1: PRODUCT BLUEPRINT & GOOGLE FLOW PROMPT -->
+          <div id="studioTabBlueprint" style="display:flex; flex-direction:column; gap:1.2rem;">
+            <!-- DOCUMENT SPECS GRID -->
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:0.75rem;">
+              <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); padding:0.75rem; border-radius:10px;">
+                <span style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block;">Page Geometry & Format</span>
+                <span style="font-size:0.85rem; font-weight:700; color:#06b6d4; margin-top:0.2rem; display:block;">${specs.dimensions || 'US Letter (8.5x11 in)'}</span>
+                <span style="font-size:0.72rem; color:var(--text-muted);">${specs.margins || '0.5 in safe print zone'}</span>
+              </div>
+              <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); padding:0.75rem; border-radius:10px;">
+                <span style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block;">Typography Hierarchy</span>
+                <span style="font-size:0.85rem; font-weight:700; color:#fff; margin-top:0.2rem; display:block;">${specs.typography?.headingFont || 'Playfair Display'} + ${specs.typography?.bodyFont || 'Lato'}</span>
+                <span style="font-size:0.72rem; color:var(--text-muted);">${specs.typography?.accentFont || 'Cormorant Italic'}</span>
+              </div>
+              <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); padding:0.75rem; border-radius:10px;">
+                <span style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block;">Brand Color Palette</span>
+                <div style="display:flex; gap:0.35rem; margin-top:0.35rem;">
+                  ${(b.palette || ['#8B5A7A', '#FAF3E8', '#7D9B76', '#C4887C', '#2E2E2E']).map(hex => `
+                    <span style="width:20px; height:20px; border-radius:50%; background:${hex}; border:1px solid rgba(255,255,255,0.2);" title="${hex}"></span>
+                  `).join('')}
+                </div>
+              </div>
+            </div>
+
+            <!-- MASTER GOOGLE FLOW PROMPT CARD -->
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+                <label style="font-size:0.75rem; font-weight:800; color:#00df89; text-transform:uppercase;">⚡ Google Flow / Gemini Master Creation Prompt</label>
+                <button class="btn-primary btn-sm" style="padding:0.3rem 0.75rem; font-size:0.75rem;" onclick="navigator.clipboard.writeText(document.getElementById('googleFlowPromptBox').innerText); window.showToast('📋 Copied Google Flow Master Prompt! Ready to paste into Gemini / Flow.','success');">
+                  📋 Copy Google Flow Master Prompt
+                </button>
+              </div>
+              <div id="googleFlowPromptBox" style="background:rgba(0,0,0,0.4); border:1px solid rgba(0,223,137,0.3); padding:0.9rem; border-radius:10px; color:#e2e8f0; font-size:0.8rem; font-family:monospace; white-space:pre-wrap; max-height:220px; overflow-y:auto; line-height:1.5;">${googleFlowPrompt}</div>
+              <p style="font-size:0.72rem; color:var(--text-muted); margin:0.3rem 0 0;">💡 <em>Paste this prompt directly into <strong>Google Flow, Google Gemini Advanced, or Claude</strong> to generate full printable PDF vector markup or Typst source files.</em></p>
+            </div>
+
+            <!-- PAGE-BY-PAGE SPREAD BREAKDOWN -->
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+                <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Page-by-Page Architectural Breakdown (${pages.length} Pages)</label>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:0.6rem; max-height:240px; overflow-y:auto; padding-right:0.25rem;">
+                ${pages.map(p => `
+                  <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); padding:0.75rem; border-radius:10px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.25rem;">
+                      <span style="font-weight:800; color:#fff; font-size:0.85rem;"><span style="color:#00df89;">Page ${p.pageNumber}:</span> ${p.title}</span>
+                      <span style="font-size:0.68rem; padding:0.15rem 0.45rem; border-radius:6px; background:rgba(6,182,212,0.15); color:#06b6d4; font-weight:700;">${p.section || 'Core Spread'}</span>
+                    </div>
+                    <div style="font-size:0.78rem; color:var(--text-secondary); margin-bottom:0.35rem; line-height:1.4;">${p.layoutSpecs}</div>
+                    <div style="display:flex; flex-wrap:wrap; gap:0.3rem;">
+                      ${(p.elements || []).map(el => `
+                        <span style="background:rgba(255,255,255,0.06); color:var(--text-muted); font-size:0.68rem; padding:0.15rem 0.4rem; border-radius:4px;">• ${el}</span>
+                      `).join('')}
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 2: ETSY SEO & LISTING PACKAGE -->
+          <div id="studioTabSeo" style="display:none; flex-direction:column; gap:1.2rem;">
             <!-- 140-CHAR TITLE -->
             <div>
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.3rem;">
                 <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Etsy Listing Title (${(seoResult.title || '').length}/140 chars)</label>
                 <button class="btn-ghost btn-sm" onclick="navigator.clipboard.writeText('${escape(seoResult.title)}'); window.showToast('Copied Title!','success');">📋 Copy Title</button>
               </div>
-              <div style="background:rgba(0,0,0,0.3); border:1px solid rgba(0,223,137,0.3); padding:0.75rem; border-radius:10px; color:#00df89; font-weight:700; font-size:0.9rem;">
+              <div style="background:rgba(0,0,0,0.3); border:1px solid rgba(0,223,137,0.3); padding:0.75rem; border-radius:10px; color:#00df89; font-weight:700; font-size:0.88rem;">
                 ${seoResult.title}
               </div>
             </div>
@@ -1274,22 +1375,87 @@ window.APP_MODULES.brands = async function(container) {
               </div>
               <div id="aiDescBox" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); padding:0.85rem; border-radius:10px; color:var(--text-secondary); font-size:0.82rem; white-space:pre-wrap; max-height:220px; overflow-y:auto; line-height:1.5;">${seoResult.description}</div>
             </div>
+          </div>
 
-            <div style="display:flex; gap:0.5rem; margin-top:0.5rem;">
-              <button class="btn-primary" style="flex:1;" onclick="document.getElementById('aiSeoModal').style.display='none'">
-                Done & Apply to Listing
-              </button>
+          <!-- TAB 3: DELIVERABLE VAULT & ANTI-PIRACY -->
+          <div id="studioTabVault" style="display:none; flex-direction:column; gap:1.2rem;">
+            <!-- STORAGE LOCATION -->
+            <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); padding:1rem; border-radius:12px;">
+              <span style="font-size:0.72rem; font-weight:800; color:#06b6d4; text-transform:uppercase; display:block; margin-bottom:0.3rem;">📦 Supabase Storage Location</span>
+              <div style="font-family:monospace; background:rgba(0,0,0,0.35); padding:0.5rem 0.75rem; border-radius:8px; color:#00df89; font-size:0.8rem; word-break:break-all;">
+                product-vault/brands/${b.id}/${encodeURIComponent(prodName.toLowerCase().replace(/[^a-z0-9]/g, '_'))}/v1.0/deliverable.pdf
+              </div>
+              <p style="font-size:0.72rem; color:var(--text-muted); margin:0.4rem 0 0;">Private bucket with RLS protection. Files are delivered via dynamic single-use expiring signed URLs.</p>
             </div>
+
+            <!-- SOURCE CLOUD TEMPLATE LINKS -->
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+              <div>
+                <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.3rem;">Canva Master Template Link</label>
+                <input type="text" placeholder="https://www.canva.com/design/..." class="form-input" style="width:100%; font-size:0.8rem; padding:0.5rem; background:rgba(255,255,255,0.05); border:1px solid var(--border-subtle); border-radius:8px; color:#fff;">
+              </div>
+              <div>
+                <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.3rem;">Notion / Google Drive Hub</label>
+                <input type="text" placeholder="https://notion.so/..." class="form-input" style="width:100%; font-size:0.8rem; padding:0.5rem; background:rgba(255,255,255,0.05); border:1px solid var(--border-subtle); border-radius:8px; color:#fff;">
+              </div>
+            </div>
+
+            <!-- ANTI-PIRACY DELIVERY ENGINE NOTICE -->
+            <div style="background:linear-gradient(135deg, rgba(139,92,246,0.1), rgba(6,182,212,0.08)); border:1px solid rgba(139,92,246,0.25); padding:1rem; border-radius:12px;">
+              <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem;">
+                <span style="font-size:1.1rem;">🛡️</span>
+                <strong style="color:#fff; font-size:0.9rem;">GRO10X Dynamic Anti-Piracy Delivery Engine</strong>
+              </div>
+              <p style="font-size:0.78rem; color:var(--text-secondary); margin:0 0 0.5rem; line-height:1.4;">
+                Instead of uploading vulnerable static PDFs to Etsy that can be easily pirated, upload the <strong>1-Page Branded GRO10X Access Card</strong> to Etsy. When the buyer scans or clicks their link:
+              </p>
+              <ul style="font-size:0.75rem; color:var(--text-muted); padding-left:1.2rem; margin:0; line-height:1.5;">
+                <li><strong style="color:#fff;">Dynamic Stamping:</strong> PDF footer stamped with <code>"Exclusively Licensed to: [Buyer Name] · Order #[Etsy_Order_ID]"</code></li>
+                <li><strong style="color:#fff;">Expiring Signed URLs:</strong> Download link expires in 48 hours (max 3 IP downloads).</li>
+                <li><strong style="color:#fff;">Single-Claim Tokens:</strong> Token is permanently bound to the verified Etsy transaction.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- MODAL FOOTER -->
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1.25rem; border-top:1px solid rgba(255,255,255,0.1); padding-top:1rem;">
+            <span style="font-size:0.75rem; color:var(--text-muted);">Brand: <strong>${b.name}</strong> · Category: <strong>${b.niche}</strong></span>
+            <button class="btn-primary" onclick="document.getElementById('aiSeoModal').style.display='none'">
+              Done & Save
+            </button>
           </div>
         `;
       } catch (err) {
         modalContent.innerHTML = `
           <div style="text-align:center; padding:1.5rem;">
-            <p style="color:#ef4444; font-weight:700;">Could not generate AI SEO: ${err.message}</p>
+            <p style="color:#ef4444; font-weight:700;">Could not generate AI Studio Package: ${err.message}</p>
             <button class="btn-secondary" onclick="document.getElementById('aiSeoModal').style.display='none'">Close</button>
           </div>
         `;
       }
+    },
+
+    switchStudioTab(tab) {
+      const bTab = document.getElementById('studioTabBlueprint');
+      const sTab = document.getElementById('studioTabSeo');
+      const vTab = document.getElementById('studioTabVault');
+
+      const bBtn = document.getElementById('modalTabBtnBlueprint');
+      const sBtn = document.getElementById('modalTabBtnSeo');
+      const vBtn = document.getElementById('modalTabBtnVault');
+
+      if (!bTab || !sTab || !vTab) return;
+
+      bTab.style.display = tab === 'blueprint' ? 'flex' : 'none';
+      sTab.style.display = tab === 'seo' ? 'flex' : 'none';
+      vTab.style.display = tab === 'vault' ? 'flex' : 'none';
+
+      const activeStyle = 'flex:1; background:rgba(0,223,137,0.15); border:1px solid rgba(0,223,137,0.3); color:#00df89; font-weight:800; font-size:0.78rem; padding:0.55rem 0.6rem; border-radius:8px; cursor:pointer;';
+      const inactiveStyle = 'flex:1; background:none; border:1px solid transparent; color:var(--text-muted); font-weight:800; font-size:0.78rem; padding:0.55rem 0.6rem; border-radius:8px; cursor:pointer;';
+
+      if (bBtn) bBtn.style.cssText = tab === 'blueprint' ? activeStyle : inactiveStyle;
+      if (sBtn) sBtn.style.cssText = tab === 'seo' ? activeStyle : inactiveStyle;
+      if (vBtn) vBtn.style.cssText = tab === 'vault' ? activeStyle : inactiveStyle;
     },
 
     async openDBMStandupModal() {
