@@ -2390,6 +2390,8 @@ window.APP_MODULES.brands = async function(container) {
           headers: {
             'Authorization': `Bearer ${token}`
           },
+          body: formData
+        });
         const text = await res.text();
         let data;
         try {
