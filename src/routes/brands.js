@@ -2191,10 +2191,21 @@ router.post('/trigger-20th-telegram-evaluation', requireAuth, async (req, res) =
 router.SEED_BRANDS_DATA = SEED_BRANDS_DATA;
 router.loadBrandsState = loadBrandsState;
 router.persistBrandsState = persistBrandsState;
+router.saveProductAssets = saveProductAssets;
+router.loadProductAssets = loadProductAssets;
+router.saveProductMockup = saveProductMockup;
+router.loadProductMockups = loadProductMockups;
+router.loadFullProduct = loadFullProduct;
 
 module.exports = router;
 module.exports.SEED_BRANDS_DATA = SEED_BRANDS_DATA;
 module.exports.loadBrandsState = loadBrandsState;
 module.exports.persistBrandsState = persistBrandsState;
+module.exports.saveProductAssets = saveProductAssets;
+module.exports.loadProductAssets = loadProductAssets;
+module.exports.saveProductMockup = saveProductMockup;
+module.exports.loadProductMockups = loadProductMockups;
+module.exports.loadFullProduct = loadFullProduct;
+
 
 

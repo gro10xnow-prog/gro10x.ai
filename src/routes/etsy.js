@@ -625,7 +625,19 @@ router.post('/brands/:brandId/publish-all', requireAuth, requireAdmin, asyncHand
   if (brandState) {
     brand.productsLive = catalog.filter(p => p.status === 'Live').length;
     brand.totalListingFeesCharged = Number(((brand.totalListingFeesCharged || 0) + (published.length * 0.20)).toFixed(2));
-    const { persistBrandsState } = require('./brands');
+    const { persistBrandsState, saveProductAssets } = require('./brands');
+    if (typeof saveProductAssets === 'function') {
+      for (const pub of published) {
+        await saveProductAssets(brandId, pub.code, {
+          status: 'Live',
+          etsyListingId: pub.etsyListingId,
+          etsyUrl: pub.etsyUrl,
+          listedAt: pub.listedAt,
+          expiresAt: pub.expiresAt,
+          listingFeeCharged: pub.listingFeeCharged
+        });
+      }
+    }
     await persistBrandsState(brandState);
   }
 
@@ -905,12 +917,14 @@ router.patch('/brands/:brandId/listings/:listingId', requireAuth, requireAdmin, 
       const { state: brandState, catalog } = await getBrandData(brandId);
       const prod = catalog?.find(p => p.code === productCode || p.productCode === productCode);
       if (prod && brandState) {
-        if (title) prod.seoTitle = title;
-        if (description) prod.seoDescription = description;
-        if (price !== undefined) prod.price = Number(price);
-        if (tags) prod.seoTags = tags;
-        if (listingState) prod.status = listingState === 'active' ? 'Live' : 'Inactive';
-        const { persistBrandsState } = require('./brands');
+        const patch = {};
+        if (title) { prod.seoTitle = title; patch.seoTitle = title; }
+        if (description) { prod.seoDescription = description; patch.seoDescription = description; }
+        if (price !== undefined) { prod.price = Number(price); patch.price = Number(price); }
+        if (tags) { prod.seoTags = tags; patch.seoTags = tags; }
+        if (listingState) { prod.status = listingState === 'active' ? 'Live' : 'Inactive'; patch.status = prod.status; }
+        const { persistBrandsState, saveProductAssets } = require('./brands');
+        if (typeof saveProductAssets === 'function') await saveProductAssets(brandId, productCode, patch);
         await persistBrandsState(brandState);
       }
     }
@@ -957,6 +971,15 @@ router.post('/brands/:brandId/listings/:listingId/renew', requireAuth, requireAd
         prod.listedAt = listedIso;
         prod.expiresAt = expiresIso;
         prod.renewalCount = (prod.renewalCount || 0) + 1;
+        const { persistBrandsState, saveProductAssets } = require('./brands');
+        if (typeof saveProductAssets === 'function') {
+          await saveProductAssets(brandId, prod.code, {
+            status: 'Live',
+            listedAt: listedIso,
+            expiresAt: expiresIso,
+            renewalCount: prod.renewalCount
+          });
+        }
       }
       const { persistBrandsState } = require('./brands');
       await persistBrandsState(brandState);
@@ -997,6 +1020,10 @@ router.post('/brands/:brandId/listings/:listingId/deactivate', requireAuth, requ
       const prod = catalog?.find(p => p.code === productCode || p.etsyListingId === Number(listingId) || p.etsyListingId === String(listingId));
       if (prod) {
         prod.status = 'Inactive';
+        const { persistBrandsState, saveProductAssets } = require('./brands');
+        if (typeof saveProductAssets === 'function') {
+          await saveProductAssets(brandId, prod.code, { status: 'Inactive' });
+        }
       }
       if (brand) {
         brand.productsLive = (catalog || []).filter(p => p.status === 'Live').length;
@@ -1038,6 +1065,10 @@ router.post('/brands/:brandId/listings/:listingId/reactivate', requireAuth, requ
       const prod = catalog?.find(p => p.code === productCode || p.etsyListingId === Number(listingId) || p.etsyListingId === String(listingId));
       if (prod) {
         prod.status = 'Live';
+        const { persistBrandsState, saveProductAssets } = require('./brands');
+        if (typeof saveProductAssets === 'function') {
+          await saveProductAssets(brandId, prod.code, { status: 'Live' });
+        }
       }
       if (brand) {
         brand.productsLive = (catalog || []).filter(p => p.status === 'Live').length;
