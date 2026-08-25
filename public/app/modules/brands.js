@@ -1544,19 +1544,22 @@ window.APP_MODULES.brands = async function(container) {
             <button onclick="document.getElementById('aiSeoModal').style.display='none'" style="background:none; border:none; color:var(--text-muted); font-size:1.5rem; cursor:pointer;">✕</button>
           </div>
 
-          <!-- 4-TAB SELECTOR STRIP -->
+          <!-- 5-TAB SELECTOR STRIP -->
           <div style="display:flex; gap:0.4rem; background:rgba(0,0,0,0.35); padding:0.35rem; border-radius:12px; margin-bottom:1.25rem; border:1px solid rgba(255,255,255,0.06); flex-wrap:wrap;">
-            <button id="modalTabBtnBlueprint" type="button" onclick="window.BrandsModule.switchStudioTab('blueprint')" style="flex:1; min-width:140px; background:rgba(0,223,137,0.15); border:1px solid rgba(0,223,137,0.3); color:#00df89; font-weight:800; font-size:0.76rem; padding:0.55rem 0.5rem; border-radius:8px; cursor:pointer;">
-              🎨 Product Blueprint
+            <button id="modalTabBtnBlueprint" type="button" onclick="window.BrandsModule.switchStudioTab('blueprint')" style="flex:1; min-width:120px; background:rgba(0,223,137,0.15); border:1px solid rgba(0,223,137,0.3); color:#00df89; font-weight:800; font-size:0.75rem; padding:0.55rem 0.4rem; border-radius:8px; cursor:pointer;">
+              🎨 Blueprint
             </button>
-            <button id="modalTabBtnSeo" type="button" onclick="window.BrandsModule.switchStudioTab('seo')" style="flex:1; min-width:140px; background:none; border:1px solid transparent; color:var(--text-muted); font-weight:800; font-size:0.76rem; padding:0.55rem 0.5rem; border-radius:8px; cursor:pointer;">
-              📈 Etsy SEO Package
+            <button id="modalTabBtnSeo" type="button" onclick="window.BrandsModule.switchStudioTab('seo')" style="flex:1; min-width:120px; background:none; border:1px solid transparent; color:var(--text-muted); font-weight:800; font-size:0.75rem; padding:0.55rem 0.4rem; border-radius:8px; cursor:pointer;">
+              📈 Etsy SEO
             </button>
-            <button id="modalTabBtnVault" type="button" onclick="window.BrandsModule.switchStudioTab('vault')" style="flex:1; min-width:140px; background:none; border:1px solid transparent; color:var(--text-muted); font-weight:800; font-size:0.76rem; padding:0.55rem 0.5rem; border-radius:8px; cursor:pointer;">
-              📦 Deliverable Vault & Upload
+            <button id="modalTabBtnVault" type="button" onclick="window.BrandsModule.switchStudioTab('vault')" style="flex:1; min-width:120px; background:none; border:1px solid transparent; color:var(--text-muted); font-weight:800; font-size:0.75rem; padding:0.55rem 0.4rem; border-radius:8px; cursor:pointer;">
+              📦 Vault File
             </button>
-            <button id="modalTabBtnMockups" type="button" onclick="window.BrandsModule.switchStudioTab('mockups')" style="flex:1; min-width:140px; background:none; border:1px solid transparent; color:var(--text-muted); font-weight:800; font-size:0.76rem; padding:0.55rem 0.5rem; border-radius:8px; cursor:pointer;">
-              🖼️ 10 Mockups & Video Studio
+            <button id="modalTabBtnMockups" type="button" onclick="window.BrandsModule.switchStudioTab('mockups')" style="flex:1; min-width:120px; background:none; border:1px solid transparent; color:var(--text-muted); font-weight:800; font-size:0.75rem; padding:0.55rem 0.4rem; border-radius:8px; cursor:pointer;">
+              🖼️ 10 Mockups
+            </button>
+            <button id="modalTabBtnAudit" type="button" onclick="window.BrandsModule.switchStudioTab('audit')" style="flex:1; min-width:130px; background:none; border:1px solid transparent; color:var(--text-muted); font-weight:800; font-size:0.75rem; padding:0.55rem 0.4rem; border-radius:8px; cursor:pointer;">
+              🧠 AI Audit & Pricing
             </button>
           </div>
 
@@ -1827,6 +1830,40 @@ window.APP_MODULES.brands = async function(container) {
             </div>
           </div>
 
+          <!-- TAB 5: AI MULTIMODAL AUDIT, PRICING & AUTO-REMEDIATION -->
+          <div id="studioTabAudit" style="display:none; flex-direction:column; gap:1.2rem;">
+            <!-- AUDIT TRIGGER HERO CARD -->
+            <div style="background:linear-gradient(135deg, rgba(139,92,246,0.14), rgba(6,182,212,0.08)); border:1px solid rgba(139,92,246,0.3); padding:1.25rem; border-radius:14px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
+                <div>
+                  <div style="display:flex; align-items:center; gap:0.5rem;">
+                    <span style="font-size:1.2rem;">🧠</span>
+                    <strong style="color:#fff; font-size:1rem;">Gemini Multimodal Quality, Pricing & Auto-Fix Engine</strong>
+                  </div>
+                  <p style="font-size:0.78rem; color:var(--text-secondary); margin:0.25rem 0 0; line-height:1.4;">
+                    Visually inspects your 10 page designs for layout glitches, scores aesthetic quality, determines Etsy retail pricing, and generates targeted edit prompts for flawed pages.
+                  </p>
+                </div>
+                <button class="btn-primary" style="background:linear-gradient(135deg,#8b5cf6,#06b6d4); border:none; padding:0.6rem 1.25rem; font-weight:800; font-size:0.82rem;" onclick="window.BrandsModule.runAIProductAudit(${b.id}, '${prodCode}')">
+                  ⚡ Run AI Vision Audit Now
+                </button>
+              </div>
+            </div>
+
+            <!-- AUDIT RESULTS CONTAINER -->
+            <div id="studioAuditResultsContainer">
+              ${matchedProduct.aiAudit ? window.BrandsModule.buildAuditHtml(matchedProduct.aiAudit, b.id, prodCode) : `
+                <div style="text-align:center; padding:2rem 1rem; background:rgba(255,255,255,0.02); border:1px dashed rgba(255,255,255,0.08); border-radius:12px;">
+                  <div style="font-size:2rem; margin-bottom:0.5rem;">🔍</div>
+                  <h4 style="font-size:0.95rem; color:#fff; margin:0 0 0.3rem;">No AI Audit Run Yet</h4>
+                  <p style="font-size:0.78rem; color:var(--text-muted); margin:0 0 1rem; max-width:420px; margin-inline:auto;">
+                    Upload your page designs in the Mockups tab, then click "Run AI Vision Audit Now" to perform instant quality scoring, commercial pricing analysis, and auto-generate single-page edit prompts.
+                  </p>
+                </div>
+              `}
+            </div>
+          </div>
+
           <!-- MODAL FOOTER -->
           <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1.25rem; border-top:1px solid rgba(255,255,255,0.1); padding-top:1rem;">
             <span style="font-size:0.75rem; color:var(--text-muted);">Brand: <strong>${b.name}</strong> · Category: <strong>${b.niche}</strong></span>
@@ -1850,11 +1887,13 @@ window.APP_MODULES.brands = async function(container) {
       const sTab = document.getElementById('studioTabSeo');
       const vTab = document.getElementById('studioTabVault');
       const mTab = document.getElementById('studioTabMockups');
+      const aTab = document.getElementById('studioTabAudit');
 
       const bBtn = document.getElementById('modalTabBtnBlueprint');
       const sBtn = document.getElementById('modalTabBtnSeo');
       const vBtn = document.getElementById('modalTabBtnVault');
       const mBtn = document.getElementById('modalTabBtnMockups');
+      const aBtn = document.getElementById('modalTabBtnAudit');
 
       if (!bTab || !sTab || !vTab || !mTab) return;
 
@@ -1862,14 +1901,16 @@ window.APP_MODULES.brands = async function(container) {
       sTab.style.display = tab === 'seo' ? 'flex' : 'none';
       vTab.style.display = tab === 'vault' ? 'flex' : 'none';
       mTab.style.display = tab === 'mockups' ? 'flex' : 'none';
+      if (aTab) aTab.style.display = tab === 'audit' ? 'flex' : 'none';
 
-      const activeStyle = 'flex:1; min-width:140px; background:rgba(0,223,137,0.15); border:1px solid rgba(0,223,137,0.3); color:#00df89; font-weight:800; font-size:0.76rem; padding:0.55rem 0.5rem; border-radius:8px; cursor:pointer;';
-      const inactiveStyle = 'flex:1; min-width:140px; background:none; border:1px solid transparent; color:var(--text-muted); font-weight:800; font-size:0.76rem; padding:0.55rem 0.5rem; border-radius:8px; cursor:pointer;';
+      const activeStyle = 'flex:1; min-width:120px; background:rgba(0,223,137,0.15); border:1px solid rgba(0,223,137,0.3); color:#00df89; font-weight:800; font-size:0.75rem; padding:0.55rem 0.4rem; border-radius:8px; cursor:pointer;';
+      const inactiveStyle = 'flex:1; min-width:120px; background:none; border:1px solid transparent; color:var(--text-muted); font-weight:800; font-size:0.75rem; padding:0.55rem 0.4rem; border-radius:8px; cursor:pointer;';
 
       if (bBtn) bBtn.style.cssText = tab === 'blueprint' ? activeStyle : inactiveStyle;
       if (sBtn) sBtn.style.cssText = tab === 'seo' ? activeStyle : inactiveStyle;
       if (vBtn) vBtn.style.cssText = tab === 'vault' ? activeStyle : inactiveStyle;
       if (mBtn) mBtn.style.cssText = tab === 'mockups' ? activeStyle : inactiveStyle;
+      if (aBtn) aBtn.style.cssText = tab === 'audit' ? activeStyle : inactiveStyle;
     },
 
     async uploadProductDeliverable(brandId, productCode, productNameEncoded) {
@@ -1928,6 +1969,198 @@ window.APP_MODULES.brands = async function(container) {
       } catch (err) {
         if (statusEl) statusEl.innerHTML = `<span style="color:#ef4444; font-weight:700;">❌ Upload error: ${err.message}</span>`;
         window.showToast(`Upload failed: ${err.message}`, 'error');
+      }
+    },
+
+    buildAuditHtml(audit, brandId, productCode) {
+      if (!audit) return '';
+      const score = audit.overall_score || 0;
+      const dims = audit.dimension_scores || {};
+      const pricing = audit.pricing || {};
+      const pages = audit.page_analysis || [];
+
+      const cleanPages = pages.filter(p => p.status === 'clean');
+      const flawedPages = pages.filter(p => p.status === 'needs_fix');
+
+      return `
+        <!-- HERO SCORE & PRICING SPLIT -->
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:1rem; margin-bottom:1.25rem;">
+          <!-- SCORE CARD -->
+          <div style="background:rgba(0,0,0,0.3); border:1px solid rgba(139,92,246,0.3); padding:1.2rem; border-radius:14px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+              <span style="font-size:0.72rem; font-weight:800; color:#c084fc; text-transform:uppercase;">Overall Quality Score</span>
+              <span style="font-size:0.7rem; color:var(--text-muted);">${audit.evaluated_by || 'Gemini Vision Engine'}</span>
+            </div>
+
+            <div style="display:flex; align-items:baseline; gap:0.4rem; margin-bottom:0.85rem;">
+              <span style="font-size:2.2rem; font-weight:900; color:#00df89;">${score}</span>
+              <span style="font-size:1rem; color:var(--text-muted); font-weight:700;">/ 10.0</span>
+              <span style="margin-left:auto; font-size:0.75rem; font-weight:800; padding:0.2rem 0.6rem; border-radius:999px; background:${score >= 8 ? 'rgba(0,223,137,0.15)' : 'rgba(251,191,36,0.15)'}; color:${score >= 8 ? '#00df89' : '#fbbf24'};">
+                ${score >= 8.5 ? '⭐ Commercial Ready' : (score >= 7.0 ? '⚠️ Minor Edits Recommended' : '❌ Remediation Required')}
+              </span>
+            </div>
+
+            <!-- 4 DIMENSIONS -->
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
+              <div style="background:rgba(255,255,255,0.03); padding:0.45rem 0.6rem; border-radius:8px;">
+                <span style="font-size:0.65rem; color:var(--text-muted); text-transform:uppercase; display:block;">Aesthetics</span>
+                <strong style="font-size:0.85rem; color:#fff;">${dims.aesthetic || 0} / 10</strong>
+              </div>
+              <div style="background:rgba(255,255,255,0.03); padding:0.45rem 0.6rem; border-radius:8px;">
+                <span style="font-size:0.65rem; color:var(--text-muted); text-transform:uppercase; display:block;">Typography</span>
+                <strong style="font-size:0.85rem; color:#fff;">${dims.typography || 0} / 10</strong>
+              </div>
+              <div style="background:rgba(255,255,255,0.03); padding:0.45rem 0.6rem; border-radius:8px;">
+                <span style="font-size:0.65rem; color:var(--text-muted); text-transform:uppercase; display:block;">Usability</span>
+                <strong style="font-size:0.85rem; color:#fff;">${dims.usability || 0} / 10</strong>
+              </div>
+              <div style="background:rgba(255,255,255,0.03); padding:0.45rem 0.6rem; border-radius:8px;">
+                <span style="font-size:0.65rem; color:var(--text-muted); text-transform:uppercase; display:block;">QA Polish</span>
+                <strong style="font-size:0.85rem; color:${dims.commercial_polish < 7 ? '#fbbf24' : '#00df89'};">${dims.commercial_polish || 0} / 10</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- PRICING RECOMMENDATION CARD -->
+          <div style="background:rgba(0,0,0,0.3); border:1px solid rgba(0,223,137,0.3); padding:1.2rem; border-radius:14px; display:flex; flex-direction:column; justify-content:space-between;">
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                <span style="font-size:0.72rem; font-weight:800; color:#00df89; text-transform:uppercase;">🏷️ AI Retail Price Recommendation</span>
+                <span style="font-size:0.7rem; color:#06b6d4; font-weight:700;">Etsy Sweet Spot</span>
+              </div>
+
+              <div style="display:flex; align-items:baseline; gap:0.4rem; margin-bottom:0.4rem;">
+                <span style="font-size:2.2rem; font-weight:900; color:#00df89;">$${pricing.recommended_price ? Number(pricing.recommended_price).toFixed(2) : '7.49'}</span>
+                <span style="font-size:0.78rem; color:var(--text-muted);">USD (Floor: $${pricing.min_price || '4.99'} · Bundle: $${pricing.bundle_upsell_price || '12.99'})</span>
+              </div>
+
+              <p style="font-size:0.75rem; color:var(--text-secondary); margin:0 0 0.85rem; line-height:1.4;">
+                ${pricing.rationale || 'Optimal price point balancing volume and luxury brand perception.'}
+              </p>
+            </div>
+
+            <button class="btn-primary" style="width:100%; font-size:0.82rem; padding:0.55rem;" onclick="window.BrandsModule.applyAuditedPrice(${brandId}, '${productCode}', ${pricing.recommended_price || 7.49})">
+              🏷️ Apply $${pricing.recommended_price ? Number(pricing.recommended_price).toFixed(2) : '7.49'} to Etsy Listing
+            </button>
+          </div>
+        </div>
+
+        <!-- SUMMARY STATEMENT -->
+        <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); padding:0.85rem 1rem; border-radius:10px; margin-bottom:1.25rem; font-size:0.78rem; color:var(--text-secondary); line-height:1.45;">
+          <strong style="color:#fff;">Executive Audit Summary:</strong> ${audit.summary || 'Visual quality evaluated across all spreads.'}
+        </div>
+
+        <!-- PAGE STATUS OVERVIEW BANNER -->
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+          <h4 style="font-size:0.92rem; font-weight:800; color:#fff; margin:0;">
+            Page-by-Page Audit & Targeted Auto-Remediation (${pages.length} Pages)
+          </h4>
+          <div style="display:flex; gap:0.4rem; font-size:0.72rem; font-weight:800;">
+            <span style="padding:0.15rem 0.5rem; border-radius:6px; background:rgba(0,223,137,0.15); color:#00df89;">${cleanPages.length} Clean</span>
+            <span style="padding:0.15rem 0.5rem; border-radius:6px; background:${flawedPages.length > 0 ? 'rgba(251,191,36,0.15)' : 'rgba(255,255,255,0.06)'}; color:${flawedPages.length > 0 ? '#fbbf24' : 'var(--text-muted)'};">${flawedPages.length} Fixes</span>
+          </div>
+        </div>
+
+        <!-- PAGES LIST WITH DIRECT 1-CLICK EDIT PROMPT COPY BUTTONS -->
+        <div style="display:flex; flex-direction:column; gap:0.75rem;">
+          ${pages.map(p => `
+            <div style="background:rgba(255,255,255,0.03); border:1px solid ${p.status === 'clean' ? 'rgba(0,223,137,0.2)' : 'rgba(251,191,36,0.3)'}; border-radius:12px; padding:0.9rem;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+                <div style="font-weight:800; color:#fff; font-size:0.85rem;">
+                  <span style="color:#06b6d4;">Page ${p.page_number}:</span> ${p.title}
+                </div>
+                <span style="font-size:0.68rem; font-weight:800; padding:0.15rem 0.5rem; border-radius:6px; background:${p.status === 'clean' ? 'rgba(0,223,137,0.15)' : 'rgba(251,191,36,0.15)'}; color:${p.status === 'clean' ? '#00df89' : '#fbbf24'};">
+                  ${p.status === 'clean' ? '✅ Clean — No Edits Required' : '⚠️ Action Needed'}
+                </span>
+              </div>
+
+              ${p.defects && p.defects.length > 0 ? `
+                <div style="margin:0.4rem 0 0.6rem;">
+                  <span style="font-size:0.7rem; font-weight:800; color:#fbbf24; text-transform:uppercase; display:block; margin-bottom:0.2rem;">Detected Visual/Typo Issues:</span>
+                  <ul style="margin:0; padding-left:1.2rem; font-size:0.75rem; color:#ef4444; line-height:1.4;">
+                    ${p.defects.map(d => `<li>${d}</li>`).join('')}
+                  </ul>
+                </div>
+              ` : ''}
+
+              ${p.remediation_prompt ? `
+                <div style="background:rgba(0,0,0,0.4); border:1px solid rgba(251,191,36,0.25); border-radius:8px; padding:0.75rem; margin-top:0.5rem;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem;">
+                    <span style="font-size:0.68rem; font-weight:800; color:#fbbf24; text-transform:uppercase;">⚡ 1-Click Targeted AI Edit Prompt (Google Flow / Gemini):</span>
+                    <button class="btn-primary btn-sm" style="font-size:0.7rem; padding:0.2rem 0.6rem; background:#fbbf24; color:#000; font-weight:800;" onclick="navigator.clipboard.writeText('${escape(p.remediation_prompt)}'); window.showToast('📋 Copied Page ${p.page_number} Edit Prompt! Paste into Flow.','success');">
+                      📋 Copy Page ${p.page_number} Edit Prompt
+                    </button>
+                  </div>
+                  <div style="font-size:0.74rem; font-family:monospace; color:#e2e8f0; line-height:1.4; white-space:pre-wrap; max-height:120px; overflow-y:auto;">
+                    ${p.remediation_prompt}
+                  </div>
+                </div>
+              ` : ''}
+            </div>
+          `).join('')}
+        </div>
+      `;
+    },
+
+    async runAIProductAudit(brandId, productCode) {
+      const container = document.getElementById('studioAuditResultsContainer');
+      if (container) {
+        container.innerHTML = `
+          <div style="text-align:center; padding:2rem 1rem;">
+            <div style="width:50px; height:50px; border-radius:50%; border:3px solid rgba(139,92,246,0.2); border-top-color:#8b5cf6; animation:spin 1s linear infinite; margin:0 auto 1rem;"></div>
+            <h4 style="font-size:1rem; font-weight:800; color:#fff; margin:0 0 0.3rem;">Analyzing Visual Quality & Pricing Engine...</h4>
+            <p style="font-size:0.78rem; color:var(--text-muted); margin:0;">Gemini Multimodal Vision is inspecting page typography, layout geometry, and generating targeted single-page edit prompts...</p>
+          </div>
+        `;
+      }
+
+      try {
+        const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+        const res = await fetch(`/api/brands/${brandId}/products/${productCode}/ai-audit`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (!data.success || !data.audit) throw new Error(data.error || 'AI Audit failed');
+
+        window.showToast(`🧠 AI Audit complete! Quality Score: ${data.audit.overall_score}/10`, 'success');
+        if (container) {
+          container.innerHTML = window.BrandsModule.buildAuditHtml(data.audit, brandId, productCode);
+        }
+
+        // Reload state in background to update suggestedPrice
+        state = await loadBrandsStateFromAPI();
+      } catch (err) {
+        if (container) {
+          container.innerHTML = `
+            <div style="text-align:center; padding:1.5rem; background:rgba(239,68,68,0.08); border-radius:12px; border:1px solid rgba(239,68,68,0.2);">
+              <p style="color:#ef4444; font-weight:700; margin-bottom:0.75rem;">AI Audit Error: ${err.message}</p>
+              <button class="btn-secondary btn-sm" onclick="window.BrandsModule.runAIProductAudit(${brandId}, '${productCode}')">Retry Audit</button>
+            </div>
+          `;
+        }
+        window.showToast(err.message, 'error');
+      }
+    },
+
+    async applyAuditedPrice(brandId, productCode, price) {
+      try {
+        const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+        const res = await fetch(`/api/brands/${brandId}/products/${productCode}/apply-price`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ price })
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Failed to update price');
+
+        window.showToast(`🏷️ Price updated to $${Number(price).toFixed(2)} across catalog and Etsy!`, 'success');
+        state = await loadBrandsStateFromAPI();
+      } catch (err) {
+        window.showToast(`Price update failed: ${err.message}`, 'error');
       }
     },
 

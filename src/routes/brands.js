@@ -861,6 +861,94 @@ router.post('/:id/mockups/upload', requireAuth, vaultUpload.array('mockups', 10)
   }
 });
 
+/**
+ * POST /api/brands/:id/products/:code/ai-audit
+ * Runs Gemini Multimodal Vision Quality & Dynamic Pricing Audit
+ */
+router.post('/:id/products/:code/ai-audit', requireAuth, vaultUpload.array('pageImages', 10), async (req, res) => {
+  try {
+    const brandId = Number(req.params.id);
+    const productCode = req.params.code;
+    const directFiles = req.files || [];
+
+    const state = await loadBrandsState();
+    const brand = state.brands?.find(b => b.id === brandId);
+    if (!brand) return res.status(404).json({ success: false, error: 'Brand not found' });
+
+    const catalog = state.productsCatalog?.[brandId] || [];
+    const prod = catalog.find(p => p.code === productCode) || { code: productCode, name: productCode };
+
+    const { evaluateProductMultimodal } = require('../services/ai-evaluator');
+
+    // Collect image buffers: direct uploads > stored mockups > vault
+    let imageInputs = directFiles;
+    if (imageInputs.length === 0 && Array.isArray(prod.mockups) && prod.mockups.length > 0) {
+      imageInputs = prod.mockups.map(m => m.storagePath || m.url).filter(Boolean);
+    }
+    if (imageInputs.length === 0 && Array.isArray(prod.mockupUrls) && prod.mockupUrls.length > 0) {
+      imageInputs = prod.mockupUrls;
+    }
+
+    const auditReport = await evaluateProductMultimodal(imageInputs, prod, brand);
+
+    // Save audit into product record & auto-stage suggested price
+    prod.aiAudit = auditReport;
+    if (auditReport.pricing?.recommended_price) {
+      prod.suggestedPrice = auditReport.pricing.recommended_price;
+    }
+
+    await persistBrandsState(state);
+
+    return res.json({
+      success: true,
+      brandId,
+      productCode,
+      audit: auditReport
+    });
+  } catch (err) {
+    console.error('[AI Audit Route Exception]:', err);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * POST /api/brands/:id/products/:code/apply-price
+ * Applies AI Recommended Price to product in catalog & Etsy listing matrix
+ */
+router.post('/:id/products/:code/apply-price', requireAuth, async (req, res) => {
+  try {
+    const brandId = Number(req.params.id);
+    const productCode = req.params.code;
+    const { price } = req.body;
+
+    const numPrice = parseFloat(price);
+    if (isNaN(numPrice) || numPrice <= 0) {
+      return res.status(400).json({ success: false, error: 'Valid positive price required' });
+    }
+
+    const state = await loadBrandsState();
+    const brand = state.brands?.find(b => b.id === brandId);
+    if (!brand) return res.status(404).json({ success: false, error: 'Brand not found' });
+
+    const catalog = state.productsCatalog?.[brandId] || [];
+    const prod = catalog.find(p => p.code === productCode);
+    if (!prod) return res.status(404).json({ success: false, error: `Product ${productCode} not found` });
+
+    prod.price = numPrice;
+    await persistBrandsState(state);
+
+    return res.json({
+      success: true,
+      brandId,
+      productCode,
+      price: numPrice,
+      message: `Price updated to $${numPrice.toFixed(2)}`
+    });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 router.SEED_BRANDS_DATA = SEED_BRANDS_DATA;
 router.loadBrandsState = loadBrandsState;
 router.persistBrandsState = persistBrandsState;
