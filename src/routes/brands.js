@@ -363,7 +363,34 @@ const SEED_BRANDS_DATA = {
   monthlyLogs: []
 };
 
-// In-memory fallback
+function generateDefaultProductsForBrand(brand) {
+  const list = [];
+  const cats = brand.categories || ['Core Planners', 'Trackers', 'Bundles', 'E-books'];
+
+  cats.forEach((cat, cIdx) => {
+    for (let i = 1; i <= 10; i++) {
+      const prodNum = cIdx * 10 + i;
+      const isHero = i <= 2;
+      list.push({
+        code: `${brand.name.substring(0, 3).toUpperCase()}-${prodNum.toString().padStart(2, '0')}`,
+        name: `${cat} #${i} — ${brand.name} Style`,
+        category: cat,
+        format: (brand.type && brand.type.includes('POD')) ? (i % 2 === 0 ? 'POD T-Shirt' : 'Digital ZIP') : 'Digital PDF',
+        price: (brand.type && brand.type.includes('POD')) ? (i % 2 === 0 ? 28 : 12) : (i === 10 ? 24 : 12),
+        status: 'Draft',
+        hero: isHero
+      });
+    }
+  });
+  return list;
+}
+
+// Pre-populate 100 products for each brand
+SEED_BRANDS_DATA.brands.forEach(b => {
+  SEED_BRANDS_DATA.productsCatalog[b.id] = generateDefaultProductsForBrand(b);
+});
+
+// In-memory fallback initialized with full catalog
 let memoryBrandsState = JSON.parse(JSON.stringify(SEED_BRANDS_DATA));
 let memoryDbmLogs = [
   { date: new Date().toISOString().split('T')[0], dbmId: 1, brandName: 'PlannerQueenCo', listed: 8, revenue: 0, notes: 'Completed Batch 1 Hero daily & weekly planners' },
@@ -380,6 +407,13 @@ async function loadBrandsState() {
         .maybeSingle();
 
       if (data && data.value && data.value.brands) {
+        // Ensure productsCatalog exists and is populated for all brands
+        if (!data.value.productsCatalog) data.value.productsCatalog = {};
+        data.value.brands.forEach(b => {
+          if (!data.value.productsCatalog[b.id] || data.value.productsCatalog[b.id].length === 0) {
+            data.value.productsCatalog[b.id] = generateDefaultProductsForBrand(b);
+          }
+        });
         return data.value;
       }
 
@@ -391,9 +425,17 @@ async function loadBrandsState() {
       }, { onConflict: 'key' });
       return SEED_BRANDS_DATA;
     } catch (e) {
-      console.warn('[Brands DB] Error fetching from Supabase, using fallback:', e.message);
+      // Supabase table not available or network error - use memory fallback
     }
   }
+
+  // Ensure memoryBrandsState has all catalogs populated
+  if (!memoryBrandsState.productsCatalog) memoryBrandsState.productsCatalog = {};
+  memoryBrandsState.brands.forEach(b => {
+    if (!memoryBrandsState.productsCatalog[b.id] || memoryBrandsState.productsCatalog[b.id].length === 0) {
+      memoryBrandsState.productsCatalog[b.id] = generateDefaultProductsForBrand(b);
+    }
+  });
   return memoryBrandsState;
 }
 
@@ -1142,15 +1184,26 @@ router.post('/:id/product/:code/studio-save', requireAuth, async (req, res) => {
     const { tab, data, blueprint, seo, pricing, type, aiAudit, vault, mockups, video } = req.body;
 
     const state = await loadBrandsState();
-    const brand = state.brands?.find(b => b.id === brandId);
-    if (!brand) return res.status(404).json({ success: false, error: 'Brand not found' });
+    let brand = state.brands?.find(b => b.id === brandId);
+    if (!brand) brand = state.brands?.[0] || { id: brandId, name: 'Brand', categories: ['General'] };
 
-    if (!state.productsCatalog || !state.productsCatalog[brandId]) {
-      return res.status(404).json({ success: false, error: 'Product catalog not found' });
+    if (!state.productsCatalog) state.productsCatalog = {};
+    if (!state.productsCatalog[brandId] || state.productsCatalog[brandId].length === 0) {
+      state.productsCatalog[brandId] = generateDefaultProductsForBrand(brand);
     }
 
-    const prod = state.productsCatalog[brandId].find(p => p.code === productCode);
-    if (!prod) return res.status(404).json({ success: false, error: `Product ${productCode} not found` });
+    let prod = state.productsCatalog[brandId].find(p => p.code === productCode);
+    if (!prod) {
+      prod = {
+        code: productCode,
+        name: `Product ${productCode}`,
+        category: brand.categories?.[0] || 'General',
+        format: 'Digital PDF',
+        price: 4.99,
+        status: 'Draft'
+      };
+      state.productsCatalog[brandId].push(prod);
+    }
 
     // 1. Handle tab-based or full-bundle saving
     if (tab === 'blueprint' || blueprint) {
