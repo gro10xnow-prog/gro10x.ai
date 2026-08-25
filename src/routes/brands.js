@@ -1612,16 +1612,21 @@ router.post('/:id/product/:code/submit-review', requireAuth, async (req, res) =>
       prod.seo.tags = req.body.tags;
     }
     if (req.body.mockups !== undefined && Array.isArray(req.body.mockups) && req.body.mockups.length > 0) prod.mockups = req.body.mockups;
-    if (req.body.video !== undefined) prod.video = req.body.video;
-    if (req.body.vault !== undefined) prod.vault = req.body.vault;
+    if (req.body.mockupsCount !== undefined && Number(req.body.mockupsCount) > 0) prod.mockupsCount = Number(req.body.mockupsCount);
+    if (req.body.video !== undefined && req.body.video) prod.video = req.body.video;
+    if (req.body.vault !== undefined && req.body.vault) prod.vault = req.body.vault;
     if (req.body.aiAudit !== undefined) prod.aiAudit = req.body.aiAudit;
     if (req.body.price !== undefined && Number(req.body.price) > 0) prod.price = Number(req.body.price);
 
     // Validate minimum requirements
     const title = (prod.seoTitle || prod.seo?.title || prod.name || '').trim();
     const hasVault = Boolean(prod.vault?.storagePath || prod.vault?.fileName || prod.vault?.canvaTemplateUrl || prod.vault?.notionTemplateUrl || prod.vault?.downloadUrl);
-    const mockupsCount = Array.isArray(prod.mockups) ? prod.mockups.length : (Array.isArray(prod.mockupUrls) ? prod.mockupUrls.length : 0);
-    const hasVideo = Boolean(prod.video?.storagePath || prod.video?.fileName || (typeof prod.video === 'string' && prod.video.length > 0));
+    const mockupsCount = Math.max(
+      Array.isArray(prod.mockups) ? prod.mockups.length : 0,
+      Array.isArray(prod.mockupUrls) ? prod.mockupUrls.length : 0,
+      Number(prod.mockupsCount) || 0
+    );
+    const hasVideo = Boolean(prod.video?.storagePath || prod.video?.fileName || prod.video?.url || (typeof prod.video === 'string' && prod.video.length > 0));
     const minMockups = brand.minMockups || 4;
 
     const missing = [];

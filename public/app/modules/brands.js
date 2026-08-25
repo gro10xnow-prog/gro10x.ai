@@ -3044,7 +3044,11 @@ window.APP_MODULES.brands = async function(container) {
         description: finalDesc,
         tags: finalTags,
         price: priceEl ? parseFloat(priceEl.value) || 4.99 : 4.99,
-        type: typeEl?.value || 'pdf-planner'
+        type: typeEl?.value || 'pdf-planner',
+        // Send in-memory state data so backend validates correctly (Vercel may have stale state)
+        mockupsCount: Math.max(prod.mockupsCount || 0, prod.mockups?.length || 0, prod.mockupUrls?.length || 0),
+        video: prod.video || undefined,
+        vault: prod.vault || undefined
       };
 
       const headers = getStudioAuthHeaders({ 'Content-Type': 'application/json' });
@@ -3205,14 +3209,33 @@ window.APP_MODULES.brands = async function(container) {
           `;
         }
 
-        // Immediately sync state with backend
-        state = await loadBrandsStateFromAPI();
+        // Directly patch in-memory state — do NOT reload from API (Vercel returns stale seed data)
+        if (!state.productsCatalog) state.productsCatalog = {};
+        if (!state.productsCatalog[brandId]) state.productsCatalog[brandId] = [];
+        let _prod = state.productsCatalog[brandId].find(p => p.code === productCode);
+        if (!_prod) { _prod = { code: productCode, name: prodName, status: 'Draft' }; state.productsCatalog[brandId].push(_prod); }
+        _prod.vault = data.vault;
+        if (_prod.status === 'Draft') _prod.status = 'Vault Uploaded';
+        saveBrandsStateLocally(state);
+        // Update progress bar live
+        const _pctEl = document.getElementById('studioHeaderPctBadge');
+        const _barEl = document.getElementById('studioHeaderProgressBar');
+        const _vaultDone = Boolean(_prod.vault?.storagePath || _prod.vault?.downloadUrl);
+        const _mocksDone = (_prod.mockups?.length || 0) >= 4;
+        const _vidDone = Boolean(_prod.video?.storagePath || _prod.video?.fileName);
+        const _auditDone = (_prod.aiAudit?.overall_score || 0) >= 7.0;
+        const _seoDone = Boolean(_prod.seo?.title || _prod.seoTitle);
+        const _bpDone = Boolean(_prod.blueprint?.prompt || _prod.blueprint?.geometry);
+        const _pct = (_bpDone ? 20 : 0) + (_vaultDone ? 20 : 0) + (_mocksDone && _vidDone ? 20 : 0) + (_auditDone ? 20 : 0) + (_seoDone ? 20 : 0);
+        if (_pctEl) { _pctEl.innerText = `${_pct}% Ready`; _pctEl.style.color = _pct >= 80 ? '#00df89' : (_pct >= 40 ? '#fbbf24' : '#ef4444'); }
+        if (_barEl) _barEl.style.width = `${_pct}%`;
         renderTabContent('etsy');
       } catch (err) {
         if (statusEl) statusEl.innerHTML = `<span style="color:#ef4444; font-weight:700;">❌ Upload error: ${err.message}</span>`;
         window.showToast(`Upload failed: ${err.message}`, 'error');
       }
     },
+
 
     buildAuditHtml(audit, brandId, productCode) {
       if (!audit) return '';
@@ -3486,8 +3509,34 @@ window.APP_MODULES.brands = async function(container) {
           statusEl.innerHTML = `<span style="color:#00df89; font-weight:700;">✅ ${savedCount} mockups stored in Cloud Vault</span>`;
         }
 
-        // Reload brands state in background
-        state = await loadBrandsStateFromAPI();
+        // Directly patch in-memory state — do NOT reload from API (Vercel returns stale seed data)
+        if (!state.productsCatalog) state.productsCatalog = {};
+        if (!state.productsCatalog[brandId]) state.productsCatalog[brandId] = [];
+        let _mprod = state.productsCatalog[brandId].find(p => p.code === productCode);
+        if (!_mprod) { _mprod = { code: productCode, status: 'Draft' }; state.productsCatalog[brandId].push(_mprod); }
+        // Rebuild mockups array from the file input (the server saved them, we track locally by name+index)
+        if (!Array.isArray(_mprod.mockups)) _mprod.mockups = [];
+        // Mark that mockups exist (we track count; full metadata available on next server reload)
+        _mprod.mockupsCount = savedCount;
+        // If enough mockups, update status
+        if (savedCount >= 4 && (_mprod.video?.storagePath || _mprod.video?.fileName)) _mprod.status = 'Media Ready';
+        saveBrandsStateLocally(state);
+        // Update progress bar live
+        const _mpctEl = document.getElementById('studioHeaderPctBadge');
+        const _mbarEl = document.getElementById('studioHeaderProgressBar');
+        const _mvaultDone = Boolean(_mprod.vault?.storagePath || _mprod.vault?.downloadUrl);
+        const _mmocksDone = (_mprod.mockupsCount || _mprod.mockups?.length || 0) >= 4;
+        const _mvidDone = Boolean(_mprod.video?.storagePath || _mprod.video?.fileName);
+        const _mauditDone = (_mprod.aiAudit?.overall_score || 0) >= 7.0;
+        const _mseoDone = Boolean(_mprod.seo?.title || _mprod.seoTitle);
+        const _mbpDone = Boolean(_mprod.blueprint?.prompt || _mprod.blueprint?.geometry);
+        const _mpct = (_mbpDone ? 20 : 0) + (_mvaultDone ? 20 : 0) + (_mmocksDone && _mvidDone ? 20 : 0) + (_mauditDone ? 20 : 0) + (_mseoDone ? 20 : 0);
+        if (_mpctEl) { _mpctEl.innerText = `${_mpct}% Ready`; _mpctEl.style.color = _mpct >= 80 ? '#00df89' : (_mpct >= 40 ? '#fbbf24' : '#ef4444'); }
+        if (_mbarEl) _mbarEl.style.width = `${_mpct}%`;
+        // Update mockup count badge if visible
+        const _mcountEl = document.getElementById('mockupUploadStatus');
+        if (_mcountEl && !_mcountEl.innerHTML.includes('❌')) _mcountEl.innerHTML = `<span style="color:#00df89; font-weight:700;">✅ ${savedCount} mockups stored in Cloud Vault</span>`;
+
       } catch (err) {
         if (statusEl) statusEl.innerHTML = `<span style="color:#ef4444; font-weight:700;">❌ ${err.message}</span>`;
         window.showToast(err.message, 'error');
@@ -3966,7 +4015,27 @@ window.APP_MODULES.brands = async function(container) {
           statusEl.innerHTML = `<span style="color:#00df89; font-weight:700;">✅ Stored in Vault: ${file.name}</span>`;
         }
 
-        state = await loadBrandsStateFromAPI();
+        // Directly patch in-memory state — do NOT reload from API (Vercel returns stale seed data)
+        if (!state.productsCatalog) state.productsCatalog = {};
+        if (!state.productsCatalog[brandId]) state.productsCatalog[brandId] = [];
+        let _vprod = state.productsCatalog[brandId].find(p => p.code === productCode);
+        if (!_vprod) { _vprod = { code: productCode, status: 'Draft' }; state.productsCatalog[brandId].push(_vprod); }
+        _vprod.video = data.video || { fileName: file.name, storagePath: `brands/${brandId}/${productCode}/video/${file.name}`, uploadedAt: new Date().toISOString() };
+        if ((_vprod.mockupsCount || _vprod.mockups?.length || 0) >= 4) _vprod.status = 'Media Ready';
+        saveBrandsStateLocally(state);
+        // Update progress bar live
+        const _vpctEl = document.getElementById('studioHeaderPctBadge');
+        const _vbarEl = document.getElementById('studioHeaderProgressBar');
+        const _vvaultDone = Boolean(_vprod.vault?.storagePath || _vprod.vault?.downloadUrl);
+        const _vmocksDone = (_vprod.mockupsCount || _vprod.mockups?.length || 0) >= 4;
+        const _vvidDone = Boolean(_vprod.video?.storagePath || _vprod.video?.fileName);
+        const _vauditDone = (_vprod.aiAudit?.overall_score || 0) >= 7.0;
+        const _vseoDone = Boolean(_vprod.seo?.title || _vprod.seoTitle);
+        const _vbpDone = Boolean(_vprod.blueprint?.prompt || _vprod.blueprint?.geometry);
+        const _vpct = (_vbpDone ? 20 : 0) + (_vvaultDone ? 20 : 0) + (_vmocksDone && _vvidDone ? 20 : 0) + (_vauditDone ? 20 : 0) + (_vseoDone ? 20 : 0);
+        if (_vpctEl) { _vpctEl.innerText = `${_vpct}% Ready`; _vpctEl.style.color = _vpct >= 80 ? '#00df89' : (_vpct >= 40 ? '#fbbf24' : '#ef4444'); }
+        if (_vbarEl) _vbarEl.style.width = `${_vpct}%`;
+
       } catch (err) {
         if (statusEl) statusEl.innerHTML = `<span style="color:#ef4444; font-weight:700;">❌ ${err.message}</span>`;
         if (window.showToast) window.showToast(err.message, 'error');
