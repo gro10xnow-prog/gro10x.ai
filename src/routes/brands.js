@@ -418,82 +418,76 @@ function getMockupKey(brandId, productCode, rank) {
   return `mkp_${brandId}_${getCleanCode(productCode)}_${Number(rank) || 1}`;
 }
 
-async function saveProductMockup(brandId, productCode, rank, mockupData) {
-  if (!isSupabaseConfigured()) return;
-  const key = getMockupKey(brandId, productCode, rank);
+// ─── DURABLE SUPABASE KV STORE (custom_fields backed) ────────────────────────
+async function dbGet(key) {
+  if (!isSupabaseConfigured()) return null;
   try {
-    await supabase.from('app_settings').upsert({
-      key,
-      value: mockupData,
-      updated_at: new Date().toISOString()
-    }, { onConflict: 'key' });
-  } catch (err) {
-    console.warn('[Mockup Atomic Save Error]:', err.message);
+    const { data, error } = await supabase.from('custom_fields')
+      .select('options')
+      .eq('id', key)
+      .maybeSingle();
+    if (!error && data && data.options !== undefined && data.options !== null) return data.options;
+  } catch (e) {}
+  return null;
+}
+
+async function dbSet(key, value, entityType = 'app_setting') {
+  if (!isSupabaseConfigured()) return;
+  try {
+    await supabase.from('custom_fields').upsert({
+      id: key,
+      entity_type: entityType,
+      name: key,
+      field_type: 'json',
+      options: value
+    }, { onConflict: 'id' });
+  } catch (e) {
+    console.warn(`[Supabase KV] Error writing ${key}:`, e.message);
   }
+}
+
+async function dbList(prefix) {
+  if (!isSupabaseConfigured()) return [];
+  try {
+    const { data, error } = await supabase.from('custom_fields')
+      .select('id, options')
+      .like('id', `${prefix}%`);
+    if (!error && Array.isArray(data)) {
+      return data.map(d => ({ key: d.id, value: d.options })).filter(d => d.value !== undefined && d.value !== null);
+    }
+  } catch (e) {}
+  return [];
+}
+
+async function saveProductMockup(brandId, productCode, rank, mockupData) {
+  const key = getMockupKey(brandId, productCode, rank);
+  await dbSet(key, mockupData, 'mockup');
 }
 
 async function loadProductMockups(brandId, productCode) {
-  if (!isSupabaseConfigured()) return [];
   const prefix = `mkp_${brandId}_${getCleanCode(productCode)}_`;
-  try {
-    const { data, error } = await supabase.from('app_settings')
-      .select('key, value')
-      .like('key', `${prefix}%`);
-    if (error || !Array.isArray(data)) return [];
-    return data.map(d => d.value).filter(Boolean).sort((a, b) => (Number(a.rank) || 0) - (Number(b.rank) || 0));
-  } catch (err) {
-    console.warn('[Mockup Atomic Load Error]:', err.message);
-    return [];
-  }
+  const items = await dbList(prefix);
+  return items.map(d => d.value).filter(Boolean).sort((a, b) => (Number(a.rank) || 0) - (Number(b.rank) || 0));
 }
 
 async function saveProductAssets(brandId, productCode, patch) {
-  if (!isSupabaseConfigured()) return patch;
   const key = getProductKey(brandId, productCode);
-  let existing = {};
-  try {
-    const { data } = await supabase.from('app_settings')
-      .select('value')
-      .eq('key', key)
-      .maybeSingle();
-    if (data && data.value && typeof data.value === 'object') existing = data.value;
-  } catch (e) {}
-
+  const existing = (await dbGet(key)) || {};
   const merged = {
     ...existing,
     ...patch,
     updatedAt: new Date().toISOString()
   };
-
-  try {
-    await supabase.from('app_settings').upsert({
-      key,
-      value: merged,
-      updated_at: new Date().toISOString()
-    }, { onConflict: 'key' });
-  } catch (err) {
-    console.warn('[Product Asset Save Error]:', err.message);
-  }
-
+  await dbSet(key, merged, 'product_asset');
   return merged;
 }
 
 async function loadProductAssets(brandId, productCode) {
-  if (!isSupabaseConfigured()) return null;
   const key = getProductKey(brandId, productCode);
-  try {
-    const { data } = await supabase.from('app_settings')
-      .select('value')
-      .eq('key', key)
-      .maybeSingle();
-    return data?.value || null;
-  } catch (e) {
-    return null;
-  }
+  return await dbGet(key);
 }
 
 async function loadFullProduct(brandId, productCode) {
-  const cleanCode = getCleanCode(productCode);
   const [assetData, mockups] = await Promise.all([
     loadProductAssets(brandId, productCode),
     loadProductMockups(brandId, productCode)
@@ -526,14 +520,9 @@ async function loadBrandsState() {
   // 1. Try Supabase FIRST for brand metadata
   if (isSupabaseConfigured()) {
     try {
-      const { data } = await supabase
-        .from('app_settings')
-        .select('value')
-        .eq('key', 'brands_empire_state')
-        .maybeSingle();
-
-      if (data && data.value && data.value.brands) {
-        state = data.value;
+      const dbMeta = await dbGet('brands_empire_state');
+      if (dbMeta && dbMeta.brands && dbMeta.brands.length > 0) {
+        state = dbMeta;
       }
     } catch (e) {
       console.warn('[Brands DB] Supabase state load notice:', e.message);
@@ -569,33 +558,29 @@ async function loadBrandsState() {
   // 4. Merge live atomic product assets and mockups from Supabase
   if (isSupabaseConfigured()) {
     try {
-      const [prdRes, mkpRes] = await Promise.all([
-        supabase.from('app_settings').select('key, value').like('key', 'prd_%'),
-        supabase.from('app_settings').select('key, value').like('key', 'mkp_%')
+      const [prdList, mkpList] = await Promise.all([
+        dbList('prd_'),
+        dbList('mkp_')
       ]);
 
       const prdMap = {};
-      if (Array.isArray(prdRes.data)) {
-        prdRes.data.forEach(row => {
-          if (row.key && row.value) prdMap[row.key] = row.value;
-        });
-      }
+      prdList.forEach(row => {
+        if (row.key && row.value) prdMap[row.key] = row.value;
+      });
 
       const mkpMap = {};
-      if (Array.isArray(mkpRes.data)) {
-        mkpRes.data.forEach(row => {
-          // key format: mkp_${brandId}_${cleanCode}_${rank}
-          const parts = row.key.split('_');
-          if (parts.length >= 4) {
-            const bId = parts[1];
-            const rank = parts[parts.length - 1];
-            const pCode = parts.slice(2, parts.length - 1).join('_');
-            const groupKey = `${bId}_${pCode}`;
-            if (!mkpMap[groupKey]) mkpMap[groupKey] = [];
-            mkpMap[groupKey].push(row.value);
-          }
-        });
-      }
+      mkpList.forEach(row => {
+        // key format: mkp_${brandId}_${cleanCode}_${rank}
+        const parts = row.key.split('_');
+        if (parts.length >= 4) {
+          const bId = parts[1];
+          const rank = parts[parts.length - 1];
+          const pCode = parts.slice(2, parts.length - 1).join('_');
+          const groupKey = `${bId}_${pCode}`;
+          if (!mkpMap[groupKey]) mkpMap[groupKey] = [];
+          mkpMap[groupKey].push(row.value);
+        }
+      });
 
       for (const brand of state.brands) {
         const bId = brand.id;
@@ -637,16 +622,11 @@ async function persistBrandsState(state) {
     console.warn('[Brands DB] File write notice:', e.message);
   }
 
-
   if (isSupabaseConfigured()) {
     try {
-      await supabase.from('app_settings').upsert({
-        key: 'brands_empire_state',
-        value: state,
-        updated_at: new Date().toISOString()
-      }, { onConflict: 'key' });
+      await dbSet('brands_empire_state', state, 'brand_state');
     } catch (e) {
-      // Supabase table not present
+      console.warn('[Brands DB] Supabase state persist notice:', e.message);
     }
   }
 }
@@ -654,14 +634,9 @@ async function persistBrandsState(state) {
 async function loadDbmLogs() {
   if (isSupabaseConfigured()) {
     try {
-      const { data } = await supabase
-        .from('app_settings')
-        .select('value')
-        .eq('key', 'dbm_standup_logs')
-        .maybeSingle();
-
-      if (data && Array.isArray(data.value)) {
-        return data.value;
+      const logs = await dbGet('dbm_standup_logs');
+      if (logs && Array.isArray(logs)) {
+        return logs;
       }
     } catch (e) {
       console.warn('[DBM Logs] Error loading logs:', e.message);
@@ -674,11 +649,7 @@ async function persistDbmLogs(logs) {
   memoryDbmLogs = logs;
   if (isSupabaseConfigured()) {
     try {
-      await supabase.from('app_settings').upsert({
-        key: 'dbm_standup_logs',
-        value: logs,
-        updated_at: new Date().toISOString()
-      }, { onConflict: 'key' });
+      await dbSet('dbm_standup_logs', logs, 'dbm_logs');
     } catch (e) {
       console.warn('[DBM Logs] Error persisting logs:', e.message);
     }
