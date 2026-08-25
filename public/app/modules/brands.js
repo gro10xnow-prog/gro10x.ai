@@ -375,8 +375,6 @@ function getStudioAuthHeaders(extra = {}) {
 }
 
 async function loadBrandsStateFromAPI() {
-  // ALWAYS check localStorage first — it holds locally-patched product data (vault/mockups/video)
-  // that the API cannot reliably return (Vercel ephemeral instances return stale seeded data)
   let localState = null;
   try {
     const saved = localStorage.getItem('gro10x_brands_data');
@@ -387,26 +385,29 @@ async function loadBrandsStateFromAPI() {
     if (window.APP_API) {
       const res = await window.APP_API.get('/brands');
       if (res && res.brands) {
-        // Merge: use API for brands list/config but prefer local productsCatalog
-        // if any product has been worked on (has blueprint/vault/mockups/video/seo)
-        if (localState && localState.productsCatalog) {
-          if (!res.productsCatalog) res.productsCatalog = {};
+        // Merge: API is the AUTHORITATIVE source of truth (backed by Supabase).
+        // If localState has draft work, overlay it, but API's live status, Etsy listing IDs,
+        // and cloud URLs always take precedence.
+        if (localState && localState.productsCatalog && res.productsCatalog) {
           for (const [bId, catalog] of Object.entries(localState.productsCatalog)) {
             if (!res.productsCatalog[bId]) {
               res.productsCatalog[bId] = catalog;
             } else {
-              // Merge individual products: prefer local if it has more data
               for (const localProd of (Array.isArray(catalog) ? catalog : [])) {
                 const apiIdx = res.productsCatalog[bId].findIndex(p => p.code === localProd.code);
-                const hasLocalWork = Boolean(localProd.blueprint?.prompt || localProd.vault?.storagePath ||
-                  localProd.mockupsCount > 0 || localProd.video?.fileName || localProd.seo?.title);
-                if (hasLocalWork) {
-                  if (apiIdx >= 0) {
-                    // Keep local data, update from API only non-work fields
-                    res.productsCatalog[bId][apiIdx] = { ...res.productsCatalog[bId][apiIdx], ...localProd };
-                  } else {
-                    res.productsCatalog[bId].push(localProd);
-                  }
+                if (apiIdx >= 0) {
+                  const apiProd = res.productsCatalog[bId][apiIdx];
+                  // API data (especially status: 'Live', etsyListingId, etsyUrl, expiresAt) always wins
+                  res.productsCatalog[bId][apiIdx] = {
+                    ...localProd,
+                    ...apiProd,
+                    // Ensure status & Etsy metadata from API strictly win
+                    status: apiProd.status || localProd.status || 'Draft',
+                    etsyListingId: apiProd.etsyListingId || localProd.etsyListingId,
+                    etsyUrl: apiProd.etsyUrl || localProd.etsyUrl,
+                    expiresAt: apiProd.expiresAt || localProd.expiresAt,
+                    listedAt: apiProd.listedAt || localProd.listedAt
+                  };
                 }
               }
             }
@@ -5148,6 +5149,8 @@ window.APP_MODULES.brands = async function(container) {
         }
 
         if (window.showToast) window.showToast(`✅ ${prod.code} is now live on Etsy! ($0.20 fee logged)`, 'success');
+        const modal = document.getElementById('aiSeoModal');
+        if (modal) modal.style.display = 'none';
         state = await loadBrandsStateFromAPI();
         renderTabContent('etsy');
       } catch (e) {

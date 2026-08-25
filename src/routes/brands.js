@@ -603,6 +603,11 @@ async function loadBrandsState() {
           }
           return merged;
         });
+
+        // Dynamically compute live counts and fees from the true merged catalog
+        const liveProducts = state.productsCatalog[bId].filter(p => p.status === 'Live');
+        brand.productsLive = liveProducts.length;
+        brand.totalListingFeesCharged = Number(((brand.totalListingFeesCharged || 0) + (liveProducts.length * 0.20)).toFixed(2));
       }
     } catch (mergeErr) {
       console.warn('[Brands DB] Error merging live assets into catalog:', mergeErr.message);
