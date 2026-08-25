@@ -407,7 +407,37 @@ const DBM_LOGS_FILE_PATH = process.env.NODE_ENV === 'test'
   : path.join(__dirname, '../../data/dbm_standup_logs.json');
 
 async function loadBrandsState() {
-  // 1. Try reading from disk file first for ultra-fast durable recovery
+  // 1. Try Supabase FIRST — authoritative source for Vercel/serverless deployments
+  //    (Disk-first ordering failed because Vercel serves the committed seed file from
+  //     disk, so concurrent upload calls would each read seed state and overwrite Supabase,
+  //     losing previously-uploaded mockups/vault/video data.)
+  if (isSupabaseConfigured()) {
+    try {
+      const { data, error } = await supabase
+        .from('app_settings')
+        .select('value')
+        .eq('key', 'brands_empire_state')
+        .maybeSingle();
+
+      if (data && data.value && data.value.brands) {
+        if (!data.value.productsCatalog) data.value.productsCatalog = {};
+        data.value.brands.forEach(b => {
+          if (!data.value.productsCatalog[b.id] || data.value.productsCatalog[b.id].length === 0) {
+            data.value.productsCatalog[b.id] = generateDefaultProductsForBrand(b);
+          }
+        });
+        memoryBrandsState = data.value;
+        // Cache to disk for next same-instance read
+        try { fs.writeFileSync(STATE_FILE_PATH, JSON.stringify(memoryBrandsState, null, 2), 'utf8'); } catch (err) {}
+        return memoryBrandsState;
+      }
+    } catch (e) {
+      // Supabase unavailable — fall through to disk
+      console.warn('[Brands DB] Supabase state load notice:', e.message);
+    }
+  }
+
+  // 2. Fallback: disk file (local dev or Supabase unavailable)
   try {
     if (fs.existsSync(STATE_FILE_PATH)) {
       const fileData = JSON.parse(fs.readFileSync(STATE_FILE_PATH, 'utf8'));
@@ -426,31 +456,6 @@ async function loadBrandsState() {
     console.warn('[Brands DB] Disk state load notice:', e.message);
   }
 
-  // 2. Try Supabase app_settings
-  if (isSupabaseConfigured()) {
-    try {
-      const { data, error } = await supabase
-        .from('app_settings')
-        .select('value')
-        .eq('key', 'brands_empire_state')
-        .maybeSingle();
-
-      if (data && data.value && data.value.brands) {
-        if (!data.value.productsCatalog) data.value.productsCatalog = {};
-        data.value.brands.forEach(b => {
-          if (!data.value.productsCatalog[b.id] || data.value.productsCatalog[b.id].length === 0) {
-            data.value.productsCatalog[b.id] = generateDefaultProductsForBrand(b);
-          }
-        });
-        memoryBrandsState = data.value;
-        try { fs.writeFileSync(STATE_FILE_PATH, JSON.stringify(memoryBrandsState, null, 2), 'utf8'); } catch (err) {}
-        return memoryBrandsState;
-      }
-    } catch (e) {
-      // Supabase table not available
-    }
-  }
-
   // 3. Fallback to memory initialized with full catalog
   if (!memoryBrandsState.productsCatalog) memoryBrandsState.productsCatalog = {};
   memoryBrandsState.brands.forEach(b => {
@@ -462,6 +467,7 @@ async function loadBrandsState() {
   try { fs.writeFileSync(STATE_FILE_PATH, JSON.stringify(memoryBrandsState, null, 2), 'utf8'); } catch (err) {}
   return memoryBrandsState;
 }
+
 
 async function persistBrandsState(state) {
   memoryBrandsState = state;
