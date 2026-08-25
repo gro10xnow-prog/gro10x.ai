@@ -63,6 +63,7 @@ const exportRoutes = require('./export');
 const eodRoutes = require('./eod');
 const enginesRoutes = require('./engines');
 const brandsRoutes = require('./brands');
+const etsyRoutes = require('./etsy');
 
 // System Version Endpoint
 router.get('/version', (req, res) => {
@@ -174,6 +175,7 @@ router.use('/export', exportRoutes);
 router.use('/eod', eodRoutes);
 router.use('/engines', enginesRoutes);
 router.use('/brands', brandsRoutes);
+router.use('/etsy', etsyRoutes);
 
 // Public Client Phone Check (used by chat widget — rate-limited & safe)
 router.get('/public/client-check', asyncHandler(async (req, res) => {

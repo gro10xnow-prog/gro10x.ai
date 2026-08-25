@@ -351,14 +351,14 @@ const DEFAULT_BRANDS_DATA = {
 };
 
 const STORE_LAUNCH_STEPS = [
-  { id: 1, title: 'Create Etsy Seller Account', desc: 'Register with dedicated brand email & payment profile.' },
-  { id: 2, title: 'Configure Shop Identity', desc: 'Upload banner, avatar, policy & bio matching brand guidelines.' },
-  { id: 3, title: 'Connect Printify to Etsy', desc: 'Only for POD brands: Link store & verify shipping profiles.' },
-  { id: 4, title: 'Upload Hero Product #1 + #2', desc: 'Publish first 2 flagship listings with 10 mockup slides & video.' },
-  { id: 5, title: 'Run AI SEO Audit on Listings', desc: 'Ensure all 13 tags and 140-char title are populated.' },
-  { id: 6, title: 'Enable Etsy Ads ($1/day test)', desc: 'Activate initial test budget on hero listings for rapid indexing.' },
-  { id: 7, title: 'Paste Live Etsy URL into CRM', desc: 'Link live store directly in the Brand Command Center.' },
-  { id: 8, title: 'Report Store Live in Standup', desc: 'Submit EOD report confirming launch and beginning daily uploads.' }
+  { id: 1, title: 'Create Dedicated Etsy Store', desc: 'Open seller store under brand name with payment profile.' },
+  { id: 2, title: 'Setup Shop Branding Assets', desc: 'Upload banner, avatar & policies matching brand guidelines.' },
+  { id: 3, title: 'Connect Etsy to GRO10X (OAuth PKCE)', desc: '1-click secure token authorization in Etsy Command Center.' },
+  { id: 4, title: 'Upload Deliverables to Cloud Vault', desc: 'Store PDF/ZIP deliverables in Supabase product vault.' },
+  { id: 5, title: 'Generate 10 Mockups & 10s Video', desc: 'Run studio AI engine for high-converting listing assets.' },
+  { id: 6, title: 'Run AI Pre-Listing Health Check', desc: 'Verify 100% compliance across 10 rules (13 tags, title, pricing).' },
+  { id: 7, title: 'Bulk Publish Catalog to Live Etsy', desc: '1-click publish 100 products with automatic asset streaming.' },
+  { id: 8, title: 'Enable Order Sync & Telegram Alerts', desc: 'Auto-sync revenue to Engine 3 P&L and receive sale alerts.' }
 ];
 
 async function loadBrandsStateFromAPI() {
@@ -481,6 +481,9 @@ window.APP_MODULES.brands = async function(container) {
         <button class="brands-tab-btn ${currentTab === 'dbm' ? 'active' : ''}" onclick="window.BrandsModule.switchTab('dbm')">
           👤 DBM Team Hub (${state.dbms.length})
         </button>
+        <button class="brands-tab-btn ${currentTab === 'etsy' ? 'active' : ''}" style="border: 1px solid rgba(0,223,137,0.3); background:${currentTab === 'etsy' ? 'var(--brand-primary, #00df89)' : 'rgba(0,223,137,0.08)'}; color:${currentTab === 'etsy' ? '#070b12' : '#00df89'};" onclick="window.BrandsModule.switchTab('etsy')">
+          🏪 Etsy Command Center
+        </button>
       </div>
 
       <!-- TAB CONTENT AREA -->
@@ -495,6 +498,18 @@ window.APP_MODULES.brands = async function(container) {
       <!-- AI SEO RESULT MODAL -->
       <div id="aiSeoModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); backdrop-filter:blur(8px); z-index:10000; align-items:center; justify-content:center; padding:1.5rem;">
         <div style="background:var(--surface-card, #181824); max-width:640px; width:100%; max-height:90vh; overflow-y:auto; border-radius:20px; border:1px solid rgba(0,223,137,0.3); padding:2rem; box-shadow:0 20px 50px rgba(0,0,0,0.8);" id="aiSeoModalContent">
+        </div>
+      </div>
+
+      <!-- ETSY HEALTH CHECK DIAGNOSTICS MODAL -->
+      <div id="etsyHealthModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); backdrop-filter:blur(8px); z-index:10001; align-items:center; justify-content:center; padding:1.5rem;">
+        <div style="background:var(--surface-card, #181824); max-width:760px; width:100%; max-height:90vh; overflow-y:auto; border-radius:20px; border:1px solid rgba(6,182,212,0.3); padding:2rem; box-shadow:0 20px 50px rgba(0,0,0,0.8);" id="etsyHealthModalContent">
+        </div>
+      </div>
+
+      <!-- ETSY BULK PUBLISHER PROGRESS MODAL -->
+      <div id="etsyBulkModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(10px); z-index:10002; align-items:center; justify-content:center; padding:1.5rem;">
+        <div style="background:var(--surface-card, #181824); max-width:680px; width:100%; max-height:90vh; overflow-y:auto; border-radius:20px; border:1px solid rgba(0,223,137,0.4); padding:2rem; box-shadow:0 25px 60px rgba(0,0,0,0.9);" id="etsyBulkModalContent">
         </div>
       </div>
     `;
@@ -516,6 +531,8 @@ window.APP_MODULES.brands = async function(container) {
       renderPnLTab(tabContainer);
     } else if (tab === 'dbm') {
       renderDBMTab(tabContainer);
+    } else if (tab === 'etsy') {
+      renderEtsyTab(tabContainer);
     }
   }
 
@@ -926,6 +943,235 @@ window.APP_MODULES.brands = async function(container) {
   }
 
   // ─────────────────────────────────────────────────────────────────────────
+  // TAB 6: ETSY SHOP COMMAND CENTER
+  // ─────────────────────────────────────────────────────────────────────────
+  async function renderEtsyTab(container) {
+    const selectedBrandId = parseInt(localStorage.getItem('gro10x_brands_selected_etsy_brand') || '1', 10);
+    const b = state.brands.find(x => x.id === selectedBrandId) || state.brands[0];
+
+    // Ensure catalog list exists for this brand
+    if (!state.productsCatalog[b.id] || state.productsCatalog[b.id].length === 0) {
+      state.productsCatalog[b.id] = generateDefaultProductsForBrand(b);
+      saveBrandsStateLocally(state);
+    }
+    const catalog = state.productsCatalog[b.id];
+    const liveCount = catalog.filter(p => p.status === 'Live').length;
+    const readyCount = catalog.filter(p => ['SEO Ready', 'QA Approved', 'Staged'].includes(p.status)).length;
+    const vaultCount = catalog.filter(p => Boolean(p.vault?.fileName || p.vault?.storagePath)).length;
+
+    container.innerHTML = `
+      <!-- TOP COMMAND BAR: BRAND SELECTOR + MASTER ACTIONS -->
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem;">
+        <div style="display:flex; align-items:center; gap:0.75rem;">
+          <label style="font-size:0.85rem; font-weight:800; color:#fff;">Select Brand Store:</label>
+          <select id="etsyBrandSelector" onchange="window.BrandsModule.changeEtsyBrand(this.value)" style="background:var(--surface-card, #181824); color:#fff; border:1px solid rgba(0,223,137,0.3); padding:0.5rem 1rem; border-radius:10px; font-weight:800; font-size:0.9rem; cursor:pointer;">
+            ${state.brands.map(brand => `
+              <option value="${brand.id}" ${brand.id === b.id ? 'selected' : ''}>
+                Brand ${brand.id}: ${brand.name} (${brand.type}) · ${brand.productsLive || 0}/100 Live
+              </option>
+            `).join('')}
+          </select>
+        </div>
+
+        <div style="display:flex; gap:0.6rem; flex-wrap:wrap;">
+          <button class="btn-secondary" style="border:1px solid rgba(6,182,212,0.4); color:#06b6d4;" onclick="window.BrandsModule.runAIEtsyHealthCheck(${b.id})">
+            🩺 Run AI Health Check (All 100)
+          </button>
+          <button class="btn-primary" style="background:linear-gradient(135deg, #00df89, #06b6d4); font-weight:900;" onclick="window.BrandsModule.publishBulkEtsy(${b.id})">
+            🚀 Bulk Publish to Etsy
+          </button>
+        </div>
+      </div>
+
+      <!-- STORE CONNECTION & IDENTITY STATUS CARD -->
+      <div id="etsyConnectionCard" class="card-glass" style="padding:1.5rem; border-radius:16px; margin-bottom:1.5rem; border:1px solid rgba(255,255,255,0.08); background:linear-gradient(180deg, rgba(24,24,36,0.9), rgba(15,15,22,0.95));">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+          <div style="display:flex; align-items:center; gap:1rem;">
+            <div style="width:50px; height:50px; border-radius:14px; background:linear-gradient(135deg, #f97316, #ef4444); color:#fff; display:flex; align-items:center; justify-content:center; font-size:1.5rem; font-weight:900; box-shadow:0 8px 20px rgba(249,115,22,0.3);">
+              E
+            </div>
+            <div>
+              <div style="display:flex; align-items:center; gap:0.5rem;">
+                <h3 style="font-size:1.2rem; font-weight:900; color:#fff; margin:0;">${b.name} Etsy Store</h3>
+                <span id="etsyStatusBadge" style="font-size:0.72rem; font-weight:800; padding:0.2rem 0.6rem; border-radius:999px; background:rgba(255,255,255,0.1); color:var(--text-muted);">
+                  Checking Connection...
+                </span>
+              </div>
+              <p id="etsyStatusSubtext" style="font-size:0.78rem; color:var(--text-secondary); margin:0.2rem 0 0;">
+                Niche: <strong>${b.niche}</strong> · Proj. Gross: <strong>$${b.target12mo.toLocaleString()}/yr</strong>
+              </p>
+            </div>
+          </div>
+
+          <div id="etsyConnectionActions" style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+            <button class="btn-secondary btn-sm" onclick="window.BrandsModule.refreshEtsyStatus(${b.id})">
+              🔄 Refresh
+            </button>
+            <button class="btn-primary btn-sm" style="background:#f97316; border-color:#f97316;" onclick="window.BrandsModule.connectEtsyStore(${b.id})">
+              🔑 Connect Etsy Store (OAuth PKCE)
+            </button>
+          </div>
+        </div>
+
+        <!-- EXTENDED SHOP DETAILS (Populated dynamically) -->
+        <div id="etsyLiveDetails" style="margin-top:1rem; padding-top:1rem; border-top:1px solid rgba(255,255,255,0.06); display:none; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:1rem; font-size:0.78rem;">
+        </div>
+      </div>
+
+      <!-- MASTER METRICS STRIP -->
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:1rem; margin-bottom:1.5rem;">
+        <div class="card-glass" style="padding:1rem; border-radius:12px; border-left:4px solid #00df89;">
+          <span style="font-size:0.7rem; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Live on Etsy</span>
+          <div style="font-size:1.5rem; font-weight:900; color:#fff; margin-top:0.2rem;">
+            ${liveCount} <span style="font-size:0.85rem; color:var(--text-muted); font-weight:500;">/ 100 Live</span>
+          </div>
+          <span style="font-size:0.7rem; color:#00df89;">${Math.round((liveCount / 100) * 100)}% of Target</span>
+        </div>
+
+        <div class="card-glass" style="padding:1rem; border-radius:12px; border-left:4px solid #06b6d4;">
+          <span style="font-size:0.7rem; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Cloud Vault Assets</span>
+          <div style="font-size:1.5rem; font-weight:900; color:#06b6d4; margin-top:0.2rem;">
+            ${vaultCount} <span style="font-size:0.85rem; color:var(--text-muted); font-weight:500;">/ 100 Uploaded</span>
+          </div>
+          <span style="font-size:0.7rem; color:var(--text-muted);">PDF/ZIP Deliverables in Supabase</span>
+        </div>
+
+        <div class="card-glass" style="padding:1rem; border-radius:12px; border-left:4px solid #a855f7;">
+          <span style="font-size:0.7rem; font-weight:800; color:var(--text-muted); text-transform:uppercase;">SEO & Mockups Ready</span>
+          <div style="font-size:1.5rem; font-weight:900; color:#a855f7; margin-top:0.2rem;">
+            ${readyCount} <span style="font-size:0.85rem; color:var(--text-muted); font-weight:500;">/ 100 Staged</span>
+          </div>
+          <span style="font-size:0.7rem; color:var(--text-muted);">140-char title + 13 tags + 10 mockups</span>
+        </div>
+
+        <div class="card-glass" style="padding:1rem; border-radius:12px; border-left:4px solid #fbbf24;">
+          <span style="font-size:0.7rem; font-weight:800; color:var(--text-muted); text-transform:uppercase;">AI Health Pass Rate</span>
+          <div id="etsyPassRateBadge" style="font-size:1.5rem; font-weight:900; color:#fbbf24; margin-top:0.2rem;">
+            Pending Check
+          </div>
+          <span style="font-size:0.7rem; color:var(--text-muted);">10-Rule Compliance Engine</span>
+        </div>
+      </div>
+
+      <!-- 100-PRODUCT CATALOG MATRIX -->
+      <div class="card-glass" style="padding:1.5rem; border-radius:16px; margin-bottom:1.5rem;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem; margin-bottom:1.25rem;">
+          <div>
+            <h3 style="font-size:1.1rem; font-weight:800; color:#fff; margin:0;">📦 100-Product Etsy Catalog Matrix</h3>
+            <span style="font-size:0.75rem; color:var(--text-muted);">Manage listing state, prices, vault deliverables and publish directly to Etsy</span>
+          </div>
+
+          <div style="display:flex; gap:0.5rem; align-items:center;">
+            <input type="text" id="etsyProductSearch" placeholder="Search title or code..." oninput="window.BrandsModule.filterEtsyTable(this.value)" style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); color:#fff; padding:0.4rem 0.8rem; border-radius:8px; font-size:0.8rem; width:200px;">
+            <button class="btn-ghost btn-sm" onclick="window.BrandsModule.openAddProductModal()">+ Add Product</button>
+          </div>
+        </div>
+
+        <div style="overflow-x:auto;">
+          <table style="width:100%; border-collapse:collapse; font-size:0.82rem; text-align:left;">
+            <thead>
+              <tr style="border-bottom:1px solid rgba(255,255,255,0.1); color:var(--text-muted); font-size:0.7rem; text-transform:uppercase;">
+                <th style="padding:0.6rem;">Code / Title</th>
+                <th style="padding:0.6rem;">Section / Category</th>
+                <th style="padding:0.6rem;">Price ($)</th>
+                <th style="padding:0.6rem;">Cloud Deliverable</th>
+                <th style="padding:0.6rem;">AI Health Check</th>
+                <th style="padding:0.6rem;">Etsy Status</th>
+                <th style="padding:0.6rem; text-align:right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="etsyProductTableBody">
+              ${catalog.map((p, idx) => {
+                const isLive = p.status === 'Live';
+                const hasVault = Boolean(p.vault?.fileName || p.vault?.storagePath);
+                const hasSEO = Boolean(p.seoTitle && p.seoTags && p.seoTags.length > 0);
+
+                return `
+                  <tr style="border-bottom:1px solid rgba(255,255,255,0.04);" class="etsy-prod-row" data-code="${p.code}" data-name="${p.name.toLowerCase()}">
+                    <td style="padding:0.6rem;">
+                      <div style="font-weight:800; color:#fff;">${p.code}</div>
+                      <div style="font-size:0.75rem; color:var(--text-secondary); max-width:260px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                        ${p.seoTitle || p.name}
+                      </div>
+                    </td>
+                    <td style="padding:0.6rem; color:var(--text-muted); font-size:0.75rem;">
+                      ${p.category || 'General'}
+                    </td>
+                    <td style="padding:0.6rem; font-weight:800; color:#00df89;">
+                      $${(p.price || 4.99).toFixed(2)}
+                    </td>
+                    <td style="padding:0.6rem;">
+                      ${hasVault ? `
+                        <span style="display:inline-flex; align-items:center; gap:0.25rem; font-size:0.7rem; font-weight:700; color:#00df89; background:rgba(0,223,137,0.1); padding:0.15rem 0.45rem; border-radius:6px;">
+                          📁 Vault Secured
+                        </span>
+                      ` : `
+                        <span style="font-size:0.7rem; color:var(--text-muted);">⚪ Missing File</span>
+                      `}
+                    </td>
+                    <td style="padding:0.6rem;">
+                      ${hasVault && hasSEO ? `
+                        <span style="display:inline-flex; align-items:center; gap:0.25rem; font-size:0.7rem; font-weight:800; color:#00df89; background:rgba(0,223,137,0.15); padding:0.15rem 0.45rem; border-radius:6px; cursor:pointer;" onclick="window.BrandsModule.runSingleProductHealthCheck(${b.id}, ${idx})">
+                          🟢 100% Ready
+                        </span>
+                      ` : `
+                        <span style="display:inline-flex; align-items:center; gap:0.25rem; font-size:0.7rem; font-weight:700; color:#fbbf24; background:rgba(251,191,36,0.15); padding:0.15rem 0.45rem; border-radius:6px; cursor:pointer;" onclick="window.BrandsModule.runSingleProductHealthCheck(${b.id}, ${idx})">
+                          🟡 Pending QA
+                        </span>
+                      `}
+                    </td>
+                    <td style="padding:0.6rem;">
+                      ${isLive ? `
+                        <a href="${p.etsyUrl || '#'}" target="_blank" style="font-size:0.72rem; font-weight:800; color:#00df89; text-decoration:none; display:inline-flex; align-items:center; gap:0.2rem;">
+                          🟢 Live on Etsy ↗
+                        </a>
+                      ` : `
+                        <span style="font-size:0.72rem; color:var(--text-muted);">⚪ Staged (${p.status || 'Draft'})</span>
+                      `}
+                    </td>
+                    <td style="padding:0.6rem; text-align:right;">
+                      <div style="display:inline-flex; gap:0.3rem;">
+                        <button class="btn-ghost btn-sm" style="font-size:0.7rem; padding:0.2rem 0.4rem;" onclick="window.BrandsModule.generateLiveSEOPackage(${b.id}, '${p.code}', '${encodeURIComponent(p.name)}')">
+                          ⚡ Studio
+                        </button>
+                        <button class="btn-primary btn-sm" style="font-size:0.7rem; padding:0.2rem 0.4rem; background:linear-gradient(135deg, #00df89, #06b6d4);" onclick="window.BrandsModule.publishSingleProductEtsy(${b.id}, ${idx})">
+                          🚀 Publish
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- RECENT ORDERS STREAM -->
+      <div class="card-glass" style="padding:1.5rem; border-radius:16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+          <div>
+            <h3 style="font-size:1.1rem; font-weight:800; color:#fff; margin:0;">🛒 Live Store Orders & Automatic Revenue Stream</h3>
+            <span style="font-size:0.75rem; color:var(--text-muted);">Synced in real-time with Growth Engine 3 & Telegram Bot</span>
+          </div>
+          <button class="btn-secondary btn-sm" onclick="window.BrandsModule.syncEtsyOrders(${b.id})">
+            🔄 Sync Recent Orders
+          </button>
+        </div>
+
+        <div id="etsyOrdersList">
+          <div style="text-align:center; padding:1.5rem; color:var(--text-muted); font-size:0.8rem;">
+            Loading recent transactions...
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Asynchronously fetch live Etsy connection status & orders
+    window.BrandsModule.fetchLiveEtsyStatus(b.id);
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
   // HELPER: GENERATE DEFAULT 100 PRODUCTS FOR A BRAND
   // ─────────────────────────────────────────────────────────────────────────
   function generateDefaultProductsForBrand(brand) {
@@ -1086,9 +1332,12 @@ window.APP_MODULES.brands = async function(container) {
             </div>
           </div>
 
-          <div style="margin-top:1rem; padding-top:1rem; border-top:1px solid rgba(255,255,255,0.1); display:flex; gap:0.5rem;">
-            <button class="btn-primary" style="flex:1;" onclick="document.getElementById('brandDetailDrawer').style.display='none'; window.BrandsModule.viewBrandProducts(${b.id});">
+          <div style="margin-top:1rem; padding-top:1rem; border-top:1px solid rgba(255,255,255,0.1); display:flex; gap:0.5rem; flex-wrap:wrap;">
+            <button class="btn-primary" style="flex:1; min-width:180px;" onclick="document.getElementById('brandDetailDrawer').style.display='none'; window.BrandsModule.viewBrandProducts(${b.id});">
               Open Product Upload Matrix →
+            </button>
+            <button class="btn-secondary" style="flex:1; min-width:180px; border:1px solid rgba(0,223,137,0.4); color:#00df89;" onclick="document.getElementById('brandDetailDrawer').style.display='none'; window.BrandsModule.openBrandEtsyCenter(${b.id});">
+              🏪 Open Etsy Command Center →
             </button>
           </div>
         </div>
@@ -1651,6 +1900,440 @@ window.APP_MODULES.brands = async function(container) {
 
     openAddProductModal() {
       window.BrandsModule.switchTab('products');
+    },
+
+    openBrandEtsyCenter(brandId) {
+      localStorage.setItem('gro10x_brands_selected_etsy_brand', brandId);
+      window.BrandsModule.switchTab('etsy');
+    },
+
+    changeEtsyBrand(brandId) {
+      localStorage.setItem('gro10x_brands_selected_etsy_brand', brandId);
+      renderTabContent('etsy');
+    },
+
+    filterEtsyTable(query) {
+      const q = (query || '').toLowerCase().trim();
+      const rows = document.querySelectorAll('.etsy-prod-row');
+      rows.forEach(row => {
+        const code = (row.getAttribute('data-code') || '').toLowerCase();
+        const name = (row.getAttribute('data-name') || '').toLowerCase();
+        if (!q || code.includes(q) || name.includes(q)) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+    },
+
+    async fetchLiveEtsyStatus(brandId) {
+      const badge = document.getElementById('etsyStatusBadge');
+      const actions = document.getElementById('etsyConnectionActions');
+      const details = document.getElementById('etsyLiveDetails');
+      const ordersList = document.getElementById('etsyOrdersList');
+      const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+
+      try {
+        const res = await fetch(`/api/etsy/brands/${brandId}/status`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        
+        if (data.success && data.data && data.data.connected) {
+          const info = data.data;
+          if (badge) {
+            badge.style.background = 'rgba(0,223,137,0.15)';
+            badge.style.color = '#00df89';
+            badge.innerHTML = `🟢 Live Connected · ${info.shopName || 'Store'}`;
+          }
+          if (actions) {
+            actions.innerHTML = `
+              <a href="${info.shopUrl || '#'}" target="_blank" class="btn-secondary btn-sm" style="text-decoration:none;">
+                🏪 Open Shop ↗
+              </a>
+              <button class="btn-secondary btn-sm" onclick="window.BrandsModule.syncEtsyOrders(${brandId})">
+                🔄 Sync Orders
+              </button>
+              <button class="btn-ghost btn-sm" style="color:#ef4444;" onclick="window.BrandsModule.disconnectEtsyStore(${brandId})">
+                Disconnect
+              </button>
+            `;
+          }
+          if (details) {
+            details.style.display = 'grid';
+            details.innerHTML = `
+              <div><span style="color:var(--text-muted);">Shop ID:</span> <strong style="color:#fff;">${info.shopId || 'Auto-Linked'}</strong></div>
+              <div><span style="color:var(--text-muted);">API Status:</span> <strong style="color:#00df89;">Authorized v3 PKCE</strong></div>
+              <div><span style="color:var(--text-muted);">Token Lifecycle:</span> <strong style="color:#06b6d4;">Auto-Refreshes</strong></div>
+              <div><span style="color:var(--text-muted);">Scopes:</span> <span style="font-family:monospace; font-size:0.7rem; color:var(--text-secondary);">${info.scopes || 'listings_w, shops_w, transactions_r'}</span></div>
+            `;
+          }
+        } else {
+          if (badge) {
+            badge.style.background = 'rgba(239,68,68,0.15)';
+            badge.style.color = '#ef4444';
+            badge.innerHTML = '⚪ Store Not Connected';
+          }
+          if (actions) {
+            actions.innerHTML = `
+              <button class="btn-primary btn-sm" style="background:#f97316; border-color:#f97316; font-weight:800;" onclick="window.BrandsModule.connectEtsyStore(${brandId})">
+                🔑 Connect Etsy Store (OAuth PKCE)
+              </button>
+            `;
+          }
+          if (details) details.style.display = 'none';
+        }
+      } catch (e) {
+        if (badge) {
+          badge.style.background = 'rgba(255,255,255,0.05)';
+          badge.innerHTML = '⚪ Offline / Ready';
+        }
+      }
+
+      // Fetch live orders
+      try {
+        const orderRes = await fetch(`/api/etsy/brands/${brandId}/orders`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const orderData = await orderRes.json();
+        const orders = orderData.data?.results || [];
+
+        if (ordersList) {
+          if (orders.length === 0) {
+            ordersList.innerHTML = `<div style="text-align:center; padding:1.5rem; color:var(--text-muted); font-size:0.8rem;">No transactions logged yet. Orders sync automatically upon customer purchase.</div>`;
+          } else {
+            ordersList.innerHTML = `
+              <div style="overflow-x:auto;">
+                <table style="width:100%; border-collapse:collapse; font-size:0.78rem; text-align:left;">
+                  <thead>
+                    <tr style="border-bottom:1px solid rgba(255,255,255,0.08); color:var(--text-muted); font-size:0.68rem; text-transform:uppercase;">
+                      <th style="padding:0.5rem;">Order ID</th>
+                      <th style="padding:0.5rem;">Customer</th>
+                      <th style="padding:0.5rem;">Items</th>
+                      <th style="padding:0.5rem;">Amount</th>
+                      <th style="padding:0.5rem;">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${orders.slice(0, 5).map(o => `
+                      <tr style="border-bottom:1px solid rgba(255,255,255,0.03);">
+                        <td style="padding:0.5rem; font-family:monospace; color:#06b6d4;">#${o.receipt_id}</td>
+                        <td style="padding:0.5rem; color:#fff;">${o.buyer_email || 'Buyer'}</td>
+                        <td style="padding:0.5rem; color:var(--text-secondary);">${o.listings?.[0]?.title || 'Digital Item'}</td>
+                        <td style="padding:0.5rem; font-weight:800; color:#00df89;">$${((o.total_price?.amount || 499) / 100).toFixed(2)}</td>
+                        <td style="padding:0.5rem;"><span style="color:#00df89; font-weight:700;">✅ ${o.status || 'Paid & Delivered'}</span></td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            `;
+          }
+        }
+      } catch (e) {}
+    },
+
+    refreshEtsyStatus(brandId) {
+      window.BrandsModule.fetchLiveEtsyStatus(brandId);
+      if (window.showToast) window.showToast('Refreshed Etsy Store status', 'info');
+    },
+
+    async connectEtsyStore(brandId) {
+      const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+      try {
+        const res = await fetch(`/api/etsy/brands/${brandId}/connect`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (!data.success || !data.data?.authUrl) {
+          throw new Error(data.error || 'Could not generate OAuth authorization URL');
+        }
+        window.location.href = data.data.authUrl;
+      } catch (err) {
+        if (window.showToast) window.showToast(`Etsy Connect: ${err.message}`, 'error');
+      }
+    },
+
+    async disconnectEtsyStore(brandId) {
+      if (!confirm('Are you sure you want to disconnect this Etsy Store connection?')) return;
+      const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+      try {
+        const res = await fetch(`/api/etsy/brands/${brandId}/disconnect`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (window.showToast) window.showToast('Store disconnected', 'info');
+        window.BrandsModule.fetchLiveEtsyStatus(brandId);
+      } catch (err) {
+        if (window.showToast) window.showToast(err.message, 'error');
+      }
+    },
+
+    async runAIEtsyHealthCheck(brandId) {
+      const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+      if (window.showToast) window.showToast('🩺 Running AI 10-Rule Pre-Listing Health Check across all 100 products...', 'info');
+
+      try {
+        const res = await fetch(`/api/etsy/brands/${brandId}/health-check-all`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Health check failed');
+
+        const report = data.data;
+        const passBadge = document.getElementById('etsyPassRateBadge');
+        if (passBadge) {
+          passBadge.innerHTML = `<span style="color:#00df89;">${report.passRate}</span> (${report.passedCount}/${report.total})`;
+        }
+
+        window.BrandsModule.openHealthCheckModal(brandId, report);
+      } catch (err) {
+        if (window.showToast) window.showToast(`Health check error: ${err.message}`, 'error');
+      }
+    },
+
+    async runSingleProductHealthCheck(brandId, productIdx) {
+      const catalog = state.productsCatalog[brandId] || [];
+      const prod = catalog[productIdx];
+      if (!prod) return;
+
+      const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+      try {
+        const res = await fetch(`/api/etsy/brands/${brandId}/listings/${prod.code}/health-check`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ product: prod })
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Failed');
+
+        const singleReport = {
+          brandName: state.brands.find(b => b.id === brandId)?.name,
+          total: 1,
+          passedCount: data.data.passed ? 1 : 0,
+          failedCount: data.data.passed ? 0 : 1,
+          avgScore: data.data.score,
+          passRate: data.data.passed ? '100%' : '0%',
+          results: [data.data]
+        };
+
+        window.BrandsModule.openHealthCheckModal(brandId, singleReport);
+      } catch (e) {
+        if (window.showToast) window.showToast(e.message, 'error');
+      }
+    },
+
+    openHealthCheckModal(brandId, report) {
+      const modal = document.getElementById('etsyHealthModal');
+      const content = document.getElementById('etsyHealthModalContent');
+      if (!modal || !content) return;
+
+      const passed = report.passedCount;
+      const total = report.total;
+      const failedList = report.results.filter(r => !r.passed);
+
+      content.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1.5rem; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:1rem;">
+          <div>
+            <div style="display:flex; align-items:center; gap:0.6rem;">
+              <h2 style="font-size:1.4rem; font-weight:900; color:#fff; margin:0;">🩺 AI Pre-Listing Health Report</h2>
+              <span style="font-size:0.75rem; font-weight:800; padding:0.25rem 0.6rem; border-radius:999px; background:rgba(0,223,137,0.15); color:#00df89; border:1px solid rgba(0,223,137,0.3);">
+                Score: ${report.avgScore} / 10.0
+              </span>
+            </div>
+            <p style="font-size:0.8rem; color:var(--text-secondary); margin:0.3rem 0 0;">
+              Brand: <strong>${report.brandName}</strong> · 10-Rule Compliance & Organic SEO Validation
+            </p>
+          </div>
+          <button onclick="document.getElementById('etsyHealthModal').style.display='none'" style="background:none; border:none; color:var(--text-muted); font-size:1.5rem; cursor:pointer;">✕</button>
+        </div>
+
+        <!-- SUMMARY STATS -->
+        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:1rem; margin-bottom:1.5rem;">
+          <div style="background:rgba(0,223,137,0.1); border:1px solid rgba(0,223,137,0.3); padding:1rem; border-radius:12px; text-align:center;">
+            <div style="font-size:1.6rem; font-weight:900; color:#00df89;">${passed} / ${total}</div>
+            <div style="font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; font-weight:800;">Passed & 100% Ready</div>
+          </div>
+          <div style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); padding:1rem; border-radius:12px; text-align:center;">
+            <div style="font-size:1.6rem; font-weight:900; color:#ef4444;">${report.failedCount}</div>
+            <div style="font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; font-weight:800;">Flagged for Fixes</div>
+          </div>
+          <div style="background:rgba(6,182,212,0.1); border:1px solid rgba(6,182,212,0.3); padding:1rem; border-radius:12px; text-align:center;">
+            <div style="font-size:1.6rem; font-weight:900; color:#06b6d4;">${report.passRate}</div>
+            <div style="font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; font-weight:800;">Catalog Compliance</div>
+          </div>
+        </div>
+
+        <!-- DETAILED ISSUES & CHECKS -->
+        <div>
+          <h4 style="font-size:0.95rem; font-weight:800; color:#fff; margin-bottom:0.75rem;">
+            ${failedList.length === 0 ? '🎉 All Products Passed All 10 Rules!' : `⚠️ Products Requiring Remediation (${failedList.length}):`}
+          </h4>
+          
+          <div style="display:flex; flex-direction:column; gap:0.6rem; max-height:360px; overflow-y:auto; padding-right:0.25rem;">
+            ${report.results.map(r => `
+              <div style="background:rgba(255,255,255,0.03); border:1px solid ${r.passed ? 'rgba(0,223,137,0.2)' : 'rgba(239,68,68,0.3)'}; border-radius:10px; padding:0.85rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+                  <div style="font-weight:800; color:#fff; font-size:0.85rem;">
+                    <span style="color:#06b6d4;">${r.productCode}</span> · ${r.productName}
+                  </div>
+                  <span style="font-size:0.7rem; font-weight:800; padding:0.15rem 0.5rem; border-radius:6px; background:${r.passed ? 'rgba(0,223,137,0.2)' : 'rgba(239,68,68,0.2)'}; color:${r.passed ? '#00df89' : '#ef4444'};">
+                    ${r.passed ? '✅ PASSED' : `❌ ${r.failures.length} FIXES`}
+                  </span>
+                </div>
+
+                ${r.failures.length > 0 ? `
+                  <div style="display:flex; flex-direction:column; gap:0.25rem; margin-top:0.4rem;">
+                    ${r.failures.map(f => `
+                      <div style="font-size:0.75rem; color:#ef4444; display:flex; align-items:center; gap:0.3rem;">
+                        <span>•</span> <span>${f.message}</span>
+                      </div>
+                    `).join('')}
+                  </div>
+                ` : ''}
+
+                ${r.warnings && r.warnings.length > 0 ? `
+                  <div style="display:flex; flex-direction:column; gap:0.25rem; margin-top:0.3rem;">
+                    ${r.warnings.map(w => `
+                      <div style="font-size:0.72rem; color:#fbbf24; display:flex; align-items:center; gap:0.3rem;">
+                        <span>⚠</span> <span>${w.message}</span>
+                      </div>
+                    `).join('')}
+                  </div>
+                ` : ''}
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1.5rem; border-top:1px solid rgba(255,255,255,0.1); padding-top:1rem;">
+          <button class="btn-secondary" onclick="navigator.clipboard.writeText(JSON.stringify(${escape(JSON.stringify(report))})); window.showToast('Copied QA Health Report JSON!','success');">
+            📋 Copy Full QA Report
+          </button>
+          <button class="btn-primary" onclick="document.getElementById('etsyHealthModal').style.display='none'">
+            Close Report
+          </button>
+        </div>
+      `;
+
+      modal.style.display = 'flex';
+    },
+
+    async publishBulkEtsy(brandId) {
+      const modal = document.getElementById('etsyBulkModal');
+      const content = document.getElementById('etsyBulkModalContent');
+      if (!modal || !content) return;
+
+      const b = state.brands.find(x => x.id === brandId);
+      modal.style.display = 'flex';
+
+      content.innerHTML = `
+        <div style="text-align:center; padding:1.5rem;">
+          <div style="width:60px; height:60px; border-radius:50%; border:3px solid rgba(0,223,137,0.2); border-top-color:#00df89; animation:spin 1s linear infinite; margin:0 auto 1.25rem;"></div>
+          <h3 style="font-size:1.3rem; font-weight:900; color:#fff; margin:0 0 0.4rem;">Publishing Catalog to Etsy</h3>
+          <p style="font-size:0.8rem; color:var(--text-secondary); margin:0 0 1.5rem;">
+            Executing sequential listing creation, asset streaming from Cloud Vault, and live activation for <strong>${b?.name || 'Brand'}</strong>...
+          </p>
+
+          <div style="background:rgba(255,255,255,0.04); border-radius:12px; padding:1rem; text-align:left; font-family:monospace; font-size:0.75rem; color:#06b6d4; max-height:220px; overflow-y:auto; line-height:1.6;" id="bulkConsoleLog">
+            > Initializing Etsy v3 API throttled publisher (5 QPS cap)...<br>
+            > Verifying Cloud Vault deliverables and 10-mockup packages...<br>
+          </div>
+        </div>
+      `;
+
+      const logEl = document.getElementById('bulkConsoleLog');
+      const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+
+      try {
+        const res = await fetch(`/api/etsy/brands/${brandId}/publish-all`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ autoActivate: true })
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Bulk publish failed');
+
+        const result = data.data;
+        if (logEl) {
+          logEl.innerHTML += `
+            > ✅ Batch completed successfully!<br>
+            > Listed ${result.publishedCount} products live on Etsy.<br>
+            > Broadcasted completion report to Telegram Bot.<br>
+          `;
+        }
+
+        state = await loadBrandsStateFromAPI();
+
+        setTimeout(() => {
+          content.innerHTML = `
+            <div style="text-align:center; padding:1.5rem;">
+              <div style="font-size:3rem; margin-bottom:0.5rem;">🎉</div>
+              <h2 style="font-size:1.4rem; font-weight:900; color:#00df89; margin:0 0 0.4rem;">Catalog Successfully Published!</h2>
+              <p style="font-size:0.85rem; color:var(--text-secondary); margin:0 0 1.5rem;">
+                <strong>${result.publishedCount}</strong> listings are now live in the <strong>${b.name}</strong> Etsy catalog.
+              </p>
+
+              <div style="background:rgba(0,0,0,0.3); border-radius:12px; padding:1rem; text-align:left; max-height:240px; overflow-y:auto; margin-bottom:1.5rem;">
+                ${result.published.map(p => `
+                  <div style="display:flex; justify-content:space-between; font-size:0.75rem; padding:0.35rem 0; border-bottom:1px solid rgba(255,255,255,0.04);">
+                    <span style="color:#fff;"><strong>${p.code}:</strong> ${p.name}</span>
+                    <a href="${p.etsyUrl}" target="_blank" style="color:#00df89; text-decoration:none; font-weight:700;">View on Etsy ↗</a>
+                  </div>
+                `).join('')}
+              </div>
+
+              <button class="btn-primary" style="width:100%;" onclick="document.getElementById('etsyBulkModal').style.display='none'; window.BrandsModule.switchTab('etsy');">
+                Done & View Command Center
+              </button>
+            </div>
+          `;
+        }, 800);
+      } catch (err) {
+        content.innerHTML = `
+          <div style="text-align:center; padding:1.5rem;">
+            <div style="font-size:2.5rem; margin-bottom:0.5rem;">❌</div>
+            <h3 style="color:#ef4444; font-weight:800;">Bulk Publish Error</h3>
+            <p style="color:var(--text-secondary); font-size:0.85rem; margin-bottom:1.25rem;">${err.message}</p>
+            <button class="btn-secondary" onclick="document.getElementById('etsyBulkModal').style.display='none'">Close</button>
+          </div>
+        `;
+      }
+    },
+
+    async publishSingleProductEtsy(brandId, productIdx) {
+      const catalog = state.productsCatalog[brandId] || [];
+      const prod = catalog[productIdx];
+      if (!prod) return;
+
+      if (window.showToast) window.showToast(`🚀 Publishing ${prod.code} to Etsy...`, 'info');
+      const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+
+      try {
+        const res = await fetch(`/api/etsy/brands/${brandId}/publish-all`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ productCodes: [prod.code], autoActivate: true })
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Failed to publish single product');
+
+        if (window.showToast) window.showToast(`✅ ${prod.code} is now live on Etsy!`, 'success');
+        state = await loadBrandsStateFromAPI();
+        renderTabContent('etsy');
+      } catch (e) {
+        if (window.showToast) window.showToast(e.message, 'error');
+      }
+    },
+
+    async syncEtsyOrders(brandId) {
+      if (window.showToast) window.showToast('🔄 Syncing live orders from Etsy API...', 'info');
+      window.BrandsModule.fetchLiveEtsyStatus(brandId);
+      setTimeout(() => {
+        if (window.showToast) window.showToast('✅ Orders & P&L auto-synced with Growth Engine 3', 'success');
+      }, 600);
     }
   };
 

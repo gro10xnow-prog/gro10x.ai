@@ -766,10 +766,17 @@ router.get('/:id/vault/download', requireAuth, async (req, res) => {
       return res.json({ success: true, downloadUrl: data.signedUrl, expiresIn: '24h' });
     }
 
-    res.json({ success: false, error: 'Cloud storage is not active' });
+    return res.json({ success: false, error: 'Cloud storage is not active' });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    return res.status(500).json({ success: false, error: err.message });
   }
 });
 
+router.SEED_BRANDS_DATA = SEED_BRANDS_DATA;
+router.loadBrandsState = loadBrandsState;
+router.persistBrandsState = persistBrandsState;
+
 module.exports = router;
+module.exports.SEED_BRANDS_DATA = SEED_BRANDS_DATA;
+module.exports.loadBrandsState = loadBrandsState;
+module.exports.persistBrandsState = persistBrandsState;
