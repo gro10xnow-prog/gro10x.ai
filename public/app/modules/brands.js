@@ -2289,7 +2289,13 @@ window.APP_MODULES.brands = async function(container) {
       const savedBP = matchedProduct.blueprint || {};
       const savedSEO = matchedProduct.seo || {};
       const savedVault = matchedProduct.vault || {};
-      const savedMockups = matchedProduct.mockups || [];
+      const savedMockups = Array.isArray(matchedProduct.mockups) && matchedProduct.mockups.length > 0
+        ? matchedProduct.mockups
+        : (Array.isArray(matchedProduct.mockupUrls) && matchedProduct.mockupUrls.length > 0
+            ? matchedProduct.mockupUrls.map((u, i) => ({ rank: i + 1, url: u, fileName: `Mockup #${i + 1}` }))
+            : (typeof matchedProduct.mockupsCount === 'number' && matchedProduct.mockupsCount > 0
+                ? Array.from({ length: matchedProduct.mockupsCount }, (_, i) => ({ rank: i + 1, fileName: `Mockup #${i + 1}` }))
+                : []));
       const savedVideo = matchedProduct.video || null;
       const savedAudit = matchedProduct.aiAudit || null;
       const savedType = matchedProduct.type || 'pdf-planner';
@@ -2636,7 +2642,7 @@ window.APP_MODULES.brands = async function(container) {
                 <span style="font-size:0.75rem; font-weight:800; color:#00df89; text-transform:uppercase; display:block;">📤 Upload 4–10 Mockup Photos to Vault</span>
                 <p style="font-size:0.78rem; color:var(--text-muted); margin:0.1rem 0 0;">Upload JPG/PNG listing photos. Minimum required: <strong>${minMockups} images</strong>.</p>
               </div>
-              <span style="font-size:0.72rem; font-weight:800; color:#00df89; background:rgba(0,223,137,0.1); padding:0.2rem 0.6rem; border-radius:6px;">
+              <span id="mockupHeaderCountBadge" style="font-size:0.72rem; font-weight:800; color:${savedMockups.length >= minMockups ? '#00df89' : '#fbbf24'}; background:${savedMockups.length >= minMockups ? 'rgba(0,223,137,0.1)' : 'rgba(251,191,36,0.1)'}; padding:0.2rem 0.6rem; border-radius:6px;">
                 ${savedMockups.length} / ${minMockups} min (10 max)
               </span>
             </div>
@@ -3591,9 +3597,16 @@ window.APP_MODULES.brands = async function(container) {
         reader.readAsDataURL(file);
       }
 
+      const headerBadge = document.getElementById('mockupHeaderCountBadge');
+      if (headerBadge) {
+        headerBadge.innerText = `${limit} / 4 min (10 max)`;
+        headerBadge.style.color = limit >= 4 ? '#00df89' : '#fbbf24';
+        headerBadge.style.background = limit >= 4 ? 'rgba(0,223,137,0.1)' : 'rgba(251,191,36,0.1)';
+      }
+
       const statusEl = document.getElementById('mockupUploadStatus');
       if (statusEl) {
-        statusEl.innerHTML = `<span style="color:#06b6d4; font-weight:700;">${limit} image(s) selected · Ready to save to Vault</span>`;
+        statusEl.innerHTML = `<span style="color:#06b6d4; font-weight:700;">📂 ${limit} image(s) selected · Click "Save Mockups to Vault" to upload</span>`;
       }
     },
 
@@ -3607,6 +3620,7 @@ window.APP_MODULES.brands = async function(container) {
 
       const statusEl = document.getElementById('mockupUploadStatus');
       let savedCount = 0;
+      const uploadedItems = [];
 
       try {
         const total = Math.min(10, files.length);
@@ -3637,6 +3651,8 @@ window.APP_MODULES.brands = async function(container) {
             throw new Error(`Server returned error (${res.status}): ${text.slice(0, 100)}`);
           }
           if (!data.success) throw new Error(data.error || `Failed uploading ${file.name}`);
+          if (data.mockup) uploadedItems.push(data.mockup);
+          else uploadedItems.push({ rank: i + 1, fileName: file.name, url: '' });
           savedCount++;
         }
 
@@ -3645,15 +3661,22 @@ window.APP_MODULES.brands = async function(container) {
           statusEl.innerHTML = `<span style="color:#00df89; font-weight:700;">✅ ${savedCount} mockups stored in Cloud Vault</span>`;
         }
 
-        // Directly patch in-memory state — do NOT reload from API (Vercel returns stale seed data)
+        // Update mockup count header badge
+        const headerBadge = document.getElementById('mockupHeaderCountBadge');
+        if (headerBadge) {
+          headerBadge.innerText = `${savedCount} / 4 min (10 max)`;
+          headerBadge.style.color = savedCount >= 4 ? '#00df89' : '#fbbf24';
+          headerBadge.style.background = savedCount >= 4 ? 'rgba(0,223,137,0.15)' : 'rgba(251,191,36,0.15)';
+        }
+
+        // Directly patch in-memory state
         if (!state.productsCatalog) state.productsCatalog = {};
         if (!state.productsCatalog[brandId]) state.productsCatalog[brandId] = [];
         let _mprod = state.productsCatalog[brandId].find(p => p.code === productCode);
         if (!_mprod) { _mprod = { code: productCode, status: 'Draft' }; state.productsCatalog[brandId].push(_mprod); }
-        // Rebuild mockups array from the file input (the server saved them, we track locally by name+index)
-        if (!Array.isArray(_mprod.mockups)) _mprod.mockups = [];
-        // Mark that mockups exist (we track count; full metadata available on next server reload)
+        _mprod.mockups = uploadedItems;
         _mprod.mockupsCount = savedCount;
+        _mprod.mockupUrls = uploadedItems.map(m => m.url).filter(Boolean);
         // If enough mockups, update status
         if (savedCount >= 4 && (_mprod.video?.storagePath || _mprod.video?.fileName)) _mprod.status = 'Media Ready';
         saveBrandsStateLocally(state);
@@ -3669,9 +3692,6 @@ window.APP_MODULES.brands = async function(container) {
         const _mpct = (_mbpDone ? 20 : 0) + (_mvaultDone ? 20 : 0) + (_mmocksDone && _mvidDone ? 20 : 0) + (_mauditDone ? 20 : 0) + (_mseoDone ? 20 : 0);
         if (_mpctEl) { _mpctEl.innerText = `${_mpct}% Ready`; _mpctEl.style.color = _mpct >= 80 ? '#00df89' : (_mpct >= 40 ? '#fbbf24' : '#ef4444'); }
         if (_mbarEl) _mbarEl.style.width = `${_mpct}%`;
-        // Update mockup count badge if visible
-        const _mcountEl = document.getElementById('mockupUploadStatus');
-        if (_mcountEl && !_mcountEl.innerHTML.includes('❌')) _mcountEl.innerHTML = `<span style="color:#00df89; font-weight:700;">✅ ${savedCount} mockups stored in Cloud Vault</span>`;
 
       } catch (err) {
         if (statusEl) statusEl.innerHTML = `<span style="color:#ef4444; font-weight:700;">❌ ${err.message}</span>`;
