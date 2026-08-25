@@ -397,7 +397,32 @@ let memoryDbmLogs = [
   { date: new Date().toISOString().split('T')[0], dbmId: 4, brandName: 'PromptVault', listed: 10, revenue: 0, notes: 'Configured Notion duplication templates for Midjourney prompts' }
 ];
 
+const fs = require('fs');
+const path = require('path');
+const STATE_FILE_PATH = path.join(__dirname, '../../data/brands_empire_state.json');
+const DBM_LOGS_FILE_PATH = path.join(__dirname, '../../data/dbm_standup_logs.json');
+
 async function loadBrandsState() {
+  // 1. Try reading from disk file first for ultra-fast durable recovery
+  try {
+    if (fs.existsSync(STATE_FILE_PATH)) {
+      const fileData = JSON.parse(fs.readFileSync(STATE_FILE_PATH, 'utf8'));
+      if (fileData && fileData.brands && fileData.brands.length > 0) {
+        if (!fileData.productsCatalog) fileData.productsCatalog = {};
+        fileData.brands.forEach(b => {
+          if (!fileData.productsCatalog[b.id] || fileData.productsCatalog[b.id].length === 0) {
+            fileData.productsCatalog[b.id] = generateDefaultProductsForBrand(b);
+          }
+        });
+        memoryBrandsState = fileData;
+        return memoryBrandsState;
+      }
+    }
+  } catch (e) {
+    console.warn('[Brands DB] Disk state load notice:', e.message);
+  }
+
+  // 2. Try Supabase app_settings
   if (isSupabaseConfigured()) {
     try {
       const { data, error } = await supabase
@@ -407,40 +432,42 @@ async function loadBrandsState() {
         .maybeSingle();
 
       if (data && data.value && data.value.brands) {
-        // Ensure productsCatalog exists and is populated for all brands
         if (!data.value.productsCatalog) data.value.productsCatalog = {};
         data.value.brands.forEach(b => {
           if (!data.value.productsCatalog[b.id] || data.value.productsCatalog[b.id].length === 0) {
             data.value.productsCatalog[b.id] = generateDefaultProductsForBrand(b);
           }
         });
-        return data.value;
+        memoryBrandsState = data.value;
+        try { fs.writeFileSync(STATE_FILE_PATH, JSON.stringify(memoryBrandsState, null, 2), 'utf8'); } catch (err) {}
+        return memoryBrandsState;
       }
-
-      // If not yet saved in Supabase, seed it
-      await supabase.from('app_settings').upsert({
-        key: 'brands_empire_state',
-        value: SEED_BRANDS_DATA,
-        updated_at: new Date().toISOString()
-      }, { onConflict: 'key' });
-      return SEED_BRANDS_DATA;
     } catch (e) {
-      // Supabase table not available or network error - use memory fallback
+      // Supabase table not available
     }
   }
 
-  // Ensure memoryBrandsState has all catalogs populated
+  // 3. Fallback to memory initialized with full catalog
   if (!memoryBrandsState.productsCatalog) memoryBrandsState.productsCatalog = {};
   memoryBrandsState.brands.forEach(b => {
     if (!memoryBrandsState.productsCatalog[b.id] || memoryBrandsState.productsCatalog[b.id].length === 0) {
       memoryBrandsState.productsCatalog[b.id] = generateDefaultProductsForBrand(b);
     }
   });
+
+  try { fs.writeFileSync(STATE_FILE_PATH, JSON.stringify(memoryBrandsState, null, 2), 'utf8'); } catch (err) {}
   return memoryBrandsState;
 }
 
 async function persistBrandsState(state) {
   memoryBrandsState = state;
+  // Always persist to disk file immediately
+  try {
+    fs.writeFileSync(STATE_FILE_PATH, JSON.stringify(state, null, 2), 'utf8');
+  } catch (e) {
+    console.warn('[Brands DB] File write notice:', e.message);
+  }
+
   if (isSupabaseConfigured()) {
     try {
       await supabase.from('app_settings').upsert({
@@ -449,7 +476,7 @@ async function persistBrandsState(state) {
         updated_at: new Date().toISOString()
       }, { onConflict: 'key' });
     } catch (e) {
-      console.warn('[Brands DB] Error saving to Supabase:', e.message);
+      // Supabase table not present
     }
   }
 }
@@ -756,18 +783,28 @@ router.post('/:id/vault/upload', requireAuth, vaultUpload.single('file'), async 
       downloadUrl: signedDownloadUrl
     };
 
-    // Update product catalog record if present
+    // Update product catalog record
     if (!state.productsCatalog) state.productsCatalog = {};
-    if (state.productsCatalog[brandId]) {
-      const prod = state.productsCatalog[brandId].find(p =>
-        (productCode && p.code === productCode) ||
-        (productName && p.name === productName)
-      );
-      if (prod) {
-        prod.vault = vaultData;
-        if (prod.status !== 'Live' && prod.status !== 'Pending Review' && prod.status !== 'Revision Requested') {
-          prod.status = 'Vault Uploaded';
-        }
+    if (!state.productsCatalog[brandId]) state.productsCatalog[brandId] = generateDefaultProductsForBrand(brand);
+    let prod = state.productsCatalog[brandId].find(p =>
+      (productCode && p.code === productCode) ||
+      (productName && p.name === productName)
+    );
+    if (!prod && productCode) {
+      prod = {
+        code: productCode,
+        name: productName || `Product ${productCode}`,
+        category: brand.categories?.[0] || 'General',
+        format: 'Digital PDF',
+        price: 12,
+        status: 'Draft'
+      };
+      state.productsCatalog[brandId].push(prod);
+    }
+    if (prod) {
+      prod.vault = vaultData;
+      if (prod.status !== 'Live' && prod.status !== 'Pending Review' && prod.status !== 'Revision Requested') {
+        prod.status = 'Vault Uploaded';
       }
     }
 
@@ -876,19 +913,29 @@ router.post('/:id/mockups/upload', requireAuth, vaultUpload.array('mockups', 10)
 
     // Update product catalog record
     if (!state.productsCatalog) state.productsCatalog = {};
-    if (state.productsCatalog[brandId]) {
-      const prod = state.productsCatalog[brandId].find(p =>
-        (productCode && p.code === productCode) ||
-        (productName && p.name === productName)
-      );
-      if (prod) {
-        prod.mockups = uploadedMockups;
-        prod.mockupUrls = uploadedMockups.map(m => m.url).filter(Boolean);
-        prod.mockupsCount = uploadedMockups.length;
-        if (prod.status !== 'Live' && prod.status !== 'Pending Review' && prod.status !== 'Revision Requested') {
-          if (uploadedMockups.length >= 4 && (prod.video?.storagePath || prod.video?.fileName)) {
-            prod.status = 'Media Ready';
-          }
+    if (!state.productsCatalog[brandId]) state.productsCatalog[brandId] = generateDefaultProductsForBrand(brand);
+    let prod = state.productsCatalog[brandId].find(p =>
+      (productCode && p.code === productCode) ||
+      (productName && p.name === productName)
+    );
+    if (!prod && productCode) {
+      prod = {
+        code: productCode,
+        name: productName || `Product ${productCode}`,
+        category: brand.categories?.[0] || 'General',
+        format: 'Digital PDF',
+        price: 12,
+        status: 'Draft'
+      };
+      state.productsCatalog[brandId].push(prod);
+    }
+    if (prod) {
+      prod.mockups = uploadedMockups;
+      prod.mockupUrls = uploadedMockups.map(m => m.url).filter(Boolean);
+      prod.mockupsCount = uploadedMockups.length;
+      if (prod.status !== 'Live' && prod.status !== 'Pending Review' && prod.status !== 'Revision Requested') {
+        if (uploadedMockups.length >= 4 && (prod.video?.storagePath || prod.video?.fileName)) {
+          prod.status = 'Media Ready';
         }
       }
     }
@@ -966,22 +1013,37 @@ router.post('/:id/mockups/upload-single', requireAuth, vaultUpload.single('mocku
 
     // Update product catalog record
     if (!state.productsCatalog) state.productsCatalog = {};
-    if (state.productsCatalog[brandId]) {
-      const prod = state.productsCatalog[brandId].find(p =>
-        (productCode && p.code === productCode) ||
-        (productName && p.name === productName)
-      );
-      if (prod) {
-        if (!Array.isArray(prod.mockups)) prod.mockups = [];
-        const existingIdx = prod.mockups.findIndex(m => m.rank === rankNum);
-        if (existingIdx >= 0) {
-          prod.mockups[existingIdx] = item;
-        } else {
-          prod.mockups.push(item);
+    if (!state.productsCatalog[brandId]) state.productsCatalog[brandId] = generateDefaultProductsForBrand(brand);
+    let prod = state.productsCatalog[brandId].find(p =>
+      (productCode && p.code === productCode) ||
+      (productName && p.name === productName)
+    );
+    if (!prod && productCode) {
+      prod = {
+        code: productCode,
+        name: productName || `Product ${productCode}`,
+        category: brand.categories?.[0] || 'General',
+        format: 'Digital PDF',
+        price: 12,
+        status: 'Draft'
+      };
+      state.productsCatalog[brandId].push(prod);
+    }
+    if (prod) {
+      if (!Array.isArray(prod.mockups)) prod.mockups = [];
+      const existingIdx = prod.mockups.findIndex(m => m.rank === rankNum);
+      if (existingIdx >= 0) {
+        prod.mockups[existingIdx] = item;
+      } else {
+        prod.mockups.push(item);
+      }
+      prod.mockups.sort((a, b) => (a.rank || 0) - (b.rank || 0));
+      prod.mockupUrls = prod.mockups.map(m => m.url).filter(Boolean);
+      prod.mockupsCount = prod.mockups.length;
+      if (prod.status !== 'Live' && prod.status !== 'Pending Review' && prod.status !== 'Revision Requested') {
+        if (prod.mockups.length >= 4 && (prod.video?.storagePath || prod.video?.fileName)) {
+          prod.status = 'Media Ready';
         }
-        prod.mockups.sort((a, b) => (a.rank || 0) - (b.rank || 0));
-        prod.mockupUrls = prod.mockups.map(m => m.url).filter(Boolean);
-        prod.mockupsCount = prod.mockups.length;
       }
     }
 
@@ -1456,17 +1518,27 @@ router.post('/:id/video/upload', requireAuth, vaultUpload.single('video'), async
     };
 
     if (!state.productsCatalog) state.productsCatalog = {};
-    if (state.productsCatalog[brandId]) {
-      const prod = state.productsCatalog[brandId].find(p =>
-        (productCode && p.code === productCode) ||
-        (productName && p.name === productName)
-      );
-      if (prod) {
-        prod.video = videoItem;
-        if (prod.status !== 'Live' && prod.status !== 'Pending Review' && prod.status !== 'Revision Requested') {
-          if ((prod.mockups?.length || prod.mockupUrls?.length || 0) >= 4) {
-            prod.status = 'Media Ready';
-          }
+    if (!state.productsCatalog[brandId]) state.productsCatalog[brandId] = generateDefaultProductsForBrand(brand);
+    let prod = state.productsCatalog[brandId].find(p =>
+      (productCode && p.code === productCode) ||
+      (productName && p.name === productName)
+    );
+    if (!prod && productCode) {
+      prod = {
+        code: productCode,
+        name: productName || `Product ${productCode}`,
+        category: brand.categories?.[0] || 'General',
+        format: 'Digital PDF',
+        price: 12,
+        status: 'Draft'
+      };
+      state.productsCatalog[brandId].push(prod);
+    }
+    if (prod) {
+      prod.video = videoItem;
+      if (prod.status !== 'Live' && prod.status !== 'Pending Review' && prod.status !== 'Revision Requested') {
+        if ((prod.mockups?.length || prod.mockupUrls?.length || 0) >= 4) {
+          prod.status = 'Media Ready';
         }
       }
     }
