@@ -148,15 +148,41 @@ async function refreshAccessToken(brandId, refreshToken) {
     scopes: data.scope || ''
   };
 
-  await saveConnectionTokens(brandId, updatedTokens);
+  await saveConnectionTokens(brandId, updatedTokens, true); // tokenOnly=true — preserves shop_id
   return updatedTokens;
 }
 
 /**
  * 4. Token Persistence (Supabase + Memory Fallback)
+ * NOTE: When refreshing tokens (tokenOnly=true), we PATCH only the token fields
+ * so that shop_id / shop_name / shop_url are NEVER overwritten by a refresh.
  */
-async function saveConnectionTokens(brandId, connectionData) {
+async function saveConnectionTokens(brandId, connectionData, tokenOnly = false) {
   const brandKey = String(brandId);
+
+  if (isSupabaseConfigured() && tokenOnly) {
+    // Token-only update — never clobber shop_id / shop_name / shop_url
+    const tokenPatch = {
+      access_token: connectionData.accessToken,
+      refresh_token: connectionData.refreshToken,
+      token_expires_at: connectionData.expiresAt,
+      last_refreshed_at: new Date().toISOString(),
+      status: 'active'
+    };
+    try {
+      await supabase.from('etsy_connections').update(tokenPatch).eq('brand_id', brandKey);
+    } catch (e) {
+      console.warn('[Etsy Token Vault] Token-only update failed:', e.message);
+    }
+    // Update memory cache by merging
+    if (memoryEtsyConnections[brandKey]) {
+      Object.assign(memoryEtsyConnections[brandKey], tokenPatch);
+    } else {
+      memoryEtsyConnections[brandKey] = tokenPatch;
+    }
+    return memoryEtsyConnections[brandKey];
+  }
+
   const record = {
     brand_id: brandKey,
     shop_id: connectionData.shopId || null,
@@ -176,10 +202,8 @@ async function saveConnectionTokens(brandId, connectionData) {
 
   if (isSupabaseConfigured()) {
     try {
-      // Upsert into etsy_connections table if present
       const { error } = await supabase.from('etsy_connections').upsert(record, { onConflict: 'brand_id' });
       if (error) {
-        // Fallback store in app_settings JSON blob
         const { data: existing } = await supabase.from('app_settings').select('value').eq('key', 'etsy_connections_vault').maybeSingle();
         const vaultMap = existing?.value || {};
         vaultMap[brandKey] = record;
@@ -195,7 +219,8 @@ async function saveConnectionTokens(brandId, connectionData) {
 
 async function getConnection(brandId) {
   const brandKey = String(brandId);
-  if (memoryEtsyConnections[brandKey]) {
+  // Only use memory cache if the cached record has a valid shop_id
+  if (memoryEtsyConnections[brandKey] && memoryEtsyConnections[brandKey].shop_id) {
     return memoryEtsyConnections[brandKey];
   }
 

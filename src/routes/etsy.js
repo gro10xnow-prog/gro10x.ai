@@ -425,6 +425,17 @@ router.post('/brands/:brandId/publish-all', requireAuth, requireAdmin, asyncHand
   const conn = await getConnection(brandId);
   const isSimulated = !conn || !conn.shop_id || conn.status !== 'active';
 
+  // If not in dry-run mode and the shop is not properly connected, reject immediately.
+  // We never silently fake a "Live" listing — that hides a broken Etsy connection from the operator.
+  if (!dryRun && isSimulated) {
+    const reason = !conn
+      ? 'No Etsy connection found. Connect via OAuth in Brand Settings.'
+      : !conn.shop_id
+        ? 'Etsy shop ID is missing. Re-connect your Etsy account via Brand Settings to complete the OAuth flow.'
+        : 'Etsy connection is inactive. Re-authenticate in Brand Settings.';
+    return fail(res, reason, 503);
+  }
+
   const targetProducts = productCodes && productCodes.length > 0
     ? catalog.filter(p => productCodes.includes(p.code || p.productCode))
     : catalog.filter(p => ['Pending Review', 'QA Approved', 'SEO Ready', 'Staged', 'Live'].includes(p.status) || !p.status);
@@ -474,26 +485,6 @@ router.post('/brands/:brandId/publish-all', requireAuth, requireAdmin, asyncHand
     }
 
     try {
-      if (isSimulated) {
-        // Simulated execution (when running staging / dry-run)
-        const mockListingId = 980000000 + i + 1;
-        prod.status = 'Live';
-        prod.etsyListingId = mockListingId;
-        prod.etsyUrl = `https://www.etsy.com/listing/${mockListingId}/${encodeURIComponent((prod.seoTitle || prod.name).slice(0, 30))}`;
-        prod.listedAt = listedIso;
-        prod.expiresAt = expiresIso;
-        prod.listingFeeCharged = 0.20;
-        published.push({
-          code,
-          name: prod.name,
-          etsyListingId: mockListingId,
-          etsyUrl: prod.etsyUrl,
-          listedAt: listedIso,
-          expiresAt: expiresIso,
-          listingFeeCharged: 0.20,
-          mode: 'Staged / Simulated'
-        });
-      } else {
         // Real Live Etsy v3 API Call
         const priceCents = Math.round((prod.price || 4.99) * 100);
         const tags = (prod.seoTags || ['planner', 'printable']).slice(0, 13).map(t => t.slice(0, 20));
@@ -611,7 +602,7 @@ router.post('/brands/:brandId/publish-all', requireAuth, requireAdmin, asyncHand
           listingFeeCharged: 0.20,
           mode: 'Live on Etsy'
         });
-      }
+
     } catch (err) {
       errors.push({
         code,
