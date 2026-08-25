@@ -3181,11 +3181,31 @@ window.APP_MODULES.brands = async function(container) {
           if (!state.productsCatalog[_bId]) state.productsCatalog[_bId] = [];
           const _idx = state.productsCatalog[_bId].findIndex(p => p.code === productCode);
           if (_idx >= 0) {
-            // Merge server response into existing product (preserves vault/mockups/video patched earlier)
-            state.productsCatalog[_bId][_idx] = {
-              ...state.productsCatalog[_bId][_idx],
-              ...data.product
+            const _existing = state.productsCatalog[_bId][_idx];
+            // Merge: preserve in-memory vault/mockups/video/aiAudit — server state is stale on Vercel
+            const _merged = {
+              ..._existing,
+              ...(tabName === 'seo' || tabName === 'all' ? { seo: data.product?.seo } : {}),
+              ...(tabName === 'blueprint' || tabName === 'all' ? { blueprint: data.product?.blueprint ?? _existing.blueprint } : {}),
+              price: data.product?.price ?? _existing.price,
+              // ALWAYS keep in-memory uploads — do NOT overwrite with stale server values
+              vault: _existing.vault,
+              mockupsCount: _existing.mockupsCount,
+              mockups: _existing.mockups,
+              video: _existing.video,
+              aiAudit: _existing.aiAudit,
             };
+            state.productsCatalog[_bId][_idx] = _merged;
+
+            // Recalculate studioPercent from merged in-memory state (server percent may be stale/0)
+            const _bpOk  = !!(_merged.blueprint?.prompt || _merged.blueprint?.geometry);
+            const _vOk   = !!(_merged.vault?.storagePath || _merged.vault?.fileName);
+            const _mOk   = !!((_merged.mockupsCount || 0) >= 3 || (_merged.mockups?.length || 0) >= 3);
+            const _audOk = !!(_merged.aiAudit?.overall);
+            const _seoOk = !!(_merged.seo?.title);
+            const _localPct = [_bpOk, _vOk, _mOk, _audOk, _seoOk].filter(Boolean).length * 20;
+            // Use local calculation if it's higher than what server returned
+            data.studioPercent = Math.max(data.studioPercent || 0, _localPct);
           } else {
             state.productsCatalog[_bId].push(data.product);
           }
@@ -3200,6 +3220,7 @@ window.APP_MODULES.brands = async function(container) {
           pctEl.style.color = data.studioPercent >= 80 ? '#00df89' : (data.studioPercent >= 40 ? '#fbbf24' : '#ef4444');
         }
         if (barEl && data.studioPercent !== undefined) barEl.style.width = `${data.studioPercent}%`;
+
 
         if (tabName === 'all') {
           const modal = document.getElementById('aiSeoModal');
