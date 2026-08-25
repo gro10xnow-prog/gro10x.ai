@@ -7,6 +7,11 @@ Thumbs.db
 
 # Backup files
 data/db.backup.json
+data/*_test.json
+
+# Test outputs and screenshots
+tests/screenshots/
+tmp_test_assets/
 
 # Large assets not needed in repo
 *.pdf
