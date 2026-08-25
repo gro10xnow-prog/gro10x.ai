@@ -47,21 +47,11 @@ const etsyUpload = multer({
   limits: { fileSize: 100 * 1024 * 1024 }
 });
 
-// Helper to fetch brand and catalog from app_settings
+// Helper to fetch brand and catalog from persisted brands state
 async function getBrandData(brandId) {
   const brandKey = parseInt(brandId, 10);
-  let state = null;
-  if (isSupabaseConfigured()) {
-    try {
-      const { data } = await supabase.from('app_settings').select('value').eq('key', 'brands_empire_state').maybeSingle();
-      if (data?.value && Array.isArray(data.value.brands)) state = data.value;
-    } catch (e) {}
-  }
-  if (!state || !Array.isArray(state.brands)) {
-    const brandsMod = require('./brands');
-    state = brandsMod.SEED_BRANDS_DATA || brandsMod.router?.SEED_BRANDS_DATA || { brands: [], productsCatalog: {} };
-  }
-
+  const { loadBrandsState } = require('./brands');
+  const state = await loadBrandsState();
   const brand = state.brands?.find(b => b.id === brandKey) || null;
   const catalog = (state.productsCatalog && state.productsCatalog[brandKey]) || [];
   return { state, brand, catalog, brandKey };
@@ -437,7 +427,7 @@ router.post('/brands/:brandId/publish-all', requireAuth, requireAdmin, asyncHand
 
   const targetProducts = productCodes && productCodes.length > 0
     ? catalog.filter(p => productCodes.includes(p.code || p.productCode))
-    : catalog.filter(p => ['SEO Ready', 'QA Approved', 'Staged', 'Live'].includes(p.status) || !p.status);
+    : catalog.filter(p => ['Pending Review', 'QA Approved', 'SEO Ready', 'Staged', 'Live'].includes(p.status) || !p.status);
 
   if (targetProducts.length === 0) {
     return fail(res, 'No products found ready for Etsy listing. Complete Studio Engine steps first.', 400);

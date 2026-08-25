@@ -13,7 +13,7 @@
       "target12mo": 24200,
       "netTarget": 20579,
       "productsTarget": 100,
-      "productsLive": 0,
+      "productsLive": 1,
       "actualGross": 0,
       "actualAds": 0,
       "palette": [
@@ -46,7 +46,8 @@
         "6": false,
         "7": false,
         "8": false
-      }
+      },
+      "totalListingFeesCharged": 0.2
     },
     {
       "id": 2,
@@ -691,96 +692,76 @@
         "name": "Daily & Weekly Planners #1 — PlannerQueenCo Style",
         "category": "Daily & Weekly Planners",
         "format": "Digital PDF",
-        "price": 12,
-        "status": "Pending Review",
+        "price": 14.99,
+        "status": "Live",
         "hero": true,
-        "blueprint": {
-          "geometry": "US Letter",
-          "typography": "Lato",
-          "prompt": "Sample prompt"
-        },
-        "studioPercent": 80,
-        "updatedAt": "2026-08-25T17:23:02.577Z",
         "vault": {
-          "storagePath": "brands/1/PLA-01/v1.0/1787678573287_planner_v1.pdf",
-          "fileName": "planner_v1.pdf",
-          "fileSizeBytes": 27,
-          "fileFormat": "PDF",
-          "version": "1.0",
-          "uploadedAt": "2026-08-25T17:22:53.983Z",
-          "uploadedBy": "DBM",
-          "canvaTemplateUrl": "https://canva.com/design/test-planner",
-          "notionTemplateUrl": "",
-          "downloadUrl": ""
+          "fileName": "master_planner.pdf",
+          "storagePath": "vault/master_planner.pdf"
         },
         "mockups": [
-          {
-            "rank": 1,
-            "fileName": "mockup_1.png",
-            "fileSizeBytes": 17,
-            "contentType": "image/png",
-            "storagePath": "brands/1/PLA-01/mockups/1787678577068_1_mockup_1.png",
-            "url": "",
-            "uploadedAt": "2026-08-25T17:22:57.304Z"
-          },
-          {
-            "rank": 2,
-            "fileName": "mockup_2.png",
-            "fileSizeBytes": 17,
-            "contentType": "image/png",
-            "storagePath": "brands/1/PLA-01/mockups/1787678577832_2_mockup_2.png",
-            "url": "",
-            "uploadedAt": "2026-08-25T17:22:58.323Z"
-          },
-          {
-            "rank": 3,
-            "fileName": "mockup_3.png",
-            "fileSizeBytes": 17,
-            "contentType": "image/png",
-            "storagePath": "brands/1/PLA-01/mockups/1787678578838_3_mockup_3.png",
-            "url": "",
-            "uploadedAt": "2026-08-25T17:22:59.939Z"
-          },
-          {
-            "rank": 4,
-            "fileName": "mockup_4.png",
-            "fileSizeBytes": 17,
-            "contentType": "image/png",
-            "storagePath": "brands/1/PLA-01/mockups/1787678580665_4_mockup_4.png",
-            "url": "",
-            "uploadedAt": "2026-08-25T17:23:00.869Z"
-          }
+          "m1.png",
+          "m2.png",
+          "m3.png",
+          "m4.png",
+          "m5.png"
         ],
         "mockupUrls": [],
         "mockupsCount": 4,
-        "video": {
-          "fileName": "promo.mp4",
-          "fileSizeBytes": 20,
-          "contentType": "video/mp4",
-          "storagePath": "brands/1/PLA-01/video/1787678581264_promo.mp4",
-          "url": "",
-          "uploadedAt": "2026-08-25T17:23:02.187Z"
-        },
+        "video": "vid1.mp4",
         "seo": {
-          "title": "Daily & Weekly Life Planner Printable Template 2026",
-          "description": "Instant download aesthetic daily planner.",
+          "title": "Daily & Weekly Life Planner Printable Template 2026 - Instant Digital Download",
+          "description": "Instant digital download aesthetic daily and weekly life planner printable template. Includes morning routine, habit tracking, daily task matrix, reflection prompts, and goal setting worksheets. Compatible with iPad GoodNotes and standard home printing.",
           "tags": [
             "daily planner",
             "weekly planner",
             "goodnotes",
-            "productivity"
+            "productivity",
+            "life planner",
+            "habit tracker",
+            "digital template",
+            "printable pdf",
+            "routine checklist",
+            "aesthetic planner",
+            "daily agenda",
+            "goal tracker",
+            "task manager"
           ]
         },
-        "seoTitle": "Daily & Weekly Life Planner Printable Template 2026",
-        "seoDescription": "Instant download aesthetic daily planner.",
+        "seoTitle": "2026 Minimalist Master Planner Printable Template PDF",
+        "seoDescription": "Instant digital download aesthetic daily and weekly life planner printable template. Includes morning routine, habit tracking, daily task matrix, reflection prompts, and goal setting worksheets. Compatible with iPad GoodNotes and standard home printing.",
         "seoTags": [
           "daily planner",
           "weekly planner",
           "goodnotes",
-          "productivity"
+          "productivity",
+          "life planner",
+          "habit tracker",
+          "digital template",
+          "printable pdf",
+          "routine checklist",
+          "aesthetic planner",
+          "daily agenda",
+          "goal tracker",
+          "task manager"
         ],
-        "submittedAt": "2026-08-25T17:23:02.999Z",
-        "submittedBy": "DVM"
+        "studioPercent": 60,
+        "updatedAt": "2026-08-25T18:03:04.230Z",
+        "submittedAt": "2026-08-25T18:06:52.246Z",
+        "submittedBy": "DVM",
+        "approvedAt": "2026-08-25T18:06:56.249Z",
+        "approvedBy": "GRO-000",
+        "listedAt": "2026-08-25T18:03:07.592Z",
+        "adminPriceNote": "Upgraded hero tier",
+        "etsyListingId": 980000001,
+        "etsyUrl": "https://www.etsy.com/listing/980000001/Daily%20%26%20Weekly%20Life%20Planner%20Pr",
+        "expiresAt": "2026-12-23T18:03:07.592Z",
+        "listingFeeCharged": 0.2,
+        "aiAudit": {
+          "overall_score": 8.5,
+          "score": 8.5
+        },
+        "revisionRequestedAt": "2026-08-25T18:06:54.493Z"
       },
       {
         "code": "PLA-02",
@@ -12499,5 +12480,17 @@
       }
     ]
   },
-  "monthlyLogs": []
+  "monthlyLogs": [],
+  "midMonthIncentives": {
+    "2026-08": {
+      "1": {
+        "dbmId": 1,
+        "targetPct": 70,
+        "bonusUsd": 75,
+        "note": "Special 20th sprint bonus for PLA brand acceleration",
+        "approved": true,
+        "updatedAt": "2026-08-25T18:06:58.443Z"
+      }
+    }
+  }
 }

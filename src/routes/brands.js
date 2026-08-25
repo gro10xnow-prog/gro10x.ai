@@ -1688,7 +1688,7 @@ router.post('/:id/product/:code/review-action', requireAuth, async (req, res) =>
   try {
     const brandId = Number(req.params.id);
     const productCode = req.params.code;
-    const { action, revisionNote } = req.body;
+    const { action, revisionNote, priceOverride, priceNote } = req.body;
 
     const state = await loadBrandsState();
     const brand = state.brands?.find(b => b.id === brandId);
@@ -1714,9 +1714,18 @@ router.post('/:id/product/:code/review-action', requireAuth, async (req, res) =>
       prod.adminRevisionNote = revisionNote || 'Please review and adjust product assets per guidelines.';
       prod.revisionRequestedAt = new Date().toISOString();
     } else if (action === 'approve') {
-      prod.status = 'QA Approved';
+      prod.status = 'Live';
       prod.approvedAt = new Date().toISOString();
+      prod.approvedBy = req.user?.name || req.user?.username || req.user?.id || 'Admin';
+      prod.listedAt = prod.listedAt || new Date().toISOString();
       delete prod.adminRevisionNote;
+
+      if (priceOverride !== undefined && priceOverride !== null && !isNaN(Number(priceOverride))) {
+        prod.price = Number(priceOverride);
+        if (priceNote) prod.adminPriceNote = String(priceNote);
+      }
+
+      brand.productsLive = state.productsCatalog[brandId].filter(p => p.status === 'Live').length;
     }
 
     await persistBrandsState(state);

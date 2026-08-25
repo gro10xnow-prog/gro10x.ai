@@ -113,7 +113,7 @@ describe('DVM Product Factory & Review Queue Flow', () => {
 
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
-    expect(res.body.data.status).toBe('QA Approved');
+    expect(res.body.data.status).toBe('Live');
   });
 });
 

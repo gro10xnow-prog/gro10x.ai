@@ -1389,6 +1389,13 @@ window.APP_MODULES.brands = async function(container) {
 
                   return queueItems.map(p => {
                     const auditScore = Number(p.aiAudit?.overall_score ?? p.aiAudit?.score ?? 0);
+                    const mockups = Array.isArray(p.mockups) ? p.mockups : (Array.isArray(p.mockupUrls) ? p.mockupUrls.map((u, i) => ({ url: u, rank: i + 1 })) : []);
+                    const vault = p.vault || {};
+                    const hasVault = Boolean(vault.storagePath || vault.downloadUrl || vault.canvaTemplateUrl || vault.notionTemplateUrl || vault.fileName);
+                    const video = p.video || {};
+                    const hasVideo = Boolean(video.storagePath || video.fileName || (typeof video === 'string' && video.length > 0));
+                    const detailId = `reviewDetail_${p.brandId}_${p.code}`;
+
                     return `
                       <tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
                         <td style="padding:0.6rem;">
@@ -1421,15 +1428,127 @@ window.APP_MODULES.brands = async function(container) {
                         </td>
                         <td style="padding:0.6rem; text-align:right;">
                           <div style="display:inline-flex; gap:0.3rem;">
-                            <button class="btn-ghost btn-sm" style="font-size:0.7rem; padding:0.2rem 0.5rem;" onclick="window.BrandsModule.generateLiveSEOPackage(${p.brandId}, '${p.code}', '${encodeURIComponent(p.name)}')">
-                              ⚡ Inspect
+                            <button class="btn-ghost btn-sm" style="font-size:0.7rem; padding:0.2rem 0.5rem; color:#06b6d4;" onclick="window.BrandsModule.toggleReviewInspection('${detailId}')">
+                              🔍 Inspect & Review
                             </button>
                             <button class="btn-secondary btn-sm" style="font-size:0.7rem; padding:0.2rem 0.5rem; color:#ef4444; border-color:rgba(239,68,68,0.4);" onclick="window.BrandsModule.requestRevisionForProduct(${p.brandId}, '${p.code}')">
                               📝 Revise
                             </button>
-                            <button class="btn-primary btn-sm" style="font-size:0.7rem; padding:0.2rem 0.5rem; background:linear-gradient(135deg, #00df89, #06b6d4);" onclick="window.BrandsModule.publishSingleProductEtsy(${p.brandId}, ${p.catIdx})">
-                              🚀 Approve & Publish ($0.20)
+                            <button class="btn-primary btn-sm" style="font-size:0.7rem; padding:0.2rem 0.5rem; background:linear-gradient(135deg, #00df89, #06b6d4);" onclick="window.BrandsModule.approveProductDirectly(${p.brandId}, '${p.code}')">
+                              ✅ Approve & Set Live
                             </button>
+                          </div>
+                        </td>
+                      </tr>
+
+                      <!-- EXPANDABLE INLINE INSPECTION PANEL -->
+                      <tr id="${detailId}" style="display:none; background:rgba(0,0,0,0.3); border-bottom:1px solid rgba(255,255,255,0.08);">
+                        <td colspan="7" style="padding:1.25rem;">
+                          <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:1.25rem; display:flex; flex-direction:column; gap:1rem;">
+                            
+                            <!-- HEADER & QUICK ACTIONS -->
+                            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem; border-bottom:1px solid rgba(255,255,255,0.06); padding-bottom:0.75rem;">
+                              <div>
+                                <span style="font-size:0.72rem; font-weight:800; color:#06b6d4; text-transform:uppercase;">Product Quality Audit & Asset Inspection</span>
+                                <h4 style="font-size:1rem; color:#fff; margin:0.15rem 0 0;">${p.name} (${p.code})</h4>
+                              </div>
+                              <div style="display:flex; gap:0.4rem; align-items:center;">
+                                <button class="btn-ghost btn-sm" style="font-size:0.72rem;" onclick="window.BrandsModule.generateLiveSEOPackage(${p.brandId}, '${p.code}', '${encodeURIComponent(p.name)}')">
+                                  🎨 Open Full Studio
+                                </button>
+                                <button class="btn-secondary btn-sm" style="font-size:0.72rem; color:#ef4444; border-color:rgba(239,68,68,0.4);" onclick="window.BrandsModule.requestRevisionForProduct(${p.brandId}, '${p.code}')">
+                                  📝 Request Revision
+                                </button>
+                                <button class="btn-primary btn-sm" style="font-size:0.75rem; background:linear-gradient(135deg, #00df89, #06b6d4); font-weight:800;" onclick="window.BrandsModule.approveProductDirectly(${p.brandId}, '${p.code}')">
+                                  ✅ Approve & Set Live
+                                </button>
+                                <button class="btn-primary btn-sm" style="font-size:0.75rem; background:linear-gradient(135deg, #06b6d4, #a855f7); font-weight:800;" onclick="window.BrandsModule.publishSingleProductEtsy(${p.brandId}, ${p.catIdx})">
+                                  🚀 Approve & Publish to Etsy ($0.20)
+                                </button>
+                              </div>
+                            </div>
+
+                            <!-- 4-COLUMN INSPECTION GRID -->
+                            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:1rem;">
+                              
+                              <!-- 1. DELIVERABLE VAULT ASSETS -->
+                              <div style="background:rgba(0,0,0,0.3); border:1px solid rgba(0,223,137,0.2); border-radius:10px; padding:0.85rem;">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+                                  <span style="font-size:0.7rem; font-weight:800; color:#00df89; text-transform:uppercase;">📦 1. Vault Deliverable</span>
+                                  <span style="font-size:0.65rem; color:${hasVault ? '#00df89' : '#ef4444'}; font-weight:800;">${hasVault ? '✅ Stored' : '❌ Missing'}</span>
+                                </div>
+                                ${hasVault ? `
+                                  <div style="font-size:0.75rem; color:#fff; font-weight:700; margin-bottom:0.4rem;">
+                                    ${vault.fileName || 'Master File'} ${vault.fileFormat ? `· ${vault.fileFormat}` : ''} ${vault.version ? `(v${vault.version})` : ''}
+                                  </div>
+                                  <div style="display:flex; flex-direction:column; gap:0.3rem;">
+                                    ${vault.downloadUrl ? `<a href="${vault.downloadUrl}" target="_blank" style="color:#06b6d4; text-decoration:none; font-size:0.72rem; font-weight:800;">📥 Download Master File →</a>` : ''}
+                                    ${vault.canvaTemplateUrl ? `<a href="${vault.canvaTemplateUrl}" target="_blank" style="color:#00df89; text-decoration:none; font-size:0.72rem; font-weight:800;">🎨 Open Canva Template Link →</a>` : ''}
+                                    ${vault.notionTemplateUrl ? `<a href="${vault.notionTemplateUrl}" target="_blank" style="color:#a855f7; text-decoration:none; font-size:0.72rem; font-weight:800;">📓 Open Notion Hub Link →</a>` : ''}
+                                  </div>
+                                ` : `
+                                  <span style="font-size:0.72rem; color:var(--text-muted);">No deliverable uploaded yet.</span>
+                                `}
+                              </div>
+
+                              <!-- 2. MEDIA (MOCKUPS & VIDEO) -->
+                              <div style="background:rgba(0,0,0,0.3); border:1px solid rgba(6,182,212,0.2); border-radius:10px; padding:0.85rem;">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+                                  <span style="font-size:0.7rem; font-weight:800; color:#06b6d4; text-transform:uppercase;">🖼️ 2. Media (${mockups.length} Mockups)</span>
+                                  <span style="font-size:0.65rem; color:${mockups.length >= 4 ? '#00df89' : '#fbbf24'}; font-weight:800;">${mockups.length >= 4 ? '✅ Minimum Met' : `${mockups.length}/4 min`}</span>
+                                </div>
+                                <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(42px, 1fr)); gap:0.3rem; margin-bottom:0.4rem;">
+                                  ${mockups.map((m, idx) => `
+                                    <div style="aspect-ratio:1; border-radius:6px; overflow:hidden; border:1px solid rgba(255,255,255,0.1); background:#000; display:flex; align-items:center; justify-content:center; position:relative;">
+                                      ${m.url ? `<img src="${m.url}" style="width:100%; height:100%; object-fit:cover;">` : `<span style="font-size:0.58rem; color:#00df89;">#${m.rank || idx + 1}</span>`}
+                                    </div>
+                                  `).join('')}
+                                </div>
+                                <div style="font-size:0.7rem; color:var(--text-muted);">
+                                  Video: <strong style="color:${hasVideo ? '#00df89' : '#fbbf24'};">${hasVideo ? `✅ ${video.fileName || '10s Video Attached'}` : '⚪ Not Uploaded'}</strong>
+                                </div>
+                              </div>
+
+                              <!-- 3. PRE-AUDITED AI SCORECARD -->
+                              <div style="background:rgba(0,0,0,0.3); border:1px solid rgba(168,85,247,0.2); border-radius:10px; padding:0.85rem;">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+                                  <span style="font-size:0.7rem; font-weight:800; color:#a855f7; text-transform:uppercase;">🧠 3. AI Quality Audit</span>
+                                  <span style="font-size:0.65rem; color:${auditScore >= 7 ? '#00df89' : '#fbbf24'}; font-weight:800;">Score: ${auditScore}/10</span>
+                                </div>
+                                ${p.aiAudit ? `
+                                  <div style="font-size:0.72rem; color:#fff; margin-bottom:0.3rem;">
+                                    Status: <strong style="color:${auditScore >= 7 ? '#00df89' : '#ef4444'};">${p.aiAudit.gateStatus === 'passed' || auditScore >= 7 ? '🟢 Quality Passed' : '🔴 Action Required'}</strong>
+                                  </div>
+                                  <div style="font-size:0.68rem; color:var(--text-secondary); max-height:60px; overflow-y:auto;">
+                                    ${p.aiAudit.summary || p.aiAudit.feedback || 'Quality standards verified across layout, typography, and commercial compliance.'}
+                                  </div>
+                                ` : `
+                                  <span style="font-size:0.72rem; color:var(--text-muted);">AI Audit ready to be evaluated.</span>
+                                `}
+                              </div>
+
+                              <!-- 4. EXECUTIVE PRICING & SEO OVERRIDE -->
+                              <div style="background:rgba(0,0,0,0.3); border:1px solid rgba(251,191,36,0.25); border-radius:10px; padding:0.85rem;">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+                                  <span style="font-size:0.7rem; font-weight:800; color:#fbbf24; text-transform:uppercase;">💰 4. Admin Price Override</span>
+                                  <span style="font-size:0.65rem; color:#00df89; font-weight:800;">Executive Control</span>
+                                </div>
+                                <div style="display:grid; grid-template-columns:1fr 2fr; gap:0.4rem; margin-bottom:0.4rem;">
+                                  <div>
+                                    <label style="font-size:0.62rem; color:var(--text-muted); display:block;">Price ($ USD):</label>
+                                    <input type="number" step="0.01" id="reviewPrice_${p.brandId}_${p.code}" value="${(p.price || 4.99).toFixed(2)}" style="width:100%; font-size:0.78rem; padding:0.3rem; background:rgba(0,0,0,0.4); border:1px solid var(--border-subtle); border-radius:6px; color:#00df89; font-weight:800;">
+                                  </div>
+                                  <div>
+                                    <label style="font-size:0.62rem; color:var(--text-muted); display:block;">Override Reason / Note:</label>
+                                    <input type="text" id="reviewNote_${p.brandId}_${p.code}" value="${p.adminPriceNote || ''}" placeholder="e.g. Premium flagship bundle" style="width:100%; font-size:0.72rem; padding:0.3rem; background:rgba(0,0,0,0.4); border:1px solid var(--border-subtle); border-radius:6px; color:#fff;">
+                                  </div>
+                                </div>
+                                <div style="font-size:0.68rem; color:var(--text-muted);">
+                                  SEO Title: <span style="color:#fff;">${(p.seoTitle || p.name).slice(0, 50)}...</span>
+                                </div>
+                              </div>
+
+                            </div>
                           </div>
                         </td>
                       </tr>
@@ -2495,10 +2614,18 @@ window.APP_MODULES.brands = async function(container) {
             </div>
 
             <!-- THUMBNAIL PREVIEW GRID -->
-            <div id="mockupThumbnailGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(75px, 1fr)); gap:0.5rem; margin-bottom:0.85rem;">
+            <div id="mockupThumbnailGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(80px, 1fr)); gap:0.5rem; margin-bottom:0.85rem;">
               ${(savedMockups.length > 0 ? savedMockups : []).map((m, idx) => `
-                <div style="position:relative; aspect-ratio:1; border-radius:8px; overflow:hidden; border:1px solid rgba(0,223,137,0.3); background:#000;">
-                  <img src="${m.url || m}" style="width:100%; height:100%; object-fit:cover;">
+                <div style="position:relative; aspect-ratio:1; border-radius:8px; overflow:hidden; border:1px solid rgba(0,223,137,0.4); background:rgba(0,0,0,0.5); display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                  ${(m.url && typeof m.url === 'string' && m.url.startsWith('http')) ? `
+                    <img src="${m.url}" style="width:100%; height:100%; object-fit:cover;">
+                  ` : `
+                    <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; width:100%; padding:4px; box-sizing:border-box; text-align:center;">
+                      <span style="font-size:1.2rem;">🖼️</span>
+                      <span style="font-size:0.6rem; color:#fff; font-weight:700; max-width:70px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${m.fileName || `Slot ${m.rank || idx + 1}`}</span>
+                      <span style="font-size:0.55rem; color:#00df89; font-weight:800;">✅ Stored</span>
+                    </div>
+                  `}
                   <span style="position:absolute; bottom:2px; left:2px; font-size:0.6rem; font-weight:800; background:rgba(0,0,0,0.85); color:#00df89; padding:1px 4px; border-radius:3px;">#${m.rank || idx + 1}</span>
                 </div>
               `).join('')}
@@ -2561,14 +2688,14 @@ window.APP_MODULES.brands = async function(container) {
           <div style="background:${auditDone ? 'rgba(0,223,137,0.1)' : (auditScore > 0 ? 'rgba(239,68,68,0.1)' : 'rgba(255,255,255,0.03)')}; border:1px solid ${auditDone ? 'rgba(0,223,137,0.3)' : (auditScore > 0 ? 'rgba(239,68,68,0.3)' : 'rgba(255,255,255,0.08)')}; padding:1rem 1.25rem; border-radius:14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
             <div>
               <span style="font-size:0.72rem; font-weight:800; color:${auditDone ? '#00df89' : (auditScore > 0 ? '#ef4444' : '#06b6d4')}; text-transform:uppercase;">
-                ${auditDone ? '🟢 AI Quality Gate: PASSED (≥70% Required)' : (auditScore > 0 ? '🔴 AI Quality Gate: ACTION REQUIRED (<70%)' : '⚪ AI Quality Gate: Pending Evaluation')}
+                ${auditDone ? '🟢 AI Quality Gate: PASSED (≥70% Required)' : (auditScore > 0 ? '🔴 AI Quality Gate: ACTION REQUIRED (<70%)' : '⚪ AI Quality Gate: Ready for Evaluation')}
               </span>
               <div style="font-size:0.85rem; color:#fff; font-weight:700; margin-top:0.15rem;">
-                ${auditDone ? `Score: ${auditScore}/10 (${(auditScore*10).toFixed(0)}%) · Commercial quality verified.` : (auditScore > 0 ? `Score: ${auditScore}/10 (${(auditScore*10).toFixed(0)}%) · Fix flagged pages below before submitting.` : 'Run AI Vision Audit to evaluate typography, layout geometry & commercial compliance.')}
+                ${auditDone ? `Score: ${auditScore}/10 (${(auditScore*10).toFixed(0)}%) · Commercial quality verified.` : (auditScore > 0 ? `Score: ${auditScore}/10 (${(auditScore*10).toFixed(0)}%) · Fix flagged items below before submitting.` : 'AI Vision Audit evaluates typography, layout geometry, printable margins & commercial compliance.')}
               </div>
             </div>
             <button class="btn-primary" style="background:linear-gradient(135deg,#8b5cf6,#06b6d4); border:none; padding:0.6rem 1.25rem; font-weight:800; font-size:0.82rem;" onclick="window.BrandsModule.runAIProductAudit(${b.id}, '${prodCode}')">
-              ⚡ Run AI Vision Audit Now
+              ⚡ ${savedAudit ? '🔄 Re-Run AI Vision Audit' : '⚡ Run AI Vision Audit Now'}
             </button>
           </div>
 
@@ -2577,7 +2704,7 @@ window.APP_MODULES.brands = async function(container) {
             ${savedAudit ? window.BrandsModule.buildAuditHtml(savedAudit, b.id, prodCode) : `
               <div style="text-align:center; padding:2rem 1rem; background:rgba(255,255,255,0.02); border:1px dashed rgba(255,255,255,0.08); border-radius:12px;">
                 <div style="font-size:2rem; margin-bottom:0.5rem;">🔍</div>
-                <h4 style="font-size:0.95rem; color:#fff; margin:0 0 0.3rem;">No AI Audit Run Yet</h4>
+                <h4 style="font-size:0.95rem; color:#fff; margin:0 0 0.3rem;">AI Quality Audit</h4>
                 <p style="font-size:0.78rem; color:var(--text-muted); margin:0 0 1rem; max-width:420px; margin-inline:auto;">
                   Click "Run AI Vision Audit Now" to perform quality scoring, pricing analysis, and auto-generate single-page edit prompts.
                 </p>
@@ -2605,7 +2732,7 @@ window.APP_MODULES.brands = async function(container) {
             <div>
               <span style="font-size:0.72rem; font-weight:800; color:#06b6d4; text-transform:uppercase;">Context-Aware SEO Generator</span>
               <p style="font-size:0.78rem; color:var(--text-secondary); margin:0.1rem 0 0;">
-                AI generates conversion title, 13 tags, and description using audit score (${auditScore}/10) & pricing.
+                AI generates conversion title, 13 tags, and description using audit score (${auditScore > 0 ? `${auditScore}/10` : 'Pending'}) & pricing.
               </p>
             </div>
             <button class="btn-primary btn-sm" style="background:linear-gradient(135deg, #06b6d4, #00df89); font-weight:800;" onclick="window.BrandsModule.generateStudioSEOWithAI(${b.id}, '${prodCode}')">
@@ -2631,8 +2758,15 @@ window.APP_MODULES.brands = async function(container) {
               </select>
             </div>
             <div>
-              <label style="font-size:0.72rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.2rem;">Retail Price ($ USD)</label>
-              <input type="number" step="0.01" id="studioRetailPrice" value="${savedPrice}" style="width:100%; font-size:0.85rem; padding:0.55rem; background:rgba(0,0,0,0.35); border:1px solid var(--border-subtle); border-radius:8px; color:#fff; font-weight:800;">
+              <label style="font-size:0.72rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.2rem;">
+                Retail Price ($ USD) ${isAdmin ? '<span style="color:#00df89; font-size:0.65rem;">👑 Admin Control</span>' : '<span style="color:#fbbf24; font-size:0.65rem;">🔒 AI-Audited</span>'}
+              </label>
+              ${isAdmin ? `
+                <input type="number" step="0.01" id="studioRetailPrice" value="${savedPrice}" style="width:100%; font-size:0.85rem; padding:0.55rem; background:rgba(0,0,0,0.35); border:1px solid var(--border-subtle); border-radius:8px; color:#fff; font-weight:800;">
+              ` : `
+                <input type="number" step="0.01" id="studioRetailPrice" value="${savedPrice}" readonly style="width:100%; font-size:0.85rem; padding:0.55rem; background:rgba(0,0,0,0.45); border:1px solid rgba(251,191,36,0.3); border-radius:8px; color:#fbbf24; font-weight:800; cursor:not-allowed;" title="Price is set automatically by AI Quality Audit score. Improve product quality to unlock higher pricing.">
+                <span style="font-size:0.65rem; color:var(--text-muted); display:block; margin-top:0.2rem;">🔒 Fixed by AI Audit score.</span>
+              `}
             </div>
           </div>
 
@@ -4678,9 +4812,44 @@ window.APP_MODULES.brands = async function(container) {
       }
     },
 
+    toggleReviewInspection(detailId) {
+      const el = document.getElementById(detailId);
+      if (el) {
+        el.style.display = el.style.display === 'none' ? 'table-row' : 'none';
+      }
+    },
+
+    async approveProductDirectly(brandId, productCode) {
+      const priceInput = document.getElementById(`reviewPrice_${brandId}_${productCode}`);
+      const noteInput = document.getElementById(`reviewNote_${brandId}_${productCode}`);
+      const priceOverride = priceInput ? parseFloat(priceInput.value) : undefined;
+      const priceNote = noteInput ? noteInput.value.trim() : undefined;
+
+      const headers = getStudioAuthHeaders({ 'Content-Type': 'application/json' });
+      try {
+        const res = await fetch(`/api/brands/${brandId}/product/${productCode}/review-action`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            action: 'approve',
+            priceOverride: !isNaN(priceOverride) ? priceOverride : undefined,
+            priceNote
+          })
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Approval failed');
+
+        if (window.showToast) window.showToast(`🎉 ${productCode} QA Approved & set to Live!`, 'success');
+        state = await loadBrandsStateFromAPI();
+        renderTabContent('etsy');
+      } catch (err) {
+        if (window.showToast) window.showToast(err.message, 'error');
+      }
+    },
+
     async publishSingleProductEtsy(brandId, productIdx) {
       const catalog = state.productsCatalog[brandId] || [];
-      const prod = catalog[productIdx];
+      const prod = typeof productIdx === 'number' ? catalog[productIdx] : catalog.find(p => p.code === productIdx);
       if (!prod) return;
 
       // ── Publish Guard Validation ──
@@ -4690,8 +4859,8 @@ window.APP_MODULES.brands = async function(container) {
       const gatePassed = !prod.aiAudit || auditScore >= 7.0 || prod.aiAudit?.gateStatus === 'passed';
 
       const missing = [];
-      if (!title || title.length < 5) missing.push('SEO Title is missing or too short (Studio Tab 2)');
-      if (!hasVault) missing.push('Deliverable file (PDF/ZIP/Link) not uploaded to Vault (Studio Tab 3)');
+      if (!title || title.length < 5) missing.push('SEO Title is missing (Studio Step 5)');
+      if (!hasVault) missing.push('Deliverable file (PDF/ZIP/Link) not uploaded to Vault (Studio Step 2)');
 
       if (missing.length > 0) {
         if (window.showToast) {
@@ -4702,25 +4871,24 @@ window.APP_MODULES.brands = async function(container) {
         return;
       }
 
-      if (!gatePassed) {
-        if (!confirm(`⚠️ AI Quality Gate Notice: Product quality score is ${(auditScore * 10).toFixed(0)}% (Recommended threshold is 70%). Publish anyway?`)) {
-          return;
-        }
-      }
-
       if (!confirm(`Publishing ${prod.code} (${title.slice(0, 40)}...) to Etsy will incur a $0.20 listing fee. Proceed?`)) return;
 
       if (window.showToast) window.showToast(`🚀 Publishing ${prod.code} to Etsy...`, 'info');
-      const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+      const headers = getStudioAuthHeaders({ 'Content-Type': 'application/json' });
 
       try {
         const res = await fetch(`/api/etsy/brands/${brandId}/publish-all`, {
           method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          headers,
           body: JSON.stringify({ productCodes: [prod.code], autoActivate: true })
         });
         const data = await res.json();
         if (!data.success) throw new Error(data.error || 'Failed to publish single product');
+
+        if (data.data?.publishedCount === 0 && data.data?.errors?.length > 0) {
+          const errMsg = data.data.errors[0].reason || 'Pre-listing validation failed';
+          throw new Error(`Cannot Publish ${prod.code}: ${errMsg}`);
+        }
 
         if (window.showToast) window.showToast(`✅ ${prod.code} is now live on Etsy! ($0.20 fee logged)`, 'success');
         state = await loadBrandsStateFromAPI();

@@ -315,12 +315,12 @@ function runProductHealthCheck(product, brand = {}) {
   const warnings = [];
   const checks = [];
 
-  const title = (product.seoTitle || product.title || product.name || '').trim();
-  const description = (product.seoDescription || product.description || '').trim();
-  const tags = Array.isArray(product.seoTags) ? product.seoTags : (product.tags || []);
+  const title = (product.seoTitle || product.seo?.title || product.title || product.name || '').trim();
+  const description = (product.seoDescription || product.seo?.description || product.description || '').trim();
+  const tags = Array.isArray(product.seoTags) ? product.seoTags : (Array.isArray(product.seo?.tags) ? product.seo.tags : (product.tags || []));
   const price = parseFloat(product.price || product.suggestedPrice || 0);
-  const hasVaultFile = Boolean(product.vault?.storagePath || product.vault?.fileName || product.fileUrl || product.isDigitalReady);
-  const mockupCount = Array.isArray(product.mockups) ? product.mockups.length : (product.mockupPrompts ? 10 : 0);
+  const hasVaultFile = Boolean(product.vault?.storagePath || product.vault?.fileName || product.vault?.canvaTemplateUrl || product.vault?.notionTemplateUrl || product.vault?.downloadUrl || product.fileUrl || product.isDigitalReady);
+  const mockupCount = Array.isArray(product.mockups) ? product.mockups.length : (Array.isArray(product.mockupUrls) ? product.mockupUrls.length : (product.mockupPrompts ? 10 : 0));
   const sectionId = product.etsySectionId || product.section || product.category;
 
   // RULE 1: Title Etsy Limit (30 - 140 Chars)
