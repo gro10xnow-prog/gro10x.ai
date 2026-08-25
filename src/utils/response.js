@@ -20,7 +20,9 @@ function ok(res, data = {}, statusCode = 200, meta = {}) {
 /**
  * Send a standardized API error response
  */
-function fail(res, statusCode = 500, message = 'Internal Server Error', code = 'SERVER_ERROR', details = null) {
+function fail(res, arg2 = 500, arg3 = 'Internal Server Error', code = 'SERVER_ERROR', details = null) {
+  const statusCode = typeof arg2 === 'number' ? arg2 : (typeof arg3 === 'number' ? arg3 : 500);
+  const message = typeof arg2 === 'string' ? arg2 : (typeof arg3 === 'string' ? arg3 : 'Internal Server Error');
   const payload = {
     success: false,
     error: {

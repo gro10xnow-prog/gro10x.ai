@@ -1201,6 +1201,7 @@ window.APP_MODULES.brands = async function(container) {
                 <th style="padding:0.6rem;">Price ($)</th>
                 <th style="padding:0.6rem;">Media (1-10 + Vid)</th>
                 <th style="padding:0.6rem;">Deliverable</th>
+                <th style="padding:0.6rem;">Studio %</th>
                 <th style="padding:0.6rem;">AI Health</th>
                 <th style="padding:0.6rem;">Expiry (120d)</th>
                 <th style="padding:0.6rem;">Etsy Status</th>
@@ -1211,10 +1212,14 @@ window.APP_MODULES.brands = async function(container) {
               ${catalog.map((p, idx) => {
                 const isLive = p.status === 'Live';
                 const isInactive = p.status === 'Inactive';
-                const hasVault = Boolean(p.vault?.fileName || p.vault?.storagePath);
-                const hasSEO = Boolean(p.seoTitle && p.seoTags && p.seoTags.length > 0);
+                const hasVault = Boolean(p.vault?.fileName || p.vault?.storagePath || p.vault?.canvaTemplateUrl || p.vault?.notionTemplateUrl);
+                const hasSEO = Boolean((p.seoTitle || p.seo?.title) && (p.seoTags?.length > 0 || p.seo?.tags?.length > 0));
                 const mockupCount = Array.isArray(p.mockups) ? p.mockups.length : (Array.isArray(p.mockupUrls) ? p.mockupUrls.length : 0);
                 const hasVideo = Boolean(p.video?.fileName || p.video?.storagePath || p.video);
+                const bpDone = Boolean(p.blueprint?.geometry || p.blueprint?.prompt);
+                const auditScore = Number(p.aiAudit?.overall_score ?? p.aiAudit?.score ?? 0);
+                const auditDone = auditScore >= 7.0;
+                const studioPct = p.studioPercent !== undefined ? p.studioPercent : ((bpDone ? 20 : 0) + (hasSEO ? 20 : 0) + (hasVault ? 20 : 0) + (mockupCount > 0 ? 20 : 0) + (auditDone ? 20 : 0));
 
                 let expiryDisplay = '<span style="font-size:0.7rem; color:var(--text-muted);">Not Listed</span>';
                 if (isLive && p.expiresAt) {
@@ -1228,7 +1233,7 @@ window.APP_MODULES.brands = async function(container) {
                     <td style="padding:0.6rem;">
                       <div style="font-weight:800; color:#fff;">${p.code}</div>
                       <div style="font-size:0.75rem; color:var(--text-secondary); max-width:240px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                        ${p.seoTitle || p.name}
+                        ${p.seoTitle || p.seo?.title || p.name}
                       </div>
                     </td>
                     <td style="padding:0.6rem; color:var(--text-muted); font-size:0.75rem;">
@@ -1250,6 +1255,11 @@ window.APP_MODULES.brands = async function(container) {
                       ` : `
                         <span style="font-size:0.7rem; color:var(--text-muted);">⚪ Missing</span>
                       `}
+                    </td>
+                    <td style="padding:0.6rem;">
+                      <span style="display:inline-flex; align-items:center; font-size:0.72rem; font-weight:800; padding:0.15rem 0.45rem; border-radius:6px; background:${studioPct >= 80 ? 'rgba(0,223,137,0.15)' : (studioPct >= 40 ? 'rgba(251,191,36,0.15)' : 'rgba(239,68,68,0.15)')}; color:${studioPct >= 80 ? '#00df89' : (studioPct >= 40 ? '#fbbf24' : '#ef4444')};">
+                        ${studioPct}%
+                      </span>
                     </td>
                     <td style="padding:0.6rem;">
                       ${hasVault && hasSEO ? `
@@ -1862,16 +1872,19 @@ window.APP_MODULES.brands = async function(container) {
       if (!prodName) prodName = matchedProduct.name || `Product ${prodCode || '1'}`;
       if (!prodCode) prodCode = matchedProduct.code || 'PROD-001';
 
+      // Set global active studio context
+      window._studioCtx = { brandId: b.id, productCode: prodCode, productName: prodName };
+
       const modal = document.getElementById('aiSeoModal');
       const modalContent = document.getElementById('aiSeoModalContent');
       if (!modal || !modalContent) return;
 
-      modalContent.style.maxWidth = '840px';
+      modalContent.style.maxWidth = '880px';
       modalContent.innerHTML = `
         <div style="text-align:center; padding:2.5rem 1rem;">
           <div style="font-size:2.8rem; margin-bottom:1rem; animation:spin 2s linear infinite;">🤖</div>
-          <h3 style="color:#fff; font-size:1.3rem; font-weight:800; margin-bottom:0.5rem;">Generating Product Blueprint & Etsy SEO Package...</h3>
-          <p style="color:var(--text-muted); font-size:0.88rem;">Architecting page-by-page design layout, Google Flow creation prompts, 13 SEO tags & listing description for <strong>${prodName}</strong>.</p>
+          <h3 style="color:#fff; font-size:1.3rem; font-weight:800; margin-bottom:0.5rem;">Loading Studio Engine for ${prodName}...</h3>
+          <p style="color:var(--text-muted); font-size:0.88rem;">Synchronizing Cloud Vault assets, AI quality audit, and listing packages.</p>
         </div>
       `;
       modal.style.display = 'flex';
@@ -1881,7 +1894,11 @@ window.APP_MODULES.brands = async function(container) {
         let blueprintResult = null;
         let mockupResult = null;
 
-        if (window.APP_API) {
+        // Fetch AI defaults if product doesn't already have saved SEO/Blueprint
+        const hasExistingSEO = Boolean(matchedProduct.seo?.title || matchedProduct.seoTitle);
+        const hasExistingBP = Boolean(matchedProduct.blueprint?.geometry || matchedProduct.blueprint?.prompt);
+
+        if (window.APP_API && (!hasExistingSEO || !hasExistingBP)) {
           const [seoRes, bpRes, mockRes] = await Promise.all([
             window.APP_API.post('/ai/etsy-seo', {
               productName: prodName,
@@ -1914,82 +1931,122 @@ window.APP_MODULES.brands = async function(container) {
           mockupResult = mockRes ? mockRes.data : null;
         }
 
-        if (!seoResult || !seoResult.title) {
-          throw new Error('Could not fetch SEO package from server');
-        }
+        // Merge saved data with AI defaults
+        const savedBP = matchedProduct.blueprint || {};
+        const savedSEO = matchedProduct.seo || {};
+        const savedVault = matchedProduct.vault || {};
+        const savedMockups = matchedProduct.mockups || [];
+        const savedVideo = matchedProduct.video || null;
+        const savedAudit = matchedProduct.aiAudit || null;
+        const savedType = matchedProduct.type || 'pdf-planner';
+        const savedPrice = matchedProduct.price || (savedSEO.price) || 4.99;
 
-        const tagsJoined = (seoResult.tags || []).join(', ');
+        const effectiveTitle = savedSEO.title || matchedProduct.seoTitle || (seoResult?.title) || `${prodName} | Printable Template & Digital Tracker`;
+        const effectiveTags = (savedSEO.tags && savedSEO.tags.length > 0)
+          ? savedSEO.tags
+          : ((matchedProduct.seoTags && matchedProduct.seoTags.length > 0) ? matchedProduct.seoTags : (seoResult?.tags || ['digital planner', 'printable template', 'instant download', 'daily checklist', 'goodnotes']));
+        const effectiveTagsStr = Array.isArray(effectiveTags) ? effectiveTags.join(', ') : String(effectiveTags);
+        const effectiveDesc = savedSEO.description || matchedProduct.seoDescription || (seoResult?.description) || `Instant digital download printable template. High-resolution layout ready for immediate print or tablet use.`;
+
         const bp = blueprintResult || {};
         const specs = bp.documentSpecs || {
-          dimensions: 'US Letter (8.5 x 11 in) / 300 DPI Vector PDF',
+          dimensions: savedBP.geometry || 'US Letter (8.5 x 11 in) / 300 DPI Vector PDF',
           margins: '0.5 in safe print margin',
           pageCount: '10 Core Spreads',
           colorSystem: { primaryAccent: '#8B5A7A', backgroundTint: '#FAF3E8', secondaryAccent: '#7D9B76', highlight: '#C4887C', darkText: '#2E2E2E' },
           typography: { headingFont: 'Playfair Display', bodyFont: 'Lato', accentFont: 'Cormorant Garamond' }
         };
         const pages = bp.pageBreakdown || [];
-        const googleFlowPrompt = bp.googleFlowPrompt || '';
+        const effectivePrompt = savedBP.prompt || savedBP.googleFlowPrompt || (bp.googleFlowPrompt) || '';
 
         const mockData = mockupResult || {};
         const mockups = mockData.mockups || [];
         const masterMockupPrompt = mockData.masterMockupPrompt || '';
         const videoPrompt = mockData.videoPrompt || '';
 
-        const currentVault = matchedProduct.vault || {};
-        const currentMockups = matchedProduct.mockups || [];
+        // Calculate 5-Step Studio Progress
+        const bpDone = Boolean(savedBP.geometry || savedBP.prompt || effectivePrompt);
+        const seoDone = Boolean(effectiveTitle && effectiveTags.length > 0);
+        const vaultDone = Boolean(savedVault.storagePath || savedVault.canvaTemplateUrl || savedVault.notionTemplateUrl);
+        const mediaDone = Boolean(savedMockups.length > 0);
+        const auditScore = Number(savedAudit?.overall_score ?? savedAudit?.score ?? 0);
+        const auditDone = auditScore >= 7.0;
+
+        const progressPct = (bpDone ? 20 : 0) + (seoDone ? 20 : 0) + (vaultDone ? 20 : 0) + (mediaDone ? 20 : 0) + (auditDone ? 20 : 0);
 
         modalContent.innerHTML = `
           <!-- MODAL HEADER -->
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:0.85rem;">
-            <div>
-              <span style="font-size:0.72rem; font-weight:800; color:#00df89; text-transform:uppercase; letter-spacing:0.5px;">⚡ Product Factory & Studio Engine</span>
-              <div style="display:flex; align-items:center; gap:0.5rem; margin-top:0.2rem;">
-                <h2 style="font-size:1.35rem; font-weight:900; color:#fff; margin:0;">${prodName}</h2>
-                ${matchedProduct.etsyListingId ? `
-                  <span style="font-size:0.7rem; font-weight:800; background:rgba(0,223,137,0.15); color:#00df89; border:1px solid rgba(0,223,137,0.3); padding:0.15rem 0.5rem; border-radius:999px;">
-                    🟢 Etsy #${matchedProduct.etsyListingId}
+          <div style="margin-bottom:1rem; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:0.85rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <span style="font-size:0.72rem; font-weight:800; color:#00df89; text-transform:uppercase; letter-spacing:0.5px;">⚡ Product Factory & Studio Engine</span>
+                <div style="display:flex; align-items:center; gap:0.5rem; margin-top:0.2rem; flex-wrap:wrap;">
+                  <h2 style="font-size:1.35rem; font-weight:900; color:#fff; margin:0;">${prodName}</h2>
+                  <span style="font-size:0.7rem; font-weight:800; background:rgba(6,182,212,0.15); color:#06b6d4; border:1px solid rgba(6,182,212,0.3); padding:0.15rem 0.5rem; border-radius:999px;">
+                    SKU: ${prodCode}
                   </span>
-                ` : ''}
+                  ${matchedProduct.etsyListingId ? `
+                    <span style="font-size:0.7rem; font-weight:800; background:rgba(0,223,137,0.15); color:#00df89; border:1px solid rgba(0,223,137,0.3); padding:0.15rem 0.5rem; border-radius:999px;">
+                      🟢 Etsy #${matchedProduct.etsyListingId}
+                    </span>
+                  ` : ''}
+                </div>
+              </div>
+              <button onclick="document.getElementById('aiSeoModal').style.display='none'" style="background:none; border:none; color:var(--text-muted); font-size:1.5rem; cursor:pointer;">✕</button>
+            </div>
+
+            <!-- 5-STEP VISUAL PROGRESS TRACKER -->
+            <div style="margin-top:0.85rem; background:rgba(0,0,0,0.3); padding:0.6rem 0.8rem; border-radius:10px; border:1px solid rgba(255,255,255,0.06);">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+                <span style="font-size:0.72rem; font-weight:800; color:#fff;">DVM Studio Readiness Progress</span>
+                <span style="font-size:0.75rem; font-weight:900; color:${progressPct >= 80 ? '#00df89' : (progressPct >= 40 ? '#fbbf24' : '#ef4444')};">${progressPct}% Complete</span>
+              </div>
+              <div style="width:100%; height:6px; background:rgba(255,255,255,0.1); border-radius:999px; overflow:hidden; margin-bottom:0.6rem;">
+                <div style="width:${progressPct}%; height:100%; background:linear-gradient(90deg, #00df89, #06b6d4); transition:width 0.3s ease;"></div>
+              </div>
+              <div style="display:flex; justify-content:space-between; gap:0.3rem; flex-wrap:wrap; font-size:0.68rem; font-weight:700;">
+                <span style="color:${bpDone ? '#00df89' : 'var(--text-muted)'};">${bpDone ? '✅ 1. Blueprint' : '⚪ 1. Blueprint'}</span>
+                <span style="color:${seoDone ? '#00df89' : 'var(--text-muted)'};">${seoDone ? '✅ 2. SEO' : '⚪ 2. SEO'}</span>
+                <span style="color:${vaultDone ? '#00df89' : 'var(--text-muted)'};">${vaultDone ? '✅ 3. Vault' : '⚪ 3. Vault'}</span>
+                <span style="color:${mediaDone ? '#00df89' : 'var(--text-muted)'};">${mediaDone ? '✅ 4. Media' : '⚪ 4. Media'}</span>
+                <span style="color:${auditDone ? '#00df89' : (auditScore > 0 ? '#ef4444' : 'var(--text-muted)')};">${auditDone ? '✅ 5. Quality (≥70%)' : (auditScore > 0 ? `⚠️ 5. Quality (${(auditScore*10).toFixed(0)}%)` : '⚪ 5. Quality Gate')}</span>
               </div>
             </div>
-            <button onclick="document.getElementById('aiSeoModal').style.display='none'" style="background:none; border:none; color:var(--text-muted); font-size:1.5rem; cursor:pointer;">✕</button>
           </div>
 
           <!-- 5-TAB SELECTOR STRIP -->
           <div style="display:flex; gap:0.4rem; background:rgba(0,0,0,0.35); padding:0.35rem; border-radius:12px; margin-bottom:1.25rem; border:1px solid rgba(255,255,255,0.06); flex-wrap:wrap;">
             <button id="modalTabBtnBlueprint" type="button" onclick="window.BrandsModule.switchStudioTab('blueprint')" style="flex:1; min-width:120px; background:rgba(0,223,137,0.15); border:1px solid rgba(0,223,137,0.3); color:#00df89; font-weight:800; font-size:0.75rem; padding:0.55rem 0.4rem; border-radius:8px; cursor:pointer;">
-              🎨 Blueprint
+              🎨 1. Blueprint
             </button>
             <button id="modalTabBtnSeo" type="button" onclick="window.BrandsModule.switchStudioTab('seo')" style="flex:1; min-width:120px; background:none; border:1px solid transparent; color:var(--text-muted); font-weight:800; font-size:0.75rem; padding:0.55rem 0.4rem; border-radius:8px; cursor:pointer;">
-              📈 Etsy SEO
+              📈 2. Etsy SEO
             </button>
             <button id="modalTabBtnVault" type="button" onclick="window.BrandsModule.switchStudioTab('vault')" style="flex:1; min-width:120px; background:none; border:1px solid transparent; color:var(--text-muted); font-weight:800; font-size:0.75rem; padding:0.55rem 0.4rem; border-radius:8px; cursor:pointer;">
-              📦 Vault File
+              📦 3. Vault File
             </button>
             <button id="modalTabBtnMockups" type="button" onclick="window.BrandsModule.switchStudioTab('mockups')" style="flex:1; min-width:120px; background:none; border:1px solid transparent; color:var(--text-muted); font-weight:800; font-size:0.75rem; padding:0.55rem 0.4rem; border-radius:8px; cursor:pointer;">
-              🖼️ Media (Photos + Video)
+              🖼️ 4. Media (Photos + Video)
             </button>
             <button id="modalTabBtnAudit" type="button" onclick="window.BrandsModule.switchStudioTab('audit')" style="flex:1; min-width:130px; background:none; border:1px solid transparent; color:var(--text-muted); font-weight:800; font-size:0.75rem; padding:0.55rem 0.4rem; border-radius:8px; cursor:pointer;">
-              🧠 AI Audit & Pricing
+              🧠 5. AI Audit & Quality
             </button>
           </div>
 
           <!-- TAB 1: PRODUCT BLUEPRINT & GOOGLE FLOW PROMPT -->
           <div id="studioTabBlueprint" style="display:flex; flex-direction:column; gap:1.2rem;">
-            <!-- DOCUMENT SPECS GRID -->
-            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:0.75rem;">
+            <!-- DOCUMENT SPECS & EDITABLE GEOMETRY -->
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:0.75rem;">
               <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); padding:0.75rem; border-radius:10px;">
-                <span style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block;">Page Geometry & Format</span>
-                <span style="font-size:0.85rem; font-weight:700; color:#06b6d4; margin-top:0.2rem; display:block;">${specs.dimensions || 'US Letter (8.5x11 in)'}</span>
-                <span style="font-size:0.72rem; color:var(--text-muted);">${specs.margins || '0.5 in safe print zone'}</span>
+                <label style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.2rem;">Page Geometry & Format</label>
+                <input type="text" id="studioBlueprintGeometry" value="${specs.dimensions || 'US Letter (8.5x11 in)'}" style="width:100%; font-size:0.82rem; padding:0.45rem; background:rgba(0,0,0,0.3); border:1px solid var(--border-subtle); border-radius:6px; color:#06b6d4; font-weight:700;">
               </div>
               <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); padding:0.75rem; border-radius:10px;">
-                <span style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block;">Typography Hierarchy</span>
-                <span style="font-size:0.85rem; font-weight:700; color:#fff; margin-top:0.2rem; display:block;">${specs.typography?.headingFont || 'Playfair Display'} + ${specs.typography?.bodyFont || 'Lato'}</span>
-                <span style="font-size:0.72rem; color:var(--text-muted);">${specs.typography?.accentFont || 'Cormorant Italic'}</span>
+                <label style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.2rem;">Typography Hierarchy</label>
+                <input type="text" id="studioBlueprintTypography" value="${specs.typography?.headingFont || 'Playfair Display'} + ${specs.typography?.bodyFont || 'Lato'}" style="width:100%; font-size:0.82rem; padding:0.45rem; background:rgba(0,0,0,0.3); border:1px solid var(--border-subtle); border-radius:6px; color:#fff; font-weight:700;">
               </div>
               <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); padding:0.75rem; border-radius:10px;">
-                <span style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block;">Brand Color Palette</span>
+                <label style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.2rem;">Brand Color Palette</label>
                 <div style="display:flex; gap:0.35rem; margin-top:0.35rem;">
                   ${(b.palette || ['#8B5A7A', '#FAF3E8', '#7D9B76', '#C4887C', '#2E2E2E']).map(hex => `
                     <span style="width:20px; height:20px; border-radius:50%; background:${hex}; border:1px solid rgba(255,255,255,0.2);" title="${hex}"></span>
@@ -1998,16 +2055,21 @@ window.APP_MODULES.brands = async function(container) {
               </div>
             </div>
 
-            <!-- MASTER GOOGLE FLOW PROMPT CARD -->
+            <!-- MASTER GOOGLE FLOW PROMPT (EDITABLE TEXTAREA) -->
             <div>
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
                 <label style="font-size:0.75rem; font-weight:800; color:#00df89; text-transform:uppercase;">⚡ Google Flow / Gemini Master Creation Prompt</label>
-                <button class="btn-primary btn-sm" style="padding:0.3rem 0.75rem; font-size:0.75rem;" onclick="navigator.clipboard.writeText(document.getElementById('googleFlowPromptBox').innerText); window.showToast('📋 Copied Google Flow Master Prompt! Ready to paste into Gemini / Flow.','success');">
-                  📋 Copy Google Flow Master Prompt
-                </button>
+                <div style="display:flex; gap:0.4rem;">
+                  <button class="btn-primary btn-sm" style="padding:0.3rem 0.75rem; font-size:0.75rem;" onclick="navigator.clipboard.writeText(document.getElementById('studioBlueprintPrompt').value); window.showToast('📋 Copied Google Flow Master Prompt!','success');">
+                    📋 Copy Prompt
+                  </button>
+                  <button class="btn-secondary btn-sm" style="padding:0.3rem 0.75rem; font-size:0.75rem;" onclick="window.BrandsModule.saveStudioDraft('blueprint')">
+                    💾 Save Blueprint
+                  </button>
+                </div>
               </div>
-              <div id="googleFlowPromptBox" style="background:rgba(0,0,0,0.4); border:1px solid rgba(0,223,137,0.3); padding:0.9rem; border-radius:10px; color:#e2e8f0; font-size:0.8rem; font-family:monospace; white-space:pre-wrap; max-height:220px; overflow-y:auto; line-height:1.5;">${googleFlowPrompt}</div>
-              <p style="font-size:0.72rem; color:var(--text-muted); margin:0.3rem 0 0;">💡 <em>Copy this prompt and paste it into <strong>Google Flow</strong>. The agent will process all pages <strong>sequentially</strong>, generating each page as a <strong>3:4 portrait visual design image</strong> — one page at a time. Import the images into <strong>PowerPoint</strong> for any final adjustments, then export as PDF for Etsy delivery.</em></p>
+              <textarea id="studioBlueprintPrompt" rows="6" style="width:100%; background:rgba(0,0,0,0.4); border:1px solid rgba(0,223,137,0.3); padding:0.9rem; border-radius:10px; color:#e2e8f0; font-size:0.8rem; font-family:monospace; line-height:1.5; resize:vertical;">${effectivePrompt}</textarea>
+              <p style="font-size:0.72rem; color:var(--text-muted); margin:0.3rem 0 0;">💡 <em>Paste into <strong>Google Flow</strong>. Generate each page as a <strong>3:4 portrait visual design image</strong>, import into PowerPoint, and export to PDF.</em></p>
             </div>
 
             <!-- PAGE-BY-PAGE SPREAD BREAKDOWN -->
@@ -2034,62 +2096,79 @@ window.APP_MODULES.brands = async function(container) {
             </div>
           </div>
 
-          <!-- TAB 2: ETSY SEO & LISTING PACKAGE -->
+          <!-- TAB 2: ETSY SEO & LISTING PACKAGE (EDITABLE) -->
           <div id="studioTabSeo" style="display:none; flex-direction:column; gap:1.2rem;">
-            <!-- 140-CHAR TITLE -->
+            <!-- PRODUCT TYPE & PRICING ROW -->
+            <div style="display:grid; grid-template-columns:2fr 1fr; gap:0.75rem;">
+              <div>
+                <label style="font-size:0.72rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.2rem;">Product Type (1300 Catalog Scalable)</label>
+                <select id="studioProductType" style="width:100%; font-size:0.82rem; padding:0.55rem; background:rgba(0,0,0,0.35); border:1px solid var(--border-subtle); border-radius:8px; color:#00df89; font-weight:700;">
+                  <option value="pdf-planner" ${savedType === 'pdf-planner' ? 'selected' : ''}>📄 PDF Planner / Printable</option>
+                  <option value="png-sublimation" ${savedType === 'png-sublimation' ? 'selected' : ''}>🎨 PNG Sublimation / Tumbler Wrap (ZIP)</option>
+                  <option value="svg-cut-file" ${savedType === 'svg-cut-file' ? 'selected' : ''}>✂️ SVG Cut File / Cricut (ZIP)</option>
+                  <option value="font-pack" ${savedType === 'font-pack' ? 'selected' : ''}>🔤 Font Pack (OTF/TTF ZIP)</option>
+                  <option value="canva-template" ${savedType === 'canva-template' ? 'selected' : ''}>🌐 Canva Master Template Link</option>
+                  <option value="notion-template" ${savedType === 'notion-template' ? 'selected' : ''}>📓 Notion Hub / Template Link</option>
+                  <option value="pod-design" ${savedType === 'pod-design' ? 'selected' : ''}>👕 Print-on-Demand (POD) Design</option>
+                  <option value="prompt-vault" ${savedType === 'prompt-vault' ? 'selected' : ''}>🧠 AI Prompt Vault / Matrix (ZIP/PDF)</option>
+                  <option value="wall-art-print" ${savedType === 'wall-art-print' ? 'selected' : ''}>🖼️ Printable Wall Art (PDF/PNG)</option>
+                  <option value="e-book" ${savedType === 'e-book' ? 'selected' : ''}>📚 E-Book / Strategy Guide (PDF)</option>
+                </select>
+              </div>
+              <div>
+                <label style="font-size:0.72rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.2rem;">Retail Price ($ USD)</label>
+                <input type="number" step="0.01" id="studioRetailPrice" value="${savedPrice}" style="width:100%; font-size:0.85rem; padding:0.55rem; background:rgba(0,0,0,0.35); border:1px solid var(--border-subtle); border-radius:8px; color:#fff; font-weight:800;">
+              </div>
+            </div>
+
+            <!-- 140-CHAR TITLE INPUT -->
             <div>
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.3rem;">
-                <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Etsy Listing Title (${(seoResult.title || '').length}/140 chars)</label>
-                <button class="btn-ghost btn-sm" onclick="navigator.clipboard.writeText('${escape(seoResult.title)}'); window.showToast('Copied Title!','success');">📋 Copy Title</button>
+                <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Etsy Listing Title (Max 140 Chars)</label>
+                <span id="seoTitleCounter" style="font-size:0.7rem; color:${effectiveTitle.length > 140 ? '#ef4444' : '#00df89'}; font-weight:800;">${effectiveTitle.length}/140 chars</span>
               </div>
-              <div style="background:rgba(0,0,0,0.3); border:1px solid rgba(0,223,137,0.3); padding:0.75rem; border-radius:10px; color:#00df89; font-weight:700; font-size:0.88rem;">
-                ${seoResult.title}
-              </div>
+              <input type="text" id="studioSeoTitle" maxlength="140" value="${escape(effectiveTitle)}" oninput="document.getElementById('seoTitleCounter').innerText = this.value.length + '/140 chars'" style="width:100%; font-size:0.88rem; padding:0.65rem; background:rgba(0,0,0,0.35); border:1px solid rgba(0,223,137,0.3); border-radius:8px; color:#00df89; font-weight:700;">
             </div>
 
-            <!-- 13 TAGS -->
+            <!-- 13 TAGS INPUT -->
             <div>
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
-                <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase;">13 High-Intent Etsy Tags (Max 20 chars each)</label>
-                <button class="btn-secondary btn-sm" onclick="navigator.clipboard.writeText('${tagsJoined}'); window.showToast('Copied All 13 Tags!','success');">📋 Copy All 13 Tags</button>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.3rem;">
+                <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase;">13 High-Intent Etsy Tags (Comma-separated, max 20 chars per tag)</label>
+                <span id="seoTagsCountBadge" style="font-size:0.7rem; color:#06b6d4; font-weight:800;">${effectiveTags.length} / 13 Tags</span>
               </div>
-              <div style="display:flex; flex-wrap:wrap; gap:0.4rem; background:rgba(0,0,0,0.25); padding:0.75rem; border-radius:10px;">
-                ${(seoResult.tags || []).map((tag, tIdx) => `
-                  <span onclick="navigator.clipboard.writeText('${tag}'); window.showToast('Copied tag: ${tag}','success');" style="background:rgba(6,182,212,0.15); color:#06b6d4; border:1px solid rgba(6,182,212,0.3); padding:0.25rem 0.6rem; border-radius:999px; font-size:0.75rem; font-weight:700; cursor:pointer;" title="Click to copy tag #${tIdx + 1}">
-                    #${tIdx + 1} ${tag}
-                  </span>
-                `).join('')}
-              </div>
+              <input type="text" id="studioSeoTags" value="${escape(effectiveTagsStr)}" oninput="const c = this.value.split(',').map(s=>s.trim()).filter(Boolean).length; document.getElementById('seoTagsCountBadge').innerText = c + ' / 13 Tags';" style="width:100%; font-size:0.82rem; padding:0.6rem; background:rgba(0,0,0,0.35); border:1px solid var(--border-subtle); border-radius:8px; color:#fff;">
             </div>
 
-            <!-- DESCRIPTION -->
+            <!-- DESCRIPTION TEXTAREA -->
             <div>
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.3rem;">
                 <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Conversion-Optimized Description</label>
-                <button class="btn-ghost btn-sm" onclick="navigator.clipboard.writeText(document.getElementById('aiDescBox').innerText); window.showToast('Copied Description!','success');">📋 Copy Description</button>
+                <div style="display:flex; gap:0.4rem;">
+                  <button class="btn-ghost btn-sm" onclick="navigator.clipboard.writeText(document.getElementById('studioSeoDescription').value); window.showToast('Copied Description!','success');">📋 Copy</button>
+                  <button class="btn-primary btn-sm" onclick="window.BrandsModule.saveStudioDraft('seo')">💾 Save SEO</button>
+                </div>
               </div>
-              <div id="aiDescBox" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); padding:0.85rem; border-radius:10px; color:var(--text-secondary); font-size:0.82rem; white-space:pre-wrap; max-height:220px; overflow-y:auto; line-height:1.5;">${seoResult.description}</div>
+              <textarea id="studioSeoDescription" rows="6" style="width:100%; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); padding:0.85rem; border-radius:10px; color:var(--text-secondary); font-size:0.82rem; line-height:1.5; resize:vertical;">${effectiveDesc}</textarea>
             </div>
           </div>
 
           <!-- TAB 3: DELIVERABLE VAULT & DIRECT UPLOAD -->
           <div id="studioTabVault" style="display:none; flex-direction:column; gap:1.2rem;">
-            <!-- DIRECT FILE UPLOAD CARD -->
             <div style="background:rgba(0,223,137,0.04); border:1px solid rgba(0,223,137,0.25); padding:1.25rem; border-radius:14px;">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
                 <div>
-                  <span style="font-size:0.72rem; font-weight:800; color:#00df89; text-transform:uppercase; display:block;">📥 Upload Finished Deliverable (PowerPoint Export)</span>
-                  <p style="font-size:0.78rem; color:var(--text-muted); margin:0.1rem 0 0;">Upload the QA-verified PDF or ZIP file directly to the GRO10X Vault.</p>
+                  <span style="font-size:0.72rem; font-weight:800; color:#00df89; text-transform:uppercase; display:block;">📥 Upload Finished Deliverable (PDF / ZIP / Template)</span>
+                  <p style="font-size:0.78rem; color:var(--text-muted); margin:0.1rem 0 0;">Upload deliverable file directly to the GRO10X Secure Vault (max 50MB).</p>
                 </div>
                 <span style="font-size:0.7rem; background:rgba(255,255,255,0.08); color:var(--text-secondary); padding:0.2rem 0.5rem; border-radius:6px;">Max 50MB</span>
               </div>
 
               <div style="display:grid; grid-template-columns:2fr 1fr; gap:0.75rem; align-items:center; margin-bottom:0.75rem;">
                 <div>
-                  <input type="file" id="vaultFileInput" accept=".pdf,.zip,.png" style="width:100%; font-size:0.82rem; background:rgba(0,0,0,0.3); border:1px dashed rgba(0,223,137,0.4); padding:0.75rem; border-radius:10px; color:#fff; cursor:pointer;">
+                  <input type="file" id="vaultFileInput" accept=".pdf,.zip,.png,.otf,.ttf" style="width:100%; font-size:0.82rem; background:rgba(0,0,0,0.3); border:1px dashed rgba(0,223,137,0.4); padding:0.75rem; border-radius:10px; color:#fff; cursor:pointer;">
                 </div>
                 <div>
-                  <input type="text" id="vaultVersionInput" value="${currentVault.version || '1.0'}" placeholder="Version (e.g. 1.0)" style="width:100%; font-size:0.82rem; padding:0.6rem; background:rgba(255,255,255,0.05); border:1px solid var(--border-subtle); border-radius:8px; color:#fff;" title="Deliverable Version">
+                  <input type="text" id="vaultVersionInput" value="${savedVault.version || '1.0'}" placeholder="Version (e.g. 1.0)" style="width:100%; font-size:0.82rem; padding:0.6rem; background:rgba(255,255,255,0.05); border:1px solid var(--border-subtle); border-radius:8px; color:#fff;" title="Deliverable Version">
                 </div>
               </div>
 
@@ -2097,11 +2176,11 @@ window.APP_MODULES.brands = async function(container) {
               <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:0.85rem;">
                 <div>
                   <label style="font-size:0.7rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.2rem;">Canva Master Link (Optional)</label>
-                  <input type="text" id="vaultCanvaInput" value="${currentVault.canvaTemplateUrl || ''}" placeholder="https://www.canva.com/design/..." style="width:100%; font-size:0.78rem; padding:0.5rem; background:rgba(255,255,255,0.04); border:1px solid var(--border-subtle); border-radius:8px; color:#fff;">
+                  <input type="text" id="vaultCanvaInput" value="${savedVault.canvaTemplateUrl || ''}" placeholder="https://www.canva.com/design/..." style="width:100%; font-size:0.78rem; padding:0.5rem; background:rgba(255,255,255,0.04); border:1px solid var(--border-subtle); border-radius:8px; color:#fff;">
                 </div>
                 <div>
                   <label style="font-size:0.7rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.2rem;">Notion / Hub Link (Optional)</label>
-                  <input type="text" id="vaultNotionInput" value="${currentVault.notionTemplateUrl || ''}" placeholder="https://notion.so/..." style="width:100%; font-size:0.78rem; padding:0.5rem; background:rgba(255,255,255,0.04); border:1px solid var(--border-subtle); border-radius:8px; color:#fff;">
+                  <input type="text" id="vaultNotionInput" value="${savedVault.notionTemplateUrl || ''}" placeholder="https://notion.so/..." style="width:100%; font-size:0.78rem; padding:0.5rem; background:rgba(255,255,255,0.04); border:1px solid var(--border-subtle); border-radius:8px; color:#fff;">
                 </div>
               </div>
 
@@ -2112,13 +2191,13 @@ window.APP_MODULES.brands = async function(container) {
                   </button>
                   ${matchedProduct.etsyListingId ? `
                     <button class="btn-secondary" style="padding:0.5rem 1rem; font-size:0.8rem; border:1px solid rgba(0,223,137,0.4); color:#00df89;" onclick="window.BrandsModule.attachVaultFileToEtsy(${b.id}, '${prodCode}')">
-                      🚀 Attach PDF to Etsy (#${matchedProduct.etsyListingId})
+                      🚀 Attach File to Etsy (#${matchedProduct.etsyListingId})
                     </button>
                   ` : ''}
                 </div>
                 <div id="vaultUploadStatus" style="font-size:0.78rem;">
-                  ${currentVault.fileName ? `
-                    <span style="color:#00df89; font-weight:700;">✅ Stored: ${currentVault.fileName} (${(currentVault.fileSizeBytes / (1024*1024)).toFixed(2)} MB) · v${currentVault.version}</span>
+                  ${savedVault.fileName ? `
+                    <span style="color:#00df89; font-weight:700;">✅ Stored: ${savedVault.fileName} (${(savedVault.fileSizeBytes / (1024*1024)).toFixed(2)} MB) · v${savedVault.version}</span>
                   ` : `<span style="color:var(--text-muted);">No file uploaded yet</span>`}
                 </div>
               </div>
@@ -2128,36 +2207,18 @@ window.APP_MODULES.brands = async function(container) {
             <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); padding:1rem; border-radius:12px;">
               <span style="font-size:0.72rem; font-weight:800; color:#06b6d4; text-transform:uppercase; display:block; margin-bottom:0.3rem;">📦 Supabase Storage Location</span>
               <div style="font-family:monospace; background:rgba(0,0,0,0.35); padding:0.5rem 0.75rem; border-radius:8px; color:#00df89; font-size:0.8rem; word-break:break-all;">
-                ${currentVault.storagePath || `product-vault/brands/${b.id}/${encodeURIComponent(prodName.toLowerCase().replace(/[^a-z0-9]/g, '_'))}/v1.0/deliverable.pdf`}
+                ${savedVault.storagePath || `product-vault/brands/${b.id}/${encodeURIComponent(prodName.toLowerCase().replace(/[^a-z0-9]/g, '_'))}/v1.0/deliverable.pdf`}
               </div>
-              <p style="font-size:0.72rem; color:var(--text-muted); margin:0.4rem 0 0;">Private bucket with RLS protection. Files are delivered via dynamic single-use expiring signed URLs.</p>
-            </div>
-
-            <!-- ANTI-PIRACY DELIVERY ENGINE NOTICE -->
-            <div style="background:linear-gradient(135deg, rgba(139,92,246,0.1), rgba(6,182,212,0.08)); border:1px solid rgba(139,92,246,0.25); padding:1rem; border-radius:12px;">
-              <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem;">
-                <span style="font-size:1.1rem;">🛡️</span>
-                <strong style="color:#fff; font-size:0.9rem;">GRO10X Dynamic Anti-Piracy Delivery Engine</strong>
-              </div>
-              <p style="font-size:0.78rem; color:var(--text-secondary); margin:0 0 0.5rem; line-height:1.4;">
-                Instead of uploading vulnerable static PDFs to Etsy that can be easily pirated, upload the <strong>1-Page Branded GRO10X Access Card</strong> to Etsy. When the buyer scans or clicks their link:
-              </p>
-              <ul style="font-size:0.75rem; color:var(--text-muted); padding-left:1.2rem; margin:0; line-height:1.5;">
-                <li><strong style="color:#fff;">Dynamic Stamping:</strong> PDF footer stamped with <code>"Exclusively Licensed to: [Buyer Name] · Order #[Etsy_Order_ID]"</code></li>
-                <li><strong style="color:#fff;">Expiring Signed URLs:</strong> Download link expires in 48 hours (max 3 IP downloads).</li>
-                <li><strong style="color:#fff;">Single-Claim Tokens:</strong> Token is permanently bound to the verified Etsy transaction.</li>
-              </ul>
             </div>
           </div>
 
           <!-- TAB 4: 1-10 MOCKUPS & 10-SECOND VIDEO STUDIO -->
           <div id="studioTabMockups" style="display:none; flex-direction:column; gap:1.2rem;">
-            <!-- MOCKUP IMAGES FILE PICKER & CLOUD VAULT UPLOADER -->
             <div style="background:rgba(0,223,137,0.04); border:1px solid rgba(0,223,137,0.25); padding:1.25rem; border-radius:14px;">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
                 <div>
                   <span style="font-size:0.72rem; font-weight:800; color:#00df89; text-transform:uppercase; display:block;">📤 Upload 1–10 Mockup Images to Cloud Vault</span>
-                  <p style="font-size:0.78rem; color:var(--text-muted); margin:0.1rem 0 0;">Upload 1 to 10 mockup JPG/PNG images to store in Cloud Vault and stream directly to Etsy (min 1, up to 10).</p>
+                  <p style="font-size:0.78rem; color:var(--text-muted); margin:0.1rem 0 0;">Upload 1 to 10 mockup JPG/PNG images to store in Cloud Vault and stream directly to Etsy.</p>
                 </div>
                 <span style="font-size:0.7rem; background:rgba(255,255,255,0.08); color:var(--text-secondary); padding:0.2rem 0.5rem; border-radius:6px;">1–10 Images</span>
               </div>
@@ -2168,7 +2229,7 @@ window.APP_MODULES.brands = async function(container) {
 
               <!-- THUMBNAIL PREVIEW GRID -->
               <div id="mockupThumbnailGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(80px, 1fr)); gap:0.5rem; margin-bottom:0.85rem;">
-                ${(currentMockups.length > 0 ? currentMockups : []).map((m, idx) => `
+                ${(savedMockups.length > 0 ? savedMockups : []).map((m, idx) => `
                   <div style="position:relative; aspect-ratio:1; border-radius:8px; overflow:hidden; border:1px solid rgba(0,223,137,0.3); background:#000;">
                     <img src="${m.url || ''}" style="width:100%; height:100%; object-fit:cover;" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'80\\' height=\\'80\\' viewBox=\\'0 0 80 80\\'><rect fill=\\'%23111\\' width=\\'80\\' height=\\'80\\'/><text fill=\\'%2300df89\\' font-size=\\'10\\' font-family=\\'sans-serif\\' x=\\'50%25\\' y=\\'50%25\\' text-anchor=\\'middle\\' dy=\\'.3em\\'>Slot ${m.rank || idx + 1}</text></svg>'">
                     <span style="position:absolute; bottom:2px; left:2px; font-size:0.6rem; font-weight:800; background:rgba(0,0,0,0.8); color:#00df89; padding:1px 4px; border-radius:3px;">#${m.rank || idx + 1}</span>
@@ -2188,8 +2249,8 @@ window.APP_MODULES.brands = async function(container) {
                   ` : ''}
                 </div>
                 <div id="mockupUploadStatus" style="font-size:0.78rem;">
-                  ${currentMockups.length > 0 ? `
-                    <span style="color:#00df89; font-weight:700;">✅ ${currentMockups.length} mockups stored</span>
+                  ${savedMockups.length > 0 ? `
+                    <span style="color:#00df89; font-weight:700;">✅ ${savedMockups.length} mockups stored</span>
                   ` : `<span style="color:var(--text-muted);">No images uploaded yet</span>`}
                 </div>
               </div>
@@ -2200,7 +2261,7 @@ window.APP_MODULES.brands = async function(container) {
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
                 <div>
                   <span style="font-size:0.72rem; font-weight:800; color:#c084fc; text-transform:uppercase; display:block;">📹 Listing Video Upload (MP4 / MOV)</span>
-                  <p style="font-size:0.78rem; color:var(--text-muted); margin:0.1rem 0 0;">3–15 seconds, max 100MB, 4:5 or 9:16 portrait. Audio is automatically muted by Etsy.</p>
+                  <p style="font-size:0.78rem; color:var(--text-muted); margin:0.1rem 0 0;">3–15 seconds, max 100MB. Audio is muted on Etsy.</p>
                 </div>
                 <span style="font-size:0.7rem; background:rgba(255,255,255,0.08); color:var(--text-secondary); padding:0.2rem 0.5rem; border-radius:6px;">Max 100MB</span>
               </div>
@@ -2221,99 +2282,56 @@ window.APP_MODULES.brands = async function(container) {
                   ` : ''}
                 </div>
                 <div id="videoUploadStatus" style="font-size:0.78rem;">
-                  ${matchedProduct.video?.fileName ? `
-                    <span style="color:#00df89; font-weight:700;">✅ Stored: ${matchedProduct.video.fileName}</span>
+                  ${savedVideo?.fileName ? `
+                    <span style="color:#00df89; font-weight:700;">✅ Stored: ${savedVideo.fileName}</span>
                   ` : `<span style="color:var(--text-muted);">No video uploaded yet</span>`}
                 </div>
               </div>
             </div>
-
-            <!-- MASTER MOCKUP PROMPT (ALL 10 IN ONE COPY) -->
-            <div style="background:rgba(0,0,0,0.3); border:1px solid rgba(0,223,137,0.3); padding:1.1rem; border-radius:14px;">
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
-                <div>
-                  <span style="font-size:0.72rem; font-weight:800; color:#00df89; text-transform:uppercase; display:block;">🖼️ Master Etsy Mockup Image Generation Prompt (10 Scenes)</span>
-                  <span style="font-size:0.75rem; color:var(--text-muted);">Copy this entire block and paste into Google Flow / Midjourney to generate all 10 listing mockups sequentially.</span>
-                </div>
-                <button class="btn-primary btn-sm" style="padding:0.4rem 0.85rem; font-size:0.75rem;" onclick="navigator.clipboard.writeText(document.getElementById('masterMockupPromptBox').innerText); window.showToast('📋 Copied All 10 Mockup Prompts!','success');">
-                  📋 Copy All 10 Mockup Prompts
-                </button>
-              </div>
-              <div id="masterMockupPromptBox" style="background:rgba(0,0,0,0.45); border:1px solid rgba(255,255,255,0.08); padding:0.85rem; border-radius:10px; color:#e2e8f0; font-size:0.78rem; font-family:monospace; white-space:pre-wrap; max-height:200px; overflow-y:auto; line-height:1.45;">${masterMockupPrompt}</div>
-            </div>
-
-            <!-- 10-SECOND LISTING VIDEO PROMPT -->
-            <div style="background:linear-gradient(135deg, rgba(168,85,247,0.1), rgba(6,182,212,0.08)); border:1px solid rgba(168,85,247,0.3); padding:1.1rem; border-radius:14px;">
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
-                <div>
-                  <span style="font-size:0.72rem; font-weight:800; color:#c084fc; text-transform:uppercase; display:block;">🎥 10-Second Etsy Listing Video Prompt</span>
-                  <span style="font-size:0.75rem; color:var(--text-muted);">Cinematic video brief for Google Flow / Kling AI / Runway Gen-3 (4:5 or 9:16 portrait).</span>
-                </div>
-                <button class="btn-secondary btn-sm" style="padding:0.4rem 0.85rem; font-size:0.75rem;" onclick="navigator.clipboard.writeText(document.getElementById('videoPromptBox').innerText); window.showToast('🎥 Copied 10-Second Video Prompt!','success');">
-                  🎥 Copy 10s Video Prompt
-                </button>
-              </div>
-              <div id="videoPromptBox" style="background:rgba(0,0,0,0.45); border:1px solid rgba(255,255,255,0.08); padding:0.85rem; border-radius:10px; color:#e2e8f0; font-size:0.78rem; font-family:monospace; white-space:pre-wrap; max-height:180px; overflow-y:auto; line-height:1.45;">${videoPrompt}</div>
-            </div>
-
-            <!-- INDIVIDUAL 10 MOCKUP CARDS -->
-            <div>
-              <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.5rem;">Individual Mockup Scene Details (${mockups.length} Scenes)</label>
-              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:0.6rem; max-height:260px; overflow-y:auto; padding-right:0.25rem;">
-                ${mockups.map(m => `
-                  <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); padding:0.75rem; border-radius:10px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.25rem;">
-                      <span style="font-weight:800; color:#fff; font-size:0.82rem;"><span style="color:#06b6d4;">#${m.number}:</span> ${m.title}</span>
-                      <button class="btn-ghost btn-sm" style="font-size:0.68rem; padding:0.15rem 0.45rem;" onclick="navigator.clipboard.writeText('${escape(m.scene)}'); window.showToast('Copied Mockup #${m.number}!','success');">📋 Copy</button>
-                    </div>
-                    <span style="font-size:0.68rem; color:#00df89; font-weight:700; display:block; margin-bottom:0.3rem;">${m.type}</span>
-                    <p style="font-size:0.74rem; color:var(--text-secondary); margin:0; line-height:1.35;">${m.scene}</p>
-                  </div>
-                `).join('')}
-              </div>
-            </div>
           </div>
 
-          <!-- TAB 5: AI MULTIMODAL AUDIT, PRICING & AUTO-REMEDIATION -->
+          <!-- TAB 5: AI MULTIMODAL AUDIT, PRICING & 70% QUALITY GATE -->
           <div id="studioTabAudit" style="display:none; flex-direction:column; gap:1.2rem;">
-            <!-- AUDIT TRIGGER HERO CARD -->
-            <div style="background:linear-gradient(135deg, rgba(139,92,246,0.14), rgba(6,182,212,0.08)); border:1px solid rgba(139,92,246,0.3); padding:1.25rem; border-radius:14px;">
-              <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
-                <div>
-                  <div style="display:flex; align-items:center; gap:0.5rem;">
-                    <span style="font-size:1.2rem;">🧠</span>
-                    <strong style="color:#fff; font-size:1rem;">Gemini Multimodal Quality, Pricing & Auto-Fix Engine</strong>
-                  </div>
-                  <p style="font-size:0.78rem; color:var(--text-secondary); margin:0.25rem 0 0; line-height:1.4;">
-                    Visually inspects your 10 page designs for layout glitches, scores aesthetic quality, determines Etsy retail pricing, and generates targeted edit prompts for flawed pages.
-                  </p>
+            <!-- QUALITY GATE STATUS BANNER -->
+            <div style="background:${auditDone ? 'rgba(0,223,137,0.1)' : (auditScore > 0 ? 'rgba(239,68,68,0.1)' : 'rgba(255,255,255,0.03)')}; border:1px solid ${auditDone ? 'rgba(0,223,137,0.3)' : (auditScore > 0 ? 'rgba(239,68,68,0.3)' : 'rgba(255,255,255,0.08)')}; padding:1rem 1.25rem; border-radius:14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
+              <div>
+                <span style="font-size:0.72rem; font-weight:800; color:${auditDone ? '#00df89' : (auditScore > 0 ? '#ef4444' : '#06b6d4')}; text-transform:uppercase;">
+                  ${auditDone ? '🟢 AI Quality Gate: PASSED (≥70% Required)' : (auditScore > 0 ? '🔴 AI Quality Gate: ACTION REQUIRED (<70%)' : '⚪ AI Quality Gate: Pending Evaluation')}
+                </span>
+                <div style="font-size:0.85rem; color:#fff; font-weight:700; margin-top:0.15rem;">
+                  ${auditDone ? `Score: ${auditScore}/10 (${(auditScore*10).toFixed(0)}%) · Product meets commercial quality threshold for live Etsy listing.` : (auditScore > 0 ? `Score: ${auditScore}/10 (${(auditScore*10).toFixed(0)}%) · Threshold is 70%. Fix flagged pages below before submitting.` : 'Run AI Vision Audit to evaluate typography, layout geometry & commercial compliance.')}
                 </div>
-                <button class="btn-primary" style="background:linear-gradient(135deg,#8b5cf6,#06b6d4); border:none; padding:0.6rem 1.25rem; font-weight:800; font-size:0.82rem;" onclick="window.BrandsModule.runAIProductAudit(${b.id}, '${prodCode}')">
-                  ⚡ Run AI Vision Audit Now
-                </button>
               </div>
+              <button class="btn-primary" style="background:linear-gradient(135deg,#8b5cf6,#06b6d4); border:none; padding:0.6rem 1.25rem; font-weight:800; font-size:0.82rem;" onclick="window.BrandsModule.runAIProductAudit(${b.id}, '${prodCode}')">
+                ⚡ Run AI Vision Audit Now
+              </button>
             </div>
 
             <!-- AUDIT RESULTS CONTAINER -->
             <div id="studioAuditResultsContainer">
-              ${matchedProduct.aiAudit ? window.BrandsModule.buildAuditHtml(matchedProduct.aiAudit, b.id, prodCode) : `
+              ${savedAudit ? window.BrandsModule.buildAuditHtml(savedAudit, b.id, prodCode) : `
                 <div style="text-align:center; padding:2rem 1rem; background:rgba(255,255,255,0.02); border:1px dashed rgba(255,255,255,0.08); border-radius:12px;">
                   <div style="font-size:2rem; margin-bottom:0.5rem;">🔍</div>
                   <h4 style="font-size:0.95rem; color:#fff; margin:0 0 0.3rem;">No AI Audit Run Yet</h4>
                   <p style="font-size:0.78rem; color:var(--text-muted); margin:0 0 1rem; max-width:420px; margin-inline:auto;">
-                    Upload your page designs in the Mockups tab, then click "Run AI Vision Audit Now" to perform instant quality scoring, commercial pricing analysis, and auto-generate single-page edit prompts.
+                    Upload page designs in the Media tab, then click "Run AI Vision Audit Now" to perform quality scoring, pricing analysis, and auto-generate single-page edit prompts.
                   </p>
                 </div>
               `}
             </div>
           </div>
 
-          <!-- MODAL FOOTER -->
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1.25rem; border-top:1px solid rgba(255,255,255,0.1); padding-top:1rem;">
-            <span style="font-size:0.75rem; color:var(--text-muted);">Brand: <strong>${b.name}</strong> · Category: <strong>${b.niche}</strong></span>
-            <button class="btn-primary" onclick="document.getElementById('aiSeoModal').style.display='none'">
-              Done & Save
-            </button>
+          <!-- MODAL FOOTER (REAL DONE & SAVE) -->
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1.25rem; border-top:1px solid rgba(255,255,255,0.1); padding-top:1rem; flex-wrap:wrap; gap:0.5rem;">
+            <span style="font-size:0.75rem; color:var(--text-muted);">Brand: <strong>${b.name}</strong> · SKU: <strong>${prodCode}</strong></span>
+            <div style="display:flex; gap:0.5rem;">
+              <button class="btn-ghost" onclick="document.getElementById('aiSeoModal').style.display='none'">
+                ✕ Close
+              </button>
+              <button class="btn-primary" style="background:linear-gradient(135deg, #00df89, #06b6d4); font-weight:800; padding:0.55rem 1.4rem;" onclick="window.BrandsModule.saveStudioDraft('all')">
+                💾 Save All & Close
+              </button>
+            </div>
           </div>
         `;
       } catch (err) {
@@ -2355,6 +2373,70 @@ window.APP_MODULES.brands = async function(container) {
       if (vBtn) vBtn.style.cssText = tab === 'vault' ? activeStyle : inactiveStyle;
       if (mBtn) mBtn.style.cssText = tab === 'mockups' ? activeStyle : inactiveStyle;
       if (aBtn) aBtn.style.cssText = tab === 'audit' ? activeStyle : inactiveStyle;
+    },
+
+    async saveStudioDraft(tabName = 'all') {
+      if (!window._studioCtx) {
+        if (window.showToast) window.showToast('Studio session context not found. Please re-open Studio.', 'warning');
+        return;
+      }
+      const { brandId, productCode, productName } = window._studioCtx;
+      const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+
+      const titleVal = document.getElementById('studioSeoTitle')?.value || '';
+      const descVal = document.getElementById('studioSeoDescription')?.value || '';
+      const tagsVal = document.getElementById('studioSeoTags')?.value || '';
+      const priceVal = parseFloat(document.getElementById('studioRetailPrice')?.value) || 0;
+      const typeVal = document.getElementById('studioProductType')?.value || 'pdf-planner';
+      const bpPrompt = document.getElementById('studioBlueprintPrompt')?.value || '';
+      const bpGeometry = document.getElementById('studioBlueprintGeometry')?.value || '';
+      const bpTypo = document.getElementById('studioBlueprintTypography')?.value || '';
+
+      const payload = {};
+      if (tabName === 'seo' || tabName === 'all') {
+        payload.seo = {
+          title: titleVal,
+          description: descVal,
+          tags: tagsVal.split(',').map(t => t.trim()).filter(Boolean)
+        };
+        payload.pricing = { retailPrice: priceVal };
+        payload.type = typeVal;
+      }
+      if (tabName === 'blueprint' || tabName === 'all') {
+        payload.blueprint = {
+          geometry: bpGeometry,
+          typography: bpTypo,
+          prompt: bpPrompt,
+          googleFlowPrompt: bpPrompt
+        };
+      }
+      if (tabName !== 'all') {
+        payload.tab = tabName;
+      }
+
+      try {
+        const res = await fetch(`/api/brands/${brandId}/product/${productCode}/studio-save`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Failed to save Studio draft');
+
+        if (window.showToast) window.showToast(`✅ ${tabName === 'all' ? 'All Studio changes' : tabName.toUpperCase()} saved to Vault & Catalog! (${data.studioPercent || 0}% Complete)`, 'success');
+        state = await loadBrandsStateFromAPI();
+        renderTabContent('etsy');
+
+        if (tabName === 'all') {
+          const modal = document.getElementById('aiSeoModal');
+          if (modal) modal.style.display = 'none';
+        }
+      } catch (err) {
+        if (window.showToast) window.showToast(`Save failed: ${err.message}`, 'error');
+      }
     },
 
     async uploadProductDeliverable(brandId, productCode, productNameEncoded) {
@@ -2416,6 +2498,10 @@ window.APP_MODULES.brands = async function(container) {
             </div>
           `;
         }
+
+        // Immediately sync state with backend
+        state = await loadBrandsStateFromAPI();
+        renderTabContent('etsy');
       } catch (err) {
         if (statusEl) statusEl.innerHTML = `<span style="color:#ef4444; font-weight:700;">❌ Upload error: ${err.message}</span>`;
         window.showToast(`Upload failed: ${err.message}`, 'error');
@@ -3963,7 +4049,32 @@ window.APP_MODULES.brands = async function(container) {
       const prod = catalog[productIdx];
       if (!prod) return;
 
-      if (!confirm(`Publishing ${prod.code} to Etsy will incur a $0.20 listing fee. Proceed?`)) return;
+      // ── Publish Guard Validation ──
+      const title = (prod.seoTitle || prod.seo?.title || prod.name || '').trim();
+      const hasVault = Boolean(prod.vault?.storagePath || prod.vault?.canvaTemplateUrl || prod.vault?.notionTemplateUrl || prod.vault?.downloadUrl);
+      const auditScore = Number(prod.aiAudit?.overall_score ?? prod.aiAudit?.score ?? 0);
+      const gatePassed = !prod.aiAudit || auditScore >= 7.0 || prod.aiAudit?.gateStatus === 'passed';
+
+      const missing = [];
+      if (!title || title.length < 5) missing.push('SEO Title is missing or too short (Studio Tab 2)');
+      if (!hasVault) missing.push('Deliverable file (PDF/ZIP/Link) not uploaded to Vault (Studio Tab 3)');
+
+      if (missing.length > 0) {
+        if (window.showToast) {
+          window.showToast(`❌ Cannot Publish ${prod.code}:\n• ${missing.join('\n• ')}`, 'error');
+        } else {
+          alert(`Cannot Publish ${prod.code}:\n- ${missing.join('\n- ')}\n\nPlease open Studio (⚡) to complete.`);
+        }
+        return;
+      }
+
+      if (!gatePassed) {
+        if (!confirm(`⚠️ AI Quality Gate Notice: Product quality score is ${(auditScore * 10).toFixed(0)}% (Recommended threshold is 70%). Publish anyway?`)) {
+          return;
+        }
+      }
+
+      if (!confirm(`Publishing ${prod.code} (${title.slice(0, 40)}...) to Etsy will incur a $0.20 listing fee. Proceed?`)) return;
 
       if (window.showToast) window.showToast(`🚀 Publishing ${prod.code} to Etsy...`, 'info');
       const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';

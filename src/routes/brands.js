@@ -1127,6 +1127,112 @@ router.patch('/:id/product/:code', requireAuth, async (req, res) => {
 });
 
 /**
+ * POST /api/brands/:id/product/:code/studio-save
+ * Persists Studio Drawer draft data (Blueprint, Etsy SEO, Pricing, Type, AI Audit) into Supabase state blob
+ */
+router.post('/:id/product/:code/studio-save', requireAuth, async (req, res) => {
+  try {
+    const brandId = Number(req.params.id);
+    const productCode = req.params.code;
+    const { tab, data, blueprint, seo, pricing, type, aiAudit, vault, mockups, video } = req.body;
+
+    const state = await loadBrandsState();
+    const brand = state.brands?.find(b => b.id === brandId);
+    if (!brand) return res.status(404).json({ success: false, error: 'Brand not found' });
+
+    if (!state.productsCatalog || !state.productsCatalog[brandId]) {
+      return res.status(404).json({ success: false, error: 'Product catalog not found' });
+    }
+
+    const prod = state.productsCatalog[brandId].find(p => p.code === productCode);
+    if (!prod) return res.status(404).json({ success: false, error: `Product ${productCode} not found` });
+
+    // 1. Handle tab-based or full-bundle saving
+    if (tab === 'blueprint' || blueprint) {
+      const bpData = tab === 'blueprint' ? data : blueprint;
+      prod.blueprint = { ...(prod.blueprint || {}), ...(bpData || {}) };
+    }
+
+    if (tab === 'seo' || seo) {
+      const seoData = tab === 'seo' ? data : seo;
+      prod.seo = { ...(prod.seo || {}), ...(seoData || {}) };
+      if (seoData?.title) prod.seoTitle = seoData.title;
+      if (seoData?.description) prod.seoDescription = seoData.description;
+      if (seoData?.tags) {
+        prod.seoTags = Array.isArray(seoData.tags) 
+          ? seoData.tags 
+          : String(seoData.tags).split(',').map(s => s.trim()).filter(Boolean);
+      }
+    }
+
+    if (tab === 'pricing' || pricing) {
+      const priceData = tab === 'pricing' ? data : pricing;
+      const retail = Number(priceData?.retailPrice ?? priceData?.price ?? prod.price);
+      if (!isNaN(retail) && retail > 0) {
+        prod.price = retail;
+        prod.retailPrice = retail;
+      }
+      if (priceData?.costPrice !== undefined) prod.costPrice = Number(priceData.costPrice);
+    }
+
+    if (tab === 'audit' || aiAudit) {
+      const auditData = tab === 'audit' ? data : aiAudit;
+      prod.aiAudit = { ...(prod.aiAudit || {}), ...(auditData || {}) };
+      const score = Number(prod.aiAudit.score ?? prod.aiAudit.overallScore ?? 0);
+      prod.aiAudit.gateStatus = score >= 70 ? 'passed' : 'failed';
+    }
+
+    if (tab === 'type' || type) {
+      prod.type = (tab === 'type' ? data?.type : type) || prod.type || 'pdf-planner';
+    }
+
+    if (vault) prod.vault = { ...(prod.vault || {}), ...vault };
+    if (mockups) {
+      prod.mockups = mockups;
+      prod.mockupUrls = mockups.map(m => m.url || m).filter(Boolean);
+      prod.mockupsCount = mockups.length;
+    }
+    if (video) prod.video = video;
+
+    // 2. Calculate Studio Progress %
+    let progress = 0;
+    const hasBlueprint = Boolean(prod.blueprint && (prod.blueprint.geometry || prod.blueprint.prompt || prod.blueprint.canvaPrompt || prod.blueprint.pages));
+    const hasSEO = Boolean((prod.seo?.title || prod.seoTitle) && (prod.seo?.tags?.length > 0 || prod.seoTags?.length > 0));
+    const hasVault = Boolean(prod.vault?.storagePath || prod.vault?.canvaTemplateUrl || prod.vault?.notionTemplateUrl);
+    const hasMedia = Boolean((prod.mockups && prod.mockups.length > 0) || (prod.mockupUrls && prod.mockupUrls.length > 0));
+    const auditScore = Number(prod.aiAudit?.score ?? prod.aiAudit?.overallScore ?? 0);
+    const hasAudit = auditScore >= 70;
+
+    if (hasBlueprint) progress += 20;
+    if (hasSEO) progress += 20;
+    if (hasVault) progress += 20;
+    if (hasMedia) progress += 20;
+    if (hasAudit) progress += 20;
+
+    prod.studioPercent = progress;
+    prod.updatedAt = new Date().toISOString();
+
+    // Auto-advance status if SEO and Vault are ready
+    if (hasSEO && hasVault && (prod.status === 'Pending' || prod.status === 'In Progress')) {
+      prod.status = 'SEO Ready';
+    }
+
+    await persistBrandsState(state);
+
+    return res.json({
+      success: true,
+      product: prod,
+      studioPercent: progress,
+      gateStatus: prod.aiAudit?.gateStatus || 'pending',
+      message: `Studio draft for ${productCode} saved successfully`
+    });
+  } catch (err) {
+    console.error('[Studio Save Error]:', err);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
  * DELETE /api/brands/:id/product/:code
  * Removes a product from the brand catalog
  */
