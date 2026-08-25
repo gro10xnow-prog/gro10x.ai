@@ -1,0 +1,270 @@
+/**
+ * public/app/modules/dbm.js
+ * ─────────────────────────────────────────────────────────────────────────────
+ * GRO10X Digital Brand Manager (DBM) Operations & Team Tracker Module v2.0
+ * 
+ * Manages the 4-person DBM Team operating the 13-brand digital empire:
+ * 1. DBM Division Matrix & Brand Ownership
+ * 2. 8-Hour Daily Operating SOP & Listing Cadence (8 products/day target)
+ * 3. Daily EOD Standup Submission & Async Log (Synced to Server & Supabase)
+ * 4. P&L Performance Bonus Tracker (5% net margin incentive)
+ * 5. Quality Control (QC) 10-Point Checklist
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+
+window.APP_MODULES = window.APP_MODULES || {};
+
+window.APP_MODULES.dbm = async function(container) {
+  async function getBrandsState() {
+    try {
+      if (window.APP_API) {
+        const res = await window.APP_API.get('/brands');
+        if (res && res.brands) return res;
+      }
+    } catch (e) {}
+
+    try {
+      const saved = localStorage.getItem('gro10x_brands_data');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {}
+
+    return null;
+  }
+
+  async function getDBMLogs() {
+    try {
+      if (window.APP_API) {
+        const res = await window.APP_API.get('/brands/dbm-logs');
+        if (res && res.logs) return res.logs;
+      }
+    } catch (e) {}
+
+    try {
+      const saved = localStorage.getItem('gro10x_dbm_standups');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {}
+
+    return [
+      { date: new Date().toISOString().split('T')[0], dbmId: 1, brandName: 'PlannerQueenCo', listed: 8, revenue: 0, notes: 'Completed Batch 1 Hero daily & weekly planners' },
+      { date: new Date().toISOString().split('T')[0], dbmId: 4, brandName: 'PromptVault', listed: 10, revenue: 0, notes: 'Configured Notion duplication templates for Midjourney prompts' }
+    ];
+  }
+
+  const brandsState = (await getBrandsState()) || {
+    brands: [
+      { id: 1, name: 'PlannerQueenCo', dbmId: 1, target12mo: 24200, productsLive: 0, productsTarget: 100 },
+      { id: 2, name: 'WildMutt Co.', dbmId: 2, target12mo: 33540, productsLive: 0, productsTarget: 100 },
+      { id: 3, name: 'TinyDesks Studio', dbmId: 3, target12mo: 22050, productsLive: 0, productsTarget: 100 },
+      { id: 4, name: 'LittleStarsLearning', dbmId: 3, target12mo: 17850, productsLive: 0, productsTarget: 100 },
+      { id: 5, name: 'InkWrapped', dbmId: 1, target12mo: 20900, productsLive: 0, productsTarget: 100 },
+      { id: 6, name: 'CozyThreads™', dbmId: 2, target12mo: 23200, productsLive: 0, productsTarget: 100 },
+      { id: 7, name: 'ProudProfessional', dbmId: 2, target12mo: 20650, productsLive: 0, productsTarget: 100 },
+      { id: 8, name: 'FiestaFoundry', dbmId: 1, target12mo: 21250, productsLive: 0, productsTarget: 100 },
+      { id: 9, name: 'ZenWallCo', dbmId: 3, target12mo: 19100, productsLive: 0, productsTarget: 100 },
+      { id: 10, name: 'SparkSVG', dbmId: 4, target12mo: 26400, productsLive: 0, productsTarget: 100 },
+      { id: 11, name: 'PageForge Publishing', dbmId: 4, target12mo: 33716, productsLive: 0, productsTarget: 100 },
+      { id: 12, name: 'LetterLab Fonts', dbmId: 4, target12mo: 20750, productsLive: 0, productsTarget: 100 },
+      { id: 13, name: 'PromptVault', dbmId: 4, target12mo: 74560, productsLive: 0, productsTarget: 100 }
+    ],
+    dbms: [
+      { id: 1, name: 'DBM 1', title: 'Digital Products Specialist', assignedBrands: [1, 5, 8], status: 'Active' },
+      { id: 2, name: 'DBM 2', title: 'POD & Mixed Products Lead', assignedBrands: [2, 6, 7], status: 'Active' },
+      { id: 3, name: 'DBM 3', title: 'B2B & Education Lead', assignedBrands: [3, 4, 9], status: 'Active' },
+      { id: 4, name: 'DBM 4', title: 'Tech, Fonts & AI Vaults Lead', assignedBrands: [10, 11, 12, 13], status: 'Active' }
+    ]
+  };
+
+  let logs = await getDBMLogs();
+
+  function render() {
+    container.innerHTML = `
+      <div class="view-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem;">
+        <div>
+          <div style="display:flex; align-items:center; gap:0.6rem; margin-bottom:0.3rem;">
+            <h1 style="font-size:1.65rem; font-weight:900; font-family:var(--font-heading); color:var(--text-primary); margin:0;">
+              👤 DBM Operations & Team Command
+            </h1>
+            <span style="font-size:0.72rem; font-weight:800; padding:0.2rem 0.6rem; border-radius:999px; background:rgba(6,182,212,0.15); color:#06b6d4; border:1px solid rgba(6,182,212,0.3);">
+              4 Digital Brand Managers · 1,300 Units Output Engine
+            </span>
+          </div>
+          <p style="color:var(--text-secondary); font-size:0.88rem; margin:0;">
+            Cadence: <strong>8 hrs/day = 8 listings/day = ~13 days per brand</strong>. Full portfolio live in ~8 weeks.
+          </p>
+        </div>
+
+        <div style="display:flex; gap:0.5rem;">
+          <a href="#brands" class="btn-secondary">
+            🛍️ Brand Command Center
+          </a>
+          <button class="btn-primary" onclick="window.DBMModule.openLogStandupModal()">
+            📋 Log Daily EOD Report
+          </button>
+        </div>
+      </div>
+
+      <!-- 4 DBM DIVISIONS CARDS -->
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:1.25rem; margin-bottom:1.75rem;">
+        ${brandsState.dbms.map(d => {
+          const assigned = brandsState.brands.filter(b => d.assignedBrands.includes(b.id));
+          const totalTargetGross = assigned.reduce((acc, b) => acc + (b.target12mo || 0), 0);
+          const totalLive = assigned.reduce((acc, b) => acc + (b.productsLive || 0), 0);
+          const totalTargetProducts = assigned.reduce((acc, b) => acc + (b.productsTarget || 100), 0);
+
+          return `
+            <div class="card-glass" style="border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:1.25rem; display:flex; flex-direction:column; justify-content:space-between;">
+              <div>
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.75rem;">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <div style="width:40px; height:40px; border-radius:10px; background:linear-gradient(135deg, #00df89, #06b6d4); color:#070b12; display:flex; align-items:center; justify-content:center; font-weight:900;">
+                      D${d.id}
+                    </div>
+                    <div>
+                      <h3 style="font-size:1.05rem; font-weight:800; color:#fff; margin:0;">${d.name}</h3>
+                      <span style="font-size:0.7rem; color:var(--text-muted);">${d.title}</span>
+                    </div>
+                  </div>
+                  <span style="font-size:0.68rem; font-weight:800; padding:0.2rem 0.5rem; border-radius:999px; background:rgba(0,223,137,0.15); color:#00df89;">
+                    🟢 Active
+                  </span>
+                </div>
+
+                <div style="background:rgba(0,0,0,0.25); padding:0.75rem; border-radius:10px; margin-bottom:0.85rem;">
+                  <span style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Assigned Brands:</span>
+                  <div style="display:flex; flex-direction:column; gap:0.35rem; margin-top:0.4rem;">
+                    ${assigned.map(b => `
+                      <div style="display:flex; justify-content:space-between; font-size:0.78rem;">
+                        <span style="color:#fff;">${b.name}</span>
+                        <span style="color:#00df89; font-weight:700;">$${(b.target12mo || 0).toLocaleString()} target</span>
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; margin-bottom:0.85rem; font-size:0.75rem;">
+                  <div style="background:rgba(255,255,255,0.03); padding:0.5rem; border-radius:8px;">
+                    <span style="color:var(--text-muted);">Execution Pace:</span>
+                    <div style="font-size:1rem; font-weight:800; color:#06b6d4;">${totalLive} / ${totalTargetProducts}</div>
+                  </div>
+                  <div style="background:rgba(255,255,255,0.03); padding:0.5rem; border-radius:8px;">
+                    <span style="color:var(--text-muted);">Year 1 Gross:</span>
+                    <div style="font-size:1rem; font-weight:800; color:#fff;">$${totalTargetGross.toLocaleString()}</div>
+                  </div>
+                </div>
+              </div>
+
+              <div style="display:flex; gap:0.4rem;">
+                <button class="btn-primary btn-sm" style="width:100%; font-size:0.75rem;" onclick="window.DBMModule.filterByDBM(${d.id})">
+                  Manage ${d.name} Pipeline →
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+
+      <!-- 8-HOUR DAILY OPERATING SOP & RECENT STANDUPS -->
+      <div style="display:grid; grid-template-columns: 1fr 1.2fr; gap:1.5rem;">
+        
+        <!-- 8-HOUR DAILY RHYTHM -->
+        <div class="card-glass" style="padding:1.5rem; border-radius:16px;">
+          <h3 style="font-size:1.1rem; font-weight:800; color:#fff; margin-bottom:0.3rem;">⏰ 8-Hour DBM Daily SOP</h3>
+          <span style="font-size:0.75rem; color:var(--text-muted); display:block; margin-bottom:1rem;">Production standard for 7–8 listings / day output</span>
+
+          <div style="display:flex; flex-direction:column; gap:0.6rem; font-size:0.8rem;">
+            <div style="background:rgba(255,255,255,0.03); padding:0.6rem; border-radius:8px; border-left:3px solid #00df89;">
+              <strong style="color:#00df89;">09:00 – 09:15</strong> · Morning Briefing & Review Checks (15m)
+            </div>
+            <div style="background:rgba(255,255,255,0.03); padding:0.6rem; border-radius:8px; border-left:3px solid #06b6d4;">
+              <strong style="color:#06b6d4;">09:15 – 12:00</strong> · Creation Block 1: Design & List ~3 Products (AI Buttons 6+8)
+            </div>
+            <div style="background:rgba(255,255,255,0.02); padding:0.45rem 0.6rem; border-radius:8px; color:var(--text-muted);">
+              <strong>12:00 – 12:30</strong> · Lunch Break
+            </div>
+            <div style="background:rgba(255,255,255,0.03); padding:0.6rem; border-radius:8px; border-left:3px solid #a855f7;">
+              <strong style="color:#a855f7;">12:30 – 14:30</strong> · Creation Block 2: Design & List ~2 Products
+            </div>
+            <div style="background:rgba(255,255,255,0.03); padding:0.6rem; border-radius:8px; border-left:3px solid #fbbf24;">
+              <strong style="color:#fbbf24;">14:30 – 16:30</strong> · Creation Block 3: Design & List ~2 Products
+            </div>
+            <div style="background:rgba(255,255,255,0.03); padding:0.6rem; border-radius:8px; border-left:3px solid #ef4444;">
+              <strong style="color:#ef4444;">16:30 – 17:30</strong> · Promotion, Pinterest Pins & Daily EOD Standup
+            </div>
+          </div>
+        </div>
+
+        <!-- RECENT DAILY STANDUP LOGS -->
+        <div class="card-glass" style="padding:1.5rem; border-radius:16px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+            <div>
+              <h3 style="font-size:1.1rem; font-weight:800; color:#fff; margin:0;">📋 Daily Standup Reports</h3>
+              <span style="font-size:0.75rem; color:var(--text-muted);">Async EOD accountability log from DBMs (Cloud Persisted)</span>
+            </div>
+            <button class="btn-ghost btn-sm" onclick="window.DBMModule.openLogStandupModal()">+ Log EOD</button>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:0.75rem; max-height:360px; overflow-y:auto;">
+            ${logs.map(l => `
+              <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); padding:0.75rem; border-radius:10px; font-size:0.8rem;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:0.25rem;">
+                  <strong style="color:#fff;">DBM ${l.dbmId} · ${l.brandName}</strong>
+                  <span style="font-size:0.72rem; color:var(--text-muted);">${l.date}</span>
+                </div>
+                <div style="display:flex; gap:1rem; font-size:0.75rem; color:#00df89; margin-bottom:0.35rem;">
+                  <span>Listed Today: <strong>${l.listed} Products</strong></span>
+                  ${l.revenue > 0 ? `<span>Revenue: <strong>$${l.revenue}</strong></span>` : ''}
+                </div>
+                <p style="font-size:0.75rem; color:var(--text-secondary); margin:0;">${l.notes}</p>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+      </div>
+    `;
+  }
+
+  window.DBMModule = {
+    filterByDBM(dbmId) {
+      localStorage.setItem('gro10x_brands_active_tab', 'products');
+      const b = brandsState.brands.find(x => x.dbmId === dbmId);
+      if (b) localStorage.setItem('gro10x_brands_selected_brand', b.id);
+      window.location.hash = '#brands';
+    },
+
+    async openLogStandupModal() {
+      const dbmIdStr = prompt('Select DBM (1, 2, 3, or 4):', '1');
+      if (!dbmIdStr) return;
+      const dbmId = Number(dbmIdStr);
+
+      const brandName = prompt('Brand Name worked on today:', 'PlannerQueenCo');
+      if (!brandName) return;
+
+      const listed = Number(prompt('How many products were listed today?', '8')) || 0;
+      const revenue = Number(prompt('Revenue generated today ($ USD, enter 0 if pre-launch):', '0')) || 0;
+      const notes = prompt('Standup notes / wins / blockers:', 'Completed design & upload for daily batch') || '';
+
+      const newLog = {
+        date: new Date().toISOString().split('T')[0],
+        dbmId,
+        brandName,
+        listed,
+        revenue,
+        notes
+      };
+
+      logs.unshift(newLog);
+
+      if (window.APP_API) {
+        window.APP_API.post('/brands/dbm-logs', newLog).catch(e => console.warn('[DBM] Sync note:', e.message));
+      } else {
+        localStorage.setItem('gro10x_dbm_standups', JSON.stringify(logs));
+      }
+
+      if (window.showToast) window.showToast(`Logged Standup for DBM ${dbmId} successfully!`, 'success');
+      render();
+    }
+  };
+
+  render();
+};

@@ -156,6 +156,118 @@ router.post('/summarize-brief', requireAuth, async (req, res) => {
   }
 });
 
+// POST /api/ai/etsy-seo — Generates Etsy SEO Title, 13 Tags, and Listing Description
+router.post('/etsy-seo', requireAuth, async (req, res) => {
+  const { productName, brandName, brandNiche, brandVoice, type } = req.body;
+  if (!productName || !brandName) {
+    return res.status(400).json({ error: 'productName and brandName are required' });
+  }
+
+  const key = process.env.GEMINI_API_KEY;
+
+  function generateFallbackSEO(pName, bName, niche, pType) {
+    const cleanP = pName.replace(/^[A-Z]\d+\s*[-–]\s*/, '');
+    const title = `${cleanP} | ${bName} Aesthetic ${pType || 'Digital Download'} | Printable & Instant PDF`.slice(0, 140);
+    const tags = [
+      'digital planner',
+      'instant download',
+      'printable tracker',
+      'aesthetic template',
+      'productivity hub',
+      'daily organizer',
+      'self improvement',
+      'minimalist design',
+      'pdf planner',
+      'goodnotes template',
+      'notion system',
+      'gift for organized',
+      `${(bName || 'gro10x').toLowerCase().slice(0, 20)}`
+    ].slice(0, 13);
+
+    const description = `✨ Welcome to ${bName} — ${niche || 'Premium Digital Products'}\n\n` +
+      `Upgrade your routine with the **${cleanP}**.\n\n` +
+      `📦 WHAT IS INCLUDED:\n` +
+      `• High-resolution interactive PDF / Assets\n` +
+      `• Easy setup guide & tutorial links\n` +
+      `• Commercial & personal use flexibility\n\n` +
+      `⚡ HOW IT WORKS:\n` +
+      `1. Complete your purchase.\n` +
+      `2. Instantly download your files from Etsy Purchases.\n` +
+      `3. Open in your favorite app (GoodNotes, Canva, Notion) or print!\n\n` +
+      `💌 Need help or custom requests? Send us an Etsy message anytime!`;
+
+    return {
+      title,
+      tags,
+      description,
+      keywords: [cleanP.toLowerCase(), 'digital template', 'instant download', 'printable sheet', 'aesthetic system'],
+      generatedBy: 'smart_fallback'
+    };
+  }
+
+  if (!key) {
+    return res.json({
+      success: true,
+      ...generateFallbackSEO(productName, brandName, brandNiche, type)
+    });
+  }
+
+  const prompt =
+    `You are an elite Etsy SEO and copywriting specialist.\n\n` +
+    `Generate a high-converting, search-ranked Etsy listing package for:\n` +
+    `Product Name: "${productName}"\n` +
+    `Brand: "${brandName}"\n` +
+    `Niche: "${brandNiche || 'Digital products'}"\n` +
+    `Brand Voice: "${brandVoice || 'Warm, inspiring, clear'}"\n` +
+    `Format / Fulfillment: "${type || 'Digital Download'}"\n\n` +
+    `Strict Requirements:\n` +
+    `1. "title": Under 140 characters, high-search volume keywords separated by " | ".\n` +
+    `2. "tags": EXACTLY 13 comma-separated tag phrases. EACH tag MUST BE 20 CHARACTERS OR FEWER. No single generic words.\n` +
+    `3. "description": 3 structured sections: Hook/Overview, What is Included (bullet points), How to Access.\n` +
+    `4. "keywords": 5 high-intent buyer keyword phrases.\n\n` +
+    `OUTPUT STRICT JSON ONLY with keys "title", "tags" (array of 13 strings), "description", "keywords" (array of 5 strings). No markdown formatting or extra text outside JSON.`;
+
+  try {
+    let resultText = null;
+    for (const model of MODELS) {
+      try {
+        resultText = await callSingle(model, prompt, key);
+        if (resultText) break;
+      } catch (e) {
+        console.warn('[Etsy SEO] Skip model ' + model + ':', e.message);
+      }
+    }
+
+    if (!resultText) throw new Error('No output from Gemini');
+
+    // Extract JSON block
+    const cleaned = resultText.replace(/```json/gi, '').replace(/```/g, '').trim();
+    const parsed = JSON.parse(cleaned);
+
+    // Validate 13 tags length (max 20 chars each)
+    let tags = (parsed.tags || []).map(t => String(t).trim().slice(0, 20)).filter(Boolean);
+    while (tags.length < 13) {
+      tags.push('instant download');
+    }
+    tags = tags.slice(0, 13);
+
+    return res.json({
+      success: true,
+      title: (parsed.title || productName).slice(0, 140),
+      tags,
+      description: parsed.description || '',
+      keywords: (parsed.keywords || []).slice(0, 5),
+      generatedBy: 'gemini'
+    });
+  } catch (err) {
+    console.warn('[Etsy SEO Gemini Error]:', err.message);
+    return res.json({
+      success: true,
+      ...generateFallbackSEO(productName, brandName, brandNiche, type)
+    });
+  }
+});
+
 router.get('/status', requireAuth, (req, res) => res.json({ success: true, configured: !!process.env.GEMINI_API_KEY, models: MODELS }));
 
 module.exports = router;

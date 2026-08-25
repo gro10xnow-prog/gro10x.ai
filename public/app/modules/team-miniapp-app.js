@@ -2277,6 +2277,135 @@
   }
 
   // ══════════════════════════════════════════
+  // DBM MOBILE DIGITAL BRAND OPERATIONS
+  // ══════════════════════════════════════════
+  window.openDBMMobileModal = async function() {
+    triggerHaptic();
+    let modal = document.getElementById('dbmMobileModal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'dbmMobileModal';
+      modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(6px);z-index:99999;display:flex;flex-direction:column;justify-content:flex-end;';
+      modal.innerHTML = `
+        <div style="background:#fff;border-radius:20px 20px 0 0;max-height:85vh;overflow-y:auto;padding:1.25rem 1rem;color:#070b12;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+            <div>
+              <h3 style="font-size:1.1rem;font-weight:800;margin:0;">🛍️ DBM Brand Uploads</h3>
+              <span style="font-size:0.72rem;color:#64748b;">Mark listings live & copy AI prompts</span>
+            </div>
+            <button onclick="document.getElementById('dbmMobileModal').style.display='none'" style="background:none;border:none;font-size:1.4rem;cursor:pointer;">✕</button>
+          </div>
+          <div id="dbmMobileContent"><div class="empty-state">Loading brand catalog...</div></div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+    modal.style.display = 'flex';
+
+    try {
+      const res = await fetch('/api/brands', { headers: authHeaders() });
+      const data = await res.json();
+      const brands = data.brands || [];
+      const content = document.getElementById('dbmMobileContent');
+      if (!content) return;
+
+      content.innerHTML = `
+        <div style="margin-bottom:0.75rem;">
+          <label style="font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;">Select Brand:</label>
+          <select id="dbmMobileBrandSel" onchange="renderDBMMobileBrandProducts(this.value)" style="width:100%;margin-top:0.25rem;padding:0.5rem;border-radius:10px;border:1.5px solid #e2e8f0;font-family:'Outfit',sans-serif;font-weight:700;">
+            ${brands.map(b => `<option value="${b.id}">${b.id}. ${b.name} (${b.type}) — ${b.productsLive || 0}/100 Live</option>`).join('')}
+          </select>
+        </div>
+        <div id="dbmMobileProductsList" style="display:flex;flex-direction:column;gap:0.5rem;max-height:55vh;overflow-y:auto;">
+        </div>
+      `;
+
+      window._dbmBrandsCache = data;
+      renderDBMMobileBrandProducts(brands[0]?.id || 1);
+    } catch(err) {
+      document.getElementById('dbmMobileContent').innerHTML = `<div class="empty-state">Could not load brands: ${err.message}</div>`;
+    }
+  };
+
+  window.renderDBMMobileBrandProducts = function(brandId) {
+    const data = window._dbmBrandsCache;
+    if (!data) return;
+    const bId = Number(brandId);
+    const brand = (data.brands || []).find(b => b.id === bId);
+    const listEl = document.getElementById('dbmMobileProductsList');
+    if (!listEl || !brand) return;
+
+    let prods = (data.productsCatalog && data.productsCatalog[bId]) || [];
+    if (prods.length === 0) {
+      const cats = brand.categories || ['Planners', 'Trackers', 'Bundles'];
+      cats.forEach((cat, cIdx) => {
+        for (let i = 1; i <= 10; i++) {
+          prods.push({
+            code: `${brand.name.substring(0,3).toUpperCase()}-${cIdx * 10 + i}`,
+            name: `${cat} #${i} — ${brand.name} Style`,
+            category: cat,
+            status: 'Pending'
+          });
+        }
+      });
+    }
+
+    listEl.innerHTML = prods.slice(0, 50).map((p, idx) => `
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:0.6rem;display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <strong style="font-size:0.82rem;color:#070b12;display:block;">${p.name}</strong>
+          <span style="font-size:0.7rem;color:#64748b;">${p.category} · ${p.code || ''}</span>
+        </div>
+        <div style="display:flex;gap:0.3rem;">
+          <button onclick="toggleMobileProductLive(${bId}, ${idx}, '${p.status === 'Live' ? 'Pending' : 'Live'}', this)" style="background:${p.status === 'Live' ? '#d1fae5' : '#ede9fe'};color:${p.status === 'Live' ? '#047857' : '#6d28d9'};border:none;border-radius:8px;padding:0.3rem 0.6rem;font-size:0.72rem;font-weight:800;cursor:pointer;">
+            ${p.status === 'Live' ? '🟢 Live' : '⏳ Pending'}
+          </button>
+        </div>
+      </div>
+    `).join('');
+  };
+
+  window.toggleMobileProductLive = async function(brandId, productIdx, newStatus, btn) {
+    triggerHaptic();
+    btn.innerText = '...';
+    try {
+      await fetch(`/api/brands/${brandId}/product`, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ productIdx, status: newStatus })
+      });
+      btn.style.background = newStatus === 'Live' ? '#d1fae5' : '#ede9fe';
+      btn.style.color = newStatus === 'Live' ? '#047857' : '#6d28d9';
+      btn.innerText = newStatus === 'Live' ? '🟢 Live' : '⏳ Pending';
+    } catch(err) {
+      alert('Error updating status');
+    }
+  };
+
+  window.openDBMStandupMobile = function() {
+    triggerHaptic();
+    const brand = prompt('Which brand did you work on today?', 'PlannerQueenCo');
+    if (!brand) return;
+    const count = Number(prompt('How many products did you list today?', '8')) || 0;
+    const notes = prompt('Standup notes / wins / blockers:', 'Completed daily batch') || '';
+
+    fetch('/api/brands/dbm-logs', {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({
+        dbmId: 1,
+        brandName: brand,
+        listed: count,
+        revenue: 0,
+        notes
+      })
+    }).then(() => {
+      triggerHaptic('success');
+      alert(`✅ DBM Standup logged for ${brand} (${count} listings)!`);
+    }).catch(e => alert('Error logging standup'));
+  };
+
+  // ══════════════════════════════════════════
   // START
   // ══════════════════════════════════════════
   init();

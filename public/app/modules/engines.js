@@ -16,57 +16,39 @@ window.APP_MODULES = window.APP_MODULES || {};
 const DEFAULT_ENGINES_STATE = {
   saas: {
     target: 35000,
-    current: 4200,
-    subscribers: 28,
-    mrr: 1400,
-    products: [
-      { name: 'AI Prompt Optimizer V2', status: 'Live', users: 142, mrr: 710 },
-      { name: 'ComfyUI Node Visualizer', status: 'Beta', users: 65, mrr: 450 },
-      { name: 'Multi-Bot Auto Engine', status: 'Live', users: 34, mrr: 240 }
-    ]
+    current: 0,
+    subscribers: 0,
+    mrr: 0,
+    products: []
   },
   sprints: {
     target: 25000,
-    current: 6000,
-    activeSprints: 4,
-    avgValue: 1500,
-    pipeline: [
-      { client: 'Nexus Retail Corp', sprint: 'ComfyUI Product Pipeline', val: 1500, status: 'In Review' },
-      { client: 'FinGrowth Global', sprint: 'Custom RAG Chatbot', val: 1500, status: 'Active' },
-      { client: 'AeroTech Studio', sprint: 'Photorealistic Visuals', val: 1500, status: 'Active' },
-      { client: 'HealthAI Labs', sprint: 'Prompt Architecture', val: 1500, status: 'Proposal' }
-    ]
+    current: 0,
+    activeSprints: 0,
+    avgValue: 0,
+    pipeline: []
   },
   assets: {
     target: 20000,
-    current: 3100,
-    listings: 52,
-    downloads: 418,
+    current: 0,
+    listings: 1300,
+    downloads: 0,
     stores: [
-      { name: 'Etsy AI Design Vault', items: 34, monthlySales: 125, rev: 1850 },
-      { name: 'Gumroad ComfyUI Workflows', items: 12, monthlySales: 54, rev: 890 },
-      { name: 'CreativeMarket Synth Kits', items: 6, monthlySales: 18, rev: 360 }
+      { name: '13-Brand Digital & POD Portfolio', items: 1300, monthlySales: 0, rev: 0 }
     ]
   },
   retainers: {
     target: 15000,
-    current: 4500,
-    activeCount: 3,
-    accounts: [
-      { client: 'BrandPulse UK', tier: 'Growth Retainer ($1,500/mo)', renewal: '2026-09-01', health: 'Healthy' },
-      { client: 'Solvent AI Singapore', tier: 'Growth Retainer ($1,500/mo)', renewal: '2026-09-10', health: 'Healthy' },
-      { client: 'Apex Media Group', tier: 'Growth Retainer ($1,500/mo)', renewal: '2026-09-15', health: 'Healthy' }
-    ]
+    current: 0,
+    activeCount: 0,
+    accounts: []
   },
   video: {
     target: 5000,
-    current: 950,
-    monthlyViews: 48500,
-    avgRPM: 8.5,
-    channels: [
-      { name: 'YouTube — AI Workflow Labs', subs: '4.2K', monthlyViews: '32K', yield: 620 },
-      { name: 'TikTok — 10x AI Automation', subs: '12.8K', monthlyViews: '16.5K', yield: 330 }
-    ]
+    current: 0,
+    monthlyViews: 0,
+    avgRPM: 0,
+    channels: []
   }
 };
 
@@ -323,8 +305,8 @@ async function renderEnginesView(container) {
           </div>
         </div>
         <div style="margin-top:1rem; padding-top:0.75rem; border-top:1px solid rgba(255,255,255,0.05); display:flex; justify-content:space-between; align-items:center;">
-          <button class="btn-ghost btn-sm" onclick="alert('Asset Auto-Publisher connects directly with Etsy and Gumroad.')">+ Publish Asset Pack</button>
-          <a href="#assets" class="btn-secondary btn-sm">Hardware & Assets →</a>
+          <a href="#brands" class="btn-primary btn-sm">🛍️ Brand Command Center →</a>
+          <a href="#dbm" class="btn-secondary btn-sm">DBM Ops →</a>
         </div>
       </div>
 
