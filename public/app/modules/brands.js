@@ -1444,9 +1444,33 @@ window.APP_MODULES.brands = async function(container) {
       render();
     },
 
-    async generateLiveSEOPackage(productNameEncoded, brandName, brandId) {
-      const prodName = decodeURIComponent(productNameEncoded);
-      const b = state.brands.find(x => x.id === brandId) || { name: brandName, niche: 'Digital products', voice: 'Inspiring', type: 'Digital', palette: ['#8B5A7A', '#FAF3E8', '#7D9B76', '#C4887C', '#2E2E2E'], fonts: 'Playfair Display + Lato' };
+    async generateLiveSEOPackage(arg1, arg2, arg3) {
+      let brandId, prodCode, prodName;
+
+      // Handle (brandId, productCode, productNameEncoded)
+      if (typeof arg1 === 'number' || (typeof arg1 === 'string' && !isNaN(Number(arg1)) && typeof arg2 === 'string' && arg2.includes('-'))) {
+        brandId = Number(arg1);
+        prodCode = arg2;
+        prodName = arg3 ? decodeURIComponent(arg3) : '';
+      } else {
+        // Handle (productNameEncoded, brandName, brandId)
+        prodName = decodeURIComponent(arg1);
+        brandId = typeof arg3 === 'number' ? arg3 : (Number(arg3) || 1);
+        prodCode = '';
+      }
+
+      // Resolve Brand
+      let b = state.brands?.find(x => x.id === brandId);
+      if (!b) {
+        b = state.brands?.find(x => x.name === arg2) || { id: brandId || 1, name: typeof arg2 === 'string' && !arg2.includes('-') ? arg2 : 'PlannerQueenCo', niche: 'Digital products', voice: 'Inspiring', type: 'Digital', palette: ['#8B5A7A', '#FAF3E8', '#7D9B76', '#C4887C', '#2E2E2E'], fonts: 'Playfair Display + Lato' };
+      }
+      if (!b.id) b.id = brandId || 1;
+
+      // Resolve Product from Catalog
+      const brandCatalog = state.productsCatalog && state.productsCatalog[b.id] ? state.productsCatalog[b.id] : [];
+      let matchedProduct = brandCatalog.find(p => (prodCode && p.code === prodCode) || (prodName && p.name === prodName)) || {};
+      if (!prodName) prodName = matchedProduct.name || `Product ${prodCode || '1'}`;
+      if (!prodCode) prodCode = matchedProduct.code || 'PROD-001';
 
       const modal = document.getElementById('aiSeoModal');
       const modalContent = document.getElementById('aiSeoModalContent');
@@ -1465,6 +1489,7 @@ window.APP_MODULES.brands = async function(container) {
       try {
         let seoResult = null;
         let blueprintResult = null;
+        let mockupResult = null;
 
         if (window.APP_API) {
           const [seoRes, bpRes, mockRes] = await Promise.all([
@@ -1520,12 +1545,8 @@ window.APP_MODULES.brands = async function(container) {
         const masterMockupPrompt = mockData.masterMockupPrompt || '';
         const videoPrompt = mockData.videoPrompt || '';
 
-        // Find existing product in catalog if already uploaded
-        const brandCatalog = state.productsCatalog && state.productsCatalog[b.id] ? state.productsCatalog[b.id] : [];
-        const matchedProduct = brandCatalog.find(p => p.name === prodName) || {};
         const currentVault = matchedProduct.vault || {};
         const currentMockups = matchedProduct.mockups || [];
-        const prodCode = matchedProduct.code || '';
 
         modalContent.innerHTML = `
           <!-- MODAL HEADER -->
@@ -1946,9 +1967,13 @@ window.APP_MODULES.brands = async function(container) {
           headers: {
             'Authorization': `Bearer ${token}`
           },
-          body: formData
-        });
-        const data = await res.json();
+        const text = await res.text();
+        let data;
+        try {
+          data = JSON.parse(text);
+        } catch (e) {
+          throw new Error(`Server returned error (${res.status}): ${text.slice(0, 100)}`);
+        }
         if (!data.success) throw new Error(data.error || 'Upload failed');
 
         window.showToast('✅ Deliverable saved to Vault!', 'success');
@@ -2120,7 +2145,13 @@ window.APP_MODULES.brands = async function(container) {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${token}` }
         });
-        const data = await res.json();
+        const text = await res.text();
+        let data;
+        try {
+          data = JSON.parse(text);
+        } catch (e) {
+          throw new Error(`Server returned error (${res.status}): ${text.slice(0, 100)}`);
+        }
         if (!data.success || !data.audit) throw new Error(data.error || 'AI Audit failed');
 
         window.showToast(`🧠 AI Audit complete! Quality Score: ${data.audit.overall_score}/10`, 'success');
@@ -2202,29 +2233,43 @@ window.APP_MODULES.brands = async function(container) {
       }
 
       const statusEl = document.getElementById('mockupUploadStatus');
-      if (statusEl) {
-        statusEl.innerHTML = `<span style="color:#06b6d4; font-weight:700;">⏳ Uploading ${files.length} mockup(s) to Cloud Vault...</span>`;
-      }
-
-      const formData = new FormData();
-      formData.append('productCode', productCode);
-      for (let i = 0; i < Math.min(10, files.length); i++) {
-        formData.append('mockups', files[i]);
-      }
+      const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+      let savedCount = 0;
 
       try {
-        const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
-        const res = await fetch(`/api/brands/${brandId}/mockups/upload`, {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}` },
-          body: formData
-        });
-        const data = await res.json();
-        if (!data.success) throw new Error(data.error || 'Failed to upload mockups');
+        const total = Math.min(10, files.length);
+        for (let i = 0; i < total; i++) {
+          const file = files[i];
+          if (statusEl) {
+            statusEl.innerHTML = `<span style="color:#06b6d4; font-weight:700;">⏳ Uploading ${i + 1}/${total}: ${file.name}...</span>`;
+          }
 
-        window.showToast(`✅ Saved ${data.count} mockups to Cloud Vault!`, 'success');
+          const formData = new FormData();
+          formData.append('productCode', productCode);
+          formData.append('mockup', file);
+          formData.append('rank', i + 1);
+          formData.append('totalFiles', total);
+
+          const res = await fetch(`/api/brands/${brandId}/mockups/upload-single`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` },
+            body: formData
+          });
+
+          const text = await res.text();
+          let data;
+          try {
+            data = JSON.parse(text);
+          } catch (e) {
+            throw new Error(`Server returned error (${res.status}): ${text.slice(0, 100)}`);
+          }
+          if (!data.success) throw new Error(data.error || `Failed uploading ${file.name}`);
+          savedCount++;
+        }
+
+        window.showToast(`✅ Saved all ${savedCount} mockups to Cloud Vault!`, 'success');
         if (statusEl) {
-          statusEl.innerHTML = `<span style="color:#00df89; font-weight:700;">✅ ${data.count} mockups stored in Cloud Vault</span>`;
+          statusEl.innerHTML = `<span style="color:#00df89; font-weight:700;">✅ ${savedCount} mockups stored in Cloud Vault</span>`;
         }
 
         // Reload brands state in background

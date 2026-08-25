@@ -862,6 +862,98 @@ router.post('/:id/mockups/upload', requireAuth, vaultUpload.array('mockups', 10)
 });
 
 /**
+ * POST /api/brands/:id/mockups/upload-single
+ * Uploads a single mockup image for a product to Supabase Storage 'product-vault'
+ */
+router.post('/:id/mockups/upload-single', requireAuth, vaultUpload.single('mockup'), async (req, res) => {
+  try {
+    const brandId = Number(req.params.id);
+    const { productCode, productName, rank, totalFiles } = req.body;
+    const file = req.file;
+
+    if (!file) {
+      return res.status(400).json({ success: false, error: 'No image file provided' });
+    }
+
+    const state = await loadBrandsState();
+    const brand = state.brands.find(b => b.id === brandId);
+    if (!brand) return res.status(404).json({ success: false, error: 'Brand not found' });
+
+    const cleanCode = (productCode || 'PROD').replace(/[^a-zA-Z0-9_-]/g, '_');
+    const safeFileName = file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const rankNum = Number(rank) || 1;
+    const storagePath = `brands/${brandId}/${cleanCode}/mockups/${Date.now()}_${rankNum}_${safeFileName}`;
+    let signedUrl = '';
+
+    if (isSupabaseConfigured()) {
+      try {
+        const { error: uploadError } = await supabase.storage
+          .from('product-vault')
+          .upload(storagePath, file.buffer, {
+            contentType: file.mimetype || 'image/jpeg',
+            upsert: true
+          });
+
+        if (!uploadError) {
+          const { data: signedData } = await supabase.storage
+            .from('product-vault')
+            .createSignedUrl(storagePath, 3600 * 24 * 7); // 7 days
+          signedUrl = signedData?.signedUrl || '';
+        } else {
+          console.warn('[Mockup Upload] Storage notice:', uploadError.message);
+        }
+      } catch (storageErr) {
+        console.warn('[Mockup Storage Exception]:', storageErr.message);
+      }
+    }
+
+    const item = {
+      rank: rankNum,
+      fileName: file.originalname,
+      fileSizeBytes: file.size,
+      contentType: file.mimetype,
+      storagePath: storagePath,
+      url: signedUrl,
+      uploadedAt: new Date().toISOString()
+    };
+
+    // Update product catalog record
+    if (!state.productsCatalog) state.productsCatalog = {};
+    if (state.productsCatalog[brandId]) {
+      const prod = state.productsCatalog[brandId].find(p =>
+        (productCode && p.code === productCode) ||
+        (productName && p.name === productName)
+      );
+      if (prod) {
+        if (!Array.isArray(prod.mockups)) prod.mockups = [];
+        const existingIdx = prod.mockups.findIndex(m => m.rank === rankNum);
+        if (existingIdx >= 0) {
+          prod.mockups[existingIdx] = item;
+        } else {
+          prod.mockups.push(item);
+        }
+        prod.mockups.sort((a, b) => (a.rank || 0) - (b.rank || 0));
+        prod.mockupUrls = prod.mockups.map(m => m.url).filter(Boolean);
+        prod.mockupsCount = prod.mockups.length;
+      }
+    }
+
+    await persistBrandsState(state);
+
+    return res.json({
+      success: true,
+      brandId,
+      productCode,
+      mockup: item,
+      totalSaved: state.productsCatalog?.[brandId]?.find(p => p.code === productCode)?.mockups?.length || 1
+    });
+  } catch (err) {
+    console.error('[Mockup Single Upload Error]:', err);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
  * POST /api/brands/:id/products/:code/ai-audit
  * Runs Gemini Multimodal Vision Quality & Dynamic Pricing Audit
  */
