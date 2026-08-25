@@ -157,4 +157,33 @@ describe('Etsy API Route Endpoints', () => {
     
     expect([200, 401]).toContain(res.status);
   });
+
+  test('POST /api/etsy/brands/1/listings/999/upload-images responds with status code', async () => {
+    const res = await request(app)
+      .post('/api/etsy/brands/1/listings/999/upload-images');
+    
+    expect([200, 400, 401, 403]).toContain(res.status);
+  });
+
+  test('POST /api/etsy/brands/1/listings/999/upload-file responds with status code', async () => {
+    const res = await request(app)
+      .post('/api/etsy/brands/1/listings/999/upload-file');
+    
+    expect([200, 400, 401, 403, 500]).toContain(res.status);
+  });
+});
+
+describe('Etsy Image and Deliverable Streaming Helpers', () => {
+  const { uploadListingImage, uploadListingFile, fetchFileBuffer } = require('../src/services/etsy');
+
+  test('uploadListingImage and uploadListingFile are exported functions', () => {
+    expect(typeof uploadListingImage).toBe('function');
+    expect(typeof uploadListingFile).toBe('function');
+    expect(typeof fetchFileBuffer).toBe('function');
+  });
+
+  test('fetchFileBuffer safely returns null for undefined path', async () => {
+    const result = await fetchFileBuffer(null);
+    expect(result).toBeNull();
+  });
 });

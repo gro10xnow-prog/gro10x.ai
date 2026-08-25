@@ -13,6 +13,7 @@
 
 const express = require('express');
 const router = express.Router();
+const multer = require('multer');
 const { requireAuth } = require('../middleware/auth');
 const { requireAdmin } = require('../middleware/rbac');
 const { ok, fail, asyncHandler } = require('../utils/response');
@@ -26,10 +27,19 @@ const {
   getValidAccessToken,
   etsyApiCall,
   runProductHealthCheck,
+  uploadListingImage,
+  uploadListingFile,
+  fetchFileBuffer,
   ETSY_KEYSTRING,
   ETSY_SHARED_SECRET,
   ETSY_REDIRECT_URI
 } = require('../services/etsy');
+
+// Memory storage for direct image/file proxy uploads
+const etsyUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 50 * 1024 * 1024 }
+});
 
 // Helper to fetch brand and catalog from app_settings
 async function getBrandData(brandId) {
@@ -483,7 +493,50 @@ router.post('/brands/:brandId/publish-all', requireAuth, requireAdmin, asyncHand
 
         const listingId = createRes.listing_id;
 
-        // Activate listing
+        // 1. Stream Mockup Images to Etsy Listing if available
+        const mockupsToUpload = Array.isArray(prod.mockups) ? prod.mockups : (Array.isArray(prod.mockupUrls) ? prod.mockupUrls.map((u, idx) => ({ url: u, rank: idx + 1 })) : []);
+        if (mockupsToUpload.length > 0 && listingId) {
+          for (let mIdx = 0; mIdx < Math.min(10, mockupsToUpload.length); mIdx++) {
+            const m = mockupsToUpload[mIdx];
+            try {
+              const imgBuf = await fetchFileBuffer(m.storagePath || m.url || m);
+              if (imgBuf) {
+                await uploadListingImage(
+                  brandId,
+                  conn.shop_id,
+                  listingId,
+                  imgBuf,
+                  m.fileName || `mockup_${mIdx + 1}.jpg`,
+                  mIdx + 1,
+                  prod.seoTitle || prod.name
+                );
+              }
+            } catch (imgErr) {
+              console.warn(`[Etsy Mockup Stream Note (${code} - #${mIdx + 1})]:`, imgErr.message);
+            }
+          }
+        }
+
+        // 2. Stream Digital Deliverable PDF to Etsy Listing if available
+        if ((prod.vault?.storagePath || prod.vault?.downloadUrl) && listingId) {
+          try {
+            const fileBuf = await fetchFileBuffer(prod.vault.storagePath || prod.vault.downloadUrl);
+            if (fileBuf) {
+              await uploadListingFile(
+                brandId,
+                conn.shop_id,
+                listingId,
+                fileBuf,
+                prod.vault.fileName || `${code}_deliverable.pdf`,
+                1
+              );
+            }
+          } catch (fileErr) {
+            console.warn(`[Etsy Vault File Stream Note (${code})]:`, fileErr.message);
+          }
+        }
+
+        // 3. Activate listing
         if (autoActivate && listingId) {
           try {
             await etsyApiCall(brandId, `/shops/${conn.shop_id}/listings/${listingId}`, {
@@ -574,6 +627,137 @@ router.get('/brands/:brandId/orders', requireAuth, asyncHandler(async (req, res)
     return ok(res, receipts);
   } catch (err) {
     return fail(res, err.message, 500);
+  }
+}));
+
+/**
+ * 13. POST /api/etsy/brands/:brandId/listings/:listingId/upload-images
+ * Accepts multipart files (up to 10) OR JSON payload with mockup URLs / storagePaths,
+ * and uploads them sequentially to the Etsy listing images API.
+ */
+router.post('/brands/:brandId/listings/:listingId/upload-images', requireAuth, etsyUpload.array('mockups', 10), asyncHandler(async (req, res) => {
+  const { brandId, listingId } = req.params;
+  const files = req.files || [];
+  const { mockups, mockupUrls } = req.body;
+  const conn = await getConnection(brandId);
+
+  if (!conn || !conn.shop_id || conn.status !== 'active') {
+    return fail(res, `Etsy store for Brand ${brandId} is not connected. Connect via OAuth first.`, 400);
+  }
+
+  const results = [];
+  const errors = [];
+
+  // Case A: Direct multipart file buffers
+  if (files && files.length > 0) {
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      try {
+        const uploadRes = await uploadListingImage(
+          brandId,
+          conn.shop_id,
+          listingId,
+          file.buffer,
+          file.originalname,
+          i + 1
+        );
+        results.push({ rank: i + 1, fileName: file.originalname, listingImageId: uploadRes.listing_image_id, url: uploadRes.url_570xN || uploadRes.url_fullxfull });
+      } catch (err) {
+        errors.push({ rank: i + 1, fileName: file.originalname, error: err.message });
+      }
+    }
+  }
+  // Case B: Cloud Vault URLs or StoragePaths
+  else {
+    let rawList = [];
+    if (Array.isArray(mockups)) rawList = mockups;
+    else if (Array.isArray(mockupUrls)) rawList = mockupUrls;
+    else if (typeof mockupUrls === 'string') {
+      try { rawList = JSON.parse(mockupUrls); } catch (e) { rawList = [mockupUrls]; }
+    } else if (typeof mockups === 'string') {
+      try { rawList = JSON.parse(mockups); } catch (e) { rawList = [mockups]; }
+    }
+
+    for (let i = 0; i < rawList.length; i++) {
+      const item = rawList[i];
+      const pathOrUrl = typeof item === 'string' ? item : (item.storagePath || item.url);
+      const name = (typeof item === 'object' && item.fileName) ? item.fileName : `mockup_${i + 1}.jpg`;
+      try {
+        const imgBuf = await fetchFileBuffer(pathOrUrl);
+        if (imgBuf) {
+          const uploadRes = await uploadListingImage(
+            brandId,
+            conn.shop_id,
+            listingId,
+            imgBuf,
+            name,
+            i + 1
+          );
+          results.push({ rank: i + 1, fileName: name, listingImageId: uploadRes.listing_image_id, url: uploadRes.url_570xN || uploadRes.url_fullxfull });
+        }
+      } catch (err) {
+        errors.push({ rank: i + 1, path: pathOrUrl, error: err.message });
+      }
+    }
+  }
+
+  return ok(res, {
+    brandId,
+    listingId,
+    uploadedCount: results.length,
+    failedCount: errors.length,
+    results,
+    errors
+  });
+}));
+
+/**
+ * 14. POST /api/etsy/brands/:brandId/listings/:listingId/upload-file
+ * Accepts single file (multipart) OR storagePath / downloadUrl (JSON),
+ * and streams it directly to Etsy listing digital files API.
+ */
+router.post('/brands/:brandId/listings/:listingId/upload-file', requireAuth, etsyUpload.single('file'), asyncHandler(async (req, res) => {
+  const { brandId, listingId } = req.params;
+  const file = req.file;
+  const { storagePath, downloadUrl, fileName } = req.body;
+  const conn = await getConnection(brandId);
+
+  if (!conn || !conn.shop_id || conn.status !== 'active') {
+    return fail(res, `Etsy store for Brand ${brandId} is not connected. Connect via OAuth first.`, 400);
+  }
+
+  let fileBuffer = null;
+  let name = fileName || 'deliverable.pdf';
+
+  if (file) {
+    fileBuffer = file.buffer;
+    name = file.originalname;
+  } else if (storagePath || downloadUrl) {
+    fileBuffer = await fetchFileBuffer(storagePath || downloadUrl);
+  }
+
+  if (!fileBuffer) {
+    return fail(res, 'No deliverable file provided. Upload a PDF/ZIP or provide storagePath/downloadUrl.', 400);
+  }
+
+  try {
+    const uploadRes = await uploadListingFile(
+      brandId,
+      conn.shop_id,
+      listingId,
+      fileBuffer,
+      name,
+      1
+    );
+
+    return ok(res, {
+      brandId,
+      listingId,
+      file: uploadRes,
+      message: 'Deliverable attached to Etsy listing successfully'
+    });
+  } catch (err) {
+    return fail(res, `Etsy digital file upload failed: ${err.message}`, 500);
   }
 }));
 

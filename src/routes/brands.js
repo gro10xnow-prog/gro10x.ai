@@ -772,6 +772,95 @@ router.get('/:id/vault/download', requireAuth, async (req, res) => {
   }
 });
 
+/**
+ * POST /api/brands/:id/mockups/upload
+ * Uploads up to 10 mockup images for a product to Supabase Storage 'product-vault'
+ */
+router.post('/:id/mockups/upload', requireAuth, vaultUpload.array('mockups', 10), async (req, res) => {
+  try {
+    const brandId = Number(req.params.id);
+    const { productCode, productName } = req.body;
+    const files = req.files || [];
+
+    if (!files || files.length === 0) {
+      return res.status(400).json({ success: false, error: 'No image files provided. Select up to 10 mockup images (PNG/JPG/WEBP).' });
+    }
+
+    const state = await loadBrandsState();
+    const brand = state.brands.find(b => b.id === brandId);
+    if (!brand) return res.status(404).json({ success: false, error: 'Brand not found' });
+
+    const cleanCode = (productCode || 'PROD').replace(/[^a-zA-Z0-9_-]/g, '_');
+    const uploadedMockups = [];
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const safeFileName = file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_');
+      const storagePath = `brands/${brandId}/${cleanCode}/mockups/${Date.now()}_${i + 1}_${safeFileName}`;
+      let signedUrl = '';
+
+      if (isSupabaseConfigured()) {
+        try {
+          const { error: uploadError } = await supabase.storage
+            .from('product-vault')
+            .upload(storagePath, file.buffer, {
+              contentType: file.mimetype || 'image/jpeg',
+              upsert: true
+            });
+
+          if (!uploadError) {
+            const { data: signedData } = await supabase.storage
+              .from('product-vault')
+              .createSignedUrl(storagePath, 3600 * 24 * 7); // 7 days
+            signedUrl = signedData?.signedUrl || '';
+          } else {
+            console.warn('[Mockup Upload] Storage notice:', uploadError.message);
+          }
+        } catch (storageErr) {
+          console.warn('[Mockup Storage Exception]:', storageErr.message);
+        }
+      }
+
+      uploadedMockups.push({
+        rank: i + 1,
+        fileName: file.originalname,
+        fileSizeBytes: file.size,
+        contentType: file.mimetype,
+        storagePath: storagePath,
+        url: signedUrl,
+        uploadedAt: new Date().toISOString()
+      });
+    }
+
+    // Update product catalog record
+    if (!state.productsCatalog) state.productsCatalog = {};
+    if (state.productsCatalog[brandId]) {
+      const prod = state.productsCatalog[brandId].find(p =>
+        (productCode && p.code === productCode) ||
+        (productName && p.name === productName)
+      );
+      if (prod) {
+        prod.mockups = uploadedMockups;
+        prod.mockupUrls = uploadedMockups.map(m => m.url).filter(Boolean);
+        prod.mockupsCount = uploadedMockups.length;
+      }
+    }
+
+    await persistBrandsState(state);
+
+    return res.json({
+      success: true,
+      brandId,
+      productCode,
+      count: uploadedMockups.length,
+      mockups: uploadedMockups
+    });
+  } catch (err) {
+    console.error('[Mockups Upload Error]:', err);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 router.SEED_BRANDS_DATA = SEED_BRANDS_DATA;
 router.loadBrandsState = loadBrandsState;
 router.persistBrandsState = persistBrandsState;

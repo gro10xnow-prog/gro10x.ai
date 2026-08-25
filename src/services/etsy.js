@@ -436,6 +436,62 @@ function runProductHealthCheck(product, brand = {}) {
   };
 }
 
+/**
+ * 7. Upload Listing Image to Etsy (multipart/form-data)
+ */
+async function uploadListingImage(brandId, shopId, listingId, imageBuffer, fileName = 'mockup.jpg', rank = 1, altText = '') {
+  const mimeType = fileName.endsWith('.png') ? 'image/png' : (fileName.endsWith('.webp') ? 'image/webp' : 'image/jpeg');
+  const blob = new Blob([imageBuffer], { type: mimeType });
+  const formData = new FormData();
+  formData.append('image', blob, fileName);
+  if (rank) formData.append('rank', String(rank));
+  if (altText) formData.append('alt_text', String(altText).slice(0, 250));
+
+  return etsyApiCall(brandId, `/shops/${shopId}/listings/${listingId}/images`, {
+    method: 'POST',
+    body: formData,
+    isMultipart: true
+  });
+}
+
+/**
+ * 8. Upload Digital File Deliverable to Etsy (multipart/form-data)
+ */
+async function uploadListingFile(brandId, shopId, listingId, fileBuffer, fileName = 'deliverable.pdf', rank = 1) {
+  const mimeType = fileName.endsWith('.zip') ? 'application/zip' : 'application/pdf';
+  const blob = new Blob([fileBuffer], { type: mimeType });
+  const formData = new FormData();
+  formData.append('file', blob, fileName);
+  if (rank) formData.append('rank', String(rank));
+  formData.append('name', fileName);
+
+  return etsyApiCall(brandId, `/shops/${shopId}/listings/${listingId}/files`, {
+    method: 'POST',
+    body: formData,
+    isMultipart: true
+  });
+}
+
+/**
+ * 9. Fetch File Buffer helper from URL or Supabase Storage
+ */
+async function fetchFileBuffer(storagePathOrUrl) {
+  if (!storagePathOrUrl) return null;
+  if (storagePathOrUrl.startsWith('http')) {
+    const res = await fetch(storagePathOrUrl);
+    if (!res.ok) throw new Error(`Failed to download asset from URL: ${res.statusText}`);
+    const arrayBuf = await res.arrayBuffer();
+    return Buffer.from(arrayBuf);
+  }
+  if (isSupabaseConfigured()) {
+    const { data, error } = await supabase.storage.from('product-vault').download(storagePathOrUrl);
+    if (error) throw new Error(`Supabase storage error: ${error.message}`);
+    const arrayBuf = await data.arrayBuffer();
+    return Buffer.from(arrayBuf);
+  }
+  return null;
+}
+
 module.exports = {
   ETSY_KEYSTRING,
   ETSY_SHARED_SECRET,
@@ -449,5 +505,8 @@ module.exports = {
   getConnection,
   getValidAccessToken,
   etsyApiCall,
-  runProductHealthCheck
+  runProductHealthCheck,
+  uploadListingImage,
+  uploadListingFile,
+  fetchFileBuffer
 };

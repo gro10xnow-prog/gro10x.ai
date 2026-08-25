@@ -1524,13 +1524,22 @@ window.APP_MODULES.brands = async function(container) {
         const brandCatalog = state.productsCatalog && state.productsCatalog[b.id] ? state.productsCatalog[b.id] : [];
         const matchedProduct = brandCatalog.find(p => p.name === prodName) || {};
         const currentVault = matchedProduct.vault || {};
+        const currentMockups = matchedProduct.mockups || [];
+        const prodCode = matchedProduct.code || '';
 
         modalContent.innerHTML = `
           <!-- MODAL HEADER -->
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:0.85rem;">
             <div>
               <span style="font-size:0.72rem; font-weight:800; color:#00df89; text-transform:uppercase; letter-spacing:0.5px;">⚡ Product Factory & Studio Engine</span>
-              <h2 style="font-size:1.35rem; font-weight:900; color:#fff; margin:0.2rem 0 0;">${prodName}</h2>
+              <div style="display:flex; align-items:center; gap:0.5rem; margin-top:0.2rem;">
+                <h2 style="font-size:1.35rem; font-weight:900; color:#fff; margin:0;">${prodName}</h2>
+                ${matchedProduct.etsyListingId ? `
+                  <span style="font-size:0.7rem; font-weight:800; background:rgba(0,223,137,0.15); color:#00df89; border:1px solid rgba(0,223,137,0.3); padding:0.15rem 0.5rem; border-radius:999px;">
+                    🟢 Etsy #${matchedProduct.etsyListingId}
+                  </span>
+                ` : ''}
+              </div>
             </div>
             <button onclick="document.getElementById('aiSeoModal').style.display='none'" style="background:none; border:none; color:var(--text-muted); font-size:1.5rem; cursor:pointer;">✕</button>
           </div>
@@ -1547,7 +1556,7 @@ window.APP_MODULES.brands = async function(container) {
               📦 Deliverable Vault & Upload
             </button>
             <button id="modalTabBtnMockups" type="button" onclick="window.BrandsModule.switchStudioTab('mockups')" style="flex:1; min-width:140px; background:none; border:1px solid transparent; color:var(--text-muted); font-weight:800; font-size:0.76rem; padding:0.55rem 0.5rem; border-radius:8px; cursor:pointer;">
-              🖼️ 10 Mockups & 10s Video
+              🖼️ 10 Mockups & Video Studio
             </button>
           </div>
 
@@ -1682,10 +1691,17 @@ window.APP_MODULES.brands = async function(container) {
                 </div>
               </div>
 
-              <div style="display:flex; justify-content:space-between; align-items:center;">
-                <button class="btn-primary" style="padding:0.5rem 1.25rem; font-size:0.82rem;" onclick="window.BrandsModule.uploadProductDeliverable(${b.id}, '${matchedProduct.code || ''}', '${encodeURIComponent(prodName)}')">
-                  🚀 Save & Upload to Cloud Vault
-                </button>
+              <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+                <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                  <button class="btn-primary" style="padding:0.5rem 1.25rem; font-size:0.82rem;" onclick="window.BrandsModule.uploadProductDeliverable(${b.id}, '${prodCode}', '${encodeURIComponent(prodName)}')">
+                    🚀 Save & Upload to Cloud Vault
+                  </button>
+                  ${matchedProduct.etsyListingId ? `
+                    <button class="btn-secondary" style="padding:0.5rem 1rem; font-size:0.8rem; border:1px solid rgba(0,223,137,0.4); color:#00df89;" onclick="window.BrandsModule.attachVaultFileToEtsy(${b.id}, '${prodCode}')">
+                      🚀 Attach PDF to Etsy (#${matchedProduct.etsyListingId})
+                    </button>
+                  ` : ''}
+                </div>
                 <div id="vaultUploadStatus" style="font-size:0.78rem;">
                   ${currentVault.fileName ? `
                     <span style="color:#00df89; font-weight:700;">✅ Stored: ${currentVault.fileName} (${(currentVault.fileSizeBytes / (1024*1024)).toFixed(2)} MB) · v${currentVault.version}</span>
@@ -1722,6 +1738,49 @@ window.APP_MODULES.brands = async function(container) {
 
           <!-- TAB 4: 10 MOCKUPS & 10-SECOND VIDEO STUDIO -->
           <div id="studioTabMockups" style="display:none; flex-direction:column; gap:1.2rem;">
+            <!-- MOCKUP IMAGES FILE PICKER & CLOUD VAULT UPLOADER -->
+            <div style="background:rgba(0,223,137,0.04); border:1px solid rgba(0,223,137,0.25); padding:1.25rem; border-radius:14px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+                <div>
+                  <span style="font-size:0.72rem; font-weight:800; color:#00df89; text-transform:uppercase; display:block;">📤 Upload 10 Mockup Images to Cloud Vault</span>
+                  <p style="font-size:0.78rem; color:var(--text-muted); margin:0.1rem 0 0;">Upload your 10 generated mockup JPG/PNG images to store in Cloud Vault and stream directly to Etsy.</p>
+                </div>
+                <span style="font-size:0.7rem; background:rgba(255,255,255,0.08); color:var(--text-secondary); padding:0.2rem 0.5rem; border-radius:6px;">Up to 10 Images</span>
+              </div>
+
+              <div style="margin-bottom:0.75rem;">
+                <input type="file" id="mockupFilesInput" multiple accept="image/png,image/jpeg,image/webp" onchange="window.BrandsModule.handleMockupFileSelect(event)" style="width:100%; font-size:0.82rem; background:rgba(0,0,0,0.3); border:1px dashed rgba(0,223,137,0.4); padding:0.75rem; border-radius:10px; color:#fff; cursor:pointer;">
+              </div>
+
+              <!-- THUMBNAIL PREVIEW GRID -->
+              <div id="mockupThumbnailGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(80px, 1fr)); gap:0.5rem; margin-bottom:0.85rem;">
+                ${(currentMockups.length > 0 ? currentMockups : []).map((m, idx) => `
+                  <div style="position:relative; aspect-ratio:1; border-radius:8px; overflow:hidden; border:1px solid rgba(0,223,137,0.3); background:#000;">
+                    <img src="${m.url || ''}" style="width:100%; height:100%; object-fit:cover;" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'80\\' height=\\'80\\' viewBox=\\'0 0 80 80\\'><rect fill=\\'%23111\\' width=\\'80\\' height=\\'80\\'/><text fill=\\'%2300df89\\' font-size=\\'10\\' font-family=\\'sans-serif\\' x=\\'50%25\\' y=\\'50%25\\' text-anchor=\\'middle\\' dy=\\'.3em\\'>Slot ${m.rank || idx + 1}</text></svg>'">
+                    <span style="position:absolute; bottom:2px; left:2px; font-size:0.6rem; font-weight:800; background:rgba(0,0,0,0.8); color:#00df89; padding:1px 4px; border-radius:3px;">#${m.rank || idx + 1}</span>
+                  </div>
+                `).join('')}
+              </div>
+
+              <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+                <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                  <button class="btn-primary" style="padding:0.5rem 1rem; font-size:0.8rem;" onclick="window.BrandsModule.uploadProductMockups(${b.id}, '${prodCode}')">
+                    💾 Save Mockups to Vault
+                  </button>
+                  ${matchedProduct.etsyListingId ? `
+                    <button class="btn-secondary" style="padding:0.5rem 1rem; font-size:0.8rem; border:1px solid rgba(0,223,137,0.4); color:#00df89;" onclick="window.BrandsModule.pushMockupsToEtsy(${b.id}, '${prodCode}')">
+                      🚀 Push to Live Etsy Listing (#${matchedProduct.etsyListingId})
+                    </button>
+                  ` : ''}
+                </div>
+                <div id="mockupUploadStatus" style="font-size:0.78rem;">
+                  ${currentMockups.length > 0 ? `
+                    <span style="color:#00df89; font-weight:700;">✅ ${currentMockups.length} mockups stored</span>
+                  ` : `<span style="color:var(--text-muted);">No images uploaded yet</span>`}
+                </div>
+              </div>
+            </div>
+
             <!-- MASTER MOCKUP PROMPT (ALL 10 IN ONE COPY) -->
             <div style="background:rgba(0,0,0,0.3); border:1px solid rgba(0,223,137,0.3); padding:1.1rem; border-radius:14px;">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
@@ -1869,6 +1928,167 @@ window.APP_MODULES.brands = async function(container) {
       } catch (err) {
         if (statusEl) statusEl.innerHTML = `<span style="color:#ef4444; font-weight:700;">❌ Upload error: ${err.message}</span>`;
         window.showToast(`Upload failed: ${err.message}`, 'error');
+      }
+    },
+
+    handleMockupFileSelect(event) {
+      const files = event.target.files;
+      const grid = document.getElementById('mockupThumbnailGrid');
+      if (!grid || !files || files.length === 0) return;
+
+      grid.innerHTML = '';
+      const limit = Math.min(10, files.length);
+
+      for (let i = 0; i < limit; i++) {
+        const file = files[i];
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const div = document.createElement('div');
+          div.style.cssText = 'position:relative; aspect-ratio:1; border-radius:8px; overflow:hidden; border:1px solid rgba(0,223,137,0.4); background:#000;';
+          div.innerHTML = `
+            <img src="${e.target.result}" style="width:100%; height:100%; object-fit:cover;">
+            <span style="position:absolute; bottom:2px; left:2px; font-size:0.6rem; font-weight:800; background:rgba(0,0,0,0.85); color:#00df89; padding:1px 4px; border-radius:3px;">Slot ${i + 1}</span>
+          `;
+          grid.appendChild(div);
+        };
+        reader.readAsDataURL(file);
+      }
+
+      const statusEl = document.getElementById('mockupUploadStatus');
+      if (statusEl) {
+        statusEl.innerHTML = `<span style="color:#06b6d4; font-weight:700;">${limit} image(s) selected · Ready to save to Vault</span>`;
+      }
+    },
+
+    async uploadProductMockups(brandId, productCode) {
+      const fileInput = document.getElementById('mockupFilesInput');
+      const files = fileInput?.files;
+      if (!files || files.length === 0) {
+        window.showToast('Please select at least 1 mockup image (PNG/JPG)', 'warning');
+        return;
+      }
+
+      const statusEl = document.getElementById('mockupUploadStatus');
+      if (statusEl) {
+        statusEl.innerHTML = `<span style="color:#06b6d4; font-weight:700;">⏳ Uploading ${files.length} mockup(s) to Cloud Vault...</span>`;
+      }
+
+      const formData = new FormData();
+      formData.append('productCode', productCode);
+      for (let i = 0; i < Math.min(10, files.length); i++) {
+        formData.append('mockups', files[i]);
+      }
+
+      try {
+        const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+        const res = await fetch(`/api/brands/${brandId}/mockups/upload`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: formData
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Failed to upload mockups');
+
+        window.showToast(`✅ Saved ${data.count} mockups to Cloud Vault!`, 'success');
+        if (statusEl) {
+          statusEl.innerHTML = `<span style="color:#00df89; font-weight:700;">✅ ${data.count} mockups stored in Cloud Vault</span>`;
+        }
+
+        // Reload brands state in background
+        state = await loadBrandsStateFromAPI();
+      } catch (err) {
+        if (statusEl) statusEl.innerHTML = `<span style="color:#ef4444; font-weight:700;">❌ ${err.message}</span>`;
+        window.showToast(err.message, 'error');
+      }
+    },
+
+    async pushMockupsToEtsy(brandId, productCode) {
+      const statusEl = document.getElementById('mockupUploadStatus');
+      if (statusEl) {
+        statusEl.innerHTML = `<span style="color:#06b6d4; font-weight:700;">🚀 Pushing mockups to live Etsy listing...</span>`;
+      }
+
+      try {
+        const brandCatalog = state.productsCatalog && state.productsCatalog[brandId] ? state.productsCatalog[brandId] : [];
+        const prod = brandCatalog.find(p => p.code === productCode);
+        if (!prod || !prod.etsyListingId) {
+          throw new Error(`Product ${productCode} has not been created on Etsy yet. Click "Bulk Publish to Etsy" or publish listing first.`);
+        }
+
+        const fileInput = document.getElementById('mockupFilesInput');
+        const files = fileInput?.files;
+        const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+
+        let res;
+        if (files && files.length > 0) {
+          const formData = new FormData();
+          for (let i = 0; i < Math.min(10, files.length); i++) {
+            formData.append('mockups', files[i]);
+          }
+          res = await fetch(`/api/etsy/brands/${brandId}/listings/${prod.etsyListingId}/upload-images`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` },
+            body: formData
+          });
+        } else if (prod.mockups && prod.mockups.length > 0) {
+          res = await fetch(`/api/etsy/brands/${brandId}/listings/${prod.etsyListingId}/upload-images`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ mockups: prod.mockups })
+          });
+        } else {
+          throw new Error('No mockup images found. Select image files or upload to Vault first.');
+        }
+
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Etsy image push failed');
+
+        window.showToast(`🎉 ${data.data.uploadedCount} mockups are now live on Etsy listing #${prod.etsyListingId}!`, 'success');
+        if (statusEl) {
+          statusEl.innerHTML = `<span style="color:#00df89; font-weight:700;">🎉 Live on Etsy! ${data.data.uploadedCount} images active on #${prod.etsyListingId}</span>`;
+        }
+      } catch (err) {
+        if (statusEl) statusEl.innerHTML = `<span style="color:#ef4444; font-weight:700;">❌ ${err.message}</span>`;
+        window.showToast(err.message, 'error');
+      }
+    },
+
+    async attachVaultFileToEtsy(brandId, productCode) {
+      const statusEl = document.getElementById('vaultUploadStatus');
+      if (statusEl) {
+        statusEl.innerHTML = `<span style="color:#06b6d4; font-weight:700;">🚀 Attaching deliverable to live Etsy listing...</span>`;
+      }
+
+      try {
+        const brandCatalog = state.productsCatalog && state.productsCatalog[brandId] ? state.productsCatalog[brandId] : [];
+        const prod = brandCatalog.find(p => p.code === productCode);
+        if (!prod || !prod.etsyListingId) {
+          throw new Error(`Product ${productCode} has not been created on Etsy yet. Click "Bulk Publish to Etsy" first.`);
+        }
+        if (!prod.vault?.storagePath && !prod.vault?.downloadUrl) {
+          throw new Error(`No file found in Vault. Upload the PDF/ZIP first.`);
+        }
+
+        const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+        const res = await fetch(`/api/etsy/brands/${brandId}/listings/${prod.etsyListingId}/upload-file`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            storagePath: prod.vault.storagePath,
+            downloadUrl: prod.vault.downloadUrl,
+            fileName: prod.vault.fileName
+          })
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Failed to attach file to Etsy');
+
+        window.showToast(`🎉 PDF Deliverable successfully attached to Etsy listing #${prod.etsyListingId}!`, 'success');
+        if (statusEl) {
+          statusEl.innerHTML = `<span style="color:#00df89; font-weight:700;">🎉 Deliverable live on Etsy listing #${prod.etsyListingId}!</span>`;
+        }
+      } catch (err) {
+        if (statusEl) statusEl.innerHTML = `<span style="color:#ef4444; font-weight:700;">❌ ${err.message}</span>`;
+        window.showToast(err.message, 'error');
       }
     },
 
