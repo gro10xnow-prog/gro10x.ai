@@ -281,7 +281,17 @@ router.post('/product-blueprint', requireAuth, async (req, res) => {
     ? brandPalette
     : ['#8B5A7A', '#FAF3E8', '#7D9B76', '#C4887C', '#2E2E2E'];
 
-  const fontString = brandFonts || 'Playfair Display + Lato';
+  let headingFont = 'Playfair Display';
+  let bodyFont = 'Lato';
+  if (typeof brandFonts === 'string') {
+    const parts = brandFonts.split('+').map(s => s.trim());
+    headingFont = parts[0] || 'Playfair Display';
+    bodyFont = parts[1] || 'Lato';
+  } else if (brandFonts && typeof brandFonts === 'object') {
+    headingFont = brandFonts.heading || brandFonts.headingFont || 'Playfair Display';
+    bodyFont = brandFonts.body || brandFonts.bodyFont || 'Lato';
+  }
+  const fontString = `${headingFont} + ${bodyFont}`;
 
   function generateDeterministicBlueprint(pName, bName, niche, voice, palette, fonts, pType) {
     const cleanP = pName.replace(/^[A-Z]\d+\s*[-–]\s*/, '');
@@ -289,6 +299,17 @@ router.post('/product-blueprint', requireAuth, async (req, res) => {
     const isBudget = cleanP.toLowerCase().includes('budget') || cleanP.toLowerCase().includes('financial') || cleanP.toLowerCase().includes('debt');
     const isHabit = cleanP.toLowerCase().includes('habit') || cleanP.toLowerCase().includes('goal') || cleanP.toLowerCase().includes('vision');
     const isTracker = cleanP.toLowerCase().includes('tracker') || cleanP.toLowerCase().includes('log') || cleanP.toLowerCase().includes('sheet');
+
+    let hFont = headingFont;
+    let bFont = bodyFont;
+    if (typeof fonts === 'string' && fonts.includes('+')) {
+      const parts = fonts.split('+').map(s => s.trim());
+      hFont = parts[0] || hFont;
+      bFont = parts[1] || bFont;
+    } else if (fonts && typeof fonts === 'object') {
+      hFont = fonts.heading || fonts.headingFont || hFont;
+      bFont = fonts.body || fonts.bodyFont || bFont;
+    }
 
     const primaryColor = palette[0] || '#8B5A7A';
     const bgTint = palette[1] || '#FAF3E8';
@@ -304,7 +325,7 @@ router.post('/product-blueprint', requireAuth, async (req, res) => {
         purpose: 'Establish premium brand identity, ownership personal license attribution, and aesthetic tone.',
         layoutSpecs: 'Full-bleed minimalist cover with 0.5 in inner safe zone. Top centered brand badge, large serif headline, subtitle banner, fillable "This Planner Belongs To:" card, and bottom personal use license declaration.',
         elements: [
-          `Brand Header: "${bName}" in ${fonts.split('+')[0] || 'Playfair Display'} font`,
+          `Brand Header: "${bName}" in ${hFont} font`,
           `Product Title: "${cleanP}" (${primaryColor})`,
           `Subtitle: "Aesthetic Intentional System for ${niche || 'Daily Productivity'}"`,
           'Fillable Name / Email attribution box with rounded borders and subtle drop shadow',
@@ -450,11 +471,12 @@ router.post('/product-blueprint', requireAuth, async (req, res) => {
       `  • Highlight: ${highlightColor}\n` +
       `  • Body Text: ${textColor}\n\n` +
       `Typography:\n` +
-      `  • Headings & Titles: ${fonts.split('+')[0] ? fonts.split('+')[0].trim() : 'Playfair Display'} (Elegant serif — bold, refined)\n` +
-      `  • Body & Labels: ${fonts.split('+')[1] ? fonts.split('+')[1].trim() : 'Lato'} (Clean, highly legible sans-serif)\n` +
+      `  • Headings & Titles: ${hFont} (Elegant serif — bold, refined)\n` +
+      `  • Body & Labels: ${bFont} (Clean, highly legible sans-serif)\n` +
       `  • Accent / Quotes: Cormorant Garamond (Italic — soft and aspirational)\n\n` +
       `Design Style: Minimalist botanical — clean white space, subtle line separators, soft warm tones, premium aesthetic.\n\n` +
       `PAGE-BY-PAGE DESIGN BRIEF\n` +
+      `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
       `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
       pages.map(p =>
         `PAGE ${p.pageNumber} — ${p.title.toUpperCase()}\n` +
@@ -493,8 +515,8 @@ router.post('/product-blueprint', requireAuth, async (req, res) => {
           darkText: textColor
         },
         typography: {
-          headingFont: fonts.split('+')[0] ? fonts.split('+')[0].trim() : 'Playfair Display',
-          bodyFont: fonts.split('+')[1] ? fonts.split('+')[1].trim() : 'Lato',
+          headingFont: hFont,
+          bodyFont: bFont,
           accentFont: 'Cormorant Garamond (Italic)'
         }
       },
@@ -593,7 +615,17 @@ router.post('/mockup-prompts', requireAuth, async (req, res) => {
     ? brandPalette
     : ['#8B5A7A', '#FAF3E8', '#7D9B76', '#C4887C', '#2E2E2E'];
 
-  const fontString = brandFonts || 'Playfair Display + Lato';
+  let headingFont = 'Playfair Display';
+  let bodyFont = 'Lato';
+  if (typeof brandFonts === 'string') {
+    const parts = brandFonts.split('+').map(s => s.trim());
+    headingFont = parts[0] || 'Playfair Display';
+    bodyFont = parts[1] || 'Lato';
+  } else if (brandFonts && typeof brandFonts === 'object') {
+    headingFont = brandFonts.heading || brandFonts.headingFont || 'Playfair Display';
+    bodyFont = brandFonts.body || brandFonts.bodyFont || 'Lato';
+  }
+  const fontString = `${headingFont} + ${bodyFont}`;
 
   function generateDeterministicMockups(pName, bName, niche, voice, palette, fonts, pType) {
     const cleanP = pName.replace(/^[A-Z]\d+\s*[-–]\s*/, '');
