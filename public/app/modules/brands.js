@@ -2942,6 +2942,16 @@ window.APP_MODULES.brands = async function(container) {
         }
 
         state = await loadBrandsStateFromAPI();
+
+        // Explicitly patch in-memory state so the gate check sees the blueprint
+        // (avoids timing issue where catalog key types differ or state re-reads stale data)
+        const catalogForBrand = state.productsCatalog?.[brandId] || state.productsCatalog?.[String(brandId)] || [];
+        const savedProd = catalogForBrand.find(p => p.code === productCode);
+        if (savedProd && !savedProd.blueprint?.googleFlowPrompt) {
+          if (!savedProd.blueprint) savedProd.blueprint = {};
+          Object.assign(savedProd.blueprint, blueprintBundle);
+        }
+
         if (window.showToast) window.showToast('✅ Blueprint & Mockup Briefs generated & saved!', 'success');
 
         // Re-open Studio directly in Tab 1 (Blueprint)
