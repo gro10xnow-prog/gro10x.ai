@@ -16,9 +16,16 @@
 
 const express = require('express');
 const router = express.Router();
+const multer = require('multer');
 const { requireAuth } = require('../middleware/auth');
 const { supabase, isSupabaseConfigured } = require('../services/supabase');
 const { readDB, writeDB } = require('../services/db');
+
+// Multer memory storage configuration for Vault uploads (max 50MB)
+const vaultUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 50 * 1024 * 1024 }
+});
 
 // Default 13-Brand Portfolio Data
 const SEED_BRANDS_DATA = {
@@ -639,6 +646,127 @@ router.post('/dbm-logs', requireAuth, async (req, res) => {
     await persistDbmLogs(logs);
 
     res.json({ success: true, log: newEntry });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * POST /api/brands/:id/vault/upload
+ * Directly uploads deliverable PDF / ZIP into Supabase Storage bucket 'product-vault'
+ */
+router.post('/:id/vault/upload', requireAuth, vaultUpload.single('file'), async (req, res) => {
+  try {
+    const brandId = Number(req.params.id);
+    const { productCode, productName, version, canvaTemplateUrl, notionTemplateUrl } = req.body;
+    const file = req.file;
+
+    if (!file && !canvaTemplateUrl && !notionTemplateUrl) {
+      return res.status(400).json({ success: false, error: 'Please provide a file (PDF/ZIP) or template link' });
+    }
+
+    const state = await loadBrandsState();
+    const brand = state.brands.find(b => b.id === brandId);
+    if (!brand) return res.status(404).json({ success: false, error: 'Brand not found' });
+
+    let storagePath = '';
+    let signedDownloadUrl = '';
+
+    if (file) {
+      const cleanCode = (productCode || 'PROD').replace(/[^a-zA-Z0-9_-]/g, '_');
+      const safeFileName = file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_');
+      const ver = (version || '1.0').replace(/[^a-zA-Z0-9._-]/g, '_');
+      storagePath = `brands/${brandId}/${cleanCode}/v${ver}/${Date.now()}_${safeFileName}`;
+
+      if (isSupabaseConfigured()) {
+        try {
+          const { error: uploadError } = await supabase.storage
+            .from('product-vault')
+            .upload(storagePath, file.buffer, {
+              contentType: file.mimetype || 'application/pdf',
+              upsert: true
+            });
+
+          if (uploadError) {
+            console.warn('[Vault Upload] Supabase upload notice:', uploadError.message);
+          } else {
+            const { data: signedData } = await supabase.storage
+              .from('product-vault')
+              .createSignedUrl(storagePath, 3600 * 24); // 24 hours
+            signedDownloadUrl = signedData?.signedUrl || '';
+          }
+        } catch (storageErr) {
+          console.warn('[Vault Upload] Storage exception:', storageErr.message);
+        }
+      }
+    }
+
+    const vaultData = {
+      storagePath: storagePath || (file ? `local/${file.originalname}` : ''),
+      fileName: file ? file.originalname : 'Cloud Template',
+      fileSizeBytes: file ? file.size : 0,
+      fileFormat: file ? (file.mimetype.includes('pdf') ? 'PDF' : (file.mimetype.includes('zip') ? 'ZIP' : 'Digital Deliverable')) : 'Cloud Link',
+      version: version || '1.0',
+      uploadedAt: new Date().toISOString(),
+      uploadedBy: req.user?.name || req.user?.empCode || 'DBM',
+      canvaTemplateUrl: canvaTemplateUrl || '',
+      notionTemplateUrl: notionTemplateUrl || '',
+      downloadUrl: signedDownloadUrl
+    };
+
+    // Update product catalog record if present
+    if (!state.productsCatalog) state.productsCatalog = {};
+    if (state.productsCatalog[brandId]) {
+      const prod = state.productsCatalog[brandId].find(p =>
+        (productCode && p.code === productCode) ||
+        (productName && p.name === productName)
+      );
+      if (prod) {
+        prod.vault = vaultData;
+        if (prod.status === 'Pending' || prod.status === 'In Progress') {
+          prod.status = 'SEO Ready';
+        }
+      }
+    }
+
+    await persistBrandsState(state);
+
+    res.json({
+      success: true,
+      vault: vaultData,
+      brandId,
+      productCode: productCode || ''
+    });
+  } catch (err) {
+    console.error('[Vault Upload Error]:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * GET /api/brands/:id/vault/download
+ * Generates fresh 24h signed URL for deliverable asset
+ */
+router.get('/:id/vault/download', requireAuth, async (req, res) => {
+  try {
+    const { storagePath } = req.query;
+    if (!storagePath) {
+      return res.status(400).json({ success: false, error: 'storagePath is required' });
+    }
+
+    if (isSupabaseConfigured()) {
+      const { data, error } = await supabase.storage
+        .from('product-vault')
+        .createSignedUrl(storagePath, 3600 * 24);
+
+      if (error) {
+        return res.status(400).json({ success: false, error: error.message });
+      }
+
+      return res.json({ success: true, downloadUrl: data.signedUrl, expiresIn: '24h' });
+    }
+
+    res.json({ success: false, error: 'Cloud storage is not active' });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }

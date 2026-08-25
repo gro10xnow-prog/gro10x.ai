@@ -580,6 +580,206 @@ router.post('/product-blueprint', requireAuth, async (req, res) => {
   }
 });
 
+// ─────────────────────────────────────────────────────────────────────────────
+// POST /api/ai/mockup-prompts — Generates 10 Etsy Listing Image Prompts + 10s Video Prompt
+// ─────────────────────────────────────────────────────────────────────────────
+router.post('/mockup-prompts', requireAuth, async (req, res) => {
+  const { productName, brandName, brandNiche, brandVoice, brandPalette, brandFonts, type, category } = req.body;
+  if (!productName || !brandName) {
+    return res.status(400).json({ error: 'productName and brandName are required' });
+  }
+
+  const paletteArr = Array.isArray(brandPalette) && brandPalette.length > 0
+    ? brandPalette
+    : ['#8B5A7A', '#FAF3E8', '#7D9B76', '#C4887C', '#2E2E2E'];
+
+  const fontString = brandFonts || 'Playfair Display + Lato';
+
+  function generateDeterministicMockups(pName, bName, niche, voice, palette, fonts, pType) {
+    const cleanP = pName.replace(/^[A-Z]\d+\s*[-–]\s*/, '');
+    const primaryColor = palette[0] || '#8B5A7A';
+    const bgTint = palette[1] || '#FAF3E8';
+    const secondaryColor = palette[2] || '#7D9B76';
+    const highlightColor = palette[3] || '#C4887C';
+    const textColor = palette[4] || '#2E2E2E';
+
+    const mockups = [
+      {
+        number: 1,
+        title: 'Hero iPad Lifestyle (Main Etsy Thumbnail)',
+        type: 'Primary Listing Hero',
+        scene: `Professional studio flat-lay photography of an iPad Pro in portrait orientation displaying the aesthetic digital cover of "${cleanP}" by ${bName}. Resting on a luxurious warm cream (${bgTint}) desk surface alongside a sleek minimalist brass pen, soft botanical eucalyptus branches, and gentle natural morning shadows. 8k, hyper-detailed, clean editorial look.`
+      },
+      {
+        number: 2,
+        title: 'Flat Lay Cover & Clean Aesthetics',
+        type: 'Cover Showcase',
+        scene: `Overhead top-down camera angle of "${cleanP}" digital cover printed on luxury textured matte paper or displayed on a tablet. Bordered with aesthetic lifestyle items in brand colors (${primaryColor}, ${secondaryColor}), soft linen napkin, and neutral ceramic mug. Clean white space, crisp typography in ${fonts}.`
+      },
+      {
+        number: 3,
+        title: 'Daily Schedule Page Close-Up with Pen',
+        type: 'Feature Deep-Dive',
+        scene: `Macro angle angled view of the Daily Focused Execution page from "${cleanP}". A gold pen rests across the 6:00 AM – 9:00 PM hourly schedule box. Clear readable section headers: "Top Priorities", "Eisenhower Matrix", "Water Intake". Soft depth of field, bright warm daylight.`
+      },
+      {
+        number: 4,
+        title: 'Weekly Master Spread Open on Desk',
+        type: 'Spread View',
+        scene: `Two-page open spread of the Weekly Master Plan from "${cleanP}" lying flat on a modern scandinavian oak desk. Coffee cup with latte art in background, reading glasses, pastel highlighter. Clean vertical columns from Monday to Sunday clearly visible.`
+      },
+      {
+        number: 5,
+        title: '30-Day Habit Matrix in Active Use',
+        type: 'Gamification & Results',
+        scene: `High-resolution perspective shot focusing on the 30-Day Habit Matrix page. Several circular check-bubbles are neatly filled in with soft pastel ink (${secondaryColor}), displaying a satisfying streak. Inspiring, motivating, aesthetic productivity aesthetic.`
+      },
+      {
+        number: 6,
+        title: 'Hands-in-Frame Writing Lifestyle Shot',
+        type: 'Human Connection & Scale',
+        scene: `First-person point-of-view photo of a well-manicured female hand holding an elegant fine-tip pen, actively writing notes into the "${cleanP}" planner. Soft knit sweater sleeve, cozy warm morning ambience, diffused window light.`
+      },
+      {
+        number: 7,
+        title: '10-Pages Fanned-Out Bundle Showcase',
+        type: 'Value & Scope Showcase',
+        scene: `All core pages of "${cleanP}" dynamically fanned out in a cascading 3D isometric stack, revealing cover, monthly calendar, daily spread, habit tracker, and budget sheet all together. Badge banner overlay style: "Complete 10-Spread Productivity System".`
+      },
+      {
+        number: 8,
+        title: '90-Day Vision & Financial Spread',
+        type: 'Transformation & Goals',
+        scene: `Clean angled shot of the 90-Day Goal Roadmap and Monthly Cash Flow pages side by side. Professional planner setup with minimal gold paperclips, clean calculator, and motivational quote card. High aspiration value.`
+      },
+      {
+        number: 9,
+        title: 'Full Aesthetic Desk Aerial Lifestyle',
+        type: 'Aspirational Lifestyle',
+        scene: `Wide overhead bird's-eye flat lay of an entire productive desk workspace: planner tablet centered, laptop open with ambient screen, small potted succulent, scented candle, notebook, and ceramic dish. Colors harmonized in ${primaryColor} and ${bgTint}.`
+      },
+      {
+        number: 10,
+        title: 'Instant Download & Device Compatibility',
+        type: 'Etsy Purchase Reassurance',
+        scene: `Clean split-screen graphic displaying a smartphone, iPad tablet with Apple Pencil, and printable A4 paper stack, all showing the matching "${cleanP}" layout. Prominent aesthetic text badge: "Instant Digital Download · GoodNotes · Notability · Print at Home".`
+      }
+    ];
+
+    const masterMockupPrompt =
+      `BRAND & MOCKUP VISUAL BRIEF\n` +
+      `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+      `Brand: ${bName} | Niche: ${niche || 'Digital Products'}\n` +
+      `Product: ${cleanP}\n` +
+      `Brand Colors: Primary ${primaryColor}, Background ${bgTint}, Secondary ${secondaryColor}, Highlight ${highlightColor}, Dark ${textColor}\n` +
+      `Typography: ${fonts}\n` +
+      `Aesthetic Style: Minimalist botanical luxury, warm natural morning lighting, clean editorial depth.\n\n` +
+      `INSTRUCTIONS FOR AI AGENT / GOOGLE FLOW:\n` +
+      `Generate 10 distinct, high-converting Etsy listing mockup images in 3:4 PORTRAIT aspect ratio, sequentially one after the other:\n\n` +
+      mockups.map(m =>
+        `MOCKUP #${m.number} — ${m.title.toUpperCase()} (${m.type})\n` +
+        `Scene Description: ${m.scene}\n` +
+        `Aspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity\n`
+      ).join('\n') +
+      `\nOUTPUT GUIDELINES:\n` +
+      `• Process all 10 mockup scenes one by one in sequence\n` +
+      `• Maintain consistent brand color palette (${primaryColor}, ${bgTint}) across all images\n` +
+      `• Ensure high-end commercial photo realism with soft natural lighting and realistic props\n`;
+
+    const videoPrompt =
+      `🎥 10-SECOND ETSY LISTING VIDEO PROMPT\n` +
+      `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+      `Tool: Google Flow / Kling AI / Runway Gen-3 / Pika / Sora\n` +
+      `Duration: 10 Seconds | Format: 4:5 Portrait (Etsy Video) or 9:16 (Reels/TikTok)\n` +
+      `Product: "${cleanP}" by ${bName}\n` +
+      `Color Grade: Warm cream tones (${bgTint}), soft mauve accents (${primaryColor}), natural golden hour window light\n` +
+      `Music / Audio: Relaxing lo-fi acoustic guitar / soft piano instrumental (no vocals)\n\n` +
+      `TIMELINE & SCENE TRANSITIONS (10 SECONDS TOTAL):\n\n` +
+      `• [0:00 – 0:02s] SCENE 1 — OPENING HOOK (Slow Gliding Pan):\n` +
+      `  Camera smoothly glides over a sunlit minimalist desk with coffee and botanical flowers, landing on the unopened aesthetic cover of "${cleanP}".\n\n` +
+      `• [0:02 – 0:04s] SCENE 2 — THE OPENING (Smooth Page Turn):\n` +
+      `  A female hand gently turns the cover to reveal the elegant Year-at-a-Glance calendar and Monthly Intentions spread with soft depth of field.\n\n` +
+      `• [0:04 – 0:06s] SCENE 3 — CORE SPREADS (Fast Smooth Flip):\n` +
+      `  Smooth cinematic page-flip motion displaying the Weekly Master Plan and Daily 6AM–9PM time-blocking spread.\n\n` +
+      `• [0:06 – 0:08s] SCENE 4 — INTERACTION & ACTIVE USE (Macro Close-Up):\n` +
+      `  Close-up shot of a fine-tip gold pen smoothly ticking a habit check-bubble in the 30-Day Habit Matrix, showing tactile satisfaction and clarity.\n\n` +
+      `• [0:08 – 0:10s] SCENE 5 — CALL TO ACTION (Pull-Back & Text Fade):\n` +
+      `  Camera pulls back to full styled desk view as elegant serif text fades onto screen: "${cleanP} — Instant Digital Download · GoodNotes & Printable".\n`;
+
+    return {
+      productName: cleanP,
+      brandName: bName,
+      mockups,
+      masterMockupPrompt,
+      videoPrompt
+    };
+  }
+
+  const key = process.env.GEMINI_API_KEY;
+
+  if (!key) {
+    return res.json({
+      success: true,
+      data: generateDeterministicMockups(productName, brandName, brandNiche, brandVoice, paletteArr, fontString, type),
+      generatedBy: 'smart_mockup_engine'
+    });
+  }
+
+  const prompt =
+    `You are an elite Etsy Product Visualizer and E-commerce Art Director.\n` +
+    `Generate 10 distinct Etsy listing mockup photo prompts and a 10-second listing video prompt for:\n` +
+    `Product Name: "${productName}"\n` +
+    `Brand: "${brandName}"\n` +
+    `Niche: "${brandNiche || 'Digital Products'}"\n` +
+    `Brand Voice: "${brandVoice || 'Warm, empowering, clear'}"\n` +
+    `Color Palette: ${JSON.stringify(paletteArr)}\n` +
+    `Typography: "${fontString}"\n` +
+    `Format: "${type || 'Digital PDF'}"\n\n` +
+    `Return strict JSON with:\n` +
+    `1. "mockups": Array of 10 objects { "number", "title", "type", "scene" }\n` +
+    `2. "masterMockupPrompt": Single copy-ready master prompt for Google Flow / Midjourney containing all 10 image prompts in sequence (3:4 portrait).\n` +
+    `3. "videoPrompt": A 10-second structured video creation prompt broken down by timestamps (0-2s, 2-4s, 4-6s, 6-8s, 8-10s).\n\n` +
+    `OUTPUT STRICT JSON ONLY. No markdown wrapper or extra text outside JSON.`;
+
+  try {
+    let resultText = null;
+    for (const model of MODELS) {
+      try {
+        resultText = await callSingle(model, prompt, key);
+        if (resultText) break;
+      } catch (e) {
+        console.warn('[Mockup Prompts] Skip model ' + model + ':', e.message);
+      }
+    }
+
+    if (!resultText) throw new Error('No output from Gemini');
+
+    const cleaned = resultText.replace(/```json/gi, '').replace(/```/g, '').trim();
+    const parsed = JSON.parse(cleaned);
+
+    const baseData = generateDeterministicMockups(productName, brandName, brandNiche, brandVoice, paletteArr, fontString, type);
+
+    return res.json({
+      success: true,
+      data: {
+        productName: parsed.productName || productName,
+        brandName: parsed.brandName || brandName,
+        mockups: parsed.mockups || baseData.mockups,
+        masterMockupPrompt: parsed.masterMockupPrompt || baseData.masterMockupPrompt,
+        videoPrompt: parsed.videoPrompt || baseData.videoPrompt
+      },
+      generatedBy: 'gemini'
+    });
+  } catch (err) {
+    console.warn('[Mockup Prompts Gemini Error]:', err.message);
+    return res.json({
+      success: true,
+      data: generateDeterministicMockups(productName, brandName, brandNiche, brandVoice, paletteArr, fontString, type),
+      generatedBy: 'smart_mockup_engine'
+    });
+  }
+});
+
 router.get('/status', requireAuth, (req, res) => res.json({ success: true, configured: !!process.env.GEMINI_API_KEY, models: MODELS }));
 
 module.exports = router;
