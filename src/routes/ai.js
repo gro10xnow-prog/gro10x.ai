@@ -436,19 +436,47 @@ router.post('/product-blueprint', requireAuth, async (req, res) => {
     ];
 
     const googleFlowPrompt =
-      `# 🤖 GOOGLE FLOW / GEMINI PROMPT — DIGITAL PRODUCT PDF BUILDER\n\n` +
-      `You are an elite Digital Product Architect & Publication Designer specializing in best-selling Etsy digital downloads and GoodNotes planners.\n\n` +
-      `GENERATE THE FULL, PRODUCTION-READY PRINTABLE AND DIGITAL PDF FOR:\n` +
-      `• Brand: "${bName}" (${niche})\n` +
-      `• Product Name: "${cleanP}"\n` +
-      `• Target Audience: Women 25–45, professionals, moms, students seeking organization and clarity\n` +
-      `• Format: High-Resolution Vector PDF (US Letter 8.5 x 11 in / A4, 300 DPI)\n` +
-      `• Color Palette: Primary: ${primaryColor}, Background: ${bgTint}, Secondary: ${secondaryColor}, Accent: ${highlightColor}, Text: ${textColor}\n` +
-      `• Typography Hierarchy: Header: ${fonts.split('+')[0] || 'Playfair Display'}, Body: ${fonts.split('+')[1] || 'Lato'}, Accent: Cormorant Garamond\n\n` +
-      `--- PAGE-BY-PAGE BLUEPRINT REQUIREMENTS ---\n` +
-      pages.map(p => `PAGE ${p.pageNumber}: ${p.title}\n- Purpose: ${p.purpose}\n- Layout: ${p.layoutSpecs}\n- Key Elements: ${p.elements.join(', ')}\n`).join('\n') +
-      `\n--- OUTPUT FORMAT ---\n` +
-      `Provide complete, clean, self-contained HTML5/CSS print markup using @page { size: letter; margin: 0.5in; } with embedded SVG icons and styled flex/grid tables ready to be rendered to PDF via Chrome Print, Puppeteer, or Typst vector code.\n`;
+      `BRAND & PRODUCT BRIEF\n` +
+      `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+      `Brand: ${bName} | Niche: ${niche || 'Digital Products'}\n` +
+      `Product: ${cleanP}\n` +
+      `Target Audience: Women 25–45, professionals, moms & students seeking organisation and clarity\n\n` +
+      `VISUAL IDENTITY SYSTEM\n` +
+      `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+      `Color Palette:\n` +
+      `  • Primary Accent: ${primaryColor}\n` +
+      `  • Background / Fill: ${bgTint}\n` +
+      `  • Secondary Accent: ${secondaryColor}\n` +
+      `  • Highlight: ${highlightColor}\n` +
+      `  • Body Text: ${textColor}\n\n` +
+      `Typography:\n` +
+      `  • Headings & Titles: ${fonts.split('+')[0] ? fonts.split('+')[0].trim() : 'Playfair Display'} (Elegant serif — bold, refined)\n` +
+      `  • Body & Labels: ${fonts.split('+')[1] ? fonts.split('+')[1].trim() : 'Lato'} (Clean, highly legible sans-serif)\n` +
+      `  • Accent / Quotes: Cormorant Garamond (Italic — soft and aspirational)\n\n` +
+      `Design Style: Minimalist botanical — clean white space, subtle line separators, soft warm tones, premium aesthetic.\n\n` +
+      `PAGE-BY-PAGE DESIGN BRIEF\n` +
+      `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+      pages.map(p =>
+        `PAGE ${p.pageNumber} — ${p.title.toUpperCase()}\n` +
+        `Purpose: ${p.purpose}\n` +
+        `Layout: ${p.layoutSpecs}\n` +
+        `Elements to include:\n` +
+        p.elements.map(el => `  - ${el}`).join('\n') +
+        `\n`
+      ).join('\n') +
+      `OUTPUT INSTRUCTIONS\n` +
+      `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+      `Generate each page as a VISUAL DESIGN IMAGE in 3:4 PORTRAIT ASPECT RATIO (matching A4 / US Letter portrait orientation — width:height = 3:4).\n\n` +
+      `Process all ${pages.length} pages SEQUENTIALLY, one after the other:\n` +
+      pages.map(p => `  Step ${p.pageNumber}: Generate the visual design for Page ${p.pageNumber} — "${p.title}"`).join('\n') + `\n\n` +
+      `Design Guidelines per page:\n` +
+      `  • Background colour: ${bgTint} (warm cream / off-white)\n` +
+      `  • Apply the exact hex colours and font hierarchy from the Visual Identity System above\n` +
+      `  • Use clean grid lines, rounded table cells, and minimal botanical corner accents where appropriate\n` +
+      `  • All text labels, section headers, and fillable boxes should be clearly visible\n` +
+      `  • Make it look like a premium, print-ready planner page — the final output will be imported into PowerPoint for minor adjustments before being exported as a PDF product for Etsy\n` +
+      `  • DO NOT add any page numbers or extra borders beyond the design spec\n` +
+      `  • Keep the design elegant, aspirational, and true to the ${bName} brand voice: ${voice || 'warm, empowering, and practical'}\n`;
 
     return {
       productName: cleanP,
@@ -496,8 +524,8 @@ router.post('/product-blueprint', requireAuth, async (req, res) => {
   }
 
   const prompt =
-    `You are an elite Digital Product Architect & Publication Designer.\n` +
-    `Generate a comprehensive, page-by-page design blueprint and prompt for:\n` +
+    `You are an expert Digital Product Designer for premium Etsy digital downloads.\n` +
+    `Generate a comprehensive, page-by-page visual design blueprint for the following product:\n` +
     `Product Name: "${productName}"\n` +
     `Brand: "${brandName}"\n` +
     `Niche: "${brandNiche || 'Digital Products'}"\n` +
@@ -508,7 +536,7 @@ router.post('/product-blueprint', requireAuth, async (req, res) => {
     `Return strict JSON with:\n` +
     `1. "documentSpecs": { "dimensions", "margins", "pageCount", "colorSystem": { "primaryAccent", "backgroundTint", "secondaryAccent", "highlight", "darkText" }, "typography": { "headingFont", "bodyFont", "accentFont" } }\n` +
     `2. "pageBreakdown": Array of 8-12 objects { "pageNumber", "section", "title", "purpose", "layoutSpecs", "elements" (array of strings) }\n` +
-    `3. "googleFlowPrompt": A detailed, copy-ready prompt string formatted for Google Flow / Gemini / Claude to generate the printable PDF or HTML/CSS code.\n\n` +
+    `3. "googleFlowPrompt": A single copy-ready prompt for Google Flow that describes all pages sequentially. The prompt should instruct Flow to generate each page as a VISUAL DESIGN IMAGE in 3:4 PORTRAIT aspect ratio (like A4/US Letter portrait). Include the brand colors, font names, layout details, and elements for each page. End with an instruction to process all pages one by one sequentially, outputting one visual image per page. Do NOT ask for HTML, CSS, or code.\n\n` +
     `OUTPUT STRICT JSON ONLY. No markdown wrapper or extra text outside JSON.`;
 
   try {

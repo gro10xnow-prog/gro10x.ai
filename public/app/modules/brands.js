@@ -1312,7 +1312,7 @@ window.APP_MODULES.brands = async function(container) {
                 </button>
               </div>
               <div id="googleFlowPromptBox" style="background:rgba(0,0,0,0.4); border:1px solid rgba(0,223,137,0.3); padding:0.9rem; border-radius:10px; color:#e2e8f0; font-size:0.8rem; font-family:monospace; white-space:pre-wrap; max-height:220px; overflow-y:auto; line-height:1.5;">${googleFlowPrompt}</div>
-              <p style="font-size:0.72rem; color:var(--text-muted); margin:0.3rem 0 0;">💡 <em>Paste this prompt directly into <strong>Google Flow, Google Gemini Advanced, or Claude</strong> to generate full printable PDF vector markup or Typst source files.</em></p>
+              <p style="font-size:0.72rem; color:var(--text-muted); margin:0.3rem 0 0;">💡 <em>Copy this prompt and paste it into <strong>Google Flow</strong>. The agent will process all pages <strong>sequentially</strong>, generating each page as a <strong>3:4 portrait visual design image</strong> — one page at a time. Import the images into <strong>PowerPoint</strong> for any final adjustments, then export as PDF for Etsy delivery.</em></p>
             </div>
 
             <!-- PAGE-BY-PAGE SPREAD BREAKDOWN -->
