@@ -1413,6 +1413,390 @@ router.post('/:id/video/upload', requireAuth, vaultUpload.single('video'), async
   }
 });
 
+/**
+ * ─────────────────────────────────────────────────────────────────────────────
+ * DVM REVIEW QUEUE & DBM INCENTIVE SYSTEM ENDPOINTS
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+
+/**
+ * POST /api/brands/:id/product/:code/submit-review
+ * DVM submits a completed product for Admin Review
+ */
+router.post('/:id/product/:code/submit-review', requireAuth, async (req, res) => {
+  try {
+    const brandId = Number(req.params.id);
+    const productCode = req.params.code;
+    const state = await loadBrandsState();
+    const brand = state.brands?.find(b => b.id === brandId);
+    if (!brand) return res.status(404).json({ success: false, error: 'Brand not found' });
+
+    if (!state.productsCatalog) state.productsCatalog = {};
+    if (!state.productsCatalog[brandId]) state.productsCatalog[brandId] = [];
+
+    let prod = state.productsCatalog[brandId].find(p => p.code === productCode);
+    if (!prod) {
+      prod = {
+        code: productCode,
+        name: req.body.title || `Product ${productCode}`,
+        category: req.body.category || 'General',
+        price: req.body.price || 4.99,
+        status: 'Draft'
+      };
+      state.productsCatalog[brandId].push(prod);
+    }
+
+    // Merge request body into product if provided
+    if (req.body.title !== undefined) prod.seoTitle = req.body.title;
+    if (req.body.mockups !== undefined) prod.mockups = req.body.mockups;
+    if (req.body.video !== undefined) prod.video = req.body.video;
+    if (req.body.vault !== undefined) prod.vault = req.body.vault;
+    if (req.body.aiAudit !== undefined) prod.aiAudit = req.body.aiAudit;
+    if (req.body.price !== undefined) prod.price = req.body.price;
+
+    // Validate minimum requirements
+    const title = (prod.seoTitle || prod.seo?.title || prod.name || '').trim();
+    const hasVault = Boolean(prod.vault?.storagePath || prod.vault?.fileName || prod.vault?.canvaTemplateUrl || prod.vault?.notionTemplateUrl || prod.vault?.downloadUrl);
+    const mockupsCount = Array.isArray(prod.mockups) ? prod.mockups.length : (Array.isArray(prod.mockupUrls) ? prod.mockupUrls.length : 0);
+    const hasVideo = Boolean(prod.video?.storagePath || prod.video?.fileName || (typeof prod.video === 'string' && prod.video.length > 0));
+    const minMockups = brand.minMockups || 4;
+
+    const missing = [];
+    if (!title || title.length < 5) missing.push('SEO Title is missing (Studio Step 5)');
+    if (!hasVault) missing.push('Deliverable file not uploaded to Vault (Studio Step 2)');
+    if (mockupsCount < minMockups) missing.push(`At least ${minMockups} mockup photos required (currently ${mockupsCount})`);
+    if (!hasVideo) missing.push('Listing video is required (Studio Step 3)');
+
+    if (missing.length > 0) {
+      return res.status(400).json({ success: false, error: `Cannot submit for review:\n• ${missing.join('\n• ')}` });
+    }
+
+    prod.status = 'Pending Review';
+    prod.submittedAt = new Date().toISOString();
+    prod.submittedBy = req.user?.name || req.user?.username || 'DVM';
+    delete prod.adminRevisionNote;
+
+    await persistBrandsState(state);
+
+    return res.json({
+      success: true,
+      data: {
+        status: prod.status,
+        product: prod
+      },
+      product: prod,
+      message: `Product ${productCode} submitted for Admin Review!`
+    });
+  } catch (err) {
+    console.error('[Submit Review Error]:', err);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * GET /api/brands/review-queue
+ * Fetches all products across all brands currently 'Pending Review' or 'Revision Requested'
+ */
+router.get('/review-queue', requireAuth, async (req, res) => {
+  try {
+    const state = await loadBrandsState();
+    const queue = [];
+
+    if (state.productsCatalog) {
+      for (const [bId, catalog] of Object.entries(state.productsCatalog)) {
+        const brand = state.brands?.find(b => b.id === Number(bId));
+        if (Array.isArray(catalog)) {
+          for (const prod of catalog) {
+            if (prod.status === 'Pending Review' || prod.status === 'Revision Requested') {
+              queue.push({
+                brandId: Number(bId),
+                brandName: brand?.name || `Brand #${bId}`,
+                dbmId: brand?.dbmId || null,
+                ...prod
+              });
+            }
+          }
+        }
+      }
+    }
+
+    return res.json({
+      success: true,
+      count: queue.length,
+      queue,
+      data: {
+        count: queue.length,
+        queue
+      }
+    });
+  } catch (err) {
+    console.error('[Review Queue Error]:', err);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * POST /api/brands/:id/product/:code/review-action
+ * Admin approves, requests revision, or rejects a submitted product
+ */
+router.post('/:id/product/:code/review-action', requireAuth, async (req, res) => {
+  try {
+    const brandId = Number(req.params.id);
+    const productCode = req.params.code;
+    const { action, revisionNote } = req.body;
+
+    const state = await loadBrandsState();
+    const brand = state.brands?.find(b => b.id === brandId);
+    if (!brand) return res.status(404).json({ success: false, error: 'Brand not found' });
+
+    if (!state.productsCatalog) state.productsCatalog = {};
+    if (!state.productsCatalog[brandId]) state.productsCatalog[brandId] = [];
+
+    let prod = state.productsCatalog[brandId].find(p => p.code === productCode);
+    if (!prod) {
+      prod = {
+        code: productCode,
+        name: `Product ${productCode}`,
+        category: 'General',
+        price: 4.99,
+        status: 'Draft'
+      };
+      state.productsCatalog[brandId].push(prod);
+    }
+
+    if (action === 'request_revision') {
+      prod.status = 'Revision Requested';
+      prod.adminRevisionNote = revisionNote || 'Please review and adjust product assets per guidelines.';
+      prod.revisionRequestedAt = new Date().toISOString();
+    } else if (action === 'approve') {
+      prod.status = 'QA Approved';
+      prod.approvedAt = new Date().toISOString();
+      delete prod.adminRevisionNote;
+    }
+
+    await persistBrandsState(state);
+
+    return res.json({
+      success: true,
+      product: prod,
+      data: {
+        status: prod.status,
+        product: prod
+      },
+      message: `Product ${productCode} updated: ${prod.status}`
+    });
+  } catch (err) {
+    console.error('[Review Action Error]:', err);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * GET /api/brands/dbm-incentive-ledger
+ * Calculates live DBM Earnings:
+ * 1. Vault Product Completion Bonus = sum of product retail price for all Live/Published products
+ * 2. 10% Flat Sales Commission on brand actualGross
+ * 3. 3%/4%/5% Tier Achievement Incentive based on monthly upload target
+ * 4. Mid-Month Surprise Incentive (if admin approved for the month)
+ */
+router.get('/dbm-incentive-ledger', requireAuth, async (req, res) => {
+  try {
+    const state = await loadBrandsState();
+    const dbms = state.dbms || [];
+    const brands = state.brands || [];
+    const currentMonthKey = new Date().toISOString().slice(0, 7);
+    const midMonthMap = state.midMonthIncentives?.[currentMonthKey] || {};
+
+    const ledger = dbms.map(dbm => {
+      const assignedBrands = brands.filter(b => b.dbmId === dbm.id);
+
+      let vaultBonusTotal = 0;
+      let totalLiveProducts = 0;
+      let totalBrandGross = 0;
+      let totalMonthlyTargetRevenue = 0;
+
+      for (const brand of assignedBrands) {
+        totalBrandGross += (brand.actualGross || 0);
+        totalMonthlyTargetRevenue += ((brand.target12mo || 24000) / 12);
+
+        const catalog = state.productsCatalog?.[brand.id] || [];
+        for (const p of catalog) {
+          if (p.status === 'Live' || p.etsyListingId) {
+            totalLiveProducts++;
+            const price = Number(p.price || p.seo?.price || p.retailPrice || 4.99);
+            vaultBonusTotal += price;
+          }
+        }
+      }
+
+      // 1. Vault Completion Bonus
+      // 2. 10% Flat Sales Commission
+      const salesCommission = totalBrandGross * 0.10;
+
+      // 3. Monthly Achievement Tiers (30 products/month default target)
+      const monthlyProductTarget = dbm.monthlyProductTarget || 30;
+      const achievementPct = monthlyProductTarget > 0 ? (totalLiveProducts / monthlyProductTarget) : 0;
+
+      let tierName = 'Base Tier';
+      let tierBonus = 0;
+      let nextTierTarget = '80% Tier';
+      let nextTierBonus = totalMonthlyTargetRevenue * 0.80 * 0.03;
+
+      if (achievementPct >= 1.20) {
+        tierName = '120% Super Achiever (5%)';
+        tierBonus = totalMonthlyTargetRevenue * 1.20 * 0.05;
+        nextTierTarget = 'Max Tier Achieved 🏆';
+        nextTierBonus = 0;
+      } else if (achievementPct >= 1.00) {
+        tierName = '100% Target Achieved (4%)';
+        tierBonus = totalMonthlyTargetRevenue * 1.00 * 0.04;
+        nextTierTarget = '120% Tier';
+        nextTierBonus = totalMonthlyTargetRevenue * 1.20 * 0.05;
+      } else if (achievementPct >= 0.80) {
+        tierName = '80% Bronze Tier (3%)';
+        tierBonus = totalMonthlyTargetRevenue * 0.80 * 0.03;
+        nextTierTarget = '100% Tier';
+        nextTierBonus = totalMonthlyTargetRevenue * 1.00 * 0.04;
+      }
+
+      // 4. Mid-Month Surprise Incentive
+      const surpriseIncentive = midMonthMap[dbm.id] || null;
+      const surpriseBonus = (surpriseIncentive && surpriseIncentive.approved && achievementPct >= (surpriseIncentive.targetPct / 100))
+        ? Number(surpriseIncentive.bonusUsd || 0)
+        : 0;
+
+      const totalEarnings = vaultBonusTotal + salesCommission + tierBonus + surpriseBonus;
+
+      return {
+        dbmId: dbm.id,
+        name: dbm.name,
+        role: dbm.role || 'Digital Brand Manager',
+        assignedBrands: assignedBrands.map(b => ({ id: b.id, name: b.name })),
+        totalLiveProducts,
+        monthlyProductTarget,
+        achievementPct: Math.round(achievementPct * 100),
+        vaultBonusTotal: Number(vaultBonusTotal.toFixed(2)),
+        salesCommission: Number(salesCommission.toFixed(2)),
+        tierName,
+        tierBonus: Number(tierBonus.toFixed(2)),
+        nextTierTarget,
+        nextTierBonus: Number(nextTierBonus.toFixed(2)),
+        surpriseIncentive,
+        surpriseBonus: Number(surpriseBonus.toFixed(2)),
+        totalEarnings: Number(totalEarnings.toFixed(2)),
+        monthKey: currentMonthKey
+      };
+    });
+
+    return res.json({
+      success: true,
+      monthKey: currentMonthKey,
+      ledger,
+      data: {
+        monthKey: currentMonthKey,
+        ledger
+      }
+    });
+  } catch (err) {
+    console.error('[DBM Ledger Error]:', err);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * POST /api/brands/set-mid-month-incentive
+ * Admin configures or approves a custom mid-month incentive for a DBM
+ */
+router.post('/set-mid-month-incentive', requireAuth, async (req, res) => {
+  try {
+    const { dbmId, targetPct, bonusUsd, note, approved } = req.body;
+    const state = await loadBrandsState();
+    const currentMonthKey = new Date().toISOString().slice(0, 7);
+
+    if (!state.midMonthIncentives) state.midMonthIncentives = {};
+    if (!state.midMonthIncentives[currentMonthKey]) state.midMonthIncentives[currentMonthKey] = {};
+
+    state.midMonthIncentives[currentMonthKey][dbmId] = {
+      dbmId,
+      targetPct: Number(targetPct) || 70,
+      bonusUsd: Number(bonusUsd) || 50,
+      note: note || 'Mid-Month Sprint Bonus',
+      approved: Boolean(approved),
+      updatedAt: new Date().toISOString()
+    };
+
+    await persistBrandsState(state);
+
+    return res.json({
+      success: true,
+      monthKey: currentMonthKey,
+      incentive: state.midMonthIncentives[currentMonthKey][dbmId],
+      data: {
+        monthKey: currentMonthKey,
+        incentive: state.midMonthIncentives[currentMonthKey][dbmId]
+      },
+      message: `Mid-month incentive for DBM #${dbmId} ${approved ? 'approved & active' : 'configured'}`
+    });
+  } catch (err) {
+    console.error('[Set Mid-Month Incentive Error]:', err);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * POST /api/brands/trigger-20th-telegram-evaluation
+ * Generates mid-month performance summary and dispatches Telegram notification to Admin
+ */
+router.post('/trigger-20th-telegram-evaluation', requireAuth, async (req, res) => {
+  try {
+    const state = await loadBrandsState();
+    const dbms = state.dbms || [];
+    const brands = state.brands || [];
+    const currentMonthKey = new Date().toISOString().slice(0, 7);
+
+    let summaryText = `📊 *GRO10X 20th Mid-Month DBM Performance Brief* (${currentMonthKey})\n\n`;
+
+    dbms.forEach(dbm => {
+      const assigned = brands.filter(b => b.dbmId === dbm.id);
+      let liveCount = 0;
+      assigned.forEach(b => {
+        const cat = state.productsCatalog?.[b.id] || [];
+        liveCount += cat.filter(p => p.status === 'Live' || p.etsyListingId).length;
+      });
+      const target = dbm.monthlyProductTarget || 30;
+      const pct = Math.round((liveCount / target) * 100);
+
+      summaryText += `👤 *${dbm.name}* (${assigned.map(b => b.name).join(', ') || 'No brands'})\n` +
+        `• Progress: *${liveCount}/${target} products* (${pct}% achieved)\n` +
+        `• Suggested Incentive: ${pct < 80 ? `💡 Consider a ${Math.max(60, pct + 10)}% sprint bonus (\$35–\$50)` : '✅ On track for Tier bonus!'}\n\n`;
+    });
+
+    summaryText += `_Review and approve custom incentives in the Admin DBM Hub._`;
+
+    // Attempt Telegram delivery if bot is configured
+    try {
+      const { sendToGroup } = require('../services/bot');
+      if (sendToGroup) {
+        sendToGroup(summaryText);
+      }
+    } catch (botErr) {
+      console.warn('[Telegram 20th Brief Notice]:', botErr.message);
+    }
+
+    return res.json({
+      success: true,
+      summaryText,
+      data: {
+        summaryText
+      },
+      message: '20th Mid-Month Evaluation brief generated'
+    });
+  } catch (err) {
+    console.error('[20th Telegram Eval Error]:', err);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 router.SEED_BRANDS_DATA = SEED_BRANDS_DATA;
 router.loadBrandsState = loadBrandsState;
 router.persistBrandsState = persistBrandsState;
@@ -1421,4 +1805,5 @@ module.exports = router;
 module.exports.SEED_BRANDS_DATA = SEED_BRANDS_DATA;
 module.exports.loadBrandsState = loadBrandsState;
 module.exports.persistBrandsState = persistBrandsState;
+
 
