@@ -498,13 +498,16 @@ router.post('/brands/:brandId/publish-all', requireAuth, requireAdmin, asyncHand
         const priceCents = Math.round((prod.price || 4.99) * 100);
         const tags = (prod.seoTags || ['planner', 'printable']).slice(0, 13).map(t => t.slice(0, 20));
 
+        const taxonomyId = prod.taxonomyId || prod.taxonomy_id || ((prod.type || prod.format || prod.category || '').toLowerCase().includes('print') ? 2078 : 12476);
+
         const listingPayload = {
           quantity: 999,
-          title: (prod.seoTitle || prod.name).slice(0, 140),
-          description: prod.seoDescription || `Instant digital download printable template.`,
+          title: (prod.seoTitle || prod.seo?.title || prod.name).slice(0, 140),
+          description: prod.seoDescription || prod.seo?.description || `Instant digital download printable template. High-resolution vector PDF layout ready for print or GoodNotes.`,
           price: priceCents / 100,
           who_made: 'i_did',
           when_made: '2020_2026',
+          taxonomy_id: taxonomyId,
           is_supply: false,
           type: 'download',
           tags: tags

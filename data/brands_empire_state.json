@@ -692,13 +692,10 @@
         "name": "Daily & Weekly Planners #1 — PlannerQueenCo Style",
         "category": "Daily & Weekly Planners",
         "format": "Digital PDF",
-        "price": 14.99,
+        "price": 12,
         "status": "Live",
         "hero": true,
-        "vault": {
-          "fileName": "master_planner.pdf",
-          "storagePath": "vault/master_planner.pdf"
-        },
+        "seoTitle": "2026 Minimalist Master Planner Printable Template PDF",
         "mockups": [
           "m1.png",
           "m2.png",
@@ -706,62 +703,21 @@
           "m4.png",
           "m5.png"
         ],
-        "mockupUrls": [],
-        "mockupsCount": 4,
         "video": "vid1.mp4",
-        "seo": {
-          "title": "Daily & Weekly Life Planner Printable Template 2026 - Instant Digital Download",
-          "description": "Instant digital download aesthetic daily and weekly life planner printable template. Includes morning routine, habit tracking, daily task matrix, reflection prompts, and goal setting worksheets. Compatible with iPad GoodNotes and standard home printing.",
-          "tags": [
-            "daily planner",
-            "weekly planner",
-            "goodnotes",
-            "productivity",
-            "life planner",
-            "habit tracker",
-            "digital template",
-            "printable pdf",
-            "routine checklist",
-            "aesthetic planner",
-            "daily agenda",
-            "goal tracker",
-            "task manager"
-          ]
+        "vault": {
+          "fileName": "master_planner.pdf",
+          "storagePath": "vault/master_planner.pdf"
         },
-        "seoTitle": "2026 Minimalist Master Planner Printable Template PDF",
-        "seoDescription": "Instant digital download aesthetic daily and weekly life planner printable template. Includes morning routine, habit tracking, daily task matrix, reflection prompts, and goal setting worksheets. Compatible with iPad GoodNotes and standard home printing.",
-        "seoTags": [
-          "daily planner",
-          "weekly planner",
-          "goodnotes",
-          "productivity",
-          "life planner",
-          "habit tracker",
-          "digital template",
-          "printable pdf",
-          "routine checklist",
-          "aesthetic planner",
-          "daily agenda",
-          "goal tracker",
-          "task manager"
-        ],
-        "studioPercent": 60,
-        "updatedAt": "2026-08-25T18:03:04.230Z",
-        "submittedAt": "2026-08-25T18:06:52.246Z",
-        "submittedBy": "DVM",
-        "approvedAt": "2026-08-25T18:06:56.249Z",
-        "approvedBy": "GRO-000",
-        "listedAt": "2026-08-25T18:03:07.592Z",
-        "adminPriceNote": "Upgraded hero tier",
-        "etsyListingId": 980000001,
-        "etsyUrl": "https://www.etsy.com/listing/980000001/Daily%20%26%20Weekly%20Life%20Planner%20Pr",
-        "expiresAt": "2026-12-23T18:03:07.592Z",
-        "listingFeeCharged": 0.2,
         "aiAudit": {
           "overall_score": 8.5,
           "score": 8.5
         },
-        "revisionRequestedAt": "2026-08-25T18:06:54.493Z"
+        "submittedAt": "2026-08-25T18:13:35.801Z",
+        "submittedBy": "DVM",
+        "revisionRequestedAt": "2026-08-25T18:13:37.959Z",
+        "approvedAt": "2026-08-25T18:13:39.234Z",
+        "approvedBy": "GRO-000",
+        "listedAt": "2026-08-25T18:13:39.234Z"
       },
       {
         "code": "PLA-02",
@@ -12489,7 +12445,7 @@
         "bonusUsd": 75,
         "note": "Special 20th sprint bonus for PLA brand acceleration",
         "approved": true,
-        "updatedAt": "2026-08-25T18:06:58.443Z"
+        "updatedAt": "2026-08-25T18:13:41.522Z"
       }
     }
   }
