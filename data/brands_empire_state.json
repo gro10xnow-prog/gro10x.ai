@@ -13,7 +13,7 @@
       "target12mo": 24200,
       "netTarget": 20579,
       "productsTarget": 100,
-      "productsLive": 1,
+      "productsLive": 0,
       "actualGross": 0,
       "actualAds": 0,
       "palette": [
@@ -693,31 +693,8 @@
         "category": "Daily & Weekly Planners",
         "format": "Digital PDF",
         "price": 12,
-        "status": "Live",
-        "hero": true,
-        "seoTitle": "2026 Minimalist Master Planner Printable Template PDF",
-        "mockups": [
-          "m1.png",
-          "m2.png",
-          "m3.png",
-          "m4.png",
-          "m5.png"
-        ],
-        "video": "vid1.mp4",
-        "vault": {
-          "fileName": "master_planner.pdf",
-          "storagePath": "vault/master_planner.pdf"
-        },
-        "aiAudit": {
-          "overall_score": 8.5,
-          "score": 8.5
-        },
-        "submittedAt": "2026-08-25T18:13:35.801Z",
-        "submittedBy": "DVM",
-        "revisionRequestedAt": "2026-08-25T18:13:37.959Z",
-        "approvedAt": "2026-08-25T18:13:39.234Z",
-        "approvedBy": "GRO-000",
-        "listedAt": "2026-08-25T18:13:39.234Z"
+        "status": "Draft",
+        "hero": true
       },
       {
         "code": "PLA-02",

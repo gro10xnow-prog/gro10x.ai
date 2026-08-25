@@ -399,8 +399,12 @@ let memoryDbmLogs = [
 
 const fs = require('fs');
 const path = require('path');
-const STATE_FILE_PATH = path.join(__dirname, '../../data/brands_empire_state.json');
-const DBM_LOGS_FILE_PATH = path.join(__dirname, '../../data/dbm_standup_logs.json');
+const STATE_FILE_PATH = process.env.NODE_ENV === 'test'
+  ? path.join(__dirname, '../../data/brands_empire_state_test.json')
+  : path.join(__dirname, '../../data/brands_empire_state.json');
+const DBM_LOGS_FILE_PATH = process.env.NODE_ENV === 'test'
+  ? path.join(__dirname, '../../data/dbm_standup_logs_test.json')
+  : path.join(__dirname, '../../data/dbm_standup_logs.json');
 
 async function loadBrandsState() {
   // 1. Try reading from disk file first for ultra-fast durable recovery
