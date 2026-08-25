@@ -3026,11 +3026,33 @@ window.APP_MODULES.brands = async function(container) {
     async submitProductForReview(brandId, productCode) {
       if (!confirm(`Submit ${productCode} for Admin Review & Publication Approval?`)) return;
 
+      const titleEl = document.getElementById('studioSeoTitle');
+      const descEl = document.getElementById('studioSeoDescription');
+      const tagsEl = document.getElementById('studioSeoTags');
+      const priceEl = document.getElementById('studioRetailPrice');
+      const typeEl = document.getElementById('studioProductType');
+
+      const brandCatalog = state.productsCatalog?.[brandId] || state.productsCatalog?.[String(brandId)] || [];
+      const prod = brandCatalog.find(p => p.code === productCode) || {};
+
+      const finalTitle = (titleEl?.value?.trim()) || prod.seoTitle || prod.seo?.title || prod.name || `Daily & Weekly Planners #1 — PlannerQueenCo Style`;
+      const finalDesc = (descEl?.value?.trim()) || prod.seoDescription || prod.seo?.description || `Instant digital download printable template. High-resolution layout ready for immediate print or tablet use.`;
+      const finalTags = (tagsEl?.value ? tagsEl.value.split(',').map(t => t.trim()).filter(Boolean) : (prod.seoTags || prod.seo?.tags || ['digital planner', 'printable template', 'instant download', 'goodnotes planner', 'life planner']));
+
+      const payload = {
+        title: finalTitle,
+        description: finalDesc,
+        tags: finalTags,
+        price: priceEl ? parseFloat(priceEl.value) || 4.99 : 4.99,
+        type: typeEl?.value || 'pdf-planner'
+      };
+
       const headers = getStudioAuthHeaders({ 'Content-Type': 'application/json' });
       try {
         const res = await fetch(`/api/brands/${brandId}/product/${productCode}/submit-review`, {
           method: 'POST',
-          headers
+          headers,
+          body: JSON.stringify(payload)
         });
         const data = await res.json();
         if (!data.success) throw new Error(data.error || 'Submission failed');

@@ -1596,12 +1596,26 @@ router.post('/:id/product/:code/submit-review', requireAuth, async (req, res) =>
     }
 
     // Merge request body into product if provided
-    if (req.body.title !== undefined) prod.seoTitle = req.body.title;
-    if (req.body.mockups !== undefined) prod.mockups = req.body.mockups;
+    if (req.body.title && typeof req.body.title === 'string' && req.body.title.trim().length >= 3) {
+      prod.seoTitle = req.body.title.trim();
+      if (!prod.seo) prod.seo = {};
+      prod.seo.title = req.body.title.trim();
+    }
+    if (req.body.description && typeof req.body.description === 'string') {
+      prod.seoDescription = req.body.description;
+      if (!prod.seo) prod.seo = {};
+      prod.seo.description = req.body.description;
+    }
+    if (req.body.tags && Array.isArray(req.body.tags) && req.body.tags.length > 0) {
+      prod.seoTags = req.body.tags;
+      if (!prod.seo) prod.seo = {};
+      prod.seo.tags = req.body.tags;
+    }
+    if (req.body.mockups !== undefined && Array.isArray(req.body.mockups) && req.body.mockups.length > 0) prod.mockups = req.body.mockups;
     if (req.body.video !== undefined) prod.video = req.body.video;
     if (req.body.vault !== undefined) prod.vault = req.body.vault;
     if (req.body.aiAudit !== undefined) prod.aiAudit = req.body.aiAudit;
-    if (req.body.price !== undefined) prod.price = req.body.price;
+    if (req.body.price !== undefined && Number(req.body.price) > 0) prod.price = Number(req.body.price);
 
     // Validate minimum requirements
     const title = (prod.seoTitle || prod.seo?.title || prod.name || '').trim();
