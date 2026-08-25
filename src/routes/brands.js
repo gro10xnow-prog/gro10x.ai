@@ -406,77 +406,237 @@ const DBM_LOGS_FILE_PATH = process.env.NODE_ENV === 'test'
   ? path.join(__dirname, '../../data/dbm_standup_logs_test.json')
   : path.join(__dirname, '../../data/dbm_standup_logs.json');
 
+function getCleanCode(productCode) {
+  return String(productCode || 'PROD').replace(/[^a-zA-Z0-9_-]/g, '_');
+}
+
+function getProductKey(brandId, productCode) {
+  return `prd_${brandId}_${getCleanCode(productCode)}`;
+}
+
+function getMockupKey(brandId, productCode, rank) {
+  return `mkp_${brandId}_${getCleanCode(productCode)}_${Number(rank) || 1}`;
+}
+
+async function saveProductMockup(brandId, productCode, rank, mockupData) {
+  if (!isSupabaseConfigured()) return;
+  const key = getMockupKey(brandId, productCode, rank);
+  try {
+    await supabase.from('app_settings').upsert({
+      key,
+      value: mockupData,
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'key' });
+  } catch (err) {
+    console.warn('[Mockup Atomic Save Error]:', err.message);
+  }
+}
+
+async function loadProductMockups(brandId, productCode) {
+  if (!isSupabaseConfigured()) return [];
+  const prefix = `mkp_${brandId}_${getCleanCode(productCode)}_`;
+  try {
+    const { data, error } = await supabase.from('app_settings')
+      .select('key, value')
+      .like('key', `${prefix}%`);
+    if (error || !Array.isArray(data)) return [];
+    return data.map(d => d.value).filter(Boolean).sort((a, b) => (Number(a.rank) || 0) - (Number(b.rank) || 0));
+  } catch (err) {
+    console.warn('[Mockup Atomic Load Error]:', err.message);
+    return [];
+  }
+}
+
+async function saveProductAssets(brandId, productCode, patch) {
+  if (!isSupabaseConfigured()) return patch;
+  const key = getProductKey(brandId, productCode);
+  let existing = {};
+  try {
+    const { data } = await supabase.from('app_settings')
+      .select('value')
+      .eq('key', key)
+      .maybeSingle();
+    if (data && data.value && typeof data.value === 'object') existing = data.value;
+  } catch (e) {}
+
+  const merged = {
+    ...existing,
+    ...patch,
+    updatedAt: new Date().toISOString()
+  };
+
+  try {
+    await supabase.from('app_settings').upsert({
+      key,
+      value: merged,
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'key' });
+  } catch (err) {
+    console.warn('[Product Asset Save Error]:', err.message);
+  }
+
+  return merged;
+}
+
+async function loadProductAssets(brandId, productCode) {
+  if (!isSupabaseConfigured()) return null;
+  const key = getProductKey(brandId, productCode);
+  try {
+    const { data } = await supabase.from('app_settings')
+      .select('value')
+      .eq('key', key)
+      .maybeSingle();
+    return data?.value || null;
+  } catch (e) {
+    return null;
+  }
+}
+
+async function loadFullProduct(brandId, productCode) {
+  const cleanCode = getCleanCode(productCode);
+  const [assetData, mockups] = await Promise.all([
+    loadProductAssets(brandId, productCode),
+    loadProductMockups(brandId, productCode)
+  ]);
+
+  const baseProd = {
+    code: productCode,
+    name: `Product ${productCode}`,
+    status: 'Draft',
+    price: 4.99
+  };
+
+  const merged = {
+    ...baseProd,
+    ...(assetData || {})
+  };
+
+  if (Array.isArray(mockups) && mockups.length > 0) {
+    merged.mockups = mockups;
+    merged.mockupsCount = mockups.length;
+    merged.mockupUrls = mockups.map(m => m.url).filter(Boolean);
+  }
+
+  return merged;
+}
+
 async function loadBrandsState() {
-  // 1. Try Supabase FIRST — authoritative source for Vercel/serverless deployments
-  //    (Disk-first ordering failed because Vercel serves the committed seed file from
-  //     disk, so concurrent upload calls would each read seed state and overwrite Supabase,
-  //     losing previously-uploaded mockups/vault/video data.)
+  let state = null;
+
+  // 1. Try Supabase FIRST for brand metadata
   if (isSupabaseConfigured()) {
     try {
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('app_settings')
         .select('value')
         .eq('key', 'brands_empire_state')
         .maybeSingle();
 
       if (data && data.value && data.value.brands) {
-        if (!data.value.productsCatalog) data.value.productsCatalog = {};
-        data.value.brands.forEach(b => {
-          if (!data.value.productsCatalog[b.id] || data.value.productsCatalog[b.id].length === 0) {
-            data.value.productsCatalog[b.id] = generateDefaultProductsForBrand(b);
-          }
-        });
-        memoryBrandsState = data.value;
-        // Cache to disk for next same-instance read
-        try { fs.writeFileSync(STATE_FILE_PATH, JSON.stringify(memoryBrandsState, null, 2), 'utf8'); } catch (err) {}
-        return memoryBrandsState;
+        state = data.value;
       }
     } catch (e) {
-      // Supabase unavailable — fall through to disk
       console.warn('[Brands DB] Supabase state load notice:', e.message);
     }
   }
 
-  // 2. Fallback: disk file (local dev or Supabase unavailable)
-  try {
-    if (fs.existsSync(STATE_FILE_PATH)) {
-      const fileData = JSON.parse(fs.readFileSync(STATE_FILE_PATH, 'utf8'));
-      if (fileData && fileData.brands && fileData.brands.length > 0) {
-        if (!fileData.productsCatalog) fileData.productsCatalog = {};
-        fileData.brands.forEach(b => {
-          if (!fileData.productsCatalog[b.id] || fileData.productsCatalog[b.id].length === 0) {
-            fileData.productsCatalog[b.id] = generateDefaultProductsForBrand(b);
-          }
-        });
-        memoryBrandsState = fileData;
-        return memoryBrandsState;
+  // 2. Fallback to disk file if Supabase not ready or brand metadata empty
+  if (!state) {
+    try {
+      if (fs.existsSync(STATE_FILE_PATH)) {
+        const fileData = JSON.parse(fs.readFileSync(STATE_FILE_PATH, 'utf8'));
+        if (fileData && fileData.brands && fileData.brands.length > 0) {
+          state = fileData;
+        }
       }
+    } catch (e) {
+      console.warn('[Brands DB] Disk state load notice:', e.message);
     }
-  } catch (e) {
-    console.warn('[Brands DB] Disk state load notice:', e.message);
   }
 
-  // 3. Fallback to memory initialized with full catalog
-  if (!memoryBrandsState.productsCatalog) memoryBrandsState.productsCatalog = {};
-  memoryBrandsState.brands.forEach(b => {
-    if (!memoryBrandsState.productsCatalog[b.id] || memoryBrandsState.productsCatalog[b.id].length === 0) {
-      memoryBrandsState.productsCatalog[b.id] = generateDefaultProductsForBrand(b);
+  // 3. Fallback to memory state
+  if (!state) {
+    state = memoryBrandsState;
+  }
+
+  if (!state.productsCatalog) state.productsCatalog = {};
+  state.brands.forEach(b => {
+    if (!state.productsCatalog[b.id] || state.productsCatalog[b.id].length === 0) {
+      state.productsCatalog[b.id] = generateDefaultProductsForBrand(b);
     }
   });
 
+  // 4. Merge live atomic product assets and mockups from Supabase
+  if (isSupabaseConfigured()) {
+    try {
+      const [prdRes, mkpRes] = await Promise.all([
+        supabase.from('app_settings').select('key, value').like('key', 'prd_%'),
+        supabase.from('app_settings').select('key, value').like('key', 'mkp_%')
+      ]);
+
+      const prdMap = {};
+      if (Array.isArray(prdRes.data)) {
+        prdRes.data.forEach(row => {
+          if (row.key && row.value) prdMap[row.key] = row.value;
+        });
+      }
+
+      const mkpMap = {};
+      if (Array.isArray(mkpRes.data)) {
+        mkpRes.data.forEach(row => {
+          // key format: mkp_${brandId}_${cleanCode}_${rank}
+          const parts = row.key.split('_');
+          if (parts.length >= 4) {
+            const bId = parts[1];
+            const rank = parts[parts.length - 1];
+            const pCode = parts.slice(2, parts.length - 1).join('_');
+            const groupKey = `${bId}_${pCode}`;
+            if (!mkpMap[groupKey]) mkpMap[groupKey] = [];
+            mkpMap[groupKey].push(row.value);
+          }
+        });
+      }
+
+      for (const brand of state.brands) {
+        const bId = brand.id;
+        if (!state.productsCatalog[bId]) state.productsCatalog[bId] = generateDefaultProductsForBrand(brand);
+        state.productsCatalog[bId] = state.productsCatalog[bId].map(prod => {
+          const cleanCode = getCleanCode(prod.code);
+          const prdKey = `prd_${bId}_${cleanCode}`;
+          const groupKey = `${bId}_${cleanCode}`;
+          const prdAsset = prdMap[prdKey] || {};
+          const mockups = (mkpMap[groupKey] || []).filter(Boolean).sort((a, b) => (Number(a.rank) || 0) - (Number(b.rank) || 0));
+
+          const merged = {
+            ...prod,
+            ...prdAsset
+          };
+          if (mockups.length > 0) {
+            merged.mockups = mockups;
+            merged.mockupsCount = mockups.length;
+            merged.mockupUrls = mockups.map(m => m.url).filter(Boolean);
+          }
+          return merged;
+        });
+      }
+    } catch (mergeErr) {
+      console.warn('[Brands DB] Error merging live assets into catalog:', mergeErr.message);
+    }
+  }
+
+  memoryBrandsState = state;
   try { fs.writeFileSync(STATE_FILE_PATH, JSON.stringify(memoryBrandsState, null, 2), 'utf8'); } catch (err) {}
   return memoryBrandsState;
 }
 
-
 async function persistBrandsState(state) {
   memoryBrandsState = state;
-  // Always persist to disk file immediately
   try {
     fs.writeFileSync(STATE_FILE_PATH, JSON.stringify(state, null, 2), 'utf8');
   } catch (e) {
     console.warn('[Brands DB] File write notice:', e.message);
   }
+
 
   if (isSupabaseConfigured()) {
     try {
@@ -784,7 +944,7 @@ router.post('/:id/vault/upload', requireAuth, vaultUpload.single('file'), async 
       storagePath: storagePath || (file ? `local/${file.originalname}` : ''),
       fileName: file ? file.originalname : 'Cloud Template',
       fileSizeBytes: file ? file.size : 0,
-      fileFormat: file ? (file.mimetype.includes('pdf') ? 'PDF' : (file.mimetype.includes('zip') ? 'ZIP' : 'Digital Deliverable')) : 'Cloud Link',
+      fileFormat: file ? (file.mimetype?.includes('pdf') ? 'PDF' : (file.mimetype?.includes('zip') ? 'ZIP' : 'Digital Deliverable')) : 'Cloud Link',
       version: version || '1.0',
       uploadedAt: new Date().toISOString(),
       uploadedBy: req.user?.name || req.user?.empCode || 'DBM',
@@ -793,7 +953,13 @@ router.post('/:id/vault/upload', requireAuth, vaultUpload.single('file'), async 
       downloadUrl: signedDownloadUrl
     };
 
-    // Update product catalog record
+    // Save to atomic product asset key
+    await saveProductAssets(brandId, productCode, {
+      vault: vaultData,
+      status: 'Vault Uploaded'
+    });
+
+    // Update in-memory state
     if (!state.productsCatalog) state.productsCatalog = {};
     if (!state.productsCatalog[brandId]) state.productsCatalog[brandId] = generateDefaultProductsForBrand(brand);
     let prod = state.productsCatalog[brandId].find(p =>
@@ -806,7 +972,7 @@ router.post('/:id/vault/upload', requireAuth, vaultUpload.single('file'), async 
         name: productName || `Product ${productCode}`,
         category: brand.categories?.[0] || 'General',
         format: 'Digital PDF',
-        price: 12,
+        price: 4.99,
         status: 'Draft'
       };
       state.productsCatalog[brandId].push(prod);
@@ -910,7 +1076,7 @@ router.post('/:id/mockups/upload', requireAuth, vaultUpload.array('mockups', 10)
         }
       }
 
-      uploadedMockups.push({
+      const item = {
         rank: i + 1,
         fileName: file.originalname,
         fileSizeBytes: file.size,
@@ -918,27 +1084,26 @@ router.post('/:id/mockups/upload', requireAuth, vaultUpload.array('mockups', 10)
         storagePath: storagePath,
         url: signedUrl,
         uploadedAt: new Date().toISOString()
-      });
+      };
+
+      // Save atomic mockup
+      await saveProductMockup(brandId, productCode, i + 1, item);
+      uploadedMockups.push(item);
     }
 
-    // Update product catalog record
+    // Save atomic product assets
+    await saveProductAssets(brandId, productCode, {
+      mockupsCount: uploadedMockups.length,
+      mockupUrls: uploadedMockups.map(m => m.url).filter(Boolean)
+    });
+
+    // Update in-memory state
     if (!state.productsCatalog) state.productsCatalog = {};
     if (!state.productsCatalog[brandId]) state.productsCatalog[brandId] = generateDefaultProductsForBrand(brand);
     let prod = state.productsCatalog[brandId].find(p =>
       (productCode && p.code === productCode) ||
       (productName && p.name === productName)
     );
-    if (!prod && productCode) {
-      prod = {
-        code: productCode,
-        name: productName || `Product ${productCode}`,
-        category: brand.categories?.[0] || 'General',
-        format: 'Digital PDF',
-        price: 12,
-        status: 'Draft'
-      };
-      state.productsCatalog[brandId].push(prod);
-    }
     if (prod) {
       prod.mockups = uploadedMockups;
       prod.mockupUrls = uploadedMockups.map(m => m.url).filter(Boolean);
@@ -1021,7 +1186,20 @@ router.post('/:id/mockups/upload-single', requireAuth, vaultUpload.single('mocku
       uploadedAt: new Date().toISOString()
     };
 
-    // Update product catalog record
+    // 1. Save atomic mockup directly to Supabase key mkp_${brandId}_${cleanCode}_${rank}
+    await saveProductMockup(brandId, productCode, rankNum, item);
+
+    // 2. Load all current mockups for this product to get fresh count & list
+    const currentMockups = await loadProductMockups(brandId, productCode);
+    const mCount = currentMockups.length;
+
+    // 3. Save product-level mockups count & status
+    await saveProductAssets(brandId, productCode, {
+      mockupsCount: mCount,
+      mockupUrls: currentMockups.map(m => m.url).filter(Boolean)
+    });
+
+    // Update in-memory state
     if (!state.productsCatalog) state.productsCatalog = {};
     if (!state.productsCatalog[brandId]) state.productsCatalog[brandId] = generateDefaultProductsForBrand(brand);
     let prod = state.productsCatalog[brandId].find(p =>
@@ -1034,24 +1212,17 @@ router.post('/:id/mockups/upload-single', requireAuth, vaultUpload.single('mocku
         name: productName || `Product ${productCode}`,
         category: brand.categories?.[0] || 'General',
         format: 'Digital PDF',
-        price: 12,
+        price: 4.99,
         status: 'Draft'
       };
       state.productsCatalog[brandId].push(prod);
     }
     if (prod) {
-      if (!Array.isArray(prod.mockups)) prod.mockups = [];
-      const existingIdx = prod.mockups.findIndex(m => m.rank === rankNum);
-      if (existingIdx >= 0) {
-        prod.mockups[existingIdx] = item;
-      } else {
-        prod.mockups.push(item);
-      }
-      prod.mockups.sort((a, b) => (a.rank || 0) - (b.rank || 0));
-      prod.mockupUrls = prod.mockups.map(m => m.url).filter(Boolean);
-      prod.mockupsCount = prod.mockups.length;
+      prod.mockups = currentMockups;
+      prod.mockupUrls = currentMockups.map(m => m.url).filter(Boolean);
+      prod.mockupsCount = mCount;
       if (prod.status !== 'Live' && prod.status !== 'Pending Review' && prod.status !== 'Revision Requested') {
-        if (prod.mockups.length >= 4 && (prod.video?.storagePath || prod.video?.fileName)) {
+        if (mCount >= 4 && (prod.video?.storagePath || prod.video?.fileName)) {
           prod.status = 'Media Ready';
         }
       }
@@ -1064,7 +1235,7 @@ router.post('/:id/mockups/upload-single', requireAuth, vaultUpload.single('mocku
       brandId,
       productCode,
       mockup: item,
-      totalSaved: state.productsCatalog?.[brandId]?.find(p => p.code === productCode)?.mockups?.length || 1
+      totalSaved: mCount
     });
   } catch (err) {
     console.error('[Mockup Single Upload Error]:', err);
@@ -1102,11 +1273,17 @@ router.post('/:id/products/:code/ai-audit', requireAuth, vaultUpload.array('page
 
     const auditReport = await evaluateProductMultimodal(imageInputs, prod, brand);
 
+    const suggestedPrice = auditReport.pricing?.recommended_price || 7.49;
+
+    // Save audit & suggested price to atomic product asset
+    await saveProductAssets(brandId, productCode, {
+      aiAudit: auditReport,
+      suggestedPrice: suggestedPrice
+    });
+
     // Save audit into product record & auto-stage suggested price
     prod.aiAudit = auditReport;
-    if (auditReport.pricing?.recommended_price) {
-      prod.suggestedPrice = auditReport.pricing.recommended_price;
-    }
+    prod.suggestedPrice = suggestedPrice;
 
     await persistBrandsState(state);
 
@@ -1114,7 +1291,8 @@ router.post('/:id/products/:code/ai-audit', requireAuth, vaultUpload.array('page
       success: true,
       brandId,
       productCode,
-      audit: auditReport
+      audit: auditReport,
+      suggestedPrice
     });
   } catch (err) {
     console.error('[AI Audit Route Exception]:', err);
@@ -1146,6 +1324,13 @@ router.post('/:id/products/:code/apply-price', requireAuth, async (req, res) => 
     if (!prod) return res.status(404).json({ success: false, error: `Product ${productCode} not found` });
 
     prod.price = numPrice;
+    prod.retailPrice = numPrice;
+
+    await saveProductAssets(brandId, productCode, {
+      price: numPrice,
+      retailPrice: numPrice
+    });
+
     await persistBrandsState(state);
 
     return res.json({
@@ -1159,6 +1344,7 @@ router.post('/:id/products/:code/apply-price', requireAuth, async (req, res) => 
     return res.status(500).json({ success: false, error: err.message });
   }
 });
+
 
 /**
  * POST /api/brands
@@ -1357,6 +1543,28 @@ router.post('/:id/product/:code/studio-save', requireAuth, async (req, res) => {
       }
     }
 
+    // Save to atomic product asset key
+    const assetPatch = {};
+    if (tab === 'blueprint' || blueprint) assetPatch.blueprint = prod.blueprint;
+    if (tab === 'seo' || seo) {
+      assetPatch.seo = prod.seo;
+      assetPatch.seoTitle = prod.seoTitle;
+      assetPatch.seoDescription = prod.seoDescription;
+      assetPatch.seoTags = prod.seoTags;
+    }
+    if (tab === 'pricing' || pricing) {
+      assetPatch.price = prod.price;
+      assetPatch.retailPrice = prod.retailPrice;
+    }
+    if (tab === 'type' || type) assetPatch.type = prod.type;
+    if (tab === 'audit' || aiAudit) assetPatch.aiAudit = prod.aiAudit;
+    if (vault) assetPatch.vault = prod.vault;
+    if (video) assetPatch.video = prod.video;
+    assetPatch.studioPercent = progress;
+    assetPatch.status = prod.status;
+
+    await saveProductAssets(brandId, productCode, assetPatch);
+
     await persistBrandsState(state);
 
     return res.json({
@@ -1527,6 +1735,11 @@ router.post('/:id/video/upload', requireAuth, vaultUpload.single('video'), async
       uploadedAt: new Date().toISOString()
     };
 
+    // Save atomic video asset
+    await saveProductAssets(brandId, productCode, {
+      video: videoItem
+    });
+
     if (!state.productsCatalog) state.productsCatalog = {};
     if (!state.productsCatalog[brandId]) state.productsCatalog[brandId] = generateDefaultProductsForBrand(brand);
     let prod = state.productsCatalog[brandId].find(p =>
@@ -1539,7 +1752,7 @@ router.post('/:id/video/upload', requireAuth, vaultUpload.single('video'), async
         name: productName || `Product ${productCode}`,
         category: brand.categories?.[0] || 'General',
         format: 'Digital PDF',
-        price: 12,
+        price: 4.99,
         status: 'Draft'
       };
       state.productsCatalog[brandId].push(prod);
@@ -1650,6 +1863,16 @@ router.post('/:id/product/:code/submit-review', requireAuth, async (req, res) =>
     prod.submittedBy = req.user?.name || req.user?.username || 'DVM';
     delete prod.adminRevisionNote;
 
+    // Save status and submission details to atomic product key
+    await saveProductAssets(brandId, productCode, {
+      status: 'Pending Review',
+      submittedAt: prod.submittedAt,
+      submittedBy: prod.submittedBy,
+      seoTitle: prod.seoTitle,
+      seo: prod.seo,
+      price: prod.price
+    });
+
     await persistBrandsState(state);
 
     return res.json({
@@ -1738,10 +1961,15 @@ router.post('/:id/product/:code/review-action', requireAuth, async (req, res) =>
       state.productsCatalog[brandId].push(prod);
     }
 
+    const assetPatch = {};
+
     if (action === 'request_revision') {
       prod.status = 'Revision Requested';
       prod.adminRevisionNote = revisionNote || 'Please review and adjust product assets per guidelines.';
       prod.revisionRequestedAt = new Date().toISOString();
+      assetPatch.status = prod.status;
+      assetPatch.adminRevisionNote = prod.adminRevisionNote;
+      assetPatch.revisionRequestedAt = prod.revisionRequestedAt;
     } else if (action === 'approve') {
       prod.status = 'Live';
       prod.approvedAt = new Date().toISOString();
@@ -1752,16 +1980,25 @@ router.post('/:id/product/:code/review-action', requireAuth, async (req, res) =>
       if (priceOverride !== undefined && priceOverride !== null && !isNaN(Number(priceOverride))) {
         prod.price = Number(priceOverride);
         if (priceNote) prod.adminPriceNote = String(priceNote);
+        assetPatch.price = prod.price;
+        assetPatch.adminPriceNote = prod.adminPriceNote;
       }
+
+      assetPatch.status = prod.status;
+      assetPatch.approvedAt = prod.approvedAt;
+      assetPatch.approvedBy = prod.approvedBy;
+      assetPatch.listedAt = prod.listedAt;
 
       brand.productsLive = state.productsCatalog[brandId].filter(p => p.status === 'Live').length;
     }
 
+    await saveProductAssets(brandId, productCode, assetPatch);
     await persistBrandsState(state);
 
     return res.json({
       success: true,
       product: prod,
+
       data: {
         status: prod.status,
         product: prod

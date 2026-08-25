@@ -2293,7 +2293,8 @@ window.APP_MODULES.brands = async function(container) {
       const savedVideo = matchedProduct.video || null;
       const savedAudit = matchedProduct.aiAudit || null;
       const savedType = matchedProduct.type || 'pdf-planner';
-      const savedPrice = matchedProduct.price || (savedSEO.price) || 4.99;
+      const auditPrice = matchedProduct.aiAudit?.pricing?.recommended_price || matchedProduct.suggestedPrice || null;
+      const savedPrice = matchedProduct.price || auditPrice || (savedSEO.price) || 4.99;
       const minMockups = b.minMockups || 4;
 
       // Helper: check user admin status
@@ -2789,15 +2790,17 @@ window.APP_MODULES.brands = async function(container) {
               </select>
             </div>
             <div>
-              <label style="font-size:0.72rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.2rem;">
-                Retail Price ($ USD) ${isAdmin ? '<span style="color:#00df89; font-size:0.65rem;">👑 Admin Control</span>' : '<span style="color:#fbbf24; font-size:0.65rem;">🔒 AI-Audited</span>'}
-              </label>
-              ${isAdmin ? `
-                <input type="number" step="0.01" id="studioRetailPrice" value="${savedPrice}" style="width:100%; font-size:0.85rem; padding:0.55rem; background:rgba(0,0,0,0.35); border:1px solid var(--border-subtle); border-radius:8px; color:#fff; font-weight:800;">
-              ` : `
-                <input type="number" step="0.01" id="studioRetailPrice" value="${savedPrice}" readonly style="width:100%; font-size:0.85rem; padding:0.55rem; background:rgba(0,0,0,0.45); border:1px solid rgba(251,191,36,0.3); border-radius:8px; color:#fbbf24; font-weight:800; cursor:not-allowed;" title="Price is set automatically by AI Quality Audit score. Improve product quality to unlock higher pricing.">
-                <span style="font-size:0.65rem; color:var(--text-muted); display:block; margin-top:0.2rem;">🔒 Fixed by AI Audit score.</span>
-              `}
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.2rem;">
+                <label style="font-size:0.72rem; font-weight:800; color:var(--text-muted); text-transform:uppercase;">
+                  Retail Price ($ USD)
+                </label>
+                ${auditPrice ? `
+                  <span style="font-size:0.68rem; color:#06b6d4; cursor:pointer; font-weight:700; background:rgba(6,182,212,0.12); padding:0.1rem 0.4rem; border-radius:4px; border:1px solid rgba(6,182,212,0.3);" onclick="document.getElementById('studioRetailPrice').value='${Number(auditPrice).toFixed(2)}'; window.showToast('Applied AI Audit Price ($${Number(auditPrice).toFixed(2)})', 'info');" title="Click to apply AI Audit Price">
+                    ✨ AI Suggested: $${Number(auditPrice).toFixed(2)}
+                  </span>
+                ` : ''}
+              </div>
+              <input type="number" step="0.01" id="studioRetailPrice" value="${Number(savedPrice).toFixed(2)}" style="width:100%; font-size:0.85rem; padding:0.55rem; background:rgba(0,0,0,0.35); border:1px solid var(--border-subtle); border-radius:8px; color:#fff; font-weight:800;" placeholder="4.99">
             </div>
           </div>
 
@@ -3501,6 +3504,13 @@ window.APP_MODULES.brands = async function(container) {
         let _aProd = state.productsCatalog[brandId].find(p => p.code === productCode);
         if (!_aProd) { _aProd = { code: productCode, status: 'Draft' }; state.productsCatalog[brandId].push(_aProd); }
         _aProd.aiAudit = data.audit;
+        if (data.audit?.pricing?.recommended_price) {
+          _aProd.suggestedPrice = Number(data.audit.pricing.recommended_price);
+          _aProd.price = Number(data.audit.pricing.recommended_price);
+          _aProd.retailPrice = Number(data.audit.pricing.recommended_price);
+          const _priceEl = document.getElementById('studioRetailPrice');
+          if (_priceEl) _priceEl.value = Number(data.audit.pricing.recommended_price).toFixed(2);
+        }
         if (data.product) Object.assign(_aProd, { ...data.product, aiAudit: data.audit });
         saveBrandsStateLocally(state);
         // Update progress bar if audit passes
