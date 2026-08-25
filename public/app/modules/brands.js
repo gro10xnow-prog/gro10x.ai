@@ -375,10 +375,43 @@ function getStudioAuthHeaders(extra = {}) {
 }
 
 async function loadBrandsStateFromAPI() {
+  // ALWAYS check localStorage first — it holds locally-patched product data (vault/mockups/video)
+  // that the API cannot reliably return (Vercel ephemeral instances return stale seeded data)
+  let localState = null;
+  try {
+    const saved = localStorage.getItem('gro10x_brands_data');
+    if (saved) localState = JSON.parse(saved);
+  } catch (e) {}
+
   try {
     if (window.APP_API) {
       const res = await window.APP_API.get('/brands');
       if (res && res.brands) {
+        // Merge: use API for brands list/config but prefer local productsCatalog
+        // if any product has been worked on (has blueprint/vault/mockups/video/seo)
+        if (localState && localState.productsCatalog) {
+          if (!res.productsCatalog) res.productsCatalog = {};
+          for (const [bId, catalog] of Object.entries(localState.productsCatalog)) {
+            if (!res.productsCatalog[bId]) {
+              res.productsCatalog[bId] = catalog;
+            } else {
+              // Merge individual products: prefer local if it has more data
+              for (const localProd of (Array.isArray(catalog) ? catalog : [])) {
+                const apiIdx = res.productsCatalog[bId].findIndex(p => p.code === localProd.code);
+                const hasLocalWork = Boolean(localProd.blueprint?.prompt || localProd.vault?.storagePath ||
+                  localProd.mockupsCount > 0 || localProd.video?.fileName || localProd.seo?.title);
+                if (hasLocalWork) {
+                  if (apiIdx >= 0) {
+                    // Keep local data, update from API only non-work fields
+                    res.productsCatalog[bId][apiIdx] = { ...res.productsCatalog[bId][apiIdx], ...localProd };
+                  } else {
+                    res.productsCatalog[bId].push(localProd);
+                  }
+                }
+              }
+            }
+          }
+        }
         localStorage.setItem('gro10x_brands_data', JSON.stringify(res));
         return res;
       }
@@ -387,12 +420,10 @@ async function loadBrandsStateFromAPI() {
     console.warn('[Brands] API load fallback to local:', e.message);
   }
 
-  try {
-    const saved = localStorage.getItem('gro10x_brands_data');
-    if (saved) return JSON.parse(saved);
-  } catch (e) {}
+  if (localState) return localState;
   return DEFAULT_BRANDS_DATA;
 }
+
 
 function saveBrandsStateLocally(state) {
   try {
@@ -2941,16 +2972,23 @@ window.APP_MODULES.brands = async function(container) {
           throw new Error(saveData.error || `Failed to save blueprint (HTTP ${saveRes.status})`);
         }
 
-        state = await loadBrandsStateFromAPI();
-
-        // Explicitly patch in-memory state so the gate check sees the blueprint
-        // (avoids timing issue where catalog key types differ or state re-reads stale data)
-        const catalogForBrand = state.productsCatalog?.[brandId] || state.productsCatalog?.[String(brandId)] || [];
-        const savedProd = catalogForBrand.find(p => p.code === productCode);
-        if (savedProd && !savedProd.blueprint?.googleFlowPrompt) {
-          if (!savedProd.blueprint) savedProd.blueprint = {};
-          Object.assign(savedProd.blueprint, blueprintBundle);
+        // ─── CRITICAL FIX: Patch in-memory state — NEVER reload from API ───
+        // Reloading from API on Vercel returns stale seeded data, wiping the blueprint we just saved.
+        if (!state.productsCatalog) state.productsCatalog = {};
+        if (!state.productsCatalog[brandId]) state.productsCatalog[brandId] = [];
+        let _bpProd = state.productsCatalog[brandId].find(p => p.code === productCode);
+        if (!_bpProd) {
+          _bpProd = { code: productCode, name: prod.name, status: 'Draft' };
+          state.productsCatalog[brandId].push(_bpProd);
         }
+        _bpProd.blueprint = blueprintBundle;
+        _bpProd.status = saveData.product?.status || 'Blueprint Ready';
+        _bpProd.studioPercent = saveData.studioPercent || 20;
+        // Merge any other fields from the server response
+        if (saveData.product) {
+          Object.assign(_bpProd, { ...saveData.product, blueprint: blueprintBundle });
+        }
+        saveBrandsStateLocally(state);
 
         if (window.showToast) window.showToast('✅ Blueprint & Mockup Briefs generated & saved!', 'success');
 
@@ -3062,7 +3100,12 @@ window.APP_MODULES.brands = async function(container) {
         if (!data.success) throw new Error(data.error || 'Submission failed');
 
         if (window.showToast) window.showToast(`🎉 ${productCode} submitted for Admin Review!`, 'success');
-        state = await loadBrandsStateFromAPI();
+        // Patch status in in-memory state — do NOT reload from API
+        if (data.product && state.productsCatalog?.[brandId]) {
+          const _si = state.productsCatalog[brandId].findIndex(p => p.code === productCode);
+          if (_si >= 0) state.productsCatalog[brandId][_si] = { ...state.productsCatalog[brandId][_si], ...data.product };
+          saveBrandsStateLocally(state);
+        }
         const modal = document.getElementById('aiSeoModal');
         if (modal) modal.style.display = 'none';
         renderTabContent('etsy');
@@ -3130,20 +3173,46 @@ window.APP_MODULES.brands = async function(container) {
         if (!data.success) throw new Error(data.error || 'Failed to save Studio draft');
 
         if (window.showToast) window.showToast(`✅ ${tabName === 'all' ? 'All Studio changes' : tabName.toUpperCase()} saved! (${data.studioPercent || 0}% Complete)`, 'success');
-        
-        // Update header progress without re-rendering modal
+
+        // ─── CRITICAL FIX: Patch in-memory state from response — NEVER reload from API ───
+        // Reloading from API on Vercel returns stale seeded data, wiping all uploaded files.
+        if (data.product && state.productsCatalog) {
+          const _bId = brandId;
+          if (!state.productsCatalog[_bId]) state.productsCatalog[_bId] = [];
+          const _idx = state.productsCatalog[_bId].findIndex(p => p.code === productCode);
+          if (_idx >= 0) {
+            // Merge server response into existing product (preserves vault/mockups/video patched earlier)
+            state.productsCatalog[_bId][_idx] = {
+              ...state.productsCatalog[_bId][_idx],
+              ...data.product
+            };
+          } else {
+            state.productsCatalog[_bId].push(data.product);
+          }
+          saveBrandsStateLocally(state);
+        }
+
+        // Update header progress bar
         const pctEl = document.getElementById('studioHeaderPctBadge');
         const barEl = document.getElementById('studioHeaderProgressBar');
-        if (pctEl && data.studioPercent !== undefined) pctEl.innerText = `${data.studioPercent}% Ready`;
+        if (pctEl && data.studioPercent !== undefined) {
+          pctEl.innerText = `${data.studioPercent}% Ready`;
+          pctEl.style.color = data.studioPercent >= 80 ? '#00df89' : (data.studioPercent >= 40 ? '#fbbf24' : '#ef4444');
+        }
         if (barEl && data.studioPercent !== undefined) barEl.style.width = `${data.studioPercent}%`;
-
-        state = await loadBrandsStateFromAPI();
 
         if (tabName === 'all') {
           const modal = document.getElementById('aiSeoModal');
           if (modal) modal.style.display = 'none';
           renderTabContent('etsy');
+        } else if (tabName === 'blueprint') {
+          // Re-render drawer to show 5-tab Studio view with updated progress dots
+          const ctx = window._studioCtx;
+          if (ctx) {
+            setTimeout(() => window.BrandsModule.generateLiveSEOPackage(ctx.brandId, ctx.productCode, encodeURIComponent(ctx.productName || '')), 100);
+          }
         }
+
       } catch (err) {
         if (window.showToast) window.showToast(`Save failed: ${err.message}`, 'error');
       } finally {
@@ -3229,7 +3298,13 @@ window.APP_MODULES.brands = async function(container) {
         const _pct = (_bpDone ? 20 : 0) + (_vaultDone ? 20 : 0) + (_mocksDone && _vidDone ? 20 : 0) + (_auditDone ? 20 : 0) + (_seoDone ? 20 : 0);
         if (_pctEl) { _pctEl.innerText = `${_pct}% Ready`; _pctEl.style.color = _pct >= 80 ? '#00df89' : (_pct >= 40 ? '#fbbf24' : '#ef4444'); }
         if (_barEl) _barEl.style.width = `${_pct}%`;
-        renderTabContent('etsy');
+        // Update vault step indicator in progress bar area
+        const _vStep = document.querySelector('[id="studioHeaderProgressBar"]')?.closest('div')?.querySelectorAll('span');
+        // Switch to next Studio tab (Media Studio) automatically
+        if (typeof window.BrandsModule.switchStudioTab === 'function') {
+          window.BrandsModule.switchStudioTab('mockups');
+        }
+
       } catch (err) {
         if (statusEl) statusEl.innerHTML = `<span style="color:#ef4444; font-weight:700;">❌ Upload error: ${err.message}</span>`;
         window.showToast(`Upload failed: ${err.message}`, 'error');
@@ -3399,8 +3474,29 @@ window.APP_MODULES.brands = async function(container) {
           container.innerHTML = window.BrandsModule.buildAuditHtml(data.audit, brandId, productCode);
         }
 
-        // Reload state in background to update suggestedPrice & auto-advanced status
-        state = await loadBrandsStateFromAPI();
+        // Patch in-memory state from audit result — do NOT reload from API
+        if (!state.productsCatalog) state.productsCatalog = {};
+        if (!state.productsCatalog[brandId]) state.productsCatalog[brandId] = [];
+        let _aProd = state.productsCatalog[brandId].find(p => p.code === productCode);
+        if (!_aProd) { _aProd = { code: productCode, status: 'Draft' }; state.productsCatalog[brandId].push(_aProd); }
+        _aProd.aiAudit = data.audit;
+        if (data.product) Object.assign(_aProd, { ...data.product, aiAudit: data.audit });
+        saveBrandsStateLocally(state);
+        // Update progress bar if audit passes
+        const _aScore = Number(data.audit?.overall_score || 0);
+        if (_aScore >= 7.0) {
+          const _apctEl = document.getElementById('studioHeaderPctBadge');
+          const _abarEl = document.getElementById('studioHeaderProgressBar');
+          const _avaultDone = Boolean(_aProd.vault?.storagePath || _aProd.vault?.downloadUrl);
+          const _amocksDone = (_aProd.mockupsCount || _aProd.mockups?.length || 0) >= 4;
+          const _avidDone = Boolean(_aProd.video?.storagePath || _aProd.video?.fileName);
+          const _aseoDone = Boolean(_aProd.seo?.title || _aProd.seoTitle);
+          const _abpDone = Boolean(_aProd.blueprint?.prompt || _aProd.blueprint?.geometry);
+          const _apct = (_abpDone ? 20 : 0) + (_avaultDone ? 20 : 0) + (_amocksDone && _avidDone ? 20 : 0) + 20 + (_aseoDone ? 20 : 0);
+          if (_apctEl) { _apctEl.innerText = `${_apct}% Ready`; _apctEl.style.color = _apct >= 80 ? '#00df89' : (_apct >= 40 ? '#fbbf24' : '#ef4444'); }
+          if (_abarEl) _abarEl.style.width = `${_apct}%`;
+        }
+
       } catch (err) {
         if (container) {
           container.innerHTML = `
@@ -3425,8 +3521,17 @@ window.APP_MODULES.brands = async function(container) {
         const data = await res.json();
         if (!data.success) throw new Error(data.error || 'Failed to update price');
 
-        window.showToast(`🏷️ Price updated to $${Number(price).toFixed(2)} across catalog and Etsy!`, 'success');
-        state = await loadBrandsStateFromAPI();
+        window.showToast(`🏷️ Price updated to $${Number(price).toFixed(2)}!`, 'success');
+        // Patch price in in-memory state — do NOT reload from API
+        if (!state.productsCatalog) state.productsCatalog = {};
+        if (!state.productsCatalog[brandId]) state.productsCatalog[brandId] = [];
+        let _pprod = state.productsCatalog[brandId].find(p => p.code === productCode);
+        if (_pprod) { _pprod.price = Number(price); _pprod.retailPrice = Number(price); }
+        saveBrandsStateLocally(state);
+        // Update the price input field in the DOM immediately
+        const _priceEl = document.getElementById('studioRetailPrice');
+        if (_priceEl) _priceEl.value = Number(price).toFixed(2);
+
       } catch (err) {
         window.showToast(`Price update failed: ${err.message}`, 'error');
       }
