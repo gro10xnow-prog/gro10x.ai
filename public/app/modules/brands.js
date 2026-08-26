@@ -410,6 +410,9 @@ async function loadBrandsStateFromAPI() {
                   res.productsCatalog[bId][apiIdx] = {
                     ...localProd,
                     ...apiProd,
+                    name: apiProd.name || localProd.name,
+                    category: apiProd.category || localProd.category,
+                    price: apiProd.price !== undefined ? apiProd.price : localProd.price,
                     // Ensure status & Etsy metadata from API strictly win
                     status: apiProd.status || localProd.status || 'Draft',
                     etsyListingId: apiProd.etsyListingId || localProd.etsyListingId,
