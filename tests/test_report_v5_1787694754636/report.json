@@ -1,0 +1,40 @@
+{
+  "timestamp": "2026-08-25T21:52:59.356Z",
+  "url": "https://gro10x-ai.vercel.app",
+  "results": [
+    {
+      "step": 1,
+      "name": "Base Page Loaded (for cookie domain)",
+      "file": "step_01_base_page.png",
+      "status": "PASS",
+      "detail": "Auth token obtained & injected — user: Demo DBM (Digital Brand Manager)"
+    },
+    {
+      "step": 2,
+      "name": "App Dashboard /app — Brands Studio",
+      "file": "step_02_app_dashboard.png",
+      "status": "PASS",
+      "detail": "App dashboard loaded — URL: https://gro10x-ai.vercel.app/app/"
+    },
+    {
+      "step": 3,
+      "name": "Brand Command Center",
+      "file": "step_03_brand_command_center.png",
+      "status": "PASS",
+      "detail": "Brand Command Center loaded — nav: Contains: \"🛍️\n        Brand Command Center\n        0\""
+    },
+    {
+      "step": 5,
+      "name": "CRASH",
+      "file": "crash.png",
+      "status": "ERROR",
+      "detail": "Protocol error (Page.captureScreenshot): Target closed"
+    }
+  ],
+  "summary": {
+    "total": 4,
+    "passed": 3,
+    "failed": 0,
+    "errored": 1
+  }
+}

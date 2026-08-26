@@ -91,7 +91,7 @@ function callGeminiMultimodal(model, parts, apiKey, attempt = 1) {
  * Deterministic fallback audit when API key is unavailable or all models fail.
  */
 function generateFallbackAudit(product = {}, brand = {}) {
-  const brandName = brand.name || 'PlannerQueenCo';
+  const brandName = brand.name || 'PlannerQueenGro';
   const prodName = product.name || product.seoTitle || 'Daily & Weekly Planner';
 
   return {
@@ -288,7 +288,7 @@ async function evaluateProductMultimodal(inputs = [], product = {}, brand = {}) 
     console.log(`[AI Evaluator] Successfully loaded ${isPdfDocument ? 'Native PDF Document' : `${loadedCount} Page Images`} for visual audit`);
 
     // Build Multimodal Prompt tailored to PDF or Image sequence
-    const brandName = brand.name || 'PlannerQueenCo';
+    const brandName = brand.name || 'PlannerQueenGro';
     const brandNiche = brand.niche || 'Digital Planners & Trackers';
     const prodName = product.name || product.seoTitle || 'Digital Planner';
 

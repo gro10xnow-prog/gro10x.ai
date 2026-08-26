@@ -1,0 +1,124 @@
+{
+  "timestamp": "2026-08-25T20:37:06.945Z",
+  "url": "https://gro10x-ai.vercel.app/staff",
+  "results": [
+    {
+      "step": 1,
+      "name": "Staff Portal /staff Loaded",
+      "file": "step_01_staff_portal.png",
+      "status": "PASS",
+      "detail": "Staff portal loaded with login form"
+    },
+    {
+      "step": 2,
+      "name": "Login Form Filled with Credentials",
+      "file": "step_02_login_filled.png",
+      "status": null,
+      "detail": ""
+    },
+    {
+      "step": 3,
+      "name": "After Login - Dashboard",
+      "file": "step_03_after_login.png",
+      "status": "FAIL",
+      "detail": "Login may have failed — URL: https://gro10x-ai.vercel.app/auth?redirect=%2Fstaff"
+    },
+    {
+      "step": 4,
+      "name": "Brands/Etsy Section — navigation attempted",
+      "file": "step_04_brands_tab.png",
+      "status": "FAIL",
+      "detail": "Brands section not confirmed — Nav: null — Content: dex, nofollow\">\n  <title>Stakeholder &amp; Client Portal — GRO10X</title>\n  <meta name=\"description\" content=\"Secure Client &amp; Stakeholder Portal for GRO10X deliverables, AI sprint reviews, and cam"
+    },
+    {
+      "step": 5,
+      "name": "Studio Drawer Opening — no button found",
+      "file": "step_05_studio_opening.png",
+      "status": "FAIL",
+      "detail": "Studio Drawer NOT opened — null — Modal visible: null"
+    },
+    {
+      "step": 6,
+      "name": "Studio Drawer Initial State",
+      "file": "step_06_studio_initial.png",
+      "status": "FAIL",
+      "detail": "Unknown modal content"
+    },
+    {
+      "step": 7,
+      "name": "After Blueprint Generate/Load",
+      "file": "step_07_after_blueprint.png",
+      "status": "FAIL",
+      "detail": "Studio not loading 5-tab view — pct: null — tabs: false"
+    },
+    {
+      "step": 8,
+      "name": "Vault Tab Active",
+      "file": "step_08_vault_tab.png",
+      "status": null,
+      "detail": ""
+    },
+    {
+      "step": 9,
+      "name": "Vault Upload Result",
+      "file": "step_09_vault_done.png",
+      "status": "FAIL",
+      "detail": "Vault upload: no status — Progress: null"
+    },
+    {
+      "step": 10,
+      "name": "Media Studio Tab Active",
+      "file": "step_10_media_tab.png",
+      "status": null,
+      "detail": ""
+    },
+    {
+      "step": 11,
+      "name": "Mockup Upload Result",
+      "file": "step_11_mockups_done.png",
+      "status": "FAIL",
+      "detail": "Mockup upload issue — Status: null — Progress: null"
+    },
+    {
+      "step": 12,
+      "name": "Video Upload Result",
+      "file": "step_12_video_done.png",
+      "status": "FAIL",
+      "detail": "Video upload — Status: null — Progress: null"
+    },
+    {
+      "step": 13,
+      "name": "Full Progress Bar Check on SEO Tab",
+      "file": "step_13_progress_check.png",
+      "status": "FAIL",
+      "detail": "Progress only N/A — expected ≥60% | Steps: {\"pct\":\"N/A\",\"barWidth\":\"N/A\",\"bp\":false,\"vault\":false,\"media\":false,\"seo\":false}"
+    },
+    {
+      "step": 14,
+      "name": "SEO Generated",
+      "file": "step_14_seo_generated.png",
+      "status": null,
+      "detail": ""
+    },
+    {
+      "step": 15,
+      "name": "SEO Saved — Final Progress",
+      "file": "step_15_seo_saved.png",
+      "status": "FAIL",
+      "detail": "SEO step — Progress: N/A"
+    },
+    {
+      "step": 16,
+      "name": "Submit for Review — Final Result",
+      "file": "step_16_submit_result.png",
+      "status": "PASS",
+      "detail": "Modal closed — likely submitted successfully"
+    }
+  ],
+  "summary": {
+    "total": 16,
+    "passed": 2,
+    "failed": 10,
+    "errored": 0
+  }
+}

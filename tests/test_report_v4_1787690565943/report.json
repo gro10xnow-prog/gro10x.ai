@@ -1,0 +1,40 @@
+{
+  "timestamp": "2026-08-25T20:43:13.522Z",
+  "url": "https://gro10x-ai.vercel.app/auth?redirect=%2Fstaff",
+  "results": [
+    {
+      "step": 1,
+      "name": "Auth Page — Login Form",
+      "file": "step_01_auth_page.png",
+      "status": "PASS",
+      "detail": "Auth page loaded at https://gro10x-ai.vercel.app/auth?redirect=%2Fstaff"
+    },
+    {
+      "step": 2,
+      "name": "Login Form — Phone + PIN Filled",
+      "file": "step_02_login_filled.png",
+      "status": null,
+      "detail": ""
+    },
+    {
+      "step": 3,
+      "name": "After Login — Staff Dashboard",
+      "file": "step_03_after_login.png",
+      "status": "FAIL",
+      "detail": "Still on auth page — Alert: \"Verifying credentials...\" — URL: https://gro10x-ai.vercel.app/auth?redirect=%2Fstaff"
+    },
+    {
+      "step": 4,
+      "name": "CRASH",
+      "file": "crash.png",
+      "status": "ERROR",
+      "detail": "Login failed: Verifying credentials..."
+    }
+  ],
+  "summary": {
+    "total": 4,
+    "passed": 1,
+    "failed": 1,
+    "errored": 1
+  }
+}

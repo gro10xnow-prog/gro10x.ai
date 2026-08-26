@@ -33,7 +33,7 @@ const SEED_BRANDS_DATA = {
   brands: [
     {
       id: 1,
-      name: 'PlannerQueenCo',
+      name: 'PlannerQueenGro',
       tagline: 'Plan it. Own it. Live it.',
       niche: 'Productivity & Life Planning',
       type: 'Digital',
@@ -365,7 +365,7 @@ const SEED_BRANDS_DATA = {
 };
 
 const PLANNER_QUEEN_TITLES = {
-  1: "Daily & Weekly Planners #1 — PlannerQueenCo Style",
+  1: "Daily & Weekly Planners #1 — PlannerQueenGro Style",
   2: "Executive Work-Life Balance & Top-3 Priority Matrix Weekly Planner",
   3: "ADHD-Friendly Low-Dopamine & Low-Friction Daily Task Planner",
   4: "Teacher & Student Weekly Academic Lesson & Study Planner",
@@ -434,7 +434,7 @@ const PLANNER_QUEEN_TITLES = {
   67: "Solopreneur All-in-One Operations & Goal Sprint Bundle",
   68: "Health, Fitness & Habit Transformation Trio Bundle",
   69: "Ultimate GoodNotes Digital iPad Planner & Sticker Mega Pack",
-  70: "The Entire PlannerQueenCo Empire All-Access Vault Bundle",
+  70: "The Entire PlannerQueenGro Empire All-Access Vault Bundle",
   71: "Christmas & Holiday Master Planner (Budget, Gifts, Menu & Traditions)",
   72: "Thanksgiving & Autumn Gathering Host Kit (Cooking Timeline & Guests)",
   73: "Halloween Party, Costume Project & Trick-or-Treat Organizer",
@@ -464,7 +464,7 @@ const PLANNER_QUEEN_TITLES = {
   97: "The High-Impact Solopreneur: Systems for 20-Hour Workweeks (E-book)",
   98: "Meal Prep Mastery: Healthy Family Dinners in 30 Mins (E-book)",
   99: "Digital Planning Masterclass: GoodNotes & Tablet Guide (E-book)",
-  100: "The Complete PlannerQueenCo Self-Mastery E-book Library Box Set"
+  100: "The Complete PlannerQueenGro Self-Mastery E-book Library Box Set"
 };
 
 function generateDefaultProductsForBrand(brand) {
@@ -504,7 +504,7 @@ SEED_BRANDS_DATA.brands.forEach(b => {
 // In-memory fallback initialized with full catalog
 let memoryBrandsState = JSON.parse(JSON.stringify(SEED_BRANDS_DATA));
 let memoryDbmLogs = [
-  { date: new Date().toISOString().split('T')[0], dbmId: 1, brandName: 'PlannerQueenCo', listed: 8, revenue: 0, notes: 'Completed Batch 1 Hero daily & weekly planners' },
+  { date: new Date().toISOString().split('T')[0], dbmId: 1, brandName: 'PlannerQueenGro', listed: 8, revenue: 0, notes: 'Completed Batch 1 Hero daily & weekly planners' },
   { date: new Date().toISOString().split('T')[0], dbmId: 4, brandName: 'PromptVault', listed: 10, revenue: 0, notes: 'Configured Notion duplication templates for Midjourney prompts' }
 ];
 

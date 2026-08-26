@@ -2384,7 +2384,7 @@
 
   window.openDBMStandupMobile = function() {
     triggerHaptic();
-    const brand = prompt('Which brand did you work on today?', 'PlannerQueenCo');
+    const brand = prompt('Which brand did you work on today?', 'PlannerQueenGro');
     if (!brand) return;
     const count = Number(prompt('How many products did you list today?', '8')) || 0;
     const notes = prompt('Standup notes / wins / blockers:', 'Completed daily batch') || '';

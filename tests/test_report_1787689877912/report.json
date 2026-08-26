@@ -1,0 +1,120 @@
+{
+  "timestamp": "2026-08-25T20:32:03.091Z",
+  "url": "https://gro10x-ai.vercel.app",
+  "results": [
+    {
+      "step": 1,
+      "name": "App Homepage Loaded",
+      "file": "step_01_homepage.png",
+      "status": "PASS",
+      "detail": "Title: \"GRO10X — AI-First Growth Agency & Multi-Engine Ecosystem\""
+    },
+    {
+      "step": 2,
+      "name": "Login Form Filled",
+      "file": "step_02_login_form.png",
+      "status": null
+    },
+    {
+      "step": 3,
+      "name": "After Login Attempt",
+      "file": "step_03_after_login.png",
+      "status": "PASS",
+      "detail": "URL: https://gro10x-ai.vercel.app/"
+    },
+    {
+      "step": 4,
+      "name": "Brands/Etsy Section",
+      "file": "step_04_brands_section.png",
+      "status": "FAIL",
+      "detail": "Could not navigate to brands"
+    },
+    {
+      "step": 5,
+      "name": "Studio Drawer Opened",
+      "file": "step_05_studio_drawer_open.png",
+      "status": "PASS",
+      "detail": "Modal visible"
+    },
+    {
+      "step": 6,
+      "name": "Studio Initial State",
+      "file": "step_06_studio_initial_state.png",
+      "status": "FAIL",
+      "detail": "Neither gate nor tabs found"
+    },
+    {
+      "step": 7,
+      "name": "After Blueprint Generation/Load",
+      "file": "step_07_after_blueprint.png",
+      "status": "FAIL",
+      "detail": "Progress: null"
+    },
+    {
+      "step": 8,
+      "name": "Vault Tab Open",
+      "file": "step_08_vault_tab.png",
+      "status": null
+    },
+    {
+      "step": 9,
+      "name": "Vault Upload Result",
+      "file": "step_09_vault_uploaded.png",
+      "status": "FAIL",
+      "detail": "Status: null | Progress: null"
+    },
+    {
+      "step": 10,
+      "name": "Media Studio Tab Open",
+      "file": "step_10_media_tab.png",
+      "status": null
+    },
+    {
+      "step": 11,
+      "name": "Mockup Upload Result",
+      "file": "step_11_mockups_uploaded.png",
+      "status": "FAIL",
+      "detail": "Status: null | Progress: null"
+    },
+    {
+      "step": 12,
+      "name": "Video Upload Result",
+      "file": "step_12_video_uploaded.png",
+      "status": "FAIL",
+      "detail": "Status: null | Progress: null"
+    },
+    {
+      "step": 13,
+      "name": "SEO Tab — Progress Check",
+      "file": "step_13_seo_tab_progress.png",
+      "status": "FAIL",
+      "detail": "N/A | Steps: AI Services & Custom Blueprints"
+    },
+    {
+      "step": 14,
+      "name": "SEO Package Generated",
+      "file": "step_14_seo_generated.png",
+      "status": null
+    },
+    {
+      "step": 15,
+      "name": "SEO Saved — Final Progress Check",
+      "file": "step_15_seo_saved.png",
+      "status": "FAIL",
+      "detail": "Final: N/A"
+    },
+    {
+      "step": 16,
+      "name": "Submit for Review Result",
+      "file": "step_16_submit_result.png",
+      "status": "FAIL",
+      "detail": "Modal still open: true"
+    }
+  ],
+  "summary": {
+    "total": 16,
+    "passed": 3,
+    "failed": 9,
+    "errored": 0
+  }
+}

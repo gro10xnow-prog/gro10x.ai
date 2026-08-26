@@ -1,0 +1,117 @@
+{
+  "timestamp": "2026-08-25T20:54:11.000Z",
+  "url": "https://gro10x-ai.vercel.app",
+  "results": [
+    {
+      "step": 1,
+      "name": "Base Page Loaded (for cookie domain)",
+      "file": "step_01_base_page.png",
+      "status": "PASS",
+      "detail": "Auth token obtained & injected — user: Demo DBM (Digital Brand Manager)"
+    },
+    {
+      "step": 2,
+      "name": "App Dashboard /app — Brands Studio",
+      "file": "step_02_app_dashboard.png",
+      "status": "PASS",
+      "detail": "App dashboard loaded — URL: https://gro10x-ai.vercel.app/app/"
+    },
+    {
+      "step": 3,
+      "name": "Brand Command Center",
+      "file": "step_03_brand_command_center.png",
+      "status": "PASS",
+      "detail": "Brand Command Center loaded — nav: Contains: \"🛍️\n        Brand Command Center\n        0\""
+    },
+    {
+      "step": 4,
+      "name": "Studio Drawer Opened",
+      "file": "step_04_studio_open.png",
+      "status": "FAIL",
+      "detail": "Studio NOT open — NOT FOUND — {\"visible\":false,\"hasPF\":false,\"hasDVM\":false,\"hasBPGate\":false,\"pct\":null}"
+    },
+    {
+      "step": 5,
+      "name": "Studio Initial State",
+      "file": "step_05_studio_initial.png",
+      "status": null,
+      "detail": ""
+    },
+    {
+      "step": 6,
+      "name": "Blueprint Step Done",
+      "file": "step_06_blueprint_done.png",
+      "status": "FAIL",
+      "detail": "5-tab not active — pct: null"
+    },
+    {
+      "step": 7,
+      "name": "Vault Tab",
+      "file": "step_07_vault_tab.png",
+      "status": null,
+      "detail": ""
+    },
+    {
+      "step": 8,
+      "name": "Vault Upload Result",
+      "file": "step_08_vault_done.png",
+      "status": "FAIL",
+      "detail": "Vault: \"null\" pct: null"
+    },
+    {
+      "step": 9,
+      "name": "Media Studio Tab",
+      "file": "step_09_media_tab.png",
+      "status": null,
+      "detail": ""
+    },
+    {
+      "step": 10,
+      "name": "Mockup Upload Result",
+      "file": "step_10_mockups_done.png",
+      "status": "FAIL",
+      "detail": "Mockups: \"null\" pct: null"
+    },
+    {
+      "step": 11,
+      "name": "Video Upload Result",
+      "file": "step_11_video_done.png",
+      "status": "FAIL",
+      "detail": "Video: \"null\" pct: null"
+    },
+    {
+      "step": 12,
+      "name": "Progress Bar — SEO Tab",
+      "file": "step_12_progress.png",
+      "status": "FAIL",
+      "detail": "Progress N/A too low | BP:false Vault:false Media:false"
+    },
+    {
+      "step": 13,
+      "name": "SEO Generated",
+      "file": "step_13_seo_generated.png",
+      "status": null,
+      "detail": ""
+    },
+    {
+      "step": 14,
+      "name": "SEO Saved — Final Progress",
+      "file": "step_14_seo_saved.png",
+      "status": "FAIL",
+      "detail": "SEO pct:N/A"
+    },
+    {
+      "step": 15,
+      "name": "Submit for Review — Final",
+      "file": "step_15_submit_final.png",
+      "status": "PASS",
+      "detail": "🎉 SUBMITTED — Pending Review: false"
+    }
+  ],
+  "summary": {
+    "total": 15,
+    "passed": 4,
+    "failed": 7,
+    "errored": 0
+  }
+}

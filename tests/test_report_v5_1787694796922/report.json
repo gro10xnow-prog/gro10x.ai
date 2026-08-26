@@ -1,0 +1,138 @@
+{
+  "timestamp": "2026-08-25T21:54:47.419Z",
+  "url": "https://gro10x-ai.vercel.app",
+  "results": [
+    {
+      "step": 1,
+      "name": "Base Page Loaded (for cookie domain)",
+      "file": "step_01_base_page.png",
+      "status": "PASS",
+      "detail": "Auth token obtained & injected — user: Demo DBM (Digital Brand Manager)"
+    },
+    {
+      "step": 2,
+      "name": "App Dashboard /app — Brands Studio",
+      "file": "step_02_app_dashboard.png",
+      "status": "PASS",
+      "detail": "App dashboard loaded — URL: https://gro10x-ai.vercel.app/app/"
+    },
+    {
+      "step": 3,
+      "name": "Brand Command Center",
+      "file": "step_03_brand_command_center.png",
+      "status": "PASS",
+      "detail": "Brand Command Center loaded — nav: Contains: \"🛍️\n        Brand Command Center\n        0\""
+    },
+    {
+      "step": 4,
+      "name": "Etsy Command Center Tab",
+      "file": "step_04_etsy_tab.png",
+      "status": null,
+      "detail": ""
+    },
+    {
+      "step": 5,
+      "name": "Studio Drawer — onclick: window.BrandsModule.generateLiveSEOPackage(1, 'PLA-01', 'Daily%20%26%20Weekly%20",
+      "file": "step_05_studio_open.png",
+      "status": "PASS",
+      "detail": "Studio open — DVM:false BPGate:true pct:null"
+    },
+    {
+      "step": 6,
+      "name": "Studio Initial State",
+      "file": "step_06_studio_initial.png",
+      "status": null,
+      "detail": ""
+    },
+    {
+      "step": 7,
+      "name": "Blueprint Step Done",
+      "file": "step_07_blueprint_done.png",
+      "status": "PASS",
+      "detail": "Blueprint — pct: 40% Ready"
+    },
+    {
+      "step": 8,
+      "name": "Vault Tab",
+      "file": "step_08_vault_tab.png",
+      "status": null,
+      "detail": ""
+    },
+    {
+      "step": 9,
+      "name": "Vault Upload Result",
+      "file": "step_09_vault_done.png",
+      "status": "PASS",
+      "detail": "Vault ✅ pct: 40% Ready"
+    },
+    {
+      "step": 10,
+      "name": "Media Studio Tab",
+      "file": "step_10_media_tab.png",
+      "status": null,
+      "detail": ""
+    },
+    {
+      "step": 11,
+      "name": "4 Mockups Selected",
+      "file": "step_11_mockups_selected.png",
+      "status": null,
+      "detail": ""
+    },
+    {
+      "step": 12,
+      "name": "Mockup Upload Result",
+      "file": "step_12_mockups_done.png",
+      "status": "PASS",
+      "detail": "Mockups ✅ — ✅ 4 mockups stored in Cloud Vault — pct: 40% Ready"
+    },
+    {
+      "step": 13,
+      "name": "Video Selected",
+      "file": "step_13_video_selected.png",
+      "status": null,
+      "detail": ""
+    },
+    {
+      "step": 14,
+      "name": "Video Upload Result",
+      "file": "step_14_video_done.png",
+      "status": "PASS",
+      "detail": "Video ✅ — ✅ Stored in Vault: test.mp4 — pct: 60% Ready"
+    },
+    {
+      "step": 15,
+      "name": "Progress Bar — SEO Tab",
+      "file": "step_15_progress.png",
+      "status": "PASS",
+      "detail": "Progress 60% Ready | BP:true Vault:false Media:false"
+    },
+    {
+      "step": 16,
+      "name": "SEO Generated",
+      "file": "step_16_seo_generated.png",
+      "status": null,
+      "detail": ""
+    },
+    {
+      "step": 17,
+      "name": "SEO Saved — Final Progress",
+      "file": "step_17_seo_saved.png",
+      "status": "PASS",
+      "detail": "SEO saved — pct:60% Ready title:\"Daily & Weekly Planners #1 — PlannerQueenCo Style | PlannerQ\""
+    },
+    {
+      "step": 18,
+      "name": "Submit for Review — Final",
+      "file": "step_18_submit_final.png",
+      "status": "PASS",
+      "detail": "🎉 SUBMITTED — Pending Review: false"
+    }
+  ],
+  "summary": {
+    "total": 18,
+    "passed": 11,
+    "failed": 0,
+    "errored": 0
+  }
+}

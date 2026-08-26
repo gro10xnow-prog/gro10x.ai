@@ -45,14 +45,14 @@ window.APP_MODULES.dbm = async function(container) {
     } catch (e) {}
 
     return [
-      { date: new Date().toISOString().split('T')[0], dbmId: 1, brandName: 'PlannerQueenCo', listed: 8, revenue: 0, notes: 'Completed Batch 1 Hero daily & weekly planners' },
+      { date: new Date().toISOString().split('T')[0], dbmId: 1, brandName: 'PlannerQueenGro', listed: 8, revenue: 0, notes: 'Completed Batch 1 Hero daily & weekly planners' },
       { date: new Date().toISOString().split('T')[0], dbmId: 4, brandName: 'PromptVault', listed: 10, revenue: 0, notes: 'Configured Notion duplication templates for Midjourney prompts' }
     ];
   }
 
   const brandsState = (await getBrandsState()) || {
     brands: [
-      { id: 1, name: 'PlannerQueenCo', dbmId: 1, target12mo: 24200, productsLive: 0, productsTarget: 100 },
+      { id: 1, name: 'PlannerQueenGro', dbmId: 1, target12mo: 24200, productsLive: 0, productsTarget: 100 },
       { id: 2, name: 'WildMutt Co.', dbmId: 2, target12mo: 33540, productsLive: 0, productsTarget: 100 },
       { id: 3, name: 'TinyDesks Studio', dbmId: 3, target12mo: 22050, productsLive: 0, productsTarget: 100 },
       { id: 4, name: 'LittleStarsLearning', dbmId: 3, target12mo: 17850, productsLive: 0, productsTarget: 100 },
@@ -307,7 +307,7 @@ window.APP_MODULES.dbm = async function(container) {
 
     async submitStandupForm() {
       const dbmId = Number(document.getElementById('standupDbmSelect')?.value || 1);
-      const brandName = document.getElementById('standupBrandSelect')?.value || 'PlannerQueenCo';
+      const brandName = document.getElementById('standupBrandSelect')?.value || 'PlannerQueenGro';
       const listed = Number(document.getElementById('standupListedInput')?.value) || 0;
       const revenue = Number(document.getElementById('standupRevenueInput')?.value) || 0;
       const notes = document.getElementById('standupNotesInput')?.value.trim() || 'Completed daily production batch';

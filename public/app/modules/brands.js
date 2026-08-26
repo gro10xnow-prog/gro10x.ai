@@ -19,7 +19,7 @@ const DEFAULT_BRANDS_DATA = {
   brands: [
     {
       id: 1,
-      name: 'PlannerQueenCo',
+      name: 'PlannerQueenGro',
       tagline: 'Plan it. Own it. Live it.',
       niche: 'Productivity & Life Planning',
       type: 'Digital',
@@ -689,7 +689,7 @@ window.APP_MODULES.brands = async function(container) {
               <div style="background:rgba(0,223,137,0.08); border-left:3px solid #00df89; padding:0.75rem; border-radius:8px;">
                 <strong style="color:#00df89; font-size:0.8rem; text-transform:uppercase;">Phase 1 (Week 1–2) — Priority Launch</strong>
                 <p style="font-size:0.75rem; color:var(--text-secondary); margin:0.25rem 0 0;">
-                  PlannerQueenCo, PromptVault, PageForge KDP (Highest ROI & Speed)
+                  PlannerQueenGro, PromptVault, PageForge KDP (Highest ROI & Speed)
                 </p>
               </div>
 
@@ -2019,7 +2019,7 @@ window.APP_MODULES.brands = async function(container) {
   // HELPER: GENERATE DEFAULT 100 PRODUCTS FOR A BRAND
   // ─────────────────────────────────────────────────────────────────────────
   const PLANNER_QUEEN_TITLES = {
-    1: "Daily & Weekly Planners #1 — PlannerQueenCo Style",
+    1: "Daily & Weekly Planners #1 — PlannerQueenGro Style",
     2: "Executive Work-Life Balance & Top-3 Priority Matrix Weekly Planner",
     3: "ADHD-Friendly Low-Dopamine & Low-Friction Daily Task Planner",
     4: "Teacher & Student Weekly Academic Lesson & Study Planner",
@@ -2088,7 +2088,7 @@ window.APP_MODULES.brands = async function(container) {
     67: "Solopreneur All-in-One Operations & Goal Sprint Bundle",
     68: "Health, Fitness & Habit Transformation Trio Bundle",
     69: "Ultimate GoodNotes Digital iPad Planner & Sticker Mega Pack",
-    70: "The Entire PlannerQueenCo Empire All-Access Vault Bundle",
+    70: "The Entire PlannerQueenGro Empire All-Access Vault Bundle",
     71: "Christmas & Holiday Master Planner (Budget, Gifts, Menu & Traditions)",
     72: "Thanksgiving & Autumn Gathering Host Kit (Cooking Timeline & Guests)",
     73: "Halloween Party, Costume Project & Trick-or-Treat Organizer",
@@ -2118,7 +2118,7 @@ window.APP_MODULES.brands = async function(container) {
     97: "The High-Impact Solopreneur: Systems for 20-Hour Workweeks (E-book)",
     98: "Meal Prep Mastery: Healthy Family Dinners in 30 Mins (E-book)",
     99: "Digital Planning Masterclass: GoodNotes & Tablet Guide (E-book)",
-    100: "The Complete PlannerQueenCo Self-Mastery E-book Library Box Set"
+    100: "The Complete PlannerQueenGro Self-Mastery E-book Library Box Set"
   };
 
   function generateDefaultProductsForBrand(brand) {
@@ -2416,7 +2416,7 @@ window.APP_MODULES.brands = async function(container) {
       // Resolve Brand
       let b = state.brands?.find(x => x.id === brandId);
       if (!b) {
-        b = state.brands?.find(x => x.name === arg2) || { id: brandId || 1, name: typeof arg2 === 'string' && !arg2.includes('-') ? arg2 : 'PlannerQueenCo', niche: 'Digital products', voice: 'Inspiring', type: 'Digital', palette: ['#8B5A7A', '#FAF3E8', '#7D9B76', '#C4887C', '#2E2E2E'], fonts: 'Playfair Display + Lato' };
+        b = state.brands?.find(x => x.name === arg2) || { id: brandId || 1, name: typeof arg2 === 'string' && !arg2.includes('-') ? arg2 : 'PlannerQueenGro', niche: 'Digital products', voice: 'Inspiring', type: 'Digital', palette: ['#8B5A7A', '#FAF3E8', '#7D9B76', '#C4887C', '#2E2E2E'], fonts: 'Playfair Display + Lato' };
       }
       if (!b.id) b.id = brandId || 1;
 
@@ -3336,7 +3336,7 @@ window.APP_MODULES.brands = async function(container) {
       const brandCatalog = state.productsCatalog?.[brandId] || state.productsCatalog?.[String(brandId)] || [];
       const prod = brandCatalog.find(p => p.code === productCode) || {};
 
-      const finalTitle = (titleEl?.value?.trim()) || prod.seoTitle || prod.seo?.title || prod.name || `Daily & Weekly Planners #1 — PlannerQueenCo Style`;
+      const finalTitle = (titleEl?.value?.trim()) || prod.seoTitle || prod.seo?.title || prod.name || `Daily & Weekly Planners #1 — PlannerQueenGro Style`;
       const finalDesc = (descEl?.value?.trim()) || prod.seoDescription || prod.seo?.description || `Instant digital download printable template. High-resolution layout ready for immediate print or tablet use.`;
       const finalTags = (tagsEl?.value ? tagsEl.value.split(',').map(t => t.trim()).filter(Boolean) : (prod.seoTags || prod.seo?.tags || ['digital planner', 'printable template', 'instant download', 'goodnotes planner', 'life planner']));
 
@@ -4075,7 +4075,7 @@ window.APP_MODULES.brands = async function(container) {
       if (!dbmIdStr) return;
       const dbmId = Number(dbmIdStr);
 
-      const brandName = prompt('Brand Name worked on today:', 'PlannerQueenCo');
+      const brandName = prompt('Brand Name worked on today:', 'PlannerQueenGro');
       if (!brandName) return;
 
       const listed = Number(prompt('How many products were listed today?', '8')) || 0;
