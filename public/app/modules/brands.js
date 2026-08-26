@@ -3386,6 +3386,13 @@ window.APP_MODULES.brands = async function(container) {
       const pricing = audit.pricing || {};
       const pages = audit.page_analysis || [];
 
+      window._currentAuditPrompts = {};
+      pages.forEach(p => {
+        if (p.remediation_prompt) {
+          window._currentAuditPrompts[p.page_number] = p.remediation_prompt;
+        }
+      });
+
       const cleanPages = pages.filter(p => p.status === 'clean');
       const flawedPages = pages.filter(p => p.status === 'needs_fix');
 
@@ -3513,7 +3520,7 @@ window.APP_MODULES.brands = async function(container) {
                 <div style="background:rgba(0,0,0,0.4); border:1px solid rgba(251,191,36,0.25); border-radius:8px; padding:0.75rem; margin-top:0.5rem;">
                   <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem;">
                     <span style="font-size:0.68rem; font-weight:800; color:#fbbf24; text-transform:uppercase;">⚡ 1-Click Targeted AI Edit Prompt (Google Flow / Gemini):</span>
-                    <button class="btn-primary btn-sm" style="font-size:0.7rem; padding:0.2rem 0.6rem; background:#fbbf24; color:#000; font-weight:800;" onclick="navigator.clipboard.writeText('${escape(p.remediation_prompt)}'); window.showToast('📋 Copied Page ${p.page_number} Edit Prompt! Paste into Flow.','success');">
+                    <button class="btn-primary btn-sm" style="font-size:0.7rem; padding:0.2rem 0.6rem; background:#fbbf24; color:#000; font-weight:800;" onclick="window.BrandsModule.copyAuditRemediationPrompt(${p.page_number})">
                       📋 Copy Page ${p.page_number} Edit Prompt
                     </button>
                   </div>
@@ -5122,6 +5129,42 @@ window.APP_MODULES.brands = async function(container) {
             <button class="btn-secondary" onclick="document.getElementById('etsyBulkModal').style.display='none'">Close</button>
           </div>
         `;
+      }
+    },
+
+    copyAuditRemediationPrompt(pageNum) {
+      const promptText = (window._currentAuditPrompts && window._currentAuditPrompts[pageNum]) || '';
+      if (!promptText) {
+        if (window.showToast) window.showToast('No prompt found for this page.', 'error');
+        return;
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(promptText).then(() => {
+          if (window.showToast) window.showToast(`📋 Copied Page ${pageNum} Edit Prompt! (Clean text ready for Flow/Nano Banana)`, 'success');
+        }).catch(() => {
+          fallbackCopy(promptText, pageNum);
+        });
+      } else {
+        fallbackCopy(promptText, pageNum);
+      }
+
+      function fallbackCopy(text, num) {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.top = '0';
+        ta.style.left = '0';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        try {
+          document.execCommand('copy');
+          if (window.showToast) window.showToast(`📋 Copied Page ${num} Edit Prompt! (Clean text ready for Flow/Nano Banana)`, 'success');
+        } catch (e) {
+          if (window.showToast) window.showToast('Copy failed. Please manually select the prompt text.', 'error');
+        }
+        document.body.removeChild(ta);
       }
     },
 
