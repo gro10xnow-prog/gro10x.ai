@@ -2732,15 +2732,27 @@ window.APP_MODULES.brands = async function(container) {
         <!-- STEP 1: PRODUCT BLUEPRINT & CREATION GUIDE -->
         <!-- ═══════════════════════════════════════════════════════════════════ -->
         <div id="studioTabBlueprint" style="display:flex; flex-direction:column; gap:1.2rem;">
-          <!-- SPECS ROW -->
+          <!-- SPECS & CATEGORY INTELLIGENCE ROW -->
           <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:0.75rem;">
             <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); padding:0.75rem; border-radius:10px;">
-              <label style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.2rem;">Page Geometry & Format</label>
-              <input type="text" id="studioBlueprintGeometry" value="${(specs.dimensions || 'US Letter (8.5x11 in)').replace(/"/g, '&quot;')}" style="width:100%; font-size:0.82rem; padding:0.45rem; background:rgba(0,0,0,0.3); border:1px solid var(--border-subtle); border-radius:6px; color:#06b6d4; font-weight:700;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.2rem;">
+                <label style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Category Architecture</label>
+                <span style="font-size:0.68rem; font-weight:800; color:#00df89; background:rgba(0,223,137,0.1); padding:1px 6px; border-radius:4px;">${pages.length || 20} Spreads</span>
+              </div>
+              <div style="font-size:0.82rem; font-weight:800; color:#06b6d4; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                ${savedBP.categoryName || matchedProduct.category || 'Productivity Systems'}
+              </div>
+              <div style="font-size:0.68rem; color:var(--text-muted); margin-top:0.2rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                Audience: ${savedBP.targetAudience || 'Intentional buyers & professionals'}
+              </div>
+            </div>
+            <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); padding:0.75rem; border-radius:10px;">
+              <label style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.2rem;">Format & Dimensions</label>
+              <input type="text" id="studioBlueprintGeometry" value="${(specs.dimensions || 'US Letter (8.5 x 11 in) / 300 DPI Vector PDF').replace(/"/g, '&quot;')}" style="width:100%; font-size:0.8rem; padding:0.4rem; background:rgba(0,0,0,0.3); border:1px solid var(--border-subtle); border-radius:6px; color:#06b6d4; font-weight:700;">
             </div>
             <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); padding:0.75rem; border-radius:10px;">
               <label style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.2rem;">Typography Hierarchy</label>
-              <input type="text" id="studioBlueprintTypography" value="${(specs.typography?.headingFont || 'Playfair Display') + ' + ' + (specs.typography?.bodyFont || 'Lato')}" style="width:100%; font-size:0.82rem; padding:0.45rem; background:rgba(0,0,0,0.3); border:1px solid var(--border-subtle); border-radius:6px; color:#fff; font-weight:700;">
+              <input type="text" id="studioBlueprintTypography" value="${(specs.typography?.headingFont || 'Playfair Display') + ' + ' + (specs.typography?.bodyFont || 'Lato')}" style="width:100%; font-size:0.8rem; padding:0.4rem; background:rgba(0,0,0,0.3); border:1px solid var(--border-subtle); border-radius:6px; color:#fff; font-weight:700;">
             </div>
             <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); padding:0.75rem; border-radius:10px;">
               <label style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.2rem;">Brand Color Palette</label>
@@ -3183,7 +3195,11 @@ window.APP_MODULES.brands = async function(container) {
               brandVoice: b.voice,
               brandPalette: b.palette,
               brandFonts: b.fonts,
-              type: b.type
+              type: b.type || prod.format || 'Digital PDF',
+              category: prod.category || '',
+              hero: prod.hero || false,
+              format: prod.format || 'Digital PDF',
+              seoTags: prod.seoTags || prod.seo?.tags || []
             })
           }).then(async r => {
             const json = await r.json().catch(() => ({}));
@@ -3200,7 +3216,11 @@ window.APP_MODULES.brands = async function(container) {
               brandVoice: b.voice,
               brandPalette: b.palette,
               brandFonts: b.fonts,
-              type: b.type
+              type: b.type || prod.format || 'Digital PDF',
+              category: prod.category || '',
+              hero: prod.hero || false,
+              format: prod.format || 'Digital PDF',
+              seoTags: prod.seoTags || prod.seo?.tags || []
             })
           }).then(async r => {
             const json = await r.json().catch(() => ({}));
