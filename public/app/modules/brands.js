@@ -3390,6 +3390,25 @@ window.APP_MODULES.brands = async function(container) {
       const flawedPages = pages.filter(p => p.status === 'needs_fix');
 
       return `
+        ${audit.isFallback ? `
+          <!-- FALLBACK WARNING BANNER -->
+          <div style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.4); border-radius:10px; padding:0.75rem 1rem; margin-bottom:1rem; display:flex; align-items:center; gap:0.75rem;">
+            <span style="font-size:1.3rem; flex-shrink:0;">⚠️</span>
+            <div>
+              <div style="font-size:0.75rem; font-weight:800; color:#ef4444; margin-bottom:0.15rem;">ILLUSTRATIVE TEMPLATE — NOT A REAL AUDIT</div>
+              <div style="font-size:0.72rem; color:var(--text-muted);">
+                ${audit.fallbackReason || 'Gemini Vision API unavailable or no mockup images loaded.'} 
+                To trigger a real AI audit, ensure mockup images are uploaded (Studio → Tab 4), then re-run the audit.
+              </div>
+            </div>
+          </div>
+        ` : `
+          <!-- REAL AUDIT SUCCESS INDICATOR -->
+          <div style="background:rgba(0,223,137,0.06); border:1px solid rgba(0,223,137,0.25); border-radius:10px; padding:0.55rem 1rem; margin-bottom:1rem; display:flex; align-items:center; gap:0.6rem;">
+            <span style="font-size:0.9rem;">🧠</span>
+            <span style="font-size:0.72rem; color:#00df89; font-weight:700;">Real Gemini Vision Audit · ${audit.evaluated_by || 'Gemini Multimodal'}</span>
+          </div>
+        `}
         <!-- HERO SCORE & PRICING SPLIT -->
         <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:1rem; margin-bottom:1.25rem;">
           <!-- SCORE CARD -->
