@@ -3075,123 +3075,185 @@ window.APP_MODULES.brands = async function(container) {
         </div>
 
         <!-- ═══════════════════════════════════════════════════════════════════ -->
-        <!-- STEP 3: MEDIA STUDIO (MOCKUPS + VIDEO) -->
+        <!-- STEP 3: MEDIA STUDIO (10 MOCKUPS + CAPCUT VIDEO) -->
         <!-- ═══════════════════════════════════════════════════════════════════ -->
         <div id="studioTabMockups" style="display:none; flex-direction:column; gap:1.2rem;">
-          <!-- 1. MOCKUP PRODUCTION BRIEF CARD -->
-          <div style="background:rgba(6,182,212,0.05); border:1px solid rgba(6,182,212,0.25); padding:1.1rem 1.25rem; border-radius:14px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem; flex-wrap:wrap; gap:0.5rem;">
+          
+          <!-- 1. HEADER ACTION & CATEGORY PROMPT CONTROLS -->
+          <div style="background:rgba(6,182,212,0.05); border:1px solid rgba(6,182,212,0.25); padding:1rem 1.25rem; border-radius:14px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
               <div>
-                <span style="font-size:0.78rem; font-weight:800; color:#06b6d4; text-transform:uppercase; display:block;">📸 10-Slot Mockup Production Brief</span>
-                <span style="font-size:0.7rem; color:var(--text-muted);">Aspect ratio 3:4 portrait (Midjourney / Google Flow / Flux / Canva)</span>
+                <span style="font-size:0.78rem; font-weight:800; color:#06b6d4; text-transform:uppercase; display:block;">📸 10-Slot Commercial Mockup Production Studio</span>
+                <span style="font-size:0.72rem; color:var(--text-muted);">Aspect ratio 3:4 portrait (Midjourney / Google Flow / Flux / Canva) · ${mockupsList.length || 10} Category Scene Briefs</span>
               </div>
-              <button class="btn-primary btn-sm" style="font-size:0.74rem; padding:0.35rem 0.85rem; background:#06b6d4; color:#000; font-weight:800; border:none; border-radius:8px;" onclick="window.BrandsModule.copyMasterMockupPrompt()">
-                📋 Copy Master 10-Mockup Batch Prompt
-              </button>
+              <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
+                <button type="button" class="btn-ghost btn-sm" style="font-size:0.72rem; padding:0.3rem 0.65rem;" onclick="window.BrandsModule.refreshStudioMockupBriefs(${b.id}, '${prodCode}')">
+                  🔄 Refresh Scene Briefs
+                </button>
+                <button type="button" class="btn-primary btn-sm" style="font-size:0.72rem; padding:0.3rem 0.75rem; background:#06b6d4; color:#000; font-weight:800; border:none;" onclick="window.BrandsModule.copyMasterMockupPrompt()">
+                  📋 Copy Master 10-Mockup Batch Prompt
+                </button>
+              </div>
             </div>
-            
-            <p style="font-size:0.75rem; color:var(--text-secondary); margin:0 0 0.65rem; line-height:1.4;">
-              Create <strong>at least ${minMockups} mockup photos</strong> (up to 10 max). Copy the master prompt for Google Flow / Midjourney, or copy individual slot prompts below:
-            </p>
+          </div>
 
-            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:0.5rem; max-height:220px; overflow-y:auto; background:rgba(0,0,0,0.3); padding:0.75rem; border-radius:10px;">
-              ${mockupsList.map((m, idx) => {
-                const slotNum = m.number || m.slot || idx + 1;
+          <!-- 2. INTERACTIVE 10-SLOT VISUAL BOARD -->
+          <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); padding:1.25rem; border-radius:14px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; flex-wrap:wrap; gap:0.5rem;">
+              <div>
+                <strong style="font-size:0.78rem; color:#fff; text-transform:uppercase;">🖼️ 10-Slot Visual Image Grid</strong>
+                <span style="font-size:0.7rem; color:var(--text-muted); display:block;">Upload directly into specific scene slots or use the bulk dropzone below.</span>
+              </div>
+              <span id="mockupHeaderCountBadge" style="font-size:0.72rem; font-weight:800; color:${savedMockups.length >= minMockups ? '#00df89' : '#fbbf24'}; background:${savedMockups.length >= minMockups ? 'rgba(0,223,137,0.15)' : 'rgba(251,191,36,0.15)'}; padding:0.25rem 0.65rem; border-radius:6px;">
+                ${savedMockups.length} / 10 Slots Populated (${minMockups} min required)
+              </span>
+            </div>
+
+            <!-- 10 INDIVIDUAL SLOTS GRID -->
+            <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:0.75rem; margin-bottom:1rem;">
+              ${Array.from({ length: 10 }).map((_, idx) => {
+                const slotNum = idx + 1;
+                const brief = mockupsList[idx] || { title: `Slot ${slotNum}`, scene: 'High converting lifestyle mockup' };
+                const stored = savedMockups.find(m => m.rank === slotNum) || (savedMockups[idx] && !savedMockups.some(m=>m.rank===slotNum) ? savedMockups[idx] : null);
+                const hasImage = Boolean(stored && (stored.url || stored.fileName));
+
                 return `
-                  <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:0.5rem 0.65rem; display:flex; justify-content:space-between; align-items:center; gap:0.5rem;">
-                    <div style="min-width:0; flex:1;">
-                      <div style="font-size:0.72rem; font-weight:800; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                        <span style="color:#06b6d4;">#${slotNum}:</span> ${m.title || `Slot ${slotNum}`}
-                      </div>
-                      <div style="font-size:0.65rem; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                        ${(m.scene || m.prompt || '').slice(0, 60)}...
-                      </div>
+                  <div style="background:rgba(0,0,0,0.35); border:1px solid ${hasImage ? 'rgba(0,223,137,0.4)' : 'rgba(255,255,255,0.08)'}; border-radius:10px; overflow:hidden; display:flex; flex-direction:column; justify-content:space-between;">
+                    
+                    <!-- SLOT TOP INFO -->
+                    <div style="padding:0.5rem 0.65rem; border-bottom:1px solid rgba(255,255,255,0.05); display:flex; justify-content:space-between; align-items:center;">
+                      <span style="font-size:0.7rem; font-weight:800; color:${slotNum === 1 ? '#00df89' : '#06b6d4'};">
+                        ${slotNum === 1 ? '⭐ Slot #1 (Hero)' : `Slot #${slotNum}`}
+                      </span>
+                      <button type="button" class="btn-ghost btn-sm" style="font-size:0.65rem; padding:1px 5px; color:var(--text-muted);" onclick="window.BrandsModule.copyMockupSlotPrompt(${slotNum})" title="Copy Slot Prompt">
+                        📋 Prompt
+                      </button>
                     </div>
-                    <button class="btn-ghost btn-sm" style="font-size:0.68rem; padding:0.2rem 0.5rem; color:#06b6d4; border:1px solid rgba(6,182,212,0.3); flex-shrink:0;" onclick="window.BrandsModule.copyMockupSlotPrompt(${slotNum})">
-                      📋 Copy
-                    </button>
+
+                    <!-- SLOT PREVIEW / DROP AREA -->
+                    <div style="padding:0.75rem; text-align:center; min-height:110px; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                      ${hasImage ? `
+                        <div style="width:100%; aspect-ratio:4/3; border-radius:6px; overflow:hidden; background:#000; position:relative; margin-bottom:0.4rem;">
+                          ${(stored.url && stored.url.startsWith('http')) ? `
+                            <img src="${stored.url}" style="width:100%; height:100%; object-fit:cover;">
+                          ` : `
+                            <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%;">
+                              <span style="font-size:1.5rem;">🖼️</span>
+                              <span style="font-size:0.62rem; color:#fff; font-weight:700;">${stored.fileName || 'Stored Image'}</span>
+                            </div>
+                          `}
+                        </div>
+                        <div style="font-size:0.68rem; color:#00df89; font-weight:700;">✅ Stored in Vault</div>
+                      ` : `
+                        <div style="font-size:1.3rem; margin-bottom:0.25rem;">📷</div>
+                        <strong style="font-size:0.74rem; color:#fff; margin-bottom:0.15rem;">${brief.title || `Slot ${slotNum}`}</strong>
+                        <p style="font-size:0.64rem; color:var(--text-muted); margin:0; line-height:1.3; max-width:180px; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">
+                          ${brief.scene || brief.prompt || ''}
+                        </p>
+                      `}
+                    </div>
+
+                    <!-- SLOT ACTIONS -->
+                    <div style="padding:0.4rem 0.65rem; background:rgba(0,0,0,0.25); border-top:1px solid rgba(255,255,255,0.05); display:flex; justify-content:space-between; align-items:center;">
+                      <input type="file" id="mockupSlotFileInput_${slotNum}" accept="image/png,image/jpeg,image/webp" style="display:none;" onchange="window.BrandsModule.uploadSingleSlotMockup(${b.id}, '${prodCode}', ${slotNum}, this)">
+                      <button type="button" class="btn-secondary btn-sm" style="font-size:0.68rem; padding:0.2rem 0.5rem;" onclick="document.getElementById('mockupSlotFileInput_${slotNum}').click()">
+                        ${hasImage ? '🔄 Replace' : '📁 Upload'}
+                      </button>
+                      ${hasImage ? `
+                        <button type="button" class="btn-ghost btn-sm" style="color:#ef4444; font-size:0.68rem; padding:0.2rem 0.4rem;" onclick="window.BrandsModule.deleteMockupSlot(${b.id}, '${prodCode}', ${slotNum})">
+                          🗑️
+                        </button>
+                      ` : `
+                        <span style="font-size:0.62rem; color:var(--text-muted);">Empty</span>
+                      `}
+                    </div>
+
                   </div>
                 `;
               }).join('')}
             </div>
+
+            <!-- 3. BULK MULTI-IMAGE DROPZONE -->
+            <div id="mockupBulkDropzone"
+              onclick="document.getElementById('mockupFilesInput').click()"
+              ondragover="event.preventDefault(); this.style.borderColor='#00df89'; this.style.background='rgba(0,223,137,0.08)';"
+              ondragleave="this.style.borderColor='rgba(0,223,137,0.3)'; this.style.background='rgba(0,0,0,0.3)';"
+              ondrop="event.preventDefault(); this.style.borderColor='rgba(0,223,137,0.3)'; this.style.background='rgba(0,0,0,0.3)'; window.BrandsModule.handleBulkMockupDrop(event, ${b.id}, '${prodCode}');"
+              style="border:2px dashed rgba(0,223,137,0.35); background:rgba(0,0,0,0.3); border-radius:12px; padding:1.25rem 1rem; text-align:center; cursor:pointer; transition:all 0.2s ease; margin-bottom:0.75rem;">
+              <div style="font-size:1.6rem; margin-bottom:0.25rem;">📤</div>
+              <strong style="color:#fff; font-size:0.82rem; display:block; margin-bottom:0.15rem;">Drop 1–10 Mockup Photos Here for Batch Upload</strong>
+              <span style="font-size:0.7rem; color:var(--text-muted);">Auto-populates empty slots sequentially (PNG/JPG/WEBP).</span>
+              <input type="file" id="mockupFilesInput" multiple accept="image/png,image/jpeg,image/webp" style="display:none;" onchange="window.BrandsModule.onBulkMockupFilesSelected(this, ${b.id}, '${prodCode}')">
+            </div>
+
+            <div id="mockupUploadStatus" style="font-size:0.78rem;"></div>
           </div>
 
-          <!-- 2. MOCKUP UPLOAD CARD -->
-          <div style="background:rgba(0,223,137,0.04); border:1px solid rgba(0,223,137,0.25); padding:1.25rem; border-radius:14px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
-              <div>
-                <span style="font-size:0.75rem; font-weight:800; color:#00df89; text-transform:uppercase; display:block;">📤 Upload 4–10 Mockup Photos to Vault</span>
-                <p style="font-size:0.78rem; color:var(--text-muted); margin:0.1rem 0 0;">Upload JPG/PNG listing photos. Minimum required: <strong>${minMockups} images</strong>.</p>
-              </div>
-              <span id="mockupHeaderCountBadge" style="font-size:0.72rem; font-weight:800; color:${savedMockups.length >= minMockups ? '#00df89' : '#fbbf24'}; background:${savedMockups.length >= minMockups ? 'rgba(0,223,137,0.1)' : 'rgba(251,191,36,0.1)'}; padding:0.2rem 0.6rem; border-radius:6px;">
-                ${savedMockups.length} / ${minMockups} min (10 max)
-              </span>
-            </div>
-
-            <div style="margin-bottom:0.75rem;">
-              <input type="file" id="mockupFilesInput" multiple accept="image/png,image/jpeg,image/webp" onchange="window.BrandsModule.handleMockupFileSelect(event)" style="width:100%; font-size:0.82rem; background:rgba(0,0,0,0.3); border:1px dashed rgba(0,223,137,0.4); padding:0.75rem; border-radius:10px; color:#fff; cursor:pointer;">
-            </div>
-
-            <!-- THUMBNAIL PREVIEW GRID -->
-            <div id="mockupThumbnailGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(80px, 1fr)); gap:0.5rem; margin-bottom:0.85rem;">
-              ${(savedMockups.length > 0 ? savedMockups : []).map((m, idx) => `
-                <div style="position:relative; aspect-ratio:1; border-radius:8px; overflow:hidden; border:1px solid rgba(0,223,137,0.4); background:rgba(0,0,0,0.5); display:flex; flex-direction:column; align-items:center; justify-content:center;">
-                  ${(m.url && typeof m.url === 'string' && m.url.startsWith('http')) ? `
-                    <img src="${m.url}" style="width:100%; height:100%; object-fit:cover;">
-                  ` : `
-                    <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; width:100%; padding:4px; box-sizing:border-box; text-align:center;">
-                      <span style="font-size:1.2rem;">🖼️</span>
-                      <span style="font-size:0.6rem; color:#fff; font-weight:700; max-width:70px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${m.fileName || `Slot ${m.rank || idx + 1}`}</span>
-                      <span style="font-size:0.55rem; color:#00df89; font-weight:800;">✅ Stored</span>
-                    </div>
-                  `}
-                  <span style="position:absolute; bottom:2px; left:2px; font-size:0.6rem; font-weight:800; background:rgba(0,0,0,0.85); color:#00df89; padding:1px 4px; border-radius:3px;">#${m.rank || idx + 1}</span>
-                </div>
-              `).join('')}
-            </div>
-
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
-              <button class="btn-primary" style="padding:0.5rem 1rem; font-size:0.8rem;" onclick="window.BrandsModule.uploadProductMockups(${b.id}, '${prodCode}')">
-                💾 Save Mockups to Vault
-              </button>
-              <div id="mockupUploadStatus" style="font-size:0.78rem;">
-                ${savedMockups.length >= minMockups ? `
-                  <span style="color:#00df89; font-weight:700;">✅ ${savedMockups.length} mockups stored (Minimum Met)</span>
-                ` : `<span style="color:#fbbf24; font-weight:700;">⚠️ ${savedMockups.length}/${minMockups} mockups stored</span>`}
-              </div>
-            </div>
-          </div>
-
-          <!-- 3. MANDATORY LISTING VIDEO CARD (CAPCUT SCRIPT + UPLOADER) -->
+          <!-- 4. CAPCUT 3-SCENE STORYBOARD & VIDEO PLAYER -->
           <div style="background:rgba(168,85,247,0.05); border:1px solid rgba(168,85,247,0.3); padding:1.25rem; border-radius:14px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.75rem; flex-wrap:wrap; gap:0.5rem;">
               <div>
-                <span style="font-size:0.75rem; font-weight:800; color:#c084fc; text-transform:uppercase; display:block;">🎬 CapCut Listing Video (3–15s · Mandatory)</span>
-                <p style="font-size:0.78rem; color:var(--text-muted); margin:0.1rem 0 0;">Etsy requires listing videos to be under 15 seconds, max 100MB.</p>
+                <span style="font-size:0.76rem; font-weight:800; color:#c084fc; text-transform:uppercase; display:block;">🎬 CapCut 3-Scene Listing Video (3–15s · Mandatory)</span>
+                <p style="font-size:0.74rem; color:var(--text-muted); margin:0.15rem 0 0; max-width:540px;">
+                  Etsy listing video max 15 seconds, max 100MB. Follow the 3-scene conversion storyboard below.
+                </p>
               </div>
-              <span style="font-size:0.7rem; font-weight:800; background:rgba(168,85,247,0.15); color:#c084fc; padding:0.2rem 0.5rem; border-radius:6px;">Required</span>
+              <button type="button" class="btn-ghost btn-sm" style="font-size:0.72rem; padding:0.3rem 0.65rem; color:#c084fc; border:1px solid rgba(168,85,247,0.4);" onclick="navigator.clipboard.writeText(document.getElementById('capcutScriptContent')?.innerText || ''); window.showToast('📋 Copied CapCut Storyboard!','success');">
+                📋 Copy Storyboard Script
+              </button>
             </div>
 
-            ${videoPrompt ? `
-              <div style="background:rgba(0,0,0,0.3); padding:0.65rem 0.85rem; border-radius:8px; margin-bottom:0.75rem; font-size:0.74rem; font-family:monospace; color:#e2e8f0; line-height:1.4; max-height:90px; overflow-y:auto;">
-                ${videoPrompt}
+            <!-- STORYBOARD SCRIPT CARD -->
+            <div id="capcutScriptContent" style="background:rgba(0,0,0,0.35); padding:0.75rem 0.95rem; border-radius:10px; margin-bottom:0.85rem; font-size:0.74rem; font-family:monospace; color:#e2e8f0; line-height:1.5;">
+              ${videoPrompt || `
+                🎬 [Scene 1: 0-3s Hook] "Struggling to stay organized? Meet the ${prodName}." Fast cut of messy desk vs clean structured planner.
+                ✨ [Scene 2: 3-10s Solution] Smooth page-flip transition across all daily & weekly hyperlinked spreads. Pastel mildliner stylus in action.
+                🚀 [Scene 3: 10-15s CTA] "Instant Download · GoodNotes & Print Ready · Link in Bio / Shop Now".
+              `}
+            </div>
+
+            <!-- VIDEO PLAYER (IF STORED) -->
+            ${savedVideo?.url || savedVideo?.fileName ? `
+              <div style="background:rgba(0,0,0,0.4); border:1px solid rgba(168,85,247,0.3); border-radius:10px; padding:0.85rem; margin-bottom:0.75rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                  <span style="font-size:0.74rem; font-weight:800; color:#00df89;">✅ Stored Video: ${savedVideo.fileName || 'Listing Video'}</span>
+                  <button type="button" class="btn-ghost btn-sm" style="color:#ef4444; font-size:0.68rem; padding:0.2rem 0.5rem;" onclick="window.BrandsModule.clearProductVideo(${b.id}, '${prodCode}')">
+                    🗑️ Clear / Replace Video
+                  </button>
+                </div>
+                ${savedVideo.url ? `
+                  <video controls src="${savedVideo.url}" style="width:100%; max-height:220px; border-radius:8px; background:#000;"></video>
+                ` : ''}
               </div>
             ` : ''}
 
-            <div style="display:grid; grid-template-columns:2fr 1fr; gap:0.75rem; align-items:center; margin-bottom:0.75rem;">
-              <input type="file" id="listingVideoInput" accept="video/mp4,video/quicktime,.mp4,.mov" style="width:100%; font-size:0.82rem; background:rgba(0,0,0,0.3); border:1px dashed rgba(168,85,247,0.4); padding:0.75rem; border-radius:10px; color:#fff; cursor:pointer;">
-              <button class="btn-primary" style="background:#a855f7; border-color:#a855f7; padding:0.6rem 1rem; font-size:0.8rem; font-weight:800;" onclick="window.BrandsModule.uploadProductVideo(${b.id}, '${prodCode}')">
-                💾 Save Video
+            <!-- VIDEO UPLOADER -->
+            <div style="display:grid; grid-template-columns:2fr 1fr; gap:0.75rem; align-items:center;">
+              <input type="file" id="listingVideoInput" accept="video/mp4,video/quicktime,.mp4,.mov" style="width:100%; font-size:0.8rem; background:rgba(0,0,0,0.3); border:1px dashed rgba(168,85,247,0.4); padding:0.65rem; border-radius:8px; color:#fff; cursor:pointer;">
+              <button class="btn-primary" style="background:#a855f7; border-color:#a855f7; padding:0.55rem 1rem; font-size:0.8rem; font-weight:800;" onclick="window.BrandsModule.uploadProductVideo(${b.id}, '${prodCode}')">
+                💾 Save Video to Vault
               </button>
             </div>
 
-            <div id="videoUploadStatus" style="font-size:0.78rem;">
+            <div id="videoUploadStatus" style="font-size:0.78rem; margin-top:0.4rem;">
               ${savedVideo?.fileName ? `
-                <span style="color:#00df89; font-weight:700;">✅ Video Stored: ${savedVideo.fileName}</span>
-              ` : `<span style="color:#ef4444; font-weight:700;">🔴 Video missing (Required to submit for review)</span>`}
+                <span style="color:#00df89; font-weight:700;">✅ Video Ready for Etsy Publishing</span>
+              ` : `<span style="color:#ef4444; font-weight:700;">🔴 Video Missing (Etsy algorithms favor listings with video)</span>`}
             </div>
           </div>
 
+          <!-- 5. ETSY MEDIA COMPLIANCE CHECKLIST -->
+          <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); padding:1rem 1.25rem; border-radius:12px;">
+            <label style="font-size:0.72rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.5rem;">Etsy Media Conversion Compliance</label>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:0.5rem; font-size:0.74rem;">
+              <span style="color:${savedMockups.length > 0 ? '#00df89' : 'var(--text-muted)'};">${savedMockups.length > 0 ? '✅' : '⚪'} Slot 1 Hero Photo Ready</span>
+              <span style="color:${savedMockups.length >= 4 ? '#00df89' : 'var(--text-muted)'};">${savedMockups.length >= 4 ? '✅' : '⚪'} 4+ Photos Uploaded (${savedMockups.length}/10)</span>
+              <span style="color:${savedMockups.length >= 10 ? '#00df89' : 'var(--text-muted)'};">${savedMockups.length >= 10 ? '✅' : '⚪'} Full 10/10 Mockup Coverage</span>
+              <span style="color:${savedVideo?.fileName ? '#00df89' : 'var(--text-muted)'};">${savedVideo?.fileName ? '✅' : '⚪'} 3–15s Video Attached</span>
+            </div>
+          </div>
+
+          <!-- NAVIGATION BAR -->
           <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.5rem;">
             <button class="btn-ghost btn-sm" onclick="window.BrandsModule.switchStudioTab('vault')">← Step 2: Vault File</button>
             <button class="btn-primary" style="font-size:0.82rem; padding:0.55rem 1.25rem;" onclick="window.BrandsModule.switchStudioTab('audit')">
@@ -4356,32 +4418,170 @@ window.APP_MODULES.brands = async function(container) {
       }
     },
 
-    async uploadProductMockups(brandId, productCode) {
-      const fileInput = document.getElementById('mockupFilesInput');
-      const files = fileInput?.files;
-      if (!files || files.length === 0) {
-        window.showToast('Please select at least 1 mockup image (PNG/JPG)', 'warning');
-        return;
-      }
+    async refreshStudioMockupBriefs(brandId, productCode) {
+      if (window.showToast) window.showToast('🔄 Synchronizing 10-Mockup briefs with Blueprint...', 'info');
+      try {
+        const headers = getStudioAuthHeaders({ 'Content-Type': 'application/json' });
+        const res = await fetch(`/api/brands/${brandId}/mockups/refresh-briefs`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ productCode })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.success) throw new Error(data.error || 'Failed refreshing briefs');
 
-      const statusEl = document.getElementById('mockupUploadStatus');
-      let savedCount = 0;
-      const uploadedItems = [];
+        if (state.productsCatalog && state.productsCatalog[brandId]) {
+          const prod = state.productsCatalog[brandId].find(p => p.code === productCode);
+          if (prod && prod.blueprint) {
+            prod.blueprint.mockupsList = data.briefs?.mockups || [];
+            prod.blueprint.masterMockupPrompt = data.briefs?.masterMockupPrompt || '';
+            prod.blueprint.videoPrompt = data.briefs?.videoPrompt || '';
+          }
+        }
+        saveBrandsStateLocally(state);
+
+        if (window.showToast) window.showToast('✅ 10 Mockup briefs refreshed from Blueprint 2.0!', 'success');
+        const prod = state.productsCatalog[brandId].find(p => p.code === productCode);
+        window.BrandsModule.generateLiveSEOPackage(brandId, productCode, encodeURIComponent(prod?.name || ''));
+        setTimeout(() => window.BrandsModule.switchStudioTab('mockups'), 80);
+      } catch (err) {
+        console.error('[Refresh Mockup Briefs Error]:', err);
+        if (window.showToast) window.showToast(`Refresh failed: ${err.message}`, 'error');
+      }
+    },
+
+    async uploadSingleSlotMockup(brandId, productCode, slotNum, input) {
+      const file = input?.files?.[0];
+      if (!file) return;
+
+      if (window.showToast) window.showToast(`⏳ Uploading Slot #${slotNum}: ${file.name}...`, 'info');
 
       try {
-        const total = Math.min(10, files.length);
+        const formData = new FormData();
+        formData.append('productCode', productCode);
+        formData.append('mockup', file);
+        formData.append('rank', slotNum);
+        formData.append('totalFiles', 1);
+
         const uploadHeaders = getStudioAuthHeaders();
-        for (let i = 0; i < total; i++) {
-          const file = files[i];
-          if (statusEl) {
-            statusEl.innerHTML = `<span style="color:#06b6d4; font-weight:700;">⏳ Uploading ${i + 1}/${total}: ${file.name}...</span>`;
+        const res = await fetch(`/api/brands/${brandId}/mockups/upload-single`, {
+          method: 'POST',
+          headers: uploadHeaders,
+          body: formData
+        });
+
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.success) throw new Error(data.error || `Failed uploading ${file.name}`);
+
+        // Update in-memory state
+        if (state.productsCatalog && state.productsCatalog[brandId]) {
+          const prod = state.productsCatalog[brandId].find(p => p.code === productCode);
+          if (prod) {
+            if (!Array.isArray(prod.mockups)) prod.mockups = [];
+            const existingIdx = prod.mockups.findIndex(m => m.rank === slotNum);
+            if (existingIdx >= 0) {
+              prod.mockups[existingIdx] = data.mockup;
+            } else {
+              prod.mockups.push(data.mockup);
+            }
+            prod.mockupsCount = prod.mockups.length;
+            prod.mockupUrls = prod.mockups.map(m => m.url).filter(Boolean);
+            if (prod.mockups.length >= 4 && (prod.video?.storagePath || prod.video?.fileName)) {
+              prod.status = 'Media Ready';
+            }
           }
+        }
+        saveBrandsStateLocally(state);
+
+        if (window.showToast) window.showToast(`✅ Slot #${slotNum} saved to Vault!`, 'success');
+        const prod = state.productsCatalog[brandId].find(p => p.code === productCode);
+        window.BrandsModule.generateLiveSEOPackage(brandId, productCode, encodeURIComponent(prod?.name || ''));
+        setTimeout(() => window.BrandsModule.switchStudioTab('mockups'), 80);
+      } catch (err) {
+        console.error('[Upload Single Mockup Slot Error]:', err);
+        if (window.showToast) window.showToast(`Upload failed: ${err.message}`, 'error');
+      }
+    },
+
+    async deleteMockupSlot(brandId, productCode, slotNum) {
+      if (!confirm(`Clear and remove mockup in Slot #${slotNum}?`)) return;
+
+      try {
+        const headers = getStudioAuthHeaders({ 'Content-Type': 'application/json' });
+        const res = await fetch(`/api/brands/${brandId}/mockups/delete-slot`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ productCode, rank: slotNum })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.success) throw new Error(data.error || 'Failed deleting slot');
+
+        if (state.productsCatalog && state.productsCatalog[brandId]) {
+          const prod = state.productsCatalog[brandId].find(p => p.code === productCode);
+          if (prod) {
+            prod.mockups = data.mockups || (prod.mockups || []).filter(m => m.rank !== slotNum);
+            prod.mockupsCount = prod.mockups.length;
+            prod.mockupUrls = prod.mockups.map(m => m.url).filter(Boolean);
+          }
+        }
+        saveBrandsStateLocally(state);
+
+        if (window.showToast) window.showToast(`Slot #${slotNum} cleared.`, 'info');
+        const prod = state.productsCatalog[brandId].find(p => p.code === productCode);
+        window.BrandsModule.generateLiveSEOPackage(brandId, productCode, encodeURIComponent(prod?.name || ''));
+        setTimeout(() => window.BrandsModule.switchStudioTab('mockups'), 80);
+      } catch (err) {
+        console.error('[Delete Mockup Slot Error]:', err);
+        if (window.showToast) window.showToast(`Failed: ${err.message}`, 'error');
+      }
+    },
+
+    handleBulkMockupDrop(e, brandId, productCode) {
+      const dt = e.dataTransfer;
+      if (dt && dt.files && dt.files.length > 0) {
+        window.BrandsModule.uploadProductMockupsWithFiles(brandId, productCode, dt.files);
+      }
+    },
+
+    onBulkMockupFilesSelected(input, brandId, productCode) {
+      if (input && input.files && input.files.length > 0) {
+        window.BrandsModule.uploadProductMockupsWithFiles(brandId, productCode, input.files);
+      }
+    },
+
+    async uploadProductMockupsWithFiles(brandId, productCode, fileList) {
+      const statusEl = document.getElementById('mockupUploadStatus');
+      const files = Array.from(fileList || []).slice(0, 10);
+      if (files.length === 0) return;
+
+      if (statusEl) {
+        statusEl.innerHTML = `<span style="color:#06b6d4; font-weight:700;">⏳ Batch uploading ${files.length} mockups to Vault...</span>`;
+      }
+
+      const prod = state.productsCatalog?.[brandId]?.find(p => p.code === productCode);
+      const existingMockups = prod?.mockups || [];
+      const occupiedRanks = new Set(existingMockups.map(m => m.rank));
+
+      let uploadHeaders = getStudioAuthHeaders();
+      let nextSlot = 1;
+      let uploadedCount = 0;
+
+      try {
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+          while (occupiedRanks.has(nextSlot) && nextSlot <= 10) {
+            nextSlot++;
+          }
+          if (nextSlot > 10) break;
+
+          const targetSlot = nextSlot;
+          occupiedRanks.add(targetSlot);
 
           const formData = new FormData();
           formData.append('productCode', productCode);
           formData.append('mockup', file);
-          formData.append('rank', i + 1);
-          formData.append('totalFiles', total);
+          formData.append('rank', targetSlot);
+          formData.append('totalFiles', files.length);
 
           const res = await fetch(`/api/brands/${brandId}/mockups/upload-single`, {
             method: 'POST',
@@ -4389,59 +4589,72 @@ window.APP_MODULES.brands = async function(container) {
             body: formData
           });
 
-          const text = await res.text();
-          let data;
-          try {
-            data = JSON.parse(text);
-          } catch (e) {
-            throw new Error(`Server returned error (${res.status}): ${text.slice(0, 100)}`);
+          const data = await res.json().catch(() => ({}));
+          if (data.success && data.mockup) {
+            if (prod) {
+              if (!Array.isArray(prod.mockups)) prod.mockups = [];
+              const idx = prod.mockups.findIndex(m => m.rank === targetSlot);
+              if (idx >= 0) prod.mockups[idx] = data.mockup;
+              else prod.mockups.push(data.mockup);
+            }
+            uploadedCount++;
           }
-          if (!data.success) throw new Error(data.error || `Failed uploading ${file.name}`);
-          if (data.mockup) uploadedItems.push(data.mockup);
-          else uploadedItems.push({ rank: i + 1, fileName: file.name, url: '' });
-          savedCount++;
         }
 
-        window.showToast(`✅ Saved all ${savedCount} mockups to Cloud Vault!`, 'success');
-        if (statusEl) {
-          statusEl.innerHTML = `<span style="color:#00df89; font-weight:700;">✅ ${savedCount} mockups stored in Cloud Vault</span>`;
+        if (prod) {
+          prod.mockupsCount = prod.mockups?.length || 0;
+          prod.mockupUrls = (prod.mockups || []).map(m => m.url).filter(Boolean);
+          if (prod.mockupsCount >= 4 && (prod.video?.storagePath || prod.video?.fileName)) {
+            prod.status = 'Media Ready';
+          }
         }
-
-        // Update mockup count header badge
-        const headerBadge = document.getElementById('mockupHeaderCountBadge');
-        if (headerBadge) {
-          headerBadge.innerText = `${savedCount} / 4 min (10 max)`;
-          headerBadge.style.color = savedCount >= 4 ? '#00df89' : '#fbbf24';
-          headerBadge.style.background = savedCount >= 4 ? 'rgba(0,223,137,0.15)' : 'rgba(251,191,36,0.15)';
-        }
-
-        // Directly patch in-memory state
-        if (!state.productsCatalog) state.productsCatalog = {};
-        if (!state.productsCatalog[brandId]) state.productsCatalog[brandId] = [];
-        let _mprod = state.productsCatalog[brandId].find(p => p.code === productCode);
-        if (!_mprod) { _mprod = { code: productCode, status: 'Draft' }; state.productsCatalog[brandId].push(_mprod); }
-        _mprod.mockups = uploadedItems;
-        _mprod.mockupsCount = savedCount;
-        _mprod.mockupUrls = uploadedItems.map(m => m.url).filter(Boolean);
-        // If enough mockups, update status
-        if (savedCount >= 4 && (_mprod.video?.storagePath || _mprod.video?.fileName)) _mprod.status = 'Media Ready';
         saveBrandsStateLocally(state);
-        // Update progress bar live
-        const _mpctEl = document.getElementById('studioHeaderPctBadge');
-        const _mbarEl = document.getElementById('studioHeaderProgressBar');
-        const _mvaultDone = Boolean(_mprod.vault?.storagePath || _mprod.vault?.downloadUrl);
-        const _mmocksDone = (_mprod.mockupsCount || _mprod.mockups?.length || 0) >= 4;
-        const _mvidDone = Boolean(_mprod.video?.storagePath || _mprod.video?.fileName);
-        const _mauditDone = (_mprod.aiAudit?.overall_score || 0) >= 7.0;
-        const _mseoDone = Boolean(_mprod.seo?.title || _mprod.seoTitle);
-        const _mbpDone = Boolean(_mprod.blueprint?.prompt || _mprod.blueprint?.geometry);
-        const _mpct = (_mbpDone ? 20 : 0) + (_mvaultDone ? 20 : 0) + (_mmocksDone && _mvidDone ? 20 : 0) + (_mauditDone ? 20 : 0) + (_mseoDone ? 20 : 0);
-        if (_mpctEl) { _mpctEl.innerText = `${_mpct}% Ready`; _mpctEl.style.color = _mpct >= 80 ? '#00df89' : (_mpct >= 40 ? '#fbbf24' : '#ef4444'); }
-        if (_mbarEl) _mbarEl.style.width = `${_mpct}%`;
 
+        if (window.showToast) window.showToast(`✅ ${uploadedCount} mockups saved to Vault!`, 'success');
+        window.BrandsModule.generateLiveSEOPackage(brandId, productCode, encodeURIComponent(prod?.name || ''));
+        setTimeout(() => window.BrandsModule.switchStudioTab('mockups'), 80);
       } catch (err) {
+        console.error('[Bulk Mockup Upload Error]:', err);
         if (statusEl) statusEl.innerHTML = `<span style="color:#ef4444; font-weight:700;">❌ ${err.message}</span>`;
-        window.showToast(err.message, 'error');
+        if (window.showToast) window.showToast(`Batch upload error: ${err.message}`, 'error');
+      }
+    },
+
+    async uploadProductMockups(brandId, productCode) {
+      const fileInput = document.getElementById('mockupFilesInput');
+      if (fileInput && fileInput.files && fileInput.files.length > 0) {
+        await window.BrandsModule.uploadProductMockupsWithFiles(brandId, productCode, fileInput.files);
+      } else {
+        if (window.showToast) window.showToast('Please select 1–10 mockup images first', 'warning');
+      }
+    },
+
+    async clearProductVideo(brandId, productCode) {
+      if (!confirm('Clear stored listing video?')) return;
+
+      try {
+        const headers = getStudioAuthHeaders({ 'Content-Type': 'application/json' });
+        await fetch(`/api/brands/${brandId}/product/${productCode}/studio-save`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ tab: 'video', data: {} })
+        });
+
+        if (state.productsCatalog && state.productsCatalog[brandId]) {
+          const prod = state.productsCatalog[brandId].find(p => p.code === productCode);
+          if (prod) {
+            prod.video = {};
+          }
+        }
+        saveBrandsStateLocally(state);
+
+        if (window.showToast) window.showToast('Listing video cleared.', 'info');
+        const prod = state.productsCatalog[brandId].find(p => p.code === productCode);
+        window.BrandsModule.generateLiveSEOPackage(brandId, productCode, encodeURIComponent(prod?.name || ''));
+        setTimeout(() => window.BrandsModule.switchStudioTab('mockups'), 80);
+      } catch (err) {
+        console.error('[Clear Product Video Error]:', err);
+        if (window.showToast) window.showToast(`Failed: ${err.message}`, 'error');
       }
     },
 

@@ -1417,6 +1417,91 @@ router.post('/:id/mockups/upload-single', requireAuth, vaultUpload.single('mocku
 });
 
 /**
+ * POST /api/brands/:id/mockups/delete-slot
+ * Clears/deletes an individual mockup slot for a product
+ */
+router.post('/:id/mockups/delete-slot', requireAuth, async (req, res) => {
+  try {
+    const brandId = Number(req.params.id);
+    const { productCode, rank } = req.body;
+    const rankNum = Number(rank);
+
+    const state = await loadBrandsState();
+    const catalog = state.productsCatalog?.[brandId] || [];
+    const prod = catalog.find(p => p.code === productCode);
+    if (!prod) return res.status(404).json({ success: false, error: 'Product not found' });
+
+    if (Array.isArray(prod.mockups)) {
+      prod.mockups = prod.mockups.filter(m => m.rank !== rankNum);
+      prod.mockupsCount = prod.mockups.length;
+      prod.mockupUrls = prod.mockups.map(m => m.url).filter(Boolean);
+    }
+
+    await saveProductAssets(brandId, productCode, {
+      mockupsCount: prod.mockupsCount || 0,
+      mockupUrls: prod.mockupUrls || []
+    });
+
+    await persistBrandsState(state);
+
+    res.json({
+      success: true,
+      mockups: prod.mockups || [],
+      count: prod.mockups?.length || 0
+    });
+  } catch (err) {
+    console.error('[Delete Mockup Slot Error]:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * POST /api/brands/:id/mockups/refresh-briefs
+ * Regenerates 10 mockup briefs based on Blueprint 2.0 specs
+ */
+const { generateCategoryMockups } = require('../services/blueprint-generator');
+
+router.post('/:id/mockups/refresh-briefs', requireAuth, async (req, res) => {
+  try {
+    const brandId = Number(req.params.id);
+    const { productCode } = req.body;
+
+    const state = await loadBrandsState();
+    const brand = state.brands?.find(b => b.id === brandId) || state.brands?.[0] || { name: 'PlannerQueenGro', palette: ['#8B5A7A', '#FAF3E8', '#7D9B76'] };
+    const catalog = state.productsCatalog?.[brandId] || [];
+    const prod = catalog.find(p => p.code === productCode);
+    if (!prod) return res.status(404).json({ success: false, error: 'Product not found' });
+
+    const freshBriefs = generateCategoryMockups(
+      prod.name,
+      brand.name,
+      brand.niche || 'Digital Productivity',
+      brand.voice || 'Warm & Intentional',
+      brand.palette || ['#8B5A7A', '#FAF3E8', '#7D9B76'],
+      brand.fonts || 'Playfair Display + Lato',
+      prod.format || 'Digital PDF',
+      prod.category || '',
+      prod.blueprint?.categoryOverride || prod.category
+    );
+
+    if (!prod.blueprint) prod.blueprint = {};
+    prod.blueprint.masterMockupPrompt = freshBriefs.masterMockupPrompt;
+    prod.blueprint.videoPrompt = freshBriefs.videoPrompt;
+    prod.blueprint.mockupsList = freshBriefs.mockups;
+
+    await persistBrandsState(state);
+
+    res.json({
+      success: true,
+      briefs: freshBriefs
+    });
+  } catch (err) {
+    console.error('[Refresh Mockup Briefs Error]:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
  * POST /api/brands/:id/products/:code/ai-audit
  * Runs Gemini Multimodal Vision Quality & Dynamic Pricing Audit
  */
