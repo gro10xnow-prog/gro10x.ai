@@ -2541,9 +2541,102 @@ window.APP_MODULES.brands = async function(container) {
       };
       const pages = savedBP.pageBreakdown || savedBP.pages || [];
       const effectivePrompt = savedBP.prompt || savedBP.googleFlowPrompt || '';
-      const masterMockupPrompt = savedBP.masterMockupPrompt || '';
+      const defaultMockupsList = [
+        {
+          number: 1,
+          title: 'Hero iPad Pro Flat-Lay (Main Etsy Listing Thumbnail)',
+          type: 'Primary Listing Hero',
+          scene: `Professional studio flat-lay photography of an iPad Pro in 3:4 vertical portrait orientation displaying the clean, aesthetic cover of "${effectiveTitle || prodName}" by ${b.name}. Resting on a luxurious warm cream desk surface alongside a sleek minimalist brass pen, soft botanical eucalyptus branches, and gentle natural morning sunlight. 8k resolution, hyper-detailed, clean editorial depth.`
+        },
+        {
+          number: 2,
+          title: 'Open Two-Page Master Spread Overview',
+          type: 'Spread Showcase',
+          scene: `Two-page open spread of "${effectiveTitle || prodName}" lying flat on a modern scandinavian oak desk. Ceramic coffee mug with latte art in background, reading glasses, pastel highlighter. Clean vertical daily/weekly columns clearly readable. 3:4 portrait format.`
+        },
+        {
+          number: 3,
+          title: 'Lifestyle POV Writing & Planning in Cafe',
+          type: 'Human Connection & Scale',
+          scene: `First-person point-of-view photo of a well-manicured hand holding an elegant fine-tip pen, actively writing notes into "${effectiveTitle || prodName}". Soft knit cozy sweater sleeve, warm morning ambience, diffused natural window light.`
+        },
+        {
+          number: 4,
+          title: 'Macro Close-Up on Habit & Task Tracking Spread',
+          type: 'Feature Deep-Dive',
+          scene: `Macro angled close-up view of the primary tracking spread from "${effectiveTitle || prodName}". A gold pen rests across the grid with delicate checkmarks. High-resolution crisp typography, soft depth of field, bright daylight.`
+        },
+        {
+          number: 5,
+          title: '10-Page Cascading 3D Bundle Stack',
+          type: 'Value & Scope Showcase',
+          scene: `All core pages of "${effectiveTitle || prodName}" dynamically fanned out in a cascading 3D isometric stack, revealing cover, monthly calendar, daily spread, habit tracker, and budget sheet together. Subtle realistic drop shadows.`
+        },
+        {
+          number: 6,
+          title: 'Desk Aerial Overview Workspace',
+          type: 'Aspirational Lifestyle',
+          scene: `Wide overhead bird's-eye flat lay of an entire productive desk workspace: planner tablet centered, laptop open with ambient screen, small potted succulent, scented candle, notebook, and ceramic dish. Colors harmonized in ${b.palette?.[0] || '#8B5A7A'}.`
+        },
+        {
+          number: 7,
+          title: 'Instant Download & Device Stack',
+          type: 'Etsy Purchase Reassurance',
+          scene: `Clean graphic showing a smartphone, iPad tablet with Apple Pencil, and printable A4 paper stack, all displaying matching layouts from "${effectiveTitle || prodName}". Aesthetic badge: "Instant Digital Download · GoodNotes · Print at Home".`
+        },
+        {
+          number: 8,
+          title: '90-Day Goal & Financial Flow Spread',
+          type: 'Transformation & Goals',
+          scene: `Clean angled shot of the 90-Day Goal Roadmap and Cash Flow pages side by side. Minimal gold paperclips, clean calculator, and motivational quote card. High aspirational value.`
+        },
+        {
+          number: 9,
+          title: 'Printable A4 / US Letter Comparison',
+          type: 'Print Flexibility',
+          scene: `Crisp photo of printed planner pages held in hands or pinned to an aesthetic moodboard. Clean white borders, premium matte paper texture, crisp lines.`
+        },
+        {
+          number: 10,
+          title: 'Customer Transformation Review Card',
+          type: 'Social Proof Showcase',
+          scene: `Aesthetic review card graphic with 5 golden stars, a lifestyle crop of "${effectiveTitle || prodName}", and quote: "Completely transformed my daily routine and focus."`
+        }
+      ];
+
+      const activeMockupsList = (savedBP.mockupsList && savedBP.mockupsList.length > 0) ? savedBP.mockupsList : defaultMockupsList;
+
+      const builtMasterPrompt = savedBP.masterMockupPrompt || (
+        `BRAND & MOCKUP VISUAL PRODUCTION BRIEF\n` +
+        `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+        `Brand: ${b.name} | Niche: ${b.niche || 'Digital Products'}\n` +
+        `Product: ${effectiveTitle || prodName}\n` +
+        `Brand Colors: ${b.palette?.join(', ') || '#8B5A7A, #FAF3E8, #7D9B76'}\n` +
+        `Typography: ${b.fonts || 'Playfair Display + Lato'}\n` +
+        `Aesthetic Style: Minimalist botanical luxury, warm natural morning lighting, clean editorial depth.\n\n` +
+        `INSTRUCTIONS FOR AI AGENT / GOOGLE FLOW / MIDJOURNEY / FLUX:\n` +
+        `Generate 10 distinct, high-converting Etsy listing mockup images in 3:4 PORTRAIT aspect ratio (width:height = 3:4), sequentially one after the other:\n\n` +
+        activeMockupsList.map(m =>
+          `MOCKUP #${m.number || m.slot} — ${(m.title || '').toUpperCase()} (${m.type || 'Etsy Mockup'})\n` +
+          `Prompt: ${(m.scene || m.prompt || '').trim()}\n` +
+          `Aspect Ratio: 3:4 Portrait | High resolution 300 DPI vector clarity | Realistic photographic textures\n`
+        ).join('\n') +
+        `\nOUTPUT GUIDELINES:\n` +
+        `• Process all 10 mockup scenes one by one in sequence\n` +
+        `• Maintain consistent brand color palette across all images\n` +
+        `• Ensure high-end commercial photo realism with soft natural lighting and realistic props\n`
+      );
+
+      window._currentMasterMockupPrompt = builtMasterPrompt;
+      window._currentMockupPrompts = {};
+      activeMockupsList.forEach((m, idx) => {
+        const slotNum = m.number || m.slot || idx + 1;
+        window._currentMockupPrompts[slotNum] = `3:4 vertical portrait photo mockup of "${effectiveTitle || prodName}" by ${b.name}. ${(m.scene || m.prompt || '').trim()} Aesthetic brand colors (${b.palette?.slice(0, 3).join(', ')}), soft natural morning daylight, shallow depth of field, 8k resolution commercial Etsy listing photograph.`;
+      });
+
+      const masterMockupPrompt = builtMasterPrompt;
       const videoPrompt = savedBP.videoPrompt || '';
-      const mockupsList = savedBP.mockupsList || [];
+      const mockupsList = activeMockupsList;
 
       // Calculate 5-Step Studio Progress (20% each)
       const bpDone = Boolean(savedBP.geometry || savedBP.prompt || effectivePrompt);
@@ -2759,29 +2852,40 @@ window.APP_MODULES.brands = async function(container) {
         <!-- ═══════════════════════════════════════════════════════════════════ -->
         <div id="studioTabMockups" style="display:none; flex-direction:column; gap:1.2rem;">
           <!-- 1. MOCKUP PRODUCTION BRIEF CARD -->
-          <div style="background:rgba(6,182,212,0.05); border:1px solid rgba(6,182,212,0.25); padding:1rem 1.25rem; border-radius:14px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
-              <span style="font-size:0.75rem; font-weight:800; color:#06b6d4; text-transform:uppercase;">📸 10-Slot Mockup Production Brief</span>
-              ${masterMockupPrompt ? `
-                <button class="btn-secondary btn-sm" style="font-size:0.72rem; padding:0.25rem 0.6rem; color:#06b6d4; border-color:#06b6d4;" onclick="navigator.clipboard.writeText('${masterMockupPrompt.replace(/'/g, "\\'")}'); window.showToast('📋 Copied Master Mockup Prompt!','success');">
-                  📋 Copy Master Mockup Prompt
-                </button>
-              ` : ''}
+          <div style="background:rgba(6,182,212,0.05); border:1px solid rgba(6,182,212,0.25); padding:1.1rem 1.25rem; border-radius:14px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem; flex-wrap:wrap; gap:0.5rem;">
+              <div>
+                <span style="font-size:0.78rem; font-weight:800; color:#06b6d4; text-transform:uppercase; display:block;">📸 10-Slot Mockup Production Brief</span>
+                <span style="font-size:0.7rem; color:var(--text-muted);">Aspect ratio 3:4 portrait (Midjourney / Google Flow / Flux / Canva)</span>
+              </div>
+              <button class="btn-primary btn-sm" style="font-size:0.74rem; padding:0.35rem 0.85rem; background:#06b6d4; color:#000; font-weight:800; border:none; border-radius:8px;" onclick="window.BrandsModule.copyMasterMockupPrompt()">
+                📋 Copy Master 10-Mockup Batch Prompt
+              </button>
             </div>
-            <p style="font-size:0.75rem; color:var(--text-secondary); margin:0 0 0.6rem;">
-              Create <strong>at least ${minMockups} mockup photos</strong> (up to 10 max). Use Canva or Midjourney in 3:4 portrait format:
+            
+            <p style="font-size:0.75rem; color:var(--text-secondary); margin:0 0 0.65rem; line-height:1.4;">
+              Create <strong>at least ${minMockups} mockup photos</strong> (up to 10 max). Copy the master prompt for Google Flow / Midjourney, or copy individual slot prompts below:
             </p>
-            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:0.4rem; max-height:140px; overflow-y:auto; background:rgba(0,0,0,0.3); padding:0.6rem; border-radius:8px; font-size:0.72rem;">
-              <span style="color:#fff;">#1: Hero iPad / Tablet flat lay</span>
-              <span style="color:#fff;">#2: Open two-page master spread</span>
-              <span style="color:#fff;">#3: Lifestyle writing in coffee shop</span>
-              <span style="color:#fff;">#4: Macro close-up of habit tracker</span>
-              <span style="color:#fff;">#5: Fanned 10-page cascade bundle</span>
-              <span style="color:#fff;">#6: Desk aerial overview workspace</span>
-              <span style="color:#fff;">#7: Instant download device stack</span>
-              <span style="color:#fff;">#8: 90-day goal & finance spread</span>
-              <span style="color:#fff;">#9: Printable A4 / Letter comparison</span>
-              <span style="color:#fff;">#10: Customer transformation review</span>
+
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:0.5rem; max-height:220px; overflow-y:auto; background:rgba(0,0,0,0.3); padding:0.75rem; border-radius:10px;">
+              ${mockupsList.map((m, idx) => {
+                const slotNum = m.number || m.slot || idx + 1;
+                return `
+                  <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:0.5rem 0.65rem; display:flex; justify-content:space-between; align-items:center; gap:0.5rem;">
+                    <div style="min-width:0; flex:1;">
+                      <div style="font-size:0.72rem; font-weight:800; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                        <span style="color:#06b6d4;">#${slotNum}:</span> ${m.title || `Slot ${slotNum}`}
+                      </div>
+                      <div style="font-size:0.65rem; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                        ${(m.scene || m.prompt || '').slice(0, 60)}...
+                      </div>
+                    </div>
+                    <button class="btn-ghost btn-sm" style="font-size:0.68rem; padding:0.2rem 0.5rem; color:#06b6d4; border:1px solid rgba(6,182,212,0.3); flex-shrink:0;" onclick="window.BrandsModule.copyMockupSlotPrompt(${slotNum})">
+                      📋 Copy
+                    </button>
+                  </div>
+                `;
+              }).join('')}
             </div>
           </div>
 
@@ -5274,6 +5378,78 @@ window.APP_MODULES.brands = async function(container) {
         try {
           document.execCommand('copy');
           if (window.showToast) window.showToast(`📋 Copied Page ${num} Edit Prompt! (Clean text ready for Flow/Nano Banana)`, 'success');
+        } catch (e) {
+          if (window.showToast) window.showToast('Copy failed. Please manually select the prompt text.', 'error');
+        }
+        document.body.removeChild(ta);
+      }
+    },
+
+    copyMasterMockupPrompt() {
+      const promptText = window._currentMasterMockupPrompt || '';
+      if (!promptText) {
+        if (window.showToast) window.showToast('No master mockup prompt found. Please click Generate Blueprint first.', 'error');
+        return;
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(promptText).then(() => {
+          if (window.showToast) window.showToast('📋 Copied Master 10-Mockup Batch Prompt! (Ready for Google Flow / Midjourney)', 'success');
+        }).catch(() => {
+          fallbackCopy(promptText, 'Master Mockup Batch');
+        });
+      } else {
+        fallbackCopy(promptText, 'Master Mockup Batch');
+      }
+
+      function fallbackCopy(text, label) {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.top = '0';
+        ta.style.left = '0';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        try {
+          document.execCommand('copy');
+          if (window.showToast) window.showToast(`📋 Copied ${label} Prompt!`, 'success');
+        } catch (e) {
+          if (window.showToast) window.showToast('Copy failed. Please manually select the prompt text.', 'error');
+        }
+        document.body.removeChild(ta);
+      }
+    },
+
+    copyMockupSlotPrompt(slotNum) {
+      const promptText = (window._currentMockupPrompts && window._currentMockupPrompts[slotNum]) || '';
+      if (!promptText) {
+        if (window.showToast) window.showToast(`No prompt found for Slot #${slotNum}.`, 'error');
+        return;
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(promptText).then(() => {
+          if (window.showToast) window.showToast(`📋 Copied Mockup Slot #${slotNum} Prompt!`, 'success');
+        }).catch(() => {
+          fallbackCopy(promptText, `Slot #${slotNum}`);
+        });
+      } else {
+        fallbackCopy(promptText, `Slot #${slotNum}`);
+      }
+
+      function fallbackCopy(text, label) {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.top = '0';
+        ta.style.left = '0';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        try {
+          document.execCommand('copy');
+          if (window.showToast) window.showToast(`📋 Copied Mockup ${label} Prompt!`, 'success');
         } catch (e) {
           if (window.showToast) window.showToast('Copy failed. Please manually select the prompt text.', 'error');
         }
