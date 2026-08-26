@@ -4141,60 +4141,90 @@ window.APP_MODULES.brands = async function(container) {
       const cleanPages = pages.filter(p => p.status === 'clean');
       const flawedPages = pages.filter(p => p.status === 'needs_fix');
 
+      const getDimColor = (val) => val >= 8.0 ? '#00df89' : (val >= 6.5 ? '#fbbf24' : '#ef4444');
+
       return `
         ${audit.isFallback ? `
           <!-- FALLBACK WARNING BANNER -->
-          <div style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.4); border-radius:10px; padding:0.75rem 1rem; margin-bottom:1rem; display:flex; align-items:center; gap:0.75rem;">
+          <div style="background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.3); border-radius:10px; padding:0.75rem 1rem; margin-bottom:1rem; display:flex; align-items:center; gap:0.75rem;">
             <span style="font-size:1.3rem; flex-shrink:0;">⚠️</span>
             <div>
-              <div style="font-size:0.75rem; font-weight:800; color:#ef4444; margin-bottom:0.15rem;">ILLUSTRATIVE TEMPLATE — NOT A REAL AUDIT</div>
+              <div style="font-size:0.75rem; font-weight:800; color:#ef4444; margin-bottom:0.15rem;">ILLUSTRATIVE TEMPLATE AUDIT</div>
               <div style="font-size:0.72rem; color:var(--text-muted);">
-                ${audit.fallbackReason || 'Gemini Vision API unavailable or no mockup images loaded.'} 
-                To trigger a real AI audit, ensure mockup images are uploaded (Studio → Tab 4), then re-run the audit.
+                ${audit.fallbackReason || 'Gemini Vision API unavailable or document could not be loaded.'} 
+                Ensure a PDF deliverable or mockups are stored in Vault (Tabs 2 & 3), then click Re-Run Audit.
               </div>
             </div>
           </div>
         ` : `
           <!-- REAL AUDIT SUCCESS INDICATOR -->
-          <div style="background:rgba(0,223,137,0.06); border:1px solid rgba(0,223,137,0.25); border-radius:10px; padding:0.55rem 1rem; margin-bottom:1rem; display:flex; align-items:center; gap:0.6rem;">
-            <span style="font-size:0.9rem;">🧠</span>
-            <span style="font-size:0.72rem; color:#00df89; font-weight:700;">Real Gemini Vision Audit · ${audit.evaluated_by || 'Gemini Multimodal'}</span>
+          <div style="background:rgba(0,223,137,0.06); border:1px solid rgba(0,223,137,0.25); border-radius:10px; padding:0.55rem 1rem; margin-bottom:1rem; display:flex; align-items:center; justify-content:space-between;">
+            <div style="display:flex; align-items:center; gap:0.6rem;">
+              <span style="font-size:0.95rem;">🧠</span>
+              <span style="font-size:0.74rem; color:#00df89; font-weight:700;">Verified Multimodal Vision Quality Audit · ${audit.evaluated_by || 'Gemini 2.0 / 3.5'}</span>
+            </div>
+            <span style="font-size:0.68rem; color:var(--text-muted);">${new Date(audit.audited_at || Date.now()).toLocaleTimeString()}</span>
           </div>
         `}
+
         <!-- HERO SCORE & PRICING SPLIT -->
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:1rem; margin-bottom:1.25rem;">
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:1rem; margin-bottom:1.25rem;">
+          
           <!-- SCORE CARD -->
           <div style="background:rgba(0,0,0,0.3); border:1px solid rgba(139,92,246,0.3); padding:1.2rem; border-radius:14px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
-              <span style="font-size:0.72rem; font-weight:800; color:#c084fc; text-transform:uppercase;">Overall Quality Score</span>
-              <span style="font-size:0.7rem; color:var(--text-muted);">${audit.evaluated_by || 'Gemini Vision Engine'}</span>
-            </div>
-
-            <div style="display:flex; align-items:baseline; gap:0.4rem; margin-bottom:0.85rem;">
-              <span style="font-size:2.2rem; font-weight:900; color:#00df89;">${score}</span>
-              <span style="font-size:1rem; color:var(--text-muted); font-weight:700;">/ 10.0</span>
-              <span style="margin-left:auto; font-size:0.75rem; font-weight:800; padding:0.2rem 0.6rem; border-radius:999px; background:${score >= 8 ? 'rgba(0,223,137,0.15)' : 'rgba(251,191,36,0.15)'}; color:${score >= 8 ? '#00df89' : '#fbbf24'};">
-                ${score >= 8.5 ? '⭐ Commercial Ready' : (score >= 7.0 ? '⚠️ Minor Edits Recommended' : '❌ Remediation Required')}
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem;">
+              <span style="font-size:0.74rem; font-weight:800; color:#c084fc; text-transform:uppercase;">Overall Quality Score</span>
+              <span style="font-size:0.72rem; font-weight:800; padding:0.2rem 0.6rem; border-radius:999px; background:${score >= 7 ? 'rgba(0,223,137,0.15)' : 'rgba(239,68,68,0.15)'}; color:${score >= 7 ? '#00df89' : '#ef4444'};">
+                ${score >= 8.5 ? '⭐ Commercial Ready' : (score >= 7.0 ? '🟢 Quality Gate Passed' : '🔴 Action Required (<70%)')}
               </span>
             </div>
 
-            <!-- 4 DIMENSIONS -->
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
-              <div style="background:rgba(255,255,255,0.03); padding:0.45rem 0.6rem; border-radius:8px;">
-                <span style="font-size:0.65rem; color:var(--text-muted); text-transform:uppercase; display:block;">Aesthetics</span>
-                <strong style="font-size:0.85rem; color:#fff;">${dims.aesthetic || 0} / 10</strong>
+            <div style="display:flex; align-items:baseline; gap:0.4rem; margin-bottom:0.85rem;">
+              <span style="font-size:2.4rem; font-weight:900; color:${score >= 7 ? '#00df89' : '#ef4444'};">${score}</span>
+              <span style="font-size:1rem; color:var(--text-muted); font-weight:700;">/ 10.0</span>
+              <span style="font-size:0.76rem; color:var(--text-muted); margin-left:auto;">${(score * 10).toFixed(0)}% Approval</span>
+            </div>
+
+            <!-- 4 DIMENSIONS METERS -->
+            <div style="display:flex; flex-direction:column; gap:0.45rem;">
+              <div>
+                <div style="display:flex; justify-content:space-between; font-size:0.68rem; margin-bottom:0.15rem;">
+                  <span style="color:var(--text-secondary);">🎨 Aesthetic Harmony</span>
+                  <strong style="color:${getDimColor(dims.aesthetic || 0)};">${dims.aesthetic || 0} / 10</strong>
+                </div>
+                <div style="height:5px; background:rgba(255,255,255,0.08); border-radius:3px; overflow:hidden;">
+                  <div style="height:100%; width:${(dims.aesthetic || 0) * 10}%; background:${getDimColor(dims.aesthetic || 0)};"></div>
+                </div>
               </div>
-              <div style="background:rgba(255,255,255,0.03); padding:0.45rem 0.6rem; border-radius:8px;">
-                <span style="font-size:0.65rem; color:var(--text-muted); text-transform:uppercase; display:block;">Typography</span>
-                <strong style="font-size:0.85rem; color:#fff;">${dims.typography || 0} / 10</strong>
+
+              <div>
+                <div style="display:flex; justify-content:space-between; font-size:0.68rem; margin-bottom:0.15rem;">
+                  <span style="color:var(--text-secondary);">🔤 Typography Hierarchy</span>
+                  <strong style="color:${getDimColor(dims.typography || 0)};">${dims.typography || 0} / 10</strong>
+                </div>
+                <div style="height:5px; background:rgba(255,255,255,0.08); border-radius:3px; overflow:hidden;">
+                  <div style="height:100%; width:${(dims.typography || 0) * 10}%; background:${getDimColor(dims.typography || 0)};"></div>
+                </div>
               </div>
-              <div style="background:rgba(255,255,255,0.03); padding:0.45rem 0.6rem; border-radius:8px;">
-                <span style="font-size:0.65rem; color:var(--text-muted); text-transform:uppercase; display:block;">Usability</span>
-                <strong style="font-size:0.85rem; color:#fff;">${dims.usability || 0} / 10</strong>
+
+              <div>
+                <div style="display:flex; justify-content:space-between; font-size:0.68rem; margin-bottom:0.15rem;">
+                  <span style="color:var(--text-secondary);">📐 Layout & Margins</span>
+                  <strong style="color:${getDimColor(dims.usability || 0)};">${dims.usability || 0} / 10</strong>
+                </div>
+                <div style="height:5px; background:rgba(255,255,255,0.08); border-radius:3px; overflow:hidden;">
+                  <div style="height:100%; width:${(dims.usability || 0) * 10}%; background:${getDimColor(dims.usability || 0)};"></div>
+                </div>
               </div>
-              <div style="background:rgba(255,255,255,0.03); padding:0.45rem 0.6rem; border-radius:8px;">
-                <span style="font-size:0.65rem; color:var(--text-muted); text-transform:uppercase; display:block;">QA Polish</span>
-                <strong style="font-size:0.85rem; color:${dims.commercial_polish < 7 ? '#fbbf24' : '#00df89'};">${dims.commercial_polish || 0} / 10</strong>
+
+              <div>
+                <div style="display:flex; justify-content:space-between; font-size:0.68rem; margin-bottom:0.15rem;">
+                  <span style="color:var(--text-secondary);">💎 Commercial Polish & QA</span>
+                  <strong style="color:${getDimColor(dims.commercial_polish || 0)};">${dims.commercial_polish || 0} / 10</strong>
+                </div>
+                <div style="height:5px; background:rgba(255,255,255,0.08); border-radius:3px; overflow:hidden;">
+                  <div style="height:100%; width:${(dims.commercial_polish || 0) * 10}%; background:${getDimColor(dims.commercial_polish || 0)};"></div>
+                </div>
               </div>
             </div>
           </div>
@@ -4202,80 +4232,96 @@ window.APP_MODULES.brands = async function(container) {
           <!-- PRICING RECOMMENDATION CARD -->
           <div style="background:rgba(0,0,0,0.3); border:1px solid rgba(0,223,137,0.3); padding:1.2rem; border-radius:14px; display:flex; flex-direction:column; justify-content:space-between;">
             <div>
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
-                <span style="font-size:0.72rem; font-weight:800; color:#00df89; text-transform:uppercase;">🏷️ AI Retail Price Recommendation</span>
-                <span style="font-size:0.7rem; color:#06b6d4; font-weight:700;">Etsy Sweet Spot</span>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+                <span style="font-size:0.74rem; font-weight:800; color:#00df89; text-transform:uppercase;">🏷️ AI Retail Price Recommendation</span>
+                <span style="font-size:0.68rem; color:#06b6d4; font-weight:800; background:rgba(6,182,212,0.1); padding:0.15rem 0.5rem; border-radius:6px;">Etsy Sweet Spot</span>
               </div>
 
-              <div style="display:flex; align-items:baseline; gap:0.4rem; margin-bottom:0.4rem;">
-                <span style="font-size:2.2rem; font-weight:900; color:#00df89;">$${pricing.recommended_price ? Number(pricing.recommended_price).toFixed(2) : '7.49'}</span>
-                <span style="font-size:0.78rem; color:var(--text-muted);">USD (Floor: $${pricing.min_price || '4.99'} · Bundle: $${pricing.bundle_upsell_price || '12.99'})</span>
+              <div style="display:flex; align-items:baseline; gap:0.4rem; margin-bottom:0.3rem;">
+                <span style="font-size:2.4rem; font-weight:900; color:#00df89;">$${pricing.recommended_price ? Number(pricing.recommended_price).toFixed(2) : '7.49'}</span>
+                <span style="font-size:0.78rem; color:var(--text-muted);">USD</span>
               </div>
 
-              <p style="font-size:0.75rem; color:var(--text-secondary); margin:0 0 0.85rem; line-height:1.4;">
-                ${pricing.rationale || 'Optimal price point balancing volume and luxury brand perception.'}
+              <div style="display:flex; gap:0.5rem; font-size:0.7rem; color:var(--text-muted); margin-bottom:0.6rem;">
+                <span>Floor: <strong>$${pricing.min_price || '4.99'}</strong></span>
+                <span>·</span>
+                <span>Upsell Anchor: <strong>$${pricing.bundle_upsell_price || '12.99'}</strong></span>
+              </div>
+
+              <p style="font-size:0.74rem; color:var(--text-secondary); margin:0 0 0.85rem; line-height:1.4;">
+                ${pricing.rationale || 'Optimal price point balancing high conversion velocity and premium brand perception.'}
               </p>
             </div>
 
-            <button class="btn-primary" style="width:100%; font-size:0.82rem; padding:0.55rem;" onclick="window.BrandsModule.applyAuditedPrice(${brandId}, '${productCode}', ${pricing.recommended_price || 7.49})">
+            <button type="button" class="btn-primary" style="width:100%; font-size:0.82rem; padding:0.6rem; font-weight:800;" onclick="window.BrandsModule.applyAuditedPrice(${brandId}, '${productCode}', ${pricing.recommended_price || 7.49})">
               🏷️ Apply $${pricing.recommended_price ? Number(pricing.recommended_price).toFixed(2) : '7.49'} to Etsy Listing
             </button>
           </div>
         </div>
 
-        <!-- SUMMARY STATEMENT -->
-        <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); padding:0.85rem 1rem; border-radius:10px; margin-bottom:1.25rem; font-size:0.78rem; color:var(--text-secondary); line-height:1.45;">
+        <!-- EXECUTIVE SUMMARY STATEMENT -->
+        <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); padding:0.85rem 1rem; border-radius:10px; margin-bottom:1.25rem; font-size:0.78rem; color:var(--text-secondary); line-height:1.45;">
           <strong style="color:#fff;">Executive Audit Summary:</strong> ${audit.summary || 'Visual quality evaluated across all spreads.'}
         </div>
 
-        <!-- PAGE STATUS OVERVIEW BANNER -->
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+        <!-- PAGE STATUS OVERVIEW BANNER & FILTER BUTTONS -->
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; flex-wrap:wrap; gap:0.5rem;">
           <h4 style="font-size:0.92rem; font-weight:800; color:#fff; margin:0;">
-            Page-by-Page Audit & Targeted Auto-Remediation (${pages.length} Pages)
+            Page-by-Page Audit & Targeted Remediation (${pages.length} Pages)
           </h4>
-          <div style="display:flex; gap:0.4rem; font-size:0.72rem; font-weight:800;">
-            <span style="padding:0.15rem 0.5rem; border-radius:6px; background:rgba(0,223,137,0.15); color:#00df89;">${cleanPages.length} Clean</span>
-            <span style="padding:0.15rem 0.5rem; border-radius:6px; background:${flawedPages.length > 0 ? 'rgba(251,191,36,0.15)' : 'rgba(255,255,255,0.06)'}; color:${flawedPages.length > 0 ? '#fbbf24' : 'var(--text-muted)'};">${flawedPages.length} Fixes</span>
+          <div style="display:flex; gap:0.35rem; font-size:0.72rem; font-weight:800;">
+            <button type="button" class="btn-ghost btn-sm audit-filter-btn" style="padding:0.2rem 0.6rem; border-radius:6px; background:rgba(255,255,255,0.1); color:#fff;" onclick="window.BrandsModule.filterAuditPages('all', this)">
+              All (${pages.length})
+            </button>
+            <button type="button" class="btn-ghost btn-sm audit-filter-btn" style="padding:0.2rem 0.6rem; border-radius:6px; background:rgba(0,223,137,0.15); color:#00df89;" onclick="window.BrandsModule.filterAuditPages('clean', this)">
+              ✅ Clean (${cleanPages.length})
+            </button>
+            <button type="button" class="btn-ghost btn-sm audit-filter-btn" style="padding:0.2rem 0.6rem; border-radius:6px; background:${flawedPages.length > 0 ? 'rgba(251,191,36,0.15)' : 'rgba(255,255,255,0.04)'}; color:${flawedPages.length > 0 ? '#fbbf24' : 'var(--text-muted)'};" onclick="window.BrandsModule.filterAuditPages('flawed', this)">
+              ⚠️ Needs Fix (${flawedPages.length})
+            </button>
           </div>
         </div>
 
         <!-- PAGES LIST WITH DIRECT 1-CLICK EDIT PROMPT COPY BUTTONS -->
-        <div style="display:flex; flex-direction:column; gap:0.75rem;">
-          ${pages.map(p => `
-            <div style="background:rgba(255,255,255,0.03); border:1px solid ${p.status === 'clean' ? 'rgba(0,223,137,0.2)' : 'rgba(251,191,36,0.3)'}; border-radius:12px; padding:0.9rem;">
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
-                <div style="font-weight:800; color:#fff; font-size:0.85rem;">
-                  <span style="color:#06b6d4;">Page ${p.page_number}:</span> ${p.title}
+        <div id="auditPagesList" style="display:flex; flex-direction:column; gap:0.75rem;">
+          ${pages.map(p => {
+            const isClean = p.status === 'clean';
+            return `
+              <div class="audit-page-card ${isClean ? 'audit-page-clean' : 'audit-page-needs-fix'}" style="background:rgba(255,255,255,0.03); border:1px solid ${isClean ? 'rgba(0,223,137,0.2)' : 'rgba(251,191,36,0.35)'}; border-radius:12px; padding:0.9rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+                  <div style="font-weight:800; color:#fff; font-size:0.85rem;">
+                    <span style="color:#06b6d4;">Page ${p.page_number}:</span> ${p.title}
+                  </div>
+                  <span style="font-size:0.68rem; font-weight:800; padding:0.15rem 0.5rem; border-radius:6px; background:${isClean ? 'rgba(0,223,137,0.15)' : 'rgba(251,191,36,0.15)'}; color:${isClean ? '#00df89' : '#fbbf24'};">
+                    ${isClean ? '✅ Clean — No Edits Required' : '⚠️ Action Needed'}
+                  </span>
                 </div>
-                <span style="font-size:0.68rem; font-weight:800; padding:0.15rem 0.5rem; border-radius:6px; background:${p.status === 'clean' ? 'rgba(0,223,137,0.15)' : 'rgba(251,191,36,0.15)'}; color:${p.status === 'clean' ? '#00df89' : '#fbbf24'};">
-                  ${p.status === 'clean' ? '✅ Clean — No Edits Required' : '⚠️ Action Needed'}
-                </span>
+
+                ${p.defects && p.defects.length > 0 ? `
+                  <div style="margin:0.4rem 0 0.6rem;">
+                    <span style="font-size:0.7rem; font-weight:800; color:#fbbf24; text-transform:uppercase; display:block; margin-bottom:0.2rem;">Detected Visual/Typo Issues:</span>
+                    <ul style="margin:0; padding-left:1.2rem; font-size:0.75rem; color:#ef4444; line-height:1.4;">
+                      ${p.defects.map(d => `<li>${d}</li>`).join('')}
+                    </ul>
+                  </div>
+                ` : ''}
+
+                ${p.remediation_prompt ? `
+                  <div style="background:rgba(0,0,0,0.4); border:1px solid rgba(251,191,36,0.25); border-radius:8px; padding:0.75rem; margin-top:0.5rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem;">
+                      <span style="font-size:0.68rem; font-weight:800; color:#fbbf24; text-transform:uppercase;">⚡ 1-Click Targeted AI Edit Prompt (Google Flow / Gemini):</span>
+                      <button type="button" class="btn-primary btn-sm" style="font-size:0.7rem; padding:0.2rem 0.6rem; background:#fbbf24; color:#000; font-weight:800; border:none;" onclick="window.BrandsModule.copyAuditRemediationPrompt(${p.page_number})">
+                        📋 Copy Page ${p.page_number} Edit Prompt
+                      </button>
+                    </div>
+                    <div style="font-size:0.74rem; font-family:monospace; color:#e2e8f0; line-height:1.4; white-space:pre-wrap; max-height:120px; overflow-y:auto;">
+                      ${p.remediation_prompt}
+                    </div>
+                  </div>
+                ` : ''}
               </div>
-
-              ${p.defects && p.defects.length > 0 ? `
-                <div style="margin:0.4rem 0 0.6rem;">
-                  <span style="font-size:0.7rem; font-weight:800; color:#fbbf24; text-transform:uppercase; display:block; margin-bottom:0.2rem;">Detected Visual/Typo Issues:</span>
-                  <ul style="margin:0; padding-left:1.2rem; font-size:0.75rem; color:#ef4444; line-height:1.4;">
-                    ${p.defects.map(d => `<li>${d}</li>`).join('')}
-                  </ul>
-                </div>
-              ` : ''}
-
-              ${p.remediation_prompt ? `
-                <div style="background:rgba(0,0,0,0.4); border:1px solid rgba(251,191,36,0.25); border-radius:8px; padding:0.75rem; margin-top:0.5rem;">
-                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem;">
-                    <span style="font-size:0.68rem; font-weight:800; color:#fbbf24; text-transform:uppercase;">⚡ 1-Click Targeted AI Edit Prompt (Google Flow / Gemini):</span>
-                    <button class="btn-primary btn-sm" style="font-size:0.7rem; padding:0.2rem 0.6rem; background:#fbbf24; color:#000; font-weight:800;" onclick="window.BrandsModule.copyAuditRemediationPrompt(${p.page_number})">
-                      📋 Copy Page ${p.page_number} Edit Prompt
-                    </button>
-                  </div>
-                  <div style="font-size:0.74rem; font-family:monospace; color:#e2e8f0; line-height:1.4; white-space:pre-wrap; max-height:120px; overflow-y:auto;">
-                    ${p.remediation_prompt}
-                  </div>
-                </div>
-              ` : ''}
-            </div>
-          `).join('')}
+            `;
+          }).join('')}
         </div>
       `;
     },
@@ -6052,6 +6098,30 @@ window.APP_MODULES.brands = async function(container) {
           </div>
         `;
       }
+    },
+
+    filterAuditPages(filterType, btnEl) {
+      const container = document.getElementById('auditPagesList');
+      if (!container) return;
+
+      const cleanCards = container.querySelectorAll('.audit-page-clean');
+      const flawedCards = container.querySelectorAll('.audit-page-needs-fix');
+
+      if (filterType === 'all') {
+        cleanCards.forEach(el => el.style.display = 'block');
+        flawedCards.forEach(el => el.style.display = 'block');
+      } else if (filterType === 'clean') {
+        cleanCards.forEach(el => el.style.display = 'block');
+        flawedCards.forEach(el => el.style.display = 'none');
+      } else if (filterType === 'flawed') {
+        cleanCards.forEach(el => el.style.display = 'none');
+        flawedCards.forEach(el => el.style.display = 'block');
+      }
+
+      // Update button active state
+      const buttons = document.querySelectorAll('.audit-filter-btn');
+      buttons.forEach(b => b.style.outline = 'none');
+      if (btnEl) btnEl.style.outline = '2px solid #06b6d4';
     },
 
     copyAuditRemediationPrompt(pageNum) {

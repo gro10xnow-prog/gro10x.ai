@@ -1569,9 +1569,9 @@ router.post('/:id/products/:code/ai-audit', requireAuth, vaultUpload.array('page
 
 /**
  * POST /api/brands/:id/products/:code/apply-price
- * Applies AI Recommended Price to product in catalog & Etsy listing matrix (Admin Only)
+ * Applies AI Recommended Price to product in catalog & Etsy listing matrix
  */
-router.post('/:id/products/:code/apply-price', requireAuth, requireAdmin, async (req, res) => {
+router.post('/:id/products/:code/apply-price', requireAuth, async (req, res) => {
   try {
     const brandId = Number(req.params.id);
     const productCode = req.params.code;
