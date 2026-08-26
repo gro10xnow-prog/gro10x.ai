@@ -1239,16 +1239,25 @@ router.post('/:id/products/:code/ai-audit', requireAuth, vaultUpload.array('page
 
     const { evaluateProductMultimodal } = require('../services/ai-evaluator');
 
-    // Collect image buffers: direct uploads > stored mockups > vault
-    let imageInputs = directFiles;
-    if (imageInputs.length === 0 && Array.isArray(prod.mockups) && prod.mockups.length > 0) {
-      imageInputs = prod.mockups.map(m => m.storagePath || m.url).filter(Boolean);
+    // Collect audit inputs: direct uploads > Vault Deliverable PDF/file > stored mockups
+    let auditInputs = directFiles;
+    if (auditInputs.length === 0 && (prod.vault?.storagePath || prod.vault?.downloadUrl)) {
+      auditInputs = [{
+        storagePath: prod.vault.storagePath,
+        url: prod.vault.downloadUrl,
+        fileName: prod.vault.fileName,
+        fileFormat: prod.vault.fileFormat || 'PDF',
+        type: 'vault_deliverable'
+      }];
     }
-    if (imageInputs.length === 0 && Array.isArray(prod.mockupUrls) && prod.mockupUrls.length > 0) {
-      imageInputs = prod.mockupUrls;
+    if (auditInputs.length === 0 && Array.isArray(prod.mockups) && prod.mockups.length > 0) {
+      auditInputs = prod.mockups.map(m => m.storagePath || m.url).filter(Boolean);
+    }
+    if (auditInputs.length === 0 && Array.isArray(prod.mockupUrls) && prod.mockupUrls.length > 0) {
+      auditInputs = prod.mockupUrls;
     }
 
-    const auditReport = await evaluateProductMultimodal(imageInputs, prod, brand);
+    const auditReport = await evaluateProductMultimodal(auditInputs, prod, brand);
 
     const suggestedPrice = auditReport.pricing?.recommended_price || 7.49;
 
