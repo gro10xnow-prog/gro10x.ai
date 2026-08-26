@@ -1115,6 +1115,92 @@ router.get('/:id/vault/download', requireAuth, async (req, res) => {
 });
 
 /**
+ * POST /api/brands/:id/vault/generate-access-pass
+ * Generates a branded 1-Page Customer Access & Anti-Piracy License Pass PDF
+ */
+const { generateAccessPassPdf } = require('../services/access-pass-generator');
+
+router.post('/:id/vault/generate-access-pass', requireAuth, async (req, res) => {
+  try {
+    const brandId = Number(req.params.id);
+    const { productCode, productName, version, canvaTemplateUrl, notionTemplateUrl } = req.body;
+
+    const state = await loadBrandsState();
+    const brand = state.brands?.find(b => b.id === brandId) || state.brands?.[0] || { name: 'PlannerQueenGro', palette: ['#8B5A7A', '#FAF3E8', '#7D9B76'] };
+    const catalog = state.productsCatalog?.[brandId] || [];
+    const prod = catalog.find(p => p.code === productCode) || { code: productCode, name: productName || 'Product' };
+
+    const effectiveCanva = canvaTemplateUrl || prod.vault?.canvaTemplateUrl || '';
+    const effectiveNotion = notionTemplateUrl || prod.vault?.notionTemplateUrl || '';
+    const effectiveDownload = prod.vault?.downloadUrl || '';
+    const effectiveVersion = version || prod.vault?.version || '1.0';
+    const licenseId = `GRO-LIC-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+
+    const pdfBuffer = generateAccessPassPdf({
+      brandName: brand.name,
+      productName: prod.name || productName || 'Digital Product',
+      productCode: prod.code || productCode || 'PROD-01',
+      licenseId,
+      canvaTemplateUrl: effectiveCanva,
+      notionTemplateUrl: effectiveNotion,
+      downloadUrl: effectiveDownload,
+      palette: brand.palette || ['#8B5A7A', '#FAF3E8', '#7D9B76'],
+      version: effectiveVersion
+    });
+
+    const cleanCode = (productCode || 'PROD').replace(/[^a-zA-Z0-9_-]/g, '_');
+    const safeVer = effectiveVersion.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const storagePath = `brands/${brandId}/${cleanCode}/access_pass/v${safeVer}/Customer_Access_Pass.pdf`;
+
+    let signedUrl = '';
+
+    if (isSupabaseConfigured()) {
+      try {
+        const { error: uploadErr } = await supabase.storage
+          .from('product-vault')
+          .upload(storagePath, pdfBuffer, {
+            contentType: 'application/pdf',
+            upsert: true
+          });
+
+        if (uploadErr) {
+          console.warn('[Access Pass Upload Warning]:', uploadErr.message);
+        } else {
+          const { data: signedData } = await supabase.storage
+            .from('product-vault')
+            .createSignedUrl(storagePath, 3600 * 24 * 7); // 7 days
+          signedUrl = signedData?.signedUrl || '';
+        }
+      } catch (storageErr) {
+        console.warn('[Access Pass Storage Exception]:', storageErr.message);
+      }
+    }
+
+    // Update product vault state
+    if (!prod.vault) prod.vault = {};
+    prod.vault.accessPassUrl = signedUrl;
+    prod.vault.accessPassStoragePath = storagePath;
+    prod.vault.licenseId = licenseId;
+    if (effectiveCanva) prod.vault.canvaTemplateUrl = effectiveCanva;
+    if (effectiveNotion) prod.vault.notionTemplateUrl = effectiveNotion;
+
+    await persistBrandsState(state);
+
+    res.json({
+      success: true,
+      accessPassUrl: signedUrl,
+      storagePath,
+      licenseId,
+      fileName: `${cleanCode}_Access_Pass.pdf`,
+      fileSizeBytes: pdfBuffer.length
+    });
+  } catch (err) {
+    console.error('[Generate Access Pass Error]:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
  * POST /api/brands/:id/mockups/upload
  * Uploads up to 10 mockup images for a product to Supabase Storage 'product-vault'
  */

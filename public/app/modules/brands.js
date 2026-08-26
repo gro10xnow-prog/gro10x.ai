@@ -2905,51 +2905,167 @@ window.APP_MODULES.brands = async function(container) {
         <!-- ═══════════════════════════════════════════════════════════════════ -->
         <!-- STEP 2: DELIVERABLE VAULT & FILE UPLOAD -->
         <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <!-- STEP 2: DELIVERABLE VAULT & FILE UPLOAD -->
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
         <div id="studioTabVault" style="display:none; flex-direction:column; gap:1.2rem;">
-          <div style="background:rgba(0,223,137,0.04); border:1px solid rgba(0,223,137,0.25); padding:1.25rem; border-radius:14px;">
+          
+          <!-- STORED DELIVERABLE STATUS CARD -->
+          ${savedVault.fileName || savedVault.downloadUrl ? `
+            <div style="background:rgba(0,223,137,0.06); border:1px solid rgba(0,223,137,0.35); padding:1rem 1.25rem; border-radius:14px;">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:0.5rem;">
+                <div style="display:flex; align-items:center; gap:0.75rem;">
+                  <div style="width:44px; height:44px; border-radius:10px; background:rgba(0,223,137,0.15); color:#00df89; display:flex; align-items:center; justify-content:center; font-size:1.5rem;">
+                    ${(savedVault.fileName || '').toLowerCase().endsWith('.zip') ? '📦' : '📄'}
+                  </div>
+                  <div>
+                    <div style="display:flex; align-items:center; gap:0.4rem;">
+                      <strong style="color:#fff; font-size:0.88rem;">${savedVault.fileName || 'Master Deliverable'}</strong>
+                      <span style="font-size:0.68rem; font-weight:800; background:rgba(0,223,137,0.2); color:#00df89; padding:1px 6px; border-radius:4px;">v${savedVault.version || '1.0'}</span>
+                    </div>
+                    <div style="font-size:0.72rem; color:var(--text-muted); margin-top:0.15rem;">
+                      Size: <strong>${(savedVault.fileSizeBytes ? (savedVault.fileSizeBytes / (1024*1024)).toFixed(2) : '0')} MB</strong> · Uploaded: ${savedVault.uploadedAt ? new Date(savedVault.uploadedAt).toLocaleDateString() : 'Active'} · Stored in Supabase Secure Vault
+                    </div>
+                  </div>
+                </div>
+                <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
+                  ${savedVault.downloadUrl ? `
+                    <a href="${savedVault.downloadUrl}" target="_blank" class="btn-primary btn-sm" style="font-size:0.72rem; padding:0.3rem 0.65rem; text-decoration:none; display:inline-flex; align-items:center; gap:0.25rem;">
+                      📥 Download File
+                    </a>
+                  ` : ''}
+                  <button type="button" class="btn-ghost btn-sm" style="color:#ef4444; font-size:0.72rem; padding:0.3rem 0.65rem;" onclick="window.BrandsModule.clearVaultDeliverable(${b.id}, '${prodCode}', '${encodeURIComponent(prodName)}')">
+                    🗑️ Clear / Replace
+                  </button>
+                </div>
+              </div>
+            </div>
+          ` : `
+            <div style="background:rgba(255,255,255,0.02); border:1px dashed rgba(255,255,255,0.1); padding:0.85rem 1.25rem; border-radius:12px; font-size:0.78rem; color:var(--text-muted); display:flex; align-items:center; gap:0.5rem;">
+              <span style="font-size:1.1rem;">ℹ️</span> No deliverable uploaded yet. Use the dropzone below to store your master PDF/ZIP in the secure vault.
+            </div>
+          `}
+
+          <!-- DRAG & DROP UPLOAD ZONE -->
+          <div style="background:rgba(0,223,137,0.03); border:1px solid rgba(0,223,137,0.2); padding:1.25rem; border-radius:14px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
               <div>
-                <span style="font-size:0.75rem; font-weight:800; color:#00df89; text-transform:uppercase; display:block;">📥 Upload Finished Deliverable (PDF / ZIP / Template)</span>
-                <p style="font-size:0.78rem; color:var(--text-muted); margin:0.1rem 0 0;">Upload customer deliverable file directly to the GRO10X Secure Vault (max 50MB).</p>
+                <span style="font-size:0.75rem; font-weight:800; color:#00df89; text-transform:uppercase; display:block;">📥 Upload Finished Customer Deliverable</span>
+                <p style="font-size:0.76rem; color:var(--text-muted); margin:0.1rem 0 0;">Upload customer deliverable file directly to the GRO10X Secure Vault (max 50MB).</p>
               </div>
-              <span style="font-size:0.7rem; background:rgba(255,255,255,0.08); color:var(--text-secondary); padding:0.2rem 0.5rem; border-radius:6px;">Max 50MB</span>
+              <span style="font-size:0.68rem; font-weight:800; background:rgba(255,255,255,0.08); color:var(--text-secondary); padding:0.2rem 0.5rem; border-radius:6px;">Max 50MB</span>
             </div>
 
-            <div style="display:grid; grid-template-columns:2fr 1fr; gap:0.75rem; align-items:center; margin-bottom:0.75rem;">
+            <!-- INTERACTIVE DROPZONE -->
+            <div id="vaultDropzone"
+              onclick="document.getElementById('vaultFileInput').click()"
+              ondragover="event.preventDefault(); this.style.borderColor='#00df89'; this.style.background='rgba(0,223,137,0.08)';"
+              ondragleave="this.style.borderColor='rgba(0,223,137,0.3)'; this.style.background='rgba(0,0,0,0.3)';"
+              ondrop="event.preventDefault(); this.style.borderColor='rgba(0,223,137,0.3)'; this.style.background='rgba(0,0,0,0.3)'; window.BrandsModule.handleVaultDrop(event);"
+              style="border:2px dashed rgba(0,223,137,0.35); background:rgba(0,0,0,0.3); border-radius:12px; padding:1.75rem 1rem; text-align:center; cursor:pointer; transition:all 0.2s ease; margin-bottom:0.85rem;">
+              <div style="font-size:2rem; margin-bottom:0.35rem;">📂</div>
+              <strong style="color:#fff; font-size:0.85rem; display:block; margin-bottom:0.2rem;">Drag &amp; Drop Deliverable Here or Browse</strong>
+              <span style="font-size:0.72rem; color:var(--text-muted);">Supports .PDF, .ZIP, .PNG, .OTF, .TTF</span>
+              <input type="file" id="vaultFileInput" accept=".pdf,.zip,.png,.otf,.ttf" style="display:none;" onchange="window.BrandsModule.onVaultFileSelected(this)">
+            </div>
+
+            <!-- FILE INSPECTION PREVIEW (appears when file is picked) -->
+            <div id="vaultFileInspectionCard" style="display:none; background:rgba(6,182,212,0.06); border:1px solid rgba(6,182,212,0.3); border-radius:10px; padding:0.65rem 0.85rem; margin-bottom:0.85rem; font-size:0.76rem;">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span id="vaultInspectFileName" style="color:#fff; font-weight:800;"></span>
+                <span id="vaultInspectFileSize" style="color:#06b6d4; font-weight:800;"></span>
+              </div>
+              <div id="vaultInspectSizeBadge" style="margin-top:0.25rem;"></div>
+            </div>
+
+            <!-- VERSION & SETTINGS ROW -->
+            <div style="display:grid; grid-template-columns:1fr 2fr; gap:0.75rem; align-items:center; margin-bottom:0.85rem;">
               <div>
-                <input type="file" id="vaultFileInput" accept=".pdf,.zip,.png,.otf,.ttf" style="width:100%; font-size:0.82rem; background:rgba(0,0,0,0.3); border:1px dashed rgba(0,223,137,0.4); padding:0.75rem; border-radius:10px; color:#fff; cursor:pointer;">
+                <label style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.2rem;">Deliverable Version</label>
+                <input type="text" id="vaultVersionInput" value="${savedVault.version ? (parseFloat(savedVault.version) + 0.1).toFixed(1) : '1.0'}" placeholder="e.g. 1.0" style="width:100%; font-size:0.8rem; padding:0.45rem; background:rgba(255,255,255,0.05); border:1px solid var(--border-subtle); border-radius:8px; color:#00df89; font-weight:800;">
               </div>
               <div>
-                <label style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.2rem;">Version (Auto-suggested)</label>
-                <input type="text" id="vaultVersionInput" value="${savedVault.version ? suggestedVersion : '1.0'}" placeholder="e.g. 1.0" style="width:100%; font-size:0.82rem; padding:0.6rem; background:rgba(255,255,255,0.05); border:1px solid var(--border-subtle); border-radius:8px; color:#00df89; font-weight:800;" title="Deliverable Version">
+                <label style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.2rem;">Etsy Delivery Architecture</label>
+                <div style="font-size:0.74rem; color:var(--text-secondary); background:rgba(0,0,0,0.25); padding:0.45rem 0.75rem; border-radius:8px; border:1px solid rgba(255,255,255,0.05);">
+                  🔒 <strong>Direct Secure Delivery</strong> via Supabase Cloud Vault
+                </div>
               </div>
             </div>
 
-            <!-- OPTIONAL SOURCE CLOUD LINKS -->
+            <!-- SOURCE CLOUD & CANVA TEMPLATE LINKS -->
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:0.85rem;">
               <div>
-                <label style="font-size:0.7rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.2rem;">Canva Master Link (Optional)</label>
-                <input type="text" id="vaultCanvaInput" value="${(savedVault.canvaTemplateUrl || '').replace(/"/g, '&quot;')}" placeholder="https://www.canva.com/design/..." style="width:100%; font-size:0.78rem; padding:0.5rem; background:rgba(255,255,255,0.04); border:1px solid var(--border-subtle); border-radius:8px; color:#fff;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.2rem;">
+                  <label style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Canva Master Link (Optional)</label>
+                  <button type="button" class="btn-ghost btn-sm" style="font-size:0.65rem; padding:1px 5px;" onclick="window.BrandsModule.testCloudLink('vaultCanvaInput')">🔗 Test Link</button>
+                </div>
+                <input type="text" id="vaultCanvaInput" value="${(savedVault.canvaTemplateUrl || '').replace(/"/g, '&quot;')}" placeholder="https://www.canva.com/design/..." style="width:100%; font-size:0.76rem; padding:0.45rem; background:rgba(255,255,255,0.04); border:1px solid var(--border-subtle); border-radius:8px; color:#fff;">
               </div>
               <div>
-                <label style="font-size:0.7rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.2rem;">Notion / Hub Link (Optional)</label>
-                <input type="text" id="vaultNotionInput" value="${(savedVault.notionTemplateUrl || '').replace(/"/g, '&quot;')}" placeholder="https://notion.so/..." style="width:100%; font-size:0.78rem; padding:0.5rem; background:rgba(255,255,255,0.04); border:1px solid var(--border-subtle); border-radius:8px; color:#fff;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.2rem;">
+                  <label style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Notion / Hub Link (Optional)</label>
+                  <button type="button" class="btn-ghost btn-sm" style="font-size:0.65rem; padding:1px 5px;" onclick="window.BrandsModule.testCloudLink('vaultNotionInput')">🔗 Test Link</button>
+                </div>
+                <input type="text" id="vaultNotionInput" value="${(savedVault.notionTemplateUrl || '').replace(/"/g, '&quot;')}" placeholder="https://notion.so/..." style="width:100%; font-size:0.76rem; padding:0.45rem; background:rgba(255,255,255,0.04); border:1px solid var(--border-subtle); border-radius:8px; color:#fff;">
               </div>
             </div>
 
+            <!-- SAVE DELIVERABLE BUTTON -->
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
               <button class="btn-primary" style="padding:0.55rem 1.35rem; font-size:0.82rem; font-weight:800;" onclick="window.BrandsModule.uploadProductDeliverable(${b.id}, '${prodCode}', '${encodeURIComponent(prodName)}')">
-                🚀 Save & Upload Deliverable to Vault
+                🚀 Save &amp; Upload Deliverable to Vault
               </button>
-              <div id="vaultUploadStatus" style="font-size:0.78rem;">
-                ${savedVault.fileName ? `
-                  <span style="color:#00df89; font-weight:700;">✅ Stored: ${savedVault.fileName} (${(savedVault.fileSizeBytes / (1024*1024)).toFixed(2)} MB) · v${savedVault.version}</span>
-                  ${savedVault.downloadUrl ? `<a href="${savedVault.downloadUrl}" target="_blank" style="margin-left:0.5rem; color:#06b6d4; text-decoration:none; font-weight:800;">📥 Preview</a>` : ''}
-                ` : `<span style="color:var(--text-muted);">No deliverable uploaded yet</span>`}
-              </div>
+              <div id="vaultUploadStatus" style="font-size:0.78rem;"></div>
             </div>
           </div>
 
+          <!-- 1-PAGE BRANDED ANTI-PIRACY ACCESS PASS GENERATOR -->
+          <div style="background:rgba(168,85,247,0.04); border:1px solid rgba(168,85,247,0.3); padding:1.25rem; border-radius:14px;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.75rem; flex-wrap:wrap; gap:0.5rem;">
+              <div>
+                <span style="font-size:0.75rem; font-weight:800; color:#c084fc; text-transform:uppercase; display:block;">🛡️ 1-Page Branded Anti-Piracy Access Pass (PDF)</span>
+                <p style="font-size:0.76rem; color:var(--text-muted); margin:0.15rem 0 0; max-width:540px;">
+                  Compiles a high-resolution branded PDF pass delivered to Etsy buyers. Embeds clickable Canva template buttons, cloud vault links, and single-user copyright terms.
+                </p>
+              </div>
+              <button type="button" class="btn-primary btn-sm" style="background:linear-gradient(135deg, #9333ea, #c084fc); font-weight:800; padding:0.4rem 0.85rem;" onclick="window.BrandsModule.generateCustomerAccessPass(${b.id}, '${prodCode}', '${encodeURIComponent(prodName)}')">
+                🛡️ Compile Access Pass PDF
+              </button>
+            </div>
+
+            <div id="accessPassStatusArea">
+              ${savedVault.accessPassUrl ? `
+                <div style="background:rgba(168,85,247,0.1); border:1px solid rgba(168,85,247,0.3); padding:0.65rem 0.85rem; border-radius:10px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+                  <div>
+                    <span style="color:#c084fc; font-weight:800; font-size:0.78rem;">✅ Access Pass Compiled</span>
+                    <span style="font-size:0.7rem; color:var(--text-muted); margin-left:0.4rem;">License ID: <strong style="color:#fff;">${savedVault.licenseId || 'GRO-LIC-PASS'}</strong></span>
+                  </div>
+                  <div style="display:flex; gap:0.4rem;">
+                    <a href="${savedVault.accessPassUrl}" target="_blank" class="btn-secondary btn-sm" style="font-size:0.7rem; padding:0.2rem 0.6rem; text-decoration:none;">
+                      📥 Download Pass PDF
+                    </a>
+                  </div>
+                </div>
+              ` : `
+                <div style="font-size:0.74rem; color:var(--text-muted);">
+                  Click "Compile Access Pass PDF" to generate the customer delivery document.
+                </div>
+              `}
+            </div>
+          </div>
+
+          <!-- ETSY DIGITAL DELIVERY COMPLIANCE CHECKLIST -->
+          <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); padding:1rem 1.25rem; border-radius:12px;">
+            <label style="font-size:0.72rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.5rem;">Etsy Digital Delivery Compliance Checklist</label>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:0.5rem; font-size:0.74rem;">
+              <span style="color:${savedVault.fileName ? '#00df89' : 'var(--text-muted)'};">${savedVault.fileName ? '✅' : '⚪'} Master File in Vault</span>
+              <span style="color:${(savedVault.fileSizeBytes || 0) < 50*1024*1024 && savedVault.fileName ? '#00df89' : 'var(--text-muted)'};">${savedVault.fileName ? '✅' : '⚪'} File Size &lt; 50MB</span>
+              <span style="color:${savedVault.canvaTemplateUrl ? '#00df89' : 'var(--text-muted)'};">${savedVault.canvaTemplateUrl ? '✅' : '⚪'} Canva Link Attached</span>
+              <span style="color:${savedVault.accessPassUrl ? '#00df89' : 'var(--text-muted)'};">${savedVault.accessPassUrl ? '✅' : '⚪'} Access Pass Compiled</span>
+            </div>
+          </div>
+
+          <!-- NAVIGATION BAR -->
           <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.5rem;">
             <button class="btn-ghost btn-sm" onclick="window.BrandsModule.switchStudioTab('blueprint')">← Step 1: Blueprint</button>
             <button class="btn-primary" style="font-size:0.82rem; padding:0.55rem 1.25rem;" onclick="window.BrandsModule.switchStudioTab('mockups')">
@@ -3704,10 +3820,159 @@ window.APP_MODULES.brands = async function(container) {
       }
     },
 
+    onVaultFileSelected(input) {
+      const file = input?.files?.[0];
+      const card = document.getElementById('vaultFileInspectionCard');
+      const nameEl = document.getElementById('vaultInspectFileName');
+      const sizeEl = document.getElementById('vaultInspectFileSize');
+      const badgeEl = document.getElementById('vaultInspectSizeBadge');
+
+      if (!file || !card) return;
+      card.style.display = 'block';
+      if (nameEl) nameEl.textContent = `Selected: ${file.name}`;
+      const sizeMb = (file.size / (1024 * 1024)).toFixed(2);
+      if (sizeEl) sizeEl.textContent = `${sizeMb} MB`;
+
+      if (badgeEl) {
+        if (file.size <= 20 * 1024 * 1024) {
+          badgeEl.innerHTML = '<span style="color:#00df89; font-weight:700;">🟢 Direct Etsy Attachment Compatible (&lt; 20MB)</span>';
+        } else {
+          badgeEl.innerHTML = '<span style="color:#fbbf24; font-weight:700;">🟡 Large File (&gt; 20MB) — Stored in Supabase Vault; deliver via 1-Page Branded Access Pass</span>';
+        }
+      }
+    },
+
+    handleVaultDrop(e) {
+      const dt = e.dataTransfer;
+      if (dt && dt.files && dt.files.length > 0) {
+        const file = dt.files[0];
+        window._droppedVaultFile = file;
+        window.BrandsModule.onVaultFileSelected({ files: [file] });
+        if (window.showToast) window.showToast(`File selected: ${file.name}`, 'info');
+      }
+    },
+
+    testCloudLink(elementId) {
+      const el = document.getElementById(elementId);
+      const url = el ? el.value.trim() : '';
+      if (!url) {
+        if (window.showToast) window.showToast('Please enter a template or hub link to test', 'warning');
+        return;
+      }
+      if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        if (window.showToast) window.showToast('Please enter a valid URL starting with https://', 'warning');
+        return;
+      }
+      window.open(url, '_blank');
+    },
+
+    async clearVaultDeliverable(brandId, productCode, productNameEncoded) {
+      const prodName = decodeURIComponent(productNameEncoded || '');
+      if (!confirm(`Clear vault deliverable file for ${productCode} ("${prodName}")?\n\nThis will remove the current stored file and allow you to upload a fresh version.`)) {
+        return;
+      }
+
+      try {
+        const headers = getStudioAuthHeaders({ 'Content-Type': 'application/json' });
+        await fetch(`/api/brands/${brandId}/product/${productCode}/studio-save`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ tab: 'vault', data: {} })
+        });
+
+        if (state.productsCatalog && state.productsCatalog[brandId]) {
+          const prod = state.productsCatalog[brandId].find(p => p.code === productCode);
+          if (prod) {
+            prod.vault = {};
+            if (prod.status === 'Vault Uploaded') prod.status = 'Blueprint Ready';
+          }
+        }
+        saveBrandsStateLocally(state);
+
+        if (window.showToast) window.showToast('Vault deliverable cleared. Ready for fresh upload.', 'info');
+        window.BrandsModule.generateLiveSEOPackage(brandId, productCode, encodeURIComponent(prodName));
+        setTimeout(() => window.BrandsModule.switchStudioTab('vault'), 100);
+      } catch (err) {
+        console.error('[Clear Vault Deliverable Error]:', err);
+        if (window.showToast) window.showToast(`Failed to clear: ${err.message}`, 'error');
+      }
+    },
+
+    async generateCustomerAccessPass(brandId, productCode, productNameEncoded) {
+      const prodName = decodeURIComponent(productNameEncoded || '');
+      const statusArea = document.getElementById('accessPassStatusArea');
+      const canvaUrl = document.getElementById('vaultCanvaInput')?.value || '';
+      const notionUrl = document.getElementById('vaultNotionInput')?.value || '';
+      const version = document.getElementById('vaultVersionInput')?.value || '1.0';
+
+      if (statusArea) {
+        statusArea.innerHTML = '<span style="color:#c084fc; font-weight:800; font-size:0.78rem;">⏳ Compiling Branded 1-Page Customer Access Pass (PDF)...</span>';
+      }
+
+      try {
+        const headers = getStudioAuthHeaders({ 'Content-Type': 'application/json' });
+        const res = await fetch(`/api/brands/${brandId}/vault/generate-access-pass`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            productCode,
+            productName: prodName,
+            version,
+            canvaTemplateUrl: canvaUrl,
+            notionTemplateUrl: notionUrl
+          })
+        });
+
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.success) {
+          throw new Error(data.error || `HTTP ${res.status} generating access pass`);
+        }
+
+        // Patch in-memory state
+        if (state.productsCatalog && state.productsCatalog[brandId]) {
+          const prod = state.productsCatalog[brandId].find(p => p.code === productCode);
+          if (prod) {
+            if (!prod.vault) prod.vault = {};
+            prod.vault.accessPassUrl = data.accessPassUrl;
+            prod.vault.licenseId = data.licenseId;
+            prod.vault.canvaTemplateUrl = canvaUrl;
+            prod.vault.notionTemplateUrl = notionUrl;
+          }
+        }
+        saveBrandsStateLocally(state);
+
+        if (statusArea) {
+          statusArea.innerHTML = `
+            <div style="background:rgba(168,85,247,0.1); border:1px solid rgba(168,85,247,0.3); padding:0.65rem 0.85rem; border-radius:10px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+              <div>
+                <span style="color:#c084fc; font-weight:800; font-size:0.78rem;">✅ Access Pass Compiled Successfully</span>
+                <span style="font-size:0.7rem; color:var(--text-muted); margin-left:0.4rem;">License ID: <strong style="color:#fff;">${data.licenseId}</strong></span>
+              </div>
+              <div style="display:flex; gap:0.4rem;">
+                ${data.accessPassUrl ? `
+                  <a href="${data.accessPassUrl}" target="_blank" class="btn-secondary btn-sm" style="font-size:0.7rem; padding:0.2rem 0.6rem; text-decoration:none;">
+                    📥 Download Pass PDF
+                  </a>
+                ` : ''}
+              </div>
+            </div>
+          `;
+        }
+
+        if (window.showToast) window.showToast('✅ Branded Customer Access Pass compiled!', 'success');
+      } catch (err) {
+        console.error('[Generate Access Pass Error]:', err);
+        if (statusArea) {
+          statusArea.innerHTML = `<span style="color:#ef4444; font-size:0.74rem; font-weight:700;">❌ Access Pass Error: ${err.message}</span>`;
+        }
+        if (window.showToast) window.showToast(`Failed: ${err.message}`, 'error');
+      }
+    },
+
     async uploadProductDeliverable(brandId, productCode, productNameEncoded) {
       const prodName = decodeURIComponent(productNameEncoded);
       const fileInput = document.getElementById('vaultFileInput');
-      const file = fileInput && fileInput.files ? fileInput.files[0] : null;
+      const file = (fileInput && fileInput.files && fileInput.files[0]) || window._droppedVaultFile || null;
       const canvaUrl = document.getElementById('vaultCanvaInput')?.value || '';
       const notionUrl = document.getElementById('vaultNotionInput')?.value || '';
       const version = document.getElementById('vaultVersionInput')?.value || '1.0';
@@ -3746,6 +4011,7 @@ window.APP_MODULES.brands = async function(container) {
         }
         if (!data.success) throw new Error(data.error || 'Upload failed');
 
+        window._droppedVaultFile = null;
         window.showToast('✅ Deliverable saved to Vault!', 'success');
         if (statusEl) {
           statusEl.innerHTML = `
@@ -3782,12 +4048,12 @@ window.APP_MODULES.brands = async function(container) {
         const _pct = (_bpDone ? 20 : 0) + (_vaultDone ? 20 : 0) + (_mocksDone && _vidDone ? 20 : 0) + (_auditDone ? 20 : 0) + (_seoDone ? 20 : 0);
         if (_pctEl) { _pctEl.innerText = `${_pct}% Ready`; _pctEl.style.color = _pct >= 80 ? '#00df89' : (_pct >= 40 ? '#fbbf24' : '#ef4444'); }
         if (_barEl) _barEl.style.width = `${_pct}%`;
-        // Update vault step indicator in progress bar area
-        const _vStep = document.querySelector('[id="studioHeaderProgressBar"]')?.closest('div')?.querySelectorAll('span');
-        // Switch to next Studio tab (Media Studio) automatically
-        if (typeof window.BrandsModule.switchStudioTab === 'function') {
-          window.BrandsModule.switchStudioTab('mockups');
-        }
+        
+        // Re-render Studio Drawer to show updated card & pass buttons
+        setTimeout(() => {
+          window.BrandsModule.generateLiveSEOPackage(brandId, productCode, encodeURIComponent(prodName));
+          setTimeout(() => window.BrandsModule.switchStudioTab('vault'), 50);
+        }, 300);
 
       } catch (err) {
         if (statusEl) statusEl.innerHTML = `<span style="color:#ef4444; font-weight:700;">❌ Upload error: ${err.message}</span>`;
