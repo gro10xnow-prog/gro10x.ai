@@ -156,45 +156,46 @@ router.post('/summarize-brief', requireAuth, async (req, res) => {
   }
 });
 
-// POST /api/ai/etsy-seo — Generates Etsy SEO Title, 13 Tags, and Listing Description
+// POST /api/ai/etsy-seo — Generates Category-Aware Etsy SEO Title, 13 Tags, and Listing Description
 router.post('/etsy-seo', requireAuth, async (req, res) => {
-  const { productName, brandName, brandNiche, brandVoice, type } = req.body;
+  const { productName, brandName, brandNiche, brandVoice, type, category, pageCount, palette, auditScore, price } = req.body;
   if (!productName || !brandName) {
     return res.status(400).json({ error: 'productName and brandName are required' });
   }
 
   const key = process.env.GEMINI_API_KEY;
 
-  function generateFallbackSEO(pName, bName, niche, pType) {
+  function generateFallbackSEO(pName, bName, niche, pType, cat, pCount) {
     const cleanP = pName.replace(/^[A-Z]\d+\s*[-–]\s*/, '');
-    const title = `${cleanP} | ${bName} Aesthetic ${pType || 'Digital Download'} | Printable & Instant PDF`.slice(0, 140);
+    const title = `${cleanP} | ${cat || 'Digital Planner'} Printable | ${bName} Aesthetic GoodNotes PDF`.slice(0, 140);
     const tags = [
       'digital planner',
-      'instant download',
-      'printable tracker',
-      'aesthetic template',
-      'productivity hub',
-      'daily organizer',
-      'self improvement',
-      'minimalist design',
-      'pdf planner',
+      'printable organizer',
+      'daily life planner',
       'goodnotes template',
+      'instant download',
+      'aesthetic tracker',
       'notion system',
-      'gift for organized',
+      'undated planner',
+      'hyperlinked pdf',
+      'habit matrix',
+      'goal setting hub',
+      'self improvement',
       `${(bName || 'gro10x').toLowerCase().slice(0, 20)}`
     ].slice(0, 13);
 
-    const description = `✨ Welcome to ${bName} — ${niche || 'Premium Digital Products'}\n\n` +
-      `Upgrade your routine with the **${cleanP}**.\n\n` +
-      `📦 WHAT IS INCLUDED:\n` +
-      `• High-resolution interactive PDF / Assets\n` +
-      `• Easy setup guide & tutorial links\n` +
-      `• Commercial & personal use flexibility\n\n` +
+    const description = `✨ Welcome to ${bName} — ${niche || 'Intentional Productivity & Digital Stationery'}\n\n` +
+      `Transform your daily routine with the **${cleanP}**.\n\n` +
+      `📦 WHAT IS INCLUDED (${pCount || 10}-Page System):\n` +
+      `• High-Resolution Vector Printable PDF (US Letter & A4)\n` +
+      `• Hyperlinked Digital Tablet Compatibility (GoodNotes, Notability, Samsung Notes)\n` +
+      `• Official Single-User Anti-Piracy License Pass\n` +
+      `• Bonus Canva / Notion Quick-Start Setup Guide\n\n` +
       `⚡ HOW IT WORKS:\n` +
       `1. Complete your purchase.\n` +
-      `2. Instantly download your files from Etsy Purchases.\n` +
-      `3. Open in your favorite app (GoodNotes, Canva, Notion) or print!\n\n` +
-      `💌 Need help or custom requests? Send us an Etsy message anytime!`;
+      `2. Instantly download your PDF files from Etsy Purchases.\n` +
+      `3. Import to iPad/tablet or print immediately at home!\n\n` +
+      `💌 Need assistance or custom requests? Send us an Etsy message anytime!`;
 
     return {
       title,
@@ -208,7 +209,7 @@ router.post('/etsy-seo', requireAuth, async (req, res) => {
   if (!key) {
     return res.json({
       success: true,
-      ...generateFallbackSEO(productName, brandName, brandNiche, type)
+      ...generateFallbackSEO(productName, brandName, brandNiche, type, category, pageCount)
     });
   }
 
@@ -217,13 +218,17 @@ router.post('/etsy-seo', requireAuth, async (req, res) => {
     `Generate a high-converting, search-ranked Etsy listing package for:\n` +
     `Product Name: "${productName}"\n` +
     `Brand: "${brandName}"\n` +
-    `Niche: "${brandNiche || 'Digital products'}"\n` +
+    `Category: "${category || 'Digital Planner'}"\n` +
+    `Niche: "${brandNiche || 'Digital productivity'}"\n` +
     `Brand Voice: "${brandVoice || 'Warm, inspiring, clear'}"\n` +
-    `Format / Fulfillment: "${type || 'Digital Download'}"\n\n` +
+    `Format / Delivery: "${type || 'Digital PDF'}"\n` +
+    `System Size: "${pageCount || 10} Pages"\n` +
+    `Palette: "${Array.isArray(palette) ? palette.join(', ') : (palette || '#8B5A7A, #FAF3E8, #7D9B76')}"\n` +
+    `Retail Price: "$${price || 7.49} USD"\n\n` +
     `Strict Requirements:\n` +
-    `1. "title": Under 140 characters, high-search volume keywords separated by " | ".\n` +
-    `2. "tags": EXACTLY 13 comma-separated tag phrases. EACH tag MUST BE 20 CHARACTERS OR FEWER. No single generic words.\n` +
-    `3. "description": 3 structured sections: Hook/Overview, What is Included (bullet points), How to Access.\n` +
+    `1. "title": Strictly 140 characters or fewer. Front-load highest-volume Etsy search keywords separated by " | ".\n` +
+    `2. "tags": EXACTLY 13 comma-separated tag phrases. EACH tag MUST BE 20 CHARACTERS OR FEWER. Must include long-tail buyer search phrases tailored to "${category || 'planners'}".\n` +
+    `3. "description": 4 structured sections: (1) Headline Hook, (2) What is Included (bullet points), (3) How to Access & Print / GoodNotes Guide, (4) Anti-Piracy Single-User License Note.\n` +
     `4. "keywords": 5 high-intent buyer keyword phrases.\n\n` +
     `OUTPUT STRICT JSON ONLY with keys "title", "tags" (array of 13 strings), "description", "keywords" (array of 5 strings). No markdown formatting or extra text outside JSON.`;
 
@@ -263,7 +268,7 @@ router.post('/etsy-seo', requireAuth, async (req, res) => {
     console.warn('[Etsy SEO Gemini Error]:', err.message);
     return res.json({
       success: true,
-      ...generateFallbackSEO(productName, brandName, brandNiche, type)
+      ...generateFallbackSEO(productName, brandName, brandNiche, type, category, pageCount)
     });
   }
 });

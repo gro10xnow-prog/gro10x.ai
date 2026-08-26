@@ -3307,21 +3307,64 @@ window.APP_MODULES.brands = async function(container) {
         <!-- ═══════════════════════════════════════════════════════════════════ -->
         <!-- STEP 5: AI-ENHANCED ETSY SEO PACKAGE -->
         <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <!-- STEP 5: AI-ENHANCED ETSY SEO PACKAGE & LAUNCH GATE -->
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
         <div id="studioTabSeo" style="display:none; flex-direction:column; gap:1.2rem;">
-          <!-- AI ENHANCED GENERATE BANNER -->
-          <div style="background:rgba(6,182,212,0.08); border:1px solid rgba(6,182,212,0.3); padding:0.9rem 1.2rem; border-radius:12px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
+          
+          <!-- 1. AI ENHANCED GENERATE BANNER -->
+          <div style="background:rgba(6,182,212,0.06); border:1px solid rgba(6,182,212,0.3); padding:1rem 1.25rem; border-radius:14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
             <div>
-              <span style="font-size:0.72rem; font-weight:800; color:#06b6d4; text-transform:uppercase;">Context-Aware SEO Generator</span>
-              <p style="font-size:0.78rem; color:var(--text-secondary); margin:0.1rem 0 0;">
-                AI generates conversion title, 13 tags, and description using audit score (${auditScore > 0 ? `${auditScore}/10` : 'Pending'}) & pricing.
+              <span style="font-size:0.76rem; font-weight:800; color:#06b6d4; text-transform:uppercase; display:block;">Context-Aware Etsy SEO Generator</span>
+              <p style="font-size:0.74rem; color:var(--text-secondary); margin:0.15rem 0 0; max-width:560px;">
+                Gemini analyzes the Blueprint 2.0 category, 4-dimension audit score (${auditScore > 0 ? `${auditScore}/10` : 'Pending'}), and sweet spot price to generate conversion titles, 13 long-tail tags, and structured description copy.
               </p>
             </div>
-            <button class="btn-primary btn-sm" style="background:linear-gradient(135deg, #06b6d4, #00df89); font-weight:800;" onclick="window.BrandsModule.generateStudioSEOWithAI(${b.id}, '${prodCode}')">
-              ⚡ Generate SEO with Audit Context
+            <button type="button" class="btn-primary" style="background:linear-gradient(135deg, #06b6d4, #00df89); font-weight:800; font-size:0.8rem; padding:0.55rem 1.1rem; border:none;" onclick="window.BrandsModule.generateStudioSEOWithAI(${b.id}, '${prodCode}')">
+              ⚡ Generate SEO with Blueprint Context
             </button>
           </div>
 
-          <!-- PRODUCT TYPE & PRICING ROW -->
+          <!-- 2. LIVE ETSY SEARCH RESULT CARD PREVIEW -->
+          <div style="background:rgba(0,0,0,0.35); border:1px solid rgba(255,255,255,0.08); padding:1rem 1.25rem; border-radius:14px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+              <span style="font-size:0.72rem; font-weight:800; color:var(--text-muted); text-transform:uppercase;">👁️ Live Etsy Search Result Preview</span>
+              <span style="font-size:0.68rem; color:#00df89; font-weight:700;">Desktop &amp; Mobile Search Mockup</span>
+            </div>
+
+            <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:0.85rem; display:flex; gap:1rem; align-items:center; max-width:620px;">
+              <!-- HERO MOCKUP THUMBNAIL -->
+              <div style="width:90px; aspect-ratio:3/4; border-radius:6px; overflow:hidden; background:#000; flex-shrink:0; border:1px solid rgba(255,255,255,0.1); display:flex; align-items:center; justify-content:center;">
+                ${savedMockups[0]?.url ? `
+                  <img id="previewEtsyThumb" src="${savedMockups[0].url}" style="width:100%; height:100%; object-fit:cover;">
+                ` : `
+                  <span style="font-size:1.8rem;">🖼️</span>
+                `}
+              </div>
+
+              <!-- SEARCH SNIPPET INFO -->
+              <div style="flex:1; min-width:0;">
+                <div id="previewEtsyTitle" style="font-size:0.82rem; font-weight:700; color:#fff; line-height:1.35; margin-bottom:0.35rem; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">
+                  ${effectiveTitle || `${prodName} | ${b.name} Aesthetic Digital Planner`}
+                </div>
+                <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:0.25rem; display:flex; align-items:center; gap:0.3rem;">
+                  <span>${b.name || 'PlannerQueenGro'}</span>
+                  <span style="color:#fbbf24;">★★★★★</span>
+                  <span style="color:var(--text-muted);">(4.9)</span>
+                </div>
+                <div style="display:flex; align-items:baseline; gap:0.5rem;">
+                  <span id="previewEtsyPrice" style="font-size:1.05rem; font-weight:900; color:#00df89;">
+                    $${Number(savedPrice || 7.49).toFixed(2)} AUD
+                  </span>
+                  <span style="font-size:0.65rem; color:#06b6d4; background:rgba(6,182,212,0.15); padding:1px 5px; border-radius:4px; font-weight:700;">
+                    Instant Download
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. PRODUCT TYPE & PRICING ROW -->
           <div style="display:grid; grid-template-columns:2fr 1fr; gap:0.75rem;">
             <div>
               <label style="font-size:0.72rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.2rem;">Product Type (1300 Catalog Scalable)</label>
@@ -3344,47 +3387,101 @@ window.APP_MODULES.brands = async function(container) {
                   Retail Price ($ USD)
                 </label>
                 ${auditPrice ? `
-                  <span style="font-size:0.68rem; color:#06b6d4; cursor:pointer; font-weight:700; background:rgba(6,182,212,0.12); padding:0.1rem 0.4rem; border-radius:4px; border:1px solid rgba(6,182,212,0.3);" onclick="document.getElementById('studioRetailPrice').value='${Number(auditPrice).toFixed(2)}'; window.showToast('Applied AI Audit Price ($${Number(auditPrice).toFixed(2)})', 'info');" title="Click to apply AI Audit Price">
-                    ✨ AI Suggested: $${Number(auditPrice).toFixed(2)}
+                  <span style="font-size:0.68rem; color:#06b6d4; cursor:pointer; font-weight:700; background:rgba(6,182,212,0.12); padding:0.1rem 0.4rem; border-radius:4px; border:1px solid rgba(6,182,212,0.3);" onclick="document.getElementById('studioRetailPrice').value='${Number(auditPrice).toFixed(2)}'; window.BrandsModule.updateLiveEtsyPreview(); window.showToast('Applied AI Audit Price ($${Number(auditPrice).toFixed(2)})', 'info');" title="Click to apply AI Audit Price">
+                    ✨ AI: $${Number(auditPrice).toFixed(2)}
                   </span>
                 ` : ''}
               </div>
-              <input type="number" step="0.01" id="studioRetailPrice" value="${Number(savedPrice).toFixed(2)}" style="width:100%; font-size:0.85rem; padding:0.55rem; background:rgba(0,0,0,0.35); border:1px solid var(--border-subtle); border-radius:8px; color:#fff; font-weight:800;" placeholder="4.99">
+              <input type="number" step="0.01" id="studioRetailPrice" value="${Number(savedPrice).toFixed(2)}" oninput="window.BrandsModule.updateLiveEtsyPreview()" style="width:100%; font-size:0.85rem; padding:0.55rem; background:rgba(0,0,0,0.35); border:1px solid var(--border-subtle); border-radius:8px; color:#fff; font-weight:800;" placeholder="7.49">
             </div>
           </div>
 
-          <!-- 140-CHAR TITLE INPUT (NO ESCAPE BUG) -->
+          <!-- 4. 140-CHAR TITLE INPUT -->
           <div>
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.3rem;">
               <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Etsy Listing Title (Max 140 Chars)</label>
               <span id="seoTitleCounter" style="font-size:0.7rem; color:${effectiveTitle.length > 140 ? '#ef4444' : '#00df89'}; font-weight:800;">${effectiveTitle.length}/140 chars</span>
             </div>
-            <input type="text" id="studioSeoTitle" maxlength="140" value="${effectiveTitle.replace(/"/g, '&quot;')}" oninput="document.getElementById('seoTitleCounter').innerText = this.value.length + '/140 chars'" style="width:100%; font-size:0.88rem; padding:0.65rem; background:rgba(0,0,0,0.35); border:1px solid rgba(0,223,137,0.3); border-radius:8px; color:#00df89; font-weight:700;">
+            <input type="text" id="studioSeoTitle" maxlength="140" value="${effectiveTitle.replace(/"/g, '&quot;')}" oninput="document.getElementById('seoTitleCounter').innerText = this.value.length + '/140 chars'; window.BrandsModule.updateLiveEtsyPreview();" style="width:100%; font-size:0.88rem; padding:0.65rem; background:rgba(0,0,0,0.35); border:1px solid rgba(0,223,137,0.3); border-radius:8px; color:#00df89; font-weight:700;">
           </div>
 
-          <!-- 13 TAGS INPUT (NO ESCAPE BUG) -->
+          <!-- 5. INTERACTIVE 13-TAG CHIP CLOUD -->
           <div>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.3rem;">
-              <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase;">13 High-Intent Etsy Tags (Comma-separated, max 20 chars per tag)</label>
-              <span id="seoTagsCountBadge" style="font-size:0.7rem; color:#06b6d4; font-weight:800;">${effectiveTags.length} / 13 Tags</span>
-            </div>
-            <input type="text" id="studioSeoTags" value="${effectiveTagsStr.replace(/"/g, '&quot;')}" oninput="const c = this.value.split(',').map(s=>s.trim()).filter(Boolean).length; document.getElementById('seoTagsCountBadge').innerText = c + ' / 13 Tags';" style="width:100%; font-size:0.82rem; padding:0.6rem; background:rgba(0,0,0,0.35); border:1px solid var(--border-subtle); border-radius:8px; color:#fff;">
-          </div>
-
-          <!-- DESCRIPTION TEXTAREA -->
-          <div>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.3rem;">
-              <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Conversion-Optimized Description</label>
-              <div style="display:flex; gap:0.4rem;">
-                <button class="btn-ghost btn-sm" onclick="navigator.clipboard.writeText(document.getElementById('studioSeoDescription').value); window.showToast('Copied Description!','success');">📋 Copy</button>
-                <button class="btn-primary btn-sm" onclick="window.BrandsModule.saveStudioDraft('seo')">💾 Save SEO</button>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem; flex-wrap:wrap; gap:0.4rem;">
+              <div>
+                <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase;">13 High-Intent Etsy Tags (Max 20 Chars Each)</label>
+                <span style="font-size:0.68rem; color:var(--text-muted); display:block;">Click chips to remove or add custom long-tail buyer phrases below.</span>
+              </div>
+              <div style="display:flex; gap:0.4rem; align-items:center;">
+                <span id="seoTagsCountBadge" style="font-size:0.72rem; font-weight:800; color:${effectiveTags.length === 13 ? '#00df89' : '#fbbf24'}; background:${effectiveTags.length === 13 ? 'rgba(0,223,137,0.15)' : 'rgba(251,191,36,0.15)'}; padding:0.2rem 0.55rem; border-radius:6px;">
+                  ${effectiveTags.length} / 13 Tags
+                </span>
+                <button type="button" class="btn-ghost btn-sm" style="font-size:0.68rem; padding:0.2rem 0.5rem;" onclick="window.BrandsModule.copyAllStudioSeoTags()">
+                  📋 Copy Tags
+                </button>
               </div>
             </div>
-            <textarea id="studioSeoDescription" rows="5" style="width:100%; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); padding:0.85rem; border-radius:10px; color:var(--text-secondary); font-size:0.82rem; line-height:1.5; resize:vertical;">${effectiveDesc}</textarea>
+
+            <!-- TAG CHIP CONTAINER -->
+            <div id="studioSeoTagCloud" style="display:flex; flex-wrap:wrap; gap:0.4rem; background:rgba(0,0,0,0.3); padding:0.75rem; border-radius:10px; border:1px solid rgba(255,255,255,0.08); margin-bottom:0.6rem; min-height:48px;">
+              ${effectiveTags.map((tag, tIdx) => {
+                const tagLen = tag.length;
+                const isOverLimit = tagLen > 20;
+                return `
+                  <span style="display:inline-flex; align-items:center; gap:0.35rem; background:${isOverLimit ? 'rgba(239,68,68,0.2)' : 'rgba(6,182,212,0.12)'}; border:1px solid ${isOverLimit ? 'rgba(239,68,68,0.4)' : 'rgba(6,182,212,0.3)'}; color:${isOverLimit ? '#ef4444' : '#06b6d4'}; font-size:0.74rem; font-weight:700; padding:0.25rem 0.55rem; border-radius:6px;">
+                    ${tag}
+                    <span style="font-size:0.62rem; color:var(--text-muted); opacity:0.8;">(${tagLen}/20)</span>
+                    <button type="button" onclick="window.BrandsModule.removeStudioSeoTag(${tIdx})" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:0.78rem; padding:0 0 0 2px; line-height:1;">✕</button>
+                  </span>
+                `;
+              }).join('')}
+            </div>
+
+            <!-- ADD TAG INPUT ROW -->
+            <div style="display:grid; grid-template-columns:1fr auto; gap:0.5rem;">
+              <input type="text" id="studioNewTagInput" maxlength="20" placeholder="Add custom tag (max 20 chars)..." onkeydown="if(event.key==='Enter'){event.preventDefault(); window.BrandsModule.addStudioSeoTag();}" style="font-size:0.8rem; padding:0.45rem 0.75rem; background:rgba(0,0,0,0.3); border:1px solid var(--border-subtle); border-radius:8px; color:#fff;">
+              <button type="button" class="btn-secondary btn-sm" style="font-size:0.76rem; padding:0.45rem 0.85rem;" onclick="window.BrandsModule.addStudioSeoTag()">
+                + Add Tag
+              </button>
+            </div>
+
+            <!-- HIDDEN SYNCED INPUT FOR FORM DRAFT COMPATIBILITY -->
+            <input type="hidden" id="studioSeoTags" value="${effectiveTagsStr.replace(/"/g, '&quot;')}">
           </div>
 
-          <div style="display:flex; justify-content:flex-start; margin-top:0.5rem;">
+          <!-- 6. DESCRIPTION TEXTAREA -->
+          <div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.3rem;">
+              <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Conversion-Optimized Description (4 Structured Sections)</label>
+              <div style="display:flex; gap:0.4rem;">
+                <button type="button" class="btn-ghost btn-sm" onclick="navigator.clipboard.writeText(document.getElementById('studioSeoDescription').value); window.showToast('Copied Description!','success');">📋 Copy</button>
+                <button type="button" class="btn-primary btn-sm" onclick="window.BrandsModule.saveStudioDraft('seo')">💾 Save SEO</button>
+              </div>
+            </div>
+            <textarea id="studioSeoDescription" rows="6" style="width:100%; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); padding:0.85rem; border-radius:10px; color:var(--text-secondary); font-size:0.82rem; line-height:1.5; resize:vertical;">${effectiveDesc}</textarea>
+          </div>
+
+          <!-- 7. 5-POINT PRE-PUBLISHING LAUNCH GATE CHECKLIST -->
+          <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); padding:1rem 1.25rem; border-radius:14px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem;">
+              <span style="font-size:0.74rem; font-weight:800; color:var(--text-muted); text-transform:uppercase;">5-Point Pre-Publishing Launch Gate</span>
+              <span style="font-size:0.72rem; font-weight:800; color:${progressPct >= 80 ? '#00df89' : '#fbbf24'};">
+                ${progressPct}% Production Complete
+              </span>
+            </div>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:0.5rem; font-size:0.74rem;">
+              <span style="color:${bpDone ? '#00df89' : 'var(--text-muted)'};">${bpDone ? '✅' : '⚪'} 1. Blueprint Spreads Generated</span>
+              <span style="color:${vaultDone ? '#00df89' : 'var(--text-muted)'};">${vaultDone ? '✅' : '⚪'} 2. Vault Deliverable File Ready</span>
+              <span style="color:${mediaDone ? '#00df89' : 'var(--text-muted)'};">${mediaDone ? '✅' : '⚪'} 3. 4+ Mockups &amp; Video Attached</span>
+              <span style="color:${auditDone ? '#00df89' : (auditScore > 0 ? '#ef4444' : 'var(--text-muted)')};">${auditDone ? '✅' : '⚪'} 4. AI Vision Quality (Score ≥ 7.0)</span>
+              <span style="color:${seoDone ? '#00df89' : 'var(--text-muted)'};">${seoDone ? '✅' : '⚪'} 5. SEO Title &amp; 13 Tags Ready</span>
+            </div>
+          </div>
+
+          <!-- NAVIGATION BAR -->
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.5rem;">
             <button class="btn-ghost btn-sm" onclick="window.BrandsModule.switchStudioTab('audit')">← Step 4: AI Audit</button>
+            <span style="font-size:0.74rem; color:var(--text-muted);">Ready to launch or submit below ↓</span>
           </div>
         </div>
 
@@ -3404,7 +3501,7 @@ window.APP_MODULES.brands = async function(container) {
             ${isAdmin ? `
               <!-- ADMIN PUBLISH BUTTON -->
               <button class="btn-primary" style="background:linear-gradient(135deg, #00df89, #06b6d4); font-weight:900; padding:0.55rem 1.4rem;" onclick="window.BrandsModule.publishSingleProductEtsy(${b.id}, ${brandCatalog.findIndex(p=>p.code===prodCode)})">
-                🚀 Publish to Live Etsy ($0.20)
+                🚀 Publish to Live Etsy ($0.20 Fee)
               </button>
             ` : `
               <!-- DVM SUBMIT FOR ADMIN REVIEW BUTTON -->
@@ -3669,16 +3766,18 @@ window.APP_MODULES.brands = async function(container) {
             brandName: b.name,
             brandNiche: b.niche,
             brandVoice: b.voice,
-            type: prod.type || b.type,
+            type: prod.type || b.type || 'Digital PDF',
+            category: prod.category || prod.blueprint?.categoryOverride || 'Daily & Weekly Planners',
+            pageCount: prod.blueprint?.pageCount || prod.blueprint?.pages?.length || 10,
+            palette: prod.blueprint?.palette || b.palette || ['#8B5A7A', '#FAF3E8', '#7D9B76'],
             auditScore: prod.aiAudit?.overall_score || prod.aiAudit?.score || 8.0,
-            price: prod.price || 6.99
+            price: prod.price || prod.retailPrice || 7.49
           })
         });
         const seoData = await res.json();
-        if (!seoData) throw new Error('Failed to generate SEO');
+        if (!seoData || !seoData.success) throw new Error(seoData.error || 'Failed to generate SEO');
 
         const titleEl = document.getElementById('studioSeoTitle');
-        const tagsEl = document.getElementById('studioSeoTags');
         const descEl = document.getElementById('studioSeoDescription');
 
         if (titleEl && seoData.title) {
@@ -3686,20 +3785,121 @@ window.APP_MODULES.brands = async function(container) {
           const counter = document.getElementById('seoTitleCounter');
           if (counter) counter.innerText = seoData.title.length + '/140 chars';
         }
-        if (tagsEl && seoData.tags) {
-          const tagsStr = Array.isArray(seoData.tags) ? seoData.tags.join(', ') : String(seoData.tags);
-          tagsEl.value = tagsStr;
-          const badge = document.getElementById('seoTagsCountBadge');
-          if (badge) badge.innerText = (Array.isArray(seoData.tags) ? seoData.tags.length : 13) + ' / 13 Tags';
-        }
+
         if (descEl && seoData.description) {
           descEl.value = seoData.description;
         }
 
-        if (window.showToast) window.showToast('✅ AI SEO package populated! Click Save SEO to persist.', 'success');
+        // Render tag chips
+        if (Array.isArray(seoData.tags)) {
+          window._activeStudioTags = seoData.tags.map(t => String(t).trim().slice(0, 20)).filter(Boolean);
+          window.BrandsModule.renderStudioTagChips();
+        }
+
+        window.BrandsModule.updateLiveEtsyPreview();
+
+        // Update product in-memory state
+        if (prod) {
+          if (!prod.seo) prod.seo = {};
+          prod.seo.title = seoData.title;
+          prod.seo.tags = seoData.tags;
+          prod.seo.description = seoData.description;
+          prod.seoTitle = seoData.title;
+          prod.seoTags = seoData.tags;
+          prod.seoDescription = seoData.description;
+        }
+        saveBrandsStateLocally(state);
+
+        if (window.showToast) window.showToast('✅ AI SEO package generated & populated!', 'success');
       } catch (err) {
         if (window.showToast) window.showToast(`SEO generation failed: ${err.message}`, 'error');
       }
+    },
+
+    updateLiveEtsyPreview() {
+      const titleInput = document.getElementById('studioSeoTitle');
+      const priceInput = document.getElementById('studioRetailPrice');
+      const previewTitle = document.getElementById('previewEtsyTitle');
+      const previewPrice = document.getElementById('previewEtsyPrice');
+
+      if (previewTitle && titleInput) {
+        previewTitle.innerText = titleInput.value.trim() || 'Your Product Title | Aesthetic Planner';
+      }
+      if (previewPrice && priceInput) {
+        const val = parseFloat(priceInput.value) || 7.49;
+        previewPrice.innerText = `$${val.toFixed(2)} AUD`;
+      }
+    },
+
+    renderStudioTagChips() {
+      const container = document.getElementById('studioSeoTagCloud');
+      const hiddenInput = document.getElementById('studioSeoTags');
+      const badge = document.getElementById('seoTagsCountBadge');
+      const tags = window._activeStudioTags || [];
+
+      if (hiddenInput) {
+        hiddenInput.value = tags.join(', ');
+      }
+
+      if (badge) {
+        badge.innerText = `${tags.length} / 13 Tags`;
+        badge.style.color = tags.length === 13 ? '#00df89' : '#fbbf24';
+        badge.style.background = tags.length === 13 ? 'rgba(0,223,137,0.15)' : 'rgba(251,191,36,0.15)';
+      }
+
+      if (!container) return;
+
+      container.innerHTML = tags.map((tag, tIdx) => {
+        const tagLen = tag.length;
+        const isOverLimit = tagLen > 20;
+        return `
+          <span style="display:inline-flex; align-items:center; gap:0.35rem; background:${isOverLimit ? 'rgba(239,68,68,0.2)' : 'rgba(6,182,212,0.12)'}; border:1px solid ${isOverLimit ? 'rgba(239,68,68,0.4)' : 'rgba(6,182,212,0.3)'}; color:${isOverLimit ? '#ef4444' : '#06b6d4'}; font-size:0.74rem; font-weight:700; padding:0.25rem 0.55rem; border-radius:6px;">
+            ${tag}
+            <span style="font-size:0.62rem; color:var(--text-muted); opacity:0.8;">(${tagLen}/20)</span>
+            <button type="button" onclick="window.BrandsModule.removeStudioSeoTag(${tIdx})" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:0.78rem; padding:0 0 0 2px; line-height:1;">✕</button>
+          </span>
+        `;
+      }).join('');
+    },
+
+    addStudioSeoTag(tagText) {
+      const input = document.getElementById('studioNewTagInput');
+      const val = (tagText || input?.value || '').trim();
+      if (!val) return;
+
+      if (!window._activeStudioTags) {
+        const hiddenInput = document.getElementById('studioSeoTags');
+        window._activeStudioTags = (hiddenInput?.value || '').split(',').map(t => t.trim()).filter(Boolean);
+      }
+
+      if (window._activeStudioTags.length >= 13) {
+        if (window.showToast) window.showToast('Etsy maximum is 13 tags. Remove a tag first.', 'warning');
+        return;
+      }
+
+      const cleanTag = val.slice(0, 20);
+      window._activeStudioTags.push(cleanTag);
+      if (input) input.value = '';
+      window.BrandsModule.renderStudioTagChips();
+    },
+
+    removeStudioSeoTag(idx) {
+      if (!window._activeStudioTags) {
+        const hiddenInput = document.getElementById('studioSeoTags');
+        window._activeStudioTags = (hiddenInput?.value || '').split(',').map(t => t.trim()).filter(Boolean);
+      }
+      window._activeStudioTags.splice(idx, 1);
+      window.BrandsModule.renderStudioTagChips();
+    },
+
+    copyAllStudioSeoTags() {
+      const tags = window._activeStudioTags || (document.getElementById('studioSeoTags')?.value || '').split(',').map(t => t.trim()).filter(Boolean);
+      if (tags.length === 0) {
+        if (window.showToast) window.showToast('No tags to copy', 'warning');
+        return;
+      }
+      navigator.clipboard.writeText(tags.join(', '));
+      if (window.showToast) window.showToast(`📋 Copied all ${tags.length} Etsy tags!`, 'success');
     },
 
     async submitProductForReview(brandId, productCode) {
