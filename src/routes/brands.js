@@ -18,6 +18,7 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const { requireAuth } = require('../middleware/auth');
+const { requireAdmin } = require('../middleware/rbac');
 const { supabase, isSupabaseConfigured } = require('../services/supabase');
 const { readDB, writeDB } = require('../services/db');
 
@@ -1278,9 +1279,9 @@ router.post('/:id/products/:code/ai-audit', requireAuth, vaultUpload.array('page
 
 /**
  * POST /api/brands/:id/products/:code/apply-price
- * Applies AI Recommended Price to product in catalog & Etsy listing matrix
+ * Applies AI Recommended Price to product in catalog & Etsy listing matrix (Admin Only)
  */
-router.post('/:id/products/:code/apply-price', requireAuth, async (req, res) => {
+router.post('/:id/products/:code/apply-price', requireAuth, requireAdmin, async (req, res) => {
   try {
     const brandId = Number(req.params.id);
     const productCode = req.params.code;
@@ -1633,9 +1634,9 @@ router.get('/:id/expiring-soon', requireAuth, async (req, res) => {
 
 /**
  * POST /api/brands/:id/log-shop-creation-fee
- * Logs one-time $26 shop creation fee
+ * Logs one-time $26 shop creation fee (Admin Only)
  */
-router.post('/:id/log-shop-creation-fee', requireAuth, async (req, res) => {
+router.post('/:id/log-shop-creation-fee', requireAuth, requireAdmin, async (req, res) => {
   try {
     const brandId = Number(req.params.id);
     const state = await loadBrandsState();
@@ -1868,9 +1869,9 @@ router.post('/:id/product/:code/submit-review', requireAuth, async (req, res) =>
 
 /**
  * GET /api/brands/review-queue
- * Fetches all products across all brands currently 'Pending Review' or 'Revision Requested'
+ * Fetches all products across all brands currently 'Pending Review' or 'Revision Requested' (Admin Only)
  */
-router.get('/review-queue', requireAuth, async (req, res) => {
+router.get('/review-queue', requireAuth, requireAdmin, async (req, res) => {
   try {
     const state = await loadBrandsState();
     const queue = [];
@@ -1910,9 +1911,9 @@ router.get('/review-queue', requireAuth, async (req, res) => {
 
 /**
  * POST /api/brands/:id/product/:code/review-action
- * Admin approves, requests revision, or rejects a submitted product
+ * Admin approves, requests revision, or rejects a submitted product (Admin Only)
  */
-router.post('/:id/product/:code/review-action', requireAuth, async (req, res) => {
+router.post('/:id/product/:code/review-action', requireAuth, requireAdmin, async (req, res) => {
   try {
     const brandId = Number(req.params.id);
     const productCode = req.params.code;
@@ -2101,9 +2102,9 @@ router.get('/dbm-incentive-ledger', requireAuth, async (req, res) => {
 
 /**
  * POST /api/brands/set-mid-month-incentive
- * Admin configures or approves a custom mid-month incentive for a DBM
+ * Admin configures or approves a custom mid-month incentive for a DBM (Admin Only)
  */
-router.post('/set-mid-month-incentive', requireAuth, async (req, res) => {
+router.post('/set-mid-month-incentive', requireAuth, requireAdmin, async (req, res) => {
   try {
     const { dbmId, targetPct, bonusUsd, note, approved } = req.body;
     const state = await loadBrandsState();
@@ -2141,9 +2142,9 @@ router.post('/set-mid-month-incentive', requireAuth, async (req, res) => {
 
 /**
  * POST /api/brands/trigger-20th-telegram-evaluation
- * Generates mid-month performance summary and dispatches Telegram notification to Admin
+ * Generates mid-month performance summary and dispatches Telegram notification to Admin (Admin Only)
  */
-router.post('/trigger-20th-telegram-evaluation', requireAuth, async (req, res) => {
+router.post('/trigger-20th-telegram-evaluation', requireAuth, requireAdmin, async (req, res) => {
   try {
     const state = await loadBrandsState();
     const dbms = state.dbms || [];

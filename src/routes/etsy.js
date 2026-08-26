@@ -63,6 +63,7 @@ async function getBrandData(brandId) {
  */
 router.get('/brands/:brandId/status', asyncHandler(async (req, res) => {
   const { brandId } = req.params;
+  await getValidAccessToken(brandId).catch(() => {});
   const conn = await getConnection(brandId);
 
   if (!conn || !conn.access_token || conn.status === 'disconnected') {

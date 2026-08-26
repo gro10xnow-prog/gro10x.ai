@@ -374,6 +374,15 @@ function getStudioAuthHeaders(extra = {}) {
   return headers;
 }
 
+function isCurrentUserAdmin() {
+  const u = window.CURRENT_USER || JSON.parse(localStorage.getItem('gro10x_user') || '{}');
+  const roleStr = (u.role || u.accessLevel || u.access_level || '').toLowerCase();
+  const empCode = u.emp_code || u.id || '';
+  if (['GRO-000', 'GRO-001', 'GRO-002', 'GRO-005', 'PBD-000', 'PBD-001'].includes(empCode)) return true;
+  return roleStr.includes('owner') || roleStr.includes('admin') || roleStr.includes('director') || roleStr.includes('ceo') || roleStr.includes('founder') || roleStr.includes('technology admin') || !roleStr;
+}
+
+
 async function loadBrandsStateFromAPI() {
   let localState = null;
   try {
@@ -1355,18 +1364,24 @@ window.APP_MODULES.brands = async function(container) {
 
       <!-- 100-PRODUCT CATALOG MATRIX & ADMIN REVIEW QUEUE -->
       <div class="card-glass" style="padding:1.5rem; border-radius:16px; margin-bottom:1.5rem;">
-        <!-- SUB-VIEW TOGGLE STRIP -->
+        <!-- SUB-VIEW TOGGLE STRIP (Role-Aware) -->
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem; margin-bottom:1.25rem;">
           <div style="display:flex; gap:0.4rem; background:rgba(0,0,0,0.35); padding:0.3rem; border-radius:10px; border:1px solid rgba(255,255,255,0.08);">
             <button type="button" onclick="window.BrandsModule.setEtsySubView('catalog')" style="padding:0.4rem 0.9rem; border-radius:7px; font-size:0.78rem; font-weight:800; border:none; cursor:pointer; background:${(window._activeEtsySubView || 'catalog') === 'catalog' ? '#00df89' : 'none'}; color:${(window._activeEtsySubView || 'catalog') === 'catalog' ? '#070b12' : 'var(--text-muted)'};">
               📦 ${b.name} Catalog (${catalog.length})
             </button>
-            <button type="button" onclick="window.BrandsModule.setEtsySubView('review_queue')" style="padding:0.4rem 0.9rem; border-radius:7px; font-size:0.78rem; font-weight:800; border:none; cursor:pointer; background:${(window._activeEtsySubView || 'catalog') === 'review_queue' ? '#f59e0b' : 'none'}; color:${(window._activeEtsySubView || 'catalog') === 'review_queue' ? '#070b12' : 'var(--text-muted)'};">
-              📋 Admin Review Queue (${Object.values(state.productsCatalog || {}).flat().filter(p => p.status === 'Pending Review' || p.status === 'Revision Requested').length})
-            </button>
+            ${isCurrentUserAdmin() ? `
+              <button type="button" onclick="window.BrandsModule.setEtsySubView('review_queue')" style="padding:0.4rem 0.9rem; border-radius:7px; font-size:0.78rem; font-weight:800; border:none; cursor:pointer; background:${(window._activeEtsySubView || 'catalog') === 'review_queue' ? '#f59e0b' : 'none'}; color:${(window._activeEtsySubView || 'catalog') === 'review_queue' ? '#070b12' : 'var(--text-muted)'};">
+                📋 Admin Review Queue (${Object.values(state.productsCatalog || {}).flat().filter(p => p.status === 'Pending Review' || p.status === 'Revision Requested').length})
+              </button>
+            ` : catalog.filter(p => p.status === 'Revision Requested').length > 0 ? `
+              <button type="button" onclick="window.BrandsModule.setEtsySubView('revisions')" style="padding:0.4rem 0.9rem; border-radius:7px; font-size:0.78rem; font-weight:800; border:none; cursor:pointer; background:${(window._activeEtsySubView || 'catalog') === 'revisions' ? '#ef4444' : 'none'}; color:${(window._activeEtsySubView || 'catalog') === 'revisions' ? '#fff' : '#ef4444'};">
+                ⚠️ Revisions Needed (${catalog.filter(p => p.status === 'Revision Requested').length})
+              </button>
+            ` : ''}
           </div>
 
-          ${(window._activeEtsySubView || 'catalog') === 'catalog' ? `
+          ${(window._activeEtsySubView || 'catalog') === 'catalog' || (window._activeEtsySubView || 'catalog') === 'revisions' ? `
             <div style="display:flex; gap:0.5rem; align-items:center;">
               <input type="text" id="etsyProductSearch" placeholder="Search title or code..." oninput="window.BrandsModule.filterEtsyTable(this.value)" style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); color:#fff; padding:0.4rem 0.8rem; border-radius:8px; font-size:0.8rem; width:200px;">
               <button class="btn-ghost btn-sm" onclick="window.BrandsModule.openAddProductToBrandModal(${b.id})">+ Add Product</button>
@@ -1575,6 +1590,27 @@ window.APP_MODULES.brands = async function(container) {
                                     <input type="text" id="reviewNote_${p.brandId}_${p.code}" value="${p.adminPriceNote || ''}" placeholder="e.g. Premium flagship bundle" style="width:100%; font-size:0.72rem; padding:0.3rem; background:rgba(0,0,0,0.4); border:1px solid var(--border-subtle); border-radius:6px; color:#fff;">
                                   </div>
                                 </div>
+                                ${(() => {
+                                  const curPrice = Number(p.price || 4.99);
+                                  const feeListing = 0.20;
+                                  const feeTx = curPrice * 0.065;
+                                  const feeProc = (curPrice * 0.03) + 0.25;
+                                  const totalFees = feeListing + feeTx + feeProc;
+                                  const netProfit = Math.max(0, curPrice - totalFees);
+                                  const marginPct = curPrice > 0 ? Math.round((netProfit / curPrice) * 100) : 0;
+                                  return `
+                                    <div style="background:rgba(0,0,0,0.35); padding:0.4rem 0.6rem; border-radius:8px; border:1px solid rgba(0,223,137,0.2); margin-bottom:0.4rem; font-size:0.68rem;">
+                                      <div style="display:flex; justify-content:space-between; color:var(--text-muted);">
+                                        <span>Etsy Fees ($0.20 + 9.5%):</span>
+                                        <span style="color:#ef4444; font-weight:700;">-$${totalFees.toFixed(2)}</span>
+                                      </div>
+                                      <div style="display:flex; justify-content:space-between; color:#fff; font-weight:800; margin-top:0.15rem;">
+                                        <span>Net Cash Margin:</span>
+                                        <span style="color:#00df89;">$${netProfit.toFixed(2)} (${marginPct}%)</span>
+                                      </div>
+                                    </div>
+                                  `;
+                                })()}
                                 <div style="font-size:0.68rem; color:var(--text-muted);">
                                   SEO Title: <span style="color:#fff;">${(p.seoTitle || p.name).slice(0, 50)}...</span>
                                 </div>
@@ -5078,6 +5114,10 @@ window.APP_MODULES.brands = async function(container) {
     },
 
     async approveProductDirectly(brandId, productCode) {
+      if (!isCurrentUserAdmin()) {
+        if (window.showToast) window.showToast('⛔ Only Founder/CEO or Admins can approve products for publication.', 'error');
+        return;
+      }
       const priceInput = document.getElementById(`reviewPrice_${brandId}_${productCode}`);
       const noteInput = document.getElementById(`reviewNote_${brandId}_${productCode}`);
       const priceOverride = priceInput ? parseFloat(priceInput.value) : undefined;
@@ -5106,6 +5146,10 @@ window.APP_MODULES.brands = async function(container) {
     },
 
     async publishSingleProductEtsy(brandId, productIdx) {
+      if (!isCurrentUserAdmin()) {
+        if (window.showToast) window.showToast('⛔ Only Founder/CEO or Admins can authorize Etsy publishing ($0.20 listing fee).', 'error');
+        return;
+      }
       const catalog = state.productsCatalog[brandId] || [];
       const prod = typeof productIdx === 'number' ? catalog[productIdx] : catalog.find(p => p.code === productIdx);
       if (!prod) return;

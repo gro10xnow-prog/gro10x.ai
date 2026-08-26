@@ -1,7 +1,7 @@
 /**
  * public/app/modules/dbm.js
  * ─────────────────────────────────────────────────────────────────────────────
- * GRO10X Digital Brand Manager (DBM) Operations & Team Tracker Module v2.0
+ * GRO10X Digital Brand Manager (DBM) Operations & Team Tracker Module v2.5
  * 
  * Manages the 4-person DBM Team operating the 13-brand digital empire:
  * 1. DBM Division Matrix & Brand Ownership
@@ -221,7 +221,65 @@ window.APP_MODULES.dbm = async function(container) {
         </div>
 
       </div>
+
+      <!-- STANDUP SUBMISSION MODAL OVERLAY -->
+      <div id="dbmStandupModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(6px);">
+        <div class="card-glass" style="max-width:540px; width:90%; padding:1.75rem; border-radius:16px; border:1px solid rgba(0,223,137,0.3); background:#0c1017;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;">
+            <div style="display:flex; align-items:center; gap:0.5rem;">
+              <span style="font-size:1.4rem;">📋</span>
+              <h3 style="margin:0; font-size:1.2rem; color:#fff; font-weight:800;">Log DBM Daily EOD Standup</h3>
+            </div>
+            <button class="btn-ghost btn-sm" onclick="document.getElementById('dbmStandupModal').style.display='none'">✕</button>
+          </div>
+
+          <form id="dbmStandupForm" onsubmit="event.preventDefault(); window.DBMModule.submitStandupForm();">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:1rem;">
+              <div>
+                <label style="font-size:0.75rem; color:var(--text-muted); display:block; margin-bottom:0.3rem;">DBM Division:</label>
+                <select id="standupDbmSelect" onchange="window.DBMModule.updateBrandOptions(this.value)" style="width:100%; padding:0.5rem; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.1); border-radius:8px; color:#fff; font-size:0.85rem;">
+                  ${brandsState.dbms.map(d => `<option value="${d.id}">${d.name} (${d.title})</option>`).join('')}
+                </select>
+              </div>
+
+              <div>
+                <label style="font-size:0.75rem; color:var(--text-muted); display:block; margin-bottom:0.3rem;">Brand Worked On:</label>
+                <select id="standupBrandSelect" style="width:100%; padding:0.5rem; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.1); border-radius:8px; color:#00df89; font-weight:700; font-size:0.85rem;">
+                  <!-- Populated dynamically -->
+                </select>
+              </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:1rem;">
+              <div>
+                <label style="font-size:0.75rem; color:var(--text-muted); display:block; margin-bottom:0.3rem;">Products Built / Listed Today:</label>
+                <input type="number" id="standupListedInput" min="0" max="50" value="8" style="width:100%; padding:0.5rem; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.1); border-radius:8px; color:#00df89; font-weight:800; font-size:0.9rem;">
+              </div>
+
+              <div>
+                <label style="font-size:0.75rem; color:var(--text-muted); display:block; margin-bottom:0.3rem;">Revenue Today ($ USD):</label>
+                <input type="number" id="standupRevenueInput" min="0" step="0.01" value="0" style="width:100%; padding:0.5rem; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.1); border-radius:8px; color:#fff; font-weight:700; font-size:0.9rem;">
+              </div>
+            </div>
+
+            <div style="margin-bottom:1.25rem;">
+              <label style="font-size:0.75rem; color:var(--text-muted); display:block; margin-bottom:0.3rem;">Standup Notes / Wins / Blockers:</label>
+              <textarea id="standupNotesInput" rows="3" placeholder="e.g. Completed design & mockup generation for 8 hero products. No blockers." style="width:100%; padding:0.5rem; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.1); border-radius:8px; color:#fff; font-size:0.85rem; resize:vertical;"></textarea>
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; gap:0.5rem;">
+              <button type="button" class="btn-ghost" onclick="document.getElementById('dbmStandupModal').style.display='none'">Cancel</button>
+              <button type="submit" class="btn-primary" style="background:linear-gradient(135deg, #00df89, #06b6d4); font-weight:800;">
+                🚀 Submit Standup Report
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
     `;
+
+    // Populate initial brand options
+    window.DBMModule.updateBrandOptions(1);
   }
 
   window.DBMModule = {
@@ -232,17 +290,27 @@ window.APP_MODULES.dbm = async function(container) {
       window.location.hash = '#brands';
     },
 
-    async openLogStandupModal() {
-      const dbmIdStr = prompt('Select DBM (1, 2, 3, or 4):', '1');
-      if (!dbmIdStr) return;
-      const dbmId = Number(dbmIdStr);
+    updateBrandOptions(dbmId) {
+      const brandSelect = document.getElementById('standupBrandSelect');
+      if (!brandSelect) return;
+      const assigned = brandsState.brands.filter(b => b.dbmId === Number(dbmId));
+      brandSelect.innerHTML = assigned.map(b => `<option value="${b.name}">${b.name} (Brand #${b.id})</option>`).join('');
+    },
 
-      const brandName = prompt('Brand Name worked on today:', 'PlannerQueenCo');
-      if (!brandName) return;
+    openLogStandupModal() {
+      const modal = document.getElementById('dbmStandupModal');
+      if (modal) {
+        modal.style.display = 'flex';
+        window.DBMModule.updateBrandOptions(document.getElementById('standupDbmSelect')?.value || 1);
+      }
+    },
 
-      const listed = Number(prompt('How many products were listed today?', '8')) || 0;
-      const revenue = Number(prompt('Revenue generated today ($ USD, enter 0 if pre-launch):', '0')) || 0;
-      const notes = prompt('Standup notes / wins / blockers:', 'Completed design & upload for daily batch') || '';
+    async submitStandupForm() {
+      const dbmId = Number(document.getElementById('standupDbmSelect')?.value || 1);
+      const brandName = document.getElementById('standupBrandSelect')?.value || 'PlannerQueenCo';
+      const listed = Number(document.getElementById('standupListedInput')?.value) || 0;
+      const revenue = Number(document.getElementById('standupRevenueInput')?.value) || 0;
+      const notes = document.getElementById('standupNotesInput')?.value.trim() || 'Completed daily production batch';
 
       const newLog = {
         date: new Date().toISOString().split('T')[0],
@@ -255,13 +323,21 @@ window.APP_MODULES.dbm = async function(container) {
 
       logs.unshift(newLog);
 
-      if (window.APP_API) {
-        window.APP_API.post('/brands/dbm-logs', newLog).catch(e => console.warn('[DBM] Sync note:', e.message));
-      } else {
+      try {
+        const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+        await fetch('/api/brands/dbm-logs', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify(newLog)
+        });
+      } catch (e) {
         localStorage.setItem('gro10x_dbm_standups', JSON.stringify(logs));
       }
 
-      if (window.showToast) window.showToast(`Logged Standup for DBM ${dbmId} successfully!`, 'success');
+      const modal = document.getElementById('dbmStandupModal');
+      if (modal) modal.style.display = 'none';
+
+      if (window.showToast) window.showToast(`✅ Logged Standup for DBM ${dbmId} (${brandName})!`, 'success');
       render();
     }
   };

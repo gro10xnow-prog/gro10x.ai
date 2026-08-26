@@ -250,14 +250,14 @@ async function getValidAccessToken(brandId) {
     return null;
   }
 
-  // Check if token will expire in the next 5 minutes
+  // Check if token will expire in the next 15 minutes (proactive refresh)
   const expiresAt = new Date(conn.token_expires_at || conn.expiresAt || 0).getTime();
   const now = Date.now();
-  const fiveMinutes = 5 * 60 * 1000;
+  const fifteenMinutes = 15 * 60 * 1000;
 
-  if (expiresAt - now < fiveMinutes && conn.refresh_token) {
+  if (expiresAt - now < fifteenMinutes && conn.refresh_token) {
     try {
-      console.log(`[Etsy] Auto-refreshing expiring token for Brand ${brandId}...`);
+      console.log(`[Etsy] Proactively auto-refreshing expiring token for Brand ${brandId}...`);
       const refreshed = await refreshAccessToken(brandId, conn.refresh_token);
       return refreshed.accessToken;
     } catch (err) {
