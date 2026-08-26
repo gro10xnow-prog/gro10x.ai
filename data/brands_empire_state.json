@@ -1258,20 +1258,22 @@
         "submittedBy": "DVM",
         "mockupsCount": 10,
         "etsyListingId": 4562683744,
-        "studioPercent": 80,
+        "studioPercent": 100,
         "seoDescription": "✨ Welcome to PlannerQueenGro — Productivity & Life Planning\n\nUpgrade your routine with the **Daily & Weekly Planners #1 — PlannerQueenGro Style**.\n\n📦 WHAT IS INCLUDED:\n• High-resolution interactive PDF / Assets\n• Easy setup guide & tutorial links\n• Commercial & personal use flexibility\n\n⚡ HOW IT WORKS:\n1. Complete your purchase.\n2. Instantly download your files from Etsy Purchases.\n3. Open in your favorite app (GoodNotes, Canva, Notion) or print!\n\n💌 Need help or custom requests? Send us an Etsy message anytime!",
         "suggestedPrice": 7.49,
         "adminRevisionNote": "Please polish mockup lighting and verify printable margins.",
         "listingFeeCharged": 0.2,
-        "revisionRequestedAt": "2026-08-25T22:37:09.372Z"
+        "revisionRequestedAt": "2026-08-25T22:37:09.372Z",
+        "liveListingUrl": "https://www.etsy.com/listing/4562683744/daily-and-weekly-planners-1",
+        "etsyState": "active"
       },
       {
         "code": "PLA-02",
         "hero": true,
         "name": "Executive Work-Life Balance & Top-3 Priority Matrix Weekly Planner",
-        "price": 12,
+        "price": 9.99,
         "format": "Digital PDF",
-        "status": "Draft",
+        "status": "Live",
         "category": "Daily & Weekly Planners",
         "blueprint": {
           "geometry": "US Letter (8.5 x 11 in) / A4 Vector PDF (GoodNotes & Print Ready)",
@@ -1558,15 +1560,24 @@
               "scene": "Aesthetic review card graphic with 5 golden stars, a lifestyle crop of \"Executive Work-Life Balance & Top-3 Priority Matrix Weekly Planner\", and quote: \"Completely transformed my daily routine and focus.\""
             }
           ]
-        }
+        },
+        "etsyListingId": 4562903974,
+        "retailPrice": 9.99,
+        "liveListingUrl": "https://www.etsy.com/listing/4562903974/daily-and-weekly-planners-2",
+        "etsyState": "active",
+        "studioPercent": 100,
+        "approvedAt": "2026-08-26T14:00:53.504Z",
+        "approvedBy": "Admin",
+        "submittedAt": "2026-08-26T14:00:53.504Z",
+        "submittedBy": "DVM"
       },
       {
         "code": "PLA-03",
         "hero": false,
         "name": "ADHD-Friendly Low-Dopamine & Low-Friction Daily Task Planner",
-        "price": 12,
+        "price": 8.99,
         "format": "Digital PDF",
-        "status": "Draft",
+        "status": "Live",
         "category": "Daily & Weekly Planners",
         "blueprint": {
           "geometry": "US Letter (8.5 x 11 in) / A4 Vector PDF (GoodNotes & Print Ready)",
@@ -1853,15 +1864,24 @@
               "scene": "Aesthetic review card graphic with 5 golden stars, a lifestyle crop of \"ADHD-Friendly Low-Dopamine & Low-Friction Daily Task Planner\", and quote: \"Completely transformed my daily routine and focus.\""
             }
           ]
-        }
+        },
+        "etsyListingId": 4562964296,
+        "retailPrice": 8.99,
+        "liveListingUrl": "https://www.etsy.com/listing/4562964296/adhd-friendly-low-dopamine-and-low",
+        "etsyState": "active",
+        "studioPercent": 100,
+        "approvedAt": "2026-08-26T14:00:53.503Z",
+        "approvedBy": "Admin",
+        "submittedAt": "2026-08-26T14:00:53.503Z",
+        "submittedBy": "DVM"
       },
       {
         "code": "PLA-04",
         "hero": false,
         "name": "Teacher & Student Weekly Academic Lesson & Study Planner",
-        "price": 12,
+        "price": 9.99,
         "format": "Digital PDF",
-        "status": "Draft",
+        "status": "Live",
         "category": "Daily & Weekly Planners",
         "blueprint": {
           "geometry": "US Letter (8.5 x 11 in) / A4 Compatible (300 DPI Print Ready & GoodNotes Hyperlinked)",
@@ -2199,7 +2219,16 @@
               "scene": "Aesthetic review card graphic with 5 golden stars, a lifestyle photo of \"Teacher & Student Weekly Academic Lesson & Study Planner\", and teacher testimonial: \"Completely saved my lesson prep time and reduced my Sunday stress!\""
             }
           ]
-        }
+        },
+        "etsyListingId": 4563030934,
+        "retailPrice": 9.99,
+        "liveListingUrl": "https://www.etsy.com/listing/4563030934/teacher-and-student-weekly-academic",
+        "etsyState": "active",
+        "studioPercent": 100,
+        "approvedAt": "2026-08-26T14:00:53.502Z",
+        "approvedBy": "Admin",
+        "submittedAt": "2026-08-26T14:00:53.503Z",
+        "submittedBy": "DVM"
       },
       {
         "code": "PLA-05",

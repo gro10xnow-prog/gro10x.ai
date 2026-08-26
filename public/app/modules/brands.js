@@ -1830,7 +1830,10 @@ window.APP_MODULES.brands = async function(container) {
           </p>
         </div>
 
-        <div style="display:flex; gap:0.6rem;">
+        <div style="display:flex; gap:0.6rem; flex-wrap:wrap;">
+          <button class="btn-secondary btn-sm" style="font-weight:800; border:1px solid rgba(0,223,137,0.4); color:#00df89;" onclick="window.BrandsModule.syncLiveEtsyCatalog(1)">
+            🔄 Sync Live from Etsy Shop
+          </button>
           <button class="btn-primary btn-sm" style="background:#f59e0b; border-color:#f59e0b; font-weight:800;" onclick="window.BrandsModule.bulkRenewAllExpiring()">
             🔄 Renew All ${soonExpiring.length} Expiring ($${totalRenewalCost})
           </button>
@@ -4809,6 +4812,32 @@ window.APP_MODULES.brands = async function(container) {
         renderTabContent('etsy');
       } catch (err) {
         if (window.showToast) window.showToast(`Update failed: ${err.message}`, 'error');
+      }
+    },
+
+    async syncLiveEtsyCatalog(brandId = 1) {
+      if (window.showToast) window.showToast('🔄 Scanning Etsy Shop for active listings...', 'info');
+      const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+      try {
+        const res = await fetch(`/api/etsy/brands/${brandId}/sync-live-catalog`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+        });
+        const data = await res.json();
+        if (!res.ok || data.success === false) {
+          throw new Error(data.error || 'Failed to sync with Etsy shop');
+        }
+
+        if (window.showToast) {
+          window.showToast(`✅ Reconciled ${data.reconciledCount || 0} live listings from Etsy!`, 'success');
+        }
+
+        // Hard refresh state from API so UI displays Live badges
+        state = await loadBrandsStateFromAPI();
+        renderTabContent(currentTab || 'catalog');
+      } catch (err) {
+        console.error('[Sync Etsy Catalog Error]:', err);
+        if (window.showToast) window.showToast(`❌ Sync error: ${err.message}`, 'error');
       }
     },
 

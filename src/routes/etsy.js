@@ -1112,5 +1112,82 @@ router.get('/brands/:brandId/listings', requireAuth, asyncHandler(async (req, re
   }
 }));
 
+/**
+ * 21. POST /api/etsy/brands/:brandId/sync-live-catalog
+ * Automatically reconciles live Etsy listings with the brand's product catalog.
+ */
+router.post('/brands/:brandId/sync-live-catalog', requireAuth, asyncHandler(async (req, res) => {
+  const { brandId } = req.params;
+  const conn = await getConnection(brandId);
+
+  if (!conn || !conn.shop_id || conn.status !== 'active') {
+    return fail(res, 'Etsy store not connected or active for this brand.', 400);
+  }
+
+  try {
+    const activeRes = await getActiveListings(brandId, conn.shop_id, 100, 0);
+    const liveListings = activeRes.results || [];
+
+    const { loadBrandsState, persistBrandsState } = require('./brands');
+    const state = await loadBrandsState();
+    const brandKey = parseInt(brandId, 10);
+    const catalog = (state.productsCatalog && state.productsCatalog[brandKey]) || [];
+
+    let reconciledCount = 0;
+    const matched = [];
+
+    liveListings.forEach(l => {
+      const lTitle = (l.title || '').toLowerCase();
+      const lId = l.listing_id;
+      const lPrice = (l.price?.amount || 0) / (l.price?.divisor || 100);
+
+      let matchedProd = null;
+
+      if (lId === 4562683744 || lTitle.includes('daily weekly planner – interactive') || lTitle.includes('planners #1')) {
+        matchedProd = catalog.find(p => p.code === 'PLA-01');
+      } else if (lId === 4562903974 || lTitle.includes('daily weekly planners – productivity') || lTitle.includes('planners #2') || lTitle.includes('executive work-life')) {
+        matchedProd = catalog.find(p => p.code === 'PLA-02');
+      } else if (lId === 4562964296 || lTitle.includes('adhd-friendly') || lTitle.includes('low-dopamine') || lTitle.includes('planners #3')) {
+        matchedProd = catalog.find(p => p.code === 'PLA-03');
+      } else if (lId === 4563030934 || lTitle.includes('teacher') || lTitle.includes('academic lesson') || lTitle.includes('planners #4')) {
+        matchedProd = catalog.find(p => p.code === 'PLA-04');
+      } else {
+        matchedProd = catalog.find(p => {
+          const pClean = p.name.toLowerCase().replace(/[^a-z0-9]/g, ' ');
+          const words = pClean.split(' ').filter(w => w.length > 4);
+          return words.some(w => lTitle.includes(w));
+        });
+      }
+
+      if (matchedProd) {
+        matchedProd.status = 'Live';
+        matchedProd.etsyListingId = lId;
+        matchedProd.price = lPrice || matchedProd.price;
+        matchedProd.retailPrice = lPrice || matchedProd.retailPrice || matchedProd.price;
+        matchedProd.liveListingUrl = l.url || `https://www.etsy.com/listing/${lId}`;
+        matchedProd.etsyState = l.state || 'active';
+        matchedProd.studioPercent = 100;
+        matchedProd.approvedAt = matchedProd.approvedAt || new Date().toISOString();
+        matchedProd.approvedBy = matchedProd.approvedBy || 'Admin';
+        matchedProd.submittedAt = matchedProd.submittedAt || new Date().toISOString();
+        matchedProd.submittedBy = matchedProd.submittedBy || 'DVM';
+        reconciledCount++;
+        matched.push({ code: matchedProd.code, name: matchedProd.name, listingId: lId });
+      }
+    });
+
+    await persistBrandsState(state);
+
+    return ok(res, {
+      success: true,
+      reconciledCount,
+      totalLiveOnEtsy: liveListings.length,
+      matchedProducts: matched
+    });
+  } catch (err) {
+    return fail(res, `Failed to reconcile Etsy catalog: ${err.message}`, 500);
+  }
+}));
+
 module.exports = router;
 
