@@ -364,6 +364,109 @@ const SEED_BRANDS_DATA = {
   monthlyLogs: []
 };
 
+const PLANNER_QUEEN_TITLES = {
+  1: "Daily & Weekly Planners #1 — PlannerQueenCo Style",
+  2: "Executive Work-Life Balance & Top-3 Priority Matrix Weekly Planner",
+  3: "ADHD-Friendly Low-Dopamine & Low-Friction Daily Task Planner",
+  4: "Teacher & Student Weekly Academic Lesson & Study Planner",
+  5: "Busy Mom Household & Family Command Center Weekly Spread",
+  6: "Wellness, Fitness & Daily Meal Prep Schedule Planner",
+  7: "Solopreneur 90-Day Quarterly Sprint Execution Daily Planner",
+  8: "Mindful Morning & Evening Routine Reflection Journal",
+  9: "Undated Minimalist 365-Day Digital GoodNotes Tablet Planner",
+  10: "The Master Life Management All-Inclusive Daily & Weekly Mega Bundle",
+  11: "Zero-Based Budgeting & Monthly Cash Flow Master Spread",
+  12: "50/30/20 Rule Annual Income & Expense Ledger",
+  13: "Debt Snowball & Avalanche Payoff Visual Progress Thermometer",
+  14: "No-Spend Challenge & Impulse Purchase Cooling Tracker",
+  15: "Sinking Funds & Emergency Savings Milestones Visual Log",
+  16: "Bi-Weekly Paycheck Budget & Fixed Bill Payment Calendar",
+  17: "Small Business & Freelancer Tax Prep & Revenue Expense Sheet",
+  18: "Subscription & Membership Recurring Fee Audit Dashboard",
+  19: "Net Worth & Investment Growth Tracker (Quarterly Check-In)",
+  20: "Ultimate Financial Freedom & Budgeting Mastery Flagship Toolkit",
+  21: "30-Day Circular Habit Matrix & Streak Gamification Tracker",
+  22: "Atomic Routine Builder & Habit Stacking Daily Blueprint",
+  23: "Vision Board & 12-Month Life Wheel Goal Architecture Sheet",
+  24: "Quarterly OKR & High-Impact Needle Mover Action Plan",
+  25: "100-Day Discipline Challenge Tracker with Milestone Rewards",
+  26: "Daily Micro-Habits & Identity Shift Habit Scorecard",
+  27: "Morning Manifestation & Evening Wins Habit Anchor Journal",
+  28: "Annual Level 10 Life Assessment & Gap Analysis Matrix",
+  29: "Goal Breakdown Roadmap: From Big Vision to Weekly Sprints",
+  30: "Complete Goal Mastery & Habit Transformation Power System",
+  31: "Home Organizing & Room-by-Room Decluttering Action Checklist",
+  32: "Moving House & Relocation Master Logistics & Box Inventory",
+  33: "Event & Birthday Party Planning Master Coordinator Spread",
+  34: "Vehicle Maintenance, Insurance & Service Log Book",
+  35: "Medical History, Symptom & Family Health Record Keeper",
+  36: "Home Renovation, Contractor & Material Budget Project Planner",
+  37: "Pet Care, Vaccination, Vet Visit & Grooming Schedule",
+  38: "Emergency Preparedness & Family Document Vault Index",
+  39: "Garden Planning, Planting Calendar & Yard Care Schedule",
+  40: "Ultimate Home & Life Operations Executive Binder System",
+  41: "Daily Gratitude & Emotional Well-Being 5-Minute Reflection Journal",
+  42: "Sleep Optimization, Sleep Cycle & Dream Journal Tracker",
+  43: "Water Intake, Hydration & Electrolyte 30-Day Tracker",
+  44: "Menstrual Cycle, Hormone Syncing & Energy Level Tracker",
+  45: "Mental Health, Anxiety Trigger Log & Grounding Technique Sheets",
+  46: "Self-Care Menu & 50 Ways to Reset Recharge Planner",
+  47: "Daily Affirmations & Confidence Building Thought Reframing Pad",
+  48: "Reading List, Book Review & Literature Reflection Journal",
+  49: "Meditation, Mindfulness & Breathing Exercise Session Log",
+  50: "Holistic Mind-Body Wellness & Self-Care Master Sanctuary Kit",
+  51: "Job Search Pipeline, Interview Prep & Application Follow-Up CRM",
+  52: "Meeting Notes, Action Item Triage & Follow-Up Tracker",
+  53: "Weekly 1-on-1 Performance Review & Goal Alignment Agenda",
+  54: "Professional Skill Development & Continuing Education Tracker",
+  55: "Quarterly Business Review & Promotion Portfolio Builder",
+  56: "Workplace Boundary & Time Protection Priority Matrix",
+  57: "Freelance Client Project Delivery & Milestone Tracker",
+  58: "Content Creator Weekly Batch Recording & Publishing Pipeline",
+  59: "Networking & Professional Contact Rolodex Tracker",
+  60: "Executive Career Acceleration & Professional Growth Toolkit",
+  61: "Productivity Essentials Starter Bundle (Daily, Habits & Goals)",
+  62: "Financial Glow-Up Bundle (Cash Flow, Debt Snowball & Savings)",
+  63: "Mindful Living Sanctuary Bundle (Wellness, Gratitude & Self-Care)",
+  64: "Home Harmony Management Bundle (Declutter, Meal Prep & Cleaning)",
+  65: "Student Success & Academic Excellence Digital Bundle",
+  66: "Working Mom Super-Organizer Digital Planner Bundle",
+  67: "Solopreneur All-in-One Operations & Goal Sprint Bundle",
+  68: "Health, Fitness & Habit Transformation Trio Bundle",
+  69: "Ultimate GoodNotes Digital iPad Planner & Sticker Mega Pack",
+  70: "The Entire PlannerQueenCo Empire All-Access Vault Bundle",
+  71: "Christmas & Holiday Master Planner (Budget, Gifts, Menu & Traditions)",
+  72: "Thanksgiving & Autumn Gathering Host Kit (Cooking Timeline & Guests)",
+  73: "Halloween Party, Costume Project & Trick-or-Treat Organizer",
+  74: "New Year Goal Reset & 365-Day Vision Quest Planner",
+  75: "Valentine's & Self-Love 30-Day Intentional Journal",
+  76: "Spring Cleaning & Home Refresh Chore System & Declutter Matrix",
+  77: "Summer Family Vacation & Road Trip Itinerary Planner",
+  78: "Back-to-School & Family Academic Command Center Pack",
+  79: "Easter & Spring Celebration Family Event Guide & Brunch Plan",
+  80: "Ultimate 4-Season All-in-One Holiday Master System",
+  81: "Wedding Planning Master Binder (Budget, Timeline, Vendor Checklist)",
+  82: "Pregnancy & Baby Milestone Week-by-Week Memory Journal",
+  83: "Fitness Workout Log, Weight Training & PR Tracker",
+  84: "Plant Care, Propagation & Indoor Botanical Growth Log",
+  85: "Travel & Backpacking Itinerary, Packing List & Expense Journal",
+  86: "Recipe Book, Family Heirloom Cookbook & Meal Master",
+  87: "Home Buying, Mortgage Prep & Property Tour Evaluation Sheet",
+  88: "Craft & Knitting Project Queue, Materials & Sizing Planner",
+  89: "Skincare Routine, Product Expiry & Skin Reaction Tracker",
+  90: "Specialty Life Milestones Master Digital Sanctuary Bundle",
+  91: "The Intentional Life: A Beginner's Guide to Time-Blocking (E-book)",
+  92: "Mastering Money: Debt-Free Living in 12 Months (E-book)",
+  93: "Habit Psychology: The Science of Automatic Discipline (E-book)",
+  94: "Clutter-Free Sanctuary: Room-by-Room Home Transformation (E-book)",
+  95: "The Mindful Morning: 7 Rituals That Change Your Life (E-book)",
+  96: "Overcoming Procrastination: The 5-Minute Action Method (E-book)",
+  97: "The High-Impact Solopreneur: Systems for 20-Hour Workweeks (E-book)",
+  98: "Meal Prep Mastery: Healthy Family Dinners in 30 Mins (E-book)",
+  99: "Digital Planning Masterclass: GoodNotes & Tablet Guide (E-book)",
+  100: "The Complete PlannerQueenCo Self-Mastery E-book Library Box Set"
+};
+
 function generateDefaultProductsForBrand(brand) {
   const list = [];
   const cats = brand.categories || ['Core Planners', 'Trackers', 'Bundles', 'E-books'];
@@ -371,13 +474,20 @@ function generateDefaultProductsForBrand(brand) {
   cats.forEach((cat, cIdx) => {
     for (let i = 1; i <= 10; i++) {
       const prodNum = cIdx * 10 + i;
-      const isHero = i <= 2;
+      const isHero = (i === 1 || i === 2);
+      const isFlagship = (i === 10);
+      
+      let productName = `${cat} #${i} — ${brand.name} Style`;
+      if (brand.id === 1 && PLANNER_QUEEN_TITLES[prodNum]) {
+        productName = PLANNER_QUEEN_TITLES[prodNum];
+      }
+
       list.push({
         code: `${brand.name.substring(0, 3).toUpperCase()}-${prodNum.toString().padStart(2, '0')}`,
-        name: `${cat} #${i} — ${brand.name} Style`,
+        name: productName,
         category: cat,
-        format: (brand.type && brand.type.includes('POD')) ? (i % 2 === 0 ? 'POD T-Shirt' : 'Digital ZIP') : 'Digital PDF',
-        price: (brand.type && brand.type.includes('POD')) ? (i % 2 === 0 ? 28 : 12) : (i === 10 ? 24 : 12),
+        format: (brand.type && brand.type.includes('POD')) ? (i % 2 === 0 ? 'POD T-Shirt' : 'Digital ZIP') : (prodNum >= 91 && brand.id === 1 ? 'PDF E-book' : 'Digital PDF'),
+        price: (brand.type && brand.type.includes('POD')) ? (i % 2 === 0 ? 28 : 12) : (isFlagship ? 24 : (isHero ? 8.99 : 7.49)),
         status: 'Draft',
         hero: isHero
       });
