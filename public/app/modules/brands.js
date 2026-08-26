@@ -2464,6 +2464,34 @@ window.APP_MODULES.brands = async function(container) {
       // ───────────────────────────────────────────────────────────────────────
       // GATE: FIRST-OPEN "READY TO START?" SCREEN IF NO BLUEPRINT GENERATED YET
       // ───────────────────────────────────────────────────────────────────────
+      const STUDIO_CATEGORIES = [
+        { id: 'planners', name: '📅 Daily, Weekly & Life Productivity Planners (16 Spreads)' },
+        { id: 'academic', name: '🎓 Teacher & Student Academic Planners (22 Spreads)' },
+        { id: 'finance', name: '💰 Financial & Wealth Management Trackers (17 Spreads)' },
+        { id: 'goals_habits', name: '🎯 Goals, Habits & Routine Blueprints (18 Spreads)' },
+        { id: 'wellness', name: '🧘 Wellness, Health & Fitness Planners (16 Spreads)' },
+        { id: 'home_family', name: '🏡 Home, Family & Parenting Systems (16 Spreads)' },
+        { id: 'business', name: '💼 Business, Solopreneur & Content Hubs (16 Spreads)' },
+        { id: 'specialty', name: '✨ Specialty Niches — Wedding, Real Estate, Faith (16 Spreads)' },
+        { id: 'seasonal', name: '🎄 Seasonal, Holiday & Event Blueprints (16 Spreads)' },
+        { id: 'ebook', name: '📖 Comprehensive E-Books & Framework Guides (16 Modules)' }
+      ];
+
+      function resolveStudioCatId(pName, pCat, pType) {
+        const p = (pName + ' ' + pCat + ' ' + pType).toLowerCase();
+        if (p.includes('e-book') || p.includes('ebook') || p.includes('library box set') || (p.includes('guide') && p.includes('(e-book)'))) return 'ebook';
+        if (p.includes('christmas') || p.includes('holiday') || p.includes('thanksgiving') || p.includes('halloween') || p.includes('easter') || p.includes('summer') || p.includes('autumn') || p.includes('new year') || p.includes('seasonal') || p.includes('gathering')) return 'seasonal';
+        if (p.includes('teacher') || p.includes('student') || p.includes('academic') || p.includes('lesson') || p.includes('homeschool') || p.includes('school')) return 'academic';
+        if (p.includes('budget') || p.includes('finance') || p.includes('cash flow') || p.includes('debt') || p.includes('wealth') || p.includes('savings') || p.includes('expense') || p.includes('income')) return 'finance';
+        if (p.includes('goal') || p.includes('habit') || p.includes('okr') || p.includes('vision') || p.includes('streak') || p.includes('routine')) return 'goals_habits';
+        if (p.includes('wellness') || p.includes('fitness') || p.includes('health') || p.includes('workout') || p.includes('sleep') || p.includes('meal') || p.includes('nutrition') || p.includes('self-care') || p.includes('mental health')) return 'wellness';
+        if (p.includes('home') || p.includes('family') || p.includes('mom') || p.includes('household') || p.includes('cleaning') || p.includes('chore') || p.includes('declutter') || p.includes('parenting')) return 'home_family';
+        if (p.includes('business') || p.includes('solopreneur') || p.includes('client') || p.includes('freelance') || p.includes('marketing') || p.includes('content creator') || p.includes('project mgmt') || p.includes('operations')) return 'business';
+        if (p.includes('wedding') || p.includes('real estate') || p.includes('nursing') || p.includes('travel') || p.includes('author') || p.includes('faith') || p.includes('devotional') || p.includes('specialty')) return 'specialty';
+        return 'planners';
+      }
+
+      const activeCatId = resolveStudioCatId(prodName, savedBP.categoryName || matchedProduct.category || '', savedType);
       const hasExistingBP = Boolean(savedBP.geometry || savedBP.prompt || savedBP.googleFlowPrompt || savedBP.masterMockupPrompt);
 
       if (!hasExistingBP) {
@@ -2475,7 +2503,7 @@ window.APP_MODULES.brands = async function(container) {
             <span style="font-size:0.75rem; font-weight:800; color:#00df89; text-transform:uppercase; letter-spacing:1px;">Product Factory Onboarding</span>
             <h2 style="font-size:1.6rem; font-weight:900; color:#fff; margin:0.3rem 0 0.5rem;">Ready to build ${prodName}?</h2>
             <p style="font-size:0.85rem; color:var(--text-secondary); max-width:520px; margin:0 auto 1.5rem; line-height:1.5;">
-              The AI Engine will generate your <strong>Production Blueprint</strong>, <strong>10-Slot Mockup Production Brief</strong>, and <strong>CapCut Video Script</strong> for <strong>${b.name}</strong>.
+              The AI Engine will generate your <strong>Production Blueprint 2.0 (16–22 Spreads)</strong>, <strong>10-Slot Commercial Mockup Brief</strong>, and <strong>Listing Video Script</strong> for <strong>${b.name}</strong>.
             </p>
 
             <!-- INLINE ERROR AREA (visible even inside modal) -->
@@ -2492,13 +2520,23 @@ window.APP_MODULES.brands = async function(container) {
               </div>
               <div style="background:rgba(0,0,0,0.3); padding:0.65rem 0.85rem; border-radius:8px; font-size:0.8rem; color:#e2e8f0; font-family:monospace; margin-bottom:0.6rem;">
                 SKU: <strong>${prodCode}</strong><br>
-                Category: <strong>${matchedProduct.category || 'Digital Life Planner'}</strong><br>
                 Product: <strong>${prodName}</strong>
               </div>
+
+              <!-- CATEGORY ARCHITECTURE SELECTOR -->
+              <div style="margin-bottom:0.75rem;">
+                <label style="font-size:0.7rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.25rem;">Blueprint Architecture Framework:</label>
+                <select id="gateCategorySelect" style="width:100%; font-size:0.82rem; padding:0.5rem; background:rgba(0,0,0,0.5); border:1px solid rgba(0,223,137,0.4); border-radius:8px; color:#00df89; font-weight:700; cursor:pointer;">
+                  ${STUDIO_CATEGORIES.map(c => `
+                    <option value="${c.id}" ${activeCatId === c.id ? 'selected' : ''}>${c.name}</option>
+                  `).join('')}
+                </select>
+              </div>
+
               <p style="font-size:0.75rem; color:var(--text-muted); margin:0 0 1rem;">Uses brand voice (${b.voice}) and palette (${b.palette.join(', ')}).</p>
               <button id="blueprintGenerateBtn" class="btn-primary" style="width:100%; font-weight:800; padding:0.65rem;"
-                onclick="this.disabled=true; this.textContent='⏳ Generating Blueprint...'; document.getElementById('blueprintErrorBanner').style.display='none'; window.BrandsModule.generateStudioBlueprintWithAI(${b.id}, '${prodCode}', false);">
-                ⚡ Generate Blueprint from Catalog Reference
+                onclick="this.disabled=true; this.textContent='⏳ Generating Blueprint...'; document.getElementById('blueprintErrorBanner').style.display='none'; window.BrandsModule.generateStudioBlueprintWithAI(${b.id}, '${prodCode}', false, document.getElementById('gateCategorySelect')?.value);">
+                ⚡ Generate Blueprint 2.0 from Catalog Reference
               </button>
             </div>
 
@@ -2735,72 +2773,130 @@ window.APP_MODULES.brands = async function(container) {
         <!-- STEP 1: PRODUCT BLUEPRINT & CREATION GUIDE -->
         <!-- ═══════════════════════════════════════════════════════════════════ -->
         <div id="studioTabBlueprint" style="display:flex; flex-direction:column; gap:1.2rem;">
-          <!-- SPECS & CATEGORY INTELLIGENCE ROW -->
-          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:0.75rem;">
-            <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); padding:0.75rem; border-radius:10px;">
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.2rem;">
-                <label style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Category Architecture</label>
-                <span style="font-size:0.68rem; font-weight:800; color:#00df89; background:rgba(0,223,137,0.1); padding:1px 6px; border-radius:4px;">${pages.length || 20} Spreads</span>
+          
+          <!-- SPECS & CATEGORY OVERRIDE CONTROL ROW -->
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:0.75rem;">
+            
+            <!-- CARD 1: BLUEPRINT 2.0 CATEGORY ARCHITECTURE SELECTOR -->
+            <div style="background:rgba(0,223,137,0.04); border:1px solid rgba(0,223,137,0.25); padding:0.75rem; border-radius:10px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.25rem;">
+                <label style="font-size:0.68rem; font-weight:800; color:#00df89; text-transform:uppercase;">Blueprint 2.0 Architecture</label>
+                <span id="studioBlueprintSpreadBadge" style="font-size:0.68rem; font-weight:800; color:#00df89; background:rgba(0,223,137,0.15); padding:1px 6px; border-radius:4px;">${pages.length || 16} Spreads</span>
               </div>
-              <div style="font-size:0.82rem; font-weight:800; color:#06b6d4; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                ${savedBP.categoryName || matchedProduct.category || 'Productivity Systems'}
-              </div>
-              <div style="font-size:0.68rem; color:var(--text-muted); margin-top:0.2rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                Audience: ${savedBP.targetAudience || 'Intentional buyers & professionals'}
-              </div>
-            </div>
-            <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); padding:0.75rem; border-radius:10px;">
-              <label style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.2rem;">Format & Dimensions</label>
-              <input type="text" id="studioBlueprintGeometry" value="${(specs.dimensions || 'US Letter (8.5 x 11 in) / 300 DPI Vector PDF').replace(/"/g, '&quot;')}" style="width:100%; font-size:0.8rem; padding:0.4rem; background:rgba(0,0,0,0.3); border:1px solid var(--border-subtle); border-radius:6px; color:#06b6d4; font-weight:700;">
-            </div>
-            <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); padding:0.75rem; border-radius:10px;">
-              <label style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.2rem;">Typography Hierarchy</label>
-              <input type="text" id="studioBlueprintTypography" value="${(specs.typography?.headingFont || 'Playfair Display') + ' + ' + (specs.typography?.bodyFont || 'Lato')}" style="width:100%; font-size:0.8rem; padding:0.4rem; background:rgba(0,0,0,0.3); border:1px solid var(--border-subtle); border-radius:6px; color:#fff; font-weight:700;">
-            </div>
-            <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); padding:0.75rem; border-radius:10px;">
-              <label style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.2rem;">Brand Color Palette</label>
-              <div style="display:flex; gap:0.35rem; margin-top:0.35rem;">
-                ${(b.palette || ['#8B5A7A', '#FAF3E8', '#7D9B76', '#C4887C', '#2E2E2E']).map(hex => `
-                  <span style="width:20px; height:20px; border-radius:50%; background:${hex}; border:1px solid rgba(255,255,255,0.2);" title="${hex}"></span>
+              <select id="studioBlueprintCategorySelect" style="width:100%; font-size:0.78rem; padding:0.4rem; background:rgba(0,0,0,0.5); border:1px solid rgba(0,223,137,0.3); border-radius:6px; color:#00df89; font-weight:700; cursor:pointer;">
+                ${STUDIO_CATEGORIES.map(c => `
+                  <option value="${c.id}" ${activeCatId === c.id ? 'selected' : ''}>${c.name}</option>
                 `).join('')}
+              </select>
+              <div style="font-size:0.68rem; color:var(--text-muted); margin-top:0.25rem;">
+                Switch category framework anytime &amp; click <strong>Regenerate 2.0</strong>.
               </div>
             </div>
+
+            <!-- CARD 2: TARGET AUDIENCE -->
+            <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); padding:0.75rem; border-radius:10px;">
+              <label style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.25rem;">Target Audience</label>
+              <input type="text" id="studioBlueprintAudience" value="${(savedBP.targetAudience || 'Intentional professionals, busy parents & students').replace(/"/g, '&quot;')}" placeholder="e.g. K-12 teachers, homeschool parents" style="width:100%; font-size:0.78rem; padding:0.4rem; background:rgba(0,0,0,0.3); border:1px solid var(--border-subtle); border-radius:6px; color:#e2e8f0;">
+              <div style="font-size:0.68rem; color:var(--text-muted); margin-top:0.25rem;">Context passed into AI generation for tailored prompts.</div>
+            </div>
+
+            <!-- CARD 3: PRODUCT TITLE CONTEXT OVERRIDE -->
+            <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); padding:0.75rem; border-radius:10px;">
+              <label style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.25rem;">Product Name / Context</label>
+              <input type="text" id="studioBlueprintTitle" value="${prodName.replace(/"/g, '&quot;')}" placeholder="e.g. Executive Life Planner & Top-3 Matrix" style="width:100%; font-size:0.78rem; padding:0.4rem; background:rgba(0,0,0,0.3); border:1px solid var(--border-subtle); border-radius:6px; color:#06b6d4; font-weight:700;">
+              <div style="font-size:0.68rem; color:var(--text-muted); margin-top:0.25rem;">Edit keywords before regenerating to steer the design.</div>
+            </div>
+
+            <!-- CARD 4: FORMAT & TYPOGRAPHY -->
+            <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); padding:0.75rem; border-radius:10px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.25rem;">
+                <label style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Format &amp; Typography</label>
+                <div style="display:flex; gap:0.25rem;">
+                  ${(b.palette || ['#8B5A7A', '#FAF3E8', '#7D9B76', '#C4887C', '#2E2E2E']).map(hex => `
+                    <span style="width:12px; height:12px; border-radius:50%; background:${hex}; border:1px solid rgba(255,255,255,0.2);" title="${hex}"></span>
+                  `).join('')}
+                </div>
+              </div>
+              <input type="text" id="studioBlueprintGeometry" value="${(specs.dimensions || 'US Letter (8.5 x 11 in) / 300 DPI Vector PDF').replace(/"/g, '&quot;')}" style="width:100%; font-size:0.75rem; padding:0.35rem; background:rgba(0,0,0,0.3); border:1px solid var(--border-subtle); border-radius:6px; color:#06b6d4; font-weight:700; margin-bottom:0.3rem;">
+              <input type="text" id="studioBlueprintTypography" value="${(specs.typography?.headingFont || 'Playfair Display') + ' + ' + (specs.typography?.bodyFont || 'Lato')}" style="width:100%; font-size:0.75rem; padding:0.35rem; background:rgba(0,0,0,0.3); border:1px solid var(--border-subtle); border-radius:6px; color:#fff;">
+            </div>
+
           </div>
 
           <!-- SECTION 1: MASTER PRODUCT CREATION PROMPT -->
           <div>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem; flex-wrap:wrap; gap:0.5rem;">
               <label style="font-size:0.75rem; font-weight:800; color:#00df89; text-transform:uppercase;">⚡ 1. Product Layout Master Prompt (Google Flow / Gemini)</label>
-              <div style="display:flex; gap:0.4rem;">
-                <button class="btn-primary btn-sm" style="padding:0.3rem 0.75rem; font-size:0.75rem;" onclick="navigator.clipboard.writeText(document.getElementById('studioBlueprintPrompt').value); window.showToast('📋 Copied Google Flow Prompt!','success');">
+              <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
+                <button class="btn-ghost btn-sm" style="padding:0.3rem 0.65rem; font-size:0.75rem;" onclick="navigator.clipboard.writeText(document.getElementById('studioBlueprintPrompt').value); window.showToast('📋 Copied Google Flow Prompt!','success');">
                   📋 Copy Prompt
                 </button>
-                <button class="btn-secondary btn-sm" style="padding:0.3rem 0.75rem; font-size:0.75rem;" onclick="window.BrandsModule.saveStudioDraft('blueprint')">
-                  💾 Save Blueprint
+                <button class="btn-secondary btn-sm" style="padding:0.3rem 0.65rem; font-size:0.75rem;" onclick="window.BrandsModule.saveStudioDraft('blueprint')">
+                  💾 Save Draft
+                </button>
+                <button class="btn-primary btn-sm" style="background:linear-gradient(135deg, #00df89, #06b6d4); font-weight:800; padding:0.3rem 0.75rem; font-size:0.75rem;" onclick="window.BrandsModule.regenerateStudioBlueprint(${b.id}, '${prodCode}')">
+                  ♻️ Regenerate Blueprint 2.0
                 </button>
               </div>
             </div>
-            <textarea id="studioBlueprintPrompt" rows="5" style="width:100%; background:rgba(0,0,0,0.4); border:1px solid rgba(0,223,137,0.3); padding:0.85rem; border-radius:10px; color:#e2e8f0; font-size:0.8rem; font-family:monospace; line-height:1.5; resize:vertical;">${effectivePrompt}</textarea>
+            <textarea id="studioBlueprintPrompt" rows="6" style="width:100%; background:rgba(0,0,0,0.4); border:1px solid rgba(0,223,137,0.3); padding:0.85rem; border-radius:10px; color:#e2e8f0; font-size:0.8rem; font-family:monospace; line-height:1.5; resize:vertical;">${effectivePrompt}</textarea>
             <p style="font-size:0.72rem; color:var(--text-muted); margin:0.3rem 0 0;">💡 <em>Paste into <strong>Google Flow</strong>. Generate each page as a 3:4 visual layout, assemble in PowerPoint or Canva, and export to PDF.</em></p>
           </div>
 
-          <!-- SECTION 2: PAGE BREAKDOWN -->
+          <!-- SECTION 2: INTERACTIVE PAGE BREAKDOWN (ACCORDION TABLE) -->
           ${pages && pages.length > 0 ? `
-            <div>
-              <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.4rem;">Page-by-Page Structure (${pages.length} Spreads)</label>
-              <div style="display:flex; flex-direction:column; gap:0.5rem; max-height:180px; overflow-y:auto; padding-right:0.25rem;">
-                ${pages.map(p => `
-                  <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); padding:0.6rem 0.75rem; border-radius:8px; font-size:0.78rem;">
-                    <strong style="color:#00df89;">Page ${p.pageNumber || p.page_number || ''}:</strong> <span style="color:#fff;">${p.title || ''}</span> · <span style="color:var(--text-secondary);">${p.layoutSpecs || p.section || ''}</span>
+            <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:1rem;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+                <div>
+                  <label style="font-size:0.75rem; font-weight:800; color:#00df89; text-transform:uppercase;">📖 Page-by-Page Design Specifications (${pages.length} Spreads Total)</label>
+                  <span style="font-size:0.7rem; color:var(--text-muted); display:block;">Click any page to inspect purpose, layout specs, and required vector elements.</span>
+                </div>
+                <button type="button" class="btn-ghost btn-sm" style="font-size:0.7rem; padding:0.2rem 0.5rem;" onclick="
+                  const items = document.querySelectorAll('.bp-accordion-content');
+                  const allOpen = Array.from(items).every(el => el.style.display !== 'none');
+                  items.forEach(el => el.style.display = allOpen ? 'none' : 'block');
+                  this.textContent = allOpen ? '▼ Expand All' : '▲ Collapse All';
+                ">
+                  ▼ Expand All
+                </button>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:0.4rem; max-height:280px; overflow-y:auto; padding-right:0.25rem;">
+                ${pages.map((p, idx) => `
+                  <div style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.06); border-radius:8px; overflow:hidden;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding:0.5rem 0.75rem; cursor:pointer; user-select:none;" onclick="
+                      const c = document.getElementById('bpPageContent_${idx}');
+                      if (c) c.style.display = c.style.display === 'none' ? 'block' : 'none';
+                    ">
+                      <div style="display:flex; align-items:center; gap:0.5rem;">
+                        <span style="font-size:0.72rem; font-weight:800; background:rgba(0,223,137,0.15); color:#00df89; padding:0.15rem 0.45rem; border-radius:6px; font-family:monospace;">Page ${p.pageNumber || (idx + 1)}</span>
+                        <strong style="font-size:0.78rem; color:#fff;">${p.title || ''}</strong>
+                      </div>
+                      <span style="font-size:0.68rem; color:var(--text-muted); background:rgba(255,255,255,0.05); padding:0.1rem 0.4rem; border-radius:4px;">${p.section || 'Spread'}</span>
+                    </div>
+                    <div id="bpPageContent_${idx}" class="bp-accordion-content" style="display:none; padding:0.6rem 0.75rem; border-top:1px solid rgba(255,255,255,0.05); font-size:0.74rem; background:rgba(0,0,0,0.15);">
+                      ${p.purpose ? `<div style="margin-bottom:0.3rem;"><strong style="color:#06b6d4;">🎯 Purpose:</strong> <span style="color:var(--text-secondary);">${p.purpose}</span></div>` : ''}
+                      ${p.layoutSpecs ? `<div style="margin-bottom:0.4rem;"><strong style="color:#a855f7;">📐 Layout Specs:</strong> <span style="color:var(--text-secondary);">${p.layoutSpecs}</span></div>` : ''}
+                      ${Array.isArray(p.elements) && p.elements.length > 0 ? `
+                        <div>
+                          <strong style="color:#fbbf24; display:block; margin-bottom:0.25rem;">📋 Required Vector Elements:</strong>
+                          <div style="display:flex; flex-wrap:wrap; gap:0.3rem;">
+                            ${p.elements.map(el => `<span style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); padding:0.15rem 0.45rem; border-radius:4px; font-size:0.7rem; color:#e2e8f0;">• ${el}</span>`).join('')}
+                          </div>
+                        </div>
+                      ` : ''}
+                    </div>
                   </div>
                 `).join('')}
               </div>
             </div>
           ` : ''}
 
-          <!-- PROCEED BUTTON TO STEP 2 -->
-          <div style="display:flex; justify-content:flex-end; margin-top:0.5rem;">
-            <button class="btn-primary" style="font-size:0.82rem; padding:0.55rem 1.25rem;" onclick="window.BrandsModule.switchStudioTab('vault')">
+          <!-- FOOTER ACTION BAR -->
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.75rem; padding-top:0.75rem; border-top:1px solid rgba(255,255,255,0.08); flex-wrap:wrap; gap:0.5rem;">
+            <button type="button" class="btn-ghost" style="color:#ef4444; font-size:0.74rem; padding:0.35rem 0.65rem;" onclick="window.BrandsModule.resetProductBlueprint(${b.id}, '${prodCode}', '${encodeURIComponent(prodName)}')">
+              ⚠️ Reset Studio (Clear Blueprint &amp; Start Over)
+            </button>
+            <button type="button" class="btn-primary" style="font-size:0.82rem; padding:0.55rem 1.25rem;" onclick="window.BrandsModule.switchStudioTab('vault')">
               Next: Step 2 📦 Deliverable Vault →
             </button>
           </div>
@@ -3172,7 +3268,7 @@ window.APP_MODULES.brands = async function(container) {
       if (sBtn) sBtn.style.cssText = tab === 'seo' ? activeStyle : inactiveStyle;
     },
 
-    async generateStudioBlueprintWithAI(brandId, productCode, isCustom = false) {
+    async generateStudioBlueprintWithAI(brandId, productCode, isCustom = false, categoryOverride = null, targetAudienceOverride = null, nameOverride = null) {
       const b = state.brands?.find(x => x.id === brandId) || state.brands[0];
       const catalog = state.productsCatalog?.[brandId] || [];
       const prod = catalog.find(p => p.code === productCode) || { name: 'Product', code: productCode };
@@ -3181,9 +3277,33 @@ window.APP_MODULES.brands = async function(container) {
       if (isCustom) {
         customIdea = document.getElementById('studioCustomIdeaInput')?.value || '';
       }
-      const prodName = customIdea ? `${prod.name}: ${customIdea}` : prod.name;
 
-      if (window.showToast) window.showToast(`🤖 Generating AI Blueprint & Media briefs for ${prod.code}...`, 'info');
+      const effectiveTitle = nameOverride || (document.getElementById('studioBlueprintTitle')?.value) || (customIdea ? `${prod.name}: ${customIdea}` : prod.name);
+      const effectiveCategory = categoryOverride || (document.getElementById('studioBlueprintCategorySelect')?.value) || (document.getElementById('gateCategorySelect')?.value) || prod.category || '';
+      const effectiveAudience = targetAudienceOverride || (document.getElementById('studioBlueprintAudience')?.value) || '';
+
+      if (window.showToast) window.showToast(`🤖 Generating Blueprint 2.0 & Media briefs for ${prod.code}...`, 'info');
+
+      // Show Full Modal Loading Overlay
+      const modalContent = document.getElementById('aiSeoModalContent');
+      let loadingOverlay = document.getElementById('studioLoadingOverlay');
+      if (!loadingOverlay && modalContent) {
+        loadingOverlay = document.createElement('div');
+        loadingOverlay.id = 'studioLoadingOverlay';
+        loadingOverlay.style.cssText = 'position:absolute; inset:0; background:rgba(7,11,18,0.92); backdrop-filter:blur(8px); border-radius:20px; z-index:999; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:2rem; text-align:center;';
+        modalContent.style.position = 'relative';
+        modalContent.appendChild(loadingOverlay);
+      }
+      if (loadingOverlay) {
+        loadingOverlay.style.display = 'flex';
+        loadingOverlay.innerHTML = `
+          <div style="width:52px; height:52px; border:4px solid rgba(0,223,137,0.2); border-top-color:#00df89; border-radius:50%; animation:spin 0.9s linear infinite; margin-bottom:1.25rem;"></div>
+          <h3 style="color:#fff; font-size:1.15rem; font-weight:900; margin:0 0 0.4rem;">Architecting Blueprint 2.0 Specifications</h3>
+          <p style="color:var(--text-secondary); font-size:0.82rem; max-width:460px; margin:0; line-height:1.5;">
+            Engineering category-specialized page spreads, 10 commercial mockup scene briefs, and listing video scripts...
+          </p>
+        `;
+      }
 
       try {
         const headers = getStudioAuthHeaders({ 'Content-Type': 'application/json' });
@@ -3192,7 +3312,7 @@ window.APP_MODULES.brands = async function(container) {
             method: 'POST',
             headers,
             body: JSON.stringify({
-              productName: prodName,
+              productName: effectiveTitle,
               brandName: b.name,
               brandNiche: b.niche,
               brandVoice: b.voice,
@@ -3200,6 +3320,9 @@ window.APP_MODULES.brands = async function(container) {
               brandFonts: b.fonts,
               type: b.type || prod.format || 'Digital PDF',
               category: prod.category || '',
+              categoryOverride: effectiveCategory,
+              targetAudienceOverride: effectiveAudience,
+              productNameOverride: effectiveTitle,
               hero: prod.hero || false,
               format: prod.format || 'Digital PDF',
               seoTags: prod.seoTags || prod.seo?.tags || []
@@ -3213,7 +3336,7 @@ window.APP_MODULES.brands = async function(container) {
             method: 'POST',
             headers,
             body: JSON.stringify({
-              productName: prodName,
+              productName: effectiveTitle,
               brandName: b.name,
               brandNiche: b.niche,
               brandVoice: b.voice,
@@ -3221,6 +3344,8 @@ window.APP_MODULES.brands = async function(container) {
               brandFonts: b.fonts,
               type: b.type || prod.format || 'Digital PDF',
               category: prod.category || '',
+              categoryOverride: effectiveCategory,
+              productNameOverride: effectiveTitle,
               hero: prod.hero || false,
               format: prod.format || 'Digital PDF',
               seoTags: prod.seoTags || prod.seo?.tags || []
@@ -3240,6 +3365,8 @@ window.APP_MODULES.brands = async function(container) {
           typography: (bpData.documentSpecs?.typography?.headingFont || 'Playfair Display') + ' + ' + (bpData.documentSpecs?.typography?.bodyFont || 'Lato'),
           prompt: bpData.googleFlowPrompt || '',
           googleFlowPrompt: bpData.googleFlowPrompt || '',
+          categoryName: bpData.categoryName || '',
+          targetAudience: bpData.targetAudience || effectiveAudience || '',
           documentSpecs: bpData.documentSpecs || {},
           pageBreakdown: bpData.pageBreakdown || [],
           masterMockupPrompt: mockData.masterMockupPrompt || '',
@@ -3258,8 +3385,7 @@ window.APP_MODULES.brands = async function(container) {
           throw new Error(saveData.error || `Failed to save blueprint (HTTP ${saveRes.status})`);
         }
 
-        // ─── CRITICAL FIX: Patch in-memory state — NEVER reload from API ───
-        // Reloading from API on Vercel returns stale seeded data, wiping the blueprint we just saved.
+        // ─── Patch in-memory state ───
         if (!state.productsCatalog) state.productsCatalog = {};
         if (!state.productsCatalog[brandId]) state.productsCatalog[brandId] = [];
         let _bpProd = state.productsCatalog[brandId].find(p => p.code === productCode);
@@ -3268,20 +3394,23 @@ window.APP_MODULES.brands = async function(container) {
           state.productsCatalog[brandId].push(_bpProd);
         }
         _bpProd.blueprint = blueprintBundle;
-        _bpProd.status = saveData.product?.status || 'Blueprint Ready';
+        if (_bpProd.status === 'Draft') {
+          _bpProd.status = saveData.product?.status || 'Blueprint Ready';
+        }
         _bpProd.studioPercent = saveData.studioPercent || 20;
-        // Merge any other fields from the server response
         if (saveData.product) {
           Object.assign(_bpProd, { ...saveData.product, blueprint: blueprintBundle });
         }
         saveBrandsStateLocally(state);
 
-        if (window.showToast) window.showToast('✅ Blueprint & Mockup Briefs generated & saved!', 'success');
+        if (loadingOverlay) loadingOverlay.style.display = 'none';
+        if (window.showToast) window.showToast('✅ Blueprint 2.0 & Mockup Briefs generated & saved!', 'success');
 
         // Re-open Studio directly in Tab 1 (Blueprint)
         window.BrandsModule.generateLiveSEOPackage(brandId, productCode, encodeURIComponent(prod.name));
       } catch (err) {
         console.error('[Blueprint Generation Error]:', err);
+        if (loadingOverlay) loadingOverlay.style.display = 'none';
         const errBanner = document.getElementById('blueprintErrorBanner');
         const errMsg = document.getElementById('blueprintErrorMsg');
         if (errBanner && errMsg) {
@@ -3294,6 +3423,54 @@ window.APP_MODULES.brands = async function(container) {
           btn.textContent = '⚡ Retry — Generate Blueprint';
         }
         if (window.showToast) window.showToast(`Blueprint generation failed: ${err.message}`, 'error');
+      }
+    },
+
+    async regenerateStudioBlueprint(brandId, productCode) {
+      const catSelect = document.getElementById('studioBlueprintCategorySelect');
+      const catId = catSelect ? catSelect.value : null;
+      const catText = catSelect && catSelect.options[catSelect.selectedIndex] ? catSelect.options[catSelect.selectedIndex].text : 'Selected Category';
+      const audience = document.getElementById('studioBlueprintAudience')?.value || '';
+      const titleOverride = document.getElementById('studioBlueprintTitle')?.value || '';
+
+      if (!confirm(`Regenerate Blueprint 2.0 with architecture:\n"${catText}"?\n\nThis will update your Master Prompt, Page Stack, and 10 Mockup Briefs.`)) {
+        return;
+      }
+
+      await window.BrandsModule.generateStudioBlueprintWithAI(brandId, productCode, false, catId, audience, titleOverride);
+    },
+
+    async resetProductBlueprint(brandId, productCode, encodedProdName) {
+      const prodName = decodeURIComponent(encodedProdName || '');
+      if (!confirm(`Are you sure you want to reset the Blueprint for ${productCode} ("${prodName}")?\n\nThis will clear the generated prompt and mockup briefs so you can choose a fresh category architecture.\n(Your uploaded vault deliverables will not be deleted).`)) {
+        return;
+      }
+
+      if (window.showToast) window.showToast('Resetting blueprint...', 'info');
+
+      try {
+        const headers = getStudioAuthHeaders({ 'Content-Type': 'application/json' });
+        await fetch(`/api/brands/${brandId}/product/${productCode}/studio-save`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ tab: 'blueprint', data: {} })
+        });
+
+        if (state.productsCatalog && state.productsCatalog[brandId]) {
+          const prod = state.productsCatalog[brandId].find(p => p.code === productCode);
+          if (prod) {
+            prod.blueprint = {};
+            if (prod.status === 'Blueprint Ready') prod.status = 'Draft';
+            prod.studioPercent = Math.max(0, (prod.studioPercent || 20) - 20);
+          }
+        }
+        saveBrandsStateLocally(state);
+
+        if (window.showToast) window.showToast('✅ Studio reset! Ready to generate fresh blueprint.', 'success');
+        window.BrandsModule.generateLiveSEOPackage(brandId, productCode, encodeURIComponent(prodName));
+      } catch (err) {
+        console.error('[Reset Studio Error]:', err);
+        if (window.showToast) window.showToast(`Reset failed: ${err.message}`, 'error');
       }
     },
 

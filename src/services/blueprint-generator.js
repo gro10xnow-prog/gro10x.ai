@@ -4,8 +4,24 @@
  * Provides specialized, high-converting, 15–35 page product blueprints and tailored mockup briefs.
  */
 
+const AVAILABLE_CATEGORIES = {
+  planners: { id: 'planners', name: 'Daily, Weekly & Life Productivity Planners', spreadCount: 16, icon: '📅' },
+  academic: { id: 'academic', name: 'Teacher & Student Academic Planners', spreadCount: 22, icon: '🎓' },
+  finance: { id: 'finance', name: 'Financial & Wealth Management Trackers', spreadCount: 17, icon: '💰' },
+  goals_habits: { id: 'goals_habits', name: 'Goals, Habits & Routine Blueprints', spreadCount: 18, icon: '🎯' },
+  wellness: { id: 'wellness', name: 'Wellness, Health & Fitness Planners', spreadCount: 16, icon: '🧘' },
+  home_family: { id: 'home_family', name: 'Home, Family & Parenting Systems', spreadCount: 16, icon: '🏡' },
+  business: { id: 'business', name: 'Business, Solopreneur & Content Hubs', spreadCount: 16, icon: '💼' },
+  specialty: { id: 'specialty', name: 'Specialty Niches (Wedding, Real Estate, Faith)', spreadCount: 16, icon: '✨' },
+  seasonal: { id: 'seasonal', name: 'Seasonal, Holiday & Event Blueprints', spreadCount: 16, icon: '🎄' },
+  ebook: { id: 'ebook', name: 'Comprehensive E-Books & Framework Guides', spreadCount: 16, icon: '📖' }
+};
+
 // Category Identifier Resolution
-function resolveCategory(productName = '', category = '', type = '') {
+function resolveCategory(productName = '', category = '', type = '', categoryOverride = null) {
+  if (categoryOverride && AVAILABLE_CATEGORIES[categoryOverride]) {
+    return categoryOverride;
+  }
   const p = (productName + ' ' + category + ' ' + type).toLowerCase();
 
   // 1. E-books & Box sets
@@ -1175,9 +1191,9 @@ function getCategoryConfig(catId, cleanP, bName, colors, fonts) {
 /**
  * Generate Complete Deterministic Blueprint with Category Intelligence
  */
-function generateCategoryBlueprint(pName, bName, niche, voice, palette, fonts, pType, categoryName) {
+function generateCategoryBlueprint(pName, bName, niche, voice, palette, fonts, pType, categoryName, categoryOverride = null, targetAudienceOverride = null) {
   const cleanP = pName.replace(/^[A-Z]\d+\s*[-–]\s*/, '');
-  const catId = resolveCategory(cleanP, categoryName, pType);
+  const catId = resolveCategory(cleanP, categoryName, pType, categoryOverride);
 
   let hFont = 'Playfair Display';
   let bFont = 'Lato';
@@ -1195,6 +1211,10 @@ function generateCategoryBlueprint(pName, bName, niche, voice, palette, fonts, p
     : ['#8B5A7A', '#FAF3E8', '#7D9B76', '#C4887C', '#2E2E2E'];
 
   const config = getCategoryConfig(catId, cleanP, bName, colors, { heading: hFont, body: bFont });
+
+  if (targetAudienceOverride && typeof targetAudienceOverride === 'string' && targetAudienceOverride.trim()) {
+    config.targetAudience = targetAudienceOverride.trim();
+  }
 
   const primaryColor = colors[0] || '#8B5A7A';
   const bgTint = colors[1] || '#FAF3E8';
@@ -1286,9 +1306,9 @@ function generateCategoryBlueprint(pName, bName, niche, voice, palette, fonts, p
 /**
  * Generate Category-Specific 10 Mockup Scenes
  */
-function generateCategoryMockups(pName, bName, niche, voice, palette, fonts, pType, categoryName) {
+function generateCategoryMockups(pName, bName, niche, voice, palette, fonts, pType, categoryName, categoryOverride = null) {
   const cleanP = pName.replace(/^[A-Z]\d+\s*[-–]\s*/, '');
-  const catId = resolveCategory(cleanP, categoryName, pType);
+  const catId = resolveCategory(cleanP, categoryName, pType, categoryOverride);
 
   const colors = Array.isArray(palette) && palette.length > 0
     ? palette
@@ -1426,6 +1446,7 @@ function generateCategoryMockups(pName, bName, niche, voice, palette, fonts, pTy
 }
 
 module.exports = {
+  AVAILABLE_CATEGORIES,
   resolveCategory,
   generateCategoryBlueprint,
   generateCategoryMockups

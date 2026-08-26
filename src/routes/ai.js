@@ -269,13 +269,32 @@ router.post('/etsy-seo', requireAuth, async (req, res) => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
 // POST /api/ai/product-blueprint — Generates Category-Intelligent Product Blueprint & Google Flow Prompts
 // ─────────────────────────────────────────────────────────────────────────────
-const { generateCategoryBlueprint, generateCategoryMockups } = require('../services/blueprint-generator');
+const { AVAILABLE_CATEGORIES, generateCategoryBlueprint, generateCategoryMockups } = require('../services/blueprint-generator');
 
 router.post('/product-blueprint', requireAuth, async (req, res) => {
-  const { productName, brandName, brandNiche, brandVoice, brandPalette, brandFonts, type, category, hero, format, seoTags } = req.body;
-  if (!productName || !brandName) {
+  const {
+    productName,
+    brandName,
+    brandNiche,
+    brandVoice,
+    brandPalette,
+    brandFonts,
+    type,
+    category,
+    categoryOverride,
+    targetAudienceOverride,
+    productNameOverride,
+    hero,
+    format,
+    seoTags
+  } = req.body;
+
+  const effectiveProductName = (productNameOverride && productNameOverride.trim()) ? productNameOverride.trim() : productName;
+
+  if (!effectiveProductName || !brandName) {
     return res.status(400).json({ error: 'productName and brandName are required' });
   }
 
@@ -296,14 +315,16 @@ router.post('/product-blueprint', requireAuth, async (req, res) => {
   const fontString = `${headingFont} + ${bodyFont}`;
 
   const deterministicBlueprint = generateCategoryBlueprint(
-    productName,
+    effectiveProductName,
     brandName,
     brandNiche,
     brandVoice,
     paletteArr,
     fontString,
     type || format,
-    category
+    category,
+    categoryOverride,
+    targetAudienceOverride
   );
 
   const key = process.env.GEMINI_API_KEY;
@@ -319,10 +340,10 @@ router.post('/product-blueprint', requireAuth, async (req, res) => {
   const prompt =
     `You are an elite Digital Product Designer for top 1% Etsy bestseller shops.\n` +
     `Generate a highly specialized, comprehensive, page-by-page design blueprint for the following digital product:\n` +
-    `Product Title: "${productName}"\n` +
-    `Category: "${category || deterministicBlueprint.categoryName || 'Planners'}"\n` +
+    `Product Title: "${effectiveProductName}"\n` +
+    `Category: "${categoryOverride || category || deterministicBlueprint.categoryName || 'Planners'}"\n` +
     `Brand: "${brandName}"\n` +
-    `Target Audience: "${deterministicBlueprint.targetAudience}"\n` +
+    `Target Audience: "${targetAudienceOverride || deterministicBlueprint.targetAudience}"\n` +
     `Brand Niche: "${brandNiche || 'Digital Products'}"\n` +
     `Brand Voice: "${brandVoice || 'Warm, empowering, clear'}"\n` +
     `Color Palette: ${JSON.stringify(paletteArr)}\n` +
@@ -356,10 +377,10 @@ router.post('/product-blueprint', requireAuth, async (req, res) => {
     return res.json({
       success: true,
       blueprint: {
-        productName: parsed.productName || productName,
+        productName: parsed.productName || effectiveProductName,
         brandName: parsed.brandName || brandName,
         categoryName: deterministicBlueprint.categoryName,
-        targetAudience: deterministicBlueprint.targetAudience,
+        targetAudience: targetAudienceOverride || deterministicBlueprint.targetAudience,
         documentSpecs: parsed.documentSpecs || deterministicBlueprint.documentSpecs,
         pageBreakdown: (parsed.pageBreakdown && parsed.pageBreakdown.length >= 12) ? parsed.pageBreakdown : deterministicBlueprint.pageBreakdown,
         googleFlowPrompt: parsed.googleFlowPrompt || deterministicBlueprint.googleFlowPrompt,
@@ -382,8 +403,24 @@ router.post('/product-blueprint', requireAuth, async (req, res) => {
 // POST /api/ai/mockup-prompts — Generates 10 Category-Specific Mockup Prompts + Listing Video Prompt
 // ─────────────────────────────────────────────────────────────────────────────
 router.post('/mockup-prompts', requireAuth, async (req, res) => {
-  const { productName, brandName, brandNiche, brandVoice, brandPalette, brandFonts, type, category, hero, format } = req.body;
-  if (!productName || !brandName) {
+  const {
+    productName,
+    brandName,
+    brandNiche,
+    brandVoice,
+    brandPalette,
+    brandFonts,
+    type,
+    category,
+    categoryOverride,
+    productNameOverride,
+    hero,
+    format
+  } = req.body;
+
+  const effectiveProductName = (productNameOverride && productNameOverride.trim()) ? productNameOverride.trim() : productName;
+
+  if (!effectiveProductName || !brandName) {
     return res.status(400).json({ error: 'productName and brandName are required' });
   }
 
@@ -404,14 +441,15 @@ router.post('/mockup-prompts', requireAuth, async (req, res) => {
   const fontString = `${headingFont} + ${bodyFont}`;
 
   const deterministicMockups = generateCategoryMockups(
-    productName,
+    effectiveProductName,
     brandName,
     brandNiche,
     brandVoice,
     paletteArr,
     fontString,
     type || format,
-    category
+    category,
+    categoryOverride
   );
 
   const key = process.env.GEMINI_API_KEY;
