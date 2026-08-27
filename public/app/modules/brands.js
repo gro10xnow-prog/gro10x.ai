@@ -4683,11 +4683,8 @@ window.APP_MODULES.brands = async function(container) {
         if (!data.success || !data.audit) throw new Error(data.error || 'AI Audit failed');
 
         window.showToast(`🧠 AI Audit complete! Quality Score: ${data.audit.overall_score}/10`, 'success');
-        if (container) {
-          container.innerHTML = window.BrandsModule.buildAuditHtml(data.audit, brandId, productCode);
-        }
 
-        // Patch in-memory state from audit result — do NOT reload from API
+        // Patch in-memory state from audit result
         if (!state.productsCatalog) state.productsCatalog = {};
         if (!state.productsCatalog[brandId]) state.productsCatalog[brandId] = [];
         let _aProd = state.productsCatalog[brandId].find(p => p.code === productCode);
@@ -4697,25 +4694,15 @@ window.APP_MODULES.brands = async function(container) {
           _aProd.suggestedPrice = Number(data.audit.pricing.recommended_price);
           _aProd.price = Number(data.audit.pricing.recommended_price);
           _aProd.retailPrice = Number(data.audit.pricing.recommended_price);
-          const _priceEl = document.getElementById('studioRetailPrice');
-          if (_priceEl) _priceEl.value = Number(data.audit.pricing.recommended_price).toFixed(2);
         }
         if (data.product) Object.assign(_aProd, { ...data.product, aiAudit: data.audit });
         saveBrandsStateLocally(state);
-        // Update progress bar if audit passes
-        const _aScore = Number(data.audit?.overall_score || 0);
-        if (_aScore >= 7.0) {
-          const _apctEl = document.getElementById('studioHeaderPctBadge');
-          const _abarEl = document.getElementById('studioHeaderProgressBar');
-          const _avaultDone = Boolean(_aProd.vault?.storagePath || _aProd.vault?.downloadUrl);
-          const _amocksDone = (_aProd.mockupsCount || _aProd.mockups?.length || 0) >= 4;
-          const _avidDone = Boolean(_aProd.video?.storagePath || _aProd.video?.fileName);
-          const _aseoDone = Boolean(_aProd.seo?.title || _aProd.seoTitle);
-          const _abpDone = Boolean(_aProd.blueprint?.prompt || _aProd.blueprint?.geometry);
-          const _apct = (_abpDone ? 20 : 0) + (_avaultDone ? 20 : 0) + (_amocksDone && _avidDone ? 20 : 0) + 20 + (_aseoDone ? 20 : 0);
-          if (_apctEl) { _apctEl.innerText = `${_apct}% Ready`; _apctEl.style.color = _apct >= 80 ? '#00df89' : (_apct >= 40 ? '#fbbf24' : '#ef4444'); }
-          if (_abarEl) _abarEl.style.width = `${_apct}%`;
-        }
+
+        // Re-render entire Studio Drawer so Quality Gate banner, progress tracker & audit results are 100% in sync
+        window.BrandsModule.generateLiveSEOPackage(brandId, productCode, encodeURIComponent(_aProd?.name || ''));
+        setTimeout(() => {
+          window.BrandsModule.switchStudioTab('audit');
+        }, 50);
 
       } catch (err) {
         if (container) {
