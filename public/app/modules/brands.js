@@ -385,21 +385,25 @@ function isCurrentUserAdmin() {
 
 async function loadBrandsStateFromAPI(forceFresh = false) {
   try {
-    const headers = getStudioAuthHeaders({ 'Content-Type': 'application/json' });
-    const res = await fetch(`/api/brands?_t=${Date.now()}`, { headers });
-    if (res.ok) {
-      const data = await res.json();
-      if (data && data.brands && data.productsCatalog) {
-        // Authoritative server state: normalize keys for both number and string access
-        for (const b of data.brands) {
-          const cat = data.productsCatalog[b.id] || data.productsCatalog[String(b.id)] || [];
-          data.productsCatalog[b.id] = cat;
-          data.productsCatalog[String(b.id)] = cat;
-          b.productsLive = cat.filter(p => p.status === 'Live').length;
-        }
-        localStorage.setItem('gro10x_brands_data', JSON.stringify(data));
-        return data;
+    let data = null;
+    if (window.APP_API) {
+      data = await window.APP_API.request('/brands', { method: 'GET', bypassCache: true });
+    } else {
+      const headers = getStudioAuthHeaders({ 'Content-Type': 'application/json' });
+      const res = await fetch(`/api/brands?_t=${Date.now()}`, { headers, credentials: 'same-origin' });
+      if (res.ok) data = await res.json();
+    }
+
+    if (data && data.brands && data.productsCatalog) {
+      // Authoritative server state: normalize keys for both number and string access
+      for (const b of data.brands) {
+        const cat = data.productsCatalog[b.id] || data.productsCatalog[String(b.id)] || [];
+        data.productsCatalog[b.id] = cat;
+        data.productsCatalog[String(b.id)] = cat;
+        b.productsLive = cat.filter(p => p.status === 'Live').length;
       }
+      localStorage.setItem('gro10x_brands_data', JSON.stringify(data));
+      return data;
     }
   } catch (e) {
     console.warn('[Brands] Direct API load notice, trying local cache:', e.message);

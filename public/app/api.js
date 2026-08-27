@@ -32,6 +32,7 @@ window.APP_API = {
     const method = options.method || 'GET';
     const config = {
       method: method,
+      credentials: 'same-origin',
       headers: { ...this.getHeaders(), ...(options.headers || {}) }
     };
 
