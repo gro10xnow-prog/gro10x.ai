@@ -420,8 +420,9 @@ router.post('/brands/:brandId/listings/:code/health-check', requireAuth, asyncHa
  */
 router.post('/brands/:brandId/publish-all', requireAuth, requireAdmin, asyncHandler(async (req, res) => {
   const { brandId } = req.params;
-  const { productCodes, autoActivate = true, dryRun = false } = req.body;
+  const { productCodes, autoActivate = true, dryRun = false, productOverrides = [], clientProducts = [] } = req.body;
   const { state: brandState, brand, catalog } = await getBrandData(brandId);
+  const overrides = [...productOverrides, ...clientProducts];
 
   const conn = await getConnection(brandId);
   const isSimulated = !conn || !conn.shop_id || conn.status !== 'active';
@@ -437,9 +438,17 @@ router.post('/brands/:brandId/publish-all', requireAuth, requireAdmin, asyncHand
     return fail(res, reason, 503);
   }
 
-  const targetProducts = productCodes && productCodes.length > 0
+  let targetProducts = productCodes && productCodes.length > 0
     ? catalog.filter(p => productCodes.includes(p.code || p.productCode))
     : catalog.filter(p => ['Pending Review', 'QA Approved', 'SEO Ready', 'Staged', 'Live'].includes(p.status) || !p.status);
+
+  // Merge client in-memory state overrides (SEO title, tags, description, vault) if provided
+  if (overrides.length > 0) {
+    targetProducts = targetProducts.map(tp => {
+      const match = overrides.find(o => (o.code || o.productCode) === (tp.code || tp.productCode));
+      return match ? { ...tp, ...match } : tp;
+    });
+  }
 
   if (targetProducts.length === 0) {
     return fail(res, 'No products found ready for Etsy listing. Complete Studio Engine steps first.', 400);

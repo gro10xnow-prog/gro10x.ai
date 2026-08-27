@@ -3953,6 +3953,21 @@ window.APP_MODULES.brands = async function(container) {
         }
         saveBrandsStateLocally(state);
 
+        // Auto-persist SEO package to backend database immediately
+        fetch(`/api/brands/${brandId}/product/${productCode}/studio-save`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            tab: 'seo',
+            data: {
+              title: seoData.title,
+              tags: seoData.tags,
+              description: seoData.description,
+              price: prod.price || prod.retailPrice || 7.49
+            }
+          })
+        }).catch(err => console.warn('[Auto-Save SEO Error]:', err.message));
+
         if (statusEl) {
           statusEl.innerHTML = `
             <div style="background:rgba(0,223,137,0.1); border:1px solid rgba(0,223,137,0.4); border-radius:10px; padding:0.6rem 0.9rem; display:flex; justify-content:space-between; align-items:center;">
@@ -6791,7 +6806,7 @@ window.APP_MODULES.brands = async function(container) {
         const res = await fetch(`/api/etsy/brands/${brandId}/publish-all`, {
           method: 'POST',
           headers,
-          body: JSON.stringify({ productCodes: [prod.code], autoActivate: true })
+          body: JSON.stringify({ productCodes: [prod.code], autoActivate: true, productOverrides: [prod] })
         });
         const data = await res.json();
         if (!data.success) throw new Error(data.error || 'Failed to publish single product');
