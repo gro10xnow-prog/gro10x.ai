@@ -39,8 +39,13 @@ window.APP_API = {
       config.body = typeof options.body === 'string' ? options.body : JSON.stringify(options.body);
     }
 
+    // Invalidate entire cache on state-modifying requests
+    if (method !== 'GET') {
+      this._cache = {};
+    }
+
     // Cache interception for GET requests
-    if (method === 'GET') {
+    if (method === 'GET' && !options.bypassCache) {
       const cached = this._cache[url];
       if (cached && (Date.now() - cached.timestamp < this._cacheTTL)) {
         return cached.data; // Return a shallow copy if possible, but for JSON objects this is fine

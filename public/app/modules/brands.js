@@ -383,21 +383,26 @@ function isCurrentUserAdmin() {
 }
 
 
-async function loadBrandsStateFromAPI() {
+async function loadBrandsStateFromAPI(forceFresh = false) {
   let localState = null;
-  try {
-    const saved = localStorage.getItem('gro10x_brands_data');
-    if (saved) localState = JSON.parse(saved);
-  } catch (e) {}
+  if (!forceFresh) {
+    try {
+      const saved = localStorage.getItem('gro10x_brands_data');
+      if (saved) localState = JSON.parse(saved);
+    } catch (e) {}
+  }
 
   try {
     if (window.APP_API) {
-      const res = await window.APP_API.get('/brands');
+      if (forceFresh && window.APP_API._cache) {
+        window.APP_API._cache = {};
+      }
+      const res = await window.APP_API.request('/brands', { method: 'GET', bypassCache: forceFresh });
       if (res && res.brands) {
         // Merge: API is the AUTHORITATIVE source of truth (backed by Supabase).
         // If localState has draft work, overlay it, but API's live status, Etsy listing IDs,
         // and cloud URLs always take precedence.
-        if (localState && localState.productsCatalog && res.productsCatalog) {
+        if (!forceFresh && localState && localState.productsCatalog && res.productsCatalog) {
           for (const [bId, catalog] of Object.entries(localState.productsCatalog)) {
             if (!res.productsCatalog[bId]) {
               res.productsCatalog[bId] = catalog;
@@ -5728,6 +5733,9 @@ window.APP_MODULES.brands = async function(container) {
     async syncLiveEtsyCatalog(brandId = 1) {
       if (window.showToast) window.showToast('🔄 Scanning Etsy Shop for active listings...', 'info');
       try {
+        if (window.APP_API?._cache) window.APP_API._cache = {};
+        localStorage.removeItem('gro10x_brands_data');
+
         const headers = getStudioAuthHeaders({ 'Content-Type': 'application/json' });
         const res = await fetch(`/api/etsy/brands/${brandId}/sync-live-catalog`, {
           method: 'POST',
@@ -5743,8 +5751,8 @@ window.APP_MODULES.brands = async function(container) {
           window.showToast(`✅ Reconciled ${count} live listings from Etsy!`, 'success');
         }
 
-        // Hard refresh state from API so UI displays Live badges
-        state = await loadBrandsStateFromAPI();
+        // Force fresh load from server database (bypassing all client caches)
+        state = await loadBrandsStateFromAPI(true);
         const b = state.brands?.find(x => x.id === Number(brandId));
         if (b) {
           b.productsLive = (state.productsCatalog?.[brandId] || state.productsCatalog?.[String(brandId)] || []).filter(p => p.status === 'Live').length;
