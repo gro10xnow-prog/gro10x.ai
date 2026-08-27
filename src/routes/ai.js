@@ -156,16 +156,16 @@ router.post('/summarize-brief', requireAuth, async (req, res) => {
   }
 });
 
-// POST /api/ai/etsy-seo — Generates Category-Aware Etsy SEO Title, 13 Tags, and Listing Description
+// POST /api/ai/etsy-seo — Generates Category-Aware Etsy SEO Title, 13 Tags, and Listing Description with Complete Spread Breakdown
 router.post('/etsy-seo', requireAuth, async (req, res) => {
-  const { productName, brandName, brandNiche, brandVoice, type, category, pageCount, palette, auditScore, price } = req.body;
+  const { productName, brandName, brandNiche, brandVoice, type, category, pageCount, pageBreakdown, palette, auditScore, price } = req.body;
   if (!productName || !brandName) {
     return res.status(400).json({ error: 'productName and brandName are required' });
   }
 
   const key = process.env.GEMINI_API_KEY;
 
-  function generateFallbackSEO(pName, bName, niche, pType, cat, pCount) {
+  function generateFallbackSEO(pName, bName, niche, pType, cat, pCount, pBreakdown) {
     const cleanP = pName.replace(/^[A-Z]\d+\s*[-–]\s*/, '');
     const shortCat = (cat || 'Daily Planner').replace(/Planners|Trackers/i, 'Planner').trim();
     const title = `${cleanP} - ${shortCat} Printable - ${bName || 'PlannerQueen'} GoodNotes PDF`
@@ -189,17 +189,37 @@ router.post('/etsy-seo', requireAuth, async (req, res) => {
       `${(bName || 'gro10x').toLowerCase().slice(0, 20)}`
     ].slice(0, 13);
 
+    const pagesList = Array.isArray(pBreakdown) && pBreakdown.length > 0
+      ? pBreakdown.map(p => `• Page ${p.pageNum || p.page || ''}: ${p.title || p.name || 'Spread'} — ${p.purpose || 'High-productivity template layout'}`).join('\n')
+      : `• Page 1: Minimalist Aesthetic Cover & Personalization Index\n` +
+        `• Page 2: Quick Start Guide & Daily Planning Rituals\n` +
+        `• Page 3: Master Index & Hyperlinked Navigation Matrix\n` +
+        `• Page 4: Monthly Goals & Intentions Roadmap\n` +
+        `• Page 5: Weekly Master Schedule & Priority Matrix\n` +
+        `• Page 6: Daily Focused Execution & Time-Blocking Layout\n` +
+        `• Page 7: Monthly Income, Expenses & Budget Tracker\n` +
+        `• Page 8: 30-Day Habit Matrix & Routine Consistency Tracker\n` +
+        `• Page 9: Weekly Reflection, Wins & Mindful Reset\n` +
+        `• Page 10: Ideas, Mind Maps & Dot Grid Notes`;
+
+    const effectivePageCount = pCount || (Array.isArray(pBreakdown) ? pBreakdown.length : 16);
+
     const description = `✨ Welcome to ${bName} — ${niche || 'Intentional Productivity & Digital Stationery'}\n\n` +
-      `Transform your daily routine with the **${cleanP}**.\n\n` +
-      `📦 WHAT IS INCLUDED (${pCount || 10}-Page System):\n` +
-      `• High-Resolution Vector Printable PDF (US Letter & A4)\n` +
-      `• Hyperlinked Digital Tablet Compatibility (GoodNotes, Notability, Samsung Notes)\n` +
+      `Transform your daily routine, streamline your productivity, and achieve your goals with the **${cleanP}**.\n\n` +
+      `📋 COMPLETE ${effectivePageCount}-PAGE SPREAD BREAKDOWN (WHAT'S INSIDE):\n` +
+      `${pagesList}\n\n` +
+      `📦 WHAT IS INCLUDED & COMPATIBILITY:\n` +
+      `• High-Resolution Vector Printable PDF (US Letter & A4 Print-Ready 300 DPI)\n` +
+      `• Hyperlinked Digital Tablet Compatibility (GoodNotes, Notability, Samsung Notes, iPad)\n` +
+      `• Clean Minimalist Typography & Eye-Friendly Color Palette\n` +
       `• Official Single-User Anti-Piracy License Pass\n` +
       `• Bonus Canva / Notion Quick-Start Setup Guide\n\n` +
       `⚡ HOW IT WORKS:\n` +
-      `1. Complete your purchase.\n` +
+      `1. Complete your purchase on Etsy.\n` +
       `2. Instantly download your PDF files from Etsy Purchases.\n` +
-      `3. Import to iPad/tablet or print immediately at home!\n\n` +
+      `3. Import into GoodNotes / tablet app or print immediately at home!\n\n` +
+      `🔒 LICENSE & USAGE:\n` +
+      `For personal use only. Reselling, sharing, or commercial redistribution is strictly prohibited.\n\n` +
       `💌 Need assistance or custom requests? Send us an Etsy message anytime!`;
 
     return {
@@ -214,9 +234,15 @@ router.post('/etsy-seo', requireAuth, async (req, res) => {
   if (!key) {
     return res.json({
       success: true,
-      ...generateFallbackSEO(productName, brandName, brandNiche, type, category, pageCount)
+      ...generateFallbackSEO(productName, brandName, brandNiche, type, category, pageCount, pageBreakdown)
     });
   }
+
+  const formattedPageBreakdown = Array.isArray(pageBreakdown) && pageBreakdown.length > 0
+    ? pageBreakdown.map(p => `• Page ${p.pageNum || p.page || ''}: ${p.title || p.name || ''} — ${p.purpose || p.description || ''}`).join('\n')
+    : null;
+
+  const effectivePageCount = pageCount || (Array.isArray(pageBreakdown) ? pageBreakdown.length : 16);
 
   const prompt =
     `You are an elite Etsy SEO and copywriting specialist.\n\n` +
@@ -227,13 +253,19 @@ router.post('/etsy-seo', requireAuth, async (req, res) => {
     `Niche: "${brandNiche || 'Digital productivity'}"\n` +
     `Brand Voice: "${brandVoice || 'Warm, inspiring, clear'}"\n` +
     `Format / Delivery: "${type || 'Digital PDF'}"\n` +
-    `System Size: "${pageCount || 10} Pages"\n` +
+    `System Size: "${effectivePageCount} Pages"\n` +
     `Palette: "${Array.isArray(palette) ? palette.join(', ') : (palette || '#8B5A7A, #FAF3E8, #7D9B76')}"\n` +
-    `Retail Price: "$${price || 7.49} USD"\n\n` +
-    `Strict Requirements:\n` +
+    `Retail Price: "$${price || 7.49} USD"\n` +
+    (formattedPageBreakdown ? `\nActual Page-by-Page Blueprint Spread Breakdown:\n${formattedPageBreakdown}\n` : '') +
+    `\nStrict Requirements:\n` +
     `1. "title": Strictly 14 WORDS OR FEWER AND 140 characters or fewer. Comply with Etsy's official SEO ranking recommendation: "Consider using 14 words or less". Front-load highest-volume buyer keywords separated by hyphens (e.g. "Mindful Morning Routine Journal - Printable Daily Planner - GoodNotes PDF"). Avoid pipes (|) and avoid keyword stuffing.\n` +
     `2. "tags": EXACTLY 13 comma-separated tag phrases. EACH tag MUST BE 20 CHARACTERS OR FEWER. Must include long-tail buyer search phrases tailored to "${category || 'planners'}".\n` +
-    `3. "description": 4 structured sections: (1) Headline Hook, (2) What is Included (bullet points), (3) How to Access & Print / GoodNotes Guide, (4) Anti-Piracy Single-User License Note.\n` +
+    `3. "description": 5 high-converting structured sections:\n` +
+    `   (1) Headline Hook & Value Proposition\n` +
+    `   (2) 📋 COMPLETE ${effectivePageCount}-PAGE SPREAD BREAKDOWN (list every specific page with bullet points so buyers see 100% transparent value of every worksheet and spread included)\n` +
+    `   (3) 📦 What is Included & File Specifications (US Letter & A4 Vector PDF, GoodNotes / iPad tablet compatibility)\n` +
+    `   (4) ⚡ How It Works / Instant Download Steps\n` +
+    `   (5) 🔒 Anti-Piracy Single-User License Note\n` +
     `4. "keywords": 5 high-intent buyer keyword phrases.\n\n` +
     `OUTPUT STRICT JSON ONLY with keys "title", "tags" (array of 13 strings), "description", "keywords" (array of 5 strings). No markdown formatting or extra text outside JSON.`;
 

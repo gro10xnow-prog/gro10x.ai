@@ -3916,7 +3916,8 @@ window.APP_MODULES.brands = async function(container) {
             brandVoice: b.voice,
             type: prod.type || b.type || 'Digital PDF',
             category: prod.category || prod.blueprint?.categoryOverride || 'Daily & Weekly Planners',
-            pageCount: prod.blueprint?.pageCount || prod.blueprint?.pages?.length || 10,
+            pageCount: (prod.blueprint?.pageBreakdown?.length) || prod.blueprint?.pageCount || 16,
+            pageBreakdown: prod.blueprint?.pageBreakdown || prod.blueprint?.pages || [],
             palette: prod.blueprint?.palette || b.palette || ['#8B5A7A', '#FAF3E8', '#7D9B76'],
             auditScore: prod.aiAudit?.overall_score || prod.aiAudit?.score || 8.0,
             price: prod.price || prod.retailPrice || 7.49
