@@ -2914,48 +2914,95 @@ window.APP_MODULES.brands = async function(container) {
 
           <!-- SECTION 2: INTERACTIVE PAGE BREAKDOWN (ACCORDION TABLE) -->
           ${pages && pages.length > 0 ? `
-            <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:1rem;">
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+            <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.12); border-radius:14px; padding:1.25rem;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:0.5rem;">
                 <div>
-                  <label style="font-size:0.75rem; font-weight:800; color:#00df89; text-transform:uppercase;">📖 Page-by-Page Design Specifications (${pages.length} Spreads Total)</label>
-                  <span style="font-size:0.7rem; color:var(--text-muted); display:block;">Click any page to inspect purpose, layout specs, and required vector elements.</span>
+                  <label style="font-size:0.82rem; font-weight:900; color:#00df89; text-transform:uppercase; letter-spacing:0.5px; display:flex; align-items:center; gap:0.4rem;">
+                    <span>📖</span> Page-by-Page Design Specifications (${pages.length} Spreads Total)
+                  </label>
+                  <span style="font-size:0.74rem; color:var(--text-secondary, #cbd5e1); display:block; margin-top:0.2rem;">
+                    Click any spread to inspect purpose, print layout specs, and required vector UI elements.
+                  </span>
                 </div>
-                <button type="button" class="btn-ghost btn-sm" style="font-size:0.7rem; padding:0.2rem 0.5rem;" onclick="
+                <button type="button" class="btn-secondary btn-sm" style="font-size:0.75rem; font-weight:800; padding:0.35rem 0.75rem; background:rgba(0,223,137,0.12); border:1px solid rgba(0,223,137,0.3); color:#00df89; border-radius:8px; cursor:pointer;" onclick="
                   const items = document.querySelectorAll('.bp-accordion-content');
+                  const chevrons = document.querySelectorAll('[id^=bpChevron_]');
                   const allOpen = Array.from(items).every(el => el.style.display !== 'none');
                   items.forEach(el => el.style.display = allOpen ? 'none' : 'block');
-                  this.textContent = allOpen ? '▼ Expand All' : '▲ Collapse All';
+                  chevrons.forEach(ch => ch.style.transform = allOpen ? 'rotate(0deg)' : 'rotate(180deg)');
+                  this.innerHTML = allOpen ? '▼ Expand All' : '▲ Collapse All';
                 ">
                   ▼ Expand All
                 </button>
               </div>
-              <div style="display:flex; flex-direction:column; gap:0.4rem; max-height:280px; overflow-y:auto; padding-right:0.25rem;">
-                ${pages.map((p, idx) => `
-                  <div style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.06); border-radius:8px; overflow:hidden;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; padding:0.5rem 0.75rem; cursor:pointer; user-select:none;" onclick="
-                      const c = document.getElementById('bpPageContent_${idx}');
-                      if (c) c.style.display = c.style.display === 'none' ? 'block' : 'none';
-                    ">
-                      <div style="display:flex; align-items:center; gap:0.5rem;">
-                        <span style="font-size:0.72rem; font-weight:800; background:rgba(0,223,137,0.15); color:#00df89; padding:0.15rem 0.45rem; border-radius:6px; font-family:monospace;">Page ${p.pageNumber || (idx + 1)}</span>
-                        <strong style="font-size:0.78rem; color:#fff;">${p.title || ''}</strong>
-                      </div>
-                      <span style="font-size:0.68rem; color:var(--text-muted); background:rgba(255,255,255,0.05); padding:0.1rem 0.4rem; border-radius:4px;">${p.section || 'Spread'}</span>
-                    </div>
-                    <div id="bpPageContent_${idx}" class="bp-accordion-content" style="display:none; padding:0.6rem 0.75rem; border-top:1px solid rgba(255,255,255,0.05); font-size:0.74rem; background:rgba(0,0,0,0.15);">
-                      ${p.purpose ? `<div style="margin-bottom:0.3rem;"><strong style="color:#06b6d4;">🎯 Purpose:</strong> <span style="color:var(--text-secondary);">${p.purpose}</span></div>` : ''}
-                      ${p.layoutSpecs ? `<div style="margin-bottom:0.4rem;"><strong style="color:#a855f7;">📐 Layout Specs:</strong> <span style="color:var(--text-secondary);">${p.layoutSpecs}</span></div>` : ''}
-                      ${Array.isArray(p.elements) && p.elements.length > 0 ? `
-                        <div>
-                          <strong style="color:#fbbf24; display:block; margin-bottom:0.25rem;">📋 Required Vector Elements:</strong>
-                          <div style="display:flex; flex-wrap:wrap; gap:0.3rem;">
-                            ${p.elements.map(el => `<span style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); padding:0.15rem 0.45rem; border-radius:4px; font-size:0.7rem; color:#e2e8f0;">• ${el}</span>`).join('')}
-                          </div>
+
+              <div style="display:flex; flex-direction:column; gap:0.6rem; max-height:480px; overflow-y:auto; padding-right:0.35rem;">
+                ${pages.map((p, idx) => {
+                  const pNum = p.pageNumber || p.page || p.number || (idx + 1);
+                  const pTitle = p.title || p.name || p.pageTitle || p.spreadTitle || `Spread #${pNum}`;
+                  const pSec = p.section || p.category || p.type || 'Spread';
+                  const pPurpose = p.purpose || p.description || p.goal || '';
+                  const pLayout = p.layoutSpecs || p.layout || p.specs || '';
+                  const pElements = Array.isArray(p.elements) ? p.elements : (Array.isArray(p.requiredElements) ? p.requiredElements : []);
+
+                  return `
+                    <div style="background:#181826; border:1px solid rgba(255,255,255,0.1); border-radius:10px; overflow:hidden; transition:border-color 0.2s ease;">
+                      <div style="display:flex; justify-content:space-between; align-items:center; padding:0.65rem 0.9rem; cursor:pointer; user-select:none; background:rgba(255,255,255,0.02);" onclick="
+                        const c = document.getElementById('bpPageContent_${idx}');
+                        const ch = document.getElementById('bpChevron_${idx}');
+                        if (c) {
+                          const isClosed = c.style.display === 'none';
+                          c.style.display = isClosed ? 'block' : 'none';
+                          if (ch) ch.style.transform = isClosed ? 'rotate(180deg)' : 'rotate(0deg)';
+                        }
+                      ">
+                        <div style="display:flex; align-items:center; gap:0.65rem; flex:1; min-width:0;">
+                          <span style="font-size:0.75rem; font-weight:900; background:rgba(0,223,137,0.18); color:#00df89; border:1px solid rgba(0,223,137,0.35); padding:0.2rem 0.55rem; border-radius:6px; font-family:monospace; white-space:nowrap;">
+                            Page ${pNum}
+                          </span>
+                          <strong style="font-size:0.85rem; color:#ffffff; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                            ${pTitle}
+                          </strong>
                         </div>
-                      ` : ''}
+                        <div style="display:flex; align-items:center; gap:0.6rem; margin-left:0.5rem;">
+                          <span style="font-size:0.7rem; color:#94a3b8; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); padding:0.15rem 0.5rem; border-radius:6px; white-space:nowrap; font-weight:600;">
+                            ${pSec}
+                          </span>
+                          <span id="bpChevron_${idx}" style="font-size:0.75rem; color:#00df89; display:inline-block; transition:transform 0.2s ease;">▼</span>
+                        </div>
+                      </div>
+
+                      <div id="bpPageContent_${idx}" class="bp-accordion-content" style="display:none; padding:0.9rem 1rem; border-top:1px solid rgba(255,255,255,0.08); font-size:0.8rem; background:#12121c; line-height:1.5;">
+                        ${pPurpose ? `
+                          <div style="margin-bottom:0.75rem; background:rgba(6,182,212,0.08); border-left:3px solid #06b6d4; padding:0.55rem 0.85rem; border-radius:6px;">
+                            <strong style="color:#06b6d4; display:block; font-size:0.74rem; text-transform:uppercase; margin-bottom:0.2rem; letter-spacing:0.5px;">🎯 Spread Purpose</strong>
+                            <span style="color:#e2e8f0; font-size:0.8rem;">${pPurpose}</span>
+                          </div>
+                        ` : ''}
+
+                        ${pLayout ? `
+                          <div style="margin-bottom:0.75rem; background:rgba(168,85,247,0.08); border-left:3px solid #a855f7; padding:0.55rem 0.85rem; border-radius:6px;">
+                            <strong style="color:#c084fc; display:block; font-size:0.74rem; text-transform:uppercase; margin-bottom:0.2rem; letter-spacing:0.5px;">📐 Print &amp; Grid Layout Specs</strong>
+                            <span style="color:#e2e8f0; font-size:0.8rem;">${pLayout}</span>
+                          </div>
+                        ` : ''}
+
+                        ${pElements.length > 0 ? `
+                          <div style="background:rgba(251,191,36,0.08); border-left:3px solid #fbbf24; padding:0.55rem 0.85rem; border-radius:6px;">
+                            <strong style="color:#fbbf24; display:block; font-size:0.74rem; text-transform:uppercase; margin-bottom:0.35rem; letter-spacing:0.5px;">📋 Required Vector &amp; UI Elements</strong>
+                            <div style="display:flex; flex-wrap:wrap; gap:0.4rem;">
+                              ${pElements.map(el => `
+                                <span style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); padding:0.25rem 0.6rem; border-radius:6px; font-size:0.75rem; color:#f8fafc; font-weight:600;">
+                                  ✓ ${el}
+                                </span>
+                              `).join('')}
+                            </div>
+                          </div>
+                        ` : ''}
+                      </div>
                     </div>
-                  </div>
-                `).join('')}
+                  `;
+                }).join('')}
               </div>
             </div>
           ` : ''}
