@@ -384,32 +384,52 @@ function isCurrentUserAdmin() {
 
 
 async function loadBrandsStateFromAPI(forceFresh = false) {
-  try {
-    let data = null;
-    if (window.APP_API) {
-      data = await window.APP_API.request('/brands', { method: 'GET', bypassCache: true });
-    } else {
-      const headers = getStudioAuthHeaders({ 'Content-Type': 'application/json' });
-      const res = await fetch(`/api/brands?_t=${Date.now()}`, { headers, credentials: 'same-origin' });
-      if (res.ok) data = await res.json();
-    }
+  const headers = getStudioAuthHeaders({ 'Content-Type': 'application/json' });
 
-    if (data && data.brands && data.productsCatalog) {
-      // Authoritative server state: normalize keys for both number and string access
-      for (const b of data.brands) {
-        const cat = data.productsCatalog[b.id] || data.productsCatalog[String(b.id)] || [];
-        data.productsCatalog[b.id] = cat;
-        data.productsCatalog[String(b.id)] = cat;
-        b.productsLive = cat.filter(p => p.status === 'Live').length;
+  // 1. Direct fetch with explicit auth headers and credentials
+  try {
+    const res = await fetch(`/api/brands?_t=${Date.now()}`, { headers, credentials: 'same-origin' });
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.brands && data.productsCatalog) {
+        for (const b of data.brands) {
+          const cat = data.productsCatalog[b.id] || data.productsCatalog[String(b.id)] || [];
+          data.productsCatalog[b.id] = cat;
+          data.productsCatalog[String(b.id)] = cat;
+          b.productsLive = cat.filter(p => p.status === 'Live').length;
+        }
+        if (data.productsCatalog['1'] && data.productsCatalog['1'].length > 0) {
+          localStorage.setItem('gro10x_brands_data', JSON.stringify(data));
+        }
+        return data;
       }
-      localStorage.setItem('gro10x_brands_data', JSON.stringify(data));
-      return data;
     }
   } catch (e) {
-    console.warn('[Brands] Direct API load notice, trying local cache:', e.message);
+    console.warn('[Brands] Direct fetch notice:', e.message);
   }
 
-  // Fallback to local storage if offline
+  // 2. Secondary fetch through window.APP_API client
+  try {
+    if (window.APP_API) {
+      const data = await window.APP_API.request('/brands', { method: 'GET', bypassCache: true });
+      if (data && data.brands && data.productsCatalog) {
+        for (const b of data.brands) {
+          const cat = data.productsCatalog[b.id] || data.productsCatalog[String(b.id)] || [];
+          data.productsCatalog[b.id] = cat;
+          data.productsCatalog[String(b.id)] = cat;
+          b.productsLive = cat.filter(p => p.status === 'Live').length;
+        }
+        if (data.productsCatalog['1'] && data.productsCatalog['1'].length > 0) {
+          localStorage.setItem('gro10x_brands_data', JSON.stringify(data));
+        }
+        return data;
+      }
+    }
+  } catch (e) {
+    console.warn('[Brands] APP_API fetch notice:', e.message);
+  }
+
+  // 3. Fallback to local storage if network offline
   try {
     const saved = localStorage.getItem('gro10x_brands_data');
     if (saved) {
@@ -821,13 +841,12 @@ window.APP_MODULES.brands = async function(container) {
     const brand = state.brands.find(b => b.id === selectedBrandId) || state.brands[0];
 
     // Build or retrieve catalog for this brand
-    const existingCat = state.productsCatalog[brand.id] || state.productsCatalog[String(brand.id)] || [];
-    if (existingCat.length === 0) {
-      state.productsCatalog[brand.id] = generateDefaultProductsForBrand(brand);
-      state.productsCatalog[String(brand.id)] = state.productsCatalog[brand.id];
-      saveBrandsStateLocally(state);
+    let products = state.productsCatalog[brand.id] || state.productsCatalog[String(brand.id)] || [];
+    if (products.length === 0) {
+      products = generateDefaultProductsForBrand(brand);
+      state.productsCatalog[brand.id] = products;
+      state.productsCatalog[String(brand.id)] = products;
     }
-    const products = state.productsCatalog[brand.id] || state.productsCatalog[String(brand.id)] || [];
     const liveCount = products.filter(p => p.status === 'Live').length;
     brand.productsLive = liveCount;
 
@@ -1221,13 +1240,12 @@ window.APP_MODULES.brands = async function(container) {
     const b = state.brands.find(x => x.id === selectedBrandId) || state.brands[0];
 
     // Ensure catalog list exists for this brand
-    const existingCat = state.productsCatalog[b.id] || state.productsCatalog[String(b.id)] || [];
-    if (existingCat.length === 0) {
-      state.productsCatalog[b.id] = generateDefaultProductsForBrand(b);
-      state.productsCatalog[String(b.id)] = state.productsCatalog[b.id];
-      saveBrandsStateLocally(state);
+    let catalog = state.productsCatalog[b.id] || state.productsCatalog[String(b.id)] || [];
+    if (catalog.length === 0) {
+      catalog = generateDefaultProductsForBrand(b);
+      state.productsCatalog[b.id] = catalog;
+      state.productsCatalog[String(b.id)] = catalog;
     }
-    const catalog = state.productsCatalog[b.id] || state.productsCatalog[String(b.id)] || [];
     const liveCount = catalog.filter(p => p.status === 'Live').length;
     b.productsLive = liveCount;
     const readyCount = catalog.filter(p => ['SEO Ready', 'QA Approved', 'Staged'].includes(p.status)).length;
@@ -5060,11 +5078,12 @@ window.APP_MODULES.brands = async function(container) {
       const actions = document.getElementById('etsyConnectionActions');
       const details = document.getElementById('etsyLiveDetails');
       const ordersList = document.getElementById('etsyOrdersList');
-      const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+      const headers = getStudioAuthHeaders();
 
       try {
         const res = await fetch(`/api/etsy/brands/${brandId}/status`, {
-          headers: { 'Authorization': `Bearer ${token}` }
+          headers,
+          credentials: 'same-origin'
         });
         const data = await res.json();
         
@@ -5122,7 +5141,8 @@ window.APP_MODULES.brands = async function(container) {
       // Fetch live orders
       try {
         const orderRes = await fetch(`/api/etsy/brands/${brandId}/orders`, {
-          headers: { 'Authorization': `Bearer ${token}` }
+          headers,
+          credentials: 'same-origin'
         });
         const orderData = await orderRes.json();
         const orders = orderData.data?.results || [];
@@ -5168,10 +5188,11 @@ window.APP_MODULES.brands = async function(container) {
     },
 
     async connectEtsyStore(brandId) {
-      const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+      const headers = getStudioAuthHeaders();
       try {
         const res = await fetch(`/api/etsy/brands/${brandId}/connect`, {
-          headers: { 'Authorization': `Bearer ${token}` }
+          headers,
+          credentials: 'same-origin'
         });
         const data = await res.json();
         if (!data.success || !data.data?.authUrl) {
@@ -5185,11 +5206,12 @@ window.APP_MODULES.brands = async function(container) {
 
     async disconnectEtsyStore(brandId) {
       if (!confirm('Are you sure you want to disconnect this Etsy Store connection?')) return;
-      const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+      const headers = getStudioAuthHeaders();
       try {
         const res = await fetch(`/api/etsy/brands/${brandId}/disconnect`, {
           method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}` }
+          headers,
+          credentials: 'same-origin'
         });
         const data = await res.json();
         if (window.showToast) window.showToast('Store disconnected', 'info');
@@ -5200,13 +5222,14 @@ window.APP_MODULES.brands = async function(container) {
     },
 
     async runAIEtsyHealthCheck(brandId) {
-      const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+      const headers = getStudioAuthHeaders();
       if (window.showToast) window.showToast('🩺 Running AI 10-Rule Pre-Listing Health Check across all 100 products...', 'info');
 
       try {
         const res = await fetch(`/api/etsy/brands/${brandId}/health-check-all`, {
           method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}` }
+          headers,
+          credentials: 'same-origin'
         });
         const data = await res.json();
         if (!data.success) throw new Error(data.error || 'Health check failed');
@@ -5228,11 +5251,12 @@ window.APP_MODULES.brands = async function(container) {
       const prod = catalog[productIdx];
       if (!prod) return;
 
-      const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+      const headers = getStudioAuthHeaders({ 'Content-Type': 'application/json' });
       try {
         const res = await fetch(`/api/etsy/brands/${brandId}/listings/${prod.code}/health-check`, {
           method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          headers,
+          credentials: 'same-origin',
           body: JSON.stringify({ product: prod })
         });
         const data = await res.json();
@@ -5420,7 +5444,7 @@ window.APP_MODULES.brands = async function(container) {
 
         const fileInput = document.getElementById('listingVideoInput');
         const file = fileInput?.files?.[0];
-        const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+        const headers = getStudioAuthHeaders();
 
         if (statusEl) statusEl.innerHTML = `<span style="color:#06b6d4; font-weight:700;">🚀 Pushing video to Etsy listing #${prod.etsyListingId}...</span>`;
 
@@ -5428,15 +5452,19 @@ window.APP_MODULES.brands = async function(container) {
         if (file) {
           const formData = new FormData();
           formData.append('video', file);
+          const uploadHeaders = getStudioAuthHeaders();
+          delete uploadHeaders['Content-Type']; // Let browser set multipart boundary
           res = await fetch(`/api/etsy/brands/${brandId}/listings/${prod.etsyListingId}/upload-video`, {
             method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}` },
+            headers: uploadHeaders,
+            credentials: 'same-origin',
             body: formData
           });
         } else if (prod.video) {
           res = await fetch(`/api/etsy/brands/${brandId}/listings/${prod.etsyListingId}/upload-video`, {
             method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+            headers: getStudioAuthHeaders({ 'Content-Type': 'application/json' }),
+            credentials: 'same-origin',
             body: JSON.stringify(prod.video)
           });
         } else {
@@ -5460,7 +5488,7 @@ window.APP_MODULES.brands = async function(container) {
       if (!modal || !content) return;
 
       const b = state.brands.find(x => x.id === brandId) || state.brands[0];
-      const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+      const headers = getStudioAuthHeaders();
 
       content.innerHTML = `
         <div style="text-align:center; padding:2rem;">
@@ -5472,7 +5500,8 @@ window.APP_MODULES.brands = async function(container) {
 
       try {
         const res = await fetch(`/api/etsy/brands/${brandId}/shop`, {
-          headers: { 'Authorization': `Bearer ${token}` }
+          headers,
+          credentials: 'same-origin'
         });
         const data = await res.json();
         const shop = data.data || {};
@@ -5527,11 +5556,12 @@ window.APP_MODULES.brands = async function(container) {
       const announcement = document.getElementById('shopProfileAnnouncement')?.value || '';
       const sale_message = document.getElementById('shopProfileSaleMessage')?.value || '';
 
-      const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+      const headers = getStudioAuthHeaders({ 'Content-Type': 'application/json' });
       try {
         const res = await fetch(`/api/etsy/brands/${brandId}/shop`, {
           method: 'PUT',
-          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          headers,
+          credentials: 'same-origin',
           body: JSON.stringify({ title, announcement, sale_message })
         });
         const data = await res.json();
@@ -5550,7 +5580,7 @@ window.APP_MODULES.brands = async function(container) {
       if (!modal || !content) return;
 
       const b = state.brands.find(x => x.id === brandId) || state.brands[0];
-      const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+      const headers = getStudioAuthHeaders();
 
       content.innerHTML = `
         <div style="text-align:center; padding:2rem;">
@@ -5562,7 +5592,8 @@ window.APP_MODULES.brands = async function(container) {
 
       try {
         const res = await fetch(`/api/etsy/brands/${brandId}/sections`, {
-          headers: { 'Authorization': `Bearer ${token}` }
+          headers,
+          credentials: 'same-origin'
         });
         const data = await res.json();
         const sections = data.data?.results || [];
@@ -5617,11 +5648,12 @@ window.APP_MODULES.brands = async function(container) {
         return;
       }
 
-      const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+      const headers = getStudioAuthHeaders({ 'Content-Type': 'application/json' });
       try {
         const res = await fetch(`/api/etsy/brands/${brandId}/sections`, {
           method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          headers,
+          credentials: 'same-origin',
           body: JSON.stringify({ title })
         });
         const data = await res.json();
@@ -5704,11 +5736,12 @@ window.APP_MODULES.brands = async function(container) {
       const tagsStr = document.getElementById('liveEditTags')?.value || '';
       const tags = tagsStr.split(',').map(t => t.trim().substring(0, 20)).filter(Boolean).slice(0, 13);
 
-      const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+      const headers = getStudioAuthHeaders({ 'Content-Type': 'application/json' });
       try {
         const res = await fetch(`/api/etsy/brands/${brandId}/listings/${prod.etsyListingId}`, {
           method: 'PATCH',
-          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          headers,
+          credentials: 'same-origin',
           body: JSON.stringify({ title, price, quantity, description, tags, productCode })
         });
         const data = await res.json();
@@ -5770,11 +5803,12 @@ window.APP_MODULES.brands = async function(container) {
 
       if (!confirm(`Renewing listing ${prod.code} will cost $0.20 on Etsy and extend the listing for another 120 days. Proceed?`)) return;
 
-      const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+      const headers = getStudioAuthHeaders({ 'Content-Type': 'application/json' });
       try {
         const res = await fetch(`/api/etsy/brands/${brandId}/listings/${prod.etsyListingId}/renew`, {
           method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          headers,
+          credentials: 'same-origin',
           body: JSON.stringify({ productCode })
         });
         const data = await res.json();
@@ -5795,11 +5829,12 @@ window.APP_MODULES.brands = async function(container) {
 
       if (!confirm(`Deactivate listing ${prod.code} on Etsy? It will be hidden from shoppers.`)) return;
 
-      const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+      const headers = getStudioAuthHeaders({ 'Content-Type': 'application/json' });
       try {
         const res = await fetch(`/api/etsy/brands/${brandId}/listings/${prod.etsyListingId}/deactivate`, {
           method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          headers,
+          credentials: 'same-origin',
           body: JSON.stringify({ productCode })
         });
         const data = await res.json();
@@ -5818,11 +5853,12 @@ window.APP_MODULES.brands = async function(container) {
       const prod = catalog.find(p => p.code === productCode);
       if (!prod || !prod.etsyListingId) return;
 
-      const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+      const headers = getStudioAuthHeaders({ 'Content-Type': 'application/json' });
       try {
         const res = await fetch(`/api/etsy/brands/${brandId}/listings/${prod.etsyListingId}/reactivate`, {
           method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          headers,
+          credentials: 'same-origin',
           body: JSON.stringify({ productCode })
         });
         const data = await res.json();
@@ -5837,22 +5873,7 @@ window.APP_MODULES.brands = async function(container) {
     },
 
     async syncLiveEtsyListings(brandId) {
-      if (window.showToast) window.showToast('🔄 Fetching active listings from Etsy API...', 'info');
-      const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
-      try {
-        const res = await fetch(`/api/etsy/brands/${brandId}/listings`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const data = await res.json();
-        if (!data.success) throw new Error(data.error || 'Failed to sync');
-
-        const activeListings = data.data?.results || [];
-        if (window.showToast) window.showToast(`✅ Synced ${activeListings.length} active listings from Etsy!`, 'success');
-        state = await loadBrandsStateFromAPI();
-        renderTabContent('etsy');
-      } catch (err) {
-        if (window.showToast) window.showToast(`Sync error: ${err.message}`, 'error');
-      }
+      return window.BrandsModule.syncLiveEtsyCatalog(brandId);
     },
 
     async bulkRenewAllExpiring() {
@@ -6061,11 +6082,12 @@ window.APP_MODULES.brands = async function(container) {
         return;
       }
 
-      const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+      const headers = getStudioAuthHeaders({ 'Content-Type': 'application/json' });
       try {
         const res = await fetch('/api/brands', {
           method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          headers,
+          credentials: 'same-origin',
           body: JSON.stringify({ name, niche, type, tagline, target12mo })
         });
         const data = await res.json();
@@ -6159,11 +6181,12 @@ window.APP_MODULES.brands = async function(container) {
     async deleteProduct(brandId, productCode) {
       if (!confirm(`Are you sure you want to delete ${productCode} from catalog?`)) return;
 
-      const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+      const headers = getStudioAuthHeaders();
       try {
         await fetch(`/api/brands/${brandId}/product/${productCode}`, {
           method: 'DELETE',
-          headers: { 'Authorization': `Bearer ${token}` }
+          headers,
+          credentials: 'same-origin'
         });
 
         if (state.productsCatalog[brandId]) {
@@ -6180,13 +6203,14 @@ window.APP_MODULES.brands = async function(container) {
 
     async publishBulkEtsy(brandId) {
       const b = state.brands.find(x => x.id === brandId) || state.brands[0];
-      const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+      const headers = getStudioAuthHeaders({ 'Content-Type': 'application/json' });
 
       // Step 1: Pre-flight dry-run cost estimation
       try {
         const dryRes = await fetch(`/api/etsy/brands/${brandId}/publish-all`, {
           method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          headers,
+          credentials: 'same-origin',
           body: JSON.stringify({ dryRun: true })
         });
         const dryData = await dryRes.json();
@@ -6258,12 +6282,13 @@ window.APP_MODULES.brands = async function(container) {
       `;
 
       const logEl = document.getElementById('bulkConsoleLog');
-      const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+      const headers = getStudioAuthHeaders({ 'Content-Type': 'application/json' });
 
       try {
         const res = await fetch(`/api/etsy/brands/${brandId}/publish-all`, {
           method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          headers,
+          credentials: 'same-origin',
           body: JSON.stringify({ autoActivate: true })
         });
         const data = await res.json();
@@ -6629,11 +6654,12 @@ window.APP_MODULES.brands = async function(container) {
       const note = document.getElementById('midMonthNote')?.value || '';
       const approved = document.getElementById('midMonthApproveCheck')?.checked || false;
 
-      const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+      const headers = getStudioAuthHeaders({ 'Content-Type': 'application/json' });
       try {
         const res = await fetch('/api/brands/set-mid-month-incentive', {
           method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          headers,
+          credentials: 'same-origin',
           body: JSON.stringify({ dbmId, targetPct, bonusUsd, note, approved })
         });
         const data = await res.json();
@@ -6649,11 +6675,12 @@ window.APP_MODULES.brands = async function(container) {
 
     async triggerTelegram20thBrief() {
       if (window.showToast) window.showToast('🤖 Generating 20th Mid-Month Evaluation Brief...', 'info');
-      const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+      const headers = getStudioAuthHeaders({ 'Content-Type': 'application/json' });
       try {
         const res = await fetch('/api/brands/trigger-20th-telegram-evaluation', {
           method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+          headers,
+          credentials: 'same-origin'
         });
         const data = await res.json();
         if (!data.success) throw new Error(data.error || 'Evaluation failed');
@@ -6669,11 +6696,12 @@ window.APP_MODULES.brands = async function(container) {
       const note = prompt(`Enter feedback / revision note for ${productCode}:`, 'Please polish mockup lighting and verify printable margins.');
       if (!note) return;
 
-      const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
+      const headers = getStudioAuthHeaders({ 'Content-Type': 'application/json' });
       try {
         const res = await fetch(`/api/brands/${brandId}/product/${productCode}/review-action`, {
           method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          headers,
+          credentials: 'same-origin',
           body: JSON.stringify({ action: 'request_revision', revisionNote: note })
         });
         const data = await res.json();
