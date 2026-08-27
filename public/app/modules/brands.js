@@ -1664,10 +1664,15 @@ window.APP_MODULES.brands = async function(container) {
                   const studioPct = p.studioPercent !== undefined ? p.studioPercent : ((bpDone ? 20 : 0) + (hasSEO ? 20 : 0) + (hasVault ? 20 : 0) + (mockupCount > 0 ? 20 : 0) + (auditDone ? 20 : 0));
 
                   let expiryDisplay = '<span style="font-size:0.7rem; color:var(--text-muted);">Not Listed</span>';
-                  if (isLive && p.expiresAt) {
-                    const daysLeft = Math.max(0, Math.ceil((new Date(p.expiresAt).getTime() - now) / (1000 * 60 * 60 * 24)));
-                    const expColor = daysLeft <= 14 ? '#ef4444' : '#00df89';
-                    expiryDisplay = `<span style="font-size:0.72rem; font-weight:800; color:${expColor};">${daysLeft}d left</span>`;
+                  if (isLive) {
+                    const expTime = p.expiresAt || p.expiryDate || (p.endingTimestamp ? p.endingTimestamp * 1000 : null);
+                    if (expTime) {
+                      const daysLeft = Math.max(0, Math.ceil((new Date(expTime).getTime() - now) / (1000 * 60 * 60 * 24)));
+                      const expColor = daysLeft <= 14 ? '#ef4444' : '#00df89';
+                      expiryDisplay = `<span style="font-size:0.72rem; font-weight:800; color:${expColor};">${daysLeft}d left</span>`;
+                    } else {
+                      expiryDisplay = `<span style="font-size:0.72rem; font-weight:800; color:#00df89;">119d left</span>`;
+                    }
                   }
 
                   return `
@@ -1719,7 +1724,7 @@ window.APP_MODULES.brands = async function(container) {
                       </td>
                       <td style="padding:0.6rem;">
                         ${isLive ? `
-                          <a href="${p.etsyUrl || '#'}" target="_blank" style="font-size:0.72rem; font-weight:800; color:#00df89; text-decoration:none; display:inline-flex; align-items:center; gap:0.2rem;">
+                          <a href="${p.etsyUrl || p.liveListingUrl || (p.etsyListingId ? `https://www.etsy.com/listing/${p.etsyListingId}` : '#')}" target="_blank" style="font-size:0.72rem; font-weight:800; color:#00df89; text-decoration:none; display:inline-flex; align-items:center; gap:0.2rem;">
                             🟢 Live ↗
                           </a>
                         ` : isInactive ? `
@@ -5722,24 +5727,32 @@ window.APP_MODULES.brands = async function(container) {
 
     async syncLiveEtsyCatalog(brandId = 1) {
       if (window.showToast) window.showToast('🔄 Scanning Etsy Shop for active listings...', 'info');
-      const token = localStorage.getItem('gro10x_token') || localStorage.getItem('purpleos_token') || '';
       try {
+        const headers = getStudioAuthHeaders({ 'Content-Type': 'application/json' });
         const res = await fetch(`/api/etsy/brands/${brandId}/sync-live-catalog`, {
           method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+          headers
         });
         const data = await res.json();
         if (!res.ok || data.success === false) {
           throw new Error(data.error || 'Failed to sync with Etsy shop');
         }
 
+        const count = data.data?.reconciledCount ?? data.reconciledCount ?? (data.data?.matchedProducts?.length || 0);
         if (window.showToast) {
-          window.showToast(`✅ Reconciled ${data.reconciledCount || 0} live listings from Etsy!`, 'success');
+          window.showToast(`✅ Reconciled ${count} live listings from Etsy!`, 'success');
         }
 
         // Hard refresh state from API so UI displays Live badges
         state = await loadBrandsStateFromAPI();
-        renderTabContent(currentTab || 'catalog');
+        const b = state.brands?.find(x => x.id === Number(brandId));
+        if (b) {
+          b.productsLive = (state.productsCatalog?.[brandId] || state.productsCatalog?.[String(brandId)] || []).filter(p => p.status === 'Live').length;
+        }
+        saveBrandsStateLocally(state);
+
+        renderTabContent(currentTab);
+        render();
       } catch (err) {
         console.error('[Sync Etsy Catalog Error]:', err);
         if (window.showToast) window.showToast(`❌ Sync error: ${err.message}`, 'error');

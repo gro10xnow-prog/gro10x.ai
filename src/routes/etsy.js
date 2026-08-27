@@ -1199,9 +1199,11 @@ router.post('/brands/:brandId/sync-live-catalog', requireAuth, asyncHandler(asyn
         matchedProd.price = lPrice || matchedProd.price;
         matchedProd.retailPrice = lPrice || matchedProd.retailPrice || matchedProd.price;
         matchedProd.liveListingUrl = l.url || `https://www.etsy.com/listing/${lId}`;
+        matchedProd.etsyUrl = l.url || `https://www.etsy.com/listing/${lId}`;
         matchedProd.etsyState = l.state || 'active';
         matchedProd.endingTimestamp = endingTimestamp;
         matchedProd.expiryDate = new Date(endingTimestamp * 1000).toISOString();
+        matchedProd.expiresAt = new Date(endingTimestamp * 1000).toISOString();
         matchedProd.studioPercent = 100;
         matchedProd.approvedAt = matchedProd.approvedAt || new Date().toISOString();
         matchedProd.approvedBy = matchedProd.approvedBy || 'Admin';
@@ -1223,9 +1225,11 @@ router.post('/brands/:brandId/sync-live-catalog', requireAuth, asyncHandler(asyn
           category: 'Daily & Weekly Planners',
           etsyListingId: lId,
           liveListingUrl: l.url || `https://www.etsy.com/listing/${lId}`,
+          etsyUrl: l.url || `https://www.etsy.com/listing/${lId}`,
           etsyState: l.state || 'active',
           endingTimestamp: endingTimestamp,
           expiryDate: new Date(endingTimestamp * 1000).toISOString(),
+          expiresAt: new Date(endingTimestamp * 1000).toISOString(),
           studioPercent: 100,
           approvedAt: new Date().toISOString(),
           approvedBy: 'Admin (Auto-Imported from Etsy)',
