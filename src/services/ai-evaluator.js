@@ -127,7 +127,12 @@ function generateFallbackAudit(product = {}, brand = {}) {
           'Top header contains "PAGE 2 — " prompt artifact',
           'Right-hand margin tabs contain hallucinated text ("BOBS", "SCHOMER", "PAL DED")'
         ],
-        remediation_prompt: `3:4 vertical printable annual calendar page, title: "Master Index & Annual Calendar Matrix". Cream background (#FAF3E8), sage green headers (#7D9B76). Left side: 12-month clean calendar grids (Jan–Dec) with S M T W T F S columns. Right side: 4 Quarterly Focus Blocks (Q1 Jan-Mar, Q2 Apr-Jun, Q3 Jul-Sep, Q4 Oct-Dec) with blank lines. Bottom right: "Annual Important Dates & Holiday Checklist" with empty square checkboxes. Right margin index tabs labeled "JAN-MAR", "APR-JUN", "JUL-SEP", "OCT-DEC", "HABITS", "FINANCE", "NOTES". No misspelled text, crisp typography, clean vector stationery.`
+        remediation_prompt: `CRITICAL CORRECTIONS & FIXES REQUIRED:
+• Remove any "PAGE 2 —" prefix from top header
+• Replace tab gibberish with exact crisp text: "JAN-MAR", "APR-JUN", "JUL-SEP", "OCT-DEC", "HABITS", "FINANCE", "NOTES"
+
+TARGETED REDESIGN PROMPT:
+3:4 vertical printable annual calendar page, title: "Master Index & Annual Calendar Matrix". Cream background (#FAF3E8), sage green headers (#7D9B76). Left side: 12-month clean calendar grids (Jan–Dec) with S M T W T F S columns. Right side: 4 Quarterly Focus Blocks (Q1 Jan-Mar, Q2 Apr-Jun, Q3 Jul-Sep, Q4 Oct-Dec) with blank lines. Bottom right: "Annual Important Dates & Holiday Checklist" with empty square checkboxes. Right margin index tabs labeled "JAN-MAR", "APR-JUN", "JUL-SEP", "OCT-DEC", "HABITS", "FINANCE", "NOTES". No misspelled text, crisp typography, clean vector stationery.`
       },
       {
         page_number: 3,
@@ -136,7 +141,12 @@ function generateFallbackAudit(product = {}, brand = {}) {
         defects: [
           'Tuesday bottom quote card contains leaked prompt instructions: "Inspirational Quote Box: It Inspirational Quote seet into Cormorant Garamond."'
         ],
-        remediation_prompt: `3:4 vertical printable weekly planner page, title: "Weekly Master Plan & Priorities". Header: "Weekly Focus" and "Top 3 Outcomes" with empty checkboxes. 4 vertical daily columns: MONDAY, TUESDAY, WEDNESDAY, THURSDAY. Each column contains: "Top Priority" (3 empty checkboxes), "Daily Water Tracker" (8 minimalist droplet icons), and hourly schedule lines from 6:00 AM to 9:00 PM. Tuesday bottom quote box containing exact text: "Small daily disciplines compounded over time create extraordinary momentum." Elegant serif fonts, clean lines, no prompt text.`
+        remediation_prompt: `CRITICAL CORRECTIONS & FIXES REQUIRED:
+• Tuesday quote card MUST contain ONLY the exact quote: "Small daily disciplines compounded over time create extraordinary momentum."
+• Remove all leaked prompt text, font names, and metadata from design elements.
+
+TARGETED REDESIGN PROMPT:
+3:4 vertical printable weekly planner page, title: "Weekly Master Plan & Priorities". Header: "Weekly Focus" and "Top 3 Outcomes" with empty checkboxes. 4 vertical daily columns: MONDAY, TUESDAY, WEDNESDAY, THURSDAY. Each column contains: "Top Priority" (3 empty checkboxes), "Daily Water Tracker" (8 minimalist droplet icons), and hourly schedule lines from 6:00 AM to 9:00 PM. Tuesday bottom quote box containing exact text: "Small daily disciplines compounded over time create extraordinary momentum." Elegant serif fonts, clean lines, no prompt text.`
       },
       {
         page_number: 4,
@@ -173,7 +183,11 @@ function generateFallbackAudit(product = {}, brand = {}) {
         defects: [
           'Top day numbers header skips numbers: "... 6 7 10 11 12 14 15 26 27 28 29 30 31"'
         ],
-        remediation_prompt: `3:4 vertical printable habit tracker page, title: "30-Day Habit Matrix & Streak Tracker". Main table: left column for Habit Names (categorized by Morning, Health, Work, Evening) and exact 31 sequential columns numbered 1 to 31 across the top without skipping any numbers. Bottom row: 3 Milestone Reward boxes ("7-Day Streak", "14-Day Streak", "30-Day Streak") and "Monthly Consistency Percentage Calculator" box. Clean grid lines, muted mauve headers, crisp layout.`
+        remediation_prompt: `CRITICAL CORRECTIONS & FIXES REQUIRED:
+• Column numbers MUST be strictly sequential from 1 through 31 without any skipping or repeating numbers (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31).
+
+TARGETED REDESIGN PROMPT:
+3:4 vertical printable habit tracker page, title: "30-Day Habit Matrix & Streak Tracker". Main table: left column for Habit Names (categorized by Morning, Health, Work, Evening) and exact 31 sequential columns numbered 1 to 31 across the top without skipping any numbers. Bottom row: 3 Milestone Reward boxes ("7-Day Streak", "14-Day Streak", "30-Day Streak") and "Monthly Consistency Percentage Calculator" box. Clean grid lines, muted mauve headers, crisp layout.`
       },
       {
         page_number: 9,
@@ -330,7 +344,7 @@ You must return a valid JSON object matching EXACTLY this schema:
       "title": string (the exact title found on this PDF page),
       "status": string ("clean" OR "needs_fix"),
       "defects": array of strings (empty array if clean, otherwise specific defects found on this exact page),
-      "remediation_prompt": string or null (If clean, null. If needs_fix, provide the exact 3:4 portrait AI design prompt to regenerate ONLY this specific page flawlessly with no errors, matching the botanical cream aesthetic.)
+      "remediation_prompt": string or null (If clean, null. If needs_fix, provide the prompt formatted as: "CRITICAL CORRECTIONS & FIXES REQUIRED:\n• [list each defect to avoid/fix]\n\nTARGETED REDESIGN PROMPT:\n[exact 3:4 portrait AI design prompt to regenerate ONLY this specific page flawlessly with no errors, matching the botanical cream aesthetic.]")
     }
   ]
 }
@@ -370,7 +384,7 @@ You must return a valid JSON object matching EXACTLY this schema:
       "title": string (descriptive page name),
       "status": string ("clean" OR "needs_fix"),
       "defects": array of strings (empty array if clean, otherwise list specific visual/text defects found),
-      "remediation_prompt": string or null (If clean, null. If needs_fix, provide the exact 3:4 portrait AI design prompt to regenerate ONLY this specific page flawlessly.)
+      "remediation_prompt": string or null (If clean, null. If needs_fix, provide the prompt formatted as: "CRITICAL CORRECTIONS & FIXES REQUIRED:\n• [list each defect to avoid/fix]\n\nTARGETED REDESIGN PROMPT:\n[exact 3:4 portrait AI design prompt to regenerate ONLY this specific page flawlessly.]")
     }
   ]
 }

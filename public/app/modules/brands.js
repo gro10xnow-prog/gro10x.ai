@@ -4450,7 +4450,12 @@ window.APP_MODULES.brands = async function(container) {
       window._currentAuditPrompts = {};
       pages.forEach(p => {
         if (p.remediation_prompt) {
-          window._currentAuditPrompts[p.page_number] = p.remediation_prompt;
+          let fullPrompt = p.remediation_prompt;
+          if (p.defects && p.defects.length > 0 && !p.remediation_prompt.includes('CRITICAL CORRECTIONS') && !p.remediation_prompt.includes('CORRECTIONS')) {
+            const defectsFormatted = p.defects.map(d => `• ${d}`).join('\n');
+            fullPrompt = `CRITICAL CORRECTIONS & FIXES REQUIRED:\n${defectsFormatted}\n\nTARGETED REDESIGN PROMPT:\n${p.remediation_prompt}`;
+          }
+          window._currentAuditPrompts[p.page_number] = fullPrompt;
         }
       });
 
@@ -4624,14 +4629,22 @@ window.APP_MODULES.brands = async function(container) {
 
                 ${p.remediation_prompt ? `
                   <div style="background:rgba(0,0,0,0.4); border:1px solid rgba(251,191,36,0.25); border-radius:8px; padding:0.75rem; margin-top:0.5rem;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem; flex-wrap:wrap; gap:0.3rem;">
                       <span style="font-size:0.68rem; font-weight:800; color:#fbbf24; text-transform:uppercase;">⚡ 1-Click Targeted AI Edit Prompt (Google Flow / Gemini):</span>
-                      <button type="button" class="btn-primary btn-sm" style="font-size:0.7rem; padding:0.2rem 0.6rem; background:#fbbf24; color:#000; font-weight:800; border:none;" onclick="window.BrandsModule.copyAuditRemediationPrompt(${p.page_number})">
+                      <button type="button" class="btn-primary btn-sm" style="font-size:0.7rem; padding:0.2rem 0.6rem; background:#fbbf24; color:#000; font-weight:800; border:none; border-radius:6px;" onclick="window.BrandsModule.copyAuditRemediationPrompt(${p.page_number})">
                         📋 Copy Page ${p.page_number} Edit Prompt
                       </button>
                     </div>
-                    <div style="font-size:0.74rem; font-family:monospace; color:#e2e8f0; line-height:1.4; white-space:pre-wrap; max-height:120px; overflow-y:auto;">
-                      ${p.remediation_prompt}
+                    <div style="font-size:0.74rem; font-family:monospace; color:#e2e8f0; line-height:1.45; white-space:pre-wrap; max-height:140px; overflow-y:auto; background:rgba(0,0,0,0.25); padding:0.5rem 0.65rem; border-radius:6px; border:1px solid rgba(255,255,255,0.06);">
+                      ${(() => {
+                        const promptText = window._currentAuditPrompts[p.page_number] || p.remediation_prompt;
+                        if (promptText.includes('CRITICAL CORRECTIONS & FIXES REQUIRED:') || promptText.includes('CRITICAL DESIGN CORRECTIONS REQUIRED:')) {
+                          const parts = promptText.split(/TARGETED REDESIGN PROMPT:|REMEDIATION DESIGN PROMPT:/);
+                          const header = promptText.includes('CRITICAL CORRECTIONS & FIXES REQUIRED:') ? 'CRITICAL CORRECTIONS & FIXES REQUIRED:' : 'CRITICAL DESIGN CORRECTIONS REQUIRED:';
+                          return `<span style="color:#fbbf24; font-weight:800;">${header}</span>\n<span style="color:#f87171;">${parts[0].replace(header, '').trim()}</span>\n\n<span style="color:#00df89; font-weight:800;">TARGETED REDESIGN PROMPT:</span>\n<span style="color:#e2e8f0;">${(parts[1] || '').trim()}</span>`;
+                        }
+                        return promptText;
+                      })()}
                     </div>
                   </div>
                 ` : ''}
