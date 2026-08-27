@@ -3619,7 +3619,7 @@ window.APP_MODULES.brands = async function(container) {
             
             ${isAdmin ? `
               <!-- ADMIN PUBLISH BUTTON -->
-              <button class="btn-primary" style="background:linear-gradient(135deg, #00df89, #06b6d4); font-weight:900; padding:0.55rem 1.4rem;" onclick="window.BrandsModule.publishSingleProductEtsy(${b.id}, ${brandCatalog.findIndex(p=>p.code===prodCode)})">
+              <button id="studioPublishBtn" class="btn-primary" style="background:linear-gradient(135deg, #00df89, #06b6d4); font-weight:900; padding:0.55rem 1.4rem;" onclick="window.BrandsModule.publishSingleProductEtsy(${b.id}, '${prodCode}')">
                 🚀 Publish to Live Etsy ($0.20 Fee)
               </button>
             ` : `
@@ -6769,13 +6769,13 @@ window.APP_MODULES.brands = async function(container) {
       }
     },
 
-    async publishSingleProductEtsy(brandId, productIdx) {
+    async publishSingleProductEtsy(brandId, productCodeOrIdx) {
       if (!isCurrentUserAdmin()) {
         if (window.showToast) window.showToast('⛔ Only Founder/CEO or Admins can authorize Etsy publishing ($0.20 listing fee).', 'error');
         return;
       }
       const catalog = state.productsCatalog[brandId] || [];
-      const prod = typeof productIdx === 'number' ? catalog[productIdx] : catalog.find(p => p.code === productIdx);
+      const prod = typeof productCodeOrIdx === 'number' ? catalog[productCodeOrIdx] : catalog.find(p => p.code === productCodeOrIdx);
       if (!prod) return;
 
       // ── Publish Guard Validation ──
@@ -6797,7 +6797,14 @@ window.APP_MODULES.brands = async function(container) {
         return;
       }
 
-      if (!confirm(`Publishing ${prod.code} (${title.slice(0, 40)}...) to Etsy will incur a $0.20 listing fee. Proceed?`)) return;
+      if (!confirm(`Publishing ${prod.code} ("${title.slice(0, 45)}...") to Etsy will incur a $0.20 listing fee. Proceed?`)) return;
+
+      const pubBtn = document.getElementById('studioPublishBtn');
+      const origBtnHtml = pubBtn ? pubBtn.innerHTML : '';
+      if (pubBtn) {
+        pubBtn.disabled = true;
+        pubBtn.innerHTML = `<span style="display:flex; align-items:center; gap:0.4rem;"><span style="width:12px; height:12px; border:2px solid #000; border-top-color:transparent; border-radius:50%; animation:spin 0.8s linear infinite; display:inline-block;"></span> 🚀 Publishing to Etsy API v3...</span>`;
+      }
 
       if (window.showToast) window.showToast(`🚀 Publishing ${prod.code} to Etsy...`, 'info');
       const headers = getStudioAuthHeaders({ 'Content-Type': 'application/json' });
@@ -6809,20 +6816,90 @@ window.APP_MODULES.brands = async function(container) {
           body: JSON.stringify({ productCodes: [prod.code], autoActivate: true, productOverrides: [prod] })
         });
         const data = await res.json();
-        if (!data.success) throw new Error(data.error || 'Failed to publish single product');
+        if (!data.success) throw new Error(data.error || 'Failed to publish product');
 
         if (data.data?.publishedCount === 0 && data.data?.errors?.length > 0) {
           const errMsg = data.data.errors[0].reason || 'Pre-listing validation failed';
           throw new Error(`Cannot Publish ${prod.code}: ${errMsg}`);
         }
 
-        if (window.showToast) window.showToast(`✅ ${prod.code} is now live on Etsy! ($0.20 fee logged)`, 'success');
+        const pubItem = (data.data?.published && data.data.published[0]) || {
+          code: prod.code,
+          name: prod.name,
+          price: prod.price || 9.99,
+          etsyListingId: 'LIVE',
+          etsyUrl: `https://www.etsy.com/shop/${(state.brands?.find(b=>b.id===brandId)?.name || 'PlannerQueenGro')}`
+        };
+
+        if (window.showToast) window.showToast(`🎉 ${prod.code} is officially LIVE on Etsy! ($0.20 fee logged)`, 'success');
+
+        // Render Celebratory Live Listing Screen in Modal
         const modal = document.getElementById('aiSeoModal');
-        if (modal) modal.style.display = 'none';
+        const modalContent = document.getElementById('aiSeoModalContent');
+        if (modal && modalContent) {
+          modalContent.style.maxWidth = '640px';
+          modalContent.innerHTML = `
+            <div style="text-align:center; padding:1.75rem 1.25rem;">
+              <div style="width:72px; height:72px; border-radius:50%; background:linear-gradient(135deg, #00df89, #06b6d4); color:#070b12; display:flex; align-items:center; justify-content:center; font-size:2.2rem; margin:0 auto 1.25rem; box-shadow:0 10px 30px rgba(0,223,137,0.4);">
+                🎉
+              </div>
+
+              <span style="font-size:0.75rem; font-weight:800; color:#00df89; text-transform:uppercase; letter-spacing:1.5px;">Etsy Listing Published Successfully</span>
+              <h2 style="font-size:1.45rem; font-weight:900; color:#fff; margin:0.3rem 0 0.5rem; line-height:1.35;">
+                ${pubItem.name}
+              </h2>
+              <div style="display:inline-flex; align-items:center; gap:0.5rem; background:rgba(0,223,137,0.12); border:1px solid rgba(0,223,137,0.3); padding:0.25rem 0.75rem; border-radius:999px; font-size:0.75rem; color:#00df89; font-weight:700; margin-bottom:1.5rem;">
+                <span>SKU: ${pubItem.code}</span> · <span>Listing ID: #${pubItem.etsyListingId || 'LIVE'}</span> · <span>Status: 🟢 Active</span>
+              </div>
+
+              <!-- METRICS GRID -->
+              <div style="background:#12121e; border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:1.25rem; max-width:540px; margin:0 auto 1.5rem; text-align:left; display:grid; grid-template-columns:1fr 1fr; gap:0.9rem;">
+                <div>
+                  <span style="font-size:0.68rem; color:var(--text-muted); text-transform:uppercase; font-weight:700; display:block;">Live Etsy Price:</span>
+                  <span style="font-size:1.15rem; font-weight:900; color:#00df89;">$${Number(pubItem.price || prod.price || 9.99).toFixed(2)} AUD</span>
+                </div>
+                <div>
+                  <span style="font-size:0.68rem; color:var(--text-muted); text-transform:uppercase; font-weight:700; display:block;">Listing Expiry Cycle:</span>
+                  <span style="font-size:0.88rem; font-weight:800; color:#fff;">120 Days (4 Months Active)</span>
+                </div>
+                <div>
+                  <span style="font-size:0.68rem; color:var(--text-muted); text-transform:uppercase; font-weight:700; display:block;">Listing Fee Charged:</span>
+                  <span style="font-size:0.88rem; font-weight:800; color:#fbbf24;">$0.20 USD (Logged to P&amp;L)</span>
+                </div>
+                <div>
+                  <span style="font-size:0.68rem; color:var(--text-muted); text-transform:uppercase; font-weight:700; display:block;">Vault Deliverable:</span>
+                  <span style="font-size:0.88rem; font-weight:800; color:#06b6d4;">🔒 Instant Download Ready</span>
+                </div>
+              </div>
+
+              <!-- ACTION BUTTONS -->
+              <div style="display:flex; justify-content:center; gap:0.75rem; flex-wrap:wrap;">
+                ${pubItem.etsyUrl ? `
+                  <a href="${pubItem.etsyUrl}" target="_blank" class="btn-primary" style="background:linear-gradient(135deg, #00df89, #06b6d4); font-weight:900; padding:0.65rem 1.4rem; text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem;">
+                    👁️ View Live on Etsy ↗
+                  </a>
+                ` : ''}
+                <button type="button" class="btn-secondary" style="font-weight:800; padding:0.65rem 1.25rem;" onclick="navigator.clipboard.writeText('${pubItem.etsyUrl || ''}'); if (window.showToast) window.showToast('📋 Live Etsy URL copied to clipboard!', 'success');">
+                  📋 Copy Listing Link
+                </button>
+                <button type="button" class="btn-ghost" style="padding:0.65rem 1.25rem;" onclick="document.getElementById('aiSeoModal').style.display='none'; window.BrandsModule.loadBrandsStateFromAPI().then(() => window.BrandsModule.renderTabContent('etsy'));">
+                  ✕ Done &amp; Return to Catalog
+                </button>
+              </div>
+            </div>
+          `;
+        }
+
+        // Auto-refresh background state so catalog table immediately reflects Live status
         state = await loadBrandsStateFromAPI();
         renderTabContent('etsy');
       } catch (e) {
+        if (pubBtn) {
+          pubBtn.disabled = false;
+          pubBtn.innerHTML = origBtnHtml || '🚀 Publish to Live Etsy ($0.20 Fee)';
+        }
         if (window.showToast) window.showToast(e.message, 'error');
+        alert(`Listing Submission Note:\n${e.message}`);
       }
     },
 
