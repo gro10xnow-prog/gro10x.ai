@@ -3429,16 +3429,19 @@ window.APP_MODULES.brands = async function(container) {
         <div id="studioTabSeo" style="display:none; flex-direction:column; gap:1.2rem;">
           
           <!-- 1. AI ENHANCED GENERATE BANNER -->
-          <div style="background:rgba(6,182,212,0.06); border:1px solid rgba(6,182,212,0.3); padding:1rem 1.25rem; border-radius:14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
-            <div>
-              <span style="font-size:0.76rem; font-weight:800; color:#06b6d4; text-transform:uppercase; display:block;">Context-Aware Etsy SEO Generator</span>
-              <p style="font-size:0.74rem; color:var(--text-secondary); margin:0.15rem 0 0; max-width:560px;">
-                Gemini analyzes the Blueprint 2.0 category, 4-dimension audit score (${auditScore > 0 ? `${auditScore}/10` : 'Pending'}), and sweet spot price to generate conversion titles, 13 long-tail tags, and structured description copy.
-              </p>
+          <div style="background:rgba(6,182,212,0.06); border:1px solid rgba(6,182,212,0.3); padding:1rem 1.25rem; border-radius:14px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
+              <div>
+                <span style="font-size:0.76rem; font-weight:800; color:#06b6d4; text-transform:uppercase; display:block;">Context-Aware Etsy SEO Generator</span>
+                <p style="font-size:0.74rem; color:var(--text-secondary); margin:0.15rem 0 0; max-width:560px;">
+                  Gemini analyzes the Blueprint 2.0 category, 4-dimension audit score (${auditScore > 0 ? `${auditScore}/10` : 'Pending'}), and sweet spot price to generate conversion titles, 13 long-tail tags, and structured description copy.
+                </p>
+              </div>
+              <button id="btnGenerateStudioSEO" type="button" class="btn-primary" style="background:linear-gradient(135deg, #06b6d4, #00df89); font-weight:800; font-size:0.8rem; padding:0.55rem 1.1rem; border:none; cursor:pointer;" onclick="window.BrandsModule.generateStudioSEOWithAI(${b.id}, '${prodCode}')">
+                ⚡ Generate SEO with Blueprint Context
+              </button>
             </div>
-            <button type="button" class="btn-primary" style="background:linear-gradient(135deg, #06b6d4, #00df89); font-weight:800; font-size:0.8rem; padding:0.55rem 1.1rem; border:none;" onclick="window.BrandsModule.generateStudioSEOWithAI(${b.id}, '${prodCode}')">
-              ⚡ Generate SEO with Blueprint Context
-            </button>
+            <div id="studioSeoLoadingStatus" style="display:none; margin-top:0.75rem;"></div>
           </div>
 
           <!-- 2. LIVE ETSY SEARCH RESULT CARD PREVIEW -->
@@ -3866,9 +3869,33 @@ window.APP_MODULES.brands = async function(container) {
     },
 
     async generateStudioSEOWithAI(brandId, productCode) {
+      const btn = document.getElementById('btnGenerateStudioSEO');
+      const statusEl = document.getElementById('studioSeoLoadingStatus');
       const b = state.brands?.find(x => x.id === brandId) || state.brands[0];
       const catalog = state.productsCatalog?.[brandId] || [];
       const prod = catalog.find(p => p.code === productCode) || { name: 'Product', code: productCode };
+
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<span style="display:flex; align-items:center; gap:0.4rem;"><span style="width:12px; height:12px; border:2px solid #000; border-top-color:transparent; border-radius:50%; animation:spin 0.8s linear infinite; display:inline-block;"></span> ⏳ Generating SEO Package...</span>`;
+      }
+
+      if (statusEl) {
+        statusEl.style.display = 'block';
+        statusEl.innerHTML = `
+          <div style="background:#12121e; border:1px solid rgba(6,182,212,0.35); border-radius:10px; padding:0.75rem 1rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+              <span style="font-size:0.76rem; font-weight:800; color:#06b6d4; display:flex; align-items:center; gap:0.4rem;">
+                🤖 Gemini AI SEO Engine is synthesizing title, 13 tags &amp; description...
+              </span>
+              <span style="font-size:0.72rem; color:#00df89; font-weight:800; font-family:monospace;">Processing</span>
+            </div>
+            <div style="width:100%; height:6px; background:rgba(255,255,255,0.08); border-radius:999px; overflow:hidden;">
+              <div style="width:100%; height:100%; background:linear-gradient(90deg, #06b6d4, #00df89, #06b6d4); background-size:200% 100%; animation:shimmer 1.5s infinite; border-radius:999px;"></div>
+            </div>
+          </div>
+        `;
+      }
 
       if (window.showToast) window.showToast('🤖 Generating Context-Aware Etsy SEO...', 'info');
 
@@ -3926,8 +3953,36 @@ window.APP_MODULES.brands = async function(container) {
         }
         saveBrandsStateLocally(state);
 
+        if (statusEl) {
+          statusEl.innerHTML = `
+            <div style="background:rgba(0,223,137,0.1); border:1px solid rgba(0,223,137,0.4); border-radius:10px; padding:0.6rem 0.9rem; display:flex; justify-content:space-between; align-items:center;">
+              <span style="color:#00df89; font-weight:800; font-size:0.78rem;">
+                ✅ 140-Char SEO Title, 13 High-Intent Tags &amp; Description Generated &amp; Populated!
+              </span>
+              <span style="font-size:0.7rem; color:var(--text-muted);">Ready to review below</span>
+            </div>
+          `;
+          setTimeout(() => { if (statusEl) statusEl.style.display = 'none'; }, 4000);
+        }
+
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = `⚡ Regenerate SEO with Blueprint Context`;
+        }
+
         if (window.showToast) window.showToast('✅ AI SEO package generated & populated!', 'success');
       } catch (err) {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = `⚡ Generate SEO with Blueprint Context`;
+        }
+        if (statusEl) {
+          statusEl.innerHTML = `
+            <div style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.35); border-radius:10px; padding:0.6rem 0.9rem; color:#ef4444; font-weight:700; font-size:0.78rem;">
+              ❌ Generation error: ${err.message}
+            </div>
+          `;
+        }
         if (window.showToast) window.showToast(`SEO generation failed: ${err.message}`, 'error');
       }
     },
@@ -6928,6 +6983,7 @@ window.APP_MODULES.brands = async function(container) {
       font-weight: 800;
     }
     @keyframes spin { 100% { transform: rotate(360deg); } }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
   `;
   document.head.appendChild(styleEl);
 
