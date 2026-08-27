@@ -1242,28 +1242,41 @@ function generateCategoryBlueprint(pName, bName, niche, voice, palette, fonts, p
     `  • Headings & Spread Titles: ${hFont} (Elegant, refined serif)\n` +
     `  • Table Headers, Body & Labels: ${bFont} (Clean, high-legibility sans-serif)\n` +
     `  • Callouts & Quotes: Cormorant Garamond (Italic — soft and inspiring)\n\n` +
+    `CRITICAL IN-CANVAS TYPOGRAPHY & ANTI-ARTIFACT RULES:\n` +
+    `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+    `⛔ 1. DO NOT render page number prefixes (e.g. "PAGE 1 —", "PAGE 2 —", "Spread 1", "Step 1") into the visual canvas or header titles.\n` +
+    `⛔ 2. The in-canvas header title for each spread must contain ONLY the clean spread title (e.g. "Master Index & Annual Calendar Matrix", NOT "PAGE 3 — MASTER INDEX").\n` +
+    `⛔ 3. DO NOT print prompt instructions, aspect ratio tags, or metadata onto the artwork.\n` +
+    `⛔ 4. All budget, tracker, and checklist tables must contain clean BLANK fillable lines/bubbles for user input — never pre-fill fake dummy transactions.\n\n` +
     `PAGE-BY-PAGE DESIGN SPECIFICATIONS (${config.pages.length} SPREADS TOTAL)\n` +
     `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
-    config.pages.map(p =>
-      `PAGE ${p.pageNumber} — ${p.title.toUpperCase()} (${p.section})\n` +
-      `Purpose: ${p.purpose}\n` +
-      `Layout: ${p.layoutSpecs}\n` +
-      `Required Elements:\n` +
-      p.elements.map(el => `  • ${el}`).join('\n') +
-      `\n`
-    ).join('\n') +
+    config.pages.map(p => {
+      const cleanTitle = p.title.replace(/^PAGE\s*\d+\s*[-–—:]\s*/i, '').trim();
+      return (
+        `SPREAD #${p.pageNumber} of ${config.pages.length} · [${p.section}]\n` +
+        `• IN-CANVAS HEADER TITLE: "${cleanTitle}"\n` +
+        `• Purpose: ${p.purpose}\n` +
+        `• Layout: ${p.layoutSpecs}\n` +
+        `• Required Vector Elements:\n` +
+        p.elements.map(el => `    - ${el}`).join('\n') +
+        `\n`
+      );
+    }).join('\n') +
     `OUTPUT INSTRUCTIONS FOR AI AGENT / GOOGLE FLOW:\n` +
     `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
     `Generate each page as a VISUAL DESIGN IMAGE in 3:4 PORTRAIT ASPECT RATIO (matching A4 / US Letter portrait orientation — width:height = 3:4).\n\n` +
-    `Process all ${config.pages.length} pages SEQUENTIALLY, one after the other:\n` +
-    config.pages.map(p => `  Step ${p.pageNumber}: Generate visual layout for Page ${p.pageNumber} — "${p.title}"`).join('\n') + `\n\n` +
+    `Process all ${config.pages.length} spreads SEQUENTIALLY, one after the other:\n` +
+    config.pages.map(p => {
+      const cleanTitle = p.title.replace(/^PAGE\s*\d+\s*[-–—:]\s*/i, '').trim();
+      return `  Step ${p.pageNumber}: Generate 3:4 visual layout for Spread #${p.pageNumber} — Header Title: "${cleanTitle}" (Do NOT paint "PAGE ${p.pageNumber}" on image)`;
+    }).join('\n') + `\n\n` +
     `Design Guidelines per spread:\n` +
     `  • Background colour: ${bgTint} (warm cream / off-white)\n` +
     `  • Apply the exact hex colours (${primaryColor}, ${secondaryColor}) and font hierarchy above\n` +
     `  • Use crisp table cells, rounded corners (8px radius), and clean divider lines\n` +
     `  • All text labels, column headers, and fillable checkboxes must be razor-sharp and legible\n` +
     `  • Ensure print-ready 300 DPI vector clarity and seamless iPad / GoodNotes digital handwriting experience\n` +
-    `  • DO NOT add random AI watermark artifacts or extra borders beyond the design spec\n` +
+    `  • DO NOT add random AI watermark artifacts, page number prefixes, or extra borders beyond the design spec\n` +
     `  • Keep the design elegant, aspirational, and true to the ${bName} brand voice: ${voice || 'warm, empowering, and practical'}\n`;
 
   return {
