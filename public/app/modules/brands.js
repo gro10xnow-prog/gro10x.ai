@@ -4916,51 +4916,132 @@ window.APP_MODULES.brands = async function(container) {
       const files = Array.from(fileList || []).slice(0, 10);
       if (files.length === 0) return;
 
-      if (statusEl) {
-        statusEl.innerHTML = `<span style="color:#06b6d4; font-weight:700;">⏳ Batch uploading ${files.length} mockups to Vault...</span>`;
-      }
-
       const prod = state.productsCatalog?.[brandId]?.find(p => p.code === productCode);
       const existingMockups = prod?.mockups || [];
       const occupiedRanks = new Set(existingMockups.map(m => m.rank));
 
-      let uploadHeaders = getStudioAuthHeaders();
+      // Calculate slot assignments
       let nextSlot = 1;
+      const filePlan = files.map(file => {
+        while (occupiedRanks.has(nextSlot) && nextSlot <= 10) {
+          nextSlot++;
+        }
+        if (nextSlot <= 10) {
+          const slot = nextSlot;
+          occupiedRanks.add(slot);
+          return { file, slot, status: 'pending', error: null };
+        }
+        return { file, slot: null, status: 'skipped', error: 'No slot available' };
+      });
+
+      const validUploads = filePlan.filter(p => p.slot !== null);
+      if (validUploads.length === 0) {
+        if (window.showToast) window.showToast('All 10 mockup slots are already full! Replace or delete slots first.', 'warning');
+        return;
+      }
+
+      function renderProgressUI(currentIndex = 0) {
+        if (!statusEl) return;
+        const total = validUploads.length;
+        const completedCount = validUploads.filter(u => u.status === 'completed').length;
+        const overallPct = Math.round((completedCount / total) * 100);
+
+        statusEl.innerHTML = `
+          <div style="background:#141422; border:1px solid rgba(0,223,137,0.35); border-radius:12px; padding:1rem; margin-top:0.75rem; box-shadow:0 8px 24px rgba(0,0,0,0.4);">
+            <!-- TOP BAR -->
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem; flex-wrap:wrap; gap:0.4rem;">
+              <div style="display:flex; align-items:center; gap:0.5rem;">
+                <div style="width:16px; height:16px; border:2px solid rgba(0,223,137,0.3); border-top-color:#00df89; border-radius:50%; animation:spin 0.8s linear infinite;"></div>
+                <strong style="font-size:0.82rem; color:#fff;">
+                  Uploading Mockups to Cloud Vault (${completedCount} of ${total} Complete)
+                </strong>
+              </div>
+              <span style="font-size:0.78rem; font-weight:800; color:#00df89; font-family:monospace; background:rgba(0,223,137,0.15); border:1px solid rgba(0,223,137,0.3); padding:0.15rem 0.5rem; border-radius:6px;">
+                ${overallPct}%
+              </span>
+            </div>
+
+            <!-- OVERALL PROGRESS BAR -->
+            <div style="width:100%; height:8px; background:rgba(255,255,255,0.08); border-radius:999px; overflow:hidden; margin-bottom:0.75rem;">
+              <div style="width:${overallPct}%; height:100%; background:linear-gradient(90deg, #00df89, #06b6d4); transition:width 0.3s ease; border-radius:999px;"></div>
+            </div>
+
+            <!-- LIVE FILE UPLOAD QUEUE -->
+            <div style="display:flex; flex-direction:column; gap:0.35rem; max-height:180px; overflow-y:auto; padding-right:0.25rem;">
+              ${validUploads.map((item, idx) => {
+                const isCurrent = idx === currentIndex && item.status === 'uploading';
+                const isDone = item.status === 'completed';
+                const isFail = item.status === 'failed';
+                const sizeMb = (item.file.size / (1024 * 1024)).toFixed(1);
+
+                return `
+                  <div style="display:flex; justify-content:space-between; align-items:center; padding:0.4rem 0.65rem; border-radius:6px; background:${isCurrent ? 'rgba(6,182,212,0.12)' : (isDone ? 'rgba(0,223,137,0.08)' : 'rgba(255,255,255,0.02)')}; border:1px solid ${isCurrent ? 'rgba(6,182,212,0.4)' : (isDone ? 'rgba(0,223,137,0.25)' : 'rgba(255,255,255,0.05)')}; font-size:0.74rem;">
+                    <div style="display:flex; align-items:center; gap:0.5rem; overflow:hidden; flex:1; min-width:0;">
+                      <span style="font-weight:800; color:${isDone ? '#00df89' : (isCurrent ? '#06b6d4' : 'var(--text-muted)')}; font-family:monospace; min-width:54px;">
+                        Slot #${item.slot}
+                      </span>
+                      <span style="color:#ffffff; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:220px;">
+                        ${item.file.name}
+                      </span>
+                      <span style="color:var(--text-muted); font-size:0.68rem;">(${sizeMb} MB)</span>
+                    </div>
+                    <div style="font-weight:700; white-space:nowrap; margin-left:0.5rem;">
+                      ${isDone ? '<span style="color:#00df89;">✅ Stored</span>' : ''}
+                      ${isCurrent ? '<span style="color:#06b6d4;">⏳ Streaming...</span>' : ''}
+                      ${isFail ? `<span style="color:#ef4444;">❌ ${item.error || 'Failed'}</span>` : ''}
+                      ${item.status === 'pending' ? '<span style="color:var(--text-muted);">Queued</span>' : ''}
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      renderProgressUI(0);
+      let uploadHeaders = getStudioAuthHeaders();
       let uploadedCount = 0;
 
       try {
-        for (let i = 0; i < files.length; i++) {
-          const file = files[i];
-          while (occupiedRanks.has(nextSlot) && nextSlot <= 10) {
-            nextSlot++;
-          }
-          if (nextSlot > 10) break;
-
-          const targetSlot = nextSlot;
-          occupiedRanks.add(targetSlot);
+        for (let i = 0; i < validUploads.length; i++) {
+          const item = validUploads[i];
+          item.status = 'uploading';
+          renderProgressUI(i);
 
           const formData = new FormData();
           formData.append('productCode', productCode);
-          formData.append('mockup', file);
-          formData.append('rank', targetSlot);
-          formData.append('totalFiles', files.length);
+          formData.append('mockup', item.file);
+          formData.append('rank', item.slot);
+          formData.append('totalFiles', validUploads.length);
 
-          const res = await fetch(`/api/brands/${brandId}/mockups/upload-single`, {
-            method: 'POST',
-            headers: uploadHeaders,
-            body: formData
-          });
+          try {
+            const res = await fetch(`/api/brands/${brandId}/mockups/upload-single`, {
+              method: 'POST',
+              headers: uploadHeaders,
+              body: formData
+            });
 
-          const data = await res.json().catch(() => ({}));
-          if (data.success && data.mockup) {
-            if (prod) {
-              if (!Array.isArray(prod.mockups)) prod.mockups = [];
-              const idx = prod.mockups.findIndex(m => m.rank === targetSlot);
-              if (idx >= 0) prod.mockups[idx] = data.mockup;
-              else prod.mockups.push(data.mockup);
+            const data = await res.json().catch(() => ({}));
+            if (data.success && data.mockup) {
+              item.status = 'completed';
+              if (prod) {
+                if (!Array.isArray(prod.mockups)) prod.mockups = [];
+                const idx = prod.mockups.findIndex(m => m.rank === item.slot);
+                if (idx >= 0) prod.mockups[idx] = data.mockup;
+                else prod.mockups.push(data.mockup);
+              }
+              uploadedCount++;
+            } else {
+              item.status = 'failed';
+              item.error = data.error || 'Upload error';
             }
-            uploadedCount++;
+          } catch (e) {
+            item.status = 'failed';
+            item.error = e.message;
           }
+
+          renderProgressUI(i + 1);
         }
 
         if (prod) {
@@ -4972,9 +5053,22 @@ window.APP_MODULES.brands = async function(container) {
         }
         saveBrandsStateLocally(state);
 
+        if (statusEl) {
+          statusEl.innerHTML = `
+            <div style="background:rgba(0,223,137,0.12); border:1px solid rgba(0,223,137,0.4); border-radius:12px; padding:0.85rem 1.1rem; margin-top:0.75rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+              <span style="color:#00df89; font-weight:800; font-size:0.85rem;">
+                🎉 Successfully uploaded ${uploadedCount}/${validUploads.length} mockups to Cloud Vault!
+              </span>
+              <span style="font-size:0.72rem; color:var(--text-secondary);">Refreshed slots &amp; visual grid</span>
+            </div>
+          `;
+        }
+
         if (window.showToast) window.showToast(`✅ ${uploadedCount} mockups saved to Vault!`, 'success');
-        window.BrandsModule.generateLiveSEOPackage(brandId, productCode, encodeURIComponent(prod?.name || ''));
-        setTimeout(() => window.BrandsModule.switchStudioTab('mockups'), 80);
+        setTimeout(() => {
+          window.BrandsModule.generateLiveSEOPackage(brandId, productCode, encodeURIComponent(prod?.name || ''));
+          window.BrandsModule.switchStudioTab('mockups');
+        }, 1200);
       } catch (err) {
         console.error('[Bulk Mockup Upload Error]:', err);
         if (statusEl) statusEl.innerHTML = `<span style="color:#ef4444; font-weight:700;">❌ ${err.message}</span>`;
