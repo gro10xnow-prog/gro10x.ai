@@ -384,61 +384,44 @@ function isCurrentUserAdmin() {
 
 
 async function loadBrandsStateFromAPI(forceFresh = false) {
-  let localState = null;
-  if (!forceFresh) {
-    try {
-      const saved = localStorage.getItem('gro10x_brands_data');
-      if (saved) localState = JSON.parse(saved);
-    } catch (e) {}
-  }
-
   try {
-    if (window.APP_API) {
-      if (forceFresh && window.APP_API._cache) {
-        window.APP_API._cache = {};
-      }
-      const res = await window.APP_API.request('/brands', { method: 'GET', bypassCache: forceFresh });
-      if (res && res.brands) {
-        // Merge: API is the AUTHORITATIVE source of truth (backed by Supabase).
-        // If localState has draft work, overlay it, but API's live status, Etsy listing IDs,
-        // and cloud URLs always take precedence.
-        if (!forceFresh && localState && localState.productsCatalog && res.productsCatalog) {
-          for (const [bId, catalog] of Object.entries(localState.productsCatalog)) {
-            if (!res.productsCatalog[bId]) {
-              res.productsCatalog[bId] = catalog;
-            } else {
-              for (const localProd of (Array.isArray(catalog) ? catalog : [])) {
-                const apiIdx = res.productsCatalog[bId].findIndex(p => p.code === localProd.code);
-                if (apiIdx >= 0) {
-                  const apiProd = res.productsCatalog[bId][apiIdx];
-                  // API data (especially status: 'Live', etsyListingId, etsyUrl, expiresAt) always wins
-                  res.productsCatalog[bId][apiIdx] = {
-                    ...localProd,
-                    ...apiProd,
-                    name: apiProd.name || localProd.name,
-                    category: apiProd.category || localProd.category,
-                    price: apiProd.price !== undefined ? apiProd.price : localProd.price,
-                    // Ensure status & Etsy metadata from API strictly win
-                    status: apiProd.status || localProd.status || 'Draft',
-                    etsyListingId: apiProd.etsyListingId || localProd.etsyListingId,
-                    etsyUrl: apiProd.etsyUrl || localProd.etsyUrl,
-                    expiresAt: apiProd.expiresAt || localProd.expiresAt,
-                    listedAt: apiProd.listedAt || localProd.listedAt
-                  };
-                }
-              }
-            }
-          }
+    const headers = getStudioAuthHeaders({ 'Content-Type': 'application/json' });
+    const res = await fetch(`/api/brands?_t=${Date.now()}`, { headers });
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.brands && data.productsCatalog) {
+        // Authoritative server state: normalize keys for both number and string access
+        for (const b of data.brands) {
+          const cat = data.productsCatalog[b.id] || data.productsCatalog[String(b.id)] || [];
+          data.productsCatalog[b.id] = cat;
+          data.productsCatalog[String(b.id)] = cat;
+          b.productsLive = cat.filter(p => p.status === 'Live').length;
         }
-        localStorage.setItem('gro10x_brands_data', JSON.stringify(res));
-        return res;
+        localStorage.setItem('gro10x_brands_data', JSON.stringify(data));
+        return data;
       }
     }
   } catch (e) {
-    console.warn('[Brands] API load fallback to local:', e.message);
+    console.warn('[Brands] Direct API load notice, trying local cache:', e.message);
   }
 
-  if (localState) return localState;
+  // Fallback to local storage if offline
+  try {
+    const saved = localStorage.getItem('gro10x_brands_data');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (parsed && parsed.brands && parsed.productsCatalog) {
+        for (const b of parsed.brands) {
+          const cat = parsed.productsCatalog[b.id] || parsed.productsCatalog[String(b.id)] || [];
+          parsed.productsCatalog[b.id] = cat;
+          parsed.productsCatalog[String(b.id)] = cat;
+          b.productsLive = cat.filter(p => p.status === 'Live').length;
+        }
+        return parsed;
+      }
+    }
+  } catch (e) {}
+
   return DEFAULT_BRANDS_DATA;
 }
 
@@ -834,12 +817,15 @@ window.APP_MODULES.brands = async function(container) {
     const brand = state.brands.find(b => b.id === selectedBrandId) || state.brands[0];
 
     // Build or retrieve catalog for this brand
-    if (!state.productsCatalog[brand.id] || state.productsCatalog[brand.id].length === 0) {
+    const existingCat = state.productsCatalog[brand.id] || state.productsCatalog[String(brand.id)] || [];
+    if (existingCat.length === 0) {
       state.productsCatalog[brand.id] = generateDefaultProductsForBrand(brand);
+      state.productsCatalog[String(brand.id)] = state.productsCatalog[brand.id];
       saveBrandsStateLocally(state);
     }
-    const products = state.productsCatalog[brand.id];
+    const products = state.productsCatalog[brand.id] || state.productsCatalog[String(brand.id)] || [];
     const liveCount = products.filter(p => p.status === 'Live').length;
+    brand.productsLive = liveCount;
 
     container.innerHTML = `
       <div class="card-glass" style="padding:1.25rem; border-radius:16px; margin-bottom:1.5rem;">
@@ -1231,12 +1217,15 @@ window.APP_MODULES.brands = async function(container) {
     const b = state.brands.find(x => x.id === selectedBrandId) || state.brands[0];
 
     // Ensure catalog list exists for this brand
-    if (!state.productsCatalog[b.id] || state.productsCatalog[b.id].length === 0) {
+    const existingCat = state.productsCatalog[b.id] || state.productsCatalog[String(b.id)] || [];
+    if (existingCat.length === 0) {
       state.productsCatalog[b.id] = generateDefaultProductsForBrand(b);
+      state.productsCatalog[String(b.id)] = state.productsCatalog[b.id];
       saveBrandsStateLocally(state);
     }
-    const catalog = state.productsCatalog[b.id];
+    const catalog = state.productsCatalog[b.id] || state.productsCatalog[String(b.id)] || [];
     const liveCount = catalog.filter(p => p.status === 'Live').length;
+    b.productsLive = liveCount;
     const readyCount = catalog.filter(p => ['SEO Ready', 'QA Approved', 'Staged'].includes(p.status)).length;
     const vaultCount = catalog.filter(p => Boolean(p.vault?.fileName || p.vault?.storagePath)).length;
 
