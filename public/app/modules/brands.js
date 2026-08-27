@@ -1385,8 +1385,11 @@ window.APP_MODULES.brands = async function(container) {
           </div>
 
           ${(window._activeEtsySubView || 'catalog') === 'catalog' || (window._activeEtsySubView || 'catalog') === 'revisions' ? `
-            <div style="display:flex; gap:0.5rem; align-items:center;">
-              <input type="text" id="etsyProductSearch" placeholder="Search title or code..." oninput="window.BrandsModule.filterEtsyTable(this.value)" style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); color:#fff; padding:0.4rem 0.8rem; border-radius:8px; font-size:0.8rem; width:200px;">
+            <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
+              <button type="button" class="btn-secondary btn-sm" style="font-weight:800; border:1px solid rgba(0,223,137,0.4); color:#00df89; background:rgba(0,223,137,0.08);" onclick="window.BrandsModule.syncLiveEtsyCatalog(${b.id})">
+                🔄 Sync from Etsy
+              </button>
+              <input type="text" id="etsyProductSearch" placeholder="Search title or code..." oninput="window.BrandsModule.filterEtsyTable(this.value)" style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); color:#fff; padding:0.4rem 0.8rem; border-radius:8px; font-size:0.8rem; width:180px;">
               <button class="btn-ghost btn-sm" onclick="window.BrandsModule.openAddProductToBrandModal(${b.id})">+ Add Product</button>
             </div>
           ` : `

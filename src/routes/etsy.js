@@ -1140,25 +1140,59 @@ router.post('/brands/:brandId/sync-live-catalog', requireAuth, asyncHandler(asyn
       const lTitle = (l.title || '').toLowerCase();
       const lId = l.listing_id;
       const lPrice = (l.price?.amount || 0) / (l.price?.divisor || 100);
+      const endingTimestamp = l.ending_tsz || (Date.now() / 1000 + 120 * 86400);
 
       let matchedProd = null;
 
-      if (lId === 4562683744 || lTitle.includes('daily weekly planner – interactive') || lTitle.includes('planners #1')) {
-        matchedProd = catalog.find(p => p.code === 'PLA-01');
-      } else if (lId === 4562903974 || lTitle.includes('daily weekly planners – productivity') || lTitle.includes('planners #2') || lTitle.includes('executive work-life')) {
-        matchedProd = catalog.find(p => p.code === 'PLA-02');
-      } else if (lId === 4562964296 || lTitle.includes('adhd-friendly') || lTitle.includes('low-dopamine') || lTitle.includes('planners #3')) {
-        matchedProd = catalog.find(p => p.code === 'PLA-03');
-      } else if (lId === 4563030934 || lTitle.includes('teacher') || lTitle.includes('academic lesson') || lTitle.includes('planners #4')) {
-        matchedProd = catalog.find(p => p.code === 'PLA-04');
-      } else {
-        matchedProd = catalog.find(p => {
-          const pClean = p.name.toLowerCase().replace(/[^a-z0-9]/g, ' ');
-          const words = pClean.split(' ').filter(w => w.length > 4);
-          return words.some(w => lTitle.includes(w));
-        });
+      // Strategy 1: Match by existing etsyListingId
+      matchedProd = catalog.find(p => p.etsyListingId === lId || p.listingId === lId);
+
+      // Strategy 2: Match by SKU pattern in title or tags (e.g. PLA-01, PLA-07)
+      if (!matchedProd) {
+        const skuMatch = lTitle.match(/\b(pla[-_]?\d+)\b/i);
+        if (skuMatch) {
+          const rawSku = skuMatch[1].toUpperCase().replace('_', '-');
+          matchedProd = catalog.find(p => p.code?.toUpperCase() === rawSku);
+        }
       }
 
+      // Strategy 3: Known legacy title & listing ID mappings
+      if (!matchedProd) {
+        if (lId === 4562683744 || lTitle.includes('planners #1') || lTitle.includes('planner – interactive') || lTitle.includes('planners 1')) {
+          matchedProd = catalog.find(p => p.code === 'PLA-01');
+        } else if (lId === 4562903974 || lTitle.includes('planners #2') || lTitle.includes('executive work-life') || lTitle.includes('planners 2')) {
+          matchedProd = catalog.find(p => p.code === 'PLA-02');
+        } else if (lId === 4562964296 || lTitle.includes('adhd-friendly') || lTitle.includes('low-dopamine') || lTitle.includes('planners #3')) {
+          matchedProd = catalog.find(p => p.code === 'PLA-03');
+        } else if (lId === 4563030934 || lTitle.includes('teacher') || lTitle.includes('academic lesson') || lTitle.includes('planners #4')) {
+          matchedProd = catalog.find(p => p.code === 'PLA-04');
+        } else if (lId === 4563050247 || lTitle.includes('wellness fitness') || lTitle.includes('meal prep') || lTitle.includes('pla-06')) {
+          matchedProd = catalog.find(p => p.code === 'PLA-06');
+        } else if (lId === 4563246510 || lTitle.includes('solopreneur 90-day') || lTitle.includes('quarterly sprint') || lTitle.includes('pla-07')) {
+          matchedProd = catalog.find(p => p.code === 'PLA-07');
+        }
+      }
+
+      // Strategy 4: High-confidence token intersection
+      if (!matchedProd) {
+        let bestScore = 0;
+        let bestCandidate = null;
+        catalog.forEach(p => {
+          const pWords = (p.name || '').toLowerCase().replace(/[^a-z0-9]/g, ' ').split(/\s+/).filter(w => w.length >= 4);
+          if (pWords.length === 0) return;
+          const matchCount = pWords.filter(w => lTitle.includes(w)).length;
+          const score = matchCount / pWords.length;
+          if (score > 0.4 && score > bestScore) {
+            bestScore = score;
+            bestCandidate = p;
+          }
+        });
+        if (bestCandidate) {
+          matchedProd = bestCandidate;
+        }
+      }
+
+      // If matched, synchronize all live fields
       if (matchedProd) {
         matchedProd.status = 'Live';
         matchedProd.etsyListingId = lId;
@@ -1166,13 +1200,41 @@ router.post('/brands/:brandId/sync-live-catalog', requireAuth, asyncHandler(asyn
         matchedProd.retailPrice = lPrice || matchedProd.retailPrice || matchedProd.price;
         matchedProd.liveListingUrl = l.url || `https://www.etsy.com/listing/${lId}`;
         matchedProd.etsyState = l.state || 'active';
+        matchedProd.endingTimestamp = endingTimestamp;
+        matchedProd.expiryDate = new Date(endingTimestamp * 1000).toISOString();
         matchedProd.studioPercent = 100;
         matchedProd.approvedAt = matchedProd.approvedAt || new Date().toISOString();
         matchedProd.approvedBy = matchedProd.approvedBy || 'Admin';
         matchedProd.submittedAt = matchedProd.submittedAt || new Date().toISOString();
         matchedProd.submittedBy = matchedProd.submittedBy || 'DVM';
         reconciledCount++;
-        matched.push({ code: matchedProd.code, name: matchedProd.name, listingId: lId });
+        matched.push({ code: matchedProd.code, name: matchedProd.name, listingId: lId, price: lPrice });
+      } else {
+        // Strategy 5: Auto-import unmatched live Etsy listings into catalog
+        const nextIdx = catalog.length + 1;
+        const newCode = `PLA-${String(nextIdx).padStart(2, '0')}`;
+        const newProduct = {
+          code: newCode,
+          name: l.title || `Imported Etsy Listing #${lId}`,
+          price: lPrice || 9.99,
+          retailPrice: lPrice || 9.99,
+          format: 'Digital PDF',
+          status: 'Live',
+          category: 'Daily & Weekly Planners',
+          etsyListingId: lId,
+          liveListingUrl: l.url || `https://www.etsy.com/listing/${lId}`,
+          etsyState: l.state || 'active',
+          endingTimestamp: endingTimestamp,
+          expiryDate: new Date(endingTimestamp * 1000).toISOString(),
+          studioPercent: 100,
+          approvedAt: new Date().toISOString(),
+          approvedBy: 'Admin (Auto-Imported from Etsy)',
+          submittedAt: new Date().toISOString(),
+          submittedBy: 'Etsy Sync'
+        };
+        catalog.push(newProduct);
+        reconciledCount++;
+        matched.push({ code: newCode, name: newProduct.name, listingId: lId, price: lPrice, isNew: true });
       }
     });
 
