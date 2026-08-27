@@ -3906,6 +3906,32 @@ window.APP_MODULES.brands = async function(container) {
 
       try {
         const headers = getStudioAuthHeaders({ 'Content-Type': 'application/json' });
+        // Priority 1: Visually audited pages from real uploaded planner deliverable
+        // Priority 2: Blueprint 2.0 architecture pageBreakdown
+        // Priority 3: Blueprint pages/spreads
+        let effectivePages = [];
+        if (prod.aiAudit?.page_analysis && Array.isArray(prod.aiAudit.page_analysis) && prod.aiAudit.page_analysis.length > 0) {
+          effectivePages = prod.aiAudit.page_analysis.map((p, idx) => ({
+            pageNumber: p.page_number || idx + 1,
+            title: p.title || `Spread #${idx + 1}`,
+            purpose: p.purpose || (p.defects?.length > 0 ? 'Customized productivity worksheet' : 'High-resolution printable layout')
+          }));
+        } else if (prod.blueprint?.pageBreakdown && Array.isArray(prod.blueprint.pageBreakdown) && prod.blueprint.pageBreakdown.length > 0) {
+          effectivePages = prod.blueprint.pageBreakdown.map((p, idx) => ({
+            pageNumber: p.pageNumber || p.pageNum || p.page_number || idx + 1,
+            title: p.title || p.name || `Spread #${idx + 1}`,
+            purpose: p.purpose || p.description || 'High-productivity layout'
+          }));
+        } else if (prod.blueprint?.pages && Array.isArray(prod.blueprint.pages) && prod.blueprint.pages.length > 0) {
+          effectivePages = prod.blueprint.pages.map((p, idx) => ({
+            pageNumber: p.pageNumber || p.pageNum || idx + 1,
+            title: p.title || p.name || `Spread #${idx + 1}`,
+            purpose: p.purpose || 'High-productivity layout'
+          }));
+        }
+
+        const effectiveCount = effectivePages.length || prod.blueprint?.pageCount || 16;
+
         const res = await fetch('/api/ai/etsy-seo', {
           method: 'POST',
           headers,
@@ -3916,8 +3942,8 @@ window.APP_MODULES.brands = async function(container) {
             brandVoice: b.voice,
             type: prod.type || b.type || 'Digital PDF',
             category: prod.category || prod.blueprint?.categoryOverride || 'Daily & Weekly Planners',
-            pageCount: (prod.blueprint?.pageBreakdown?.length) || prod.blueprint?.pageCount || 16,
-            pageBreakdown: prod.blueprint?.pageBreakdown || prod.blueprint?.pages || [],
+            pageCount: effectiveCount,
+            pageBreakdown: effectivePages,
             palette: prod.blueprint?.palette || b.palette || ['#8B5A7A', '#FAF3E8', '#7D9B76'],
             auditScore: prod.aiAudit?.overall_score || prod.aiAudit?.score || 8.0,
             price: prod.price || prod.retailPrice || 7.49

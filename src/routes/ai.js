@@ -189,20 +189,53 @@ router.post('/etsy-seo', requireAuth, async (req, res) => {
       `${(bName || 'gro10x').toLowerCase().slice(0, 20)}`
     ].slice(0, 13);
 
-    const pagesList = Array.isArray(pBreakdown) && pBreakdown.length > 0
-      ? pBreakdown.map(p => `• Page ${p.pageNum || p.page || ''}: ${p.title || p.name || 'Spread'} — ${p.purpose || 'High-productivity template layout'}`).join('\n')
-      : `• Page 1: Minimalist Aesthetic Cover & Personalization Index\n` +
-        `• Page 2: Quick Start Guide & Daily Planning Rituals\n` +
-        `• Page 3: Master Index & Hyperlinked Navigation Matrix\n` +
-        `• Page 4: Monthly Goals & Intentions Roadmap\n` +
-        `• Page 5: Weekly Master Schedule & Priority Matrix\n` +
-        `• Page 6: Daily Focused Execution & Time-Blocking Layout\n` +
-        `• Page 7: Monthly Income, Expenses & Budget Tracker\n` +
-        `• Page 8: 30-Day Habit Matrix & Routine Consistency Tracker\n` +
-        `• Page 9: Weekly Reflection, Wins & Mindful Reset\n` +
-        `• Page 10: Ideas, Mind Maps & Dot Grid Notes`;
+    let pagesList = '';
+    if (Array.isArray(pBreakdown) && pBreakdown.length > 0) {
+      pagesList = pBreakdown.map((p, idx) => {
+        const num = p.pageNumber || p.page_number || p.pageNum || p.page || (idx + 1);
+        const pTitle = p.title || p.name || `Spread #${num}`;
+        const pPurpose = p.purpose || p.description || (p.status === 'clean' ? 'High-resolution printable layout' : '');
+        return `• Page ${num}: ${pTitle}${pPurpose ? ` — ${pPurpose}` : ''}`;
+      }).join('\n');
+    } else {
+      const catLower = (cat || '').toLowerCase();
+      if (catLower.includes('budget') || catLower.includes('finance')) {
+        pagesList = `• Page 1: Minimalist Cover & Financial Ledger Index\n` +
+          `• Page 2: Annual Net Worth & Financial Goals Roadmap\n` +
+          `• Page 3: Monthly Master Budget & Expense Tracker\n` +
+          `• Page 4: Debt Snowball & Payoff Velocity Tracker\n` +
+          `• Page 5: Sinking Funds & Savings Challenge Matrix\n` +
+          `• Page 6: Bill Calendar & Automated Payment Log\n` +
+          `• Page 7: Daily Expense Log & Receipts Categorizer\n` +
+          `• Page 8: Subscription Audit & Recurring Bills Hub\n` +
+          `• Page 9: End-of-Month Financial Review & Net Surplus\n` +
+          `• Page 10: Financial Vision, Notes & Milestone Badges`;
+      } else if (catLower.includes('fitness') || catLower.includes('health') || catLower.includes('wellness')) {
+        pagesList = `• Page 1: Minimalist Cover & Fitness Profile Index\n` +
+          `• Page 2: 90-Day Body Transformation & Measurement Matrix\n` +
+          `• Page 3: Weekly Workout Split & Progressive Overload Log\n` +
+          `• Page 4: Daily Meal Plan & Macronutrient Tracker\n` +
+          `• Page 5: Water Intake, Sleep & Recovery Dashboard\n` +
+          `• Page 6: Running & Cardio Pace Performance Log\n` +
+          `• Page 7: Grocery List & High-Protein Meal Prep Matrix\n` +
+          `• Page 8: 30-Day Fitness Consistency Habit Tracker\n` +
+          `• Page 9: Weekly Check-In, Progress Photos & Wins\n` +
+          `• Page 10: Wellness Notes & Motivational Reflections`;
+      } else {
+        pagesList = `• Page 1: Minimalist Aesthetic Cover & Personalization Index\n` +
+          `• Page 2: Quick Start Guide & Daily Planning Rituals\n` +
+          `• Page 3: Master Index & Hyperlinked Navigation Matrix\n` +
+          `• Page 4: Monthly Goals & Intentions Roadmap\n` +
+          `• Page 5: Weekly Master Schedule & Priority Matrix\n` +
+          `• Page 6: Daily Focused Execution & Time-Blocking Layout\n` +
+          `• Page 7: Monthly Income, Expenses & Budget Tracker\n` +
+          `• Page 8: 30-Day Habit Matrix & Routine Consistency Tracker\n` +
+          `• Page 9: Weekly Reflection, Wins & Mindful Reset\n` +
+          `• Page 10: Ideas, Mind Maps & Dot Grid Notes`;
+      }
+    }
 
-    const effectivePageCount = pCount || (Array.isArray(pBreakdown) ? pBreakdown.length : 16);
+    const effectivePageCount = pCount || (Array.isArray(pBreakdown) && pBreakdown.length > 0 ? pBreakdown.length : 16);
 
     const description = `✨ Welcome to ${bName} — ${niche || 'Intentional Productivity & Digital Stationery'}\n\n` +
       `Transform your daily routine, streamline your productivity, and achieve your goals with the **${cleanP}**.\n\n` +
@@ -239,10 +272,15 @@ router.post('/etsy-seo', requireAuth, async (req, res) => {
   }
 
   const formattedPageBreakdown = Array.isArray(pageBreakdown) && pageBreakdown.length > 0
-    ? pageBreakdown.map(p => `• Page ${p.pageNum || p.page || ''}: ${p.title || p.name || ''} — ${p.purpose || p.description || ''}`).join('\n')
+    ? pageBreakdown.map((p, idx) => {
+        const num = p.pageNumber || p.page_number || p.pageNum || p.page || (idx + 1);
+        const pTitle = p.title || p.name || `Spread #${num}`;
+        const pPurpose = p.purpose || p.description || '';
+        return `• Page ${num}: ${pTitle}${pPurpose ? ` — ${pPurpose}` : ''}`;
+      }).join('\n')
     : null;
 
-  const effectivePageCount = pageCount || (Array.isArray(pageBreakdown) ? pageBreakdown.length : 16);
+  const effectivePageCount = pageCount || (Array.isArray(pageBreakdown) && pageBreakdown.length > 0 ? pageBreakdown.length : 16);
 
   const prompt =
     `You are an elite Etsy SEO and copywriting specialist.\n\n` +
@@ -256,13 +294,13 @@ router.post('/etsy-seo', requireAuth, async (req, res) => {
     `System Size: "${effectivePageCount} Pages"\n` +
     `Palette: "${Array.isArray(palette) ? palette.join(', ') : (palette || '#8B5A7A, #FAF3E8, #7D9B76')}"\n` +
     `Retail Price: "$${price || 7.49} USD"\n` +
-    (formattedPageBreakdown ? `\nActual Page-by-Page Blueprint Spread Breakdown:\n${formattedPageBreakdown}\n` : '') +
+    (formattedPageBreakdown ? `\nActual Tested Page-by-Page Spread Breakdown (from AI Vision Audit & Blueprint):\n${formattedPageBreakdown}\n` : '') +
     `\nStrict Requirements:\n` +
     `1. "title": Strictly 14 WORDS OR FEWER AND 140 characters or fewer. Comply with Etsy's official SEO ranking recommendation: "Consider using 14 words or less". Front-load highest-volume buyer keywords separated by hyphens (e.g. "Mindful Morning Routine Journal - Printable Daily Planner - GoodNotes PDF"). Avoid pipes (|) and avoid keyword stuffing.\n` +
     `2. "tags": EXACTLY 13 comma-separated tag phrases. EACH tag MUST BE 20 CHARACTERS OR FEWER. Must include long-tail buyer search phrases tailored to "${category || 'planners'}".\n` +
     `3. "description": 5 high-converting structured sections:\n` +
-    `   (1) Headline Hook & Value Proposition\n` +
-    `   (2) 📋 COMPLETE ${effectivePageCount}-PAGE SPREAD BREAKDOWN (list every specific page with bullet points so buyers see 100% transparent value of every worksheet and spread included)\n` +
+    `   (1) Headline Hook & Value Proposition tailored specifically to "${productName}"\n` +
+    `   (2) 📋 COMPLETE ${effectivePageCount}-PAGE SPREAD BREAKDOWN (CRITICAL: You MUST use the EXACT page titles provided in the Actual Tested Page-by-Page Spread Breakdown above, listing every page as a bullet point: "• Page X: [Exact Title] — [Brief 1-sentence value]")\n` +
     `   (3) 📦 What is Included & File Specifications (US Letter & A4 Vector PDF, GoodNotes / iPad tablet compatibility)\n` +
     `   (4) ⚡ How It Works / Instant Download Steps\n` +
     `   (5) 🔒 Anti-Piracy Single-User License Note\n` +
