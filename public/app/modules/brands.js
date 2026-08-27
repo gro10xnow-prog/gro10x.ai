@@ -3320,12 +3320,8 @@ window.APP_MODULES.brands = async function(container) {
             </div>
 
             <!-- STORYBOARD SCRIPT CARD -->
-            <div id="capcutScriptContent" style="background:rgba(0,0,0,0.35); padding:0.75rem 0.95rem; border-radius:10px; margin-bottom:0.85rem; font-size:0.74rem; font-family:monospace; color:#e2e8f0; line-height:1.5;">
-              ${videoPrompt || `
-                🎬 [Scene 1: 0-3s Hook] "Struggling to stay organized? Meet the ${prodName}." Fast cut of messy desk vs clean structured planner.
-                ✨ [Scene 2: 3-10s Solution] Smooth page-flip transition across all daily & weekly hyperlinked spreads. Pastel mildliner stylus in action.
-                🚀 [Scene 3: 10-15s CTA] "Instant Download · GoodNotes & Print Ready · Link in Bio / Shop Now".
-              `}
+            <div id="capcutScriptContent" style="margin-bottom:0.85rem;">
+              ${window.BrandsModule.formatStoryboardHtml(videoPrompt, prodName, b.name)}
             </div>
 
             <!-- VIDEO PLAYER (IF STORED) -->
@@ -3346,7 +3342,7 @@ window.APP_MODULES.brands = async function(container) {
             <!-- VIDEO UPLOADER -->
             <div style="display:grid; grid-template-columns:2fr 1fr; gap:0.75rem; align-items:center;">
               <input type="file" id="listingVideoInput" accept="video/mp4,video/quicktime,.mp4,.mov" style="width:100%; font-size:0.8rem; background:rgba(0,0,0,0.3); border:1px dashed rgba(168,85,247,0.4); padding:0.65rem; border-radius:8px; color:#fff; cursor:pointer;">
-              <button class="btn-primary" style="background:#a855f7; border-color:#a855f7; padding:0.55rem 1rem; font-size:0.8rem; font-weight:800;" onclick="window.BrandsModule.uploadProductVideo(${b.id}, '${prodCode}')">
+              <button id="btnSaveVideoToVault" class="btn-primary" style="background:#a855f7; border-color:#a855f7; padding:0.55rem 1rem; font-size:0.8rem; font-weight:800; cursor:pointer;" onclick="window.BrandsModule.uploadProductVideo(${b.id}, '${prodCode}')">
                 💾 Save Video to Vault
               </button>
             </div>
@@ -5630,63 +5626,202 @@ window.APP_MODULES.brands = async function(container) {
       modal.style.display = 'flex';
     },
 
+    formatStoryboardHtml(videoPrompt, prodName, brandName) {
+      if (!videoPrompt || typeof videoPrompt !== 'string') {
+        return `
+          <div style="padding:0.75rem 0.95rem; background:rgba(0,0,0,0.35); border-radius:10px; font-size:0.74rem; color:#cbd5e1;">
+            🎬 <strong>10s Video Concept:</strong> Fast cut of messy desk vs clean structured planner (${prodName}), followed by smooth page-flip transition and instant download call to action.
+          </div>
+        `;
+      }
+
+      // Check if prompt has scene breakdown
+      const sceneMatches = [...videoPrompt.matchAll(/•\s*\[(.*?)\]\s*(SCENE\s*\d+[^:\n]*):?\s*\n?\s*([\s\S]*?)(?=(?:•\s*\[|$))/gi)];
+
+      if (sceneMatches && sceneMatches.length > 0) {
+        return `
+          <div style="display:flex; flex-direction:column; gap:0.6rem;">
+            <!-- QUICK SPECS BAR -->
+            <div style="display:flex; gap:0.4rem; flex-wrap:wrap; margin-bottom:0.2rem;">
+              <span style="font-size:0.68rem; font-weight:800; background:rgba(192,132,252,0.15); color:#c084fc; border:1px solid rgba(192,132,252,0.3); padding:0.2rem 0.5rem; border-radius:6px;">⏱️ 10s Duration</span>
+              <span style="font-size:0.68rem; font-weight:800; background:rgba(6,182,212,0.15); color:#06b6d4; border:1px solid rgba(6,182,212,0.3); padding:0.2rem 0.5rem; border-radius:6px;">📐 4:5 / 9:16 Portrait</span>
+              <span style="font-size:0.68rem; font-weight:800; background:rgba(0,223,137,0.15); color:#00df89; border:1px solid rgba(0,223,137,0.3); padding:0.2rem 0.5rem; border-radius:6px;">🎵 Lo-fi Acoustic / Piano</span>
+              <span style="font-size:0.68rem; font-weight:800; background:rgba(251,191,36,0.15); color:#fbbf24; border:1px solid rgba(251,191,36,0.3); padding:0.2rem 0.5rem; border-radius:6px;">🛠️ CapCut / Google Flow / Kling</span>
+            </div>
+
+            <!-- SCENE CARDS -->
+            <div style="display:grid; grid-template-columns:1fr; gap:0.45rem;">
+              ${sceneMatches.map(m => {
+                const timecode = m[1].trim();
+                const sceneTitle = m[2].trim();
+                const desc = m[3].trim().replace(/\n\s*/g, ' ');
+                return `
+                  <div style="background:rgba(0,0,0,0.35); border:1px solid rgba(192,132,252,0.2); border-radius:8px; padding:0.6rem 0.8rem; display:flex; gap:0.75rem; align-items:flex-start;">
+                    <div style="background:rgba(192,132,252,0.15); border:1px solid rgba(192,132,252,0.3); color:#c084fc; font-weight:800; font-size:0.68rem; padding:0.2rem 0.45rem; border-radius:6px; white-space:nowrap; flex-shrink:0;">
+                      ${timecode}
+                    </div>
+                    <div style="flex:1; min-width:0;">
+                      <div style="font-size:0.75rem; font-weight:800; color:#fff; margin-bottom:0.15rem;">
+                        ${sceneTitle}
+                      </div>
+                      <div style="font-size:0.72rem; color:#cbd5e1; line-height:1.4;">
+                        ${desc}
+                      </div>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      // Fallback pre-wrap
+      return `
+        <div style="background:rgba(0,0,0,0.35); padding:0.75rem 0.95rem; border-radius:10px; font-size:0.74rem; font-family:monospace; color:#e2e8f0; line-height:1.5; white-space:pre-wrap;">
+          ${videoPrompt}
+        </div>
+      `;
+    },
+
     async uploadProductVideo(brandId, productCode) {
       const fileInput = document.getElementById('listingVideoInput');
       const file = fileInput?.files?.[0];
+      const btn = document.getElementById('btnSaveVideoToVault');
+      const statusEl = document.getElementById('videoUploadStatus');
+
       if (!file) {
         if (window.showToast) window.showToast('Please select an MP4/MOV video file first', 'warning');
         return;
       }
 
-      const statusEl = document.getElementById('videoUploadStatus');
+      const totalMb = (file.size / (1024 * 1024)).toFixed(1);
+      const origBtnHtml = btn ? btn.innerHTML : '';
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<span style="display:flex; align-items:center; gap:0.4rem;"><span style="width:12px; height:12px; border:2px solid #000; border-top-color:transparent; border-radius:50%; animation:spin 0.8s linear infinite; display:inline-block;"></span> Streaming...</span>`;
+      }
 
-      try {
-        if (statusEl) statusEl.innerHTML = `<span style="color:#06b6d4; font-weight:700;">⏳ Uploading ${file.name} to Cloud Vault...</span>`;
+      function updateVideoProgressUI(pct, loadedMb) {
+        if (!statusEl) return;
+        statusEl.innerHTML = `
+          <div style="background:#141422; border:1px solid rgba(168,85,247,0.35); border-radius:12px; padding:1rem; margin-top:0.6rem; box-shadow:0 8px 24px rgba(0,0,0,0.4);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem; flex-wrap:wrap; gap:0.4rem;">
+              <div style="display:flex; align-items:center; gap:0.5rem;">
+                <div style="width:14px; height:14px; border:2px solid rgba(192,132,252,0.3); border-top-color:#c084fc; border-radius:50%; animation:spin 0.8s linear infinite;"></div>
+                <strong style="font-size:0.8rem; color:#fff;">
+                  Streaming Video to Cloud Vault (${loadedMb} of ${totalMb} MB)
+                </strong>
+              </div>
+              <span style="font-size:0.75rem; font-weight:800; color:#c084fc; font-family:monospace; background:rgba(168,85,247,0.15); border:1px solid rgba(168,85,247,0.3); padding:0.15rem 0.5rem; border-radius:6px;">
+                ${pct}%
+              </span>
+            </div>
 
-        const formData = new FormData();
-        formData.append('productCode', productCode);
-        formData.append('video', file);
+            <!-- ANIMATED PROGRESS BAR -->
+            <div style="width:100%; height:7px; background:rgba(255,255,255,0.08); border-radius:999px; overflow:hidden; margin-bottom:0.35rem;">
+              <div style="width:${pct}%; height:100%; background:linear-gradient(90deg, #c084fc, #06b6d4, #00df89); transition:width 0.2s ease; border-radius:999px;"></div>
+            </div>
 
-        const uploadHeaders = getStudioAuthHeaders();
-        const res = await fetch(`/api/brands/${brandId}/video/upload`, {
-          method: 'POST',
-          headers: uploadHeaders,
-          body: formData
-        });
+            <div style="font-size:0.7rem; color:var(--text-muted); display:flex; justify-content:space-between;">
+              <span>File: <strong style="color:#fff;">${file.name}</strong></span>
+              <span style="color:#06b6d4;">Direct Supabase Multi-part Stream</span>
+            </div>
+          </div>
+        `;
+      }
 
-        const data = await res.json();
-        if (!data.success) throw new Error(data.error || 'Failed uploading video');
+      updateVideoProgressUI(0, '0.0');
 
-        if (window.showToast) window.showToast(`✅ Video saved to Cloud Vault: ${file.name}!`, 'success');
-        if (statusEl) {
-          statusEl.innerHTML = `<span style="color:#00df89; font-weight:700;">✅ Stored in Vault: ${file.name}</span>`;
+      const formData = new FormData();
+      formData.append('productCode', productCode);
+      formData.append('video', file);
+
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', `/api/brands/${brandId}/video/upload`);
+      const uploadHeaders = getStudioAuthHeaders();
+      for (const k in uploadHeaders) {
+        if (k.toLowerCase() !== 'content-type') {
+          xhr.setRequestHeader(k, uploadHeaders[k]);
+        }
+      }
+
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) {
+          const pct = Math.round((e.loaded / e.total) * 100);
+          const loadedMb = (e.loaded / (1024 * 1024)).toFixed(1);
+          updateVideoProgressUI(pct, loadedMb);
+        }
+      };
+
+      xhr.onload = () => {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = origBtnHtml || `💾 Save Video to Vault`;
         }
 
-        // Directly patch in-memory state — do NOT reload from API (Vercel returns stale seed data)
-        if (!state.productsCatalog) state.productsCatalog = {};
-        if (!state.productsCatalog[brandId]) state.productsCatalog[brandId] = [];
-        let _vprod = state.productsCatalog[brandId].find(p => p.code === productCode);
-        if (!_vprod) { _vprod = { code: productCode, status: 'Draft' }; state.productsCatalog[brandId].push(_vprod); }
-        _vprod.video = data.video || { fileName: file.name, storagePath: `brands/${brandId}/${productCode}/video/${file.name}`, uploadedAt: new Date().toISOString() };
-        if ((_vprod.mockupsCount || _vprod.mockups?.length || 0) >= 4) _vprod.status = 'Media Ready';
-        saveBrandsStateLocally(state);
-        // Update progress bar live
-        const _vpctEl = document.getElementById('studioHeaderPctBadge');
-        const _vbarEl = document.getElementById('studioHeaderProgressBar');
-        const _vvaultDone = Boolean(_vprod.vault?.storagePath || _vprod.vault?.downloadUrl);
-        const _vmocksDone = (_vprod.mockupsCount || _vprod.mockups?.length || 0) >= 4;
-        const _vvidDone = Boolean(_vprod.video?.storagePath || _vprod.video?.fileName);
-        const _vauditDone = (_vprod.aiAudit?.overall_score || 0) >= 7.0;
-        const _vseoDone = Boolean(_vprod.seo?.title || _vprod.seoTitle);
-        const _vbpDone = Boolean(_vprod.blueprint?.prompt || _vprod.blueprint?.geometry);
-        const _vpct = (_vbpDone ? 20 : 0) + (_vvaultDone ? 20 : 0) + (_vmocksDone && _vvidDone ? 20 : 0) + (_vauditDone ? 20 : 0) + (_vseoDone ? 20 : 0);
-        if (_vpctEl) { _vpctEl.innerText = `${_vpct}% Ready`; _vpctEl.style.color = _vpct >= 80 ? '#00df89' : (_vpct >= 40 ? '#fbbf24' : '#ef4444'); }
-        if (_vbarEl) _vbarEl.style.width = `${_vpct}%`;
+        try {
+          const data = JSON.parse(xhr.responseText);
+          if (xhr.status >= 400 || !data.success) {
+            throw new Error(data.error || `Upload failed with status ${xhr.status}`);
+          }
 
-      } catch (err) {
-        if (statusEl) statusEl.innerHTML = `<span style="color:#ef4444; font-weight:700;">❌ ${err.message}</span>`;
-        if (window.showToast) window.showToast(err.message, 'error');
-      }
+          if (window.showToast) window.showToast(`✅ Video saved to Cloud Vault (${totalMb} MB)!`, 'success');
+
+          // Update in-memory state
+          if (!state.productsCatalog) state.productsCatalog = {};
+          if (!state.productsCatalog[brandId]) state.productsCatalog[brandId] = [];
+          let _vprod = state.productsCatalog[brandId].find(p => p.code === productCode);
+          if (!_vprod) { _vprod = { code: productCode, status: 'Draft' }; state.productsCatalog[brandId].push(_vprod); }
+          _vprod.video = data.video || { fileName: file.name, storagePath: `brands/${brandId}/${productCode}/video/${file.name}`, uploadedAt: new Date().toISOString() };
+          if ((_vprod.mockupsCount || _vprod.mockups?.length || 0) >= 4) _vprod.status = 'Media Ready';
+          saveBrandsStateLocally(state);
+
+          if (statusEl) {
+            statusEl.innerHTML = `
+              <div style="background:rgba(0,223,137,0.1); border:1px solid rgba(0,223,137,0.35); border-radius:10px; padding:0.6rem 0.9rem; margin-top:0.6rem; display:flex; justify-content:space-between; align-items:center;">
+                <span style="color:#00df89; font-weight:800; font-size:0.78rem;">
+                  ✅ Stored in Vault: ${file.name} (${totalMb} MB) · Ready for Etsy API
+                </span>
+                <span style="font-size:0.7rem; color:var(--text-muted);">Saved to Product State</span>
+              </div>
+            `;
+          }
+
+          // Seamlessly re-render Media tab so video player appears immediately
+          window.BrandsModule.generateLiveSEOPackage(brandId, productCode, encodeURIComponent(_vprod.name || ''));
+          setTimeout(() => {
+            window.BrandsModule.switchStudioTab('mockups');
+          }, 50);
+
+        } catch (err) {
+          if (statusEl) {
+            statusEl.innerHTML = `
+              <div style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.35); border-radius:10px; padding:0.6rem 0.9rem; margin-top:0.6rem; color:#ef4444; font-weight:700; font-size:0.78rem;">
+                ❌ Video Upload Error: ${err.message}
+              </div>
+            `;
+          }
+          if (window.showToast) window.showToast(`Upload failed: ${err.message}`, 'error');
+        }
+      };
+
+      xhr.onerror = () => {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = origBtnHtml || `💾 Save Video to Vault`;
+        }
+        if (statusEl) {
+          statusEl.innerHTML = `
+            <div style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.35); border-radius:10px; padding:0.6rem 0.9rem; margin-top:0.6rem; color:#ef4444; font-weight:700; font-size:0.78rem;">
+              ❌ Network error uploading video to server
+            </div>
+          `;
+        }
+        if (window.showToast) window.showToast('Network error during video upload', 'error');
+      };
+
+      xhr.send(formData);
     },
 
     async pushVideoToEtsy(brandId, productCode) {
