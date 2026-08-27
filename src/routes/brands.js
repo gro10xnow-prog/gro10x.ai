@@ -695,8 +695,13 @@ async function loadBrandsState() {
 
       for (const brand of state.brands) {
         const bId = brand.id;
-        if (!state.productsCatalog[bId]) state.productsCatalog[bId] = generateDefaultProductsForBrand(brand);
-        state.productsCatalog[bId] = state.productsCatalog[bId].map(prod => {
+        const catalog = state.productsCatalog[bId] || state.productsCatalog[String(bId)];
+        if (!catalog || catalog.length === 0) {
+          state.productsCatalog[bId] = generateDefaultProductsForBrand(brand);
+          state.productsCatalog[String(bId)] = state.productsCatalog[bId];
+        }
+        const activeCatalog = state.productsCatalog[bId] || state.productsCatalog[String(bId)];
+        state.productsCatalog[bId] = activeCatalog.map(prod => {
           const cleanCode = getCleanCode(prod.code);
           const prdKey = `prd_${bId}_${cleanCode}`;
           const groupKey = `${bId}_${cleanCode}`;
@@ -714,6 +719,7 @@ async function loadBrandsState() {
           }
           return merged;
         });
+        state.productsCatalog[String(bId)] = state.productsCatalog[bId];
 
         // Dynamically compute live counts and fees from the true merged catalog
         const liveProducts = state.productsCatalog[bId].filter(p => p.status === 'Live');

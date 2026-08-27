@@ -254,17 +254,15 @@ app.post(['/api/webhooks/telegram', '/webhooks/telegram'], async (req, res) => {
 // Mount API routes (prioritized before static assets)
 app.use('/api', apiRoutes);
 
-// Serve SPA app modules and public static assets
+// Serve SPA app modules and public static assets (no-cache for modules so code updates apply immediately)
 app.use('/app/modules', express.static(path.join(__dirname, 'public/app/modules'), {
-  maxAge: '5m',
   setHeaders: (res) => {
-    res.setHeader('Cache-Control', 'public, max-age=300, must-revalidate');
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
   }
 }));
 app.use('/app', express.static(path.join(__dirname, 'public/app'), {
-  maxAge: '5m',
   setHeaders: (res) => {
-    res.setHeader('Cache-Control', 'public, max-age=300, must-revalidate');
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
   }
 }));
 app.use(express.static(path.join(__dirname, 'public'), { maxAge: '1d' }));
