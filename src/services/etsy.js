@@ -362,6 +362,15 @@ function runProductHealthCheck(product, brand = {}) {
     checks.push({ name: 'Title Length (30-140 chars)', passed: true, value: `${title.length} chars` });
   }
 
+  // RULE 1B: Title Word Count (Etsy Algorithm Recommends ≤14 Words)
+  const words = title.split(/\s+/).filter(Boolean);
+  if (words.length > 14) {
+    warnings.push({ rule: 'title_word_count', message: `Title contains ${words.length} words. Etsy algorithm suggests 14 words or less for higher conversion and clean mobile display.`, severity: 'tip' });
+    checks.push({ name: 'Title Word Count (≤14 words)', passed: true, value: `${words.length} words (Etsy recommends ≤14)` });
+  } else if (words.length > 0) {
+    checks.push({ name: 'Title Word Count (≤14 words)', passed: true, value: `${words.length} words (Optimal)` });
+  }
+
   // RULE 2: Primary Keywords in Title
   const brandNiche = (brand.niche || brand.name || '').toLowerCase();
   const hasNicheKeywords = title.length > 0;

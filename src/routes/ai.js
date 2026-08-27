@@ -167,7 +167,12 @@ router.post('/etsy-seo', requireAuth, async (req, res) => {
 
   function generateFallbackSEO(pName, bName, niche, pType, cat, pCount) {
     const cleanP = pName.replace(/^[A-Z]\d+\s*[-–]\s*/, '');
-    const title = `${cleanP} | ${cat || 'Digital Planner'} Printable | ${bName} Aesthetic GoodNotes PDF`.slice(0, 140);
+    const shortCat = (cat || 'Daily Planner').replace(/Planners|Trackers/i, 'Planner').trim();
+    const title = `${cleanP} - ${shortCat} Printable - ${bName || 'PlannerQueen'} GoodNotes PDF`
+      .replace(/\|/g, '-')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 140);
     const tags = [
       'digital planner',
       'printable organizer',
@@ -226,7 +231,7 @@ router.post('/etsy-seo', requireAuth, async (req, res) => {
     `Palette: "${Array.isArray(palette) ? palette.join(', ') : (palette || '#8B5A7A, #FAF3E8, #7D9B76')}"\n` +
     `Retail Price: "$${price || 7.49} USD"\n\n` +
     `Strict Requirements:\n` +
-    `1. "title": Strictly 140 characters or fewer. Front-load highest-volume Etsy search keywords separated by " | ".\n` +
+    `1. "title": Strictly 14 WORDS OR FEWER AND 140 characters or fewer. Comply with Etsy's official SEO ranking recommendation: "Consider using 14 words or less". Front-load highest-volume buyer keywords separated by hyphens (e.g. "Mindful Morning Routine Journal - Printable Daily Planner - GoodNotes PDF"). Avoid pipes (|) and avoid keyword stuffing.\n` +
     `2. "tags": EXACTLY 13 comma-separated tag phrases. EACH tag MUST BE 20 CHARACTERS OR FEWER. Must include long-tail buyer search phrases tailored to "${category || 'planners'}".\n` +
     `3. "description": 4 structured sections: (1) Headline Hook, (2) What is Included (bullet points), (3) How to Access & Print / GoodNotes Guide, (4) Anti-Piracy Single-User License Note.\n` +
     `4. "keywords": 5 high-intent buyer keyword phrases.\n\n` +

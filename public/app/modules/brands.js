@@ -3511,13 +3511,22 @@ window.APP_MODULES.brands = async function(container) {
             </div>
           </div>
 
-          <!-- 4. 140-CHAR TITLE INPUT -->
+          <!-- 4. 140-CHAR TITLE INPUT WITH ETSY 14-WORD OPTIMIZER -->
           <div>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.3rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.3rem; flex-wrap:wrap; gap:0.3rem;">
               <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Etsy Listing Title (Max 140 Chars)</label>
-              <span id="seoTitleCounter" style="font-size:0.7rem; color:${effectiveTitle.length > 140 ? '#ef4444' : '#00df89'}; font-weight:800;">${effectiveTitle.length}/140 chars</span>
+              <div style="display:flex; gap:0.4rem; align-items:center;">
+                <span id="seoTitleWordCounter" style="font-size:0.7rem; font-weight:800; padding:0.1rem 0.45rem; border-radius:4px; background:${(effectiveTitle.trim().split(/\s+/).filter(Boolean).length <= 14) ? 'rgba(0,223,137,0.15)' : 'rgba(251,191,36,0.15)'}; color:${(effectiveTitle.trim().split(/\s+/).filter(Boolean).length <= 14) ? '#00df89' : '#fbbf24'}; border:1px solid ${(effectiveTitle.trim().split(/\s+/).filter(Boolean).length <= 14) ? 'rgba(0,223,137,0.3)' : 'rgba(251,191,36,0.3)'};">
+                  ${(effectiveTitle.trim().split(/\s+/).filter(Boolean).length <= 14) ? `🟢 ${effectiveTitle.trim().split(/\s+/).filter(Boolean).length} / 14 words` : `🟡 ${effectiveTitle.trim().split(/\s+/).filter(Boolean).length} words (Etsy Tip: ≤14 words)`}
+                </span>
+                <span id="seoTitleCounter" style="font-size:0.7rem; color:${effectiveTitle.length > 140 ? '#ef4444' : '#00df89'}; font-weight:800;">${effectiveTitle.length}/140 chars</span>
+              </div>
             </div>
-            <input type="text" id="studioSeoTitle" maxlength="140" value="${effectiveTitle.replace(/"/g, '&quot;')}" oninput="document.getElementById('seoTitleCounter').innerText = this.value.length + '/140 chars'; window.BrandsModule.updateLiveEtsyPreview();" style="width:100%; font-size:0.88rem; padding:0.65rem; background:rgba(0,0,0,0.35); border:1px solid rgba(0,223,137,0.3); border-radius:8px; color:#00df89; font-weight:700;">
+            <input type="text" id="studioSeoTitle" maxlength="140" value="${effectiveTitle.replace(/"/g, '&quot;')}" oninput="window.BrandsModule.onTitleInputChanged(this)" style="width:100%; font-size:0.88rem; padding:0.65rem; background:rgba(0,0,0,0.35); border:1px solid rgba(0,223,137,0.3); border-radius:8px; color:#00df89; font-weight:700;">
+            <div style="display:flex; align-items:center; gap:0.35rem; font-size:0.7rem; color:var(--text-muted); margin-top:0.35rem;">
+              <span>💡</span>
+              <span><strong>Tips to improve your title:</strong> Consider using <strong>14 words or less</strong> and front-load primary search keywords for higher organic conversion.</span>
+            </div>
           </div>
 
           <!-- 5. INTERACTIVE 13-TAG CHIP CLOUD -->
@@ -3921,8 +3930,7 @@ window.APP_MODULES.brands = async function(container) {
 
         if (titleEl && seoData.title) {
           titleEl.value = seoData.title;
-          const counter = document.getElementById('seoTitleCounter');
-          if (counter) counter.innerText = seoData.title.length + '/140 chars';
+          window.BrandsModule.onTitleInputChanged(titleEl);
         }
 
         if (descEl && seoData.description) {
@@ -3996,6 +4004,32 @@ window.APP_MODULES.brands = async function(container) {
         }
         if (window.showToast) window.showToast(`SEO generation failed: ${err.message}`, 'error');
       }
+    },
+
+    onTitleInputChanged(input) {
+      if (!input) return;
+      const val = input.value || '';
+      const charCounter = document.getElementById('seoTitleCounter');
+      const wordCounter = document.getElementById('seoTitleWordCounter');
+      if (charCounter) {
+        charCounter.innerText = `${val.length}/140 chars`;
+        charCounter.style.color = val.length > 140 ? '#ef4444' : '#00df89';
+      }
+      if (wordCounter) {
+        const words = val.trim().split(/\s+/).filter(Boolean).length;
+        if (words <= 14) {
+          wordCounter.innerHTML = `🟢 ${words} / 14 words`;
+          wordCounter.style.background = 'rgba(0,223,137,0.15)';
+          wordCounter.style.color = '#00df89';
+          wordCounter.style.borderColor = 'rgba(0,223,137,0.3)';
+        } else {
+          wordCounter.innerHTML = `🟡 ${words} words (Etsy Tip: ≤14 words)`;
+          wordCounter.style.background = 'rgba(251,191,36,0.15)';
+          wordCounter.style.color = '#fbbf24';
+          wordCounter.style.borderColor = 'rgba(251,191,36,0.3)';
+        }
+      }
+      window.BrandsModule.updateLiveEtsyPreview();
     },
 
     updateLiveEtsyPreview() {
