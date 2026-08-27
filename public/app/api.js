@@ -11,11 +11,27 @@ window.APP_API = {
   _cacheTTL: 30000, // 30 seconds
 
   getToken() {
-    return localStorage.getItem('sb-access-token') ||
+    // First try known static keys
+    const staticToken = localStorage.getItem('sb-access-token') ||
            localStorage.getItem('purpleos_pin_token') ||
            localStorage.getItem('purple_token') ||
            localStorage.getItem('gro10x_token') ||
            localStorage.getItem('jwt_token') || '';
+    if (staticToken) return staticToken;
+    // Supabase uses a dynamic key: sb-<project_ref>-auth-token containing JSON with access_token
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('sb-') && key.endsWith('-auth-token')) {
+          const raw = localStorage.getItem(key);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed?.access_token) return parsed.access_token;
+          }
+        }
+      }
+    } catch (e) {}
+    return '';
   },
 
   getHeaders() {

@@ -362,11 +362,30 @@ const STORE_LAUNCH_STEPS = [
 ];
 
 function getStudioAuthHeaders(extra = {}) {
-  const token = (window.APP_API && window.APP_API.getToken && window.APP_API.getToken()) ||
-    localStorage.getItem('sb-access-token') ||
-    localStorage.getItem('gro10x_token') ||
-    localStorage.getItem('purpleos_pin_token') ||
-    localStorage.getItem('purple_token') || '';
+  // Resolve token: check window.APP_API first, then scan all localStorage keys for Supabase auth
+  let token = (window.APP_API && window.APP_API.getToken && window.APP_API.getToken()) || '';
+  if (!token || !token.trim()) {
+    // Supabase stores auth under a dynamic key: sb-<project_ref>-auth-token
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('sb-') && key.endsWith('-auth-token')) {
+          const raw = localStorage.getItem(key);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed?.access_token) { token = parsed.access_token; break; }
+          }
+        }
+      }
+    } catch (e) {}
+  }
+  if (!token || !token.trim()) {
+    token = localStorage.getItem('sb-access-token') ||
+            localStorage.getItem('purpleos_pin_token') ||
+            localStorage.getItem('purple_token') ||
+            localStorage.getItem('gro10x_token') ||
+            localStorage.getItem('jwt_token') || '';
+  }
   const headers = { ...extra };
   if (token && token.trim() !== '') {
     headers['Authorization'] = `Bearer ${token.trim()}`;
@@ -455,6 +474,32 @@ function saveBrandsStateLocally(state) {
     localStorage.setItem('gro10x_brands_data', JSON.stringify(state));
   } catch (e) {}
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CACHE VERSION GUARD — bump this string to force-purge all stale localStorage
+// ─────────────────────────────────────────────────────────────────────────────
+const BRANDS_CACHE_VERSION = 'v2026-08-27c';
+(function purgeStaleLocalCache() {
+  try {
+    const storedVersion = localStorage.getItem('gro10x_brands_cache_version');
+    if (storedVersion !== BRANDS_CACHE_VERSION) {
+      localStorage.removeItem('gro10x_brands_data');
+      localStorage.setItem('gro10x_brands_cache_version', BRANDS_CACHE_VERSION);
+      console.log('[Brands] Stale cache purged — version bumped to', BRANDS_CACHE_VERSION);
+    }
+    // Also nuke the cache if it has no live products (guard against blank data)
+    const cached = localStorage.getItem('gro10x_brands_data');
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      const brand1Cat = parsed?.productsCatalog?.[1] || parsed?.productsCatalog?.['1'] || [];
+      const liveInCache = brand1Cat.filter(p => p.status === 'Live').length;
+      if (liveInCache === 0 && brand1Cat.length > 0) {
+        localStorage.removeItem('gro10x_brands_data');
+        console.log('[Brands] Detected 0-live stale cache — purged for fresh API load');
+      }
+    }
+  } catch (e) {}
+})();
 
 // ─────────────────────────────────────────────────────────────────────────────
 // MAIN RENDER CONTROLLER
