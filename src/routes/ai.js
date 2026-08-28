@@ -156,6 +156,96 @@ router.post('/summarize-brief', requireAuth, async (req, res) => {
   }
 });
 
+function buildDeterministicSpreadBreakdown(pageBreakdown, pageCount, category, productName) {
+  let pagesList = '';
+  let count = pageCount;
+
+  if (Array.isArray(pageBreakdown) && pageBreakdown.length > 0) {
+    count = pageBreakdown.length;
+    pagesList = pageBreakdown.map((p, idx) => {
+      const num = p.pageNumber || p.page_number || p.pageNum || p.page || (idx + 1);
+      const pTitle = p.title || p.name || `Spread #${num}`;
+      const pPurpose = p.purpose || p.description || (p.status === 'clean' ? 'High-resolution printable layout' : '');
+      return `• Page ${num}: ${pTitle}${pPurpose ? ` — ${pPurpose}` : ''}`;
+    }).join('\n');
+  } else {
+    // If no page breakdown is passed, resolve category spreads from blueprint generator
+    try {
+      const { generateCategoryBlueprint } = require('../services/blueprint-generator');
+      const bp = generateCategoryBlueprint({ productName, category, brandName: 'PlannerQueenGro' });
+      if (bp && Array.isArray(bp.pages) && bp.pages.length > 0) {
+        count = bp.pages.length;
+        pagesList = bp.pages.map((p, idx) => {
+          const num = p.pageNumber || idx + 1;
+          return `• Page ${num}: ${p.title}${p.purpose ? ` — ${p.purpose}` : ''}`;
+        }).join('\n');
+      }
+    } catch (e) {
+      // Fallback
+    }
+
+    if (!pagesList) {
+      count = 16;
+      pagesList = `• Page 1: Minimalist Aesthetic Cover & Personalization Index\n` +
+        `• Page 2: Quick Start Guide & Daily Planning Rituals\n` +
+        `• Page 3: Master Index & Hyperlinked Navigation Matrix\n` +
+        `• Page 4: Monthly Goals & Intentions Roadmap\n` +
+        `• Page 5: Weekly Master Schedule & Priority Matrix\n` +
+        `• Page 6: Daily Focused Execution & Time-Blocking Layout\n` +
+        `• Page 7: Monthly Income, Expenses & Budget Tracker\n` +
+        `• Page 8: 30-Day Habit Matrix & Routine Consistency Tracker\n` +
+        `• Page 9: Weekly Reflection, Wins & Mindful Reset\n` +
+        `• Page 10: Ideas, Mind Maps & Dot Grid Notes`;
+    }
+  }
+
+  return {
+    sectionHeader: `📋 COMPLETE ${count}-PAGE SPREAD BREAKDOWN (WHAT'S INSIDE):`,
+    pagesList,
+    count
+  };
+}
+
+function injectDeterministicSpreadsIntoDescription(description, spreadInfo, productName, brandName, brandNiche) {
+  const { sectionHeader, pagesList } = spreadInfo;
+  const spreadBlock = `${sectionHeader}\n${pagesList}`;
+
+  if (!description || typeof description !== 'string') {
+    return `✨ Welcome to ${brandName || 'PlannerQueenGro'} — ${brandNiche || 'Intentional Productivity & Digital Stationery'}\n\n` +
+      `Transform your daily routine, streamline your productivity, and achieve your goals with the **${productName}**.\n\n` +
+      `${spreadBlock}\n\n` +
+      `📦 WHAT IS INCLUDED & COMPATIBILITY:\n` +
+      `• High-Resolution Vector Printable PDF (US Letter & A4 Print-Ready 300 DPI)\n` +
+      `• Hyperlinked Digital Tablet Compatibility (GoodNotes, Notability, Samsung Notes, iPad)\n` +
+      `• Clean Minimalist Typography & Eye-Friendly Color Palette\n` +
+      `• Official Single-User Anti-Piracy License Pass\n` +
+      `• Bonus Canva / Notion Quick-Start Setup Guide\n\n` +
+      `⚡ HOW IT WORKS:\n` +
+      `1. Complete your purchase on Etsy.\n` +
+      `2. Instantly download your PDF files from Etsy Purchases.\n` +
+      `3. Import into GoodNotes / tablet app or print immediately at home!\n\n` +
+      `🔒 LICENSE & USAGE:\n` +
+      `For personal use only. Reselling, sharing, or commercial redistribution is strictly prohibited.\n\n` +
+      `💌 Need assistance or custom requests? Send us an Etsy message anytime!`;
+  }
+
+  // Regex to match existing spread section (from COMPLETE ... PAGE SPREAD BREAKDOWN up to 📦 WHAT IS INCLUDED or next section)
+  const spreadSectionRegex = /(?:📋\s*)?(?:COMPLETE\s+)?(?:\d+[-–\s]*PAGE)?\s*SPREAD\s*BREAKDOWN[\s\S]*?(?=(?:📦|⚡|🔒|💌|WHAT IS INCLUDED|HOW IT WORKS|LICENSE|$))/i;
+
+  if (spreadSectionRegex.test(description)) {
+    return description.replace(spreadSectionRegex, `${spreadBlock}\n\n`);
+  }
+
+  // If no spread section was found, insert it right after the first headline paragraph
+  const paragraphs = description.split('\n\n');
+  if (paragraphs.length >= 2) {
+    paragraphs.splice(2, 0, spreadBlock);
+    return paragraphs.join('\n\n');
+  }
+
+  return `${description}\n\n${spreadBlock}`;
+}
+
 // POST /api/ai/etsy-seo — Generates Category-Aware Etsy SEO Title, 13 Tags, and Listing Description with Complete Spread Breakdown
 router.post('/etsy-seo', requireAuth, async (req, res) => {
   const { productName, brandName, brandNiche, brandVoice, type, category, pageCount, pageBreakdown, palette, auditScore, price } = req.body;
@@ -164,8 +254,10 @@ router.post('/etsy-seo', requireAuth, async (req, res) => {
   }
 
   const key = process.env.GEMINI_API_KEY;
+  const spreadInfo = buildDeterministicSpreadBreakdown(pageBreakdown, pageCount, category, productName);
+  const effectivePageCount = spreadInfo.count;
 
-  function generateFallbackSEO(pName, bName, niche, pType, cat, pCount, pBreakdown) {
+  function generateFallbackSEO(pName, bName, niche, pType, cat, sInfo) {
     const cleanP = pName.replace(/^[A-Z]\d+\s*[-–]\s*/, '');
     const shortCat = (cat || 'Daily Planner').replace(/Planners|Trackers/i, 'Planner').trim();
     const title = `${cleanP} - ${shortCat} Printable - ${bName || 'PlannerQueen'} GoodNotes PDF`
@@ -189,71 +281,7 @@ router.post('/etsy-seo', requireAuth, async (req, res) => {
       `${(bName || 'gro10x').toLowerCase().slice(0, 20)}`
     ].slice(0, 13);
 
-    let pagesList = '';
-    if (Array.isArray(pBreakdown) && pBreakdown.length > 0) {
-      pagesList = pBreakdown.map((p, idx) => {
-        const num = p.pageNumber || p.page_number || p.pageNum || p.page || (idx + 1);
-        const pTitle = p.title || p.name || `Spread #${num}`;
-        const pPurpose = p.purpose || p.description || (p.status === 'clean' ? 'High-resolution printable layout' : '');
-        return `• Page ${num}: ${pTitle}${pPurpose ? ` — ${pPurpose}` : ''}`;
-      }).join('\n');
-    } else {
-      const catLower = (cat || '').toLowerCase();
-      if (catLower.includes('budget') || catLower.includes('finance')) {
-        pagesList = `• Page 1: Minimalist Cover & Financial Ledger Index\n` +
-          `• Page 2: Annual Net Worth & Financial Goals Roadmap\n` +
-          `• Page 3: Monthly Master Budget & Expense Tracker\n` +
-          `• Page 4: Debt Snowball & Payoff Velocity Tracker\n` +
-          `• Page 5: Sinking Funds & Savings Challenge Matrix\n` +
-          `• Page 6: Bill Calendar & Automated Payment Log\n` +
-          `• Page 7: Daily Expense Log & Receipts Categorizer\n` +
-          `• Page 8: Subscription Audit & Recurring Bills Hub\n` +
-          `• Page 9: End-of-Month Financial Review & Net Surplus\n` +
-          `• Page 10: Financial Vision, Notes & Milestone Badges`;
-      } else if (catLower.includes('fitness') || catLower.includes('health') || catLower.includes('wellness')) {
-        pagesList = `• Page 1: Minimalist Cover & Fitness Profile Index\n` +
-          `• Page 2: 90-Day Body Transformation & Measurement Matrix\n` +
-          `• Page 3: Weekly Workout Split & Progressive Overload Log\n` +
-          `• Page 4: Daily Meal Plan & Macronutrient Tracker\n` +
-          `• Page 5: Water Intake, Sleep & Recovery Dashboard\n` +
-          `• Page 6: Running & Cardio Pace Performance Log\n` +
-          `• Page 7: Grocery List & High-Protein Meal Prep Matrix\n` +
-          `• Page 8: 30-Day Fitness Consistency Habit Tracker\n` +
-          `• Page 9: Weekly Check-In, Progress Photos & Wins\n` +
-          `• Page 10: Wellness Notes & Motivational Reflections`;
-      } else {
-        pagesList = `• Page 1: Minimalist Aesthetic Cover & Personalization Index\n` +
-          `• Page 2: Quick Start Guide & Daily Planning Rituals\n` +
-          `• Page 3: Master Index & Hyperlinked Navigation Matrix\n` +
-          `• Page 4: Monthly Goals & Intentions Roadmap\n` +
-          `• Page 5: Weekly Master Schedule & Priority Matrix\n` +
-          `• Page 6: Daily Focused Execution & Time-Blocking Layout\n` +
-          `• Page 7: Monthly Income, Expenses & Budget Tracker\n` +
-          `• Page 8: 30-Day Habit Matrix & Routine Consistency Tracker\n` +
-          `• Page 9: Weekly Reflection, Wins & Mindful Reset\n` +
-          `• Page 10: Ideas, Mind Maps & Dot Grid Notes`;
-      }
-    }
-
-    const effectivePageCount = pCount || (Array.isArray(pBreakdown) && pBreakdown.length > 0 ? pBreakdown.length : 16);
-
-    const description = `✨ Welcome to ${bName} — ${niche || 'Intentional Productivity & Digital Stationery'}\n\n` +
-      `Transform your daily routine, streamline your productivity, and achieve your goals with the **${cleanP}**.\n\n` +
-      `📋 COMPLETE ${effectivePageCount}-PAGE SPREAD BREAKDOWN (WHAT'S INSIDE):\n` +
-      `${pagesList}\n\n` +
-      `📦 WHAT IS INCLUDED & COMPATIBILITY:\n` +
-      `• High-Resolution Vector Printable PDF (US Letter & A4 Print-Ready 300 DPI)\n` +
-      `• Hyperlinked Digital Tablet Compatibility (GoodNotes, Notability, Samsung Notes, iPad)\n` +
-      `• Clean Minimalist Typography & Eye-Friendly Color Palette\n` +
-      `• Official Single-User Anti-Piracy License Pass\n` +
-      `• Bonus Canva / Notion Quick-Start Setup Guide\n\n` +
-      `⚡ HOW IT WORKS:\n` +
-      `1. Complete your purchase on Etsy.\n` +
-      `2. Instantly download your PDF files from Etsy Purchases.\n` +
-      `3. Import into GoodNotes / tablet app or print immediately at home!\n\n` +
-      `🔒 LICENSE & USAGE:\n` +
-      `For personal use only. Reselling, sharing, or commercial redistribution is strictly prohibited.\n\n` +
-      `💌 Need assistance or custom requests? Send us an Etsy message anytime!`;
+    const description = injectDeterministicSpreadsIntoDescription(null, sInfo, cleanP, bName, niche);
 
     return {
       title,
@@ -267,20 +295,9 @@ router.post('/etsy-seo', requireAuth, async (req, res) => {
   if (!key) {
     return res.json({
       success: true,
-      ...generateFallbackSEO(productName, brandName, brandNiche, type, category, pageCount, pageBreakdown)
+      ...generateFallbackSEO(productName, brandName, brandNiche, type, category, spreadInfo)
     });
   }
-
-  const formattedPageBreakdown = Array.isArray(pageBreakdown) && pageBreakdown.length > 0
-    ? pageBreakdown.map((p, idx) => {
-        const num = p.pageNumber || p.page_number || p.pageNum || p.page || (idx + 1);
-        const pTitle = p.title || p.name || `Spread #${num}`;
-        const pPurpose = p.purpose || p.description || '';
-        return `• Page ${num}: ${pTitle}${pPurpose ? ` — ${pPurpose}` : ''}`;
-      }).join('\n')
-    : null;
-
-  const effectivePageCount = pageCount || (Array.isArray(pageBreakdown) && pageBreakdown.length > 0 ? pageBreakdown.length : 16);
 
   const prompt =
     `You are an elite Etsy SEO and copywriting specialist.\n\n` +
@@ -294,13 +311,13 @@ router.post('/etsy-seo', requireAuth, async (req, res) => {
     `System Size: "${effectivePageCount} Pages"\n` +
     `Palette: "${Array.isArray(palette) ? palette.join(', ') : (palette || '#8B5A7A, #FAF3E8, #7D9B76')}"\n` +
     `Retail Price: "$${price || 7.49} USD"\n` +
-    (formattedPageBreakdown ? `\nActual Tested Page-by-Page Spread Breakdown (from AI Vision Audit & Blueprint):\n${formattedPageBreakdown}\n` : '') +
+    `Actual Tested Page Breakdown:\n${spreadInfo.pagesList}\n` +
     `\nStrict Requirements:\n` +
     `1. "title": Strictly 14 WORDS OR FEWER AND 140 characters or fewer. Comply with Etsy's official SEO ranking recommendation: "Consider using 14 words or less". Front-load highest-volume buyer keywords separated by hyphens (e.g. "Mindful Morning Routine Journal - Printable Daily Planner - GoodNotes PDF"). Avoid pipes (|) and avoid keyword stuffing.\n` +
     `2. "tags": EXACTLY 13 comma-separated tag phrases. EACH tag MUST BE 20 CHARACTERS OR FEWER. Must include long-tail buyer search phrases tailored to "${category || 'planners'}".\n` +
     `3. "description": 5 high-converting structured sections:\n` +
     `   (1) Headline Hook & Value Proposition tailored specifically to "${productName}"\n` +
-    `   (2) 📋 COMPLETE ${effectivePageCount}-PAGE SPREAD BREAKDOWN (CRITICAL: You MUST use the EXACT page titles provided in the Actual Tested Page-by-Page Spread Breakdown above, listing every page as a bullet point: "• Page X: [Exact Title] — [Brief 1-sentence value]")\n` +
+    `   (2) ${spreadInfo.sectionHeader}\n${spreadInfo.pagesList}\n` +
     `   (3) 📦 What is Included & File Specifications (US Letter & A4 Vector PDF, GoodNotes / iPad tablet compatibility)\n` +
     `   (4) ⚡ How It Works / Instant Download Steps\n` +
     `   (5) 🔒 Anti-Piracy Single-User License Note\n` +
@@ -331,19 +348,28 @@ router.post('/etsy-seo', requireAuth, async (req, res) => {
     }
     tags = tags.slice(0, 13);
 
+    // CRITICAL: Deterministically guarantee Section 2 spreads in the returned description
+    const finalDescription = injectDeterministicSpreadsIntoDescription(
+      parsed.description,
+      spreadInfo,
+      productName,
+      brandName,
+      brandNiche
+    );
+
     return res.json({
       success: true,
       title: (parsed.title || productName).slice(0, 140),
       tags,
-      description: parsed.description || '',
+      description: finalDescription,
       keywords: (parsed.keywords || []).slice(0, 5),
-      generatedBy: 'gemini'
+      generatedBy: 'gemini_with_deterministic_spreads'
     });
   } catch (err) {
     console.warn('[Etsy SEO Gemini Error]:', err.message);
     return res.json({
       success: true,
-      ...generateFallbackSEO(productName, brandName, brandNiche, type, category, pageCount)
+      ...generateFallbackSEO(productName, brandName, brandNiche, type, category, spreadInfo)
     });
   }
 });

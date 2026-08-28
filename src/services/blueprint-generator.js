@@ -483,18 +483,30 @@ function getCategoryConfig(catId, cleanP, bName, colors, fonts) {
           },
           {
             pageNumber: 12,
-            section: 'High-Impact Savings Challenges',
-            title: '52-Week & No-Spend Challenge Matrix',
-            purpose: 'Gamified savings challenges to generate quick financial momentum and break impulse habits.',
-            layoutSpecs: '52-week incremental savings table ($1,378 challenge) + 30-day No-Spend calendar challenge.',
+            section: 'Savings Challenges (52-Week)',
+            title: '52-Week Tiered Savings Challenge',
+            purpose: 'Gamified 52-week incremental savings schedule to build savings momentum and reach $1,378+.',
+            layoutSpecs: '52 numbered weekly rows with deposit targets, checkboxes, and cumulative milestone totals.',
             elements: [
               '52-Week Tiered Savings Schedule Checklist',
-              '30-Day No-Spend Visual Calendar Tracker',
-              'Saved Challenge Funds Allocation Plan'
+              'Weekly Target Amount & Deposit Checkboxes',
+              'Milestone Milestone Progress Badges'
             ]
           },
           {
             pageNumber: 13,
+            section: 'No-Spend Reset Challenge',
+            title: '30-Day No-Spend Challenge Matrix',
+            purpose: '30-day visual challenge calendar to reset spending habits and eliminate impulse purchases.',
+            layoutSpecs: '30-day visual calendar grid with saved funds reallocation plan.',
+            elements: [
+              '30-Day No-Spend Visual Calendar Tracker',
+              'Saved Challenge Funds Allocation Plan Table',
+              'Mindful Financial Reflections Log'
+            ]
+          },
+          {
+            pageNumber: 14,
             section: 'Investment & Retirement Growth',
             title: 'Investment Portfolio & Retirement Log',
             purpose: 'Track index funds, Roth IRA, 401(k), ETFs, and crypto growth over time.',
@@ -506,19 +518,43 @@ function getCategoryConfig(catId, cleanP, bName, colors, fonts) {
             ]
           },
           {
-            pageNumber: 14,
-            section: 'Tax Deduction & Expense Organizer',
-            title: 'Annual Tax Deduction & Receipt Log',
-            purpose: 'Organize deductible business, charity, medical, and property expenses for stress-free filing.',
-            layoutSpecs: 'Categorized deduction tables with Receipt ID, Date, Vendor, Amount, and Category.',
+            pageNumber: 15,
+            section: 'Charitable Giving & Tax Records',
+            title: 'Charitable Donations & Tax Receipts Log',
+            purpose: 'Organize deductible charitable gifts, donor receipts, and non-profit contributions.',
+            layoutSpecs: 'Table with Date, Organization Name, Deduction Type (Cash/Goods/Services), Amount, and Receipt ID.',
             elements: [
-              'Charitable Donations & Tax Receipts Log',
-              'Home Office & Business Write-Offs Table',
-              'Medical & Health Savings (HSA/FSA) Expense Log'
+              'Charitable Donations & Tax Receipts Log Table',
+              'Deduction Type Checkboxes (Cash, Goods, Services)',
+              'Annual Giving Total Summary Block'
             ]
           },
           {
-            pageNumber: 15,
+            pageNumber: 16,
+            section: 'Business & Freelance Deductions',
+            title: 'Home Office & Business Write-Offs Log',
+            purpose: 'Track eligible home office and freelance business expenses for tax deductions.',
+            layoutSpecs: 'Table with Date, Expense Description, Category, Amount, and Tax-Deductible Checkbox.',
+            elements: [
+              'Home Office & Business Write-Offs Log Table',
+              'Square Footage Home Office Calculation Notes',
+              'Tax-Deductible Percentage Calculator'
+            ]
+          },
+          {
+            pageNumber: 17,
+            section: 'Healthcare & FSA/HSA Tracking',
+            title: 'Medical & Health Savings (HSA/FSA) Expense Log',
+            purpose: 'Track healthcare, prescription, dental, and medical receipts for HSA/FSA reimbursement.',
+            layoutSpecs: 'Table with Date, Vendor/Provider, Service Description, Amount, HSA Reimbursed Checkbox, and Receipt ID.',
+            elements: [
+              'Medical & Health Savings Expense Log Table',
+              'HSA/FSA Reimbursed Status Checkboxes',
+              'Annual Out-of-Pocket Healthcare Total'
+            ]
+          },
+          {
+            pageNumber: 18,
             section: 'Monthly Financial Reflection & Wins',
             title: 'Monthly Financial Review & Budget Audit',
             purpose: 'Review spending leaks, celebrate savings wins, and adjust the budget for next month.',
@@ -530,7 +566,7 @@ function getCategoryConfig(catId, cleanP, bName, colors, fonts) {
             ]
           },
           {
-            pageNumber: 16,
+            pageNumber: 19,
             section: 'Financial Goals Vision Board',
             title: 'Financial Vision Board & Dream Milestones',
             purpose: 'Visual inspiration for long-term goals (Homeownership, Debt Freedom, Dream Vacation).',
@@ -542,7 +578,7 @@ function getCategoryConfig(catId, cleanP, bName, colors, fonts) {
             ]
           },
           {
-            pageNumber: 17,
+            pageNumber: 20,
             section: 'Dot Grid Notes & Calculations',
             title: 'Financial Calculations & Notes Grid',
             purpose: 'Scratchpad for mortgage calculations, side hustle pricing formulas, and financial notes.',
@@ -1192,7 +1228,41 @@ function getCategoryConfig(catId, cleanP, bName, colors, fonts) {
  * Generate Complete Deterministic Blueprint with Category Intelligence
  */
 function generateCategoryBlueprint(pName, bName, niche, voice, palette, fonts, pType, categoryName, categoryOverride = null, targetAudienceOverride = null) {
-  const cleanP = pName.replace(/^[A-Z]\d+\s*[-–]\s*/, '');
+  let productName = pName;
+  let brandName = bName;
+  let brandNiche = niche;
+  let brandVoice = voice;
+  let brandPalette = palette;
+  let brandFonts = fonts;
+  let productType = pType;
+  let catName = categoryName;
+  let catOverride = categoryOverride;
+  let audienceOverride = targetAudienceOverride;
+
+  if (pName && typeof pName === 'object' && !Array.isArray(pName)) {
+    productName = pName.productName || pName.name || '';
+    brandName = pName.brandName || pName.brand || 'PlannerQueenGro';
+    brandNiche = pName.brandNiche || pName.niche || 'Productivity';
+    brandVoice = pName.brandVoice || pName.voice || 'Warm, inspiring';
+    brandPalette = pName.brandPalette || pName.palette || ['#8B5A7A', '#FAF3E8', '#7D9B76'];
+    brandFonts = pName.brandFonts || pName.fonts || 'Playfair Display + Lato';
+    productType = pName.type || pName.format || 'Digital PDF';
+    catName = pName.category || pName.categoryName || '';
+    catOverride = pName.categoryOverride || null;
+    audienceOverride = pName.targetAudienceOverride || pName.targetAudience || null;
+  }
+
+  bName = brandName || bName || 'PlannerQueenGro';
+  niche = brandNiche || niche || 'Productivity & Life Planning';
+  voice = brandVoice || voice || 'Warm, inspiring, clear';
+  palette = brandPalette || palette || ['#8B5A7A', '#FAF3E8', '#7D9B76', '#C4887C', '#2E2E2E'];
+  fonts = brandFonts || fonts || 'Playfair Display + Lato';
+  pType = productType || pType || 'Digital PDF';
+  categoryName = catName || categoryName || '';
+  categoryOverride = catOverride || categoryOverride || null;
+  targetAudienceOverride = audienceOverride || targetAudienceOverride || null;
+
+  const cleanP = String(productName || 'Digital Planner').replace(/^[A-Z]\d+\s*[-–]\s*/, '');
   const catId = resolveCategory(cleanP, categoryName, pType, categoryOverride);
 
   let hFont = 'Playfair Display';
@@ -1284,6 +1354,9 @@ function generateCategoryBlueprint(pName, bName, niche, voice, palette, fonts, p
     brandName: bName,
     categoryName: config.categoryName,
     targetAudience: config.targetAudience,
+    pageCount: config.pages.length,
+    pages: config.pages,
+    pageBreakdown: config.pages,
     documentSpecs: {
       dimensions: config.dimensions,
       margins: '0.5 in (12.7 mm) safe printing zone',
@@ -1301,7 +1374,6 @@ function generateCategoryBlueprint(pName, bName, niche, voice, palette, fonts, p
         accentFont: 'Cormorant Garamond (Italic)'
       }
     },
-    pageBreakdown: config.pages,
     googleFlowPrompt,
     storageArchitecture: {
       recommendedPath: `brands/${bName.toLowerCase().replace(/[^a-z0-9]/g, '_')}/${cleanP.toLowerCase().replace(/[^a-z0-9]/g, '_')}/v1.0/deliverable.pdf`,
