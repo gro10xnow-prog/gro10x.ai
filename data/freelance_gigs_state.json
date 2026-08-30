@@ -23,7 +23,8 @@
       "title": "I will build your web app or PWA MVP in 48 hours",
       "categorySelection": {
         "primary": "Programming & Tech",
-        "sub": "Web Applications"
+        "sub": "Vibe Coding",
+        "serviceType": "Development & MVP"
       },
       "tags": [
         "web app",
@@ -171,7 +172,82 @@
       },
       "status": "Live",
       "liveUrl": "https://www.fiverr.com/farhan/build-your-pwa-mvp-48h",
-      "updatedAt": "2026-08-30T17:43:20.218Z"
+      "updatedAt": "2026-08-30T19:39:25.428Z",
+      "titleBody": "build your web app or pwa mvp in 48 hours",
+      "pricingMatrix": {
+        "screens": {
+          "basic": 2,
+          "standard": 3,
+          "premium": 10
+        },
+        "apis": {
+          "basic": 0,
+          "standard": 1,
+          "premium": 5
+        },
+        "checkboxes": {
+          "database": [
+            true,
+            true,
+            true
+          ],
+          "auth": [
+            true,
+            true,
+            true
+          ],
+          "seo": [
+            false,
+            false,
+            true
+          ],
+          "analytics": [
+            false,
+            false,
+            true
+          ],
+          "payment": [
+            false,
+            true,
+            true
+          ],
+          "hosting": [
+            true,
+            true,
+            true
+          ],
+          "admin": [
+            true,
+            true,
+            true
+          ],
+          "securityAudit": [
+            false,
+            false,
+            true
+          ]
+        }
+      },
+      "galleryPrompts": {
+        "videoScenes": [
+          "Scene 1 (0-10s) Hook: Cinematic macro shot of a frustrated entrepreneur staring at calendar showing 3 months agency delay, dramatic neon green glow transitions into a stopwatch hitting 48 hours.",
+          "Scene 2 (10-20s) Problem: Fast dynamic montage of messy legacy code, endless agency invoices, and slow loading wireframes disappearing into digital smoke.",
+          "Scene 3 (20-30s) Solution: High-tech 3D glassmorphic laptop opening rapidly, revealing sleek dark-mode Progressive Web App dashboard booting with 60fps fluidity.",
+          "Scene 4 (30-40s) Architecture: Holographic node network displaying Node.js backend connecting securely to Supabase PostgreSQL real-time database with lightning pulses.",
+          "Scene 5 (40-50s) Feature Demo: Smartphone screen smoothly installing the PWA icon to home screen, instant biometric login, dynamic interactive data chart rendering live.",
+          "Scene 6 (50-60s) Handover: Digital padlock opening smoothly, revealing 100% full GitHub repository ownership, zero recurring agency fees badge glowing.",
+          "Scene 7 (60-70s) CTA: High energy closing card with neon green typography: FAST 48-HR MVP SPRINT - SEND US YOUR SCOPE TODAY with GRO10X verified badge."
+        ],
+        "imagePrompts": [
+          "Image 1 (Hero Thumbnail 1280x769): High-contrast dark glassmorphic banner with neon green (#00DF89) bold 3D typography: WEB APP / PWA MVP IN 48 HOURS, sleek floating MacBook and iPhone mockup displaying modern SaaS dashboard, verified speed badge.",
+          "Image 2 (Feature Matrix Slide): Infographic layout on dark slate background showing 3 tier features: 48h Sprint, Supabase Database, Auth, Stripe integration, with checkmark matrix and clean UI icons.",
+          "Image 3 (Architecture & Deliverables): Isometric 3D diagram showing full stack pipeline: Frontend Responsive PWA -> Supabase PostgreSQL DB -> Vercel Cloud Edge -> Full GitHub Repo Handover."
+        ],
+        "pdfPrompts": [
+          "PDF 1 (Agency Case Study & Capabilities Guide): Write a 2-page executive agency capabilities brief detailing GRO10X rapid 48-hour MVP sprint methodology, technical architecture standards (Node.js + Supabase + Vercel), client deliverables breakdown, and project timeline milestone guarantee for prospective enterprise buyers.",
+          "PDF 2 (Technical Onboarding & Deliverables Spec Sheet): Generate a comprehensive technical spec sheet and onboarding checklist for MVP buyers, covering database configuration requirements, user role permissions, API key integration protocols, and post-launch maintenance runbook."
+        ]
+      }
     },
     {
       "id": "GIG-TECH-002",
@@ -180,97 +256,96 @@
       "category": "mobile-web",
       "platform": "fiverr",
       "gigIndex": 2,
-      "title": "I will build your ai websites & software in rapid sprint",
+      "title": "I will build fast AI web apps and SaaS platforms in 48h",
       "categorySelection": {
         "primary": "Programming & Tech",
         "sub": "Web Applications"
       },
       "tags": [
-        "ai websites software",
-        "fast delivery",
-        "supabase",
-        "node js",
-        "business solution"
+        "ai website",
+        "saas web app",
+        "nodejs express",
+        "supabase app",
+        "gemini ai"
       ],
       "pricing": {
         "basic": {
-          "title": "Core MVP Sprint",
+          "title": "Sprint MVP Launch",
           "price": 250,
           "deliveryDays": 2,
           "revisions": 2,
-          "description": "1 core feature working solution with responsive UI and live database connection.",
+          "description": "High-converting single-page AI web platform with smart lead capture and Vercel deployment.",
           "features": [
-            "1 Core Feature",
-            "Supabase Database Setup",
-            "Responsive UI",
-            "Live Cloud Deployment",
-            "Source Code Handover"
+            "Node.js Backend Setup",
+            "Gemini AI Dynamic Forms",
+            "Mobile-Optimized UI",
+            "Vercel Fast Deployment"
           ]
         },
         "standard": {
-          "title": "Full Business Platform",
-          "price": 550,
-          "deliveryDays": 5,
+          "title": "Full SaaS Platform",
+          "price": 650,
+          "deliveryDays": 4,
           "revisions": 3,
-          "description": "Complete 3-feature platform with auth, dynamic forms, notification triggers, and admin panel.",
+          "description": "Multi-page dynamic web app with Supabase database, secure auth, and smart AI features.",
           "features": [
-            "3 Core Features",
-            "User Authentication",
-            "Notification Webhooks",
-            "Admin Dashboard",
-            "7 Days Support"
+            "Supabase Database & Auth",
+            "Express API Endpoints",
+            "Gemini AI Automation",
+            "Google Sheets Sync",
+            "Core Web Vitals 95+"
           ]
         },
         "premium": {
-          "title": "Enterprise Suite",
-          "price": 1100,
-          "deliveryDays": 8,
+          "title": "Enterprise AI Ecosystem",
+          "price": 1350,
+          "deliveryDays": 7,
           "revisions": "Unlimited",
-          "description": "Full production-grade solution with payment gateway, automated digests, and 14 days warranty.",
+          "description": "Complete production-grade SaaS system with Telegram bot alerts, AI pipelines, and admin CRM.",
           "features": [
-            "Full Architecture",
-            "Payment Integration",
-            "Telegram & Email Alerts",
-            "Documentation & Runbook",
-            "14 Days Support"
+            "End-to-End SaaS Architecture",
+            "Custom Supabase PostgreSQL",
+            "Telegram Bot API Integration",
+            "Gemini AI Core Logic",
+            "VIP Priority Support"
           ]
         }
       },
-      "description": "Are you looking for rapid, reliable engineering for your business? Traditional agencies take months and charge high hourly rates. We engineer clean, cloud-native solutions deployed in days, not months.\n\nWhat We Deliver:\n• Clean, maintainable Node.js and Supabase architecture\n• Fully responsive mobile and desktop user interfaces\n• Fast cloud deployment with SSL and zero downtime\n• Real-time database and secure authentication\n• Complete source code ownership and technical handover\n\nWhy Choose GRO10X:\nWe operate a modern, AI-assisted engineering workflow focused on speed, clear communication, and measurable business outcomes. You get a working live platform quickly to validate and grow your business.\n\nVerified Tech Stack:\nNode.js, Express, Supabase PostgreSQL, Telegram Bot API, and Vercel Edge.\n\nSend us a message with your project scope to get started today!",
+      "description": "Stop waiting months to launch your digital product. At GRO10X AI Agency, we engineer ultra-fast, production-grade AI web platforms and SaaS apps delivered in days not months.\n\nWhat We Deliver:\n• High-performance Node.js and Express backend architecture\n• Secure Supabase PostgreSQL database and user authentication\n• Intelligent dynamic lead generation forms powered by Gemini AI\n• Automated workflows via Google Workspace and Google Apps Script\n• Real-time lead notifications using Telegram Bot API\n• Blazing 95+ Core Web Vitals performance deployed on Vercel\n\nWhy Choose GRO10X:\n• Rapid 48-hour sprint execution with zero code bloat\n• Mobile-first, responsive design engineered for instant conversion\n• Robust, scalable data models built for enterprise growth\n\nLaunch your vision with a battle-tested team dedicated to speed, scale, and clean execution. Send a message to start your build today!",
       "faq": [
         {
-          "q": "How fast can you deliver the project?",
-          "a": "Our sprint approach allows us to deliver basic prototypes in 48 hours and full platforms in 5 to 8 days."
+          "q": "How fast can you deliver the first working version?",
+          "a": "Our rapid sprint delivers a working MVP within 48 hours for the Basic tier and complete full-stack systems within 4 to 7 days."
         },
         {
-          "q": "Do I get full source code ownership?",
-          "a": "Yes, you receive 100% full source code ownership with complete GitHub repository access."
+          "q": "What database and hosting infrastructure do you use?",
+          "a": "We build scalable backends with Node.js, Express, and Supabase PostgreSQL, deployed globally with instant edge speeds on Vercel."
         },
         {
-          "q": "Where will the project be hosted?",
-          "a": "We deploy on serverless edge networks like Vercel with automated SSL certificates and high uptime."
+          "q": "Can the web app integrate automated alerts and CRM data?",
+          "a": "Yes. We connect Gemini AI workflows directly to Telegram Bot API for instant alerts and Google Workspace for automated lead tracking."
         },
         {
-          "q": "Can you add custom integrations later?",
-          "a": "Yes, all code is built modularly so you can easily expand features, payment gateways, and APIs."
+          "q": "Will my web application be optimized for mobile screens and SEO?",
+          "a": "Every build is mobile-first, lightweight, and fine-tuned to score 95+ on Google Core Web Vitals for maximum SEO performance."
         }
       ],
       "buyerRequirements": [
-        "What is the primary goal and target audience for this project?",
-        "Do you have reference websites, wireframes, or brand assets?",
-        "What are the 1-3 essential features required for the first release?"
+        "Please share a brief summary of your web app concept, target users, and key desired features.",
+        "Do you already have branding assets (logos, colors, copy), or should we use high-conversion standard templates?",
+        "Do you have your Supabase, Vercel, or Gemini API keys ready, or do you need guided setup instructions?"
       ],
       "thumbnailBrief": {
-        "headline": "AI WEBSITES & SOFTWARE",
-        "subheading": "FAST 48-HR SPRINT · NODE.JS + SUPABASE",
+        "headline": "AI WEB APPS & SAAS",
+        "subheading": "NODE.JS • SUPABASE • GEMINI AI",
         "colorPalette": [
           "#00DF89",
-          "#3B82F6",
-          "#09090B"
+          "#09090B",
+          "#FFFFFF"
         ],
-        "visualStyle": "Dark glassmorphic layout displaying clean dashboard interface and responsive device frames.",
-        "badgeText": "⚡ RAPID SPRINT DELIVERY",
-        "layoutAdvice": "High contrast neon typography on dark background with clean screenshot preview."
+        "visualStyle": "Dark modern SaaS interface mockup with glowing neon green accents and crisp typography",
+        "badgeText": "⚡ LAUNCH IN 48 HOURS",
+        "layoutAdvice": "Position bold headline in top left with green highlight; place 3D high-speed web app mockup on the right with the 48h badge on top right corner."
       },
       "healthCheck": {
         "score": 10,
@@ -284,7 +359,7 @@
           {
             "rule": "Title length between 25-80 chars",
             "passed": true,
-            "message": "Title is 56 chars."
+            "message": "Title is 55 chars."
           },
           {
             "rule": "Exactly 5 keyword search tags (<= 20 chars each)",
@@ -294,7 +369,7 @@
           {
             "rule": "Description length between 800-1250 chars",
             "passed": true,
-            "message": "Description length: 867 chars."
+            "message": "Description length: 897 chars."
           },
           {
             "rule": "No pricing amounts in description body",
@@ -330,7 +405,82 @@
       },
       "status": "Generated",
       "liveUrl": "",
-      "updatedAt": "2026-08-30T17:43:37.720Z"
+      "updatedAt": "2026-08-30T19:39:40.450Z",
+      "titleBody": "build fast AI web apps and SaaS platforms in 48h",
+      "pricingMatrix": {
+        "screens": {
+          "basic": 2,
+          "standard": 3,
+          "premium": 10
+        },
+        "apis": {
+          "basic": 0,
+          "standard": 1,
+          "premium": 5
+        },
+        "checkboxes": {
+          "database": [
+            true,
+            true,
+            true
+          ],
+          "auth": [
+            true,
+            true,
+            true
+          ],
+          "seo": [
+            false,
+            false,
+            true
+          ],
+          "analytics": [
+            false,
+            false,
+            true
+          ],
+          "payment": [
+            false,
+            true,
+            true
+          ],
+          "hosting": [
+            true,
+            true,
+            true
+          ],
+          "admin": [
+            true,
+            true,
+            true
+          ],
+          "securityAudit": [
+            false,
+            false,
+            true
+          ]
+        }
+      },
+      "galleryPrompts": {
+        "videoScenes": [
+          "Scene 1 (0-10s) Hook: Cinematic macro shot of entrepreneur facing weeks of development delay, transitioning into rapid GRO10X sprint timer.",
+          "Scene 2 (10-20s) Problem: Legacy systems and high agency invoices dissolving into streamlined digital flow.",
+          "Scene 3 (20-30s) Solution: Sleek dark-mode dashboard interface loading with fluid 60fps responsiveness.",
+          "Scene 4 (30-40s) Architecture: Node.js backend connecting securely to Supabase PostgreSQL real-time database.",
+          "Scene 5 (40-50s) Feature Demo: Interactive feature walkthrough with live dynamic forms and instant cloud response.",
+          "Scene 6 (50-60s) Handover: Complete GitHub repository ownership and zero recurring maintenance fees badge.",
+          "Scene 7 (60-70s) CTA: High energy closing card: RAPID SPRINT DELIVERY - SEND YOUR PROJECT SCOPE TODAY."
+        ],
+        "imagePrompts": [
+          "Image 1 (Hero Thumbnail 1280x769): High-contrast dark glassmorphic banner with neon green (#00DF89) bold 3D typography: AI WEBSITES & SOFTWARE, floating laptop mockup and verified speed badge.",
+          "Image 2 (Feature Matrix Slide): Dark slate grid highlighting 4 core sprint features, Supabase integration, and live Vercel cloud deployment.",
+          "Image 3 (Architecture & Deliverables): 3D isometric diagram illustrating end-to-end full stack architecture and source code handover."
+        ],
+        "pdfPrompts": [
+          "PDF 1 (Agency Case Study & Capabilities Guide): 2-page executive summary detailing GRO10X rapid development methodology, architecture standards, and milestone timeline.",
+          "PDF 2 (Technical Onboarding & Deliverables Spec Sheet): Technical spec sheet and onboarding checklist covering database config, auth roles, and deployment runbook."
+        ]
+      }
     },
     {
       "id": "GIG-TECH-003",
@@ -342,7 +492,8 @@
       "title": "I will build a custom ERP or business management system for your business",
       "categorySelection": {
         "primary": "Programming & Tech",
-        "sub": "Databases"
+        "sub": "Databases & Internal Tools",
+        "serviceType": "Custom Operating Systems"
       },
       "tags": [
         "custom erp",
@@ -440,58 +591,133 @@
           {
             "rule": "Title starts with 'I will'",
             "passed": true,
-            "message": "Valid Fiverr title format."
+            "message": "Valid title format."
           },
           {
-            "rule": "Title length <= 80 chars",
+            "rule": "Title length between 25-80 chars",
             "passed": true,
-            "message": "Title is 73 characters."
+            "message": "Title is 73 chars."
           },
           {
-            "rule": "Exactly 5 tags",
+            "rule": "Exactly 5 keyword search tags (<= 20 chars each)",
             "passed": true,
-            "message": "5 keyword tags provided."
+            "message": "5 valid keyword tags provided."
           },
           {
-            "rule": "Description 900-1200 chars",
+            "rule": "Description length between 800-1250 chars",
             "passed": true,
-            "message": "Description length: 1,180 chars."
+            "message": "Description length: 1189 chars."
           },
           {
-            "rule": "No pricing in description",
+            "rule": "No pricing amounts in description body",
             "passed": true,
-            "message": "No dollar amounts inside description body."
+            "message": "No dollar amounts in description body."
           },
           {
-            "rule": "No competitor mentions",
+            "rule": "No competitor platform mentions",
             "passed": true,
             "message": "Compliant with marketplace TOS."
           },
           {
-            "rule": "At least 4 FAQs",
+            "rule": "At least 4 comprehensive FAQs",
             "passed": true,
             "message": "4 detailed FAQ pairs provided."
           },
           {
-            "rule": "Fast delivery turnaround",
+            "rule": "Rapid delivery turnaround (Basic tier <= 5 days)",
             "passed": true,
-            "message": "Basic tier turnaround: 5 days."
+            "message": "Basic tier turnaround: 5 day(s)."
           },
           {
-            "rule": "Buyer requirements present",
+            "rule": "At least 3 clear buyer onboarding requirements",
             "passed": true,
-            "message": "3 clear onboarding questions."
+            "message": "3 onboarding requirements provided."
           },
           {
-            "rule": "Verified tech stack only",
+            "rule": "Verified GRO10X capability stack only",
             "passed": true,
-            "message": "All tools within GRO10X verified stack."
+            "message": "All referenced tools are within verified stack."
           }
         ]
       },
       "status": "Generated",
       "liveUrl": "",
-      "updatedAt": "2026-08-30T17:27:59.277Z"
+      "updatedAt": "2026-08-30T19:35:58.445Z",
+      "titleBody": "build a custom ERP or business management system for your business",
+      "pricingMatrix": {
+        "screens": {
+          "basic": 3,
+          "standard": 6,
+          "premium": 12
+        },
+        "apis": {
+          "basic": 1,
+          "standard": 3,
+          "premium": 8
+        },
+        "checkboxes": {
+          "database": [
+            true,
+            true,
+            true
+          ],
+          "auth": [
+            true,
+            true,
+            true
+          ],
+          "seo": [
+            false,
+            false,
+            false
+          ],
+          "analytics": [
+            true,
+            true,
+            true
+          ],
+          "payment": [
+            false,
+            true,
+            true
+          ],
+          "hosting": [
+            true,
+            true,
+            true
+          ],
+          "admin": [
+            true,
+            true,
+            true
+          ],
+          "securityAudit": [
+            true,
+            true,
+            true
+          ]
+        }
+      },
+      "galleryPrompts": {
+        "videoScenes": [
+          "Scene 1 (0-10s) Hook: Office desk overflowing with messy paper invoices, tangled spreadsheets, and stressed business owner hitting keyboard in frustration.",
+          "Scene 2 (10-20s) Transformation: Messy spreadsheets dissolve into glowing digital streams connecting directly into a sleek, unified GRO10X custom ERP dashboard.",
+          "Scene 3 (20-30s) Module Showcase: Fast smooth navigation through Inventory Tracker, Staff Management, Automated Invoicing, and Real-time Cashflow modules.",
+          "Scene 4 (30-40s) Role-Based Security: Multi-tier access control demo: Admin, Finance Manager, and Specialist logins displaying tailored permission views.",
+          "Scene 5 (40-50s) Automated Alerts: Live trigger notification popping up on desktop and mobile: Invoice Paid, Stock Low, Leave Approved with 1-click actions.",
+          "Scene 6 (50-60s) Custom Fit: Visual showing zero monthly SaaS per-user licensing fees, 100% database sovereignty on Supabase PostgreSQL.",
+          "Scene 7 (60-70s) CTA: Executive boardroom closing card: TRANSFORM YOUR BUSINESS OPERATIONS INTO A CUSTOM ERP - BOOK A SYSTEM ARCHITECTURE CALL."
+        ],
+        "imagePrompts": [
+          "Image 1 (Hero Thumbnail 1280x769): High-impact dark enterprise UI with royal purple and emerald green accents, bold headline: CUSTOM ERP & BUSINESS OPERATING SYSTEM, dual widescreen monitors displaying complete multi-module CRM and inventory dashboard.",
+          "Image 2 (Modular ERP Architecture Slide): Clean grid showing 6 core modules: CRM & Leads, Invoicing & Payroll, Inventory, Kanban Operations, Telegram Bot Engine, Executive Telemetry.",
+          "Image 3 (Enterprise Security & Data Sovereignty): Infographic illustrating dedicated Supabase PostgreSQL schema, Row-Level Security, automated daily backups, and source code ownership."
+        ],
+        "pdfPrompts": [
+          "PDF 1 (Enterprise ERP Architecture & Implementation Roadmap): Produce a comprehensive 2-page systems blueprint detailing GRO10X custom business operating system modules, database ERD schema design, user RBAC matrices, and migration methodology from legacy spreadsheets.",
+          "PDF 2 (ERP Operational Audit & Discovery Questionnaire): Create a 2-page operational discovery document with structured diagnostic questions for department heads (Sales, Inventory, Finance, HR) to scope custom ERP workflows."
+        ]
+      }
     },
     {
       "id": "GIG-TECH-004",
@@ -503,7 +729,8 @@
       "title": "I will build a custom AI Telegram bot or WhatsApp chatbot for your business",
       "categorySelection": {
         "primary": "Programming & Tech",
-        "sub": "Chatbots"
+        "sub": "Chatbots",
+        "serviceType": "Chatbot Development"
       },
       "tags": [
         "telegram bot",
@@ -599,58 +826,133 @@
           {
             "rule": "Title starts with 'I will'",
             "passed": true,
-            "message": "Valid Fiverr title format."
+            "message": "Valid title format."
           },
           {
-            "rule": "Title length <= 80 chars",
+            "rule": "Title length between 25-80 chars",
             "passed": true,
-            "message": "Title is 74 characters."
+            "message": "Title is 75 chars."
           },
           {
-            "rule": "Exactly 5 tags",
+            "rule": "Exactly 5 keyword search tags (<= 20 chars each)",
             "passed": true,
-            "message": "5 keyword tags provided."
+            "message": "5 valid keyword tags provided."
           },
           {
-            "rule": "Description 900-1200 chars",
+            "rule": "Description length between 800-1250 chars",
             "passed": true,
-            "message": "Description length: 1,110 chars."
+            "message": "Description length: 1142 chars."
           },
           {
-            "rule": "No pricing in description",
+            "rule": "No pricing amounts in description body",
             "passed": true,
-            "message": "No dollar amounts inside description body."
+            "message": "No dollar amounts in description body."
           },
           {
-            "rule": "No competitor mentions",
+            "rule": "No competitor platform mentions",
             "passed": true,
             "message": "Compliant with marketplace TOS."
           },
           {
-            "rule": "At least 4 FAQs",
+            "rule": "At least 4 comprehensive FAQs",
             "passed": true,
             "message": "4 detailed FAQ pairs provided."
           },
           {
-            "rule": "Fast delivery turnaround",
+            "rule": "Rapid delivery turnaround (Basic tier <= 5 days)",
             "passed": true,
-            "message": "Basic tier turnaround: 3 days."
+            "message": "Basic tier turnaround: 3 day(s)."
           },
           {
-            "rule": "Buyer requirements present",
+            "rule": "At least 3 clear buyer onboarding requirements",
             "passed": true,
-            "message": "3 clear onboarding questions."
+            "message": "3 onboarding requirements provided."
           },
           {
-            "rule": "Verified tech stack only",
+            "rule": "Verified GRO10X capability stack only",
             "passed": true,
-            "message": "All tools within GRO10X verified stack."
+            "message": "All referenced tools are within verified stack."
           }
         ]
       },
       "status": "Generated",
       "liveUrl": "",
-      "updatedAt": "2026-08-30T17:27:59.277Z"
+      "updatedAt": "2026-08-30T19:35:58.445Z",
+      "titleBody": "build a custom AI Telegram bot or WhatsApp chatbot for your business",
+      "pricingMatrix": {
+        "screens": {
+          "basic": 1,
+          "standard": 3,
+          "premium": 5
+        },
+        "apis": {
+          "basic": 1,
+          "standard": 2,
+          "premium": 4
+        },
+        "checkboxes": {
+          "database": [
+            true,
+            true,
+            true
+          ],
+          "auth": [
+            true,
+            true,
+            true
+          ],
+          "seo": [
+            false,
+            false,
+            false
+          ],
+          "analytics": [
+            false,
+            true,
+            true
+          ],
+          "payment": [
+            false,
+            false,
+            true
+          ],
+          "hosting": [
+            true,
+            true,
+            true
+          ],
+          "admin": [
+            true,
+            true,
+            true
+          ],
+          "securityAudit": [
+            false,
+            true,
+            true
+          ]
+        }
+      },
+      "galleryPrompts": {
+        "videoScenes": [
+          "Scene 1 (0-10s) Hook: Midnight clock ticking, prospective client asking a product question on mobile chat with zero response from competing business.",
+          "Scene 2 (10-20s) Instant AI Response: GRO10X AI Bot replying within 0.5 seconds with personalized, verified product info and interactive booking button.",
+          "Scene 3 (20-30s) RAG Precision: Visual graphic showing Gemini AI scanning verified company knowledge base to generate hallucination-free answers.",
+          "Scene 4 (30-40s) Interactive Menus: Smooth user interaction with Telegram inline buttons, web mini apps, order tracking, and lead qualification wizard.",
+          "Scene 5 (40-50s) Team Escalation: High-value lead captured and instantly dispatched to business owner Telegram group with 1-click Contact button.",
+          "Scene 6 (50-60s) Reliability: High uptime serverless architecture running 24/7 with zero monthly third-party platform bot fees.",
+          "Scene 7 (60-70s) CTA: Glowing chatbot interface card: 24/7 AI TELEGRAM & WHATSAPP BOTS - AUTOMATE YOUR SALES & SUPPORT TODAY."
+        ],
+        "imagePrompts": [
+          "Image 1 (Hero Thumbnail 1280x769): Futuristic dark background with electric blue glow, bold typography: 24/7 AI TELEGRAM & WHATSAPP CHATBOT, floating iPhone displaying interactive Telegram bot chat with inline buttons and verified badge.",
+          "Image 2 (Bot Capabilities Grid): 4-quadrant diagram showing 24/7 Lead Capture, RAG Document Knowledge Base, Telegram Mini App Integration, and Real-time Team Push Alerts.",
+          "Image 3 (Architecture Flowchart): Clean visual pipeline: Customer Query -> Gemini AI Engine -> Supabase DB -> Instant Telegram / WhatsApp Notification."
+        ],
+        "pdfPrompts": [
+          "PDF 1 (AI Bot Architecture & RAG Knowledge Base Guide): Write a 2-page technical guide explaining how custom Telegram and WhatsApp bots integrate with enterprise RAG knowledge bases, handle fallback escalations, and protect proprietary business data.",
+          "PDF 2 (Chatbot Conversation Flow & FAQ Configuration Handbook): Create a structured client onboarding worksheet for drafting intent trees, custom greeting messages, lead qualification criteria, and notification channel webhooks."
+        ]
+      }
     },
     {
       "id": "GIG-TECH-005",
@@ -662,7 +964,8 @@
       "title": "I will build a real-time analytics or operations dashboard for your business",
       "categorySelection": {
         "primary": "Programming & Tech",
-        "sub": "Data Analytics"
+        "sub": "Data Analytics",
+        "serviceType": "Data Visualization & Dashboards"
       },
       "tags": [
         "dashboard",
@@ -758,58 +1061,133 @@
           {
             "rule": "Title starts with 'I will'",
             "passed": true,
-            "message": "Valid Fiverr title format."
+            "message": "Valid title format."
           },
           {
-            "rule": "Title length <= 80 chars",
+            "rule": "Title length between 25-80 chars",
             "passed": true,
-            "message": "Title is 75 characters."
+            "message": "Title is 76 chars."
           },
           {
-            "rule": "Exactly 5 tags",
+            "rule": "Exactly 5 keyword search tags (<= 20 chars each)",
             "passed": true,
-            "message": "5 keyword tags provided."
+            "message": "5 valid keyword tags provided."
           },
           {
-            "rule": "Description 900-1200 chars",
+            "rule": "Description length between 800-1250 chars",
             "passed": true,
-            "message": "Description length: 1,130 chars."
+            "message": "Description length: 1133 chars."
           },
           {
-            "rule": "No pricing in description",
+            "rule": "No pricing amounts in description body",
             "passed": true,
-            "message": "No dollar amounts inside description body."
+            "message": "No dollar amounts in description body."
           },
           {
-            "rule": "No competitor mentions",
+            "rule": "No competitor platform mentions",
             "passed": true,
             "message": "Compliant with marketplace TOS."
           },
           {
-            "rule": "At least 4 FAQs",
+            "rule": "At least 4 comprehensive FAQs",
             "passed": true,
             "message": "4 detailed FAQ pairs provided."
           },
           {
-            "rule": "Fast delivery turnaround",
+            "rule": "Rapid delivery turnaround (Basic tier <= 5 days)",
             "passed": true,
-            "message": "Basic tier turnaround: 3 days."
+            "message": "Basic tier turnaround: 3 day(s)."
           },
           {
-            "rule": "Buyer requirements present",
+            "rule": "At least 3 clear buyer onboarding requirements",
             "passed": true,
-            "message": "3 clear onboarding questions."
+            "message": "3 onboarding requirements provided."
           },
           {
-            "rule": "Verified tech stack only",
+            "rule": "Verified GRO10X capability stack only",
             "passed": true,
-            "message": "All tools within GRO10X verified stack."
+            "message": "All referenced tools are within verified stack."
           }
         ]
       },
       "status": "Generated",
       "liveUrl": "",
-      "updatedAt": "2026-08-30T17:27:59.277Z"
+      "updatedAt": "2026-08-30T19:35:58.445Z",
+      "titleBody": "build a real-time analytics or operations dashboard for your business",
+      "pricingMatrix": {
+        "screens": {
+          "basic": 1,
+          "standard": 3,
+          "premium": 6
+        },
+        "apis": {
+          "basic": 1,
+          "standard": 2,
+          "premium": 4
+        },
+        "checkboxes": {
+          "database": [
+            true,
+            true,
+            true
+          ],
+          "auth": [
+            true,
+            true,
+            true
+          ],
+          "seo": [
+            false,
+            false,
+            false
+          ],
+          "analytics": [
+            true,
+            true,
+            true
+          ],
+          "payment": [
+            false,
+            false,
+            false
+          ],
+          "hosting": [
+            true,
+            true,
+            true
+          ],
+          "admin": [
+            true,
+            true,
+            true
+          ],
+          "securityAudit": [
+            false,
+            false,
+            true
+          ]
+        }
+      },
+      "galleryPrompts": {
+        "videoScenes": [
+          "Scene 1 (0-10s) Hook: Chaotic multiple browser tabs with Stripe, Google Analytics, and spreadsheets failing to give executive clear business health view.",
+          "Scene 2 (10-20s) Single Screen Clarity: All data streams converge into a stunning dark glassmorphic command center with real-time KPI tiles glowing green.",
+          "Scene 3 (20-30s) Interactive Charts: Cursor hovering smoothly over dynamic revenue charts, cohort retention heatmaps, and funnel drop-off analytics.",
+          "Scene 4 (30-40s) Live Filters: Date range picker filtering instantly across millions of data points in milliseconds with zero loading lag.",
+          "Scene 5 (40-50s) Automated Digests: Daily 9 AM morning briefing summary generating automatically and pinging executive mobile device.",
+          "Scene 6 (50-60s) Data Security: Clean Supabase PostgreSQL connection with encrypted API tokens and strict access controls.",
+          "Scene 7 (60-70s) CTA: High-end executive analytics display: REAL-TIME EXECUTIVE OPERATIONS DASHBOARDS - SEE YOUR ENTIRE BUSINESS IN ONE SCREEN."
+        ],
+        "imagePrompts": [
+          "Image 1 (Hero Thumbnail 1280x769): Ultra-premium dark analytics cockpit with vibrant neon green and purple data graphs, bold text: REAL-TIME ANALYTICS & OPS DASHBOARD, dual curved monitors showing multi-chart KPI control center.",
+          "Image 2 (Chart Types & Data Visualization Slide): Showcase of 4 interactive chart modules: Revenue Trends, Lead Conversion Funnel, Customer Cohorts, and Team Output Metrics.",
+          "Image 3 (Data Pipeline Integration Diagram): Clear infographic mapping multiple data sources (Stripe, PostgreSQL, CSV, REST APIs) aggregating into unified Chart.js visual interface."
+        ],
+        "pdfPrompts": [
+          "PDF 1 (Executive KPI Framework & Dashboard Design Spec): Produce a 2-page executive guide detailing essential SaaS and agency KPI metrics (MRR, CAC, LTV, Net Margin), chart visual hierarchy, and telemetry thresholds for leadership dashboards.",
+          "PDF 2 (Dashboard Data Integration & API Connection Guide): Create a step-by-step technical spec sheet for connecting third-party databases, webhook endpoints, and scheduled aggregation jobs into custom dashboards."
+        ]
+      }
     },
     {
       "id": "GIG-TECH-006",
@@ -821,7 +1199,8 @@
       "title": "I will connect your apps with a custom API or webhook integration",
       "categorySelection": {
         "primary": "Programming & Tech",
-        "sub": "APIs & Integrations"
+        "sub": "API & Integrations",
+        "serviceType": "API Integration & Middleware"
       },
       "tags": [
         "api integration",
@@ -917,58 +1296,133 @@
           {
             "rule": "Title starts with 'I will'",
             "passed": true,
-            "message": "Valid Fiverr title format."
+            "message": "Valid title format."
           },
           {
-            "rule": "Title length <= 80 chars",
+            "rule": "Title length between 25-80 chars",
             "passed": true,
-            "message": "Title is 66 characters."
+            "message": "Title is 65 chars."
           },
           {
-            "rule": "Exactly 5 tags",
+            "rule": "Exactly 5 keyword search tags (<= 20 chars each)",
             "passed": true,
-            "message": "5 keyword tags provided."
+            "message": "5 valid keyword tags provided."
           },
           {
-            "rule": "Description 900-1200 chars",
+            "rule": "Description length between 800-1250 chars",
             "passed": true,
-            "message": "Description length: 1,125 chars."
+            "message": "Description length: 1097 chars."
           },
           {
-            "rule": "No pricing in description",
+            "rule": "No pricing amounts in description body",
             "passed": true,
-            "message": "No dollar amounts inside description body."
+            "message": "No dollar amounts in description body."
           },
           {
-            "rule": "No competitor mentions",
+            "rule": "No competitor platform mentions",
             "passed": true,
             "message": "Compliant with marketplace TOS."
           },
           {
-            "rule": "At least 4 FAQs",
+            "rule": "At least 4 comprehensive FAQs",
             "passed": true,
             "message": "4 detailed FAQ pairs provided."
           },
           {
-            "rule": "Fast delivery turnaround",
+            "rule": "Rapid delivery turnaround (Basic tier <= 5 days)",
             "passed": true,
-            "message": "Basic tier turnaround: 2 days."
+            "message": "Basic tier turnaround: 2 day(s)."
           },
           {
-            "rule": "Buyer requirements present",
+            "rule": "At least 3 clear buyer onboarding requirements",
             "passed": true,
-            "message": "3 clear onboarding questions."
+            "message": "3 onboarding requirements provided."
           },
           {
-            "rule": "Verified tech stack only",
+            "rule": "Verified GRO10X capability stack only",
             "passed": true,
-            "message": "All tools within GRO10X verified stack."
+            "message": "All referenced tools are within verified stack."
           }
         ]
       },
       "status": "Generated",
       "liveUrl": "",
-      "updatedAt": "2026-08-30T17:27:59.277Z"
+      "updatedAt": "2026-08-30T19:35:58.445Z",
+      "titleBody": "connect your apps with a custom API or webhook integration",
+      "pricingMatrix": {
+        "screens": {
+          "basic": 1,
+          "standard": 2,
+          "premium": 4
+        },
+        "apis": {
+          "basic": 2,
+          "standard": 4,
+          "premium": 8
+        },
+        "checkboxes": {
+          "database": [
+            true,
+            true,
+            true
+          ],
+          "auth": [
+            true,
+            true,
+            true
+          ],
+          "seo": [
+            false,
+            false,
+            false
+          ],
+          "analytics": [
+            false,
+            true,
+            true
+          ],
+          "payment": [
+            false,
+            true,
+            true
+          ],
+          "hosting": [
+            true,
+            true,
+            true
+          ],
+          "admin": [
+            true,
+            true,
+            true
+          ],
+          "securityAudit": [
+            true,
+            true,
+            true
+          ]
+        }
+      },
+      "galleryPrompts": {
+        "videoScenes": [
+          "Scene 1 (0-10s) Hook: Data trapped in separate isolated software silos causing repetitive manual copy-pasting and human error.",
+          "Scene 2 (10-20s) Custom Bridge: High-speed glowing digital bridge connecting two software platforms instantly with Node.js and REST webhooks.",
+          "Scene 3 (20-30s) Form Trigger: Customer submitting lead on web form, instantly creating record in database, generating invoice, and sending Telegram ping.",
+          "Scene 4 (30-40s) Google Workspace Sync: Custom Google Apps Script running automated sheet calculations, Gemini summary, and email dispatch.",
+          "Scene 5 (40-50s) Error Handling & Retries: Automated retry queue handling network blips smoothly with zero data loss.",
+          "Scene 6 (50-60s) Zero Subscription: Visual comparing expensive third-party Zapier bills versus  monthly custom code ownership.",
+          "Scene 7 (60-70s) CTA: High-tech network visualization: CUSTOM API & WEBHOOK INTEGRATIONS - CONNECT YOUR APPS SEAMLESSLY."
+        ],
+        "imagePrompts": [
+          "Image 1 (Hero Thumbnail 1280x769): Glowing network graph on dark slate background, bold typography: CUSTOM API & WEBHOOK INTEGRATIONS, visual icons of Google Workspace, Supabase, Stripe, and Telegram connecting smoothly.",
+          "Image 2 (Integration Matrix Slide): Visual comparison table: 100% Source Code Ownership, Zero Recurring Monthly Subscription Fees, High-Frequency Webhook Speed.",
+          "Image 3 (Workflow Automation Pipeline): Step-by-step diagram: Webhook Event Ingestion -> Payload Validation -> Database Upsert -> Automated Alert Dispatch."
+        ],
+        "pdfPrompts": [
+          "PDF 1 (Custom Middleware Architecture & Zero-Fee Automation Blueprint): Write a 2-page technical guide contrasting custom Node.js/Apps Script webhook middleware against costly SaaS subscription tools, highlighting latency advantages, security, and cost savings.",
+          "PDF 2 (API Integration Discovery & Payload Mapping Spec): Generate a structured client scoping worksheet for documenting API endpoints, JSON payload schemas, authentication methods (OAuth/API Keys), and webhook trigger events."
+        ]
+      }
     },
     {
       "id": "GIG-TECH-007",
@@ -980,7 +1434,8 @@
       "title": "I will audit your business workflow and deliver a custom AI roadmap",
       "categorySelection": {
         "primary": "Business",
-        "sub": "Consulting"
+        "sub": "AI Strategy & Consulting",
+        "serviceType": "AI Consulting & Roadmaps"
       },
       "tags": [
         "ai consulting",
@@ -1075,58 +1530,133 @@
           {
             "rule": "Title starts with 'I will'",
             "passed": true,
-            "message": "Valid Fiverr title format."
+            "message": "Valid title format."
           },
           {
-            "rule": "Title length <= 80 chars",
+            "rule": "Title length between 25-80 chars",
             "passed": true,
-            "message": "Title is 67 characters."
+            "message": "Title is 67 chars."
           },
           {
-            "rule": "Exactly 5 tags",
+            "rule": "Exactly 5 keyword search tags (<= 20 chars each)",
             "passed": true,
-            "message": "5 keyword tags provided."
+            "message": "5 valid keyword tags provided."
           },
           {
-            "rule": "Description 900-1200 chars",
+            "rule": "Description length between 800-1250 chars",
             "passed": true,
-            "message": "Description length: 1,090 chars."
+            "message": "Description length: 1086 chars."
           },
           {
-            "rule": "No pricing in description",
+            "rule": "No pricing amounts in description body",
             "passed": true,
-            "message": "No dollar amounts inside description body."
+            "message": "No dollar amounts in description body."
           },
           {
-            "rule": "No competitor mentions",
+            "rule": "No competitor platform mentions",
             "passed": true,
             "message": "Compliant with marketplace TOS."
           },
           {
-            "rule": "At least 4 FAQs",
+            "rule": "At least 4 comprehensive FAQs",
             "passed": true,
             "message": "4 detailed FAQ pairs provided."
           },
           {
-            "rule": "Fast delivery turnaround",
+            "rule": "Rapid delivery turnaround (Basic tier <= 5 days)",
             "passed": true,
-            "message": "Basic tier turnaround: 2 days."
+            "message": "Basic tier turnaround: 2 day(s)."
           },
           {
-            "rule": "Buyer requirements present",
+            "rule": "At least 3 clear buyer onboarding requirements",
             "passed": true,
-            "message": "3 clear onboarding questions."
+            "message": "3 onboarding requirements provided."
           },
           {
-            "rule": "Verified tech stack only",
+            "rule": "Verified GRO10X capability stack only",
             "passed": true,
-            "message": "All tools within GRO10X verified stack."
+            "message": "All referenced tools are within verified stack."
           }
         ]
       },
       "status": "Generated",
       "liveUrl": "",
-      "updatedAt": "2026-08-30T17:27:59.277Z"
+      "updatedAt": "2026-08-30T19:35:58.445Z",
+      "titleBody": "audit your business workflow and deliver a custom AI roadmap",
+      "pricingMatrix": {
+        "screens": {
+          "basic": 1,
+          "standard": 2,
+          "premium": 4
+        },
+        "apis": {
+          "basic": 0,
+          "standard": 1,
+          "premium": 2
+        },
+        "checkboxes": {
+          "database": [
+            false,
+            false,
+            true
+          ],
+          "auth": [
+            false,
+            false,
+            false
+          ],
+          "seo": [
+            false,
+            false,
+            false
+          ],
+          "analytics": [
+            true,
+            true,
+            true
+          ],
+          "payment": [
+            false,
+            false,
+            false
+          ],
+          "hosting": [
+            false,
+            false,
+            false
+          ],
+          "admin": [
+            false,
+            false,
+            true
+          ],
+          "securityAudit": [
+            true,
+            true,
+            true
+          ]
+        }
+      },
+      "galleryPrompts": {
+        "videoScenes": [
+          "Scene 1 (0-10s) Hook: Confused business owner reading buzzwords about AI without knowing how to actually apply it profitably.",
+          "Scene 2 (10-20s) Diagnosis: Expert diagnostic scan highlighting operational friction points across customer service, sales, and internal reporting.",
+          "Scene 3 (20-30s) ROI Matrix: Prioritized 3D matrix sorting automation opportunities by High Impact vs Low Effort for rapid payback.",
+          "Scene 4 (30-40s) Tool Stack Curation: Tailored selection of practical tools: Google Workspace, Gemini AI, Supabase, and Telegram Bot systems.",
+          "Scene 5 (40-50s) Step-by-Step Roadmap: Clear Gantt chart showing 30-day, 60-day, and 90-day execution milestones with measurable KPIs.",
+          "Scene 6 (50-60s) Strategic Deliverables: Executive PDF briefing, custom prompt library, and 1-on-1 strategy advisory call recording.",
+          "Scene 7 (60-70s) CTA: High impact executive closing slide: ACTIONABLE AI WORKFLOW AUDIT & ROADMAP - SCHEDULE YOUR STRATEGY SESSION."
+        ],
+        "imagePrompts": [
+          "Image 1 (Hero Thumbnail 1280x769): Sleek dark minimalist executive design with warm amber and emerald accents, bold text: ACTIONABLE AI WORKFLOW AUDIT & ROADMAP, 3D holographic roadmap timeline with milestone badges.",
+          "Image 2 (Audit Deliverables Overview Slide): Infographic showcasing 5 core deliverables: Bottleneck Analysis, ROI Priority Matrix, Curated Tech Stack, Custom Prompt Library, 1-on-1 Strategy Call.",
+          "Image 3 (ROI Impact Timeline): Visual 3-phase implementation roadmap illustrating Month 1 Quick Wins, Month 2 Workflow Automation, Month 3 Full OS Deployment."
+        ],
+        "pdfPrompts": [
+          "PDF 1 (Executive AI Strategy & Operational Efficiency Framework): Produce a 2-page high-level whitepaper outlining the GRO10X AI maturity framework for SMBs, ROI measurement benchmarks, and adoption roadmaps.",
+          "PDF 2 (Business Process Discovery & Automation Readiness Audit): Create a comprehensive 2-page diagnostic questionnaire covering department task frequencies, manual bottlenecks, data structure readiness, and employee tooling access."
+        ]
+      }
     }
   ]
 }

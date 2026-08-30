@@ -277,6 +277,9 @@ Return a single JSON object with EXACTLY this schema:
         const rawJson = await callGemini(model, prompt, apiKey);
         const parsed = JSON.parse(rawJson);
 
+        const title = parsed.title || `I will build your ${service.title.toLowerCase()}`;
+        const titleBody = title.replace(/^i\s+will\s+/i, '').trim();
+
         const gig = {
           id: `GIG-TECH-00${gigIndex}`,
           accountId,
@@ -285,6 +288,42 @@ Return a single JSON object with EXACTLY this schema:
           platform: 'fiverr',
           gigIndex,
           ...parsed,
+          title,
+          titleBody,
+          pricingMatrix: parsed.pricingMatrix || {
+            screens: { basic: 2, standard: 3, premium: 10 },
+            apis: { basic: 0, standard: 1, premium: 5 },
+            checkboxes: {
+              database: [true, true, true],
+              auth: [true, true, true],
+              seo: [false, false, true],
+              analytics: [false, false, true],
+              payment: [false, true, true],
+              hosting: [true, true, true],
+              admin: [true, true, true],
+              securityAudit: [false, false, true]
+            }
+          },
+          galleryPrompts: parsed.galleryPrompts || {
+            videoScenes: [
+              `Scene 1 (0-10s) Hook: Cinematic macro shot of entrepreneur facing weeks of development delay, transitioning into rapid GRO10X sprint timer.`,
+              `Scene 2 (10-20s) Problem: Legacy systems and high agency invoices dissolving into streamlined digital flow.`,
+              `Scene 3 (20-30s) Solution: Sleek dark-mode dashboard interface loading with fluid 60fps responsiveness.`,
+              `Scene 4 (30-40s) Architecture: Node.js backend connecting securely to Supabase PostgreSQL real-time database.`,
+              `Scene 5 (40-50s) Feature Demo: Interactive feature walkthrough with live dynamic forms and instant cloud response.`,
+              `Scene 6 (50-60s) Handover: Complete GitHub repository ownership and zero recurring maintenance fees badge.`,
+              `Scene 7 (60-70s) CTA: High energy closing card: RAPID SPRINT DELIVERY - SEND YOUR PROJECT SCOPE TODAY.`
+            ],
+            imagePrompts: [
+              `Image 1 (Hero Thumbnail 1280x769): High-contrast dark glassmorphic banner with neon green (#00DF89) bold 3D typography: ${service.title.toUpperCase()}, floating laptop mockup and verified speed badge.`,
+              `Image 2 (Feature Matrix Slide): Dark slate grid highlighting 4 core sprint features, Supabase integration, and live Vercel cloud deployment.`,
+              `Image 3 (Architecture & Deliverables): 3D isometric diagram illustrating end-to-end full stack architecture and source code handover.`
+            ],
+            pdfPrompts: [
+              `PDF 1 (Agency Case Study & Capabilities Guide): 2-page executive summary detailing GRO10X rapid development methodology, architecture standards, and milestone timeline.`,
+              `PDF 2 (Technical Onboarding & Deliverables Spec Sheet): Technical spec sheet and onboarding checklist covering database config, auth roles, and deployment runbook.`
+            ]
+          },
           status: 'Generated',
           liveUrl: '',
           updatedAt: new Date().toISOString()
@@ -311,6 +350,7 @@ function generateTemplateGig({ service, gigIndex = 1, accountId = 'ACC-TECH-001'
 
   let title = `I will build your ${service.title.toLowerCase()} in rapid sprint`;
   if (title.length > 75) title = `I will build your ${service.title.substring(0, 45)} fast`;
+  const titleBody = title.replace(/^i\s+will\s+/i, '').trim();
 
   const gig = {
     id: `GIG-TECH-00${gigIndex}`,
@@ -320,9 +360,11 @@ function generateTemplateGig({ service, gigIndex = 1, accountId = 'ACC-TECH-001'
     platform: 'fiverr',
     gigIndex,
     title,
+    titleBody,
     categorySelection: {
       primary: 'Programming & Tech',
-      sub: isERP ? 'Databases' : 'Web Applications'
+      sub: isERP ? 'Databases' : 'Vibe Coding',
+      serviceType: 'Development & MVP'
     },
     tags: [
       (service.slug || 'web app').replace(/-/g, ' ').substring(0, 20),
@@ -357,6 +399,20 @@ function generateTemplateGig({ service, gigIndex = 1, accountId = 'ACC-TECH-001'
         features: ['Full Architecture', 'Payment Integration', 'Telegram & Email Alerts', 'Documentation & Runbook', '14 Days Support']
       }
     },
+    pricingMatrix: {
+      screens: { basic: 2, standard: 3, premium: 10 },
+      apis: { basic: 0, standard: 1, premium: 5 },
+      checkboxes: {
+        database: [true, true, true],
+        auth: [true, true, true],
+        seo: [false, false, true],
+        analytics: [false, false, true],
+        payment: [false, true, true],
+        hosting: [true, true, true],
+        admin: [true, true, true],
+        securityAudit: [false, false, true]
+      }
+    },
     description: `Are you looking for rapid, reliable engineering for your business? Traditional agencies take months and charge high hourly rates. We engineer clean, cloud-native solutions deployed in days, not months.\n\nWhat We Deliver:\n• Clean, maintainable Node.js and Supabase architecture\n• Fully responsive mobile and desktop user interfaces\n• Fast cloud deployment with SSL and zero downtime\n• Real-time database and secure authentication\n• Complete source code ownership and technical handover\n\nWhy Choose GRO10X:\nWe operate a modern, AI-assisted engineering workflow focused on speed, clear communication, and measurable business outcomes. You get a working live platform quickly to validate and grow your business.\n\nVerified Tech Stack:\nNode.js, Express, Supabase PostgreSQL, Telegram Bot API, and Vercel Edge.\n\nSend us a message with your project scope to get started today!`,
     faq: [
       { q: 'How fast can you deliver the project?', a: 'Our sprint approach allows us to deliver basic prototypes in 48 hours and full platforms in 5 to 8 days.' },
@@ -375,7 +431,27 @@ function generateTemplateGig({ service, gigIndex = 1, accountId = 'ACC-TECH-001'
       colorPalette: ['#00DF89', '#3B82F6', '#09090B'],
       visualStyle: 'Dark glassmorphic layout displaying clean dashboard interface and responsive device frames.',
       badgeText: '⚡ RAPID SPRINT DELIVERY',
-      layoutAdvice: 'High contrast neon typography on dark background with clean screenshot preview.'
+      layoutAdvice: 'Canva 1280x769 canvas with bold neon green typography on dark background with clean screenshot preview.'
+    },
+    galleryPrompts: {
+      videoScenes: [
+        `Scene 1 (0-10s) Hook: Cinematic macro shot of entrepreneur facing weeks of development delay, transitioning into rapid GRO10X sprint timer.`,
+        `Scene 2 (10-20s) Problem: Legacy systems and high agency invoices dissolving into streamlined digital flow.`,
+        `Scene 3 (20-30s) Solution: Sleek dark-mode dashboard interface loading with fluid 60fps responsiveness.`,
+        `Scene 4 (30-40s) Architecture: Node.js backend connecting securely to Supabase PostgreSQL real-time database.`,
+        `Scene 5 (40-50s) Feature Demo: Interactive feature walkthrough with live dynamic forms and instant cloud response.`,
+        `Scene 6 (50-60s) Handover: Complete GitHub repository ownership and zero recurring maintenance fees badge.`,
+        `Scene 7 (60-70s) CTA: High energy closing card: RAPID SPRINT DELIVERY - SEND YOUR PROJECT SCOPE TODAY.`
+      ],
+      imagePrompts: [
+        `Image 1 (Hero Thumbnail 1280x769): High-contrast dark glassmorphic banner with neon green (#00DF89) bold 3D typography: ${service.title.toUpperCase()}, floating laptop mockup and verified speed badge.`,
+        `Image 2 (Feature Matrix Slide): Dark slate grid highlighting 4 core sprint features, Supabase integration, and live Vercel cloud deployment.`,
+        `Image 3 (Architecture & Deliverables): 3D isometric diagram illustrating end-to-end full stack architecture and source code handover.`
+      ],
+      pdfPrompts: [
+        `PDF 1 (Agency Case Study & Capabilities Guide): 2-page executive summary detailing GRO10X rapid development methodology, architecture standards, and milestone timeline.`,
+        `PDF 2 (Technical Onboarding & Deliverables Spec Sheet): Technical spec sheet and onboarding checklist covering database config, auth roles, and deployment runbook.`
+      ]
     },
     status: 'Generated',
     liveUrl: '',

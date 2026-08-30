@@ -154,4 +154,35 @@ describe('Marketplace Freelance Gig Engine Test Suite', () => {
     });
   });
 
+  describe('4. Modular Fiverr Companion & Media Prompt Studio Validation', () => {
+    test('All 7 seeded gigs have titleBody without "I will"', () => {
+      const gigs = getAllGigs();
+      gigs.forEach(g => {
+        expect(g.titleBody).toBeDefined();
+        expect(g.titleBody.toLowerCase().startsWith('i will')).toBe(false);
+        expect(g.title.toLowerCase().startsWith('i will')).toBe(true);
+      });
+    });
+
+    test('All 7 seeded gigs have 7 video scenes, 3 image prompts, and 2 PDF prompts', () => {
+      const gigs = getAllGigs();
+      gigs.forEach(g => {
+        expect(g.galleryPrompts).toBeDefined();
+        expect(g.galleryPrompts.videoScenes.length).toBe(7);
+        expect(g.galleryPrompts.imagePrompts.length).toBe(3);
+        expect(g.galleryPrompts.pdfPrompts.length).toBe(2);
+      });
+    });
+
+    test('Pricing matrix contains valid screens, apis, and checkbox configurations', () => {
+      const gig = getGigById('GIG-TECH-001');
+      expect(gig.pricingMatrix).toBeDefined();
+      expect(gig.pricingMatrix.screens.basic).toBe(2);
+      expect(gig.pricingMatrix.screens.standard).toBe(3);
+      expect(gig.pricingMatrix.screens.premium).toBe(10);
+      expect(gig.pricingMatrix.checkboxes.database).toEqual([true, true, true]);
+      expect(gig.pricingMatrix.checkboxes.auth).toEqual([true, true, true]);
+    });
+  });
+
 });
