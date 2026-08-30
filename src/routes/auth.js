@@ -84,19 +84,42 @@ router.post('/telegram', async (req, res) => {
     let resolvedUser = null;
     let linkedType = userType || 'team';
 
-    if (isSupabaseConfigured() && tgId) {
-      // 1. Try finding team member by telegram_id
-      const { data: teamUser } = await supabase.from('profiles').select('*').eq('telegram_id', tgId).maybeSingle();
-      if (teamUser) {
-        resolvedUser = teamUser;
-        linkedType = 'team';
-      } else {
-        // 2. Try finding client partner by telegram_id or client phone
-        const { data: clientUser } = await supabase.from('clients').select('*').eq('telegram_id', tgId).maybeSingle();
-        if (clientUser) {
-          resolvedUser = clientUser;
-          linkedType = 'client';
+    if (tgId) {
+      if (isSupabaseConfigured()) {
+        // 1. Try finding team member by telegram_id
+        const { data: teamUser } = await supabase.from('profiles').select('*').eq('telegram_id', tgId).maybeSingle();
+        if (teamUser) {
+          resolvedUser = teamUser;
+          linkedType = 'team';
+        } else {
+          // 2. Try finding client partner by telegram_id or client phone
+          const { data: clientUser } = await supabase.from('clients').select('*').eq('telegram_id', tgId).maybeSingle();
+          if (clientUser) {
+            resolvedUser = clientUser;
+            linkedType = 'client';
+          }
         }
+      }
+
+      // 3. Fallback to state service
+      if (!resolvedUser) {
+        try {
+          const state = require('../services/state');
+          const emp = await state.getEmployeeByTelegramId(tgId);
+          if (emp) {
+            resolvedUser = {
+              id: emp.id || emp.emp_code,
+              emp_code: emp.emp_code || emp.id,
+              name: emp.name,
+              role: emp.role,
+              phone: emp.phone,
+              email: emp.email,
+              access_level: emp.accessLevel,
+              department: emp.department
+            };
+            linkedType = 'team';
+          }
+        } catch (e) {}
       }
     }
 
