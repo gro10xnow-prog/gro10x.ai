@@ -166,10 +166,13 @@ app.get(['/api/system-health', '/api/system-health/detailed'], async (req, res) 
       }
     }
 
-    const team = getTeamBot();
-    const client = getClientBot();
+    let team = getTeamBot();
+    let client = getClientBot();
+    if (!team || !client) {
+      try { initBot(); team = getTeamBot(); client = getClientBot(); } catch (e) {}
+    }
 
-    const isHealthy = dbStatus === 'Connected' && (team !== null || !process.env.TELEGRAM_BOT_TOKEN_TEAM);
+    const isHealthy = dbStatus === 'Connected' && team !== null;
 
     const hasAuth = !!(req.headers.authorization || (req.headers.cookie && req.headers.cookie.includes('sb-access-token')));
 
@@ -182,8 +185,10 @@ app.get(['/api/system-health', '/api/system-health/detailed'], async (req, res) 
       sseClients: getActiveClientsCount ? getActiveClientsCount() : 0,
       botStatus: {
         teamBot: team ? 'active' : 'null',
+        hasTeamToken: !!(process.env.TEAM_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN_TEAM || process.env.TELEGRAM_BOT_TOKEN),
         teamBotMode: process.env.RENDER || process.env.NODE_ENV === 'production' ? 'webhook' : 'polling',
         clientBot: client ? 'active' : 'null',
+        hasClientToken: !!(process.env.CLIENT_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN),
         clientBotMode: process.env.RENDER || process.env.NODE_ENV === 'production' ? 'webhook' : 'polling'
       },
       uptimeSeconds: Math.round(process.uptime()),
