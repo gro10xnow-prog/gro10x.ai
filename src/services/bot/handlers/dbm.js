@@ -10,7 +10,6 @@
  */
 
 const state = require('../../state');
-const axios = require('axios');
 const BASE_URL = process.env.BASE_URL || 'https://gro10x-ai.vercel.app';
 
 const DBM_DIVISIONS = {
@@ -223,18 +222,22 @@ async function handleDBMStandupWizardStep(teamBot, msg, wizardState, emp) {
 
     // Persist standup log to backend
     try {
-      await axios.post(BASE_URL + '/api/brands/dbm-logs', {
-        dbmId: wizardState.dbmId,
-        empCode: wizardState.empId,
-        empName: wizardState.empName,
-        brand: wizardState.brand,
-        listingsToday: listingsCount,
-        revenueToday: revenue,
-        notes,
-        date: today
-      }, {
-        headers: { 'x-internal-token': process.env.INTERNAL_API_TOKEN || 'gro10x_internal_sync' },
-        timeout: 5000
+      await fetch(BASE_URL + '/api/brands/dbm-logs', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-internal-token': process.env.INTERNAL_API_TOKEN || 'gro10x_internal_sync'
+        },
+        body: JSON.stringify({
+          dbmId: wizardState.dbmId,
+          empCode: wizardState.empId,
+          empName: wizardState.empName,
+          brand: wizardState.brand,
+          listingsToday: listingsCount,
+          revenueToday: revenue,
+          notes,
+          date: today
+        })
       });
     } catch (e) {
       console.warn('[DBM Standup] API persistence note:', e.message);
