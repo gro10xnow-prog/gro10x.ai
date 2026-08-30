@@ -163,12 +163,14 @@ function initBot() {
     return;
   }
 
-  const teamToken = process.env.TEAM_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN_TEAM || process.env.TELEGRAM_BOT_TOKEN;
-  const clientToken = process.env.CLIENT_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN;
+  const rawTeam = process.env.TEAM_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN_TEAM || process.env.TELEGRAM_BOT_TOKEN;
+  const rawClient = process.env.CLIENT_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN;
+  const teamToken = rawTeam ? rawTeam.trim() : null;
+  const clientToken = rawClient ? rawClient.trim() : null;
   const baseUrl = process.env.BASE_URL || 'https://gro10x-ai.vercel.app';
 
   // 1. Initialize Team Bot (Purple Man)
-  if (teamToken && teamToken.trim() !== '' && !teamToken.includes('your_token')) {
+  if (teamToken && teamToken !== '' && !teamToken.includes('your_token')) {
     try {
       const usePolling = process.env.USE_POLLING === 'true';
       teamBot = new TelegramBot(teamToken, { polling: usePolling });
@@ -1179,16 +1181,18 @@ function sendTelegramNotification(chatId, text, inlineKeyboard = null, isTeam = 
 
   if (!targetBot) {
     if (isTeam) {
-      const token = process.env.TEAM_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN;
-      if (token && token.trim() !== '' && !token.includes('your_token')) {
+      const raw = process.env.TEAM_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN;
+      const token = raw ? raw.trim() : null;
+      if (token && token !== '' && !token.includes('your_token')) {
         try {
           teamBot = new TelegramBot(token, { polling: false });
           targetBot = teamBot;
         } catch (e) {}
       }
     } else {
-      const token = process.env.CLIENT_BOT_TOKEN || process.env.TEAM_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN;
-      if (token && token.trim() !== '' && !token.includes('your_token')) {
+      const raw = process.env.CLIENT_BOT_TOKEN || process.env.TEAM_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN;
+      const token = raw ? raw.trim() : null;
+      if (token && token !== '' && !token.includes('your_token')) {
         try {
           clientBot = new TelegramBot(token, { polling: false });
           targetBot = clientBot;
