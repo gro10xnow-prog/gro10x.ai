@@ -14,11 +14,22 @@ const { supabase, isSupabaseConfigured } = require('./supabase');
 const DATA_DIR = path.join(__dirname, '..', '..', 'data');
 const STATE_FILE = path.join(DATA_DIR, 'freelance_gigs_state.json');
 
+let seedState = null;
+try {
+  seedState = require('../../data/freelance_gigs_state.json');
+} catch (e) {
+  seedState = { accounts: [], gigs: [] };
+}
+
 let inMemoryState = null;
 
 function ensureDataDir() {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
+  try {
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
+  } catch (e) {
+    // Read-only filesystem on Vercel / serverless runtime — safe to ignore
   }
 }
 
@@ -28,23 +39,18 @@ function ensureDataDir() {
 function getFreelanceState() {
   if (inMemoryState) return inMemoryState;
 
-  ensureDataDir();
-
-  if (fs.existsSync(STATE_FILE)) {
-    try {
+  try {
+    ensureDataDir();
+    if (fs.existsSync(STATE_FILE)) {
       const raw = fs.readFileSync(STATE_FILE, 'utf-8');
       inMemoryState = JSON.parse(raw);
       return inMemoryState;
-    } catch (e) {
-      console.warn('[GigStore] Warning: Failed to parse freelance_gigs_state.json, initializing empty state:', e.message);
     }
+  } catch (e) {
+    // Fallback to bundled seed state
   }
 
-  inMemoryState = {
-    accounts: [],
-    gigs: []
-  };
-
+  inMemoryState = JSON.parse(JSON.stringify(seedState || { accounts: [], gigs: [] }));
   return inMemoryState;
 }
 
@@ -53,12 +59,12 @@ function getFreelanceState() {
  */
 async function saveFreelanceState(state) {
   inMemoryState = state;
-  ensureDataDir();
 
   try {
+    ensureDataDir();
     fs.writeFileSync(STATE_FILE, JSON.stringify(state, null, 2), 'utf-8');
   } catch (e) {
-    console.error('[GigStore] Error writing state file:', e.message);
+    // Read-only filesystem on Vercel — in-memory and Supabase handle persistence
   }
 
   // Asynchronous backup to Supabase settings table if configured
