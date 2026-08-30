@@ -123,17 +123,37 @@ async function getEmployeeByPhone(phone) {
         const { data } = await supabase
           .from('profiles')
           .select('*')
-          .or(`phone.ilike.%${last10}`);
+          .ilike('phone', `%${last10}%`);
         if (data && data.length > 0) {
-          const found = data.find(p => normalizePhone(p.phone) === norm);
+          const found = data.find(p => normalizePhone(p.phone) === norm || normalizePhone(p.phone).endsWith(last10));
           if (found) return mapProfile(found);
         }
       } catch (e) {
         console.warn('state.getEmployeeByPhone Supabase err:', e.message);
       }
     }
+
+    // Reliable fallback to static db.json
+    try {
+      const fs = require('fs');
+      const path = require('path');
+      const dbPath = path.resolve(__dirname, '../../data/db.json');
+      if (fs.existsSync(dbPath)) {
+        const db = JSON.parse(fs.readFileSync(dbPath, 'utf8'));
+        const found = (db.team || []).find(m => normalizePhone(m.phone) === norm || normalizePhone(m.phone).endsWith(last10));
+        if (found) {
+          return mapProfile({
+            ...found,
+            emp_code: found.empCode || found.id,
+            base_salary: found.baseSalary,
+            access_level: found.accessLevel
+          });
+        }
+      }
+    } catch (e) {}
+
     return null;
-  }, 60000);
+  }, 10000);
 }
 
 async function getAllTeam() {
