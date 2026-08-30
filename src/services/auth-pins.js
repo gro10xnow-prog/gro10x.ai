@@ -218,9 +218,9 @@ async function verifyPin(phone, inputPin, requestedPortal = null) {
           linkedType = 'client';
         }
       } else {
-        let pQuery = supabase.from('profiles').select('emp_code,name,role,phone,email,access_level,onboarding_complete,telegram_id');
+        let pQuery = supabase.from('profiles').select('*');
         if (targetId) pQuery = pQuery.eq('emp_code', targetId);
-        else pQuery = pQuery.ilike('phone', `%${norm}`);
+        else pQuery = pQuery.ilike('phone', `%${norm.slice(-10)}%`);
         const { data: profile } = await pQuery.maybeSingle();
 
         if (profile) {
@@ -240,7 +240,7 @@ async function verifyPin(phone, inputPin, requestedPortal = null) {
       // Fallback if not found under initial linkedType assumption
       if (!userObj) {
         if (requestedPortal !== 'client') {
-          const { data: profile } = await supabase.from('profiles').select('emp_code,name,role,phone,email,access_level').ilike('phone', `%${norm}`).maybeSingle();
+          const { data: profile } = await supabase.from('profiles').select('*').ilike('phone', `%${norm.slice(-10)}%`).maybeSingle();
           if (profile) {
             userObj = { id: profile.emp_code, emp_code: profile.emp_code, name: profile.name, role: profile.role, phone: profile.phone, email: profile.email, accessLevel: profile.access_level };
             linkedType = 'team';
