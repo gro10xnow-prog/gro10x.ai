@@ -163,8 +163,8 @@ function initBot() {
     return;
   }
 
-  const teamToken = process.env.TEAM_BOT_TOKEN || null?.teamBot?.token;
-  const clientToken = process.env.CLIENT_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN || null?.clientBot?.token;
+  const teamToken = process.env.TEAM_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN_TEAM || process.env.TELEGRAM_BOT_TOKEN;
+  const clientToken = process.env.CLIENT_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN;
   const baseUrl = process.env.BASE_URL || 'https://gro10x-ai.vercel.app';
 
   // 1. Initialize Team Bot (Purple Man)
