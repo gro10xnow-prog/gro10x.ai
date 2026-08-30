@@ -314,6 +314,16 @@ Return a single JSON object with EXACTLY this schema:
               `Scene 6 (50-60s) Handover: Complete GitHub repository ownership and zero recurring maintenance fees badge.`,
               `Scene 7 (60-70s) CTA: High energy closing card: RAPID SPRINT DELIVERY - SEND YOUR PROJECT SCOPE TODAY.`
             ],
+            voiceoverScenes: [
+              `Tired of waiting months for traditional agencies just to see a basic prototype? There is a much faster way.`,
+              `Endless hourly billing, bloated codebases, and missed launch deadlines kill great startup ideas before they even get off the ground.`,
+              `At GRO10X, we engineer and deploy your full working web application or Progressive Web App in as fast as 48 hours.`,
+              `Powered by modern Node.js, Supabase PostgreSQL, and serverless edge hosting on Vercel with zero downtime and ironclad security.`,
+              `Your users get instant mobile installation, secure authentication, dynamic data forms, and interactive analytics ready to pitch to real investors.`,
+              `You receive one hundred percent full source code ownership, complete GitHub repository access, and zero monthly lock-in fees.`,
+              `Stop waiting and launch your MVP this week. Send us a message today with your project scope!`
+            ],
+            fullVoiceoverScript: `Tired of waiting months for traditional agencies just to see a basic prototype? There is a much faster way. Endless hourly billing, bloated codebases, and missed launch deadlines kill great startup ideas before they even get off the ground. At GRO10X, we engineer and deploy your full working web application or Progressive Web App in as fast as 48 hours. Powered by modern Node.js, Supabase PostgreSQL, and serverless edge hosting on Vercel with zero downtime and ironclad security. Your users get instant mobile installation, secure authentication, dynamic data forms, and interactive analytics ready to pitch to real investors. You receive one hundred percent full source code ownership, complete GitHub repository access, and zero monthly lock-in fees. Stop waiting and launch your MVP this week. Send us a message today with your project scope!`,
             imagePrompts: [
               `Image 1 (Hero Thumbnail 1280x769): High-contrast dark glassmorphic banner with neon green (#00DF89) bold 3D typography: ${service.title.toUpperCase()}, floating laptop mockup and verified speed badge.`,
               `Image 2 (Feature Matrix Slide): Dark slate grid highlighting 4 core sprint features, Supabase integration, and live Vercel cloud deployment.`,
@@ -443,6 +453,16 @@ function generateTemplateGig({ service, gigIndex = 1, accountId = 'ACC-TECH-001'
         `Scene 6 (50-60s) Handover: Complete GitHub repository ownership and zero recurring maintenance fees badge.`,
         `Scene 7 (60-70s) CTA: High energy closing card: RAPID SPRINT DELIVERY - SEND YOUR PROJECT SCOPE TODAY.`
       ],
+      voiceoverScenes: [
+        `Tired of waiting months for traditional agencies just to see a basic prototype? There is a much faster way.`,
+        `Endless hourly billing, bloated codebases, and missed launch deadlines kill great startup ideas before they even get off the ground.`,
+        `At GRO10X, we engineer and deploy your full working web application or Progressive Web App in as fast as 48 hours.`,
+        `Powered by modern Node.js, Supabase PostgreSQL, and serverless edge hosting on Vercel with zero downtime and ironclad security.`,
+        `Your users get instant mobile installation, secure authentication, dynamic data forms, and interactive analytics ready to pitch to real investors.`,
+        `You receive one hundred percent full source code ownership, complete GitHub repository access, and zero monthly lock-in fees.`,
+        `Stop waiting and launch your MVP this week. Send us a message today with your project scope!`
+      ],
+      fullVoiceoverScript: `Tired of waiting months for traditional agencies just to see a basic prototype? There is a much faster way. Endless hourly billing, bloated codebases, and missed launch deadlines kill great startup ideas before they even get off the ground. At GRO10X, we engineer and deploy your full working web application or Progressive Web App in as fast as 48 hours. Powered by modern Node.js, Supabase PostgreSQL, and serverless edge hosting on Vercel with zero downtime and ironclad security. Your users get instant mobile installation, secure authentication, dynamic data forms, and interactive analytics ready to pitch to real investors. You receive one hundred percent full source code ownership, complete GitHub repository access, and zero monthly lock-in fees. Stop waiting and launch your MVP this week. Send us a message today with your project scope!`,
       imagePrompts: [
         `Image 1 (Hero Thumbnail 1280x769): High-contrast dark glassmorphic banner with neon green (#00DF89) bold 3D typography: ${service.title.toUpperCase()}, floating laptop mockup and verified speed badge.`,
         `Image 2 (Feature Matrix Slide): Dark slate grid highlighting 4 core sprint features, Supabase integration, and live Vercel cloud deployment.`,

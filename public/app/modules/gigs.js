@@ -540,22 +540,36 @@ function renderModalBody() {
           </div>
         </div>
 
-        <!-- 🎬 70s Video Prompts (7x 10s Google Flow Prompts) -->
-        <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:1rem;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem; flex-wrap:wrap; gap:0.5rem;">
+        <!-- 🎬 70s Video & Voiceover Suite (7x 10s Google Flow Prompts + Voiceover Narration) -->
+        <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:1.2rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.85rem; flex-wrap:wrap; gap:0.5rem;">
             <div>
-              <div style="font-size:0.85rem; font-weight:800; color:#a855f7; text-transform:uppercase;">🎬 70s Gig Video Suite (7x 10s Google Flow Prompts)</div>
-              <div style="font-size:0.75rem; color:var(--text-muted);">Generate 7 clips in Google Flow, stitch in CapCut Pro with voiceover / music.</div>
+              <div style="font-size:0.85rem; font-weight:800; color:#a855f7; text-transform:uppercase;">🎬 70s Gig Video & Voiceover Suite (Google Flow & ElevenLabs)</div>
+              <div style="font-size:0.75rem; color:var(--text-muted);">7 synchronized 10s scenes with visual prompts and spoken narration (~20 words/scene).</div>
             </div>
-            <button onclick="window.GigsModule.copyText('${escapeHtml(videoScenes.join('\\n\\n'))}', this)" class="btn-primary btn-sm" style="background:#a855f7; color:#fff; font-weight:800; font-size:0.75rem; padding:0.25rem 0.65rem; border:none;">📋 Copy Full 70s Script</button>
+            <div style="display:flex; gap:0.4rem;">
+              <button onclick="window.GigsModule.copyText('${escapeHtml((gallery.voiceoverScenes || []).join(' '))}', this)" class="btn-primary btn-sm" style="background:#00df89; color:#09090b; font-weight:800; font-size:0.75rem; padding:0.25rem 0.65rem; border:none;">🎙️ Copy Full Voiceover</button>
+              <button onclick="window.GigsModule.copyText('${escapeHtml(videoScenes.join('\\n\\n'))}', this)" class="btn-secondary btn-sm" style="font-size:0.75rem; padding:0.25rem 0.65rem;">📋 Copy 7 Visual Prompts</button>
+            </div>
           </div>
-          <div style="display:flex; flex-direction:column; gap:0.5rem;">
-            ${videoScenes.map((scene, sIdx) => `
-              <div style="background:rgba(0,0,0,0.3); padding:0.65rem 0.85rem; border-radius:6px; border:1px solid rgba(255,255,255,0.04); display:flex; justify-content:space-between; align-items:flex-start; gap:0.75rem;">
-                <div style="font-size:0.8rem; color:#e2e8f0; line-height:1.4;">${scene}</div>
-                <button onclick="window.GigsModule.copyText('${escapeHtml(scene)}', this)" class="btn-secondary btn-sm" style="font-size:0.65rem; padding:0.2rem 0.45rem; white-space:nowrap;">📋 Copy Scene</button>
-              </div>
-            `).join('')}
+
+          <div style="display:flex; flex-direction:column; gap:0.75rem;">
+            ${videoScenes.map((scene, sIdx) => {
+              const voLine = (gallery.voiceoverScenes && gallery.voiceoverScenes[sIdx]) || '';
+              return `
+                <div style="background:rgba(0,0,0,0.35); padding:0.85rem; border-radius:8px; border:1px solid rgba(255,255,255,0.06);">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+                    <span style="font-size:0.75rem; font-weight:800; color:#c084fc;">SCENE 0${sIdx+1} (${sIdx*10}s – ${(sIdx+1)*10}s)</span>
+                    <div style="display:flex; gap:0.35rem;">
+                      <button onclick="window.GigsModule.copyText('${escapeHtml(scene)}', this)" class="btn-secondary btn-sm" style="font-size:0.65rem; padding:0.15rem 0.45rem;">📋 Copy Visual</button>
+                      <button onclick="window.GigsModule.copyText('${escapeHtml(voLine)}', this)" class="btn-primary btn-sm" style="background:#38bdf8; color:#09090b; font-weight:800; font-size:0.65rem; padding:0.15rem 0.45rem; border:none;">🎙️ Copy VO</button>
+                    </div>
+                  </div>
+                  <div style="font-size:0.8rem; color:#e2e8f0; line-height:1.4; margin-bottom:0.45rem;"><strong>Visual Cue:</strong> ${scene}</div>
+                  ${voLine ? `<div style="background:rgba(56,189,248,0.08); border-left:3px solid #38bdf8; padding:0.4rem 0.6rem; border-radius:4px; font-size:0.8rem; color:#bae6fd; font-style:italic;">🎙️ "${voLine}"</div>` : ''}
+                </div>
+              `;
+            }).join('')}
           </div>
         </div>
 

@@ -164,11 +164,12 @@ describe('Marketplace Freelance Gig Engine Test Suite', () => {
       });
     });
 
-    test('All 7 seeded gigs have 7 video scenes, 3 image prompts, and 2 PDF prompts', () => {
+    test('All 7 seeded gigs have 7 video scenes, 7 voiceover scenes, 3 image prompts, and 2 PDF prompts', () => {
       const gigs = getAllGigs();
       gigs.forEach(g => {
         expect(g.galleryPrompts).toBeDefined();
         expect(g.galleryPrompts.videoScenes.length).toBe(7);
+        expect(g.galleryPrompts.voiceoverScenes.length).toBe(7);
         expect(g.galleryPrompts.imagePrompts.length).toBe(3);
         expect(g.galleryPrompts.pdfPrompts.length).toBe(2);
       });

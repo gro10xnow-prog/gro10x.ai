@@ -175,7 +175,7 @@ const SEEDED_STATE = {
       },
       "status": "Live",
       "liveUrl": "https://www.fiverr.com/farhan/build-your-pwa-mvp-48h",
-      "updatedAt": "2026-08-30T19:39:25.428Z",
+      "updatedAt": "2026-08-30T20:08:27.051Z",
       "titleBody": "build your web app or pwa mvp in 48 hours",
       "pricingMatrix": {
         "screens": {
@@ -249,7 +249,17 @@ const SEEDED_STATE = {
         "pdfPrompts": [
           "PDF 1 (Agency Case Study & Capabilities Guide): Write a 2-page executive agency capabilities brief detailing GRO10X rapid 48-hour MVP sprint methodology, technical architecture standards (Node.js + Supabase + Vercel), client deliverables breakdown, and project timeline milestone guarantee for prospective enterprise buyers.",
           "PDF 2 (Technical Onboarding & Deliverables Spec Sheet): Generate a comprehensive technical spec sheet and onboarding checklist for MVP buyers, covering database configuration requirements, user role permissions, API key integration protocols, and post-launch maintenance runbook."
-        ]
+        ],
+        "voiceoverScenes": [
+          "Tired of waiting months for traditional agencies just to see a basic prototype? There is a much faster way.",
+          "Endless hourly billing, bloated codebases, and missed launch deadlines kill great startup ideas before they even get off the ground.",
+          "At GRO10X, we engineer and deploy your full working web application or Progressive Web App in as fast as 48 hours.",
+          "Powered by modern Node.js, Supabase PostgreSQL, and serverless edge hosting on Vercel with zero downtime and ironclad security.",
+          "Your users get instant mobile installation, secure authentication, dynamic data forms, and interactive analytics ready to pitch to real investors.",
+          "You receive one hundred percent full source code ownership, complete GitHub repository access, and zero monthly lock-in fees.",
+          "Stop waiting and launch your MVP this week. Send us a message today with your project scope!"
+        ],
+        "fullVoiceoverScript": "Tired of waiting months for traditional agencies just to see a basic prototype? There is a much faster way. Endless hourly billing, bloated codebases, and missed launch deadlines kill great startup ideas before they even get off the ground. At GRO10X, we engineer and deploy your full working web application or Progressive Web App in as fast as 48 hours. Powered by modern Node.js, Supabase PostgreSQL, and serverless edge hosting on Vercel with zero downtime and ironclad security. Your users get instant mobile installation, secure authentication, dynamic data forms, and interactive analytics ready to pitch to real investors. You receive one hundred percent full source code ownership, complete GitHub repository access, and zero monthly lock-in fees. Stop waiting and launch your MVP this week. Send us a message today with your project scope!"
       }
     },
     {
@@ -408,7 +418,7 @@ const SEEDED_STATE = {
       },
       "status": "Generated",
       "liveUrl": "",
-      "updatedAt": "2026-08-30T19:39:40.450Z",
+      "updatedAt": "2026-08-30T20:08:27.051Z",
       "titleBody": "build fast AI web apps and SaaS platforms in 48h",
       "pricingMatrix": {
         "screens": {
@@ -482,7 +492,17 @@ const SEEDED_STATE = {
         "pdfPrompts": [
           "PDF 1 (Agency Case Study & Capabilities Guide): 2-page executive summary detailing GRO10X rapid development methodology, architecture standards, and milestone timeline.",
           "PDF 2 (Technical Onboarding & Deliverables Spec Sheet): Technical spec sheet and onboarding checklist covering database config, auth roles, and deployment runbook."
-        ]
+        ],
+        "voiceoverScenes": [
+          "Is your current website slow, clunky, and failing to convert visitors on mobile devices?",
+          "Traditional heavy CMS sites lag, break on updates, and charge high monthly maintenance fees for mediocre performance.",
+          "We build high-performance Progressive Web Apps and modern responsive websites that load at lightning-fast 60 frames per second.",
+          "With Google Lighthouse 100 scores, offline browsing capabilities, and instant mobile home-screen installation with zero app store delays.",
+          "Capture high-intent leads automatically with real-time database sync and seamless mobile-first user experiences.",
+          "Deployed globally on serverless cloud edge networks with automated SSL certificates and complete source code ownership.",
+          "Upgrade your digital presence with speed and precision. Message us today to discuss your website build!"
+        ],
+        "fullVoiceoverScript": "Is your current website slow, clunky, and failing to convert visitors on mobile devices? Traditional heavy CMS sites lag, break on updates, and charge high monthly maintenance fees for mediocre performance. We build high-performance Progressive Web Apps and modern responsive websites that load at lightning-fast 60 frames per second. With Google Lighthouse 100 scores, offline browsing capabilities, and instant mobile home-screen installation with zero app store delays. Capture high-intent leads automatically with real-time database sync and seamless mobile-first user experiences. Deployed globally on serverless cloud edge networks with automated SSL certificates and complete source code ownership. Upgrade your digital presence with speed and precision. Message us today to discuss your website build!"
       }
     },
     {
@@ -645,7 +665,7 @@ const SEEDED_STATE = {
       },
       "status": "Generated",
       "liveUrl": "",
-      "updatedAt": "2026-08-30T19:35:58.445Z",
+      "updatedAt": "2026-08-30T20:08:27.051Z",
       "titleBody": "build a custom ERP or business management system for your business",
       "pricingMatrix": {
         "screens": {
@@ -719,7 +739,17 @@ const SEEDED_STATE = {
         "pdfPrompts": [
           "PDF 1 (Enterprise ERP Architecture & Implementation Roadmap): Produce a comprehensive 2-page systems blueprint detailing GRO10X custom business operating system modules, database ERD schema design, user RBAC matrices, and migration methodology from legacy spreadsheets.",
           "PDF 2 (ERP Operational Audit & Discovery Questionnaire): Create a 2-page operational discovery document with structured diagnostic questions for department heads (Sales, Inventory, Finance, HR) to scope custom ERP workflows."
-        ]
+        ],
+        "voiceoverScenes": [
+          "Are spreadsheets, lost invoices, and disconnected software tools slowing down your business operations every single day?",
+          "Generic SaaS subscriptions charge hundreds per user every month while still forcing your team to do manual data entry.",
+          "We build custom business operating systems and ERPs tailored precisely to your exact operational workflows.",
+          "Manage leads, track staff output, automate client invoicing, and monitor cashflow in one unified dark-mode dashboard.",
+          "Equipped with role-based permissions, automated Telegram bot alerts, and ironclad Supabase PostgreSQL data security.",
+          "You own the entire software stack forever with zero recurring per-seat licensing fees and complete data sovereignty.",
+          "Scale your operations with clarity. Send us a message with your business workflow to get a custom system demo!"
+        ],
+        "fullVoiceoverScript": "Are spreadsheets, lost invoices, and disconnected software tools slowing down your business operations every single day? Generic SaaS subscriptions charge hundreds per user every month while still forcing your team to do manual data entry. We build custom business operating systems and ERPs tailored precisely to your exact operational workflows. Manage leads, track staff output, automate client invoicing, and monitor cashflow in one unified dark-mode dashboard. Equipped with role-based permissions, automated Telegram bot alerts, and ironclad Supabase PostgreSQL data security. You own the entire software stack forever with zero recurring per-seat licensing fees and complete data sovereignty. Scale your operations with clarity. Send us a message with your business workflow to get a custom system demo!"
       }
     },
     {
@@ -880,7 +910,7 @@ const SEEDED_STATE = {
       },
       "status": "Generated",
       "liveUrl": "",
-      "updatedAt": "2026-08-30T19:35:58.445Z",
+      "updatedAt": "2026-08-30T20:08:27.051Z",
       "titleBody": "build a custom AI Telegram bot or WhatsApp chatbot for your business",
       "pricingMatrix": {
         "screens": {
@@ -954,7 +984,17 @@ const SEEDED_STATE = {
         "pdfPrompts": [
           "PDF 1 (AI Bot Architecture & RAG Knowledge Base Guide): Write a 2-page technical guide explaining how custom Telegram and WhatsApp bots integrate with enterprise RAG knowledge bases, handle fallback escalations, and protect proprietary business data.",
           "PDF 2 (Chatbot Conversation Flow & FAQ Configuration Handbook): Create a structured client onboarding worksheet for drafting intent trees, custom greeting messages, lead qualification criteria, and notification channel webhooks."
-        ]
+        ],
+        "voiceoverScenes": [
+          "Are you losing valuable prospective leads because your customer service team cannot respond 24/7?",
+          "Slow replies cause buyers to bounce to competitors, while hiring round-the-clock support staff costs thousands every month.",
+          "We engineer intelligent AI Telegram bots and WhatsApp chatbots that engage, qualify, and convert customers automatically.",
+          "Powered by Google Gemini AI with RAG knowledge base integration, ensuring 100% accurate, hallucination-free answers based strictly on your docs.",
+          "Interactive inline menus, instant appointment scheduling, and automated push notifications sent directly to your sales team.",
+          "Engineered with lightweight cloud webhooks with high uptime and zero monthly third-party bot platform fees.",
+          "Automate your sales and customer support today. Message us with your bot requirements to get started!"
+        ],
+        "fullVoiceoverScript": "Are you losing valuable prospective leads because your customer service team cannot respond 24/7? Slow replies cause buyers to bounce to competitors, while hiring round-the-clock support staff costs thousands every month. We engineer intelligent AI Telegram bots and WhatsApp chatbots that engage, qualify, and convert customers automatically. Powered by Google Gemini AI with RAG knowledge base integration, ensuring 100% accurate, hallucination-free answers based strictly on your docs. Interactive inline menus, instant appointment scheduling, and automated push notifications sent directly to your sales team. Engineered with lightweight cloud webhooks with high uptime and zero monthly third-party bot platform fees. Automate your sales and customer support today. Message us with your bot requirements to get started!"
       }
     },
     {
@@ -1115,7 +1155,7 @@ const SEEDED_STATE = {
       },
       "status": "Generated",
       "liveUrl": "",
-      "updatedAt": "2026-08-30T19:35:58.445Z",
+      "updatedAt": "2026-08-30T20:08:27.051Z",
       "titleBody": "build a real-time analytics or operations dashboard for your business",
       "pricingMatrix": {
         "screens": {
@@ -1189,7 +1229,17 @@ const SEEDED_STATE = {
         "pdfPrompts": [
           "PDF 1 (Executive KPI Framework & Dashboard Design Spec): Produce a 2-page executive guide detailing essential SaaS and agency KPI metrics (MRR, CAC, LTV, Net Margin), chart visual hierarchy, and telemetry thresholds for leadership dashboards.",
           "PDF 2 (Dashboard Data Integration & API Connection Guide): Create a step-by-step technical spec sheet for connecting third-party databases, webhook endpoints, and scheduled aggregation jobs into custom dashboards."
-        ]
+        ],
+        "voiceoverScenes": [
+          "Are you wasting hours every week digging through multiple tabs and messy spreadsheets just to understand your business performance?",
+          "Without clear data visibility, leaders make blind decisions and miss critical revenue bottlenecks before it is too late.",
+          "We engineer real-time executive operations and analytics dashboards that display your entire business in one single screen.",
+          "Track MRR, CAC, conversion rates, and team productivity with interactive trend graphs and cohort heatmaps.",
+          "Filter millions of records in milliseconds and receive automated morning briefings sent directly to your Telegram.",
+          "Connected securely to Supabase PostgreSQL and Stripe APIs with encrypted credentials and strict role access controls.",
+          "Gain complete visibility over your growth. Message us with your data sources to build your custom dashboard!"
+        ],
+        "fullVoiceoverScript": "Are you wasting hours every week digging through multiple tabs and messy spreadsheets just to understand your business performance? Without clear data visibility, leaders make blind decisions and miss critical revenue bottlenecks before it is too late. We engineer real-time executive operations and analytics dashboards that display your entire business in one single screen. Track MRR, CAC, conversion rates, and team productivity with interactive trend graphs and cohort heatmaps. Filter millions of records in milliseconds and receive automated morning briefings sent directly to your Telegram. Connected securely to Supabase PostgreSQL and Stripe APIs with encrypted credentials and strict role access controls. Gain complete visibility over your growth. Message us with your data sources to build your custom dashboard!"
       }
     },
     {
@@ -1350,7 +1400,7 @@ const SEEDED_STATE = {
       },
       "status": "Generated",
       "liveUrl": "",
-      "updatedAt": "2026-08-30T19:35:58.445Z",
+      "updatedAt": "2026-08-30T20:08:27.051Z",
       "titleBody": "connect your apps with a custom API or webhook integration",
       "pricingMatrix": {
         "screens": {
@@ -1424,7 +1474,17 @@ const SEEDED_STATE = {
         "pdfPrompts": [
           "PDF 1 (Custom Middleware Architecture & Zero-Fee Automation Blueprint): Write a 2-page technical guide contrasting custom Node.js/Apps Script webhook middleware against costly SaaS subscription tools, highlighting latency advantages, security, and cost savings.",
           "PDF 2 (API Integration Discovery & Payload Mapping Spec): Generate a structured client scoping worksheet for documenting API endpoints, JSON payload schemas, authentication methods (OAuth/API Keys), and webhook trigger events."
-        ]
+        ],
+        "voiceoverScenes": [
+          "Are your business software tools trapped in isolated silos, forcing employees to copy and paste data all day?",
+          "Manual data entry leads to expensive human errors, delayed deliveries, and frustrated customers waiting for updates.",
+          "We build custom, rock-solid API integrations and webhook bridges that connect your software automatically.",
+          "Automate Google Workspace workflows, sync payment gateways to invoice databases, and trigger instant team alert notifications.",
+          "Engineered with Node.js microservices and automated retry queues that guarantee zero data loss during network spikes.",
+          "You own the custom middleware code forever with zero monthly subscription fees charged by third-party automation tools.",
+          "Connect your applications seamlessly. Message us with the tools you need integrated to get started today!"
+        ],
+        "fullVoiceoverScript": "Are your business software tools trapped in isolated silos, forcing employees to copy and paste data all day? Manual data entry leads to expensive human errors, delayed deliveries, and frustrated customers waiting for updates. We build custom, rock-solid API integrations and webhook bridges that connect your software automatically. Automate Google Workspace workflows, sync payment gateways to invoice databases, and trigger instant team alert notifications. Engineered with Node.js microservices and automated retry queues that guarantee zero data loss during network spikes. You own the custom middleware code forever with zero monthly subscription fees charged by third-party automation tools. Connect your applications seamlessly. Message us with the tools you need integrated to get started today!"
       }
     },
     {
@@ -1584,7 +1644,7 @@ const SEEDED_STATE = {
       },
       "status": "Generated",
       "liveUrl": "",
-      "updatedAt": "2026-08-30T19:35:58.445Z",
+      "updatedAt": "2026-08-30T20:08:27.051Z",
       "titleBody": "audit your business workflow and deliver a custom AI roadmap",
       "pricingMatrix": {
         "screens": {
@@ -1658,7 +1718,17 @@ const SEEDED_STATE = {
         "pdfPrompts": [
           "PDF 1 (Executive AI Strategy & Operational Efficiency Framework): Produce a 2-page high-level whitepaper outlining the GRO10X AI maturity framework for SMBs, ROI measurement benchmarks, and adoption roadmaps.",
           "PDF 2 (Business Process Discovery & Automation Readiness Audit): Create a comprehensive 2-page diagnostic questionnaire covering department task frequencies, manual bottlenecks, data structure readiness, and employee tooling access."
-        ]
+        ],
+        "voiceoverScenes": [
+          "Curious about how modern AI tools can cut operational costs, but overwhelmed by hype and technical jargon?",
+          "Most companies waste thousands on the wrong software tools that their employees never actually adopt or use.",
+          "We deliver practical, executive-level AI audits and implementation roadmaps tailored specifically to your company.",
+          "We analyze your sales, delivery, and administration bottlenecks to identify your highest-ROI automation quick wins.",
+          "You receive a prioritized implementation matrix, curated tool stack recommendations, and actionable prompt playbooks.",
+          "Backed by tested agency workflows that cut manual labor and multiply your team output capacity immediately.",
+          "Transform your business with practical AI execution. Message us today to book your strategy session!"
+        ],
+        "fullVoiceoverScript": "Curious about how modern AI tools can cut operational costs, but overwhelmed by hype and technical jargon? Most companies waste thousands on the wrong software tools that their employees never actually adopt or use. We deliver practical, executive-level AI audits and implementation roadmaps tailored specifically to your company. We analyze your sales, delivery, and administration bottlenecks to identify your highest-ROI automation quick wins. You receive a prioritized implementation matrix, curated tool stack recommendations, and actionable prompt playbooks. Backed by tested agency workflows that cut manual labor and multiply your team output capacity immediately. Transform your business with practical AI execution. Message us today to book your strategy session!"
       }
     }
   ]
