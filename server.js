@@ -236,6 +236,8 @@ app.post(['/api/webhooks/telegram', '/webhooks/telegram'], async (req, res) => {
         console.log(`[Webhook] Processing update (${botType}) update_id:`, req.body?.update_id);
       }
       await targetBot.processUpdate(req.body);
+      // Serverless execution barrier: allow event handlers to finish Telegram API calls
+      await new Promise(resolve => setTimeout(resolve, 800));
       return res.status(200).json({ ok: true });
     } catch (err) {
       console.error(`Telegram webhook update processing error (${botType}):`, err.message);

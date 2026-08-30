@@ -266,7 +266,7 @@ function initBot() {
             const errorMsg = `🔒 *Access Restricted — GRO10X Internal Portal*\n\n` +
               `The phone number *+${normPhone}* is not registered in the GRO10X employee database.\n\n` +
               `If you are an authorized employee, please contact Technology Admin *Firoz Uddin Ahmed* (01708-459008) to authorize your account.`;
-            return teamBot.sendMessage(chatId, errorMsg, { parse_mode: 'Markdown' });
+            return await teamBot.sendMessage(chatId, errorMsg, { parse_mode: 'Markdown' });
           }
 
           // Link Telegram ID and generate temp PIN in parallel for max performance
@@ -287,10 +287,10 @@ function initBot() {
             `Use the menu below or tap *Open App* for the full portal.`;
 
           const keyboard = getRoleKeyboard(emp.accessLevel, true, emp);
-          teamBot.sendMessage(chatId, welcomeMsg, { parse_mode: 'Markdown', reply_markup: keyboard });
+          await teamBot.sendMessage(chatId, welcomeMsg, { parse_mode: 'Markdown', reply_markup: keyboard });
         } catch (err) {
           console.error('[Bot Error: contact handler]', err.message);
-          teamBot.sendMessage(msg.chat.id, '⚠️ An error occurred during verification. Please try again.').catch(() => {});
+          await teamBot.sendMessage(msg.chat.id, '⚠️ An error occurred during verification. Please try again.').catch(() => {});
         }
       });
 
@@ -400,24 +400,32 @@ function initBot() {
       // /start handler
       teamBot.onText(/\/start/, async (msg) => {
         const chatId = msg.chat.id;
-        await state.clearSession(chatId);
-        
-        const emp = await state.getEmployeeByTelegramId(chatId);
+        try {
+          await state.clearSession(chatId);
+          
+          const emp = await state.getEmployeeByTelegramId(chatId);
 
-        if (emp) {
-          const welcome = `💜 *Welcome back, ${emp.name}!*\n\n` +
-            `🏢 *${emp.role}* · ${emp.department}\n` +
-            `⭐ Rank: *${emp.badge || '🌱 Recruit'}* (${emp.xp || 0} XP)\n\n` +
-            `Your dashboard is ready. Tap any menu button below or hit *Open App* for full access.`;
-          const keyboard = getRoleKeyboard(emp.accessLevel, true, emp);
-          teamBot.sendMessage(chatId, welcome, { parse_mode: 'Markdown', reply_markup: keyboard });
-        } else {
-          const welcome = `⚡ *GRO10X — Team Assistant*\n\n` +
-            `Welcome to the internal team bot.\n\n` +
-            `📌 *Getting Started:*\n` +
-            `Tap *📱 Verify My Phone Number* below to link your account. It takes 5 seconds!`;
-          const keyboard = getRoleKeyboard('Specialist / Crew', false);
-          teamBot.sendMessage(chatId, welcome, { parse_mode: 'Markdown', reply_markup: keyboard });
+          if (emp) {
+            const welcome = `💜 *Welcome back, ${emp.name}!*\n\n` +
+              `🏢 *${emp.role}* · ${emp.department}\n` +
+              `⭐ Rank: *${emp.badge || '🌱 Recruit'}* (${emp.xp || 0} XP)\n\n` +
+              `Your dashboard is ready. Tap any menu button below or hit *Open App* for full access.`;
+            const keyboard = getRoleKeyboard(emp.accessLevel, true, emp);
+            await teamBot.sendMessage(chatId, welcome, { parse_mode: 'Markdown', reply_markup: keyboard });
+          } else {
+            const welcome = `⚡ *GRO10X — Team Assistant*\n\n` +
+              `Welcome to the internal team bot.\n\n` +
+              `📌 *Getting Started:*\n` +
+              `Tap *📱 Verify My Phone Number* below to link your account. It takes 5 seconds!`;
+            const keyboard = getRoleKeyboard('Specialist / Crew', false);
+            await teamBot.sendMessage(chatId, welcome, { parse_mode: 'Markdown', reply_markup: keyboard });
+          }
+        } catch (err) {
+          console.error('[Bot Error: /start handler]', err.message);
+          await teamBot.sendMessage(chatId, `⚡ *GRO10X — Team Assistant*\n\nTap *📱 Verify My Phone Number* below to link your account.`, {
+            parse_mode: 'Markdown',
+            reply_markup: getRoleKeyboard('Specialist / Crew', false)
+          }).catch(() => {});
         }
       });
 
