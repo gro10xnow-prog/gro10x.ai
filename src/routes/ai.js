@@ -6,13 +6,13 @@ const { requireManager } = require('../middleware/rbac');
 const { getFirstName } = require('../utils/name');
 
 const PORTAL = 'https://gro10x-ai.vercel.app/crew';
-const BOT_LINK = 'https://t.me/purplemanosbot';
+const BOT_LINK = 'https://t.me/Aigeneral01bot';
 
 const STEPS = {
-  no_pin:           '1. Open your Crew Portal: https://gro10x-ai.vercel.app/crew\n2. Enter your registered phone number to log in\n3. Connect our Telegram Assistant (https://t.me/purplemanosbot) to complete your 4-part profile survey & sign your agreement.',
+  no_pin:           '1. Open our Telegram Team Bot (https://t.me/Aigeneral01bot)\n2. Tap /start and press "📱 Verify My Phone Number"\n3. The bot will verify your account and provide your login PIN and Crew Portal access.',
   temp_pin:         'Log in to https://gro10x-ai.vercel.app/crew with your temporary PIN and set your permanent 6-digit PIN in Profile Settings.',
-  pin_no_tg:        'Launch our Telegram Team Bot (https://t.me/purplemanosbot), tap /start, and link your account for daily operations and attendance.',
-  pin_tg_no_survey: 'Open the Telegram Mini App via @purplemanosbot, complete your profile survey, and sign your Stage 1 Employment Agreement to activate your DBM workspace.',
+  pin_no_tg:        'Launch our Telegram Team Bot (https://t.me/Aigeneral01bot), tap /start, and link your account for daily operations and attendance.',
+  pin_tg_no_survey: 'Open the Telegram Mini App via @Aigeneral01bot, complete your profile survey, and sign your Stage 1 Employment Agreement to activate your DBM workspace.',
   fully_onboarded:  'Clock in daily via Telegram Bot, access your DBM Brand Studio at https://gro10x-ai.vercel.app/app#brands, and submit your EOD reports.'
 };
 

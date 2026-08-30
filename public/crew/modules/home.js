@@ -174,7 +174,7 @@ window.CREW_MODULES.home = async function(container) {
       <div style="font-size:0.85rem; color:var(--text-muted); line-height:1.6; margin-bottom:1rem;">
         Clocking in/out, GPS check-ins, and mobile instant reports are synced live with your Telegram Bot.
       </div>
-      <a href="https://t.me/purplemanosbot" target="_blank" class="btn-primary" style="display:inline-block; text-decoration:none;">🤖 Launch Crew Bot (@purplemanosbot)</a>
+      <a href="https://t.me/Aigeneral01bot" target="_blank" class="btn-primary" style="display:inline-block; text-decoration:none;">🤖 Launch Team Bot (@Aigeneral01bot)</a>
     </div>
   `;
 };
