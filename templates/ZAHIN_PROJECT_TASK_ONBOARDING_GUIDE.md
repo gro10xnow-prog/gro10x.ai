@@ -22,7 +22,7 @@ Provide this structure to Zahin when sitting with department leads. Each row rep
 | # | Column Header | Required? | Example Value | Description & PurpleOS System Effect |
 |---|---|---|---|---|
 | 1 | **`Task Title`** | **YES** | `Hero Commercial 60s Edit` | The name of the deliverable. Appears on Kanban cards, Telegram notifications, and EOD logs. |
-| 2 | **`Client Name`** | **YES** | `Apex Footwear` | The client/brand. If internal agency work, use `Internal Agency` or `Purplebot`. |
+| 2 | **`Client Name`** | **YES** | `Apex Footwear` | The client/brand. If internal agency work, use `Internal Agency` or `GRO10X`. |
 | 3 | **`Project Name`** | Recommended | `Apex Autumn 2026 Campaign` | Groups multiple tasks together under a single campaign/retainer. |
 | 4 | **`Assignee`** | **YES** | `Md. Zahin Khandaker` or `PBD-002` | Name or Employee ID of the specialist responsible. Triggers their dashboard & bot alerts. |
 | 5 | **`Department`** | Recommended | `Post Production` | Department filter (`Creative & Content`, `Production`, `Post Production`, `Influencer Marketing`, `Development & Tech`, `Client Relations`, `Finance`). |

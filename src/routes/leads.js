@@ -222,7 +222,7 @@ router.post('/', leadSubmitLimiter, async (req, res) => {
     const ownerChatId = process.env.OWNER_TELEGRAM_ID;
     if (ownerChatId) {
       const score = newLead.score || 50;
-      let header = `🔔 *New Lead from Purplebot Digital!*\n🏅 Score: *${score}/100*`;
+      let header = `🔔 *New Lead from GRO10X AI Agency!*\n🏅 Score: *${score}/100*`;
       if (score >= 75) {
         header = `🔥 *PRIORITY LEAD — HIGH CONVERSION POTENTIAL!*\n🏅 Score: *${score}/100* — _Fast response recommended (<30m)_`;
       } else if (score < 50) {

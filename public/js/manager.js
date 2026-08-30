@@ -1896,7 +1896,7 @@ function selectManagerChatClient(clientName) {
     messagesBox.innerHTML = `
       <div style="align-self: flex-start; max-width: 80%; background: rgba(255,255,255,0.06); padding: 0.75rem 1rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08);">
         <div style="font-size: 0.72rem; color: #94a3b8; margin-bottom: 0.2rem;">${clientName} (via Telegram)</div>
-        <div style="color: #e2e8f0; font-size: 0.85rem;">Hi Purplebot team! Just checking in on the latest reel cuts for this week's campaign.</div>
+        <div style="color: #e2e8f0; font-size: 0.85rem;">Hi GRO10X team! Just checking in on the latest campaign deliverables.</div>
       </div>
       <div style="align-self: flex-end; max-width: 80%; background: linear-gradient(135deg, #2563eb, #7c3aed); padding: 0.75rem 1rem; border-radius: 12px; color: #fff;">
         <div style="font-size: 0.72rem; color: #bfdbfe; margin-bottom: 0.2rem;">You (Manager)</div>

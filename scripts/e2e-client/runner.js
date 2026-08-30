@@ -1,6 +1,6 @@
 /**
  * scripts/e2e-client/runner.js
- * PurpleOS Client Partner Stakeholder Master E2E Test Suite Orchestrator
+ * GRO10X OS Client Partner Stakeholder Master E2E Test Suite Orchestrator
  * 
  * Usage:
  *   node scripts/e2e-client/runner.js              (Runs all 9 phases)
@@ -22,7 +22,7 @@ const { runPhase9 } = require('./phases/phase-9-cross-browser');
 
 async function main() {
   console.log('\n============================================================');
-  console.log('🤝 PurpleOS Client Partner Stakeholder Master E2E Test Suite');
+  console.log('🤝 GRO10X OS Client Partner Stakeholder Master E2E Test Suite');
   console.log('   Brands · Retainer Clients · Enterprise Accounts');
   console.log('============================================================\n');
 

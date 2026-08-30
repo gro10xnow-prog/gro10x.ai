@@ -210,7 +210,7 @@ function hydrateUserInfo() {
     if (!role) role = 'Team Member';
 
     // Store normalized user object back to localStorage
-    const userObj = { name, role, phone: cleanPhone, email: localStorage.getItem('purple_user_email') || 'contact@purplebot.digital' };
+    const userObj = { name, role, phone: cleanPhone, email: localStorage.getItem('purple_user_email') || 'gro10xnow@gmail.com' };
     localStorage.setItem('purple_user', JSON.stringify(userObj));
 
     // Hydrate UI elements
@@ -220,7 +220,7 @@ function hydrateUserInfo() {
 
     if (nameEl) nameEl.textContent = name;
     if (roleEl) roleEl.textContent = role;
-    if (avatarEl) avatarEl.textContent = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'PB';
+    if (avatarEl) avatarEl.textContent = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'GX';
 
   } catch (e) {
     console.warn('[PurpleOS Shell] User hydration error:', e);

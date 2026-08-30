@@ -1,6 +1,6 @@
 -- ====================================================================
 -- PurpleOS Version 0.6 Master Database Schema Migration
--- Project: Purplebot Digital Agency OS & Employee Web Panel
+-- Project: GRO10X AI Agency OS & Employee Web Panel
 -- ====================================================================
 
 -- 1. Enable UUID Extension

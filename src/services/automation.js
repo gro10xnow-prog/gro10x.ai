@@ -245,7 +245,7 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
       const clientTg = clientObj?.telegramId || clientObj?.telegram_id;
 
       if (clientTg) {
-        const msgText = `✅ *Payment Received & Verified!*\n\nInvoice: *${invoice.id}*\nAmount: *BDT ${Number(invoice.amount || 0).toLocaleString()}*\nDate: *${invoice.paidDate || invoice.paid_date || new Date().toISOString().split('T')[0]}*\n\nThank you for partnering with Purplebot Digital!`;
+        const msgText = `✅ *Payment Received & Verified!*\n\nInvoice: *${invoice.id}*\nAmount: *BDT ${Number(invoice.amount || 0).toLocaleString()}*\nDate: *${invoice.paidDate || invoice.paid_date || new Date().toISOString().split('T')[0]}*\n\nThank you for partnering with GRO10X AI Agency!`;
         sendTelegramNotification(clientTg, msgText, null, false);
       }
 
@@ -547,9 +547,9 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
       const pendingExp = (db.expenses || []).filter(e => e.status !== 'Disbursed' && e.status !== 'Rejected').length;
       const activeStaff = (db.team || []).length;
 
-      const msgText = `☀️ *PURPLEBOT 9:00 AM MORNING EXECUTIVE BRIEFING*\n` +
+      const msgText = `☀️ *GRO10X 9:00 AM MORNING EXECUTIVE BRIEFING*\n` +
         `📅 Date: *${todayStr}*\n\n` +
-        `🎬 *Active Campaigns & Shoots:* ${openTasks} Open Workflows\n` +
+        `🎬 *Active Campaigns & Workflows:* ${openTasks} Open Workflows\n` +
         `👥 *Team Capacity:* ${activeStaff} Specialists Active\n` +
         `🧾 *Pending Approvals:* ${pendingExp} Expense Claims Awaiting Release\n` +
         `📱 *Social Dispatches:* Check 1-Click Social Dispatch Hub\n\n` +
@@ -578,13 +578,13 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
       const eodCount = (db.eod_reports || []).filter(e => (e.date || '').startsWith(todayStr) || (e.submittedAt || '').startsWith(todayStr)).length;
       const openTickets = (db.tickets || []).filter(t => t.status !== 'Resolved').length;
 
-      const msgText = `🌙 *PURPLEBOT 8:30 PM EVENING EXECUTIVE DIGEST*\n\n` +
+      const msgText = `🌙 *GRO10X 8:30 PM EVENING EXECUTIVE DIGEST*\n\n` +
         `📊 *Financial Summary:*\n` +
         `  • Total Revenue Collected: *BDT ${paidRev.toLocaleString()}*\n` +
         `  • Disbursed Operational Expenses: *BDT ${disbursedExp.toLocaleString()}*\n\n` +
         `📋 *Team EOD Submission Rate:* ${eodCount} Reports Logged Today\n` +
         `🔧 *Active Support Tickets:* ${openTickets} Open Ticket(s)\n\n` +
-        `_Generated automatically by PurpleOS Core_`;
+        `_Generated automatically by GRO10X OS Core_`;
 
       const leaders = (db.team || []).filter(t => (t.role || '').toLowerCase().includes('director') || (t.role || '').toLowerCase().includes('founder') || (t.role || '').toLowerCase().includes('owner'));
       leaders.forEach(l => {
@@ -607,7 +607,7 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
       const clientCount = (db.clients || []).length;
       const taskCount = (db.tasks || []).length;
 
-      const msgText = `📈 *PURPLEBOT WEEKLY EXECUTIVE KPI SUMMARY*\n\n` +
+      const msgText = `📈 *GRO10X WEEKLY EXECUTIVE KPI SUMMARY*\n\n` +
         `💰 Total Portfolio Revenue: *BDT ${totalRev.toLocaleString()}*\n` +
         `🏢 Active Brand Retainers: *${clientCount} Clients*\n` +
         `🚀 Total Campaign Workflows: *${taskCount} Production Shoots*\n\n` +
@@ -741,22 +741,21 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
       const expense = eventData?.expense || eventData || {};
       const staffObj = findStaffMember(db, { employeeId: expense.employeeId || expense.emp_code || expense.empCode, name: expense.submittedBy || expense.loggedBy });
       
-      const targetManager = (staffObj && staffObj.reportsTo)
-        ? (db.team || []).find(t => t.id === staffObj.reportsTo)
-        : (db.team || []).find(t => (t.role || '').toLowerCase().includes('managing director') || t.id === 'PBD-001');
+      const owner = (db.team || []).find(t => (t.role || '').toLowerCase().includes('founder') || (t.role || '').toLowerCase().includes('director') || (t.accessLevel || '').toLowerCase().includes('admin'));
+      const targetId = (staffObj && staffObj.reportsTo ? (db.team || []).find(t => t.id === staffObj.reportsTo)?.telegramId : null) || owner?.telegramId || process.env.OWNER_TELEGRAM_ID;
 
-      const msgText = `💰 *NEW EXPENSE CLAIM SUBMITTED (TIER 1 PENDING)*\n\n` +
+      const msgText = `💰 *NEW EXPENSE CLAIM SUBMITTED (PENDING APPROVAL)*\n\n` +
         `📋 Claim ID: *${expense.id || 'EXP-NEW'}*\n` +
         `👤 Submitted By: *${expense.submittedBy || expense.loggedBy || 'Staff Member'}*\n` +
         `📁 Category: *${expense.category || 'General'}*\n` +
         `💵 Amount: *BDT ${(Number(expense.amount) || 0).toLocaleString()}*\n` +
         `📝 Note: *${expense.description || 'Field operational expense'}*\n\n` +
-        `Click below to approve Tier 1 or inspect in Manager Portal.`;
+        `Click below to approve and release payment.`;
 
-      if (targetManager && targetManager.telegramId) {
-        sendTelegramNotification(targetManager.telegramId, msgText, [
-          [{ text: '✅ Approve T1 (Manager)', callback_data: `approve_expense_t1:${expense.id}` }],
-          [{ text: '🔍 Inspect in Manager Portal', url: `https://gro10x-ai.vercel.app/manager` }]
+      if (targetId) {
+        sendTelegramNotification(targetId, msgText, [
+          [{ text: '💸 Approve & Disburse', callback_data: `disburse_expense_t3:${expense.id}` }],
+          [{ text: '🔍 Inspect in Admin Portal', url: `https://gro10x-ai.vercel.app/admin` }]
         ], true);
       }
 
@@ -770,85 +769,60 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
       });
     }
 
-    // TRIGGER 19.1: Expense Tier 1 Approved -> Check High-Value (> BDT 10k) Ops Routing
+    // TRIGGER 19.1: Expense Tier 1 Approved -> Fast-track to Owner
     if (eventType === 'expense_tier1_approved') {
       const expense = eventData?.expense || eventData || {};
       const amt = Number(expense.amount) || 0;
+      expense.status = 'Tier 2 Approved';
 
-      if (amt > 10000) {
-        // High-Value Claim (> 10k) -> Route to Kafil Mahmud (Head of Business Operations) for Tier 1.5
-        const kafil = (db.team || []).find(t => t.id === 'PBD-004' || (t.role || '').toLowerCase().includes('business operations'));
-        expense.status = 'Tier 1.5 Pending (Ops Review)';
+      const owner = (db.team || []).find(t => (t.role || '').toLowerCase().includes('founder') || (t.role || '').toLowerCase().includes('director') || (t.accessLevel || '').toLowerCase().includes('admin'));
+      const targetId = owner?.telegramId || process.env.OWNER_TELEGRAM_ID;
 
-        const msgText = `🚨 *HIGH-VALUE EXPENSE CLAIM (> BDT 10,000) — TIER 1.5 OPS REVIEW*\n\n` +
-          `📋 Claim ID: *${expense.id || 'EXP-NEW'}*\n` +
-          `👤 Submitted By: *${expense.submittedBy || expense.loggedBy || 'Staff Member'}*\n` +
-          `💵 Amount: *BDT ${amt.toLocaleString()}*\n` +
-          `✍️ T1 Approved By: *${expense.tier1?.approvedBy || 'Line Manager'}*\n\n` +
-          `Requires Head of Business Operations sign-off before Finance disbursement.`;
+      const msgText = `💰 *EXPENSE CLAIM VERIFIED — READY FOR DISBURSEMENT*\n\n` +
+        `📋 Claim ID: *${expense.id || 'EXP-NEW'}*\n` +
+        `👤 Submitted By: *${expense.submittedBy || expense.loggedBy || 'Staff Member'}*\n` +
+        `💵 Amount: *BDT ${amt.toLocaleString()}*\n\n` +
+        `Click below to release electronic disbursement.`;
 
-        const targetId = kafil?.telegramId || process.env.OWNER_TELEGRAM_ID;
-        if (targetId) {
-          sendTelegramNotification(targetId, msgText, [
-            [{ text: '✅ Approve T1.5 (Ops Head)', callback_data: `approve_expense_t1_5:${expense.id}` }],
-            [{ text: '🔍 Inspect in Portal', url: `https://gro10x-ai.vercel.app/admin` }]
-          ], true);
-        }
-      } else {
-        // Standard Claim (<= 10k) -> Route directly to Borhan Siddique (Finance Manager) for Tier 2
-        const borhan = (db.team || []).find(t => t.id === 'PBD-029' || (t.role || '').toLowerCase().includes('finance manager'));
-        expense.status = 'Tier 2 Pending';
-
-        const msgText = `💰 *EXPENSE CLAIM TIER 1 APPROVED — AWAITING TIER 2 FINANCE VERIFICATION*\n\n` +
-          `📋 Claim ID: *${expense.id || 'EXP-NEW'}*\n` +
-          `👤 Submitted By: *${expense.submittedBy || expense.loggedBy || 'Staff Member'}*\n` +
-          `💵 Amount: *BDT ${amt.toLocaleString()}*\n` +
-          `✍️ T1 Approved By: *${expense.tier1?.approvedBy || 'Line Manager'}*\n\n` +
-          `Click below to verify for final disbursement.`;
-
-        const targetId = borhan?.telegramId || process.env.OWNER_TELEGRAM_ID;
-        if (targetId) {
-          sendTelegramNotification(targetId, msgText, [
-            [{ text: '💰 Verify T2 (Finance)', callback_data: `approve_expense_t2:${expense.id}` }],
-            [{ text: '🔍 Inspect in Admin Portal', url: `https://gro10x-ai.vercel.app/admin` }]
-          ], true);
-        }
-      }
-    }
-
-    // TRIGGER 19.2: Expense Tier 1.5 Approved -> Route to Finance Manager (Tier 2)
-    if (eventType === 'expense_tier1_5_approved') {
-      const expense = eventData.expense;
-      const borhan = (db.team || []).find(t => t.id === 'PBD-029' || (t.role || '').toLowerCase().includes('finance manager'));
-      expense.status = 'Tier 2 Pending';
-
-      const msgText = `💰 *HIGH-VALUE EXPENSE TIER 1.5 OPS APPROVED — AWAITING FINANCE VERIFICATION*\n\n` +
-        `📋 Claim ID: *${expense.id}*\n` +
-        `👤 Submitted By: *${expense.submittedBy}*\n` +
-        `💵 Amount: *BDT ${(Number(expense.amount) || 0).toLocaleString()}*\n` +
-        `✍️ Ops Approved By: *${expense.tier1_5?.approvedBy || 'Kafil Mahmud (Head of Ops)'}*\n\n` +
-        `Click below to verify for final disbursement.`;
-
-      const targetId = borhan?.telegramId || process.env.OWNER_TELEGRAM_ID;
       if (targetId) {
         sendTelegramNotification(targetId, msgText, [
-          [{ text: '💰 Verify T2 (Finance)', callback_data: `approve_expense_t2:${expense.id}` }],
+          [{ text: '💸 Release Disbursement', callback_data: `disburse_expense_t3:${expense.id}` }],
           [{ text: '🔍 Inspect in Admin Portal', url: `https://gro10x-ai.vercel.app/admin` }]
         ], true);
       }
     }
 
-    // TRIGGER 20: New Leave Request Submitted -> Alert Line Manager (AUT-020)
+    // TRIGGER 19.2: Expense Tier 1.5 Approved -> Route to Owner
+    if (eventType === 'expense_tier1_5_approved') {
+      const expense = eventData.expense;
+      expense.status = 'Tier 2 Approved';
+
+      const owner = (db.team || []).find(t => (t.role || '').toLowerCase().includes('founder') || (t.role || '').toLowerCase().includes('director') || (t.accessLevel || '').toLowerCase().includes('admin'));
+      const targetId = owner?.telegramId || process.env.OWNER_TELEGRAM_ID;
+
+      const msgText = `💰 *EXPENSE OPS APPROVED — READY FOR DISBURSEMENT*\n\n` +
+        `📋 Claim ID: *${expense.id}*\n` +
+        `👤 Submitted By: *${expense.submittedBy}*\n` +
+        `💵 Amount: *BDT ${(Number(expense.amount) || 0).toLocaleString()}*\n\n` +
+        `Click below to release electronic disbursement.`;
+
+      if (targetId) {
+        sendTelegramNotification(targetId, msgText, [
+          [{ text: '💸 Release Disbursement', callback_data: `disburse_expense_t3:${expense.id}` }],
+          [{ text: '🔍 Inspect in Admin Portal', url: `https://gro10x-ai.vercel.app/admin` }]
+        ], true);
+      }
+    }
+
+    // TRIGGER 20: New Leave Request Submitted -> Alert Founder / Admin (AUT-020)
     if (eventType === 'leave_submitted') {
       const leave = eventData.leave || eventData || {};
       const staffRaw = leave.staffName || leave.employeeName || leave.employee_name || 'Staff';
-      const leaveId = leave.id || 'N/A';
       const staffName = staffRaw.split(' ')[0].toLowerCase();
       const staffObj = (db.team || []).find(t => (t.name || '').toLowerCase().includes(staffName));
 
-      const targetManager = (staffObj && staffObj.reportsTo)
-        ? (db.team || []).find(t => t.id === staffObj.reportsTo)
-        : (db.team || []).find(t => (t.role || '').toLowerCase().includes('managing director') || t.id === 'PBD-001');
+      const owner = (db.team || []).find(t => (t.role || '').toLowerCase().includes('founder') || (t.role || '').toLowerCase().includes('director') || (t.accessLevel || '').toLowerCase().includes('admin'));
+      const targetManager = (staffObj && staffObj.reportsTo ? (db.team || []).find(t => t.id === staffObj.reportsTo) : null) || owner || { telegramId: process.env.OWNER_TELEGRAM_ID };
 
       const msgText = `🌴 *NEW LEAVE REQUEST SUBMITTED (PENDING MANAGER REVIEW)*\n\n` +
         `📋 Leave ID: *${leave.id || 'N/A'}*\n` +
@@ -924,7 +898,7 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
       const dept = staffObj?.department || 'Operations';
 
       const lineManager = (db.team || []).find(t => (t.department || '').toLowerCase() === dept.toLowerCase() && (t.accessLevel || '').includes('Manager'));
-      const owner = (db.team || []).find(t => (t.role || '').toLowerCase().includes('managing director') || t.id === 'PBD-001') || (db.team || [])[0];
+      const owner = (db.team || []).find(t => (t.role || '').toLowerCase().includes('founder') || (t.role || '').toLowerCase().includes('director') || (t.accessLevel || '').toLowerCase().includes('admin')) || { telegramId: process.env.OWNER_TELEGRAM_ID };
       const tasksCompleted = eod.tasksCompleted || eod.tasksDone || eod.tasks_done || 'None';
       const tasksInProgress = eod.tasksInProgress || eod.tasksTomorrow || eod.tasks_tomorrow || 'None';
       const blockers = eod.blockers || 'None';
@@ -981,10 +955,10 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
 
       managers.forEach(mgr => {
         const dept = mgr.department || 'Operations';
-        const msgText = `📋 *PURPLEBOT 7:30 PM DEPARTMENT EOD DIGEST*\n` +
+        const msgText = `📋 *GRO10X 7:30 PM DEPARTMENT EOD DIGEST*\n` +
           `🏢 Department: *${dept}*\n\n` +
           `✅ *Reports Logged Today:* ${todayEods.length} Submissions\n` +
-          `🔴 *🔴 Blockers Flagged:* ${blockersCount} Action Item(s)\n\n` +
+          `🔴 *Blockers Flagged:* ${blockersCount} Action Item(s)\n\n` +
           `🌐 Open Manager Portal: https://gro10x-ai.vercel.app/manager`;
 
         const targetId = mgr.telegramId || process.env.OWNER_TELEGRAM_ID;

@@ -1,4 +1,11 @@
-// 🔮 PURPLEBOT DIGITAL — PUBLIC PURPLE BOT AI WIDGET (v1.0.0 - Clean Rewrite)
+// 🔮 GRO10X AI — PUBLIC GRO10X AI WIDGET (v1.0.0 - Clean Rewrite)
+// Flow: (Pre-selected Service?) -> Name -> Company -> WhatsApp Phone -> Instant Lead Log -> SSE Realtime
+// ─────────────────────────────────────────────────────────────────────────────
+
+var BOT_NAME = 'GRO10X AI Assistant';
+var BOT_AVATAR = '🤖';
+var BRAND_COLOR = '#00df89';
+var STORAGE_KEY = 'gro10x_bot_session_v1';
 
 // ─── BOT STATE ────────────────────────────────────────────────────────────────
 var botState = {
@@ -8,8 +15,6 @@ var botState = {
   service: '',
   phone: ''
 };
-
-var STORAGE_KEY = 'purple_bot_session_v1';
 
 // ─── WIDGET CSS ───────────────────────────────────────────────────────────────
 var WIDGET_CSS = `
@@ -244,7 +249,7 @@ function closePurpleWidget() {
 }
 
 // ─── OPEN WITH SERVICE PRE-SELECTED (called from pricing buttons) ─────────────
-function openPurpleBot(serviceTitle) {
+function openGroBot(serviceTitle) {
   openPurpleWidgetBox();
 
   if (serviceTitle && botState.step !== 'FINISHED') {
@@ -262,6 +267,7 @@ function openPurpleBot(serviceTitle) {
     }, 100);
   }
 }
+
 
 // ─── BOT STATE INIT ───────────────────────────────────────────────────────────
 function initBotState() {
@@ -496,7 +502,7 @@ async function handleQnA(query) {
   try {
     var res = await fetch('/api/services');
     var services = await res.json();
-    var reply = '🎨 <strong>Purplebot Core Offerings:</strong><br><ul style="padding-left:1.2rem;margin:0.4rem 0;">';
+    var reply = '🎨 <strong>GRO10X Core Offerings:</strong><br><ul style="padding-left:1.2rem;margin:0.4rem 0;">';
     (services || []).slice(0, 4).forEach(function(s) {
       reply += '<li><strong>' + s.title + '</strong> — ' + (s.price || '') + '</li>';
     });
@@ -505,7 +511,7 @@ async function handleQnA(query) {
     updateInputPlaceholder();
     appendBotMsg(reply);
   } catch (err) {
-    appendBotMsg('Our packages start at <strong>৳45,000/mo</strong> for Social Media & Reels! Tell me your <strong>Company Name</strong> to get a quote.');
+    appendBotMsg('Our packages start at <strong>৳45,000/mo</strong> for AI Growth & Web Apps! Tell me your <strong>Company Name</strong> to get a quote.');
     botState.step = 'ASK_COMPANY';
     updateInputPlaceholder();
   }
@@ -520,7 +526,7 @@ async function checkClientAndSubmitLead() {
       if (checkRes.ok) {
         var checkData = await checkRes.json();
         if (checkData.found) {
-          appendBotMsg('🎉 Welcome back, <strong>' + (checkData.name || 'valued partner') + '</strong>! You\'re registered as an active client partner.<br><br>You can access your Workspace directly at <a href="/partners" style="color:#7c3aed;font-weight:700;">purplebot.digital/partners</a>.');
+          appendBotMsg('🎉 Welcome back, <strong>' + (checkData.name || 'valued partner') + '</strong>! You\'re registered as an active client partner.<br><br>You can access your Workspace directly at <a href="/partners" style="color:#00df89;font-weight:700;">gro10x.ai/partners</a>.');
           botState.step = 'FINISHED';
           updateInputPlaceholder();
           setBotBusy(false);
@@ -541,8 +547,8 @@ async function checkClientAndSubmitLead() {
         contactEmail: '',
         phone: botState.phone,
         service: botState.service || 'General Inquiry',
-        notes: 'Submitted via Purple Bot AI Chat Widget.',
-        source: 'Purple Bot — Website Widget',
+        notes: 'Submitted via GRO10X AI Chat Widget.',
+        source: 'GRO10X AI — Website Widget',
         utm_source: utm.utm_source || utm.source || '',
         utm_medium: utm.utm_medium || utm.medium || '',
         utm_campaign: utm.utm_campaign || utm.campaign || ''
@@ -551,13 +557,13 @@ async function checkClientAndSubmitLead() {
 
     var data = await leadRes.json();
     if (data.success || data.id) {
-      appendBotMsg('✅ <strong>Thank you ' + botState.name + '!</strong><br><br>Your campaign brief for <strong>' + botState.company + '</strong> has been logged.<br><br>Our lead director will contact you via WhatsApp at <strong>' + botState.phone + '</strong> within 2 hours. 🚀');
+      appendBotMsg('✅ <strong>Thank you ' + botState.name + '!</strong><br><br>Your brief for <strong>' + botState.company + '</strong> has been logged.<br><br>Our lead director will contact you via WhatsApp at <strong>' + botState.phone + '</strong> within 2 hours. 🚀');
       trackEvent('lead_captured', botState.service);
     } else {
-      appendBotMsg('⚠️ There was a slight issue saving your brief. Please WhatsApp us directly at <strong>+88 01711 019550</strong>.');
+      appendBotMsg('⚠️ There was a slight issue saving your brief. Please WhatsApp us directly at <strong>+880 1708-459008</strong>.');
     }
   } catch (err) {
-    appendBotMsg('⚠️ <strong>Something went wrong connecting to our servers.</strong><br><br>Please reach out directly via WhatsApp at <strong>+88 01711 019550</strong> or email <strong>contact@purplebot.digital</strong> and our team will prepare your proposal immediately. 🙏');
+    appendBotMsg('⚠️ <strong>Something went wrong connecting to our servers.</strong><br><br>Please reach out directly via WhatsApp at <strong>+880 1708-459008</strong> or email <strong>gro10xnow@gmail.com</strong> and our team will prepare your proposal immediately. 🙏');
   }
 
   botState.step = 'FINISHED';
@@ -576,8 +582,8 @@ function trackEvent(eventType, label) {
   } catch (err) {}
 }
 
-// ─── EXPOSE TO WINDOW (for pricing plan buttons: onclick="openPurpleBot(...)") ─
-window.openPurpleBot = openPurpleBot;
+// ─── EXPOSE TO WINDOW (for pricing plan buttons: onclick="openGroBot(...)") ───
+window.openGroBot = openGroBot;
 window.togglePurpleWidget = togglePurpleWidget;
 window.closePurpleWidget = closePurpleWidget;
 

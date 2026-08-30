@@ -20,17 +20,17 @@ try {
       team: db.team || [],
       botConfig: db.botConfig || {
         clientBot: {
-          name: 'Purplebot Client Assistant',
+          name: 'GRO10X Client Assistant',
           tone: 'Empathetic & Creative',
           persona: 'Official Agency Client Success Assistant',
-          greeting: 'Welcome to Purplebot Digital Agency! How can we assist your brand today?',
+          greeting: 'Welcome to GRO10X AI Agency! How can we assist your brand today?',
           fallback: 'Thank you! Our account team has been notified and will reach out shortly.'
         },
         teamBot: {
-          name: 'Purplebot Crew Ops Bot',
+          name: 'GRO10X Crew Ops Bot',
           tone: 'Direct & Professional',
-          persona: 'Internal Operations & Shoot Logistics Bot',
-          greeting: 'PurpleOS Crew Ops online. Type /clockin or /mybookings to begin.',
+          persona: 'Internal Operations & Logistics Bot',
+          greeting: 'GRO10X Crew Ops online. Type /clockin or /mybookings to begin.',
           fallback: 'Command recognized. Operations dashboard updated.'
         },
         knowledgeBase: db.botConfig?.knowledgeBase || [],

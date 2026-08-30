@@ -55,7 +55,7 @@
     if (!ROUTES[hash]) hash = '#home';
 
     const routeInfo = ROUTES[hash];
-    document.title = `PurpleOS — ${routeInfo.title || 'Crew'}`;
+    document.title = `GRO10X OS — ${routeInfo.title || 'Crew'}`;
 
     document.querySelectorAll('.bottom-nav-item').forEach(link => {
       if (link.getAttribute('href') === hash) {

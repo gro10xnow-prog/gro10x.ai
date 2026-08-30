@@ -1518,7 +1518,7 @@ router.get('/payslip', requireMiniAppAuth, async (req, res) => {
   <div class="sheet">
     <div class="header">
       <div class="logo-area">
-        <h1>🟣 Purplebot Digital</h1>
+        <h1>🟢 GRO10X AI Agency</h1>
         <div class="sub">Official Monthly Earnings Statement &bull; ${monthLabel}</div>
       </div>
       <div class="meta-box">
@@ -1569,8 +1569,8 @@ router.get('/payslip', requireMiniAppAuth, async (req, res) => {
     </div>
 
     <div class="footer">
-      Purplebot Digital Ltd. &bull; Creative & Engineering Production Network<br>
-      This document is electronically generated and digitally stamped by PurpleOS Finance Core.
+      GRO10X AI Agency &bull; Global Remote Operations & Dhaka Hub<br>
+      This document is electronically generated and digitally stamped by GRO10X Finance Core.
     </div>
   </div>
 </body>

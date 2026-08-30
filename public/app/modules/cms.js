@@ -44,6 +44,15 @@ window.APP_MODULES.cms = async function(container) {
         <div class="kpi-tile"><div class="kpi-label">🔒 Hidden / Internal</div><div class="kpi-val" id="kpiHidden">...</div></div>
       </div>
 
+      <!-- Link to Marketplace Gigs -->
+      <a href="#gigs" style="display:flex; justify-content:space-between; align-items:center; background:linear-gradient(135deg, rgba(0,223,137,0.1), rgba(6,182,212,0.1)); border:1px solid rgba(0,223,137,0.3); border-radius:12px; padding:0.85rem 1.25rem; margin-bottom:1.5rem; text-decoration:none; color:var(--text-main);">
+        <div>
+          <strong style="color:#00df89; font-size:0.92rem;">⚡ Marketplace Gigs Studio (Fiverr & Upwork)</strong>
+          <div style="font-size:0.8rem; color:var(--text-muted); margin-top:0.15rem;">7 AI-optimized gig packages with 1-click copy-paste drawers & 10-point health checks.</div>
+        </div>
+        <span class="btn-primary btn-sm" style="background:#00df89; color:#09090b; font-weight:800; border:none; padding:0.35rem 0.75rem;">Open Gig Studio &rarr;</span>
+      </a>
+
       <!-- Service Catalog Grid -->
       <div style="margin-bottom: 2rem;">
         <div style="font-size: 1.1rem; font-weight: 800; color: var(--text-main); margin-bottom: 1rem;">

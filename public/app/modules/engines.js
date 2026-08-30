@@ -258,9 +258,9 @@ async function renderEnginesView(container) {
             `).join('')}
           </div>
         </div>
-        <div style="margin-top:1rem; padding-top:0.75rem; border-top:1px solid rgba(255,255,255,0.05); display:flex; justify-content:space-between; align-items:center;">
-          <a href="#kanban" class="btn-ghost btn-sm">Open Kanban Pipeline</a>
-          <a href="/reviewroom.html" class="btn-secondary btn-sm">Review Room →</a>
+        <div style="margin-top:1rem; padding-top:0.75rem; border-top:1px solid rgba(255,255,255,0.05); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+          <a href="#gigs" class="btn-primary btn-sm" style="background:#00df89; color:#09090b; font-weight:800; border:none; text-decoration:none; display:inline-flex; align-items:center; gap:0.3rem;">⚡ Open Marketplace Gigs (7 Ready) →</a>
+          <a href="#kanban" class="btn-ghost btn-sm">Kanban Pipeline</a>
         </div>
       </div>
 

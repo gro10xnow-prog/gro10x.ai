@@ -11,6 +11,7 @@
   const ROUTES = {
     '#dashboard':  { module: 'dashboard.js',  title: 'Executive Overview', icon: '📊' },
     '#engines':    { module: 'engines.js',    title: '5-Engine Growth Operations', icon: '🚀' },
+    '#gigs':       { module: 'gigs.js',       title: 'Marketplace Gig Studio', icon: '⚡' },
     '#analytics':  { module: 'analytics.js',  title: 'Agency Analytics & Scorecards', icon: '📈' },
     '#crm':        { module: 'crm.js',        title: 'Clients & Retainers CRM', icon: '👥' },
     '#kanban':     { module: 'kanban.js',     title: 'Production Pipeline Hub', icon: '📋' },
@@ -352,6 +353,7 @@
       // Navigation
       { type: 'Navigation', icon: '📊', title: 'Executive Overview', hash: '#dashboard' },
       { type: 'Navigation', icon: '🚀', title: '5-Engine Growth Operations Cockpit', hash: '#engines' },
+      { type: 'Navigation', icon: '⚡', title: 'Marketplace Gig Studio (Fiverr & Upwork)', hash: '#gigs' },
       { type: 'Navigation', icon: '📈', title: 'Agency Analytics & Scorecards', hash: '#analytics' },
       { type: 'Navigation', icon: '🎯', title: 'Leads Pipeline Hub', hash: '#leads' },
       { type: 'Navigation', icon: '👥', title: 'Client CRM Directory', hash: '#crm' },

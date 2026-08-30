@@ -39,29 +39,29 @@ function switchChatMode(mode) {
   const feed = document.getElementById('chatFeed');
 
   if (mode === 'team') {
-    nameEl.innerText = 'Purple Man (Team Crew Bot)';
+    nameEl.innerText = 'GRO10X Team Bot (@Aigeneral01bot)';
     chipsEl.innerHTML = `
       <button type="button" class="chip-btn" onclick="openEmbeddedMiniApp('clockin')">🟢 Clock In Studio</button>
-      <button type="button" class="chip-btn" onclick="openEmbeddedMiniApp('tasks')">📋 My Shoot Tasks</button>
+      <button type="button" class="chip-btn" onclick="openEmbeddedMiniApp('tasks')">📋 My Tasks</button>
       <button type="button" class="chip-btn" onclick="sendQuickMessage('/myearnings')">💰 My Earnings</button>
       <button type="button" class="chip-btn" onclick="sendQuickMessage('/clockout')">🚪 Clock Out</button>
     `;
     feed.innerHTML = `
       <div class="msg-bubble msg-bot">
-        🤖 **Purple Man Crew Operations Active!** Tap quick actions below to open In-Chat MiniApps or check shoot schedules.
+        🤖 **GRO10X Team Operations Active!** Tap quick actions below to open In-Chat MiniApps or check task schedules.
       </div>
     `;
   } else {
-    nameEl.innerText = 'Purple Bot (B2B Client Bot)';
+    nameEl.innerText = 'GRO10X Client Bot (@gro10xb2bot)';
     chipsEl.innerHTML = `
-      <button type="button" class="chip-btn" onclick="openEmbeddedMiniApp('review')">🎬 Review Room V2</button>
+      <button type="button" class="chip-btn" onclick="openEmbeddedMiniApp('review')">🎬 Review Room</button>
       <button type="button" class="chip-btn" onclick="sendQuickMessage('What are your service packages and rates?')">💰 Service Rates</button>
-      <button type="button" class="chip-btn" onclick="sendQuickMessage('Can I see your portfolio reel?')">📁 Portfolio Reel</button>
+      <button type="button" class="chip-btn" onclick="sendQuickMessage('Can I see your portfolio?')">📁 Portfolio</button>
       <button type="button" class="chip-btn" onclick="sendQuickMessage('How do I verify an invoice payment?')">💳 Invoice Billing</button>
     `;
     feed.innerHTML = `
       <div class="msg-bubble msg-bot">
-        👋 Welcome to **Purplebot Digital Agency**! How can we assist your brand today? Select a quick action below or type your inquiry.
+        👋 Welcome to **GRO10X AI Agency**! How can we assist your brand today? Select a quick action below or type your inquiry.
       </div>
     `;
   }

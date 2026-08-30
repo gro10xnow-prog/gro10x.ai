@@ -3,18 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PurpleOS — Loading...</title>
+  <title>GRO10X OS — Loading...</title>
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#0b0f19">
   <style>
     body { background: #09090b; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-    .loader { text-align: center; color: #a855f7; font-family: sans-serif; }
-    .spinner { width: 40px; height: 40px; border: 3px solid rgba(168,85,247,0.2); border-top-color: #a855f7; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 1rem; }
+    .loader { text-align: center; color: #00df89; font-family: sans-serif; }
+    .spinner { width: 40px; height: 40px; border: 3px solid rgba(0,223,137,0.2); border-top-color: #00df89; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 1rem; }
     @keyframes spin { to { transform: rotate(360deg); } }
   </style>
   <script>
     (function() {
-      var token = localStorage.getItem('sb-access-token') ||
+      var token = localStorage.getItem('gro10x_token') ||
+                  localStorage.getItem('sb-access-token') ||
                   localStorage.getItem('purpleos_pin_token') ||
                   localStorage.getItem('purple_token');
       window.location.replace(token ? '/app' : '/auth?redirect=/app');
@@ -24,7 +25,7 @@
 <body>
   <div class="loader">
     <div class="spinner"></div>
-    <div>Loading PurpleOS...</div>
+    <div>Loading GRO10X OS...</div>
   </div>
   <script>
     if ('serviceWorker' in navigator) {

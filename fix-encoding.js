@@ -149,7 +149,7 @@ const cleanChairman = `function buildChairmanBriefing(db) {
   msg += \`  • \${activeLeads} active leads in pipeline (Est. BDT \${pipelineValue.toLocaleString()})\n\`;
   
   msg += \`────────────────────────\n\`;
-  msg += \`_Purplebot OS — Executive Summary_\`;
+  msg += \`_GRO10X OS — Executive Summary_\`;
 
   return msg;
 }`;

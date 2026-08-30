@@ -1,4 +1,4 @@
-// 👥 PURPLEBOT CREW OPERATIONS PORTAL JS
+// 👥 GRO10X CREW OPERATIONS PORTAL JS
 
 let currentCrewEmpCode = 'EMP-002';
 let crewStaffList = [];

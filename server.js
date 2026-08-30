@@ -317,8 +317,8 @@ app.get(['/onboarding', '/team-onboarding'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public/onboarding.html'));
 });
 
-app.get(['/docs', '/overview', '/PBD_Transformation_Tool_Overview.html', '/PBD_Transformation_Tool_Overview'], (req, res) => {
-  res.sendFile(path.join(__dirname, 'public/PBD_Transformation_Tool_Overview.html'));
+app.get(['/docs', '/overview'], (req, res) => {
+  res.redirect('/');
 });
 
 // Dedicated Public Service Pages Routes
@@ -372,7 +372,7 @@ app.use(errorHandler);
 if (require.main === module) {
   app.listen(PORT, () => {
     console.log(`\n==================================================`);
-    console.log(`🚀 PurpleOS Platform running at: http://localhost:${PORT}`);
+    console.log(`⚡ GRO10X OS Platform running at: http://localhost:${PORT}`);
     console.log(`==================================================\n`);
   });
 }

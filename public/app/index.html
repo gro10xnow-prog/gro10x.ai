@@ -10,6 +10,17 @@
       GRO10XAuth.requireAuth({ portal: 'admin' });
       var theme = localStorage.getItem('gro10x_theme') || localStorage.getItem('purple_theme') || 'dark';
       document.documentElement.setAttribute('data-theme', theme);
+
+      // Instantly purge stale PWA caches
+      if ('serviceWorker' in navigator && 'caches' in window) {
+        caches.keys().then(function(keys) {
+          keys.forEach(function(k) {
+            if (k.indexOf('purpleos') !== -1 || k.indexOf('cache-v1') !== -1 || k.indexOf('cache-v2') !== -1) {
+              caches.delete(k);
+            }
+          });
+        });
+      }
     })();
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -93,6 +104,10 @@
       <a href="#engines" class="nav-item">
         <span class="icon">🚀</span>
         <span>Growth Engines</span>
+      </a>
+      <a href="#gigs" class="nav-item">
+        <span class="icon">⚡</span>
+        <span>Marketplace Gigs</span>
       </a>
       <a href="#analytics" class="nav-item">
         <span class="icon">📈</span>
@@ -219,8 +234,8 @@
     </div>
   </div>
 
-  <script src="/app/api.js"></script>
-  <script src="/app/app.js"></script>
+  <script src="/app/api.js?v=3.0"></script>
+  <script src="/app/app.js?v=3.0"></script>
   <script>
     function toggleTheme() {
       const current = document.documentElement.getAttribute('data-theme') || 'dark';

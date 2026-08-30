@@ -807,15 +807,14 @@ function setDynamicYear() {
 }
 
 // ── 10. CHAT BOT TRIGGER HELPER ──
-function openPurpleBot(topic) {
+function openGroBot(topic) {
   if (window.openWidgetBox) {
     window.openWidgetBox();
   } else {
     openLeadModal(topic || 'AI Inquiry');
   }
 }
-window.openPurpleBot = openPurpleBot;
-window.openGroBot = openPurpleBot;
+window.openGroBot = openGroBot;
 
 // FAQ Accordion
 function toggleFAQ(button) {

@@ -43,7 +43,7 @@ async function runTeamTests() {
   total++;
   try {
     const res = await request('/team');
-    if (res.status === 200 && typeof res.raw === 'string' && res.raw.includes('PURPLEBOT CREW OPS PORTAL')) {
+    if (res.status === 200 && typeof res.raw === 'string' && (res.raw.includes('GRO10X') || res.raw.includes('Crew Operations'))) {
       console.log('✅ Test 1 Passed: GET /team returned 200 OK with valid portal HTML');
       passed++;
     } else {

@@ -17,7 +17,7 @@ jest.spyOn(https, 'request').mockImplementation((options, callback) => {
       candidates: [{
         content: {
           parts: [{
-            text: 'Hi Nafis! 👋 Welcome to Purplebot Digital as our Specialist in Production. Please follow the instructions.\n\n📌 Your Next Step:\nVisit the PurpleOS portal and log in with your phone number.\n\n🔗 Portal: https://gro10x-ai.vercel.app\n\nLet us know if you need help!\n\n— Purplebot Digital Admin 🔮'
+            text: 'Hi Nafis! 👋 Welcome to GRO10X as our Specialist in Production. Please follow the instructions.\n\n📌 Your Next Step:\nVisit the GRO10X portal and log in with your phone number.\n\n🔗 Portal: https://gro10x-ai.vercel.app\n\nLet us know if you need help!\n\n— GRO10X Admin 🚀'
           }]
         }
       }]
@@ -93,7 +93,7 @@ describe('AI Message Generator API Integration Tests', () => {
     expect(res.body.message).toBeDefined();
     expect(res.body.message.length).toBeGreaterThan(150);
     expect(res.body.message).toContain('Portal:');
-    expect(res.body.message).toContain('Purplebot Digital Admin');
+    expect(res.body.message).toContain('GRO10X');
     expect(['gemini', 'template']).toContain(res.body.generatedBy);
   });
 

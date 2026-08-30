@@ -1,4 +1,4 @@
-# PurpleOS — System Architecture, Runbooks & API Reference
+# GRO10X OS — System Architecture, Runbooks & API Reference
 
 > **Version**: `0.9.0.0` (Department Manager Stakeholder Handover Release)
 > **Go-Live Date**: September 1, 2026
@@ -51,7 +51,7 @@
 |  2. GZIP/Brotli Compression                                   |
 |  3. CORS Whitelist                                            |
 |  4. JSON + URL-encoded Body Parser                            |
-|  5. Subdomain Router (manager.purplebot.digital)              |
+|  5. Subdomain Router (manager.gro10x.ai)                      |
 |  6. JWT Auth Guard (HMAC-SHA256 custom token)                 |
 |  7. API Route Handler (src/routes/api.js)                     |
 |  8. Static File Serving (/public)                             |
@@ -283,7 +283,7 @@ All cron jobs are registered in vercel.json. Times below are UTC (BST = UTC+6):
 
 ## 7. Runbook -- Deployment
 
-PurpleOS uses Vercel for zero-downtime continuous deployment. Every push to main
+GRO10X OS uses Vercel for zero-downtime continuous deployment. Every push to main
 deploys automatically.
 
 ```bash

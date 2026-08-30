@@ -47,7 +47,7 @@ window.MANAGER_MODULES.tech = async function(container) {
             <span class="badge badge-emerald">🟢 Listening</span>
           </div>
           <div class="kpi-val" style="font-size:1.4rem;">2 Active Daemons</div>
-          <div class="kpi-sub">@purplebot_team_bot · @purplebot_client_bot</div>
+          <div class="kpi-sub">@Aigeneral01bot · @gro10xb2bot</div>
         </div>
 
         <div class="kpi-tile">

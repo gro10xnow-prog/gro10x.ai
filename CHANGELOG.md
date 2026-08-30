@@ -1,4 +1,4 @@
-# PurpleOS Changelog
+# GRO10X OS Changelog
 
 ## [0.9.0.0] - 2026-08-22 (Department Manager Stakeholder Handover Release — Go-Live: Sep 1, 2026)
 ### Added
@@ -44,7 +44,7 @@
 ## [0.8.0-rc] - 2026-08-05
 ### Added
 - **Analytics & Observability**: Real-time performance scorecards, Sentry integration, and custom CSV data exports.
-- **SSE Web Chat**: Real-time server-sent events web chat widget integrated with the Purplebot engine.
+- **SSE Web Chat**: Real-time server-sent events web chat widget integrated with the GRO10X Bot engine.
 - **Loading States**: Shimmer skeleton animations on the public landing page to prevent content flash.
 - **Service Detail 404**: Clean fallback page when a non-existent service ID is requested.
 - **Security Middleware**: Global input validation for POST/PUT requests to sanitize inputs and prevent payload abuse.

@@ -38,7 +38,7 @@
 
         if (nameEl) nameEl.textContent = displayName;
         if (deskNameEl) deskNameEl.textContent = displayName;
-        if (subEl) subEl.textContent = `${user.pocRole ? user.pocRole.toUpperCase() + ' · ' : ''}${user.company ? user.company.toUpperCase() : 'PURPLEOS CLIENT'}`;
+        if (subEl) subEl.textContent = `${user.pocRole ? user.pocRole.toUpperCase() + ' · ' : ''}${user.company ? user.company.toUpperCase() : 'GRO10X CLIENT'}`;
         if (deskSubEl) deskSubEl.textContent = `${user.pocRole ? user.pocRole.toUpperCase() + ' · ' : ''}VERIFIED WORKSPACE`;
         if (deskLogo) deskLogo.textContent = initial;
         if (mobLogo) mobLogo.textContent = initial;

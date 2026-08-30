@@ -14,7 +14,7 @@ async function runPhase1(page) {
     await page.goto(AUTH_URL, { waitUntil: 'domcontentloaded' });
     await wait(500);
     const title = await page.title();
-    tracker.assert(title.includes('Portal') || title.includes('Purplebot'), `Unexpected title: ${title}`);
+    tracker.assert(title.includes('Portal') || title.includes('GRO10X'), `Unexpected title: ${title}`);
     await tracker.screenshot(page, 't1.1.1_auth_page.png');
   });
 

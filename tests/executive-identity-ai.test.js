@@ -18,7 +18,7 @@ jest.spyOn(https, 'request').mockImplementation((options, callback) => {
       candidates: [{
         content: {
           parts: [{
-            text: 'Hi Zahin! 👋 Welcome to Purplebot Digital! We are so excited to have you join us as our Visualizer in Creative & Content.\n\nYour PurpleOS workspace is ready and waiting.\n\nPortal: https://gro10x-ai.vercel.app\n\n-- Purplebot Digital Admin'
+            text: 'Hi Zahin! 👋 Welcome to GRO10X! We are so excited to have you join us as our Visualizer in Creative & Content.\n\nYour GRO10X workspace is ready and waiting.\n\nPortal: https://gro10x-ai.vercel.app\n\n-- GRO10X Admin'
           }]
         }
       }]

@@ -47,7 +47,7 @@ async function runPartnerTests() {
   total++;
   try {
     const res = await request('/partners');
-    if (res.status === 200 && typeof res.raw === 'string' && res.raw.includes('PURPLEBOT CLIENT PORTAL')) {
+    if (res.status === 200 && typeof res.raw === 'string' && (res.raw.includes('GRO10X') || res.raw.includes('Partner Workspace'))) {
       console.log('✅ Test 1 Passed: GET /partners returned 200 OK with valid portal HTML');
       passed++;
     } else {

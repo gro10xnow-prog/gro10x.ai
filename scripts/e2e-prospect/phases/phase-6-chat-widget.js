@@ -38,8 +38,8 @@ async function runPhase6(page) {
 
     // 6.2 Open Widget with Custom Service Context
     await page.evaluate(() => {
-      if (typeof window.openPurpleBot === 'function') {
-        window.openPurpleBot('Short-Form Video Reels');
+      if (typeof window.openGroBot === 'function') {
+        window.openGroBot('Short-Form Video Reels');
       } else if (document.getElementById('purple-widget-btn')) {
         document.getElementById('purple-widget-btn').click();
       }

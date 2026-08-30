@@ -125,7 +125,7 @@ async function runPhase7(page) {
     const leadSubmitRes = await makePostRequest('/api/leads', {
       clientName: 'Phase 7 Verification Lead',
       contactPerson: 'E2E QA Lead',
-      contactEmail: 'e2eqa@purplebot.digital',
+      contactEmail: 'e2eqa@gro10x.ai',
       phone: `01711${Date.now().toString().slice(-6)}`,
       service: 'Monthly Social Media Retainer',
       source: 'Phase 7 E2E Automated Verification',

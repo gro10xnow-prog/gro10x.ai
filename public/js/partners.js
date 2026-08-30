@@ -1,4 +1,4 @@
-// 🤝 PURPLEBOT CLIENT & PARTNER PORTAL JS
+// 🤝 GRO10X CLIENT & PARTNER PORTAL JS
 
 let currentPartnerClient = 'Chillox Fast Food Chain';
 let currentPartnerReviewId = 'REV-001';

@@ -33,7 +33,7 @@ async function runPhase1(page) {
     await captureScreenshot(page, 'phase1_1_landing_hero_desktop.png');
     
     const title = await page.title();
-    record('1.1.1 Landing page loads with valid title', title.includes('Purplebot Digital') || title.includes('PurpleOS'));
+    record('1.1.1 Landing page loads with valid title', title.includes('GRO10X') || title.includes('PurpleOS'));
 
     const heroHeading = await page.$eval('.pb-hero-title', el => el.innerText).catch(() => '');
     record('1.1.2 Hero heading renders immediately without blank state', heroHeading.length > 5);
@@ -136,7 +136,7 @@ async function runPhase1(page) {
       document.getElementById('contact').scrollIntoView();
       document.getElementById('leadName').value = 'Automated QA Lead';
       document.getElementById('leadPhone').value = '01711' + Date.now().toString().slice(-6);
-      document.getElementById('leadEmail').value = 'qalead@purplebot.digital';
+      document.getElementById('leadEmail').value = 'qalead@gro10x.ai';
       document.getElementById('leadNotes').value = 'Automated E2E browser verification proposal submission.';
       
       if (typeof window.handleLeadFormSubmit === 'function') {

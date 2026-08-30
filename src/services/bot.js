@@ -24,7 +24,8 @@ module.exports = {
   sendToGroup,
   getRoleKeyboard,
   getClientKeyboard,
-  sendAgreementNotification
+  sendAgreementNotification,
+  processWebhookUpdate
 };
 
 // ══════════════════════════════════════════

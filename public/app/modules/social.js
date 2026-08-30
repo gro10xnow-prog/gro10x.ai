@@ -148,7 +148,7 @@ window.APP_MODULES.social = async function(container) {
 
             <div class="form-group">
               <label class="form-label">Hashtags (comma separated)</label>
-              <input type="text" id="spHashtags" class="input-text" placeholder="#PurpleBot #DigitalMarketing #Creative">
+              <input type="text" id="spHashtags" class="input-text" placeholder="#GRO10X #AIAgency #Automation">
             </div>
 
             <div class="form-group">

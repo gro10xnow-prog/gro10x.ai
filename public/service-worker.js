@@ -1,10 +1,12 @@
-// 📱 PURPLEOS PWA SERVICE WORKER (Module C9 & Crew Offline-First)
-const CACHE_NAME = 'purpleos-cache-v2';
-const CREW_CACHE = 'purpleos-crew-v1';
+// 📱 GRO10X PWA SERVICE WORKER v3.0 (Network-First with offline fallback)
+const CACHE_NAME = 'gro10x-cache-v3';
+const CREW_CACHE = 'gro10x-crew-v3';
 
 const ASSETS_TO_CACHE = [
   '/',
   '/admin',
+  '/app',
+  '/app/',
   '/team',
   '/partners',
   '/css/tokens.css',
@@ -21,34 +23,8 @@ const ASSETS_TO_CACHE = [
   '/js/team.js'
 ];
 
-const CREW_ASSETS_TO_CACHE = [
-  '/crew',
-  '/crew/',
-  '/crew/index.html',
-  '/crew/api.js',
-  '/crew/crew.js',
-  '/crew/sse.js',
-  '/crew/modules/home.js',
-  '/crew/modules/tasks.js',
-  '/crew/modules/earnings.js',
-  '/crew/modules/leaves.js',
-  '/crew/modules/eod.js',
-  '/crew/modules/expenses.js',
-  '/crew/modules/deliverables.js',
-  '/crew/modules/calendar.js',
-  '/crew/modules/tickets.js',
-  '/crew/modules/leaderboard.js',
-  '/crew/modules/profile.js',
-  '/manifest.json'
-];
-
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    Promise.all([
-      caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS_TO_CACHE).catch(() => {})),
-      caches.open(CREW_CACHE).then((cache) => cache.addAll(CREW_ASSETS_TO_CACHE).catch(() => {}))
-    ]).then(() => self.skipWaiting())
-  );
+  self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
@@ -70,37 +46,16 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  const url = new URL(event.request.url);
-
-  // Crew App routes: Stale-While-Revalidate / Cache-First strategy
-  if (url.pathname.startsWith('/crew')) {
-    event.respondWith(
-      caches.match(event.request).then((cachedResponse) => {
-        const fetchPromise = fetch(event.request).then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200) {
-            const clone = networkResponse.clone();
-            caches.open(CREW_CACHE).then((cache) => cache.put(event.request, clone)).catch(() => {});
-          }
-          return networkResponse;
-        }).catch(() => null);
-
-        return cachedResponse || fetchPromise || caches.match('/crew/index.html') || caches.match('/crew');
-      })
-    );
-    return;
-  }
-
-  // Other routes
+  // Network-first strategy for app and modules to prevent stale UI caching
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-      return fetch(event.request).then((networkResponse) => {
+    fetch(event.request)
+      .then((networkResponse) => {
+        if (networkResponse && networkResponse.status === 200) {
+          const clone = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone)).catch(() => {});
+        }
         return networkResponse;
-      });
-    }).catch(() => {
-      return caches.match('/');
-    })
+      })
+      .catch(() => caches.match(event.request))
   );
 });

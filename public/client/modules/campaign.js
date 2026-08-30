@@ -186,7 +186,7 @@ window.CLIENT_MODULES.campaign = async function(container) {
           else if (isPending) statusBadge = 'badge-amber';
           else if (p.status === 'Changes Requested') statusBadge = 'badge-pink';
 
-          const placeholderSvg = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='200' viewBox='0 0 400 200'><rect width='100%' height='100%' fill='%231e1136'/><circle cx='200' cy='100' r='40' fill='%237c3aed' opacity='0.4'/><text x='50%' y='52%' dominant-baseline='middle' text-anchor='middle' fill='%23c084fc' font-family='sans-serif' font-size='14' font-weight='700'>PURPLEBOT CREATIVE</text></svg>";
+          const placeholderSvg = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='200' viewBox='0 0 400 200'><rect width='100%' height='100%' fill='%231e1136'/><circle cx='200' cy='100' r='40' fill='%2300df89' opacity='0.4'/><text x='50%' y='52%' dominant-baseline='middle' text-anchor='middle' fill='%2300df89' font-family='sans-serif' font-size='14' font-weight='700'>GRO10X CREATIVE</text></svg>";
           const mediaUrl = (p.mediaUrls && p.mediaUrls[0]) || placeholderSvg;
           const displayDate = formatDisplayDate(p.scheduledDate, p.scheduledTime);
           const safeId = escapeHTML(p.id);

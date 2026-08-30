@@ -113,7 +113,7 @@ const DEFAULT_SERVICES = [
     icon: "🔌",
     title: "AI Integrations & APIs",
     badge: "",
-    description: "Seamlessly connect your existing business tools (Stripe, HubSpot, Slack, WhatsApp) to state-of-the-art AI models.",
+    description: "Seamlessly connect your business tools (Google Workspace, Telegram, Stripe, CRMs) to Gemini and OpenAI models via custom webhooks.",
     price: "$1,200 / project",
     priceUSD: "$1,200",
     priceBDT: "৳140,000",
@@ -121,8 +121,8 @@ const DEFAULT_SERVICES = [
     deliveryTime: "5-7 Days",
     features: [
       "Custom Webhooks & REST API Middleware",
-      "Automated Data Sync Pipelines",
-      "Zapier / Make.com / n8n Automation Nodes",
+      "Google Workspace & Apps Script AI Bridges",
+      "Automated Multi-Channel Sync Pipelines",
       "Zero Downtime Architecture"
     ],
     includedFeatures: [
@@ -131,9 +131,9 @@ const DEFAULT_SERVICES = [
       "Secure Environment Secrets Management",
       "Technical Documentation & Runbook"
     ],
-    details: "Unify your fragmented tools. We build custom API bridges that automate repetitive data entry, customer notifications, and internal team operations.",
+    details: "Unify your fragmented tools. We build custom Node.js and Google Apps Script API bridges that automate repetitive data entry, customer notifications, and internal operations.",
     faq: [
-      { q: "Do you support no-code tools like Make.com?", a: "Yes, we build both custom Node.js/Python microservices and n8n/Make/Zapier automated workflows depending on your preference." }
+      { q: "Which platforms can you connect?", a: "We build custom REST API bridges, webhooks, and Google Workspace automations connecting any platform with API access." }
     ],
     public: true
   },
@@ -269,65 +269,65 @@ const DEFAULT_SERVICES = [
   },
   {
     id: "SVC-009",
-    slug: "comfyui-workflow-creation",
+    slug: "ai-visual-generation",
     category: "ai-artists",
     categoryName: "AI Artists",
-    icon: "⚙️",
-    title: "ComfyUI Workflow Creation",
+    icon: "🎨",
+    title: "AI Visuals & Product Imagery",
     badge: "POPULAR",
-    description: "Bespoke ComfyUI nodes and automated pipelines for instant, consistent product photo generation.",
-    price: "$1,500 / workflow",
-    priceUSD: "$1,500",
-    priceBDT: "৳175,000",
-    priceCycle: "/ workflow",
-    deliveryTime: "7-10 Days",
+    description: "Bespoke commercial product imagery, marketing visuals, and brand assets generated with Google Flow and Gemini Imagen.",
+    price: "$800 / kit",
+    priceUSD: "$800",
+    priceBDT: "৳95,000",
+    priceCycle: "/ kit",
+    deliveryTime: "3-5 Days",
     features: [
-      "Custom ControlNet & IP-Adapter Pipelines",
-      "One-Click Automated Generation Setup",
-      "Product Consistency Presets & Seed Controls",
-      "Cloud (RunPod / Modal) or Local Installation"
+      "Ultra-HD 4K Commercial Product Shots",
+      "Brand Consistency & Style Preservation",
+      "Multiple Aspect Ratios (1:1, 9:16, 16:9)",
+      "High-Resolution Upscaling & Touch-up"
     ],
     includedFeatures: [
-      "Exportable .json Node Graph Handover",
-      "Model Checkpoint & LoRA Recommendations",
-      "Step-by-Step Loom Video Walkthrough",
-      "14 Days Technical Workflow Support"
+      "25+ Curated High-Resolution Visuals",
+      "Layered Source Deliverables & Transparent PNGs",
+      "Prompt Formula & Visual Guidelines Document",
+      "2 Detailed Revision Cycles"
     ],
-    details: "Stop doing manual product photoshoots. Generate hundreds of studio-quality marketing images in any setting, angle, or lighting in seconds.",
+    details: "Stop doing expensive physical photoshoots. Generate studio-quality marketing imagery, product mockups, and banner visuals in any setting or style.",
     faq: [
-      { q: "Can I run this on my own computer?", a: "Yes, if you have an NVIDIA GPU (8GB+ VRAM), or we can set it up on cloud serverless GPUs for pennies per generation." }
+      { q: "What tools do you use?", a: "We utilize Google Flow, Gemini Imagen, and specialized creative pipelines to deliver pixel-perfect commercial imagery." }
     ],
     public: true
   },
   {
     id: "SVC-010",
-    slug: "midjourney-stable-diffusion-art",
+    slug: "ai-video-creatives-heygen-capcut",
     category: "ai-artists",
     categoryName: "AI Artists",
-    icon: "🎨",
-    title: "Midjourney & Stable Diffusion Art",
-    badge: "",
-    description: "High-concept artwork, architectural renders, packaging concepts, and high-impact digital art.",
-    price: "$500 / batch",
-    priceUSD: "$500",
-    priceBDT: "৳60,000",
-    priceCycle: "/ batch",
-    deliveryTime: "3-5 Days",
+    icon: "🎬",
+    title: "AI Video Creatives & Avatar Spokespersons",
+    badge: "NEW",
+    description: "Photorealistic AI avatar videos and viral short-form social creatives produced with HeyGen and CapCut Pro.",
+    price: "$600 / pack",
+    priceUSD: "$600",
+    priceBDT: "৳70,000",
+    priceCycle: "/ pack",
+    deliveryTime: "3-4 Days",
     features: [
-      "Upscaled 4K / 8K Master Deliverables",
-      "Prompt Formula & Seed Handover",
-      "Vectorization & Layered Files Support",
-      "Full Unrestricted Commercial Rights"
+      "Photorealistic Multi-Language Talking Avatars",
+      "Dynamic Captions & Motion Graphics",
+      "High-Retention Vertical Video Pacing",
+      "4K Ultra-HD Master Video Renders"
     ],
     includedFeatures: [
-      "25 Curated High-Concept Visuals",
-      "Color Grading & Post-Processing in Photoshop",
-      "Multiple Aspect Ratios (16:9, 9:16, 1:1)",
-      "2 Rounds of Detailed Revisions"
+      "5 Ready-to-Publish Short-Form Videos",
+      "Script Polishing & Native Voice Synthesis",
+      "Custom Brand Color Grading & Typography",
+      "Full Commercial Distribution License"
     ],
-    details: "Premium visuals crafted by experienced creative directors and prompt engineers for ad campaigns, website headers, packaging, and digital publications.",
+    details: "Engage your social media audience with realistic avatar presentations and viral short-form videos tailored for TikTok, Instagram Reels, and YouTube Shorts.",
     faq: [
-      { q: "Do we get full copyright?", a: "Yes, all deliverables come with complete commercial usage rights for unlimited marketing and product packaging." }
+      { q: "Can we use custom scripts and branding?", a: "Yes, you provide the message or topic, and we produce the complete script, avatar performance, captions, and edits." }
     ],
     public: true
   },
@@ -786,6 +786,74 @@ const DEFAULT_SERVICES = [
     details: "Equip your writers and marketers with bulletproof prompts that generate consistent, high-converting copy in your exact brand tone every time.",
     faq: [
       { q: "Do these prompts work on ChatGPT Plus?", a: "Yes, prompts are optimized for ChatGPT, Claude 3.5 Sonnet, and team AI workspaces." }
+    ],
+    public: true
+  },
+
+  // 📱 8. Progressive Web Apps & Core Software
+  {
+    id: "SVC-025",
+    slug: "progressive-web-apps",
+    category: "mobile-web",
+    categoryName: "AI Mobile Development",
+    icon: "⚡",
+    title: "Progressive Web Apps (PWA) & Fast MVPs",
+    badge: "POPULAR",
+    description: "Lightning-fast, offline-capable Progressive Web Apps and rapid MVPs engineered with modern Node.js and Supabase.",
+    price: "$2,000 / MVP",
+    priceUSD: "$2,000",
+    priceBDT: "৳235,000",
+    priceCycle: "/ MVP",
+    deliveryTime: "48 Hours - 5 Days",
+    features: [
+      "Offline-First Service Worker Architecture",
+      "Installable on iOS & Android without App Store friction",
+      "Real-Time Database & Auth with Supabase",
+      "Deployable Vercel Edge Hosting Setup"
+    ],
+    includedFeatures: [
+      "Responsive Glassmorphic UI Design",
+      "Push Notification Integration",
+      "1-Click Installation Prompt",
+      "14 Days Post-Launch Warranty"
+    ],
+    details: "Launch your product concept in record time. PWAs provide native app feel with zero app store delays, perfect for rapid MVPs and business tools.",
+    faq: [
+      { q: "Can users install the app on their phone?", a: "Yes, PWAs install directly from the browser with an app icon on the home screen and full offline functionality." }
+    ],
+    public: true
+  },
+
+  // 💼 9. Custom ERP & Business Management OS
+  {
+    id: "SVC-026",
+    slug: "custom-erp-business-os",
+    category: "business-ai",
+    categoryName: "AI for Businesses",
+    icon: "🏢",
+    title: "Custom ERP & Business Operating Systems",
+    badge: "FLAGSHIP",
+    description: "Tailored business operating systems to replace messy pen-and-paper or spreadsheet workflows with automated dashboards, CRM, and team tracking.",
+    price: "$3,000 / system",
+    priceUSD: "$3,000",
+    priceBDT: "৳350,000",
+    priceCycle: "/ system",
+    deliveryTime: "1-2 Weeks",
+    features: [
+      "Role-Based Access Control (Admins, Managers, Staff, Clients)",
+      "Automated Financial Ledgers & Invoice Generation",
+      "Kanban Task & Project Management Pipeline",
+      "Telegram Bot & Real-Time Event Alerts"
+    ],
+    includedFeatures: [
+      "Tailored Database Schema on Supabase",
+      "Custom Executive KPI Command Center",
+      "Team Onboarding & Video Walkthrough Guide",
+      "30 Days Post-Deployment Technical Support"
+    ],
+    details: "Transform traditional pen-and-paper operations into a modern, cloud-connected agency operating system designed specifically around your business rules.",
+    faq: [
+      { q: "Is the system customized to our workflow?", a: "Yes, every module, stage pipeline, role, and notification rule is configured specifically to match your operational model." }
     ],
     public: true
   }

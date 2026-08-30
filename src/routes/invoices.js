@@ -202,7 +202,7 @@ router.post('/:id/send', requireAuth, requireManager, async (req, res) => {
     }
     
     if (!clientEmail) {
-      clientEmail = 'contact@purplebot.digital';
+      clientEmail = 'gro10xnow@gmail.com';
     }
     
     const invoice = mapInvoice(inv || { id, clientName: 'Agency Client', amount: 50000 });

@@ -20,7 +20,7 @@ const { runPhase8 } = require('./phases/phase-8-bot-wiring');
 
 async function main() {
   console.log('\n╔══════════════════════════════════════════════════════════════════════════╗');
-  console.log('║ 🧪 PURPLEOS PROSPECTIVE CLIENT / PUBLIC AUDIENCE MASTER E2E QA SUITE    ║');
+  console.log('║ 🧪 GRO10X PROSPECTIVE CLIENT / PUBLIC AUDIENCE MASTER E2E QA SUITE       ║');
   console.log('╚══════════════════════════════════════════════════════════════════════════╝\n');
 
   const serverInstance = await startServerIfNeeded();

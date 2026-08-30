@@ -24,7 +24,7 @@ async function runTests() {
         phone: '+8801712345678',
         linkedId: 'EMP-002',
         linkedType: 'team',
-        email: 'farhan@purplebot.digital',
+        email: 'farhan@gro10x.ai',
         sendTelegram: false
       })
     });
@@ -44,7 +44,7 @@ async function runTests() {
     const setRes = await fetch(`${BASE_URL}/api/auth/pin/set`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ phone: '+8801712345678', newPin: '9988', email: 'farhan@purplebot.digital' })
+      body: JSON.stringify({ phone: '+8801712345678', newPin: '9988', email: 'farhan@gro10x.ai' })
     });
     const setData = await setRes.json();
     console.log('✅ 4. Set Permanent PIN Result:', setData);

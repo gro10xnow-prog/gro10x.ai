@@ -36,7 +36,7 @@ async function runPhase5(page) {
 
     const consultationCta = await page.evaluate(() => {
       const links = Array.from(document.querySelectorAll('a, button'));
-      return links.some(el => el.innerText.includes('Consultation') || el.innerText.includes('Purplebot') || el.innerText.includes('Contact'));
+      return links.some(el => el.innerText.includes('Consultation') || el.innerText.includes('GRO10X') || el.innerText.includes('Contact'));
     });
     record('5.1.2 Partners page includes active agency contact & consultation pathway', consultationCta);
 
