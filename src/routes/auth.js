@@ -248,7 +248,8 @@ router.post('/pin/generate', authLimiter, requireAuth, requireManager, async (re
       `🌐 Direct Portal Access: ${portalUrl}`;
 
     const btnText = targetType === 'team' ? '🚀 Open Crew Workspace' : '🌐 Launch Client Portal';
-    const appUrl = targetType === 'team' ? 'https://gro10x-ai.vercel.app/team-miniapp' : 'https://gro10x-ai.vercel.app/client';
+    const baseUrl = process.env.BASE_URL || 'https://purpleos-iota.vercel.app';
+    const appUrl = targetType === 'team' ? `${baseUrl}/team-miniapp` : `${baseUrl}/client`;
 
     sendTelegramNotification(userObj.telegramId, pushMsg, [
       [{ text: btnText, web_app: { url: appUrl } }]
@@ -278,15 +279,6 @@ router.post('/pin/verify', pinVerifyLimiter, async (req, res) => {
   if (!result.success) {
     const status = result.locked ? 429 : 401;
     return res.status(status).json(result);
-  }
-
-  try {
-    const norm = normalizePhone(phone);
-    if (isSupabaseConfigured() && result.linkedType === 'team') {
-      await supabase.from('profiles').update({ permanent_pin_set: true }).ilike('phone', `%${norm}`);
-    }
-  } catch (err) {
-    console.warn('Web login update error:', err.message);
   }
 
   // Issue real signed JWT token with individual POC identity
@@ -353,6 +345,7 @@ router.post('/pin/set', requireAuth, async (req, res) => {
       const member = await state.getEmployeeByPhone(phone);
       
       if (member && member.telegramId) {
+        const baseUrl = process.env.BASE_URL || 'https://purpleos-iota.vercel.app';
         const msg = `🎉 *Authentication Complete!*\n\n` +
           `Your permanent 4-digit PIN is now securely configured.\n\n` +
           `*Next Step:* Please complete your profile survey to finish setting up your account.`;
@@ -361,7 +354,7 @@ router.post('/pin/set', requireAuth, async (req, res) => {
           [
             { 
               text: '🎓 Open Profile Survey', 
-              web_app: { url: 'https://gro10x-ai.vercel.app/team-miniapp' } 
+              web_app: { url: `${baseUrl}/team-miniapp` } 
             }
           ]
         ];

@@ -52,13 +52,14 @@
     }
 
     const telegramId = tgUser?.id || null;
+    const initDataStr = tg?.initData || '';
     try {
-      // If in Telegram Mini App: exchange telegramId for signed JWT token
-      if (telegramId) {
+      // If in Telegram Mini App: exchange telegramId/initData for signed JWT token
+      if (telegramId || initDataStr) {
         const authRes = await fetch('/api/auth/telegram', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ telegramId, userType: 'team' })
+          body: JSON.stringify({ telegramId, initData: initDataStr, userType: 'team' })
         });
         if (authRes.ok) {
           const authData = await authRes.json();
@@ -67,14 +68,15 @@
       }
 
       const token = sessionStorage.getItem('jwt_token');
-      const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+      const headers = {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      if (initDataStr) headers['x-telegram-init-data'] = initDataStr;
 
-      // Fetch profile — use telegramId if available, else use /api/auth/me (web JWT)
+      // Fetch profile — use telegramId if available, else use /api/team/me (web JWT)
       let res;
       if (telegramId) {
         res = await fetch(`/api/team/me?telegramId=${telegramId}`, { headers });
       } else {
-        // Web path: get profile via JWT auth
         res = await fetch('/api/team/me', { headers });
       }
       if (!res.ok) { showLock(); return; }

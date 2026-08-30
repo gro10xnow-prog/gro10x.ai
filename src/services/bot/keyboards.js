@@ -24,9 +24,10 @@ function getRoleKeyboard(accessLevel, isVerified = false, emp = null) {
 
   // Progressive Disclosure: Guided Journey Mode during onboarding
   if (!emp.onboardingComplete) {
+    const baseUrl = process.env.BASE_URL || 'https://purpleos-iota.vercel.app';
     return {
       keyboard: [
-        [{ text: '🎓 Complete My Profile Survey', web_app: { url: 'https://gro10x-ai.vercel.app/team-miniapp' } }],
+        [{ text: '🎓 Complete My Profile Survey', web_app: { url: `${baseUrl}/team-miniapp` } }],
         [{ text: '🔑 View My Web Login PIN' }]
       ],
       resize_keyboard: true

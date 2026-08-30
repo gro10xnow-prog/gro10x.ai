@@ -47,13 +47,14 @@ async function findPinRecordSupabase(norm) {
         .maybeSingle();
 
       if (profile && profile.pin_hash) {
+        const isVerified = Boolean(profile.is_verified);
         const rec = {
           phone: profile.phone,
           norm_phone: norm,
           normPhone: norm,
           pin: profile.pin_hash,
-          is_temp: !profile.permanent_pin_set && !profile.is_verified,
-          isTemp: !profile.permanent_pin_set && !profile.is_verified,
+          is_temp: !isVerified,
+          isTemp: !isVerified,
           linked_id: profile.emp_code,
           linkedId: profile.emp_code,
           linked_type: 'team',
@@ -84,13 +85,16 @@ async function upsertPinRecordSupabase(record) {
   if (!isSupabaseConfigured()) return true;
 
   try {
-    // Persist PIN directly to profiles table
+    const updatePayload = {
+      pin_hash: record.pin,
+      updated_at: new Date().toISOString()
+    };
+    if (record.isTemp === false || record.is_temp === false) {
+      updatePayload.is_verified = true;
+    }
     await supabase
       .from('profiles')
-      .update({
-        pin_hash: record.pin,
-        updated_at: new Date().toISOString()
-      })
+      .update(updatePayload)
       .ilike('phone', `%${last10}%`);
 
     return true;
@@ -101,12 +105,20 @@ async function upsertPinRecordSupabase(record) {
 }
 
 // ─────────────────────────────────────────────────────────────
-// createTempPin — Generate or update PIN for a phone number
+// createTempPin — Generate or retrieve PIN for a phone number
 // ─────────────────────────────────────────────────────────────
 
 async function createTempPin(phone, linkedId = null, linkedType = 'team', email = '') {
   const rawPhone = (phone || '').trim();
   const norm = normalizePhone(rawPhone);
+  if (!norm) return null;
+
+  // Preserve existing PIN if user already has one configured
+  const existing = await findPinRecordSupabase(norm);
+  if (existing && existing.pin) {
+    return existing;
+  }
+
   const pinCode = generate4DigitPin();
 
   const pinRecord = {
@@ -423,10 +435,21 @@ async function setPermanentPin(phone, newPin, email = '') {
 
   await upsertPinRecordSupabase(updatedRecord);
 
-  if (email && isSupabaseConfigured()) {
+  if (isSupabaseConfigured()) {
     try {
-      await supabase.from('profiles').update({ email: email.trim() }).eq('phone', phone);
-    } catch (e) {}
+      const last10 = norm.slice(-10);
+      const updateData = {
+        pin_hash: String(newPin).trim(),
+        is_verified: true,
+        updated_at: new Date().toISOString()
+      };
+      if (email && email.trim()) {
+        updateData.email = email.trim();
+      }
+      await supabase.from('profiles').update(updateData).ilike('phone', `%${last10}%`);
+    } catch (e) {
+      console.warn('setPermanentPin Supabase err:', e.message);
+    }
   }
 
   return { success: true, message: 'Permanent PIN updated successfully!' };

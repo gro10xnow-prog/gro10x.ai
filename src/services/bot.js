@@ -220,16 +220,17 @@ async function handleTeamContact(msg) {
     await state.linkTelegramId(emp.emp_code || emp.id, chatId);
     emp.telegramId = String(chatId);
 
-    // 2. Generate temporary PIN
+    // 2. Generate or retrieve existing PIN
     const pinRecord = await createTempPin(emp.phone, emp.emp_code || emp.id, 'team', emp.email);
 
+    const baseUrl = process.env.BASE_URL || 'https://purpleos-iota.vercel.app';
     // 3. Send welcome message with credentials and keyboard
     const welcomeMsg = `✅ <b>Identity Verified — Welcome, ${emp.name}!</b>\n\n` +
       `• Designation: <b>${emp.role}</b>\n` +
       `• Department: <b>${emp.department || 'Operations'}</b>\n` +
       `• Access Level: <b>${emp.accessLevel || 'Specialist / Crew'}</b>\n\n` +
       `🔑 <b>Desktop Web PIN:</b> <code>${pinRecord.pin}</code>\n` +
-      `🌐 <b>Crew Portal:</b> https://gro10x-ai.vercel.app/crew\n\n` +
+      `🌐 <b>Crew Portal:</b> ${baseUrl}/crew\n\n` +
       `━━━━━━━━━━━━━━━━━━━━\n` +
       `🚀 <b>Your full dashboard is now unlocked!</b>\n` +
       `Use the menu below or tap <b>Open App</b> for the full portal.`;
@@ -416,7 +417,7 @@ function initBot() {
           menu_button: {
             type: 'web_app',
             text: 'Open App',
-            web_app: { url: 'https://gro10x-ai.vercel.app/team-miniapp' }
+            web_app: { url: `${baseUrl}/team-miniapp` }
           }
         })
       }).catch(e => {});
