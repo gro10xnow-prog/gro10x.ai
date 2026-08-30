@@ -53,84 +53,8 @@ function mapQuote(q) {
   };
 }
 
-const DEFAULT_INVOICES = [
-  {
-    id: 'INV-2026-001',
-    client_id: 'cli_chillox',
-    client_name: 'Chillox Bangladesh',
-    project_name: 'Monthly Social Media Retainer (Q1)',
-    date: '2026-08-01',
-    due_date: '2026-08-15',
-    paid_date: '2026-08-05',
-    amount: 75000,
-    tax_rate: 15,
-    discount: 0,
-    status: 'Paid',
-    items: [
-      { description: 'Social Media Management & 16 Content Pieces', qty: 1, rate: 75000, amount: 75000 }
-    ],
-    notes: 'Paid via bKash Merchant Gateway'
-  },
-  {
-    id: 'INV-2026-002',
-    client_id: 'cli_aura',
-    client_name: 'Aura Cosmetics',
-    project_name: 'Beauty TVC & 10 Short-Form Reels',
-    date: '2026-08-10',
-    due_date: '2026-08-25',
-    amount: 45000,
-    tax_rate: 15,
-    discount: 0,
-    status: 'Pending',
-    items: [
-      { description: 'Studio Production & Color Grading Package', qty: 1, rate: 45000, amount: 45000 }
-    ],
-    notes: 'Awaiting client direct bank transfer'
-  },
-  {
-    id: 'INV-2026-003',
-    client_id: 'cli_apex',
-    client_name: 'Apex Footwear',
-    project_name: 'Footwear Collection Launch Motion Kit',
-    date: '2026-07-20',
-    due_date: '2026-08-05',
-    amount: 120000,
-    tax_rate: 15,
-    discount: 0,
-    status: 'Overdue',
-    items: [
-      { description: '3D Motion Brand Identity & Packaging Suite', qty: 1, rate: 120000, amount: 120000 }
-    ],
-    notes: 'Followed up via Account Manager'
-  }
-];
-
-const DEFAULT_QUOTES = [
-  {
-    id: 'QTE-2026-001',
-    client_name: 'LG Electronics Bangladesh',
-    amount: 150000,
-    tax_rate: 15,
-    discount: 0,
-    status: 'Sent',
-    date: '2026-08-12',
-    valid_until: '2026-08-31',
-    items: [{ description: 'Enterprise Digital Marketing & Influencer Campaign', qty: 1, rate: 150000, amount: 150000 }],
-    terms: '50% advance upon contract signing, 50% upon final delivery.'
-  },
-  {
-    id: 'QTE-2026-002',
-    client_name: 'Daraz Bangladesh',
-    amount: 85000,
-    tax_rate: 15,
-    discount: 0,
-    status: 'Draft',
-    date: '2026-08-15',
-    valid_until: '2026-09-05',
-    items: [{ description: '11.11 Megasale Creative Asset Suite', qty: 1, rate: 85000, amount: 85000 }],
-    terms: 'Net 15 days payment terms.'
-  }
-];
+const DEFAULT_INVOICES = [];
+const DEFAULT_QUOTES = [];
 
 let inMemoryInvoices = [...DEFAULT_INVOICES];
 let inMemoryQuotes = [...DEFAULT_QUOTES];

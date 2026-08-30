@@ -29,48 +29,7 @@ function mapTicket(t) {
   };
 }
 
-const DEFAULT_TICKETS = [
-  {
-    id: 'TCK-001',
-    title: 'Brand Campaign Reel Aspect Ratio Adjustment',
-    description: 'The reel requires 9:16 vertical crop re-export for social platforms.',
-    submitted_by: 'Partner Brand',
-    assigned_to: 'Video Editor & Colorist',
-    priority: 'Urgent',
-    status: 'In Progress',
-    category: 'Creative Adjustment',
-    client_id: 'cli_chillox',
-    created_at: '2026-08-16T14:20:00Z',
-    updated_at: '2026-08-16T15:00:00Z'
-  },
-  {
-    id: 'TCK-002',
-    title: 'Product Packaging Color Grade Tone Adjustment',
-    description: 'Client requested warmer skin tones on the cosmetic packaging close-up shot.',
-    submitted_by: 'Partner Brand',
-    assigned_to: 'Video Editor & Colorist',
-    priority: 'Medium',
-    status: 'Open',
-    category: 'Post Production',
-    client_id: 'cli_aura',
-    created_at: '2026-08-17T09:30:00Z',
-    updated_at: '2026-08-17T09:30:00Z'
-  },
-  {
-    id: 'TCK-003',
-    title: 'Meta Ads Manager Access Token Re-authorization',
-    description: 'API access token expired. Needs admin re-authentication.',
-    submitted_by: 'Marketing Team',
-    assigned_to: 'Technical Admin',
-    priority: 'High',
-    status: 'Resolved',
-    category: 'IT & Infrastructure',
-    client_id: null,
-    resolved_at: '2026-08-15T18:00:00Z',
-    created_at: '2026-08-15T11:00:00Z',
-    updated_at: '2026-08-15T18:00:00Z'
-  }
-];
+const DEFAULT_TICKETS = [];
 
 let inMemoryTickets = [...DEFAULT_TICKETS];
 

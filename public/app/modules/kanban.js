@@ -116,21 +116,11 @@ window.APP_MODULES.kanban = async function(container) {
     }
   ];
 
-  const DEFAULT_CLIENTS = [
-    { id: 'cli_chillox', name: 'Chillox Bangladesh', category: 'Food & Beverage' },
-    { id: 'cli_aura', name: 'Aura Cosmetics', category: 'Beauty & Fashion' },
-    { id: 'cli_apex', name: 'Apex Footwear', category: 'Retail' },
-    { id: 'cli_gp', name: 'Grameenphone', category: 'Telecommunications' },
-    { id: 'cli_daraz', name: 'Daraz Bangladesh', category: 'E-commerce' }
-  ];
+  const DEFAULT_CLIENTS = [];
 
   const DEFAULT_TEAM_MEMBERS = [
-    { emp_code: 'PBD-001', name: 'Mahmudul Hasan', role: 'Agency Owner / Director' },
-    { emp_code: 'PBD-002', name: 'H. M. Ifteker Mahmud', role: 'Managing Director' },
-    { emp_code: 'PBD-003', name: 'Borhan Uddin', role: 'Lead Video Producer' },
-    { emp_code: 'PBD-004', name: 'Zahin', role: 'Senior Graphic Designer' },
-    { emp_code: 'PBD-005', name: 'Ruhul Amin', role: 'QC & Quality Specialist' },
-    { emp_code: 'PBD-006', name: 'Firoz Ahmed', role: 'Operations & Tech Lead' }
+    { emp_code: 'GRO-000', name: 'Firoz Uddin Ahmed', role: 'Technology Admin' },
+    { emp_code: 'GRO-002', name: 'Anika Nower', role: 'Digital Brand Manager' }
   ];
 
   async function loadData() {

@@ -321,8 +321,12 @@ const SEED_BRANDS_DATA = {
   dbms: [
     {
       id: 1,
-      name: 'DBM 1',
-      title: 'Digital Products Specialist',
+      name: 'DBM 1 · Anika Nower',
+      empCode: 'GRO-002',
+      empName: 'Anika Nower',
+      email: 'anikanower10152@gmail.com',
+      phone: '+8801760753971',
+      title: 'Digital Products Specialist (DBM 1)',
       assignedBrands: [1, 5, 8],
       todayUploads: 0,
       weeklyUploads: 0,
@@ -2147,6 +2151,53 @@ router.post('/:id/product/:code/submit-review', requireAuth, async (req, res) =>
     });
 
     await persistBrandsState(state);
+
+    // ─── Dispatch Telegram QC Review Alert to Admins ──────────────────────
+    try {
+      const { sendTelegramNotification } = require('../services/bot');
+      const submitterName = req.user?.name || prod.submittedBy || 'Digital Brand Manager';
+      const pTitle = prod.seoTitle || prod.seo?.title || prod.name || productCode;
+      const pPrice = prod.price ? `$${Number(prod.price).toFixed(2)} USD` : '$7.49 USD';
+      const spreadCount = prod.vault?.pageCount || prod.blueprint?.pageCount || (prod.aiAudit?.page_analysis?.length) || 16;
+      const hasVideo = Boolean(prod.video?.url || prod.video?.fileName || (typeof prod.video === 'string' && prod.video.length > 0));
+
+      const qcMsg =
+        `📦 *PRODUCT QC REVIEW REQUEST*\n\n` +
+        `🏪 *Brand:* ${brand.name} (Brand #${brandId})\n` +
+        `🏷️ *Product:* \`${productCode}\` · *${pTitle}*\n` +
+        `👤 *Submitted By:* ${submitterName}\n` +
+        `💰 *Retail Price:* ${pPrice}\n` +
+        `🖼️ *Mockups:* ${mockupsCount} photos attached · ${hasVideo ? '🎬 Video Attached' : '⚪ No Video'}\n` +
+        `📦 *Deliverable:* ${spreadCount} Master Spreads ready in Vault\n\n` +
+        `📌 *Action Required:* Review assets and approve for live Etsy catalog:`;
+
+      const qcKeyboard = [
+        [
+          { text: '✅ Approve & Publish', callback_data: `qc_approve:${brandId}:${productCode}` },
+          { text: '✏️ Request Revision', callback_data: `qc_reject:${brandId}:${productCode}` }
+        ],
+        [
+          { text: '🌐 Open Product Studio', url: 'https://gro10x-ai.vercel.app/app#brands' }
+        ]
+      ];
+
+      // Send to Admin / Owner Telegram accounts
+      if (supabase) {
+        const { data: admins } = await supabase
+          .from('profiles')
+          .select('telegram_id')
+          .in('emp_code', ['GRO-000']);
+        if (admins && admins.length > 0) {
+          for (const a of admins) {
+            if (a.telegram_id) {
+              sendTelegramNotification(a.telegram_id, qcMsg, qcKeyboard, true).catch(() => {});
+            }
+          }
+        }
+      }
+    } catch (tgErr) {
+      console.warn('[Submit Review Telegram Alert Warning]:', tgErr.message);
+    }
 
     return res.json({
       success: true,

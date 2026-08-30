@@ -14,12 +14,17 @@ const { getBadge, calcBadge } = require('../utils/xp');
 
 function mapProfile(p) {
   if (!p) return null;
+  const roleStr = String(p.role || '').toLowerCase();
+  const dbmMatch = roleStr.match(/dbm\s*(\d)/i) || roleStr.match(/digital\s+brand\s+manager\s*(\d)/i);
+  const derivedDbmId = p.dbm_id || p.dbmId || (dbmMatch ? parseInt(dbmMatch[1], 10) : (roleStr.includes('brand manager') || roleStr.includes('dbm') ? 1 : null));
+
   return {
     id: p.emp_code || p.id,
     emp_code: p.emp_code || p.id,
     name: p.name || 'Team Member',
     role: p.role || 'Specialist',
     department: p.department || '',
+    dbmId: derivedDbmId,
     telegramId: p.telegram_id ? String(p.telegram_id) : null,
     phone: p.phone || '',
     baseSalary: Number(p.base_salary) || 0,

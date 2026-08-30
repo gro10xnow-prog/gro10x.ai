@@ -32,39 +32,38 @@ const miniAppLimiter = rateLimit({
 });
 
 const DEFAULT_TEAM = [
-  { emp_code: 'GRO-000', name: 'Firoz Uddin Ahmed', role: 'Technology Admin', department: 'Tech & AI', status: 'In Studio', phone: '+8801708459008', access_level: 'Technology Admin', base_salary: 95000, commission_rate: 5, onboarding_complete: true, survey_complete: true, xp: 2500, badge: '⚡ Tech Admin' },
-  { emp_code: 'GRO-001', name: 'H. M. Ifteker Mahmud', role: 'Managing Director', department: 'Top Management', status: 'In Studio', phone: '+8801612309290', access_level: 'Managing Director', base_salary: 140000, commission_rate: 8, onboarding_complete: true, survey_complete: true, xp: 2400, badge: '🚀 Managing Director' },
-  { emp_code: 'GRO-002', name: 'S M Tariful Islam', role: 'Chairman', department: 'Top Management', status: 'In Studio', phone: '+8801708455081', access_level: 'Owner', base_salary: 150000, commission_rate: 10, onboarding_complete: true, survey_complete: true, xp: 2600, badge: '👑 Chairman' },
-  { emp_code: 'GRO-003', name: 'MD Mehedi Bin Jayed', role: 'Head of Client & Growth', department: 'Leadership', status: 'In Studio', phone: '+8801874079687', access_level: 'Line Manager', base_salary: 90000, commission_rate: 5, onboarding_complete: true, survey_complete: true, xp: 1900, badge: '💼 Growth Lead' },
-  { emp_code: 'GRO-004', name: 'Kafil Uddin Mahmud', role: 'Head of Business Operations', department: 'Leadership', status: 'In Studio', phone: '+8801612309290', access_level: 'Line Manager', base_salary: 90000, commission_rate: 5, onboarding_complete: true, survey_complete: true, xp: 1900, badge: '⚙️ Ops Lead' },
-  { emp_code: 'GRO-005', name: 'Md. Zahin Khandaker', role: 'Head of Internal Operations', department: 'Leadership', status: 'In Studio', phone: '+8801627737348', access_level: 'Technology Admin', base_salary: 95000, commission_rate: 5, onboarding_complete: true, survey_complete: true, xp: 2100, badge: '⚡ Internal Ops Lead' },
-  { emp_code: 'GRO-006', name: 'Ruhul Amin Rupom', role: 'Art Director', department: 'Design & Post-Production', status: 'In Studio', phone: '+8801711413766', access_level: 'Line Manager', base_salary: 85000, commission_rate: 4, onboarding_complete: true, survey_complete: true, xp: 1800, badge: '🎨 Art Director' },
-  { emp_code: 'GRO-007', name: 'Mahmudul Hasan Shuvo', role: 'Senior Visualizer', department: 'Design & Post-Production', status: 'In Studio', phone: '+8801622926502', access_level: 'Specialist / Crew', base_salary: 65000, commission_rate: 3, onboarding_complete: true, survey_complete: true, xp: 1500, badge: '🖌️ Senior Visualizer' },
-  { emp_code: 'GRO-008', name: 'Shahjalal Badsha Arif', role: 'Senior Visualizer', department: 'Design & Post-Production', status: 'In Studio', phone: '+8801980341566', access_level: 'Specialist / Crew', base_salary: 65000, commission_rate: 3, onboarding_complete: true, survey_complete: true, xp: 1500, badge: '🖌️ Senior Visualizer' },
-  { emp_code: 'GRO-009', name: 'Asmaul Husna Kamona', role: 'Visualizer', department: 'Design & Post-Production', status: 'In Studio', phone: '+8801794054015', access_level: 'Specialist / Crew', base_salary: 50000, commission_rate: 2, onboarding_complete: true, survey_complete: true, xp: 1300, badge: '🎨 Visualizer' },
-  { emp_code: 'GRO-010', name: 'Omar Faruq Rony', role: 'Visualizer', department: 'Design & Post-Production', status: 'In Studio', phone: '+8801623851701', access_level: 'Specialist / Crew', base_salary: 50000, commission_rate: 2, onboarding_complete: true, survey_complete: true, xp: 1300, badge: '🎨 Visualizer' },
-  { emp_code: 'GRO-011', name: 'Shalmir Rahman Shihab', role: 'Associate Visualizer', department: 'Design & Post-Production', status: 'In Studio', phone: '+8801798274976', access_level: 'Specialist / Crew', base_salary: 40000, commission_rate: 2, onboarding_complete: true, survey_complete: true, xp: 1100, badge: '🌱 Associate Visualizer' },
-  { emp_code: 'GRO-012', name: 'Anik Saha', role: 'Associate Visualizer', department: 'Design & Post-Production', status: 'In Studio', phone: '+8801786681030', access_level: 'Specialist / Crew', base_salary: 40000, commission_rate: 2, onboarding_complete: true, survey_complete: true, xp: 1100, badge: '🌱 Associate Visualizer' },
-  { emp_code: 'GRO-013', name: 'Nasir Ullah Khan Al Nahian', role: 'Head of Production', department: 'Content Production', status: 'In Studio', phone: '+8801685662296', access_level: 'Line Manager', base_salary: 85000, commission_rate: 4, onboarding_complete: true, survey_complete: true, xp: 1800, badge: '🎬 Production Lead' },
-  { emp_code: 'GRO-014', name: 'S. M. Masud Ur Rahman Pial', role: 'Senior Copywriter', department: 'Content Production', status: 'In Studio', phone: '+8801911571156', access_level: 'Specialist / Crew', base_salary: 60000, commission_rate: 3, onboarding_complete: true, survey_complete: true, xp: 1400, badge: '✍️ Senior Copywriter' },
-  { emp_code: 'GRO-015', name: 'Md. Shadly Benzadid Arefin', role: 'AI Prompt Engineer', department: 'Content Production', status: 'In Studio', phone: '+8801680066637', access_level: 'Specialist / Crew', base_salary: 55000, commission_rate: 3, onboarding_complete: true, survey_complete: true, xp: 1350, badge: '🤖 AI Specialist' },
-  { emp_code: 'GRO-016', name: 'Tasin Kabir', role: 'Senior Manager, Client Services', department: 'Client Services', status: 'In Studio', phone: '+8801709952672', access_level: 'Line Manager', base_salary: 75000, commission_rate: 4, onboarding_complete: true, survey_complete: true, xp: 1600, badge: '💼 CS Manager' },
-  { emp_code: 'GRO-017', name: 'Sayed Ashraf', role: 'Assistant Manager, Client Services', department: 'Client Services', status: 'In Studio', phone: '+8801617410967', access_level: 'Specialist / Crew', base_salary: 50000, commission_rate: 3, onboarding_complete: true, survey_complete: true, xp: 1300, badge: '🤝 Assistant Manager' },
-  { emp_code: 'GRO-018', name: 'Rimjhim Rashid', role: 'Assistant Manager, Client Services', department: 'Client Services', status: 'In Studio', phone: '+8801759768962', access_level: 'Specialist / Crew', base_salary: 50000, commission_rate: 3, onboarding_complete: true, survey_complete: true, xp: 1300, badge: '🤝 Assistant Manager' },
-  { emp_code: 'GRO-019', name: 'Shafket Hossan Pranto', role: 'Assistant Manager, Strategy & Planning', department: 'Strategy & Planning', status: 'In Studio', phone: '+8801804217607', access_level: 'Specialist / Crew', base_salary: 50000, commission_rate: 3, onboarding_complete: true, survey_complete: true, xp: 1300, badge: '📊 Strategy AM' },
-  { emp_code: 'GRO-020', name: 'Syeda Wahida Sabrina', role: 'Strategy Associate', department: 'Strategy & Planning', status: 'In Studio', phone: '+8801796587832', access_level: 'Specialist / Crew', base_salary: 35000, commission_rate: 2, onboarding_complete: true, survey_complete: true, xp: 1000, badge: '📈 Strategy Associate' },
-  { emp_code: 'GRO-021', name: 'Faiyaz Amin Rahin', role: 'Strategy Associate', department: 'Strategy & Planning', status: 'In Studio', phone: '+8801975089893', access_level: 'Specialist / Crew', base_salary: 35000, commission_rate: 2, onboarding_complete: true, survey_complete: true, xp: 1000, badge: '📈 Strategy Associate' },
-  { emp_code: 'GRO-022', name: 'Farhat Lamisa Hossain', role: 'Digital Marketing Associate', department: 'Strategy & Planning', status: 'In Studio', phone: '+8801757378806', access_level: 'Specialist / Crew', base_salary: 35000, commission_rate: 2, onboarding_complete: true, survey_complete: true, xp: 1000, badge: '📱 Marketing Associate' },
-  { emp_code: 'GRO-023', name: 'Zaima Zahin', role: 'Digital Marketing Associate', department: 'Strategy & Client Services', status: 'In Studio', phone: '+8801774619700', access_level: 'Specialist / Crew', base_salary: 35000, commission_rate: 2, onboarding_complete: true, survey_complete: true, xp: 1000, badge: '📱 Marketing Associate' },
-  { emp_code: 'GRO-024', name: 'Arib Shahran Hassan', role: 'Digital Marketing Associate', department: 'Strategy & Client Services', status: 'In Studio', phone: '+8801929290000', access_level: 'Specialist / Crew', base_salary: 35000, commission_rate: 2, onboarding_complete: true, survey_complete: true, xp: 1000, badge: '📱 Marketing Associate' },
-  { emp_code: 'GRO-025', name: 'Rafin Islam Awnon', role: 'Digital Marketing Associate', department: 'Strategy & Client Services', status: 'In Studio', phone: '+8801835045407', access_level: 'Specialist / Crew', base_salary: 35000, commission_rate: 2, onboarding_complete: true, survey_complete: true, xp: 1000, badge: '📱 Marketing Associate' },
-  { emp_code: 'GRO-026', name: 'Mahin Islam', role: 'Digital Marketing Associate', department: 'Strategy & Client Services', status: 'In Studio', phone: '+8801516766605', access_level: 'Specialist / Crew', base_salary: 35000, commission_rate: 2, onboarding_complete: true, survey_complete: true, xp: 1000, badge: '📱 Marketing Associate' },
-  { emp_code: 'GRO-027', name: 'Md. Arefin Islam', role: 'Digital Marketing Associate', department: 'Website, Tech & AI', status: 'In Studio', phone: '+8801331401450', access_level: 'Specialist / Crew', base_salary: 35000, commission_rate: 2, onboarding_complete: true, survey_complete: true, xp: 1000, badge: '💻 Tech Associate' },
-  { emp_code: 'GRO-028', name: 'Rayeem Jawad Rythm', role: 'Digital Marketing Associate', department: 'Client Services', status: 'In Studio', phone: '+8801634763885', access_level: 'Specialist / Crew', base_salary: 35000, commission_rate: 2, onboarding_complete: true, survey_complete: true, xp: 1000, badge: '📱 Marketing Associate' },
-  { emp_code: 'GRO-029', name: 'Md. Borhan Siddique', role: 'Manager, Finance & Admin', department: 'Finance & Admin', status: 'In Studio', phone: '+8801688495740', access_level: 'Finance Manager', base_salary: 85000, commission_rate: 5, onboarding_complete: true, survey_complete: true, xp: 1850, badge: '💰 Finance Manager' },
-  { emp_code: 'GRO-030', name: 'SK Mukit Hassan', role: 'Junior Executive, Finance & Admin', department: 'Finance & Admin', status: 'In Studio', phone: '+8801754696129', access_level: 'Specialist / Crew', base_salary: 40000, commission_rate: 2, onboarding_complete: true, survey_complete: true, xp: 1150, badge: '💳 Finance Exec' },
-  { emp_code: 'GRO-031', name: 'Mohammad Shanto', role: 'Office Assistant', department: 'Administration', status: 'In Studio', phone: '+8801799580967', access_level: 'Office Staff', base_salary: 25000, commission_rate: 0, onboarding_complete: true, survey_complete: true, xp: 900, badge: '🏢 Office Assistant' },
-  { emp_code: 'GRO-032', name: 'Mst. Sapia Khatun', role: 'Office Assistant', department: 'Administration', status: 'In Studio', phone: '+8801701614916', access_level: 'Office Staff', base_salary: 25000, commission_rate: 0, onboarding_complete: true, survey_complete: true, xp: 900, badge: '🏢 Office Assistant' }
+  {
+    emp_code: 'GRO-000',
+    name: 'Firoz Uddin Ahmed',
+    role: 'Technology Admin',
+    department: 'Tech & AI',
+    status: 'In Studio',
+    phone: '+8801708459008',
+    access_level: 'Technology Admin',
+    base_salary: 95000,
+    commission_rate: 5,
+    onboarding_complete: true,
+    survey_complete: true,
+    xp: 2500,
+    badge: '⚡ Tech Admin'
+  },
+  {
+    emp_code: 'GRO-002',
+    name: 'Anika Nower',
+    role: 'Digital Brand Manager',
+    department: 'Brand Operations',
+    status: 'Active',
+    phone: '+8801760753971',
+    email: 'anikanower10152@gmail.com',
+    access_level: 'Specialist / Crew',
+    base_salary: 20000,
+    commission_rate: 10,
+    dbm_id: 1,
+    onboarding_complete: false,
+    survey_complete: false,
+    xp: 100,
+    badge: '🌱 DBM Recruit'
+  }
 ];
 
 function mapProfile(p) {
@@ -78,12 +77,17 @@ function mapProfile(p) {
   if (p.primary_skill || p.secondary_skill || p.tshirt_size || p.portfolio_url) surveyProgress = Math.max(surveyProgress, 4);
   if (p.onboarding_complete && surveyProgress >= 4) surveyProgress = 5;
 
+  const roleStr = String(p.role || '').toLowerCase();
+  const dbmMatch = roleStr.match(/dbm\s*(\d)/i) || roleStr.match(/digital\s+brand\s+manager\s*(\d)/i);
+  const derivedDbmId = p.dbm_id || p.dbmId || (dbmMatch ? parseInt(dbmMatch[1], 10) : (roleStr.includes('brand manager') || roleStr.includes('dbm') ? 1 : null));
+
   return {
     id: p.emp_code || p.id,
     emp_code: p.emp_code,
     name: p.name,
     role: p.role,
     department: p.department,
+    dbmId: derivedDbmId,
     telegramId: p.telegram_id,
     phone: p.phone,
     avatarUrl: p.avatar_url || '',
@@ -692,7 +696,7 @@ router.post('/agreement', miniAppLimiter, requireMiniAppAuth, async (req, res) =
           const keyboard = { keyboard: [], resize_keyboard: true }; // will be repopulated on next /start
           await teamBot.sendMessage(telegramId,
             `🎉 *Agreement Signed — You're Officially Activated!*\n\n` +
-            `Welcome to the Purplebot Digital team, *${empName}*!\n\n` +
+            `Welcome to the GRO10X team, *${empName}*!\n\n` +
             `✅ Your account is now fully unlocked.\n` +
             `📱 Tap */start* to open your full dashboard menu.`,
             { parse_mode: 'Markdown' }
@@ -700,26 +704,31 @@ router.post('/agreement', miniAppLimiter, requireMiniAppAuth, async (req, res) =
         }
       } catch (e) { /* non-critical */ }
 
-      // Notify Finance Manager via Telegram
+      // Notify Admin / Finance via Telegram
       try {
-        let financeTgId = null;
+        let approverTgId = null;
         if (supabase) {
           const { data: fin } = await supabase.from('profiles').select('telegram_id').or('access_level.eq.Finance Manager,role.ilike.%finance manager%').maybeSingle();
-          financeTgId = fin?.telegram_id;
+          approverTgId = fin?.telegram_id;
+          if (!approverTgId) {
+            const { data: admin } = await supabase.from('profiles').select('telegram_id').eq('emp_code', 'GRO-000').maybeSingle();
+            approverTgId = admin?.telegram_id;
+          }
         }
-        if (!financeTgId) {
+        if (!approverTgId) {
           const db2 = await readDB();
-          financeTgId = (db2.team || []).find(t => (t.role || '').toLowerCase().includes('finance') || t.accessLevel === 'Finance Manager')?.telegramId;
+          approverTgId = (db2.team || []).find(t => (t.role || '').toLowerCase().includes('finance') || t.accessLevel === 'Finance Manager')?.telegramId
+            || (db2.team || []).find(t => t.id === 'GRO-000' || t.emp_code === 'GRO-000')?.telegramId;
         }
-        if (financeTgId) {
+        if (approverTgId) {
           await sendTelegramNotification(
-            financeTgId,
-            `📝 *Employment Agreement — Stage 2 Countersign Required*\n\n` +
+            approverTgId,
+            `📝 *Employment Agreement — Final Seal & Activation Required*\n\n` +
             `• Employee: *${empName}* (${empCode})\n` +
             `• Role: *${emp.role}*\n` +
             `• Employee signed at: ${new Date().toLocaleString('en-GB')}\n\n` +
-            `Please countersign the agreement as Finance Manager.`,
-            [[{ text: '✅ Countersign Agreement', callback_data: `agr_stage2:${empCode}` }]],
+            `Please apply the final seal to activate employee workspace:`,
+            [[{ text: '👑 Final Seal & Activate Employee', callback_data: `agr_stage3:${empCode}` }]],
             true
           );
         }
@@ -852,8 +861,11 @@ router.post('/attendance', requireAuth, async (req, res) => {
 // GET /api/team/attendance
 router.get('/attendance', requireAuth, async (req, res) => {
   try {
+    if (!supabase) return res.json([]);
     const { data, error } = await supabase.from('attendance').select('*').order('created_at', { ascending: false });
-    if (error) throw error;
+    if (error) {
+      return res.json([]);
+    }
     let mapped = (data || []).map(mapAttendance);
     const empId = req.query.employeeId || req.query.empId;
     if (empId) {
@@ -861,8 +873,7 @@ router.get('/attendance', requireAuth, async (req, res) => {
     }
     res.json(mapped);
   } catch (err) {
-    console.error('Attendance GET error:', err.message);
-    res.status(500).json({ error: err.message });
+    res.json([]);
   }
 });
 
@@ -1948,11 +1959,11 @@ router.get('/invitation-status', requireAuth, async (req, res) => {
       role: p.role,
       department: p.department || 'General',
       phone: p.phone || '',
-      telegramLinked: p.emp_code !== (process.env.QC_REVIEWER_CODE || 'GRO-006'),
-      hasPIN: true,
-      pinIsTemp: false,
-      surveyComplete: true,
-      onboardingComplete: true
+      telegramLinked: Boolean(p.telegram_id),
+      hasPIN: Boolean(p.hasPIN || p.pin),
+      pinIsTemp: Boolean(p.pinIsTemp),
+      surveyComplete: Boolean(p.survey_complete),
+      onboardingComplete: Boolean(p.onboarding_complete)
     }));
     return res.json({
       success: true,

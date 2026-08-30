@@ -47,31 +47,7 @@ async function updateSupabaseLeave(id, updates) {
   return null;
 }
 
-const DEFAULT_LEAVES = [
-  {
-    id: 'LEV-001',
-    employee_id: 'PBD-010',
-    employee_name: 'Lead Designer',
-    leave_type: 'Annual Leave',
-    start_date: '2026-08-20',
-    end_date: '2026-08-22',
-    reason: 'Family event & travel',
-    status: 'Approved',
-    manager_reviewed_by: 'Department Head',
-    created_at: '2026-08-15T10:00:00Z'
-  },
-  {
-    id: 'LEV-002',
-    employee_id: 'PBD-011',
-    employee_name: 'Video Editor',
-    leave_type: 'Casual Leave',
-    start_date: '2026-08-25',
-    end_date: '2026-08-26',
-    reason: 'Personal work',
-    status: 'Pending',
-    created_at: '2026-08-17T12:00:00Z'
-  }
-];
+const DEFAULT_LEAVES = [];
 
 let inMemoryLeaves = [...DEFAULT_LEAVES];
 

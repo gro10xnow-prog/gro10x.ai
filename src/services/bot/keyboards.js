@@ -220,6 +220,25 @@ function getRoleKeyboard(accessLevel, isVerified = false, emp = null) {
 
   const userRole = (emp?.role || '').toLowerCase();
 
+  // ─── Digital Brand Manager (DBM) Keyboard ──────────────────────────────────
+  if (
+    userRole.includes('brand manager') ||
+    userRole.includes('digital brand') ||
+    userRole.includes('dbm')
+  ) {
+    return {
+      keyboard: [
+        [{ text: '🛍️ My Brands & Products' }, { text: '📦 Today\'s Listing Queue' }],
+        [{ text: '📋 DBM Daily Standup' }, { text: '💰 My DBM Incentive' }],
+        [{ text: '📝 EOD Report' }, { text: '🌴 Leave Request' }],
+        [{ text: '🧾 Submit Expense' }, { text: '💳 Bank & bKash' }],
+        [{ text: '👤 My Profile' }, { text: '💰 My Earnings' }],
+        [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
+      ],
+      resize_keyboard: true
+    };
+  }
+
   if (emp?.id === 'PBD-028') {
     return {
       keyboard: [

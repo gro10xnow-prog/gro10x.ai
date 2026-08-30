@@ -41,42 +41,7 @@ function mapExpense(e) {
   };
 }
 
-const DEFAULT_EXPENSES = [
-  {
-    id: 'EXP-001',
-    title: 'Niketon Studio Production Lighting Gear & Softboxes',
-    category: 'Equipment & Gear',
-    amount: 12500,
-    date: '2026-08-10',
-    logged_by: 'Studio Lead',
-    submitted_by: 'Studio Lead',
-    description: 'Godox softbox replacement diffuser and C-stand mounts',
-    status: 'Approved',
-    tier1_approved: true,
-    tier1_approved_by: 'Department Head',
-    tier1_approved_at: '2026-08-10T14:30:00Z',
-    tier2_approved: true,
-    tier2_approved_by: 'Managing Director',
-    tier2_approved_at: '2026-08-10T16:00:00Z',
-    created_at: '2026-08-10T14:00:00Z'
-  },
-  {
-    id: 'EXP-002',
-    title: 'Props & Supplies for Brand Shoot',
-    category: 'Shoot Props',
-    amount: 4200,
-    date: '2026-08-14',
-    logged_by: 'Creative Lead',
-    submitted_by: 'Creative Lead',
-    description: 'Styling props, acrylic mounts, studio background panels',
-    status: 'Tier 2 Pending',
-    tier1_approved: true,
-    tier1_approved_by: 'Department Head',
-    tier1_approved_at: '2026-08-14T11:00:00Z',
-    tier2_approved: false,
-    created_at: '2026-08-14T10:00:00Z'
-  }
-];
+const DEFAULT_EXPENSES = [];
 
 let inMemoryExpenses = [...DEFAULT_EXPENSES];
 

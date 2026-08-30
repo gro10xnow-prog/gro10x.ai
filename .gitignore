@@ -17,3 +17,4 @@ tmp_test_assets/
 *.pdf
 Screenshot*.png
 scratch/
+.chrome-test-profile/

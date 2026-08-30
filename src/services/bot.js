@@ -104,19 +104,56 @@ async function sendAgreementNotification(stage, emp, dbData) {
     // Owner approved → fully activate employee
     if (emp.telegramId) {
       const keyboard = getRoleKeyboard(emp.accessLevel, true, { ...emp, onboardingComplete: true });
-      teamBot.sendMessage(emp.telegramId,
-        `🎉 *CONGRATULATIONS, ${emp.name}!*\n\n` +
-        `Your Employment Agreement is fully executed and signed by all parties.\n\n` +
-        `━━━━━━━━━━━━━━━━━━━━\n` +
-        `🚀 *You are now an official GRO10X team member!*\n\n` +
-        `📌 *Your Next Steps:*\n` +
-        `1. 📍 Do your first GPS Clock-In to go Online\n` +
-        `2. 📋 Check *My Tasks* for your first assignment\n` +
-        `3. 💳 Verify your *Bank & bKash* payout accounts\n` +
-        `4. 👤 Review your *My Profile* — check your salary details\n\n` +
-        `Tap *Open App* to access your full dashboard. Welcome to the team! ⚡`,
-        { parse_mode: 'Markdown', reply_markup: keyboard }
-      ).catch(() => {});
+      const isDBM = (emp.role || '').toLowerCase().includes('brand manager') ||
+                    (emp.role || '').toLowerCase().includes('dbm');
+
+      let activationMsg;
+      if (isDBM) {
+        const dbmId = emp.dbmId || 1;
+        const dbmBrandMap = {
+          1: { brands: 'PlannerQueenGro · InkWrapped · FiestaFoundry', target: '$66,350/yr combined' },
+          2: { brands: 'WildMutt Co. · CozyThreads™ · ProudProfessional', target: '$77,390/yr combined' },
+          3: { brands: 'TinyDesks · LittleStarsLearning · ZenWallCo', target: '$59,000/yr combined' },
+          4: { brands: 'SparkSVG · PageForge · LetterLab · PromptVault', target: '$155,426/yr combined' }
+        };
+        const dbmInfo = dbmBrandMap[dbmId] || dbmBrandMap[1];
+
+        activationMsg =
+          `🎉 *WELCOME TO THE TEAM, ${emp.name.toUpperCase()}!*\n\n` +
+          `━━━━━━━━━━━━━━━━━━━━\n` +
+          `🚀 *You are now an official GRO10X Digital Brand Manager!*\n\n` +
+          `📊 *Your Division:* DBM ${dbmId}\n` +
+          `🏪 *Your Brands:* ${dbmInfo.brands}\n` +
+          `🎯 *Combined ARR Target:* ${dbmInfo.target}\n` +
+          `💸 *Base Salary:* BDT ${(Number(emp.baseSalary || emp.base_salary) || 20000).toLocaleString()}/mo · *Commission:* 10% of brand sales\n\n` +
+          `━━━━━━━━━━━━━━━━━━━━\n` +
+          `📋 *YOUR 8-HOUR DAILY SOP:*\n` +
+          `• 🌅 *9AM–1PM (Block 1):* Create & publish 4 listings\n` +
+          `• ⚡ *1PM–5PM (Block 2):* Create & publish 4 more listings\n` +
+          `• 📝 *5PM–6PM (Block 3):* QC submit & DBM daily standup\n` +
+          `• 🎯 *Daily target:* 8 live listings across your brands\n\n` +
+          `━━━━━━━━━━━━━━━━━━━━\n` +
+          `📌 *YOUR FIRST DAY ACTIONS:*\n` +
+          `1. 📍 Tap *Clock-In GPS* to go Online\n` +
+          `2. 🛍️ Tap *My Brands & Products* to inspect your catalog\n` +
+          `3. 💳 Tap *Bank & bKash* to verify payout accounts\n` +
+          `4. 🌐 Open your dashboard: https://gro10x-ai.vercel.app/app#brands\n\n` +
+          `Let's build this empire together! 💜⚡`;
+      } else {
+        activationMsg =
+          `🎉 *CONGRATULATIONS, ${emp.name}!*\\n\\n` +
+          `Your Employment Agreement is fully executed and signed by all parties.\\n\\n` +
+          `━━━━━━━━━━━━━━━━━━━━\\n` +
+          `🚀 *You are now an official GRO10X team member!*\\n\\n` +
+          `📌 *Your Next Steps:*\\n` +
+          `1. 📍 Do your first GPS Clock-In to go Online\\n` +
+          `2. 📋 Check *My Tasks* for your first assignment\\n` +
+          `3. 💳 Verify your *Bank & bKash* payout accounts\\n` +
+          `4. 👤 Review your *My Profile* — check your salary details\\n\\n` +
+          `Tap *Open App* to access your full dashboard. Welcome to the team! ⚡`;
+      }
+
+      teamBot.sendMessage(emp.telegramId, activationMsg, { parse_mode: 'Markdown', reply_markup: keyboard }).catch(() => {});
     }
   }
 }
@@ -284,6 +321,8 @@ function initBot() {
         '🎬 Client Approvals', '📢 Send Client Link', '💬 Client Feedback', '👥 Account Team', '📡 Media Buying', '🚀 Client Activation', '🏢 Ops Dashboard',
         // Finance Manager
         '💸 Expense Queue', '🧾 Invoice Status', '📊 Payroll Summary', '🏦 Bank & bKash Hub', '👥 Admin Team',
+        // Digital Brand Manager (DBM)
+        '🛍️ My Brands & Products', '📦 Today\'s Listing Queue', '📋 DBM Daily Standup', '💰 My DBM Incentive',
         // Shared Manager & Approvals
         '👥 My Team', '✅ Leave Approvals', '👥 HR & Attendance',
         // Wizard-initiating buttons — handled exclusively by their onText() listeners
@@ -291,7 +330,7 @@ function initBot() {
         '🧾 Log Expense Entry', '📋 Invoice Tracker', '💰 Payment Follow-Up'
       ];
 
-      const VALID_WIZARD_ACTIONS = ['await_expense', 'await_leave', 'await_eod', 'await_deploy'];
+      const VALID_WIZARD_ACTIONS = ['await_expense', 'await_leave', 'await_eod', 'await_deploy', 'await_dbm'];
 
       teamBot.on('message', async (msg) => {
         const chatId = msg.chat.id;
@@ -352,6 +391,9 @@ function initBot() {
         } else if (wizardState.action.startsWith('await_deploy')) {
           const ticketsHandler = require('./bot/handlers/tickets');
           await ticketsHandler.handleDeployWizardStep(teamBot, msg, wizardState, emp);
+        } else if (wizardState.action.startsWith('await_dbm')) {
+          const dbmHandler = require('./bot/handlers/dbm');
+          await dbmHandler.handleDBMStandupWizardStep(teamBot, msg, wizardState, emp);
         }
       });
 
@@ -500,6 +542,12 @@ function initBot() {
       // EOD
       teamBot.onText(/\/eod(?:@\w+)?|\/submiteod(?:@\w+)?|📝 EOD Report/, (msg) => eodHandler.handleInitEOD(teamBot, msg));
       teamBot.onText(/\/myeod(?:@\w+)?|📝 My EOD History/, (msg) => eodHandler.handleMyEODHistory(teamBot, msg));
+
+      // Digital Brand Manager (DBM)
+      const dbmHandler = require('./bot/handlers/dbm');
+      teamBot.onText(/\/dbmstandup(?:@\w+)?|📋 DBM Daily Standup/, (msg) => dbmHandler.handleDBMStandup(teamBot, msg));
+      teamBot.onText(/\/mybrands(?:@\w+)?|🛍️ My Brands & Products|📦 Today's Listing Queue/, (msg) => dbmHandler.handleMyBrands(teamBot, msg));
+      teamBot.onText(/\/dbmincentive(?:@\w+)?|💰 My DBM Incentive/, (msg) => dbmHandler.handleDBMIncentive(teamBot, msg));
 
       // Executive briefing & status
       teamBot.onText(/\/briefing(?:@\w+)?|🌅 Morning Briefing/, (msg) => briefingHandler.handleMorningBriefing(teamBot, msg));

@@ -428,22 +428,11 @@ router.post('/clean-tasks-ai', requireAuth, requireManager, asyncHandler(async (
   let teamProfiles = [];
   let clientList = [];
 
-  const DEFAULT_CLIENTS = [
-    { name: 'Apex Footwear' },
-    { name: 'Chillox Bangladesh' },
-    { name: 'Aura Cosmetics' },
-    { name: 'Daraz Bangladesh' },
-    { name: 'Grameenphone' },
-    { name: 'Internal Agency' }
-  ];
+  const DEFAULT_CLIENTS = [];
 
   const DEFAULT_TEAM = [
-    { emp_code: 'PBD-001', name: 'Mahmudul Hasan', department: 'Leadership' },
-    { emp_code: 'PBD-002', name: 'Md. Zahin Khandaker', department: 'Leadership' },
-    { emp_code: 'PBD-003', name: 'Borhan Uddin', department: 'Production' },
-    { emp_code: 'PBD-004', name: 'Zahin', department: 'Creative & Content' },
-    { emp_code: 'PBD-005', name: 'Ruhul Amin', department: 'Quality Assurance' },
-    { emp_code: 'PBD-006', name: 'Firoz Ahmed', department: 'Operations' }
+    { emp_code: 'GRO-000', name: 'Firoz Uddin Ahmed', department: 'Tech & AI' },
+    { emp_code: 'GRO-002', name: 'Anika Nower', department: 'Brand Operations' }
   ];
 
   if (isSupabaseConfigured()) {

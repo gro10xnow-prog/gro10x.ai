@@ -728,7 +728,6 @@ function registerLegacyTeamMenus(teamBot, readDB) {
         }).eq('id', expId);
 
         broadcast('expense_update', [{ id: expId, status: 'Rejected' }]);
-
         alertMsg = `❌ Expense claim declined.`;
         statusBadge = `❌ Declined (${emp.name})`;
         teamBot.sendMessage(chatId, `❌ *Expense ${expId} has been declined.*`, { parse_mode: 'Markdown' });
@@ -742,6 +741,78 @@ function registerLegacyTeamMenus(teamBot, readDB) {
             ).catch(() => {});
           }
         }
+
+      // ─── 6. DBM PRODUCT QC REVIEW APPROVE / REJECT ───────────────────────────
+      } else if (data.startsWith('qc_approve:')) {
+        const parts = data.split(':');
+        const brandId = Number(parts[1]);
+        const productCode = parts[2];
+
+        try {
+          const brandsRoute = require('../../../routes/brands');
+          if (typeof brandsRoute.loadBrandsState === 'function' && typeof brandsRoute.persistBrandsState === 'function') {
+            const bState = await brandsRoute.loadBrandsState();
+            const brand = bState.brands?.find(b => b.id === brandId);
+            const catalog = bState.productsCatalog?.[brandId] || [];
+            const prod = catalog.find(p => p.code === productCode);
+            if (prod) {
+              prod.status = 'Live';
+              prod.approvedAt = new Date().toISOString();
+              prod.approvedBy = emp.name || 'Admin';
+              prod.listedAt = prod.listedAt || new Date().toISOString();
+              delete prod.adminRevisionNote;
+              if (brand) brand.productsLive = catalog.filter(p => p.status === 'Live').length;
+              await brandsRoute.persistBrandsState(bState);
+              if (typeof brandsRoute.saveProductAssets === 'function') {
+                await brandsRoute.saveProductAssets(brandId, productCode, {
+                  status: 'Live',
+                  approvedAt: prod.approvedAt,
+                  approvedBy: prod.approvedBy,
+                  listedAt: prod.listedAt
+                });
+              }
+            }
+          }
+        } catch (e) {
+          console.warn('[QC Approve Error]:', e.message);
+        }
+
+        alertMsg = `✅ Product ${productCode} Approved & Published Live!`;
+        statusBadge = `✅ Approved & Live (by ${emp.name})`;
+        teamBot.sendMessage(chatId, `✅ *QC Approved:* Product \`${productCode}\` is now marked **Live** and ready for Etsy syncing!`, { parse_mode: 'Markdown' });
+
+      } else if (data.startsWith('qc_reject:')) {
+        const parts = data.split(':');
+        const brandId = Number(parts[1]);
+        const productCode = parts[2];
+
+        try {
+          const brandsRoute = require('../../../routes/brands');
+          if (typeof brandsRoute.loadBrandsState === 'function' && typeof brandsRoute.persistBrandsState === 'function') {
+            const bState = await brandsRoute.loadBrandsState();
+            const catalog = bState.productsCatalog?.[brandId] || [];
+            const prod = catalog.find(p => p.code === productCode);
+            if (prod) {
+              prod.status = 'Revision Requested';
+              prod.adminRevisionNote = `Revision requested by ${emp.name} via Telegram QC review.`;
+              prod.revisionRequestedAt = new Date().toISOString();
+              await brandsRoute.persistBrandsState(bState);
+              if (typeof brandsRoute.saveProductAssets === 'function') {
+                await brandsRoute.saveProductAssets(brandId, productCode, {
+                  status: 'Revision Requested',
+                  adminRevisionNote: prod.adminRevisionNote,
+                  revisionRequestedAt: prod.revisionRequestedAt
+                });
+              }
+            }
+          }
+        } catch (e) {
+          console.warn('[QC Reject Error]:', e.message);
+        }
+
+        alertMsg = `✏️ Revision Requested for ${productCode}`;
+        statusBadge = `✏️ Revision Requested (by ${emp.name})`;
+        teamBot.sendMessage(chatId, `✏️ *Revision Requested:* Product \`${productCode}\` status updated to **Revision Requested**.`, { parse_mode: 'Markdown' });
       }
 
       // Update inline button text to badge (preserving remaining buttons if in a batch list)

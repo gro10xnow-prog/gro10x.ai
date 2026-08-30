@@ -347,13 +347,7 @@ window.APP_MODULES.social = async function(container) {
     return btns;
   }
 
-  const DEFAULT_CLIENTS = [
-    { id: 'cli_chillox', name: 'Chillox Bangladesh', company: 'Chillox Bangladesh' },
-    { id: 'cli_aura', name: 'Aura Cosmetics', company: 'Aura Cosmetics' },
-    { id: 'cli_apex', name: 'Apex Footwear', company: 'Apex Footwear' },
-    { id: 'cli_gp', name: 'Grameenphone', company: 'Grameenphone' },
-    { id: 'cli_daraz', name: 'Daraz Bangladesh', company: 'Daraz Bangladesh' }
-  ];
+  const DEFAULT_CLIENTS = [];
 
   function populateClientDropdown() {
     const select = document.getElementById('spClientSelect');

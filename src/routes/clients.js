@@ -37,13 +37,7 @@ function mapClient(c) {
   };
 }
 
-const DEFAULT_CLIENTS = [
-  { id: 'cli_chillox', name: 'Chillox Bangladesh', category: 'Food & Beverage', status: 'Active Retainer', company: 'Chillox Bangladesh' },
-  { id: 'cli_aura', name: 'Aura Cosmetics', category: 'Beauty & Fashion', status: 'Active Retainer', company: 'Aura Cosmetics' },
-  { id: 'cli_apex', name: 'Apex Footwear', category: 'Retail', status: 'Active Retainer', company: 'Apex Footwear' },
-  { id: 'cli_gp', name: 'Grameenphone', category: 'Telecommunications', status: 'Enterprise', company: 'Grameenphone' },
-  { id: 'cli_daraz', name: 'Daraz Bangladesh', category: 'E-commerce', status: 'Project Basis', company: 'Daraz Bangladesh' }
-];
+const DEFAULT_CLIENTS = [];
 
 // GET all clients (Admin sees all; Client sees ONLY their own client record)
 router.get('/', requireAuth, async (req, res) => {

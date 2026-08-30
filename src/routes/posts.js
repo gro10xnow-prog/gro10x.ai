@@ -81,56 +81,7 @@ async function requirePostOwnership(req, res, next) {
   next();
 }
 
-const DEFAULT_POSTS = [
-  {
-    id: 'PST-001',
-    client_id: 'cli_chillox',
-    client_name: 'Chillox Bangladesh',
-    platform: 'Instagram',
-    target_url: 'https://instagram.com/chillox',
-    title: '🍔 Double Patty Burger Weekend Special Reel',
-    caption: 'Craving the juiciest bite in town? 🔥 Get 20% off on all Double Gourmet Burgers this weekend only! Tag a friend who owes you a meal. #Chillox #DhakaFoodie #BurgerLover',
-    hashtags: '#Chillox #DhakaFoodie #BurgerLover #WeekendTreat',
-    media_urls: ['https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800'],
-    scheduled_date: new Date(Date.now() + 86400000).toISOString().split('T')[0],
-    scheduled_time: '19:30',
-    assigned_publisher: 'Borhan Uddin',
-    status: 'Approved',
-    created_at: new Date().toISOString()
-  },
-  {
-    id: 'PST-002',
-    client_id: 'cli_aura',
-    client_name: 'Aura Cosmetics',
-    platform: 'Facebook',
-    target_url: 'https://facebook.com/auracosmetics',
-    title: '✨ Hydrating Vitamin C Serum Product Showcase',
-    caption: 'Glow from within! Discover the secret to 24-hour hydration with our newly formulated Vitamin C Radiance Serum. Dermatologically tested. 🌸 #AuraCosmetics #SkincareRoutine #GlowUp',
-    hashtags: '#AuraCosmetics #SkincareRoutine #GlowUp #RadiantSkin',
-    media_urls: ['https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=800'],
-    scheduled_date: new Date(Date.now() + 2 * 86400000).toISOString().split('T')[0],
-    scheduled_time: '18:00',
-    assigned_publisher: 'Zahin',
-    status: 'Client Review',
-    created_at: new Date().toISOString()
-  },
-  {
-    id: 'PST-003',
-    client_id: 'cli_apex',
-    client_name: 'Apex Footwear',
-    platform: 'LinkedIn',
-    target_url: 'https://linkedin.com/company/apex-footwear',
-    title: '💼 Executive Leather Collection — Craftsmanship Behind Every Stitch',
-    caption: 'Precision, heritage, and unmatched comfort. Explore how Apex combines traditional artisanal leather craft with modern ergonomics for modern leaders. #ApexFootwear #LeadershipStyle #Craftsmanship',
-    hashtags: '#ApexFootwear #LeadershipStyle #Craftsmanship #CorporateFashion',
-    media_urls: ['https://images.unsplash.com/photo-1549298916-b41d501d3772?w=800'],
-    scheduled_date: new Date(Date.now() + 3 * 86400000).toISOString().split('T')[0],
-    scheduled_time: '11:00',
-    assigned_publisher: 'Mahmudul Hasan',
-    status: 'In Pipeline',
-    created_at: new Date().toISOString()
-  }
-];
+const DEFAULT_POSTS = [];
 
 // In-memory store for session continuity when Supabase table is unreachable
 let inMemoryPosts = [...DEFAULT_POSTS];

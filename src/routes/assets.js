@@ -26,78 +26,7 @@ function mapAsset(a) {
   };
 }
 
-const DEFAULT_ASSETS = [
-  {
-    id: 'AST-001',
-    name: 'Sony FX3 Cinema Line Camera + 24-70mm GM II',
-    serial: 'SN-FX3-98214',
-    category: 'Camera & Cinema',
-    purchase_price: 480000,
-    monthly_depreciation: 8000,
-    condition: 'In Use',
-    assigned_to: 'Asif (Senior Video Editor & Colorist)',
-    purchase_date: '2025-11-15',
-    warranty_expiry: '2027-11-15',
-    notes: 'Main primary shoot rig for Chillox & Aura brand TVCs',
-    created_at: '2025-11-15T10:00:00Z'
-  },
-  {
-    id: 'AST-002',
-    name: 'Apple MacBook Pro 16" (M3 Max / 64GB RAM / 2TB)',
-    serial: 'SN-MBP-44021',
-    category: 'Laptop & PC',
-    purchase_price: 395000,
-    monthly_depreciation: 6500,
-    condition: 'Good',
-    assigned_to: 'Zahin (Lead Full-Stack Developer)',
-    purchase_date: '2026-01-10',
-    warranty_expiry: '2028-01-10',
-    notes: 'Platform engineering & AI model inference workstation',
-    created_at: '2026-01-10T10:00:00Z'
-  },
-  {
-    id: 'AST-003',
-    name: 'Godox Knowled M600D Daylight LED + Light Dome III',
-    serial: 'SN-GDX-77123',
-    category: 'Lighting & Audio',
-    purchase_price: 165000,
-    monthly_depreciation: 2500,
-    condition: 'Good',
-    assigned_to: 'Borhan (Finance & Studio Lead)',
-    purchase_date: '2026-02-01',
-    warranty_expiry: '2027-02-01',
-    notes: 'Niketon HQ key studio lighting fixture',
-    created_at: '2026-02-01T10:00:00Z'
-  },
-  {
-    id: 'AST-004',
-    name: 'DJI RS 3 Pro Gimbal Stabilizer Combo',
-    serial: 'SN-DJI-33981',
-    category: 'Camera & Cinema',
-    purchase_price: 95000,
-    monthly_depreciation: 1800,
-    condition: 'Good',
-    assigned_to: 'Unassigned',
-    purchase_date: '2026-03-05',
-    warranty_expiry: '2027-03-05',
-    notes: 'Available for checkout in equipment cabinet 2',
-    created_at: '2026-03-05T10:00:00Z'
-  },
-  {
-    id: 'AST-005',
-    name: 'Sennheiser MKH 416 Shotgun Microphone + Boom Kit',
-    serial: 'SN-SNN-10944',
-    category: 'Lighting & Audio',
-    purchase_price: 110000,
-    monthly_depreciation: 1500,
-    condition: 'Good',
-    assigned_to: 'Unassigned',
-    purchase_date: '2026-04-12',
-    warranty_expiry: '2028-04-12',
-    notes: 'High-directional dialogue capture rig for field sets',
-    created_at: '2026-04-12T10:00:00Z'
-  }
-];
+const DEFAULT_ASSETS = [];
 
 let inMemoryAssets = [...DEFAULT_ASSETS];
 
