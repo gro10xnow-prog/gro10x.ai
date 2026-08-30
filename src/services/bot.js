@@ -281,7 +281,7 @@ function initBot() {
             `• Department: *${emp.department}*\n` +
             `• Access Level: *${emp.accessLevel}*\n\n` +
             `🔑 *Desktop Web PIN:* \`${pinRecord.pin}\`\n` +
-            `🌐 Portal: https://gro10x-ai.vercel.app/auth\n\n` +
+            `🌐 Crew Portal: https://gro10x-ai.vercel.app/crew\n\n` +
             `━━━━━━━━━━━━━━━━━━━━\n` +
             `🚀 *Your full dashboard is now unlocked!*\n` +
             `Use the menu below or tap *Open App* for the full portal.`;
