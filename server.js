@@ -31,6 +31,7 @@ const ALLOWED_ORIGINS = Array.from(new Set([
 ]));
 
 const app = express();
+app.set('trust proxy', 1);
 
 // Validate Environment Variables on Startup
 const { validateEnvironment } = require('./src/utils/env');
@@ -242,9 +243,8 @@ app.post(['/api/webhooks/telegram', '/webhooks/telegram'], async (req, res) => {
       } else {
         console.log(`[Webhook] Processing update (${botType}) update_id:`, req.body?.update_id);
       }
-      await targetBot.processUpdate(req.body);
-      // Serverless execution barrier: allow event handlers to finish Telegram API calls
-      await new Promise(resolve => setTimeout(resolve, 800));
+      const { processWebhookUpdate } = require('./src/services/bot');
+      await processWebhookUpdate(req.body, botType);
       return res.status(200).json({ ok: true });
     } catch (err) {
       console.error(`Telegram webhook update processing error (${botType}):`, err.message);

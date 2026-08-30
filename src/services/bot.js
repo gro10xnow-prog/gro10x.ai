@@ -159,6 +159,215 @@ async function sendAgreementNotification(stage, emp, dbData) {
   }
 }
 
+// ══════════════════════════════════════════
+// SERVERLESS DIRECT ASYNC DISPATCHERS
+// ══════════════════════════════════════════
+
+async function handleTeamStart(msg) {
+  const chatId = msg.chat?.id;
+  if (!chatId) return;
+  if (!teamBot) initBot();
+  if (!teamBot) return;
+
+  try {
+    await state.clearSession(chatId);
+    const emp = await state.getEmployeeByTelegramId(chatId);
+
+    if (emp) {
+      const welcome = `💜 <b>Welcome back, ${emp.name}!</b>\n\n` +
+        `🏢 <b>${emp.role}</b> · ${emp.department || 'Operations'}\n` +
+        `⭐ Rank: <b>${emp.badge || '🌱 Recruit'}</b> (${emp.xp || 0} XP)\n\n` +
+        `Your dashboard is ready. Tap any menu button below or hit <b>Open App</b> for full access.`;
+      const keyboard = getRoleKeyboard(emp.accessLevel, true, emp);
+      await teamBot.sendMessage(chatId, welcome, { parse_mode: 'HTML', reply_markup: keyboard });
+    } else {
+      const welcome = `⚡ <b>GRO10X — Team Assistant</b>\n\n` +
+        `Welcome to the internal team bot.\n\n` +
+        `📌 <b>Getting Started:</b>\n` +
+        `Tap <b>📱 Verify My Phone Number</b> below to link your account. It takes 5 seconds!`;
+      const keyboard = getRoleKeyboard('Specialist / Crew', false);
+      await teamBot.sendMessage(chatId, welcome, { parse_mode: 'HTML', reply_markup: keyboard });
+    }
+  } catch (err) {
+    console.error('[Bot Error: handleTeamStart]', err.message);
+    try {
+      await teamBot.sendMessage(chatId, `⚡ GRO10X — Team Assistant\n\nTap 📱 Verify My Phone Number below to link your account.`, {
+        reply_markup: getRoleKeyboard('Specialist / Crew', false)
+      });
+    } catch (e2) {}
+  }
+}
+
+async function handleTeamContact(msg) {
+  const chatId = msg.chat?.id;
+  const contact = msg.contact;
+  if (!chatId || !contact || !contact.phone_number) return;
+  if (!teamBot) initBot();
+  if (!teamBot) return;
+
+  try {
+    const normPhone = state.normalizePhone(contact.phone_number);
+    let emp = await state.getEmployeeByPhone(normPhone);
+
+    if (!emp) {
+      const errorMsg = `🔒 <b>Access Restricted — GRO10X Internal Portal</b>\n\n` +
+        `The phone number <b>+${normPhone}</b> is not registered in the GRO10X employee database.\n\n` +
+        `If you are an authorized employee, please contact Technology Admin <b>Firoz Uddin Ahmed</b> (01708-459008) to authorize your account.`;
+      return await teamBot.sendMessage(chatId, errorMsg, { parse_mode: 'HTML' });
+    }
+
+    // 1. Link Telegram ID in Supabase
+    await state.linkTelegramId(emp.emp_code || emp.id, chatId);
+    emp.telegramId = String(chatId);
+
+    // 2. Generate temporary PIN
+    const pinRecord = await createTempPin(emp.phone, emp.emp_code || emp.id, 'team', emp.email);
+
+    // 3. Send welcome message with credentials and keyboard
+    const welcomeMsg = `✅ <b>Identity Verified — Welcome, ${emp.name}!</b>\n\n` +
+      `• Designation: <b>${emp.role}</b>\n` +
+      `• Department: <b>${emp.department || 'Operations'}</b>\n` +
+      `• Access Level: <b>${emp.accessLevel || 'Specialist / Crew'}</b>\n\n` +
+      `🔑 <b>Desktop Web PIN:</b> <code>${pinRecord.pin}</code>\n` +
+      `🌐 <b>Crew Portal:</b> https://gro10x-ai.vercel.app/crew\n\n` +
+      `━━━━━━━━━━━━━━━━━━━━\n` +
+      `🚀 <b>Your full dashboard is now unlocked!</b>\n` +
+      `Use the menu below or tap <b>Open App</b> for the full portal.`;
+
+    const keyboard = getRoleKeyboard(emp.accessLevel, true, emp);
+    await teamBot.sendMessage(chatId, welcomeMsg, { parse_mode: 'HTML', reply_markup: keyboard });
+  } catch (err) {
+    console.error('[Bot Error: handleTeamContact]', err.message);
+    try {
+      await teamBot.sendMessage(chatId, '⚠️ An error occurred during verification. Please try again.');
+    } catch (e2) {}
+  }
+}
+
+async function handleTeamHelp(msg) {
+  const chatId = msg.chat?.id;
+  if (!chatId) return;
+  if (!teamBot) initBot();
+  if (!teamBot) return;
+
+  try {
+    await state.clearSession(chatId);
+    const helpText = `📖 <b>GRO10X TEAM BOT — COMMAND GUIDE</b>\n\n` +
+      `• <code>/start</code> — Verify identity & launch menu\n` +
+      `• <code>/help</code> — Show all available commands\n` +
+      `• <code>/myprofile</code> — View & update employee profile\n` +
+      `• <code>/mybank</code> — Manage salary bank & bKash payout details\n` +
+      `• <code>/mytasks</code> — See your assigned active tasks\n` +
+      `• <code>/myearnings</code> — Salary + commission breakdown\n` +
+      `• <code>/resetpin</code> — Get a fresh web portal login PIN\n` +
+      `• <code>/clockin</code> — GPS studio clock-in\n` +
+      `• <code>/clockout</code> — Clock-out & log daily hours\n` +
+      `• <code>/orientation</code> — Complete onboarding survey\n` +
+      `• <code>/techdiag</code> — System diagnostics (Admin only)\n\n` +
+      `💡 <b>Tip:</b> You can also search tasks inline anywhere in Telegram by typing <code>@Aigeneral01bot &lt;search_term&gt;</code>!`;
+    await teamBot.sendMessage(chatId, helpText, { parse_mode: 'HTML' });
+  } catch (e) {}
+}
+
+async function handleTeamViewPin(msg) {
+  const chatId = msg.chat?.id;
+  if (!chatId) return;
+  if (!teamBot) initBot();
+  if (!teamBot) return;
+
+  try {
+    const emp = await state.getEmployeeByTelegramId(chatId);
+    if (!emp) {
+      return await teamBot.sendMessage(chatId, `❌ Please verify your phone number first by tapping "Verify My Phone Number".`, {
+        reply_markup: getRoleKeyboard('Specialist / Crew', false)
+      });
+    }
+    const pinRecord = await createTempPin(emp.phone, emp.id, 'team', emp.email);
+    await teamBot.sendMessage(chatId, `🔑 <b>Your Desktop Web PIN:</b> <code>${pinRecord.pin}</code>\n\nGo to https://gro10x-ai.vercel.app/crew to log in.`, { parse_mode: 'HTML' });
+  } catch (e) {}
+}
+
+async function handleClientStart(msg) {
+  const chatId = msg.chat?.id;
+  if (!chatId) return;
+  if (!clientBot) initBot();
+  if (!clientBot) return;
+
+  try {
+    const dbData = await readDB();
+    const client = (dbData.clients || []).find(c => String(c.telegramId) === String(chatId));
+
+    if (client) {
+      const pendingCount = (dbData.tasks || []).filter(t => t.client === client.name && t.stage === 'Client Review').length;
+      const welcome = `👋 <b>Welcome back, ${client.name || client.contactPerson}!</b>\n\n` +
+        `📋 <b>${pendingCount} deliverable(s)</b> awaiting your review.\n` +
+        `💳 Monthly Retainer: <b>BDT ${(client.retainerValue || 0).toLocaleString()}</b>\n\n` +
+        `Tap any menu button below or hit <b>Open App</b> for your client portal.`;
+      const keyboard = getClientKeyboard(client);
+      await clientBot.sendMessage(chatId, welcome, { parse_mode: 'HTML', reply_markup: keyboard });
+    } else {
+      const welcome = `⚡ <b>Welcome to GRO10X!</b>\n\n` +
+        `We are an AI-First Growth Agency & Multi-Engine Ecosystem scaling brands 10x faster with AI software, synthetic media pipelines, and digital products.\n\n` +
+        `🎯 <b>How can we help your brand today?</b>\n\n` +
+        `• 💬 <b>Get a Custom Quote</b> — 1-minute tailored growth proposal\n` +
+        `• 📅 <b>Book a Strategy Call</b> — 15-min discovery consultation\n` +
+        `• 💰 <b>Service Pricing & Plans</b> — Transparent package rates\n` +
+        `• 📁 <b>See Portfolio</b> — Review AI apps, media & solutions\n\n` +
+        `👇 <b>Select an option below to get started:</b>`;
+      const keyboard = getProspectKeyboard();
+      await clientBot.sendMessage(chatId, welcome, { parse_mode: 'HTML', reply_markup: keyboard });
+    }
+  } catch (e) {
+    console.error('[Bot Error: handleClientStart]', e.message);
+  }
+}
+
+async function processWebhookUpdate(update, botType = 'team') {
+  if (!update) return;
+  if (!teamBot && !clientBot) {
+    initBot();
+  }
+
+  const targetBot = botType === 'client' ? clientBot : teamBot;
+  if (!targetBot) return;
+
+  try {
+    if (update.message) {
+      const msg = update.message;
+      const text = (msg.text || '').trim();
+
+      if (botType === 'team') {
+        if (text.startsWith('/start')) {
+          await handleTeamStart(msg);
+          return;
+        }
+        if (msg.contact) {
+          await handleTeamContact(msg);
+          return;
+        }
+        if (text.startsWith('/help')) {
+          await handleTeamHelp(msg);
+          return;
+        }
+        if (text.includes('View My Web Login PIN') || text === '/resetpin') {
+          await handleTeamViewPin(msg);
+          return;
+        }
+      } else {
+        if (text.startsWith('/start')) {
+          await handleClientStart(msg);
+          return;
+        }
+      }
+    }
+
+    // Fallback to internal library router
+    await targetBot.processUpdate(update);
+  } catch (err) {
+    console.error(`[processWebhookUpdate] Error (${botType}):`, err.message);
+  }
+}
+
 function initBot() {
   if (process.env.NODE_ENV === 'test') {
     return;
@@ -1227,13 +1436,3 @@ function sendTelegramNotification(chatId, text, inlineKeyboard = null, isTeam = 
 function sendToGroup(chatId, text, isTeam = true) {
   return sendTelegramNotification(chatId, text, null, isTeam);
 }
-
-module.exports = {
-  initBot,
-  getTeamBot,
-  getClientBot,
-  sendTelegramNotification,
-  sendToGroup,
-  getRoleKeyboard,
-  getClientKeyboard
-};

@@ -1,25 +1,15 @@
 const { broadcast } = require('./sse');
 const { supabase, isSupabaseConfigured } = require('./supabase');
 
-// Break circular dependency safely by referencing bot export after module initialization
-let _cachedSendTelegram = null;
-try {
-  const botMod = require('./bot');
-  if (botMod && typeof botMod.sendTelegramNotification === 'function') {
-    _cachedSendTelegram = botMod.sendTelegramNotification;
-  }
-} catch (e) {}
-
+// Break circular dependency cleanly via lazy loader
 function getSendTelegram() {
-  if (_cachedSendTelegram) return _cachedSendTelegram;
   try {
     const botMod = require('./bot');
     if (botMod && typeof botMod.sendTelegramNotification === 'function') {
-      _cachedSendTelegram = botMod.sendTelegramNotification;
-      return _cachedSendTelegram;
+      return botMod.sendTelegramNotification;
     }
   } catch (e) {}
-  return _cachedSendTelegram || (() => Promise.resolve());
+  return (() => Promise.resolve());
 }
 
 function recordAutomationLog(db, logEntry) {
