@@ -111,15 +111,22 @@ app.use(subdomainRouter);
 app.get(['/api/sync', '/sync', '/api/events'], requireAuth, sseHandler);
 
 // Bot Status Health Check
-app.get(['/api/bot-status', '/bot-status'], (req, res) => {
+app.get(['/api/bot-status', '/bot-status'], async (req, res) => {
   let team = getTeamBot();
   let client = getClientBot();
   if (!team || !client) {
     try { initBot(); team = getTeamBot(); client = getClientBot(); } catch (e) {}
   }
+  let teamInfo = null;
+  let clientInfo = null;
+  try { if (team) teamInfo = await team.getMe(); } catch (e) { teamInfo = { error: e.message }; }
+  try { if (client) clientInfo = await client.getMe(); } catch (e) { clientInfo = { error: e.message }; }
+
   res.json({
     teamBot: team ? 'active' : 'null',
+    teamBotInfo: teamInfo,
     clientBot: client ? 'active' : 'null',
+    clientBotInfo: clientInfo,
     timestamp: new Date().toISOString()
   });
 });
