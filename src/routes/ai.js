@@ -5,31 +5,32 @@ const { requireAuth } = require('../middleware/auth');
 const { requireManager } = require('../middleware/rbac');
 const { getFirstName } = require('../utils/name');
 
-const PORTAL = 'https://gro10x-ai.vercel.app';
+const PORTAL = 'https://gro10x-ai.vercel.app/crew';
+const BOT_LINK = 'https://t.me/purplemanosbot';
 
 const STEPS = {
-  no_pin:           'Visit the GRO10X portal and log in with your phone number to receive your temporary access PIN.',
-  temp_pin:         'Log in with your temporary PIN and set your permanent 6-digit PIN in Profile Settings.',
-  pin_no_tg:        'In GRO10X, go to Profile then Telegram Setup and link your Telegram account to receive daily alerts.',
-  pin_tg_no_survey: 'Complete your Staff Survey and Agreement under Profile then Survey inside GRO10X to unlock full access.',
-  fully_onboarded:  'Check your daily tasks via the Kanban board, log EOD reports, and clock in through the Team Bot.'
+  no_pin:           '1. Open your Crew Portal: https://gro10x-ai.vercel.app/crew\n2. Enter your registered phone number to log in\n3. Connect our Telegram Assistant (https://t.me/purplemanosbot) to complete your 4-part profile survey & sign your agreement.',
+  temp_pin:         'Log in to https://gro10x-ai.vercel.app/crew with your temporary PIN and set your permanent 6-digit PIN in Profile Settings.',
+  pin_no_tg:        'Launch our Telegram Team Bot (https://t.me/purplemanosbot), tap /start, and link your account for daily operations and attendance.',
+  pin_tg_no_survey: 'Open the Telegram Mini App via @purplemanosbot, complete your profile survey, and sign your Stage 1 Employment Agreement to activate your DBM workspace.',
+  fully_onboarded:  'Clock in daily via Telegram Bot, access your DBM Brand Studio at https://gro10x-ai.vercel.app/app#brands, and submit your EOD reports.'
 };
 
 // Rich, complete message for every stage — always reliable
 function build(name, role, dept, stage) {
   const fn = getFirstName(name);
-  const r = role || 'Specialist';
-  const d = dept || 'the team';
+  const r = role || 'Digital Brand Manager';
+  const d = dept || 'Brand Operations';
   const step = STEPS[stage] || STEPS.no_pin;
   const map = {
-    no_pin:           'Hi ' + fn + '!\n\nWelcome to GRO10X! We are so excited to have you join us as our ' + r + ' in ' + d + '.\n\nYour GRO10X workspace is ready and waiting. This is where you will track your daily tasks, log your work, and stay connected with the team.',
-    temp_pin:         'Hi ' + fn + '!\n\nGreat to have you on board as our ' + r + ' in ' + d + '! You have already received your temporary PIN.\n\nYou are just one step away from securing your account and getting full access to everything inside GRO10X.',
-    pin_no_tg:        'Hi ' + fn + '!\n\nExcellent work setting your permanent PIN! You are making great progress through onboarding as our ' + r + '.\n\nThe next step is linking your Telegram account. This is how you will receive your daily task briefings, schedule updates, and team announcements directly on your phone.',
-    pin_tg_no_survey: 'Hi ' + fn + '!\n\nYou are almost fully onboarded as our ' + r + ' in ' + d + ' -- you are so close to the finish line!\n\nThe Staff Survey and Agreement is the final step. Completing it unlocks your full GRO10X profile, payslip access, and confirms your role details in our system.',
-    fully_onboarded:  'Hi ' + fn + '!\n\nYou are officially fully onboarded as our ' + r + ' -- welcome to the GRO10X team!\n\nYour GRO10X workspace is fully unlocked and ready. Here is your recommended daily workflow to get the most out of the platform:'
+    no_pin:           'Hi ' + fn + '! 👋\n\nWelcome to GRO10X! We are thrilled to have you on board as our ' + r + ' in ' + d + '.\n\nYour GRO10X Digital Brand workspace is ready. You will be managing our high-growth digital product brands, running listing launches, and tracking your daily performance.',
+    temp_pin:         'Hi ' + fn + '! 👋\n\nGreat to have you on board as our ' + r + ' in ' + d + '! Your account PIN is ready.\n\nYou are just one step away from securing your account and unlocking your Brand Operations Hub.',
+    pin_no_tg:        'Hi ' + fn + '! 👋\n\nExcellent work setting your permanent PIN! You are making great progress through onboarding as our ' + r + '.\n\nThe next step is linking your Telegram account so you can clock in, receive daily task briefings, and access the DBM Bot menu directly on your phone.',
+    pin_tg_no_survey: 'Hi ' + fn + '! 👋\n\nYou are almost fully onboarded as our ' + r + ' in ' + d + '!\n\nThe Staff Profile Survey and Employment Agreement is the final step. Completing it confirms your role details, connects your payout method, and activates your full DBM workspace.',
+    fully_onboarded:  'Hi ' + fn + '! 🎉\n\nYou are officially fully onboarded as our ' + r + ' -- welcome to the GRO10X team!\n\nYour GRO10X Brand Studio is fully unlocked. Here is your daily operational workflow:'
   };
   const intro = map[stage] || map.no_pin;
-  return intro + '\n\nNext Step:\n' + step + '\n\nPortal: ' + PORTAL + '\n\nReach out to the Admin team anytime if you need help. Looking forward to doing great work together!\n\n-- GRO10X Admin Team';
+  return intro + '\n\n📌 Quick Onboarding Steps:\n' + step + '\n\n• Web Crew Portal: ' + PORTAL + '\n• Telegram Bot: ' + BOT_LINK + '\n\nIf you have any questions or need assistance, reply directly to this message.\n\nLooking forward to building great brands together!\n\n-- Firoz Uddin Ahmed · Founder & Tech Lead\nGRO10X';
 }
 
 // Gemini with strict response validation
@@ -46,7 +47,7 @@ function callSingle(model, prompt, key) {
           const j = JSON.parse(data);
           if (j.candidates && j.candidates[0] && j.candidates[0].content) {
             const text = (j.candidates[0].content.parts || []).map(p => p.text || '').join('').trim();
-            if (text.length >= 200 && (text.toLowerCase().includes('purpleos') || text.toLowerCase().includes('admin'))) return resolve(text);
+            if (text.length >= 120 && (text.toLowerCase().includes('gro10x') || text.toLowerCase().includes('welcome') || text.toLowerCase().includes('portal'))) return resolve(text);
             return reject(new Error('Incomplete: ' + model + ' only ' + text.length + ' chars'));
           }
           reject(new Error((j.error && j.error.message) || 'No output: ' + model));
@@ -61,19 +62,20 @@ function callSingle(model, prompt, key) {
 
 async function tryGemini(name, role, dept, stage, key) {
   const fn = getFirstName(name);
-  const nextStep = STEPS[stage] || '';
+  const nextStep = STEPS[stage] || STEPS.no_pin;
   const prompt =
-    'You are the Admin of Purplebot Digital, a creative digital agency in Dhaka.\n\n' +
-    'Write a complete WhatsApp onboarding message in English for ' + name + ' (' + (role || 'Specialist') + ', ' + (dept || 'General') + ') at Purplebot Digital. Stage: ' + stage + '.\n\n' +
+    'You are Firoz Uddin Ahmed, Founder and Tech Lead of GRO10X, a high-growth AI and digital product agency in Dhaka.\n\n' +
+    'Write a clear, professional, and welcoming WhatsApp onboarding message in English for ' + name + ' (' + (role || 'Digital Brand Manager') + ', ' + (dept || 'Brand Operations') + '). Stage: ' + stage + '.\n\n' +
     'The message MUST include all of these in order:\n' +
-    '1. Hi ' + fn + '! [one relevant emoji]\n' +
-    '2. Warm welcome mentioning role (' + role + ') and department (' + dept + ')\n' +
-    '3. Why completing this step matters for them\n' +
-    '4. Next Step: ' + nextStep + '\n' +
-    '5. Portal: ' + PORTAL + '\n' +
-    '6. Short encouraging closing sentence\n' +
-    '7. Sign-off: -- Purplebot Digital Admin\n\n' +
-    'Output the message text ONLY. No markdown, no code blocks. Minimum 150 words.';
+    '1. Hi ' + fn + '! 👋\n' +
+    '2. Warm personal welcome to GRO10X mentioning their role (' + role + ' in ' + dept + ')\n' +
+    '3. Clear 1-2-3 step instructions on how to get started:\n' +
+    '   - Step 1: Open Crew Portal (' + PORTAL + ') using their registered phone number\n' +
+    '   - Step 2: Launch Telegram Bot (' + BOT_LINK + ') and tap /start\n' +
+    '   - Step 3: Complete profile survey and sign the digital employment agreement\n' +
+    '4. Note that they can reach out directly for any questions\n' +
+    '5. Encouraging sign-off: "-- Firoz Uddin Ahmed · Founder & Tech Lead, GRO10X"\n\n' +
+    'Output the message text ONLY. Do NOT use markdown code fences. Keep formatting clean for WhatsApp with emojis and bullet points.';
   for (const model of MODELS) {
     try { const r = await callSingle(model, prompt, key); console.log('[AI] OK ' + model + ' ' + r.length + ' chars'); return r; }
     catch (e) { console.warn('[AI] skip ' + model + ': ' + e.message); }
