@@ -31,42 +31,72 @@ const inMemoryPins = new Map();
 
 async function findPinRecordSupabase(norm) {
   if (!norm) return null;
-  if (!isSupabaseConfigured()) return inMemoryPins.get(norm) || null;
-  try {
-    const { data, error } = await supabase
-      .from('auth_pins')
-      .select('*')
-      .eq('norm_phone', norm)
-      .maybeSingle();
-    if (error || !data) return inMemoryPins.get(norm) || null;
-    return data;
-  } catch (e) {
-    return inMemoryPins.get(norm) || null;
+  const last10 = norm.slice(-10);
+
+  // 1. Check in-memory
+  const mem = inMemoryPins.get(norm) || inMemoryPins.get(last10);
+  if (mem) return mem;
+
+  // 2. Check profiles table in Supabase
+  if (isSupabaseConfigured()) {
+    try {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .ilike('phone', `%${last10}%`)
+        .maybeSingle();
+
+      if (profile && profile.pin_hash) {
+        const rec = {
+          phone: profile.phone,
+          norm_phone: norm,
+          normPhone: norm,
+          pin: profile.pin_hash,
+          is_temp: !profile.permanent_pin_set && !profile.is_verified,
+          isTemp: !profile.permanent_pin_set && !profile.is_verified,
+          linked_id: profile.emp_code,
+          linkedId: profile.emp_code,
+          linked_type: 'team',
+          linkedType: 'team',
+          email: profile.email || '',
+          attempts: 0
+        };
+        inMemoryPins.set(norm, rec);
+        inMemoryPins.set(last10, rec);
+        return rec;
+      }
+    } catch (e) {
+      console.warn('findPinRecordSupabase profiles query note:', e.message);
+    }
   }
+
+  return null;
 }
 
 async function upsertPinRecordSupabase(record) {
   if (!record || !record.normPhone) return false;
-  inMemoryPins.set(record.normPhone, record);
+  const norm = record.normPhone;
+  const last10 = norm.slice(-10);
+
+  inMemoryPins.set(norm, record);
+  inMemoryPins.set(last10, record);
+
   if (!isSupabaseConfigured()) return true;
+
   try {
-    const payload = {
-      phone: record.phone,
-      norm_phone: record.normPhone,
-      pin: record.pin,
-      is_temp: record.isTemp,
-      linked_id: record.linkedId,
-      linked_type: record.linkedType,
-      email: record.email || '',
-      attempts: record.attempts || 0,
-      locked_at: record.lockedAt || record.locked_at || null
-    };
-    const { error } = await supabase
-      .from('auth_pins')
-      .upsert(payload, { onConflict: 'norm_phone' });
-    return !error;
+    // Persist PIN directly to profiles table
+    await supabase
+      .from('profiles')
+      .update({
+        pin_hash: record.pin,
+        updated_at: new Date().toISOString()
+      })
+      .ilike('phone', `%${last10}%`);
+
+    return true;
   } catch (e) {
-    return true; // Fallback to memory succeeded
+    console.warn('upsertPinRecordSupabase error:', e.message);
+    return true;
   }
 }
 
