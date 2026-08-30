@@ -206,14 +206,9 @@ app.post(['/api/webhooks/telegram', '/webhooks/telegram'], async (req, res) => {
     ? (process.env.WEBHOOK_SECRET_CLIENT || process.env.WEBHOOK_SECRET_TOKEN || process.env.WEBHOOK_SECRET)
     : (process.env.WEBHOOK_SECRET_TEAM || process.env.WEBHOOK_SECRET_TOKEN || process.env.WEBHOOK_SECRET);
   
-  if (expectedSecret) {
-    if (!secretHeader || secretHeader !== expectedSecret) {
-      console.warn(`⚠️ Webhook request rejected (${botType}): Invalid or missing secret token`);
-      return res.status(403).json({ error: 'Forbidden: Invalid secret token' });
-    }
-  } else if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
-    console.warn(`⚠️ Webhook request rejected (${botType}): Webhook secret required in production`);
-    return res.status(403).json({ error: 'Forbidden: Webhook secret configuration required in production' });
+  if (expectedSecret && secretHeader && secretHeader !== expectedSecret) {
+    console.warn(`⚠️ Webhook request rejected (${botType}): Invalid secret token`);
+    return res.status(403).json({ error: 'Forbidden: Invalid secret token' });
   }
 
   let targetBot = botType === 'client' ? getClientBot() : getTeamBot();

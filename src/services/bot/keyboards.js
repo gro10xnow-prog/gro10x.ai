@@ -14,7 +14,9 @@ function getRoleKeyboard(accessLevel, isVerified = false, emp = null) {
       keyboard: [
         [{ text: '📱 Verify My Phone Number', request_contact: true }]
       ],
-      resize_keyboard: true
+      resize_keyboard: true,
+      one_time_keyboard: false,
+      is_persistent: true
     };
   }
 
