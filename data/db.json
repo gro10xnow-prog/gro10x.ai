@@ -100,6 +100,25 @@
       "xp": 100,
       "onboardingComplete": false,
       "surveyComplete": false
+    },
+    {
+      "id": "GRO-TEST",
+      "empCode": "GRO-TEST",
+      "name": "QA Test DBM",
+      "email": "test.dbm@gro10x.ai",
+      "phone": "+8801889825025",
+      "role": "Digital Brand Manager",
+      "department": "Brand Operations",
+      "accessLevel": "Specialist / Crew",
+      "status": "Active",
+      "baseSalary": 20000,
+      "telegramId": null,
+      "onboardingComplete": false,
+      "hasPIN": false,
+      "pinIsTemp": true,
+      "surveyComplete": false,
+      "agreementSigned": false,
+      "joinedDate": "2026-08-30"
     }
   ],
   "tasks": [],
