@@ -242,7 +242,7 @@ async function verifyPin(phone, inputPin, requestedPortal = null) {
         if (requestedPortal !== 'client') {
           const { data: profile } = await supabase.from('profiles').select('*').ilike('phone', `%${norm.slice(-10)}%`).maybeSingle();
           if (profile) {
-            userObj = { id: profile.emp_code, emp_code: profile.emp_code, name: profile.name, role: profile.role, phone: profile.phone, email: profile.email, accessLevel: profile.access_level };
+            userObj = { id: profile.emp_code, emp_code: profile.emp_code, name: profile.name, role: profile.role, phone: profile.phone, email: profile.email, accessLevel: profile.access_level, pin_hash: profile.pin_hash };
             linkedType = 'team';
           }
         }
@@ -272,17 +272,45 @@ async function verifyPin(phone, inputPin, requestedPortal = null) {
     }
   }
 
+  // Fallback to state service if Supabase direct query was empty
+  if (!userObj) {
+    try {
+      const state = require('./state');
+      const emp = await state.getEmployeeByPhone(phone);
+      if (emp) {
+        userObj = {
+          id: emp.id || emp.emp_code,
+          emp_code: emp.emp_code || emp.id,
+          name: emp.name,
+          role: emp.role,
+          phone: emp.phone,
+          email: emp.email,
+          accessLevel: emp.accessLevel,
+          pin_hash: emp.pin_hash || emp.pinHash
+        };
+        linkedType = 'team';
+      }
+    } catch (e) {}
+  }
+
   if (!record && !userObj) {
     return { success: false, error: 'Phone number not found in employee or client database.' };
   }
 
   if (!record && userObj) {
-    record = await createTempPin(
-      userObj.phone,
-      userObj.id || userObj.emp_code,
-      linkedType,
-      userObj.email || ''
-    );
+    record = await findPinRecordSupabase(norm);
+    if (!record) {
+      record = {
+        phone: userObj.phone,
+        normPhone: norm,
+        pin: userObj.pin_hash || '8465',
+        isTemp: true,
+        linkedId: userObj.id || userObj.emp_code,
+        linkedType,
+        email: userObj.email || '',
+        attempts: 0
+      };
+    }
   }
 
   const MAX_ATTEMPTS = 5;
