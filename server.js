@@ -260,6 +260,14 @@ app.post(['/api/webhooks/telegram', '/webhooks/telegram'], async (req, res) => {
   return res.status(200).json({ ok: true });
 });
 
+// Vercel Serverless URL Normalizer
+app.use((req, res, next) => {
+  if (req.url.startsWith('/server.js')) {
+    req.url = req.url.replace(/^\/server\.js/, '') || '/';
+  }
+  next();
+});
+
 // Mount API routes (prioritized before static assets)
 app.use('/api', apiRoutes);
 
