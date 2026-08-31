@@ -25,8 +25,71 @@ const DigistoreModule = {
   vendors: [],
   renewals: [],
   analytics: null,
+  _keyboardShortcutsInitialized: false,
+
+  getElapsedSla(order) {
+    const baseTime = new Date(order.paymentVerifiedAt || order.updatedAt || order.createdAt || Date.now()).getTime();
+    const now = Date.now();
+    const elapsedMinutes = Math.max(0, Math.floor((now - baseTime) / 60000));
+
+    if (elapsedMinutes <= 15) {
+      return {
+        level: 'on_track',
+        minutes: elapsedMinutes,
+        badgeText: `🟢 ${elapsedMinutes}m in queue`,
+        color: '#10b981',
+        bg: 'rgba(16, 185, 129, 0.15)',
+        border: 'rgba(16, 185, 129, 0.3)',
+        pulse: false
+      };
+    } else if (elapsedMinutes <= 30) {
+      return {
+        level: 'warning',
+        minutes: elapsedMinutes,
+        badgeText: `🟡 ${elapsedMinutes}m in queue`,
+        color: '#f59e0b',
+        bg: 'rgba(245, 158, 11, 0.15)',
+        border: 'rgba(245, 158, 11, 0.3)',
+        pulse: false
+      };
+    } else {
+      return {
+        level: 'overdue',
+        minutes: elapsedMinutes,
+        badgeText: `🚨 ${elapsedMinutes}m SLA Overdue`,
+        color: '#ef4444',
+        bg: 'rgba(239, 68, 68, 0.2)',
+        border: 'rgba(239, 68, 68, 0.5)',
+        pulse: true
+      };
+    }
+  },
+
+  initKeyboardShortcuts() {
+    if (this._keyboardShortcutsInitialized) return;
+    this._keyboardShortcutsInitialized = true;
+
+    window.addEventListener('keydown', (e) => {
+      const modalsContainer = document.getElementById('digiModalsContainer');
+      if (!modalsContainer || !modalsContainer.innerHTML.trim()) return;
+
+      // Escape key closes modal
+      if (e.key === 'Escape') {
+        modalsContainer.innerHTML = '';
+      }
+
+      // Ctrl+Enter or Cmd+Enter submits primary form action
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        const primaryBtn = modalsContainer.querySelector('button[type="submit"], button.btn-primary:not(.btn-secondary)');
+        if (primaryBtn && !primaryBtn.disabled) {
+          primaryBtn.click();
+        }
+      }
+    });
+  },
 
   async render(container) {
+    this.initKeyboardShortcuts();
     container.innerHTML = `
       <div class="digistore-container" style="padding: 24px 0;">
         <!-- Header -->
@@ -580,15 +643,22 @@ const DigistoreModule = {
           </div>
         `;
       }
-      return items.map(o => `
-        <div class="card delivery-card-item" data-id="${o.id}" style="padding: 20px; border-top: 4px solid #f59e0b; display: flex; flex-direction: column; justify-content: space-between;">
+      return items.map(o => {
+        const sla = this.getElapsedSla(o);
+        return `
+        <div class="card delivery-card-item" data-id="${o.id}" style="padding: 20px; border-top: 4px solid ${sla.color}; display: flex; flex-direction: column; justify-content: space-between;">
           <div>
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; gap: 8px;">
               <div>
                 <span style="font-family: monospace; font-size: 12px; color: #38bdf8; font-weight: 700;">${o.orderNumber}</span>
                 <h4 style="font-size: 16px; font-weight: 700; color: #fff; margin-top: 2px;">${o.productName}</h4>
               </div>
-              <span class="badge" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3);">⏱️ ${o.duration}</span>
+              <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+                <span class="badge ${sla.pulse ? 'step-active-pulse' : ''}" style="background: ${sla.bg}; color: ${sla.color}; border: 1px solid ${sla.border}; font-weight: 700;">
+                  ${sla.badgeText}
+                </span>
+                <span class="badge" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); font-size: 11px;">⏱️ ${o.duration}</span>
+              </div>
             </div>
 
             <div style="background: rgba(0,0,0,0.25); border-radius: 8px; padding: 12px; font-size: 13px; margin-bottom: 14px;">
@@ -618,7 +688,8 @@ const DigistoreModule = {
             </button>
           </div>
         </div>
-      `).join('');
+      `;
+      }).join('');
     };
 
     container.innerHTML = `
@@ -860,16 +931,52 @@ const DigistoreModule = {
         return;
       }
 
+      const totalOrders = orders.length;
+      const verifiedOrders = orders.filter(o => (o.payment_status || o.paymentStatus) === 'verified');
+      const totalLtv = verifiedOrders.reduce((sum, o) => sum + Number(o.sale_price || o.salePrice || 0), 0);
+      const totalProfit = verifiedOrders.reduce((sum, o) => sum + Number(o.profit || 0), 0);
+      const activeSubs = orders.filter(o => 
+        (o.delivery_status || o.deliveryStatus) === 'delivered' &&
+        o.order_stage !== 'confirmed_closed' &&
+        o.order_stage !== 'admin_closed'
+      ).length;
+
       content.innerHTML = `
+        <!-- Customer Summary Header -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 20px;">
+          <div style="background: rgba(0,0,0,0.35); border-radius: 8px; padding: 12px; border-left: 3px solid #38bdf8;">
+            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">Total Orders</div>
+            <div style="font-size: 20px; font-weight: 800; color: #fff; margin-top: 2px;">${totalOrders}</div>
+          </div>
+          <div style="background: rgba(0,0,0,0.35); border-radius: 8px; padding: 12px; border-left: 3px solid #00df89;">
+            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">Total LTV</div>
+            <div style="font-size: 20px; font-weight: 800; color: #00df89; margin-top: 2px;">৳${totalLtv.toLocaleString()}</div>
+          </div>
+          <div style="background: rgba(0,0,0,0.35); border-radius: 8px; padding: 12px; border-left: 3px solid #06b6d4;">
+            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">Net Profit</div>
+            <div style="font-size: 20px; font-weight: 800; color: #06b6d4; margin-top: 2px;">+৳${totalProfit.toLocaleString()}</div>
+          </div>
+          <div style="background: rgba(0,0,0,0.35); border-radius: 8px; padding: 12px; border-left: 3px solid #a855f7;">
+            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">Active Subs</div>
+            <div style="font-size: 20px; font-weight: 800; color: #a855f7; margin-top: 2px;">${activeSubs}</div>
+          </div>
+        </div>
+
         <div style="display: flex; flex-direction: column; gap: 12px;">
-          ${orders.map(o => `
-            <div class="card" style="padding: 16px; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle);">
+          ${orders.map(o => {
+            const isDelivered = (o.delivery_status || o.deliveryStatus) === 'delivered';
+            const isClosed = o.order_stage === 'confirmed_closed' || o.order_stage === 'admin_closed';
+            const ribbonColor = isClosed ? '#14b8a6' : (isDelivered ? '#00df89' : '#f59e0b');
+            const actLink = o.activation_link || o.activationLink;
+
+            return `
+            <div class="card timeline-order-card" style="padding: 16px; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-left: 4px solid ${ribbonColor};">
               <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; flex-wrap: wrap; gap: 6px;">
                 <div>
                   <strong style="font-family: monospace; color: #38bdf8; font-size: 15px;">${o.order_number || o.orderNumber}</strong>
                   <span style="font-size: 12px; color: var(--text-muted); margin-left: 8px;">${new Date(o.created_at || o.createdAt).toLocaleString('en-GB')}</span>
                 </div>
-                <span class="badge" style="background: ${(o.delivery_status || o.deliveryStatus) === 'delivered' ? 'rgba(0,223,137,0.15)' : 'rgba(245,158,11,0.15)'}; color: ${(o.delivery_status || o.deliveryStatus) === 'delivered' ? '#00df89' : '#f59e0b'};">
+                <span class="badge" style="background: ${isClosed ? 'rgba(20,184,166,0.15)' : (isDelivered ? 'rgba(0,223,137,0.15)' : 'rgba(245,158,11,0.15)')}; color: ${ribbonColor};">
                   ${o.order_stage || o.orderStage || o.delivery_status || o.deliveryStatus}
                 </span>
               </div>
@@ -879,13 +986,19 @@ const DigistoreModule = {
                 <div><strong>Payment:</strong> ${o.payment_method || o.paymentMethod || 'bKash'} (${o.payment_status || o.paymentStatus})</div>
                 <div><strong>Expiry:</strong> ${o.expiry_date || o.expiryDate || 'N/A'}</div>
               </div>
-              ${(o.activation_link || o.activationLink) ? `
-                <div style="margin-top: 10px; font-size: 12px; background: rgba(0,0,0,0.4); padding: 8px; border-radius: 6px; word-break: break-all;">
-                  🔗 <strong>Activation Link:</strong> <a href="${o.activation_link || o.activationLink}" target="_blank" style="color: #38bdf8;">${o.activation_link || o.activationLink}</a>
+              ${actLink ? `
+                <div style="margin-top: 10px; font-size: 12px; background: rgba(0,0,0,0.4); padding: 8px 12px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+                  <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                    🔗 <strong>Link:</strong> <a href="${actLink}" target="_blank" style="color: #38bdf8;">${actLink}</a>
+                  </div>
+                  <button type="button" class="btn btn-sm btn-secondary" onclick="navigator.clipboard.writeText('${actLink}'); alert('Link copied!');" style="padding: 4px 8px; font-size: 11px; white-space: nowrap;">
+                    📋 Copy
+                  </button>
                 </div>
               ` : ''}
             </div>
-          `).join('')}
+            `;
+          }).join('')}
         </div>
       `;
     } catch (err) {
