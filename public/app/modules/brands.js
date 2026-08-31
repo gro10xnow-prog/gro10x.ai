@@ -744,7 +744,7 @@ window.APP_MODULES.brands = async function(container) {
                     </span>
                   </div>
                   <div style="height:6px; background:rgba(255,255,255,0.06); border-radius:4px; overflow:hidden;">
-                    <div style="height:100%; width:${pct * 3}%; background:${b.palette[0] || '#00df89'}; border-radius:4px;"></div>
+                    <div style="height:100%; width:${Math.min(100, Math.round((b.target12mo / totalTarget) * 100))}%; background:${b.palette[0] || '#00df89'}; border-radius:4px;"></div>
                   </div>
                 </div>
               `;
@@ -839,11 +839,11 @@ window.APP_MODULES.brands = async function(container) {
                   "${b.tagline}"
                 </p>
 
-                <!-- COLOR PALETTE DOTS -->
+                <!-- COLOR PALETTE DOTS (1-Click Copy) -->
                 <div style="display:flex; align-items:center; gap:0.4rem; margin-bottom:0.85rem;">
                   <span style="font-size:0.68rem; color:var(--text-muted);">Palette:</span>
                   ${(b.palette || []).slice(0, 5).map(c => `
-                    <span style="width:14px; height:14px; border-radius:50%; background:${c}; border:1px solid rgba(255,255,255,0.2);" title="${c}"></span>
+                    <span onclick="navigator.clipboard.writeText('${c}'); if (window.showToast) window.showToast('🎨 Hex ' + '${c}' + ' copied!');" style="width:14px; height:14px; border-radius:50%; background:${c}; border:1px solid rgba(255,255,255,0.2); cursor:pointer;" title="Click to copy ${c}"></span>
                   `).join('')}
                   <span style="font-size:0.68rem; color:var(--text-muted); margin-left:auto;">${b.fonts || 'Standard'}</span>
                 </div>
@@ -7264,9 +7264,58 @@ window.APP_MODULES.brands = async function(container) {
       }
     },
 
-    async requestRevisionForProduct(brandId, productCode) {
-      const note = prompt(`Enter feedback / revision note for ${productCode}:`, 'Please polish mockup lighting and verify printable margins.');
-      if (!note) return;
+    requestRevisionForProduct(brandId, productCode) {
+      window.BrandsModule.openQcRevisionModal(brandId, productCode);
+    },
+
+    openQcRevisionModal(brandId, productCode) {
+      let modal = document.getElementById('qcRevisionModal');
+      if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'qcRevisionModal';
+        modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.8); backdrop-filter:blur(8px); z-index:99999; display:flex; align-items:center; justify-content:center; padding:1rem;';
+        document.body.appendChild(modal);
+      }
+
+      modal.innerHTML = `
+        <div style="background:#0f172a; border:1px solid rgba(239,68,68,0.4); border-radius:16px; padding:1.5rem; max-width:540px; width:100%; box-shadow:0 25px 50px rgba(0,0,0,0.8);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+            <div style="display:flex; align-items:center; gap:0.5rem;">
+              <span style="font-size:1.4rem;">🔴</span>
+              <h3 style="font-size:1.15rem; font-weight:800; color:#fff; margin:0;">Request QC Revisions: ${productCode}</h3>
+            </div>
+            <button onclick="document.getElementById('qcRevisionModal').style.display='none'" style="background:none; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
+          </div>
+
+          <p style="font-size:0.82rem; color:var(--text-secondary); margin-bottom:0.75rem;">
+            Select one or more quick categories or write specific revision feedback for the DBM:
+          </p>
+
+          <!-- Quick Preset Chips -->
+          <div style="display:flex; flex-wrap:wrap; gap:0.4rem; margin-bottom:1rem;">
+            <button type="button" onclick="document.getElementById('qcRevisionNoteText').value += (document.getElementById('qcRevisionNoteText').value ? ' ' : '') + '📐 Layout & Margins: Please align printable bleed margins. '" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:#fff; padding:0.3rem 0.65rem; border-radius:20px; font-size:0.75rem; cursor:pointer;">📐 Layout Margins</button>
+            <button type="button" onclick="document.getElementById('qcRevisionNoteText').value += (document.getElementById('qcRevisionNoteText').value ? ' ' : '') + '🏷️ SEO Tags: Tag list requires higher search intent keywords. '" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:#fff; padding:0.3rem 0.65rem; border-radius:20px; font-size:0.75rem; cursor:pointer;">🏷️ SEO Tag Quality</button>
+            <button type="button" onclick="document.getElementById('qcRevisionNoteText').value += (document.getElementById('qcRevisionNoteText').value ? ' ' : '') + '📁 Vault File: Deliverable PDF link is missing or unshared. '" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:#fff; padding:0.3rem 0.65rem; border-radius:20px; font-size:0.75rem; cursor:pointer;">📁 Vault Deliverable</button>
+            <button type="button" onclick="document.getElementById('qcRevisionNoteText').value += (document.getElementById('qcRevisionNoteText').value ? ' ' : '') + '🖼️ Mockups: Increase mockup image resolution and contrast. '" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:#fff; padding:0.3rem 0.65rem; border-radius:20px; font-size:0.75rem; cursor:pointer;">🖼️ Mockup Quality</button>
+          </div>
+
+          <textarea id="qcRevisionNoteText" rows="4" style="width:100%; box-sizing:border-box; background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.15); border-radius:10px; color:#fff; padding:0.75rem; font-size:0.85rem; font-family:inherit; resize:vertical; margin-bottom:1.25rem;" placeholder="Enter specific instructions for the DBM..."></textarea>
+
+          <div style="display:flex; justify-content:flex-end; gap:0.6rem;">
+            <button class="btn-secondary btn-sm" onclick="document.getElementById('qcRevisionModal').style.display='none'">Cancel</button>
+            <button class="btn-primary btn-sm" style="background:#ef4444; border-color:#dc2626; color:#fff; font-weight:800;" onclick="window.BrandsModule.submitQcRevision('${brandId}', '${productCode}')">
+              🔴 Dispatch Revisions to DBM
+            </button>
+          </div>
+        </div>
+      `;
+      modal.style.display = 'flex';
+    },
+
+    async submitQcRevision(brandId, productCode) {
+      const note = document.getElementById('qcRevisionNoteText')?.value.trim() || 'Please check and revise the product assets.';
+      const modal = document.getElementById('qcRevisionModal');
+      if (modal) modal.style.display = 'none';
 
       const headers = getStudioAuthHeaders({ 'Content-Type': 'application/json' });
       try {

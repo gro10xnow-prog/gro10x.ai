@@ -79,6 +79,10 @@
           <p style="font-size: 0.88rem; color: #a1a1aa; line-height: 1.5; margin-bottom: 0.75rem;">
             Describe the changes needed. The production team will be notified immediately.
           </p>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+            <span style="font-size:0.75rem; color:var(--text-muted);">Feedback Notes:</span>
+            <button type="button" class="rr-btn rr-btn-secondary" style="font-size:0.72rem; padding:0.2rem 0.5rem;" onclick="insertCurrentVideoTimestamp()">⏱️ Insert Video Timestamp</button>
+          </div>
           <textarea id="revisionFeedbackInput" rows="4" style="width:100%; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); border-radius:10px; color:#fff; padding:0.75rem; font-size:0.88rem; resize:vertical; font-family:inherit; box-sizing:border-box;" placeholder="e.g. Please adjust the color grade on the opening sequence, and shorten the CTA overlay by 2 seconds..."></textarea>
           <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1rem;">
             <button class="rr-btn rr-btn-secondary" onclick="closeRevisionModal()">Cancel</button>
@@ -515,6 +519,19 @@
       const secs = String(current % 60).padStart(2, '0');
       input.value = `${mins}:${secs}`;
       showToast(`📌 Captured time ${mins}:${secs}`, 'info');
+    }
+
+    function insertCurrentVideoTimestamp() {
+      const vid = document.getElementById('videoPlayer');
+      const txt = document.getElementById('revisionFeedbackInput');
+      if (!txt) return;
+      const time = vid ? Math.floor(vid.currentTime || 0) : 0;
+      const mins = String(Math.floor(time / 60)).padStart(2, '0');
+      const secs = String(time % 60).padStart(2, '0');
+      const stamp = `[${mins}:${secs}] `;
+      txt.value = (txt.value ? txt.value + '\n' : '') + stamp;
+      txt.focus();
+      showToast(`⏱️ Inserted timestamp ${mins}:${secs}`, 'info');
     }
 
     function seekVideoTo(seconds) {

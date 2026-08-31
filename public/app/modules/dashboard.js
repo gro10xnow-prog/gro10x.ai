@@ -238,7 +238,7 @@ window.APP_MODULES.dashboard = async function(container) {
             </div>
 
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 0.85rem;">
-              ${pendingExps.slice(0, 4).map(exp => `
+              ${pendingExps.slice(0, 3).map(exp => `
                 <div style="background: var(--surface-2, #1b1b26); border: 1px solid var(--border-subtle); border-radius: 14px; padding: 0.85rem; display: flex; justify-content: space-between; align-items: center; gap: 0.75rem;">
                   <div>
                     <div style="display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.2rem;">
@@ -250,6 +250,21 @@ window.APP_MODULES.dashboard = async function(container) {
                   <div style="display: flex; gap: 0.35rem;">
                     <button onclick="window.execApproveExpense('${exp.id}')" style="background: rgba(0, 223, 137, 0.18); border: 1px solid rgba(0, 223, 137, 0.35); color: #00df89; font-size: 0.75rem; font-weight: 700; padding: 0.35rem 0.65rem; border-radius: 8px; cursor: pointer;">✅ Approve</button>
                     <button onclick="window.execRejectExpense('${exp.id}')" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171; font-size: 0.75rem; font-weight: 700; padding: 0.35rem 0.65rem; border-radius: 8px; cursor: pointer;">❌</button>
+                  </div>
+                </div>
+              `).join('')}
+              ${pendingLeavesList.slice(0, 3).map(lv => `
+                <div style="background: var(--surface-2, #1b1b26); border: 1px solid var(--border-subtle); border-radius: 14px; padding: 0.85rem; display: flex; justify-content: space-between; align-items: center; gap: 0.75rem;">
+                  <div>
+                    <div style="display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.2rem;">
+                      <span style="font-size: 0.72rem; background: rgba(168, 85, 247, 0.2); color: #c084fc; padding: 0.1rem 0.4rem; border-radius: 6px; font-weight: 700;">🌴 Leave Application</span>
+                      <strong style="font-size: 0.9rem; color: #fff;">${escapeHTML(lv.userName || lv.user || 'Crew Member')}</strong>
+                    </div>
+                    <div style="font-size: 0.78rem; color: var(--text-secondary);">${escapeHTML(lv.type || 'Personal')} · ${lv.startDate || 'Upcoming'} (${lv.days || 1}d)</div>
+                  </div>
+                  <div style="display: flex; gap: 0.35rem;">
+                    <button onclick="window.execApproveLeave('${lv.id}')" style="background: rgba(0, 223, 137, 0.18); border: 1px solid rgba(0, 223, 137, 0.35); color: #00df89; font-size: 0.75rem; font-weight: 700; padding: 0.35rem 0.65rem; border-radius: 8px; cursor: pointer;">✅ Sign Off</button>
+                    <button onclick="window.execRejectLeave('${lv.id}')" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171; font-size: 0.75rem; font-weight: 700; padding: 0.35rem 0.65rem; border-radius: 8px; cursor: pointer;">❌</button>
                   </div>
                 </div>
               `).join('')}
