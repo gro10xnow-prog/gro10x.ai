@@ -432,16 +432,24 @@ async function getMyEODs(empCode) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SESSION STATE (Wizards on Vercel)
+// SESSION STATE (Wizards on Vercel with In-Memory + Supabase Dual Layer)
 // ─────────────────────────────────────────────────────────────────────────────
+
+const _sessionCache = new Map();
 
 async function getSession(chatId) {
   if (!chatId) return null;
   const strId = String(chatId);
 
+  // Check local in-memory session cache first
+  const memoryHit = _sessionCache.get(strId);
+  if (memoryHit && (Date.now() - memoryHit.ts) < 30 * 60 * 1000) {
+    return memoryHit.state;
+  }
+
   if (supabase) {
     try {
-      const { data } = await supabase.from('bot_sessions').select('state, updated_at').eq('chat_id', strId).maybeSingle();
+      const { data, error } = await supabase.from('bot_sessions').select('state, updated_at').eq('chat_id', strId).maybeSingle();
       if (data && data.state) {
         // Auto-expire sessions older than 30 minutes
         if (data.updated_at) {
@@ -449,29 +457,63 @@ async function getSession(chatId) {
           const ageMinutes = (Date.now() - updatedAt.getTime()) / 1000 / 60;
           if (ageMinutes > 30) {
             await supabase.from('bot_sessions').delete().eq('chat_id', strId).catch(() => {});
+            _sessionCache.delete(strId);
             return null;
           }
         }
+        _sessionCache.set(strId, { state: data.state, ts: Date.now() });
         return data.state;
+      }
+
+      // Fallback to custom_fields if bot_sessions table is unavailable
+      if (error) {
+        const { data: cfData } = await supabase.from('custom_fields')
+          .select('field_value, updated_at')
+          .eq('entity_type', 'bot_session')
+          .eq('field_name', 'session_' + strId)
+          .maybeSingle();
+
+        if (cfData && cfData.field_value) {
+          const parsed = typeof cfData.field_value === 'string' ? JSON.parse(cfData.field_value) : cfData.field_value;
+          _sessionCache.set(strId, { state: parsed, ts: Date.now() });
+          return parsed;
+        }
       }
     } catch (e) {
       console.warn('state.getSession Supabase err:', e.message);
     }
   }
-  return null;
+
+  return memoryHit ? memoryHit.state : null;
 }
 
 async function setSession(chatId, stateObject) {
   if (!chatId) return;
   const strId = String(chatId);
+  const stateVal = stateObject || {};
+
+  // Update in-memory cache immediately
+  _sessionCache.set(strId, { state: stateVal, ts: Date.now() });
 
   if (supabase) {
     try {
-      await supabase.from('bot_sessions').upsert({
+      const { error } = await supabase.from('bot_sessions').upsert({
         chat_id: strId,
-        state: stateObject || {},
+        state: stateVal,
         updated_at: new Date().toISOString()
       }, { onConflict: 'chat_id' });
+
+      if (error) {
+        // Fallback to custom_fields
+        try {
+          await supabase.from('custom_fields').upsert({
+            entity_type: 'bot_session',
+            field_name: 'session_' + strId,
+            field_value: typeof stateVal === 'object' ? JSON.stringify(stateVal) : stateVal,
+            updated_at: new Date().toISOString()
+          }, { onConflict: 'entity_type,field_name' });
+        } catch (cfErr) {}
+      }
     } catch (e) {
       console.warn('state.setSession Supabase err:', e.message);
     }
@@ -482,12 +524,16 @@ async function clearSession(chatId) {
   if (!chatId) return;
   const strId = String(chatId);
 
+  // Clear in-memory cache
+  _sessionCache.delete(strId);
+
   if (supabase) {
     try {
       await supabase.from('bot_sessions').delete().eq('chat_id', strId);
-    } catch (e) {
-      console.warn('state.clearSession Supabase err:', e.message);
-    }
+    } catch (e) {}
+    try {
+      await supabase.from('custom_fields').delete().eq('entity_type', 'bot_session').eq('field_name', 'session_' + strId);
+    } catch (e) {}
   }
 }
 

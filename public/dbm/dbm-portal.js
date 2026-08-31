@@ -1076,19 +1076,21 @@
 
     if (step === 5) {
       // ── STEP 5: FINAL QC & SUBMIT ──
-      const title = prod.seoTitle || prod.seo?.title || prod.name || '';
-      const canva = prod.vault?.canvaTemplateUrl || prod.canvaTemplateUrl || '';
+      const title = (prod.seoTitle || prod.seo?.title || prod.name || '').trim();
+      const canva = (prod.vault?.canvaTemplateUrl || prod.canvaTemplateUrl || '').trim();
       const price = Number(prod.price || 7.49).toFixed(2);
-      const tags = prod.seoTags || [];
-      const hasCanva = Boolean(canva);
-      const hasTitle = Boolean(title && title.length >= 5 && title.length <= 140);
-      const hasTags = tags.length >= 10;
+      const tags = Array.isArray(prod.seoTags) ? prod.seoTags : [];
+      const hasCanva = Boolean(canva && (canva.startsWith('http://') || canva.startsWith('https://')));
+      const hasTitle = Boolean(title && title.length >= 10 && title.length <= 140);
+      const hasTags = tags.length >= 5;
+      const hasPrice = Number(price) >= 0.20;
+      const isReadyToSubmit = hasTitle && hasCanva && hasTags && hasPrice;
 
       return `
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
           <div>
             <h3 style="font-size: 1.25rem; font-weight: 800;">🚀 Step 5: Pre-Flight QC Verification & Submit for Admin Review</h3>
-            <p style="color: var(--text-secondary); font-size: 0.85rem;">Review all checklist items before submitting for final Admin approval and Etsy publishing.</p>
+            <p style="color: var(--text-secondary); font-size: 0.85rem;">Review all quality checks before submitting for final Admin approval and Etsy publishing.</p>
           </div>
           <span style="font-size: 0.85rem; font-weight: 800; color: #00df89; background: rgba(0,223,137,0.1); padding: 0.3rem 0.75rem; border-radius: 20px;">
             SKU: ${prod.code}
@@ -1100,45 +1102,51 @@
           <div style="background: var(--bg-surface); padding: 1.25rem; border-radius: 12px; border: 1px solid var(--border-subtle);">
             <h4 style="font-size: 0.88rem; font-weight: 800; color: #38bdf8; margin-bottom: 0.8rem;">📋 Asset Summary</h4>
             <div style="font-size: 0.82rem; display: flex; flex-direction: column; gap: 0.5rem;">
-              <div><strong>Title:</strong> ${title || '<span style="color:#f43f5e;">Missing Title</span>'}</div>
+              <div><strong>Title:</strong> ${title ? title : '<span style="color:#f43f5e;">Missing Title (Go to Step 4)</span>'}</div>
               <div><strong>Category:</strong> ${prod.category || 'General'}</div>
               <div><strong>Price:</strong> $${price} USD</div>
-              <div><strong>Canva Deliverable:</strong> ${hasCanva ? '<a href="' + canva + '" target="_blank" style="color:#00df89;">🔗 Open Canva Link ↗</a>' : '<span style="color:#f43f5e;">Missing Link (Go back to Step 2)</span>'}</div>
-              <div><strong>Tags Attached:</strong> ${tags.length} / 13 Tags</div>
+              <div><strong>Canva Deliverable:</strong> ${hasCanva ? '<a href="' + canva + '" target="_blank" style="color:#00df89;">🔗 Open Canva Link ↗</a>' : '<span style="color:#f43f5e;">Missing Link (Go to Step 2)</span>'}</div>
+              <div><strong>Tags Attached:</strong> ${tags.length} / 13 Tags ${tags.length < 5 ? '<span style="color:#f43f5e;">(Min 5 needed)</span>' : ''}</div>
             </div>
           </div>
 
-          <!-- 5-Point Self-Checklist -->
+          <!-- 4-Point Self-Checklist -->
           <div style="background: var(--bg-surface); padding: 1.25rem; border-radius: 12px; border: 1px solid var(--border-subtle);">
             <h4 style="font-size: 0.88rem; font-weight: 800; color: var(--brand-primary); margin-bottom: 0.8rem;">✅ Auto-Quality Verification Checklist</h4>
             <div style="display: flex; flex-direction: column; gap: 0.6rem; font-size: 0.82rem;">
               <label style="display: flex; align-items: center; gap: 0.5rem;">
                 <span style="color:${hasTitle ? '#00df89' : '#f43f5e'}; font-weight:800;">${hasTitle ? '✓' : '✗'}</span>
-                <span>Etsy SEO Title is formatted and under 140 chars</span>
+                <span>Etsy SEO Title is formatted (10–140 chars): <strong>${title.length} chars</strong></span>
               </label>
               <label style="display: flex; align-items: center; gap: 0.5rem;">
-                <span style="color:${hasTags ? '#00df89' : '#f59e0b'}; font-weight:800;">${hasTags ? '✓' : '⚠️'}</span>
-                <span>13 high-intent search tags populated (${tags.length} ready)</span>
+                <span style="color:${hasTags ? '#00df89' : '#f43f5e'}; font-weight:800;">${hasTags ? '✓' : '✗'}</span>
+                <span>High-intent search tags populated: <strong>${tags.length} tags</strong> (min 5)</span>
               </label>
               <label style="display: flex; align-items: center; gap: 0.5rem;">
                 <span style="color:${hasCanva ? '#00df89' : '#f43f5e'}; font-weight:800;">${hasCanva ? '✓' : '✗'}</span>
-                <span>Canva deliverable template link attached & working</span>
+                <span>Canva deliverable template link attached & valid URL</span>
               </label>
               <label style="display: flex; align-items: center; gap: 0.5rem;">
-                <span style="color:#00df89; font-weight:800;">✓</span>
-                <span>Retail price set to $${price} USD</span>
+                <span style="color:${hasPrice ? '#00df89' : '#f43f5e'}; font-weight:800;">${hasPrice ? '✓' : '✗'}</span>
+                <span>Retail price verified: <strong>$${price} USD</strong></span>
               </label>
             </div>
           </div>
         </div>
 
         <!-- Big Submit Action -->
-        <div style="background: linear-gradient(135deg, rgba(0,223,137,0.12), rgba(6,182,212,0.08)); border: 1px solid rgba(0,223,137,0.3); border-radius: 14px; padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+        <div style="background: ${isReadyToSubmit ? 'linear-gradient(135deg, rgba(0,223,137,0.12), rgba(6,182,212,0.08))' : 'rgba(244,63,94,0.08)'}; border: 1px solid ${isReadyToSubmit ? 'rgba(0,223,137,0.3)' : 'rgba(244,63,94,0.3)'}; border-radius: 14px; padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
           <div>
-            <h4 style="font-size: 1.1rem; font-weight: 800; color: #fff;">Ready to proceed for publication?</h4>
-            <p style="color: var(--text-secondary); font-size: 0.82rem;">Admin receives an immediate Telegram push notification to review and publish to Etsy.</p>
+            <h4 style="font-size: 1.1rem; font-weight: 800; color: #fff;">
+              ${isReadyToSubmit ? 'Ready to proceed for publication?' : '⚠️ Action Required Before Submission'}
+            </h4>
+            <p style="color: var(--text-secondary); font-size: 0.82rem;">
+              ${isReadyToSubmit 
+                ? 'Admin receives an immediate Telegram push notification to review and publish to Etsy.' 
+                : 'Please complete the highlighted checklist items above before submitting.'}
+            </p>
           </div>
-          <button class="btn-primary" onclick="finalSubmitProductForReview('${prod.code}')" style="font-size: 1.05rem; padding: 0.85rem 2rem; background: linear-gradient(135deg, #00df89, #06b6d4);">
+          <button class="btn-primary" onclick="finalSubmitProductForReview('${prod.code}')" style="font-size: 1.05rem; padding: 0.85rem 2rem; background: ${isReadyToSubmit ? 'linear-gradient(135deg, #00df89, #06b6d4)' : '#4b5563'}; cursor: ${isReadyToSubmit ? 'pointer' : 'not-allowed'};">
             🚀 Submit for Admin Review & Publish
           </button>
         </div>
@@ -1394,6 +1402,22 @@
   };
 
   window.generateAiSeoForCurrentProduct = async function(code) {
+    const titleEl = document.getElementById('step4Title');
+    const tagsEl = document.getElementById('step4Tags');
+    const descEl = document.getElementById('step4Desc');
+
+    const hasExistingContent = (titleEl && titleEl.value.trim().length > 0) ||
+                               (tagsEl && tagsEl.value.trim().length > 0) ||
+                               (descEl && descEl.value.trim().length > 0);
+
+    if (hasExistingContent) {
+      const confirmOverwrite = window.confirm('⚠️ You already have SEO content entered. Generating a new AI SEO package will overwrite your title, tags, and description. Do you want to proceed?');
+      if (!confirmOverwrite) {
+        showToast('AI SEO generation cancelled (kept your custom content)');
+        return;
+      }
+    }
+
     const brand = DBM_STATE.assignedBrands.find(b => b.id === DBM_STATE.activeBrandId) || DBM_STATE.assignedBrands[0];
     const prod = DBM_STATE.activeEditingProduct || {};
     const name = prod.name || prod.seoTitle || 'Digital Planner';
@@ -1410,9 +1434,6 @@
       });
 
       if (res && res.title) {
-        const titleEl = document.getElementById('step4Title');
-        const tagsEl = document.getElementById('step4Tags');
-        const descEl = document.getElementById('step4Desc');
         if (titleEl) titleEl.value = res.title;
         if (tagsEl) tagsEl.value = Array.isArray(res.tags) ? res.tags.join(', ') : (res.tags || '');
         if (descEl) descEl.value = res.description || '';
@@ -1426,7 +1447,6 @@
       console.warn('[AI SEO Generation Notice]:', e.message);
       showToast('⚠️ AI SEO generation failed. Please check connection and retry.', 'error');
       // Pre-fill editable fallback only if title is completely empty
-      const titleEl = document.getElementById('step4Title');
       if (titleEl && !titleEl.value.trim()) {
         const cleanTitle = (name + ' | Printable Planner Template for ' + (brand?.name || 'PlannerQueenGro')).slice(0, 138);
         titleEl.value = cleanTitle;
@@ -1440,14 +1460,44 @@
     const prod = DBM_STATE.activeEditingProduct || {};
     const submitterName = getUserDisplayName();
 
+    const title = (prod.seoTitle || prod.name || '').trim();
+    const canvaUrl = (prod.vault?.canvaTemplateUrl || prod.canvaTemplateUrl || '').trim();
+    const price = Number(prod.price || 0);
+    const tags = Array.isArray(prod.seoTags) ? prod.seoTags : [];
+
+    // Pre-Flight Quality Check Verification
+    const validationErrors = [];
+    if (!title || title.length < 10) {
+      validationErrors.push('Etsy SEO Title is missing or too short (< 10 chars)');
+    } else if (title.length > 140) {
+      validationErrors.push('Etsy SEO Title exceeds 140 characters limit');
+    }
+
+    if (!canvaUrl || (!canvaUrl.startsWith('http://') && !canvaUrl.startsWith('https://'))) {
+      validationErrors.push('Deliverable template link is missing or invalid URL');
+    }
+
+    if (tags.length < 5) {
+      validationErrors.push('At least 5 Etsy SEO tags required (found ' + tags.length + ')');
+    }
+
+    if (isNaN(price) || price < 0.20) {
+      validationErrors.push('Price must be set to at least $0.20 USD');
+    }
+
+    if (validationErrors.length > 0) {
+      showToast('⚠️ Pre-flight check failed: ' + validationErrors.join('; '), 'error');
+      return;
+    }
+
     const payload = {
-      title: prod.seoTitle || prod.name || 'Product ' + code,
-      name: prod.name || prod.seoTitle || 'Product ' + code,
+      title: title,
+      name: prod.name || title,
       category: prod.category || 'General',
-      price: Number(prod.price || 7.49),
-      canvaTemplateUrl: prod.vault?.canvaTemplateUrl || prod.canvaTemplateUrl || 'https://canva.com',
+      price: price || 7.49,
+      canvaTemplateUrl: canvaUrl,
       description: prod.seoDescription || prod.seo?.description || '',
-      tags: prod.seoTags || ['digital planner', 'goodnotes planner', 'printable planner'],
+      tags: tags,
       mockups: prod.mockups || [],
       submittedBy: submitterName
     };
@@ -1553,7 +1603,10 @@
       return '<div style="color: var(--text-muted); padding: 3rem; text-align: center; grid-column: 1 / -1;">No reference products match your search.</div>';
     }
 
-    return products.map(p => `
+    return products.map(p => {
+      const etsyLink = p.etsyUrl || p.liveListingUrl || (p.etsyListingId ? ('https://www.etsy.com/listing/' + p.etsyListingId) : '');
+
+      return `
       <div class="card" style="border-left: 4px solid var(--accent-purple); transition: transform 0.2s ease; cursor: pointer;" onclick="openReferenceProductModal('${p.code}')">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
           <span style="font-family: var(--font-mono); font-weight: 800; font-size: 0.85rem; color: #c084fc;">${p.code}</span>
@@ -1569,16 +1622,22 @@
           <strong style="color: #00df89;">$${Number(p.price || 7.49).toFixed(2)} USD</strong>
         </div>
 
-        <div style="display: flex; gap: 0.4rem; align-items: center;">
+        <div style="display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap;">
           <span style="font-size: 0.72rem; font-weight: 700; color: #38bdf8; background: rgba(6,182,212,0.1); padding: 0.15rem 0.45rem; border-radius: 6px;">16 Spreads PDF</span>
           <span style="font-size: 0.72rem; font-weight: 700; color: #a855f7; background: rgba(168,85,247,0.1); padding: 0.15rem 0.45rem; border-radius: 6px;">13 Tags</span>
+          ${etsyLink ? `
+            <a href="${etsyLink}" target="_blank" onclick="event.stopPropagation()" style="font-size: 0.72rem; font-weight: 700; color: #00df89; background: rgba(0,223,137,0.12); border: 1px solid rgba(0,223,137,0.25); padding: 0.15rem 0.45rem; border-radius: 6px; text-decoration: none; display: inline-flex; align-items: center; gap: 0.2rem;">
+              🛒 Etsy Live ↗
+            </a>
+          ` : ''}
         </div>
 
         <button class="btn-ghost" style="width: 100%; justify-content: center; font-size: 0.8rem; color: #c084fc; border-color: rgba(168,85,247,0.3); margin-top: 0.75rem;">
           👀 Inspect Complete Assets & SEO →
         </button>
       </div>
-    `).join('');
+    `;
+    }).join('');
   }
 
   window.setRefCategoryFilter = function(filter) {
@@ -1607,6 +1666,7 @@
     const tags = Array.isArray(prod.seoTags) ? prod.seoTags : (prod.seo?.tags || ['planner', 'productivity', 'goodnotes', 'daily organizer', 'printable template', 'budget ledger', 'financial freedom', 'adhd tracker', 'habit schedule', 'weekly spread', 'ipad agenda', 'neutral aesthetic', 'instant download']);
     const desc = prod.seoDescription || prod.seo?.description || '✨ Instant Download Digital Planner template.\n\nWHAT IS INCLUDED:\n- High-resolution printable PDF files (US Letter & A4)\n- Hyperlinked GoodNotes & Notability digital template\n- Canva editable master link\n- Lifetime access & free updates\n\nHOW IT WORKS:\n1. Complete your purchase\n2. Download instant access PDF\n3. Open in GoodNotes or print at home!';
     const canva = prod.vault?.canvaTemplateUrl || prod.canvaTemplateUrl || 'https://canva.com/design/reference-template';
+    const etsyLink = prod.etsyUrl || prod.liveListingUrl || (prod.etsyListingId ? ('https://www.etsy.com/listing/' + prod.etsyListingId) : '');
 
     inner.innerHTML = `
       <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.75rem;">
@@ -1618,6 +1678,19 @@
       </div>
 
       <div style="display: flex; flex-direction: column; gap: 1.2rem;">
+        ${etsyLink ? `
+          <!-- Section 0: Live Etsy Listing Link -->
+          <div style="background: rgba(0,223,137,0.08); padding: 0.9rem 1.1rem; border-radius: 10px; border: 1px solid rgba(0,223,137,0.25); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.6rem;">
+            <div>
+              <span style="font-size: 0.72rem; font-weight: 800; color: #00df89; text-transform: uppercase; letter-spacing: 0.5px;">Live Marketplace Listing</span>
+              <div style="font-size: 0.88rem; color: #fff; font-weight: 700;">Live & Active on Etsy Store (Verified Gold Standard)</div>
+            </div>
+            <a href="${etsyLink}" target="_blank" class="btn-primary" style="font-size: 0.78rem; padding: 0.4rem 0.9rem; text-decoration: none; background: #00df89; color: #070b12; font-weight: 800; display: inline-flex; align-items: center; gap: 0.3rem;">
+              🛒 View Live on Etsy ↗
+            </a>
+          </div>
+        ` : ''}
+
         <!-- Section 1: Etsy Title -->
         <div style="background: var(--bg-surface); padding: 1rem; border-radius: 10px; border: 1px solid var(--border-subtle);">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem;">
@@ -2119,18 +2192,26 @@
 
     showToast('Submitting EOD Report...', 'success');
 
+    const newLogRecord = {
+      dbmId: DBM_STATE.dbm?.id || 1,
+      empCode: getUserEmpCode(),
+      dbmName: getUserDisplayName(),
+      brandName,
+      listed,
+      productCodes,
+      notes: blockerCategory ? ('[Blocker: ' + blockerCategory + '] ' + notes) : notes,
+      isBlocker,
+      date: new Date().toISOString().split('T')[0]
+    };
+
     try {
-      const res = await DBM_API.post('/brands/dbm-logs', {
-        dbmId: DBM_STATE.dbm?.id || 1,
-        brandName,
-        listed,
-        productCodes,
-        notes: blockerCategory ? ('[Blocker: ' + blockerCategory + '] ' + notes) : notes,
-        isBlocker
-      });
+      const res = await DBM_API.post('/brands/dbm-logs', newLogRecord);
 
       if (res.success) {
         showToast('✅ EOD Report Submitted! Admin notified via Telegram.');
+        if (Array.isArray(DBM_STATE.standups)) {
+          DBM_STATE.standups.unshift(newLogRecord);
+        }
         await reloadState();
         window.location.hash = '#output';
       } else {
@@ -2274,12 +2355,12 @@
     const newPin = document.getElementById('settingsNewPin')?.value.trim();
     const confirmPin = document.getElementById('settingsConfirmPin')?.value.trim();
 
-    if (!newPin || newPin.length !== 4) {
-      showToast('PIN must be exactly 4 digits', 'error');
+    if (!newPin || !/^\d{4}$/.test(newPin)) {
+      showToast('PIN must be exactly 4 numeric digits (e.g. 0621)', 'error');
       return;
     }
     if (newPin !== confirmPin) {
-      showToast('PINs do not match', 'error');
+      showToast('PIN confirmation does not match', 'error');
       return;
     }
 

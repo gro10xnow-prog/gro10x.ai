@@ -328,16 +328,27 @@ async function handleTodayQueue(teamBot, msg) {
     const activeBrand = brandsState.brands.find(b => b.id === activeBrandId) || brandsState.brands[0] || {};
     const catalog = brandsState.productsCatalog?.[activeBrand.id] || [];
 
-    const drafts = catalog.filter(p => p.status !== 'Live' && p.status !== 'Pending Review');
+    const todayStr = new Date().toISOString().split('T')[0];
+    const drafts = catalog.filter(p => {
+      const isLive = p.status === 'Live';
+      const isPending = p.status === 'Pending Review';
+      const isSubmittedToday = p.submittedAt && p.submittedAt.startsWith(todayStr);
+      return !isLive && !isPending && !isSubmittedToday;
+    });
     const dailyTarget = dbmInfo.dailyTarget || 8;
     const todayBatch = drafts.slice(0, dailyTarget);
+    const todaySubmitted = catalog.filter(p => p.submittedAt && p.submittedAt.startsWith(todayStr)).length;
 
     let text = '📦 *TODAY\'S LISTING QUEUE — ' + activeBrand.name + '*\n';
     text += '━━━━━━━━━━━━━━━━━━━━\n';
-    text += '🎯 *Target Batch (' + todayBatch.length + ' of ' + dailyTarget + ' SKUs Today):*\n\n';
+    text += '🎯 *Target Batch (' + todayBatch.length + ' of ' + dailyTarget + ' SKUs Remaining Today):*\n\n';
 
     if (todayBatch.length === 0) {
-      text += '🎉 *All 100 SKUs are submitted or live! Amazing work!*\n\n';
+      if (todaySubmitted >= dailyTarget) {
+        text += '🏆 *Daily quota complete! (' + todaySubmitted + '/' + dailyTarget + ' submitted today). Outstanding work!*\n\n';
+      } else {
+        text += '🎉 *All SKUs in ' + activeBrand.name + ' are submitted or live! Amazing work!*\n\n';
+      }
     } else {
       todayBatch.forEach((p, idx) => {
         text += '*' + (idx + 1) + '. ' + p.code + ':* ' + (p.name || p.seoTitle || 'Digital Product').substring(0, 38) + '\n';
@@ -345,9 +356,6 @@ async function handleTodayQueue(teamBot, msg) {
       });
       text += '\n';
     }
-
-    const todayStr = new Date().toISOString().split('T')[0];
-    const todaySubmitted = catalog.filter(p => p.submittedAt && p.submittedAt.startsWith(todayStr)).length;
 
     text += '━━━━━━━━━━━━━━━━━━━━\n';
     text += '📊 *Today\'s Velocity:* ' + todaySubmitted + ' / ' + dailyTarget + ' Submitted\n';

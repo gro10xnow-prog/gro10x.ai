@@ -45,6 +45,21 @@
         method: 'POST',
         body: body instanceof FormData ? body : JSON.stringify(body)
       });
+    },
+    patch(path, body) {
+      return this.request(path, {
+        method: 'PATCH',
+        body: body instanceof FormData ? body : JSON.stringify(body)
+      });
+    },
+    put(path, body) {
+      return this.request(path, {
+        method: 'PUT',
+        body: body instanceof FormData ? body : JSON.stringify(body)
+      });
+    },
+    delete(path) {
+      return this.request(path, { method: 'DELETE' });
     }
   };
 })(window);
