@@ -865,8 +865,9 @@ async function handleOrderTracking(bot, chatId, ref) {
   }
 
   const lang = getLang(chatId);
-  const payStatus = order.payment_status === 'verified' ? '✅ Verified' : order.payment_status === 'rejected' ? '❌ Rejected' : '⏳ Pending Verification';
-  const delivStatus = order.delivery_status === 'delivered' ? '🔑 Delivered' : '⏳ Processing';
+  const isRejected = order.payment_status === 'rejected' || order.order_stage === 'payment_rejected' || order.order_stage === 'rejected';
+  const payStatus = order.payment_status === 'verified' ? '✅ Verified' : isRejected ? '❌ Rejected' : '⏳ Pending Verification';
+  const delivStatus = order.delivery_status === 'delivered' ? '🔑 Delivered' : isRejected ? '⛔ Cancelled' : '⏳ Processing';
 
   let text = `📋 *Order Status: \`${order.order_number}\`*\n\n`;
   text += `📦 *Product:* ${order.product_name} (${order.duration})\n`;
@@ -876,6 +877,21 @@ async function handleOrderTracking(bot, chatId, ref) {
 
   if (order.activation_date) text += `📅 *Activated:* ${order.activation_date}\n`;
   if (order.expiry_date) text += `⏳ *Valid Until:* ${order.expiry_date}\n`;
+
+  if (isRejected) {
+    text += `\n⚠️ *পেমেন্ট ভেরিফিকেশন ব্যর্থ হয়েছে!*\n` +
+      `কারণ: _${order.notes || 'ইনভ্যালিড TrxID বা অ্যাকাউন্টে টাকা পাওয়ার রেকর্ড পাওয়া যায়নি'}_\n\n` +
+      `অনুগ্রহ করে সঠিক তথ্য সহ WhatsApp সাপোর্টে যোগাযোগ করুন।`;
+
+    return bot.sendMessage(chatId, text, {
+      parse_mode: 'Markdown',
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: '💬 WhatsApp Support', url: `https://wa.me/8801889825025?text=${encodeURIComponent('Salam, regarding rejected order ' + order.order_number)}` }]
+        ]
+      }
+    });
+  }
 
   bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
 }

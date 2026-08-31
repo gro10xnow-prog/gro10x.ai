@@ -1352,7 +1352,7 @@ router.get('/track/:orderNumber', asyncHandler(async (req, res) => {
     const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(orderNumber.trim());
     let query = supabase
       .from('digi_orders')
-      .select('id, order_number, product_name, duration, payment_status, delivery_status, order_stage, activation_link, customer_confirmed_at, activation_date, expiry_date, created_at');
+      .select('id, order_number, product_name, duration, payment_status, delivery_status, order_stage, activation_link, customer_confirmed_at, activation_date, expiry_date, notes, created_at');
 
     if (isUUID) {
       query = query.or(`id.eq.${orderNumber.trim()},order_number.eq.${cleanRef}`);
@@ -1377,6 +1377,7 @@ router.get('/track/:orderNumber', asyncHandler(async (req, res) => {
         customer_confirmed_at: found.customer_confirmed_at || found.customerConfirmedAt,
         activation_date: found.activation_date || found.activationDate,
         expiry_date: found.expiry_date || found.expiryDate,
+        notes: found.notes,
         created_at: found.created_at || found.createdAt
       };
     }
@@ -1386,18 +1387,20 @@ router.get('/track/:orderNumber', asyncHandler(async (req, res) => {
     return fail(res, 'Order not found. Please check your order reference number.', 404);
   }
 
-  const stage = order.order_stage || (
+  const isRejected = order.payment_status === 'rejected' || order.order_stage === 'payment_rejected' || order.order_stage === 'rejected';
+
+  const stage = isRejected ? 'payment_rejected' : (order.order_stage || (
     order.customer_confirmed_at ? 'confirmed_closed' :
     order.delivery_status === 'delivered' ? 'delivered' :
     order.payment_status === 'verified' ? 'payment_verified' : 'pending_payment'
-  );
+  ));
 
   const steps = [
     { key: 'order_created', label: 'অর্ডার গ্রহণ', labelEn: 'Order Placed', done: true },
-    { key: 'payment_verified', label: 'পেমেন্ট নিশ্চিত', labelEn: 'Payment Verified', done: ['payment_verified', 'procuring', 'link_received', 'delivered', 'confirmed_closed', 'admin_closed'].includes(stage) },
-    { key: 'procuring', label: 'প্রকিউরমেন্ট প্রসেসিং', labelEn: 'Procuring Access', done: ['procuring', 'link_received', 'delivered', 'confirmed_closed', 'admin_closed'].includes(stage) },
-    { key: 'delivered', label: 'ডেলিভারি সম্পন্ন', labelEn: 'Delivered', done: ['delivered', 'confirmed_closed', 'admin_closed'].includes(stage) },
-    { key: 'confirmed_closed', label: 'অ্যাক্টিভেটেড ও ক্লোজড', labelEn: 'Activated & Confirmed', done: ['confirmed_closed', 'admin_closed'].includes(stage) }
+    { key: 'payment_verified', label: 'পেমেন্ট নিশ্চিত', labelEn: 'Payment Verified', done: !isRejected && ['payment_verified', 'procuring', 'link_received', 'delivered', 'confirmed_closed', 'admin_closed'].includes(stage) },
+    { key: 'procuring', label: 'প্রকিউরমেন্ট প্রসেসিং', labelEn: 'Procuring Access', done: !isRejected && ['procuring', 'link_received', 'delivered', 'confirmed_closed', 'admin_closed'].includes(stage) },
+    { key: 'delivered', label: 'ডেলিভারি সম্পন্ন', labelEn: 'Delivered', done: !isRejected && ['delivered', 'confirmed_closed', 'admin_closed'].includes(stage) },
+    { key: 'confirmed_closed', label: 'অ্যাক্টিভেটেড ও ক্লোজড', labelEn: 'Activated & Confirmed', done: !isRejected && ['confirmed_closed', 'admin_closed'].includes(stage) }
   ];
 
   return ok(res, {
@@ -1408,6 +1411,8 @@ router.get('/track/:orderNumber', asyncHandler(async (req, res) => {
     orderStage: stage,
     paymentStatus: order.payment_status,
     deliveryStatus: order.delivery_status,
+    rejectionReason: isRejected ? (order.notes || 'Payment verification failed.') : null,
+    notes: order.notes,
     activationLink: (stage === 'delivered' || stage === 'confirmed_closed' || stage === 'admin_closed') ? order.activation_link : null,
     customerConfirmedAt: order.customer_confirmed_at,
     activationDate: order.activation_date,

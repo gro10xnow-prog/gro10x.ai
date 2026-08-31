@@ -147,6 +147,7 @@
       }
 
       function renderOrderResult(o) {
+        const isRejected = o.paymentStatus === 'rejected' || o.orderStage === 'payment_rejected' || o.orderStage === 'rejected';
         const isPaid = o.paymentStatus === 'verified';
         const isDelivered = o.deliveryStatus === 'delivered';
         const isClosed = o.orderStage === 'confirmed_closed' || o.orderStage === 'admin_closed';
@@ -155,7 +156,11 @@
         let statusBadgeClass = 'rgba(245, 158, 11, 0.15)';
         let statusColor = '#f59e0b';
 
-        if (isClosed) {
+        if (isRejected) {
+          statusText = '❌ পেমেন্ট বাতিল / ভেরিফিকেশন ব্যর্থ হয়েছে';
+          statusBadgeClass = 'rgba(239, 68, 68, 0.15)';
+          statusColor = '#ef4444';
+        } else if (isClosed) {
           statusText = '✅ অ্যাক্টিভেশন নিশ্চিত ও অর্ডার সফলভাবে সম্পন্ন';
           statusBadgeClass = 'rgba(0, 223, 137, 0.2)';
           statusColor = '#00df89';
@@ -186,7 +191,7 @@
             <div style="background: rgba(0,0,0,0.35); border-radius: var(--radius-md); padding: 18px 14px; margin-bottom: 20px;">
               <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; text-align: center; position: relative;">
                 ${steps.map((st, i) => {
-                  const isCurrentActive = i === activeStepIndex && !isClosed;
+                  const isCurrentActive = i === activeStepIndex && !isClosed && !isRejected;
                   return `
                     <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
                       <div class="${isCurrentActive ? 'step-active-pulse' : ''}" style="width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; background: ${st.done ? '#00df89' : 'rgba(255,255,255,0.1)'}; color: ${st.done ? '#000' : 'var(--text-muted)'};">
@@ -202,7 +207,7 @@
             </div>
 
             <!-- ETA Delivery Banner (if in progress) -->
-            ${((isPaid || o.orderStage === 'procuring') && !isDelivered && !isClosed) ? `
+            ${((isPaid || o.orderStage === 'procuring') && !isDelivered && !isClosed && !isRejected) ? `
               <div class="eta-banner">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                   <div style="font-size: 13px; font-weight: 700; color: #38bdf8; display: flex; align-items: center; gap: 6px;">
@@ -222,6 +227,28 @@
             <div style="background: ${statusBadgeClass}; border: 1px solid ${statusColor}40; border-radius: var(--radius-md); padding: 14px; margin-bottom: 20px; font-weight: 700; color: ${statusColor}; font-size: 14px; display: flex; align-items: center; gap: 8px;">
               <span>${statusText}</span>
             </div>
+
+            <!-- Rejection Recovery Card -->
+            ${isRejected ? `
+              <div style="background: rgba(239, 68, 68, 0.08); border: 2px solid #ef4444; border-radius: var(--radius-md); padding: 20px; margin-bottom: 20px;">
+                <div style="font-size: 14px; font-weight: 800; color: #ef4444; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+                  <span>⚠️</span> পেমেন্ট বাতিলের কারণ:
+                </div>
+                <div style="background: rgba(0,0,0,0.4); border-radius: 6px; padding: 12px; font-size: 13px; color: #fff; margin-bottom: 14px; border-left: 3px solid #ef4444;">
+                  ${o.rejectionReason || o.notes || 'ইনভ্যালিড TrxID বা অ্যাকাউন্টে টাকা পাওয়ার রেকর্ড পাওয়া যায়নি।'}
+                </div>
+
+                <div style="font-size: 12px; color: var(--text-main); line-height: 1.6; margin-bottom: 16px;">
+                  <strong style="color: #ef4444; display: block; margin-bottom: 4px;">🛠️ করণীয়:</strong>
+                  1. আপনার bKash / Nagad স্টেটমেন্ট চেক করে সঠিক TrxID ও সেন্ডার নম্বর যাচাই করুন।<br>
+                  2. টাকা কেটে নেওয়া হয়ে থাকলে ট্রানজেকশনের ফুল স্ক্রিনশট সহ নিচের বাটনে ক্লিক করে WhatsApp সাপোর্টে জানান।
+                </div>
+
+                <a href="https://wa.me/8801889825025?text=${encodeURIComponent('Salam, regarding my rejected order ' + o.orderNumber + ' - I need help verifying my payment.')}" target="_blank" class="btn btn-primary" style="background: #25d366; color: #000; font-weight: 700; width: 100%; text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px;">
+                  <span>💬</span> WhatsApp সাপোর্টে পেমেন্ট সমাধান চান ➔
+                </a>
+              </div>
+            ` : ''}
 
             <!-- Activation Link Card (if delivered) -->
             ${o.activationLink ? `
