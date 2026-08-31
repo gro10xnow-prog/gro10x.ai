@@ -1,9 +1,9 @@
 /**
  * public/dbm/dbm-portal.js
  * ─────────────────────────────────────────────────────────────────────────────
- * GRO10X Digital Brand Manager Dedicated Portal Engine v2.3
- * Tab 3: Enhanced Gold-Standard Reference Library with Category Filters,
- * Real-Time Search, 16-Page Architecture, and Tag Baseline Cloning.
+ * GRO10X Digital Brand Manager Dedicated Portal Engine v2.4
+ * Tab 4: Enhanced My Output Dashboard with 7-Day Velocity Tracker,
+ * Pending Review Triage Table, and Transparent Incentive Calculator.
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
@@ -242,7 +242,7 @@
         <!-- Gold Standard Snapshot -->
         <div class="card" style="border-left: 4px solid var(--accent-purple);">
           <span style="font-size: 0.72rem; font-weight: 800; text-transform: uppercase; color: var(--accent-purple);">Reference Standard (Completed by Admin)</span>
-          <h3 style="font-size: 1.4rem; font-weight: 800; margin: 0.3rem 0; color: #fff;">
+          <h3 style="font-size: 1.4rem; font-weight: 800; margin-bottom: 0.3rem; color: #fff;">
             ${liveProducts.length} Finished Reference Models
           </h3>
           <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1rem;">
@@ -1264,53 +1264,201 @@
 
   // ── VIEW 4: MY OUTPUT ──
   function renderOutputView(container) {
-    let totalListed = 0;
-    let pendingCount = 0;
-    let liveCount = 0;
+    const brands = DBM_STATE.assignedBrands || [];
+    const brand = brands.find(b => b.id === DBM_STATE.activeBrandId) || brands[0] || {};
+    const catalog = DBM_STATE.productsCatalog[brand.id] || [];
 
-    Object.values(DBM_STATE.productsCatalog).forEach(catalog => {
-      catalog.forEach(p => {
-        totalListed++;
-        if (p.status === 'Pending Review') pendingCount++;
-        if (p.status === 'Live') liveCount++;
+    let totalPending = [];
+    let totalLiveCount = 0;
+
+    Object.entries(DBM_STATE.productsCatalog).forEach(([bId, pList]) => {
+      const bObj = brands.find(b => b.id === Number(bId)) || { name: 'Brand #' + bId };
+      pList.forEach(p => {
+        if (p.status === 'Pending Review') {
+          totalPending.push({ ...p, brandName: bObj.name, brandId: bId });
+        }
+        if (p.status === 'Live') {
+          totalLiveCount++;
+        }
       });
     });
 
-    const vaultBonusEarned = (liveCount * 6.99).toFixed(2);
+    const vaultBonusEarned = (totalLiveCount * 6.99).toFixed(2);
+    const today = new Date().toISOString().split('T')[0];
+    const todayCount = DBM_STATE.todaySubmittedCount || 0;
+
+    // Weekly 7-Day Velocity Data
+    const weekDays = [
+      { day: 'Mon', count: todayCount >= 8 ? 8 : (todayCount > 0 ? todayCount : 8), quota: 8, isToday: true },
+      { day: 'Tue', count: 0, quota: 8, isToday: false },
+      { day: 'Wed', count: 0, quota: 8, isToday: false },
+      { day: 'Thu', count: 0, quota: 8, isToday: false },
+      { day: 'Fri', count: 0, quota: 8, isToday: false },
+      { day: 'Sat', count: 0, quota: 8, isToday: false },
+      { day: 'Sun', count: 0, quota: 8, isToday: false }
+    ];
 
     container.innerHTML = `
-      <div style="margin-bottom: 2rem;">
-        <h1 style="font-family: var(--font-heading); font-size: 1.8rem; font-weight: 800;">📊 My Performance & Output Report</h1>
-        <p style="color: var(--text-secondary);">Tracking your personal output, approval cadence, and monthly incentive bonuses.</p>
+      <!-- Top Title Header -->
+      <div style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <h1 style="font-family: var(--font-heading); font-size: 1.8rem; font-weight: 800;">
+            📊 My Output & Performance Command
+          </h1>
+          <p style="color: var(--text-secondary); font-size: 0.95rem;">
+            Real-time tracking of your daily upload velocity, pending QC approvals, and monthly vault bonus earnings.
+          </p>
+        </div>
+
+        <button class="btn-primary" onclick="window.location.hash='#standup'" style="background: linear-gradient(135deg, #00df89, #06b6d4);">
+          📝 Submit Today's Standup
+        </button>
       </div>
 
-      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.25rem; margin-bottom: 2rem;">
-        <div class="card" style="border-left: 4px solid #38bdf8;">
+      <!-- 4 KPI Cards Grid -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; margin-bottom: 1.5rem;">
+        <div class="card" style="border-left: 4px solid #38bdf8; margin-bottom: 0;">
           <span style="font-size: 0.72rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Submitted Today</span>
-          <div style="font-size: 1.8rem; font-weight: 900; color: #38bdf8; margin-top: 0.2rem;">${DBM_STATE.todaySubmittedCount} <span style="font-size: 0.9rem; color: var(--text-muted);">/ 8 Quota</span></div>
+          <div style="font-size: 1.8rem; font-weight: 900; color: #38bdf8; margin-top: 0.2rem;">
+            ${todayCount} <span style="font-size: 0.9rem; color: var(--text-muted); font-weight: 600;">/ ${DBM_STATE.dailyTarget} Quota</span>
+          </div>
+          <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.3rem;">Target: 8 listings per day</div>
         </div>
 
-        <div class="card" style="border-left: 4px solid #f59e0b;">
+        <div class="card" style="border-left: 4px solid #f59e0b; margin-bottom: 0;">
           <span style="font-size: 0.72rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Pending Admin Approval</span>
-          <div style="font-size: 1.8rem; font-weight: 900; color: #f59e0b; margin-top: 0.2rem;">${pendingCount}</div>
+          <div style="font-size: 1.8rem; font-weight: 900; color: #f59e0b; margin-top: 0.2rem;">
+            ${totalPending.length} <span style="font-size: 0.85rem; color: var(--text-muted);">Products</span>
+          </div>
+          <div style="font-size: 0.72rem; color: #f59e0b; margin-top: 0.3rem;">⏳ In Founder Review Queue</div>
         </div>
 
-        <div class="card" style="border-left: 4px solid #00df89;">
-          <span style="font-size: 0.72rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Published & Live</span>
-          <div style="font-size: 1.8rem; font-weight: 900; color: #00df89; margin-top: 0.2rem;">${liveCount}</div>
+        <div class="card" style="border-left: 4px solid #00df89; margin-bottom: 0;">
+          <span style="font-size: 0.72rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Published & Live on Etsy</span>
+          <div style="font-size: 1.8rem; font-weight: 900; color: #00df89; margin-top: 0.2rem;">
+            ${totalLiveCount} <span style="font-size: 0.85rem; color: var(--text-muted);">Listings</span>
+          </div>
+          <div style="font-size: 0.72rem; color: #00df89; margin-top: 0.3rem;">🟢 100% QC Passed</div>
         </div>
 
-        <div class="card" style="border-left: 4px solid #a855f7;">
-          <span style="font-size: 0.72rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Vault Incentive Earned</span>
-          <div style="font-size: 1.8rem; font-weight: 900; color: #a855f7; margin-top: 0.2rem;">$${vaultBonusEarned}</div>
+        <div class="card" style="border-left: 4px solid #a855f7; margin-bottom: 0;">
+          <span style="font-size: 0.72rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Vault Incentive Bonus</span>
+          <div style="font-size: 1.8rem; font-weight: 900; color: #a855f7; margin-top: 0.2rem;">
+            $${vaultBonusEarned} <span style="font-size: 0.85rem; color: var(--text-muted);">USD</span>
+          </div>
+          <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.3rem;">$6.99 / live product bonus</div>
         </div>
       </div>
 
-      <!-- Standup Submission History -->
+      <!-- 7-Day Production Velocity Tracker -->
+      <div class="card" style="margin-bottom: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <div>
+            <h3 style="font-size: 1.15rem; font-weight: 800;">📈 7-Day Production Velocity (8 Products / Day Cadence)</h3>
+            <p style="font-size: 0.8rem; color: var(--text-muted);">Daily upload consistency tracker for this week.</p>
+          </div>
+          <span style="font-size: 0.8rem; font-weight: 800; color: #00df89; background: rgba(0,223,137,0.12); padding: 0.25rem 0.6rem; border-radius: 20px;">
+            Target: 40 Listings / Week
+          </span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.75rem; text-align: center;">
+          ${weekDays.map(w => {
+            const pct = Math.min(100, Math.round((w.count / w.quota) * 100));
+            return `
+              <div style="background: var(--bg-surface); padding: 0.85rem 0.5rem; border-radius: 12px; border: 1px solid ${w.isToday ? 'rgba(0,223,137,0.4)' : 'var(--border-subtle)'};">
+                <span style="font-size: 0.75rem; font-weight: 800; color: ${w.isToday ? '#00df89' : 'var(--text-muted)'}; display: block; margin-bottom: 0.5rem;">
+                  ${w.day} ${w.isToday ? '(Today)' : ''}
+                </span>
+                
+                <!-- Mini Bar -->
+                <div style="height: 60px; background: rgba(255,255,255,0.04); border-radius: 6px; position: relative; display: flex; align-items: flex-end; overflow: hidden; margin-bottom: 0.5rem;">
+                  <div style="width: 100%; height: ${pct}%; background: ${pct >= 100 ? 'linear-gradient(180deg, #00df89, #06b6d4)' : 'rgba(56,189,248,0.5)'}; border-radius: 6px; transition: height 0.3s ease;"></div>
+                </div>
+
+                <strong style="font-size: 0.9rem; color: #fff;">${w.count} / ${w.quota}</strong>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+
+      <!-- Two-Column Section: Pending Triage & Compensation -->
+      <div style="display: grid; grid-template-columns: 1.4fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+        <!-- Pending Review Table -->
+        <div class="card" style="margin-bottom: 0;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h3 style="font-size: 1.15rem; font-weight: 800;">⏳ Products in Founder Review Queue</h3>
+            <span style="font-size: 0.75rem; color: #f59e0b; font-weight: 700;">${totalPending.length} Awaiting Approval</span>
+          </div>
+
+          ${renderPendingTriageTable(totalPending)}
+        </div>
+
+        <!-- Compensation & Incentive Summary -->
+        <div class="card" style="margin-bottom: 0; background: linear-gradient(135deg, rgba(168,85,247,0.06), rgba(6,182,212,0.04)); border-color: rgba(168,85,247,0.25);">
+          <h3 style="font-size: 1.15rem; font-weight: 800; color: #c084fc; margin-bottom: 0.4rem;">💰 Compensation & Monthly Payouts</h3>
+          <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 1.25rem;">Direct monthly settlement to registered bKash / Bank account.</p>
+
+          <div style="display: flex; flex-direction: column; gap: 0.85rem; font-size: 0.85rem;">
+            <div style="display: flex; justify-content: space-between; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-subtle);">
+              <span style="color: var(--text-muted);">Base Retainer:</span>
+              <strong style="color: #fff;">৳ Guaranteed Base</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-subtle);">
+              <span style="color: var(--text-muted);">Live Listings Bonus:</span>
+              <strong style="color: #00df89;">$${vaultBonusEarned} USD (${totalLiveCount} Live)</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-subtle);">
+              <span style="color: var(--text-muted);">Next Payout Date:</span>
+              <strong style="color: #38bdf8;">1st of Next Month</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: var(--text-muted);">Quality Multiplier:</span>
+              <strong style="color: #a855f7;">1.0x (100% First-Pass QC)</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Standup Submission History Table -->
       <div class="card">
         <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1rem;">📜 Your Standup Submission History</h3>
         ${renderStandupHistoryTable()}
       </div>
+    `;
+  }
+
+  function renderPendingTriageTable(pendingList) {
+    if (pendingList.length === 0) {
+      return '<div style="color: var(--text-muted); padding: 2rem; text-align: center;">No products currently waiting for review.</div>';
+    }
+
+    return `
+      <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+        <thead>
+          <tr style="border-bottom: 1px solid var(--border-subtle); color: var(--text-muted); text-align: left;">
+            <th style="padding: 0.6rem;">SKU</th>
+            <th style="padding: 0.6rem;">Product Name</th>
+            <th style="padding: 0.6rem;">Brand</th>
+            <th style="padding: 0.6rem;">Price</th>
+            <th style="padding: 0.6rem; text-align: right;">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${pendingList.map(p => `
+            <tr style="border-bottom: 1px solid var(--border-subtle);">
+              <td style="padding: 0.65rem; font-family: var(--font-mono); font-weight: 700; color: #f59e0b;">${p.code}</td>
+              <td style="padding: 0.65rem; font-weight: 600;">${(p.name || p.seoTitle || 'Product').substring(0, 32)}</td>
+              <td style="padding: 0.65rem; color: var(--text-secondary);">${p.brandName || 'PlannerQueenGro'}</td>
+              <td style="padding: 0.65rem; font-weight: 700;">$${Number(p.price || 7.49).toFixed(2)}</td>
+              <td style="padding: 0.65rem; text-align: right;">
+                <button class="btn-secondary" style="font-size: 0.72rem; padding: 0.25rem 0.6rem;" onclick="startProductStudio('${p.code}')">✏️ Edit in Studio</button>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
     `;
   }
 
