@@ -431,9 +431,9 @@ const DigistoreModule = {
         <td style="padding: 14px 16px;">
           ${stageBadge}
           <div style="display: flex; flex-direction: column; gap: 2px; margin-top: 4px;">
-            ${o.paymentProofUrl ? `<a href="${o.paymentProofUrl}" target="_blank" style="font-size: 11px; color: #38bdf8; text-decoration: underline;">🖼️ Cust Proof</a>` : ''}
-            ${o.vendorPaymentProofUrl ? `<a href="${o.vendorPaymentProofUrl}" target="_blank" style="font-size: 11px; color: #f97316; text-decoration: underline;">🖼️ Vendor Proof</a>` : ''}
-            ${o.adminClosureProofUrl ? `<a href="${o.adminClosureProofUrl}" target="_blank" style="font-size: 11px; color: #94a3b8; text-decoration: underline;">🖼️ Close Proof</a>` : ''}
+            ${o.paymentProofUrl ? `<button type="button" class="proof-lightbox-trigger" data-img="${o.paymentProofUrl}" data-title="Customer Payment Proof — ${o.orderNumber}" style="background: none; border: none; padding: 0; font-size: 11px; color: #38bdf8; text-decoration: underline; cursor: pointer; text-align: left;">🖼️ Cust Proof</button>` : ''}
+            ${o.vendorPaymentProofUrl ? `<button type="button" class="proof-lightbox-trigger" data-img="${o.vendorPaymentProofUrl}" data-title="Vendor Payment Proof — ${o.orderNumber}" style="background: none; border: none; padding: 0; font-size: 11px; color: #f97316; text-decoration: underline; cursor: pointer; text-align: left;">🖼️ Vendor Proof</button>` : ''}
+            ${o.adminClosureProofUrl ? `<button type="button" class="proof-lightbox-trigger" data-img="${o.adminClosureProofUrl}" data-title="Closure Proof — ${o.orderNumber}" style="background: none; border: none; padding: 0; font-size: 11px; color: #94a3b8; text-decoration: underline; cursor: pointer; text-align: left;">🖼️ Close Proof</button>` : ''}
           </div>
         </td>
         <td style="padding: 14px 16px;">
@@ -473,6 +473,16 @@ const DigistoreModule = {
   },
 
   bindOrderRowActions(container) {
+    // Lightbox triggers for payment proofs
+    container.querySelectorAll('.proof-lightbox-trigger').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const img = e.currentTarget.getAttribute('data-img');
+        const title = e.currentTarget.getAttribute('data-title') || 'Proof Preview';
+        if (img) this.openLightboxModal(img, title);
+      });
+    });
+
     // Verify Payment button
     container.querySelectorAll('.btn-verify-pay').forEach(btn => {
       btn.addEventListener('click', async (e) => {
@@ -480,12 +490,12 @@ const DigistoreModule = {
         try {
           const res = await APP_API.patch(`/digistore/orders/${id}/verify-payment`);
           if (res && res.message) {
-            alert(res.message);
+            if (window.showToast) window.showToast(res.message, 'success');
             await this.loadAllData();
             this.renderOrdersTab(container);
           }
         } catch (err) {
-          alert('Error verifying payment: ' + err.message);
+          if (window.showToast) window.showToast('Error verifying payment: ' + err.message, 'error');
         }
       });
     });
@@ -542,11 +552,11 @@ const DigistoreModule = {
         if (confirm('Create a renewal order for this subscription?')) {
           try {
             await APP_API.post(`/digistore/orders/${id}/renew`);
-            alert('Renewal order created!');
+            if (window.showToast) window.showToast('Renewal order created!', 'success');
             await this.loadAllData();
             this.renderOrdersTab(container);
           } catch (err) {
-            alert('Error creating renewal: ' + err.message);
+            if (window.showToast) window.showToast('Error creating renewal: ' + err.message, 'error');
           }
         }
       });
@@ -1664,6 +1674,21 @@ const DigistoreModule = {
             <div style="color: var(--text-muted); margin-top: 2px;">Customer: <strong>${order.customerName}</strong> | WA: <span style="color:#25d366;">${order.customerWhatsapp || order.customerContact}</span></div>
           </div>
 
+          <!-- Preset Guideline Selector -->
+          <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 12px; margin-bottom: 16px;">
+            <label style="font-size: 12px; color: #38bdf8; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+              <span>⚡</span> Quick Guideline Preset Template:
+            </label>
+            <select id="selectGuidelinePreset" style="width: 100%; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 8px 10px; color: #fff; font-size: 13px; margin-top: 6px;">
+              <option value="">-- Choose Guideline Preset Template --</option>
+              <option value="gemini">Gemini Pro 18M (6-Step Clean Chrome Guide)</option>
+              <option value="netflix">Netflix 4K UHD (Profile PIN & Household Rule)</option>
+              <option value="canva">Canva Pro Edu (Team Invite Link Guide)</option>
+              <option value="office">Office 365 / Google Drive (Login & Pass Change)</option>
+              <option value="vpn">ExpressVPN / NordVPN (Key Activation Guide)</option>
+            </select>
+          </div>
+
           <!-- Mode Switcher -->
           <div style="display: flex; gap: 8px; margin-bottom: 16px; background: rgba(0,0,0,0.3); padding: 4px; border-radius: 8px;">
             <button type="button" class="btn btn-sm ${isLinkProd ? 'btn-primary' : 'btn-secondary'}" id="btnTabLinkMode" style="flex: 1;">
@@ -1748,6 +1773,47 @@ const DigistoreModule = {
       formLink.style.display = 'none';
     });
 
+    // Preset selection logic
+    const PRESETS = {
+      gemini: {
+        type: 'link',
+        notes: "1. উপরের অ্যাক্টিভেশন লিংকটি কপি করুন\n2. Google Chrome-এ একটি নতুন Profile তৈরি করুন\n3. সেখানে একটি Clean Gmail দিয়ে লগইন করুন (যেখানে কোনো paid sub নেই)\n4. লিংকে গিয়ে 'FREE ACTIVATION' বাটনে ক্লিক করুন\n5. সফলভাবে অ্যাক্টিভেট হলে নিচে কনফার্ম করুন! 🎉"
+      },
+      netflix: {
+        type: 'creds',
+        notes: "⚠️ নিয়ম: শুধুমাত্র আপনার নির্ধারিত প্রোফাইল ও পিন ব্যবহার করবেন। পাসওয়ার্ড বা প্রোফাইল নেম পরিবর্তন করবেন না।"
+      },
+      canva: {
+        type: 'link',
+        notes: "1. উপরের টিম ইনভাইট লিংকে ক্লিক করুন\n2. আপনার ব্যক্তিগত ক্যানভা একাউন্টে লগইন করুন\n3. 'Join Team' চাপুন — সরাসরি প্রো ফিচার আনলক হয়ে যাবে! 🎨"
+      },
+      office: {
+        type: 'creds',
+        notes: "Portal: portal.office.com\n⚠️ প্রথমবার লগইন করার সাথে সাথে পাসওয়ার্ড পরিবর্তন করে নতুন সিকিউর পাসওয়ার্ড সেট করুন।"
+      },
+      vpn: {
+        type: 'creds',
+        notes: "Download: Official Website\nঅ্যাপ ইনস্টল করে এক্টিভেশন কি দিয়ে লগইন করুন।"
+      }
+    };
+
+    const selPreset = modalContainer.querySelector('#selectGuidelinePreset');
+    if (selPreset) {
+      selPreset.addEventListener('change', (e) => {
+        const val = e.target.value;
+        const p = PRESETS[val];
+        if (!p) return;
+
+        if (p.type === 'link') {
+          btnTabLink.click();
+        } else {
+          btnTabCreds.click();
+          const inpNotes = document.getElementById('modalCredNotes');
+          if (inpNotes) inpNotes.value = p.notes;
+        }
+      });
+    }
+
     // Handle Link Delivery Submit
     formLink.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -1821,6 +1887,74 @@ const DigistoreModule = {
         btn.textContent = 'Save & Deliver 🔑';
       }
     });
+  },
+
+  openLightboxModal(imgSrc, title = 'Proof Screenshot Preview') {
+    let rotation = 0;
+    let scale = 1;
+
+    const modalContainer = document.getElementById('digiModalsContainer');
+    if (!modalContainer) return;
+
+    modalContainer.innerHTML = `
+      <div id="lightboxBackdrop" style="position: fixed; inset: 0; background: rgba(0,0,0,0.92); backdrop-filter: blur(10px); z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;">
+        <!-- Header Toolbar -->
+        <div style="position: absolute; top: 16px; left: 20px; right: 20px; display: flex; justify-content: space-between; align-items: center; z-index: 100000; flex-wrap: wrap; gap: 8px;">
+          <div style="color: #fff; font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+            <span>📸</span> <span>${title}</span>
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <button class="btn btn-sm btn-secondary" id="btnLightboxRotate" style="padding: 6px 12px;">🔄 Rotate</button>
+            <button class="btn btn-sm btn-secondary" id="btnLightboxZoomIn" style="padding: 6px 12px;">➕ Zoom In</button>
+            <button class="btn btn-sm btn-secondary" id="btnLightboxZoomOut" style="padding: 6px 12px;">➖ Zoom Out</button>
+            <a href="${imgSrc}" download target="_blank" class="btn btn-sm btn-secondary" style="padding: 6px 12px; text-decoration: none;">📥 Download</a>
+            <button class="btn btn-sm btn-primary" id="btnLightboxClose" style="padding: 6px 14px; background: #ef4444; border: none; color: #fff;">✕ Close</button>
+          </div>
+        </div>
+
+        <!-- Image Container -->
+        <div style="max-width: 90vw; max-height: 80vh; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+          <img id="lightboxImage" src="${imgSrc}" alt="Lightbox Preview" style="max-width: 85vw; max-height: 75vh; object-fit: contain; border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,0.8); transition: transform 0.25s ease;" />
+        </div>
+      </div>
+    `;
+
+    const img = document.getElementById('lightboxImage');
+    const updateTransform = () => {
+      if (img) img.style.transform = `rotate(${rotation}deg) scale(${scale})`;
+    };
+
+    document.getElementById('btnLightboxRotate').addEventListener('click', (e) => {
+      e.stopPropagation();
+      rotation = (rotation + 90) % 360;
+      updateTransform();
+    });
+
+    document.getElementById('btnLightboxZoomIn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      scale = Math.min(scale + 0.25, 3);
+      updateTransform();
+    });
+
+    document.getElementById('btnLightboxZoomOut').addEventListener('click', (e) => {
+      e.stopPropagation();
+      scale = Math.max(scale - 0.25, 0.5);
+      updateTransform();
+    });
+
+    const close = () => { modalContainer.innerHTML = ''; };
+    document.getElementById('btnLightboxClose').addEventListener('click', close);
+    document.getElementById('lightboxBackdrop').addEventListener('click', (e) => {
+      if (e.target.id === 'lightboxBackdrop') close();
+    });
+
+    const escHandler = (e) => {
+      if (e.key === 'Escape') {
+        close();
+        window.removeEventListener('keydown', escHandler);
+      }
+    };
+    window.addEventListener('keydown', escHandler);
   },
 
   openAdminCloseModal(order) {

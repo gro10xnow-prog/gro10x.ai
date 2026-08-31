@@ -495,3 +495,54 @@ a {
   padding: 3px 8px;
   border-radius: 9999px;
 }
+
+/* ── Live Stepper & ETA Banner Enhancements (Phase 5B) ── */
+@keyframes stepPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 223, 137, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(0, 223, 137, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 223, 137, 0);
+  }
+}
+
+.step-active-pulse {
+  animation: stepPulse 2s infinite !important;
+  border: 2px solid #00df89 !important;
+  background: rgba(0, 223, 137, 0.25) !important;
+  color: #00df89 !important;
+}
+
+.eta-banner {
+  background: rgba(56, 189, 248, 0.08);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.eta-progress-track {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 9999px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+.eta-progress-fill {
+  height: 100%;
+  width: 65%;
+  background: linear-gradient(90deg, #38bdf8, #00df89);
+  border-radius: 9999px;
+  animation: etaShimmer 2s infinite linear;
+}
+
+@keyframes etaShimmer {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
