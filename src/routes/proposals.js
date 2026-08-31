@@ -114,14 +114,14 @@ const DEFAULT_PROPOSALS = [
     ],
     recurring_items: [
       {
-        name: 'Conversational AI Inference & API Utilization',
-        description: 'Gemini Flash AI inference tokens covering high-volume 24/7 automated messaging',
+        name: 'Conversational AI Inference & API Allocation (Baseline)',
+        description: 'Standard Gemini Flash AI token quota covering high-volume 24/7 automated messaging. Any high-surge or additional model compute is charged transparently at actual provider cost.',
         amount: 4000,
         frequency: 'Monthly'
       },
       {
         name: 'Dedicated Cloud Infrastructure & High-Availability Hosting',
-        description: 'Secure, dedicated server hosting, SSL encryption, continuous uptime & webhook listeners',
+        description: 'Secure, dedicated single-tenant server hosting, SSL encryption, continuous uptime & webhook listeners',
         amount: 3000,
         frequency: 'Monthly'
       },
@@ -137,8 +137,8 @@ const DEFAULT_PROPOSALS = [
     currency: 'BDT',
     timeline: '10–14 Working Days from Meta Credentials Handover',
     valid_until: '2026-09-30',
-    terms: '1. One-time build cost is split: 50% advance upon kickoff, 50% upon successful UAT sign-off.\n2. Monthly maintenance and AI infrastructure retainer is billed at the beginning of each service cycle.\n3. UCB retains full ownership of customer data and conversation history.\n4. Standard SLA response time for critical infrastructure triage is under 60 minutes.',
-    notes: 'Agency partner mark-up friendly. Baseline internal price: $400 one-time (~48,000 BDT) + 7,500–10,000 BDT/month retainer.',
+    terms: '1. One-time build cost is split: 50% advance upon kickoff, 50% upon successful UAT sign-off.\n2. Monthly maintenance and AI infrastructure retainer is billed at the beginning of each service cycle.\n3. Usage & API Policy: Baseline monthly AI inference is included; any exceptional surges or additional third-party API consumption will be billed at actuals with transparent usage telemetry.\n4. UCB retains full ownership of customer data and conversation history.\n5. Standard SLA response time for critical infrastructure triage is under 60 minutes.',
+    notes: 'Agency partner mark-up friendly. Baseline internal price: $400 one-time (~48,000 BDT) + 7,500–10,000 BDT/month retainer. Extra API at actuals.',
     status: 'Sent',
     created_by: 'GRO-001',
     view_count: 0,
@@ -535,7 +535,7 @@ You must respond with valid JSON strictly conforming to this JSON schema:
   "recurringTotal": number (Sum of recurringItems amounts),
   "currency": "${selectedCurrency}",
   "timeline": "string (e.g., 10–14 Working Days)",
-  "terms": "string (Clear 3-4 bullet commercial terms)"
+  "terms": "string (Clear 3-4 bullet commercial terms including advance %, retainer cycle, and note that any high-surge API/third-party compute beyond standard quota is billed at actuals)"
 }
 `;
 

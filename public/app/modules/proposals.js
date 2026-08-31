@@ -558,6 +558,7 @@ window.APP_MODULES['proposals.js'] = {
       document.getElementById('proposalModalTitle').textContent = '✨ Create Project Proposal';
       document.getElementById('propEditId').value = '';
       document.getElementById('propShareToken').value = '';
+      document.getElementById('propTerms').value = '1. 50% advance upon formal kickoff and credentials handover; 50% upon successful UAT sign-off.\n2. Monthly maintenance and AI infrastructure retainer is billed at the beginning of each service cycle.\n3. Usage & API Policy: Standard monthly AI inference volume is included. Any high-volume surges or additional third-party API compute will be billed directly at actual provider costs with full transparent usage telemetry.\n4. Client maintains 100% data sovereignty and confidential control over all user sessions and data.\n5. Standard SLA response time for critical infrastructure triage is under 60 minutes.';
 
       // Add starter empty rows
       this.addScopeItemRow('System Architecture & API Integration', '');
