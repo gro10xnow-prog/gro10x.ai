@@ -20,7 +20,61 @@ const { broadcast } = require('./sse');
 const { getTeamBot } = require('./bot');
 
 let digivaultBot = null;
-const userSessions = new Map(); // chatId -> { lang, step, selectedProduct, orderId, ... }
+const userSessions = new Map(); // Fast in-memory cache: chatId -> { lang, step, selectedProduct, orderId, ... }
+
+/**
+ * Persistent Session Manager (In-Memory Cache + Supabase Backup)
+ */
+async function getSession(chatId) {
+  const cId = String(chatId);
+  if (userSessions.has(cId)) {
+    return userSessions.get(cId);
+  }
+  if (isSupabaseConfigured()) {
+    try {
+      const { data } = await supabase.from('digi_bot_sessions').select('*').eq('chat_id', cId).maybeSingle();
+      if (data && data.session_data) {
+        const sess = {
+          lang: data.lang || 'bn',
+          step: data.step || 'idle',
+          ...(typeof data.session_data === 'object' ? data.session_data : {})
+        };
+        userSessions.set(cId, sess);
+        return sess;
+      }
+    } catch (e) {}
+  }
+  const defaultSess = { lang: 'bn', step: 'idle' };
+  userSessions.set(cId, defaultSess);
+  return defaultSess;
+}
+
+async function saveSession(chatId, sessionData) {
+  const cId = String(chatId);
+  userSessions.set(cId, sessionData);
+  if (isSupabaseConfigured()) {
+    try {
+      const payload = {
+        chat_id: cId,
+        lang: sessionData.lang || 'bn',
+        step: sessionData.step || 'idle',
+        session_data: sessionData,
+        updated_at: new Date().toISOString()
+      };
+      await supabase.from('digi_bot_sessions').upsert(payload, { onConflict: 'chat_id' });
+    } catch (e) {}
+  }
+}
+
+async function clearSession(chatId) {
+  const cId = String(chatId);
+  userSessions.delete(cId);
+  if (isSupabaseConfigured()) {
+    try {
+      await supabase.from('digi_bot_sessions').delete().eq('chat_id', cId);
+    } catch (e) {}
+  }
+}
 
 // Payment Receiver Numbers (Can be customized via App Settings)
 const PAYMENT_CONFIG = {
@@ -93,7 +147,7 @@ const CATEGORIES = [
 ];
 
 function getLang(chatId) {
-  const session = userSessions.get(chatId);
+  const session = userSessions.get(String(chatId));
   return session?.lang || 'bn'; // Default to Bengali for BD audience
 }
 
@@ -139,19 +193,18 @@ function getDigiVaultBot() {
 
 function registerBotHandlers(bot) {
   // Command: /start
-  bot.onText(/\/start/, (msg) => {
+  bot.onText(/\/start/, async (msg) => {
     const chatId = msg.chat.id;
-    userSessions.set(chatId, { lang: 'bn', step: 'idle' });
+    await saveSession(chatId, { lang: 'bn', step: 'idle' });
     sendWelcomeMenu(bot, chatId);
   });
 
   // Command: /lang
-  bot.onText(/\/lang/, (msg) => {
+  bot.onText(/\/lang/, async (msg) => {
     const chatId = msg.chat.id;
-    const current = getLang(chatId);
-    const newLang = current === 'bn' ? 'en' : 'bn';
-    const sess = userSessions.get(chatId) || {};
-    userSessions.set(chatId, { ...sess, lang: newLang });
+    const sess = await getSession(chatId);
+    const newLang = sess.lang === 'bn' ? 'en' : 'bn';
+    await saveSession(chatId, { ...sess, lang: newLang });
     bot.sendMessage(chatId, newLang === 'bn' ? '🇧🇩 ভাষা পরিবর্তন করা হয়েছে: বাংলা' : '🇬🇧 Language switched to: English');
     sendWelcomeMenu(bot, chatId);
   });
@@ -196,10 +249,9 @@ function registerBotHandlers(bot) {
         return sendWelcomeMenu(bot, chatId, query.message.message_id);
       }
       if (data === 'toggle_lang') {
-        const curr = getLang(chatId);
-        const next = curr === 'bn' ? 'en' : 'bn';
-        const sess = userSessions.get(chatId) || {};
-        userSessions.set(chatId, { ...sess, lang: next });
+        const sess = await getSession(chatId);
+        const next = sess.lang === 'bn' ? 'en' : 'bn';
+        await saveSession(chatId, { ...sess, lang: next });
         return sendWelcomeMenu(bot, chatId, query.message.message_id);
       }
       if (data.startsWith('cat:')) {
@@ -253,34 +305,34 @@ function registerBotHandlers(bot) {
   bot.on('message', async (msg) => {
     if (!msg.text || msg.text.startsWith('/')) return;
     const chatId = msg.chat.id;
-    const session = userSessions.get(chatId);
+    const session = await getSession(chatId);
     if (!session || session.step === 'idle') return;
 
     if (session.step === 'awaiting_name') {
       session.customerName = msg.text.trim();
       session.step = 'awaiting_contact';
-      userSessions.set(chatId, session);
+      await saveSession(chatId, session);
       return bot.sendMessage(chatId, t(chatId, 'askContact'), { parse_mode: 'Markdown' });
     }
 
     if (session.step === 'awaiting_contact') {
       session.customerContact = msg.text.trim();
       session.step = 'awaiting_whatsapp';
-      userSessions.set(chatId, session);
+      await saveSession(chatId, session);
       return bot.sendMessage(chatId, t(chatId, 'askWhatsapp'), { parse_mode: 'Markdown' });
     }
 
     if (session.step === 'awaiting_whatsapp') {
       session.customerWhatsapp = msg.text.trim();
       session.step = 'awaiting_payment';
-      userSessions.set(chatId, session);
+      await saveSession(chatId, session);
       return completeOrderCreation(bot, chatId, session);
     }
 
     if (session.step === 'awaiting_payment') {
       // User sent TrxID as text
       session.trxId = msg.text.trim();
-      userSessions.set(chatId, session);
+      await saveSession(chatId, session);
       return handlePaymentProofSubmission(bot, chatId, session, null, msg.text.trim());
     }
   });
@@ -288,7 +340,7 @@ function registerBotHandlers(bot) {
   // Photo / Screenshot Handler
   bot.on('photo', async (msg) => {
     const chatId = msg.chat.id;
-    const session = userSessions.get(chatId);
+    const session = await getSession(chatId);
     if (!session || !session.orderNumber) {
       // Find latest pending order for this chat
       const order = await findLatestPendingOrder(chatId);
@@ -457,7 +509,7 @@ async function startOrderFlow(bot, chatId, slug) {
   }
 
   const lang = getLang(chatId);
-  userSessions.set(chatId, {
+  await saveSession(chatId, {
     lang,
     step: 'awaiting_name',
     selectedProduct: product
@@ -501,7 +553,7 @@ async function completeOrderCreation(bot, chatId, session) {
 
   session.orderId = savedId;
   session.orderNumber = orderNumber;
-  userSessions.set(chatId, session);
+  await saveSession(chatId, session);
 
   // Send Invoice to Customer
   let text = `${t(chatId, 'orderSuccess')}\n\n`;
@@ -586,7 +638,7 @@ async function handlePaymentPhoto(bot, chatId, order, msg) {
     }
   } catch (e) {}
 
-  userSessions.delete(chatId);
+  await clearSession(chatId);
 }
 
 async function handlePaymentProofSubmission(bot, chatId, session, photoUrl = null, trxId = null) {
@@ -600,7 +652,8 @@ async function handlePaymentProofSubmission(bot, chatId, session, photoUrl = nul
 
   const text = t(chatId, 'screenshotReceived').replace('%ORDER%', session.orderNumber || '');
   bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
-  userSessions.delete(chatId);
+
+  await clearSession(chatId);
 }
 
 async function handleOrderTracking(bot, chatId, ref) {
@@ -781,6 +834,9 @@ async function processDigiVaultWebhook(update) {
 module.exports = {
   initDigiVaultBot,
   getDigiVaultBot,
+  getSession,
+  saveSession,
+  clearSession,
   sendTelegramPaymentRejection,
   sendTelegramOrderDelivery,
   sendTelegramActivationDelivery,

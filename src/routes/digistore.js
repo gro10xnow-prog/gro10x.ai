@@ -142,6 +142,23 @@ function generateCustomerWhatsAppRejectionLink(order, reason = 'Payment verifica
   return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`;
 }
 
+// Helper: Generate Renewal WhatsApp Reminder Link
+function generateRenewalWhatsAppReminderLink(renewal) {
+  const rawPhone = renewal.customer_whatsapp || renewal.customerWhatsapp || renewal.customer_contact || renewal.customerContact || '';
+  const cleanPhone = rawPhone.replace(/[^0-9]/g, '');
+  if (!cleanPhone || cleanPhone.length < 8) return null;
+  const name = (renewal.customer_name || renewal.customerName || 'Customer').split(' ')[0];
+  const prodName = renewal.product_name || renewal.productName || 'Subscription';
+  const daysLeft = renewal.daysRemaining !== undefined ? renewal.daysRemaining : 7;
+  const price = renewal.sale_price || renewal.salePrice || 0;
+  
+  const msg = daysLeft <= 0
+    ? `Salam ${name}! Your DigiVault ${prodName} subscription has expired.\n\nWould you like to renew it for ৳${Number(price).toLocaleString()} to continue uninterrupted access?\n\nReply here or visit: https://gro10x-ai.vercel.app/digivault`
+    : `Salam ${name}! Your DigiVault ${prodName} subscription will expire in ${daysLeft} day${daysLeft > 1 ? 's' : ''}.\n\nWould you like to renew it for ৳${Number(price).toLocaleString()}?\n\nReply here or visit: https://gro10x-ai.vercel.app/digivault`;
+    
+  return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`;
+}
+
 // Helper: Map Order Object
 function mapOrder(o, vendorMap = {}) {
   if (!o) return null;
@@ -401,6 +418,50 @@ router.post('/vendors', requireAuth, requireAdmin, asyncHandler(async (req, res)
 
   inMemoryVendors.push(payload);
   return ok(res, payload, 201);
+}));
+
+/**
+ * PUT /api/digistore/vendors/:id
+ */
+router.put('/vendors/:id', requireAuth, requireManager, asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { name, contactType, contactHandle, phone, paymentMethod, notes, avgDeliveryMin, reliabilityScore, isActive } = req.body;
+
+  const updates = {
+    ...(name !== undefined && { name }),
+    ...(contactType !== undefined && { contact_type: contactType }),
+    ...(contactHandle !== undefined && { contact_handle: contactHandle }),
+    ...(phone !== undefined && { phone: String(phone).replace(/[^0-9]/g, '') }),
+    ...(paymentMethod !== undefined && { payment_method: paymentMethod }),
+    ...(notes !== undefined && { notes }),
+    ...(avgDeliveryMin !== undefined && { avg_delivery_min: Number(avgDeliveryMin) }),
+    ...(reliabilityScore !== undefined && { reliability_score: Number(reliabilityScore) }),
+    ...(isActive !== undefined && { is_active: Boolean(isActive) }),
+    updated_at: new Date().toISOString()
+  };
+
+  if (isSupabaseConfigured()) {
+    const { data, error } = await supabase.from('digi_vendors').update(updates).eq('id', id).select().maybeSingle();
+    if (error) return fail(res, error.message, 500);
+    return ok(res, data);
+  }
+
+  return ok(res, { id, ...updates });
+}));
+
+/**
+ * DELETE /api/digistore/vendors/:id
+ */
+router.delete('/vendors/:id', requireAuth, requireAdmin, asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  if (isSupabaseConfigured()) {
+    const { error } = await supabase.from('digi_vendors').delete().eq('id', id);
+    if (error) return fail(res, error.message, 500);
+    return ok(res, { id, deleted: true });
+  }
+
+  return ok(res, { id, deleted: true });
 }));
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1134,11 +1195,15 @@ router.get('/renewals', requireAuth, asyncHandler(async (req, res) => {
       .order('expiry_date', { ascending: true });
 
     if (!error && data) {
-      renewals = data.map(o => ({
-        ...mapOrder(o),
-        isExpired: o.expiry_date < todayStr,
-        daysRemaining: Math.ceil((new Date(o.expiry_date) - today) / (1000 * 60 * 60 * 24))
-      }));
+      renewals = data.map(o => {
+        const mapped = {
+          ...mapOrder(o),
+          isExpired: o.expiry_date < todayStr,
+          daysRemaining: Math.ceil((new Date(o.expiry_date) - today) / (1000 * 60 * 60 * 24))
+        };
+        mapped.whatsappReminderLink = generateRenewalWhatsAppReminderLink(mapped);
+        return mapped;
+      });
     }
   }
 

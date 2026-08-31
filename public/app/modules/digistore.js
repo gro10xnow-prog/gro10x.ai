@@ -136,7 +136,7 @@ const DigistoreModule = {
     const profit = totalRev - totalCost;
     const margin = totalRev > 0 ? Math.round((profit / totalRev) * 100) : 0;
     const pendingDeliv = this.orders.filter(o => o.paymentStatus === 'verified' && o.deliveryStatus !== 'delivered').length;
-    const activeSubs = this.orders.filter(o => o.deliveryStatus === 'delivered').length;
+    const activeSubs = this.orders.filter(o => (o.deliveryStatus === 'delivered' || o.orderStage === 'delivered') && o.orderStage !== 'confirmed_closed' && o.orderStage !== 'admin_closed').length;
 
     const elRev = document.getElementById('kpiDigiRevenue');
     const elProf = document.getElementById('kpiDigiProfit');
@@ -473,81 +473,126 @@ const DigistoreModule = {
   // ───────────────────────────────────────────────────────────────────────────
   renderDeliveryTab(container) {
     const queue = this.orders.filter(o => o.paymentStatus === 'verified' && o.deliveryStatus !== 'delivered');
+    const vendors = [...new Set(queue.map(o => o.vendorName).filter(Boolean))];
+
+    const renderCards = (items) => {
+      if (items.length === 0) {
+        return `
+          <div class="card" style="padding: 48px; text-align: center; color: var(--text-muted); grid-column: 1 / -1;">
+            <div style="font-size: 36px; margin-bottom: 12px;">🎉</div>
+            <div style="font-size: 16px; font-weight: 700; color: #fff;">No Orders Match Filter</div>
+            <div style="font-size: 13px; margin-top: 4px;">All unfulfilled orders are currently clear or filtered out.</div>
+          </div>
+        `;
+      }
+      return items.map(o => `
+        <div class="card delivery-card-item" data-id="${o.id}" style="padding: 20px; border-top: 4px solid #f59e0b; display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+              <div>
+                <span style="font-family: monospace; font-size: 12px; color: #38bdf8; font-weight: 700;">${o.orderNumber}</span>
+                <h4 style="font-size: 16px; font-weight: 700; color: #fff; margin-top: 2px;">${o.productName}</h4>
+              </div>
+              <span class="badge" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3);">⏱️ ${o.duration}</span>
+            </div>
+
+            <div style="background: rgba(0,0,0,0.25); border-radius: 8px; padding: 12px; font-size: 13px; margin-bottom: 14px;">
+              <div style="color: #94a3b8;">Customer: <strong style="color: #fff;">${o.customerName}</strong> (${o.customerContact})</div>
+              <div style="color: #25d366; margin-top: 2px; font-weight: 600;">WhatsApp: ${o.customerWhatsapp || o.customerContact}</div>
+              <div style="color: #94a3b8; margin-top: 4px;">Supplier: <strong style="color: #38bdf8;">${o.vendorName}</strong> (Cost: ৳${o.vendorPrice})</div>
+              <div style="color: #10b981; margin-top: 4px; font-weight: 700;">Net Profit: +৳${o.profit.toLocaleString()}</div>
+            </div>
+
+            ${o.vendorPaymentProofUrl ? `
+              <div style="font-size: 11px; color: #10b981; margin-bottom: 10px; display: flex; align-items: center; gap: 4px;">
+                <span>✅</span> Vendor Payment Recorded (৳${o.vendorPaymentAmount})
+              </div>
+            ` : `
+              <div style="font-size: 11px; color: #f97316; margin-bottom: 10px; display: flex; align-items: center; gap: 4px;">
+                <span>⚠️</span> Need to pay vendor ৳${o.vendorPrice}
+              </div>
+            `}
+          </div>
+
+          <div style="display: flex; gap: 8px; margin-top: 12px;">
+            <button class="btn btn-secondary btn-queue-procure" data-id="${o.id}" style="flex: 1; font-size: 12px;">
+              💬 1-Click Procure
+            </button>
+            <button class="btn btn-primary btn-queue-deliver" data-id="${o.id}" style="flex: 1; font-size: 12px;">
+              🔑 Enter Link / Creds
+            </button>
+          </div>
+        </div>
+      `).join('');
+    };
 
     container.innerHTML = `
-      <div style="margin-bottom: 20px;">
-        <h3 style="font-size: 18px; font-weight: 700; color: #fff;">🔑 Action Center — Unfulfilled Orders (${queue.length})</h3>
-        <p style="color: var(--text-muted); font-size: 13px;">
-          These orders have verified customer payments. Procure credentials or activation link from the supplier and enter them to dispatch to the customer.
-        </p>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+        <div>
+          <h3 style="font-size: 18px; font-weight: 700; color: #fff;">🔑 Action Center — Unfulfilled Orders (${queue.length})</h3>
+          <p style="color: var(--text-muted); font-size: 13px; margin-top: 2px;">
+            Verified customer payments ready for procurement and credential delivery.
+          </p>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+          <input type="text" id="inputDeliverySearch" placeholder="Search customer, ref, product..." style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 8px 14px; color: #fff; font-size: 13px; min-width: 230px;" />
+          <select id="selectDeliveryVendorFilter" style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 8px 12px; color: #fff; font-size: 13px;">
+            <option value="all">All Suppliers (${vendors.length})</option>
+            ${vendors.map(v => `<option value="${v}">${v}</option>`).join('')}
+          </select>
+        </div>
       </div>
 
-      ${queue.length === 0 ? `
-        <div class="card" style="padding: 48px; text-align: center; color: var(--text-muted);">
-          <div style="font-size: 36px; margin-bottom: 12px;">🎉</div>
-          <div style="font-size: 16px; font-weight: 700; color: #fff;">Delivery Queue is Clear!</div>
-          <div style="font-size: 13px; margin-top: 4px;">All paid orders have been successfully fulfilled.</div>
-        </div>
-      ` : `
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 16px;">
-          ${queue.map(o => `
-            <div class="card" style="padding: 20px; border-top: 4px solid #f59e0b; display: flex; flex-direction: column; justify-content: space-between;">
-              <div>
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
-                  <div>
-                    <span style="font-family: monospace; font-size: 12px; color: #38bdf8; font-weight: 700;">${o.orderNumber}</span>
-                    <h4 style="font-size: 16px; font-weight: 700; color: #fff; margin-top: 2px;">${o.productName}</h4>
-                  </div>
-                  <span class="badge" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3);">⏱️ ${o.duration}</span>
-                </div>
-
-                <div style="background: rgba(0,0,0,0.25); border-radius: 8px; padding: 12px; font-size: 13px; margin-bottom: 14px;">
-                  <div style="color: #94a3b8;">Customer: <strong style="color: #fff;">${o.customerName}</strong> (${o.customerContact})</div>
-                  <div style="color: #25d366; margin-top: 2px; font-weight: 600;">WhatsApp: ${o.customerWhatsapp || o.customerContact}</div>
-                  <div style="color: #94a3b8; margin-top: 4px;">Supplier: <strong style="color: #38bdf8;">${o.vendorName}</strong> (Cost: ৳${o.vendorPrice})</div>
-                  <div style="color: #10b981; margin-top: 4px; font-weight: 700;">Net Profit: +৳${o.profit.toLocaleString()}</div>
-                </div>
-
-                ${o.vendorPaymentProofUrl ? `
-                  <div style="font-size: 11px; color: #10b981; margin-bottom: 10px; display: flex; align-items: center; gap: 4px;">
-                    <span>✅</span> Vendor Payment Recorded (৳${o.vendorPaymentAmount})
-                  </div>
-                ` : `
-                  <div style="font-size: 11px; color: #f97316; margin-bottom: 10px; display: flex; align-items: center; gap: 4px;">
-                    <span>⚠️</span> Need to pay vendor ৳${o.vendorPrice}
-                  </div>
-                `}
-              </div>
-
-              <div style="display: flex; gap: 8px; margin-top: 12px;">
-                <button class="btn btn-secondary btn-queue-procure" data-id="${o.id}" style="flex: 1; font-size: 12px;">
-                  💬 1-Click Procure
-                </button>
-                <button class="btn btn-primary btn-queue-deliver" data-id="${o.id}" style="flex: 1; font-size: 12px;">
-                  🔑 Enter Link / Creds
-                </button>
-              </div>
-            </div>
-          `).join('')}
-        </div>
-      `}
+      <div id="deliveryQueueGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 16px;">
+        ${renderCards(queue)}
+      </div>
     `;
 
-    container.querySelectorAll('.btn-queue-procure').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const id = e.currentTarget.getAttribute('data-id');
-        const order = this.orders.find(o => o.id === id);
-        if (order) this.openProcureModal(order);
+    const bindCardActions = () => {
+      container.querySelectorAll('.btn-queue-procure').forEach(btn => {
+        btn.onclick = (e) => {
+          const id = e.currentTarget.getAttribute('data-id');
+          const order = this.orders.find(o => o.id === id);
+          if (order) this.openProcureModal(order);
+        };
       });
-    });
 
-    container.querySelectorAll('.btn-queue-deliver').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const id = e.currentTarget.getAttribute('data-id');
-        const order = this.orders.find(o => o.id === id);
-        if (order) this.openDeliveryModal(order);
+      container.querySelectorAll('.btn-queue-deliver').forEach(btn => {
+        btn.onclick = (e) => {
+          const id = e.currentTarget.getAttribute('data-id');
+          const order = this.orders.find(o => o.id === id);
+          if (order) this.openDeliveryModal(order);
+        };
       });
-    });
+    };
+
+    bindCardActions();
+
+    // Wire live filter and search
+    const inpSearch = container.querySelector('#inputDeliverySearch');
+    const selVendor = container.querySelector('#selectDeliveryVendorFilter');
+    const grid = container.querySelector('#deliveryQueueGrid');
+
+    const filterQueue = () => {
+      const q = inpSearch.value.trim().toLowerCase();
+      const v = selVendor.value;
+
+      const filtered = queue.filter(o => {
+        const matchSearch = !q ||
+          (o.orderNumber && o.orderNumber.toLowerCase().includes(q)) ||
+          (o.customerName && o.customerName.toLowerCase().includes(q)) ||
+          (o.customerContact && o.customerContact.toLowerCase().includes(q)) ||
+          (o.productName && o.productName.toLowerCase().includes(q));
+        const matchVendor = v === 'all' || o.vendorName === v;
+        return matchSearch && matchVendor;
+      });
+
+      grid.innerHTML = renderCards(filtered);
+      bindCardActions();
+    };
+
+    inpSearch.addEventListener('input', filterQueue);
+    selVendor.addEventListener('change', filterQueue);
   },
 
   // ───────────────────────────────────────────────────────────────────────────
@@ -655,84 +700,110 @@ const DigistoreModule = {
   // TAB 4: SUPPLIERS DIRECTORY
   // ───────────────────────────────────────────────────────────────────────────
   renderVendorsTab(container) {
+    const list = (this.vendors && this.vendors.length > 0) ? this.vendors : [
+      { id: 'v1', name: 'Premium Box Munir', contactType: 'whatsapp', contactHandle: '+880 1602-733832', phone: '01602733832', paymentMethod: 'bkash', avgDeliveryMin: 15, notes: 'AI & Gemini Pro 18M Specialist' },
+      { id: 'v2', name: 'Farhan Ahmed Rifat (FarhanFlix)', contactType: 'whatsapp', contactHandle: '+880 1609-127266', phone: '01609127266', paymentMethod: 'bkash', avgDeliveryMin: 30, notes: 'Full Catalog & Streaming' }
+    ];
+
     container.innerHTML = `
-      <div style="margin-bottom: 20px;">
-        <h3 style="font-size: 18px; font-weight: 700; color: #fff;">🏪 Verified Suppliers Directory</h3>
-        <p style="color: var(--text-muted); font-size: 13px;">
-          Suppliers fulfillment contacts and procurement channels. Strict blind protocol applies.
-        </p>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+        <div>
+          <h3 style="font-size: 18px; font-weight: 700; color: #fff;">🏪 Verified Suppliers Directory (${list.length})</h3>
+          <p style="color: var(--text-muted); font-size: 13px; margin-top: 2px;">
+            Suppliers fulfillment contacts and procurement channels. Strict blind protocol applies.
+          </p>
+        </div>
+        <button class="btn btn-primary" id="btnOpenAddVendorModal" style="display: flex; align-items: center; gap: 6px;">
+          <span>➕</span> Add Supplier
+        </button>
       </div>
 
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 20px;">
-        <!-- Vendor A: Munir -->
-        <div class="card" style="padding: 24px; border-left: 4px solid #00df89;">
-          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
-            <div>
-              <span class="badge" style="background: rgba(0, 223, 137, 0.15); color: #00df89; font-size: 11px;">⭐ AI & VIDEO SPECIALIST</span>
-              <h4 style="font-size: 18px; font-weight: 800; color: #fff; margin-top: 4px;">Premium Box Munir</h4>
-            </div>
-            <span style="font-size: 20px;">💎</span>
-          </div>
-          
-          <div style="color: var(--text-muted); font-size: 13px; margin-bottom: 16px;">
-            Primary Supplier for <strong>Gemini Pro 18M Admin Accounts (91% Margin)</strong>, VEO 3 Ultra Video generation, and Official CapCut Premium.
-          </div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 20px;">
+        ${list.map(v => {
+          const cleanPhone = (v.phone || v.contactHandle || '').replace(/[^0-9]/g, '');
+          const isMunir = (v.name || '').toLowerCase().includes('munir');
+          const borderColor = isMunir ? '#00df89' : '#38bdf8';
+          const badgeText = isMunir ? '⭐ AI & VIDEO SPECIALIST' : '🛍️ CATALOG SUPPLIER';
 
-          <div style="background: rgba(0,0,0,0.3); border-radius: 8px; padding: 12px; font-size: 13px; margin-bottom: 16px;">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
-              <span style="color: #94a3b8;">WhatsApp:</span>
-              <strong style="color: #38bdf8;">+880 1602-733832</strong>
-            </div>
-            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
-              <span style="color: #94a3b8;">Payment Method:</span>
-              <span style="color: #fff;">bKash Personal</span>
-            </div>
-            <div style="display: flex; justify-content: space-between;">
-              <span style="color: #94a3b8;">Avg Fulfillment:</span>
-              <span style="color: #10b981; font-weight: 700;">10 - 20 Mins</span>
-            </div>
-          </div>
+          return `
+            <div class="card vendor-card" style="padding: 24px; border-left: 4px solid ${borderColor}; display: flex; flex-direction: column; justify-content: space-between;">
+              <div>
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                  <div>
+                    <span class="badge" style="background: rgba(255,255,255,0.08); color: ${borderColor}; font-size: 11px;">${badgeText}</span>
+                    <h4 style="font-size: 18px; font-weight: 800; color: #fff; margin-top: 4px;">${v.name}</h4>
+                  </div>
+                  <span style="font-size: 20px;">${isMunir ? '💎' : '📦'}</span>
+                </div>
 
-          <a href="https://wa.me/8801602733832" target="_blank" class="btn btn-primary" style="width: 100%; text-align: center; text-decoration: none; display: block;">
-            💬 Open Munir on WhatsApp
-          </a>
-        </div>
+                ${v.notes ? `
+                  <div style="color: var(--text-muted); font-size: 13px; margin-bottom: 16px;">
+                    ${v.notes}
+                  </div>
+                ` : ''}
 
-        <!-- Vendor B: Farhan -->
-        <div class="card" style="padding: 24px; border-left: 4px solid #38bdf8;">
-          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
-            <div>
-              <span class="badge" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; font-size: 11px;">🛍️ GENERAL CATALOG SUPPLIER</span>
-              <h4 style="font-size: 18px; font-weight: 800; color: #fff; margin-top: 4px;">Farhan Ahmed Rifat (FarhanFlix)</h4>
-            </div>
-            <span style="font-size: 20px;">📦</span>
-          </div>
+                <div style="background: rgba(0,0,0,0.3); border-radius: 8px; padding: 12px; font-size: 13px; margin-bottom: 16px;">
+                  <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                    <span style="color: #94a3b8;">Contact:</span>
+                    <strong style="color: #38bdf8;">${v.contactHandle || v.phone || 'N/A'}</strong>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                    <span style="color: #94a3b8;">Payment:</span>
+                    <span style="color: #fff;">${v.paymentMethod || 'bKash Personal'}</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between;">
+                    <span style="color: #94a3b8;">Avg Fulfillment:</span>
+                    <span style="color: #10b981; font-weight: 700;">${v.avgDeliveryMin || 20} Mins</span>
+                  </div>
+                </div>
+              </div>
 
-          <div style="color: var(--text-muted); font-size: 13px; margin-bottom: 16px;">
-            Full-catalog supplier covering <strong>40+ streaming, audio, creative tools, Office365, Google Drive, and LinkedIn packs</strong>.
-          </div>
-
-          <div style="background: rgba(0,0,0,0.3); border-radius: 8px; padding: 12px; font-size: 13px; margin-bottom: 16px;">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
-              <span style="color: #94a3b8;">WhatsApp:</span>
-              <strong style="color: #38bdf8;">+880 1609-127266</strong>
+              <div style="display: flex; gap: 8px; margin-top: 10px;">
+                ${cleanPhone ? `
+                  <a href="https://wa.me/${cleanPhone}" target="_blank" class="btn btn-primary" style="flex: 2; text-align: center; text-decoration: none;">
+                    💬 WhatsApp
+                  </a>
+                ` : ''}
+                <button class="btn btn-secondary btn-edit-vendor" data-id="${v.id}" style="flex: 1;">
+                  ✏️ Edit
+                </button>
+                <button class="btn btn-secondary btn-delete-vendor" data-id="${v.id}" style="background: rgba(239, 68, 68, 0.15); color: #ef4444; border-color: rgba(239, 68, 68, 0.3);">
+                  🗑️
+                </button>
+              </div>
             </div>
-            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
-              <span style="color: #94a3b8;">Telegram:</span>
-              <span style="color: #fff;">@farhan_ahmed_rifat</span>
-            </div>
-            <div style="display: flex; justify-content: space-between;">
-              <span style="color: #94a3b8;">Payment Method:</span>
-              <span style="color: #fff;">bKash Personal</span>
-            </div>
-          </div>
-
-          <a href="https://wa.me/8801609127266" target="_blank" class="btn btn-primary" style="width: 100%; text-align: center; text-decoration: none; display: block;">
-            💬 Open Farhan on WhatsApp
-          </a>
-        </div>
+          `;
+        }).join('')}
       </div>
     `;
+
+    container.querySelector('#btnOpenAddVendorModal')?.addEventListener('click', () => {
+      this.openNewVendorModal();
+    });
+
+    container.querySelectorAll('.btn-edit-vendor').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = e.currentTarget.getAttribute('data-id');
+        const v = list.find(item => item.id === id);
+        if (v) this.openEditVendorModal(v);
+      });
+    });
+
+    container.querySelectorAll('.btn-delete-vendor').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const id = e.currentTarget.getAttribute('data-id');
+        if (confirm('Are you sure you want to remove this supplier?')) {
+          try {
+            await APP_API.delete(`/digistore/vendors/${id}`);
+            alert('Supplier removed successfully.');
+            await this.loadAllData();
+            this.renderVendorsTab(container);
+          } catch (err) {
+            alert('Error deleting supplier: ' + err.message);
+          }
+        }
+      });
+    });
   },
 
   // ───────────────────────────────────────────────────────────────────────────
@@ -790,9 +861,19 @@ const DigistoreModule = {
                     ৳${r.salePrice.toLocaleString()}
                   </td>
                   <td style="padding: 14px 16px; text-align: right;">
-                    <button class="btn btn-sm btn-primary btn-renew-order" data-id="${r.id}">
-                      🔄 Renew Order
-                    </button>
+                    <div style="display: flex; gap: 6px; justify-content: flex-end; align-items: center;">
+                      ${r.whatsappReminderLink ? `
+                        <a href="${r.whatsappReminderLink}" target="_blank" class="btn btn-sm" style="background: rgba(37,211,102,0.15); color: #25d366; text-decoration: none; padding: 5px 10px; font-weight: 600;">
+                          💬 WA Follow-up
+                        </a>
+                      ` : ''}
+                      <button class="btn btn-sm btn-primary btn-renew-order" data-id="${r.id}">
+                        🔄 Renew
+                      </button>
+                      <button class="btn btn-sm btn-secondary btn-procure-modal" data-id="${r.id}" style="padding: 5px 10px;">
+                        ⚡ Procure
+                      </button>
+                    </div>
                   </td>
                 </tr>
               `).join('')}
@@ -813,6 +894,14 @@ const DigistoreModule = {
         } catch (err) {
           alert('Error: ' + err.message);
         }
+      });
+    });
+
+    container.querySelectorAll('.btn-procure-modal').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = e.currentTarget.getAttribute('data-id');
+        const order = this.orders.find(o => o.id === id);
+        if (order) this.openProcureModal(order);
       });
     });
   },
@@ -1631,6 +1720,183 @@ const DigistoreModule = {
         this.switchTab('products');
       } catch (err) {
         alert('Error adding product: ' + err.message);
+      }
+    });
+  },
+
+  openNewVendorModal() {
+    const modalContainer = document.getElementById('digiModalsContainer');
+    if (!modalContainer) return;
+
+    modalContainer.innerHTML = `
+      <div class="modal-backdrop" style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px;">
+        <div class="modal-card" style="background: #131722; border: 1px solid var(--border-subtle); border-radius: 12px; width: 100%; max-width: 500px; padding: 24px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h3 style="font-size: 18px; font-weight: 800; color: #fff;">➕ Add New Supplier</h3>
+            <button class="btn btn-sm btn-secondary btn-close-modal">✕</button>
+          </div>
+
+          <form id="formNewVendor" style="display: flex; flex-direction: column; gap: 14px;">
+            <div>
+              <label style="font-size: 12px; color: #94a3b8; font-weight: 600;">Supplier Name *</label>
+              <input type="text" id="modalVendorName" required placeholder="e.g. Premium Box Munir" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px; color: #fff; font-size: 13px; margin-top: 4px;" />
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+              <div>
+                <label style="font-size: 12px; color: #94a3b8; font-weight: 600;">WhatsApp / Phone *</label>
+                <input type="text" id="modalVendorPhone" required placeholder="e.g. 01602733832" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px; color: #fff; font-size: 13px; margin-top: 4px;" />
+              </div>
+              <div>
+                <label style="font-size: 12px; color: #94a3b8; font-weight: 600;">Contact Handle</label>
+                <input type="text" id="modalVendorHandle" placeholder="e.g. +880 1602-733832" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px; color: #fff; font-size: 13px; margin-top: 4px;" />
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+              <div>
+                <label style="font-size: 12px; color: #94a3b8; font-weight: 600;">Payment Method</label>
+                <input type="text" id="modalVendorPayment" placeholder="e.g. bKash Personal" value="bKash Personal" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px; color: #fff; font-size: 13px; margin-top: 4px;" />
+              </div>
+              <div>
+                <label style="font-size: 12px; color: #94a3b8; font-weight: 600;">Avg Delivery (Mins)</label>
+                <input type="number" id="modalVendorAvgMin" placeholder="30" value="20" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px; color: #fff; font-size: 13px; margin-top: 4px;" />
+              </div>
+            </div>
+
+            <div>
+              <label style="font-size: 12px; color: #94a3b8; font-weight: 600;">Notes & Specialties</label>
+              <textarea id="modalVendorNotes" rows="2" placeholder="e.g. AI & Gemini Pro 18M Specialist (91% Margin)" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px; color: #fff; font-size: 13px; margin-top: 4px;"></textarea>
+            </div>
+
+            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 6px;">
+              <button type="button" class="btn btn-secondary btn-close-modal">Cancel</button>
+              <button type="submit" class="btn btn-primary" id="btnSubmitNewVendor">Save Supplier</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    `;
+
+    modalContainer.querySelectorAll('.btn-close-modal').forEach(b => {
+      b.addEventListener('click', () => { modalContainer.innerHTML = ''; });
+    });
+
+    const form = modalContainer.querySelector('#formNewVendor');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('btnSubmitNewVendor');
+      btn.disabled = true;
+      btn.textContent = 'Saving... ⏳';
+
+      const payload = {
+        name: document.getElementById('modalVendorName').value.trim(),
+        phone: document.getElementById('modalVendorPhone').value.trim(),
+        contactHandle: document.getElementById('modalVendorHandle').value.trim() || document.getElementById('modalVendorPhone').value.trim(),
+        contactType: 'whatsapp',
+        paymentMethod: document.getElementById('modalVendorPayment').value.trim(),
+        avgDeliveryMin: Number(document.getElementById('modalVendorAvgMin').value) || 20,
+        notes: document.getElementById('modalVendorNotes').value.trim()
+      };
+
+      try {
+        await APP_API.post('/digistore/vendors', payload);
+        alert('Supplier added successfully!');
+        modalContainer.innerHTML = '';
+        await this.loadAllData();
+        this.switchTab('vendors');
+      } catch (err) {
+        alert('Error adding supplier: ' + err.message);
+        btn.disabled = false;
+        btn.textContent = 'Save Supplier';
+      }
+    });
+  },
+
+  openEditVendorModal(vendor) {
+    const modalContainer = document.getElementById('digiModalsContainer');
+    if (!modalContainer) return;
+
+    modalContainer.innerHTML = `
+      <div class="modal-backdrop" style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px;">
+        <div class="modal-card" style="background: #131722; border: 1px solid var(--border-subtle); border-radius: 12px; width: 100%; max-width: 500px; padding: 24px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h3 style="font-size: 18px; font-weight: 800; color: #fff;">✏️ Edit Supplier</h3>
+            <button class="btn btn-sm btn-secondary btn-close-modal">✕</button>
+          </div>
+
+          <form id="formEditVendor" style="display: flex; flex-direction: column; gap: 14px;">
+            <div>
+              <label style="font-size: 12px; color: #94a3b8; font-weight: 600;">Supplier Name *</label>
+              <input type="text" id="modalEditVendorName" required value="${vendor.name || ''}" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px; color: #fff; font-size: 13px; margin-top: 4px;" />
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+              <div>
+                <label style="font-size: 12px; color: #94a3b8; font-weight: 600;">WhatsApp / Phone *</label>
+                <input type="text" id="modalEditVendorPhone" required value="${vendor.phone || vendor.contactHandle || ''}" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px; color: #fff; font-size: 13px; margin-top: 4px;" />
+              </div>
+              <div>
+                <label style="font-size: 12px; color: #94a3b8; font-weight: 600;">Contact Handle</label>
+                <input type="text" id="modalEditVendorHandle" value="${vendor.contactHandle || ''}" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px; color: #fff; font-size: 13px; margin-top: 4px;" />
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+              <div>
+                <label style="font-size: 12px; color: #94a3b8; font-weight: 600;">Payment Method</label>
+                <input type="text" id="modalEditVendorPayment" value="${vendor.paymentMethod || 'bKash Personal'}" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px; color: #fff; font-size: 13px; margin-top: 4px;" />
+              </div>
+              <div>
+                <label style="font-size: 12px; color: #94a3b8; font-weight: 600;">Avg Delivery (Mins)</label>
+                <input type="number" id="modalEditVendorAvgMin" value="${vendor.avgDeliveryMin || 20}" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px; color: #fff; font-size: 13px; margin-top: 4px;" />
+              </div>
+            </div>
+
+            <div>
+              <label style="font-size: 12px; color: #94a3b8; font-weight: 600;">Notes & Specialties</label>
+              <textarea id="modalEditVendorNotes" rows="2" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px; color: #fff; font-size: 13px; margin-top: 4px;">${vendor.notes || ''}</textarea>
+            </div>
+
+            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 6px;">
+              <button type="button" class="btn btn-secondary btn-close-modal">Cancel</button>
+              <button type="submit" class="btn btn-primary" id="btnSubmitEditVendor">Update Supplier</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    `;
+
+    modalContainer.querySelectorAll('.btn-close-modal').forEach(b => {
+      b.addEventListener('click', () => { modalContainer.innerHTML = ''; });
+    });
+
+    const form = modalContainer.querySelector('#formEditVendor');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('btnSubmitEditVendor');
+      btn.disabled = true;
+      btn.textContent = 'Updating... ⏳';
+
+      const payload = {
+        name: document.getElementById('modalEditVendorName').value.trim(),
+        phone: document.getElementById('modalEditVendorPhone').value.trim(),
+        contactHandle: document.getElementById('modalEditVendorHandle').value.trim() || document.getElementById('modalEditVendorPhone').value.trim(),
+        paymentMethod: document.getElementById('modalEditVendorPayment').value.trim(),
+        avgDeliveryMin: Number(document.getElementById('modalEditVendorAvgMin').value) || 20,
+        notes: document.getElementById('modalEditVendorNotes').value.trim()
+      };
+
+      try {
+        await APP_API.put(`/digistore/vendors/${vendor.id}`, payload);
+        alert('Supplier updated successfully!');
+        modalContainer.innerHTML = '';
+        await this.loadAllData();
+        this.switchTab('vendors');
+      } catch (err) {
+        alert('Error updating supplier: ' + err.message);
+        btn.disabled = false;
+        btn.textContent = 'Update Supplier';
       }
     });
   },
