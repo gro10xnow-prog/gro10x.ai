@@ -112,7 +112,9 @@ const STRINGS = {
     btnConfirmCheckout: '✅ Confirm & Place Order',
     btnEditCheckout: '✏️ Edit / Restart',
     btnHelp: '❓ Help',
-    helpText: '📖 *DigiVault Bot Commands:*\n\n• `/start` — Main Menu & Hot Deals\n• `/catalog` — Browse All Digital Subscriptions\n• `/myorder <REF>` — Track Your Order Status\n• `/lang` — Switch between বাংলা / English\n• `/contact` — Customer Support WhatsApp\n• `/help` — View this Command Guide\n\nNeed assistance? Contact our team: `%PHONE%`'
+    helpText: '📖 *DigiVault Bot Commands:*\n\n• `/start` — Main Menu & Hot Deals\n• `/catalog` — Browse All Digital Subscriptions\n• `/myorder <REF>` — Track Your Order Status\n• `/lang` — Switch between বাংলা / English\n• `/contact` — Customer Support WhatsApp\n• `/help` — View this Command Guide\n\nNeed assistance? Contact our team: `%PHONE%`',
+    renewalReminder: '🔔 *Subscription Renewal Alert*\n\nSalam %NAME%! Your *%PRODUCT%* subscription expires in *%DAYS% days* (Expiry: `%EXPIRY%`).\n\nTo ensure uninterrupted service, tap below to renew seamlessly:',
+    btnRenewNow: '🔄 Renew Now ৳%PRICE%'
   },
   bn: {
     welcomeTitle: '🏪 *ডিজিভল্ট (DigiVault)-এ স্বাগতম!*',
@@ -141,7 +143,9 @@ const STRINGS = {
     btnConfirmCheckout: '✅ অর্ডার কনফার্ম করুন',
     btnEditCheckout: '✏️ তথ্য পরিবর্তন / রিস্টার্ট',
     btnHelp: '❓ সাহায্য',
-    helpText: '📖 *ডিজিভল্ট বট কমান্ড তালিকা:*\n\n• `/start` — মেইন মেনু ও সেরা অফার\n• `/catalog` — সম্পূর্ণ সাবস্ক্রিপশন ক্যাটালগ\n• `/myorder <REF>` — অর্ডার স্ট্যাটাস চেক\n• `/lang` — ভাষা পরিবর্তন (বাংলা / English)\n• `/contact` — কাস্টমার সাপোর্ট WhatsApp\n• `/help` — কমান্ড নির্দেশিকা\n\nকোনো সহায়তার প্রয়োজন হলে যোগাযোগ করুন: `%PHONE%`'
+    helpText: '📖 *ডিজিভল্ট বট কমান্ড তালিকা:*\n\n• `/start` — মেইন মেনু ও সেরা অফার\n• `/catalog` — সম্পূর্ণ সাবস্ক্রিপশন ক্যাটালগ\n• `/myorder <REF>` — অর্ডার স্ট্যাটাস চেক\n• `/lang` — ভাষা পরিবর্তন (বাংলা / English)\n• `/contact` — কাস্টমার সাপোর্ট WhatsApp\n• `/help` — কমান্ড নির্দেশিকা\n\nকোনো সহায়তার প্রয়োজন হলে যোগাযোগ করুন: `%PHONE%`',
+    renewalReminder: '🔔 *সাবস্ক্রিপশন মেয়াদ শেষ হচ্ছে (Renewal Alert)*\n\nসালাম %NAME%! আপনার *%PRODUCT%* সাবস্ক্রিপশনের মেয়াদ আর *%DAYS% দিন* বাকি আছে (মেয়াদ শেষ: `%EXPIRY%`)।\n\nনির্বিঘ্নে সার্ভিস চালু রাখতে নিচের বাটনে চাপ দিয়ে এখনই রিনিউ করুন:',
+    btnRenewNow: '🔄 এখনই রিনিউ করুন ৳%PRICE%'
   }
 };
 
@@ -326,6 +330,39 @@ function registerBotHandlers(bot) {
           } catch (e) {}
         }
         return bot.sendMessage(chatId, t(chatId, 'orderConfirmed'), { parse_mode: 'Markdown' });
+      }
+      if (data.startsWith('renew_order:')) {
+        const orderId = data.replace('renew_order:', '');
+        let order = null;
+        if (isSupabaseConfigured() && orderId) {
+          const { data: dbOrder } = await supabase.from('digi_orders').select('*').eq('id', orderId).maybeSingle();
+          order = dbOrder;
+        }
+        if (!order) {
+          return bot.sendMessage(chatId, t(chatId, 'orderNotFound'), { parse_mode: 'Markdown' });
+        }
+        const prod = PRODUCTS.find(p => p.slug === order.product_slug) || {
+          name: order.product_name,
+          slug: order.product_slug || 'gemini-pro-18m-veo-3',
+          duration: order.product_duration || 'Renewal',
+          sale_price: Number(order.sale_price) || 2000,
+          vendor_price: Number(order.vendor_price) || 170,
+          vendor_id: order.vendor_id
+        };
+
+        const session = {
+          lang: getLang(chatId),
+          step: 'awaiting_confirmation',
+          selectedProduct: prod,
+          customerName: order.customer_name,
+          customerContact: order.customer_contact,
+          customerWhatsapp: order.customer_whatsapp || order.customer_contact,
+          isRenewal: true,
+          parentOrderId: order.id
+        };
+
+        await saveSession(chatId, session);
+        return sendOrderConfirmationPrompt(bot, chatId, session);
       }
     } catch (err) {
       console.error('[DigiVault Bot Callback Error]:', err.message);
@@ -889,6 +926,34 @@ async function sendTelegramPaymentRejection(chatId, order, reason = 'Payment ver
   }
 }
 
+async function sendRenewalReminder(bot, chatId, order, daysRemaining = 3) {
+  if (!bot || !chatId) return false;
+
+  const daysText = daysRemaining <= 0 ? (getLang(chatId) === 'bn' ? 'আজই' : 'today') : `${daysRemaining}`;
+  const price = (Number(order.sale_price) || 0).toLocaleString();
+  const expiryFormatted = order.expiry_date ? new Date(order.expiry_date).toLocaleDateString('en-GB') : 'N/A';
+
+  const text = t(chatId, 'renewalReminder')
+    .replace('%NAME%', order.customer_name || 'Customer')
+    .replace('%PRODUCT%', order.product_name)
+    .replace('%DAYS%', daysText)
+    .replace('%EXPIRY%', expiryFormatted);
+
+  const btnText = t(chatId, 'btnRenewNow').replace('%PRICE%', price);
+  const keyboard = [
+    [{ text: btnText, callback_data: `renew_order:${order.id}` }],
+    [{ text: t(chatId, 'btnHelp'), callback_data: 'menu_help' }]
+  ];
+
+  try {
+    await bot.sendMessage(chatId, text, { parse_mode: 'Markdown', reply_markup: { inline_keyboard: keyboard } });
+    return true;
+  } catch (err) {
+    console.error('[DigiVault Bot Renewal Reminder Error]:', err.message);
+    return false;
+  }
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // WEBHOOK UPDATE PROCESSOR (FOR SERVERLESS / VERCEL)
 // ─────────────────────────────────────────────────────────────────────────────
@@ -905,6 +970,7 @@ module.exports = {
   getSession,
   saveSession,
   clearSession,
+  sendRenewalReminder,
   sendTelegramPaymentRejection,
   sendTelegramOrderDelivery,
   sendTelegramActivationDelivery,

@@ -88,6 +88,12 @@ try {
   initDigiVaultBot();
 } catch (e) { console.warn('[DigiVault Bot] Init note:', e.message); }
 
+// Initialize DigiVault Retention Cron Worker
+try {
+  const { initDigiVaultCron } = require('./src/services/digivault-cron');
+  initDigiVaultCron();
+} catch (e) { console.warn('[DigiVault Cron] Init note:', e.message); }
+
 // Sentry Request Handler
 if (Sentry) {
   app.use(Sentry.Handlers.requestHandler());
@@ -348,6 +354,10 @@ app.get(['/onboarding', '/team-onboarding'], (req, res) => {
 
 app.get(['/docs', '/overview'], (req, res) => {
   res.redirect('/');
+});
+
+app.get(['/flow-simulator', '/flow-simulator.html', '/simulator'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/flow-simulator.html'));
 });
 
 // Dedicated Public Service Pages Routes

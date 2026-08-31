@@ -101,8 +101,89 @@ const DigistoreModule = {
     `;
 
     this.bindGlobalEvents(container);
+    this.initRealtimeFeed();
     await this.loadAllData();
     this.switchTab('orders');
+  },
+
+  initRealtimeFeed() {
+    if (this._sseConnected) return;
+    try {
+      if (window.EventSource) {
+        const sse = new EventSource('/api/events');
+        sse.onmessage = (e) => {
+          try {
+            const payload = JSON.parse(e.data);
+            if (payload.type && payload.type.startsWith('digistore_')) {
+              this.handleRealtimeEvent(payload);
+            }
+          } catch (err) {}
+        };
+        sse.addEventListener('digistore_order_created', (e) => {
+          try { this.handleRealtimeEvent({ type: 'digistore_order_created', data: JSON.parse(e.data) }); } catch (err) {}
+        });
+        sse.addEventListener('digistore_order_updated', (e) => {
+          try { this.handleRealtimeEvent({ type: 'digistore_order_updated', data: JSON.parse(e.data) }); } catch (err) {}
+        });
+        this._sseConnected = true;
+      }
+    } catch (e) {
+      console.warn('[DigiVault Realtime Feed Note]:', e.message);
+    }
+  },
+
+  handleRealtimeEvent(event) {
+    const { type, data } = event;
+    const orderNum = data?.order_number || data?.orderNumber || 'Order Event';
+    const amount = data?.sale_price ? ` (৳${Number(data.sale_price).toLocaleString()})` : '';
+
+    if (type === 'digistore_order_created') {
+      this.showToast(`🛒 নতুন অর্ডার এসেছে: ${orderNum}${amount}`, 'success');
+    } else if (type === 'digistore_payment_proof') {
+      this.showToast(`📸 পেমেন্ট স্ক্রিনশট আপলোড হয়েছে: ${orderNum}`, 'info');
+    } else if (type === 'digistore_delivered') {
+      this.showToast(`🔑 অর্ডার ডেলিভারি সম্পন্ন: ${orderNum}`, 'success');
+    }
+
+    // Refresh active data silently
+    this.loadAllData().then(() => {
+      if (this.currentTab) this.switchTab(this.currentTab);
+    });
+  },
+
+  showToast(message, type = 'info') {
+    let toastContainer = document.getElementById('digiToastContainer');
+    if (!toastContainer) {
+      toastContainer = document.createElement('div');
+      toastContainer.id = 'digiToastContainer';
+      toastContainer.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 99999; display: flex; flex-direction: column; gap: 8px; pointer-events: none;';
+      document.body.appendChild(toastContainer);
+    }
+
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+      background: ${type === 'success' ? 'rgba(0, 223, 137, 0.95)' : type === 'warning' ? 'rgba(245, 158, 11, 0.95)' : 'rgba(30, 41, 59, 0.95)'};
+      color: ${type === 'success' ? '#000' : '#fff'};
+      font-weight: 700;
+      font-size: 13px;
+      padding: 12px 18px;
+      border-radius: 8px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      backdrop-filter: blur(8px);
+      pointer-events: auto;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    `;
+    toast.innerHTML = `<span>${message}</span>`;
+    toastContainer.appendChild(toast);
+
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateY(-10px)';
+      setTimeout(() => toast.remove(), 300);
+    }, 4500);
   },
 
   async loadAllData() {
@@ -811,11 +892,16 @@ const DigistoreModule = {
   // ───────────────────────────────────────────────────────────────────────────
   renderRenewalsTab(container) {
     container.innerHTML = `
-      <div style="margin-bottom: 20px;">
-        <h3 style="font-size: 18px; font-weight: 700; color: #fff;">🔔 Subscriptions Due for Renewal (${this.renewals.length})</h3>
-        <p style="color: var(--text-muted); font-size: 13px;">
-          Automated cron detects subscriptions expiring in ≤ 7 days so you can follow up with customers before they lapse.
-        </p>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+        <div>
+          <h3 style="font-size: 18px; font-weight: 700; color: #fff;">🔔 Subscriptions Due for Renewal (${this.renewals.length})</h3>
+          <p style="color: var(--text-muted); font-size: 13px;">
+            Automated cron detects subscriptions expiring in ≤ 7 days and dispatches Telegram notifications.
+          </p>
+        </div>
+        <button class="btn btn-secondary btn-sm" id="btnTriggerRenewalCron" style="display: flex; align-items: center; gap: 6px; padding: 8px 14px; font-weight: 700;">
+          <span>⚡</span> Run Retention Check Now
+        </button>
       </div>
 
       ${this.renewals.length === 0 ? `
@@ -882,6 +968,25 @@ const DigistoreModule = {
         </div>
       `}
     `;
+
+    const btnCron = container.querySelector('#btnTriggerRenewalCron');
+    if (btnCron) {
+      btnCron.addEventListener('click', async () => {
+        btnCron.disabled = true;
+        btnCron.innerHTML = '<span>⏳</span> Evaluating...';
+        try {
+          const res = await APP_API.post('/digistore/cron/trigger-renewals');
+          this.showToast(`✅ Retention evaluation done: ${res.data?.dueOrders?.length || 0} due, ${res.data?.remindersSent || 0} reminders sent`, 'success');
+          await this.loadAllData();
+          this.renderRenewalsTab(container);
+        } catch (err) {
+          alert('Cron Trigger Error: ' + err.message);
+        } finally {
+          btnCron.disabled = false;
+          btnCron.innerHTML = '<span>⚡</span> Run Retention Check Now';
+        }
+      });
+    }
 
     container.querySelectorAll('.btn-renew-order').forEach(btn => {
       btn.addEventListener('click', async (e) => {

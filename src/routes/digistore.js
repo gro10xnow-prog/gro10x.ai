@@ -1670,5 +1670,12 @@ router.post('/orders/:id/payment-proof', upload.single('screenshot'), asyncHandl
   return ok(res, { success: true, proofUrl });
 }));
 
+// ── 9. Automated Retention Cron Trigger Route ──────────────────────────────────
+router.post('/cron/trigger-renewals', requireAuth, requireManager, asyncHandler(async (req, res) => {
+  const { runDigiVaultRenewalCheck } = require('../services/digivault-cron');
+  const result = await runDigiVaultRenewalCheck();
+  return ok(res, result);
+}));
+
 module.exports = router;
 
