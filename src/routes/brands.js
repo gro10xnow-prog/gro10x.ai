@@ -1198,6 +1198,59 @@ router.post('/:id/vault/upload', requireAuth, vaultUpload.single('file'), handle
 router.post('/:id/product/:code/vault-upload', requireAuth, vaultUpload.single('file'), handleVaultUpload);
 
 /**
+ * POST /api/brands/:id/product/:code/save-assets
+ * Partial background auto-save for mockup URLs & video assets
+ */
+router.post('/:id/product/:code/save-assets', requireAuth, async (req, res) => {
+  try {
+    const brandId = parseInt(req.params.id, 10);
+    const productCode = req.params.code;
+    const { mockups, videoUrl } = req.body;
+
+    const state = await loadBrandsState();
+    if (!state.productsCatalog[brandId]) {
+      state.productsCatalog[brandId] = [];
+    }
+
+    let prod = state.productsCatalog[brandId].find(p => p.code === productCode);
+    if (!prod) {
+      prod = {
+        code: productCode,
+        name: `Product ${productCode}`,
+        category: 'General',
+        format: 'Digital PDF',
+        price: 7.49,
+        status: 'Draft'
+      };
+      state.productsCatalog[brandId].push(prod);
+    }
+
+    if (Array.isArray(mockups)) {
+      prod.mockups = mockups;
+      prod.mockupUrls = mockups;
+    }
+    if (videoUrl !== undefined) {
+      prod.video = typeof videoUrl === 'string' ? { url: videoUrl } : videoUrl;
+    }
+
+    await persistBrandsState(state);
+
+    res.json({
+      success: true,
+      brandId,
+      productCode,
+      saved: {
+        mockups: prod.mockups || [],
+        video: prod.video || null
+      }
+    });
+  } catch (err) {
+    console.error('[Save Product Assets Error]:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
  * GET /api/brands/:id/vault/download
  * Generates fresh 24h signed URL for deliverable asset
  */

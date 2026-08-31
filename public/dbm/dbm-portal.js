@@ -384,6 +384,121 @@
     `;
   }
 
+  // ── BRAND-ADAPTIVE MOCKUP PROMPT GUIDE ──
+  function getMockupSlotGuide(brand) {
+    const brandName = brand?.name || 'PlannerQueenGro';
+    const niche = (brand?.niche || '').toLowerCase();
+    const type = (brand?.type || '').toLowerCase();
+
+    // Sublimation / Tumblers / Craft Files (e.g. InkWrapped)
+    if (niche.includes('tumbler') || niche.includes('sublimation') || niche.includes('craft') || niche.includes('svg')) {
+      return [
+        { slot: 1, name: 'Hero 3D Tumbler Wrap Mockup', desc: 'Main Etsy photo: 20oz skinny tumbler with wrap on clean marble surface.' },
+        { slot: 2, name: '360° Flat Design Spread', desc: 'Full flat 9.3" x 8.2" seamless wrap preview showing edge-to-edge detail.' },
+        { slot: 3, name: 'Straight vs Tapered Fit Guide', desc: 'Infographic explaining straight & tapered PNG files included in pack.' },
+        { slot: 4, name: 'Heat Press & Mug Press Specs', desc: 'Time & temperature guide (365°F for 60s, convection oven 375°F for 6 mins).' },
+        { slot: 5, name: 'High-Res 300 DPI Print Zoom', desc: 'Close-up macro texture showing ultra-crisp sublimation clarity.' },
+        { slot: 6, name: 'Lifestyle Kitchen & Office Scene', desc: 'Holding tumbler in hand with iced coffee or office desk setup.' },
+        { slot: 7, name: 'Color & Texture Options', desc: 'White gloss vs stainless steel background render preview.' },
+        { slot: 8, name: 'Instant Download & Formats', desc: 'Diagram: 2x 300 DPI PNGs + commercial license + Canva template.' },
+        { slot: 9, name: 'Crafter Review & Rating Badge', desc: '5-star badge with quote: "Pressed flawlessly on my Cricut mug press!"' },
+        { slot: 10, name: 'Brand Story & Commercial Guarantee', desc: `${brandName} premium craft seal and 100% satisfaction promise.` }
+      ];
+    }
+
+    // Events / Celebration / Party Suites (e.g. FiestaFoundry)
+    if (niche.includes('event') || niche.includes('party') || niche.includes('celebration') || niche.includes('invitation')) {
+      return [
+        { slot: 1, name: 'Hero Invitation Suite Flatlay', desc: 'Main photo: 5x7 invitation with matching RSVP card, envelope & florals.' },
+        { slot: 2, name: 'Smartphone Digital Evite Mockup', desc: 'iPhone mockup showing electronic text/WhatsApp paperless version.' },
+        { slot: 3, name: 'Full Matching Decor Bundle', desc: 'Welcome sign, cupcake toppers, favor tags, and banner matching items.' },
+        { slot: 4, name: 'Print & Paper Recommendations', desc: 'Cardstock thickness guide (110lb+ / 300gsm, linen & cotton finishes).' },
+        { slot: 5, name: 'Customizable Text & Font Guide', desc: 'Highlighting 100% editable Canva fonts with no font installations needed.' },
+        { slot: 6, name: 'Tabletop Party Setting Scene', desc: 'Realistic party table spread with place cards and themed decor.' },
+        { slot: 7, name: 'Printing Options Infographic', desc: 'Home printing vs Prints of Love / Staples / Canva Print options.' },
+        { slot: 8, name: '3-Step Easy Edit Workflow', desc: 'Diagram: Purchase -> Edit text in Canva on phone/PC -> Download & Print.' },
+        { slot: 9, name: 'Hostess Review & Social Proof', desc: '5-star badge with quote: "Everyone complimented our party invites!"' },
+        { slot: 10, name: 'Brand Story & Event Guarantee', desc: `${brandName} celebration suite seal and instant party guarantee.` }
+      ];
+    }
+
+    // POD Apparel & Mixed (e.g. WildMutt Co., CozyThreads)
+    if (type.includes('pod') || niche.includes('apparel') || niche.includes('pet') || niche.includes('shirt')) {
+      return [
+        { slot: 1, name: 'Hero Lifestyle Model Shot', desc: 'Model wearing design in aesthetic, well-lit natural environment.' },
+        { slot: 2, name: 'Flatlay with Themed Accessories', desc: 'Neatly folded shirt with sunglasses, denim, and trendy accessories.' },
+        { slot: 3, name: 'Unisex Size & Fit Chart', desc: 'Clear inch & cm measurement chart for S through 3XL.' },
+        { slot: 4, name: 'Color Swatch Variations Grid', desc: 'Grid of 6 top bestselling fabric color options (Black, Sand, Forest, Heather).' },
+        { slot: 5, name: 'Fabric & Print Texture Zoom', desc: 'High-definition macro of ring-spun cotton and direct-to-garment print.' },
+        { slot: 6, name: 'Back Design or Sleeve Detail', desc: 'Secondary print placement or alternate angle.' },
+        { slot: 7, name: 'Eco-Friendly & Ethical Production', desc: 'Badges for water-based inks, ethical manufacturing, and fast dispatch.' },
+        { slot: 8, name: 'Care & Washing Instructions', desc: 'Wash cold inside-out, tumble dry low guide for maximum print longevity.' },
+        { slot: 9, name: 'Customer Review & Rating Badge', desc: '5-star quote: "Super soft and print quality is top notch!"' },
+        { slot: 10, name: 'Brand Story & Guarantee', desc: `${brandName} quality guarantee and easy replacement promise.` }
+      ];
+    }
+
+    // Default: Digital Planners, Trackers, E-books (e.g. PlannerQueenGro)
+    return [
+      { slot: 1, name: 'Hero Flatlay Presentation', desc: 'Main Etsy search image: iPad + stylus + clean accessories on warm neutral backdrop.' },
+      { slot: 2, name: '3D Isometric Page Fan', desc: 'Shows full product depth with multiple hyperlinked spreads fanned out.' },
+      { slot: 3, name: 'Features & Benefits Infographic', desc: 'Bullet points highlighting key indexed tabs, lag-free navigation, and productivity wins.' },
+      { slot: 4, name: 'Compatible Devices & Note Apps', desc: 'Badges for GoodNotes 5/6, Notability, Apple iPad, Samsung Notes, and Printable PDF.' },
+      { slot: 5, name: 'Daily Priority Matrix Spread', desc: 'Close-up high-resolution zoom of the primary daily planning layout.' },
+      { slot: 6, name: 'Habit & Routine Tracker Spread', desc: 'Close-up of streak tracking and monthly habit circles in action.' },
+      { slot: 7, name: 'Monthly Overview & Budget Spread', desc: 'Close-up of calendar grid and financial logging section.' },
+      { slot: 8, name: 'How to Download in 3 Steps', desc: 'Simple diagram: Purchase -> Download PDF from Etsy -> Import to GoodNotes/Print.' },
+      { slot: 9, name: 'Customer Review & Social Proof', desc: '5-star badge with empowering testimonial quote: "Transformed my daily routine!"' },
+      { slot: 10, name: 'Brand Story & Guarantee', desc: `${brandName} quality seal and lifetime digital access guarantee.` }
+    ];
+  }
+
+  // ── LOCAL DRAFT AUTO-SAVE HELPERS ──
+  function saveProductDraftLocal(code) {
+    try {
+      const prod = DBM_STATE.activeEditingProduct;
+      if (!prod || !code) return;
+      const draftPayload = {
+        code: code,
+        name: prod.name,
+        category: prod.category,
+        blueprintPrompt: prod.blueprintPrompt,
+        vault: prod.vault,
+        canvaTemplateUrl: prod.canvaTemplateUrl || prod.vault?.canvaTemplateUrl,
+        notionTemplateUrl: prod.notionTemplateUrl || prod.vault?.notionTemplateUrl,
+        mockups: prod.mockups,
+        video: prod.video,
+        seoTitle: prod.seoTitle,
+        seoTags: prod.seoTags,
+        seoDescription: prod.seoDescription,
+        price: prod.price,
+        savedAt: Date.now()
+      };
+      localStorage.setItem('dbm_studio_draft_' + code, JSON.stringify(draftPayload));
+    } catch (e) {}
+  }
+
+  function getStoredDraft(code) {
+    try {
+      const raw = localStorage.getItem('dbm_studio_draft_' + code);
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) { return null; }
+  }
+
+  window.restoreStoredDraft = function(code) {
+    const draft = getStoredDraft(code);
+    if (!draft || !DBM_STATE.activeEditingProduct) return;
+    Object.assign(DBM_STATE.activeEditingProduct, draft);
+    showToast('📥 Local draft restored for ' + code + '!');
+    render();
+  };
+
+  window.discardStoredDraft = function(code) {
+    localStorage.removeItem('dbm_studio_draft_' + code);
+    showToast('🗑️ Draft discarded');
+    render();
+  };
+
   // ── VIEW 2: BRAND STUDIO (5-STEP WIZARD) ──
   function renderStudioView(container) {
     const brands = DBM_STATE.assignedBrands;
@@ -393,6 +508,7 @@
     const activeProd = catalog.find(p => p.code === DBM_STATE.currentStudioCode) || getNextActiveDraft(catalog);
     DBM_STATE.activeEditingProduct = activeProd;
     const step = DBM_STATE.currentStudioStep || 1;
+    const storedDraft = getStoredDraft(activeProd.code);
 
     container.innerHTML = `
       <!-- Brand Switcher Bar -->
@@ -419,6 +535,23 @@
           </button>
         </div>
       </div>
+
+      <!-- Auto-Saved Local Draft Banner (if available) -->
+      ${storedDraft && storedDraft.savedAt ? `
+        <div style="background: rgba(168, 85, 247, 0.12); border: 1px solid rgba(168, 85, 247, 0.35); border-radius: 10px; padding: 0.65rem 1.1rem; margin-bottom: 1.25rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+          <span style="font-size: 0.82rem; color: #d8b4fe;">
+            💾 <strong>Unsaved Local Draft Found</strong> for ${activeProd.code} (Saved ${new Date(storedDraft.savedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})
+          </span>
+          <div style="display: flex; gap: 0.4rem;">
+            <button onclick="restoreStoredDraft('${activeProd.code}')" style="background: var(--accent-purple); color: #fff; border: none; border-radius: 6px; padding: 0.35rem 0.85rem; font-size: 0.75rem; font-weight: 700; cursor: pointer;">
+              📥 Restore Draft
+            </button>
+            <button onclick="discardStoredDraft('${activeProd.code}')" style="background: transparent; color: var(--text-muted); border: 1px solid var(--border-subtle); border-radius: 6px; padding: 0.35rem 0.65rem; font-size: 0.75rem; cursor: pointer;">
+              Discard
+            </button>
+          </div>
+        </div>
+      ` : ''}
 
       <!-- Studio Stepper Header (1 to 5) -->
       <div class="studio-stepper">
@@ -526,7 +659,8 @@
       // ── STEP 2: DELIVERABLE VAULT & CANVA LINK ──
       const canvaUrl = prod.vault?.canvaTemplateUrl || prod.canvaTemplateUrl || '';
       const notionUrl = prod.vault?.notionTemplateUrl || prod.notionTemplateUrl || '';
-      const isValidCanva = canvaUrl.includes('canva.com');
+      const isCanvaTemplate = canvaUrl.includes('canva.com/design/') && (canvaUrl.includes('/template/') || canvaUrl.includes('template=') || canvaUrl.includes('shared'));
+      const isCanvaDesign = canvaUrl.includes('canva.com/design/');
 
       return `
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
@@ -544,12 +678,12 @@
                 🎨 Canva Template Share Link (Recommended)
               </label>
               <div id="canvaLinkStatus">
-                ${isValidCanva ? '<span style="color:#00df89; font-weight:800; font-size:0.75rem;">🟢 Valid Canva Link</span>' : '<span style="color:var(--text-muted); font-size:0.75rem;">Paste share link below</span>'}
+                ${isCanvaTemplate ? '<span style="color:#00df89; font-weight:800; font-size:0.75rem;">🟢 Valid Template Share Link</span>' : isCanvaDesign ? '<span style="color:#f59e0b; font-weight:700; font-size:0.75rem;">⚠️ Design Link (Ensure "Share as Template" is on)</span>' : '<span style="color:var(--text-muted); font-size:0.75rem;">Paste share link below</span>'}
               </div>
             </div>
             
             <div style="display: flex; gap: 0.5rem;">
-              <input type="url" id="step2CanvaUrl" value="${canvaUrl}" oninput="validateCanvaLinkInput(this.value)" placeholder="https://www.canva.com/design/DA..." style="flex: 1; padding: 0.7rem; background: var(--surface-card); border: 1px solid var(--border-subtle); color: #fff; border-radius: 8px; font-size: 0.88rem;">
+              <input type="url" id="step2CanvaUrl" value="${canvaUrl}" oninput="validateCanvaLinkInput(this.value)" placeholder="https://www.canva.com/design/DA.../template/..." style="flex: 1; padding: 0.7rem; background: var(--surface-card); border: 1px solid var(--border-subtle); color: #fff; border-radius: 8px; font-size: 0.88rem;">
               <button class="btn-secondary" onclick="testCanvaLink()" style="font-size: 0.8rem; padding: 0.5rem 1rem;">
                 🔗 Test Link ↗
               </button>
@@ -585,19 +719,7 @@
       // ── STEP 3: 10 MOCKUP SLOTS & VIDEO ──
       const mockups = prod.mockups || prod.mockupUrls || [];
       const videoUrl = prod.video?.url || (typeof prod.video === 'string' ? prod.video : '') || '';
-
-      const mockupSlots = [
-        { slot: 1, name: 'Hero Flatlay Presentation', desc: 'Main Etsy search image: iPad + clean accessories on neutral backdrop.' },
-        { slot: 2, name: '3D Isometric Page Fan', desc: 'Shows full product depth and multiple spreads fanned out.' },
-        { slot: 3, name: 'Features & Benefits Infographic', desc: 'Bullet points highlighting key tabs, index links, and productivity wins.' },
-        { slot: 4, name: 'Compatible Devices & Sizes', desc: 'Badges showing GoodNotes, Notability, Apple iPad, and Printable PDF.' },
-        { slot: 5, name: 'Daily Priority Matrix Spread', desc: 'Close-up high-resolution zoom of the primary daily planning page.' },
-        { slot: 6, name: 'Habit & Routine Tracker Spread', desc: 'Close-up of streak tracking and monthly habit circles.' },
-        { slot: 7, name: 'Monthly Overview & Budget Spread', desc: 'Close-up of calendar grid and financial logging section.' },
-        { slot: 8, name: 'How to Download in 3 Steps', desc: 'Simple diagram: Purchase -> Download PDF -> Open in GoodNotes/Print.' },
-        { slot: 9, name: 'Customer Review & Social Proof', desc: '5-star badge with empowering testimonial quote.' },
-        { slot: 10, name: 'Brand Story & Guarantee', desc: 'PlannerQueenGro quality seal and instant delivery guarantee.' }
-      ];
+      const mockupSlots = getMockupSlotGuide(brand);
 
       return `
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.5rem;">
@@ -632,11 +754,23 @@
         </div>
 
         <!-- Video Slot -->
-        <div style="background: var(--bg-surface); padding: 0.85rem 1.25rem; border-radius: 10px; border: 1px solid var(--border-subtle); margin-bottom: 1.5rem;">
-          <label style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--accent-purple); display: block; margin-bottom: 0.2rem;">
-            🎬 Listing Demo Video URL (MP4 / Short Screen Walkthrough)
-          </label>
-          <input type="url" id="step3VideoUrl" value="${videoUrl}" placeholder="https://gro10x-ai.vercel.app/demo.mp4" style="width: 100%; padding: 0.55rem; background: var(--surface-card); border: 1px solid var(--border-subtle); color: #fff; border-radius: 6px; font-size: 0.82rem;">
+        <div style="background: var(--bg-surface); padding: 1rem 1.25rem; border-radius: 10px; border: 1px solid var(--border-subtle); margin-bottom: 1.5rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+            <label style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--accent-purple);">
+              🎬 Listing Demo Video (Etsy 5–15s Preview Clip)
+            </label>
+            ${videoUrl ? '<span style="font-size:0.7rem; color:#00df89; font-weight:800;">✓ Video Attached</span>' : ''}
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; align-items: center;">
+            <div>
+              <span style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">Option A: Video CDN / MP4 URL</span>
+              <input type="url" id="step3VideoUrl" value="${videoUrl}" placeholder="https://gro10x-ai.vercel.app/demo.mp4" style="width: 100%; padding: 0.55rem; background: var(--surface-card); border: 1px solid var(--border-subtle); color: #fff; border-radius: 6px; font-size: 0.82rem;">
+            </div>
+            <div>
+              <span style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">Option B: Upload MP4 / MOV Video File (max 50MB)</span>
+              <input type="file" id="step3VideoFile" accept=".mp4,.mov,.webm" style="width: 100%; padding: 0.4rem; background: var(--surface-card); border: 1px solid var(--border-subtle); color: var(--text-secondary); border-radius: 6px; font-size: 0.78rem;">
+            </div>
+          </div>
         </div>
 
         <div style="display: flex; justify-content: space-between; border-top: 1px solid var(--border-subtle); padding-top: 1.25rem;">
@@ -837,10 +971,15 @@
   window.validateCanvaLinkInput = function(val) {
     const el = document.getElementById('canvaLinkStatus');
     if (!el) return;
-    if (val.includes('canva.com')) {
-      el.innerHTML = '<span style="color:#00df89; font-weight:800; font-size:0.75rem;">🟢 Valid Canva Link</span>';
-    } else if (val.length > 5) {
-      el.innerHTML = '<span style="color:#f59e0b; font-size:0.75rem;">⚠️ Ensure link is from canva.com</span>';
+    const trimmed = (val || '').trim();
+    if (trimmed.includes('canva.com/design/') && (trimmed.includes('/template/') || trimmed.includes('template=') || trimmed.includes('shared'))) {
+      el.innerHTML = '<span style="color:#00df89; font-weight:800; font-size:0.75rem;">🟢 Valid Template Share Link</span>';
+    } else if (trimmed.includes('canva.com/design/')) {
+      el.innerHTML = '<span style="color:#f59e0b; font-weight:700; font-size:0.75rem;">⚠️ Design Link (Ensure "Share as Template" is on)</span>';
+    } else if (trimmed.includes('canva.com')) {
+      el.innerHTML = '<span style="color:#f59e0b; font-size:0.75rem;">⚠️ Ensure link points to specific /design/</span>';
+    } else if (trimmed.length > 5) {
+      el.innerHTML = '<span style="color:#f43f5e; font-size:0.75rem;">❌ Must be a canva.com/design/ link</span>';
     } else {
       el.innerHTML = '<span style="color:var(--text-muted); font-size:0.75rem;">Paste share link below</span>';
     }
@@ -900,6 +1039,7 @@
       if (category) DBM_STATE.activeEditingProduct.category = category;
       if (prompt) DBM_STATE.activeEditingProduct.blueprintPrompt = prompt;
     }
+    saveProductDraftLocal(code);
     showToast('Saved Step 1 Blueprint!');
     goToStudioStep(2);
   };
@@ -970,23 +1110,57 @@
       showToast('Saved Step 2 Deliverable Vault!');
     }
 
+    saveProductDraftLocal(code);
     goToStudioStep(3);
   };
 
-  window.saveStep3AndContinue = function(code) {
+  window.saveStep3AndContinue = async function(code) {
+    const brand = DBM_STATE.assignedBrands.find(b => b.id === DBM_STATE.activeBrandId) || DBM_STATE.assignedBrands[0];
     const inputs = document.querySelectorAll('.mockup-input-slot');
     const mockups = [];
     inputs.forEach(inp => {
       const val = inp.value.trim();
       if (val) mockups.push(val);
     });
-    const video = document.getElementById('step3VideoUrl')?.value.trim();
+
+    const videoFileInput = document.getElementById('step3VideoFile');
+    const videoFile = videoFileInput?.files?.[0];
+    let finalVideoUrl = document.getElementById('step3VideoUrl')?.value.trim() || '';
+
+    // If direct video file attached, upload to Vault storage
+    if (videoFile && brand) {
+      showToast('📤 Uploading video asset to Vault...', 'success');
+      try {
+        const formData = new FormData();
+        formData.append('file', videoFile);
+        formData.append('productCode', code);
+        const uploadRes = await DBM_API.post('/brands/' + brand.id + '/vault/upload', formData);
+        if (uploadRes && uploadRes.success && uploadRes.vault?.fileUrl) {
+          finalVideoUrl = uploadRes.vault.fileUrl;
+          showToast('✅ Video asset uploaded!');
+        }
+      } catch (err) {
+        console.warn('[Video Upload Notice]:', err.message);
+      }
+    }
 
     if (DBM_STATE.activeEditingProduct) {
       DBM_STATE.activeEditingProduct.mockups = mockups;
-      if (video) DBM_STATE.activeEditingProduct.video = { url: video };
+      if (finalVideoUrl) DBM_STATE.activeEditingProduct.video = { url: finalVideoUrl };
     }
-    showToast('Saved Step 3 Mockup Slots!');
+
+    // Auto-save locally
+    saveProductDraftLocal(code);
+
+    // Non-blocking background persistence to server
+    if (brand) {
+      DBM_API.post('/brands/' + brand.id + '/product/' + code + '/save-assets', {
+        mockups: mockups,
+        videoUrl: finalVideoUrl
+      }).catch(e => console.warn('[Assets Auto-Save Notice]:', e.message));
+    }
+
+    showToast('Saved Step 3 Mockup Slots & Video!');
     goToStudioStep(4);
   };
 
@@ -1002,6 +1176,8 @@
       if (desc) DBM_STATE.activeEditingProduct.seoDescription = desc;
       DBM_STATE.activeEditingProduct.price = price;
     }
+
+    saveProductDraftLocal(code);
     showToast('Saved Step 4 SEO & Pricing!');
     goToStudioStep(5);
   };
@@ -1071,6 +1247,10 @@
       const res = await DBM_API.post('/brands/' + brand.id + '/product/' + code + '/submit-review', payload);
       if (res.success) {
         showToast('🎉 Product submitted! Admin alerted via Telegram.');
+        
+        // Remove submitted local draft
+        localStorage.removeItem('dbm_studio_draft_' + code);
+
         await reloadState();
         
         // Find next draft product and auto-advance
