@@ -2149,9 +2149,9 @@ router.post('/:id/video/upload', requireAuth, vaultUpload.single('video'), async
 
 /**
  * POST /api/brands/:id/product/:code/submit-review
- * DVM submits a completed product for Admin Review
+ * DBM submits a completed product for Admin Review
  */
-router.post(['/:id/product/:code/submit-review', '/:id/product/:code/submit-for-review'], requireAuth, async (req, res) => {
+async function handleSubmitReview(req, res) {
   try {
     const brandId = Number(req.params.id);
     const productCode = req.params.code;
@@ -2166,20 +2166,21 @@ router.post(['/:id/product/:code/submit-review', '/:id/product/:code/submit-for-
     if (!prod) {
       prod = {
         code: productCode,
-        name: req.body.title || `Product ${productCode}`,
+        name: req.body.name || req.body.title || `Product ${productCode}`,
         category: req.body.category || 'General',
-        price: req.body.price || 4.99,
+        price: Number(req.body.price) || 7.49,
         status: 'Draft'
       };
       state.productsCatalog[brandId].push(prod);
     }
 
-    // Merge request body into product if provided
+    // Merge request body into product
     if (req.body.title && typeof req.body.title === 'string' && req.body.title.trim().length >= 3) {
       prod.seoTitle = req.body.title.trim();
       if (!prod.seo) prod.seo = {};
       prod.seo.title = req.body.title.trim();
     }
+    if (req.body.name) prod.name = req.body.name;
     if (req.body.description && typeof req.body.description === 'string') {
       prod.seoDescription = req.body.description;
       if (!prod.seo) prod.seo = {};
@@ -2190,29 +2191,25 @@ router.post(['/:id/product/:code/submit-review', '/:id/product/:code/submit-for-
       if (!prod.seo) prod.seo = {};
       prod.seo.tags = req.body.tags;
     }
-    if (req.body.mockups !== undefined && Array.isArray(req.body.mockups) && req.body.mockups.length > 0) prod.mockups = req.body.mockups;
+    if (req.body.mockups !== undefined && Array.isArray(req.body.mockups)) prod.mockups = req.body.mockups;
     if (req.body.mockupsCount !== undefined && Number(req.body.mockupsCount) > 0) prod.mockupsCount = Number(req.body.mockupsCount);
     if (req.body.video !== undefined && req.body.video) prod.video = req.body.video;
     if (req.body.vault !== undefined && req.body.vault) prod.vault = req.body.vault;
+    if (req.body.canvaTemplateUrl || req.body.vaultUrl) {
+      if (!prod.vault) prod.vault = {};
+      if (req.body.canvaTemplateUrl) prod.vault.canvaTemplateUrl = req.body.canvaTemplateUrl;
+      if (req.body.vaultUrl) prod.vault.downloadUrl = req.body.vaultUrl;
+    }
     if (req.body.aiAudit !== undefined) prod.aiAudit = req.body.aiAudit;
     if (req.body.price !== undefined && Number(req.body.price) > 0) prod.price = Number(req.body.price);
 
     // Validate minimum requirements
     const title = (prod.seoTitle || prod.seo?.title || prod.name || '').trim();
     const hasVault = Boolean(prod.vault?.storagePath || prod.vault?.fileName || prod.vault?.canvaTemplateUrl || prod.vault?.notionTemplateUrl || prod.vault?.downloadUrl);
-    const mockupsCount = Math.max(
-      Array.isArray(prod.mockups) ? prod.mockups.length : 0,
-      Array.isArray(prod.mockupUrls) ? prod.mockupUrls.length : 0,
-      Number(prod.mockupsCount) || 0
-    );
-    const hasVideo = Boolean(prod.video?.storagePath || prod.video?.fileName || prod.video?.url || (typeof prod.video === 'string' && prod.video.length > 0));
-    const minMockups = brand.minMockups || 4;
 
     const missing = [];
-    if (!title || title.length < 5) missing.push('SEO Title is missing (Studio Step 5)');
-    if (!hasVault) missing.push('Deliverable file not uploaded to Vault (Studio Step 2)');
-    if (mockupsCount < minMockups) missing.push(`At least ${minMockups} mockup photos required (currently ${mockupsCount})`);
-    if (!hasVideo) missing.push('Listing video is required (Studio Step 3)');
+    if (!title || title.length < 3) missing.push('SEO Title or Product Name is required');
+    if (!hasVault) missing.push('Canva template link or Vault deliverable file is required');
 
     if (missing.length > 0) {
       return res.status(400).json({ success: false, error: `Cannot submit for review:\n• ${missing.join('\n• ')}` });
@@ -2220,7 +2217,7 @@ router.post(['/:id/product/:code/submit-review', '/:id/product/:code/submit-for-
 
     prod.status = 'Pending Review';
     prod.submittedAt = new Date().toISOString();
-    prod.submittedBy = req.user?.name || req.user?.username || 'DVM';
+    prod.submittedBy = req.user?.name || req.body.submittedBy || 'Digital Brand Manager';
     delete prod.adminRevisionNote;
 
     // Save status and submission details to atomic product key
@@ -2295,7 +2292,10 @@ router.post(['/:id/product/:code/submit-review', '/:id/product/:code/submit-for-
     console.error('[Submit Review Error]:', err);
     return res.status(500).json({ success: false, error: err.message });
   }
-});
+}
+
+router.post('/:id/product/:code/submit-review', requireAuth, handleSubmitReview);
+router.post('/:id/product/:code/submit-for-review', requireAuth, handleSubmitReview);
 
 /**
  * GET /api/brands/review-queue
