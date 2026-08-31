@@ -772,6 +772,10 @@ function initBot() {
       teamBot.onText(/\/dbmstatus(?:@\w+)?|\/mystatus(?:@\w+)?|📊 My DBM Status/, (msg) => dbmHandler.handleDBMMyStatus(teamBot, msg));
       teamBot.onText(/\/dbmincentive(?:@\w+)?|💰 My DBM Incentive/, (msg) => dbmHandler.handleDBMIncentive(teamBot, msg));
 
+      // Brand Empire & Admin Executive Commands
+      const adminHandler = require('./bot/handlers/admin');
+      teamBot.onText(/\/brandsummary(?:@\w+)?|\/brands(?:@\w+)?|🛍️ Brand Empire Summary/, (msg) => adminHandler.handleBrandEmpireSummary(teamBot, msg));
+
       // Executive briefing & status
       teamBot.onText(/\/briefing(?:@\w+)?|🌅 Morning Briefing/, (msg) => briefingHandler.handleMorningBriefing(teamBot, msg));
       teamBot.onText(/\/snapshot(?:@\w+)?|📊 Business Snapshot|🏢 Ops Dashboard/, (msg) => briefingHandler.handleBusinessSnapshot(teamBot, msg));

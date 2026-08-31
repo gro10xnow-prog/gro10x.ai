@@ -831,6 +831,46 @@ function registerLegacyTeamMenus(teamBot, readDB) {
         const parts = data.split(':');
         const brandId = Number(parts[1]);
         const productCode = parts[2];
+
+        // Present Admin with quick structured rejection reason choices
+        const reasonKeyboard = [
+          [
+            { text: '🎨 Canva Layout & Design Polish', callback_data: `qc_reject_apply:${brandId}:${productCode}:layout` },
+            { text: '📈 SEO Title & Tags Fix', callback_data: `qc_reject_apply:${brandId}:${productCode}:seo` }
+          ],
+          [
+            { text: '🖼️ Mockup Images Quality/Count', callback_data: `qc_reject_apply:${brandId}:${productCode}:mockups` },
+            { text: '📁 Deliverable PDF Export Issue', callback_data: `qc_reject_apply:${brandId}:${productCode}:vault` }
+          ],
+          [
+            { text: '❌ Cancel Revision', callback_data: `noop` }
+          ]
+        ];
+
+        return teamBot.sendMessage(
+          chatId,
+          `✏️ *SELECT REVISION REASON FOR PRODUCT \`${productCode}\`*\n\n` +
+          `Choose the primary issue to send instant constructive feedback to the Brand Manager:`,
+          {
+            parse_mode: 'Markdown',
+            reply_markup: { inline_keyboard: reasonKeyboard }
+          }
+        );
+
+      } else if (data.startsWith('qc_reject_apply:')) {
+        const parts = data.split(':');
+        const brandId = Number(parts[1]);
+        const productCode = parts[2];
+        const reasonKey = parts[3] || 'general';
+
+        const REASON_MAP = {
+          layout: 'Canva layout and visual design need polish. Please check typography and margins per brand guidelines.',
+          seo: 'Etsy SEO Title and 13 tags need refinement. Please ensure high-intent keywords are used.',
+          mockups: 'Mockup images need improvement. Ensure high-resolution staging and proper aspect ratios.',
+          vault: 'Deliverable deliverable file/PDF format issue. Please re-export and verify Canva master template link.',
+          general: 'Revision requested by Admin per brand quality standards.'
+        };
+        const note = REASON_MAP[reasonKey] || REASON_MAP.general;
         let rejectedProd = null;
 
         try {
@@ -841,7 +881,7 @@ function registerLegacyTeamMenus(teamBot, readDB) {
             const prod = catalog.find(p => p.code === productCode);
             if (prod) {
               prod.status = 'Revision Requested';
-              prod.adminRevisionNote = `Revision requested by ${emp.name} via Telegram QC review.`;
+              prod.adminRevisionNote = note;
               prod.revisionRequestedAt = new Date().toISOString();
               await brandsRoute.persistBrandsState(bState);
               if (typeof brandsRoute.saveProductAssets === 'function') {
@@ -859,8 +899,8 @@ function registerLegacyTeamMenus(teamBot, readDB) {
         }
 
         alertMsg = `✏️ Revision Requested for ${productCode}`;
-        statusBadge = `✏️ Revision Requested (by ${emp.name})`;
-        teamBot.sendMessage(chatId, `✏️ *Revision Requested:* Product \`${productCode}\` status updated to **Revision Requested**.`, { parse_mode: 'Markdown' });
+        statusBadge = `✏️ Revision Requested: ${reasonKey.toUpperCase()}`;
+        teamBot.sendMessage(chatId, `✏️ *Revision Requested:* Product \`${productCode}\` returned to Brand Manager with note:\n_"${note}"_`, { parse_mode: 'Markdown' });
 
         // Dispatch Telegram Revision Alert to Submitting DBM
         try {
@@ -894,8 +934,8 @@ function registerLegacyTeamMenus(teamBot, readDB) {
             const pTitle = rejectedProd?.seoTitle || rejectedProd?.name || productCode;
             const dbmMsg =
               `⚠️ *ACTION REQUIRED: PRODUCT REVISION*\n\n` +
-              `Product *${productCode}* (\`${pTitle}\`) was returned for revision by ${emp.name}.\n\n` +
-              `📝 *Admin Note:* ${rejectedProd?.adminRevisionNote || 'Please review guidelines and update mockups/SEO.'}\n\n` +
+              `Product *${productCode}* (\`${pTitle}\`) was returned for revision by Admin.\n\n` +
+              `📝 *Admin Feedback Note:* ${note}\n\n` +
               `👉 *Open Brand Studio to edit:* https://gro10x-ai.vercel.app/dbm#studio`;
             sendTelegramNotification(dbmTelegramId, dbmMsg, [
               [{ text: '✏️ Edit in Brand Studio', url: 'https://gro10x-ai.vercel.app/dbm#studio' }]

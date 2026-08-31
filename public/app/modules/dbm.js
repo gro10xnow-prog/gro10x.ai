@@ -67,10 +67,10 @@ window.APP_MODULES.dbm = async function(container) {
       { id: 13, name: 'PromptVault', dbmId: 4, target12mo: 74560, productsLive: 0, productsTarget: 100 }
     ],
     dbms: [
-      { id: 1, name: 'DBM 1', title: 'Digital Products Specialist', assignedBrands: [1, 5, 8], status: 'Active' },
-      { id: 2, name: 'DBM 2', title: 'POD & Mixed Products Lead', assignedBrands: [2, 6, 7], status: 'Active' },
-      { id: 3, name: 'DBM 3', title: 'B2B & Education Lead', assignedBrands: [3, 4, 9], status: 'Active' },
-      { id: 4, name: 'DBM 4', title: 'Tech, Fonts & AI Vaults Lead', assignedBrands: [10, 11, 12, 13], status: 'Active' }
+      { id: 1, name: 'Anika Nower (GRO-002)', title: 'Digital Products Specialist (Division 1 Lead)', assignedBrands: [1, 5, 8], status: 'Active' },
+      { id: 2, name: 'Division 2 Lead', title: 'POD & Apparel Products Lead', assignedBrands: [2, 6, 7], status: 'Active' },
+      { id: 3, name: 'Division 3 Lead', title: 'B2B, Kids & Education Lead', assignedBrands: [3, 4, 9], status: 'Active' },
+      { id: 4, name: 'Division 4 Lead', title: 'Tech, Fonts & AI Prompt Vaults Lead', assignedBrands: [10, 11, 12, 13], status: 'Active' }
     ]
   };
 

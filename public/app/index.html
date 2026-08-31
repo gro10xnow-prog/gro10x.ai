@@ -360,7 +360,7 @@
             <div style="background:var(--surface-2, #222232); padding:0.75rem; border-radius:10px; border:1px solid var(--border-subtle, #2e2e3e); margin-top:0.2rem;">
               <div style="font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; font-weight:700; margin-bottom:0.4rem;">Agency Pipeline Snapshot</div>
               <div style="display:flex; justify-content:space-between; font-size:0.8rem;">
-                <span>👥 Staff Roster: <strong>${data.agencyTelemetry?.totalStaff || 33} members</strong></span>
+                <span>👥 Staff Roster: <strong>${data.agencyTelemetry?.totalStaff ?? (data.totalTeamCount || 0)} members</strong></span>
                 <span>📋 In Progress: <strong>${data.agencyTelemetry?.openTasks || 0} tasks</strong></span>
                 <span>🚨 Overdue: <strong style="color:${(data.agencyTelemetry?.overdueTasks || 0) > 0 ? '#ef4444' : '#10b981'}">${data.agencyTelemetry?.overdueTasks || 0}</strong></span>
               </div>

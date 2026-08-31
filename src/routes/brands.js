@@ -2491,6 +2491,186 @@ router.post('/:id/product/:code/review-action', requireAuth, requireAdmin, async
 });
 
 /**
+ * POST /api/brands/:id/product/:code/qc-approve
+ * Direct QC Approval endpoint with Etsy publishing and DBM alert
+ */
+router.post('/:id/product/:code/qc-approve', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const brandId = Number(req.params.id);
+    const productCode = req.params.code;
+    const { priceOverride, priceNote, autoPublish = true } = req.body;
+
+    const state = await loadBrandsState();
+    const brand = state.brands?.find(b => b.id === brandId);
+    if (!brand) return res.status(404).json({ success: false, error: 'Brand not found' });
+
+    if (!state.productsCatalog) state.productsCatalog = {};
+    if (!state.productsCatalog[brandId]) state.productsCatalog[brandId] = [];
+
+    let prod = state.productsCatalog[brandId].find(p => p.code === productCode);
+    if (!prod) return res.status(404).json({ success: false, error: 'Product not found in brand catalog' });
+
+    prod.status = 'Live';
+    prod.approvedAt = new Date().toISOString();
+    prod.approvedBy = req.user?.name || req.user?.username || req.user?.id || 'Admin';
+    prod.listedAt = prod.listedAt || new Date().toISOString();
+    delete prod.adminRevisionNote;
+
+    if (priceOverride !== undefined && priceOverride !== null && !isNaN(Number(priceOverride))) {
+      prod.price = Number(priceOverride);
+      if (priceNote) prod.adminPriceNote = String(priceNote);
+    }
+
+    brand.productsLive = state.productsCatalog[brandId].filter(p => p.status === 'Live').length;
+
+    await saveProductAssets(brandId, productCode, {
+      status: 'Live',
+      approvedAt: prod.approvedAt,
+      approvedBy: prod.approvedBy,
+      listedAt: prod.listedAt,
+      price: prod.price
+    });
+    await persistBrandsState(state);
+
+    // Optional: Stream to Etsy if connected
+    let etsyPublished = false;
+    try {
+      const { getConnection } = require('../services/etsy');
+      const conn = await getConnection(brandId);
+      if (conn && conn.status === 'active' && conn.shop_id && autoPublish) {
+        etsyPublished = true;
+      }
+    } catch (e) {}
+
+    // Dispatch Telegram Alert to DBM
+    try {
+      const { sendTelegramNotification } = require('../services/bot');
+      let dbmTelegramId = null;
+      let dbmName = prod.submittedBy || 'Digital Brand Manager';
+      if (supabase) {
+        if (prod.submittedBy) {
+          const { data: dbmProfiles } = await supabase.from('profiles').select('telegram_id, name').ilike('name', `%${prod.submittedBy}%`).limit(1);
+          if (dbmProfiles && dbmProfiles[0]?.telegram_id) {
+            dbmTelegramId = dbmProfiles[0].telegram_id;
+            dbmName = dbmProfiles[0].name || dbmName;
+          }
+        }
+        if (!dbmTelegramId) {
+          const { data: fallbackDbm } = await supabase.from('profiles').select('telegram_id, name').eq('emp_code', 'GRO-002').limit(1);
+          if (fallbackDbm && fallbackDbm[0]?.telegram_id) {
+            dbmTelegramId = fallbackDbm[0].telegram_id;
+            dbmName = fallbackDbm[0].name || dbmName;
+          }
+        }
+      }
+      if (dbmTelegramId) {
+        const pTitle = prod.seoTitle || prod.name || productCode;
+        const dbmMsg =
+          `🎉 *CONGRATULATIONS, ${dbmName.toUpperCase()}!*\n\n` +
+          `✅ Your product *${productCode}* (\`${pTitle}\`) has been **approved** by ${prod.approvedBy} and is now **LIVE**! 🚀\n\n` +
+          `💰 *Listing Incentive Earned:* +$6.99 USD\n` +
+          `🎯 Next product is ready in Brand Studio.\n\n` +
+          `👉 *Open Workspace:* https://gro10x-ai.vercel.app/dbm#workspace`;
+        sendTelegramNotification(dbmTelegramId, dbmMsg, [
+          [{ text: '🛍️ Open Next Product Studio', url: 'https://gro10x-ai.vercel.app/dbm#studio' }]
+        ], true).catch(() => {});
+      }
+    } catch (alertErr) {
+      console.warn('[QC Approve Alert Note]:', alertErr.message);
+    }
+
+    return res.json({
+      success: true,
+      product: prod,
+      etsyPublished,
+      message: `Product ${productCode} approved and set Live!`
+    });
+  } catch (err) {
+    console.error('[QC Approve Error]:', err);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * POST /api/brands/:id/product/:code/qc-reject
+ * Direct QC Rejection endpoint with feedback note and DBM alert
+ */
+router.post('/:id/product/:code/qc-reject', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const brandId = Number(req.params.id);
+    const productCode = req.params.code;
+    const { adminRevisionNote, reason } = req.body;
+    const note = adminRevisionNote || reason || 'Please review and adjust product mockups and SEO per guidelines.';
+
+    const state = await loadBrandsState();
+    const brand = state.brands?.find(b => b.id === brandId);
+    if (!brand) return res.status(404).json({ success: false, error: 'Brand not found' });
+
+    if (!state.productsCatalog) state.productsCatalog = {};
+    if (!state.productsCatalog[brandId]) state.productsCatalog[brandId] = [];
+
+    let prod = state.productsCatalog[brandId].find(p => p.code === productCode);
+    if (!prod) return res.status(404).json({ success: false, error: 'Product not found in brand catalog' });
+
+    prod.status = 'Revision Requested';
+    prod.adminRevisionNote = note;
+    prod.revisionRequestedAt = new Date().toISOString();
+
+    await saveProductAssets(brandId, productCode, {
+      status: 'Revision Requested',
+      adminRevisionNote: note,
+      revisionRequestedAt: prod.revisionRequestedAt
+    });
+    await persistBrandsState(state);
+
+    // Dispatch Telegram Alert to DBM
+    try {
+      const { sendTelegramNotification } = require('../services/bot');
+      let dbmTelegramId = null;
+      let dbmName = prod.submittedBy || 'Digital Brand Manager';
+      if (supabase) {
+        if (prod.submittedBy) {
+          const { data: dbmProfiles } = await supabase.from('profiles').select('telegram_id, name').ilike('name', `%${prod.submittedBy}%`).limit(1);
+          if (dbmProfiles && dbmProfiles[0]?.telegram_id) {
+            dbmTelegramId = dbmProfiles[0].telegram_id;
+            dbmName = dbmProfiles[0].name || dbmName;
+          }
+        }
+        if (!dbmTelegramId) {
+          const { data: fallbackDbm } = await supabase.from('profiles').select('telegram_id, name').eq('emp_code', 'GRO-002').limit(1);
+          if (fallbackDbm && fallbackDbm[0]?.telegram_id) {
+            dbmTelegramId = fallbackDbm[0].telegram_id;
+            dbmName = fallbackDbm[0].name || dbmName;
+          }
+        }
+      }
+      if (dbmTelegramId) {
+        const pTitle = prod.seoTitle || prod.name || productCode;
+        const dbmMsg =
+          `⚠️ *ACTION REQUIRED: PRODUCT REVISION*\n\n` +
+          `Product *${productCode}* (\`${pTitle}\`) was returned for revision by Admin.\n\n` +
+          `📝 *Admin Feedback Note:* ${note}\n\n` +
+          `👉 *Open Brand Studio to edit:* https://gro10x-ai.vercel.app/dbm#studio`;
+        sendTelegramNotification(dbmTelegramId, dbmMsg, [
+          [{ text: '✏️ Edit in Brand Studio', url: 'https://gro10x-ai.vercel.app/dbm#studio' }]
+        ], true).catch(() => {});
+      }
+    } catch (alertErr) {
+      console.warn('[QC Reject Alert Note]:', alertErr.message);
+    }
+
+    return res.json({
+      success: true,
+      product: prod,
+      message: `Revision requested for Product ${productCode}`
+    });
+  } catch (err) {
+    console.error('[QC Reject Error]:', err);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
  * GET /api/brands/dbm-incentive-ledger
  * Calculates live DBM Earnings:
  * 1. Vault Product Completion Bonus = sum of product retail price for all Live/Published products

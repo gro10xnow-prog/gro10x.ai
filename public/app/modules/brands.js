@@ -1,4 +1,4 @@
-﻿/**
+/**
  * public/app/modules/brands.js
  * ─────────────────────────────────────────────────────────────────────────────
  * GRO10X Digital Brand Empire — Command Center Module v2.0 (Phase 2 Live)
@@ -7221,17 +7221,44 @@ window.APP_MODULES.brands = async function(container) {
       }
     },
 
+    toggleReviewInspection(detailId) {
+      const el = document.getElementById(detailId);
+      if (!el) return;
+      el.style.display = (el.style.display === 'none' || !el.style.display) ? 'table-row' : 'none';
+    },
+
+    async approveProductDirectly(brandId, productCode) {
+      if (window.showToast) window.showToast(`⏳ Approving ${productCode} and setting Live...`, 'info');
+      const headers = getStudioAuthHeaders({ 'Content-Type': 'application/json' });
+      try {
+        const res = await fetch(`/api/brands/${brandId}/product/${productCode}/qc-approve`, {
+          method: 'POST',
+          headers,
+          credentials: 'same-origin',
+          body: JSON.stringify({ autoPublish: true })
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Approval failed');
+
+        if (window.showToast) window.showToast(`🎉 Product ${productCode} Approved & Published Live!`, 'success');
+        state = await loadBrandsStateFromAPI();
+        renderTabContent('etsy');
+      } catch (err) {
+        if (window.showToast) window.showToast(err.message, 'error');
+      }
+    },
+
     async requestRevisionForProduct(brandId, productCode) {
       const note = prompt(`Enter feedback / revision note for ${productCode}:`, 'Please polish mockup lighting and verify printable margins.');
       if (!note) return;
 
       const headers = getStudioAuthHeaders({ 'Content-Type': 'application/json' });
       try {
-        const res = await fetch(`/api/brands/${brandId}/product/${productCode}/review-action`, {
+        const res = await fetch(`/api/brands/${brandId}/product/${productCode}/qc-reject`, {
           method: 'POST',
           headers,
           credentials: 'same-origin',
-          body: JSON.stringify({ action: 'request_revision', revisionNote: note })
+          body: JSON.stringify({ adminRevisionNote: note })
         });
         const data = await res.json();
         if (!data.success) throw new Error(data.error || 'Action failed');
