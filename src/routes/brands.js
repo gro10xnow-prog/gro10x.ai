@@ -943,6 +943,59 @@ router.post('/:id/settings', requireAuth, async (req, res) => {
 });
 
 /**
+ * GET /api/brands/my-brands
+ * Returns assigned brands and catalogs for the authenticated DBM
+ */
+router.get('/my-brands', requireAuth, async (req, res) => {
+  try {
+    const state = await loadBrandsState();
+    const role = (req.user?.profile?.role || req.user?.role || '').toLowerCase();
+    const access = (req.user?.profile?.accessLevel || req.user?.accessLevel || '').toLowerCase();
+    const empId = req.user?.profile?.emp_code || req.user?.id || '';
+
+    const isAdmin = access.includes('owner') || access.includes('admin') || role.includes('owner') || role.includes('admin') || ['GRO-000', 'GRO-001'].includes(empId);
+
+    // Determine DBM ID (Default to DBM 1 for Anika Nower / GRO-TEST or digital brand managers)
+    let dbmId = 1;
+    if (empId === 'GRO-002' || empId === 'GRO-TEST' || role.includes('brand') || role.includes('dbm')) {
+      dbmId = 1; // Division 1: PlannerQueenGro (1), InkWrapped (5), FiestaFoundry (8)
+    }
+
+    const dbmInfo = state.dbms?.find(d => d.id === dbmId) || {
+      id: dbmId,
+      name: req.user?.name || 'Digital Brand Manager',
+      title: 'Digital Products Specialist',
+      assignedBrands: [1, 5, 8],
+      status: 'Active'
+    };
+
+    const assignedBrandIds = isAdmin ? state.brands.map(b => b.id) : (dbmInfo.assignedBrands || [1, 5, 8]);
+    const assignedBrands = state.brands.filter(b => assignedBrandIds.includes(b.id));
+
+    const filteredCatalog = {};
+    for (const bId of assignedBrandIds) {
+      filteredCatalog[bId] = state.productsCatalog?.[bId] || [];
+    }
+
+    res.json({
+      success: true,
+      dbm: {
+        ...dbmInfo,
+        name: req.user?.name || dbmInfo.name,
+        emp_code: empId
+      },
+      isAdmin,
+      assignedBrandIds,
+      brands: assignedBrands,
+      productsCatalog: filteredCatalog,
+      dailyTarget: 8
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
  * GET /api/brands/dbm-logs
  * Returns all DBM EOD standup reports
  */
@@ -957,29 +1010,59 @@ router.get('/dbm-logs', requireAuth, async (req, res) => {
 
 /**
  * POST /api/brands/dbm-logs
- * Submits a new DBM EOD standup report
+ * Submits a new DBM EOD standup report and dispatches Telegram notification to Admin
  */
 router.post('/dbm-logs', requireAuth, async (req, res) => {
   try {
-    const { dbmId, brandName, listed, revenue, notes } = req.body;
-    if (!dbmId || !brandName) {
-      return res.status(400).json({ success: false, error: 'dbmId and brandName are required' });
-    }
+    const { brandName, listed, revenue, notes, isBlocker, productCodes } = req.body;
+    let dbmId = Number(req.body.dbmId) || 1;
+    const submitterName = req.user?.name || 'Digital Brand Manager';
 
     const logs = await loadDbmLogs();
     const newEntry = {
       id: 'log_' + Date.now(),
       date: new Date().toISOString().split('T')[0],
       timestamp: new Date().toISOString(),
-      dbmId: Number(dbmId),
-      brandName,
+      dbmId,
+      dbmName: submitterName,
+      brandName: brandName || 'PlannerQueenGro',
       listed: Number(listed) || 0,
       revenue: Number(revenue) || 0,
-      notes: notes || ''
+      notes: notes || '',
+      isBlocker: Boolean(isBlocker),
+      productCodes: productCodes || ''
     };
 
     logs.unshift(newEntry);
     await persistDbmLogs(logs);
+
+    // ── Dispatch Telegram Alert to Admin ──
+    try {
+      const { sendTelegramNotification } = require('../services/bot');
+      const adminChatId = process.env.ADMIN_TELEGRAM_ID || process.env.OWNER_TELEGRAM_ID || '7277874987';
+
+      if (isBlocker) {
+        const blockerMsg =
+          `🚨 *DBM BLOCKER ESCALATION!*\n\n` +
+          `👤 *DBM:* ${submitterName}\n` +
+          `🏪 *Brand:* ${newEntry.brandName}\n` +
+          `⚠️ *Blocker:* ${notes}\n\n` +
+          `📌 *Action:* Immediate admin follow-up required.`;
+        sendTelegramNotification(adminChatId, blockerMsg, null, true).catch(() => {});
+      } else {
+        const standupMsg =
+          `📊 *EOD STANDUP REPORT*\n\n` +
+          `👤 *DBM:* ${submitterName}\n` +
+          `🏪 *Brand:* ${newEntry.brandName}\n` +
+          `📦 *Products Submitted Today:* *${newEntry.listed} / 8 Target*\n` +
+          (newEntry.productCodes ? `🏷️ *SKUs:* \`${newEntry.productCodes}\`\n` : '') +
+          `💬 *Notes:* ${notes || 'No blockers. Daily quota fulfilled.'}\n\n` +
+          `🌐 [Open Command Center](https://gro10x-ai.vercel.app/app#dbm)`;
+        sendTelegramNotification(adminChatId, standupMsg, null, true).catch(() => {});
+      }
+    } catch (tgErr) {
+      console.warn('[Telegram DBM Log Alert Warning]:', tgErr.message);
+    }
 
     res.json({ success: true, log: newEntry });
   } catch (err) {

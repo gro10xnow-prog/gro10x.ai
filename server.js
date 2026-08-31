@@ -284,6 +284,11 @@ app.use('/app', express.static(path.join(__dirname, 'public/app'), {
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
   }
 }));
+app.use('/dbm', express.static(path.join(__dirname, 'public/dbm'), {
+  setHeaders: (res) => {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  }
+}));
 app.use(express.static(path.join(__dirname, 'public'), { maxAge: '1d' }));
 
 // Explicit Multi-Portal Routes (Phase C Architecture)
@@ -293,6 +298,10 @@ app.get('/', (req, res) => {
 
 app.get(['/app', '/admin', '/dashboard', '/os'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public/app/index.html'));
+});
+
+app.get(['/dbm', '/dbm-portal'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/dbm/index.html'));
 });
 
 app.get(['/manager', '/manager-portal'], (req, res) => {

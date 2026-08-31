@@ -97,8 +97,40 @@ function requireClientOwnership(req, res, next) {
   return res.status(403).json({ error: 'Forbidden: You do not have permission to access this client account' });
 }
 
+function requireDBM(req, res, next) {
+  if (!req.user) {
+    return res.status(401).json({ error: 'Unauthorized: Authentication required' });
+  }
+
+  const role = (req.user.profile?.role || req.user.role || '').toLowerCase();
+  const access = (req.user.profile?.accessLevel || req.user.accessLevel || '').toLowerCase();
+  const empId = req.user.profile?.emp_code || req.user.id || '';
+
+  const isAuthorized =
+    ['GRO-000', 'GRO-001', 'GRO-002', 'GRO-005', 'GRO-TEST', 'PBD-000', 'PBD-001', 'PBD-002', 'PBD-005'].includes(empId) ||
+    access.includes('owner') ||
+    access.includes('admin') ||
+    access.includes('manager') ||
+    access.includes('specialist') ||
+    access.includes('crew') ||
+    role.includes('brand') ||
+    role.includes('dbm') ||
+    role.includes('digital brand') ||
+    role.includes('etsy') ||
+    role.includes('specialist') ||
+    role.includes('admin') ||
+    role.includes('owner');
+
+  if (!isAuthorized) {
+    return res.status(403).json({ error: 'Forbidden: Digital Brand Manager or Admin privileges required' });
+  }
+
+  next();
+}
+
 module.exports = {
   requireAdmin,
   requireManager,
+  requireDBM,
   requireClientOwnership
 };

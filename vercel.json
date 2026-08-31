@@ -152,6 +152,14 @@
       "dest": "/public/app/$1"
     },
     {
+      "src": "/dbm/(.*)",
+      "dest": "/public/dbm/$1"
+    },
+    {
+      "src": "/dbm",
+      "dest": "/public/dbm/index.html"
+    },
+    {
       "src": "/(.*)",
       "dest": "/server.js"
     }

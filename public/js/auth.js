@@ -205,7 +205,7 @@ function saveSessionAndRedirect(user, linkedType, email, realToken) {
       role.includes('director') || role.includes('manager'));
 
     if (isDBM) {
-      window.location.href = '/app#brands';
+      window.location.href = '/dbm';
     } else if (isOwnerAdmin) {
       window.location.href = '/app';
     } else if (isManager) {
