@@ -329,7 +329,43 @@ function registerBotHandlers(bot) {
             }]);
           } catch (e) {}
         }
-        return bot.sendMessage(chatId, t(chatId, 'orderConfirmed'), { parse_mode: 'Markdown' });
+        return sendRatingPrompt(bot, chatId, orderId);
+      }
+      if (data.startsWith('rate_order:')) {
+        const parts = data.split(':');
+        const orderId = parts[1];
+        const stars = parseInt(parts[2], 10) || 5;
+        const now = new Date().toISOString();
+
+        if (isSupabaseConfigured() && orderId) {
+          try {
+            await supabase.from('digi_orders').update({
+              customer_rating: stars,
+              updated_at: now
+            }).eq('id', orderId);
+
+            await supabase.from('digi_order_timeline').insert([{
+              order_id: orderId,
+              stage: 'customer_rated',
+              actor: 'customer',
+              note: `Customer rated ${stars}/5 stars via Telegram Bot`,
+              created_at: now
+            }]);
+          } catch (e) {}
+        }
+
+        const lang = getLang(chatId);
+        if (stars >= 4) {
+          const text = (lang === 'bn')
+            ? `🎉 *অনেক ধন্যবাদ আপনার ৫-স্টার রেটিংয়ের জন্য!*\n\nআপনার সন্তুষ্টিই আমাদের অনুপ্রেরণা। যেকোনো সময় সাবস্ক্রিপশন রিনিউ বা নতুন টুলের জন্য DigiVault বটে আসুন:\n👉 https://t.me/Digivault20bot`
+            : `🎉 *Thank you for your ${stars}-star rating!*\n\nYour satisfaction is our highest priority. Share DigiVault with friends:\n👉 https://t.me/Digivault20bot`;
+          return bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
+        } else {
+          const text = (lang === 'bn')
+            ? `🙏 *আপনার মতামতের জন্য ধন্যবাদ!*\n\nআমরা সব সময় সার্ভিস উন্নত করার চেষ্টা করছি। কোনো সমস্যা হয়ে থাকলে অনুগ্রহ করে আমাদের WhatsApp সাপোর্টে জানান:\n👉 wa.me/8801889825025`
+            : `🙏 *Thank you for your feedback!*\n\nWe strive for continuous improvement. If you faced any issues, please reach our WhatsApp support:\n👉 wa.me/8801889825025`;
+          return bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
+        }
       }
       if (data.startsWith('renew_order:')) {
         const orderId = data.replace('renew_order:', '');
@@ -499,6 +535,22 @@ function sendOrderConfirmationPrompt(bot, chatId, session) {
   ];
 
   bot.sendMessage(chatId, prompt, { parse_mode: 'Markdown', reply_markup: { inline_keyboard: keyboard } });
+}
+
+function sendRatingPrompt(bot, chatId, orderId) {
+  const lang = getLang(chatId);
+  const text = (lang === 'bn')
+    ? `✅ *অ্যাক্টিভেশন নিশ্চিত হয়েছে!*\n\nআমাদের সার্ভিসে আপনার অভিজ্ঞতা কেমন ছিল? অনুগ্রহ করে নিচে রেটিং দিন:`
+    : `✅ *Activation Confirmed!*\n\nHow was your experience with DigiVault? Please rate our service:`;
+
+  const keyboard = [
+    [{ text: '⭐️⭐️⭐️⭐️⭐️ (৫/৫ - অসাধারণ)', callback_data: `rate_order:${orderId}:5` }],
+    [{ text: '⭐️⭐️⭐️⭐️ (৪/৫ - ভালো)', callback_data: `rate_order:${orderId}:4` }],
+    [{ text: '⭐️⭐️⭐️ (৩/৫ - সাধারণ)', callback_data: `rate_order:${orderId}:3` }],
+    [{ text: '⭐️ / ⭐️⭐️ (উন্নতি প্রয়োজন)', callback_data: `rate_order:${orderId}:2` }]
+  ];
+
+  bot.sendMessage(chatId, text, { parse_mode: 'Markdown', reply_markup: { inline_keyboard: keyboard } });
 }
 
 function sendCategoryMenu(bot, chatId, messageId = null) {
@@ -684,14 +736,22 @@ async function completeOrderCreation(bot, chatId, session) {
   session.orderNumber = orderNumber;
   await saveSession(chatId, session);
 
-  // Send Invoice to Customer
-  let text = `${t(chatId, 'orderSuccess')}\n\n`;
-  text += `📋 *${t(chatId, 'orderRef')}:* \`${orderNumber}\`\n`;
-  text += `📦 *Product:* ${prod.name} (${prod.duration})\n`;
-  text += `💰 *Amount Due:* ৳${prod.sale_price.toLocaleString()}\n\n`;
-  text += t(chatId, 'payInstructions')
-    .replace('%BKASH%', PAYMENT_CONFIG.bkash)
-    .replace('%NAGAD%', PAYMENT_CONFIG.nagad);
+  // Send Monospace Invoice Slip to Customer
+  const lang = getLang(chatId);
+  const receiptTitle = lang === 'bn' ? 'ডিজিভল্ট ডিজিটাল ইনভয়েস' : 'DIGIVAULT INVOICE SLIP';
+  let text = `🧾 *${receiptTitle}*\n\n` +
+    `\`\`\`\n` +
+    `═════════ DIGIVAULT BD ═════════\n` +
+    `Order Ref: #${orderNumber}\n` +
+    `Product:   ${prod.name}\n` +
+    `Duration:  ${prod.duration}\n` +
+    `Amount:    ৳${prod.sale_price.toLocaleString()} BDT\n` +
+    `Status:    Awaiting Payment\n` +
+    `════════════════════════════════\n` +
+    `\`\`\`\n\n` +
+    `💳 *Send Money করার নম্বর:* \`${PAYMENT_CONFIG.bkash}\`\n` +
+    `_(বিকাশ ও নগদ পার্সোনাল — নম্বরের উপর ট্যাপ করলে কপি হবে)_\n\n` +
+    `📸 টাকা পাঠানোর পর সেন্ডার নম্বর বা স্ক্রিনশট এই চ্যাটে পাঠান।`;
 
   bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
 
@@ -772,11 +832,18 @@ async function handlePaymentPhoto(bot, chatId, order, msg) {
 
 async function handlePaymentProofSubmission(bot, chatId, session, photoUrl = null, trxId = null) {
   if (isSupabaseConfigured() && session.orderId) {
-    await supabase.from('digi_orders').update({
-      payment_ref: trxId || '',
-      payment_proof_url: photoUrl,
-      updated_at: new Date().toISOString()
-    }).eq('id', session.orderId);
+    try {
+      const { data } = await supabase.from('digi_orders').update({
+        payment_ref: trxId || '',
+        payment_proof_url: photoUrl,
+        order_stage: 'payment_submitted',
+        updated_at: new Date().toISOString()
+      }).eq('id', session.orderId).select().maybeSingle();
+
+      if (data) {
+        broadcast('digistore_order_updated', data);
+      }
+    } catch (e) {}
   }
 
   const text = t(chatId, 'screenshotReceived').replace('%ORDER%', session.orderNumber || '');

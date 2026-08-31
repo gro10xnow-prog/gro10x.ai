@@ -1046,16 +1046,24 @@ router.post('/orders/:id/customer-confirm', asyncHandler(async (req, res) => {
   };
 
   if (isSupabaseConfigured()) {
-    const { data, error } = await supabase.from('digi_orders').update(updates).eq('id', id).select().maybeSingle();
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+    let updateQuery = supabase.from('digi_orders').update(updates);
+    if (isUUID) {
+      updateQuery = updateQuery.eq('id', id);
+    } else {
+      updateQuery = updateQuery.or(`order_number.eq.${id.toUpperCase()},id.eq.${id}`);
+    }
+    const { data, error } = await updateQuery.select().maybeSingle();
     if (error) return fail(res, error.message, 500);
 
-    await recordTimeline(id, 'confirmed_closed', 'customer', notes || 'Customer confirmed subscription activation and closed order.', proofUrl);
-    broadcast('digistore_order_updated', data);
+    const effectiveId = data?.id || id;
+    await recordTimeline(effectiveId, 'confirmed_closed', 'customer', notes || 'Customer confirmed subscription activation and closed order.', proofUrl);
+    if (data) broadcast('digistore_order_updated', data);
 
     return ok(res, {
       success: true,
       message: 'Thank you! Your activation confirmation has been recorded successfully.',
-      order: mapOrder(data)
+      order: data ? mapOrder(data) : { id: effectiveId, orderStage: 'confirmed_closed' }
     });
   }
 
@@ -1341,14 +1349,21 @@ router.get('/track/:orderNumber', asyncHandler(async (req, res) => {
   let order = null;
 
   if (isSupabaseConfigured()) {
-    const { data } = await supabase
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(orderNumber.trim());
+    let query = supabase
       .from('digi_orders')
-      .select('id, order_number, product_name, duration, payment_status, delivery_status, order_stage, activation_link, customer_confirmed_at, activation_date, expiry_date, created_at')
-      .eq('order_number', cleanRef)
-      .maybeSingle();
+      .select('id, order_number, product_name, duration, payment_status, delivery_status, order_stage, activation_link, customer_confirmed_at, activation_date, expiry_date, created_at');
+
+    if (isUUID) {
+      query = query.or(`id.eq.${orderNumber.trim()},order_number.eq.${cleanRef}`);
+    } else {
+      query = query.eq('order_number', cleanRef);
+    }
+
+    const { data } = await query.maybeSingle();
     order = data;
   } else {
-    const found = inMemoryOrders.find(o => (o.order_number || o.orderNumber || '').toUpperCase() === cleanRef);
+    const found = inMemoryOrders.find(o => (o.order_number || o.orderNumber || '').toUpperCase() === cleanRef || o.id === orderNumber);
     if (found) {
       order = {
         id: found.id,
@@ -1854,5 +1869,54 @@ router.get('/export/financials', requireAuth, asyncHandler(async (req, res) => {
   return res.send(csv);
 }));
 
+// ─────────────────────────────────────────────────────────────────────────────
+// 12. CUSTOMER ORDER RATING & FEEDBACK
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * POST /api/digistore/orders/:id/rate
+ */
+router.post('/orders/:id/rate', asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { rating, feedback = '' } = req.body;
+
+  const numRating = parseInt(rating, 10);
+  if (!numRating || numRating < 1 || numRating > 5) {
+    return badRequest(res, 'Rating must be an integer between 1 and 5');
+  }
+
+  const now = new Date().toISOString();
+
+  if (isSupabaseConfigured()) {
+    const { data: order, error } = await supabase
+      .from('digi_orders')
+      .update({
+        customer_rating: numRating,
+        customer_feedback: feedback.trim(),
+        updated_at: now
+      })
+      .eq('id', id)
+      .select()
+      .maybeSingle();
+
+    if (error) throw error;
+    if (!order) return notFound(res, 'Order not found');
+
+    await supabase.from('digi_order_timeline').insert([{
+      order_id: id,
+      stage: 'customer_rated',
+      actor: 'customer',
+      note: `Customer submitted rating: ${numRating}/5 stars${feedback.trim() ? ' - "' + feedback.trim() + '"' : ''}`,
+      created_at: now
+    }]);
+
+    broadcast('digistore_order_updated', order);
+    return ok(res, order, 'Customer rating submitted successfully');
+  }
+
+  return ok(res, { id, customer_rating: numRating, customer_feedback: feedback.trim() }, 'Rating saved');
+}));
+
 module.exports = router;
+
 
