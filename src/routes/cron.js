@@ -838,6 +838,225 @@ router.get('/lead-pipeline-summary', authorizeCron, async (req, res) => {
   }
 });
 
+/**
+ * GET /api/cron/digivault-renewals
+ * Daily 9 AM BST Digest of subscriptions expiring in next 3 days
+ */
+router.get('/digivault-renewals', authorizeCron, async (req, res) => {
+  try {
+    if (!isSupabaseConfigured()) {
+      return res.json({ success: true, message: 'Supabase not configured, skipped.' });
+    }
+
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+    const threeDaysAhead = new Date(today.getTime() + 3 * 86400000).toISOString().split('T')[0];
+
+    // Find subscriptions expiring in <= 3 days that haven't been alerted or renewed
+    const { data: expiring, error } = await supabase
+      .from('digi_orders')
+      .select('*')
+      .eq('delivery_status', 'delivered')
+      .eq('is_renewed', false)
+      .lte('expiry_date', threeDaysAhead)
+      .order('expiry_date', { ascending: true });
+
+    if (error) throw error;
+
+    if (!expiring || expiring.length === 0) {
+      return res.json({ success: true, count: 0, message: 'No subscriptions due for renewal in next 3 days.' });
+    }
+
+    const unalerted = expiring.filter(o => !o.renewal_reminder_sent);
+    let totalPotentialRev = expiring.reduce((sum, o) => sum + Number(o.sale_price || 0), 0);
+
+    let msg = `🔔 *DigiVault Daily Renewal Intelligence*\n\n`;
+    msg += `📅 *Date:* ${todayStr}\n`;
+    msg += `📋 *Expiring within 3 days:* ${expiring.length} active subscription(s)\n`;
+    msg += `💰 *Renewal Revenue Potential:* ৳${totalPotentialRev.toLocaleString()}\n\n`;
+
+    expiring.slice(0, 10).forEach(o => {
+      const isPast = o.expiry_date < todayStr;
+      const statusIcon = isPast ? '⚠️ EXPIRED' : '⏳ Due';
+      msg += `  • *${o.customer_name}* — ${o.product_name} (${o.duration})\n`;
+      msg += `    ${statusIcon}: \`${o.expiry_date}\` · Price: ৳${Number(o.sale_price || 0).toLocaleString()}\n`;
+    });
+
+    if (expiring.length > 10) {
+      msg += `\n_...and ${expiring.length - 10} more subscriptions._\n`;
+    }
+
+    msg += `\n🌐 Manage DigiVault: https://gro10x-ai.vercel.app/app/index.html`;
+
+    // Mark alerted
+    const idsToMark = unalerted.map(o => o.id);
+    if (idsToMark.length > 0) {
+      await supabase.from('digi_orders').update({ renewal_reminder_sent: true }).in('id', idsToMark);
+    }
+
+    // Send to team Telegram group or admins
+    if (process.env.TELEGRAM_TEAM_GROUP_ID) {
+      const { getTeamBot } = require('../services/bot');
+      const teamBot = getTeamBot();
+      if (teamBot) {
+        teamBot.sendMessage(process.env.TELEGRAM_TEAM_GROUP_ID, msg, { parse_mode: 'Markdown' }).catch(() => {});
+      }
+    }
+
+    return res.json({
+      success: true,
+      expiringCount: expiring.length,
+      unalertedCount: unalerted.length,
+      potentialRevenue: totalPotentialRev,
+      timestamp: new Date().toISOString()
+    });
+  } catch (err) {
+    console.error('[DigiVault Renewal Cron Error]:', err.message);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/cron/dbm-morning-nudge
+router.get('/dbm-morning-nudge', async (req, res) => {
+  try {
+    const { loadBrandsState } = require('./brands');
+    const brandsState = await loadBrandsState();
+    
+    // Query DBM team members from Supabase profiles
+    const { data: dbmProfiles } = await supabase
+      .from('profiles')
+      .select('*')
+      .not('telegram_id', 'is', null);
+
+    const dbmUsers = (dbmProfiles || []).filter(p => {
+      const r = (p.role || '').toLowerCase();
+      return r.includes('brand manager') || r.includes('digital brand') || r.includes('dbm');
+    });
+
+    if (!dbmUsers.length) {
+      return res.json({ success: true, message: 'No DBMs with telegram_id found', sentCount: 0 });
+    }
+
+    let sentCount = 0;
+    for (const dbm of dbmUsers) {
+      const dbmId = dbm.dbm_id || dbm.dbmId || 1;
+      const dbmInfo = brandsState.dbms?.find(d => d.id === dbmId) || { assignedBrands: [1, 5, 8], dailyTarget: 8 };
+      const assignedBrandIds = dbmInfo.assignedBrands || [1, 5, 8];
+      const activeBrandId = assignedBrandIds[0] || 1;
+      const activeBrand = brandsState.brands?.find(b => b.id === activeBrandId) || brandsState.brands?.[0] || { name: 'PlannerQueenGro' };
+      const catalog = brandsState.productsCatalog?.[activeBrand.id] || [];
+
+      const drafts = catalog.filter(p => p.status !== 'Live' && p.status !== 'Pending Review');
+      const dailyTarget = dbmInfo.dailyTarget || 8;
+      const batchStart = drafts[0];
+      const batchEnd = drafts[Math.max(0, dailyTarget - 1)] || drafts[drafts.length - 1] || batchStart;
+
+      const batchLabel = batchStart && batchEnd && batchStart.code !== batchEnd.code
+        ? `SKUs ${batchStart.code} through ${batchEnd.code}`
+        : batchStart ? `SKU ${batchStart.code}` : 'All complete!';
+
+      const firstName = (dbm.name || 'Brand Manager').split(' ')[0];
+
+      const nudgeMsg =
+        `☀️ *Good Morning, ${firstName}! Ready to build?*\n\n` +
+        `📋 *TODAY'S PRODUCTION MISSION:*\n` +
+        `🏪 *Active Brand:* ${activeBrand.name}\n` +
+        `🎯 *Target Batch:* ${batchLabel} (*${dailyTarget} Products Quota*)\n` +
+        `📦 *Catalog Progress:* ${100 - drafts.length}/100 Completed\n` +
+        `⏰ *EOD Standup Deadline:* 5:00 PM BST\n\n` +
+        `🚀 *Recommended Flow (3 Blocks):*\n` +
+        `• 🌅 *9AM–1PM:* 4 Product Blueprints & Vaults\n` +
+        `• ⚡ *1PM–5PM:* 4 Mockups, Videos & AI SEO\n` +
+        `• 📝 *5PM–6PM:* Submit QC Review & Daily Standup\n\n` +
+        `🌐 [Open DBM Workspace](https://gro10x-ai.vercel.app/dbm#workspace) · [Studio](https://gro10x-ai.vercel.app/dbm#studio)`;
+
+      try {
+        await sendTelegramNotification(dbm.telegram_id, nudgeMsg, null, true);
+        sentCount++;
+      } catch (tgErr) {
+        console.warn(`[Morning Nudge Telegram Error for ${dbm.name}]:`, tgErr.message);
+      }
+    }
+
+    return res.json({
+      success: true,
+      message: `Morning nudge dispatched to ${sentCount} DBM(s)`,
+      sentCount,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('❌ Error in DBM morning nudge cron:', error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/cron/dbm-standup-reminder
+router.get('/dbm-standup-reminder', async (req, res) => {
+  try {
+    const { data: dbmProfiles } = await supabase
+      .from('profiles')
+      .select('*')
+      .not('telegram_id', 'is', null);
+
+    const dbmUsers = (dbmProfiles || []).filter(p => {
+      const r = (p.role || '').toLowerCase();
+      return r.includes('brand manager') || r.includes('digital brand') || r.includes('dbm');
+    });
+
+    if (!dbmUsers.length) {
+      return res.json({ success: true, message: 'No DBMs found', sentCount: 0 });
+    }
+
+    // Check today's standup logs to only notify those who haven't submitted yet
+    const todayStr = new Date().toISOString().split('T')[0];
+    let submittedEmpCodes = [];
+    try {
+      const { data: logsData } = await supabase
+        .from('custom_fields')
+        .select('value')
+        .eq('entity_type', 'brand_empire')
+        .eq('field_name', 'dbm_eod_logs')
+        .maybeSingle();
+
+      const logs = logsData?.value || [];
+      submittedEmpCodes = logs
+        .filter(l => l.date === todayStr)
+        .map(l => l.empCode || l.emp_code || l.dbmName);
+    } catch (e) {}
+
+    let sentCount = 0;
+    for (const dbm of dbmUsers) {
+      const alreadySubmitted = submittedEmpCodes.some(c => c && (c === dbm.emp_code || c === dbm.name));
+      if (alreadySubmitted) continue; // Skip if already submitted!
+
+      const firstName = (dbm.name || 'Brand Manager').split(' ')[0];
+      const reminderMsg =
+        `🕔 *5:00 PM Standup Reminder — ${firstName}!*\n\n` +
+        `It's time to log your daily output report. It takes less than 30 seconds!\n\n` +
+        `Tap the button below or reply with /dbmstandup:\n\n` +
+        `🌐 [Submit EOD Standup Online](https://gro10x-ai.vercel.app/dbm#standup)`;
+
+      try {
+        await sendTelegramNotification(dbm.telegram_id, reminderMsg, null, true);
+        sentCount++;
+      } catch (tgErr) {
+        console.warn(`[Standup Reminder Telegram Error for ${dbm.name}]:`, tgErr.message);
+      }
+    }
+
+    return res.json({
+      success: true,
+      message: `Standup reminder sent to ${sentCount} DBM(s) (Skipped ${dbmUsers.length - sentCount} already logged)`,
+      sentCount,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('❌ Error in DBM standup reminder cron:', error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;
+
 
 

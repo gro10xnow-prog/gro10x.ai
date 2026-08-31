@@ -87,11 +87,32 @@
     {
       "path": "/api/cron/weekly-kpi-summary",
       "schedule": "0 3 * * 1"
+    },
+    {
+      "path": "/api/cron/digivault-renewals",
+      "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/cron/dbm-morning-nudge",
+      "schedule": "0 3 * * 0,1,2,3,4,6"
+    },
+    {
+      "path": "/api/cron/dbm-standup-reminder",
+      "schedule": "0 11 * * 0,1,2,3,4,6"
     }
   ],
   "headers": [
     {
       "source": "/app/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/digivault/(.*)",
       "headers": [
         {
           "key": "Cache-Control",
@@ -150,6 +171,14 @@
     {
       "src": "/app/(.*)",
       "dest": "/public/app/$1"
+    },
+    {
+      "src": "/digivault/(.*)",
+      "dest": "/public/digivault/$1"
+    },
+    {
+      "src": "/digivault",
+      "dest": "/public/digivault/index.html"
     },
     {
       "src": "/dbm/(.*)",

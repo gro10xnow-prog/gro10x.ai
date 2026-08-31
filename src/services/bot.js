@@ -1,4 +1,4 @@
-﻿const TelegramBot = require('node-telegram-bot-api');
+const TelegramBot = require('node-telegram-bot-api');
 const { supabase } = require('./supabase');
 const { normalizePhone } = require('../utils/phone');
 
@@ -535,7 +535,7 @@ function initBot() {
         // Finance Manager
         '💸 Expense Queue', '🧾 Invoice Status', '📊 Payroll Summary', '🏦 Bank & bKash Hub', '👥 Admin Team',
         // Digital Brand Manager (DBM)
-        '🛍️ My Brands & Products', '📦 Today\'s Listing Queue', '📋 DBM Daily Standup', '💰 My DBM Incentive',
+        '🛍️ My Brands & Products', '📦 Today\'s Listing Queue', '📋 DBM Daily Standup', '💰 My DBM Incentive', '📊 My DBM Status',
         // Shared Manager & Approvals
         '👥 My Team', '✅ Leave Approvals', '👥 HR & Attendance',
         // Wizard-initiating buttons — handled exclusively by their onText() listeners
@@ -767,7 +767,9 @@ function initBot() {
       // Digital Brand Manager (DBM)
       const dbmHandler = require('./bot/handlers/dbm');
       teamBot.onText(/\/dbmstandup(?:@\w+)?|📋 DBM Daily Standup/, (msg) => dbmHandler.handleDBMStandup(teamBot, msg));
-      teamBot.onText(/\/mybrands(?:@\w+)?|🛍️ My Brands & Products|📦 Today's Listing Queue/, (msg) => dbmHandler.handleMyBrands(teamBot, msg));
+      teamBot.onText(/\/mybrands(?:@\w+)?|🛍️ My Brands & Products/, (msg) => dbmHandler.handleMyBrands(teamBot, msg));
+      teamBot.onText(/\/todayqueue(?:@\w+)?|\/queue(?:@\w+)?|📦 Today's Listing Queue/, (msg) => dbmHandler.handleTodayQueue(teamBot, msg));
+      teamBot.onText(/\/dbmstatus(?:@\w+)?|\/mystatus(?:@\w+)?|📊 My DBM Status/, (msg) => dbmHandler.handleDBMMyStatus(teamBot, msg));
       teamBot.onText(/\/dbmincentive(?:@\w+)?|💰 My DBM Incentive/, (msg) => dbmHandler.handleDBMIncentive(teamBot, msg));
 
       // Executive briefing & status
