@@ -444,3 +444,54 @@ a {
     font-size: 16px; /* Prevents unwanted auto-zoom on mobile safari/chrome */
   }
 }
+
+/* ── Dropzone & Tooltip Enhancements (Phase 5A) ── */
+.dv-dropzone {
+  border: 2px dashed rgba(255, 255, 255, 0.18);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  transition: all 0.25s ease;
+  position: relative;
+}
+
+.dv-dropzone:hover, .dv-dropzone.dragover {
+  border-color: var(--primary);
+  background: rgba(0, 223, 137, 0.06);
+  box-shadow: 0 0 20px rgba(0, 223, 137, 0.15);
+}
+
+.dv-tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  right: 0;
+  background: #00df89;
+  color: #000;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 4px 8px;
+  border-radius: 4px;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: all 0.2s ease;
+  z-index: 100;
+  white-space: nowrap;
+}
+
+.dv-tooltip.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.badge-savings {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 9999px;
+}

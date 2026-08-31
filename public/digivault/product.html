@@ -117,11 +117,15 @@
               </div>
               <div style="font-size: 12px; color: var(--text-main); line-height: 1.5;">
                 অনুগ্রহ করে নিচের নম্বরে <strong>Send Money</strong> করুন:<br>
-                <span style="font-family: monospace; font-size: 16px; font-weight: 800; color: #fff; background: rgba(0,0,0,0.4); padding: 4px 8px; border-radius: 6px; display: inline-block; margin-top: 6px;">
-                  📱 01312415757 (01312-415757)
-                </span>
-                <span style="font-size: 11px; color: var(--text-muted); display: block; margin-top: 4px;">
-                  (বিকাশ ও নগদ পার্সোনাল নম্বর)
+                <div style="display: flex; gap: 8px; align-items: center; margin-top: 6px; position: relative;">
+                  <input type="text" id="inpSendNo" value="01312415757" readonly style="flex: 1; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 8px 12px; color: #fff; font-family: monospace; font-size: 16px; font-weight: 800;" />
+                  <button type="button" class="btn btn-secondary btn-sm" id="btnCopySendNo" style="padding: 8px 14px; font-weight: 700; white-space: nowrap;">
+                    📋 কপি নম্বর
+                  </button>
+                  <div id="tooltipSendNo" class="dv-tooltip">✓ নম্বর কপি হয়েছে!</div>
+                </div>
+                <span style="font-size: 11px; color: var(--text-muted); display: block; margin-top: 6px;">
+                  (বিকাশ ও নগদ পার্সোনাল নম্বর: 01312-415757)
                 </span>
               </div>
             </div>
@@ -139,7 +143,26 @@
 
             <div class="form-group">
               <label class="form-label" data-i18n="lblScreenshot">পেমেন্টের স্ক্রিনশট আপলোড করুন</label>
-              <input type="file" id="custScreenshot" accept="image/*" class="form-input" style="padding: 8px;" />
+              <div id="dropzoneScreenshot" class="dv-dropzone">
+                <input type="file" id="custScreenshot" accept="image/*" style="display: none;" />
+                <div id="dropzonePrompt">
+                  <div style="font-size: 28px; margin-bottom: 6px;">📸</div>
+                  <div style="font-size: 13px; font-weight: 700; color: #fff;">এখানে ছবি টেনে এনে ছাড়ুন বা ক্লিক করুন</div>
+                  <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">
+                    অথবা স্ক্রিনশট নিয়ে সরাসরি <kbd style="background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; color: #38bdf8;">Ctrl+V</kbd> বা <kbd style="background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; color: #38bdf8;">Cmd+V</kbd> পেস্ট করুন
+                  </div>
+                </div>
+                <div id="dropzonePreview" style="display: none; align-items: center; gap: 12px; text-align: left; width: 100%;">
+                  <img id="imgScreenshotPreview" src="" alt="Proof Preview" style="width: 50px; height: 50px; object-fit: cover; border-radius: 6px; border: 1px solid var(--primary);" />
+                  <div style="flex: 1; min-width: 0;">
+                    <div id="txtPreviewName" style="font-size: 13px; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></div>
+                    <div id="txtPreviewSize" style="font-size: 11px; color: var(--text-muted);"></div>
+                  </div>
+                  <button type="button" id="btnRemoveScreenshot" class="btn btn-sm" style="background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.4); padding: 6px 10px;">
+                    ✕ মুছুন
+                  </button>
+                </div>
+              </div>
             </div>
 
             <button type="submit" class="btn btn-primary" id="btnSubmitOrder" style="padding: 14px; font-size: 16px; width: 100%; margin-top: 8px;">
@@ -217,6 +240,103 @@
         }
       }
 
+      // 1-Click Copy Send Money Number with Tooltip
+      const btnCopySendNo = document.getElementById('btnCopySendNo');
+      if (btnCopySendNo) {
+        btnCopySendNo.addEventListener('click', () => {
+          const inp = document.getElementById('inpSendNo');
+          navigator.clipboard.writeText(inp.value);
+          const tip = document.getElementById('tooltipSendNo');
+          if (tip) {
+            tip.classList.add('show');
+            setTimeout(() => tip.classList.remove('show'), 2000);
+          }
+        });
+      }
+
+      // Dropzone & Clipboard Paste Handlers
+      let selectedProofFile = null;
+      const dropzone = document.getElementById('dropzoneScreenshot');
+      const fileInput = document.getElementById('custScreenshot');
+      const dropPrompt = document.getElementById('dropzonePrompt');
+      const dropPreview = document.getElementById('dropzonePreview');
+      const imgPreview = document.getElementById('imgScreenshotPreview');
+      const txtName = document.getElementById('txtPreviewName');
+      const txtSize = document.getElementById('txtPreviewSize');
+      const btnRemove = document.getElementById('btnRemoveScreenshot');
+
+      function handleProofFile(file) {
+        if (!file || !file.type.startsWith('image/')) {
+          alert('অনুগ্রহ করে একটি ছবি (Image file) আপলোড করুন।');
+          return;
+        }
+        selectedProofFile = file;
+        if (txtName) txtName.textContent = file.name || 'clipboard-screenshot.png';
+        if (txtSize) txtSize.textContent = `${(file.size / 1024).toFixed(1)} KB`;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          if (imgPreview) imgPreview.src = e.target.result;
+          if (dropPrompt) dropPrompt.style.display = 'none';
+          if (dropPreview) dropPreview.style.display = 'flex';
+        };
+        reader.readAsDataURL(file);
+      }
+
+      if (dropzone && fileInput) {
+        dropzone.addEventListener('click', (e) => {
+          if (btnRemove && (e.target === btnRemove || btnRemove.contains(e.target))) return;
+          fileInput.click();
+        });
+
+        fileInput.addEventListener('change', (e) => {
+          if (e.target.files && e.target.files[0]) {
+            handleProofFile(e.target.files[0]);
+          }
+        });
+
+        dropzone.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          dropzone.classList.add('dragover');
+        });
+
+        dropzone.addEventListener('dragleave', () => {
+          dropzone.classList.remove('dragover');
+        });
+
+        dropzone.addEventListener('drop', (e) => {
+          e.preventDefault();
+          dropzone.classList.remove('dragover');
+          if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            handleProofFile(e.dataTransfer.files[0]);
+          }
+        });
+
+        if (btnRemove) {
+          btnRemove.addEventListener('click', (e) => {
+            e.stopPropagation();
+            selectedProofFile = null;
+            fileInput.value = '';
+            if (imgPreview) imgPreview.src = '';
+            if (dropPreview) dropPreview.style.display = 'none';
+            if (dropPrompt) dropPrompt.style.display = 'block';
+          });
+        }
+
+        // Global Paste Listener (Ctrl+V / Cmd+V)
+        window.addEventListener('paste', (e) => {
+          const items = (e.clipboardData || (e.originalEvent && e.originalEvent.clipboardData))?.items;
+          if (!items) return;
+          for (let item of items) {
+            if (item.kind === 'file' && item.type.startsWith('image/')) {
+              const blob = item.getAsFile();
+              handleProofFile(blob);
+              break;
+            }
+          }
+        });
+      }
+
       // Checkout form submission
       const form = document.getElementById('formCheckout');
       form.addEventListener('submit', async (e) => {
@@ -232,7 +352,6 @@
         const payMethod = document.getElementById('custPayMethod').value;
         const payFrom = document.getElementById('custPayFrom').value.trim();
         const trxId = document.getElementById('custTrxId').value.trim();
-        const fileInput = document.getElementById('custScreenshot');
 
         const utmData = store.captureUTM();
 
@@ -267,10 +386,11 @@
 
           const order = json.data;
 
-          // If screenshot attached, upload it
-          if (fileInput.files.length > 0 && order.id) {
+          // If screenshot attached or pasted, upload it
+          const proofToUpload = selectedProofFile || (fileInput && fileInput.files && fileInput.files[0]);
+          if (proofToUpload && order.id) {
             const formData = new FormData();
-            formData.append('screenshot', fileInput.files[0]);
+            formData.append('screenshot', proofToUpload);
             formData.append('trxId', trxId);
             formData.append('method', payMethod);
 
