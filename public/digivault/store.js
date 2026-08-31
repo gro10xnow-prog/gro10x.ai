@@ -14,9 +14,9 @@
 
 const DIGIVAULT_CONFIG = {
   apiBase: '/api/digistore',
-  bkashNumber: '01602733832',
-  nagadNumber: '01602733832',
-  whatsappNumber: '+880 1602-733832',
+  bkashNumber: '01312415757',
+  nagadNumber: '01312415757',
+  whatsappNumber: '+880 1312-415757',
   telegramBot: 'Digivault20bot'
 };
 

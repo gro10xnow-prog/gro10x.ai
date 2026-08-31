@@ -24,9 +24,9 @@ const userSessions = new Map(); // chatId -> { lang, step, selectedProduct, orde
 
 // Payment Receiver Numbers (Can be customized via App Settings)
 const PAYMENT_CONFIG = {
-  bkash: process.env.BKASH_NUMBER || '01602733832',
-  nagad: process.env.NAGAD_NUMBER || '01602733832',
-  supportPhone: '+880 1602-733832'
+  bkash: process.env.BKASH_NUMBER || '01312415757',
+  nagad: process.env.NAGAD_NUMBER || '01312415757',
+  supportPhone: '+880 1312-415757'
 };
 
 // Bilingual Strings Dictionary
