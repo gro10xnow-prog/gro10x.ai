@@ -250,9 +250,11 @@ function injectDeterministicSpreadsIntoDescription(description, spreadInfo, prod
 
 // POST /api/ai/etsy-seo — Generates Category-Aware Etsy SEO Title, 13 Tags, and Listing Description with Complete Spread Breakdown
 router.post('/etsy-seo', requireAuth, async (req, res) => {
-  const { productName, brandName, brandNiche, brandVoice, type, category, pageCount, pageBreakdown, palette, auditScore, price } = req.body;
-  if (!productName || !brandName) {
-    return res.status(400).json({ error: 'productName and brandName are required' });
+  const productName = req.body.productName || req.body.title || req.body.name;
+  const brandName = req.body.brandName || req.body.brand || 'PlannerQueenGro';
+  const { brandNiche, brandVoice, type, category, pageCount, pageBreakdown, palette, auditScore, price } = req.body;
+  if (!productName) {
+    return res.status(400).json({ error: 'productName or title is required' });
   }
 
   const key = process.env.GEMINI_API_KEY;
@@ -383,9 +385,15 @@ router.post('/etsy-seo', requireAuth, async (req, res) => {
 const { AVAILABLE_CATEGORIES, generateCategoryBlueprint, generateCategoryMockups } = require('../services/blueprint-generator');
 
 router.post('/product-blueprint', requireAuth, async (req, res) => {
+  const rawName = req.body.productNameOverride || req.body.productName || req.body.title || req.body.name;
+  const effectiveProductName = (rawName && rawName.trim()) ? rawName.trim() : 'Digital Planner';
+  const effectiveBrandName = req.body.brandName || req.body.brand || 'PlannerQueenGro';
+
+  if (!effectiveProductName) {
+    return res.status(400).json({ error: 'productName or title is required' });
+  }
+
   const {
-    productName,
-    brandName,
     brandNiche,
     brandVoice,
     brandPalette,
@@ -394,17 +402,12 @@ router.post('/product-blueprint', requireAuth, async (req, res) => {
     category,
     categoryOverride,
     targetAudienceOverride,
-    productNameOverride,
     hero,
     format,
     seoTags
   } = req.body;
-
-  const effectiveProductName = (productNameOverride && productNameOverride.trim()) ? productNameOverride.trim() : productName;
-
-  if (!effectiveProductName || !brandName) {
-    return res.status(400).json({ error: 'productName and brandName are required' });
-  }
+  const brandName = effectiveBrandName;
+  const productName = effectiveProductName;
 
   const paletteArr = Array.isArray(brandPalette) && brandPalette.length > 0
     ? brandPalette
