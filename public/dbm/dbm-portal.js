@@ -924,16 +924,43 @@
     }
   };
 
-  window.saveStep2AndContinue = function(code) {
+  window.saveStep2AndContinue = async function(code) {
+    const brand = DBM_STATE.assignedBrands.find(b => b.id === DBM_STATE.activeBrandId) || DBM_STATE.assignedBrands[0];
     const canva = document.getElementById('step2CanvaUrl')?.value.trim();
     const notion = document.getElementById('step2NotionUrl')?.value.trim();
+    const fileInput = document.getElementById('step2VaultFile');
+    const file = fileInput?.files?.[0];
 
     if (DBM_STATE.activeEditingProduct) {
       if (!DBM_STATE.activeEditingProduct.vault) DBM_STATE.activeEditingProduct.vault = {};
       if (canva) DBM_STATE.activeEditingProduct.vault.canvaTemplateUrl = canva;
       if (notion) DBM_STATE.activeEditingProduct.vault.notionTemplateUrl = notion;
     }
-    showToast('Saved Step 2 Deliverable Vault!');
+
+    if (file && brand) {
+      showToast('📤 Uploading deliverable to Vault Storage...', 'success');
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('productCode', code);
+        if (canva) formData.append('canvaTemplateUrl', canva);
+        if (notion) formData.append('notionTemplateUrl', notion);
+
+        const uploadRes = await DBM_API.post('/brands/' + brand.id + '/vault/upload', formData);
+        if (uploadRes && uploadRes.success && uploadRes.vault) {
+          if (DBM_STATE.activeEditingProduct) {
+            DBM_STATE.activeEditingProduct.vault = uploadRes.vault;
+          }
+          showToast('✅ Deliverable uploaded to Vault!');
+        }
+      } catch (err) {
+        console.warn('[Vault Upload Warning]:', err.message);
+        showToast('Saved template links (file upload skipped or failed)', 'error');
+      }
+    } else {
+      showToast('Saved Step 2 Deliverable Vault!');
+    }
+
     goToStudioStep(3);
   };
 
@@ -982,29 +1009,33 @@
         productName: name,
         title: name,
         category: prod.category || 'Productivity Planner',
-        brandNiche: brand.niche,
-        brandName: brand.name
-      }).catch(() => null);
+        brandNiche: brand?.niche || 'Digital Planners & Productivity',
+        brandName: brand?.name || 'PlannerQueenGro'
+      });
 
       if (res && res.title) {
-        document.getElementById('step4Title').value = res.title;
-        document.getElementById('step4Tags').value = Array.isArray(res.tags) ? res.tags.join(', ') : (res.tags || '');
-        document.getElementById('step4Desc').value = res.description || '';
+        const titleEl = document.getElementById('step4Title');
+        const tagsEl = document.getElementById('step4Tags');
+        const descEl = document.getElementById('step4Desc');
+        if (titleEl) titleEl.value = res.title;
+        if (tagsEl) tagsEl.value = Array.isArray(res.tags) ? res.tags.join(', ') : (res.tags || '');
+        if (descEl) descEl.value = res.description || '';
         updateTitleCharCount(res.title);
         updateTagCountBadge(Array.isArray(res.tags) ? res.tags.join(', ') : res.tags);
-        showToast('✅ AI SEO Generated!');
+        showToast('✅ AI SEO Package Generated!');
       } else {
-        // Fallback
-        const cleanTitle = (name + ' | Printable Planner Template for ' + brand.name).slice(0, 138);
-        const tags = 'digital planner, daily planner, goodnotes template, printable planner, productivity tracker, life planner, ipad agenda, adhd planner, goal tracker, routine journal, habit schedule, minimalist binder, weekly spread';
-        document.getElementById('step4Title').value = cleanTitle;
-        document.getElementById('step4Tags').value = tags;
-        updateTitleCharCount(cleanTitle);
-        updateTagCountBadge(tags);
-        showToast('✅ SEO Template Generated!');
+        throw new Error('AI SEO service did not return a valid title package');
       }
     } catch (e) {
-      showToast('Generated standard SEO package', 'success');
+      console.warn('[AI SEO Generation Notice]:', e.message);
+      showToast('⚠️ AI SEO generation failed. Please check connection and retry.', 'error');
+      // Pre-fill editable fallback only if title is completely empty
+      const titleEl = document.getElementById('step4Title');
+      if (titleEl && !titleEl.value.trim()) {
+        const cleanTitle = (name + ' | Printable Planner Template for ' + (brand?.name || 'PlannerQueenGro')).slice(0, 138);
+        titleEl.value = cleanTitle;
+        updateTitleCharCount(cleanTitle);
+      }
     }
   };
 
@@ -1805,9 +1836,13 @@
     }
 
     try {
-      const user = JSON.parse(localStorage.getItem('gro10x_user') || '{}');
+      const user = JSON.parse(localStorage.getItem('gro10x_user') || sessionStorage.getItem('gro10x_user') || '{}');
+      if (!user.phone) {
+        showToast('Could not identify your account phone. Please sign out and sign back in.', 'error');
+        return;
+      }
       const res = await DBM_API.post('/auth/pin/set', {
-        phone: user.phone || '01889825025',
+        phone: user.phone,
         newPin: newPin
       });
 
@@ -1838,14 +1873,21 @@
           DBM_STATE.activeBrandId = DBM_STATE.assignedBrands[0].id;
         }
 
-        // Hydrate header with real display name
+        // Hydrate header with real display name & division badge
         const displayName = getUserDisplayName();
+        const empCode = getUserEmpCode();
         const nameEl = document.getElementById('userName');
         const avatarEl = document.getElementById('userAvatar');
+        const divisionBadgeEl = document.getElementById('userDivisionBadge');
+
         if (nameEl) nameEl.textContent = displayName;
         if (avatarEl) {
           const initials = displayName.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
-          avatarEl.textContent = initials || 'AN';
+          avatarEl.textContent = initials || 'DB';
+        }
+        if (divisionBadgeEl) {
+          const brandName = DBM_STATE.assignedBrands[0]?.name || 'PlannerQueenGro';
+          divisionBadgeEl.textContent = `${empCode} · ${brandName}`;
         }
       }
 

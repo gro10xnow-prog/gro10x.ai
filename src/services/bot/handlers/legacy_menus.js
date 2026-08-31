@@ -747,6 +747,7 @@ function registerLegacyTeamMenus(teamBot, readDB) {
         const parts = data.split(':');
         const brandId = Number(parts[1]);
         const productCode = parts[2];
+        let approvedProd = null;
 
         try {
           const brandsRoute = require('../../../routes/brands');
@@ -771,6 +772,7 @@ function registerLegacyTeamMenus(teamBot, readDB) {
                   listedAt: prod.listedAt
                 });
               }
+              approvedProd = prod;
             }
           }
         } catch (e) {
@@ -781,10 +783,55 @@ function registerLegacyTeamMenus(teamBot, readDB) {
         statusBadge = `✅ Approved & Live (by ${emp.name})`;
         teamBot.sendMessage(chatId, `✅ *QC Approved:* Product \`${productCode}\` is now marked **Live** and ready for Etsy syncing!`, { parse_mode: 'Markdown' });
 
+        // Dispatch Instant Telegram Alert to Submitting DBM
+        try {
+          let dbmTelegramId = null;
+          let dbmName = approvedProd?.submittedBy || 'Digital Brand Manager';
+          if (supabase) {
+            if (approvedProd?.submittedBy) {
+              const { data: dbmProfiles } = await supabase
+                .from('profiles')
+                .select('telegram_id, name')
+                .ilike('name', `%${approvedProd.submittedBy}%`)
+                .limit(1);
+              if (dbmProfiles && dbmProfiles[0]?.telegram_id) {
+                dbmTelegramId = dbmProfiles[0].telegram_id;
+                dbmName = dbmProfiles[0].name || dbmName;
+              }
+            }
+            if (!dbmTelegramId) {
+              const { data: fallbackDbm } = await supabase
+                .from('profiles')
+                .select('telegram_id, name')
+                .eq('emp_code', 'GRO-002')
+                .limit(1);
+              if (fallbackDbm && fallbackDbm[0]?.telegram_id) {
+                dbmTelegramId = fallbackDbm[0].telegram_id;
+                dbmName = fallbackDbm[0].name || dbmName;
+              }
+            }
+          }
+          if (dbmTelegramId) {
+            const pTitle = approvedProd?.seoTitle || approvedProd?.name || productCode;
+            const dbmMsg =
+              `🎉 *CONGRATULATIONS, ${dbmName.toUpperCase()}!*\n\n` +
+              `✅ Your product *${productCode}* (\`${pTitle}\`) has been **approved** by ${emp.name} and is now **LIVE on Etsy**! 🚀\n\n` +
+              `💰 *Listing Incentive Earned:* +$6.99 USD\n` +
+              `🎯 Keep the momentum going — your next queued product is ready in Brand Studio!\n\n` +
+              `👉 *Open Workspace:* https://gro10x-ai.vercel.app/dbm#workspace`;
+            sendTelegramNotification(dbmTelegramId, dbmMsg, [
+              [{ text: '🛍️ Open Next Product Studio', url: 'https://gro10x-ai.vercel.app/dbm#studio' }]
+            ], true).catch(() => {});
+          }
+        } catch (alertErr) {
+          console.warn('[QC Approve DBM Alert Warning]:', alertErr.message);
+        }
+
       } else if (data.startsWith('qc_reject:')) {
         const parts = data.split(':');
         const brandId = Number(parts[1]);
         const productCode = parts[2];
+        let rejectedProd = null;
 
         try {
           const brandsRoute = require('../../../routes/brands');
@@ -804,6 +851,7 @@ function registerLegacyTeamMenus(teamBot, readDB) {
                   revisionRequestedAt: prod.revisionRequestedAt
                 });
               }
+              rejectedProd = prod;
             }
           }
         } catch (e) {
@@ -813,6 +861,49 @@ function registerLegacyTeamMenus(teamBot, readDB) {
         alertMsg = `✏️ Revision Requested for ${productCode}`;
         statusBadge = `✏️ Revision Requested (by ${emp.name})`;
         teamBot.sendMessage(chatId, `✏️ *Revision Requested:* Product \`${productCode}\` status updated to **Revision Requested**.`, { parse_mode: 'Markdown' });
+
+        // Dispatch Telegram Revision Alert to Submitting DBM
+        try {
+          let dbmTelegramId = null;
+          let dbmName = rejectedProd?.submittedBy || 'Digital Brand Manager';
+          if (supabase) {
+            if (rejectedProd?.submittedBy) {
+              const { data: dbmProfiles } = await supabase
+                .from('profiles')
+                .select('telegram_id, name')
+                .ilike('name', `%${rejectedProd.submittedBy}%`)
+                .limit(1);
+              if (dbmProfiles && dbmProfiles[0]?.telegram_id) {
+                dbmTelegramId = dbmProfiles[0].telegram_id;
+                dbmName = dbmProfiles[0].name || dbmName;
+              }
+            }
+            if (!dbmTelegramId) {
+              const { data: fallbackDbm } = await supabase
+                .from('profiles')
+                .select('telegram_id, name')
+                .eq('emp_code', 'GRO-002')
+                .limit(1);
+              if (fallbackDbm && fallbackDbm[0]?.telegram_id) {
+                dbmTelegramId = fallbackDbm[0].telegram_id;
+                dbmName = fallbackDbm[0].name || dbmName;
+              }
+            }
+          }
+          if (dbmTelegramId) {
+            const pTitle = rejectedProd?.seoTitle || rejectedProd?.name || productCode;
+            const dbmMsg =
+              `⚠️ *ACTION REQUIRED: PRODUCT REVISION*\n\n` +
+              `Product *${productCode}* (\`${pTitle}\`) was returned for revision by ${emp.name}.\n\n` +
+              `📝 *Admin Note:* ${rejectedProd?.adminRevisionNote || 'Please review guidelines and update mockups/SEO.'}\n\n` +
+              `👉 *Open Brand Studio to edit:* https://gro10x-ai.vercel.app/dbm#studio`;
+            sendTelegramNotification(dbmTelegramId, dbmMsg, [
+              [{ text: '✏️ Edit in Brand Studio', url: 'https://gro10x-ai.vercel.app/dbm#studio' }]
+            ], true).catch(() => {});
+          }
+        } catch (alertErr) {
+          console.warn('[QC Reject DBM Alert Warning]:', alertErr.message);
+        }
       }
 
       // Update inline button text to badge (preserving remaining buttons if in a batch list)

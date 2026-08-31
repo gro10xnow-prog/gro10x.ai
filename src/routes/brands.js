@@ -1074,10 +1074,11 @@ router.post('/dbm-logs', requireAuth, async (req, res) => {
  * POST /api/brands/:id/vault/upload
  * Directly uploads deliverable PDF / ZIP into Supabase Storage bucket 'product-vault'
  */
-router.post('/:id/vault/upload', requireAuth, vaultUpload.single('file'), async (req, res) => {
+async function handleVaultUpload(req, res) {
   try {
     const brandId = Number(req.params.id);
-    const { productCode, productName, version, canvaTemplateUrl, notionTemplateUrl } = req.body;
+    const productCode = req.params.code || req.body.productCode;
+    const { productName, version, canvaTemplateUrl, notionTemplateUrl } = req.body;
     const file = req.file;
 
     if (!file && !canvaTemplateUrl && !notionTemplateUrl) {
@@ -1176,7 +1177,10 @@ router.post('/:id/vault/upload', requireAuth, vaultUpload.single('file'), async 
     console.error('[Vault Upload Error]:', err);
     res.status(500).json({ success: false, error: err.message });
   }
-});
+}
+
+router.post('/:id/vault/upload', requireAuth, vaultUpload.single('file'), handleVaultUpload);
+router.post('/:id/product/:code/vault-upload', requireAuth, vaultUpload.single('file'), handleVaultUpload);
 
 /**
  * GET /api/brands/:id/vault/download
