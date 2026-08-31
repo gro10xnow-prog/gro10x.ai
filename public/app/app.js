@@ -230,7 +230,10 @@
 
       // Execute module render method
       const moduleName = routeInfo.module.replace('.js', '');
-      const renderFn = window.APP_MODULES && window.APP_MODULES[moduleName];
+      const moduleObj = window.APP_MODULES && (window.APP_MODULES[moduleName] || window.APP_MODULES[routeInfo.module]);
+      const renderFn = typeof moduleObj === 'function'
+        ? moduleObj
+        : (moduleObj && typeof moduleObj.render === 'function' ? moduleObj.render.bind(moduleObj) : null);
 
       if (typeof renderFn === 'function') {
         viewContainer.innerHTML = '';

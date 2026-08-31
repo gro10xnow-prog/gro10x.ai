@@ -16,7 +16,7 @@
 
 window.APP_MODULES = window.APP_MODULES || {};
 
-window.APP_MODULES['digistore.js'] = {
+const DigistoreModule = {
   currentTab: 'orders',
   orderFilter: 'all',
   productCategoryFilter: 'all',
@@ -1379,4 +1379,10 @@ window.APP_MODULES['digistore.js'] = {
     });
   }
 };
+
+window.APP_MODULES.digistore = async function(container) {
+  return DigistoreModule.render(container);
+};
+
+window.APP_MODULES['digistore.js'] = DigistoreModule;
 
