@@ -26,7 +26,7 @@ const userSessions = new Map(); // chatId -> { lang, step, selectedProduct, orde
 const PAYMENT_CONFIG = {
   bkash: process.env.BKASH_NUMBER || '01312415757',
   nagad: process.env.NAGAD_NUMBER || '01312415757',
-  supportPhone: '+880 1312-415757'
+  supportPhone: process.env.SUPPORT_WHATSAPP || '+880 1889-825025'
 };
 
 // Bilingual Strings Dictionary

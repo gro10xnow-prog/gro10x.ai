@@ -1048,7 +1048,7 @@ router.post('/generate-post', requireAuth, asyncHandler(async (req, res) => {
 👉 t.me/Digivault20bot
 
 💬 *WhatsApp ইনবক্স:*
-👉 wa.me/8801312415757
+👉 wa.me/8801889825025
 
 #DigiVault #Subscription #${product.category.replace(/\s+/g, '')} #BangladeshTech #DigitalProducts`;
 
@@ -1068,7 +1068,7 @@ router.post('/generate-post', requireAuth, asyncHandler(async (req, res) => {
 👉 t.me/Digivault20bot
 
 💬 *WhatsApp Support:*
-👉 wa.me/8801312415757
+👉 wa.me/8801889825025
 
 #DigiVault #PremiumSubscription #${product.category.replace(/\s+/g, '')} #Verified`;
 
