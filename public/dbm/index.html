@@ -4,6 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GRO10X — Digital Brand Manager Workspace</title>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#070b12">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="DBM Workspace">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
@@ -373,12 +378,107 @@
       from { transform: translateY(20px); opacity: 0; }
       to { transform: translateY(0); opacity: 1; }
     }
+
+    /* Mobile Drawer & Backdrop */
+    #sidebarBackdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(4px);
+      z-index: 150;
+    }
+    #sidebarBackdrop.active {
+      display: block;
+    }
+
+    .btn-hamburger {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(30, 41, 59, 0.8);
+      color: var(--text-primary);
+      border: 1px solid var(--border-subtle);
+      font-size: 1.25rem;
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-right: 0.6rem;
+      transition: all 0.2s ease;
+    }
+    .btn-hamburger:hover {
+      background: var(--surface-card-hover);
+      color: var(--brand-primary);
+    }
+
+    /* Responsive Breakpoints */
+    @media (max-width: 900px) {
+      .dhaka-clock {
+        display: none;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .btn-hamburger {
+        display: inline-flex;
+      }
+
+      aside.dbm-sidebar {
+        position: fixed;
+        left: 0;
+        top: 64px;
+        bottom: 0;
+        width: 260px;
+        background: #0f172a;
+        box-shadow: 10px 0 30px rgba(0, 0, 0, 0.7);
+        transform: translateX(-100%);
+        transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 200;
+        border-right: 1px solid var(--border-subtle);
+      }
+
+      aside.dbm-sidebar.open {
+        transform: translateX(0);
+      }
+
+      main#dbm-main {
+        padding: 1.25rem 1rem;
+      }
+
+      header.dbm-header {
+        padding: 0 1rem;
+      }
+
+      .role-pill {
+        display: none;
+      }
+
+      .user-name {
+        display: none;
+      }
+
+      .user-pill {
+        padding: 0.25rem;
+      }
+
+      .studio-stepper {
+        padding: 0.3rem;
+      }
+
+      .step-item {
+        min-width: 120px;
+        padding: 0.5rem 0.6rem;
+        font-size: 0.75rem;
+      }
+    }
   </style>
 </head>
 <body>
   <!-- Top Bar -->
   <header class="dbm-header">
     <div style="display: flex; align-items: center;">
+      <button id="mobileMenuToggle" onclick="toggleMobileMenu()" class="btn-hamburger" aria-label="Open Navigation">☰</button>
       <a href="#workspace" class="brand-logo">
         <span class="brand-badge">GRO10X</span>
         <span class="brand-title">DBM Workspace</span>
@@ -400,6 +500,8 @@
 
   <!-- App Layout -->
   <div class="app-layout">
+    <div id="sidebarBackdrop" onclick="toggleMobileMenu(true)"></div>
+
     <!-- Sidebar -->
     <aside class="dbm-sidebar">
       <a href="#workspace" class="nav-link active" data-route="workspace">
@@ -447,5 +549,10 @@
 
   <script src="/dbm/api.js"></script>
   <script src="/dbm/dbm-portal.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/service-worker.js', { scope: '/' }).catch(() => {});
+    }
+  </script>
 </body>
 </html>

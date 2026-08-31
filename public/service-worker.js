@@ -1,12 +1,16 @@
-// 📱 GRO10X PWA SERVICE WORKER v3.0 (Network-First with offline fallback)
-const CACHE_NAME = 'gro10x-cache-v3';
-const CREW_CACHE = 'gro10x-crew-v3';
+// 📱 GRO10X PWA SERVICE WORKER v4.0 (Network-First with offline fallback)
+const CACHE_NAME = 'gro10x-cache-v4';
+const CREW_CACHE = 'gro10x-crew-v4';
 
 const ASSETS_TO_CACHE = [
   '/',
   '/admin',
   '/app',
   '/app/',
+  '/dbm',
+  '/dbm/',
+  '/dbm/dbm-portal.js',
+  '/dbm/api.js',
   '/team',
   '/partners',
   '/css/tokens.css',

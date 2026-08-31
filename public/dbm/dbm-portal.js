@@ -79,6 +79,20 @@
     window.location.href = '/auth';
   };
 
+  // Mobile Drawer Toggle
+  window.toggleMobileMenu = function(forceClose = false) {
+    const sidebar = document.querySelector('aside.dbm-sidebar');
+    const backdrop = document.getElementById('sidebarBackdrop');
+    if (!sidebar) return;
+    if (forceClose) {
+      sidebar.classList.remove('open');
+      if (backdrop) backdrop.classList.remove('active');
+    } else {
+      sidebar.classList.toggle('open');
+      if (backdrop) backdrop.classList.toggle('active');
+    }
+  };
+
   // Router
   function initRouter() {
     window.addEventListener('hashchange', renderCurrentRoute);
@@ -86,6 +100,7 @@
   }
 
   function renderCurrentRoute() {
+    if (window.toggleMobileMenu) window.toggleMobileMenu(true);
     const hash = (window.location.hash || '#workspace').replace('#', '');
     const validRoutes = ['workspace', 'studio', 'references', 'output', 'standup', 'settings'];
     const current = validRoutes.includes(hash) ? hash : 'workspace';
@@ -118,6 +133,170 @@
   // ── VIEW 1: MY WORKSPACE (HOME) ──
   function renderWorkspaceView(container) {
     const brands = DBM_STATE.assignedBrands || [];
+    const displayName = getUserDisplayName();
+
+    // Multi-Brand Portfolio Overview Mode
+    if (DBM_STATE.activeBrandId === 'all') {
+      let aggregateLive = 0;
+      let aggregatePending = [];
+      let aggregateTotalProducts = 0;
+
+      const brandCardsData = brands.map(b => {
+        const cat = DBM_STATE.productsCatalog[b.id] || [];
+        const live = cat.filter(p => p.status === 'Live');
+        const pending = cat.filter(p => p.status === 'Pending Review');
+        const next = getNextActiveDraft(cat);
+        aggregateLive += live.length;
+        aggregateTotalProducts += cat.length;
+        pending.forEach(p => aggregatePending.push({ ...p, brandName: b.name, brandId: b.id }));
+        const pct = Math.min(100, Math.round((live.length / 100) * 100));
+        return {
+          brand: b,
+          catalog: cat,
+          liveCount: live.length,
+          pendingCount: pending.length,
+          remainingCount: Math.max(0, 100 - live.length - pending.length),
+          pct,
+          next
+        };
+      });
+
+      const totalGoal = brands.length * 100;
+      const totalRemaining = Math.max(0, totalGoal - aggregateLive - aggregatePending.length);
+
+      container.innerHTML = `
+        <!-- Brand Switcher Chips on Workspace -->
+        <div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; overflow-x: auto; background: var(--bg-surface); padding: 0.4rem; border-radius: 14px; border: 1px solid var(--border-subtle);">
+          <button onclick="switchWorkspaceBrand('all')" style="padding: 0.55rem 1.1rem; border-radius: 10px; font-weight: 700; font-size: 0.84rem; border: none; cursor: pointer; transition: all 0.2s ease; background: var(--brand-primary); color: #070b12;">
+            🌐 All Brands Overview
+          </button>
+          ${brands.map(b => `
+            <button onclick="switchWorkspaceBrand(${b.id})" style="padding: 0.55rem 1.1rem; border-radius: 10px; font-weight: 700; font-size: 0.84rem; border: none; cursor: pointer; transition: all 0.2s ease; background: transparent; color: var(--text-secondary);">
+              🛍️ ${b.name} (${b.phase || 'Phase ' + b.id})
+            </button>
+          `).join('')}
+        </div>
+
+        <!-- Multi-Brand Portfolio Header -->
+        <div style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+          <div>
+            <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.3rem;">
+              <h1 style="font-family: var(--font-heading); font-size: 1.8rem; font-weight: 800;">
+                🌐 Multi-Brand Portfolio Command
+              </h1>
+              <span style="background: rgba(168,85,247,0.15); color: #c084fc; border: 1px solid rgba(168,85,247,0.3); font-size: 0.75rem; font-weight: 800; padding: 0.2rem 0.6rem; border-radius: 20px;">
+                ${brands.length} Active Empire Brands
+              </span>
+            </div>
+            <p style="color: var(--text-secondary); font-size: 0.95rem;">
+              Consolidated 300-SKU scaling overview for <strong style="color: #fff;">${displayName}</strong> across all brand divisions.
+            </p>
+          </div>
+
+          <button class="btn-secondary" onclick="window.location.hash='#output'" style="background: rgba(0,223,137,0.12); border-color: rgba(0,223,137,0.3); color: #00df89;">
+            📊 View Output & Compensation Analytics →
+          </button>
+        </div>
+
+        <!-- Portfolio Aggregate KPI Strip -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+          <div style="background: rgba(0,223,137,0.08); border: 1px solid rgba(0,223,137,0.25); border-radius: 12px; padding: 0.85rem 1.2rem; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-size: 0.72rem; font-weight: 800; color: #00df89; text-transform: uppercase;">Total Live Empire Listings</div>
+              <div style="font-size: 1.5rem; font-weight: 900; color: #fff; margin-top: 0.1rem;">${aggregateLive} <span style="font-size: 0.85rem; color: var(--text-muted);">/ ${totalGoal} Goal</span></div>
+            </div>
+            <span style="font-size: 1.6rem;">🏪</span>
+          </div>
+
+          <div style="background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.25); border-radius: 12px; padding: 0.85rem 1.2rem; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-size: 0.72rem; font-weight: 800; color: #f59e0b; text-transform: uppercase;">Total In Admin Review</div>
+              <div style="font-size: 1.5rem; font-weight: 900; color: #fff; margin-top: 0.1rem;">${aggregatePending.length} <span style="font-size: 0.85rem; color: var(--text-muted);">Products</span></div>
+            </div>
+            <span style="font-size: 1.6rem;">📬</span>
+          </div>
+
+          <div style="background: rgba(6,182,212,0.08); border: 1px solid rgba(6,182,212,0.25); border-radius: 12px; padding: 0.85rem 1.2rem; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-size: 0.72rem; font-weight: 800; color: #38bdf8; text-transform: uppercase;">Remaining to Goal</div>
+              <div style="font-size: 1.5rem; font-weight: 900; color: #fff; margin-top: 0.1rem;">${totalRemaining} <span style="font-size: 0.85rem; color: var(--text-muted);">SKUs</span></div>
+            </div>
+            <span style="font-size: 1.6rem;">🚀</span>
+          </div>
+
+          <div style="background: rgba(168,85,247,0.08); border: 1px solid rgba(168,85,247,0.25); border-radius: 12px; padding: 0.85rem 1.2rem; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-size: 0.72rem; font-weight: 800; color: #c084fc; text-transform: uppercase;">Estimated Bonus Accrued</div>
+              <div style="font-size: 1.5rem; font-weight: 900; color: #c084fc; margin-top: 0.1rem;">$${(aggregateLive * 6.99).toFixed(2)} <span style="font-size: 0.85rem; color: var(--text-muted);">USD</span></div>
+            </div>
+            <span style="font-size: 1.6rem;">💰</span>
+          </div>
+        </div>
+
+        <!-- 3 Brand Progression Cards -->
+        <h3 style="font-size: 1.2rem; font-weight: 800; margin-bottom: 1rem;">📦 Brand Division Progress (100 SKUs Each)</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.25rem; margin-bottom: 2rem;">
+          ${brandCardsData.map(c => `
+            <div class="card" style="margin-bottom: 0; display: flex; flex-direction: column; justify-content: space-between; border-top: 4px solid ${c.pct >= 100 ? '#00df89' : c.pct > 0 ? '#38bdf8' : 'var(--border-subtle)'};">
+              <div>
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
+                  <div>
+                    <span style="font-size: 0.72rem; font-weight: 800; color: #38bdf8; text-transform: uppercase;">${c.brand.phase || 'Brand #' + c.brand.id}</span>
+                    <h3 style="font-size: 1.25rem; font-weight: 800; color: #fff; margin-top: 0.1rem;">${c.brand.name}</h3>
+                    <p style="font-size: 0.78rem; color: var(--text-secondary);">${c.brand.niche || 'Digital Products'}</p>
+                  </div>
+                  <span style="font-size: 1.2rem; font-weight: 900; color: ${c.pct >= 100 ? '#00df89' : '#38bdf8'};">${c.pct}%</span>
+                </div>
+
+                <!-- Progress Bar -->
+                <div style="height: 8px; background: rgba(30,41,59,0.8); border-radius: 20px; overflow: hidden; margin-bottom: 1rem;">
+                  <div style="height: 100%; width: ${c.pct}%; background: linear-gradient(90deg, #00df89, #06b6d4); border-radius: 20px;"></div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; text-align: center; margin-bottom: 1.25rem; background: var(--bg-surface); padding: 0.6rem; border-radius: 10px; border: 1px solid var(--border-subtle);">
+                  <div>
+                    <div style="font-size: 0.68rem; color: #00df89; font-weight: 700;">🟢 Live</div>
+                    <strong style="font-size: 1.1rem; color: #fff;">${c.liveCount}</strong>
+                  </div>
+                  <div>
+                    <div style="font-size: 0.68rem; color: #f59e0b; font-weight: 700;">⏳ Review</div>
+                    <strong style="font-size: 1.1rem; color: #fff;">${c.pendingCount}</strong>
+                  </div>
+                  <div>
+                    <div style="font-size: 0.68rem; color: #38bdf8; font-weight: 700;">🎯 Left</div>
+                    <strong style="font-size: 1.1rem; color: #fff;">${c.remainingCount}</strong>
+                  </div>
+                </div>
+
+                <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                  Immediate Next SKU: <strong style="color: #fff; font-family: var(--font-mono);">${c.next.code}</strong> — ${(c.next.name || c.next.seoTitle || 'Draft').substring(0, 30)}
+                </div>
+              </div>
+
+              <div style="display: flex; gap: 0.5rem;">
+                <button class="btn-primary" onclick="switchWorkspaceBrand(${c.brand.id})" style="flex: 1; justify-content: center; font-size: 0.82rem; padding: 0.55rem 0.8rem;">
+                  🎯 Focus Workspace →
+                </button>
+                <button class="btn-secondary" onclick="switchActiveBrand(${c.brand.id}); window.location.hash='#studio';" style="font-size: 0.82rem; padding: 0.55rem 0.8rem;">
+                  🛍️ Studio
+                </button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+
+        <!-- Cross-Brand Pending Review Triage -->
+        <div class="card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h3 style="font-size: 1.15rem; font-weight: 800;">⏳ Cross-Brand Founder Review Queue</h3>
+            <span style="font-size: 0.75rem; color: #f59e0b; font-weight: 700;">${aggregatePending.length} Products Awaiting Approval Across All Brands</span>
+          </div>
+          ${renderPendingTriageTable(aggregatePending)}
+        </div>
+      `;
+      return;
+    }
+
     const brand = brands.find(b => b.id === DBM_STATE.activeBrandId) || brands[0] || {};
     const catalog = DBM_STATE.productsCatalog[brand.id] || [];
     const today = new Date().toISOString().split('T')[0];
@@ -131,7 +310,6 @@
     const nextProduct = getNextActiveDraft(catalog);
 
     const progressPct = Math.min(100, Math.round((todaySubmitted / DBM_STATE.dailyTarget) * 100));
-    const displayName = getUserDisplayName();
 
     // Compute today's dynamic SKU batch range from catalog state
     const pendingDrafts = catalog.filter(p => p.status !== 'Live' && p.status !== 'Pending Review');
@@ -145,6 +323,9 @@
     container.innerHTML = `
       <!-- Brand Switcher Chips on Workspace -->
       <div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; overflow-x: auto; background: var(--bg-surface); padding: 0.4rem; border-radius: 14px; border: 1px solid var(--border-subtle);">
+        <button onclick="switchWorkspaceBrand('all')" style="padding: 0.55rem 1.1rem; border-radius: 10px; font-weight: 700; font-size: 0.84rem; border: none; cursor: pointer; transition: all 0.2s ease; background: transparent; color: var(--text-secondary);">
+          🌐 All Brands Overview
+        </button>
         ${brands.map(b => `
           <button onclick="switchWorkspaceBrand(${b.id})" style="padding: 0.55rem 1.1rem; border-radius: 10px; font-weight: 700; font-size: 0.84rem; border: none; cursor: pointer; transition: all 0.2s ease; background: ${b.id === brand.id ? 'var(--brand-primary)' : 'transparent'}; color: ${b.id === brand.id ? '#070b12' : 'var(--text-secondary)'};">
             🛍️ ${b.name} (${b.phase || 'Phase ' + b.id})
@@ -278,13 +459,13 @@
           <!-- Filter Tabs -->
           <div style="display: flex; gap: 0.35rem; background: var(--bg-surface); padding: 0.25rem; border-radius: 8px; border: 1px solid var(--border-subtle);">
             <button onclick="setQueueFilter('all')" class="btn-filter ${DBM_STATE.tableFilter === 'all' ? 'active' : ''}" style="padding: 0.35rem 0.75rem; border-radius: 6px; font-size: 0.75rem; font-weight: 700; border: none; cursor: pointer; background: ${DBM_STATE.tableFilter === 'all' ? 'var(--brand-primary)' : 'transparent'}; color: ${DBM_STATE.tableFilter === 'all' ? '#070b12' : 'var(--text-muted)'};">
-              All (100)
+              All (${catalog.length})
             </button>
             <button onclick="setQueueFilter('live')" class="btn-filter ${DBM_STATE.tableFilter === 'live' ? 'active' : ''}" style="padding: 0.35rem 0.75rem; border-radius: 6px; font-size: 0.75rem; font-weight: 700; border: none; cursor: pointer; background: ${DBM_STATE.tableFilter === 'live' ? '#a855f7' : 'transparent'}; color: ${DBM_STATE.tableFilter === 'live' ? '#fff' : 'var(--text-muted)'};">
               🌟 Live References (${liveProducts.length})
             </button>
             <button onclick="setQueueFilter('today')" class="btn-filter ${DBM_STATE.tableFilter === 'today' ? 'active' : ''}" style="padding: 0.35rem 0.75rem; border-radius: 6px; font-size: 0.75rem; font-weight: 700; border: none; cursor: pointer; background: ${DBM_STATE.tableFilter === 'today' ? '#06b6d4' : 'transparent'}; color: ${DBM_STATE.tableFilter === 'today' ? '#070b12' : 'var(--text-muted)'};">
-              🎯 Today's Batch (8)
+              🎯 Today's Batch (${DBM_STATE.dailyTarget})
             </button>
             <button onclick="setQueueFilter('review')" class="btn-filter ${DBM_STATE.tableFilter === 'review' ? 'active' : ''}" style="padding: 0.35rem 0.75rem; border-radius: 6px; font-size: 0.75rem; font-weight: 700; border: none; cursor: pointer; background: ${DBM_STATE.tableFilter === 'review' ? '#f59e0b' : 'transparent'}; color: ${DBM_STATE.tableFilter === 'review' ? '#070b12' : 'var(--text-muted)'};">
               ⏳ In Review (${pendingReview.length})
@@ -300,6 +481,11 @@
   }
 
   window.switchWorkspaceBrand = function(brandId) {
+    if (brandId === 'all') {
+      DBM_STATE.activeBrandId = 'all';
+      renderCurrentRoute();
+      return;
+    }
     DBM_STATE.activeBrandId = Number(brandId);
     const catalog = DBM_STATE.productsCatalog[brandId] || [];
     const nextProd = getNextActiveDraft(catalog);
@@ -319,6 +505,18 @@
     }
   };
 
+  window.loadMoreQueue = function() {
+    DBM_STATE.allQueueLimit = (DBM_STATE.allQueueLimit || 25) + 25;
+    const brand = DBM_STATE.assignedBrands.find(b => b.id === DBM_STATE.activeBrandId) || DBM_STATE.assignedBrands[0] || {};
+    const catalog = DBM_STATE.productsCatalog[brand.id] || [];
+    const nextProd = getNextActiveDraft(catalog);
+
+    const container = document.getElementById('executionTableContainer');
+    if (container) {
+      container.innerHTML = renderFilteredQueueTable(catalog, nextProd.code);
+    }
+  };
+
   function renderFilteredQueueTable(catalog, nextCode) {
     let filtered = [...catalog];
     const filter = DBM_STATE.tableFilter || 'all';
@@ -326,18 +524,23 @@
     if (filter === 'live') {
       filtered = catalog.filter(p => p.status === 'Live');
     } else if (filter === 'today') {
-      // Day 1 batch: index 13 to 20 (PLA-14 to PLA-21)
-      filtered = catalog.slice(13, 21);
+      // Dynamic: slice the first dailyTarget pending drafts
+      const pendingDrafts = catalog.filter(p => p.status !== 'Live' && p.status !== 'Pending Review');
+      filtered = pendingDrafts.slice(0, DBM_STATE.dailyTarget);
     } else if (filter === 'review') {
       filtered = catalog.filter(p => p.status === 'Pending Review');
     } else {
-      // Show first 25 for fast rendering
-      filtered = catalog.slice(0, 25);
+      // Show based on allQueueLimit with load more
+      const limit = DBM_STATE.allQueueLimit || 25;
+      filtered = catalog.slice(0, limit);
     }
 
     if (filtered.length === 0) {
       return '<div style="color: var(--text-muted); padding: 2rem; text-align: center;">No products match this filter.</div>';
     }
+
+    const hasMore = filter === 'all' && catalog.length > (DBM_STATE.allQueueLimit || 25);
+    const limit = DBM_STATE.allQueueLimit || 25;
 
     return `
       <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
@@ -381,7 +584,15 @@
           }).join('')}
         </tbody>
       </table>
+      ${hasMore ? `
+        <div style="text-align: center; margin-top: 1rem;">
+          <button class="btn-secondary" onclick="loadMoreQueue()" style="font-size: 0.82rem; padding: 0.5rem 1.2rem;">
+            📦 Load 25 More SKUs (${catalog.length - limit} remaining)
+          </button>
+        </div>
+      ` : ''}
     `;
+  }
   }
 
   // ── BRAND-ADAPTIVE MOCKUP PROMPT GUIDE ──
@@ -1514,6 +1725,20 @@
     const today = new Date().toISOString().split('T')[0];
     const todayCount = DBM_STATE.todaySubmittedCount || 0;
 
+    // Calculate First-Pass QC Pass Rate & Quality Multiplier
+    let revisionCount = 0;
+    Object.values(DBM_STATE.productsCatalog).flat().forEach(p => {
+      if (p.status === 'Revision Requested' || p.status === 'Needs Revision' || p.status === 'Rejected') {
+        revisionCount++;
+      }
+    });
+    const totalProcessed = totalLiveCount + totalPending.length + revisionCount;
+    const qcPassRate = totalProcessed > 0
+      ? Math.max(0, Math.round(((totalProcessed - revisionCount) / totalProcessed) * 100))
+      : 100;
+    const qualityMultiplier = (qcPassRate / 100).toFixed(2);
+    const multiplierColor = qcPassRate >= 90 ? '#00df89' : qcPassRate >= 75 ? '#f59e0b' : '#f43f5e';
+
     // Weekly 7-Day Velocity Data (Aggregated dynamically from productsCatalog)
     const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const now = new Date();
@@ -1566,7 +1791,7 @@
           <div style="font-size: 1.8rem; font-weight: 900; color: #38bdf8; margin-top: 0.2rem;">
             ${todayCount} <span style="font-size: 0.9rem; color: var(--text-muted); font-weight: 600;">/ ${DBM_STATE.dailyTarget} Quota</span>
           </div>
-          <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.3rem;">Target: 8 listings per day</div>
+          <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.3rem;">Target: ${DBM_STATE.dailyTarget} listings per day</div>
         </div>
 
         <div class="card" style="border-left: 4px solid #f59e0b; margin-bottom: 0;">
@@ -1598,11 +1823,11 @@
       <div class="card" style="margin-bottom: 1.5rem;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
           <div>
-            <h3 style="font-size: 1.15rem; font-weight: 800;">📈 7-Day Production Velocity (8 Products / Day Cadence)</h3>
+            <h3 style="font-size: 1.15rem; font-weight: 800;">📈 7-Day Production Velocity (${DBM_STATE.dailyTarget} Products / Day Cadence)</h3>
             <p style="font-size: 0.8rem; color: var(--text-muted);">Daily upload consistency tracker for this week.</p>
           </div>
           <span style="font-size: 0.8rem; font-weight: 800; color: #00df89; background: rgba(0,223,137,0.12); padding: 0.25rem 0.6rem; border-radius: 20px;">
-            Target: 40 Listings / Week
+            Target: ${DBM_STATE.dailyTarget * 5} Listings / Week
           </span>
         </div>
 
@@ -1659,7 +1884,7 @@
             </div>
             <div style="display: flex; justify-content: space-between;">
               <span style="color: var(--text-muted);">Quality Multiplier:</span>
-              <strong style="color: #a855f7;">1.0x (100% First-Pass QC)</strong>
+              <strong style="color: ${multiplierColor};">${qualityMultiplier}x (${qcPassRate}% First-Pass QC)</strong>
             </div>
           </div>
         </div>
