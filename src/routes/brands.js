@@ -2151,7 +2151,7 @@ router.post('/:id/video/upload', requireAuth, vaultUpload.single('video'), async
  * POST /api/brands/:id/product/:code/submit-review
  * DVM submits a completed product for Admin Review
  */
-router.post('/:id/product/:code/submit-review', requireAuth, async (req, res) => {
+router.post(['/:id/product/:code/submit-review', '/:id/product/:code/submit-for-review'], requireAuth, async (req, res) => {
   try {
     const brandId = Number(req.params.id);
     const productCode = req.params.code;
