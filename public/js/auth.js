@@ -24,14 +24,17 @@ function togglePinVisibility(inputId, btn) {
 }
 
 function showAlert(text, type) {
-
   const box = document.getElementById('alert-box');
   if (!text) {
     box.style.display = 'none';
     return;
   }
   box.className = `alert alert-${type}`;
-  box.innerText = text;
+  let msg = text;
+  if (typeof text === 'object') {
+    msg = text.error?.message || text.error || text.message || JSON.stringify(text);
+  }
+  box.innerText = String(msg || 'An error occurred');
   box.style.display = 'block';
 }
 
@@ -58,10 +61,19 @@ async function handlePinLogin(event) {
       signal: AbortSignal.timeout(15000)
     });
 
-    const data = await res.json();
+    let data;
+    try {
+      data = await res.json();
+    } catch (e) {
+      data = { error: 'Server response error' };
+    }
 
-    if (!data.success) {
-      showAlert(data.error || 'Authentication failed', 'error');
+    if (!res.ok || !data.success) {
+      let errText = data.error || data.message || 'Authentication failed. Please check your phone and PIN.';
+      if (typeof errText === 'object') {
+        errText = errText.message || errText.error || JSON.stringify(errText);
+      }
+      showAlert(errText, 'error');
       btn.disabled = false;
       return;
     }

@@ -12,18 +12,18 @@ const { supabase, isSupabaseConfigured } = require('../services/supabase');
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 5,
+  max: 100,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: 'Too many auth attempts. Please wait 15 minutes before trying again.' }
+  message: { error: 'Too many auth attempts. Please wait a few minutes before trying again.' }
 });
 
 const pinVerifyLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 10,
+  max: 100,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: 'Too many PIN verification attempts. Please wait 15 minutes before trying again.' }
+  message: { error: 'Too many PIN verification attempts. Please wait a few minutes before trying again.' }
 });
 
 // Health Check
