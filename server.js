@@ -82,6 +82,12 @@ process.on('unhandledRejection', (reason, promise) => {
 // Initialize Telegram Bot & Webhooks (safe in-memory initialization)
 try { initBot(); } catch (e) { console.warn('Bot init note:', e.message); }
 
+// Initialize DigiVault Customer Commerce Bot (@Digivault20bot)
+try {
+  const { initDigiVaultBot } = require('./src/services/digivault-bot');
+  initDigiVaultBot();
+} catch (e) { console.warn('[DigiVault Bot] Init note:', e.message); }
+
 // Sentry Request Handler
 if (Sentry) {
   app.use(Sentry.Handlers.requestHandler());

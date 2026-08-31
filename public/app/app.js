@@ -19,6 +19,7 @@
     '#social':     { module: 'social.js',     title: 'Social Media Planner', icon: '📱' },
     '#cms':        { module: 'cms.js',        title: 'Services Catalog & CMS Editor', icon: '📝' },
     '#brands':     { module: 'brands.js',     title: 'Digital Brand Empire Command Center', icon: '🛍️' },
+    '#digistore':  { module: 'digistore.js',  title: 'DigiVault Commerce & Subscriptions', icon: '🏪' },
     '#dbm':        { module: 'dbm.js',        title: 'DBM Operations & Team Tracker', icon: '👤' },
     '#finance':    { module: 'finance.js',    title: 'Financials & Expense Hub', icon: '💰' },
     '#hr':         { module: 'hr.js',         title: 'HR Ops & Roster Management', icon: '👨‍💼' },

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DigiVault BD — Track Subscription Order</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22%20%2232%22%20%2232%22><text y=%2224%22 font-size=%2224%22>🏪</text></svg>">
+</head>
+<body class="lang-bn">
+
+  <!-- Header / Navigation -->
+  <header class="dv-header">
+    <div class="container dv-nav">
+      <a href="index.html" class="dv-brand">
+        <span>🏪</span>
+        <span>DigiVault</span>
+        <span class="dv-brand-badge" data-i18n="brandTag">BD</span>
+      </a>
+
+      <div class="dv-nav-links">
+        <a href="index.html" class="dv-nav-link" data-i18n="navHome">হোম</a>
+        <a href="catalog.html" class="dv-nav-link" data-i18n="navCatalog">ক্যাটালগ</a>
+        <a href="track.html" class="dv-nav-link active" data-i18n="navTrack">অর্ডার ট্র্যাক</a>
+        <a href="https://t.me/Digivault20bot" target="_blank" class="btn btn-telegram btn-sm" style="display: flex; gap: 6px;">
+          <span>📱</span>
+          <span data-i18n="navBot">টেলিগ্রাম বট</span>
+        </a>
+        <button class="btn-lang-toggle" id="btnLangToggle">🇬🇧 English</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container" style="padding-top: 50px; padding-bottom: 80px; max-width: 680px; text-align: center;">
+    <h1 style="font-size: 28px; font-weight: 800; color: #fff; margin-bottom: 8px;" data-i18n="trackTitle">
+      অর্ডার স্ট্যাটাস চেক করুন
+    </h1>
+    <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 28px;" data-i18n="trackSubtitle">
+      আপনার অর্ডার নম্বর দিয়ে (যেমন: DIGI-102938) বর্তমান অবস্থা চেক করুন।
+    </p>
+
+    <!-- Search Form -->
+    <div class="card" style="padding: 24px; margin-bottom: 30px;">
+      <form id="formTrackOrder" style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <input type="text" id="inputOrderRef" class="form-input" style="flex: 1; min-width: 220px; font-family: monospace; font-size: 16px; text-transform: uppercase;" placeholder="e.g. DIGI-992811" required />
+        <button type="submit" class="btn btn-primary" id="btnCheckStatus" style="padding: 10px 24px;">
+          <span data-i18n="btnTrack">স্ট্যাটাস দেখুন</span> ➔
+        </button>
+      </form>
+    </div>
+
+    <!-- Tracking Result Container -->
+    <div id="trackingResult"></div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="dv-footer">
+    <div class="container">
+      <p data-i18n="footerText">© ২০২৬ ডিজিভল্ট বিডি। গ্রো১০এক্স (GRO10X) ইকোসিস্টেমের ডিজিটাল ব্র্যান্ড।</p>
+    </div>
+  </footer>
+
+  <script src="store.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const form = document.getElementById('formTrackOrder');
+      const inputRef = document.getElementById('inputOrderRef');
+      const resultBox = document.getElementById('trackingResult');
+
+      // Auto-check if ref in URL query
+      const urlParams = new URLSearchParams(window.location.search);
+      const queryRef = urlParams.get('ref');
+      if (queryRef) {
+        inputRef.value = queryRef;
+        fetchStatus(queryRef);
+      }
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const ref = inputRef.value.trim();
+        if (ref) fetchStatus(ref);
+      });
+
+      async function fetchStatus(ref) {
+        resultBox.innerHTML = `
+          <div class="card" style="padding: 40px; text-align: center; color: var(--text-muted);">
+            <div style="font-size: 32px; margin-bottom: 8px;">⏳</div>
+            <div>অর্ডার তথ্য খোঁজা হচ্ছে...</div>
+          </div>
+        `;
+
+        try {
+          const res = await fetch(`/api/digistore/track/${encodeURIComponent(ref)}`);
+          const json = await res.json();
+
+          if (!res.ok) throw new Error(json.error || 'Order not found');
+
+          const o = json.data;
+          renderOrderResult(o);
+        } catch (err) {
+          resultBox.innerHTML = `
+            <div class="card" style="padding: 36px; text-align: center; border-color: rgba(239, 68, 68, 0.3);">
+              <div style="font-size: 36px; margin-bottom: 10px;">❌</div>
+              <h3 style="font-size: 18px; font-weight: 700; color: #ef4444; margin-bottom: 6px;">অর্ডার পাওয়া যায়নি</h3>
+              <p style="color: var(--text-muted); font-size: 13px;">দয়া করে আপনার অর্ডার রেফারেন্স নম্বরটি পুনরায় পরীক্ষা করুন।</p>
+            </div>
+          `;
+        }
+      }
+
+      function renderOrderResult(o) {
+        const isPaid = o.paymentStatus === 'verified';
+        const isDelivered = o.deliveryStatus === 'delivered';
+
+        let statusText = '⏳ পেমেন্ট ভেরিফিকেশন প্রক্রিয়াধীন';
+        let statusBadgeClass = 'rgba(245, 158, 11, 0.15)';
+        let statusColor = '#f59e0b';
+
+        if (isDelivered) {
+          statusText = '🔑 ডেলিভারি সম্পন্ন ও অ্যাক্টিভ';
+          statusBadgeClass = 'rgba(0, 223, 137, 0.15)';
+          statusColor = '#00df89';
+        } else if (isPaid) {
+          statusText = '✅ পেমেন্ট ভেরিফাইড — ডেলিভারি তৈরি হচ্ছে';
+          statusBadgeClass = 'rgba(56, 189, 248, 0.15)';
+          statusColor = '#38bdf8';
+        }
+
+        resultBox.innerHTML = `
+          <div class="card" style="padding: 28px; text-align: left; border-top: 4px solid ${statusColor};">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+              <div>
+                <span style="font-family: monospace; font-size: 12px; color: #38bdf8; font-weight: 700;">${o.orderNumber}</span>
+                <h3 style="font-size: 18px; font-weight: 800; color: #fff; margin-top: 2px;">${o.productName}</h3>
+              </div>
+              <span class="badge" style="background: rgba(168, 85, 247, 0.15); color: #a855f7;">⏱️ ${o.duration}</span>
+            </div>
+
+            <div style="background: ${statusBadgeClass}; border: 1px solid ${statusColor}40; border-radius: var(--radius-md); padding: 14px; margin-bottom: 20px; font-weight: 700; color: ${statusColor}; font-size: 14px; display: flex; align-items: center; gap: 8px;">
+              <span>${statusText}</span>
+            </div>
+
+            <div style="background: rgba(0,0,0,0.3); border-radius: var(--radius-md); padding: 16px; font-size: 13px; margin-bottom: 20px;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <span style="color: var(--text-muted);">অর্ডার তৈরির সময়:</span>
+                <span style="color: #fff;">${new Date(o.createdAt).toLocaleString('bn-BD')}</span>
+              </div>
+              ${o.activationDate ? `
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                  <span style="color: var(--text-muted);">অ্যাক্টিভেশন তারিখ:</span>
+                  <span style="color: #fff;">${o.activationDate}</span>
+                </div>
+              ` : ''}
+              ${o.expiryDate ? `
+                <div style="display: flex; justify-content: space-between;">
+                  <span style="color: var(--text-muted);">মেয়াদ উত্তীর্ণ হবে:</span>
+                  <strong style="color: #00df89;">${o.expiryDate}</strong>
+                </div>
+              ` : ''}
+            </div>
+
+            <div style="text-align: center;">
+              <a href="https://wa.me/8801602733832?text=Salam%2C%20regarding%20my%20order%20${o.orderNumber}" target="_blank" class="btn btn-secondary" style="width: 100%;">
+                💬 এই অর্ডার সংক্রান্ত সাহায্যের জন্য WhatsApp-এ নক দিন
+              </a>
+            </div>
+          </div>
+        `;
+      }
+    });
+  </script>
+</body>
+</html>

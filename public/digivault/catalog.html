@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DigiVault BD — All Digital Subscriptions Catalog</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22%20%2232%22%20%2232%22><text y=%2224%22 font-size=%2224%22>🏪</text></svg>">
+</head>
+<body class="lang-bn">
+
+  <!-- Header / Navigation -->
+  <header class="dv-header">
+    <div class="container dv-nav">
+      <a href="index.html" class="dv-brand">
+        <span>🏪</span>
+        <span>DigiVault</span>
+        <span class="dv-brand-badge" data-i18n="brandTag">BD</span>
+      </a>
+
+      <div class="dv-nav-links">
+        <a href="index.html" class="dv-nav-link" data-i18n="navHome">হোম</a>
+        <a href="catalog.html" class="dv-nav-link active" data-i18n="navCatalog">ক্যাটালগ</a>
+        <a href="track.html" class="dv-nav-link" data-i18n="navTrack">অর্ডার ট্র্যাক</a>
+        <a href="https://t.me/Digivault20bot" target="_blank" class="btn btn-telegram btn-sm" style="display: flex; gap: 6px;">
+          <span>📱</span>
+          <span data-i18n="navBot">টেলিগ্রাম বট</span>
+        </a>
+        <button class="btn-lang-toggle" id="btnLangToggle">🇬🇧 English</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container" style="padding-top: 30px; padding-bottom: 60px;">
+    <!-- Catalog Header & Search -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px;">
+      <div>
+        <h1 style="font-size: 28px; font-weight: 800; color: #fff;">📦 ডিজিটাল প্রোডাক্ট ক্যাটালগ</h1>
+        <p style="color: var(--text-muted); font-size: 14px;">৪৫+ প্রিমিয়াম সাবস্ক্রিপশন ও AI টুলস থেকে পছন্দেরটি বেছে নিন</p>
+      </div>
+
+      <div style="min-width: 280px; flex: 1; max-width: 400px;">
+        <input type="text" id="inputCatalogSearch" class="form-input" style="width: 100%; border-radius: 9999px; padding: 12px 20px;" placeholder="সার্চ করুন (যেমন: Netflix, Gemini, Canva)..." data-i18n="searchPlaceholder" />
+      </div>
+    </div>
+
+    <!-- Category Filter Chips -->
+    <div class="filter-chips-wrapper" id="categoryChips">
+      <button class="filter-chip active" data-cat="all" data-i18n="catAll">সকল প্রোডাক্ট</button>
+      <button class="filter-chip" data-cat="AI Tools" data-i18n="catAI">🤖 AI টুলস</button>
+      <button class="filter-chip" data-cat="Streaming" data-i18n="catStreaming">🎬 স্ট্রিমিং</button>
+      <button class="filter-chip" data-cat="Music" data-i18n="catMusic">🎵 মিউজিক</button>
+      <button class="filter-chip" data-cat="Creative Tools" data-i18n="catCreative">🎨 ক্রিয়েটিভ</button>
+      <button class="filter-chip" data-cat="Productivity" data-i18n="catCloud">💼 ক্লাউড ও অফিস</button>
+      <button class="filter-chip" data-cat="Professional" data-i18n="catCareer">🚀 ক্যারিয়ার ও LinkedIn</button>
+      <button class="filter-chip" data-cat="Learning" data-i18n="catCourses">📚 কোর্স</button>
+      <button class="filter-chip" data-cat="VPN" data-i18n="catVPN">🔒 ভিপিএন</button>
+    </div>
+
+    <!-- Products Grid -->
+    <div class="product-grid" id="catalogProductsGrid">
+      <div style="grid-column: 1 / -1; text-align: center; padding: 60px 0; color: var(--text-muted);">
+        <div style="font-size: 32px; margin-bottom: 12px;">⏳</div>
+        <div>প্রোডাক্ট লোড হচ্ছে...</div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="dv-footer">
+    <div class="container">
+      <p data-i18n="footerText">© ২০২৬ ডিজিভল্ট বিডি। গ্রো১০এক্স (GRO10X) ইকোসিস্টেমের ডিজিটাল ব্র্যান্ড।</p>
+    </div>
+  </footer>
+
+  <script src="store.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const store = window.DV_STORE;
+      const products = await store.fetchProducts();
+      
+      const grid = document.getElementById('catalogProductsGrid');
+      const searchInput = document.getElementById('inputCatalogSearch');
+      const categoryChips = document.querySelectorAll('#categoryChips button');
+
+      let currentCategory = 'all';
+      let searchQuery = '';
+
+      // Check URL query for category
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('category')) {
+        currentCategory = urlParams.get('category');
+        categoryChips.forEach(c => {
+          c.classList.toggle('active', c.getAttribute('data-cat') === currentCategory);
+        });
+      }
+
+      function renderCatalog() {
+        let filtered = products;
+        if (currentCategory !== 'all') {
+          filtered = filtered.filter(p => p.category === currentCategory);
+        }
+        if (searchQuery) {
+          const q = searchQuery.toLowerCase();
+          filtered = filtered.filter(p => p.name.toLowerCase().includes(q) || (p.tags && p.tags.some(t => t.toLowerCase().includes(q))));
+        }
+
+        if (filtered.length === 0) {
+          grid.innerHTML = `
+            <div style="grid-column: 1 / -1; text-align: center; padding: 60px 0; color: var(--text-muted);">
+              <div style="font-size: 40px; margin-bottom: 12px;">🔍</div>
+              <div style="font-size: 16px; font-weight: 700; color: #fff;">কোনো প্রোডাক্ট পাওয়া যায়নি</div>
+              <div style="font-size: 13px; margin-top: 4px;">অন্য কি-ওয়ার্ড বা ক্যাটাগরি দিয়ে চেষ্টা করুন।</div>
+            </div>
+          `;
+          return;
+        }
+
+        grid.innerHTML = filtered.map(p => `
+          <div class="card product-card" style="border-top: 3px solid ${p.isHero ? 'var(--primary)' : 'var(--border-subtle)'};">
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                <span class="badge badge-cat">${p.category}</span>
+                ${p.isHero ? `<span class="badge badge-hero">⭐ সেরা ডিল</span>` : ''}
+              </div>
+
+              <h3 class="product-card-title">${p.name}</h3>
+              <div style="font-size: 12px; color: #a855f7; font-weight: 600; margin-bottom: 12px;">⏱️ মেয়াদ: ${p.duration}</div>
+
+              ${p.deliveryNotes ? `
+                <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 14px; line-height: 1.4;">
+                  ℹ️ ${p.deliveryNotes}
+                </div>
+              ` : ''}
+            </div>
+
+            <div style="border-top: 1px solid var(--border-subtle); padding-top: 14px; display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <div style="font-size: 11px; color: var(--text-muted);">অফার প্রাইস:</div>
+                <div class="product-card-price">৳${Number(p.salePrice).toLocaleString()}</div>
+              </div>
+              <a href="product.html?slug=${p.slug}" class="btn btn-primary btn-sm" style="padding: 8px 16px;">
+                অর্ডার করুন ➔
+              </a>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      categoryChips.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          categoryChips.forEach(b => b.classList.remove('active'));
+          e.currentTarget.classList.add('active');
+          currentCategory = e.currentTarget.getAttribute('data-cat');
+          renderCatalog();
+        });
+      });
+
+      searchInput.addEventListener('input', (e) => {
+        searchQuery = e.target.value.trim();
+        renderCatalog();
+      });
+
+      renderCatalog();
+    });
+  </script>
+</body>
+</html>

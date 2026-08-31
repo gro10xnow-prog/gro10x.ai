@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DigiVault BD — Product Checkout</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22%20%2232%22%20%2232%22><text y=%2224%22 font-size=%2224%22>🏪</text></svg>">
+</head>
+<body class="lang-bn">
+
+  <!-- Header / Navigation -->
+  <header class="dv-header">
+    <div class="container dv-nav">
+      <a href="index.html" class="dv-brand">
+        <span>🏪</span>
+        <span>DigiVault</span>
+        <span class="dv-brand-badge" data-i18n="brandTag">BD</span>
+      </a>
+
+      <div class="dv-nav-links">
+        <a href="index.html" class="dv-nav-link" data-i18n="navHome">হোম</a>
+        <a href="catalog.html" class="dv-nav-link" data-i18n="navCatalog">ক্যাটালগ</a>
+        <a href="track.html" class="dv-nav-link" data-i18n="navTrack">অর্ডার ট্র্যাক</a>
+        <a href="https://t.me/Digivault20bot" target="_blank" class="btn btn-telegram btn-sm" style="display: flex; gap: 6px;">
+          <span>📱</span>
+          <span data-i18n="navBot">টেলিগ্রাম বট</span>
+        </a>
+        <button class="btn-lang-toggle" id="btnLangToggle">🇬🇧 English</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container" style="padding-top: 40px; padding-bottom: 80px; max-width: 900px;">
+    <a href="catalog.html" style="font-size: 13px; color: var(--text-muted); display: inline-flex; align-items: center; gap: 6px; margin-bottom: 20px;">
+      ← ক্যাটালগে ফিরে যান
+    </a>
+
+    <div style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 30px;" id="checkoutLayout">
+      <!-- Left Column: Product Summary Card -->
+      <div>
+        <div class="card" style="position: sticky; top: 90px; border-top: 4px solid var(--primary);">
+          <span class="badge badge-cat" id="prodCatBadge">AI Tools</span>
+          <h1 style="font-size: 22px; font-weight: 800; color: #fff; margin: 12px 0 6px;" id="prodTitle">
+            Gemini Pro ১৮ মাস অ্যাডমিন অ্যাকাউন্ট
+          </h1>
+          <div style="font-size: 13px; color: #a855f7; font-weight: 700; margin-bottom: 16px;" id="prodDuration">
+            ⏱️ মেয়াদ: ১৮ মাস
+          </div>
+
+          <div style="background: rgba(0,0,0,0.3); border-radius: var(--radius-md); padding: 16px; margin-bottom: 20px;">
+            <div style="font-size: 12px; color: var(--text-muted);">সর্বমোট প্রদেয় মূল্য:</div>
+            <div style="font-size: 32px; font-weight: 900; color: var(--primary);" id="prodPrice">৳২,০০০</div>
+            <div style="font-size: 11px; color: #10b981; font-weight: 700; margin-top: 4px;">✅ সম্পূর্ণ মেয়াদের ওয়ারেন্টি অন্তর্ভুক্ত</div>
+          </div>
+
+          <div id="prodNotesBox" style="font-size: 12px; color: var(--text-muted); line-height: 1.5; border-top: 1px dashed var(--border-subtle); padding-top: 14px;">
+            ℹ️ <span id="prodNotes">অর্ডার করার পর ১৫-৩০ মিনিটের মধ্যে ডেলিভারি সম্পন্ন হবে।</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Checkout & Payment Form -->
+      <div>
+        <div class="card" style="padding: 28px;">
+          <h2 style="font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 20px;" data-i18n="orderModalTitle">
+            সাবস্ক্রিপশন অর্ডার ফর্ম
+          </h2>
+
+          <form id="formCheckout" style="display: flex; flex-direction: column; gap: 16px;">
+            <div class="form-group">
+              <label class="form-label" data-i18n="lblFullName">আপনার পুরো নাম</label>
+              <input type="text" id="custName" class="form-input" required placeholder="e.g. Zahid Hasan" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" data-i18n="lblContact">মোবাইল অথবা WhatsApp নম্বর</label>
+              <input type="text" id="custContact" class="form-input" required placeholder="e.g. 017xxxxxxxx" />
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+              <div class="form-group">
+                <label class="form-label" data-i18n="lblChannel">ডেলিভারির মাধ্যম</label>
+                <select id="custChannel" class="form-select">
+                  <option value="whatsapp">💬 WhatsApp</option>
+                  <option value="telegram">📱 Telegram</option>
+                  <option value="facebook">📘 Facebook DM</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" data-i18n="lblPayMethod">পেমেন্ট মেথড</label>
+                <select id="custPayMethod" class="form-select">
+                  <option value="bkash">📱 bKash (Personal)</option>
+                  <option value="nagad">📱 Nagad (Personal)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Payment Instructions Box -->
+            <div style="background: rgba(0, 223, 137, 0.08); border: 1px solid rgba(0, 223, 137, 0.25); border-radius: var(--radius-md); padding: 16px;">
+              <div style="font-size: 13px; font-weight: 700; color: #00df89; margin-bottom: 6px;">
+                💳 পেমেন্ট করার নিয়ম:
+              </div>
+              <div style="font-size: 12px; color: var(--text-main); line-height: 1.5;">
+                অনুগ্রহ করে নিচের নম্বরে <strong>Send Money</strong> করুন:<br>
+                <span style="font-family: monospace; font-size: 16px; font-weight: 800; color: #fff; background: rgba(0,0,0,0.4); padding: 4px 8px; border-radius: 6px; display: inline-block; margin-top: 6px;">
+                  📱 01602733832
+                </span>
+                <span style="font-size: 11px; color: var(--text-muted); display: block; margin-top: 4px;">
+                  (বিকাশ ও নগদ পার্সোনাল নম্বর)
+                </span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" data-i18n="lblTrxId">বিকাশ / নগদ ট্রানজেকশন আইডি (TrxID)</label>
+              <input type="text" id="custTrxId" class="form-input" placeholder="e.g. BL992X881" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" data-i18n="lblScreenshot">পেমেন্টের স্ক্রিনশট আপলোড করুন</label>
+              <input type="file" id="custScreenshot" accept="image/*" class="form-input" style="padding: 8px;" />
+            </div>
+
+            <button type="submit" class="btn btn-primary" id="btnSubmitOrder" style="padding: 14px; font-size: 16px; width: 100%; margin-top: 8px;">
+              <span data-i18n="btnSubmitOrder">অর্ডার নিশ্চিত করুন</span> ➔
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Order Success Modal Container -->
+  <div id="orderSuccessModal"></div>
+
+  <!-- Footer -->
+  <footer class="dv-footer">
+    <div class="container">
+      <p data-i18n="footerText">© ২০২৬ ডিজিভল্ট বিডি। গ্রো১০এক্স (GRO10X) ইকোসিস্টেমের ডিজিটাল ব্র্যান্ড।</p>
+    </div>
+  </footer>
+
+  <script src="store.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const store = window.DV_STORE;
+      const products = await store.fetchProducts();
+      
+      const urlParams = new URLSearchParams(window.location.search);
+      const slug = urlParams.get('slug');
+      const id = urlParams.get('id');
+
+      let currentProduct = products.find(p => (slug && p.slug === slug) || (id && p.id === id)) || products[0];
+
+      if (currentProduct) {
+        document.getElementById('prodCatBadge').textContent = currentProduct.category;
+        document.getElementById('prodTitle').textContent = currentProduct.name;
+        document.getElementById('prodDuration').textContent = `⏱️ মেয়াদ: ${currentProduct.duration}`;
+        document.getElementById('prodPrice').textContent = `৳${Number(currentProduct.salePrice).toLocaleString()}`;
+        if (currentProduct.deliveryNotes) {
+          document.getElementById('prodNotes').textContent = currentProduct.deliveryNotes;
+        }
+      }
+
+      // Checkout form submission
+      const form = document.getElementById('formCheckout');
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btnSubmit = document.getElementById('btnSubmitOrder');
+        btnSubmit.disabled = true;
+        btnSubmit.innerHTML = 'অর্ডার প্রসেস হচ্ছে... ⏳';
+
+        const name = document.getElementById('custName').value.trim();
+        const contact = document.getElementById('custContact').value.trim();
+        const channel = document.getElementById('custChannel').value;
+        const payMethod = document.getElementById('custPayMethod').value;
+        const trxId = document.getElementById('custTrxId').value.trim();
+        const fileInput = document.getElementById('custScreenshot');
+
+        const utmData = store.captureUTM();
+
+        const orderPayload = {
+          productId: currentProduct?.id || null,
+          productName: currentProduct?.name || 'Subscription',
+          duration: currentProduct?.duration || '1 Month',
+          salePrice: currentProduct?.salePrice || 0,
+          vendorPrice: currentProduct?.vendorPrice || 0,
+          vendorId: currentProduct?.vendorId || null,
+          customerName: name,
+          customerContact: contact,
+          contactChannel: channel,
+          paymentMethod: payMethod,
+          paymentRef: trxId,
+          sourceChannel: utmData.utm_source || 'web',
+          sourceUrl: window.location.href,
+          utmData: utmData
+        };
+
+        try {
+          const res = await fetch('/api/digistore/orders', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(orderPayload)
+          });
+          const json = await res.json();
+
+          if (!res.ok) throw new Error(json.error || 'Order creation failed');
+
+          const order = json.data;
+
+          // If screenshot attached, upload it
+          if (fileInput.files.length > 0 && order.id) {
+            const formData = new FormData();
+            formData.append('screenshot', fileInput.files[0]);
+            formData.append('trxId', trxId);
+            formData.append('method', payMethod);
+
+            await fetch(`/api/digistore/orders/${order.id}/payment-proof`, {
+              method: 'POST',
+              body: formData
+            }).catch(() => {});
+          }
+
+          // Show Success Modal
+          showSuccessModal(order);
+        } catch (err) {
+          alert('Error: ' + err.message);
+          btnSubmit.disabled = false;
+          btnSubmit.innerHTML = 'অর্ডার নিশ্চিত করুন ➔';
+        }
+      });
+
+      function showSuccessModal(order) {
+        const modal = document.getElementById('orderSuccessModal');
+        modal.innerHTML = `
+          <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px;">
+            <div class="card" style="max-width: 480px; width: 100%; text-align: center; padding: 32px; border: 2px solid var(--primary);">
+              <div style="font-size: 50px; margin-bottom: 12px;">🎉</div>
+              <h3 style="font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 6px;">অর্ডার সফলভাবে গ্রহণ করা হয়েছে!</h3>
+              <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 20px;">
+                আপনার পেমেন্ট ভেরিফাই হওয়ার ১৫-৩০ মিনিটের মধ্যে লগইন ডিটেইলস পাঠানো হবে।
+              </p>
+
+              <div style="background: rgba(0,0,0,0.4); border-radius: var(--radius-md); padding: 16px; margin-bottom: 24px;">
+                <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">অর্ডার রেফারেন্স নম্বর:</div>
+                <div style="font-family: monospace; font-size: 24px; font-weight: 900; color: #38bdf8; margin-top: 4px;">
+                  ${order.orderNumber || order.order_number}
+                </div>
+              </div>
+
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+                <a href="track.html?ref=${order.orderNumber || order.order_number}" class="btn btn-primary" style="width: 100%;">
+                  🔍 অর্ডার স্ট্যাটাস ট্র্যাক করুন
+                </a>
+                <a href="https://wa.me/8801602733832?text=Salam%2C%20I%20placed%20order%20ref%20${order.orderNumber || order.order_number}" target="_blank" class="btn btn-secondary" style="width: 100%;">
+                  💬 WhatsApp-এ মেসেজ দিন
+                </a>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+    });
+  </script>
+</body>
+</html>
