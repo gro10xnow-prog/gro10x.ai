@@ -422,3 +422,25 @@ a {
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(0, 223, 137, 0.15);
 }
+
+/* ── Mobile Responsive Overrides ── */
+@media (max-width: 768px) {
+  #checkoutLayout {
+    grid-template-columns: 1fr !important;
+    gap: 20px !important;
+  }
+
+  .dv-nav {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .dv-nav-links {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .form-input, .form-select, .form-textarea {
+    font-size: 16px; /* Prevents unwanted auto-zoom on mobile safari/chrome */
+  }
+}

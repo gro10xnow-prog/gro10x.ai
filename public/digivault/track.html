@@ -81,7 +81,13 @@
         if (ref) fetchStatus(ref);
       });
 
-      async function fetchStatus(ref) {
+      async function fetchStatus(rawRef) {
+        let cleanRef = rawRef.trim().toUpperCase();
+        if (/^\d{6}$/.test(cleanRef)) {
+          cleanRef = 'DIGI-' + cleanRef;
+        }
+        inputRef.value = cleanRef;
+
         resultBox.innerHTML = `
           <div class="card" style="padding: 40px; text-align: center; color: var(--text-muted);">
             <div style="font-size: 32px; margin-bottom: 8px;">⏳</div>
@@ -90,7 +96,7 @@
         `;
 
         try {
-          const res = await fetch(`/api/digistore/track/${encodeURIComponent(ref)}`);
+          const res = await fetch(`/api/digistore/track/${encodeURIComponent(cleanRef)}`);
           const json = await res.json();
 
           if (!res.ok) throw new Error(json.error || 'Order not found');
@@ -102,7 +108,17 @@
             <div class="card" style="padding: 36px; text-align: center; border-color: rgba(239, 68, 68, 0.3);">
               <div style="font-size: 36px; margin-bottom: 10px;">❌</div>
               <h3 style="font-size: 18px; font-weight: 700; color: #ef4444; margin-bottom: 6px;">অর্ডার পাওয়া যায়নি</h3>
-              <p style="color: var(--text-muted); font-size: 13px;">দয়া করে আপনার অর্ডার রেফারেন্স নম্বরটি পুনরায় পরীক্ষা করুন।</p>
+              <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 18px;">
+                দয়া করে আপনার অর্ডার রেফারেন্স নম্বরটি সঠিক কিনা যাচাই করুন (যেমন: <code style="color: #38bdf8; font-weight: 700;">DIGI-123456</code>)।
+              </p>
+              <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                <a href="https://wa.me/8801889825025?text=${encodeURIComponent('Salam, I need help finding my DigiVault order: ' + cleanRef)}" target="_blank" class="btn btn-primary" style="background: #25d366; color: #000; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                  <span>💬</span> WhatsApp সাপোর্টে যোগাযোগ করুন
+                </a>
+                <a href="catalog.html" class="btn btn-secondary" style="text-decoration: none;">
+                  🛒 ক্যাটালগ দেখুন
+                </a>
+              </div>
             </div>
           `;
         }

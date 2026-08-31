@@ -107,7 +107,12 @@ const STRINGS = {
     orderNotFound: '❌ Order not found. Please check your order reference number.',
     contactText: '📞 *Customer Support:*\nWhatsApp: `%PHONE%`\nWeb: https://gro10x-ai.vercel.app/digivault',
     credentialsDelivered: '🎉 *Your DigiVault Order is Ready!*\n\n📦 *Product:* %PRODUCT%\n⏱️ *Duration:* %DURATION%\n\n🔑 *Access Details:*\n%CREDS%\n\n⏳ *Expiry Date:* `%EXPIRY%`\n\nThank you for choosing DigiVault! Please confirm once verified below:',
-    orderConfirmed: '🎉 *Awesome! Your activation confirmation is recorded.*\n\nThank you for choosing DigiVault! 🙏\n👉 Share with friends: https://gro10x-ai.vercel.app/digivault'
+    orderConfirmed: '🎉 *Awesome! Your activation confirmation is recorded.*\n\nThank you for choosing DigiVault! 🙏\n👉 Share with friends: https://gro10x-ai.vercel.app/digivault',
+    orderReviewPrompt: '📋 *Order Review (Please Verify):*\n\n📦 *Product:* %PRODUCT% (%DURATION%)\n💰 *Amount Due:* ৳%PRICE% BDT\n👤 *Name:* %NAME%\n📱 *Mobile:* %PHONE%\n💬 *WhatsApp:* %WHATSAPP%\n\nIf all details are correct, tap *Confirm Order* below:',
+    btnConfirmCheckout: '✅ Confirm & Place Order',
+    btnEditCheckout: '✏️ Edit / Restart',
+    btnHelp: '❓ Help',
+    helpText: '📖 *DigiVault Bot Commands:*\n\n• `/start` — Main Menu & Hot Deals\n• `/catalog` — Browse All Digital Subscriptions\n• `/myorder <REF>` — Track Your Order Status\n• `/lang` — Switch between বাংলা / English\n• `/contact` — Customer Support WhatsApp\n• `/help` — View this Command Guide\n\nNeed assistance? Contact our team: `%PHONE%`'
   },
   bn: {
     welcomeTitle: '🏪 *ডিজিভল্ট (DigiVault)-এ স্বাগতম!*',
@@ -131,7 +136,12 @@ const STRINGS = {
     orderNotFound: '❌ অর্ডার খুঁজে পাওয়া যায়নি। অনুগ্রহ করে সঠিক রেফারেন্স নম্বর দিন।',
     contactText: '📞 *কাস্টমার সাপোর্ট:*\nWhatsApp: `%PHONE%`\nWeb: https://gro10x-ai.vercel.app/digivault',
     credentialsDelivered: '🎉 *আপনার ডিজিভল্ট অর্ডার সম্পন্ন হয়েছে!*\n\n📦 *প্রোডাক্ট:* %PRODUCT%\n⏱️ *মেয়াদ:* %DURATION%\n\n🔑 *লগইন ডিটেইলস:*\n%CREDS%\n\n⏳ *মেয়াদ শেষ:* `%EXPIRY%`\n\nডিজিভল্ট ব্যবহারের জন্য ধন্যবাদ! একাউন্ট চেক করে নিচে কনফার্ম করুন:',
-    orderConfirmed: '🎉 *দারুণ! আপনার অ্যাক্টিভেশন সফলভাবে কনফার্ম হয়েছে।*\n\nআমাদের সাথে থাকার জন্য অনেক ধন্যবাদ! 🙏\n👉 বন্ধুদের সাথে শেয়ার করতে পারেন: https://gro10x-ai.vercel.app/digivault'
+    orderConfirmed: '🎉 *দারুণ! আপনার অ্যাক্টিভেশন সফলভাবে কনফার্ম হয়েছে।*\n\nআমাদের সাথে থাকার জন্য অনেক ধন্যবাদ! 🙏\n👉 বন্ধুদের সাথে শেয়ার করতে পারেন: https://gro10x-ai.vercel.app/digivault',
+    orderReviewPrompt: '📋 *অর্ডার তথ্য যাচাই (Order Review):*\n\n📦 *প্রোডাক্ট:* %PRODUCT% (%DURATION%)\n💰 *প্রদেয় মূল্য:* ৳%PRICE% টাকা\n👤 *নাম:* %NAME%\n📱 *মোবাইল:* %PHONE%\n💬 *WhatsApp:* %WHATSAPP%\n\nসব তথ্য সঠিক থাকলে নিচে *অর্ডার কনফার্ম করুন* বাটনে চাপুন:',
+    btnConfirmCheckout: '✅ অর্ডার কনফার্ম করুন',
+    btnEditCheckout: '✏️ তথ্য পরিবর্তন / রিস্টার্ট',
+    btnHelp: '❓ সাহায্য',
+    helpText: '📖 *ডিজিভল্ট বট কমান্ড তালিকা:*\n\n• `/start` — মেইন মেনু ও সেরা অফার\n• `/catalog` — সম্পূর্ণ সাবস্ক্রিপশন ক্যাটালগ\n• `/myorder <REF>` — অর্ডার স্ট্যাটাস চেক\n• `/lang` — ভাষা পরিবর্তন (বাংলা / English)\n• `/contact` — কাস্টমার সাপোর্ট WhatsApp\n• `/help` — কমান্ড নির্দেশিকা\n\nকোনো সহায়তার প্রয়োজন হলে যোগাযোগ করুন: `%PHONE%`'
   }
 };
 
@@ -222,6 +232,12 @@ function registerBotHandlers(bot) {
     bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
   });
 
+  // Command: /help
+  bot.onText(/\/help/, (msg) => {
+    const chatId = msg.chat.id;
+    sendHelpMessage(bot, chatId);
+  });
+
   // Command: /myorder <ref>
   bot.onText(/\/myorder(?:\s+(.+))?/, async (msg, match) => {
     const chatId = msg.chat.id;
@@ -248,6 +264,9 @@ function registerBotHandlers(bot) {
       if (data === 'menu_main') {
         return sendWelcomeMenu(bot, chatId, query.message.message_id);
       }
+      if (data === 'menu_help') {
+        return sendHelpMessage(bot, chatId, query.message.message_id);
+      }
       if (data === 'toggle_lang') {
         const sess = await getSession(chatId);
         const next = sess.lang === 'bn' ? 'en' : 'bn';
@@ -265,6 +284,18 @@ function registerBotHandlers(bot) {
       if (data.startsWith('order:')) {
         const prodSlug = data.replace('order:', '');
         return startOrderFlow(bot, chatId, prodSlug);
+      }
+      if (data === 'checkout_confirm') {
+        const sess = await getSession(chatId);
+        if (sess && sess.selectedProduct) {
+          return completeOrderCreation(bot, chatId, sess);
+        }
+      }
+      if (data === 'checkout_restart') {
+        const sess = await getSession(chatId);
+        if (sess && sess.selectedProduct) {
+          return startOrderFlow(bot, chatId, sess.selectedProduct.slug);
+        }
       }
       if (data === 'track_order') {
         return bot.sendMessage(chatId, t(chatId, 'trackPrompt'), { parse_mode: 'Markdown' });
@@ -324,9 +355,9 @@ function registerBotHandlers(bot) {
 
     if (session.step === 'awaiting_whatsapp') {
       session.customerWhatsapp = msg.text.trim();
-      session.step = 'awaiting_payment';
+      session.step = 'awaiting_confirmation';
       await saveSession(chatId, session);
-      return completeOrderCreation(bot, chatId, session);
+      return sendOrderConfirmationPrompt(bot, chatId, session);
     }
 
     if (session.step === 'awaiting_payment') {
@@ -381,7 +412,8 @@ function sendWelcomeMenu(bot, chatId, messageId = null) {
       { text: lang === 'bn' ? '⭐ সেরা অফার: Gemini 18M' : '⭐ Hero Deal: Gemini 18M', callback_data: 'prod:gemini-pro-18m-veo-3' }
     ],
     [
-      { text: lang === 'bn' ? '🔍 অর্ডার ট্র্যাক' : '🔍 Track Order', callback_data: 'track_order' },
+      { text: lang === 'bn' ? '🔍 ট্র্যাক' : '🔍 Track', callback_data: 'track_order' },
+      { text: t(chatId, 'btnHelp'), callback_data: 'menu_help' },
       { text: t(chatId, 'changeLang'), callback_data: 'toggle_lang' }
     ]
   ];
@@ -394,6 +426,42 @@ function sendWelcomeMenu(bot, chatId, messageId = null) {
   } else {
     bot.sendMessage(chatId, text, opts);
   }
+}
+
+function sendHelpMessage(bot, chatId, messageId = null) {
+  const text = t(chatId, 'helpText').replace('%PHONE%', PAYMENT_CONFIG.supportPhone);
+  const keyboard = [
+    [
+      { text: t(chatId, 'back'), callback_data: 'menu_main' },
+      { text: '💬 WhatsApp Support', callback_data: 'contact_support' }
+    ]
+  ];
+  const opts = { parse_mode: 'Markdown', reply_markup: { inline_keyboard: keyboard } };
+  if (messageId) {
+    bot.editMessageText(text, { chat_id: chatId, message_id: messageId, ...opts }).catch(() => {
+      bot.sendMessage(chatId, text, opts);
+    });
+  } else {
+    bot.sendMessage(chatId, text, opts);
+  }
+}
+
+function sendOrderConfirmationPrompt(bot, chatId, session) {
+  const prod = session.selectedProduct;
+  const prompt = t(chatId, 'orderReviewPrompt')
+    .replace('%PRODUCT%', prod.name)
+    .replace('%DURATION%', prod.duration)
+    .replace('%PRICE%', prod.sale_price.toLocaleString())
+    .replace('%NAME%', session.customerName || 'N/A')
+    .replace('%PHONE%', session.customerContact || 'N/A')
+    .replace('%WHATSAPP%', session.customerWhatsapp || session.customerContact || 'N/A');
+
+  const keyboard = [
+    [{ text: t(chatId, 'btnConfirmCheckout'), callback_data: 'checkout_confirm' }],
+    [{ text: t(chatId, 'btnEditCheckout'), callback_data: 'checkout_restart' }]
+  ];
+
+  bot.sendMessage(chatId, prompt, { parse_mode: 'Markdown', reply_markup: { inline_keyboard: keyboard } });
 }
 
 function sendCategoryMenu(bot, chatId, messageId = null) {

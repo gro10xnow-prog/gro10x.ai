@@ -75,7 +75,12 @@ const DV_I18N = {
     statusPendingPay: '⏳ Awaiting Payment Verification',
     statusVerified: '✅ Payment Verified — Processing Delivery',
     statusDelivered: '🔑 Delivered & Active',
-    statusRejected: '❌ Payment Rejected'
+    statusRejected: '❌ Payment Rejected',
+    orderReviewTitle: 'Order Review',
+    lblConfirmOrder: 'Confirm Order',
+    lblEditOrder: 'Edit Details',
+    errOrderNotFound: 'Order not found. Please verify your reference number.',
+    btnSupportWhatsApp: 'Contact WhatsApp Support'
   },
   bn: {
     brandTag: 'ডিজিভল্ট বিডি',
@@ -130,7 +135,12 @@ const DV_I18N = {
     statusPendingPay: '⏳ পেমেন্ট ভেরিফিকেশন প্রক্রিয়াধীন',
     statusVerified: '✅ পেমেন্ট ভেরিফাইড — ডেলিভারি তৈরি হচ্ছে',
     statusDelivered: '🔑 ডেলিভারি সম্পন্ন ও অ্যাক্টিভ',
-    statusRejected: '❌ পেমেন্ট বাতিল করা হয়েছে'
+    statusRejected: '❌ পেমেন্ট বাতিল করা হয়েছে',
+    orderReviewTitle: 'অর্ডার তথ্য যাচাই',
+    lblConfirmOrder: 'অর্ডার কনফার্ম করুন',
+    lblEditOrder: 'তথ্য পরিবর্তন করুন',
+    errOrderNotFound: 'অর্ডার পাওয়া যায়নি। অনুগ্রহ করে রেফারেন্স নম্বরটি যাচাই করুন।',
+    btnSupportWhatsApp: 'WhatsApp সাপোর্টে যোগাযোগ করুন'
   }
 };
 
