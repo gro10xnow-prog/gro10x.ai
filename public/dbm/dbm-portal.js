@@ -1,9 +1,8 @@
 /**
  * public/dbm/dbm-portal.js
  * ─────────────────────────────────────────────────────────────────────────────
- * GRO10X Digital Brand Manager Dedicated Portal Engine v2.5
- * Tab 5: Enhanced EOD Standup with Auto-Population, Quick Win Chips,
- * Structured Blocker Escalation, and Direct Telegram Alerting.
+ * GRO10X Digital Brand Manager Dedicated Portal Engine v2.6 (Complete 6-Tab Suite)
+ * Tab 6: Enhanced Profile & Settings, Telegram Linking, Permanent PIN, and Sign-Out.
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
@@ -62,6 +61,14 @@
       }
     } catch(e) {}
     return DBM_STATE.dbm?.name && DBM_STATE.dbm.name !== 'DBM 1' ? DBM_STATE.dbm.name : 'Anika Nower';
+  }
+
+  function getUserEmpCode() {
+    try {
+      const user = JSON.parse(localStorage.getItem('gro10x_user') || sessionStorage.getItem('gro10x_user') || '{}');
+      if (user && user.emp_code) return user.emp_code;
+    } catch(e) {}
+    return 'GRO-002';
   }
 
   window.dbmSignOut = function() {
@@ -1657,30 +1664,128 @@
 
   // ── VIEW 6: SETTINGS ──
   function renderSettingsView(container) {
+    const displayName = getUserDisplayName();
+    const empCode = getUserEmpCode();
+    const brands = DBM_STATE.assignedBrands || [];
+
     container.innerHTML = `
-      <div style="margin-bottom: 2rem;">
-        <h1 style="font-family: var(--font-heading); font-size: 1.8rem; font-weight: 800;">⚙️ Account Settings</h1>
-        <p style="color: var(--text-secondary);">Manage your security PIN and profile details.</p>
+      <!-- Settings Header -->
+      <div style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <h1 style="font-family: var(--font-heading); font-size: 1.8rem; font-weight: 800;">
+            ⚙️ Account & Security Settings
+          </h1>
+          <p style="color: var(--text-secondary); font-size: 0.95rem;">
+            Manage your permanent 4-digit security PIN, Telegram notification linking, and active session.
+          </p>
+        </div>
       </div>
 
-      <div class="card" style="max-width: 500px;">
-        <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1rem;">🔐 Change Access PIN</h3>
+      <!-- Two-Column Settings Grid -->
+      <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 1.5rem;">
         
-        <form onsubmit="changeDbmPin(event)" style="display: flex; flex-direction: column; gap: 1rem;">
-          <div>
-            <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">New 4-Digit PIN</label>
-            <input type="password" maxlength="4" id="settingsNewPin" required placeholder="••••" style="width: 100%; padding: 0.65rem; background: var(--bg-surface); border: 1px solid var(--border-subtle); color: var(--text-primary); border-radius: 8px; font-size: 1.2rem; letter-spacing: 4px; text-align: center;">
+        <!-- Left Column: Official Profile Details & Telegram Card -->
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+          
+          <!-- Profile Card -->
+          <div class="card" style="border-left: 4px solid var(--brand-primary); margin-bottom: 0;">
+            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.25rem;">
+              <div style="width: 54px; height: 54px; border-radius: 50%; background: linear-gradient(135deg, #00df89, #06b6d4); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.2rem; color: #070b12;">
+                ${displayName.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase() || 'AN'}
+              </div>
+              <div>
+                <h3 style="font-size: 1.25rem; font-weight: 800; color: #fff;">${displayName}</h3>
+                <span style="background: rgba(0,223,137,0.12); color: #00df89; font-size: 0.72rem; font-weight: 800; padding: 0.2rem 0.55rem; border-radius: 12px;">
+                  Digital Brand Manager
+                </span>
+              </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.85rem;">
+              <div style="display: flex; justify-content: space-between; padding-bottom: 0.4rem; border-bottom: 1px solid var(--border-subtle);">
+                <span style="color: var(--text-muted);">Employee Code:</span>
+                <strong style="color: #38bdf8; font-family: var(--font-mono);">${empCode}</strong>
+              </div>
+
+              <div style="display: flex; justify-content: space-between; padding-bottom: 0.4rem; border-bottom: 1px solid var(--border-subtle);">
+                <span style="color: var(--text-muted);">Daily Target:</span>
+                <strong style="color: #fff;">8 Products / Day (Day 1: PLA-14..21)</strong>
+              </div>
+
+              <div style="display: flex; justify-content: space-between; padding-bottom: 0.4rem; border-bottom: 1px solid var(--border-subtle);">
+                <span style="color: var(--text-muted);">Timezone:</span>
+                <strong style="color: #fff;">Asia/Dhaka (BST, UTC+6)</strong>
+              </div>
+
+              <div>
+                <span style="color: var(--text-muted); font-size: 0.78rem; font-weight: 700; text-transform: uppercase; display: block; margin-bottom: 0.4rem;">Assigned Brand Portfolios:</span>
+                <div style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
+                  ${brands.map(b => `
+                    <span style="background: var(--bg-surface); border: 1px solid var(--border-subtle); padding: 0.25rem 0.6rem; border-radius: 8px; font-size: 0.78rem; font-weight: 600; color: #fff;">
+                      🛍️ ${b.name} (${b.phase || 'Phase ' + b.id})
+                    </span>
+                  `).join('')}
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div>
-            <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">Confirm New PIN</label>
-            <input type="password" maxlength="4" id="settingsConfirmPin" required placeholder="••••" style="width: 100%; padding: 0.65rem; background: var(--bg-surface); border: 1px solid var(--border-subtle); color: var(--text-primary); border-radius: 8px; font-size: 1.2rem; letter-spacing: 4px; text-align: center;">
+          <!-- Telegram Notification Card -->
+          <div class="card" style="border-left: 4px solid var(--accent-cyan); margin-bottom: 0;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
+              <h3 style="font-size: 1.1rem; font-weight: 800; color: #38bdf8;">📱 Telegram Bot Notifications</h3>
+              <span style="font-size: 0.72rem; font-weight: 800; color: #00df89; background: rgba(0,223,137,0.1); padding: 0.2rem 0.5rem; border-radius: 12px;">
+                @GRO10X_Bot
+              </span>
+            </div>
+            <p style="font-size: 0.82rem; color: var(--text-secondary); line-height: 1.4; margin-bottom: 1rem;">
+              Connect your personal Telegram account to receive real-time push alerts when Admin approves your products and publishes them to Etsy.
+            </p>
+            <a href="https://t.me/GRO10X_Bot?start=bind_${empCode.replace('-','')}" target="_blank" class="btn-primary" style="display: inline-flex; justify-content: center; text-decoration: none; font-size: 0.85rem; padding: 0.65rem 1.2rem; background: linear-gradient(135deg, #06b6d4, #3b82f6);">
+              🔗 Connect / Open @GRO10X_Bot ↗
+            </a>
+          </div>
+        </div>
+
+        <!-- Right Column: PIN Update & Session Termination -->
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+          
+          <!-- PIN Change Form -->
+          <div class="card" style="border-left: 4px solid var(--accent-purple); margin-bottom: 0;">
+            <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 0.3rem; color: #c084fc;">🔐 Update Permanent Access PIN</h3>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+              Set your personal 4-digit PIN for future logins.
+            </p>
+            
+            <form onsubmit="changeDbmPin(event)" style="display: flex; flex-direction: column; gap: 1rem;">
+              <div>
+                <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">New 4-Digit PIN</label>
+                <input type="password" maxlength="4" id="settingsNewPin" required placeholder="••••" style="width: 100%; padding: 0.65rem; background: var(--bg-surface); border: 1px solid var(--border-subtle); color: var(--text-primary); border-radius: 8px; font-size: 1.2rem; letter-spacing: 4px; text-align: center;">
+              </div>
+
+              <div>
+                <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">Confirm New PIN</label>
+                <input type="password" maxlength="4" id="settingsConfirmPin" required placeholder="••••" style="width: 100%; padding: 0.65rem; background: var(--bg-surface); border: 1px solid var(--border-subtle); color: var(--text-primary); border-radius: 8px; font-size: 1.2rem; letter-spacing: 4px; text-align: center;">
+              </div>
+
+              <button type="submit" class="btn-primary" style="justify-content: center; margin-top: 0.5rem; background: linear-gradient(135deg, #a855f7, #06b6d4);">
+                💾 Save Permanent PIN
+              </button>
+            </form>
           </div>
 
-          <button type="submit" class="btn-primary" style="justify-content: center; margin-top: 0.5rem;">
-            💾 Save New PIN
-          </button>
-        </form>
+          <!-- Session Logout Card -->
+          <div class="card" style="border-left: 4px solid #f43f5e; margin-bottom: 0;">
+            <h3 style="font-size: 1.1rem; font-weight: 800; color: #f87171; margin-bottom: 0.3rem;">🚪 Sign Out & Terminate Session</h3>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">
+              Securely purge authentication tokens and return to the login screen.
+            </p>
+            <button onclick="dbmSignOut()" class="btn-secondary" style="width: 100%; justify-content: center; color: #f87171; border-color: rgba(244,63,94,0.3); font-weight: 700;">
+              🚪 Sign Out of GRO10X DBM Portal
+            </button>
+          </div>
+        </div>
+
       </div>
     `;
   }
