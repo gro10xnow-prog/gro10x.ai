@@ -518,6 +518,19 @@ async function completeOrderCreation(bot, chatId, session) {
   broadcast('digistore_order_created', payload);
 
   try {
+    // Direct Admin Chat Alert (if DIGIVAULT_ADMIN_CHAT_ID or ADMIN_TELEGRAM_CHAT_ID configured)
+    const adminChatId = process.env.DIGIVAULT_ADMIN_CHAT_ID || process.env.ADMIN_TELEGRAM_CHAT_ID;
+    if (adminChatId) {
+      const adminMsg = `🛒 *New DigiVault Order — ${orderNumber}*\n\n` +
+        `📦 *Product:* ${prod.name} (${prod.duration})\n` +
+        `👤 *Customer:* ${session.customerName} (${session.customerContact})\n` +
+        `💬 *WhatsApp:* ${session.customerWhatsapp || 'N/A'}\n` +
+        `💰 *Sale Price:* ৳${prod.sale_price.toLocaleString()} | *Profit:* +৳${payload.profit.toLocaleString()}\n` +
+        `💳 *Status:* Awaiting Payment Screenshot\n\n` +
+        `_Action: Check Admin Panel once proof arrives._`;
+      bot.sendMessage(adminChatId, adminMsg, { parse_mode: 'Markdown' }).catch(() => {});
+    }
+
     const teamBot = getTeamBot();
     if (teamBot && process.env.TELEGRAM_TEAM_GROUP_ID) {
       const tgMsg = `🛒 *New DigiVault Bot Order — ${orderNumber}*\n\n` +
@@ -552,8 +565,17 @@ async function handlePaymentPhoto(bot, chatId, order, msg) {
   const text = t(chatId, 'screenshotReceived').replace('%ORDER%', order.order_number || '');
   bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
 
-  // Notify Team Bot
+  // Direct Admin Alert & Team Bot Alert
   try {
+    const adminChatId = process.env.DIGIVAULT_ADMIN_CHAT_ID || process.env.ADMIN_TELEGRAM_CHAT_ID;
+    if (adminChatId) {
+      const adminMsg = `📎 *Payment Screenshot Received — ${order.order_number}*\n\n` +
+        `📦 *Product:* ${order.product_name}\n` +
+        `🖼️ *Proof:* [View Screenshot](${fileUrl || '#'})\n\n` +
+        `_Action: Check and click Verify in Admin Panel._`;
+      bot.sendMessage(adminChatId, adminMsg, { parse_mode: 'Markdown' }).catch(() => {});
+    }
+
     const teamBot = getTeamBot();
     if (teamBot && process.env.TELEGRAM_TEAM_GROUP_ID) {
       const tgMsg = `📎 *Payment Screenshot Received — ${order.order_number}*\n\n` +
@@ -706,6 +728,46 @@ async function sendTelegramOrderDelivery(chatId, order, credentialData = {}) {
   }
 }
 
+async function sendTelegramPaymentRejection(chatId, order, reason = 'Payment verification failed') {
+  const bot = getDigiVaultBot();
+  if (!bot || !chatId) return false;
+
+  const lang = getLang(chatId);
+  const ref = order.order_number || order.orderNumber || 'DIGI-REF';
+  const prodName = order.product_name || order.productName || 'Subscription';
+
+  const text = lang === 'bn'
+    ? `❌ *আপনার পেমেন্ট ভেরিফাই করা সম্ভব হয়নি*\n\n` +
+      `📋 *অর্ডার রেফারেন্স:* \`${ref}\`\n` +
+      `📦 *প্রোডাক্ট:* ${prodName}\n` +
+      `⚠️ *বাতিলের কারণ:* ${reason}\n\n` +
+      `💳 অনুগ্রহ করে সঠিক নম্বরে (*${PAYMENT_CONFIG.bkash}*) Send Money করে ট্রানজেকশনের স্ক্রিনশট বা TrxID এই চ্যাটে আবার পাঠান।\n\n` +
+      `💬 কোনো সাহায্যের প্রয়োজন হলে WhatsApp-এ নক দিন:`
+    : `❌ *Payment Verification Rejected*\n\n` +
+      `📋 *Order Ref:* \`${ref}\`\n` +
+      `📦 *Product:* ${prodName}\n` +
+      `⚠️ *Reason:* ${reason}\n\n` +
+      `💳 Please Send Money to *${PAYMENT_CONFIG.bkash}* (bKash/Nagad Personal) and send your payment screenshot or TrxID here.\n\n` +
+      `💬 For assistance, reach our WhatsApp support:`;
+
+  const opts = {
+    parse_mode: 'Markdown',
+    reply_markup: {
+      inline_keyboard: [
+        [{ text: '💬 WhatsApp Support (01889825025)', url: 'https://wa.me/8801889825025' }]
+      ]
+    }
+  };
+
+  try {
+    await bot.sendMessage(chatId, text, opts);
+    return true;
+  } catch (err) {
+    console.error('[DigiVault Bot Payment Rejection Error]:', err.message);
+    return false;
+  }
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // WEBHOOK UPDATE PROCESSOR (FOR SERVERLESS / VERCEL)
 // ─────────────────────────────────────────────────────────────────────────────
@@ -719,6 +781,7 @@ async function processDigiVaultWebhook(update) {
 module.exports = {
   initDigiVaultBot,
   getDigiVaultBot,
+  sendTelegramPaymentRejection,
   sendTelegramOrderDelivery,
   sendTelegramActivationDelivery,
   processDigiVaultWebhook

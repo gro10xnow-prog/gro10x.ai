@@ -367,10 +367,11 @@ const DigistoreModule = {
         </td>
         <td style="padding: 14px 16px; text-align: right;">
           <div style="display: flex; gap: 4px; justify-content: flex-end; flex-wrap: wrap;">
-            ${!isPaid ? `
+            ${!isPaid && o.paymentStatus !== 'rejected' ? `
               <button class="btn btn-sm btn-success btn-verify-pay" data-id="${o.id}" title="Verify Payment">✅ Verify</button>
+              <button class="btn btn-sm btn-secondary btn-reject-pay" data-id="${o.id}" style="background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3);" title="Reject Payment">❌ Reject</button>
             ` : ''}
-            ${!isDelivered ? `
+            ${!isDelivered && isPaid ? `
               <button class="btn btn-sm btn-primary btn-open-deliver" data-id="${o.id}" title="Enter Link / Credentials">🔑 Deliver</button>
             ` : ''}
             ${(isDelivered && stage !== 'confirmed_closed' && stage !== 'admin_closed') ? `
@@ -401,6 +402,15 @@ const DigistoreModule = {
         } catch (err) {
           alert('Error verifying payment: ' + err.message);
         }
+      });
+    });
+
+    // Reject Payment button
+    container.querySelectorAll('.btn-reject-pay').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = e.currentTarget.getAttribute('data-id');
+        const order = this.orders.find(o => o.id === id);
+        if (order) this.openRejectPaymentModal(order);
       });
     });
 
@@ -899,14 +909,18 @@ const DigistoreModule = {
               </select>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
               <div>
-                <label style="font-size: 12px; color: #94a3b8; font-weight: 600;">Customer Name</label>
+                <label style="font-size: 12px; color: #94a3b8; font-weight: 600;">Customer Name *</label>
                 <input type="text" id="modalOrderCustName" required placeholder="e.g. Zahid Hasan" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px; color: #fff; font-size: 13px; margin-top: 4px;" />
               </div>
               <div>
-                <label style="font-size: 12px; color: #94a3b8; font-weight: 600;">Contact Handle / Phone</label>
-                <input type="text" id="modalOrderCustContact" required placeholder="e.g. 017xxxxxxxx or FB Link" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px; color: #fff; font-size: 13px; margin-top: 4px;" />
+                <label style="font-size: 12px; color: #94a3b8; font-weight: 600;">Contact Phone / FB *</label>
+                <input type="text" id="modalOrderCustContact" required placeholder="e.g. 017xxxxxxxx" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px; color: #fff; font-size: 13px; margin-top: 4px;" />
+              </div>
+              <div>
+                <label style="font-size: 12px; color: #94a3b8; font-weight: 600;">WhatsApp No. *</label>
+                <input type="text" id="modalOrderCustWhatsapp" required placeholder="e.g. 018xxxxxxxx" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px; color: #fff; font-size: 13px; margin-top: 4px;" />
               </div>
             </div>
 
@@ -991,6 +1005,7 @@ const DigistoreModule = {
         duration: duration,
         customerName: document.getElementById('modalOrderCustName').value.trim(),
         customerContact: document.getElementById('modalOrderCustContact').value.trim(),
+        customerWhatsapp: document.getElementById('modalOrderCustWhatsapp').value.trim() || document.getElementById('modalOrderCustContact').value.trim(),
         contactChannel: document.getElementById('modalOrderChannel').value,
         paymentMethod: document.getElementById('modalOrderPayMethod').value,
         salePrice: Number(inpSale.value),
@@ -1006,6 +1021,94 @@ const DigistoreModule = {
         this.switchTab('orders');
       } catch (err) {
         alert('Error creating order: ' + err.message);
+      }
+    });
+  },
+
+  openRejectPaymentModal(order) {
+    const modalContainer = document.getElementById('digiModalsContainer');
+    if (!modalContainer) return;
+
+    modalContainer.innerHTML = `
+      <div class="modal-backdrop" style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px;">
+        <div class="modal-card" style="background: #131722; border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 12px; width: 100%; max-width: 480px; padding: 24px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <div>
+              <span style="font-family: monospace; font-size: 12px; color: #38bdf8; font-weight: 700;">${order.orderNumber}</span>
+              <h3 style="font-size: 18px; font-weight: 800; color: #ef4444;">❌ Reject Payment Verification</h3>
+            </div>
+            <button class="btn btn-sm btn-secondary btn-close-modal">✕</button>
+          </div>
+
+          <div style="background: rgba(0,0,0,0.25); border-radius: 8px; padding: 12px; font-size: 13px; margin-bottom: 16px;">
+            <div style="color: #fff; font-weight: 700;">${order.productName} (৳${order.salePrice})</div>
+            <div style="color: var(--text-muted); margin-top: 2px;">Customer: <strong>${order.customerName}</strong> (${order.customerContact})</div>
+          </div>
+
+          <form id="formRejectPayment" style="display: flex; flex-direction: column; gap: 14px;">
+            <div>
+              <label style="font-size: 12px; color: #94a3b8; font-weight: 600;">Select Rejection Reason *</label>
+              <select id="modalRejectReasonSelect" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px; color: #fff; font-size: 13px; margin-top: 4px;">
+                <option value="বিকাশ/নগদ স্টেটমেন্টে কোনো টাকা পাওয়া যায়নি">বিকাশ/নগদ স্টেটমেন্টে কোনো টাকা পাওয়া যায়নি (No payment received)</option>
+                <option value="ভুল TrxID বা ফেক স্ক্রিনশট প্রদান করা হয়েছে">ভুল TrxID বা ফেক স্ক্রিনশট প্রদান করা হয়েছে (Invalid TrxID / Fake proof)</option>
+                <option value="টাকার পরিমাণ কম পাঠানো হয়েছে">টাকার পরিমাণ কম পাঠানো হয়েছে (Partial / insufficient amount)</option>
+                <option value="custom">অন্যান্য কারণ (Custom reason below)</option>
+              </select>
+            </div>
+
+            <div>
+              <label style="font-size: 12px; color: #94a3b8; font-weight: 600;">Custom Reason / Customer Explanation</label>
+              <textarea id="modalRejectNotes" rows="2" placeholder="Explain why payment could not be verified..." style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px; color: #fff; font-size: 13px; margin-top: 4px;"></textarea>
+            </div>
+
+            <div id="rejectResultBox"></div>
+
+            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 6px;">
+              <button type="button" class="btn btn-secondary btn-close-modal">Cancel</button>
+              <button type="submit" class="btn btn-primary" id="btnSubmitReject" style="background: #ef4444; border-color: #ef4444; color: #fff; font-weight: 700;">
+                Confirm Rejection ❌
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    `;
+
+    modalContainer.querySelectorAll('.btn-close-modal').forEach(b => {
+      b.addEventListener('click', () => { modalContainer.innerHTML = ''; });
+    });
+
+    const form = modalContainer.querySelector('#formRejectPayment');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('btnSubmitReject');
+      btn.disabled = true;
+      btn.textContent = 'Rejecting... ⏳';
+
+      const sel = document.getElementById('modalRejectReasonSelect').value;
+      const notes = document.getElementById('modalRejectNotes').value.trim();
+      const finalReason = sel === 'custom' ? (notes || 'Payment verification failed') : (notes ? `${sel} — ${notes}` : sel);
+
+      try {
+        const res = await APP_API.patch(`/digistore/orders/${order.id}/reject-payment`, { reason: finalReason });
+        const resultBox = document.getElementById('rejectResultBox');
+        resultBox.innerHTML = `
+          <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; border-radius: 8px; padding: 12px; margin-top: 8px;">
+            <div style="font-weight: 700; color: #ef4444; font-size: 13px; margin-bottom: 4px;">❌ Payment Rejected & Logged to Timeline!</div>
+            <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">Customer Telegram bot notified automatically if linked. Use WhatsApp button below:</div>
+            ${res.rejectionWhatsAppUrl ? `
+              <a href="${res.rejectionWhatsAppUrl}" target="_blank" class="btn" style="background: #25d366; color: #000; font-weight: 700; width: 100%; text-align: center; text-decoration: none; display: block;">
+                💬 Send Rejection Notice via WhatsApp ➔
+              </a>
+            ` : ''}
+          </div>
+        `;
+        btn.textContent = 'Rejected ❌';
+        await this.loadAllData();
+      } catch (err) {
+        alert('Error rejecting payment: ' + err.message);
+        btn.disabled = false;
+        btn.textContent = 'Confirm Rejection ❌';
       }
     });
   },

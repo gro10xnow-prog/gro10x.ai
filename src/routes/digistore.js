@@ -127,6 +127,21 @@ function generateCustomerWhatsAppDeliveryLink(order, activationLink, credentials
   return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`;
 }
 
+// Helper: Generate Customer WhatsApp Rejection Pre-fill Link
+function generateCustomerWhatsAppRejectionLink(order, reason = 'Payment verification failed') {
+  const rawPhone = order.customer_whatsapp || order.customerWhatsapp || order.customer_contact || order.customerContact || '';
+  const cleanPhone = rawPhone.replace(/[^0-9]/g, '');
+  if (!cleanPhone || cleanPhone.length < 8) return null;
+  const ref = order.order_number || order.orderNumber || 'DIGI-REF';
+  const prodName = order.product_name || order.productName || 'Subscription';
+  const msg = `Salam! Regarding your DigiVault order *${ref}* (${prodName}):\n\n` +
+    `❌ We could not verify your payment.\n` +
+    `⚠️ *Reason:* ${reason}\n\n` +
+    `Please Send Money to *01312415757* (bKash/Nagad Personal) and send your payment screenshot or TrxID.\n` +
+    `💬 Need help? Reply right here or contact: wa.me/8801889825025`;
+  return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`;
+}
+
 // Helper: Map Order Object
 function mapOrder(o, vendorMap = {}) {
   if (!o) return null;
@@ -152,6 +167,7 @@ function mapOrder(o, vendorMap = {}) {
     paymentStatus: o.payment_status || o.paymentStatus || 'pending',
     paymentMethod: o.payment_method || o.paymentMethod || 'bkash',
     paymentRef: o.payment_ref || o.paymentRef || '',
+    senderAccount: o.sender_account || o.senderAccount || null,
     paymentProofUrl: o.payment_proof_url || o.paymentProofUrl || null,
     paymentVerifiedBy: o.payment_verified_by || o.paymentVerifiedBy || null,
     paymentVerifiedAt: o.payment_verified_at || o.paymentVerifiedAt || null,
@@ -442,6 +458,7 @@ router.post('/orders', asyncHandler(async (req, res) => {
     vendorId,
     paymentMethod = 'bkash',
     paymentRef = '',
+    senderAccount = '',
     sourceChannel = 'web',
     sourceUrl = '',
     utmData = {},
@@ -493,6 +510,7 @@ router.post('/orders', asyncHandler(async (req, res) => {
     payment_status: 'pending',
     payment_method: paymentMethod,
     payment_ref: paymentRef,
+    sender_account: senderAccount || null,
     delivery_status: 'pending',
     order_stage: 'pending_payment',
     source_channel: sourceChannel,
@@ -628,21 +646,46 @@ router.patch('/orders/:id/verify-payment', requireAuth, asyncHandler(async (req,
 router.patch('/orders/:id/reject-payment', requireAuth, asyncHandler(async (req, res) => {
   const { id } = req.params;
   const { reason = 'Payment verification failed' } = req.body;
+  const staffCode = req.user?.empCode || req.user?.id || 'Admin';
 
   const updates = {
     payment_status: 'rejected',
+    order_stage: 'payment_rejected',
     notes: reason,
     updated_at: new Date().toISOString()
   };
 
+  let order = null;
   if (isSupabaseConfigured()) {
     const { data, error } = await supabase.from('digi_orders').update(updates).eq('id', id).select().maybeSingle();
     if (error) return fail(res, error.message, 500);
-    broadcast('digistore_order_updated', data);
-    return ok(res, data);
+    order = data;
+  } else {
+    order = { id, ...updates };
   }
 
-  return ok(res, { id, ...updates });
+  // Record timeline audit event
+  await recordTimeline(id, 'payment_rejected', staffCode, `Payment rejected: ${reason}`);
+
+  // Auto-dispatch rejection to customer Telegram Bot if ordered via bot
+  if (order && (order.telegram_chat_id || order.source_channel === 'telegram')) {
+    try {
+      const { sendTelegramPaymentRejection } = require('../services/digivault-bot');
+      if (typeof sendTelegramPaymentRejection === 'function') {
+        const chatId = order.telegram_chat_id || order.customer_contact;
+        sendTelegramPaymentRejection(chatId, order, reason).catch(() => {});
+      }
+    } catch (e) {}
+  }
+
+  const rejectionWhatsAppUrl = generateCustomerWhatsAppRejectionLink(order, reason);
+  broadcast('digistore_order_updated', order);
+
+  return ok(res, {
+    order: mapOrder(order),
+    rejectionWhatsAppUrl,
+    message: 'Payment marked as rejected. Timeline and notifications updated.'
+  });
 }));
 
 /**

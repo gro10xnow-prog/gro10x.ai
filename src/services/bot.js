@@ -773,7 +773,6 @@ function initBot() {
       teamBot.onText(/\/dbmincentive(?:@\w+)?|💰 My DBM Incentive/, (msg) => dbmHandler.handleDBMIncentive(teamBot, msg));
 
       // Brand Empire & Admin Executive Commands
-      const adminHandler = require('./bot/handlers/admin');
       teamBot.onText(/\/brandsummary(?:@\w+)?|\/brands(?:@\w+)?|🛍️ Brand Empire Summary/, (msg) => adminHandler.handleBrandEmpireSummary(teamBot, msg));
 
       // Executive briefing & status

@@ -119,9 +119,15 @@
               </div>
             </div>
 
-            <div class="form-group">
-              <label class="form-label" data-i18n="lblTrxId">বিকাশ / নগদ ট্রানজেকশন আইডি (TrxID)</label>
-              <input type="text" id="custTrxId" class="form-input" placeholder="e.g. BL992X881" />
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+              <div class="form-group">
+                <label class="form-label" data-i18n="lblPayFrom">আপনার সেন্ডার নম্বর (যেখান থেকে টাকা পাঠিয়েছেন)</label>
+                <input type="tel" id="custPayFrom" class="form-input" placeholder="e.g. 017xxxxxxxx" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" data-i18n="lblTrxId">বিকাশ / নগদ ট্রানজেকশন আইডি (TrxID)</label>
+                <input type="text" id="custTrxId" class="form-input" placeholder="e.g. BL992X881" />
+              </div>
             </div>
 
             <div class="form-group">
@@ -183,6 +189,7 @@
         const whatsapp = document.getElementById('custWhatsapp').value.trim();
         const channel = document.getElementById('custChannel').value;
         const payMethod = document.getElementById('custPayMethod').value;
+        const payFrom = document.getElementById('custPayFrom').value.trim();
         const trxId = document.getElementById('custTrxId').value.trim();
         const fileInput = document.getElementById('custScreenshot');
 
@@ -200,6 +207,7 @@
           customerWhatsapp: whatsapp || contact,
           contactChannel: channel,
           paymentMethod: payMethod,
+          senderAccount: payFrom,
           paymentRef: trxId,
           sourceChannel: utmData.utm_source || 'web',
           sourceUrl: window.location.href,
@@ -232,7 +240,7 @@
           }
 
           // Show Success Modal
-          showSuccessModal(order);
+          showSuccessModal(order, currentProduct);
         } catch (err) {
           alert('Error: ' + err.message);
           btnSubmit.disabled = false;
@@ -240,38 +248,71 @@
         }
       });
 
-      function showSuccessModal(order) {
+      function showSuccessModal(order, product) {
         const modal = document.getElementById('orderSuccessModal');
+        const price = order.salePrice || order.sale_price || product?.salePrice || 0;
+        const ref = order.orderNumber || order.order_number;
+
         modal.innerHTML = `
-          <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px;">
-            <div class="card" style="max-width: 480px; width: 100%; text-align: center; padding: 32px; border: 2px solid var(--primary);">
-              <div style="font-size: 50px; margin-bottom: 12px;">🎉</div>
+          <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.88); backdrop-filter: blur(8px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px;">
+            <div class="card" style="max-width: 500px; width: 100%; text-align: center; padding: 32px; border: 2px solid var(--primary); max-height: 90vh; overflow-y: auto;">
+              <div style="font-size: 48px; margin-bottom: 8px;">🎉</div>
               <h3 style="font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 6px;">অর্ডার সফলভাবে গ্রহণ করা হয়েছে!</h3>
-              <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 20px;">
-                আপনার পেমেন্ট ভেরিফাই হওয়ার ১৫-৩০ মিনিটের মধ্যে লগইন ডিটেইলস পাঠানো হবে।
+              <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 18px;">
+                পেমেন্ট ভেরিফাই হওয়ার ১৫-৩০ মিনিটের মধ্যে ডেলিভারি সম্পন্ন হবে।
               </p>
 
-              <div style="background: rgba(0,0,0,0.4); border-radius: var(--radius-md); padding: 16px; margin-bottom: 24px;">
-                <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">অর্ডার রেফারেন্স নম্বর:</div>
-                <div style="font-family: monospace; font-size: 24px; font-weight: 900; color: #38bdf8; margin-top: 4px;">
-                  ${order.orderNumber || order.order_number}
+              <!-- Order Ref & Amount Due Box -->
+              <div style="background: rgba(0,0,0,0.4); border-radius: var(--radius-md); padding: 16px; margin-bottom: 16px; border: 1px solid var(--border-subtle);">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 10px; margin-bottom: 10px;">
+                  <span style="font-size: 12px; color: var(--text-muted);">অর্ডার রেফারেন্স:</span>
+                  <strong style="font-family: monospace; font-size: 18px; color: #38bdf8;">${ref}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="font-size: 12px; color: var(--text-muted);">প্রদেয় পরিমাণ:</span>
+                  <strong style="font-size: 22px; font-weight: 900; color: #00df89;">৳${Number(price).toLocaleString()}</strong>
+                </div>
+              </div>
+
+              <!-- Send Money Instruction & 1-Click Copy -->
+              <div style="background: rgba(0, 223, 137, 0.08); border: 1px solid rgba(0, 223, 137, 0.3); border-radius: var(--radius-md); padding: 16px; margin-bottom: 20px; text-align: left;">
+                <div style="font-size: 12px; font-weight: 700; color: #00df89; margin-bottom: 4px;">
+                  💳 Send Money নম্বর (বিকাশ ও নগদ পার্সোনাল):
+                </div>
+                <div style="display: flex; gap: 8px; align-items: center; margin-top: 6px;">
+                  <input type="text" value="01312415757" readonly id="inpModalSendNo" style="flex: 1; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 8px 12px; color: #fff; font-family: monospace; font-size: 16px; font-weight: 800;" />
+                  <button type="button" class="btn btn-primary" id="btnCopyPayNo" style="padding: 8px 14px; font-size: 12px; white-space: nowrap;">
+                    📋 কপি নম্বর
+                  </button>
+                </div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 6px;">
+                  টাকা পাঠিয়ে TrxID বা স্ক্রিনশট ট্র্যাকিং পেজে বা WhatsApp-এ পাঠান।
                 </div>
               </div>
 
               <div style="display: flex; flex-direction: column; gap: 10px;">
-                <a href="track.html?ref=${order.orderNumber || order.order_number}" class="btn btn-primary" style="width: 100%;">
+                <a href="track.html?ref=${ref}" class="btn btn-primary" style="width: 100%;">
                   🔍 অর্ডার স্ট্যাটাস ট্র্যাক করুন
                 </a>
                 <a href="https://t.me/Digivault20bot" target="_blank" class="btn" style="background: #229ed9; color: #fff; width: 100%; text-decoration: none; display: block;">
                   📱 টেলিগ্রাম বটে ইনস্ট্যান্ট আপডেট পান
                 </a>
-                <a href="https://wa.me/8801889825025?text=Salam%2C%20I%20placed%20order%20ref%20${order.orderNumber || order.order_number}" target="_blank" class="btn btn-secondary" style="width: 100%;">
-                  💬 WhatsApp-এ মেসেজ দিন
+                <a href="https://wa.me/8801889825025?text=Salam%2C%20I%20placed%20order%20ref%20${ref}%20for%20BDT%20${price}" target="_blank" class="btn btn-secondary" style="width: 100%;">
+                  💬 WhatsApp-এ ট্রানজেকশন স্ক্রিনশট দিন
                 </a>
               </div>
             </div>
           </div>
         `;
+
+        // Wire copy button
+        document.getElementById('btnCopyPayNo')?.addEventListener('click', () => {
+          const inp = document.getElementById('inpModalSendNo');
+          if (inp) {
+            navigator.clipboard.writeText(inp.value);
+            alert('বিকাশ ও নগদ নম্বর কপি করা হয়েছে: 01312415757');
+          }
+        });
       }
     });
   </script>
