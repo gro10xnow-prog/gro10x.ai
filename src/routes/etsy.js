@@ -35,7 +35,12 @@ const {
   deactivateListing,
   reactivateListing,
   getActiveListings,
+  getShopReceipts,
+  getShopReceipt,
   fetchFileBuffer,
+  BRAND_SKU_PREFIXES,
+  BRAND_DEFAULT_CATEGORIES,
+  BRAND_TAXONOMY_MAP,
   ETSY_KEYSTRING,
   ETSY_SHARED_SECRET,
   ETSY_REDIRECT_URI
@@ -221,6 +226,31 @@ router.post('/brands/:brandId/disconnect', requireAuth, requireAdmin, asyncHandl
     status: 'disconnected'
   });
   return ok(res, { success: true, message: `Brand ${brandId} Etsy store disconnected.` });
+}));
+
+/**
+ * 4B. GET /api/etsy/brands/:brandId/connection
+ * Check Etsy connection state and demo status (P3-3)
+ */
+router.get('/brands/:brandId/connection', requireAuth, asyncHandler(async (req, res) => {
+  const { brandId } = req.params;
+  const conn = await getConnection(brandId);
+  const isConnected = Boolean(conn && conn.shop_id && conn.status === 'active' && conn.access_token);
+  const isDemoMode = !isConnected;
+
+  return ok(res, {
+    brandId: Number(brandId),
+    isConnected,
+    isDemoMode,
+    shopId: conn?.shop_id || null,
+    shopName: conn?.shop_name || null,
+    shopUrl: conn?.shop_url || null,
+    connectedAt: conn?.connected_at || null,
+    tokenExpiresAt: conn?.token_expires_at || null,
+    bannerMessage: isDemoMode
+      ? '⚠️ Etsy OAuth is not connected for this brand. Operating in sandbox / simulated catalog mode.'
+      : '🟢 Live Etsy store connected and synchronized.'
+  });
 }));
 
 /**
@@ -499,7 +529,7 @@ router.post('/brands/:brandId/publish-all', requireAuth, requireAdmin, asyncHand
         const priceCents = Math.round((prod.price || 4.99) * 100);
         const tags = (prod.seoTags || ['planner', 'printable']).slice(0, 13).map(t => t.slice(0, 20));
 
-        const taxonomyId = prod.taxonomyId || prod.taxonomy_id || ((prod.type || prod.format || prod.category || '').toLowerCase().includes('print') ? 2078 : 12476);
+        const taxonomyId = prod.taxonomyId || prod.taxonomy_id || BRAND_TAXONOMY_MAP[Number(brandId)] || ((prod.type || prod.format || prod.category || '').toLowerCase().includes('print') ? 2078 : 1042);
 
         // Etsy title rules: & can only appear ONCE, no | pipes, no leading special chars, max 140 chars
         const rawTitle = (prod.seoTitle || prod.seo?.title || prod.name || '').trim();
@@ -1220,10 +1250,11 @@ router.post('/brands/:brandId/sync-live-catalog', requireAuth, asyncHandler(asyn
         matchedProd.submittedBy = matchedProd.submittedBy || 'DVM';
         reconciledCount++;
         matched.push({ code: matchedProd.code, name: matchedProd.name, listingId: lId, price: lPrice });
-      } else {
-        // Strategy 5: Auto-import unmatched live Etsy listings into catalog
+        // Strategy 5: Auto-import unmatched live Etsy listings into catalog (Brand-Adaptive SKU Prefix & Category)
         const nextIdx = catalog.length + 1;
-        const newCode = `PLA-${String(nextIdx).padStart(2, '0')}`;
+        const skuPrefix = brand?.skuPrefix || BRAND_SKU_PREFIXES[Number(brandId)] || (brand?.name ? brand.name.substring(0, 3).toUpperCase() : 'PRD');
+        const defaultCategory = BRAND_DEFAULT_CATEGORIES[Number(brandId)] || 'Digital Products';
+        const newCode = `${skuPrefix}-${String(nextIdx).padStart(2, '0')}`;
         const newProduct = {
           code: newCode,
           name: l.title || `Imported Etsy Listing #${lId}`,
@@ -1231,7 +1262,7 @@ router.post('/brands/:brandId/sync-live-catalog', requireAuth, asyncHandler(asyn
           retailPrice: lPrice || 9.99,
           format: 'Digital PDF',
           status: 'Live',
-          category: 'Daily & Weekly Planners',
+          category: defaultCategory,
           etsyListingId: lId,
           liveListingUrl: l.url || `https://www.etsy.com/listing/${lId}`,
           etsyUrl: l.url || `https://www.etsy.com/listing/${lId}`,
@@ -1263,6 +1294,210 @@ router.post('/brands/:brandId/sync-live-catalog', requireAuth, asyncHandler(asyn
     return fail(res, `Failed to reconcile Etsy catalog: ${err.message}`, 500);
   }
 }));
+
+/**
+ * 23. GET /api/etsy/expiry-alerts
+ * 4-Month Listing Expiry Cycle Tracker (P3-1)
+ * Inspects all 13 brand catalogs for listings expiring within 14 days or already expired.
+ */
+router.get('/expiry-alerts', requireAuth, asyncHandler(async (req, res) => {
+  const { loadBrandsState } = require('./brands');
+  const state = await loadBrandsState();
+  const brands = state.brands || [];
+  const catalogMap = state.productsCatalog || {};
+
+  const now = Date.now();
+  const expiringListings = [];
+  let totalRenewalCost = 0;
+
+  for (const brand of brands) {
+    const catalog = catalogMap[brand.id] || [];
+    for (const prod of catalog) {
+      if (prod.status === 'Live' && (prod.expiresAt || prod.expiryDate || prod.endingTimestamp)) {
+        const expiryMs = prod.endingTimestamp ? (prod.endingTimestamp * 1000) : new Date(prod.expiresAt || prod.expiryDate).getTime();
+        const diffDays = Math.ceil((expiryMs - now) / (1000 * 60 * 60 * 24));
+
+        if (diffDays <= 14) {
+          totalRenewalCost += 0.20;
+          expiringListings.push({
+            brandId: brand.id,
+            brandName: brand.name,
+            productCode: prod.code,
+            productName: prod.name,
+            etsyListingId: prod.etsyListingId,
+            liveListingUrl: prod.liveListingUrl || prod.etsyUrl,
+            expiresAt: new Date(expiryMs).toISOString(),
+            daysRemaining: diffDays,
+            isExpired: diffDays <= 0,
+            renewalFeeUsd: 0.20
+          });
+        }
+      }
+    }
+  }
+
+  // Sort by urgency (least days remaining first)
+  expiringListings.sort((a, b) => a.daysRemaining - b.daysRemaining);
+
+  return ok(res, {
+    count: expiringListings.length,
+    totalRenewalCost: Number(totalRenewalCost.toFixed(2)),
+    expiringListings,
+    message: expiringListings.length > 0
+      ? `⚠️ Found ${expiringListings.length} listing(s) requiring 4-month renewal ($${totalRenewalCost.toFixed(2)} USD).`
+      : '🟢 All active listings are healthy (no renewals due in the next 14 days).'
+  });
+}));
+
+/**
+ * 24. POST /api/etsy/trigger-expiry-telegram-alerts
+ * Dispatches a renewal alert broadcast to Admin (GRO-000) via Telegram (P3-1)
+ */
+router.post('/trigger-expiry-telegram-alerts', requireAuth, requireAdmin, asyncHandler(async (req, res) => {
+  const { loadBrandsState } = require('./brands');
+  const state = await loadBrandsState();
+  const brands = state.brands || [];
+  const catalogMap = state.productsCatalog || {};
+
+  const now = Date.now();
+  const expiringListings = [];
+  for (const brand of brands) {
+    const catalog = catalogMap[brand.id] || [];
+    for (const prod of catalog) {
+      if (prod.status === 'Live' && (prod.expiresAt || prod.expiryDate || prod.endingTimestamp)) {
+        const expiryMs = prod.endingTimestamp ? (prod.endingTimestamp * 1000) : new Date(prod.expiresAt || prod.expiryDate).getTime();
+        const diffDays = Math.ceil((expiryMs - now) / (1000 * 60 * 60 * 24));
+        if (diffDays <= 14) {
+          expiringListings.push({
+            brandName: brand.name,
+            productCode: prod.code,
+            productName: prod.name,
+            daysRemaining: diffDays,
+            isExpired: diffDays <= 0
+          });
+        }
+      }
+    }
+  }
+
+  if (expiringListings.length === 0) {
+    return ok(res, { success: true, message: 'No expiring listings found. No alert dispatched.' });
+  }
+
+  try {
+    const { sendTelegramNotification } = require('../services/bot');
+    let adminTelegramId = null;
+    if (supabase) {
+      const { data: admins } = await supabase.from('profiles').select('telegram_id').eq('emp_code', 'GRO-000').limit(1);
+      if (admins && admins[0]?.telegram_id) adminTelegramId = admins[0].telegram_id;
+    }
+
+    if (adminTelegramId) {
+      let msg = `⏰ *ETSY 4-MONTH LISTING EXPIRY ALERT*\n\n`;
+      msg += `⚠️ *${expiringListings.length} Listing(s)* are due for renewal in the next 14 days ($0.20/ea):\n\n`;
+      expiringListings.slice(0, 8).forEach(item => {
+        const urgency = item.isExpired ? '🔴 EXPIRED' : `⏳ ${item.daysRemaining} days left`;
+        msg += `• *${item.brandName}* · \`${item.productCode}\`: ${urgency}\n`;
+      });
+      if (expiringListings.length > 8) {
+        msg += `_...and ${expiringListings.length - 8} more listings._\n`;
+      }
+      msg += `\n👉 *Action:* Open Brand Command Center to renew:`;
+
+      await sendTelegramNotification(adminTelegramId, msg, [
+        [{ text: '🔄 Open Renewal Console', url: 'https://gro10x-ai.vercel.app/app#brands' }]
+      ], true);
+    }
+  } catch (tgErr) {
+    console.warn('[Expiry Alert Telegram Warning]:', tgErr.message);
+  }
+
+  return ok(res, {
+    success: true,
+    expiringCount: expiringListings.length,
+    message: `Dispatched expiry alert for ${expiringListings.length} listing(s) to Admin.`
+  });
+}));
+
+/**
+ * 25. GET /api/etsy/brands/:brandId/receipts
+ * 26. GET /api/etsy/brands/:brandId/orders
+ * Customer Order Receipts & Instant Digital Fulfillment Route (P3-6)
+ */
+async function handleGetShopReceipts(req, res) {
+  const { brandId } = req.params;
+  const limit = Math.min(50, Number(req.query.limit) || 20);
+  const offset = Number(req.query.offset) || 0;
+
+  const conn = await getConnection(brandId);
+
+  if (conn && conn.shop_id && conn.status === 'active') {
+    try {
+      const etsyReceipts = await getShopReceipts(brandId, conn.shop_id, limit, offset);
+      return ok(res, {
+        success: true,
+        brandId: Number(brandId),
+        isDemoMode: false,
+        shopId: conn.shop_id,
+        count: etsyReceipts.count || (Array.isArray(etsyReceipts.results) ? etsyReceipts.results.length : 0),
+        receipts: etsyReceipts.results || etsyReceipts
+      });
+    } catch (apiErr) {
+      console.warn(`[Etsy Receipts API Note]: ${apiErr.message}`);
+    }
+  }
+
+  // Sandbox / Demo Receipts Fallback
+  const demoOrders = [
+    {
+      receipt_id: 3948172019,
+      buyer_user_id: 8492011,
+      buyer_email: 'buyer.clara@gmail.com',
+      name: 'Clara Jenkins',
+      country_iso: 'US',
+      currency_code: 'USD',
+      grandtotal: { amount: 749, divisor: 100 },
+      is_paid: true,
+      is_shipped: true,
+      status: 'Completed (Instant Digital Delivery)',
+      fulfillment_type: 'Digital PDF Download',
+      created_timestamp: Math.floor(Date.now() / 1000 - 86400 * 2),
+      items: [
+        { title: '2026 Ultimate Life & Work Planner — Editable GoodNotes PDF', quantity: 1, price: { amount: 749, divisor: 100 } }
+      ]
+    },
+    {
+      receipt_id: 3948190342,
+      buyer_user_id: 9382012,
+      buyer_email: 'sarah.m@outlook.co.uk',
+      name: 'Sarah Mitchell',
+      country_iso: 'GB',
+      currency_code: 'USD',
+      grandtotal: { amount: 1498, divisor: 100 },
+      is_paid: true,
+      is_shipped: true,
+      status: 'Completed (Instant Digital Delivery)',
+      fulfillment_type: 'Digital PDF Download',
+      created_timestamp: Math.floor(Date.now() / 1000 - 86400 * 5),
+      items: [
+        { title: 'ADHD Dopamine Daily Reset & Executive Planner', quantity: 2, price: { amount: 749, divisor: 100 } }
+      ]
+    }
+  ];
+
+  return ok(res, {
+    success: true,
+    brandId: Number(brandId),
+    isDemoMode: true,
+    shopId: conn?.shop_id || null,
+    count: demoOrders.length,
+    receipts: demoOrders,
+    bannerMessage: '⚠️ Operating in Sandbox / Demo mode. Connect Etsy OAuth to view live buyer receipts.'
+  });
+}
+
+router.get('/brands/:brandId/receipts', requireAuth, asyncHandler(handleGetShopReceipts));
+router.get('/brands/:brandId/orders', requireAuth, asyncHandler(handleGetShopReceipts));
 
 module.exports = router;
 

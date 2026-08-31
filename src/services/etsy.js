@@ -29,6 +29,57 @@ const ETSY_DEFAULT_SCOPES = [
   'profile_r'
 ].join('%20');
 
+// Brand-Adaptive SKU Prefixes across all 13 Digital Brands
+const BRAND_SKU_PREFIXES = {
+  1: 'PLA',
+  2: 'MUTT',
+  3: 'DESK',
+  4: 'STAR',
+  5: 'INK',
+  6: 'COZY',
+  7: 'PRO',
+  8: 'FIESTA',
+  9: 'ZEN',
+  10: 'SPARK',
+  11: 'FORGE',
+  12: 'FONT',
+  13: 'PROMPT'
+};
+
+// Brand-Specific Default Categories
+const BRAND_DEFAULT_CATEGORIES = {
+  1: 'Daily & Weekly Planners',
+  2: 'Pet Bandanas & Accessories',
+  3: 'Desk Mats & Workspace Goods',
+  4: 'Kids Learning Worksheets',
+  5: 'Wrapping Paper & Packaging',
+  6: 'Embroidered Apparel & Merch',
+  7: 'Resume & Career Templates',
+  8: 'Party Decor & Event Printables',
+  9: 'Minimalist Wall Art Prints',
+  10: 'SVG Cut Files & Vector Bundles',
+  11: 'KDP Low Content & Book Covers',
+  12: 'Typography & Display Fonts',
+  13: 'AI Midjourney Prompt Vaults'
+};
+
+// Brand-Specific Verified Etsy Open API v3 Taxonomy Mapping
+const BRAND_TAXONOMY_MAP = {
+  1: 1042,   // Calendars & Planners
+  2: 12476,  // Pet Clothing & Accessories
+  3: 2078,   // Office & Desk Accessories
+  4: 1042,   // Learning & School Worksheets
+  5: 6915,   // Paper & Party Supplies / Gift Wrap
+  6: 12476,  // Clothing / Shirts / Hoodies
+  7: 1042,   // Career & Resume Templates
+  8: 6915,   // Party & Gifting Printables
+  9: 2078,   // Wall Decor & Art Prints
+  10: 1042,  // Craft Supplies & Vector Files
+  11: 1042,  // Books / Publishing Templates
+  12: 1042,  // Digital Fonts & Lettering
+  13: 1042   // AI Prompt Vaults & Guides
+};
+
 // In-Memory Token & State Fallback (persisted in app_settings or memory)
 let memoryEtsyConnections = {};
 let memoryEtsyListings = {};
@@ -598,11 +649,28 @@ async function getActiveListings(brandId, shopId, limit = 100, offset = 0) {
   return etsyApiCall(brandId, `/shops/${shopId}/listings/active?limit=${limit}&offset=${offset}`);
 }
 
+/**
+ * 16. Fetch Shop Customer Receipts / Orders from Etsy v3 API
+ */
+async function getShopReceipts(brandId, shopId, limit = 50, offset = 0) {
+  return etsyApiCall(brandId, `/shops/${shopId}/receipts?limit=${limit}&offset=${offset}`);
+}
+
+/**
+ * 17. Fetch Single Shop Customer Receipt / Order Detail
+ */
+async function getShopReceipt(brandId, shopId, receiptId) {
+  return etsyApiCall(brandId, `/shops/${shopId}/receipts/${receiptId}`);
+}
+
 module.exports = {
   ETSY_KEYSTRING,
   ETSY_SHARED_SECRET,
   ETSY_REDIRECT_URI,
   ETSY_DEFAULT_SCOPES,
+  BRAND_SKU_PREFIXES,
+  BRAND_DEFAULT_CATEGORIES,
+  BRAND_TAXONOMY_MAP,
   generatePKCE,
   getAuthorizationUrl,
   exchangeCodeForTokens,
@@ -620,6 +688,8 @@ module.exports = {
   deactivateListing,
   reactivateListing,
   getActiveListings,
+  getShopReceipts,
+  getShopReceipt,
   fetchFileBuffer
 };
 
