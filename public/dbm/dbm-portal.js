@@ -480,7 +480,21 @@
     `;
   }
 
+  function hasUnsavedStudioInputs() {
+    const route = window.location.hash.replace('#', '') || 'workspace';
+    if (route !== 'studio') return false;
+    const p1 = document.getElementById('step1Prompt')?.value.trim();
+    const c2 = document.getElementById('step2CanvaUrl')?.value.trim();
+    const t4 = document.getElementById('step4Title')?.value.trim();
+    return Boolean(p1 || c2 || t4);
+  }
+
   window.switchWorkspaceBrand = function(brandId) {
+    if (hasUnsavedStudioInputs()) {
+      const confirmSwitch = window.confirm('⚠️ You have unsaved changes in your active Brand Studio draft.\n\nDo you want to switch brand and discard uncommitted inputs?');
+      if (!confirmSwitch) return;
+    }
+
     if (brandId === 'all') {
       DBM_STATE.activeBrandId = 'all';
       renderCurrentRoute();
@@ -489,7 +503,8 @@
     DBM_STATE.activeBrandId = Number(brandId);
     const catalog = DBM_STATE.productsCatalog[brandId] || [];
     const nextProd = getNextActiveDraft(catalog);
-    DBM_STATE.currentStudioCode = nextProd.code || 'PLA-14';
+    const prefix = DBM_STATE.assignedBrands.find(b => b.id === Number(brandId))?.name?.substring(0, 3).toUpperCase() || 'PRD';
+    DBM_STATE.currentStudioCode = nextProd.code || `${prefix}-01`;
     renderCurrentRoute();
   };
 
@@ -563,46 +578,91 @@
             if (p.status === 'Pending Review') {
               statusBadge = '<span style="background:rgba(245,158,11,0.15); color:#f59e0b; padding:0.2rem 0.55rem; border-radius:12px; font-weight:700; font-size:0.75rem;">⏳ Pending Review</span>';
               actionBtn = `<button class="btn-secondary" style="font-size:0.75rem; padding:0.3rem 0.75rem;" onclick="startProductStudio('${p.code}')">Edit 🎨</button>`;
-            } else if (p.status === 'Live') {
-              statusBadge = '<span style="background:rgba(0,223,137,0.15); color:#00df89; padding:0.2rem 0.55rem; border-radius:12px; font-weight:700; font-size:0.75rem;">🟢 Live (Reference)</span>';
-              actionBtn = `<button class="btn-ghost" style="font-size:0.75rem; padding:0.3rem 0.75rem; color:#a855f7; border-color:rgba(168,85,247,0.3);" onclick="openReferenceProductModal('${p.code}')">👀 Reference</button>`;
-            } else if (isNext) {
-              statusBadge = '<span style="background:rgba(6,182,212,0.2); color:#38bdf8; border:1px solid rgba(6,182,212,0.4); padding:0.2rem 0.55rem; border-radius:12px; font-weight:800; font-size:0.75rem;">👉 Next Up</span>';
-              actionBtn = `<button class="btn-primary" style="font-size:0.75rem; padding:0.3rem 0.9rem; background:linear-gradient(135deg,#00df89,#06b6d4);" onclick="startProductStudio('${p.code}')">▶️ Start Now</button>`;
-            }
-
+          ${visible.map(p => {
+            const isTarget = p.code === nextCode;
+            const rowClass = isTarget ? 'style="background: rgba(0,223,137,0.06);"' : '';
             return `
-              <tr style="border-bottom: 1px solid var(--border-subtle); background: ${isNext ? 'rgba(6,182,212,0.04)' : 'transparent'};">
-                <td style="padding: 0.75rem 0.6rem; font-family: var(--font-mono); font-weight: 700; color: ${isNext ? '#38bdf8' : 'inherit'};">${p.code}</td>
-                <td style="padding: 0.75rem 0.6rem; font-weight: 600;">${p.name || p.seoTitle || 'Untitled Product'}</td>
-                <td style="padding: 0.75rem 0.6rem; color: var(--text-secondary);">${p.category || 'General'}</td>
-                <td style="padding: 0.75rem 0.6rem; font-weight: 700;">$${Number(p.price || 7.49).toFixed(2)}</td>
-                <td style="padding: 0.75rem 0.6rem;">${statusBadge}</td>
-                <td style="padding: 0.75rem 0.6rem; text-align: right;">${actionBtn}</td>
+              <tr ${rowClass}>
+                <td>
+                  <strong style="font-family: var(--font-mono); color: #38bdf8;">${p.code}</strong>
+                  ${isTarget ? '<span style="font-size:0.68rem; background:#00df89; color:#070b12; font-weight:900; padding:0.1rem 0.35rem; border-radius:4px; margin-left:0.3rem;">NEXT</span>' : ''}
+                </td>
+                <td style="font-weight: 600; color: #fff; max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                  ${p.name}
+                </td>
+                <td><span style="font-size:0.75rem; color:var(--text-muted);">${p.category || 'General'}</span></td>
+                <td><strong style="color: #00df89;">$${(p.price || 7.49).toFixed(2)}</strong></td>
+                <td>
+                  <span style="font-size:0.72rem; font-weight:800; padding:0.15rem 0.45rem; border-radius:6px; background:rgba(0,223,137,0.12); color:#00df89;">
+                    ${p.studioPercent || (p.status === 'Live' ? 100 : 80)}%
+                  </span>
+                </td>
+                <td>
+                  <span class="badge ${p.status === 'Live' ? 'badge-success' : p.status === 'Pending Review' ? 'badge-warning' : p.status === 'Revision Requested' ? 'badge-danger' : 'badge-neutral'}">
+                    ${p.status || 'Draft'}
+                  </span>
+                </td>
+                <td style="text-align: right;">
+                  <button class="btn-primary" style="font-size: 0.72rem; padding: 0.25rem 0.6rem;" onclick="openProductInStudio('${p.code}')">
+                    ${p.status === 'Live' ? '👁️ Inspect' : '⚡ Open Studio'}
+                  </button>
+                </td>
               </tr>
             `;
           }).join('')}
         </tbody>
       </table>
       ${hasMore ? `
-        <div style="text-align: center; margin-top: 1rem;">
-          <button class="btn-secondary" onclick="loadMoreQueue()" style="font-size: 0.82rem; padding: 0.5rem 1.2rem;">
-            📦 Load 25 More SKUs (${catalog.length - limit} remaining)
+        <div style="text-align:center; padding:1rem; border-top:1px solid var(--border-subtle);">
+          <button class="btn-secondary btn-sm" onclick="loadMoreQueue()">
+            ⬇️ Load Next 25 Products (${visible.length}/${prods.length} shown)
           </button>
         </div>
       ` : ''}
     `;
   }
-  }
 
   // ── BRAND-ADAPTIVE MOCKUP PROMPT GUIDE ──
-  function getMockupSlotGuide(brand) {
+  function getMockupSlotGuide(brand, product = {}) {
     const brandName = brand?.name || 'PlannerQueenGro';
     const niche = (brand?.niche || '').toLowerCase();
     const type = (brand?.type || '').toLowerCase();
+    const cat = (product?.category || '').toLowerCase();
 
-    // Sublimation / Tumblers / Craft Files (e.g. InkWrapped)
-    if (niche.includes('tumbler') || niche.includes('sublimation') || niche.includes('craft') || niche.includes('svg')) {
+    // AI Midjourney Prompt Vaults
+    if (cat.includes('prompt') || cat.includes('midjourney') || cat.includes('ai') || brandName.toLowerCase().includes('prompt')) {
+      return [
+        { slot: 1, name: 'Hero Midjourney Showcase Grid', desc: 'Main photo: 3x3 high-definition aesthetic AI image grid generated from vault.' },
+        { slot: 2, name: 'Notion Prompt Database UI', desc: 'Sleek dark-mode Notion gallery view showcasing tagged & filtered prompts.' },
+        { slot: 3, name: 'Before & After Parameter Comparison', desc: 'V6.0 vs v5.2 stylistic side-by-side prompt output breakdown.' },
+        { slot: 4, name: 'Commercial License & Copy-Paste PDF', desc: 'Infographic: Instant 1-click copy prompts, PDF guide, and unrestricted commercial IP.' },
+        { slot: 5, name: 'Lighting & Style Archetypes', desc: 'Macro zoom: Cyberpunk, Editorial Fashion, Isometric 3D, and Watercolor variations.' },
+        { slot: 6, name: 'Aspect Ratio & Sizing Cheat Sheet', desc: 'Infographic explaining --ar 16:9, --ar 9:16, --ar 4:5, and upscaling settings.' },
+        { slot: 7, name: 'Device Mockup (Desktop + Phone)', desc: 'Showing Notion app open on MacBook Pro and iPhone simultaneously.' },
+        { slot: 8, name: '3-Step Instant Creation Flow', desc: 'Diagram: Copy Prompt -> Paste in Discord/Midjourney -> Get photoreal result.' },
+        { slot: 9, name: 'Creator Review & Rating Badge', desc: '5-star quote: "These Midjourney prompts saved me 50+ hours of creative work!"' },
+        { slot: 10, name: 'PromptVault Guarantee', desc: '100% test-verified prompt guarantee and monthly updates access.' }
+      ];
+    }
+
+    // Typography & Digital Display Fonts
+    if (cat.includes('font') || cat.includes('typeface') || cat.includes('letter') || brandName.toLowerCase().includes('letterlab')) {
+      return [
+        { slot: 1, name: 'Hero Typography Title Presentation', desc: 'Main Etsy photo: Bold title display in aesthetic branding composition.' },
+        { slot: 2, name: 'Full Alphabet & Glyphs Sheet', desc: 'Complete uppercase, lowercase, numerals, punctuation, and ligatures overview.' },
+        { slot: 3, name: 'Branding & Packaging Mockup', desc: 'Font applied on luxury perfume box, candle label, or boutique packaging.' },
+        { slot: 4, name: 'Social Media & Editorial Layout', desc: 'Instagram post and magazine cover layout showcasing font versatility.' },
+        { slot: 5, name: 'OTF, TTF & WOFF Webfont Specs', desc: 'Infographic detailing desktop installation and web font support.' },
+        { slot: 6, name: 'Multilingual Accents & Special Characters', desc: 'Displaying international language support and custom stylistic alternates.' },
+        { slot: 7, name: 'Logo Design & Monogram Ideas', desc: '4 inspiring brand identity marks created using the font.' },
+        { slot: 8, name: 'Canva & Procreate Compatibility', desc: 'Badges confirming 1-click upload to Canva Pro, Adobe Illustrator, and iPad apps.' },
+        { slot: 9, name: 'Graphic Designer 5-Star Review', desc: '5-star quote: "The smoothest curves and ligature pairings I have used!"' },
+        { slot: 10, name: 'Commercial License Certificate', desc: 'Lifetime desktop and commercial digital product usage badge.' }
+      ];
+    }
+
+    // Sublimation / Tumblers / Craft Files
+    if (niche.includes('tumbler') || niche.includes('sublimation') || niche.includes('craft') || niche.includes('svg') || cat.includes('svg')) {
       return [
         { slot: 1, name: 'Hero 3D Tumbler Wrap Mockup', desc: 'Main Etsy photo: 20oz skinny tumbler with wrap on clean marble surface.' },
         { slot: 2, name: '360° Flat Design Spread', desc: 'Full flat 9.3" x 8.2" seamless wrap preview showing edge-to-edge detail.' },
@@ -617,7 +677,7 @@
       ];
     }
 
-    // Events / Celebration / Party Suites (e.g. FiestaFoundry)
+    // Events / Celebration / Party Suites
     if (niche.includes('event') || niche.includes('party') || niche.includes('celebration') || niche.includes('invitation')) {
       return [
         { slot: 1, name: 'Hero Invitation Suite Flatlay', desc: 'Main photo: 5x7 invitation with matching RSVP card, envelope & florals.' },
@@ -633,7 +693,7 @@
       ];
     }
 
-    // POD Apparel & Mixed (e.g. WildMutt Co., CozyThreads)
+    // POD Apparel & Mixed
     if (type.includes('pod') || niche.includes('apparel') || niche.includes('pet') || niche.includes('shirt')) {
       return [
         { slot: 1, name: 'Hero Lifestyle Model Shot', desc: 'Model wearing design in aesthetic, well-lit natural environment.' },
@@ -649,7 +709,7 @@
       ];
     }
 
-    // Default: Digital Planners, Trackers, E-books (e.g. PlannerQueenGro)
+    // Default: Digital Planners, Trackers, E-books
     return [
       { slot: 1, name: 'Hero Flatlay Presentation', desc: 'Main Etsy search image: iPad + stylus + clean accessories on warm neutral backdrop.' },
       { slot: 2, name: '3D Isometric Page Fan', desc: 'Shows full product depth with multiple hyperlinked spreads fanned out.' },
@@ -930,7 +990,7 @@
       // ── STEP 3: 10 MOCKUP SLOTS & VIDEO ──
       const mockups = prod.mockups || prod.mockupUrls || [];
       const videoUrl = prod.video?.url || (typeof prod.video === 'string' ? prod.video : '') || '';
-      const mockupSlots = getMockupSlotGuide(brand);
+      const mockupSlots = getMockupSlotGuide(brand, prod);
 
       return `
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.5rem;">

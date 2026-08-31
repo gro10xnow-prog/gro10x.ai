@@ -508,6 +508,22 @@ window.APP_MODULES.brands = async function(container) {
   let state = await loadBrandsStateFromAPI();
   let currentTab = localStorage.getItem('gro10x_brands_active_tab') || 'portfolio';
 
+  // Parse OAuth redirect query parameters (P4-5)
+  const fullHash = window.location.hash || '';
+  const hashQuery = fullHash.includes('?') ? fullHash.split('?')[1] : (window.location.search || '').replace(/^\?/, '');
+  const urlParams = new URLSearchParams(hashQuery);
+
+  if (urlParams.get('etsy_connected') === 'success') {
+    const connectedBrandId = Number(urlParams.get('brand') || 1);
+    const shopName = urlParams.get('shop') || 'Etsy Store';
+    currentTab = 'etsy';
+    localStorage.setItem('gro10x_brands_active_tab', 'etsy');
+    localStorage.setItem('gro10x_brands_selected_brand', connectedBrandId);
+    setTimeout(() => {
+      if (window.showToast) window.showToast(`🎉 Etsy Store "${shopName}" connected successfully for Brand #${connectedBrandId}!`, 'success');
+    }, 300);
+  }
+
   function render() {
     const totalTargetGross = state.brands.reduce((acc, b) => acc + (b.target12mo || 0), 0);
     const totalTargetNet = state.brands.reduce((acc, b) => acc + (b.netTarget || 0), 0);
