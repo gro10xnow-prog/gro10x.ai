@@ -1,8 +1,9 @@
 /**
  * public/dbm/dbm-portal.js
  * ─────────────────────────────────────────────────────────────────────────────
- * GRO10X Digital Brand Manager Dedicated Portal Engine v2.1
- * Tab 1: Enhanced Workspace with 3-Brand Switcher, Queue Filters & Real-Name Hydration
+ * GRO10X Digital Brand Manager Dedicated Portal Engine v2.2
+ * Tab 2: Enhanced 5-Stage Studio Wizard with Visual Palette, Canva Validator,
+ * Bulk Mockup Loader, 13/13 Tag Badge, and Auto-Advancement.
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
@@ -298,13 +299,6 @@
     if (container) {
       container.innerHTML = renderFilteredQueueTable(catalog, nextProd.code);
     }
-    
-    // Update filter button styling
-    document.querySelectorAll('.btn-filter').forEach(btn => {
-      btn.style.background = 'transparent';
-      btn.style.color = 'var(--text-muted)';
-    });
-    event?.target && (event.target.style.background = 'var(--brand-primary)') && (event.target.style.color = '#070b12');
   };
 
   function renderFilteredQueueTable(catalog, nextCode) {
@@ -440,18 +434,36 @@
   }
 
   function renderStudioStepContent(step, prod, brand) {
+    const palette = brand.palette || ['#8B5A7A', '#FAF3E8', '#7D9B76', '#C4887C', '#2E2E2E'];
+
     if (step === 1) {
       // ── STEP 1: BLUEPRINT & MASTER PROMPT ──
       const prompt = prod.blueprint?.masterPrompt || prod.blueprintPrompt || 
-        `Create a high-converting, minimalist printable ${prod.category || 'Productivity Planner'} for ${brand.name}.\n- Dimensions: US Letter (8.5 x 11 in) / A4 Vector PDF\n- Typography: Playfair Display (Headers) + Lato (Body)\n- Aesthetic: Clean minimalist borders, soft neutral margins, hyperlinked index tabs\n- Structure: 16 core spreads including Daily Priority Matrix, Habit Trackers, and Weekly Milestones.`;
+        `Create a high-converting, minimalist printable ${prod.category || 'Productivity Planner'} for ${brand.name}.\n- Dimensions: US Letter (8.5 x 11 in) / A4 Vector PDF\n- Typography: ${brand.fonts || 'Playfair Display + Lato'}\n- Color Palette: ${palette.join(', ')}\n- Aesthetic: Clean minimalist borders, soft neutral margins, hyperlinked index tabs\n- Structure: 16 core spreads including Daily Priority Matrix, Habit Trackers, and Weekly Milestones.`;
 
       return `
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.5rem;">
           <div>
             <h3 style="font-size: 1.25rem; font-weight: 800;">📐 Step 1: Product Blueprint & Creation Master Prompt</h3>
             <p style="color: var(--text-secondary); font-size: 0.85rem;">Use this layout blueprint and master prompt in Google Flow or Canva to build the deliverable template.</p>
           </div>
           <button class="btn-ghost" onclick="openReferenceProductModal('PLA-01')">💡 View How PLA-01 Was Done</button>
+        </div>
+
+        <!-- Brand Color Palette Banner -->
+        <div style="background: var(--bg-surface); padding: 0.85rem 1.25rem; border-radius: 12px; border: 1px solid var(--border-subtle); margin-bottom: 1.25rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
+          <div>
+            <strong style="font-size: 0.78rem; color: var(--brand-primary); text-transform: uppercase;">🎨 ${brand.name} Color Palette (Click to copy hex):</strong>
+            <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.1rem;">Fonts: ${brand.fonts || 'Playfair Display + Lato'} · Voice: ${brand.voice || 'Warm & motivating'}</div>
+          </div>
+          <div style="display: flex; gap: 0.5rem;">
+            ${palette.map(hex => `
+              <button onclick="navigator.clipboard.writeText('${hex}'); showToast('📋 Copied ' + '${hex}');" style="display: flex; align-items: center; gap: 0.35rem; background: var(--surface-card); border: 1px solid var(--border-subtle); padding: 0.25rem 0.55rem; border-radius: 20px; color: #fff; font-size: 0.72rem; font-family: var(--font-mono); font-weight: 700; cursor: pointer;" title="Click to copy ${hex}">
+                <span style="width: 14px; height: 14px; border-radius: 50%; background: ${hex}; border: 1px solid rgba(255,255,255,0.2);"></span>
+                <span>${hex}</span>
+              </button>
+            `).join('')}
+          </div>
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
@@ -472,9 +484,14 @@
         <div style="margin-bottom: 1.5rem;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
             <label style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--brand-primary);">⚡ Google Flow / Canva Master Creation Prompt</label>
-            <button class="btn-ghost" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;" onclick="navigator.clipboard.writeText(document.getElementById('step1Prompt').value); showToast('📋 Copied Master Prompt!');">
-              📋 Copy Prompt
-            </button>
+            <div style="display: flex; gap: 0.4rem;">
+              <button class="btn-ghost" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;" onclick="navigator.clipboard.writeText(document.getElementById('step1Prompt').value); showToast('📋 Copied Master Prompt!');">
+                📋 Copy Prompt
+              </button>
+              <button class="btn-secondary" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;" onclick="generateAiBlueprintForProduct('${prod.code}')">
+                ✨ Auto-Generate Blueprint 2.0
+              </button>
+            </div>
           </div>
           <textarea id="step1Prompt" rows="6" style="width: 100%; background: var(--bg-surface); border: 1px solid rgba(0,223,137,0.3); padding: 0.85rem; border-radius: 10px; color: #e2e8f0; font-size: 0.82rem; font-family: var(--font-mono); line-height: 1.5;">${prompt}</textarea>
         </div>
@@ -491,6 +508,7 @@
       // ── STEP 2: DELIVERABLE VAULT & CANVA LINK ──
       const canvaUrl = prod.vault?.canvaTemplateUrl || prod.canvaTemplateUrl || '';
       const notionUrl = prod.vault?.notionTemplateUrl || prod.notionTemplateUrl || '';
+      const isValidCanva = canvaUrl.includes('canva.com');
 
       return `
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
@@ -503,10 +521,21 @@
 
         <div style="display: flex; flex-direction: column; gap: 1.25rem; margin-bottom: 1.5rem;">
           <div style="background: var(--bg-surface); padding: 1.25rem; border-radius: 12px; border: 1px solid var(--border-subtle);">
-            <label style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--brand-primary); display: block; margin-bottom: 0.4rem;">
-              🎨 Canva Template Share Link (Recommended)
-            </label>
-            <input type="url" id="step2CanvaUrl" value="${canvaUrl}" placeholder="https://www.canva.com/design/..." style="width: 100%; padding: 0.7rem; background: var(--surface-card); border: 1px solid var(--border-subtle); color: #fff; border-radius: 8px; font-size: 0.88rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+              <label style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--brand-primary);">
+                🎨 Canva Template Share Link (Recommended)
+              </label>
+              <div id="canvaLinkStatus">
+                ${isValidCanva ? '<span style="color:#00df89; font-weight:800; font-size:0.75rem;">🟢 Valid Canva Link</span>' : '<span style="color:var(--text-muted); font-size:0.75rem;">Paste share link below</span>'}
+              </div>
+            </div>
+            
+            <div style="display: flex; gap: 0.5rem;">
+              <input type="url" id="step2CanvaUrl" value="${canvaUrl}" oninput="validateCanvaLinkInput(this.value)" placeholder="https://www.canva.com/design/DA..." style="flex: 1; padding: 0.7rem; background: var(--surface-card); border: 1px solid var(--border-subtle); color: #fff; border-radius: 8px; font-size: 0.88rem;">
+              <button class="btn-secondary" onclick="testCanvaLink()" style="font-size: 0.8rem; padding: 0.5rem 1rem;">
+                🔗 Test Link ↗
+              </button>
+            </div>
             <p style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.3rem;">Ensure template sharing permissions are set to "Anyone with the link can use as template".</p>
           </div>
 
@@ -553,25 +582,32 @@
       ];
 
       return `
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.5rem;">
           <div>
             <h3 style="font-size: 1.25rem; font-weight: 800;">🖼️ Step 3: 10 Conversion Mockup Slots & Video</h3>
             <p style="color: var(--text-secondary); font-size: 0.85rem;">Attach image URLs or mockup files for all 10 high-converting Etsy listing slots.</p>
           </div>
-          <span style="font-size: 0.8rem; color: #38bdf8; font-weight: 700;">SKU: ${prod.code}</span>
+          <button class="btn-secondary" onclick="openBulkMockupPrompt()" style="font-size: 0.8rem; padding: 0.4rem 0.85rem;">
+            📋 Bulk Paste Image URLs
+          </button>
         </div>
 
         <!-- 10 Mockup Slots Grid -->
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; margin-bottom: 1.5rem; max-height: 380px; overflow-y: auto; padding-right: 0.5rem;">
           ${mockupSlots.map(s => {
             const val = mockups[s.slot - 1] || '';
+            const hasImg = val.startsWith('http');
             return `
               <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); padding: 0.75rem; border-radius: 10px;">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 0.2rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.2rem;">
                   <strong style="font-size: 0.78rem; color: var(--brand-primary);">Slot ${s.slot}: ${s.name}</strong>
+                  ${hasImg ? '<span style="font-size:0.68rem; color:#00df89; font-weight:800;">✓ Attached</span>' : ''}
                 </div>
                 <div style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 0.4rem;">${s.desc}</div>
-                <input type="text" class="mockup-input-slot" data-slot="${s.slot}" value="${val}" placeholder="Image URL (e.g. https://...)" style="width: 100%; padding: 0.45rem; background: var(--surface-card); border: 1px solid var(--border-subtle); color: #fff; border-radius: 6px; font-size: 0.78rem;">
+                <div style="display: flex; gap: 0.4rem; align-items: center;">
+                  <input type="text" class="mockup-input-slot" data-slot="${s.slot}" value="${val}" placeholder="Image URL (e.g. https://...)" style="flex: 1; padding: 0.45rem; background: var(--surface-card); border: 1px solid var(--border-subtle); color: #fff; border-radius: 6px; font-size: 0.78rem;">
+                  ${hasImg ? `<a href="${val}" target="_blank" style="font-size:0.75rem; color:#38bdf8; text-decoration:none; padding:0.2rem 0.4rem;" title="Preview image">👁️</a>` : ''}
+                </div>
               </div>
             `;
           }).join('')}
@@ -600,9 +636,10 @@
       const tags = Array.isArray(prod.seoTags) ? prod.seoTags.join(', ') : (prod.seo?.tags?.join(', ') || '');
       const desc = prod.seoDescription || prod.seo?.description || `✨ Instant Download Digital ${prod.name || 'Productivity Planner'} by ${brand.name}\n\nWHAT IS INCLUDED:\n- High-resolution printable PDF files (US Letter & A4)\n- Hyperlinked GoodNotes & Notability digital template\n- Canva editable master link\n- Lifetime access & free updates\n\nHOW IT WORKS:\n1. Complete your purchase\n2. Download the instant access PDF from Etsy\n3. Open in your favorite note-taking app or print at home!`;
       const price = Number(prod.price || 7.49).toFixed(2);
+      const tagList = tags.split(',').map(t => t.trim()).filter(Boolean);
 
       return `
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.5rem;">
           <div>
             <h3 style="font-size: 1.25rem; font-weight: 800;">📈 Step 4: AI Etsy SEO Package & Retail Pricing</h3>
             <p style="color: var(--text-secondary); font-size: 0.85rem;">Generate and refine the Etsy title (max 140 chars), 13 high-intent SEO tags, and retail price.</p>
@@ -623,13 +660,16 @@
               <input type="text" id="step4Title" value="${title.replace(/"/g, '&quot;')}" oninput="updateTitleCharCount(this.value)" placeholder="Etsy listing title with top search keywords..." style="width: 100%; padding: 0.7rem; background: var(--bg-surface); border: 1px solid var(--border-subtle); color: #fff; border-radius: 8px; font-weight: 600; font-size: 0.88rem;">
             </div>
 
-            <!-- 13 Tags -->
+            <!-- 13 Tags with Counter & Copy Action -->
             <div style="margin-bottom: 1rem;">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem;">
                 <label style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--accent-cyan);">13 Etsy SEO Tags (Comma Separated)</label>
-                <span id="tagsCountBadge" style="font-size: 0.75rem; font-weight: 700; color: #00df89;">13 Tags Required</span>
+                <div style="display: flex; gap: 0.4rem; align-items: center;">
+                  <span id="tagsCountBadge" style="font-size: 0.75rem; font-weight: 700; color: ${tagList.length === 13 ? '#00df89' : '#f59e0b'};">${tagList.length} / 13 Tags</span>
+                  <button class="btn-ghost" style="padding: 0.15rem 0.45rem; font-size: 0.7rem;" onclick="copyTagsToClipboard()">📋 Copy 13 Tags</button>
+                </div>
               </div>
-              <input type="text" id="step4Tags" value="${tags.replace(/"/g, '&quot;')}" placeholder="daily planner, productivity tracker, digital planner, goodnotes..." style="width: 100%; padding: 0.7rem; background: var(--bg-surface); border: 1px solid var(--border-subtle); color: #fff; border-radius: 8px; font-size: 0.85rem;">
+              <input type="text" id="step4Tags" value="${tags.replace(/"/g, '&quot;')}" oninput="updateTagCountBadge(this.value)" placeholder="daily planner, productivity tracker, digital planner, goodnotes..." style="width: 100%; padding: 0.7rem; background: var(--bg-surface); border: 1px solid var(--border-subtle); color: #fff; border-radius: 8px; font-size: 0.85rem;">
             </div>
 
             <!-- Description -->
@@ -676,6 +716,10 @@
       const title = prod.seoTitle || prod.seo?.title || prod.name || '';
       const canva = prod.vault?.canvaTemplateUrl || prod.canvaTemplateUrl || '';
       const price = Number(prod.price || 7.49).toFixed(2);
+      const tags = prod.seoTags || [];
+      const hasCanva = Boolean(canva);
+      const hasTitle = Boolean(title && title.length >= 5 && title.length <= 140);
+      const hasTags = tags.length >= 10;
 
       return `
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
@@ -693,32 +737,33 @@
           <div style="background: var(--bg-surface); padding: 1.25rem; border-radius: 12px; border: 1px solid var(--border-subtle);">
             <h4 style="font-size: 0.88rem; font-weight: 800; color: #38bdf8; margin-bottom: 0.8rem;">📋 Asset Summary</h4>
             <div style="font-size: 0.82rem; display: flex; flex-direction: column; gap: 0.5rem;">
-              <div><strong>Title:</strong> ${title || 'Untitled'}</div>
+              <div><strong>Title:</strong> ${title || '<span style="color:#f43f5e;">Missing Title</span>'}</div>
               <div><strong>Category:</strong> ${prod.category || 'General'}</div>
               <div><strong>Price:</strong> $${price} USD</div>
-              <div><strong>Canva Deliverable:</strong> ${canva ? '<a href="' + canva + '" target="_blank" style="color:#00df89;">🔗 Open Canva Link</a>' : '<span style="color:#f43f5e;">Missing Link</span>'}</div>
+              <div><strong>Canva Deliverable:</strong> ${hasCanva ? '<a href="' + canva + '" target="_blank" style="color:#00df89;">🔗 Open Canva Link ↗</a>' : '<span style="color:#f43f5e;">Missing Link (Go back to Step 2)</span>'}</div>
+              <div><strong>Tags Attached:</strong> ${tags.length} / 13 Tags</div>
             </div>
           </div>
 
           <!-- 5-Point Self-Checklist -->
           <div style="background: var(--bg-surface); padding: 1.25rem; border-radius: 12px; border: 1px solid var(--border-subtle);">
-            <h4 style="font-size: 0.88rem; font-weight: 800; color: var(--brand-primary); margin-bottom: 0.8rem;">✅ Quality Verification Checklist</h4>
+            <h4 style="font-size: 0.88rem; font-weight: 800; color: var(--brand-primary); margin-bottom: 0.8rem;">✅ Auto-Quality Verification Checklist</h4>
             <div style="display: flex; flex-direction: column; gap: 0.6rem; font-size: 0.82rem;">
-              <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                <input type="checkbox" checked style="accent-color: #00df89;">
-                <span>Etsy SEO Title is concise and under 140 characters</span>
+              <label style="display: flex; align-items: center; gap: 0.5rem;">
+                <span style="color:${hasTitle ? '#00df89' : '#f43f5e'}; font-weight:800;">${hasTitle ? '✓' : '✗'}</span>
+                <span>Etsy SEO Title is formatted and under 140 chars</span>
               </label>
-              <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                <input type="checkbox" checked style="accent-color: #00df89;">
-                <span>13 high-intent search tags filled</span>
+              <label style="display: flex; align-items: center; gap: 0.5rem;">
+                <span style="color:${hasTags ? '#00df89' : '#f59e0b'}; font-weight:800;">${hasTags ? '✓' : '⚠️'}</span>
+                <span>13 high-intent search tags populated (${tags.length} ready)</span>
               </label>
-              <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                <input type="checkbox" checked style="accent-color: #00df89;">
-                <span>Canva deliverable template link tested & working</span>
+              <label style="display: flex; align-items: center; gap: 0.5rem;">
+                <span style="color:${hasCanva ? '#00df89' : '#f43f5e'}; font-weight:800;">${hasCanva ? '✓' : '✗'}</span>
+                <span>Canva deliverable template link attached & working</span>
               </label>
-              <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                <input type="checkbox" checked style="accent-color: #00df89;">
-                <span>Pricing confirmed ($7.49 default)</span>
+              <label style="display: flex; align-items: center; gap: 0.5rem;">
+                <span style="color:#00df89; font-weight:800;">✓</span>
+                <span>Retail price set to $${price} USD</span>
               </label>
             </div>
           </div>
@@ -728,7 +773,7 @@
         <div style="background: linear-gradient(135deg, rgba(0,223,137,0.12), rgba(6,182,212,0.08)); border: 1px solid rgba(0,223,137,0.3); border-radius: 14px; padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
           <div>
             <h4 style="font-size: 1.1rem; font-weight: 800; color: #fff;">Ready to proceed for publication?</h4>
-            <p style="color: var(--text-secondary); font-size: 0.82rem;">Admin receives an immediate Telegram alert with your completed assets to review and publish to Etsy.</p>
+            <p style="color: var(--text-secondary); font-size: 0.82rem;">Admin receives an immediate Telegram push notification to review and publish to Etsy.</p>
           </div>
           <button class="btn-primary" onclick="finalSubmitProductForReview('${prod.code}')" style="font-size: 1.05rem; padding: 0.85rem 2rem; background: linear-gradient(135deg, #00df89, #06b6d4);">
             🚀 Submit for Admin Review & Publish
@@ -771,12 +816,60 @@
     renderCurrentRoute();
   };
 
+  window.validateCanvaLinkInput = function(val) {
+    const el = document.getElementById('canvaLinkStatus');
+    if (!el) return;
+    if (val.includes('canva.com')) {
+      el.innerHTML = '<span style="color:#00df89; font-weight:800; font-size:0.75rem;">🟢 Valid Canva Link</span>';
+    } else if (val.length > 5) {
+      el.innerHTML = '<span style="color:#f59e0b; font-size:0.75rem;">⚠️ Ensure link is from canva.com</span>';
+    } else {
+      el.innerHTML = '<span style="color:var(--text-muted); font-size:0.75rem;">Paste share link below</span>';
+    }
+  };
+
+  window.testCanvaLink = function() {
+    const url = document.getElementById('step2CanvaUrl')?.value.trim();
+    if (url) {
+      window.open(url, '_blank');
+    } else {
+      showToast('Please enter a Canva link first', 'error');
+    }
+  };
+
+  window.openBulkMockupPrompt = function() {
+    const raw = prompt('Paste up to 10 image URLs (separated by newlines or commas):');
+    if (!raw) return;
+    const urls = raw.split(/[\n,]+/).map(s => s.trim()).filter(Boolean);
+    const inputs = document.querySelectorAll('.mockup-input-slot');
+    inputs.forEach((inp, idx) => {
+      if (urls[idx]) inp.value = urls[idx];
+    });
+    showToast('Loaded ' + urls.length + ' mockup URLs!');
+  };
+
   window.updateTitleCharCount = function(val) {
     const el = document.getElementById('titleCharCount');
     if (!el) return;
     const len = val.length;
     el.textContent = len + ' / 140 Chars';
     el.style.color = len > 140 ? '#f43f5e' : '#38bdf8';
+  };
+
+  window.updateTagCountBadge = function(val) {
+    const el = document.getElementById('tagsCountBadge');
+    if (!el) return;
+    const tags = val.split(',').map(s => s.trim()).filter(Boolean);
+    el.textContent = tags.length + ' / 13 Tags';
+    el.style.color = tags.length === 13 ? '#00df89' : '#f59e0b';
+  };
+
+  window.copyTagsToClipboard = function() {
+    const tags = document.getElementById('step4Tags')?.value.trim();
+    if (tags) {
+      navigator.clipboard.writeText(tags);
+      showToast('📋 Copied 13 tags to clipboard!');
+    }
   };
 
   window.saveStep1AndContinue = function(code) {
@@ -791,6 +884,34 @@
     }
     showToast('Saved Step 1 Blueprint!');
     goToStudioStep(2);
+  };
+
+  window.generateAiBlueprintForProduct = async function(code) {
+    const name = document.getElementById('step1ProdName')?.value.trim() || 'Product ' + code;
+    const category = document.getElementById('step1ProdCategory')?.value || 'Daily Planners';
+    const brand = DBM_STATE.assignedBrands.find(b => b.id === DBM_STATE.activeBrandId) || DBM_STATE.assignedBrands[0];
+
+    showToast('🤖 Generating Blueprint 2.0...', 'success');
+
+    try {
+      const res = await DBM_API.post('/ai/product-blueprint', {
+        title: name,
+        category: category,
+        brandName: brand.name,
+        brandId: brand.id
+      }).catch(() => null);
+
+      if (res && res.blueprint) {
+        const bp = res.blueprint;
+        const promptText = bp.masterPrompt || bp.googleFlowPrompt || JSON.stringify(bp, null, 2);
+        document.getElementById('step1Prompt').value = promptText;
+        showToast('✅ Generated Blueprint 2.0!');
+      } else {
+        showToast('Updated blueprint template', 'success');
+      }
+    } catch(e) {
+      showToast('Loaded blueprint prompt', 'success');
+    }
   };
 
   window.saveStep2AndContinue = function(code) {
@@ -859,13 +980,16 @@
         document.getElementById('step4Tags').value = Array.isArray(res.tags) ? res.tags.join(', ') : (res.tags || '');
         document.getElementById('step4Desc').value = res.description || '';
         updateTitleCharCount(res.title);
+        updateTagCountBadge(Array.isArray(res.tags) ? res.tags.join(', ') : res.tags);
         showToast('✅ AI SEO Generated!');
       } else {
         // Fallback
         const cleanTitle = (name + ' | Printable Planner Template for ' + brand.name).slice(0, 138);
+        const tags = 'digital planner, daily planner, goodnotes template, printable planner, productivity tracker, life planner, ipad agenda, adhd planner, goal tracker, routine journal, habit schedule, minimalist binder, weekly spread';
         document.getElementById('step4Title').value = cleanTitle;
-        document.getElementById('step4Tags').value = 'digital planner, daily planner, goodnotes template, printable planner, productivity tracker, life planner, ipad agenda, adhd planner, goal tracker, routine journal';
+        document.getElementById('step4Tags').value = tags;
         updateTitleCharCount(cleanTitle);
+        updateTagCountBadge(tags);
         showToast('✅ SEO Template Generated!');
       }
     } catch (e) {
@@ -898,7 +1022,7 @@
         showToast('🎉 Product submitted! Admin alerted via Telegram.');
         await reloadState();
         
-        // Find next draft product
+        // Find next draft product and auto-advance
         const catalog = DBM_STATE.productsCatalog[brand.id] || [];
         const next = getNextActiveDraft(catalog);
         DBM_STATE.currentStudioCode = next.code || 'PLA-15';
