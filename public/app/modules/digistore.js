@@ -82,6 +82,7 @@ const DigistoreModule = {
         <div style="display: flex; gap: 8px; border-bottom: 1px solid var(--border-subtle, rgba(255,255,255,0.08)); padding-bottom: 12px; margin-bottom: 24px; overflow-x: auto;" id="digiNavTabs">
           <button class="filter-chip active" data-tab="orders">📥 Orders Pipeline (<span id="tabBadgeOrders">0</span>)</button>
           <button class="filter-chip" data-tab="delivery">🔑 Delivery Queue (<span id="tabBadgeDelivery" style="color: #f59e0b;">0</span>)</button>
+          <button class="filter-chip" data-tab="customers">👤 Customers CRM</button>
           <button class="filter-chip" data-tab="products">📋 Products Catalog (44+)</button>
           <button class="filter-chip" data-tab="vendors">🏪 Verified Suppliers</button>
           <button class="filter-chip" data-tab="renewals">🔔 Renewals Engine</button>
@@ -276,6 +277,9 @@ const DigistoreModule = {
       case 'delivery':
         this.renderDeliveryTab(content);
         break;
+      case 'customers':
+        this.renderCustomersTab(content);
+        break;
       case 'products':
         this.renderProductsTab(content);
         break;
@@ -302,9 +306,6 @@ const DigistoreModule = {
   // ───────────────────────────────────────────────────────────────────────────
   // TAB 1: ORDERS PIPELINE
   // ───────────────────────────────────────────────────────────────────────────
-  // ───────────────────────────────────────────────────────────────────────────
-  // TAB 1: ORDERS PIPELINE
-  // ───────────────────────────────────────────────────────────────────────────
   renderOrdersTab(container) {
     let filtered = this.orders;
     if (this.orderFilter !== 'all') {
@@ -326,8 +327,11 @@ const DigistoreModule = {
           <button class="filter-chip ${this.orderFilter === 'delivered' ? 'active' : ''}" data-filter="delivered">🔑 Delivered</button>
           <button class="filter-chip ${this.orderFilter === 'closed' ? 'active' : ''}" data-filter="closed">✅ Closed</button>
         </div>
-        <div style="display: flex; gap: 8px;">
-          <input type="text" id="inputSearchOrders" placeholder="Search by customer, product, order #..." style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 8px 14px; color: #fff; font-size: 13px; min-width: 260px;" />
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <input type="text" id="inputSearchOrders" placeholder="Search by customer, product, order #..." style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 8px 14px; color: #fff; font-size: 13px; min-width: 240px;" />
+          <a href="/api/digistore/export/orders" download class="btn btn-secondary btn-sm" style="display: flex; align-items: center; gap: 6px; text-decoration: none; padding: 8px 12px; font-weight: 600;">
+            <span>📥</span> Export CSV
+          </a>
         </div>
       </div>
 
@@ -677,6 +681,209 @@ const DigistoreModule = {
   },
 
   // ───────────────────────────────────────────────────────────────────────────
+  // TAB: CUSTOMER CRM & INTELLIGENCE
+  // ───────────────────────────────────────────────────────────────────────────
+  async renderCustomersTab(container) {
+    container.innerHTML = `
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+        <div>
+          <h3 style="font-size: 18px; font-weight: 700; color: #fff;">👤 Customer Relationship Management (CRM)</h3>
+          <p style="color: var(--text-muted); font-size: 13px;">
+            Comprehensive directory of all DigiVault clients, order frequencies, and lifetime value (LTV).
+          </p>
+        </div>
+        <div>
+          <input type="text" id="inputSearchCustomers" placeholder="Search by customer, phone, WhatsApp..." style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 8px 14px; color: #fff; font-size: 13px; min-width: 260px;" />
+        </div>
+      </div>
+
+      <div id="customersTableContainer">
+        <div class="card" style="padding: 40px; text-align: center; color: var(--text-muted);">
+          <div style="font-size: 32px; margin-bottom: 8px;">⏳</div>
+          <div>Loading customer analytics...</div>
+        </div>
+      </div>
+    `;
+
+    try {
+      const res = await APP_API.get('/digistore/customers');
+      const customers = (res && res.data) || [];
+
+      const renderTable = (list) => {
+        if (list.length === 0) {
+          return `
+            <div class="card" style="padding: 48px; text-align: center; color: var(--text-muted);">
+              <div style="font-size: 32px; margin-bottom: 8px;">👤</div>
+              <div>No customers found matching search.</div>
+            </div>
+          `;
+        }
+
+        return `
+          <div class="card" style="padding: 0; overflow: hidden;">
+            <div style="overflow-x: auto;">
+              <table class="table" style="width: 100%; border-collapse: collapse; text-align: left;">
+                <thead>
+                  <tr style="background: rgba(0,0,0,0.3); border-bottom: 1px solid var(--border-subtle);">
+                    <th style="padding: 14px 16px; font-size: 12px; color: #64748b; text-transform: uppercase;">Customer Profile</th>
+                    <th style="padding: 14px 16px; font-size: 12px; color: #64748b; text-transform: uppercase;">Contact Channels</th>
+                    <th style="padding: 14px 16px; font-size: 12px; color: #64748b; text-transform: uppercase;">Total Orders</th>
+                    <th style="padding: 14px 16px; font-size: 12px; color: #64748b; text-transform: uppercase;">Lifetime Value (LTV)</th>
+                    <th style="padding: 14px 16px; font-size: 12px; color: #64748b; text-transform: uppercase;">Net Profit</th>
+                    <th style="padding: 14px 16px; font-size: 12px; color: #64748b; text-transform: uppercase;">Active Subs</th>
+                    <th style="padding: 14px 16px; font-size: 12px; color: #64748b; text-transform: uppercase; text-align: right;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${list.map(c => `
+                    <tr style="border-bottom: 1px solid var(--border-subtle);">
+                      <td style="padding: 14px 16px;">
+                        <div style="font-weight: 700; color: #fff; display: flex; align-items: center; gap: 6px;">
+                          ${c.name}
+                          ${c.telegramChatId ? '<span class="badge" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; font-size: 10px;">📱 TG Bot</span>' : ''}
+                        </div>
+                        <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">
+                          Member since: ${new Date(c.firstOrderDate).toLocaleDateString('en-GB')}
+                        </div>
+                      </td>
+                      <td style="padding: 14px 16px;">
+                        <div style="font-family: monospace; font-size: 13px; color: #fff;">${c.contact}</div>
+                        ${c.whatsapp && c.whatsapp !== c.contact ? `
+                          <div style="font-size: 11px; color: #25d366;">WA: ${c.whatsapp}</div>
+                        ` : ''}
+                      </td>
+                      <td style="padding: 14px 16px; font-weight: 700; color: #fff;">
+                        ${c.totalOrders} ${c.totalOrders === 1 ? 'order' : 'orders'}
+                      </td>
+                      <td style="padding: 14px 16px; font-weight: 800; color: #00df89; font-size: 15px;">
+                        ৳${Number(c.totalSpent).toLocaleString()}
+                      </td>
+                      <td style="padding: 14px 16px; font-weight: 700; color: #06b6d4;">
+                        +৳${Number(c.totalProfit).toLocaleString()}
+                      </td>
+                      <td style="padding: 14px 16px;">
+                        <span class="badge" style="background: ${c.activeSubscriptions > 0 ? 'rgba(0, 223, 137, 0.15)' : 'rgba(255,255,255,0.05)'}; color: ${c.activeSubscriptions > 0 ? '#00df89' : '#64748b'};">
+                          ${c.activeSubscriptions} active
+                        </span>
+                      </td>
+                      <td style="padding: 14px 16px; text-align: right;">
+                        <div style="display: flex; gap: 6px; justify-content: flex-end; align-items: center;">
+                          <a href="https://wa.me/${(c.whatsapp || c.contact).replace(/[^0-9]/g, '')}" target="_blank" class="btn btn-sm" style="background: rgba(37,211,102,0.15); color: #25d366; text-decoration: none; padding: 5px 10px; font-weight: 600;">
+                            💬 WhatsApp
+                          </a>
+                          <button class="btn btn-sm btn-secondary btn-view-cust-history" data-contact="${c.contact}" style="padding: 5px 10px;">
+                            📋 History
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        `;
+      };
+
+      const tableContainer = container.querySelector('#customersTableContainer');
+      tableContainer.innerHTML = renderTable(customers);
+
+      const bindActions = () => {
+        container.querySelectorAll('.btn-view-cust-history').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const contact = e.currentTarget.getAttribute('data-contact');
+            this.openCustomerHistoryModal(contact);
+          });
+        });
+      };
+      bindActions();
+
+      const inpSearch = container.querySelector('#inputSearchCustomers');
+      if (inpSearch) {
+        inpSearch.addEventListener('input', (e) => {
+          const q = e.target.value.toLowerCase().trim();
+          const filtered = customers.filter(c => 
+            c.name.toLowerCase().includes(q) ||
+            c.contact.toLowerCase().includes(q) ||
+            (c.whatsapp && c.whatsapp.toLowerCase().includes(q))
+          );
+          tableContainer.innerHTML = renderTable(filtered);
+          bindActions();
+        });
+      }
+    } catch (err) {
+      container.querySelector('#customersTableContainer').innerHTML = `
+        <div class="card" style="padding: 30px; color: #ef4444; text-align: center;">
+          Error loading CRM: ${err.message}
+        </div>
+      `;
+    }
+  },
+
+  async openCustomerHistoryModal(contact) {
+    const modalsContainer = document.getElementById('digiModalsContainer');
+    modalsContainer.innerHTML = `
+      <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px;">
+        <div class="card" style="max-width: 800px; width: 100%; padding: 28px; max-height: 90vh; overflow-y: auto; border: 1px solid var(--primary);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 14px;">
+            <h3 style="font-size: 18px; font-weight: 700; color: #fff;">📋 Customer Purchase History: ${contact}</h3>
+            <button class="btn btn-sm btn-secondary" id="btnCloseCustHistory">✕ Close</button>
+          </div>
+          <div id="custHistoryContent">
+            <div style="text-align: center; color: var(--text-muted); padding: 30px;">Loading customer order history...</div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.getElementById('btnCloseCustHistory').addEventListener('click', () => {
+      modalsContainer.innerHTML = '';
+    });
+
+    try {
+      const res = await APP_API.get(`/digistore/customers/${encodeURIComponent(contact)}/orders`);
+      const orders = (res && res.data) || [];
+      const content = document.getElementById('custHistoryContent');
+
+      if (orders.length === 0) {
+        content.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 30px;">No previous orders found for this contact.</div>`;
+        return;
+      }
+
+      content.innerHTML = `
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          ${orders.map(o => `
+            <div class="card" style="padding: 16px; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle);">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; flex-wrap: wrap; gap: 6px;">
+                <div>
+                  <strong style="font-family: monospace; color: #38bdf8; font-size: 15px;">${o.order_number || o.orderNumber}</strong>
+                  <span style="font-size: 12px; color: var(--text-muted); margin-left: 8px;">${new Date(o.created_at || o.createdAt).toLocaleString('en-GB')}</span>
+                </div>
+                <span class="badge" style="background: ${(o.delivery_status || o.deliveryStatus) === 'delivered' ? 'rgba(0,223,137,0.15)' : 'rgba(245,158,11,0.15)'}; color: ${(o.delivery_status || o.deliveryStatus) === 'delivered' ? '#00df89' : '#f59e0b'};">
+                  ${o.order_stage || o.orderStage || o.delivery_status || o.deliveryStatus}
+                </span>
+              </div>
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; font-size: 13px;">
+                <div><strong>Product:</strong> ${o.product_name || o.productName}</div>
+                <div><strong>Amount:</strong> ৳${Number(o.sale_price || o.salePrice).toLocaleString()} (Profit: +৳${Number(o.profit).toLocaleString()})</div>
+                <div><strong>Payment:</strong> ${o.payment_method || o.paymentMethod || 'bKash'} (${o.payment_status || o.paymentStatus})</div>
+                <div><strong>Expiry:</strong> ${o.expiry_date || o.expiryDate || 'N/A'}</div>
+              </div>
+              ${(o.activation_link || o.activationLink) ? `
+                <div style="margin-top: 10px; font-size: 12px; background: rgba(0,0,0,0.4); padding: 8px; border-radius: 6px; word-break: break-all;">
+                  🔗 <strong>Activation Link:</strong> <a href="${o.activation_link || o.activationLink}" target="_blank" style="color: #38bdf8;">${o.activation_link || o.activationLink}</a>
+                </div>
+              ` : ''}
+            </div>
+          `).join('')}
+        </div>
+      `;
+    } catch (err) {
+      document.getElementById('custHistoryContent').innerHTML = `<div style="color: #ef4444; text-align: center; padding: 20px;">Error: ${err.message}</div>`;
+    }
+  },
+
+  // ───────────────────────────────────────────────────────────────────────────
   // TAB 3: PRODUCTS CATALOG
   // ───────────────────────────────────────────────────────────────────────────
   renderProductsTab(container) {
@@ -736,11 +943,16 @@ const DigistoreModule = {
                 ` : ''}
               </div>
 
-              <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-subtle); padding-top: 10px;">
-                <span style="font-size: 11px; color: #64748b;">Supplier: ${p.vendorName ? p.vendorName.split(' ')[0] : 'Farhan'}</span>
-                <button class="btn btn-sm btn-secondary btn-quick-order" data-prod-id="${p.id}" data-prod-name="${p.name}" data-prod-sale="${p.salePrice}" data-prod-cost="${p.vendorPrice}" data-prod-dur="${p.duration}">
-                  🛒 Order
+              <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-subtle); padding-top: 10px; gap: 8px;">
+                <button class="btn btn-sm btn-toggle-stock" data-id="${p.id}" data-current="${p.stock_status || p.stockStatus || 'available'}" style="font-size: 11px; padding: 4px 8px; font-weight: 700; background: ${(p.stock_status || p.stockStatus) === 'out_of_stock' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(16, 185, 129, 0.15)'}; color: ${(p.stock_status || p.stockStatus) === 'out_of_stock' ? '#ef4444' : '#10b981'};">
+                  ${(p.stock_status || p.stockStatus) === 'out_of_stock' ? '🔴 Stock Out' : '🟢 In Stock'}
                 </button>
+                <div style="display: flex; gap: 6px; align-items: center;">
+                  <span style="font-size: 11px; color: #64748b;">${p.vendorName ? p.vendorName.split(' ')[0] : 'Supplier'}</span>
+                  <button class="btn btn-sm btn-secondary btn-quick-order" data-prod-id="${p.id}" data-prod-name="${p.name}" data-prod-sale="${p.salePrice}" data-prod-cost="${p.vendorPrice}" data-prod-dur="${p.duration}">
+                    🛒 Order
+                  </button>
+                </div>
               </div>
             </div>
           `;
@@ -753,6 +965,23 @@ const DigistoreModule = {
       b.addEventListener('click', (e) => {
         this.productCategoryFilter = e.currentTarget.getAttribute('data-cat');
         this.renderProductsTab(container);
+      });
+    });
+
+    // Stock toggle clicks
+    container.querySelectorAll('.btn-toggle-stock').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const id = e.currentTarget.getAttribute('data-id');
+        const curr = e.currentTarget.getAttribute('data-current');
+        const next = curr === 'out_of_stock' ? 'available' : 'out_of_stock';
+        try {
+          await APP_API.patch(`/digistore/products/${id}/stock`, { stock_status: next });
+          this.showToast(`Product stock status updated to ${next}`, 'success');
+          await this.loadAllData();
+          this.renderProductsTab(container);
+        } catch (err) {
+          alert('Stock update error: ' + err.message);
+        }
       });
     });
 
@@ -1020,11 +1249,16 @@ const DigistoreModule = {
     const channelMap = a.channelBreakdown || {};
 
     container.innerHTML = `
-      <div style="margin-bottom: 20px;">
-        <h3 style="font-size: 18px; font-weight: 700; color: #fff;">📊 DigiVault Commerce Intelligence</h3>
-        <p style="color: var(--text-muted); font-size: 13px;">
-          Financial telemetry across all digital subscription sales, margin breakdowns, and acquisition channels.
-        </p>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+        <div>
+          <h3 style="font-size: 18px; font-weight: 700; color: #fff;">📊 DigiVault Commerce Intelligence</h3>
+          <p style="color: var(--text-muted); font-size: 13px;">
+            Financial telemetry across all digital subscription sales, margin breakdowns, and acquisition channels.
+          </p>
+        </div>
+        <a href="/api/digistore/export/financials" download class="btn btn-secondary btn-sm" style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none; padding: 8px 12px; font-weight: 600;">
+          <span>📊</span> Export Financials CSV
+        </a>
       </div>
 
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; margin-bottom: 24px;">

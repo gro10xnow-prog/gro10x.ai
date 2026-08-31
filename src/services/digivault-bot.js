@@ -539,7 +539,8 @@ async function sendProductsInCategory(bot, chatId, categoryId, messageId = null)
 
   const keyboard = products.map(p => {
     const heroTag = p.is_hero ? '⭐ ' : '';
-    return [{ text: `${heroTag}${p.name} — ৳${p.sale_price.toLocaleString()}`, callback_data: `prod:${p.slug}` }];
+    const stockTag = p.stock_status === 'out_of_stock' ? ' [🚫 Stock Out]' : '';
+    return [{ text: `${heroTag}${p.name} — ৳${p.sale_price.toLocaleString()}${stockTag}`, callback_data: `prod:${p.slug}` }];
   });
 
   keyboard.push([
@@ -572,6 +573,7 @@ async function sendProductDetail(bot, chatId, slug, messageId = null) {
   }
 
   const lang = getLang(chatId);
+  const isOutOfStock = product.stock_status === 'out_of_stock';
   let text = `📦 *${product.name}*\n\n`;
   if (product.is_hero) text += `⭐ *${t(chatId, 'heroBadge')}*\n\n`;
   text += `⏱️ *${t(chatId, 'duration')}:* ${product.duration}\n`;
@@ -581,10 +583,16 @@ async function sendProductDetail(bot, chatId, slug, messageId = null) {
     text += `ℹ️ *${lang === 'bn' ? 'ডেলিভারি সংক্রান্ত তথ্য' : 'Delivery Details'}:*\n_${product.delivery_notes}_\n\n`;
   }
 
-  text += `⚡ _${lang === 'bn' ? 'অর্ডার করার পর ১৫-৩০ মিনিটের মধ্যে ডেলিভারি পাবেন।' : 'Delivered within 15-30 minutes after payment verification.'}_`;
+  if (isOutOfStock) {
+    text += `🚫 *${lang === 'bn' ? 'স্ট্যাটাস: বর্তমানে স্টক আউট (Out of Stock)' : 'Status: Currently Out of Stock'}*\n_${lang === 'bn' ? 'স্টক রিস্টক হওয়ার সাথে সাথে আপডেট পেতে আমাদের WhatsApp সাপোর্টে যোগাযোগ করুন।' : 'Contact WhatsApp support to reserve your slot as soon as restocked.'}_\n\n`;
+  } else {
+    text += `⚡ _${lang === 'bn' ? 'অর্ডার করার পর ১৫-৩০ মিনিটের মধ্যে ডেলিভারি পাবেন।' : 'Delivered within 15-30 minutes after payment verification.'}_\n\n`;
+  }
 
   const keyboard = [
-    [{ text: t(chatId, 'orderNow'), callback_data: `order:${product.slug}` }],
+    isOutOfStock
+      ? [{ text: lang === 'bn' ? '💬 WhatsApp-এ বুকিং করুন' : '💬 Reserve via WhatsApp', url: 'https://wa.me/8801889825025' }]
+      : [{ text: t(chatId, 'orderNow'), callback_data: `order:${product.slug}` }],
     [{ text: t(chatId, 'back'), callback_data: `cat:${product.category}` }]
   ];
 
@@ -614,6 +622,22 @@ async function startOrderFlow(bot, chatId, slug) {
   }
 
   const lang = getLang(chatId);
+
+  if (product && product.stock_status === 'out_of_stock') {
+    const outText = lang === 'bn'
+      ? `🚫 *দুঃখিত! এই প্রোডাক্টটি বর্তমানে স্টক আউট রয়েছে।*\n\nস্টক আসার সাথে সাথে আপডেট পেতে আমাদের WhatsApp সাপোর্টে যোগাযোগ করুন:`
+      : `🚫 *Sorry! This product is currently out of stock.*\n\nTo reserve when restocked, reach our WhatsApp support:`;
+    return bot.sendMessage(chatId, outText, {
+      parse_mode: 'Markdown',
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: '💬 WhatsApp Support (01889825025)', url: 'https://wa.me/8801889825025' }],
+          [{ text: t(chatId, 'backCategories'), callback_data: 'menu_categories' }]
+        ]
+      }
+    });
+  }
+
   await saveSession(chatId, {
     lang,
     step: 'awaiting_name',

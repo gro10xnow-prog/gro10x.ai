@@ -1677,5 +1677,182 @@ router.post('/cron/trigger-renewals', requireAuth, requireManager, asyncHandler(
   return ok(res, result);
 }));
 
+// ── 10. Customer CRM & History Endpoints ─────────────────────────────────────
+router.get('/customers', requireAuth, asyncHandler(async (req, res) => {
+  let orders = inMemoryOrders;
+  if (isSupabaseConfigured()) {
+    const { data } = await supabase.from('digi_orders').select('*');
+    if (data) orders = data;
+  }
+
+  const customerMap = {};
+  orders.forEach(o => {
+    const contact = (o.customer_contact || o.customerContact || '').trim();
+    if (!contact) return;
+
+    if (!customerMap[contact]) {
+      customerMap[contact] = {
+        contact,
+        name: o.customer_name || o.customerName || 'Customer',
+        whatsapp: o.customer_whatsapp || o.customerWhatsapp || contact,
+        telegramChatId: o.telegram_chat_id || o.telegramChatId || null,
+        totalOrders: 0,
+        totalSpent: 0,
+        totalProfit: 0,
+        activeSubscriptions: 0,
+        firstOrderDate: o.created_at || o.createdAt,
+        lastOrderDate: o.created_at || o.createdAt
+      };
+    }
+
+    const c = customerMap[contact];
+    c.totalOrders++;
+
+    const isPaid = (o.payment_status || o.paymentStatus) === 'verified';
+    if (isPaid) {
+      c.totalSpent += Number(o.sale_price || o.salePrice) || 0;
+      c.totalProfit += Number(o.profit) || 0;
+    }
+
+    const isDelivered = (o.delivery_status || o.deliveryStatus) === 'delivered';
+    const stage = o.order_stage || o.orderStage;
+    if (isDelivered && stage !== 'confirmed_closed' && stage !== 'admin_closed') {
+      c.activeSubscriptions++;
+    }
+
+    const oDate = new Date(o.created_at || o.createdAt);
+    if (oDate < new Date(c.firstOrderDate)) c.firstOrderDate = o.created_at || o.createdAt;
+    if (oDate > new Date(c.lastOrderDate)) c.lastOrderDate = o.created_at || o.createdAt;
+  });
+
+  const customers = Object.values(customerMap).sort((a, b) => b.totalSpent - a.totalSpent);
+  return ok(res, customers);
+}));
+
+router.get('/customers/:contact/orders', requireAuth, asyncHandler(async (req, res) => {
+  const contact = req.params.contact.trim();
+  let orders = inMemoryOrders.filter(o => (o.customer_contact || o.customerContact) === contact);
+
+  if (isSupabaseConfigured()) {
+    const { data } = await supabase
+      .from('digi_orders')
+      .select('*')
+      .eq('customer_contact', contact)
+      .order('created_at', { ascending: false });
+
+    if (data) orders = data;
+  }
+
+  return ok(res, orders);
+}));
+
+// ── 11. Product Stock Control Route ──────────────────────────────────────────
+router.patch('/products/:id/stock', requireAuth, requireManager, asyncHandler(async (req, res) => {
+  const id = req.params.id;
+  const { stock_status } = req.body;
+
+  if (!['available', 'limited', 'out_of_stock'].includes(stock_status)) {
+    return fail(res, 'Invalid stock_status. Must be available, limited, or out_of_stock', 400);
+  }
+
+  if (isSupabaseConfigured()) {
+    const { data, error } = await supabase
+      .from('digi_products')
+      .update({ stock_status, updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .select()
+      .maybeSingle();
+
+    if (error) return fail(res, error.message, 500);
+    broadcast('digistore_product_updated', data);
+    return ok(res, { success: true, product: data });
+  }
+
+  const p = inMemoryProducts.find(x => x.id === id);
+  if (p) p.stock_status = stock_status;
+  return ok(res, { success: true, product: p });
+}));
+
+// ── 12. Financial & Orders CSV Data Exports ──────────────────────────────────
+router.get('/export/orders', requireAuth, asyncHandler(async (req, res) => {
+  let orders = inMemoryOrders;
+  if (isSupabaseConfigured()) {
+    const { data } = await supabase.from('digi_orders').select('*').order('created_at', { ascending: false });
+    if (data) orders = data;
+  }
+
+  const headers = [
+    'Order Ref', 'Customer Name', 'Mobile', 'WhatsApp', 'Product', 'Duration',
+    'Sale Price (BDT)', 'Vendor Cost (BDT)', 'Net Profit (BDT)', 'Payment Method',
+    'Payment Status', 'Delivery Status', 'Order Stage', 'Created At', 'Expiry Date'
+  ];
+
+  const rows = orders.map(o => [
+    `"${o.order_number || o.orderNumber || ''}"`,
+    `"${(o.customer_name || o.customerName || '').replace(/"/g, '""')}"`,
+    `"${o.customer_contact || o.customerContact || ''}"`,
+    `"${o.customer_whatsapp || o.customerWhatsapp || ''}"`,
+    `"${(o.product_name || o.productName || '').replace(/"/g, '""')}"`,
+    `"${o.product_duration || o.duration || ''}"`,
+    Number(o.sale_price || o.salePrice) || 0,
+    Number(o.vendor_price || o.vendorPrice) || 0,
+    Number(o.profit) || 0,
+    `"${o.payment_method || o.paymentMethod || ''}"`,
+    `"${o.payment_status || o.paymentStatus || ''}"`,
+    `"${o.delivery_status || o.deliveryStatus || ''}"`,
+    `"${o.order_stage || o.orderStage || ''}"`,
+    `"${o.created_at || o.createdAt || ''}"`,
+    `"${o.expiry_date || o.expiryDate || ''}"`
+  ].join(','));
+
+  const csv = [headers.join(','), ...rows].join('\r\n');
+  res.setHeader('Content-Type', 'text/csv');
+  res.setHeader('Content-Disposition', `attachment; filename="digivault-orders-${new Date().toISOString().slice(0, 10)}.csv"`);
+  return res.send(csv);
+}));
+
+router.get('/export/financials', requireAuth, asyncHandler(async (req, res) => {
+  let orders = inMemoryOrders;
+  if (isSupabaseConfigured()) {
+    const { data } = await supabase.from('digi_orders').select('*');
+    if (data) orders = data;
+  }
+
+  const verified = orders.filter(o => (o.payment_status || o.paymentStatus) === 'verified');
+  const summaryMap = {};
+
+  verified.forEach(o => {
+    const pName = o.product_name || o.productName || 'General Subscription';
+    if (!summaryMap[pName]) {
+      summaryMap[pName] = { product: pName, units: 0, revenue: 0, cogs: 0, profit: 0 };
+    }
+    const s = summaryMap[pName];
+    s.units++;
+    const rev = Number(o.sale_price || o.salePrice) || 0;
+    const cost = Number(o.vendor_price || o.vendorPrice) || 0;
+    s.revenue += rev;
+    s.cogs += cost;
+    s.profit += (rev - cost);
+  });
+
+  const headers = ['Product', 'Total Units Sold', 'Gross Revenue (BDT)', 'Total COGS (BDT)', 'Net Profit (BDT)', 'Gross Margin %'];
+  const rows = Object.values(summaryMap).map(s => {
+    const margin = s.revenue > 0 ? ((s.profit / s.revenue) * 100).toFixed(1) : '0.0';
+    return [
+      `"${s.product.replace(/"/g, '""')}"`,
+      s.units,
+      s.revenue,
+      s.cogs,
+      s.profit,
+      `"${margin}%"`
+    ].join(',');
+  });
+
+  const csv = [headers.join(','), ...rows].join('\r\n');
+  res.setHeader('Content-Type', 'text/csv');
+  res.setHeader('Content-Disposition', `attachment; filename="digivault-financials-${new Date().toISOString().slice(0, 10)}.csv"`);
+  return res.send(csv);
+}));
+
 module.exports = router;
 

@@ -177,9 +177,43 @@
         document.getElementById('prodCatBadge').textContent = currentProduct.category;
         document.getElementById('prodTitle').textContent = currentProduct.name;
         document.getElementById('prodDuration').textContent = `⏱️ মেয়াদ: ${currentProduct.duration}`;
-        document.getElementById('prodPrice').textContent = `৳${Number(currentProduct.salePrice).toLocaleString()}`;
-        if (currentProduct.deliveryNotes) {
-          document.getElementById('prodNotes').textContent = currentProduct.deliveryNotes;
+        document.getElementById('prodPrice').textContent = `৳${Number(currentProduct.salePrice || currentProduct.sale_price || 0).toLocaleString()}`;
+        if (currentProduct.deliveryNotes || currentProduct.delivery_notes) {
+          document.getElementById('prodNotes').textContent = currentProduct.deliveryNotes || currentProduct.delivery_notes;
+        }
+
+        // Stock Status Handling
+        if (currentProduct.stockStatus === 'out_of_stock' || currentProduct.stock_status === 'out_of_stock') {
+          const catBadge = document.getElementById('prodCatBadge');
+          const stockBadge = document.createElement('span');
+          stockBadge.className = 'badge';
+          stockBadge.id = 'badgeStockOut';
+          stockBadge.style.cssText = 'background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.4); margin-left: 8px;';
+          stockBadge.textContent = '🚫 স্টক আউট (Out of Stock)';
+          if (catBadge && catBadge.parentNode) {
+            catBadge.parentNode.insertBefore(stockBadge, catBadge.nextSibling);
+          }
+
+          const btnSubmit = document.getElementById('btnSubmitOrder');
+          if (btnSubmit) {
+            btnSubmit.disabled = true;
+            btnSubmit.style.opacity = '0.6';
+            btnSubmit.style.cursor = 'not-allowed';
+            btnSubmit.innerHTML = '🚫 বর্তমানে স্টক আউট';
+          }
+
+          const form = document.getElementById('formCheckout');
+          if (form) {
+            const reserveBox = document.createElement('div');
+            reserveBox.id = 'boxWhatsappReserve';
+            reserveBox.style.cssText = 'margin-top: 14px; text-align: center;';
+            reserveBox.innerHTML = `
+              <a href="https://wa.me/8801889825025?text=${encodeURIComponent('Salam, please reserve ' + currentProduct.name + ' for me when restocked.')}" target="_blank" class="btn btn-primary" style="background: #25d366; color: #000; font-weight: 700; width: 100%; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px;">
+                <span>💬</span> স্টক আসার সাথে সাথে জানতে WhatsApp-এ নক দিন
+              </a>
+            `;
+            form.appendChild(reserveBox);
+          }
         }
       }
 
