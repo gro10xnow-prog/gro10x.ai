@@ -133,6 +133,15 @@
     const progressPct = Math.min(100, Math.round((todaySubmitted / DBM_STATE.dailyTarget) * 100));
     const displayName = getUserDisplayName();
 
+    // Compute today's dynamic SKU batch range from catalog state
+    const pendingDrafts = catalog.filter(p => p.status !== 'Live' && p.status !== 'Pending Review');
+    const batchStart = pendingDrafts[0] || nextProduct;
+    const batchEnd = pendingDrafts[Math.max(0, DBM_STATE.dailyTarget - 1)] || pendingDrafts[pendingDrafts.length - 1] || batchStart;
+    const todayBatchLabel = batchStart.code && batchEnd.code && batchStart.code !== batchEnd.code
+      ? `SKUs ${batchStart.code} through ${batchEnd.code}`
+      : batchStart.code ? `SKU ${batchStart.code}` : 'See Queue Below';
+
+
     container.innerHTML = `
       <!-- Brand Switcher Chips on Workspace -->
       <div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; overflow-x: auto; background: var(--bg-surface); padding: 0.4rem; border-radius: 14px; border: 1px solid var(--border-subtle);">
@@ -155,7 +164,7 @@
             </span>
           </div>
           <p style="color: var(--text-secondary); font-size: 0.95rem;">
-            Active Focus: <strong style="color: #fff;">${brand.name || 'PlannerQueenGro'}</strong> · Day 1 Target: <strong style="color: #38bdf8;">SKUs PLA-14 through PLA-21 (8 Products Quota)</strong>
+            Active Focus: <strong style="color: #fff;">${brand.name || 'PlannerQueenGro'}</strong> · Today's Batch: <strong style="color: #38bdf8;">${todayBatchLabel} (${DBM_STATE.dailyTarget} Products Quota)</strong>
           </p>
         </div>
 
@@ -227,7 +236,7 @@
             </div>
             <div style="text-align: right;">
               <span style="font-size: 1.4rem; font-weight: 800; color: ${progressPct >= 100 ? '#00df89' : '#38bdf8'};">${progressPct}%</span>
-              <div style="font-size: 0.72rem; color: var(--text-muted);">Target: PLA-14 to PLA-21</div>
+              <div style="font-size: 0.72rem; color: var(--text-muted);">Target: ${todayBatchLabel}</div>
             </div>
           </div>
 
@@ -1083,7 +1092,7 @@
   function renderReferencesView(container) {
     const brand = DBM_STATE.assignedBrands.find(b => b.id === DBM_STATE.activeBrandId) || DBM_STATE.assignedBrands[0] || {};
     const catalog = DBM_STATE.productsCatalog[brand.id] || [];
-    const allRefs = catalog.filter(p => p.status === 'Live' || ['PLA-01','PLA-02','PLA-03','PLA-04','PLA-05','PLA-06','PLA-07','PLA-08','PLA-09','PLA-10','PLA-11','PLA-12','PLA-13'].includes(p.code));
+    const allRefs = catalog.filter(p => p.status === 'Live');
 
     const filter = DBM_STATE.refCategoryFilter || 'all';
     const query = (DBM_STATE.refSearchQuery || '').toLowerCase().trim();
@@ -1325,16 +1334,33 @@
     const today = new Date().toISOString().split('T')[0];
     const todayCount = DBM_STATE.todaySubmittedCount || 0;
 
-    // Weekly 7-Day Velocity Data
-    const weekDays = [
-      { day: 'Mon', count: todayCount >= 8 ? 8 : (todayCount > 0 ? todayCount : 8), quota: 8, isToday: true },
-      { day: 'Tue', count: 0, quota: 8, isToday: false },
-      { day: 'Wed', count: 0, quota: 8, isToday: false },
-      { day: 'Thu', count: 0, quota: 8, isToday: false },
-      { day: 'Fri', count: 0, quota: 8, isToday: false },
-      { day: 'Sat', count: 0, quota: 8, isToday: false },
-      { day: 'Sun', count: 0, quota: 8, isToday: false }
-    ];
+    // Weekly 7-Day Velocity Data (Aggregated dynamically from productsCatalog)
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const now = new Date();
+    const currentDayIdx = now.getDay(); // 0 = Sun, 1 = Mon, ... 6 = Sat
+    
+    // Calculate start of current week (Monday)
+    const mondayOffset = (currentDayIdx === 0 ? -6 : 1) - currentDayIdx;
+    const mondayDate = new Date(now);
+    mondayDate.setDate(now.getDate() + mondayOffset);
+
+    // Build 7 calendar days Mon..Sun
+    const allProducts = Object.values(DBM_STATE.productsCatalog).flat();
+    const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((dayName, i) => {
+      const d = new Date(mondayDate);
+      d.setDate(mondayDate.getDate() + i);
+      const dateStr = d.toISOString().split('T')[0];
+      const isToday = dateStr === today;
+      
+      // Count submissions matching this calendar date
+      const count = allProducts.filter(p => p.submittedAt && p.submittedAt.startsWith(dateStr)).length;
+      return {
+        day: dayName,
+        count: isToday ? Math.max(count, todayCount) : count,
+        quota: DBM_STATE.dailyTarget,
+        isToday
+      };
+    });
 
     container.innerHTML = `
       <!-- Top Title Header -->
@@ -1500,10 +1526,20 @@
     `;
   }
 
+  window.loadMoreStandups = function() {
+    DBM_STATE.standupDisplayLimit = (DBM_STATE.standupDisplayLimit || 10) + 10;
+    const outputContainer = document.getElementById('dbm-main');
+    if (outputContainer) renderCurrentRoute();
+  };
+
   function renderStandupHistoryTable() {
     if (!DBM_STATE.standups || DBM_STATE.standups.length === 0) {
       return '<div style="color: var(--text-muted); padding: 1.5rem; text-align: center;">No standup reports logged yet.</div>';
     }
+
+    const limit = DBM_STATE.standupDisplayLimit || 10;
+    const visibleStandups = DBM_STATE.standups.slice(0, limit);
+    const hasMore = DBM_STATE.standups.length > limit;
 
     return `
       <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
@@ -1517,17 +1553,24 @@
           </tr>
         </thead>
         <tbody>
-          ${DBM_STATE.standups.map(s => `
+          ${visibleStandups.map(s => `
             <tr style="border-bottom: 1px solid var(--border-subtle);">
               <td style="padding: 0.75rem 0.6rem; font-weight: 700;">${s.date}</td>
               <td style="padding: 0.75rem 0.6rem; color: #38bdf8; font-weight: 600;">${s.brandName}</td>
-              <td style="padding: 0.75rem 0.6rem; font-weight: 800;">${s.listed} / 8</td>
+              <td style="padding: 0.75rem 0.6rem; font-weight: 800;">${s.listed} / ${DBM_STATE.dailyTarget}</td>
               <td style="padding: 0.75rem 0.6rem;">${s.isBlocker ? '<span style="color:#f43f5e; font-weight:800;">🚨 Yes</span>' : '<span style="color:#00df89;">🟢 No</span>'}</td>
               <td style="padding: 0.75rem 0.6rem; color: var(--text-secondary);">${s.notes || 'None'}</td>
             </tr>
           `).join('')}
         </tbody>
       </table>
+      ${hasMore ? `
+        <div style="text-align: center; margin-top: 1rem;">
+          <button class="btn-secondary" onclick="loadMoreStandups()" style="font-size: 0.82rem; padding: 0.5rem 1.2rem;">
+            📜 Load More Standups (${DBM_STATE.standups.length - limit} remaining)
+          </button>
+        </div>
+      ` : ''}
     `;
   }
 
@@ -1538,7 +1581,7 @@
     const catalog = DBM_STATE.productsCatalog[activeBrand.id] || [];
     const today = new Date().toISOString().split('T')[0];
 
-    const todayCount = DBM_STATE.todaySubmittedCount || 8;
+    const todayCount = DBM_STATE.todaySubmittedCount || 0;
 
     container.innerHTML = `
       <div style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
@@ -1740,7 +1783,7 @@
 
               <div style="display: flex; justify-content: space-between; padding-bottom: 0.4rem; border-bottom: 1px solid var(--border-subtle);">
                 <span style="color: var(--text-muted);">Daily Target:</span>
-                <strong style="color: #fff;">8 Products / Day (Day 1: PLA-14..21)</strong>
+                <strong style="color: #fff;">${DBM_STATE.dailyTarget} Products / Day</strong>
               </div>
 
               <div style="display: flex; justify-content: space-between; padding-bottom: 0.4rem; border-bottom: 1px solid var(--border-subtle);">

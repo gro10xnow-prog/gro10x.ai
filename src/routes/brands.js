@@ -988,7 +988,7 @@ router.get('/my-brands', requireAuth, async (req, res) => {
       assignedBrandIds,
       brands: assignedBrands,
       productsCatalog: filteredCatalog,
-      dailyTarget: 8
+      dailyTarget: Number(dbmInfo.dailyTarget || 8)
     });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
@@ -997,12 +997,27 @@ router.get('/my-brands', requireAuth, async (req, res) => {
 
 /**
  * GET /api/brands/dbm-logs
- * Returns all DBM EOD standup reports
+ * Returns DBM EOD standup reports (supports optional ?page and ?limit query pagination)
  */
 router.get('/dbm-logs', requireAuth, async (req, res) => {
   try {
-    const logs = await loadDbmLogs();
-    res.json({ success: true, logs });
+    const allLogs = await loadDbmLogs();
+    const page = Math.max(1, Number(req.query.page) || 1);
+    const limit = req.query.limit ? Math.max(1, Number(req.query.limit)) : 0;
+
+    let logs = allLogs;
+    if (limit > 0) {
+      const startIndex = (page - 1) * limit;
+      logs = allLogs.slice(startIndex, startIndex + limit);
+    }
+
+    res.json({
+      success: true,
+      total: allLogs.length,
+      page,
+      limit: limit || allLogs.length,
+      logs
+    });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
