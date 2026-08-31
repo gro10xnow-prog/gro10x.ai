@@ -176,7 +176,16 @@
   }
 
   async function handleRoute() {
-    let hash = window.location.hash || '#dashboard';
+    let hash = window.location.hash;
+    if (!hash) {
+      const user = window.CURRENT_USER || {};
+      const role = (user.role || '').toLowerCase();
+      if (role.includes('brand') || role.includes('dbm') || role.includes('digital brand') || role.includes('etsy')) {
+        hash = '#brands';
+      } else {
+        hash = '#dashboard';
+      }
+    }
     if (!ROUTES[hash]) hash = '#dashboard';
 
     const routeInfo = ROUTES[hash];

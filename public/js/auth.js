@@ -194,22 +194,26 @@ function saveSessionAndRedirect(user, linkedType, email, realToken) {
     const role = (user?.role || '').toLowerCase();
     const access = (user?.accessLevel || '').toLowerCase();
 
+    const isDBM = role.includes('brand') || role.includes('dbm') || role.includes('digital brand') || role.includes('etsy');
+
     const isOwnerAdmin = access.includes('owner') || access.includes('admin') || 
       role === 'owner' ||
       role.includes('owner') || role.includes('managing director') || 
       role.includes('chairman') || role.includes('admin') || role.includes('head');
 
-    const isManager = !isOwnerAdmin && (access.includes('director') || access.includes('manager') ||
+    const isManager = !isOwnerAdmin && !isDBM && (access.includes('director') || access.includes('manager') ||
       role.includes('director') || role.includes('manager'));
 
-    if (isOwnerAdmin) {
+    if (isDBM) {
+      window.location.href = '/app#brands';
+    } else if (isOwnerAdmin) {
       window.location.href = '/app';
     } else if (isManager) {
       window.location.href = '/manager';
     } else if (linkedType === 'client' || role.includes('client')) {
       window.location.href = '/partners.html';
     } else {
-      window.location.href = '/team.html';
+      window.location.href = '/crew';
     }
   }, 1000);
 }
