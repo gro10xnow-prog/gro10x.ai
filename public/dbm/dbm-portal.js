@@ -539,83 +539,78 @@
     if (filter === 'live') {
       filtered = catalog.filter(p => p.status === 'Live');
     } else if (filter === 'today') {
-      // Dynamic: slice the first dailyTarget pending drafts
       const pendingDrafts = catalog.filter(p => p.status !== 'Live' && p.status !== 'Pending Review');
-      filtered = pendingDrafts.slice(0, DBM_STATE.dailyTarget);
+      filtered = pendingDrafts.slice(0, DBM_STATE.dailyTarget || 8);
     } else if (filter === 'review') {
       filtered = catalog.filter(p => p.status === 'Pending Review');
-    } else {
-      // Show based on allQueueLimit with load more
-      const limit = DBM_STATE.allQueueLimit || 25;
-      filtered = catalog.slice(0, limit);
+    } else if (filter === 'revisions') {
+      filtered = catalog.filter(p => p.status === 'Revision Requested');
+    } else if (filter === 'ready') {
+      filtered = catalog.filter(p => !['Live', 'Pending Review', 'Revision Requested'].includes(p.status));
     }
 
     if (filtered.length === 0) {
-      return '<div style="color: var(--text-muted); padding: 2rem; text-align: center;">No products match this filter.</div>';
+      return '<div style="color: var(--text-muted); padding: 2.5rem; text-align: center; font-size: 0.9rem;">No products match this filter.</div>';
     }
 
-    const hasMore = filter === 'all' && catalog.length > (DBM_STATE.allQueueLimit || 25);
     const limit = DBM_STATE.allQueueLimit || 25;
+    const isAll = filter === 'all';
+    const visible = isAll ? filtered.slice(0, limit) : filtered;
+    const hasMore = isAll && filtered.length > limit;
 
     return `
-      <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
-        <thead>
-          <tr style="border-bottom: 1px solid var(--border-subtle); color: var(--text-muted); text-align: left;">
-            <th style="padding: 0.6rem;">SKU</th>
-            <th style="padding: 0.6rem;">Product Name</th>
-            <th style="padding: 0.6rem;">Category</th>
-            <th style="padding: 0.6rem;">Price</th>
-            <th style="padding: 0.6rem;">Status</th>
-            <th style="padding: 0.6rem; text-align: right;">Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${filtered.map(p => {
-            const isNext = p.code === nextCode;
-            let statusBadge = '<span style="background:rgba(100,116,139,0.15); color:#94a3b8; padding:0.2rem 0.55rem; border-radius:12px; font-weight:700; font-size:0.75rem;">Draft</span>';
-            let actionBtn = `<button class="btn-primary" style="font-size:0.75rem; padding:0.3rem 0.75rem;" onclick="startProductStudio('${p.code}')">Start ➔</button>`;
+      <div class="table-responsive" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+        <table class="data-table" style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+          <thead>
+            <tr style="border-bottom: 1px solid var(--border-subtle); color: var(--text-muted); text-align: left;">
+              <th style="padding: 0.75rem 0.6rem;">SKU Code</th>
+              <th style="padding: 0.75rem 0.6rem;">Product Name</th>
+              <th style="padding: 0.75rem 0.6rem;">Category</th>
+              <th style="padding: 0.75rem 0.6rem;">Price</th>
+              <th style="padding: 0.75rem 0.6rem;">Readiness</th>
+              <th style="padding: 0.75rem 0.6rem;">Status</th>
+              <th style="padding: 0.75rem 0.6rem; text-align: right;">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${visible.map(p => {
+              const isTarget = p.code === nextCode;
+              const isLive = p.status === 'Live';
+              const isPending = p.status === 'Pending Review';
+              const isRev = p.status === 'Revision Requested';
 
-            if (p.status === 'Pending Review') {
-              statusBadge = '<span style="background:rgba(245,158,11,0.15); color:#f59e0b; padding:0.2rem 0.55rem; border-radius:12px; font-weight:700; font-size:0.75rem;">⏳ Pending Review</span>';
-              actionBtn = `<button class="btn-secondary" style="font-size:0.75rem; padding:0.3rem 0.75rem;" onclick="startProductStudio('${p.code}')">Edit 🎨</button>`;
-          ${visible.map(p => {
-            const isTarget = p.code === nextCode;
-            const rowClass = isTarget ? 'style="background: rgba(0,223,137,0.06);"' : '';
-            return `
-              <tr ${rowClass}>
-                <td>
-                  <strong style="font-family: var(--font-mono); color: #38bdf8;">${p.code}</strong>
-                  ${isTarget ? '<span style="font-size:0.68rem; background:#00df89; color:#070b12; font-weight:900; padding:0.1rem 0.35rem; border-radius:4px; margin-left:0.3rem;">NEXT</span>' : ''}
-                </td>
-                <td style="font-weight: 600; color: #fff; max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                  ${p.name}
-                </td>
-                <td><span style="font-size:0.75rem; color:var(--text-muted);">${p.category || 'General'}</span></td>
-                <td><strong style="color: #00df89;">$${(p.price || 7.49).toFixed(2)}</strong></td>
-                <td>
-                  <span style="font-size:0.72rem; font-weight:800; padding:0.15rem 0.45rem; border-radius:6px; background:rgba(0,223,137,0.12); color:#00df89;">
-                    ${p.studioPercent || (p.status === 'Live' ? 100 : 80)}%
-                  </span>
-                </td>
-                <td>
-                  <span class="badge ${p.status === 'Live' ? 'badge-success' : p.status === 'Pending Review' ? 'badge-warning' : p.status === 'Revision Requested' ? 'badge-danger' : 'badge-neutral'}">
-                    ${p.status || 'Draft'}
-                  </span>
-                </td>
-                <td style="text-align: right;">
-                  <button class="btn-primary" style="font-size: 0.72rem; padding: 0.25rem 0.6rem;" onclick="openProductInStudio('${p.code}')">
-                    ${p.status === 'Live' ? '👁️ Inspect' : '⚡ Open Studio'}
-                  </button>
-                </td>
-              </tr>
-            `;
-          }).join('')}
-        </tbody>
-      </table>
+              let statusBadge = `<span class="badge ${isLive ? 'badge-success' : isPending ? 'badge-warning' : isRev ? 'badge-danger' : 'badge-neutral'}">${p.status || 'Draft'}</span>`;
+
+              let actionBtn = `<button class="btn-primary" style="font-size: 0.75rem; padding: 0.35rem 0.8rem;" onclick="openProductInStudio('${p.code}')">${isLive ? '👁️ Inspect' : '⚡ Open Studio'}</button>`;
+
+              return `
+                <tr style="border-bottom: 1px solid var(--border-subtle); background: ${isTarget ? 'rgba(0,223,137,0.06)' : 'transparent'};">
+                  <td style="padding: 0.75rem 0.6rem;">
+                    <strong style="font-family: var(--font-mono); color: #38bdf8;">${p.code}</strong>
+                    ${isTarget ? '<span style="font-size:0.68rem; background:#00df89; color:#070b12; font-weight:900; padding:0.1rem 0.35rem; border-radius:4px; margin-left:0.3rem;">NEXT</span>' : ''}
+                  </td>
+                  <td style="padding: 0.75rem 0.6rem; font-weight: 600; color: #fff; max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${(p.name || '').replace(/"/g, '&quot;')}">
+                    ${p.name || 'Untitled SKU'}
+                  </td>
+                  <td style="padding: 0.75rem 0.6rem; color: var(--text-muted); font-size: 0.78rem;">${p.category || 'General'}</td>
+                  <td style="padding: 0.75rem 0.6rem; font-weight: 700; color: #00df89;">$${Number(p.price || 7.49).toFixed(2)}</td>
+                  <td style="padding: 0.75rem 0.6rem;">
+                    <span style="font-size:0.72rem; font-weight:800; padding:0.15rem 0.45rem; border-radius:6px; background:rgba(0,223,137,0.12); color:#00df89;">
+                      ${p.studioPercent || (isLive ? 100 : 80)}%
+                    </span>
+                  </td>
+                  <td style="padding: 0.75rem 0.6rem;">${statusBadge}</td>
+                  <td style="padding: 0.75rem 0.6rem; text-align: right;">${actionBtn}</td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
       ${hasMore ? `
-        <div style="text-align:center; padding:1rem; border-top:1px solid var(--border-subtle);">
-          <button class="btn-secondary btn-sm" onclick="loadMoreQueue()">
-            ⬇️ Load Next 25 Products (${visible.length}/${prods.length} shown)
+        <div style="text-align: center; padding: 1rem; border-top: 1px solid var(--border-subtle);">
+          <button class="btn-secondary btn-sm" onclick="loadMoreQueue()" style="font-size: 0.82rem; padding: 0.5rem 1.2rem;">
+            ⬇️ Load Next 25 Products (${visible.length}/${filtered.length} shown)
           </button>
         </div>
       ` : ''}
@@ -761,13 +756,13 @@
     if (!draft || !DBM_STATE.activeEditingProduct) return;
     Object.assign(DBM_STATE.activeEditingProduct, draft);
     showToast('📥 Local draft restored for ' + code + '!');
-    render();
+    renderCurrentRoute();
   };
 
   window.discardStoredDraft = function(code) {
     localStorage.removeItem('dbm_studio_draft_' + code);
     showToast('🗑️ Draft discarded');
-    render();
+    renderCurrentRoute();
   };
 
   // ── VIEW 2: BRAND STUDIO (5-STEP WIZARD) ──
@@ -824,29 +819,40 @@
         </div>
       ` : ''}
 
-      <!-- Studio Stepper Header (1 to 5) -->
-      <div class="studio-stepper">
-        <button class="step-item ${step === 1 ? 'active' : ''} ${step > 1 ? 'completed' : ''}" onclick="goToStudioStep(1)">
-          <span class="step-badge">${step > 1 ? '✓' : '1'}</span>
-          <span>1. Blueprint & Prompt</span>
-        </button>
-        <button class="step-item ${step === 2 ? 'active' : ''} ${step > 2 ? 'completed' : ''}" onclick="goToStudioStep(2)">
-          <span class="step-badge">${step > 2 ? '✓' : '2'}</span>
-          <span>2. Deliverable Vault</span>
-        </button>
-        <button class="step-item ${step === 3 ? 'active' : ''} ${step > 3 ? 'completed' : ''}" onclick="goToStudioStep(3)">
-          <span class="step-badge">${step > 3 ? '✓' : '3'}</span>
-          <span>3. 10 Mockup Slots</span>
-        </button>
-        <button class="step-item ${step === 4 ? 'active' : ''} ${step > 4 ? 'completed' : ''}" onclick="goToStudioStep(4)">
-          <span class="step-badge">${step > 4 ? '✓' : '4'}</span>
-          <span>4. AI Etsy SEO</span>
-        </button>
-        <button class="step-item ${step === 5 ? 'active' : ''}" onclick="goToStudioStep(5)">
-          <span class="step-badge">5</span>
-          <span>5. Final QC & Submit</span>
-        </button>
-      </div>
+      <!-- Dynamic Step Completion Checks -->
+      ${(() => {
+        const s1Done = Boolean(activeProd.blueprintPrompt || activeProd.blueprint?.masterPrompt || activeProd.name);
+        const s2Done = Boolean(activeProd.vault?.canvaTemplateUrl || activeProd.canvaTemplateUrl || activeProd.vault?.storagePath);
+        const s3Done = Boolean((activeProd.mockups && activeProd.mockups.length >= 3) || (activeProd.mockupUrls && activeProd.mockupUrls.length >= 3));
+        const s4Done = Boolean(activeProd.seoTitle && (activeProd.seoTags?.length >= 5 || activeProd.seo?.tags?.length >= 5));
+        const s5Done = Boolean(activeProd.status === 'Pending Review' || activeProd.status === 'Live');
+
+        return `
+          <!-- Studio Stepper Header (1 to 5) -->
+          <div class="studio-stepper" style="display: flex; gap: 0.5rem; margin-bottom: 1.25rem; overflow-x: auto; -webkit-overflow-scrolling: touch;">
+            <button class="step-item ${step === 1 ? 'active' : ''} ${s1Done ? 'completed' : ''}" onclick="goToStudioStep(1)">
+              <span class="step-badge">${s1Done ? '✓' : '1'}</span>
+              <span>1. Blueprint & Prompt</span>
+            </button>
+            <button class="step-item ${step === 2 ? 'active' : ''} ${s2Done ? 'completed' : ''}" onclick="goToStudioStep(2)">
+              <span class="step-badge">${s2Done ? '✓' : '2'}</span>
+              <span>2. Deliverable Vault</span>
+            </button>
+            <button class="step-item ${step === 3 ? 'active' : ''} ${s3Done ? 'completed' : ''}" onclick="goToStudioStep(3)">
+              <span class="step-badge">${s3Done ? '✓' : '3'}</span>
+              <span>3. 10 Mockup Slots</span>
+            </button>
+            <button class="step-item ${step === 4 ? 'active' : ''} ${s4Done ? 'completed' : ''}" onclick="goToStudioStep(4)">
+              <span class="step-badge">${s4Done ? '✓' : '4'}</span>
+              <span>4. AI Etsy SEO</span>
+            </button>
+            <button class="step-item ${step === 5 ? 'active' : ''} ${s5Done ? 'completed' : ''}" onclick="goToStudioStep(5)">
+              <span class="step-badge">${s5Done ? '✓' : '5'}</span>
+              <span>5. Final QC & Submit</span>
+            </button>
+          </div>
+        `;
+      })()}
 
       <!-- Stepper Content Container -->
       <div class="card" style="border-top: 4px solid var(--brand-primary); min-height: 480px;">
@@ -869,104 +875,67 @@
             <h3 style="font-size: 1.25rem; font-weight: 800;">📐 Step 1: Product Blueprint & Creation Master Prompt</h3>
             <p style="color: var(--text-secondary); font-size: 0.85rem;">Use this layout blueprint and master prompt in Google Flow or Canva to build the deliverable template.</p>
           </div>
-          <button class="btn-ghost" onclick="openReferenceProductModal('PLA-01')">💡 View How PLA-01 Was Done</button>
+          <button class="btn-primary" onclick="generateAiBlueprintForProduct('${prod.code}')" style="background: linear-gradient(135deg, #00df89, #06b6d4);">
+            ⚡ Re-Generate Blueprint 2.0
+          </button>
         </div>
 
-        <!-- Brand Color Palette Banner -->
-        <div style="background: var(--bg-surface); padding: 0.85rem 1.25rem; border-radius: 12px; border: 1px solid var(--border-subtle); margin-bottom: 1.25rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
           <div>
-            <strong style="font-size: 0.78rem; color: var(--brand-primary); text-transform: uppercase;">🎨 ${brand.name} Color Palette (Click to copy hex):</strong>
-            <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.1rem;">Fonts: ${brand.fonts || 'Playfair Display + Lato'} · Voice: ${brand.voice || 'Warm & motivating'}</div>
-          </div>
-          <div style="display: flex; gap: 0.5rem;">
-            ${palette.map(hex => `
-              <button onclick="navigator.clipboard.writeText('${hex}'); showToast('📋 Copied ' + '${hex}');" style="display: flex; align-items: center; gap: 0.35rem; background: var(--surface-card); border: 1px solid var(--border-subtle); padding: 0.25rem 0.55rem; border-radius: 20px; color: #fff; font-size: 0.72rem; font-family: var(--font-mono); font-weight: 700; cursor: pointer;" title="Click to copy ${hex}">
-                <span style="width: 14px; height: 14px; border-radius: 50%; background: ${hex}; border: 1px solid rgba(255,255,255,0.2);"></span>
-                <span>${hex}</span>
-              </button>
-            `).join('')}
-          </div>
-        </div>
-
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
-          <div>
-            <label style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">Product Working Title</label>
-            <input type="text" id="step1ProdName" value="${prod.name || prod.seoTitle || ''}" style="width: 100%; padding: 0.65rem; background: var(--bg-surface); border: 1px solid var(--border-subtle); color: #38bdf8; font-weight: 700; border-radius: 8px;">
+            <label style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">Product Name</label>
+            <input type="text" id="step1ProdName" value="${prod.name || ''}" style="width: 100%; padding: 0.6rem; background: var(--bg-surface); border: 1px solid var(--border-subtle); color: #fff; border-radius: 8px; font-weight: 600; font-size: 0.9rem;">
           </div>
           <div>
-            <label style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">Category Framework</label>
-            <select id="step1ProdCategory" style="width: 100%; padding: 0.65rem; background: var(--bg-surface); border: 1px solid var(--border-subtle); color: #fff; font-weight: 600; border-radius: 8px;">
-              ${(brand.categories || ['Daily & Weekly Planners', 'Financial Trackers', 'Goal Setting & Habits', 'Life & Project Mgmt', 'Wellness & Self-Dev', 'Work & Career', 'Bundles', 'E-books']).map(c => `
-                <option value="${c}" ${c === prod.category ? 'selected' : ''}>${c}</option>
-              `).join('')}
+            <label style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">Category Niche</label>
+            <select id="step1ProdCategory" style="width: 100%; padding: 0.6rem; background: var(--bg-surface); border: 1px solid var(--border-subtle); color: #fff; border-radius: 8px; font-size: 0.85rem;">
+              ${(brand.categories || ['Daily Planners', 'Financial Trackers', 'Goal Setting', 'Wellness', 'Bundles']).map(c => `<option value="${c}" ${prod.category === c ? 'selected' : ''}>${c}</option>`).join('')}
             </select>
           </div>
         </div>
 
         <div style="margin-bottom: 1.5rem;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
-            <label style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--brand-primary);">⚡ Google Flow / Canva Master Creation Prompt</label>
-            <div style="display: flex; gap: 0.4rem;">
-              <button class="btn-ghost" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;" onclick="navigator.clipboard.writeText(document.getElementById('step1Prompt').value); showToast('📋 Copied Master Prompt!');">
-                📋 Copy Prompt
-              </button>
-              <button class="btn-secondary" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;" onclick="generateAiBlueprintForProduct('${prod.code}')">
-                ✨ Auto-Generate Blueprint 2.0
-              </button>
-            </div>
+            <label style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--brand-primary);">Master AI Production Prompt</label>
+            <button class="btn-ghost" onclick="copyBlueprintPrompt()" style="font-size: 0.75rem; padding: 0.2rem 0.6rem;">📋 Copy Prompt</button>
           </div>
-          <textarea id="step1Prompt" rows="6" style="width: 100%; background: var(--bg-surface); border: 1px solid rgba(0,223,137,0.3); padding: 0.85rem; border-radius: 10px; color: #e2e8f0; font-size: 0.82rem; font-family: var(--font-mono); line-height: 1.5;">${prompt}</textarea>
+          <textarea id="step1Prompt" rows="8" style="width: 100%; background: var(--bg-surface); border: 1px solid var(--border-subtle); color: #e2e8f0; padding: 0.75rem; border-radius: 8px; font-family: var(--font-mono); font-size: 0.8rem; line-height: 1.5;">${prompt}</textarea>
         </div>
 
-        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; border-top: 1px solid var(--border-subtle); padding-top: 1.25rem;">
+        <div style="display: flex; justify-content: flex-end; border-top: 1px solid var(--border-subtle); padding-top: 1.25rem;">
           <button class="btn-primary" onclick="saveStep1AndContinue('${prod.code}')">
-            Continue to Step 2: Deliverable Vault ➔
+            Continue to Step 2: Deliverables ➔
           </button>
         </div>
       `;
     }
 
     if (step === 2) {
-      // ── STEP 2: DELIVERABLE VAULT & CANVA LINK ──
+      // ── STEP 2: DELIVERABLE VAULT & CANVA MASTER ──
       const canvaUrl = prod.vault?.canvaTemplateUrl || prod.canvaTemplateUrl || '';
       const notionUrl = prod.vault?.notionTemplateUrl || prod.notionTemplateUrl || '';
-      const isCanvaTemplate = canvaUrl.includes('canva.com/design/') && (canvaUrl.includes('/template/') || canvaUrl.includes('template=') || canvaUrl.includes('shared'));
-      const isCanvaDesign = canvaUrl.includes('canva.com/design/');
 
       return `
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
           <div>
-            <h3 style="font-size: 1.25rem; font-weight: 800;">📦 Step 2: Deliverable Vault & Template Links</h3>
-            <p style="color: var(--text-secondary); font-size: 0.85rem;">Attach the finished Canva template link or upload the export PDF that the customer downloads.</p>
+            <h3 style="font-size: 1.25rem; font-weight: 800;">🔒 Step 2: Customer Deliverable Vault & Canva Master Link</h3>
+            <p style="color: var(--text-secondary); font-size: 0.85rem;">Attach the editable Canva/Notion master link and upload the final high-res printable PDF.</p>
           </div>
-          <span style="font-size: 0.8rem; color: #38bdf8; font-weight: 700;">SKU: ${prod.code}</span>
         </div>
 
         <div style="display: flex; flex-direction: column; gap: 1.25rem; margin-bottom: 1.5rem;">
           <div style="background: var(--bg-surface); padding: 1.25rem; border-radius: 12px; border: 1px solid var(--border-subtle);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
-              <label style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--brand-primary);">
-                🎨 Canva Template Share Link (Recommended)
-              </label>
-              <div id="canvaLinkStatus">
-                ${isCanvaTemplate ? '<span style="color:#00df89; font-weight:800; font-size:0.75rem;">🟢 Valid Template Share Link</span>' : isCanvaDesign ? '<span style="color:#f59e0b; font-weight:700; font-size:0.75rem;">⚠️ Design Link (Ensure "Share as Template" is on)</span>' : '<span style="color:var(--text-muted); font-size:0.75rem;">Paste share link below</span>'}
-              </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem;">
+              <label style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--brand-primary);">Editable Canva Master Template Link (Mandatory for QC)</label>
+              <span id="canvaLinkStatus" style="font-size: 0.72rem; font-weight: 700; color: ${canvaUrl.includes('canva.com') ? '#00df89' : '#f59e0b'};">
+                ${canvaUrl.includes('canva.com') ? '✓ Valid Canva Link' : '⚠️ Paste Canva share link below'}
+              </span>
             </div>
-            
-            <div style="display: flex; gap: 0.5rem;">
-              <input type="url" id="step2CanvaUrl" value="${canvaUrl}" oninput="validateCanvaLinkInput(this.value)" placeholder="https://www.canva.com/design/DA.../template/..." style="flex: 1; padding: 0.7rem; background: var(--surface-card); border: 1px solid var(--border-subtle); color: #fff; border-radius: 8px; font-size: 0.88rem;">
-              <button class="btn-secondary" onclick="testCanvaLink()" style="font-size: 0.8rem; padding: 0.5rem 1rem;">
-                🔗 Test Link ↗
-              </button>
-            </div>
-            <p style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.3rem;">Ensure template sharing permissions are set to "Anyone with the link can use as template".</p>
+            <input type="url" id="step2CanvaUrl" value="${canvaUrl}" oninput="validateCanvaLinkInput(this.value)" placeholder="https://www.canva.com/design/DAF.../view?utm_content=..." style="width: 100%; padding: 0.65rem; background: var(--surface-card); border: 1px solid var(--border-subtle); color: #fff; border-radius: 8px; font-size: 0.85rem;">
           </div>
 
           <div style="background: var(--bg-surface); padding: 1.25rem; border-radius: 12px; border: 1px solid var(--border-subtle);">
-            <label style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--accent-purple); display: block; margin-bottom: 0.4rem;">
-              📝 Optional: Notion Template Link / Google Drive Asset Link
-            </label>
-            <input type="url" id="step2NotionUrl" value="${notionUrl}" placeholder="https://notion.so/..." style="width: 100%; padding: 0.7rem; background: var(--surface-card); border: 1px solid var(--border-subtle); color: #fff; border-radius: 8px; font-size: 0.88rem;">
+            <label style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">Optional Notion / Google Drive Resource Link</label>
+            <input type="url" id="step2NotionUrl" value="${notionUrl}" placeholder="https://notion.so/..." style="width: 100%; padding: 0.65rem; background: var(--surface-card); border: 1px solid var(--border-subtle); color: #fff; border-radius: 8px; font-size: 0.85rem;">
           </div>
 
           <div style="background: var(--bg-surface); padding: 1.25rem; border-radius: 12px; border: 1px solid var(--border-subtle);">
@@ -1003,21 +972,29 @@
           </button>
         </div>
 
-        <!-- 10 Mockup Slots Grid -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; margin-bottom: 1.5rem; max-height: 380px; overflow-y: auto; padding-right: 0.5rem;">
+        <!-- 10 Mockup Slots Grid with Image Thumbnail Cards -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 0.85rem; margin-bottom: 1.5rem; max-height: 420px; overflow-y: auto; padding-right: 0.5rem;">
           ${mockupSlots.map(s => {
             const val = mockups[s.slot - 1] || '';
             const hasImg = val.startsWith('http');
             return `
-              <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); padding: 0.75rem; border-radius: 10px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.2rem;">
-                  <strong style="font-size: 0.78rem; color: var(--brand-primary);">Slot ${s.slot}: ${s.name}</strong>
-                  ${hasImg ? '<span style="font-size:0.68rem; color:#00df89; font-weight:800;">✓ Attached</span>' : ''}
+              <div style="background: var(--bg-surface); border: 1px solid ${hasImg ? 'rgba(0,223,137,0.3)' : 'var(--border-subtle)'}; padding: 0.75rem; border-radius: 10px; display: flex; gap: 0.75rem; align-items: center;">
+                <!-- Thumbnail Preview Box -->
+                <div style="width: 52px; height: 52px; border-radius: 8px; background: rgba(0,0,0,0.35); border: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;">
+                  ${hasImg ? `<img src="${val}" alt="Slot ${s.slot}" style="width: 100%; height: 100%; object-fit: cover;">` : '<span style="font-size: 1.2rem; opacity: 0.4;">🖼️</span>'}
                 </div>
-                <div style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 0.4rem;">${s.desc}</div>
-                <div style="display: flex; gap: 0.4rem; align-items: center;">
-                  <input type="text" class="mockup-input-slot" data-slot="${s.slot}" value="${val}" placeholder="Image URL (e.g. https://...)" style="flex: 1; padding: 0.45rem; background: var(--surface-card); border: 1px solid var(--border-subtle); color: #fff; border-radius: 6px; font-size: 0.78rem;">
-                  ${hasImg ? `<a href="${val}" target="_blank" style="font-size:0.75rem; color:#38bdf8; text-decoration:none; padding:0.2rem 0.4rem;" title="Preview image">👁️</a>` : ''}
+
+                <!-- Input & Label -->
+                <div style="flex: 1; min-width: 0;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.15rem;">
+                    <strong style="font-size: 0.76rem; color: var(--brand-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Slot ${s.slot}: ${s.name}</strong>
+                    ${hasImg ? '<span style="font-size:0.65rem; color:#00df89; font-weight:800;">✓</span>' : ''}
+                  </div>
+                  <div style="font-size: 0.68rem; color: var(--text-muted); margin-bottom: 0.35rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${s.desc}">${s.desc}</div>
+                  <div style="display: flex; gap: 0.3rem; align-items: center;">
+                    <input type="text" class="mockup-input-slot" data-slot="${s.slot}" value="${val}" placeholder="Image URL (e.g. https://...)" style="flex: 1; min-width: 0; padding: 0.35rem 0.5rem; background: var(--surface-card); border: 1px solid var(--border-subtle); color: #fff; border-radius: 6px; font-size: 0.75rem;">
+                    ${hasImg ? `<a href="${val}" target="_blank" style="font-size:0.75rem; color:#38bdf8; text-decoration:none; padding:0.15rem 0.3rem;" title="Preview image">👁️</a>` : ''}
+                  </div>
                 </div>
               </div>
             `;
@@ -1074,13 +1051,14 @@
 
         <div style="display: grid; grid-template-columns: 1.4fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
           <div>
-            <!-- Title with character counter -->
+            <!-- Title with character counter & syntax warning -->
             <div style="margin-bottom: 1rem;">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem;">
                 <label style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--brand-primary);">Etsy Listing Title</label>
                 <span id="titleCharCount" style="font-size: 0.75rem; font-weight: 700; color: ${title.length > 140 ? '#f43f5e' : '#38bdf8'};">${title.length} / 140 Chars</span>
               </div>
               <input type="text" id="step4Title" value="${title.replace(/"/g, '&quot;')}" oninput="updateTitleCharCount(this.value)" placeholder="Etsy listing title with top search keywords..." style="width: 100%; padding: 0.7rem; background: var(--bg-surface); border: 1px solid var(--border-subtle); color: #fff; border-radius: 8px; font-weight: 600; font-size: 0.88rem;">
+              <div id="titleSyntaxWarning" style="display: none; font-size: 0.72rem; color: #f43f5e; margin-top: 0.3rem; font-weight: 600;"></div>
             </div>
 
             <!-- 13 Tags with Counter & Copy Action -->
@@ -1170,26 +1148,38 @@
             </div>
           </div>
 
-          <!-- 4-Point Self-Checklist -->
+          <!-- 4-Point Self-Checklist with Direct Fix Links -->
           <div style="background: var(--bg-surface); padding: 1.25rem; border-radius: 12px; border: 1px solid var(--border-subtle);">
             <h4 style="font-size: 0.88rem; font-weight: 800; color: var(--brand-primary); margin-bottom: 0.8rem;">✅ Auto-Quality Verification Checklist</h4>
             <div style="display: flex; flex-direction: column; gap: 0.6rem; font-size: 0.82rem;">
-              <label style="display: flex; align-items: center; gap: 0.5rem;">
-                <span style="color:${hasTitle ? '#00df89' : '#f43f5e'}; font-weight:800;">${hasTitle ? '✓' : '✗'}</span>
-                <span>Etsy SEO Title is formatted (10–140 chars): <strong>${title.length} chars</strong></span>
-              </label>
-              <label style="display: flex; align-items: center; gap: 0.5rem;">
-                <span style="color:${hasTags ? '#00df89' : '#f43f5e'}; font-weight:800;">${hasTags ? '✓' : '✗'}</span>
-                <span>High-intent search tags populated: <strong>${tags.length} tags</strong> (min 5)</span>
-              </label>
-              <label style="display: flex; align-items: center; gap: 0.5rem;">
-                <span style="color:${hasCanva ? '#00df89' : '#f43f5e'}; font-weight:800;">${hasCanva ? '✓' : '✗'}</span>
-                <span>Canva deliverable template link attached & valid URL</span>
-              </label>
-              <label style="display: flex; align-items: center; gap: 0.5rem;">
-                <span style="color:${hasPrice ? '#00df89' : '#f43f5e'}; font-weight:800;">${hasPrice ? '✓' : '✗'}</span>
-                <span>Retail price verified: <strong>$${price} USD</strong></span>
-              </label>
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;">
+                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                  <span style="color:${hasTitle ? '#00df89' : '#f43f5e'}; font-weight:800;">${hasTitle ? '✓' : '✗'}</span>
+                  <span>Etsy SEO Title is formatted (10–140 chars): <strong>${title.length} chars</strong></span>
+                </label>
+                ${!hasTitle ? '<button class="btn-ghost" style="padding:0.15rem 0.4rem; font-size:0.7rem; color:#38bdf8;" onclick="goToStudioStep(4)">Fix in Step 4 ➔</button>' : ''}
+              </div>
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;">
+                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                  <span style="color:${hasTags ? '#00df89' : '#f43f5e'}; font-weight:800;">${hasTags ? '✓' : '✗'}</span>
+                  <span>High-intent search tags populated: <strong>${tags.length} tags</strong> (min 5)</span>
+                </label>
+                ${!hasTags ? '<button class="btn-ghost" style="padding:0.15rem 0.4rem; font-size:0.7rem; color:#38bdf8;" onclick="goToStudioStep(4)">Fix in Step 4 ➔</button>' : ''}
+              </div>
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;">
+                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                  <span style="color:${hasCanva ? '#00df89' : '#f43f5e'}; font-weight:800;">${hasCanva ? '✓' : '✗'}</span>
+                  <span>Canva deliverable template link attached & valid URL</span>
+                </label>
+                ${!hasCanva ? '<button class="btn-ghost" style="padding:0.15rem 0.4rem; font-size:0.7rem; color:#38bdf8;" onclick="goToStudioStep(2)">Fix in Step 2 ➔</button>' : ''}
+              </div>
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;">
+                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                  <span style="color:${hasPrice ? '#00df89' : '#f43f5e'}; font-weight:800;">${hasPrice ? '✓' : '✗'}</span>
+                  <span>Retail price verified: <strong>$${price} USD</strong></span>
+                </label>
+                ${!hasPrice ? '<button class="btn-ghost" style="padding:0.15rem 0.4rem; font-size:0.7rem; color:#38bdf8;" onclick="goToStudioStep(4)">Fix in Step 4 ➔</button>' : ''}
+              </div>
             </div>
           </div>
         </div>
@@ -1286,10 +1276,28 @@
 
   window.updateTitleCharCount = function(val) {
     const el = document.getElementById('titleCharCount');
-    if (!el) return;
+    const warnEl = document.getElementById('titleSyntaxWarning');
     const len = val.length;
-    el.textContent = len + ' / 140 Chars';
-    el.style.color = len > 140 ? '#f43f5e' : '#38bdf8';
+    if (el) {
+      el.textContent = `${len} / 140 Chars`;
+      el.style.color = len > 140 ? '#f43f5e' : (len >= 10 ? '#38bdf8' : '#fbbf24');
+    }
+    if (warnEl) {
+      const hasPipe = val.includes('|');
+      const hasSpecial = /[#@]/.test(val);
+      if (hasPipe) {
+        warnEl.textContent = '⚠️ "|" (pipe) is prohibited on Etsy titles. Replace with "-" or "•"';
+        warnEl.style.display = 'block';
+      } else if (hasSpecial) {
+        warnEl.textContent = '⚠️ "#" and "@" are prohibited on Etsy.';
+        warnEl.style.display = 'block';
+      } else if (len > 140) {
+        warnEl.textContent = '⚠️ Title exceeds Etsy 140 character limit.';
+        warnEl.style.display = 'block';
+      } else {
+        warnEl.style.display = 'none';
+      }
+    }
   };
 
   window.updateTagCountBadge = function(val) {
@@ -1707,9 +1715,32 @@
 
   window.filterReferencesSearch = function(query) {
     DBM_STATE.refSearchQuery = query;
-    const container = document.getElementById('dbm-main');
-    if (container && window.location.hash === '#references') {
-      renderReferencesView(container);
+    const grid = document.getElementById('referencesGridContainer');
+    if (grid) {
+      const allRefs = getReferenceProducts();
+      let filtered = [...allRefs];
+      const q = (query || '').toLowerCase().trim();
+      const filter = DBM_STATE.refCategoryFilter || 'all';
+
+      if (filter === 'daily') {
+        filtered = filtered.filter(p => (p.category || '').toLowerCase().includes('daily') || (p.category || '').toLowerCase().includes('weekly'));
+      } else if (filter === 'finance') {
+        filtered = filtered.filter(p => (p.category || '').toLowerCase().includes('finance') || (p.category || '').toLowerCase().includes('budget'));
+      } else if (filter === 'adhd') {
+        filtered = filtered.filter(p => (p.category || '').toLowerCase().includes('adhd') || (p.category || '').toLowerCase().includes('wellness') || (p.category || '').toLowerCase().includes('habit'));
+      } else if (filter === 'academic') {
+        filtered = filtered.filter(p => (p.category || '').toLowerCase().includes('student') || (p.category || '').toLowerCase().includes('teacher') || (p.category || '').toLowerCase().includes('mom'));
+      }
+
+      if (q) {
+        filtered = filtered.filter(p =>
+          (p.name || '').toLowerCase().includes(q) ||
+          (p.code || '').toLowerCase().includes(q) ||
+          (p.seoTitle || '').toLowerCase().includes(q) ||
+          (p.category || '').toLowerCase().includes(q)
+        );
+      }
+      grid.innerHTML = renderReferenceCards(filtered);
     }
   };
 
@@ -2380,12 +2411,18 @@
             <form onsubmit="changeDbmPin(event)" style="display: flex; flex-direction: column; gap: 1rem;">
               <div>
                 <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">New 4-Digit PIN</label>
-                <input type="password" maxlength="4" id="settingsNewPin" required placeholder="••••" style="width: 100%; padding: 0.65rem; background: var(--bg-surface); border: 1px solid var(--border-subtle); color: var(--text-primary); border-radius: 8px; font-size: 1.2rem; letter-spacing: 4px; text-align: center;">
+                <div style="position: relative;">
+                  <input type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" id="settingsNewPin" required placeholder="••••" style="width: 100%; padding: 0.65rem 2.4rem 0.65rem 0.65rem; background: var(--bg-surface); border: 1px solid var(--border-subtle); color: var(--text-primary); border-radius: 8px; font-size: 1.2rem; letter-spacing: 4px; text-align: center;">
+                  <button type="button" onclick="togglePinVisibility('settingsNewPin', this)" style="position: absolute; right: 0.6rem; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1rem;" title="Show/Hide PIN">👁️</button>
+                </div>
               </div>
 
               <div>
                 <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">Confirm New PIN</label>
-                <input type="password" maxlength="4" id="settingsConfirmPin" required placeholder="••••" style="width: 100%; padding: 0.65rem; background: var(--bg-surface); border: 1px solid var(--border-subtle); color: var(--text-primary); border-radius: 8px; font-size: 1.2rem; letter-spacing: 4px; text-align: center;">
+                <div style="position: relative;">
+                  <input type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" id="settingsConfirmPin" required placeholder="••••" style="width: 100%; padding: 0.65rem 2.4rem 0.65rem 0.65rem; background: var(--bg-surface); border: 1px solid var(--border-subtle); color: var(--text-primary); border-radius: 8px; font-size: 1.2rem; letter-spacing: 4px; text-align: center;">
+                  <button type="button" onclick="togglePinVisibility('settingsConfirmPin', this)" style="position: absolute; right: 0.6rem; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1rem;" title="Show/Hide PIN">👁️</button>
+                </div>
               </div>
 
               <button type="submit" class="btn-primary" style="justify-content: center; margin-top: 0.5rem; background: linear-gradient(135deg, #a855f7, #06b6d4);">
@@ -2409,6 +2446,18 @@
       </div>
     `;
   }
+
+  window.togglePinVisibility = function(inputId, btn) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    if (input.type === 'password') {
+      input.type = 'text';
+      btn.textContent = '🔒';
+    } else {
+      input.type = 'password';
+      btn.textContent = '👁️';
+    }
+  };
 
   window.changeDbmPin = async function(event) {
     event.preventDefault();
