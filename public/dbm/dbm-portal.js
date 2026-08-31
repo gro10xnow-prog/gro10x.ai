@@ -1,9 +1,9 @@
 /**
  * public/dbm/dbm-portal.js
  * ─────────────────────────────────────────────────────────────────────────────
- * GRO10X Digital Brand Manager Dedicated Portal Engine v2.2
- * Tab 2: Enhanced 5-Stage Studio Wizard with Visual Palette, Canva Validator,
- * Bulk Mockup Loader, 13/13 Tag Badge, and Auto-Advancement.
+ * GRO10X Digital Brand Manager Dedicated Portal Engine v2.3
+ * Tab 3: Enhanced Gold-Standard Reference Library with Category Filters,
+ * Real-Time Search, 16-Page Architecture, and Tag Baseline Cloning.
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
@@ -18,6 +18,8 @@
     currentStudioCode: 'PLA-14',
     currentStudioStep: 1, // 1 to 5
     tableFilter: 'all', // 'all', 'live', 'today', 'review'
+    refCategoryFilter: 'all', // 'all', 'daily', 'finance', 'adhd', 'academic'
+    refSearchQuery: '',
     standups: [],
     todaySubmittedCount: 0,
     dailyTarget: 8,
@@ -895,6 +897,7 @@
 
     try {
       const res = await DBM_API.post('/ai/product-blueprint', {
+        productName: name,
         title: name,
         category: category,
         brandName: brand.name,
@@ -969,9 +972,10 @@
 
     try {
       const res = await DBM_API.post('/ai/etsy-seo', {
+        productName: name,
         title: name,
         category: prod.category || 'Productivity Planner',
-        niche: brand.niche,
+        brandNiche: brand.niche,
         brandName: brand.name
       }).catch(() => null);
 
@@ -1041,42 +1045,116 @@
   function renderReferencesView(container) {
     const brand = DBM_STATE.assignedBrands.find(b => b.id === DBM_STATE.activeBrandId) || DBM_STATE.assignedBrands[0] || {};
     const catalog = DBM_STATE.productsCatalog[brand.id] || [];
-    const referenceProducts = catalog.filter(p => p.status === 'Live' || ['PLA-01','PLA-02','PLA-03','PLA-04','PLA-05','PLA-06','PLA-07','PLA-08','PLA-09','PLA-10','PLA-11','PLA-12','PLA-13'].includes(p.code));
+    const allRefs = catalog.filter(p => p.status === 'Live' || ['PLA-01','PLA-02','PLA-03','PLA-04','PLA-05','PLA-06','PLA-07','PLA-08','PLA-09','PLA-10','PLA-11','PLA-12','PLA-13'].includes(p.code));
+
+    const filter = DBM_STATE.refCategoryFilter || 'all';
+    const query = (DBM_STATE.refSearchQuery || '').toLowerCase().trim();
+
+    let filtered = allRefs.filter(p => {
+      // Category filter
+      if (filter === 'daily' && !p.name?.toLowerCase().includes('daily') && !p.name?.toLowerCase().includes('weekly') && !p.category?.toLowerCase().includes('daily')) return false;
+      if (filter === 'finance' && !p.name?.toLowerCase().includes('budget') && !p.name?.toLowerCase().includes('debt') && !p.name?.toLowerCase().includes('expense') && !p.category?.toLowerCase().includes('financial')) return false;
+      if (filter === 'adhd' && !p.name?.toLowerCase().includes('adhd') && !p.name?.toLowerCase().includes('routine') && !p.name?.toLowerCase().includes('wellness')) return false;
+      if (filter === 'academic' && !p.name?.toLowerCase().includes('teacher') && !p.name?.toLowerCase().includes('student') && !p.name?.toLowerCase().includes('mom')) return false;
+
+      // Keyword query
+      if (query) {
+        const matchTitle = (p.name || p.seoTitle || '').toLowerCase().includes(query);
+        const matchCode = (p.code || '').toLowerCase().includes(query);
+        const matchCat = (p.category || '').toLowerCase().includes(query);
+        if (!matchTitle && !matchCode && !matchCat) return false;
+      }
+      return true;
+    });
 
     container.innerHTML = `
-      <div style="margin-bottom: 2rem;">
-        <h1 style="font-family: var(--font-heading); font-size: 1.8rem; font-weight: 800;">
-          🌟 Gold-Standard Reference Library (${referenceProducts.length} Live Products)
-        </h1>
-        <p style="color: var(--text-secondary); font-size: 0.95rem;">
-          These 13 products were built and published to live Etsy standard. Click any product to inspect its Canva deliverable, Mockup assets, and 13 SEO tags as your exact benchmark.
-        </p>
+      <div style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <h1 style="font-family: var(--font-heading); font-size: 1.8rem; font-weight: 800;">
+            🌟 Gold-Standard Reference Library (${allRefs.length} Live Models)
+          </h1>
+          <p style="color: var(--text-secondary); font-size: 0.92rem;">
+            Use these published models as your direct quality and formatting standard. Click any card to view Canva links, 13 tags, and layout architecture.
+          </p>
+        </div>
+
+        <!-- Search Input -->
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          <input type="text" id="refSearchInput" value="${DBM_STATE.refSearchQuery}" oninput="filterReferencesSearch(this.value)" placeholder="🔍 Search reference models..." style="padding: 0.6rem 1rem; background: var(--surface-card); border: 1px solid var(--border-subtle); color: #fff; border-radius: 10px; font-size: 0.85rem; width: 240px;">
+        </div>
       </div>
 
-      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.25rem;">
-        ${referenceProducts.map(p => `
-          <div class="card" style="border-left: 4px solid var(--accent-purple); transition: transform 0.2s ease; cursor: pointer;" onclick="openReferenceProductModal('${p.code}')">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
-              <span style="font-family: var(--font-mono); font-weight: 800; font-size: 0.85rem; color: #c084fc;">${p.code}</span>
-              <span style="font-size: 0.72rem; font-weight: 800; color: #00df89; background: rgba(0,223,137,0.12); padding: 0.2rem 0.5rem; border-radius: 12px;">🟢 Live Standard</span>
-            </div>
+      <!-- Category Filter Pills -->
+      <div style="display: flex; gap: 0.4rem; margin-bottom: 1.5rem; overflow-x: auto; background: var(--bg-surface); padding: 0.35rem; border-radius: 12px; border: 1px solid var(--border-subtle);">
+        <button onclick="setRefCategoryFilter('all')" style="padding: 0.45rem 0.9rem; border-radius: 8px; font-size: 0.78rem; font-weight: 700; border: none; cursor: pointer; background: ${filter === 'all' ? 'var(--brand-primary)' : 'transparent'}; color: ${filter === 'all' ? '#070b12' : 'var(--text-muted)'};">
+          All References (${allRefs.length})
+        </button>
+        <button onclick="setRefCategoryFilter('daily')" style="padding: 0.45rem 0.9rem; border-radius: 8px; font-size: 0.78rem; font-weight: 700; border: none; cursor: pointer; background: ${filter === 'daily' ? '#38bdf8' : 'transparent'}; color: ${filter === 'daily' ? '#070b12' : 'var(--text-muted)'};">
+          📅 Daily & Weekly (5)
+        </button>
+        <button onclick="setRefCategoryFilter('finance')" style="padding: 0.45rem 0.9rem; border-radius: 8px; font-size: 0.78rem; font-weight: 700; border: none; cursor: pointer; background: ${filter === 'finance' ? '#00df89' : 'transparent'}; color: ${filter === 'finance' ? '#070b12' : 'var(--text-muted)'};">
+          💰 Financial & Budget (3)
+        </button>
+        <button onclick="setRefCategoryFilter('adhd')" style="padding: 0.45rem 0.9rem; border-radius: 8px; font-size: 0.78rem; font-weight: 700; border: none; cursor: pointer; background: ${filter === 'adhd' ? '#a855f7' : 'transparent'}; color: ${filter === 'adhd' ? '#fff' : 'var(--text-muted)'};">
+          🧠 ADHD & Mindset (3)
+        </button>
+        <button onclick="setRefCategoryFilter('academic')" style="padding: 0.45rem 0.9rem; border-radius: 8px; font-size: 0.78rem; font-weight: 700; border: none; cursor: pointer; background: ${filter === 'academic' ? '#f59e0b' : 'transparent'}; color: ${filter === 'academic' ? '#070b12' : 'var(--text-muted)'};">
+          🎓 Academic & Mom (2)
+        </button>
+      </div>
 
-            <h3 style="font-size: 1.05rem; font-weight: 800; margin-bottom: 0.4rem; color: #fff; line-height: 1.3;">
-              ${p.name || p.seoTitle || 'Live Product'}
-            </h3>
-            
-            <p style="color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 0.8rem;">
-              Category: ${p.category || 'Productivity'} · Price: <strong style="color: #00df89;">$${Number(p.price || 7.49).toFixed(2)}</strong>
-            </p>
-
-            <button class="btn-ghost" style="width: 100%; justify-content: center; font-size: 0.8rem; color: #c084fc; border-color: rgba(168,85,247,0.3);">
-              👀 Inspect Complete Assets & SEO →
-            </button>
-          </div>
-        `).join('')}
+      <!-- Grid of Cards -->
+      <div id="referencesGridContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.25rem;">
+        ${renderReferenceCards(filtered)}
       </div>
     `;
   }
+
+  function renderReferenceCards(products) {
+    if (products.length === 0) {
+      return '<div style="color: var(--text-muted); padding: 3rem; text-align: center; grid-column: 1 / -1;">No reference products match your search.</div>';
+    }
+
+    return products.map(p => `
+      <div class="card" style="border-left: 4px solid var(--accent-purple); transition: transform 0.2s ease; cursor: pointer;" onclick="openReferenceProductModal('${p.code}')">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+          <span style="font-family: var(--font-mono); font-weight: 800; font-size: 0.85rem; color: #c084fc;">${p.code}</span>
+          <span style="font-size: 0.72rem; font-weight: 800; color: #00df89; background: rgba(0,223,137,0.12); padding: 0.2rem 0.5rem; border-radius: 12px;">🟢 Live Standard</span>
+        </div>
+
+        <h3 style="font-size: 1.05rem; font-weight: 800; margin-bottom: 0.4rem; color: #fff; line-height: 1.3;">
+          ${p.name || p.seoTitle || 'Live Product'}
+        </h3>
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; font-size: 0.8rem; color: var(--text-secondary);">
+          <span>${p.category || 'Productivity'}</span>
+          <strong style="color: #00df89;">$${Number(p.price || 7.49).toFixed(2)} USD</strong>
+        </div>
+
+        <div style="display: flex; gap: 0.4rem; align-items: center;">
+          <span style="font-size: 0.72rem; font-weight: 700; color: #38bdf8; background: rgba(6,182,212,0.1); padding: 0.15rem 0.45rem; border-radius: 6px;">16 Spreads PDF</span>
+          <span style="font-size: 0.72rem; font-weight: 700; color: #a855f7; background: rgba(168,85,247,0.1); padding: 0.15rem 0.45rem; border-radius: 6px;">13 Tags</span>
+        </div>
+
+        <button class="btn-ghost" style="width: 100%; justify-content: center; font-size: 0.8rem; color: #c084fc; border-color: rgba(168,85,247,0.3); margin-top: 0.75rem;">
+          👀 Inspect Complete Assets & SEO →
+        </button>
+      </div>
+    `).join('');
+  }
+
+  window.setRefCategoryFilter = function(filter) {
+    DBM_STATE.refCategoryFilter = filter;
+    renderCurrentRoute();
+  };
+
+  window.filterReferencesSearch = function(query) {
+    DBM_STATE.refSearchQuery = query;
+    const container = document.getElementById('dbm-main');
+    if (container && window.location.hash === '#references') {
+      renderReferencesView(container);
+    }
+  };
 
   window.openReferenceProductModal = function(code) {
     const brand = DBM_STATE.assignedBrands.find(b => b.id === DBM_STATE.activeBrandId) || DBM_STATE.assignedBrands[0];
@@ -1088,12 +1166,12 @@
     if (!modal || !inner) return;
 
     const title = prod.seoTitle || prod.seo?.title || prod.name || 'Reference Title';
-    const tags = Array.isArray(prod.seoTags) ? prod.seoTags : (prod.seo?.tags || ['planner', 'productivity', 'goodnotes', 'daily organizer', 'printable template', 'budget ledger']);
-    const desc = prod.seoDescription || prod.seo?.description || 'Full Etsy description and deliverable formatting standard.';
+    const tags = Array.isArray(prod.seoTags) ? prod.seoTags : (prod.seo?.tags || ['planner', 'productivity', 'goodnotes', 'daily organizer', 'printable template', 'budget ledger', 'financial freedom', 'adhd tracker', 'habit schedule', 'weekly spread', 'ipad agenda', 'neutral aesthetic', 'instant download']);
+    const desc = prod.seoDescription || prod.seo?.description || '✨ Instant Download Digital Planner template.\n\nWHAT IS INCLUDED:\n- High-resolution printable PDF files (US Letter & A4)\n- Hyperlinked GoodNotes & Notability digital template\n- Canva editable master link\n- Lifetime access & free updates\n\nHOW IT WORKS:\n1. Complete your purchase\n2. Download instant access PDF\n3. Open in GoodNotes or print at home!';
     const canva = prod.vault?.canvaTemplateUrl || prod.canvaTemplateUrl || 'https://canva.com/design/reference-template';
 
     inner.innerHTML = `
-      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.75rem;">
         <div>
           <span style="font-size: 0.75rem; font-weight: 800; color: #c084fc; text-transform: uppercase; letter-spacing: 0.5px;">🌟 Gold Standard Reference Specification</span>
           <h2 style="font-size: 1.4rem; font-weight: 900; color: #fff; margin-top: 0.2rem;">${prod.code}: ${prod.name || title}</h2>
@@ -1102,25 +1180,59 @@
       </div>
 
       <div style="display: flex; flex-direction: column; gap: 1.2rem;">
+        <!-- Section 1: Etsy Title -->
         <div style="background: var(--bg-surface); padding: 1rem; border-radius: 10px; border: 1px solid var(--border-subtle);">
-          <label style="font-size: 0.72rem; font-weight: 800; color: var(--brand-primary); text-transform: uppercase;">Etsy SEO Title Standard (Under 140 Chars)</label>
-          <div style="font-size: 0.9rem; font-weight: 700; color: #fff; margin-top: 0.3rem;">${title}</div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem;">
+            <label style="font-size: 0.72rem; font-weight: 800; color: var(--brand-primary); text-transform: uppercase;">Etsy SEO Title Standard (Under 140 Chars)</label>
+            <span style="font-size: 0.72rem; color: #38bdf8; font-weight: 700;">${title.length} Chars</span>
+          </div>
+          <div style="font-size: 0.9rem; font-weight: 700; color: #fff;">${title}</div>
         </div>
 
+        <!-- Section 2: 13 SEO Tags with Quick Baseline Clone Action -->
         <div style="background: var(--bg-surface); padding: 1rem; border-radius: 10px; border: 1px solid var(--border-subtle);">
-          <label style="font-size: 0.72rem; font-weight: 800; color: var(--accent-cyan); text-transform: uppercase;">13 High-Intent Etsy SEO Tags</label>
-          <div style="display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.4rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem; flex-wrap: wrap; gap: 0.4rem;">
+            <label style="font-size: 0.72rem; font-weight: 800; color: var(--accent-cyan); text-transform: uppercase;">13 High-Intent Etsy SEO Tags</label>
+            <div style="display: flex; gap: 0.4rem;">
+              <button class="btn-ghost" style="padding: 0.2rem 0.55rem; font-size: 0.72rem;" onclick="navigator.clipboard.writeText('${tags.join(', ')}'); showToast('📋 Copied 13 Reference Tags!');">
+                📋 Copy Tags
+              </button>
+              <button class="btn-secondary" style="padding: 0.2rem 0.55rem; font-size: 0.72rem;" onclick="applyReferenceTagsToStudio('${tags.join(', ')}')">
+                ⚡ Apply to Active Studio Draft
+              </button>
+            </div>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
             ${tags.map(t => `<span style="background: rgba(6,182,212,0.15); color: #38bdf8; padding: 0.2rem 0.6rem; border-radius: 6px; font-size: 0.78rem; font-weight: 600;">#${t}</span>`).join('')}
           </div>
         </div>
 
+        <!-- Section 3: Canva Link -->
         <div style="background: var(--bg-surface); padding: 1rem; border-radius: 10px; border: 1px solid var(--border-subtle);">
-          <label style="font-size: 0.72rem; font-weight: 800; color: var(--accent-purple); text-transform: uppercase;">Deliverable Canva Template</label>
+          <label style="font-size: 0.72rem; font-weight: 800; color: var(--accent-purple); text-transform: uppercase;">Deliverable Canva Template Master Link</label>
           <div style="margin-top: 0.3rem;">
-            <a href="${canva}" target="_blank" style="color: #00df89; font-weight: 700; font-size: 0.85rem; text-decoration: none;">🔗 Open Reference Canva Template Link ➔</a>
+            <a href="${canva}" target="_blank" style="color: #00df89; font-weight: 700; font-size: 0.88rem; text-decoration: none; display: inline-flex; align-items: center; gap: 0.4rem;">
+              🔗 Open Reference Canva Template Link ➔
+            </a>
           </div>
         </div>
 
+        <!-- Section 4: 16-Spread Breakdown Blueprint -->
+        <div style="background: var(--bg-surface); padding: 1rem; border-radius: 10px; border: 1px solid var(--border-subtle);">
+          <label style="font-size: 0.72rem; font-weight: 800; color: #f59e0b; text-transform: uppercase;">16-Spread Page Architecture Guide</label>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; font-size: 0.78rem; color: var(--text-secondary); margin-top: 0.4rem;">
+            <div>• Page 1: Cover & Index Dashboard</div>
+            <div>• Page 2: Daily Top-3 Priority Matrix</div>
+            <div>• Page 3: Hourly Time-Blocking Spread</div>
+            <div>• Page 4: Weekly Sprint Milestone Log</div>
+            <div>• Page 5: Monthly Goal Alignment Sheet</div>
+            <div>• Page 6: 30-Day Circular Habit Matrix</div>
+            <div>• Page 7: Financial Cash Flow Tracker</div>
+            <div>• Page 8: Evening Wins & Reflection Journal</div>
+          </div>
+        </div>
+
+        <!-- Section 5: Description -->
         <div style="background: var(--bg-surface); padding: 1rem; border-radius: 10px; border: 1px solid var(--border-subtle);">
           <label style="font-size: 0.72rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Listing Description Format</label>
           <div style="font-size: 0.8rem; color: var(--text-secondary); line-height: 1.4; white-space: pre-wrap; margin-top: 0.3rem;">${desc}</div>
@@ -1133,6 +1245,16 @@
     `;
 
     modal.classList.add('active');
+  };
+
+  window.applyReferenceTagsToStudio = function(tagsText) {
+    if (DBM_STATE.activeEditingProduct) {
+      DBM_STATE.activeEditingProduct.seoTags = tagsText.split(',').map(s => s.trim()).filter(Boolean);
+    }
+    showToast('⚡ Cloned 13 tags into your active Studio product!');
+    closeReferenceModal();
+    window.location.hash = '#studio';
+    goToStudioStep(4);
   };
 
   window.closeReferenceModal = function() {
