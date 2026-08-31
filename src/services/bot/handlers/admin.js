@@ -6,6 +6,7 @@
  */
 
 const state = require('../../state');
+const { isSupabaseConfigured } = require('../../supabase');
 
 async function handleTechDiagnostics(teamBot, msg) {
   const chatId = msg.chat.id;
@@ -19,14 +20,15 @@ async function handleTechDiagnostics(teamBot, msg) {
     return teamBot.sendMessage(chatId, `🔒 Tech Diagnostics is restricted to Admin personnel.`);
   }
 
+  const supabaseActive = typeof isSupabaseConfigured === 'function' ? isSupabaseConfigured() : Boolean(process.env.SUPABASE_URL);
+
   const text = `🛠️ *GRO10X SYSTEM DIAGNOSTICS*\n\n` +
     `• Node.js Version: \`${process.version}\`\n` +
     `• Server Uptime: \`${Math.round(process.uptime() / 60)} minutes\`\n` +
     `• Memory Usage (RSS): \`${Math.round(process.memoryUsage().rss / 1024 / 1024)} MB\`\n` +
     `• Node Heap Used: \`${Math.round(process.memoryUsage().heapUsed / 1024 / 1024)} MB\`\n` +
-    `• Supabase Status: \`${isSupabaseConfigured() ? '🟢 CONNECTED' : '🟡 LOCAL / IN-MEMORY'}\`\n` +
+    `• Supabase Status: \`${supabaseActive ? '🟢 CONNECTED' : '🟡 LOCAL / IN-MEMORY'}\`\n` +
     `• Server Environment: \`${process.env.NODE_ENV || 'production'}\`\n` +
-    `• Active Event Streams: \`${getClientCount()} clients connected\`\n` +
     `• Timestamp: \`${new Date().toISOString()}\``;
 
   teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
@@ -36,11 +38,48 @@ async function handleFullTeamStatus(teamBot, msg) {
   const chatId = msg.chat.id;
   const allTeam = await state.getAllTeam();
 
-  let text = `👥 *GRO10X FULL TEAM STATUS (${allTeam.length} Members):*\n\n`;
-  allTeam.forEach((m, idx) => {
-    const statusIcon = m.status === 'In Studio' ? '🟢' : (m.status === 'On Field Shoot' ? '🎬' : (m.status === 'On Leave' ? '🌴' : '⬛'));
-    text += `${idx + 1}. *${m.name}*\n   Role: ${m.role} (${m.department || 'General'})\n   ${statusIcon} Status: *${m.status || 'Offline'}*\n\n`;
-  });
+  const inStudio = allTeam.filter(m => (m.status || '').toLowerCase() === 'in studio');
+  const onField = allTeam.filter(m => (m.status || '').toLowerCase() === 'on field shoot');
+  const onLeave = allTeam.filter(m => (m.status || '').toLowerCase() === 'on leave');
+  const offline = allTeam.filter(m => !['in studio', 'on field shoot', 'on leave'].includes((m.status || '').toLowerCase()));
+
+  let text = `👥 *GRO10X TEAM ROSTER (${allTeam.length} Members)*\n`;
+  text += `━━━━━━━━━━━━━━━━━━━━\n`;
+  text += `🟢 *${inStudio.length} In Studio* · 🎬 *${onField.length} On Field* · 🌴 *${onLeave.length} On Leave* · ⬛ *${offline.length} Offline*\n\n`;
+
+  if (inStudio.length > 0) {
+    text += `*🟢 Active In Studio (${inStudio.length}):*\n`;
+    inStudio.forEach(m => {
+      text += `• *${m.name}* — ${m.role} _(${m.department || 'Studio'})_\n`;
+    });
+    text += `\n`;
+  }
+
+  if (onField.length > 0) {
+    text += `*🎬 On Field Shoot (${onField.length}):*\n`;
+    onField.forEach(m => {
+      text += `• *${m.name}* — ${m.role}\n`;
+    });
+    text += `\n`;
+  }
+
+  if (onLeave.length > 0) {
+    text += `*🌴 On Approved Leave (${onLeave.length}):*\n`;
+    onLeave.forEach(m => {
+      text += `• *${m.name}* — ${m.role}\n`;
+    });
+    text += `\n`;
+  }
+
+  if (offline.length > 0) {
+    text += `*⬛ Offline / Standby (${offline.length}):*\n`;
+    offline.slice(0, 8).forEach(m => {
+      text += `• ${m.name} (${m.role})\n`;
+    });
+    if (offline.length > 8) {
+      text += `_...and ${offline.length - 8} more team members._\n`;
+    }
+  }
 
   teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
 }

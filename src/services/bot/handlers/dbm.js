@@ -359,10 +359,13 @@ async function handleTodayQueue(teamBot, msg) {
 
     text += '━━━━━━━━━━━━━━━━━━━━\n';
     text += '📊 *Today\'s Velocity:* ' + todaySubmitted + ' / ' + dailyTarget + ' Submitted\n';
-    text += '🚀 *Next Action:* Launch Studio in DBM Portal:\n';
-    text += 'https://gro10x-ai.vercel.app/dbm#studio';
+    text += '🚀 *Next Action:* Tap below to open Studio or switch brand context:';
 
-    teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
+    const assignedBrands = brandsState.brands.filter(b => (dbmInfo.assignedBrands || [1, 5, 8]).includes(b.id));
+    const inlineButtons = assignedBrands.map(b => [{ text: `🛍️ ${b.name} (${brandsState.productsCatalog?.[b.id]?.filter(p => p.status === 'Live')?.length || 0}/100 Live)`, url: `https://gro10x-ai.vercel.app/dbm#workspace` }]);
+    inlineButtons.push([{ text: '⚡ Open DBM Studio Workstation', url: 'https://gro10x-ai.vercel.app/dbm#studio' }]);
+
+    teamBot.sendMessage(chatId, text, { parse_mode: 'Markdown', reply_markup: { inline_keyboard: inlineButtons } });
   } catch (err) {
     console.error('[DBM TodayQueue] error:', err.message);
     teamBot.sendMessage(chatId, '⚠️ Could not load today\'s queue.');

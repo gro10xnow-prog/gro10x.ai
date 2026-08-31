@@ -1,4 +1,4 @@
-﻿/**
+/**
  * src/services/bot/keyboards.js
  * ─────────────────────────────────────────────────────────────────────────────
  * Role-Based Telegram Custom Keyboards.
@@ -233,9 +233,8 @@ function getRoleKeyboard(accessLevel, isVerified = false, emp = null) {
       keyboard: [
         [{ text: '🛍️ My Brands & Products' }, { text: '📦 Today\'s Listing Queue' }],
         [{ text: '📋 DBM Daily Standup' }, { text: '💰 My DBM Incentive' }],
-        [{ text: '📝 EOD Report' }, { text: '🌴 Leave Request' }],
-        [{ text: '🧾 Submit Expense' }, { text: '💳 Bank & bKash' }],
-        [{ text: '👤 My Profile' }, { text: '💰 My Earnings' }],
+        [{ text: '🧾 Submit Expense' }, { text: '🌴 Leave Request' }],
+        [{ text: '👤 My Profile' }, { text: '💳 Bank & bKash' }],
         [{ text: '📍 Clock-In GPS', request_location: true }, { text: '🚪 Clock Out' }]
       ],
       resize_keyboard: true
