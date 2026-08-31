@@ -26,6 +26,7 @@
     '#tickets':    { module: 'tickets.js',    title: 'Support Desk Triage', icon: '🎟️' },
     '#automation': { module: 'automation.js', title: 'Bot Engine & Automation Logs', icon: '⚡' },
     '#leads':      { module: 'leads.js',      title: 'Leads Pipeline', icon: '🎯' },
+    '#proposals':  { module: 'proposals.js',  title: 'Client Proposals Studio', icon: '💼' },
     '#settings':   { module: 'settings.js',   title: 'Workspace Settings', icon: '⚙️' }
   };
 

@@ -172,10 +172,84 @@ function sendClientInvoiceNotification(chatId, invoice = {}) {
   return sendTelegramNotification(chatId, text, inlineKeyboard, false);
 }
 
+function sendProposalViewedNotification(proposal = {}) {
+  const title = proposal.project_title || proposal.projectTitle || 'Client Proposal';
+  const client = proposal.client_name || proposal.clientName || 'Prospective Client';
+  const propId = proposal.id || 'PROP-001';
+  const token = proposal.share_token || proposal.shareToken || '';
+  const views = proposal.view_count || 1;
+  const baseUrl = process.env.BASE_URL || 'https://gro10x-ai.vercel.app';
+  const proposalUrl = `${baseUrl}/proposal.html?t=${token}`;
+
+  const text = `👀 *Proposal Viewed by Client!*\n\n` +
+    `Client: *${client}*\n` +
+    `Proposal: *${title}* (${propId})\n` +
+    `Total Views: *${views}*\n` +
+    `Timestamp: *${new Date().toLocaleTimeString('en-US', { timeZone: 'Asia/Dhaka' })} BST*\n\n` +
+    `The client is currently reviewing your proposal document.`;
+
+  const inlineKeyboard = [
+    [{ text: '🔗 View Live Proposal', url: proposalUrl }],
+    [{ text: '📊 Open Admin Command Center', url: `${baseUrl}/app#proposals` }]
+  ];
+
+  return sendTelegramNotification('7754769807', text, inlineKeyboard, true);
+}
+
+function sendProposalAcceptedNotification(proposal = {}) {
+  const title = proposal.project_title || proposal.projectTitle || 'Client Proposal';
+  const client = proposal.client_name || proposal.clientName || 'Prospective Client';
+  const propId = proposal.id || 'PROP-001';
+  const currency = proposal.currency || 'BDT';
+  const oneTime = Number(proposal.one_time_total || proposal.oneTimeTotal || 0).toLocaleString();
+  const recurring = Number(proposal.recurring_total || proposal.recurringTotal || 0).toLocaleString();
+  const baseUrl = process.env.BASE_URL || 'https://gro10x-ai.vercel.app';
+
+  const text = `🎉 *PROPOSAL ACCEPTED!* 🚀\n\n` +
+    `Client: *${client}*\n` +
+    `Project: *${title}* (${propId})\n` +
+    `Build Total: *${currency} ${oneTime}*\n` +
+    `Monthly Retainer: *${currency} ${recurring}/mo*\n` +
+    `Accepted At: *${new Date().toLocaleTimeString('en-US', { timeZone: 'Asia/Dhaka' })} BST*\n\n` +
+    `⚡ Client confirmed acceptance! Open Admin to convert this into an active production project.`;
+
+  const inlineKeyboard = [
+    [{ text: '🚀 Convert to Project in Admin', url: `${baseUrl}/app#proposals` }]
+  ];
+
+  return sendTelegramNotification('7754769807', text, inlineKeyboard, true);
+}
+
+function sendProposalCallRequestNotification(proposal = {}, contact = {}) {
+  const title = proposal.project_title || proposal.projectTitle || 'Client Proposal';
+  const client = proposal.client_name || proposal.clientName || 'Prospective Client';
+  const name = contact.name || client;
+  const phone = contact.phone || 'Not provided';
+  const note = contact.note || 'Requested alignment call';
+  const baseUrl = process.env.BASE_URL || 'https://gro10x-ai.vercel.app';
+
+  const text = `📞 *Proposal Alignment Call Requested!*\n\n` +
+    `Project: *${title}*\n` +
+    `Contact Name: *${name}*\n` +
+    `Phone: *${phone}*\n` +
+    `Note: "${note}"\n\n` +
+    `Please reach out to schedule or confirm the onboarding kickoff call.`;
+
+  const inlineKeyboard = [
+    [{ text: '📊 Open Admin Proposals', url: `${baseUrl}/app#proposals` }]
+  ];
+
+  return sendTelegramNotification('7754769807', text, inlineKeyboard, true);
+}
+
 module.exports = {
   sendTelegramNotification,
   sendToGroup,
   sendAgreementNotification,
   sendClientDeliverableNotification,
-  sendClientInvoiceNotification
+  sendClientInvoiceNotification,
+  sendProposalViewedNotification,
+  sendProposalAcceptedNotification,
+  sendProposalCallRequestNotification
 };
+

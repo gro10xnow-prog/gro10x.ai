@@ -314,6 +314,10 @@ app.get(['/chat', '/bot-chat'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public/chat.html'));
 });
 
+app.get(['/proposal', '/proposal.html'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/proposal.html'));
+});
+
 app.get(['/team-miniapp', '/crew-app'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public/team-miniapp.html'));
 });

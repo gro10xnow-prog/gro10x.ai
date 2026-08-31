@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Client Project Proposal — GRO10X AI Agency</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- jsPDF for Instant Executive PDF Generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+  <style>
+    :root {
+      --bg-dark: #070b12;
+      --bg-surface: #0e1522;
+      --bg-surface-elevated: #151f32;
+      --bg-card: rgba(14, 21, 34, 0.85);
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-focus: rgba(0, 223, 137, 0.4);
+      --primary: #00df89;
+      --primary-hover: #00c77a;
+      --primary-glow: rgba(0, 223, 137, 0.25);
+      --cyan: #06b6d4;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      line-height: 1.6;
+      min-height: 100vh;
+      background-image: 
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(0, 223, 137, 0.15), transparent 70%),
+        radial-gradient(ellipse 60% 40% at 90% 80%, rgba(6, 182, 212, 0.1), transparent 60%);
+      background-attachment: fixed;
+    }
+
+    h1, h2, h3, h4, .brand-font {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 32px 20px 100px;
+    }
+
+    /* Top Bar */
+    .top-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border-subtle);
+      margin-bottom: 32px;
+    }
+
+    .logo-badge {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+    }
+
+    .logo-mark {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--primary), var(--cyan));
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: 800;
+      color: #070b12;
+      box-shadow: 0 0 20px var(--primary-glow);
+    }
+
+    .logo-text {
+      font-family: 'Outfit', sans-serif;
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: #fff;
+    }
+
+    .logo-text span {
+      color: var(--primary);
+    }
+
+    .doc-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      background: rgba(0, 223, 137, 0.1);
+      color: var(--primary);
+      border: 1px solid rgba(0, 223, 137, 0.3);
+    }
+
+    .status-badge.accepted {
+      background: rgba(6, 182, 212, 0.15);
+      color: var(--cyan);
+      border-color: rgba(6, 182, 212, 0.4);
+    }
+
+    /* Proposal Header Card */
+    .hero-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 36px 32px;
+      margin-bottom: 32px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary), var(--cyan));
+    }
+
+    .hero-eyebrow {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--primary);
+      margin-bottom: 8px;
+    }
+
+    .hero-title {
+      font-size: 32px;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.25;
+      margin-bottom: 24px;
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .meta-item-label {
+      font-size: 12px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .meta-item-val {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    /* Section Styling */
+    .section {
+      margin-bottom: 36px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .section-icon {
+      font-size: 22px;
+    }
+
+    .section-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .card {
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      margin-bottom: 16px;
+    }
+
+    .summary-text {
+      font-size: 16px;
+      color: #cbd5e1;
+      line-height: 1.7;
+    }
+
+    /* Scope Items Grid */
+    .scope-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    @media (min-width: 768px) {
+      .scope-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .scope-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .scope-card:hover {
+      border-color: var(--border-focus);
+      transform: translateY(-2px);
+    }
+
+    .scope-card-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .scope-card-title::before {
+      content: '✓';
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      background: rgba(0, 223, 137, 0.15);
+      color: var(--primary);
+      border-radius: 50%;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .scope-card-desc {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* Pricing Tables */
+    .table-container {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+
+    .table-header-title {
+      padding: 16px 20px;
+      background: rgba(255, 255, 255, 0.02);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .table-header-title h4 {
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .price-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    .price-table th {
+      padding: 12px 20px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    .price-table td {
+      padding: 16px 20px;
+      font-size: 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      vertical-align: middle;
+    }
+
+    .price-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .item-name {
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+
+    .item-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .item-amount {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--text-main);
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .table-subtotal-row {
+      background: rgba(0, 223, 137, 0.04);
+    }
+
+    .table-subtotal-row td {
+      padding: 16px 20px;
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .subtotal-amount {
+      font-family: 'Outfit', sans-serif;
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--primary);
+      text-align: right;
+    }
+
+    /* Terms Box */
+    .terms-box {
+      background: rgba(0, 0, 0, 0.3);
+      border-left: 3px solid var(--primary);
+      padding: 16px 20px;
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      font-size: 14px;
+      color: #cbd5e1;
+      white-space: pre-line;
+      line-height: 1.7;
+    }
+
+    /* Fixed Bottom Action Bar */
+    .bottom-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(7, 11, 18, 0.92);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-top: 1px solid var(--border-subtle);
+      padding: 16px 20px;
+      z-index: 100;
+    }
+
+    .bottom-bar-inner {
+      max-width: 960px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .pricing-summary-pill {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .pricing-pill-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .pricing-pill-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      font-weight: 600;
+      color: var(--text-dim);
+    }
+
+    .pricing-pill-value {
+      font-family: 'Outfit', sans-serif;
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--primary);
+    }
+
+    .btn-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 22px;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      border: none;
+      outline: none;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #070b12;
+      box-shadow: 0 0 20px var(--primary-glow);
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-outline:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: #fff;
+    }
+
+    /* Modal Styling */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+      padding: 20px;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-card {
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      width: 100%;
+      max-width: 480px;
+      padding: 32px;
+      position: relative;
+      transform: scale(0.95);
+      transition: transform 0.2s ease;
+    }
+
+    .modal-overlay.active .modal-card {
+      transform: scale(1);
+    }
+
+    .modal-title {
+      font-size: 22px;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+
+    .modal-desc {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 6px;
+    }
+
+    .form-input, .form-textarea {
+      width: 100%;
+      padding: 12px 14px;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      color: #fff;
+      font-size: 14px;
+      font-family: inherit;
+    }
+
+    .form-input:focus, .form-textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .toast {
+      position: fixed;
+      top: 24px;
+      right: 24px;
+      background: var(--bg-surface-elevated);
+      color: #fff;
+      border-left: 4px solid var(--primary);
+      padding: 14px 20px;
+      border-radius: var(--radius-sm);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      z-index: 300;
+      font-size: 14px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transform: translateY(-20px);
+      opacity: 0;
+      transition: all 0.3s ease;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    /* Print Optimization */
+    @media print {
+      body {
+        background: #fff;
+        color: #000;
+      }
+      .bottom-bar, .btn-group, .modal-overlay {
+        display: none !important;
+      }
+      .hero-card, .card, .scope-card, .table-container {
+        border: 1px solid #ddd;
+        background: #fff;
+        color: #000;
+        backdrop-filter: none;
+      }
+      .hero-title, .section-title, .item-name, .scope-card-title {
+        color: #000 !important;
+      }
+      .subtotal-amount, .hero-eyebrow {
+        color: #00875a !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Top Navigation -->
+    <header class="top-nav">
+      <a href="https://gro10x-ai.vercel.app" class="logo-badge" target="_blank">
+        <div class="logo-mark">⚡</div>
+        <div class="logo-text">GRO<span>10X</span></div>
+      </a>
+      <div class="doc-meta">
+        <span class="status-badge" id="proposalStatusBadge">Proposal</span>
+      </div>
+    </header>
+
+    <!-- Proposal Header -->
+    <section class="hero-card">
+      <div class="hero-eyebrow" id="docEyebrow">Commercial Project Proposal</div>
+      <h1 class="hero-title" id="projectTitle">Loading Proposal...</h1>
+      
+      <div class="meta-grid">
+        <div class="meta-item">
+          <div class="meta-item-label">Prepared For</div>
+          <div class="meta-item-val" id="clientName">—</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-item-label">Prepared By</div>
+          <div class="meta-item-val">GRO10X AI Agency</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-item-label">Proposal Date</div>
+          <div class="meta-item-val" id="proposalDate">—</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-item-label">Est. Timeline</div>
+          <div class="meta-item-val" id="timelineVal">—</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Executive Summary -->
+    <section class="section">
+      <div class="section-header">
+        <span class="section-icon">📌</span>
+        <h2 class="section-title">Executive Summary</h2>
+      </div>
+      <div class="card">
+        <p class="summary-text" id="projectSummary">Loading proposal summary...</p>
+      </div>
+    </section>
+
+    <!-- Scope of Deliverables -->
+    <section class="section">
+      <div class="section-header">
+        <span class="section-icon">⚡</span>
+        <h2 class="section-title">Scope of Deliverables & Architecture</h2>
+      </div>
+      <div class="scope-grid" id="scopeContainer">
+        <!-- Injected via JS -->
+      </div>
+    </section>
+
+    <!-- Commercial Investment Breakdown -->
+    <section class="section">
+      <div class="section-header">
+        <span class="section-icon">💳</span>
+        <h2 class="section-title">Commercial Investment Structure</h2>
+      </div>
+
+      <!-- Phase 1: One-Time Build -->
+      <div class="table-container">
+        <div class="table-header-title">
+          <h4>🛠️ Phase 1: One-Time System Architecture & Deployment</h4>
+          <span class="status-badge" style="font-size: 11px;">Fixed Build</span>
+        </div>
+        <table class="price-table">
+          <thead>
+            <tr>
+              <th>Deliverable Component</th>
+              <th style="text-align: right;">Amount (<span class="currency-tag">BDT</span>)</th>
+            </tr>
+          </thead>
+          <tbody id="oneTimeItemsBody">
+            <!-- Injected via JS -->
+          </tbody>
+          <tfoot>
+            <tr class="table-subtotal-row">
+              <td>Total One-Time Build Investment</td>
+              <td class="subtotal-amount" id="oneTimeTotalVal">0</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <!-- Phase 2: Monthly Retainer -->
+      <div class="table-container">
+        <div class="table-header-title">
+          <h4>🔄 Phase 2: Ongoing AI Infrastructure & Maintenance Retainer</h4>
+          <span class="status-badge" style="font-size: 11px;">Monthly Operational</span>
+        </div>
+        <table class="price-table">
+          <thead>
+            <tr>
+              <th>Service / Infrastructure</th>
+              <th style="text-align: right;">Monthly Fee (<span class="currency-tag">BDT</span>)</th>
+            </tr>
+          </thead>
+          <tbody id="recurringItemsBody">
+            <!-- Injected via JS -->
+          </tbody>
+          <tfoot>
+            <tr class="table-subtotal-row">
+              <td>Total Monthly Maintenance Retainer</td>
+              <td class="subtotal-amount" id="recurringTotalVal">0</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </section>
+
+    <!-- Commercial Terms & Guarantees -->
+    <section class="section">
+      <div class="section-header">
+        <span class="section-icon">📑</span>
+        <h2 class="section-title">Commercial Terms & SLA</h2>
+      </div>
+      <div class="card">
+        <div class="terms-box" id="termsBox">
+          1. 50% advance upon formal kickoff and credentials handover; 50% upon successful UAT sign-off.
+          2. Monthly maintenance retainer is billed at the beginning of each calendar cycle.
+          3. Client maintains 100% data sovereignty and confidential control over all user sessions.
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Sticky Bottom Action Bar -->
+  <aside class="bottom-bar">
+    <div class="bottom-bar-inner">
+      <div class="pricing-summary-pill">
+        <div class="pricing-pill-item">
+          <span class="pricing-pill-label">One-Time Build</span>
+          <span class="pricing-pill-value" id="bottomOneTime">৳0</span>
+        </div>
+        <div style="color: var(--border-subtle); font-size: 20px;">|</div>
+        <div class="pricing-pill-item">
+          <span class="pricing-pill-label">Monthly Retainer</span>
+          <span class="pricing-pill-value" id="bottomRecurring" style="color: var(--cyan);">৳0/mo</span>
+        </div>
+      </div>
+
+      <div class="btn-group">
+        <button class="btn btn-outline" id="btnDownloadPDF" onclick="downloadProposalPDF()">
+          <span>📥</span> Download PDF
+        </button>
+        <button class="btn btn-outline" id="btnScheduleCall" onclick="openModal('callModal')">
+          <span>📞</span> Request Alignment Call
+        </button>
+        <button class="btn btn-primary" id="btnAcceptProposal" onclick="openModal('acceptModal')">
+          <span>🤝</span> Accept Proposal
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Accept Modal -->
+  <div class="modal-overlay" id="acceptModal">
+    <div class="modal-card">
+      <h3 class="modal-title">Accept & Confirm Proposal</h3>
+      <p class="modal-desc">Confirm your intention to proceed with this proposal. Our technical lead will initiate the onboarding kickoff.</p>
+      
+      <div class="form-group">
+        <label class="form-label">Authorized Person / Representative Name</label>
+        <input type="text" id="acceptorName" class="form-input" placeholder="e.g. Zahin Khandaker">
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Optional Comments / Kickoff Date Preference</label>
+        <textarea id="acceptorNote" class="form-textarea" rows="3" placeholder="Ready to start next week..."></textarea>
+      </div>
+
+      <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+        <button class="btn btn-outline" onclick="closeModal('acceptModal')">Cancel</button>
+        <button class="btn btn-primary" onclick="submitAcceptance()">Confirm & Accept</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Call Modal -->
+  <div class="modal-overlay" id="callModal">
+    <div class="modal-card">
+      <h3 class="modal-title">Schedule Alignment Call</h3>
+      <p class="modal-desc">Leave your contact details and our team will get in touch directly to schedule a brief technical alignment call.</p>
+      
+      <div class="form-group">
+        <label class="form-label">Your Name</label>
+        <input type="text" id="callName" class="form-input" placeholder="Your name">
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Phone / WhatsApp Number</label>
+        <input type="text" id="callPhone" class="form-input" placeholder="+880 1700-000000">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Preferred Time / Notes</label>
+        <textarea id="callNote" class="form-textarea" rows="2" placeholder="Available tomorrow 3pm..."></textarea>
+      </div>
+
+      <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+        <button class="btn btn-outline" onclick="closeModal('callModal')">Cancel</button>
+        <button class="btn btn-primary" onclick="submitCallRequest()">Request Call</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast" class="toast">
+    <span id="toastMsg">Action completed successfully</span>
+  </div>
+
+  <script>
+    let currentProposal = null;
+
+    function getQueryParam(param) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(param);
+    }
+
+    function showToast(msg, isError = false) {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toastMsg');
+      toastMsg.textContent = msg;
+      toast.style.borderLeftColor = isError ? '#ef4444' : 'var(--primary)';
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3500);
+    }
+
+    function openModal(id) {
+      document.getElementById(id).classList.add('active');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('active');
+    }
+
+    async function loadProposal() {
+      const token = getQueryParam('t') || getQueryParam('token') || 'ucb-meta-ai-7x9q';
+      try {
+        const res = await fetch(`/api/public/proposals/${token}`);
+        if (!res.ok) throw new Error('Proposal not found');
+        currentProposal = await res.json();
+        renderProposal(currentProposal);
+      } catch (err) {
+        document.getElementById('projectTitle').textContent = 'Proposal Not Found';
+        document.getElementById('projectSummary').textContent = 'This proposal link is invalid or has expired. Please contact GRO10X for an updated proposal.';
+        showToast('Could not load proposal', true);
+      }
+    }
+
+    function renderProposal(p) {
+      const currSymbol = p.currency === 'USD' ? '$' : '৳';
+      
+      document.getElementById('projectTitle').textContent = p.projectTitle || 'AI Solution Proposal';
+      document.getElementById('clientName').textContent = p.clientCompany ? `${p.clientCompany} (${p.clientName})` : p.clientName;
+      document.getElementById('proposalDate').textContent = new Date(p.createdAt || Date.now()).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+      document.getElementById('timelineVal').textContent = p.timeline || '2–3 Weeks';
+      document.getElementById('projectSummary').textContent = p.projectSummary || '';
+      
+      // Status
+      const badge = document.getElementById('proposalStatusBadge');
+      badge.textContent = p.status || 'Proposal';
+      if (p.status === 'Accepted') {
+        badge.classList.add('accepted');
+        document.getElementById('btnAcceptProposal').style.display = 'none';
+      }
+
+      // Currency tags
+      document.querySelectorAll('.currency-tag').forEach(el => el.textContent = p.currency || 'BDT');
+
+      // Scope items
+      const scopeCont = document.getElementById('scopeContainer');
+      scopeCont.innerHTML = (p.scopeItems || []).map(item => `
+        <div class="scope-card">
+          <div class="scope-card-title">${item.title || 'Deliverable'}</div>
+          <div class="scope-card-desc">${item.description || ''}</div>
+        </div>
+      `).join('');
+
+      // One-time items table
+      const oneTimeBody = document.getElementById('oneTimeItemsBody');
+      oneTimeBody.innerHTML = (p.oneTimeItems || []).map(item => `
+        <tr>
+          <td>
+            <div class="item-name">${item.name}</div>
+            <div class="item-desc">${item.description || ''}</div>
+          </td>
+          <td class="item-amount">${currSymbol} ${Number(item.amount || 0).toLocaleString()}</td>
+        </tr>
+      `).join('');
+      document.getElementById('oneTimeTotalVal').textContent = `${currSymbol} ${Number(p.oneTimeTotal || 0).toLocaleString()}`;
+      document.getElementById('bottomOneTime').textContent = `${currSymbol} ${Number(p.oneTimeTotal || 0).toLocaleString()}`;
+
+      // Recurring items table
+      const recurringBody = document.getElementById('recurringItemsBody');
+      recurringBody.innerHTML = (p.recurringItems || []).map(item => `
+        <tr>
+          <td>
+            <div class="item-name">${item.name}</div>
+            <div class="item-desc">${item.description || ''}</div>
+          </td>
+          <td class="item-amount">${currSymbol} ${Number(item.amount || 0).toLocaleString()} / ${item.frequency || 'mo'}</td>
+        </tr>
+      `).join('');
+      document.getElementById('recurringTotalVal').textContent = `${currSymbol} ${Number(p.recurringTotal || 0).toLocaleString()} / month`;
+      document.getElementById('bottomRecurring').textContent = `${currSymbol} ${Number(p.recurringTotal || 0).toLocaleString()}/mo`;
+
+      // Terms
+      if (p.terms) {
+        document.getElementById('termsBox').textContent = p.terms;
+      }
+    }
+
+    async function submitAcceptance() {
+      const token = getQueryParam('t') || getQueryParam('token') || 'ucb-meta-ai-7x9q';
+      const name = document.getElementById('acceptorName').value.trim();
+      const note = document.getElementById('acceptorNote').value.trim();
+
+      try {
+        const res = await fetch(`/api/public/proposals/${token}/accept`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ acceptedBy: name, clientNote: note })
+        });
+        const data = await res.json();
+        if (data.success) {
+          closeModal('acceptModal');
+          showToast('🎉 Proposal Accepted! Our team has been notified.');
+          document.getElementById('proposalStatusBadge').textContent = 'Accepted';
+          document.getElementById('proposalStatusBadge').classList.add('accepted');
+          document.getElementById('btnAcceptProposal').style.display = 'none';
+        }
+      } catch (e) {
+        showToast('Error recording acceptance', true);
+      }
+    }
+
+    async function submitCallRequest() {
+      const token = getQueryParam('t') || getQueryParam('token') || 'ucb-meta-ai-7x9q';
+      const name = document.getElementById('callName').value.trim();
+      const phone = document.getElementById('callPhone').value.trim();
+      const note = document.getElementById('callNote').value.trim();
+
+      if (!phone) {
+        showToast('Please provide a contact phone number', true);
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/public/proposals/${token}/schedule-call`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, phone, note })
+        });
+        const data = await res.json();
+        if (data.success) {
+          closeModal('callModal');
+          showToast('📞 Request sent! We will contact you shortly.');
+        }
+      } catch (e) {
+        showToast('Error requesting call', true);
+      }
+    }
+
+    function downloadProposalPDF() {
+      if (!currentProposal) {
+        showToast('Proposal details not loaded yet', true);
+        return;
+      }
+
+      if (!window.jspdf || !window.jspdf.jsPDF) {
+        window.print();
+        return;
+      }
+
+      const p = currentProposal;
+      const doc = new window.jspdf.jsPDF();
+      const currSymbol = p.currency === 'USD' ? '$' : 'BDT ';
+
+      // Luxury Cyber Stealth Brand Header
+      doc.setFillColor(7, 11, 18);
+      doc.rect(0, 0, 210, 38, 'F');
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(22);
+      doc.setTextColor(0, 223, 137); // Cyber Emerald
+      doc.text("GRO10X AI AGENCY", 14, 18);
+
+      doc.setFontSize(9);
+      doc.setTextColor(148, 163, 184);
+      doc.setFont("helvetica", "normal");
+      doc.text("Enterprise AI Growth & Digital Solutions · gro10x.ai · Dhaka, BD", 14, 25);
+      doc.text("Direct Contact: gro10xnow@gmail.com | +880 1708-459008", 14, 30);
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(14);
+      doc.setTextColor(255, 255, 255);
+      doc.text("PROJECT PROPOSAL", 140, 20);
+      doc.setFontSize(9);
+      doc.setTextColor(6, 182, 212);
+      doc.text(`REF: ${p.id || 'PROP-2026-001'}`, 140, 27);
+
+      // Meta Block
+      let y = 48;
+      doc.setFontSize(10);
+      doc.setTextColor(30, 41, 59);
+      doc.setFont("helvetica", "bold");
+      doc.text("PREPARED FOR:", 14, y);
+      doc.text("PROJECT TITLE:", 110, y);
+
+      y += 6;
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(15, 23, 42);
+      doc.text(p.clientCompany ? `${p.clientCompany} (${p.clientName})` : p.clientName, 14, y);
+      
+      const splitTitle = doc.splitTextToSize(p.projectTitle, 85);
+      doc.text(splitTitle, 110, y);
+
+      y += Math.max(14, splitTitle.length * 5 + 4);
+      doc.setFont("helvetica", "bold");
+      doc.text("DATE:", 14, y);
+      doc.text("ESTIMATED TIMELINE:", 110, y);
+
+      y += 6;
+      doc.setFont("helvetica", "normal");
+      doc.text(new Date(p.createdAt || Date.now()).toLocaleDateString('en-GB'), 14, y);
+      doc.text(p.timeline || '2–3 Weeks', 110, y);
+
+      // Executive Summary
+      y += 12;
+      doc.setFillColor(241, 245, 249);
+      doc.rect(14, y, 182, 24, 'F');
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      doc.setTextColor(15, 23, 42);
+      doc.text("Executive Summary:", 18, y + 6);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8.5);
+      const summaryLines = doc.splitTextToSize(p.projectSummary || '', 174);
+      doc.text(summaryLines, 18, y + 12);
+
+      y += 32;
+
+      // Scope Deliverables
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      doc.setTextColor(15, 23, 42);
+      doc.text("Key Deliverables & System Architecture:", 14, y);
+      y += 6;
+
+      const scopeRows = (p.scopeItems || []).map(s => [s.title, s.description]);
+      if (doc.autoTable) {
+        doc.autoTable({
+          startY: y,
+          head: [['Deliverable Component', 'Scope Details']],
+          body: scopeRows,
+          theme: 'striped',
+          headStyles: { fillColor: [7, 11, 18], textColor: [0, 223, 137], fontStyle: 'bold' },
+          styles: { fontSize: 8, cellPadding: 3 },
+          columnStyles: { 0: { cellWidth: 60, fontStyle: 'bold' }, 1: { cellWidth: 122 } }
+        });
+        y = doc.lastAutoTable.finalY + 8;
+      }
+
+      // One-time build table
+      if (y > 220) { doc.addPage(); y = 20; }
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      doc.setTextColor(15, 23, 42);
+      doc.text("Phase 1: One-Time Build Investment", 14, y);
+      y += 4;
+
+      const oneTimeRows = (p.oneTimeItems || []).map(i => [i.name, i.description, `${currSymbol}${Number(i.amount).toLocaleString()}`]);
+      oneTimeRows.push([{ content: 'Total One-Time Build', colSpan: 2, styles: { fontStyle: 'bold', halign: 'right' } }, { content: `${currSymbol}${Number(p.oneTimeTotal).toLocaleString()}`, styles: { fontStyle: 'bold', textColor: [0, 150, 90] } }]);
+
+      if (doc.autoTable) {
+        doc.autoTable({
+          startY: y,
+          head: [['Component', 'Description', 'Amount']],
+          body: oneTimeRows,
+          theme: 'grid',
+          headStyles: { fillColor: [14, 21, 34], textColor: [255, 255, 255] },
+          styles: { fontSize: 8, cellPadding: 3 },
+          columnStyles: { 0: { cellWidth: 60 }, 1: { cellWidth: 85 }, 2: { cellWidth: 37, halign: 'right' } }
+        });
+        y = doc.lastAutoTable.finalY + 8;
+      }
+
+      // Recurring table
+      if (y > 220) { doc.addPage(); y = 20; }
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      doc.text("Phase 2: Monthly Infrastructure & Maintenance Retainer", 14, y);
+      y += 4;
+
+      const recRows = (p.recurringItems || []).map(i => [i.name, i.description, `${currSymbol}${Number(i.amount).toLocaleString()} / mo`]);
+      recRows.push([{ content: 'Total Monthly Retainer', colSpan: 2, styles: { fontStyle: 'bold', halign: 'right' } }, { content: `${currSymbol}${Number(p.recurringTotal).toLocaleString()}/mo`, styles: { fontStyle: 'bold', textColor: [6, 182, 212] } }]);
+
+      if (doc.autoTable) {
+        doc.autoTable({
+          startY: y,
+          head: [['Service / Resource', 'Description', 'Monthly Fee']],
+          body: recRows,
+          theme: 'grid',
+          headStyles: { fillColor: [14, 21, 34], textColor: [255, 255, 255] },
+          styles: { fontSize: 8, cellPadding: 3 },
+          columnStyles: { 0: { cellWidth: 60 }, 1: { cellWidth: 85 }, 2: { cellWidth: 37, halign: 'right' } }
+        });
+        y = doc.lastAutoTable.finalY + 8;
+      }
+
+      // Commercial Terms
+      if (y > 240) { doc.addPage(); y = 20; }
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      doc.text("Commercial Terms:", 14, y);
+      y += 5;
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8);
+      const termsLines = doc.splitTextToSize(p.terms || 'Standard terms apply.', 182);
+      doc.text(termsLines, 14, y);
+
+      doc.save(`GRO10X_Proposal_${p.id || '2026'}_${(p.clientName || 'Client').replace(/\s+/g, '_')}.pdf`);
+      showToast('📄 Proposal PDF downloaded successfully!');
+    }
+
+    document.addEventListener('DOMContentLoaded', loadProposal);
+  </script>
+</body>
+</html>
