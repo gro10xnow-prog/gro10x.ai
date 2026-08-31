@@ -1,12 +1,8 @@
 /**
  * public/dbm/dbm-portal.js
  * ─────────────────────────────────────────────────────────────────────────────
- * GRO10X Digital Brand Manager Dedicated Portal Engine v2.0
- * Features:
- * 1. 5-Step Guided Stepper Studio Wizard (Blueprint -> Vault -> Mockups -> SEO -> Submit)
- * 2. Gold-Standard Reference Library (PLA-01 through PLA-13)
- * 3. Next Task Active Pointer (Starting at PLA-14, target PLA-14..PLA-21)
- * 4. Automatic Admin Telegram Push Alerts on Product Submission & EOD Standup
+ * GRO10X Digital Brand Manager Dedicated Portal Engine v2.1
+ * Tab 1: Enhanced Workspace with 3-Brand Switcher, Queue Filters & Real-Name Hydration
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
@@ -20,6 +16,7 @@
     activeBrandId: 1,
     currentStudioCode: 'PLA-14',
     currentStudioStep: 1, // 1 to 5
+    tableFilter: 'all', // 'all', 'live', 'today', 'review'
     standups: [],
     todaySubmittedCount: 0,
     dailyTarget: 8,
@@ -52,6 +49,16 @@
       el.style.color = '#070b12';
     }
     setTimeout(() => { el.style.display = 'none'; }, 4000);
+  }
+
+  function getUserDisplayName() {
+    try {
+      const user = JSON.parse(localStorage.getItem('gro10x_user') || sessionStorage.getItem('gro10x_user') || '{}');
+      if (user && user.name && user.name !== 'DBM 1' && user.name !== 'DBM') {
+        return user.name;
+      }
+    } catch(e) {}
+    return DBM_STATE.dbm?.name && DBM_STATE.dbm.name !== 'DBM 1' ? DBM_STATE.dbm.name : 'Anika Nower';
   }
 
   window.dbmSignOut = function() {
@@ -92,7 +99,7 @@
     else if (current === 'settings') renderSettingsView(main);
   }
 
-  // Helper: Get next active draft product (starts from PLA-14)
+  // Helper: Get next active draft product (starts from PLA-14 or next draft)
   function getNextActiveDraft(catalog) {
     const draft = catalog.find(p => p.status !== 'Live' && p.status !== 'Pending Review');
     return draft || catalog.find(p => p.code === 'PLA-14') || catalog[13] || catalog[0] || { code: 'PLA-14', name: 'No-Spend Challenge & Impulse Purchase Cooling Tracker' };
@@ -100,7 +107,8 @@
 
   // ── VIEW 1: MY WORKSPACE (HOME) ──
   function renderWorkspaceView(container) {
-    const brand = DBM_STATE.assignedBrands.find(b => b.id === DBM_STATE.activeBrandId) || DBM_STATE.assignedBrands[0] || {};
+    const brands = DBM_STATE.assignedBrands || [];
+    const brand = brands.find(b => b.id === DBM_STATE.activeBrandId) || brands[0] || {};
     const catalog = DBM_STATE.productsCatalog[brand.id] || [];
     const today = new Date().toISOString().split('T')[0];
 
@@ -109,24 +117,35 @@
 
     const liveProducts = catalog.filter(p => p.status === 'Live');
     const pendingReview = catalog.filter(p => p.status === 'Pending Review');
+    const remainingCount = Math.max(0, 100 - liveProducts.length - pendingReview.length);
     const nextProduct = getNextActiveDraft(catalog);
 
     const progressPct = Math.min(100, Math.round((todaySubmitted / DBM_STATE.dailyTarget) * 100));
+    const displayName = getUserDisplayName();
 
     container.innerHTML = `
+      <!-- Brand Switcher Chips on Workspace -->
+      <div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; overflow-x: auto; background: var(--bg-surface); padding: 0.4rem; border-radius: 14px; border: 1px solid var(--border-subtle);">
+        ${brands.map(b => `
+          <button onclick="switchWorkspaceBrand(${b.id})" style="padding: 0.55rem 1.1rem; border-radius: 10px; font-weight: 700; font-size: 0.84rem; border: none; cursor: pointer; transition: all 0.2s ease; background: ${b.id === brand.id ? 'var(--brand-primary)' : 'transparent'}; color: ${b.id === brand.id ? '#070b12' : 'var(--text-secondary)'};">
+            🛍️ ${b.name} (${b.phase || 'Phase ' + b.id})
+          </button>
+        `).join('')}
+      </div>
+
       <!-- Top Mission Header -->
       <div style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
         <div>
           <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.3rem;">
-            <h1 style="font-family: var(--font-heading); font-size: 1.8rem; font-weight: 800;">
-              👋 Welcome, ${DBM_STATE.dbm?.name || 'Anika'}!
+            <h1 style="font-family: var(--font-heading); font-size: 1.8rem; font-weight: 800;" id="workspaceWelcomeHeading">
+              👋 Welcome, ${displayName}!
             </h1>
             <span style="background: rgba(0,223,137,0.15); color: #00df89; border: 1px solid rgba(0,223,137,0.3); font-size: 0.75rem; font-weight: 800; padding: 0.2rem 0.6rem; border-radius: 20px;">
               🟢 Active Session
             </span>
           </div>
           <p style="color: var(--text-secondary); font-size: 0.95rem;">
-            Active Focus: <strong style="color: #fff;">${brand.name || 'PlannerQueenGro'}</strong> · Day 1 Mission: <strong style="color: #38bdf8;">SKUs PLA-14 through PLA-21 (8 Products Quota)</strong>
+            Active Focus: <strong style="color: #fff;">${brand.name || 'PlannerQueenGro'}</strong> · Day 1 Target: <strong style="color: #38bdf8;">SKUs PLA-14 through PLA-21 (8 Products Quota)</strong>
           </p>
         </div>
 
@@ -135,12 +154,39 @@
         </button>
       </div>
 
+      <!-- Mini KPI Status Strip -->
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
+        <div style="background: rgba(0,223,137,0.08); border: 1px solid rgba(0,223,137,0.25); border-radius: 12px; padding: 0.85rem 1.2rem; display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="font-size: 0.72rem; font-weight: 800; color: #00df89; text-transform: uppercase;">🟢 Live on Etsy Shop</div>
+            <div style="font-size: 1.4rem; font-weight: 900; color: #fff; margin-top: 0.1rem;">${liveProducts.length} <span style="font-size: 0.85rem; color: var(--text-muted);">/ 100 Live</span></div>
+          </div>
+          <span style="font-size: 1.5rem;">🏪</span>
+        </div>
+
+        <div style="background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.25); border-radius: 12px; padding: 0.85rem 1.2rem; display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="font-size: 0.72rem; font-weight: 800; color: #f59e0b; text-transform: uppercase;">⏳ In Admin Review</div>
+            <div style="font-size: 1.4rem; font-weight: 900; color: #fff; margin-top: 0.1rem;">${pendingReview.length} <span style="font-size: 0.85rem; color: var(--text-muted);">Products</span></div>
+          </div>
+          <span style="font-size: 1.5rem;">📬</span>
+        </div>
+
+        <div style="background: rgba(6,182,212,0.08); border: 1px solid rgba(6,182,212,0.25); border-radius: 12px; padding: 0.85rem 1.2rem; display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="font-size: 0.72rem; font-weight: 800; color: #38bdf8; text-transform: uppercase;">🎯 Remaining to Goal</div>
+            <div style="font-size: 1.4rem; font-weight: 900; color: #fff; margin-top: 0.1rem;">${remainingCount} <span style="font-size: 0.85rem; color: var(--text-muted);">SKUs</span></div>
+          </div>
+          <span style="font-size: 1.5rem;">🚀</span>
+        </div>
+      </div>
+
       <!-- Action Card 1: Next Up Highlight Card -->
-      <div class="card" style="background: linear-gradient(135deg, rgba(0,223,137,0.08), rgba(6,182,212,0.05)); border: 1px solid rgba(0,223,137,0.35); position: relative; overflow: hidden;">
+      <div class="card" style="background: linear-gradient(135deg, rgba(0,223,137,0.08), rgba(6,182,212,0.05)); border: 1px solid rgba(0,223,137,0.35); position: relative; overflow: hidden; margin-bottom: 1.5rem;">
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem;">
           <div>
             <span style="font-size: 0.72rem; font-weight: 800; text-transform: uppercase; color: var(--brand-primary); letter-spacing: 0.8px;">
-              🎯 YOUR IMMEDIATE NEXT PRODUCT
+              🎯 YOUR IMMEDIATE NEXT PRODUCT TO BUILD
             </span>
             <h2 style="font-size: 1.5rem; font-weight: 900; margin: 0.3rem 0; color: #fff;">
               ${nextProduct.code}: ${nextProduct.name || nextProduct.seoTitle || 'No-Spend Challenge & Impulse Purchase Cooling Tracker'}
@@ -151,7 +197,7 @@
           </div>
 
           <div style="display: flex; gap: 0.75rem;">
-            <button class="btn-primary" onclick="startProductStudio('${nextProduct.code}')" style="font-size: 1rem; padding: 0.8rem 1.6rem;">
+            <button class="btn-primary" onclick="startProductStudio('${nextProduct.code}')" style="font-size: 1rem; padding: 0.8rem 1.6rem; background: linear-gradient(135deg, #00df89, #06b6d4);">
               ▶️ Start Product ${nextProduct.code} (Step 1)
             </button>
           </div>
@@ -185,7 +231,7 @@
               📝 Submit EOD Standup
             </button>
             <button class="btn-secondary" onclick="window.location.hash='#studio'" style="flex: 1; justify-content: center; font-size: 0.82rem;">
-              🛍️ Open Catalog Studio
+              🛍️ Open Studio
             </button>
           </div>
         </div>
@@ -194,30 +240,93 @@
         <div class="card" style="border-left: 4px solid var(--accent-purple);">
           <span style="font-size: 0.72rem; font-weight: 800; text-transform: uppercase; color: var(--accent-purple);">Reference Standard (Completed by Admin)</span>
           <h3 style="font-size: 1.4rem; font-weight: 800; margin: 0.3rem 0; color: #fff;">
-            ${liveProducts.length} Gold Standard Products Live
+            ${liveProducts.length} Finished Reference Models
           </h3>
           <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1rem;">
-            Products PLA-01 through PLA-13 are live on Etsy. Use them anytime as formatting and quality reference.
+            Products PLA-01 to PLA-13 are published live. Click below to inspect their exact Canva links, 13 tags, and layout prompt.
           </p>
-          <button class="btn-ghost" onclick="openReferenceProductModal('PLA-01')" style="width: 100%; justify-content: center; color: var(--accent-purple); border-color: rgba(168,85,247,0.3);">
+          <button class="btn-ghost" onclick="openReferenceProductModal('PLA-01')" style="width: 100%; justify-content: center; color: #c084fc; border-color: rgba(168,85,247,0.3);">
             👀 Inspect Reference Example: PLA-01 (Daily Planner)
           </button>
         </div>
       </div>
 
-      <!-- Catalog Table (Showing Live + Upcoming Queue) -->
+      <!-- Execution Queue Table with Filters -->
       <div class="card">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.75rem;">
           <h3 style="font-size: 1.15rem; font-weight: 800;">📦 ${brand.name} Execution Queue (100 SKUs)</h3>
-          <span style="font-size: 0.8rem; color: var(--text-muted);">Showing first 25 products</span>
+          
+          <!-- Filter Tabs -->
+          <div style="display: flex; gap: 0.35rem; background: var(--bg-surface); padding: 0.25rem; border-radius: 8px; border: 1px solid var(--border-subtle);">
+            <button onclick="setQueueFilter('all')" class="btn-filter ${DBM_STATE.tableFilter === 'all' ? 'active' : ''}" style="padding: 0.35rem 0.75rem; border-radius: 6px; font-size: 0.75rem; font-weight: 700; border: none; cursor: pointer; background: ${DBM_STATE.tableFilter === 'all' ? 'var(--brand-primary)' : 'transparent'}; color: ${DBM_STATE.tableFilter === 'all' ? '#070b12' : 'var(--text-muted)'};">
+              All (100)
+            </button>
+            <button onclick="setQueueFilter('live')" class="btn-filter ${DBM_STATE.tableFilter === 'live' ? 'active' : ''}" style="padding: 0.35rem 0.75rem; border-radius: 6px; font-size: 0.75rem; font-weight: 700; border: none; cursor: pointer; background: ${DBM_STATE.tableFilter === 'live' ? '#a855f7' : 'transparent'}; color: ${DBM_STATE.tableFilter === 'live' ? '#fff' : 'var(--text-muted)'};">
+              🌟 Live References (${liveProducts.length})
+            </button>
+            <button onclick="setQueueFilter('today')" class="btn-filter ${DBM_STATE.tableFilter === 'today' ? 'active' : ''}" style="padding: 0.35rem 0.75rem; border-radius: 6px; font-size: 0.75rem; font-weight: 700; border: none; cursor: pointer; background: ${DBM_STATE.tableFilter === 'today' ? '#06b6d4' : 'transparent'}; color: ${DBM_STATE.tableFilter === 'today' ? '#070b12' : 'var(--text-muted)'};">
+              🎯 Today's Batch (8)
+            </button>
+            <button onclick="setQueueFilter('review')" class="btn-filter ${DBM_STATE.tableFilter === 'review' ? 'active' : ''}" style="padding: 0.35rem 0.75rem; border-radius: 6px; font-size: 0.75rem; font-weight: 700; border: none; cursor: pointer; background: ${DBM_STATE.tableFilter === 'review' ? '#f59e0b' : 'transparent'}; color: ${DBM_STATE.tableFilter === 'review' ? '#070b12' : 'var(--text-muted)'};">
+              ⏳ In Review (${pendingReview.length})
+            </button>
+          </div>
         </div>
 
-        ${renderCatalogExecutionTable(catalog.slice(0, 25))}
+        <div id="executionTableContainer">
+          ${renderFilteredQueueTable(catalog, nextProduct.code)}
+        </div>
       </div>
     `;
   }
 
-  function renderCatalogExecutionTable(products) {
+  window.switchWorkspaceBrand = function(brandId) {
+    DBM_STATE.activeBrandId = Number(brandId);
+    const catalog = DBM_STATE.productsCatalog[brandId] || [];
+    const nextProd = getNextActiveDraft(catalog);
+    DBM_STATE.currentStudioCode = nextProd.code || 'PLA-14';
+    renderCurrentRoute();
+  };
+
+  window.setQueueFilter = function(filter) {
+    DBM_STATE.tableFilter = filter;
+    const brand = DBM_STATE.assignedBrands.find(b => b.id === DBM_STATE.activeBrandId) || DBM_STATE.assignedBrands[0] || {};
+    const catalog = DBM_STATE.productsCatalog[brand.id] || [];
+    const nextProd = getNextActiveDraft(catalog);
+
+    const container = document.getElementById('executionTableContainer');
+    if (container) {
+      container.innerHTML = renderFilteredQueueTable(catalog, nextProd.code);
+    }
+    
+    // Update filter button styling
+    document.querySelectorAll('.btn-filter').forEach(btn => {
+      btn.style.background = 'transparent';
+      btn.style.color = 'var(--text-muted)';
+    });
+    event?.target && (event.target.style.background = 'var(--brand-primary)') && (event.target.style.color = '#070b12');
+  };
+
+  function renderFilteredQueueTable(catalog, nextCode) {
+    let filtered = [...catalog];
+    const filter = DBM_STATE.tableFilter || 'all';
+
+    if (filter === 'live') {
+      filtered = catalog.filter(p => p.status === 'Live');
+    } else if (filter === 'today') {
+      // Day 1 batch: index 13 to 20 (PLA-14 to PLA-21)
+      filtered = catalog.slice(13, 21);
+    } else if (filter === 'review') {
+      filtered = catalog.filter(p => p.status === 'Pending Review');
+    } else {
+      // Show first 25 for fast rendering
+      filtered = catalog.slice(0, 25);
+    }
+
+    if (filtered.length === 0) {
+      return '<div style="color: var(--text-muted); padding: 2rem; text-align: center;">No products match this filter.</div>';
+    }
+
     return `
       <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
         <thead>
@@ -231,7 +340,8 @@
           </tr>
         </thead>
         <tbody>
-          ${products.map(p => {
+          ${filtered.map(p => {
+            const isNext = p.code === nextCode;
             let statusBadge = '<span style="background:rgba(100,116,139,0.15); color:#94a3b8; padding:0.2rem 0.55rem; border-radius:12px; font-weight:700; font-size:0.75rem;">Draft</span>';
             let actionBtn = `<button class="btn-primary" style="font-size:0.75rem; padding:0.3rem 0.75rem;" onclick="startProductStudio('${p.code}')">Start ➔</button>`;
 
@@ -241,14 +351,14 @@
             } else if (p.status === 'Live') {
               statusBadge = '<span style="background:rgba(0,223,137,0.15); color:#00df89; padding:0.2rem 0.55rem; border-radius:12px; font-weight:700; font-size:0.75rem;">🟢 Live (Reference)</span>';
               actionBtn = `<button class="btn-ghost" style="font-size:0.75rem; padding:0.3rem 0.75rem; color:#a855f7; border-color:rgba(168,85,247,0.3);" onclick="openReferenceProductModal('${p.code}')">👀 Reference</button>`;
-            } else if (p.code === 'PLA-14') {
+            } else if (isNext) {
               statusBadge = '<span style="background:rgba(6,182,212,0.2); color:#38bdf8; border:1px solid rgba(6,182,212,0.4); padding:0.2rem 0.55rem; border-radius:12px; font-weight:800; font-size:0.75rem;">👉 Next Up</span>';
               actionBtn = `<button class="btn-primary" style="font-size:0.75rem; padding:0.3rem 0.9rem; background:linear-gradient(135deg,#00df89,#06b6d4);" onclick="startProductStudio('${p.code}')">▶️ Start Now</button>`;
             }
 
             return `
-              <tr style="border-bottom: 1px solid var(--border-subtle);">
-                <td style="padding: 0.75rem 0.6rem; font-family: var(--font-mono); font-weight: 700;">${p.code}</td>
+              <tr style="border-bottom: 1px solid var(--border-subtle); background: ${isNext ? 'rgba(6,182,212,0.04)' : 'transparent'};">
+                <td style="padding: 0.75rem 0.6rem; font-family: var(--font-mono); font-weight: 700; color: ${isNext ? '#38bdf8' : 'inherit'};">${p.code}</td>
                 <td style="padding: 0.75rem 0.6rem; font-weight: 600;">${p.name || p.seoTitle || 'Untitled Product'}</td>
                 <td style="padding: 0.75rem 0.6rem; color: var(--text-secondary);">${p.category || 'General'}</td>
                 <td style="padding: 0.75rem 0.6rem; font-weight: 700;">$${Number(p.price || 7.49).toFixed(2)}</td>
@@ -766,6 +876,7 @@
   window.finalSubmitProductForReview = async function(code) {
     const brand = DBM_STATE.assignedBrands.find(b => b.id === DBM_STATE.activeBrandId) || DBM_STATE.assignedBrands[0];
     const prod = DBM_STATE.activeEditingProduct || {};
+    const submitterName = getUserDisplayName();
 
     const payload = {
       title: prod.seoTitle || prod.name || 'Product ' + code,
@@ -776,7 +887,7 @@
       description: prod.seoDescription || prod.seo?.description || '',
       tags: prod.seoTags || ['digital planner', 'goodnotes planner', 'printable planner'],
       mockups: prod.mockups || [],
-      submittedBy: DBM_STATE.dbm?.name || 'Anika Nower'
+      submittedBy: submitterName
     };
 
     showToast('🚀 Submitting for Admin Review...', 'success');
@@ -1148,13 +1259,14 @@
           DBM_STATE.activeBrandId = DBM_STATE.assignedBrands[0].id;
         }
 
-        // Hydrate header
+        // Hydrate header with real display name
+        const displayName = getUserDisplayName();
         const nameEl = document.getElementById('userName');
         const avatarEl = document.getElementById('userAvatar');
-        if (nameEl) nameEl.textContent = brandsRes.dbm.name || 'Anika Nower';
+        if (nameEl) nameEl.textContent = displayName;
         if (avatarEl) {
-          const initials = (brandsRes.dbm.name || 'AN').split(' ').map(w => w[0]).join('').substring(0, 2);
-          avatarEl.textContent = initials;
+          const initials = displayName.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
+          avatarEl.textContent = initials || 'AN';
         }
       }
 
