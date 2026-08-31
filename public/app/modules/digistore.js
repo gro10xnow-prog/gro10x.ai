@@ -221,13 +221,17 @@ const DigistoreModule = {
   // ───────────────────────────────────────────────────────────────────────────
   // TAB 1: ORDERS PIPELINE
   // ───────────────────────────────────────────────────────────────────────────
+  // ───────────────────────────────────────────────────────────────────────────
+  // TAB 1: ORDERS PIPELINE
+  // ───────────────────────────────────────────────────────────────────────────
   renderOrdersTab(container) {
     let filtered = this.orders;
     if (this.orderFilter !== 'all') {
-      if (this.orderFilter === 'pending_payment') filtered = filtered.filter(o => o.paymentStatus === 'pending');
-      else if (this.orderFilter === 'verified') filtered = filtered.filter(o => o.paymentStatus === 'verified');
-      else if (this.orderFilter === 'delivered') filtered = filtered.filter(o => o.deliveryStatus === 'delivered');
-      else if (this.orderFilter === 'rejected') filtered = filtered.filter(o => o.paymentStatus === 'rejected');
+      if (this.orderFilter === 'pending_payment') filtered = filtered.filter(o => o.orderStage === 'pending_payment' || o.paymentStatus === 'pending');
+      else if (this.orderFilter === 'verified') filtered = filtered.filter(o => o.orderStage === 'payment_verified');
+      else if (this.orderFilter === 'procuring') filtered = filtered.filter(o => o.orderStage === 'procuring');
+      else if (this.orderFilter === 'delivered') filtered = filtered.filter(o => o.orderStage === 'delivered');
+      else if (this.orderFilter === 'closed') filtered = filtered.filter(o => o.orderStage === 'confirmed_closed' || o.orderStage === 'admin_closed');
     }
 
     container.innerHTML = `
@@ -235,9 +239,11 @@ const DigistoreModule = {
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
         <div style="display: flex; gap: 8px; flex-wrap: wrap;" id="orderFilterChips">
           <button class="filter-chip ${this.orderFilter === 'all' ? 'active' : ''}" data-filter="all">All Orders (${this.orders.length})</button>
-          <button class="filter-chip ${this.orderFilter === 'pending_payment' ? 'active' : ''}" data-filter="pending_payment">⏳ Payment Pending</button>
-          <button class="filter-chip ${this.orderFilter === 'verified' ? 'active' : ''}" data-filter="verified">✅ Payment Verified</button>
+          <button class="filter-chip ${this.orderFilter === 'pending_payment' ? 'active' : ''}" data-filter="pending_payment">⏳ Pending Pay</button>
+          <button class="filter-chip ${this.orderFilter === 'verified' ? 'active' : ''}" data-filter="verified">🔵 Verified</button>
+          <button class="filter-chip ${this.orderFilter === 'procuring' ? 'active' : ''}" data-filter="procuring">🟠 Procuring</button>
           <button class="filter-chip ${this.orderFilter === 'delivered' ? 'active' : ''}" data-filter="delivered">🔑 Delivered</button>
+          <button class="filter-chip ${this.orderFilter === 'closed' ? 'active' : ''}" data-filter="closed">✅ Closed</button>
         </div>
         <div style="display: flex; gap: 8px;">
           <input type="text" id="inputSearchOrders" placeholder="Search by customer, product, order #..." style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 8px 14px; color: #fff; font-size: 13px; min-width: 260px;" />
@@ -251,12 +257,12 @@ const DigistoreModule = {
             <thead>
               <tr style="background: rgba(0,0,0,0.3); border-bottom: 1px solid var(--border-subtle, rgba(255,255,255,0.08));">
                 <th style="padding: 14px 16px; font-size: 12px; color: var(--text-dim, #64748b); text-transform: uppercase;">Order #</th>
-                <th style="padding: 14px 16px; font-size: 12px; color: var(--text-dim, #64748b); text-transform: uppercase;">Customer</th>
+                <th style="padding: 14px 16px; font-size: 12px; color: var(--text-dim, #64748b); text-transform: uppercase;">Customer & WA</th>
                 <th style="padding: 14px 16px; font-size: 12px; color: var(--text-dim, #64748b); text-transform: uppercase;">Product & Duration</th>
                 <th style="padding: 14px 16px; font-size: 12px; color: var(--text-dim, #64748b); text-transform: uppercase;">Sale / Cost / Profit</th>
-                <th style="padding: 14px 16px; font-size: 12px; color: var(--text-dim, #64748b); text-transform: uppercase;">Payment Status</th>
-                <th style="padding: 14px 16px; font-size: 12px; color: var(--text-dim, #64748b); text-transform: uppercase;">🛡️ Blind Procurement</th>
-                <th style="padding: 14px 16px; font-size: 12px; color: var(--text-dim, #64748b); text-transform: uppercase;">Delivery</th>
+                <th style="padding: 14px 16px; font-size: 12px; color: var(--text-dim, #64748b); text-transform: uppercase;">Stage & Proofs</th>
+                <th style="padding: 14px 16px; font-size: 12px; color: var(--text-dim, #64748b); text-transform: uppercase;">🛡️ Supplier Procure</th>
+                <th style="padding: 14px 16px; font-size: 12px; color: var(--text-dim, #64748b); text-transform: uppercase;">Delivery / Link</th>
                 <th style="padding: 14px 16px; font-size: 12px; color: var(--text-dim, #64748b); text-transform: uppercase; text-align: right;">Actions</th>
               </tr>
             </thead>
@@ -265,7 +271,7 @@ const DigistoreModule = {
                 <tr>
                   <td colspan="8" style="padding: 48px; text-align: center; color: var(--text-muted);">
                     <div style="font-size: 32px; margin-bottom: 8px;">📭</div>
-                    <div>No orders found. Click <strong>"Log New Order"</strong> to record your first sale!</div>
+                    <div>No orders found in this stage.</div>
                   </td>
                 </tr>
               ` : filtered.map(o => this.renderOrderRow(o)).join('')}
@@ -302,13 +308,15 @@ const DigistoreModule = {
     const isPaid = o.paymentStatus === 'verified';
     const isDelivered = o.deliveryStatus === 'delivered';
     const profitMargin = o.salePrice > 0 ? Math.round((o.profit / o.salePrice) * 100) : 0;
+    const stage = o.orderStage || (isDelivered ? 'delivered' : isPaid ? 'payment_verified' : 'pending_payment');
 
-    let paymentBadge = `<span class="badge" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3);">⏳ Pending</span>`;
-    if (isPaid) paymentBadge = `<span class="badge" style="background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3);">✅ Verified</span>`;
-    if (o.paymentStatus === 'rejected') paymentBadge = `<span class="badge" style="background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3);">❌ Rejected</span>`;
-
-    let deliveryBadge = `<span class="badge" style="background: rgba(148, 163, 184, 0.15); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.3);">⏳ Unfulfilled</span>`;
-    if (isDelivered) deliveryBadge = `<span class="badge" style="background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3);">🔑 Delivered</span>`;
+    // Stage Badges
+    let stageBadge = `<span class="badge" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3);">⏳ Pending Pay</span>`;
+    if (stage === 'payment_verified') stageBadge = `<span class="badge" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3);">🔵 Paid & Verified</span>`;
+    if (stage === 'procuring') stageBadge = `<span class="badge" style="background: rgba(249, 115, 22, 0.15); color: #f97316; border: 1px solid rgba(249, 115, 22, 0.3);">🟠 Procuring</span>`;
+    if (stage === 'delivered') stageBadge = `<span class="badge" style="background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3);">🟢 Delivered</span>`;
+    if (stage === 'confirmed_closed') stageBadge = `<span class="badge" style="background: rgba(20, 184, 166, 0.2); color: #14b8a6; border: 1px solid rgba(20, 184, 166, 0.4);">✅ Closed (Cust)</span>`;
+    if (stage === 'admin_closed') stageBadge = `<span class="badge" style="background: rgba(148, 163, 184, 0.2); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.4);">🔒 Closed (Admin)</span>`;
 
     return `
       <tr style="border-bottom: 1px solid var(--border-subtle, rgba(255,255,255,0.05));" data-order-id="${o.id}">
@@ -318,9 +326,13 @@ const DigistoreModule = {
         <td style="padding: 14px 16px;">
           <div style="font-weight: 700; color: #fff;">${o.customerName}</div>
           <div style="font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; margin-top: 2px;">
-            <span>${o.contactChannel === 'facebook' ? '📘' : o.contactChannel === 'whatsapp' ? '💬' : '📱'}</span>
-            <span>${o.customerContact}</span>
+            <span>📱 ${o.customerContact}</span>
           </div>
+          ${o.customerWhatsapp ? `
+            <div style="font-size: 11px; color: #25d366; margin-top: 2px; font-weight: 600;">
+              💬 WA: ${o.customerWhatsapp}
+            </div>
+          ` : ''}
         </td>
         <td style="padding: 14px 16px;">
           <div style="font-weight: 600; color: #f8fafc;">${o.productName}</div>
@@ -332,31 +344,42 @@ const DigistoreModule = {
           <div style="font-size: 11px; color: #10b981; font-weight: 700;">+৳${o.profit.toLocaleString()} (${profitMargin}%)</div>
         </td>
         <td style="padding: 14px 16px;">
-          ${paymentBadge}
-          ${o.paymentProofUrl ? `<div style="margin-top: 4px;"><a href="${o.paymentProofUrl}" target="_blank" style="font-size: 11px; color: #38bdf8; text-decoration: underline;">🖼️ View Proof</a></div>` : ''}
+          ${stageBadge}
+          <div style="display: flex; flex-direction: column; gap: 2px; margin-top: 4px;">
+            ${o.paymentProofUrl ? `<a href="${o.paymentProofUrl}" target="_blank" style="font-size: 11px; color: #38bdf8; text-decoration: underline;">🖼️ Cust Proof</a>` : ''}
+            ${o.vendorPaymentProofUrl ? `<a href="${o.vendorPaymentProofUrl}" target="_blank" style="font-size: 11px; color: #f97316; text-decoration: underline;">🖼️ Vendor Proof</a>` : ''}
+            ${o.adminClosureProofUrl ? `<a href="${o.adminClosureProofUrl}" target="_blank" style="font-size: 11px; color: #94a3b8; text-decoration: underline;">🖼️ Close Proof</a>` : ''}
+          </div>
         </td>
         <td style="padding: 14px 16px;">
-          ${o.procurementLink ? `
-            <a href="${o.procurementLink}" target="_blank" class="btn" style="padding: 4px 10px; font-size: 11px; background: rgba(37, 211, 102, 0.15); color: #25d366; border: 1px solid rgba(37, 211, 102, 0.3); border-radius: 6px; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; font-weight: 600;">
-              <span>💬</span> Procure (WA)
-            </a>
-            <div style="font-size: 10px; color: #64748b; margin-top: 3px;">To: ${o.vendorName.split(' ')[0]}</div>
-          ` : `<span style="font-size: 11px; color: #64748b;">No Vendor Phone</span>`}
+          <button class="btn btn-sm btn-procure-modal" data-id="${o.id}" style="padding: 4px 10px; font-size: 11px; background: rgba(37, 211, 102, 0.15); color: #25d366; border: 1px solid rgba(37, 211, 102, 0.3); border-radius: 6px; display: inline-flex; align-items: center; gap: 5px; font-weight: 600; cursor: pointer;">
+            <span>💬</span> Procure & Pay
+          </button>
+          <div style="font-size: 10px; color: #64748b; margin-top: 3px;">To: ${o.vendorName.split(' ')[0]} (৳${o.vendorPrice})</div>
         </td>
         <td style="padding: 14px 16px;">
-          ${deliveryBadge}
-          ${o.expiryDate ? `<div style="font-size: 11px; color: #94a3b8; margin-top: 3px;">Expires: ${o.expiryDate}</div>` : ''}
+          ${o.activationLink ? `
+            <div style="font-size: 11px; color: #00df89; font-weight: 700; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${o.activationLink}">
+              🔗 Link Active
+            </div>
+          ` : (isDelivered ? `<span style="font-size: 11px; color: #10b981; font-weight: 600;">🔑 Creds Delivered</span>` : `<span style="font-size: 11px; color: #64748b;">Pending Link</span>`)}
+          ${o.expiryDate ? `<div style="font-size: 10px; color: #94a3b8; margin-top: 2px;">Exp: ${o.expiryDate}</div>` : ''}
         </td>
         <td style="padding: 14px 16px; text-align: right;">
-          <div style="display: flex; gap: 6px; justify-content: flex-end;">
+          <div style="display: flex; gap: 4px; justify-content: flex-end; flex-wrap: wrap;">
             ${!isPaid ? `
               <button class="btn btn-sm btn-success btn-verify-pay" data-id="${o.id}" title="Verify Payment">✅ Verify</button>
             ` : ''}
             ${!isDelivered ? `
-              <button class="btn btn-sm btn-primary btn-open-deliver" data-id="${o.id}" title="Enter Credentials & Deliver">🔑 Deliver</button>
-            ` : `
-              <button class="btn btn-sm btn-secondary btn-renew-order" data-id="${o.id}" title="Renew Subscription">🔄 Renew</button>
-            `}
+              <button class="btn btn-sm btn-primary btn-open-deliver" data-id="${o.id}" title="Enter Link / Credentials">🔑 Deliver</button>
+            ` : ''}
+            ${(isDelivered && stage !== 'confirmed_closed' && stage !== 'admin_closed') ? `
+              <button class="btn btn-sm btn-secondary btn-admin-close" data-id="${o.id}" title="Close Order with Screenshot Proof">🔒 Close</button>
+            ` : ''}
+            ${o.whatsappDeliveryLink ? `
+              <a href="${o.whatsappDeliveryLink}" target="_blank" class="btn btn-sm" style="background: rgba(37,211,102,0.15); color: #25d366; text-decoration: none; padding: 4px 8px;" title="Send via WhatsApp">💬 WA</a>
+            ` : ''}
+            <button class="btn btn-sm btn-secondary btn-view-timeline" data-id="${o.id}" title="View Order Lifecycle History">📋</button>
           </div>
         </td>
       </tr>
@@ -381,12 +404,39 @@ const DigistoreModule = {
       });
     });
 
+    // Procure & Pay Vendor button
+    container.querySelectorAll('.btn-procure-modal').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = e.currentTarget.getAttribute('data-id');
+        const order = this.orders.find(o => o.id === id);
+        if (order) this.openProcureModal(order);
+      });
+    });
+
     // Deliver button
     container.querySelectorAll('.btn-open-deliver').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const id = e.currentTarget.getAttribute('data-id');
         const order = this.orders.find(o => o.id === id);
         if (order) this.openDeliveryModal(order);
+      });
+    });
+
+    // Admin Close Order button
+    container.querySelectorAll('.btn-admin-close').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = e.currentTarget.getAttribute('data-id');
+        const order = this.orders.find(o => o.id === id);
+        if (order) this.openAdminCloseModal(order);
+      });
+    });
+
+    // View Timeline button
+    container.querySelectorAll('.btn-view-timeline').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = e.currentTarget.getAttribute('data-id');
+        const order = this.orders.find(o => o.id === id);
+        if (order) this.openTimelineModal(order);
       });
     });
 
@@ -418,7 +468,7 @@ const DigistoreModule = {
       <div style="margin-bottom: 20px;">
         <h3 style="font-size: 18px; font-weight: 700; color: #fff;">🔑 Action Center — Unfulfilled Orders (${queue.length})</h3>
         <p style="color: var(--text-muted); font-size: 13px;">
-          These orders have verified customer payments. Procure credentials from the supplier and enter them into the vault to dispatch to the customer.
+          These orders have verified customer payments. Procure credentials or activation link from the supplier and enter them to dispatch to the customer.
         </p>
       </div>
 
@@ -429,7 +479,7 @@ const DigistoreModule = {
           <div style="font-size: 13px; margin-top: 4px;">All paid orders have been successfully fulfilled.</div>
         </div>
       ` : `
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 16px;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 16px;">
           ${queue.map(o => `
             <div class="card" style="padding: 20px; border-top: 4px solid #f59e0b; display: flex; flex-direction: column; justify-content: space-between;">
               <div>
@@ -443,19 +493,28 @@ const DigistoreModule = {
 
                 <div style="background: rgba(0,0,0,0.25); border-radius: 8px; padding: 12px; font-size: 13px; margin-bottom: 14px;">
                   <div style="color: #94a3b8;">Customer: <strong style="color: #fff;">${o.customerName}</strong> (${o.customerContact})</div>
-                  <div style="color: #94a3b8; margin-top: 4px;">Supplier: <strong style="color: #38bdf8;">${o.vendorName}</strong></div>
+                  <div style="color: #25d366; margin-top: 2px; font-weight: 600;">WhatsApp: ${o.customerWhatsapp || o.customerContact}</div>
+                  <div style="color: #94a3b8; margin-top: 4px;">Supplier: <strong style="color: #38bdf8;">${o.vendorName}</strong> (Cost: ৳${o.vendorPrice})</div>
                   <div style="color: #10b981; margin-top: 4px; font-weight: 700;">Net Profit: +৳${o.profit.toLocaleString()}</div>
                 </div>
+
+                ${o.vendorPaymentProofUrl ? `
+                  <div style="font-size: 11px; color: #10b981; margin-bottom: 10px; display: flex; align-items: center; gap: 4px;">
+                    <span>✅</span> Vendor Payment Recorded (৳${o.vendorPaymentAmount})
+                  </div>
+                ` : `
+                  <div style="font-size: 11px; color: #f97316; margin-bottom: 10px; display: flex; align-items: center; gap: 4px;">
+                    <span>⚠️</span> Need to pay vendor ৳${o.vendorPrice}
+                  </div>
+                `}
               </div>
 
               <div style="display: flex; gap: 8px; margin-top: 12px;">
-                ${o.procurementLink ? `
-                  <a href="${o.procurementLink}" target="_blank" class="btn btn-secondary" style="flex: 1; text-align: center; text-decoration: none; font-size: 12px; display: flex; align-items: center; justify-content: center; gap: 6px;">
-                    <span>💬</span> WhatsApp Supplier
-                  </a>
-                ` : ''}
+                <button class="btn btn-secondary btn-queue-procure" data-id="${o.id}" style="flex: 1; font-size: 12px;">
+                  💬 1-Click Procure
+                </button>
                 <button class="btn btn-primary btn-queue-deliver" data-id="${o.id}" style="flex: 1; font-size: 12px;">
-                  🔑 Enter Credentials
+                  🔑 Enter Link / Creds
                 </button>
               </div>
             </div>
@@ -463,6 +522,14 @@ const DigistoreModule = {
         </div>
       `}
     `;
+
+    container.querySelectorAll('.btn-queue-procure').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = e.currentTarget.getAttribute('data-id');
+        const order = this.orders.find(o => o.id === id);
+        if (order) this.openProcureModal(order);
+      });
+    });
 
     container.querySelectorAll('.btn-queue-deliver').forEach(btn => {
       btn.addEventListener('click', (e) => {
@@ -943,27 +1010,164 @@ const DigistoreModule = {
     });
   },
 
-  openDeliveryModal(order) {
+  openProcureModal(order) {
     const modalContainer = document.getElementById('digiModalsContainer');
     if (!modalContainer) return;
 
     modalContainer.innerHTML = `
-      <div class="modal-backdrop" style="position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px;">
-        <div class="modal-card" style="background: #131722; border: 1px solid var(--border-subtle); border-radius: 12px; width: 100%; max-width: 500px; padding: 24px;">
+      <div class="modal-backdrop" style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px;">
+        <div class="modal-card" style="background: #131722; border: 1px solid var(--border-subtle); border-radius: 12px; width: 100%; max-width: 520px; padding: 24px;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
             <div>
               <span style="font-family: monospace; font-size: 12px; color: #38bdf8; font-weight: 700;">${order.orderNumber}</span>
-              <h3 style="font-size: 18px; font-weight: 800; color: #fff;">🔑 Credential Vault Fulfillment</h3>
+              <h3 style="font-size: 18px; font-weight: 800; color: #fff;">🛡️ Supplier Procurement & Payment Proof</h3>
+            </div>
+            <button class="btn btn-sm btn-secondary btn-close-modal">✕</button>
+          </div>
+
+          <div style="background: rgba(0,0,0,0.3); border-radius: 8px; padding: 14px; font-size: 13px; margin-bottom: 16px;">
+            <div style="color: #fff; font-weight: 700; font-size: 15px;">${order.productName} (⏱️ ${order.duration})</div>
+            <div style="color: var(--text-muted); margin-top: 4px;">Supplier: <strong style="color: #38bdf8;">${order.vendorName}</strong> (${order.vendorPhone || 'WhatsApp'})</div>
+            <div style="color: #10b981; margin-top: 4px; font-weight: 700;">Customer Sale: ৳${order.salePrice.toLocaleString()} | Supplier Cost: ৳${order.vendorPrice.toLocaleString()}</div>
+          </div>
+
+          <form id="formProcureVendor" style="display: flex; flex-direction: column; gap: 14px;">
+            <div>
+              <label style="font-size: 12px; color: #94a3b8; font-weight: 600;">Vendor Payment Amount (৳) *</label>
+              <input type="number" id="modalProcureAmount" required value="${order.vendorPrice || 170}" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px; color: #fff; font-size: 14px; font-weight: 700; margin-top: 4px;" />
+            </div>
+
+            <div>
+              <label style="font-size: 12px; color: #94a3b8; font-weight: 600;">Upload Your Payment Screenshot to Supplier (bKash/Nagad)</label>
+              <input type="file" id="modalProcureProofFile" accept="image/*" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 8px; color: #fff; font-size: 12px; margin-top: 4px;" />
+              <span style="font-size: 11px; color: var(--text-muted);">Attaches proof of supplier payment in system audit timeline.</span>
+            </div>
+
+            <div>
+              <label style="font-size: 12px; color: #94a3b8; font-weight: 600;">Procurement Notes (Optional)</label>
+              <input type="text" id="modalProcureNotes" placeholder="e.g. Paid from bKash 01312415757" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px; color: #fff; font-size: 13px; margin-top: 4px;" />
+            </div>
+
+            <div style="background: rgba(37, 211, 102, 0.08); border: 1px solid rgba(37, 211, 102, 0.25); border-radius: 8px; padding: 12px; font-size: 12px; color: #25d366;">
+              🔒 <strong>Blind Protocol Active:</strong> Customer name & contact are strictly hidden. Vendor will only receive order ref and product details.
+            </div>
+
+            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 10px;">
+              <button type="button" class="btn btn-secondary btn-close-modal">Cancel</button>
+              <button type="submit" class="btn btn-primary" id="btnSubmitProcure" style="background: #25d366; color: #000; font-weight: 700;">
+                💬 Save Proof & Open Supplier WhatsApp ➔
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    `;
+
+    modalContainer.querySelectorAll('.btn-close-modal').forEach(b => {
+      b.addEventListener('click', () => { modalContainer.innerHTML = ''; });
+    });
+
+    const form = modalContainer.querySelector('#formProcureVendor');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('btnSubmitProcure');
+      btn.disabled = true;
+      btn.textContent = 'Saving Proof & Opening WA... ⏳';
+
+      const amount = document.getElementById('modalProcureAmount').value;
+      const notes = document.getElementById('modalProcureNotes').value.trim();
+      const fileInput = document.getElementById('modalProcureProofFile');
+
+      const formData = new FormData();
+      formData.append('amount', amount);
+      formData.append('notes', notes);
+      if (fileInput.files.length > 0) {
+        formData.append('proof', fileInput.files[0]);
+      }
+
+      try {
+        const token = localStorage.getItem('gro10x_token') || sessionStorage.getItem('gro10x_token');
+        const res = await fetch(`/api/digistore/orders/${order.id}/vendor-payment`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: formData
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || 'Procurement failed');
+
+        if (json.data && json.data.procurementUrl) {
+          window.open(json.data.procurementUrl, '_blank');
+        }
+
+        alert('✅ Vendor payment recorded & supplier WhatsApp opened!');
+        modalContainer.innerHTML = '';
+        await this.loadAllData();
+        this.switchTab('orders');
+      } catch (err) {
+        alert('Error saving procurement: ' + err.message);
+        btn.disabled = false;
+        btn.textContent = '💬 Save Proof & Open Supplier WhatsApp ➔';
+      }
+    });
+  },
+
+  openDeliveryModal(order) {
+    const modalContainer = document.getElementById('digiModalsContainer');
+    if (!modalContainer) return;
+
+    const isLinkProd = (order.productName || '').toLowerCase().includes('gemini') || (order.productName || '').toLowerCase().includes('veo') || order.deliveryType === 'link';
+
+    modalContainer.innerHTML = `
+      <div class="modal-backdrop" style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px;">
+        <div class="modal-card" style="background: #131722; border: 1px solid var(--border-subtle); border-radius: 12px; width: 100%; max-width: 540px; padding: 24px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <div>
+              <span style="font-family: monospace; font-size: 12px; color: #38bdf8; font-weight: 700;">${order.orderNumber}</span>
+              <h3 style="font-size: 18px; font-weight: 800; color: #fff;">🔑 Order Fulfillment & Delivery</h3>
             </div>
             <button class="btn btn-sm btn-secondary btn-close-modal">✕</button>
           </div>
 
           <div style="background: rgba(0,0,0,0.25); border-radius: 8px; padding: 12px; font-size: 13px; margin-bottom: 16px;">
-            <div style="color: #fff; font-weight: 700;">${order.productName}</div>
-            <div style="color: var(--text-muted); margin-top: 2px;">Customer: <strong>${order.customerName}</strong> (${order.customerContact})</div>
+            <div style="color: #fff; font-weight: 700;">${order.productName} (⏱️ ${order.duration})</div>
+            <div style="color: var(--text-muted); margin-top: 2px;">Customer: <strong>${order.customerName}</strong> | WA: <span style="color:#25d366;">${order.customerWhatsapp || order.customerContact}</span></div>
           </div>
 
-          <form id="formFulfillDelivery" style="display: flex; flex-direction: column; gap: 14px;">
+          <!-- Mode Switcher -->
+          <div style="display: flex; gap: 8px; margin-bottom: 16px; background: rgba(0,0,0,0.3); padding: 4px; border-radius: 8px;">
+            <button type="button" class="btn btn-sm ${isLinkProd ? 'btn-primary' : 'btn-secondary'}" id="btnTabLinkMode" style="flex: 1;">
+              🔗 Activation Link (Gemini)
+            </button>
+            <button type="button" class="btn btn-sm ${!isLinkProd ? 'btn-primary' : 'btn-secondary'}" id="btnTabCredsMode" style="flex: 1;">
+              🔑 ID + Pass Credentials
+            </button>
+          </div>
+
+          <!-- Link Delivery Form -->
+          <form id="formLinkDelivery" style="display: ${isLinkProd ? 'flex' : 'none'}; flex-direction: column; gap: 14px;">
+            <div>
+              <label style="font-size: 12px; color: #94a3b8; font-weight: 600;">Unique Activation Link from Supplier *</label>
+              <textarea id="modalActLink" required rows="3" placeholder="Paste link received from vendor (e.g. https://serviceactivation.google.com/subscription/new/AQCpiIG...)" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px; color: #fff; font-family: monospace; font-size: 12px; margin-top: 4px;">${order.activationLink || ''}</textarea>
+            </div>
+
+            <div style="background: rgba(0,0,0,0.3); border-radius: 8px; padding: 12px; font-size: 11px; color: var(--text-muted); line-height: 1.5;">
+              <strong style="color: #00df89; display: block; margin-bottom: 4px;">📋 What will be delivered:</strong>
+              • The unique activation URL<br>
+              • 6-Step Google Chrome guide (clean Gmail requirement)<br>
+              • Instant [✅ Confirm] button in Telegram / Web<br>
+              • WhatsApp Support link (01889825025)
+            </div>
+
+            <div id="linkDeliveryResult"></div>
+
+            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 6px;">
+              <button type="button" class="btn btn-secondary btn-close-modal">Cancel</button>
+              <button type="submit" class="btn btn-primary" id="btnSubmitLinkDeliver">Save Link & Dispatch 🚀</button>
+            </div>
+          </form>
+
+          <!-- Credentials Delivery Form -->
+          <form id="formCredsDelivery" style="display: ${!isLinkProd ? 'flex' : 'none'}; flex-direction: column; gap: 14px;">
             <div>
               <label style="font-size: 12px; color: #94a3b8; font-weight: 600;">Email / Login ID</label>
               <input type="text" id="modalCredEmail" placeholder="e.g. netflix_user@domain.com" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px; color: #fff; font-size: 13px; margin-top: 4px;" />
@@ -975,18 +1179,15 @@ const DigistoreModule = {
             </div>
 
             <div>
-              <label style="font-size: 12px; color: #94a3b8; font-weight: 600;">Redemption Link / Invite URL (If applicable)</label>
-              <input type="url" id="modalCredLink" placeholder="e.g. https://www.linkedin.com/premium/redeem/..." style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px; color: #fff; font-size: 13px; margin-top: 4px;" />
-            </div>
-
-            <div>
               <label style="font-size: 12px; color: #94a3b8; font-weight: 600;">Instructions / Customer Notes</label>
-              <textarea id="modalCredNotes" rows="2" placeholder="e.g. Please use Profile #3 only." style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px; color: #fff; font-size: 13px; margin-top: 4px;"></textarea>
+              <textarea id="modalCredNotes" rows="2" placeholder="e.g. Please use Profile #3 only. Do not change password." style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px; color: #fff; font-size: 13px; margin-top: 4px;"></textarea>
             </div>
 
-            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 10px;">
+            <div id="credsDeliveryResult"></div>
+
+            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 6px;">
               <button type="button" class="btn btn-secondary btn-close-modal">Cancel</button>
-              <button type="submit" class="btn btn-primary">Save & Mark Delivered</button>
+              <button type="submit" class="btn btn-primary" id="btnSubmitCredsDeliver">Save & Deliver 🔑</button>
             </div>
           </form>
         </div>
@@ -997,29 +1198,247 @@ const DigistoreModule = {
       b.addEventListener('click', () => { modalContainer.innerHTML = ''; });
     });
 
-    const form = modalContainer.querySelector('#formFulfillDelivery');
-    form.addEventListener('submit', async (e) => {
+    const btnTabLink = modalContainer.querySelector('#btnTabLinkMode');
+    const btnTabCreds = modalContainer.querySelector('#btnTabCredsMode');
+    const formLink = modalContainer.querySelector('#formLinkDelivery');
+    const formCreds = modalContainer.querySelector('#formCredsDelivery');
+
+    btnTabLink.addEventListener('click', () => {
+      btnTabLink.className = 'btn btn-sm btn-primary';
+      btnTabCreds.className = 'btn btn-sm btn-secondary';
+      formLink.style.display = 'flex';
+      formCreds.style.display = 'none';
+    });
+
+    btnTabCreds.addEventListener('click', () => {
+      btnTabCreds.className = 'btn btn-sm btn-primary';
+      btnTabLink.className = 'btn btn-sm btn-secondary';
+      formCreds.style.display = 'flex';
+      formLink.style.display = 'none';
+    });
+
+    // Handle Link Delivery Submit
+    formLink.addEventListener('submit', async (e) => {
       e.preventDefault();
+      const btn = document.getElementById('btnSubmitLinkDeliver');
+      btn.disabled = true;
+      btn.textContent = 'Saving & Dispatching... ⏳';
+
+      const activationLink = document.getElementById('modalActLink').value.trim();
+
+      try {
+        const res = await APP_API.post(`/digistore/orders/${order.id}/activation-link`, {
+          activationLink,
+          deliveryType: 'link'
+        });
+
+        const resultBox = document.getElementById('linkDeliveryResult');
+        resultBox.innerHTML = `
+          <div style="background: rgba(0, 223, 137, 0.1); border: 1px solid #00df89; border-radius: 8px; padding: 14px; margin-top: 10px;">
+            <div style="font-weight: 700; color: #00df89; font-size: 13px; margin-bottom: 6px;">🎉 Link Saved & Dispatched!</div>
+            <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 10px;">Telegram bot dispatched automatically if linked. Use button below for WhatsApp:</div>
+            ${res.whatsappDeliveryUrl ? `
+              <a href="${res.whatsappDeliveryUrl}" target="_blank" class="btn btn-primary" style="background: #25d366; color: #000; font-weight: 700; width: 100%; text-align: center; text-decoration: none; display: block;">
+                💬 Send Guide & Link via WhatsApp Now ➔
+              </a>
+            ` : ''}
+          </div>
+        `;
+        btn.textContent = 'Dispatched ✅';
+        await this.loadAllData();
+      } catch (err) {
+        alert('Error dispatching link: ' + err.message);
+        btn.disabled = false;
+        btn.textContent = 'Save Link & Dispatch 🚀';
+      }
+    });
+
+    // Handle Creds Delivery Submit
+    formCreds.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('btnSubmitCredsDeliver');
+      btn.disabled = true;
+      btn.textContent = 'Saving & Delivering... ⏳';
+
       const payload = {
         deliveryType: 'id_pass',
         credentialData: {
           email: document.getElementById('modalCredEmail').value.trim(),
           password: document.getElementById('modalCredPass').value.trim(),
-          link: document.getElementById('modalCredLink').value.trim(),
           notes: document.getElementById('modalCredNotes').value.trim()
         }
       };
 
       try {
         const res = await APP_API.post(`/digistore/orders/${order.id}/deliver`, payload);
-        alert(res.message || 'Credentials stored & marked as delivered!');
+        const resultBox = document.getElementById('credsDeliveryResult');
+        resultBox.innerHTML = `
+          <div style="background: rgba(0, 223, 137, 0.1); border: 1px solid #00df89; border-radius: 8px; padding: 14px; margin-top: 10px;">
+            <div style="font-weight: 700; color: #00df89; font-size: 13px; margin-bottom: 6px;">🔑 Credentials Delivered!</div>
+            ${res.whatsappDeliveryUrl ? `
+              <a href="${res.whatsappDeliveryUrl}" target="_blank" class="btn btn-primary" style="background: #25d366; color: #000; font-weight: 700; width: 100%; text-align: center; text-decoration: none; display: block;">
+                💬 Send Credentials via WhatsApp ➔
+              </a>
+            ` : ''}
+          </div>
+        `;
+        btn.textContent = 'Delivered ✅';
+        await this.loadAllData();
+      } catch (err) {
+        alert('Error fulfilling order: ' + err.message);
+        btn.disabled = false;
+        btn.textContent = 'Save & Deliver 🔑';
+      }
+    });
+  },
+
+  openAdminCloseModal(order) {
+    const modalContainer = document.getElementById('digiModalsContainer');
+    if (!modalContainer) return;
+
+    modalContainer.innerHTML = `
+      <div class="modal-backdrop" style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px;">
+        <div class="modal-card" style="background: #131722; border: 1px solid var(--border-subtle); border-radius: 12px; width: 100%; max-width: 500px; padding: 24px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <div>
+              <span style="font-family: monospace; font-size: 12px; color: #38bdf8; font-weight: 700;">${order.orderNumber}</span>
+              <h3 style="font-size: 18px; font-weight: 800; color: #fff;">🔒 Manual Order Closure</h3>
+            </div>
+            <button class="btn btn-sm btn-secondary btn-close-modal">✕</button>
+          </div>
+
+          <div style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 8px; padding: 12px; font-size: 12px; color: #f87171; margin-bottom: 16px;">
+            ⚠️ <strong>Screenshot Required:</strong> You must upload a screenshot of the WhatsApp delivery/confirmation to close this order manually for audit compliance.
+          </div>
+
+          <form id="formAdminClose" style="display: flex; flex-direction: column; gap: 14px;">
+            <div>
+              <label style="font-size: 12px; color: #94a3b8; font-weight: 600;">Closure Proof Screenshot *</label>
+              <input type="file" id="modalClosureProofFile" required accept="image/*" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 8px; color: #fff; font-size: 12px; margin-top: 4px;" />
+            </div>
+
+            <div>
+              <label style="font-size: 12px; color: #94a3b8; font-weight: 600;">Closure Notes / Reason</label>
+              <textarea id="modalClosureNotes" rows="2" placeholder="e.g. Customer acknowledged on WhatsApp and verified activation on clean profile." style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px; color: #fff; font-size: 13px; margin-top: 4px;"></textarea>
+            </div>
+
+            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 6px;">
+              <button type="button" class="btn btn-secondary btn-close-modal">Cancel</button>
+              <button type="submit" class="btn btn-primary" id="btnSubmitAdminClose" style="background: #94a3b8; color: #000; font-weight: 700;">
+                🔒 Save Proof & Close Order
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    `;
+
+    modalContainer.querySelectorAll('.btn-close-modal').forEach(b => {
+      b.addEventListener('click', () => { modalContainer.innerHTML = ''; });
+    });
+
+    const form = modalContainer.querySelector('#formAdminClose');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('btnSubmitAdminClose');
+      const fileInput = document.getElementById('modalClosureProofFile');
+      if (!fileInput.files || fileInput.files.length === 0) {
+        return alert('Proof screenshot is mandatory!');
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Closing Order... ⏳';
+
+      const formData = new FormData();
+      formData.append('closureProof', fileInput.files[0]);
+      formData.append('notes', document.getElementById('modalClosureNotes').value.trim());
+
+      try {
+        const token = localStorage.getItem('gro10x_token') || sessionStorage.getItem('gro10x_token');
+        const res = await fetch(`/api/digistore/orders/${order.id}/admin-close`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: formData
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || 'Failed to close order');
+
+        alert('✅ Order closed and proof screenshot saved!');
         modalContainer.innerHTML = '';
         await this.loadAllData();
         this.switchTab('orders');
       } catch (err) {
-        alert('Error fulfilling order: ' + err.message);
+        alert('Error closing order: ' + err.message);
+        btn.disabled = false;
+        btn.textContent = '🔒 Save Proof & Close Order';
       }
     });
+  },
+
+  async openTimelineModal(order) {
+    const modalContainer = document.getElementById('digiModalsContainer');
+    if (!modalContainer) return;
+
+    modalContainer.innerHTML = `
+      <div class="modal-backdrop" style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px;">
+        <div class="modal-card" style="background: #131722; border: 1px solid var(--border-subtle); border-radius: 12px; width: 100%; max-width: 560px; max-height: 80vh; overflow-y: auto; padding: 24px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <div>
+              <span style="font-family: monospace; font-size: 12px; color: #38bdf8; font-weight: 700;">${order.orderNumber}</span>
+              <h3 style="font-size: 18px; font-weight: 800; color: #fff;">📋 Order Audit Timeline</h3>
+            </div>
+            <button class="btn btn-sm btn-secondary btn-close-modal">✕</button>
+          </div>
+
+          <div style="background: rgba(0,0,0,0.25); border-radius: 8px; padding: 12px; font-size: 13px; margin-bottom: 20px;">
+            <div style="color: #fff; font-weight: 700;">${order.productName}</div>
+            <div style="color: var(--text-muted); margin-top: 2px;">Customer: <strong>${order.customerName}</strong> (${order.customerContact})</div>
+          </div>
+
+          <div id="timelineEventsContainer" style="display: flex; flex-direction: column; gap: 14px; padding-left: 10px; border-left: 2px solid rgba(255,255,255,0.1);">
+            <div style="color: var(--text-muted); font-size: 13px;">Loading timeline events... ⏳</div>
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
+            <button type="button" class="btn btn-secondary btn-close-modal">Close</button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    modalContainer.querySelectorAll('.btn-close-modal').forEach(b => {
+      b.addEventListener('click', () => { modalContainer.innerHTML = ''; });
+    });
+
+    try {
+      const events = await APP_API.get(`/digistore/orders/${order.id}/timeline`);
+      const container = document.getElementById('timelineEventsContainer');
+
+      if (!events || events.length === 0) {
+        container.innerHTML = `
+          <div style="font-size: 13px; color: var(--text-muted); padding: 10px 0;">
+            Created: ${new Date(order.createdAt).toLocaleString()}<br>
+            Current Stage: <strong style="color: #38bdf8;">${order.orderStage}</strong>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = events.map(ev => `
+        <div style="position: relative; padding-left: 16px;">
+          <div style="position: absolute; left: -17px; top: 2px; width: 12px; height: 12px; border-radius: 50%; background: ${ev.stage.includes('closed') ? '#14b8a6' : ev.stage.includes('delivered') ? '#10b981' : ev.stage.includes('procuring') ? '#f97316' : '#38bdf8'}; border: 2px solid #131722;"></div>
+          <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 2px;">
+            <strong style="color: #fff; text-transform: uppercase;">${ev.stage.replace('_', ' ')}</strong>
+            <span style="color: var(--text-muted); font-size: 11px;">${new Date(ev.created_at).toLocaleString()}</span>
+          </div>
+          <div style="font-size: 12px; color: #94a3b8;">${ev.note || ''}</div>
+          <div style="font-size: 11px; color: #64748b; margin-top: 2px;">Actor: <span style="color: #cbd5e1;">${ev.actor || 'system'}</span></div>
+          ${ev.proof_url ? `<div style="margin-top: 4px;"><a href="${ev.proof_url}" target="_blank" style="font-size: 11px; color: #38bdf8; text-decoration: underline;">🖼️ View Uploaded Proof</a></div>` : ''}
+        </div>
+      `).join('');
+    } catch (e) {
+      document.getElementById('timelineEventsContainer').innerHTML = `<div style="color: #f87171; font-size: 13px;">Error loading timeline: ${e.message}</div>`;
+    }
   },
 
   openNewProductModal() {

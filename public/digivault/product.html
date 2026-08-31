@@ -73,9 +73,15 @@
               <input type="text" id="custName" class="form-input" required placeholder="e.g. Zahid Hasan" />
             </div>
 
-            <div class="form-group">
-              <label class="form-label" data-i18n="lblContact">মোবাইল অথবা WhatsApp নম্বর</label>
-              <input type="text" id="custContact" class="form-input" required placeholder="e.g. 017xxxxxxxx" />
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+              <div class="form-group">
+                <label class="form-label" data-i18n="lblContact">মোবাইল নম্বর *</label>
+                <input type="tel" id="custContact" class="form-input" required placeholder="e.g. 017xxxxxxxx" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" data-i18n="lblWhatsapp">WhatsApp নম্বর *</label>
+                <input type="tel" id="custWhatsapp" class="form-input" required placeholder="e.g. 017xxxxxxxx" />
+              </div>
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
@@ -174,6 +180,7 @@
 
         const name = document.getElementById('custName').value.trim();
         const contact = document.getElementById('custContact').value.trim();
+        const whatsapp = document.getElementById('custWhatsapp').value.trim();
         const channel = document.getElementById('custChannel').value;
         const payMethod = document.getElementById('custPayMethod').value;
         const trxId = document.getElementById('custTrxId').value.trim();
@@ -190,6 +197,7 @@
           vendorId: currentProduct?.vendorId || null,
           customerName: name,
           customerContact: contact,
+          customerWhatsapp: whatsapp || contact,
           contactChannel: channel,
           paymentMethod: payMethod,
           paymentRef: trxId,
@@ -253,6 +261,9 @@
               <div style="display: flex; flex-direction: column; gap: 10px;">
                 <a href="track.html?ref=${order.orderNumber || order.order_number}" class="btn btn-primary" style="width: 100%;">
                   🔍 অর্ডার স্ট্যাটাস ট্র্যাক করুন
+                </a>
+                <a href="https://t.me/Digivault20bot" target="_blank" class="btn" style="background: #229ed9; color: #fff; width: 100%; text-decoration: none; display: block;">
+                  📱 টেলিগ্রাম বটে ইনস্ট্যান্ট আপডেট পান
                 </a>
                 <a href="https://wa.me/8801889825025?text=Salam%2C%20I%20placed%20order%20ref%20${order.orderNumber || order.order_number}" target="_blank" class="btn btn-secondary" style="width: 100%;">
                   💬 WhatsApp-এ মেসেজ দিন

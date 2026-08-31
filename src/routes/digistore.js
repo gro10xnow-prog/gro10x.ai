@@ -48,6 +48,26 @@ function calculateDurationDays(durationStr = '') {
   return 30;
 }
 
+// Helper: Record Order Timeline Event
+async function recordTimeline(orderId, stage, actor = 'system', note = '', proofUrl = null) {
+  if (!orderId) return;
+  const payload = {
+    order_id: orderId,
+    stage,
+    actor,
+    note: note || '',
+    proof_url: proofUrl,
+    created_at: new Date().toISOString()
+  };
+  if (isSupabaseConfigured()) {
+    try {
+      await supabase.from('digi_order_timeline').insert([payload]);
+    } catch (e) {
+      console.warn('[DigiVault Timeline] Note:', e.message);
+    }
+  }
+}
+
 // Helper: Compute Blind WhatsApp Procurement Link
 function generateProcurementLink(order, vendor) {
   if (!vendor || (!vendor.phone && !vendor.contact_handle)) return null;
@@ -65,15 +85,59 @@ function generateProcurementLink(order, vendor) {
   return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`;
 }
 
+// Helper: Format Clean Bengali 6-Step Guide / Credentials Delivery Message
+function generateDeliveryMessage(order, activationLink, credentials = {}) {
+  const prodName = order.product_name || order.productName || 'Gemini Pro 18 Months';
+  const duration = order.duration || '18 Months';
+
+  if (activationLink) {
+    return `🎉 *আপনার ${prodName} (${duration}) অ্যাক্টিভেশন লিংক তৈরি!*\n\n` +
+      `🔗 *অ্যাক্টিভেশন লিংক:*\n${activationLink}\n\n` +
+      `━━━━━━━━━━━━━━━━━\n` +
+      `📋 *৬টি সহজ স্টেপ অনুসরণ করুন:*\n\n` +
+      `1️⃣ পেমেন্ট ইতিমধ্যে কনফার্ম হয়েছে ✅\n` +
+      `2️⃣ উপরের লিংকটি কপি করুন\n` +
+      `3️⃣ Google Chrome-এ নতুন Profile তৈরি করুন\n` +
+      `4️⃣ সেই Profile-এ একটি Clean Gmail দিয়ে login করুন (যেখানে আগে কোনো paid subscription ছিল না)\n` +
+      `5️⃣ New Chrome Profile-এ লিংকটি paste করে open করুন\n` +
+      `6️⃣ "FREE ACTIVATION" বাটনে ক্লিক করুন ➔ BOOM! Done! 🎉\n` +
+      `━━━━━━━━━━━━━━━━━\n` +
+      `⚠️ *গুরুত্বপূর্ণ:* শুধুমাত্র NEW Chrome Profile ও clean Gmail-এ কাজ করবে।\n` +
+      `💬 কোনো সমস্যা হলে WhatsApp সাপোর্ট: wa.me/8801889825025`;
+  }
+
+  const email = credentials.email || credentials.username || '';
+  const password = credentials.password || '';
+  const notes = credentials.notes || '';
+  return `🎉 *আপনার ${prodName} (${duration}) অ্যাক্সেস ডিটেইলস!*\n\n` +
+    `📧 *Email/User:* \`${email}\`\n` +
+    `🔑 *Password:* \`${password}\`\n` +
+    (notes ? `📝 *Notes:* ${notes}\n` : '') +
+    `━━━━━━━━━━━━━━━━━\n` +
+    `⚠️ অনুগ্রহ করে পাসওয়ার্ড পরিবর্তন করবেন না।\n` +
+    `💬 কোনো সমস্যা হলে WhatsApp সাপোর্ট: wa.me/8801889825025`;
+}
+
+// Helper: Generate Customer WhatsApp Delivery Pre-fill Link
+function generateCustomerWhatsAppDeliveryLink(order, activationLink, credentials = {}) {
+  const rawPhone = order.customer_whatsapp || order.customerWhatsapp || order.customer_contact || order.customerContact || '';
+  const cleanPhone = rawPhone.replace(/[^0-9]/g, '');
+  if (!cleanPhone || cleanPhone.length < 8) return null;
+  const msg = generateDeliveryMessage(order, activationLink, credentials);
+  return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`;
+}
+
 // Helper: Map Order Object
 function mapOrder(o, vendorMap = {}) {
   if (!o) return null;
   const vendor = vendorMap[o.vendor_id] || null;
+  const actLink = o.activation_link || o.activationLink || null;
   return {
     id: o.id,
     orderNumber: o.order_number || o.orderNumber,
     customerName: o.customer_name || o.customerName || 'Anonymous',
     customerContact: o.customer_contact || o.customerContact || '',
+    customerWhatsapp: o.customer_whatsapp || o.customerWhatsapp || o.customer_contact || '',
     contactChannel: o.contact_channel || o.contactChannel || 'facebook',
     productId: o.product_id || o.productId,
     productName: o.product_name || o.productName,
@@ -102,7 +166,27 @@ function mapOrder(o, vendorMap = {}) {
     sourceChannel: o.source_channel || o.sourceChannel || 'facebook',
     procurementSent: Boolean(o.procurement_sent ?? o.procurementSent),
     notes: o.notes || '',
-    createdAt: o.created_at || o.createdAt || new Date().toISOString()
+    createdAt: o.created_at || o.createdAt || new Date().toISOString(),
+
+    // Phase 3 Extensions
+    orderStage: o.order_stage || o.orderStage || (
+      o.customer_confirmed_at ? 'confirmed_closed' :
+      o.admin_closure_proof_url ? 'admin_closed' :
+      o.delivery_status === 'delivered' ? 'delivered' :
+      o.activation_link ? 'link_received' :
+      o.procurement_sent ? 'procuring' :
+      o.payment_status === 'verified' ? 'payment_verified' : 'pending_payment'
+    ),
+    vendorPaymentProofUrl: o.vendor_payment_proof_url || o.vendorPaymentProofUrl || null,
+    vendorPaymentAmount: Number(o.vendor_payment_amount ?? o.vendorPaymentAmount) || Number(o.vendor_price ?? o.vendorPrice) || 0,
+    vendorPaymentSentAt: o.vendor_payment_sent_at || o.vendorPaymentSentAt || null,
+    activationLink: actLink,
+    activationLinkEnteredAt: o.activation_link_entered_at || o.activationLinkEnteredAt || null,
+    customerConfirmedAt: o.customer_confirmed_at || o.customerConfirmedAt || null,
+    customerConfirmationProofUrl: o.customer_confirmation_proof_url || o.customerConfirmationProofUrl || null,
+    adminClosureProofUrl: o.admin_closure_proof_url || o.adminClosureProofUrl || null,
+    orderClosedAt: o.order_closed_at || o.orderClosedAt || null,
+    whatsappDeliveryLink: generateCustomerWhatsAppDeliveryLink(o, actLink)
   };
 }
 
@@ -348,6 +432,7 @@ router.post('/orders', asyncHandler(async (req, res) => {
   const {
     customerName,
     customerContact,
+    customerWhatsapp,
     contactChannel = 'facebook',
     productId,
     productName,
@@ -390,11 +475,13 @@ router.post('/orders', asyncHandler(async (req, res) => {
 
   const profit = finalSPrice - finalVPrice;
   const orderNumber = `DIGI-${Math.floor(100000 + Math.random() * 900000)}`;
+  const finalWhatsapp = customerWhatsapp || customerContact;
 
   const payload = {
     order_number: orderNumber,
     customer_name: customerName,
     customer_contact: customerContact,
+    customer_whatsapp: finalWhatsapp,
     contact_channel: contactChannel,
     product_id: productId || null,
     product_name: finalProdName,
@@ -407,6 +494,7 @@ router.post('/orders', asyncHandler(async (req, res) => {
     payment_method: paymentMethod,
     payment_ref: paymentRef,
     delivery_status: 'pending',
+    order_stage: 'pending_payment',
     source_channel: sourceChannel,
     source_url: sourceUrl || '',
     utm_data: typeof utmData === 'object' ? utmData : {},
@@ -425,11 +513,14 @@ router.post('/orders', asyncHandler(async (req, res) => {
     if (error) return fail(res, error.message, 500);
     savedOrder = data;
 
+    // Record initial timeline entry
+    await recordTimeline(savedOrder.id, 'order_created', 'customer', `Order placed via ${sourceChannel}`);
+
     // Attribute conversion to UTM product link if campaign/source match
     if (utmData && utmData.utm_source) {
       try {
         await supabase.rpc('increment_link_order', {
-          p_slug: prodId || '',
+          p_slug: productId || '',
           p_source: utmData.utm_source
         }).catch(() => {});
       } catch (e) {}
@@ -443,6 +534,22 @@ router.post('/orders', asyncHandler(async (req, res) => {
     inMemoryOrders.unshift(payload);
   }
 
+  // Instant Customer Telegram Acknowledgement
+  if (telegramChatId) {
+    try {
+      const { getDigiVaultBot } = require('../services/digivault-bot');
+      const bot = getDigiVaultBot();
+      if (bot) {
+        const ackMsg = `✅ *অর্ডার রিসিভ হয়েছে! (#${orderNumber})*\n\n` +
+          `📦 *Product:* ${finalProdName} (${finalDuration})\n` +
+          `💰 *Amount Due:* ৳${finalSPrice.toLocaleString()}\n` +
+          `⏱ *ডেলিভারি সময়:* সাধারণত ১৫-৩০ মিনিট\n` +
+          `📬 *স্ট্যাটাস:* পেমেন্ট যাচাই করা হচ্ছে...`;
+        bot.sendMessage(telegramChatId, ackMsg, { parse_mode: 'Markdown' }).catch(() => {});
+      }
+    } catch (e) {}
+  }
+
   // Telegram Team Bot Alert
   try {
     const teamBot = getTeamBot();
@@ -450,9 +557,10 @@ router.post('/orders', asyncHandler(async (req, res) => {
       const tgMsg = `🛒 *New DigiVault Order — ${orderNumber}*\n\n` +
         `📦 *Product:* ${finalProdName} (${finalDuration})\n` +
         `👤 *Customer:* ${customerName} (${contactChannel})\n` +
+        `📱 *WhatsApp:* ${finalWhatsapp}\n` +
         `💰 *Sale Price:* ৳${finalSPrice.toLocaleString()} | *Profit:* ৳${profit.toLocaleString()}\n` +
         `💳 *Payment:* Pending (${paymentMethod})\n\n` +
-        `_Action: Verify payment in Admin Panel to unlock delivery queue._`;
+        `_Action: Verify payment in Admin Panel to unlock procurement._`;
       teamBot.sendMessage(process.env.TELEGRAM_TEAM_GROUP_ID, tgMsg, { parse_mode: 'Markdown' }).catch(() => {});
     }
   } catch (e) {}
@@ -475,6 +583,7 @@ router.patch('/orders/:id/verify-payment', requireAuth, asyncHandler(async (req,
     payment_verified_by: staffCode,
     payment_verified_at: new Date().toISOString(),
     delivery_status: 'processing',
+    order_stage: 'payment_verified',
     updated_at: new Date().toISOString()
   };
 
@@ -485,6 +594,8 @@ router.patch('/orders/:id/verify-payment', requireAuth, asyncHandler(async (req,
     const { data, error } = await supabase.from('digi_orders').update(updates).eq('id', id).select().maybeSingle();
     if (error) return fail(res, error.message, 500);
     updatedOrder = data;
+
+    await recordTimeline(id, 'payment_verified', staffCode, `Payment verified by ${staffCode}`);
 
     if (data.vendor_id) {
       const { data: v } = await supabase.from('digi_vendors').select('*').eq('id', data.vendor_id).maybeSingle();
@@ -536,10 +647,11 @@ router.patch('/orders/:id/reject-payment', requireAuth, asyncHandler(async (req,
 
 /**
  * POST /api/digistore/orders/:id/procure-link
- * Returns the blind WhatsApp procurement URL with pre-filled message
+ * Returns the blind WhatsApp procurement URL with pre-filled message & vendor amount
  */
 router.post('/orders/:id/procure-link', requireAuth, asyncHandler(async (req, res) => {
   const { id } = req.params;
+  const staffCode = req.user?.empCode || req.user?.id || 'Admin';
   let order = null;
   let vendor = null;
 
@@ -550,23 +662,185 @@ router.post('/orders/:id/procure-link', requireAuth, asyncHandler(async (req, re
       const { data: v } = await supabase.from('digi_vendors').select('*').eq('id', o.vendor_id).maybeSingle();
       vendor = v;
     }
+  } else {
+    order = inMemoryOrders.find(o => o.id === id || o.order_number === id);
   }
 
   if (!order) return fail(res, 'Order not found', 404);
   if (!vendor) return fail(res, 'No vendor assigned to this order', 400);
 
   const url = generateProcurementLink(order, vendor);
+  const vendorAmount = Number(order.vendor_price) || 0;
   
-  // Mark procurement_sent = true
+  // Mark procurement_sent = true, advance order_stage to 'procuring'
   if (isSupabaseConfigured()) {
-    await supabase.from('digi_orders').update({ procurement_sent: true, updated_at: new Date().toISOString() }).eq('id', id);
+    await supabase.from('digi_orders').update({
+      procurement_sent: true,
+      order_stage: 'procuring',
+      updated_at: new Date().toISOString()
+    }).eq('id', id);
+
+    await recordTimeline(id, 'procuring', staffCode, `Procurement initiated to vendor ${vendor.name}`);
   }
 
   return ok(res, {
     procurementUrl: url,
     vendorName: vendor.name,
     vendorPhone: vendor.phone || vendor.contact_handle,
+    vendorPaymentAmount: vendorAmount,
     messageText: `Salam ${vendor.name.split(' ')[0]} bhai, need 1x ${order.product_name} (${order.duration}). Order Ref: ${order.order_number}. Payment being sent now via bKash.`
+  });
+}));
+
+/**
+ * POST /api/digistore/orders/:id/vendor-payment
+ * Records admin's payment proof screenshot and amount sent to the supplier
+ */
+router.post('/orders/:id/vendor-payment', requireAuth, upload.single('proof'), asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { amount, notes = '' } = req.body;
+  const staffCode = req.user?.empCode || req.user?.id || 'Admin';
+
+  let proofUrl = null;
+
+  if (req.file && isSupabaseConfigured()) {
+    try {
+      const fileExt = (req.file.originalname || 'vendor-proof.png').split('.').pop();
+      const fileName = `vendor-proof-${id}-${Date.now()}.${fileExt}`;
+      const { data: upData, error: upErr } = await supabase.storage
+        .from('digi-payments')
+        .upload(fileName, req.file.buffer, { contentType: req.file.mimetype, upsert: true });
+
+      if (!upErr && upData) {
+        const { data: pubData } = supabase.storage.from('digi-payments').getPublicUrl(fileName);
+        proofUrl = pubData.publicUrl;
+      }
+    } catch (e) {
+      console.warn('[DigiVault] Supabase storage upload note:', e.message);
+    }
+  }
+
+  if (!proofUrl && req.file) {
+    proofUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64').slice(0, 50000)}`;
+  }
+
+  const updates = {
+    vendor_payment_proof_url: proofUrl,
+    vendor_payment_amount: Number(amount) || 0,
+    vendor_payment_sent_at: new Date().toISOString(),
+    procurement_sent: true,
+    order_stage: 'procuring',
+    updated_at: new Date().toISOString()
+  };
+
+  let updatedOrder = null;
+  let vendorObj = null;
+
+  if (isSupabaseConfigured()) {
+    const { data, error } = await supabase.from('digi_orders').update(updates).eq('id', id).select().maybeSingle();
+    if (error) return fail(res, error.message, 500);
+    updatedOrder = data;
+
+    await recordTimeline(id, 'procuring', staffCode, `Vendor payment of ৳${Number(amount || 0).toLocaleString()} recorded. ${notes}`, proofUrl);
+
+    if (data.vendor_id) {
+      const { data: v } = await supabase.from('digi_vendors').select('*').eq('id', data.vendor_id).maybeSingle();
+      vendorObj = v;
+    }
+  }
+
+  const procurementUrl = updatedOrder ? generateProcurementLink(updatedOrder, vendorObj) : null;
+  broadcast('digistore_order_updated', updatedOrder);
+
+  return ok(res, {
+    success: true,
+    proofUrl,
+    procurementUrl,
+    order: mapOrder(updatedOrder, vendorObj ? { [vendorObj.id]: vendorObj } : {})
+  });
+}));
+
+/**
+ * POST /api/digistore/orders/:id/activation-link
+ * Saves the unique activation link received from vendor, auto-dispatches via Telegram and/or generates WhatsApp pre-fill
+ */
+router.post('/orders/:id/activation-link', requireAuth, asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { activationLink, deliveryType = 'link' } = req.body;
+  const staffCode = req.user?.empCode || req.user?.id || 'Admin';
+
+  if (!activationLink) {
+    return fail(res, 'Activation link is required.', 400);
+  }
+
+  let order = null;
+  if (isSupabaseConfigured()) {
+    const { data: o } = await supabase.from('digi_orders').select('*').eq('id', id).maybeSingle();
+    order = o;
+  } else {
+    order = inMemoryOrders.find(o => o.id === id || o.order_number === id);
+  }
+
+  if (!order) return fail(res, 'Order not found', 404);
+
+  const durationDays = calculateDurationDays(order.duration);
+  const now = new Date();
+  const activationDate = now.toISOString().split('T')[0];
+  const expiryDate = new Date(now.getTime() + durationDays * 86400000).toISOString().split('T')[0];
+
+  const updates = {
+    activation_link: activationLink.trim(),
+    activation_link_entered_at: now.toISOString(),
+    delivery_status: 'delivered',
+    order_stage: 'delivered',
+    delivered_by: staffCode,
+    delivered_at: now.toISOString(),
+    activation_date: activationDate,
+    expiry_date: expiryDate,
+    delivery_guide_sent: true,
+    updated_at: now.toISOString()
+  };
+
+  let updatedOrder = null;
+  if (isSupabaseConfigured()) {
+    const { data, error } = await supabase.from('digi_orders').update(updates).eq('id', id).select().maybeSingle();
+    if (error) return fail(res, error.message, 500);
+    updatedOrder = data;
+
+    // Record in deliveries table
+    await supabase.from('digi_deliveries').insert([{
+      order_id: id,
+      delivery_type: deliveryType,
+      credential_data: { activation_link: activationLink.trim() },
+      entered_by: staffCode,
+      entered_at: now.toISOString(),
+      sent_at: now.toISOString(),
+      sent_via: order.telegram_chat_id ? 'telegram' : 'whatsapp'
+    }]);
+
+    await recordTimeline(id, 'delivered', staffCode, `Activation link entered & delivered by ${staffCode}`);
+  }
+
+  // Auto-dispatch via Telegram if customer ordered via Telegram Bot
+  const targetChatId = order.telegram_chat_id;
+  if (targetChatId) {
+    try {
+      const { sendTelegramActivationDelivery } = require('../services/digivault-bot');
+      if (sendTelegramActivationDelivery) {
+        sendTelegramActivationDelivery(targetChatId, updatedOrder || order, activationLink.trim()).catch(() => {});
+      }
+    } catch (e) {}
+  }
+
+  const whatsappDeliveryUrl = generateCustomerWhatsAppDeliveryLink(updatedOrder || order, activationLink.trim());
+  broadcast('digistore_delivery_completed', { order: updatedOrder, activationLink });
+
+  return ok(res, {
+    success: true,
+    order: mapOrder(updatedOrder || order),
+    whatsappDeliveryUrl,
+    expiryDate,
+    message: 'Activation link saved & dispatched! Customer can now activate.'
   });
 }));
 
@@ -596,6 +870,7 @@ router.post('/orders/:id/deliver', requireAuth, asyncHandler(async (req, res) =>
 
   const orderUpdates = {
     delivery_status: 'delivered',
+    order_stage: 'delivered',
     delivered_by: staffCode,
     delivered_at: now.toISOString(),
     activation_date: activationDate,
@@ -621,6 +896,8 @@ router.post('/orders/:id/deliver', requireAuth, asyncHandler(async (req, res) =>
 
     if (orderRes.error) return fail(res, orderRes.error.message, 500);
 
+    await recordTimeline(id, 'delivered', staffCode, `Credentials delivered by ${staffCode} (${deliveryType})`);
+
     // Auto-dispatch credentials to customer's Telegram if order was placed via Telegram Bot
     const targetChatId = orderRes.data?.telegram_chat_id || order.telegram_chat_id;
     if (targetChatId) {
@@ -630,11 +907,14 @@ router.post('/orders/:id/deliver', requireAuth, asyncHandler(async (req, res) =>
       } catch (e) {}
     }
 
+    const whatsappDeliveryUrl = generateCustomerWhatsAppDeliveryLink(orderRes.data || order, null, credentialData);
     broadcast('digistore_delivery_completed', { order: orderRes.data, delivery: delivRes.data });
+
     return ok(res, {
       success: true,
-      order: orderRes.data,
+      order: mapOrder(orderRes.data),
       delivery: delivRes.data,
+      whatsappDeliveryUrl,
       expiryDate,
       message: `Credentials saved & order delivered! Expiry date set to ${expiryDate}.`
     });
@@ -642,6 +922,125 @@ router.post('/orders/:id/deliver', requireAuth, asyncHandler(async (req, res) =>
 
   inMemoryDeliveries.push(deliveryPayload);
   return ok(res, { success: true, expiryDate, message: 'Delivery recorded (memory mode)' });
+}));
+
+/**
+ * POST /api/digistore/orders/:id/customer-confirm
+ * Public endpoint for customer to confirm they received and activated their subscription
+ */
+router.post('/orders/:id/customer-confirm', asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { notes = '', proofUrl = null } = req.body;
+  const now = new Date().toISOString();
+
+  const updates = {
+    customer_confirmed_at: now,
+    customer_confirmation_proof_url: proofUrl,
+    order_stage: 'confirmed_closed',
+    order_closed_at: now,
+    updated_at: now
+  };
+
+  if (isSupabaseConfigured()) {
+    const { data, error } = await supabase.from('digi_orders').update(updates).eq('id', id).select().maybeSingle();
+    if (error) return fail(res, error.message, 500);
+
+    await recordTimeline(id, 'confirmed_closed', 'customer', notes || 'Customer confirmed subscription activation and closed order.', proofUrl);
+    broadcast('digistore_order_updated', data);
+
+    return ok(res, {
+      success: true,
+      message: 'Thank you! Your activation confirmation has been recorded successfully.',
+      order: mapOrder(data)
+    });
+  }
+
+  return ok(res, { success: true, message: 'Confirmation recorded.' });
+}));
+
+/**
+ * POST /api/digistore/orders/:id/admin-close
+ * Admin manually closes order — strictly requires closure proof screenshot
+ */
+router.post('/orders/:id/admin-close', requireAuth, upload.single('closureProof'), asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { notes = '' } = req.body;
+  const staffCode = req.user?.empCode || req.user?.id || 'Admin';
+
+  let proofUrl = null;
+
+  if (req.file && isSupabaseConfigured()) {
+    try {
+      const fileExt = (req.file.originalname || 'closure-proof.png').split('.').pop();
+      const fileName = `closure-proof-${id}-${Date.now()}.${fileExt}`;
+      const { data: upData, error: upErr } = await supabase.storage
+        .from('digi-payments')
+        .upload(fileName, req.file.buffer, { contentType: req.file.mimetype, upsert: true });
+
+      if (!upErr && upData) {
+        const { data: pubData } = supabase.storage.from('digi-payments').getPublicUrl(fileName);
+        proofUrl = pubData.publicUrl;
+      }
+    } catch (e) {
+      console.warn('[DigiVault] Closure storage note:', e.message);
+    }
+  }
+
+  if (!proofUrl && req.file) {
+    proofUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64').slice(0, 50000)}`;
+  }
+
+  if (!proofUrl && !req.body.proofUrl) {
+    return fail(res, 'Proof screenshot is mandatory to close this order manually.', 400);
+  }
+
+  const finalProof = proofUrl || req.body.proofUrl;
+  const now = new Date().toISOString();
+
+  const updates = {
+    admin_closure_proof_url: finalProof,
+    order_stage: 'admin_closed',
+    order_closed_at: now,
+    updated_at: now
+  };
+
+  if (isSupabaseConfigured()) {
+    const { data, error } = await supabase.from('digi_orders').update(updates).eq('id', id).select().maybeSingle();
+    if (error) return fail(res, error.message, 500);
+
+    await recordTimeline(id, 'admin_closed', staffCode, `Order closed manually by ${staffCode}. ${notes}`, finalProof);
+    broadcast('digistore_order_updated', data);
+
+    return ok(res, {
+      success: true,
+      message: 'Order closed and proof screenshot saved.',
+      order: mapOrder(data)
+    });
+  }
+
+  return ok(res, { success: true, message: 'Order closed.' });
+}));
+
+/**
+ * GET /api/digistore/orders/:id/timeline
+ * Returns full timestamped lifecycle events for an order
+ */
+router.get('/orders/:id/timeline', requireAuth, asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  if (isSupabaseConfigured()) {
+    const { data, error } = await supabase
+      .from('digi_order_timeline')
+      .select('*')
+      .eq('order_id', id)
+      .order('created_at', { ascending: true });
+
+    if (!error && data) {
+      return ok(res, data);
+    }
+  }
+
+  return ok(res, []);
 }));
 
 /**
@@ -836,7 +1235,7 @@ router.get('/track/:orderNumber', asyncHandler(async (req, res) => {
   if (isSupabaseConfigured()) {
     const { data } = await supabase
       .from('digi_orders')
-      .select('order_number, product_name, duration, payment_status, delivery_status, activation_date, expiry_date, created_at')
+      .select('id, order_number, product_name, duration, payment_status, delivery_status, order_stage, activation_link, customer_confirmed_at, activation_date, expiry_date, created_at')
       .eq('order_number', cleanRef)
       .maybeSingle();
     order = data;
@@ -844,11 +1243,15 @@ router.get('/track/:orderNumber', asyncHandler(async (req, res) => {
     const found = inMemoryOrders.find(o => (o.order_number || o.orderNumber || '').toUpperCase() === cleanRef);
     if (found) {
       order = {
+        id: found.id,
         order_number: found.order_number || found.orderNumber,
         product_name: found.product_name || found.productName,
         duration: found.duration,
         payment_status: found.payment_status || found.paymentStatus,
         delivery_status: found.delivery_status || found.deliveryStatus,
+        order_stage: found.order_stage || found.orderStage || 'pending_payment',
+        activation_link: found.activation_link || found.activationLink,
+        customer_confirmed_at: found.customer_confirmed_at || found.customerConfirmedAt,
         activation_date: found.activation_date || found.activationDate,
         expiry_date: found.expiry_date || found.expiryDate,
         created_at: found.created_at || found.createdAt
@@ -860,15 +1263,34 @@ router.get('/track/:orderNumber', asyncHandler(async (req, res) => {
     return fail(res, 'Order not found. Please check your order reference number.', 404);
   }
 
+  const stage = order.order_stage || (
+    order.customer_confirmed_at ? 'confirmed_closed' :
+    order.delivery_status === 'delivered' ? 'delivered' :
+    order.payment_status === 'verified' ? 'payment_verified' : 'pending_payment'
+  );
+
+  const steps = [
+    { key: 'order_created', label: 'অর্ডার গ্রহণ', labelEn: 'Order Placed', done: true },
+    { key: 'payment_verified', label: 'পেমেন্ট নিশ্চিত', labelEn: 'Payment Verified', done: ['payment_verified', 'procuring', 'link_received', 'delivered', 'confirmed_closed', 'admin_closed'].includes(stage) },
+    { key: 'procuring', label: 'প্রকিউরমেন্ট প্রসেসিং', labelEn: 'Procuring Access', done: ['procuring', 'link_received', 'delivered', 'confirmed_closed', 'admin_closed'].includes(stage) },
+    { key: 'delivered', label: 'ডেলিভারি সম্পন্ন', labelEn: 'Delivered', done: ['delivered', 'confirmed_closed', 'admin_closed'].includes(stage) },
+    { key: 'confirmed_closed', label: 'অ্যাক্টিভেটেড ও ক্লোজড', labelEn: 'Activated & Confirmed', done: ['confirmed_closed', 'admin_closed'].includes(stage) }
+  ];
+
   return ok(res, {
+    orderId: order.id,
     orderNumber: order.order_number,
     productName: order.product_name,
     duration: order.duration,
+    orderStage: stage,
     paymentStatus: order.payment_status,
     deliveryStatus: order.delivery_status,
+    activationLink: (stage === 'delivered' || stage === 'confirmed_closed' || stage === 'admin_closed') ? order.activation_link : null,
+    customerConfirmedAt: order.customer_confirmed_at,
     activationDate: order.activation_date,
     expiryDate: order.expiry_date,
-    createdAt: order.created_at
+    createdAt: order.created_at,
+    steps
   });
 }));
 

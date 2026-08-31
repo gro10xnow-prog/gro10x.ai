@@ -111,34 +111,94 @@
       function renderOrderResult(o) {
         const isPaid = o.paymentStatus === 'verified';
         const isDelivered = o.deliveryStatus === 'delivered';
+        const isClosed = o.orderStage === 'confirmed_closed' || o.orderStage === 'admin_closed';
 
         let statusText = '⏳ পেমেন্ট ভেরিফিকেশন প্রক্রিয়াধীন';
         let statusBadgeClass = 'rgba(245, 158, 11, 0.15)';
         let statusColor = '#f59e0b';
 
-        if (isDelivered) {
-          statusText = '🔑 ডেলিভারি সম্পন্ন ও অ্যাক্টিভ';
+        if (isClosed) {
+          statusText = '✅ অ্যাক্টিভেশন নিশ্চিত ও অর্ডার সফলভাবে সম্পন্ন';
+          statusBadgeClass = 'rgba(0, 223, 137, 0.2)';
+          statusColor = '#00df89';
+        } else if (isDelivered) {
+          statusText = '🔑 ডেলিভারি সম্পন্ন! লিংক বা অ্যাক্সেস নিচে দেওয়া হয়েছে';
           statusBadgeClass = 'rgba(0, 223, 137, 0.15)';
           statusColor = '#00df89';
         } else if (isPaid) {
-          statusText = '✅ পেমেন্ট ভেরিফাইড — ডেলিভারি তৈরি হচ্ছে';
+          statusText = '✅ পেমেন্ট ভেরিফাইড — প্রকিউরমেন্ট ও ডেলিভারি প্রস্তুত হচ্ছে';
           statusBadgeClass = 'rgba(56, 189, 248, 0.15)';
           statusColor = '#38bdf8';
         }
 
+        const steps = o.steps || [];
+
         resultBox.innerHTML = `
           <div class="card" style="padding: 28px; text-align: left; border-top: 4px solid ${statusColor};">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
               <div>
-                <span style="font-family: monospace; font-size: 12px; color: #38bdf8; font-weight: 700;">${o.orderNumber}</span>
-                <h3 style="font-size: 18px; font-weight: 800; color: #fff; margin-top: 2px;">${o.productName}</h3>
+                <span style="font-family: monospace; font-size: 13px; color: #38bdf8; font-weight: 800;">${o.orderNumber}</span>
+                <h3 style="font-size: 20px; font-weight: 800; color: #fff; margin-top: 4px;">${o.productName}</h3>
               </div>
-              <span class="badge" style="background: rgba(168, 85, 247, 0.15); color: #a855f7;">⏱️ ${o.duration}</span>
+              <span class="badge" style="background: rgba(168, 85, 247, 0.15); color: #a855f7; font-size: 12px;">⏱️ ${o.duration}</span>
+            </div>
+
+            <!-- Visual Progress Stepper -->
+            <div style="background: rgba(0,0,0,0.35); border-radius: var(--radius-md); padding: 18px 14px; margin-bottom: 20px;">
+              <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; text-align: center; position: relative;">
+                ${steps.map((st, i) => `
+                  <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+                    <div style="width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; background: ${st.done ? '#00df89' : 'rgba(255,255,255,0.1)'}; color: ${st.done ? '#000' : 'var(--text-muted)'};">
+                      ${st.done ? '✓' : (i + 1)}
+                    </div>
+                    <span style="font-size: 10px; color: ${st.done ? '#fff' : 'var(--text-muted)'}; font-weight: ${st.done ? '700' : '400'}; line-height: 1.2;">
+                      ${st.label}
+                    </span>
+                  </div>
+                `).join('')}
+              </div>
             </div>
 
             <div style="background: ${statusBadgeClass}; border: 1px solid ${statusColor}40; border-radius: var(--radius-md); padding: 14px; margin-bottom: 20px; font-weight: 700; color: ${statusColor}; font-size: 14px; display: flex; align-items: center; gap: 8px;">
               <span>${statusText}</span>
             </div>
+
+            <!-- Activation Link Card (if delivered) -->
+            ${o.activationLink ? `
+              <div style="background: rgba(0, 223, 137, 0.08); border: 2px solid #00df89; border-radius: var(--radius-md); padding: 20px; margin-bottom: 20px;">
+                <div style="font-size: 13px; font-weight: 800; color: #00df89; text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                  <span>🔗</span> আপনার অ্যাক্টিভেশন লিংক:
+                </div>
+                <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+                  <input type="text" id="actLinkBox" value="${o.activationLink}" readonly style="flex: 1; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 10px; color: #fff; font-family: monospace; font-size: 12px;" />
+                  <button class="btn btn-primary" onclick="navigator.clipboard.writeText('${o.activationLink}'); alert('লিংক কপি করা হয়েছে!');" style="padding: 10px 16px; white-space: nowrap;">
+                    📋 কপি লিংক
+                  </button>
+                </div>
+
+                <div style="background: rgba(0,0,0,0.3); border-radius: 8px; padding: 14px; font-size: 12px; color: var(--text-main); line-height: 1.6;">
+                  <strong style="color: #00df89; display: block; margin-bottom: 6px;">📋 অ্যাক্টিভেশনের ৬টি সহজ নিয়ম:</strong>
+                  1. উপরের অ্যাক্টিভেশন লিংকটি কপি করুন<br>
+                  2. আপনার Google Chrome-এ নতুন Profile তৈরি করুন<br>
+                  3. সেখানে একটি Clean Gmail দিয়ে লগইন করুন (যেখানে কোনো paid sub নেই)<br>
+                  4. New Chrome Profile-এ লিংকটি paste করে open করুন<br>
+                  5. "FREE ACTIVATION" বাটনে ক্লিক করুন<br>
+                  6. সফলভাবে অ্যাক্টিভেট হলে নিচে কনফার্ম বাটনে ক্লিক করুন! 🎉
+                </div>
+              </div>
+            ` : ''}
+
+            <!-- Customer Confirmation Button (If delivered and not closed) -->
+            ${(isDelivered && !isClosed && o.orderId) ? `
+              <div id="confirmBox" style="background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: var(--radius-md); padding: 18px; text-align: center; margin-bottom: 20px;">
+                <div style="font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 8px;">
+                  আপনার সাবস্ক্রিপশন কি কাজ করছে?
+                </div>
+                <button class="btn btn-primary" id="btnConfirmReceived" style="padding: 12px 24px; font-size: 14px;">
+                  ✅ অ্যাক্টিভেশন সম্পন্ন! কনফার্ম করুন
+                </button>
+              </div>
+            ` : ''}
 
             <div style="background: rgba(0,0,0,0.3); border-radius: var(--radius-md); padding: 16px; font-size: 13px; margin-bottom: 20px;">
               <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
@@ -159,13 +219,39 @@
               ` : ''}
             </div>
 
-            <div style="text-align: center;">
-              <a href="https://wa.me/8801889825025?text=Salam%2C%20regarding%20my%20order%20${o.orderNumber}" target="_blank" class="btn btn-secondary" style="width: 100%;">
-                💬 এই অর্ডার সংক্রান্ত সাহায্যের জন্য WhatsApp-এ নক দিন
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+              <a href="https://t.me/Digivault20bot" target="_blank" class="btn" style="background: #229ed9; color: #fff; width: 100%; text-align: center; text-decoration: none; display: block;">
+                📱 টেলিগ্রাম বটে স্ট্যাটাস ও ওয়ারেন্টি সাপোর্ট
+              </a>
+              <a href="https://wa.me/8801889825025?text=Salam%2C%20regarding%20my%20order%20${o.orderNumber}" target="_blank" class="btn btn-secondary" style="width: 100%; text-align: center;">
+                💬 WhatsApp কাস্টমার সাপোর্ট
               </a>
             </div>
           </div>
         `;
+
+        // Wire confirm button
+        const btnConf = document.getElementById('btnConfirmReceived');
+        if (btnConf && o.orderId) {
+          btnConf.addEventListener('click', async () => {
+            btnConf.disabled = true;
+            btnConf.textContent = 'কনফার্ম হচ্ছে... ⏳';
+            try {
+              const r = await fetch(`/api/digistore/orders/${o.orderId}/customer-confirm`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ notes: 'Confirmed by customer on track page' })
+              });
+              if (r.ok) {
+                alert('🎉 অনেক ধন্যবাদ! আপনার অ্যাক্টিভেশন সফলভাবে কনফার্ম হয়েছে।');
+                fetchStatus(o.orderNumber);
+              }
+            } catch (e) {
+              alert('Error: ' + e.message);
+              btnConf.disabled = false;
+            }
+          });
+        }
       }
     });
   </script>

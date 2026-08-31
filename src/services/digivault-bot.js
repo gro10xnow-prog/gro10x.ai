@@ -43,15 +43,17 @@ const STRINGS = {
     backCategories: '📂 Categories',
     changeLang: '🌐 বাংলা ভাষায় দেখুন',
     askName: '✍️ Please enter your *Full Name*:',
-    askContact: '📱 Please enter your *WhatsApp or Mobile Number*:',
+    askContact: '📱 Please enter your *Mobile Number*:',
+    askWhatsapp: '💬 Please enter your *WhatsApp Number* (for delivery link & warranty alerts):',
     orderSuccess: '🧾 *Order Placed Successfully!*',
     orderRef: 'Order Reference',
     payInstructions: '💳 *Payment Instructions:*\nPlease send exact amount via *Send Money* to:\n\n📱 *bKash (Personal):* `%BKASH%`\n📱 *Nagad (Personal):* `%NAGAD%`\n\n📸 *Next Step:* Send a *Screenshot* of your payment or Transaction ID right here in this chat.',
-    screenshotReceived: '✅ *Payment Proof Received!*\n\nOur team is verifying your payment. Your credentials will be delivered *right here in this chat* within 15–30 minutes.\n\nTrack anytime with `/myorder %ORDER%`',
+    screenshotReceived: '✅ *Payment Proof Received!*\n\nOur team is verifying your payment. Your credentials or activation link will be delivered *right here in this chat* within 15–30 minutes.\n\nTrack anytime with `/myorder %ORDER%`',
     trackPrompt: '🔍 To track your order, send `/myorder DIGI-XXXXXX`',
     orderNotFound: '❌ Order not found. Please check your order reference number.',
     contactText: '📞 *Customer Support:*\nWhatsApp: `%PHONE%`\nWeb: https://gro10x-ai.vercel.app/digivault',
-    credentialsDelivered: '🎉 *Your DigiVault Order is Ready!*\n\n📦 *Product:* %PRODUCT%\n⏱️ *Duration:* %DURATION%\n\n🔑 *Access Details:*\n%CREDS%\n\n⏳ *Expiry Date:* `%EXPIRY%`\n\nThank you for choosing DigiVault! For renewal or issues, reply here anytime.'
+    credentialsDelivered: '🎉 *Your DigiVault Order is Ready!*\n\n📦 *Product:* %PRODUCT%\n⏱️ *Duration:* %DURATION%\n\n🔑 *Access Details:*\n%CREDS%\n\n⏳ *Expiry Date:* `%EXPIRY%`\n\nThank you for choosing DigiVault! Please confirm once verified below:',
+    orderConfirmed: '🎉 *Awesome! Your activation confirmation is recorded.*\n\nThank you for choosing DigiVault! 🙏\n👉 Share with friends: https://gro10x-ai.vercel.app/digivault'
   },
   bn: {
     welcomeTitle: '🏪 *ডিজিভল্ট (DigiVault)-এ স্বাগতম!*',
@@ -65,15 +67,17 @@ const STRINGS = {
     backCategories: '📂 ক্যাটাগরি সমূহ',
     changeLang: '🌐 Switch to English',
     askName: '✍️ অনুগ্রহ করে আপনার *পুরো নাম* লিখুন:',
-    askContact: '📱 আপনার *মোবাইল বা WhatsApp নম্বর* লিখুন:',
+    askContact: '📱 আপনার *মোবাইল নম্বর* লিখুন:',
+    askWhatsapp: '💬 আপনার *WhatsApp নম্বর* লিখুন (ডেলিভারি লিংক ও ওয়ারেন্টি আপডেটের জন্য):',
     orderSuccess: '🧾 *অর্ডার সফলভাবে তৈরি হয়েছে!*',
     orderRef: 'অর্ডার রেফারেন্স',
     payInstructions: '💳 *পেমেন্ট নির্দেশিকা:*\nঅনুগ্রহ করে *Send Money* করুন:\n\n📱 *বিকাশ (Personal):* `%BKASH%`\n📱 *নগদ (Personal):* `%NAGAD%`\n\n📸 *পরবর্তী ধাপ:* টাকা পাঠিয়ে পেমেন্টের *স্ক্রিনশট* বা TrxID এই চ্যাটে পাঠিয়ে দিন।',
-    screenshotReceived: '✅ *পেমেন্ট স্ক্রিনশট পাওয়া গেছে!*\n\nআমাদের টিম পেমেন্ট ভেরিফাই করছে। পরবর্তী ১৫-৩০ মিনিটের মধ্যে আপনার লগইন ডিটেইলস *সরাসরি এই চ্যাটে* দেওয়া হবে।\n\nঅর্ডার চেক করতে লিখুন: `/myorder %ORDER%`',
+    screenshotReceived: '✅ *পেমেন্ট স্ক্রিনশট পাওয়া গেছে!*\n\nআমাদের টিম পেমেন্ট ভেরিফাই করছে। পরবর্তী ১৫-৩০ মিনিটের মধ্যে আপনার অ্যাক্টিভেশন লিংক বা লগইন ডিটেইলস *সরাসরি এই চ্যাটে* দেওয়া হবে।\n\nঅর্ডার চেক করতে লিখুন: `/myorder %ORDER%`',
     trackPrompt: '🔍 আপনার অর্ডার চেক করতে লিখুন: `/myorder DIGI-XXXXXX`',
     orderNotFound: '❌ অর্ডার খুঁজে পাওয়া যায়নি। অনুগ্রহ করে সঠিক রেফারেন্স নম্বর দিন।',
     contactText: '📞 *কাস্টমার সাপোর্ট:*\nWhatsApp: `%PHONE%`\nWeb: https://gro10x-ai.vercel.app/digivault',
-    credentialsDelivered: '🎉 *আপনার ডিজিভল্ট অর্ডার সম্পন্ন হয়েছে!*\n\n📦 *প্রোডাক্ট:* %PRODUCT%\n⏱️ *মেয়াদ:* %DURATION%\n\n🔑 *লগইন ডিটেইলস:*\n%CREDS%\n\n⏳ *মেয়াদ শেষ:* `%EXPIRY%`\n\nডিজিভল্ট ব্যবহারের জন্য ধন্যবাদ! যেকোনো প্রয়োজনে এই চ্যাটে মেসেজ দিন।'
+    credentialsDelivered: '🎉 *আপনার ডিজিভল্ট অর্ডার সম্পন্ন হয়েছে!*\n\n📦 *প্রোডাক্ট:* %PRODUCT%\n⏱️ *মেয়াদ:* %DURATION%\n\n🔑 *লগইন ডিটেইলস:*\n%CREDS%\n\n⏳ *মেয়াদ শেষ:* `%EXPIRY%`\n\nডিজিভল্ট ব্যবহারের জন্য ধন্যবাদ! একাউন্ট চেক করে নিচে কনফার্ম করুন:',
+    orderConfirmed: '🎉 *দারুণ! আপনার অ্যাক্টিভেশন সফলভাবে কনফার্ম হয়েছে।*\n\nআমাদের সাথে থাকার জন্য অনেক ধন্যবাদ! 🙏\n👉 বন্ধুদের সাথে শেয়ার করতে পারেন: https://gro10x-ai.vercel.app/digivault'
   }
 };
 
@@ -217,12 +221,35 @@ function registerBotHandlers(bot) {
         const text = t(chatId, 'contactText').replace('%PHONE%', PAYMENT_CONFIG.supportPhone);
         return bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
       }
+      if (data.startsWith('confirm_order:')) {
+        const orderId = data.replace('confirm_order:', '');
+        const now = new Date().toISOString();
+        if (isSupabaseConfigured() && orderId) {
+          try {
+            await supabase.from('digi_orders').update({
+              customer_confirmed_at: now,
+              order_stage: 'confirmed_closed',
+              order_closed_at: now,
+              updated_at: now
+            }).eq('id', orderId);
+
+            await supabase.from('digi_order_timeline').insert([{
+              order_id: orderId,
+              stage: 'confirmed_closed',
+              actor: 'customer',
+              note: 'Customer confirmed activation via Telegram Bot button',
+              created_at: now
+            }]);
+          } catch (e) {}
+        }
+        return bot.sendMessage(chatId, t(chatId, 'orderConfirmed'), { parse_mode: 'Markdown' });
+      }
     } catch (err) {
       console.error('[DigiVault Bot Callback Error]:', err.message);
     }
   });
 
-  // Text Input Handler (Name & Contact step)
+  // Text Input Handler (Name, Mobile & WhatsApp step)
   bot.on('message', async (msg) => {
     if (!msg.text || msg.text.startsWith('/')) return;
     const chatId = msg.chat.id;
@@ -238,6 +265,13 @@ function registerBotHandlers(bot) {
 
     if (session.step === 'awaiting_contact') {
       session.customerContact = msg.text.trim();
+      session.step = 'awaiting_whatsapp';
+      userSessions.set(chatId, session);
+      return bot.sendMessage(chatId, t(chatId, 'askWhatsapp'), { parse_mode: 'Markdown' });
+    }
+
+    if (session.step === 'awaiting_whatsapp') {
+      session.customerWhatsapp = msg.text.trim();
       session.step = 'awaiting_payment';
       userSessions.set(chatId, session);
       return completeOrderCreation(bot, chatId, session);
@@ -441,6 +475,7 @@ async function completeOrderCreation(bot, chatId, session) {
     order_number: orderNumber,
     customer_name: session.customerName,
     customer_contact: session.customerContact,
+    customer_whatsapp: session.customerWhatsapp || session.customerContact,
     contact_channel: 'telegram',
     telegram_chat_id: String(chatId),
     product_id: prod.id || null,
@@ -453,6 +488,7 @@ async function completeOrderCreation(bot, chatId, session) {
     payment_status: 'pending',
     payment_method: 'bkash',
     delivery_status: 'pending',
+    order_stage: 'pending_payment',
     source_channel: 'telegram',
     created_at: new Date().toISOString()
   };
@@ -590,6 +626,47 @@ async function findLatestPendingOrder(chatId) {
 // EXTERNAL DELIVERY DISPATCH HELPER
 // ─────────────────────────────────────────────────────────────────────────────
 
+async function sendTelegramActivationDelivery(chatId, order, activationLink) {
+  const bot = getDigiVaultBot();
+  if (!bot || !chatId || !activationLink) return false;
+
+  const prodName = order.product_name || order.productName || 'Gemini Pro 18 Months';
+  const duration = order.duration || '18 Months';
+  const orderId = order.id || '';
+
+  const text = `🎉 *আপনার ${prodName} (${duration}) অ্যাক্টিভেশন লিংক তৈরি!*\n\n` +
+    `🔗 *অ্যাক্টিভেশন লিংক:*\n${activationLink}\n\n` +
+    `━━━━━━━━━━━━━━━━━\n` +
+    `📋 *৬টি সহজ স্টেপ অনুসরণ করুন:*\n\n` +
+    `1️⃣ পেমেন্ট ইতিমধ্যে কনফার্ম হয়েছে ✅\n` +
+    `2️⃣ উপরের লিংকটি কপি করুন\n` +
+    `3️⃣ Google Chrome-এ নতুন Profile তৈরি করুন\n` +
+    `4️⃣ সেই Profile-এ একটি Clean Gmail দিয়ে login করুন (যেখানে আগে কোনো paid subscription ছিল না)\n` +
+    `5️⃣ New Chrome Profile-এ লিংকটি paste করে open করুন\n` +
+    `6️⃣ "FREE ACTIVATION" বাটনে ক্লিক করুন ➔ BOOM! Done! 🎉\n` +
+    `━━━━━━━━━━━━━━━━━\n` +
+    `⚠️ *গুরুত্বপূর্ণ:* শুধুমাত্র NEW Chrome Profile ও clean Gmail-এ কাজ করবে।\n` +
+    `💬 কোনো সমস্যা হলে WhatsApp সাপোর্ট: wa.me/8801889825025`;
+
+  const opts = {
+    parse_mode: 'Markdown',
+    reply_markup: {
+      inline_keyboard: [
+        [{ text: '✅ অ্যাক্টিভেশন সম্পন্ন! কনফার্ম করুন', callback_data: `confirm_order:${orderId}` }],
+        [{ text: '💬 WhatsApp সাপোর্ট', url: 'https://wa.me/8801889825025' }]
+      ]
+    }
+  };
+
+  try {
+    await bot.sendMessage(chatId, text, opts);
+    return true;
+  } catch (err) {
+    console.error('[DigiVault Bot Activation Delivery Error]:', err.message);
+    return false;
+  }
+}
+
 async function sendTelegramOrderDelivery(chatId, order, credentialData = {}) {
   const bot = getDigiVaultBot();
   if (!bot || !chatId) return false;
@@ -609,8 +686,19 @@ async function sendTelegramOrderDelivery(chatId, order, credentialData = {}) {
     .replace('%CREDS%', credsText)
     .replace('%EXPIRY%', order.expiry_date || order.expiryDate || 'N/A');
 
+  const orderId = order.id || '';
+  const opts = {
+    parse_mode: 'Markdown',
+    reply_markup: {
+      inline_keyboard: [
+        [{ text: lang === 'bn' ? '✅ একাউন্ট চেক করেছি! কনফার্ম' : '✅ Verified & Activated!', callback_data: `confirm_order:${orderId}` }],
+        [{ text: '💬 WhatsApp Support', url: 'https://wa.me/8801889825025' }]
+      ]
+    }
+  };
+
   try {
-    await bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
+    await bot.sendMessage(chatId, text, opts);
     return true;
   } catch (err) {
     console.error('[DigiVault Bot Delivery Error]:', err.message);
@@ -632,5 +720,6 @@ module.exports = {
   initDigiVaultBot,
   getDigiVaultBot,
   sendTelegramOrderDelivery,
+  sendTelegramActivationDelivery,
   processDigiVaultWebhook
 };
