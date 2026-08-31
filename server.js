@@ -94,12 +94,13 @@ app.use(cors({
     if (!origin) return callback(null, true);
     if (
       ALLOWED_ORIGINS.includes(origin) ||
-      (origin.startsWith('https://gro10x-') && origin.endsWith('.vercel.app')) ||
+      origin.endsWith('.vercel.app') ||
+      origin.endsWith('gro10x.ai') ||
       (process.env.NODE_ENV !== 'production' && /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin))
     ) {
       return callback(null, true);
     }
-    callback(new Error(`CORS policy: origin ${origin} not allowed`));
+    return callback(null, false);
   },
   credentials: true
 }));
