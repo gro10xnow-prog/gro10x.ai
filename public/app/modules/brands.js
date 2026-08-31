@@ -1,4 +1,4 @@
-/**
+﻿/**
  * public/app/modules/brands.js
  * ─────────────────────────────────────────────────────────────────────────────
  * GRO10X Digital Brand Empire — Command Center Module v2.0 (Phase 2 Live)
@@ -381,8 +381,8 @@ function getStudioAuthHeaders(extra = {}) {
   }
   if (!token || !token.trim()) {
     token = localStorage.getItem('sb-access-token') ||
-            localStorage.getItem('purpleos_pin_token') ||
-            localStorage.getItem('purple_token') ||
+            localStorage.getItem('gro10x_token') ||
+            localStorage.getItem('gro10x_token') ||
             localStorage.getItem('gro10x_token') ||
             localStorage.getItem('jwt_token') || '';
   }

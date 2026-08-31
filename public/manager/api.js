@@ -1,12 +1,12 @@
-/**
+﻿/**
  * public/manager/api.js
  * Department Manager Portal API Client
  */
 window.MANAGER_API = {
   getToken() {
     return localStorage.getItem('sb-access-token') ||
-           localStorage.getItem('purpleos_pin_token') ||
-           localStorage.getItem('purple_token') || '';
+           localStorage.getItem('gro10x_token') ||
+           localStorage.getItem('gro10x_token') || '';
   },
 
   getHeaders() {
@@ -29,7 +29,7 @@ window.MANAGER_API = {
     try {
       const response = await fetch(url, config);
       if (response.status === 401) {
-        localStorage.removeItem('sb-access-token');
+        localStorage.removeItem('gro10x_token');
         window.location.href = '/auth?redirect=' + encodeURIComponent(window.location.pathname);
         return null;
       }

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * scripts/e2e-client/auth.js
  * Client Stakeholder Session & JWT Generator for E2E Browser Testing
  */
@@ -28,9 +28,9 @@ async function injectClientSession(page, customUser = {}) {
   const token = generateClientToken(user);
 
   await page.evaluate(({ token, user }) => {
-    localStorage.setItem('sb-access-token', token);
-    localStorage.setItem('purpleos_pin_token', token);
-    localStorage.setItem('purple_token', token);
+    localStorage.setItem('gro10x_token', token);
+    localStorage.setItem('gro10x_token', token);
+    localStorage.setItem('gro10x_token', token);
     localStorage.setItem('purple_user', JSON.stringify(user));
     localStorage.setItem('purple_user_phone', user.phone);
     localStorage.setItem('purple_user_name', user.name);
@@ -44,9 +44,9 @@ async function injectClientSession(page, customUser = {}) {
 
 async function clearSession(page) {
   await page.evaluate(() => {
-    localStorage.removeItem('sb-access-token');
-    localStorage.removeItem('purpleos_pin_token');
-    localStorage.removeItem('purple_token');
+    localStorage.removeItem('gro10x_token');
+    localStorage.removeItem('gro10x_token');
+    localStorage.removeItem('gro10x_token');
     localStorage.removeItem('purple_user');
     localStorage.removeItem('purple_user_phone');
     localStorage.removeItem('purple_user_name');

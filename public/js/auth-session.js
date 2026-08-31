@@ -21,11 +21,14 @@
       var token = localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY);
       if (token) return token;
 
-      // Check legacy tokens for backwards compatibility
+      // Migrate legacy tokens on first access
       for (var i = 0; i < LEGACY_TOKENS.length; i++) {
         var legToken = localStorage.getItem(LEGACY_TOKENS[i]) || sessionStorage.getItem(LEGACY_TOKENS[i]);
         if (legToken) {
           localStorage.setItem(TOKEN_KEY, legToken);
+          // Clear legacy key
+          localStorage.removeItem(LEGACY_TOKENS[i]);
+          sessionStorage.removeItem(LEGACY_TOKENS[i]);
           return legToken;
         }
       }
@@ -34,13 +37,16 @@
 
     setToken: function(token, persist) {
       if (!token) return;
+      // Clear all legacy keys on new login
+      LEGACY_TOKENS.forEach(function(k) {
+        localStorage.removeItem(k);
+        sessionStorage.removeItem(k);
+      });
       if (persist) {
         localStorage.setItem(TOKEN_KEY, token);
       } else {
         sessionStorage.setItem(TOKEN_KEY, token);
       }
-      // Also mirror to sb-access-token for Supabase API requests
-      localStorage.setItem('sb-access-token', token);
     },
 
     getUser: function() {

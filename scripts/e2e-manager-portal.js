@@ -1,4 +1,4 @@
-/**
+﻿/**
  * scripts/e2e-manager-portal.js
  * ─────────────────────────────────────────────────────────────────────────────
  * Complete Browser E2E Automation Test Suite for Department Manager Portal (/manager)
@@ -124,7 +124,7 @@ async function runAllTests() {
 
     // Set Token & User Profile in localStorage
     await page.evaluate((token, user) => {
-      localStorage.setItem('sb-access-token', token);
+      localStorage.setItem('gro10x_token', token);
       localStorage.setItem('purple_user', JSON.stringify(user));
     }, TOKENS.owner, { name: 'Department Manager (Owner)', role: 'Managing Director', accessLevel: 'Owner' });
 

@@ -1,4 +1,4 @@
-const express = require('express');
+﻿const express = require('express');
 const router = express.Router();
 const { requireAuth } = require('../middleware/auth');
 const { requireAdmin, requireManager } = require('../middleware/rbac');
@@ -248,7 +248,7 @@ router.post('/pin/generate', authLimiter, requireAuth, requireManager, async (re
       `🌐 Direct Portal Access: ${portalUrl}`;
 
     const btnText = targetType === 'team' ? '🚀 Open Crew Workspace' : '🌐 Launch Client Portal';
-    const baseUrl = process.env.BASE_URL || 'https://purpleos-iota.vercel.app';
+    const baseUrl = process.env.BASE_URL || 'https://gro10x-ai.vercel.app';
     const appUrl = targetType === 'team' ? `${baseUrl}/team-miniapp` : `${baseUrl}/client`;
 
     sendTelegramNotification(userObj.telegramId, pushMsg, [
@@ -300,7 +300,7 @@ router.post('/pin/verify', pinVerifyLimiter, async (req, res) => {
   const signedJwt = signToken(jwtPayload);
 
   // Set httpOnly Cookie
-  res.cookie('sb-access-token', signedJwt, {
+  res.cookie('gro10x_token', signedJwt, {
     httpOnly: true,
     sameSite: 'lax',
     maxAge: 7 * 24 * 60 * 60 * 1000,
@@ -345,7 +345,7 @@ router.post('/pin/set', requireAuth, async (req, res) => {
       const member = await state.getEmployeeByPhone(phone);
       
       if (member && member.telegramId) {
-        const baseUrl = process.env.BASE_URL || 'https://purpleos-iota.vercel.app';
+        const baseUrl = process.env.BASE_URL || 'https://gro10x-ai.vercel.app';
         const msg = `🎉 *Authentication Complete!*\n\n` +
           `Your permanent 4-digit PIN is now securely configured.\n\n` +
           `*Next Step:* Please complete your profile survey to finish setting up your account.`;

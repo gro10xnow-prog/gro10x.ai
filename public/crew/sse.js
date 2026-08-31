@@ -1,4 +1,4 @@
-/**
+﻿/**
  * public/crew/sse.js
  * Real-Time SSE Listener, Notification Bell & Live Sync for Crew Workspace
  */
@@ -29,7 +29,7 @@
   async function getMyProfile() {
     if (_myEmpCode && _myName) return { empCode: _myEmpCode, name: _myName };
     try {
-      const token = localStorage.getItem('sb-access-token') || localStorage.getItem('purple_token') || localStorage.getItem('purpleos_pin_token') || '';
+      const token = localStorage.getItem('sb-access-token') || localStorage.getItem('gro10x_token') || localStorage.getItem('gro10x_token') || '';
       const res = await fetch('/api/auth/me', { headers: { Authorization: token ? `Bearer ${token}` : '' } });
       const d = await res.json();
       _myEmpCode = d.user?.emp_code || d.user?.id || null;

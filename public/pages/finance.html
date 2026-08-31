@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -319,7 +319,7 @@
       if (!title || !amount) return alert('Please fill title and amount.');
 
       try {
-        const token = localStorage.getItem('sb-access-token') || localStorage.getItem('purple_token') || localStorage.getItem('purpleos_pin_token');
+        const token = localStorage.getItem('sb-access-token') || localStorage.getItem('gro10x_token') || localStorage.getItem('gro10x_token');
         const res = await fetch('/api/expenses', {
           method: 'POST',
           headers: {

@@ -24,7 +24,6 @@ const ALLOWED_ORIGINS = Array.from(new Set([
   'https://gro10x-ai.vercel.app',
   'https://gro10x.ai',
   'https://www.gro10x.ai',
-  'https://purpleos-iota.vercel.app',
   'http://localhost:3000',
   'http://localhost:3001',
   ...(process.env.VERCEL_URL ? [`https://${process.env.VERCEL_URL}`] : []),
@@ -96,7 +95,6 @@ app.use(cors({
     if (
       ALLOWED_ORIGINS.includes(origin) ||
       (origin.startsWith('https://gro10x-') && origin.endsWith('.vercel.app')) ||
-      (origin.startsWith('https://purpleos-') && origin.endsWith('.vercel.app')) ||
       (process.env.NODE_ENV !== 'production' && /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin))
     ) {
       return callback(null, true);

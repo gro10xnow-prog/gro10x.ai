@@ -1,4 +1,4 @@
-/**
+﻿/**
  * public/js/shell.js
  * ─────────────────────────────────────────────────────────────────────────────
  * PurpleOS Shared Navigation & Page Shell Manager v2.0
@@ -13,8 +13,8 @@
 
   // 2. IIFE Auth Guard
   const token = localStorage.getItem('sb-access-token') ||
-                localStorage.getItem('purpleos_pin_token') ||
-                localStorage.getItem('purple_token');
+                localStorage.getItem('gro10x_token') ||
+                localStorage.getItem('gro10x_token');
   if (!token && !window.location.pathname.startsWith('/auth')) {
     console.warn('[PurpleOS Shell] ⛔ No session token found. Redirecting to auth...');
     window.location.replace('/auth?redirect=' + encodeURIComponent(window.location.pathname));
@@ -228,9 +228,9 @@ function hydrateUserInfo() {
 }
 
 function adminSignOut() {
-  localStorage.removeItem('sb-access-token');
-  localStorage.removeItem('purpleos_pin_token');
-  localStorage.removeItem('purple_token');
+  localStorage.removeItem('gro10x_token');
+  localStorage.removeItem('gro10x_token');
+  localStorage.removeItem('gro10x_token');
   localStorage.removeItem('purple_user');
   window.location.href = '/auth';
 }

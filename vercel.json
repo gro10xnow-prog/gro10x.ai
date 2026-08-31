@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "name": "purpleos",
+  "name": "gro10x",
   "builds": [
     {
       "src": "server.js",

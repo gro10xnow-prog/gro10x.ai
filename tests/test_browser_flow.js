@@ -1,4 +1,4 @@
-const puppeteer = require('puppeteer');
+﻿const puppeteer = require('puppeteer');
 const fs = require('fs');
 const path = require('path');
 
@@ -68,9 +68,9 @@ async function runTest() {
 
   await page.evaluateOnNewDocument((t, u) => {
     localStorage.setItem('gro10x_token', t);
-    localStorage.setItem('sb-access-token', t);
-    localStorage.setItem('purple_token', t);
-    localStorage.setItem('purpleos_pin_token', t);
+    localStorage.setItem('gro10x_token', t);
+    localStorage.setItem('gro10x_token', t);
+    localStorage.setItem('gro10x_token', t);
     localStorage.setItem('gro10x_user', JSON.stringify(u));
     document.cookie = `sb-access-token=${t}; Path=/; SameSite=Lax`;
   }, token, user);

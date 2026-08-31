@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -260,7 +260,7 @@
     // Fetch review projects list from API
     async function fetchReviewsCatalog(preloadId) {
       try {
-        const token = localStorage.getItem('sb-access-token') || localStorage.getItem('purple_token');
+        const token = localStorage.getItem('sb-access-token') || localStorage.getItem('gro10x_token');
         const res = await fetch('/api/reviews', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -331,7 +331,7 @@
 
     async function loadReviewDetails(id) {
       try {
-        const token = localStorage.getItem('sb-access-token') || localStorage.getItem('purple_token');
+        const token = localStorage.getItem('sb-access-token') || localStorage.getItem('gro10x_token');
         const res = await fetch(`/api/reviews/${id}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -549,7 +549,7 @@
       formData.append('asset', file);
 
       try {
-        const token = localStorage.getItem('sb-access-token') || localStorage.getItem('purple_token');
+        const token = localStorage.getItem('sb-access-token') || localStorage.getItem('gro10x_token');
         const res = await fetch(`/api/reviews/${activeReviewData.id}/upload`, {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${token}` },
@@ -615,7 +615,7 @@
       // Persist to backend
       if (activeReviewData && activeReviewData.id) {
         try {
-          const token = localStorage.getItem('sb-access-token') || localStorage.getItem('purple_token');
+          const token = localStorage.getItem('sb-access-token') || localStorage.getItem('gro10x_token');
           const apiRes = await fetch(`/api/reviews/${activeReviewData.id}/comments`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
@@ -639,7 +639,7 @@
 
         // Persist resolve to backend
         try {
-          const token = localStorage.getItem('sb-access-token') || localStorage.getItem('purple_token');
+          const token = localStorage.getItem('sb-access-token') || localStorage.getItem('gro10x_token');
           const res = await fetch(`/api/reviews/comments/${commentId}/resolve`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
@@ -676,7 +676,7 @@
       if (!activeReviewData?.id) return;
       closeRevisionModal();
       try {
-        const token = localStorage.getItem('sb-access-token') || localStorage.getItem('purple_token');
+        const token = localStorage.getItem('sb-access-token') || localStorage.getItem('gro10x_token');
         const res = await fetch(`/api/reviews/${activeReviewData.id}/request-revisions`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
@@ -700,7 +700,7 @@
       if (!activeReviewData || !activeReviewData.id) return;
       
       try {
-        const token = localStorage.getItem('sb-access-token') || localStorage.getItem('purple_token');
+        const token = localStorage.getItem('sb-access-token') || localStorage.getItem('gro10x_token');
         const res = await fetch(`/api/reviews/${activeReviewData.id}/approve`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
@@ -834,7 +834,7 @@
         // Save to DB
         if (activeReviewData && activeReviewData.id) {
           try {
-            const token = localStorage.getItem('sb-access-token') || localStorage.getItem('purple_token');
+            const token = localStorage.getItem('sb-access-token') || localStorage.getItem('gro10x_token');
             await fetch(`/api/reviews/${activeReviewData.id}/drawings`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
@@ -880,7 +880,7 @@
       // Hook into loadReviewDetails to fetch drawings
       window.fetchDrawings = async function(reviewId) {
         try {
-          const token = localStorage.getItem('sb-access-token') || localStorage.getItem('purple_token');
+          const token = localStorage.getItem('sb-access-token') || localStorage.getItem('gro10x_token');
           const res = await fetch(`/api/reviews/${reviewId}/drawings`, {
             headers: { 'Authorization': `Bearer ${token}` }
           });

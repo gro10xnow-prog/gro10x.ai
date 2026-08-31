@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Suite A - Phase A1: Admin OS Global Shell, Authentication & Navigation
  */
 const { APP_URL, wait, assertModalOpen, assertModalClosed, TestTracker } = require('../../utils');
@@ -19,7 +19,7 @@ async function runPhaseA1(page) {
   await tracker.runStep('A1.2', 'Expired JWT triggers 401 redirect to /auth?expired=1', async () => {
     const expiredToken = generateExpiredToken('owner');
     await page.evaluate((tok) => {
-      localStorage.setItem('purple_token', tok);
+      localStorage.setItem('gro10x_token', tok);
       localStorage.setItem('gro10x_token', tok);
     }, expiredToken);
     await page.goto(APP_URL + '#dashboard', { waitUntil: 'networkidle2' });

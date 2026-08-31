@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Suite X - Phase X4: Session Expiry Interception & Redirect
  */
 const { APP_URL, BASE_URL, wait, TestTracker } = require('../../utils');
@@ -12,8 +12,8 @@ async function runPhaseX4(page) {
     await page.goto(BASE_URL + '/auth.html', { waitUntil: 'domcontentloaded' });
     const expToken = generateExpiredToken('admin');
     await page.evaluate((tok) => {
-      localStorage.setItem('sb-access-token', tok);
-      localStorage.setItem('purple_token', tok);
+      localStorage.setItem('gro10x_token', tok);
+      localStorage.setItem('gro10x_token', tok);
       localStorage.setItem('gro10x_token', tok);
     }, expToken);
     await page.goto(APP_URL + '#dashboard', { waitUntil: 'networkidle2' });

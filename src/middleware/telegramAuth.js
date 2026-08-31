@@ -1,4 +1,4 @@
-const crypto = require('crypto');
+﻿const crypto = require('crypto');
 const { requireAuth } = require('./auth');
 
 /**
@@ -62,7 +62,7 @@ function requireMiniAppAuth(req, res, next) {
 
   // Also accept session tokens via query params or cookies for web-based access / SSE
   const queryToken = req.query?.token || req.query?.t;
-  const cookieToken = req.cookies?.['sb-access-token'] || req.cookies?.['purpleos_pin_token'] || req.cookies?.['purple_token'];
+  const cookieToken = req.cookies?.['gro10x_token'] || req.cookies?.['gro10x_token'] || req.cookies?.['gro10x_token'];
   if (queryToken || cookieToken) {
     return requireAuth(req, res, next);
   }

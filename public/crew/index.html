@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
@@ -12,8 +12,8 @@
   <script>
     (function() {
       var token = localStorage.getItem('sb-access-token') ||
-                  localStorage.getItem('purpleos_pin_token') ||
-                  localStorage.getItem('purple_token');
+                  localStorage.getItem('gro10x_token') ||
+                  localStorage.getItem('gro10x_token');
       if (!token) {
         window.location.replace('/auth?redirect=' + encodeURIComponent(window.location.pathname + window.location.hash));
       }
@@ -215,9 +215,9 @@
     });
 
     function crewSignOut() {
-      localStorage.removeItem('sb-access-token');
-      localStorage.removeItem('purpleos_pin_token');
-      localStorage.removeItem('purple_token');
+      localStorage.removeItem('gro10x_token');
+      localStorage.removeItem('gro10x_token');
+      localStorage.removeItem('gro10x_token');
       localStorage.removeItem('purple_user');
       localStorage.removeItem('crew_notifications_v1');
       window.location.href = '/auth';

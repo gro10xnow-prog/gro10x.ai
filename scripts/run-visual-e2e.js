@@ -1,4 +1,4 @@
-/**
+﻿/**
  * scripts/run-visual-e2e.js
  * Automated Visual & Interaction Browser Testing Script for PurpleOS Admin Panel
  */
@@ -71,9 +71,9 @@ async function runVisualE2E() {
     
     // Inject Mock Admin Session into localStorage to ensure full admin privileges
     await page.evaluate((token) => {
-      localStorage.setItem('sb-access-token', token);
-      localStorage.setItem('purpleos_pin_token', token);
-      localStorage.setItem('purple_token', token);
+      localStorage.setItem('gro10x_token', token);
+      localStorage.setItem('gro10x_token', token);
+      localStorage.setItem('gro10x_token', token);
       localStorage.setItem('purple_user', JSON.stringify({
         id: 'PBD-004',
         emp_code: 'PBD-004',

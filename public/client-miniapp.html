@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -1166,7 +1166,7 @@
     if (!file) { showSuccess('⚠️', 'Missing Screenshot', 'Please upload your payment screenshot proof.'); return; }
 
     try {
-      const token = sessionStorage.getItem('jwt_token') || localStorage.getItem('purple_token') || localStorage.getItem('sb-access-token');
+      const token = sessionStorage.getItem('jwt_token') || localStorage.getItem('gro10x_token') || localStorage.getItem('sb-access-token');
       const formData = new FormData();
       formData.append('invoiceId', selectedInvoiceId || 'INV-2026-001');
       formData.append('paymentMethod', selectedPayMethod || 'bKash');
@@ -1283,7 +1283,7 @@
 
     try {
       const tgUser = tg?.initDataUnsafe?.user;
-      const token = sessionStorage.getItem('jwt_token') || localStorage.getItem('purple_token') || localStorage.getItem('sb-access-token');
+      const token = sessionStorage.getItem('jwt_token') || localStorage.getItem('gro10x_token') || localStorage.getItem('sb-access-token');
       const headers = { 'Content-Type': 'application/json' };
       if (token) headers['Authorization'] = `Bearer ${token}`;
 

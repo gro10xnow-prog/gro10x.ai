@@ -1,4 +1,4 @@
-// 🤝 GRO10X CLIENT & PARTNER PORTAL JS
+﻿// 🤝 GRO10X CLIENT & PARTNER PORTAL JS
 
 let currentPartnerClient = 'Chillox Fast Food Chain';
 let currentPartnerReviewId = 'REV-001';
@@ -47,9 +47,9 @@ function handlePartnerLogout() {
   localStorage.removeItem('purple_user_name');
   localStorage.removeItem('purple_user_role');
   localStorage.removeItem('purple_user_access');
-  localStorage.removeItem('sb-access-token');
-  localStorage.removeItem('purpleos_pin_token');
-  localStorage.removeItem('purple_token');
+  localStorage.removeItem('gro10x_token');
+  localStorage.removeItem('gro10x_token');
+  localStorage.removeItem('gro10x_token');
   sessionStorage.removeItem('jwt_token');
   document.cookie = "sb-access-token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
   window.location.href = '/auth';
@@ -60,7 +60,7 @@ let partnerAuthUser = null;
 
 async function initPartnerPortal() {
   try {
-    const token = localStorage.getItem('sb-access-token') || localStorage.getItem('purple_token');
+    const token = localStorage.getItem('sb-access-token') || localStorage.getItem('gro10x_token');
     const authHeaders = token ? { 'Authorization': `Bearer ${token}` } : {};
 
     // Fetch authenticated user profile
@@ -511,7 +511,7 @@ async function submitPartnerCampaignBrief(event) {
 
 function setupPartnerSSE() {
   try {
-    const token = localStorage.getItem('gro10x_token') || localStorage.getItem('sb-access-token') || sessionStorage.getItem('sb-access-token') || '';
+    const token = localStorage.getItem('gro10x_token') || localStorage.getItem('sb-access-token') || sessionStorage.getItem('gro10x_token') || '';
     const sseUrl = token ? `/api/events?role=client&token=${encodeURIComponent(token)}` : '/api/events?role=client';
     const es = new EventSource(sseUrl);
     es.onmessage = (e) => {

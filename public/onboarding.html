@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
@@ -50,7 +50,7 @@
   </style>
   <script>
     const savedPhone = localStorage.getItem('purple_user_phone');
-    const token = localStorage.getItem('sb-access-token') || localStorage.getItem('purple_token') || localStorage.getItem('purpleos_pin_token');
+    const token = localStorage.getItem('sb-access-token') || localStorage.getItem('gro10x_token') || localStorage.getItem('gro10x_token');
     let empId = localStorage.getItem('purple_user_id') || localStorage.getItem('purple_emp_code');
 
     if (!token) {
@@ -187,7 +187,7 @@
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
             body: JSON.stringify({ phone: userData.phone, newPin: pin, email: userData.personal_email || userData.email })
           }).then(r => r.json()).then(d => {
-            if (d.success) localStorage.setItem('purpleos_pin_token', 'pin_active_' + Date.now());
+            if (d.success) localStorage.setItem('gro10x_token', 'pin_active_' + Date.now());
           }).catch(() => {});
         }
       }

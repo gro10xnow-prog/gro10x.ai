@@ -1,4 +1,4 @@
-/**
+﻿/**
  * scripts/e2e/auth.js
  * Session & JWT Generator for Multi-Stakeholder E2E Browser Testing
  */
@@ -94,14 +94,14 @@ async function injectRoleSession(page, role = 'admin') {
   const user = USERS[role] || USERS.admin;
   await page.evaluate(({ token, user }) => {
     try {
-      localStorage.setItem('sb-access-token', token);
-      localStorage.setItem('purpleos_pin_token', token);
-      localStorage.setItem('purple_token', token);
+      localStorage.setItem('gro10x_token', token);
+      localStorage.setItem('gro10x_token', token);
+      localStorage.setItem('gro10x_token', token);
       localStorage.setItem('jwt_token', token);
       localStorage.setItem('gro10x_token', token);
       localStorage.setItem('purple_user', JSON.stringify(user));
       sessionStorage.setItem('jwt_token', token);
-      sessionStorage.setItem('purple_token', token);
+      sessionStorage.setItem('gro10x_token', token);
     } catch (e) {}
   }, { token, user });
   return token;

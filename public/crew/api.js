@@ -1,12 +1,12 @@
-/**
+﻿/**
  * public/crew/api.js
  * Crew Workspace API Client
  */
 window.CREW_API = {
   getToken() {
     return localStorage.getItem('sb-access-token') ||
-           localStorage.getItem('purpleos_pin_token') ||
-           localStorage.getItem('purple_token') || '';
+           localStorage.getItem('gro10x_token') ||
+           localStorage.getItem('gro10x_token') || '';
   },
 
   getHeaders() {
@@ -29,9 +29,9 @@ window.CREW_API = {
     try {
       const response = await fetch(url, config);
       if (response.status === 401) {
-        localStorage.removeItem('sb-access-token');
-        localStorage.removeItem('purpleos_pin_token');
-        localStorage.removeItem('purple_token');
+        localStorage.removeItem('gro10x_token');
+        localStorage.removeItem('gro10x_token');
+        localStorage.removeItem('gro10x_token');
         localStorage.removeItem('purple_user');
         const target = window.location.pathname + window.location.hash;
         window.location.href = '/auth?redirect=' + encodeURIComponent(target);

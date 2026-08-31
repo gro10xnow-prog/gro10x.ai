@@ -1,4 +1,4 @@
-/**
+﻿/**
  * GRO10X Studio Drawer — Full Flow Test v5
  * Auth: Direct API token injection (bypasses slow Vercel cold-start + isTemp modal)
  * Then navigates to /staff and runs the full Studio Drawer journey
@@ -124,7 +124,7 @@ function mkMp4(p) {
     // Inject auth into browser localStorage + cookie
     await page.evaluate((token, userObj) => {
       localStorage.setItem('gro10x_token', token);
-      localStorage.setItem('sb-access-token', token);
+      localStorage.setItem('gro10x_token', token);
       localStorage.setItem('gro10x_user', JSON.stringify(userObj));
       localStorage.setItem('gro10x_user_phone', userObj.phone);
       localStorage.setItem('purple_user', JSON.stringify(userObj));

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * public/app/api.js
  * ─────────────────────────────────────────────────────────────────────────────
  * PurpleOS Admin Portal API Client & Data Store v3.0
@@ -13,8 +13,8 @@ window.APP_API = {
   getToken() {
     // First try known static keys
     const staticToken = localStorage.getItem('sb-access-token') ||
-           localStorage.getItem('purpleos_pin_token') ||
-           localStorage.getItem('purple_token') ||
+           localStorage.getItem('gro10x_token') ||
+           localStorage.getItem('gro10x_token') ||
            localStorage.getItem('gro10x_token') ||
            localStorage.getItem('jwt_token') || '';
     if (staticToken) return staticToken;
@@ -74,7 +74,7 @@ window.APP_API = {
 
       if (response.status === 401) {
         console.warn('[PurpleOS API] 401 Unauthorized — Redirecting to login...');
-        localStorage.removeItem('sb-access-token');
+        localStorage.removeItem('gro10x_token');
         window.location.href = '/auth?redirect=' + encodeURIComponent(window.location.pathname);
         return null;
       }

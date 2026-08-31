@@ -1,4 +1,4 @@
-// ══════════════════════════════════════════
+﻿// ══════════════════════════════════════════
   // TELEGRAM WEBAPP INIT
   // ══════════════════════════════════════════
   const tg = window.Telegram?.WebApp;
@@ -20,8 +20,8 @@
   function authHeaders() {
     const token = sessionStorage.getItem('jwt_token') ||
                   localStorage.getItem('sb-access-token') ||
-                  localStorage.getItem('purpleos_pin_token') ||
-                  localStorage.getItem('purple_token');
+                  localStorage.getItem('gro10x_token') ||
+                  localStorage.getItem('gro10x_token');
     const h = { 'Content-Type': 'application/json' };
     if (token) h['Authorization'] = `Bearer ${token}`;
     return h;
@@ -39,8 +39,8 @@
 
     // ── Web (JWT) fallback path ──────────────────────────────────────────────
     const webToken = localStorage.getItem('sb-access-token') ||
-                     localStorage.getItem('purpleos_pin_token') ||
-                     localStorage.getItem('purple_token');
+                     localStorage.getItem('gro10x_token') ||
+                     localStorage.getItem('gro10x_token');
     if (!tgUser && !window.location.search.includes('debug') && !webToken) {
       showLock();
       return;
@@ -2255,8 +2255,8 @@
     const token = sessionStorage.getItem('jwt_token') ||
                   localStorage.getItem('gro10x_token') ||
                   localStorage.getItem('sb-access-token') ||
-                  localStorage.getItem('purpleos_pin_token') ||
-                  localStorage.getItem('purple_token') || '';
+                  localStorage.getItem('gro10x_token') ||
+                  localStorage.getItem('gro10x_token') || '';
     const sseUrl = token ? `/api/events?role=team&token=${encodeURIComponent(token)}` : '/api/events?role=team';
     sseConnection = new EventSource(sseUrl);
     sseConnection.onmessage = (e) => {

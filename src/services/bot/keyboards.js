@@ -1,4 +1,4 @@
-/**
+﻿/**
  * src/services/bot/keyboards.js
  * ─────────────────────────────────────────────────────────────────────────────
  * Role-Based Telegram Custom Keyboards.
@@ -24,7 +24,7 @@ function getRoleKeyboard(accessLevel, isVerified = false, emp = null) {
 
   // Progressive Disclosure: Guided Journey Mode during onboarding
   if (!emp.onboardingComplete) {
-    const baseUrl = process.env.BASE_URL || 'https://purpleos-iota.vercel.app';
+    const baseUrl = process.env.BASE_URL || 'https://gro10x-ai.vercel.app';
     return {
       keyboard: [
         [{ text: '🎓 Complete My Profile Survey', web_app: { url: `${baseUrl}/team-miniapp` } }],

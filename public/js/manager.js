@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 🟣 PURPLEOS MANAGER PORTAL CONTROLLER (manager.js)
  * Phase MA1 & MA2 — Manager RBAC & Kanban Task Management Hub
  */
@@ -101,7 +101,7 @@ function populateManagerClientDropdowns() {
  */
 async function checkManagerAuth() {
   try {
-    const token = localStorage.getItem('sb-access-token') || sessionStorage.getItem('sb-access-token');
+    const token = localStorage.getItem('sb-access-token') || sessionStorage.getItem('gro10x_token');
     
     // Attempt session verification from API
     const res = await fetch('/api/auth/me', {
@@ -1260,15 +1260,15 @@ async function updateTicketStatus(ticketId, newStatus) {
  * 11. Logout Handler
  */
 function logoutManager() {
-  localStorage.removeItem('sb-access-token');
-  sessionStorage.removeItem('sb-access-token');
+  localStorage.removeItem('gro10x_token');
+  sessionStorage.removeItem('gro10x_token');
   sessionStorage.removeItem('currentManagerUser');
   window.location.href = '/auth';
 }
 
 function setupManagerSSE() {
   try {
-    const token = localStorage.getItem('gro10x_token') || localStorage.getItem('sb-access-token') || sessionStorage.getItem('sb-access-token') || '';
+    const token = localStorage.getItem('gro10x_token') || localStorage.getItem('sb-access-token') || sessionStorage.getItem('gro10x_token') || '';
     const sseUrl = token ? `/api/events?role=manager&token=${encodeURIComponent(token)}` : '/api/events?role=manager';
     const es = new EventSource(sseUrl);
     es.onmessage = (e) => {

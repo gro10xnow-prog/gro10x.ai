@@ -18,7 +18,7 @@ async function requireAuth(req, res, next) {
         return [parts[0], parts.slice(1).join('=')];
       })
     );
-    token = cookies['sb-access-token'] || cookies['sb_access_token'] || cookies['purple_jwt'];
+    token = cookies['gro10x_token'] || cookies['sb-access-token'] || cookies['sb_access_token'] || cookies['purple_jwt'];
   }
 
   // 1. Verify Real Signed JWT first

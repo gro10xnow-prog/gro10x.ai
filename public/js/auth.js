@@ -161,30 +161,23 @@ function saveSessionAndRedirect(user, linkedType, email, realToken) {
   };
 
   try {
+    // Clear all legacy token keys
+    ['sb-access-token', 'purple_token', 'purpleos_pin_token'].forEach(k => localStorage.removeItem(k));
+
     localStorage.setItem('gro10x_user', JSON.stringify(userObj));
     localStorage.setItem('gro10x_user_phone', cleanPhone);
-    localStorage.setItem('purple_user', JSON.stringify(userObj));
-    localStorage.setItem('purple_user_phone', cleanPhone);
-    if (email || userObj.email) localStorage.setItem('purple_user_email', email || userObj.email);
-    if (userObj.name) localStorage.setItem('purple_user_name', userObj.name);
-    if (userObj.company) localStorage.setItem('purple_user_company', userObj.company);
-    if (userObj.pocRole) localStorage.setItem('purple_user_poc_role', userObj.pocRole);
-    if (userObj.role) localStorage.setItem('purple_user_role', userObj.role);
-    if (userObj.accessLevel) localStorage.setItem('purple_user_access', userObj.accessLevel);
-    if (userObj.id) localStorage.setItem('purple_user_id', userObj.id);
 
     // Use the real signed JWT from the server
     const token = realToken || user?.token || '';
     if (token) {
       localStorage.setItem('gro10x_token', token);
-      localStorage.setItem('sb-access-token', token);
-      document.cookie = `sb-access-token=${token}; Path=/; SameSite=Lax; max-age=604800`;
+      document.cookie = `gro10x_token=${token}; Path=/; SameSite=Lax; max-age=604800`;
     }
   } catch (storageErr) {
     console.warn('[auth] localStorage unavailable, continuing with cookie only:', storageErr.message);
     const token = realToken || user?.token || '';
     if (token) {
-      document.cookie = `sb-access-token=${token}; Path=/; SameSite=Lax; max-age=604800`;
+      document.cookie = `gro10x_token=${token}; Path=/; SameSite=Lax; max-age=604800`;
     }
   }
 

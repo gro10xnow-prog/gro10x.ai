@@ -1,4 +1,4 @@
-const TelegramBot = require('node-telegram-bot-api');
+﻿const TelegramBot = require('node-telegram-bot-api');
 const { supabase } = require('./supabase');
 const { normalizePhone } = require('../utils/phone');
 
@@ -223,7 +223,7 @@ async function handleTeamContact(msg) {
     // 2. Generate or retrieve existing PIN
     const pinRecord = await createTempPin(emp.phone, emp.emp_code || emp.id, 'team', emp.email);
 
-    const baseUrl = process.env.BASE_URL || 'https://purpleos-iota.vercel.app';
+    const baseUrl = process.env.BASE_URL || 'https://gro10x-ai.vercel.app';
     // 3. Send welcome message with credentials and keyboard
     const welcomeMsg = `✅ <b>Identity Verified — Welcome, ${emp.name}!</b>\n\n` +
       `• Designation: <b>${emp.role}</b>\n` +

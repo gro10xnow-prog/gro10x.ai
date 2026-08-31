@@ -1,4 +1,4 @@
-/**
+﻿/**
  * public/crew/modules/earnings.js
  * Crew Workspace Earnings, Payroll Breakdown, Milestone Progress & Mood Analytics
  */
@@ -32,8 +32,8 @@ window.openCrewPayslip = async function(btn) {
 
   try {
     const token = localStorage.getItem('sb-access-token') || 
-                  localStorage.getItem('purpleos_pin_token') || 
-                  localStorage.getItem('purple_token') || '';
+                  localStorage.getItem('gro10x_token') || 
+                  localStorage.getItem('gro10x_token') || '';
     const res = await fetch('/api/team/payslip', {
       headers: {
         'Authorization': token ? `Bearer ${token}` : ''
