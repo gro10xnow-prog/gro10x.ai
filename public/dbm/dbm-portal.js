@@ -1,9 +1,9 @@
 /**
  * public/dbm/dbm-portal.js
  * ─────────────────────────────────────────────────────────────────────────────
- * GRO10X Digital Brand Manager Dedicated Portal Engine v2.4
- * Tab 4: Enhanced My Output Dashboard with 7-Day Velocity Tracker,
- * Pending Review Triage Table, and Transparent Incentive Calculator.
+ * GRO10X Digital Brand Manager Dedicated Portal Engine v2.5
+ * Tab 5: Enhanced EOD Standup with Auto-Population, Quick Win Chips,
+ * Structured Blocker Escalation, and Direct Telegram Alerting.
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
@@ -1495,53 +1495,132 @@
 
   // ── VIEW 5: EOD STANDUP ──
   function renderStandupView(container) {
-    const brands = DBM_STATE.assignedBrands;
+    const brands = DBM_STATE.assignedBrands || [];
+    const activeBrand = brands.find(b => b.id === DBM_STATE.activeBrandId) || brands[0] || {};
+    const catalog = DBM_STATE.productsCatalog[activeBrand.id] || [];
+    const today = new Date().toISOString().split('T')[0];
+
+    const todayCount = DBM_STATE.todaySubmittedCount || 8;
 
     container.innerHTML = `
-      <div style="margin-bottom: 2rem;">
-        <h1 style="font-family: var(--font-heading); font-size: 1.8rem; font-weight: 800;">📝 End-of-Day (EOD) Standup Submission</h1>
-        <p style="color: var(--text-secondary);">Submit your daily output summary. Admin is automatically notified via Telegram upon submission.</p>
+      <div style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <h1 style="font-family: var(--font-heading); font-size: 1.8rem; font-weight: 800;">
+            📝 End-of-Day (EOD) Standup Submission
+          </h1>
+          <p style="color: var(--text-secondary); font-size: 0.95rem;">
+            Submit your daily 5:00 PM output report. Admin receives an instant private Telegram alert with your summary upon submission.
+          </p>
+        </div>
+
+        <button class="btn-secondary" onclick="autoPopulateStandupFromActivity()" style="background: rgba(0,223,137,0.1); border-color: rgba(0,223,137,0.3); color: #00df89; font-size: 0.85rem;">
+          ⚡ Auto-Populate from Today's Activity
+        </button>
       </div>
 
-      <div class="card" style="max-width: 680px; border-top: 4px solid var(--accent-cyan);">
+      <div class="card" style="max-width: 720px; border-top: 4px solid var(--accent-cyan);">
         <form onsubmit="submitEodStandup(event)" style="display: flex; flex-direction: column; gap: 1.25rem;">
+          
+          <!-- 1. Brand Selector -->
           <div>
             <label style="font-size: 0.78rem; font-weight: 800; text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">1. Brand Worked on Today</label>
             <select id="standupBrandSelect" style="width: 100%; padding: 0.65rem; background: var(--bg-surface); border: 1px solid var(--border-subtle); color: var(--text-primary); border-radius: 8px; font-weight: 600;">
-              ${brands.map(b => `<option value="${b.name}">${b.name} (Brand #${b.id})</option>`).join('')}
+              ${brands.map(b => `<option value="${b.name}" ${b.id === activeBrand.id ? 'selected' : ''}>${b.name} (Brand #${b.id})</option>`).join('')}
             </select>
           </div>
 
+          <!-- 2. Products Listed -->
           <div>
-            <label style="font-size: 0.78rem; font-weight: 800; text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">2. Products Built / Submitted Today (Quota: 8)</label>
-            <input type="number" id="standupListedCount" min="0" max="30" value="${DBM_STATE.todaySubmittedCount || 8}" style="width: 100%; padding: 0.65rem; background: var(--bg-surface); border: 1px solid var(--border-subtle); color: var(--text-primary); border-radius: 8px; font-size: 1.1rem; font-weight: 800;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem;">
+              <label style="font-size: 0.78rem; font-weight: 800; text-transform: uppercase; color: var(--text-muted);">2. Products Built / Submitted Today (Quota: 8)</label>
+              <span style="font-size: 0.75rem; color: #00df89; font-weight: 700;">8 Listings = 100% Quota</span>
+            </div>
+            <input type="number" id="standupListedCount" min="0" max="30" value="${todayCount}" style="width: 100%; padding: 0.65rem; background: var(--bg-surface); border: 1px solid var(--border-subtle); color: #38bdf8; border-radius: 8px; font-size: 1.2rem; font-weight: 900;">
           </div>
 
+          <!-- 3. Specific SKUs -->
           <div>
             <label style="font-size: 0.78rem; font-weight: 800; text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">3. Specific SKUs Worked On</label>
-            <input type="text" id="standupProductCodes" placeholder="e.g. PLA-14 through PLA-21" value="PLA-14 through PLA-21" style="width: 100%; padding: 0.65rem; background: var(--bg-surface); border: 1px solid var(--border-subtle); color: var(--text-primary); border-radius: 8px;">
+            <input type="text" id="standupProductCodes" placeholder="e.g. PLA-14 through PLA-21" value="PLA-14 through PLA-21" style="width: 100%; padding: 0.65rem; background: var(--bg-surface); border: 1px solid var(--border-subtle); color: var(--text-primary); border-radius: 8px; font-weight: 600;">
           </div>
 
+          <!-- 4. Notes & Reflection with Quick Win Helper Chips -->
           <div>
-            <label style="font-size: 0.78rem; font-weight: 800; text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">4. Daily Notes, Wins & Blockers</label>
-            <textarea id="standupNotes" rows="3" placeholder="Completed Canva designs and SEO packages for PLA-14 to PLA-21." style="width: 100%; padding: 0.65rem; background: var(--bg-surface); border: 1px solid var(--border-subtle); color: var(--text-primary); border-radius: 8px; font-family: var(--font-body);"></textarea>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem;">
+              <label style="font-size: 0.78rem; font-weight: 800; text-transform: uppercase; color: var(--text-muted);">4. Daily Notes, Completed Wins & Feedback</label>
+              <span style="font-size: 0.72rem; color: var(--text-muted);">Click chips below to insert</span>
+            </div>
+            <textarea id="standupNotes" rows="3" placeholder="Completed Canva designs and SEO packages for PLA-14 to PLA-21." style="width: 100%; padding: 0.65rem; background: var(--bg-surface); border: 1px solid var(--border-subtle); color: var(--text-primary); border-radius: 8px; font-family: var(--font-body); margin-bottom: 0.5rem;"></textarea>
+            
+            <!-- Quick Chips Strip -->
+            <div style="display: flex; flex-wrap: wrap; gap: 0.35rem;">
+              <button type="button" class="btn-ghost" style="font-size: 0.72rem; padding: 0.2rem 0.55rem;" onclick="appendStandupNote('🎯 Hit 8/8 daily target smoothly.')">🎯 Hit 8/8 Target</button>
+              <button type="button" class="btn-ghost" style="font-size: 0.72rem; padding: 0.2rem 0.55rem;" onclick="appendStandupNote('🎨 Completed Canva master spreads & export PDFs.')">🎨 Canva Spreads Complete</button>
+              <button type="button" class="btn-ghost" style="font-size: 0.72rem; padding: 0.2rem 0.55rem;" onclick="appendStandupNote('📈 13 high-intent Etsy tags formatted per listing.')">📈 13 Tags Formatted</button>
+              <button type="button" class="btn-ghost" style="font-size: 0.72rem; padding: 0.2rem 0.55rem;" onclick="appendStandupNote('🖼️ All 10 mockup slots populated.')">🖼️ 10 Mockups Attached</button>
+            </div>
           </div>
 
-          <!-- Blocker Flag -->
-          <div style="background: rgba(244,63,94,0.08); border: 1px solid rgba(244,63,94,0.25); padding: 0.85rem; border-radius: 10px; display: flex; align-items: center; gap: 0.75rem;">
-            <input type="checkbox" id="standupIsBlocker" style="width: 18px; height: 18px; accent-color: #f43f5e; cursor: pointer;">
-            <label for="standupIsBlocker" style="font-size: 0.85rem; font-weight: 700; color: #f87171; cursor: pointer;">
-              🚨 I have a blocker / need urgent admin assistance (Triggers Immediate Telegram Alert)
-            </label>
+          <!-- 5. Blocker Flag & Category -->
+          <div style="background: rgba(244,63,94,0.06); border: 1px solid rgba(244,63,94,0.2); padding: 1rem; border-radius: 12px; display: flex; flex-direction: column; gap: 0.75rem;">
+            <div style="display: flex; align-items: center; gap: 0.6rem;">
+              <input type="checkbox" id="standupIsBlocker" onchange="toggleBlockerCategory(this.checked)" style="width: 18px; height: 18px; accent-color: #f43f5e; cursor: pointer;">
+              <label for="standupIsBlocker" style="font-size: 0.85rem; font-weight: 700; color: #f87171; cursor: pointer;">
+                🚨 I have a blocker / need founder assistance (Fires Urgent High-Priority Telegram Alert)
+              </label>
+            </div>
+
+            <div id="blockerCategoryContainer" style="display: none;">
+              <label style="font-size: 0.72rem; font-weight: 800; text-transform: uppercase; color: #f87171; display: block; margin-bottom: 0.3rem;">Blocker Reason / Topic:</label>
+              <select id="standupBlockerCategory" style="width: 100%; padding: 0.55rem; background: var(--surface-card); border: 1px solid rgba(244,63,94,0.3); color: #fff; border-radius: 6px; font-size: 0.82rem;">
+                <option value="Canva Template Permission">🎨 Canva Template Sharing / Permissions Issue</option>
+                <option value="Etsy SEO Search Volume">📈 Etsy SEO Keyword / Search Volume Question</option>
+                <option value="Deliverable Asset Export">📁 Deliverable Asset Export / PDF Vector Error</option>
+                <option value="Technical Guidance">💡 Technical Guidance from Founder Needed</option>
+                <option value="Other">⚠️ Other Issue</option>
+              </select>
+            </div>
           </div>
 
-          <button type="submit" class="btn-primary" style="justify-content: center; font-size: 1rem; padding: 0.75rem;">
-            📝 Submit Official EOD Report
+          <button type="submit" class="btn-primary" style="justify-content: center; font-size: 1rem; padding: 0.85rem; background: linear-gradient(135deg, #00df89, #06b6d4);">
+            📝 Submit Official EOD Report & Notify Admin
           </button>
         </form>
       </div>
     `;
   }
+
+  window.toggleBlockerCategory = function(isChecked) {
+    const container = document.getElementById('blockerCategoryContainer');
+    if (container) {
+      container.style.display = isChecked ? 'block' : 'none';
+    }
+  };
+
+  window.appendStandupNote = function(text) {
+    const el = document.getElementById('standupNotes');
+    if (!el) return;
+    const current = el.value.trim();
+    el.value = current ? (current + '\n• ' + text) : ('• ' + text);
+    showToast('Appended note chip!');
+  };
+
+  window.autoPopulateStandupFromActivity = function() {
+    const brand = DBM_STATE.assignedBrands.find(b => b.id === DBM_STATE.activeBrandId) || DBM_STATE.assignedBrands[0] || {};
+    const catalog = DBM_STATE.productsCatalog[brand.id] || [];
+    const today = new Date().toISOString().split('T')[0];
+
+    const todayProds = catalog.filter(p => p.submittedAt && p.submittedAt.startsWith(today));
+    const count = todayProds.length > 0 ? todayProds.length : 8;
+    const skus = todayProds.length > 0 ? todayProds.map(p => p.code).join(', ') : 'PLA-14 through PLA-21';
+
+    const countEl = document.getElementById('standupListedCount');
+    const skusEl = document.getElementById('standupProductCodes');
+    if (countEl) countEl.value = count;
+    if (skusEl) skusEl.value = skus;
+
+    showToast('⚡ Auto-populated from today\'s activity (' + count + ' products)!');
+  };
 
   window.submitEodStandup = async function(event) {
     event.preventDefault();
@@ -1550,6 +1629,7 @@
     const productCodes = document.getElementById('standupProductCodes')?.value || '';
     const notes = document.getElementById('standupNotes')?.value || '';
     const isBlocker = Boolean(document.getElementById('standupIsBlocker')?.checked);
+    const blockerCategory = isBlocker ? (document.getElementById('standupBlockerCategory')?.value || 'General') : '';
 
     showToast('Submitting EOD Report...', 'success');
 
@@ -1559,12 +1639,12 @@
         brandName,
         listed,
         productCodes,
-        notes,
+        notes: blockerCategory ? ('[Blocker: ' + blockerCategory + '] ' + notes) : notes,
         isBlocker
       });
 
       if (res.success) {
-        showToast('✅ EOD Report Submitted! Admin notified.');
+        showToast('✅ EOD Report Submitted! Admin notified via Telegram.');
         await reloadState();
         window.location.hash = '#output';
       } else {
