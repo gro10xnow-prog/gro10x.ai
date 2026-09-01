@@ -1,9 +1,9 @@
 /**
  * public/app/modules/social.js
  * Social Media Planner & Engine 5 Content Command Center
- * v4.0 — Channel-Aware + AI Content Brief Generator + AI QC Engine (Phase 1 & Phase 2)
+ * v5.0 — Channel-Aware + AI Brief Generator + AI QC Engine + Monthly Content Calendar (Phase 1, 2, 5)
  * Channels: Grow Bangla, PILUTICS, Bong Hits, GRO10X Brand, Client Accounts
- * 5-Stage Kanban: Drafts → Internal QC → Review → Approved → Posted
+ * Views: 5-Stage Kanban Board & Monthly Content Calendar with Cadence Tracking
  */
 window.APP_MODULES = window.APP_MODULES || {};
 
@@ -13,6 +13,8 @@ window.APP_MODULES.social = async function(container) {
   let isLoading = true;
   let hasError = false;
   let activeGeneratedBrief = null;
+  let activeViewMode = 'kanban'; // 'kanban' | 'calendar'
+  let currentCalendarDate = new Date();
 
   const CHANNELS = [
     {
@@ -22,6 +24,7 @@ window.APP_MODULES.social = async function(container) {
       subs: '427 subs',
       badgeClass: 'badge-blue',
       defaultPlatform: 'YouTube',
+      targetPerWeek: 2,
       categories: ['English Lesson', 'Vocabulary Drop', 'Grammar Hack', 'Pronunciation Tip', 'Motivation']
     },
     {
@@ -31,6 +34,7 @@ window.APP_MODULES.social = async function(container) {
       subs: '218 subs',
       badgeClass: 'badge-emerald',
       defaultPlatform: 'YouTube',
+      targetPerWeek: 1,
       categories: ['Geopolitical Analysis', 'Travel Vlog', 'Country Spotlight', 'BD Insight', 'Current Events']
     },
     {
@@ -40,6 +44,7 @@ window.APP_MODULES.social = async function(container) {
       subs: '85 subs (YT+TikTok)',
       badgeClass: 'badge-pink',
       defaultPlatform: 'TikTok',
+      targetPerWeek: 3,
       categories: ['Entertainment', 'Humor', 'Trending Sound', 'Cultural Moment', 'Reaction']
     },
     {
@@ -49,6 +54,7 @@ window.APP_MODULES.social = async function(container) {
       subs: 'Official',
       badgeClass: 'badge-amber',
       defaultPlatform: 'LinkedIn',
+      targetPerWeek: 2,
       categories: ['AI Tips', 'Agency BTS', 'Case Study', 'DigiVault Promo', 'B2B Hook']
     },
     {
@@ -58,6 +64,7 @@ window.APP_MODULES.social = async function(container) {
       subs: 'CRM Sync',
       badgeClass: 'badge-gray',
       defaultPlatform: 'Facebook',
+      targetPerWeek: 3,
       categories: ['Promo', 'Offer', 'Educational', 'Behind-the-Scenes', 'Testimonial']
     }
   ];
@@ -98,6 +105,7 @@ window.APP_MODULES.social = async function(container) {
       engine: 'Custom',
       badgeClass: 'badge-purple',
       defaultPlatform: 'Facebook',
+      targetPerWeek: 2,
       categories: ['General', 'Promo', 'Update']
     };
   }
@@ -172,10 +180,15 @@ window.APP_MODULES.social = async function(container) {
             </span>
           </div>
           <div style="font-size: 0.88rem; color: var(--text-muted); margin-top:0.25rem;">
-            Channel-aware content pipeline with Gemini AI Brief Generator & QC review engine.
+            Channel-aware content pipeline with Gemini AI Brief Generator, QC Engine & Monthly Calendar.
           </div>
         </div>
-        <div style="display:flex; gap:0.6rem; align-items:center;">
+        <div style="display:flex; gap:0.6rem; align-items:center; flex-wrap:wrap;">
+          <!-- View Toggle Switcher -->
+          <div style="display:flex; background:rgba(255,255,255,0.06); border:1px solid var(--border-subtle); border-radius:10px; padding:3px; gap:2px;">
+            <button class="btn-ghost btn-sm" id="btnViewKanban" style="font-size:0.8rem; font-weight:800; padding:0.35rem 0.75rem; border-radius:8px; ${activeViewMode === 'kanban' ? 'background:rgba(255,255,255,0.15); color:#fff;' : 'color:var(--text-muted);'}" onclick="window.SOCIAL_MODULE.switchView('kanban')">📋 Kanban</button>
+            <button class="btn-ghost btn-sm" id="btnViewCalendar" style="font-size:0.8rem; font-weight:800; padding:0.35rem 0.75rem; border-radius:8px; ${activeViewMode === 'calendar' ? 'background:rgba(255,255,255,0.15); color:#fff;' : 'color:var(--text-muted);'}" onclick="window.SOCIAL_MODULE.switchView('calendar')">📅 Calendar</button>
+          </div>
           <button class="btn-secondary" onclick="window.SOCIAL_MODULE.reload()">🔄 Refresh</button>
           <button class="btn-primary" onclick="window.SOCIAL_MODULE.openPostModal()">+ Draft New Post</button>
         </div>
@@ -342,7 +355,11 @@ window.APP_MODULES.social = async function(container) {
 
   function renderContent() {
     renderKPIs();
-    renderBoard();
+    if (activeViewMode === 'calendar') {
+      renderCalendar();
+    } else {
+      renderBoard();
+    }
     populateClientDropdown();
     updateCategoryOptions('grow-bangla');
   }
@@ -464,6 +481,180 @@ window.APP_MODULES.social = async function(container) {
             ${renderColumnCards(posted, 'posted')}
           </div>
         </div>
+      </div>
+    `;
+  }
+
+  function renderCalendar() {
+    const board = document.getElementById('socialBoardContainer');
+    if (!board) return;
+
+    const year = currentCalendarDate.getFullYear();
+    const month = currentCalendarDate.getMonth();
+    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    const currentMonthName = monthNames[month];
+
+    // Filter posts for calendar
+    let filteredPosts = postsData;
+    if (activePlatformFilter !== 'all') {
+      filteredPosts = filteredPosts.filter(p => (p.platform || '').toLowerCase().includes(activePlatformFilter.toLowerCase()));
+    }
+    if (activeChannelFilter !== 'all') {
+      filteredPosts = filteredPosts.filter(p => {
+        const pChan = (p.channel || '').toLowerCase();
+        return pChan.includes(activeChannelFilter.toLowerCase()) || (activeChannelFilter === 'client' && (pChan.includes('client') || !pChan));
+      });
+    }
+
+    const firstDayIndex = new Date(year, month, 1).getDay();
+    const lastDate = new Date(year, month + 1, 0).getDate();
+    const prevLastDate = new Date(year, month, 0).getDate();
+    const totalCells = Math.ceil((firstDayIndex + lastDate) / 7) * 7;
+
+    const today = new Date();
+    const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month;
+
+    // Build calendar grid days
+    let dayCellsHtml = '';
+
+    for (let i = 0; i < totalCells; i++) {
+      let dayNumber;
+      let dateString;
+      let isCurrentMonthCell = false;
+      let isTodayCell = false;
+
+      if (i < firstDayIndex) {
+        // Prev month padding
+        dayNumber = prevLastDate - firstDayIndex + i + 1;
+        const prevMonth = month === 0 ? 11 : month - 1;
+        const prevYear = month === 0 ? year - 1 : year;
+        dateString = `${prevYear}-${String(prevMonth + 1).padStart(2, '0')}-${String(dayNumber).padStart(2, '0')}`;
+      } else if (i < firstDayIndex + lastDate) {
+        // Current month
+        dayNumber = i - firstDayIndex + 1;
+        isCurrentMonthCell = true;
+        dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(dayNumber).padStart(2, '0')}`;
+        if (isCurrentMonth && today.getDate() === dayNumber) isTodayCell = true;
+      } else {
+        // Next month padding
+        dayNumber = i - (firstDayIndex + lastDate) + 1;
+        const nextMonth = month === 11 ? 0 : month + 1;
+        const nextYear = month === 11 ? year + 1 : year;
+        dateString = `${nextYear}-${String(nextMonth + 1).padStart(2, '0')}-${String(dayNumber).padStart(2, '0')}`;
+      }
+
+      // Find posts for this day
+      const dayPosts = filteredPosts.filter(p => p.scheduledDate === dateString);
+
+      dayCellsHtml += `
+        <div class="calendar-day-cell" style="background:${isCurrentMonthCell ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.2)'}; border:1px solid ${isTodayCell ? '#10b981' : 'var(--border-subtle)'}; border-radius:10px; padding:0.6rem; min-height:115px; display:flex; flex-direction:column; gap:0.4rem; cursor:pointer; position:relative; transition:border-color 0.15s ease;" onclick="window.SOCIAL_MODULE.openPostModalWithDate('${dateString}')">
+          
+          <!-- Day Header -->
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:0.82rem; font-weight:${isTodayCell ? '900' : '700'}; color:${isTodayCell ? '#10b981' : (isCurrentMonthCell ? 'var(--text-primary)' : 'var(--text-dim)')};">
+              ${dayNumber} ${isTodayCell ? '· Today' : ''}
+            </span>
+            ${dayPosts.length > 0 ? `<span class="badge badge-purple" style="font-size:0.62rem; padding:0.1rem 0.35rem;">${dayPosts.length}</span>` : ''}
+          </div>
+
+          <!-- Scheduled Post Chips -->
+          <div style="display:flex; flex-direction:column; gap:0.3rem; flex:1; overflow-y:auto;">
+            ${dayPosts.map(p => {
+              const chanCfg = getChannelConfig(p.channel);
+              const icon = PLATFORM_ICONS[p.platform] || '📱';
+              const isPosted = p.status === 'Posted' || p.status === 'Published';
+              const isApproved = p.status === 'Approved' || p.status === 'Scheduled';
+
+              return `
+                <div class="calendar-post-chip" style="background:${isPosted ? 'rgba(59,130,246,0.15)' : (isApproved ? 'rgba(16,185,129,0.15)' : 'rgba(255,255,255,0.06)')}; border:1px solid ${isPosted ? '#3b82f6' : (isApproved ? '#10b981' : 'var(--border-subtle)')}; border-radius:6px; padding:0.3rem 0.45rem; font-size:0.7rem; line-height:1.25;" onclick="event.stopPropagation(); window.SOCIAL_MODULE.openEditModal('${p.id}')">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.15rem;">
+                    <span class="badge ${chanCfg.badgeClass}" style="font-size:0.6rem; padding:0 0.3rem;">${escapeHTML(chanCfg.name.split(' ')[1] || chanCfg.name)}</span>
+                    <span style="font-size:0.65rem;">${icon} ${p.scheduledTime ? escapeHTML(p.scheduledTime) : ''}</span>
+                  </div>
+                  <div style="font-weight:700; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                    ${escapeHTML(p.title)}
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // Per-Channel Cadence Calculations for this month
+    const monthPrefix = `${year}-${String(month + 1).padStart(2, '0')}`;
+    const monthPosts = postsData.filter(p => (p.scheduledDate || '').startsWith(monthPrefix));
+
+    const cadenceStatsHtml = CHANNELS.map(ch => {
+      const count = monthPosts.filter(p => {
+        const pChan = (p.channel || '').toLowerCase();
+        return pChan.includes(ch.id) || pChan.includes(ch.name.toLowerCase()) || (ch.id === 'client' && pChan.includes('client'));
+      }).length;
+
+      const target = ch.targetPerWeek * 4; // Monthly target (~4 weeks)
+      const pct = Math.min(100, Math.round((count / target) * 100));
+      const statusColor = pct >= 80 ? '#10b981' : (pct >= 40 ? '#f59e0b' : '#ef4444');
+
+      return `
+        <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-subtle); border-radius:10px; padding:0.75rem 1rem; display:flex; flex-direction:column; gap:0.4rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span class="badge ${ch.badgeClass}" style="font-size:0.75rem; font-weight:800;">${escapeHTML(ch.name)}</span>
+            <span style="font-size:0.75rem; font-weight:800; color:${statusColor};">${count} / ${target} Posts (${pct}%)</span>
+          </div>
+          <div style="background:rgba(255,255,255,0.06); border-radius:4px; height:6px; overflow:hidden;">
+            <div style="width:${pct}%; background:${statusColor}; height:100%; transition:width 0.3s ease;"></div>
+          </div>
+          <div style="font-size:0.68rem; color:var(--text-dim); display:flex; justify-content:space-between;">
+            <span>Cadence: ${ch.targetPerWeek}× / week</span>
+            <span>${ch.subs}</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    board.innerHTML = `
+      <div style="display:flex; flex-direction:column; gap:1.5rem;">
+        
+        <!-- Calendar Navigation Header -->
+        <div style="display:flex; justify-content:space-between; align-items:center; background:var(--surface-card, #14141e); border:1px solid var(--border-subtle); border-radius:14px; padding:0.9rem 1.2rem; flex-wrap:wrap; gap:0.8rem;">
+          <div style="display:flex; align-items:center; gap:0.8rem;">
+            <h2 style="margin:0; font-size:1.35rem; font-family:var(--font-heading); color:#fff;">
+              📅 ${currentMonthName} ${year}
+            </h2>
+            <span class="badge badge-purple" style="font-size:0.75rem;">${filteredPosts.length} posts filtered</span>
+          </div>
+          <div style="display:flex; gap:0.5rem; align-items:center;">
+            <button class="btn-secondary btn-sm" onclick="window.SOCIAL_MODULE.prevMonth()">← Prev Month</button>
+            <button class="btn-secondary btn-sm" onclick="window.SOCIAL_MODULE.todayMonth()">Today</button>
+            <button class="btn-secondary btn-sm" onclick="window.SOCIAL_MODULE.nextMonth()">Next Month →</button>
+          </div>
+        </div>
+
+        <!-- Day of Week Grid Headers -->
+        <div style="display:grid; grid-template-columns:repeat(7, 1fr); gap:0.6rem; text-align:center; font-weight:800; font-size:0.78rem; color:var(--text-muted); text-transform:uppercase;">
+          <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+        </div>
+
+        <!-- 7-Column Day Cells Grid -->
+        <div style="display:grid; grid-template-columns:repeat(7, 1fr); gap:0.6rem;">
+          ${dayCellsHtml}
+        </div>
+
+        <!-- Channel Cadence & Frequency Tracker -->
+        <div style="background:var(--surface-card, #14141e); border:1px solid var(--border-subtle); border-radius:14px; padding:1.2rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; border-bottom:1px solid var(--border-subtle); padding-bottom:0.6rem;">
+            <div>
+              <h3 style="margin:0; font-size:1rem; color:#fff; font-family:var(--font-heading);">⚡ Monthly Channel Publishing Cadence & Frequency</h3>
+              <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.2rem;">Engine 5 video output targets vs actual scheduled/published content for ${currentMonthName}.</div>
+            </div>
+            <span class="badge badge-emerald">Engine 5 Scaling</span>
+          </div>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:1rem;">
+            ${cadenceStatsHtml}
+          </div>
+        </div>
+
       </div>
     `;
   }
@@ -599,7 +790,8 @@ window.APP_MODULES.social = async function(container) {
       if (Array.isArray(updatedPosts)) {
         postsData = updatedPosts;
         renderKPIs();
-        renderBoard();
+        if (activeViewMode === 'calendar') renderCalendar();
+        else renderBoard();
       }
     });
   }
@@ -608,13 +800,42 @@ window.APP_MODULES.social = async function(container) {
     reload() {
       loadInitialData();
     },
+    switchView(mode) {
+      activeViewMode = mode;
+      const btnK = document.getElementById('btnViewKanban');
+      const btnC = document.getElementById('btnViewCalendar');
+      if (btnK) {
+        btnK.style.background = mode === 'kanban' ? 'rgba(255,255,255,0.15)' : 'transparent';
+        btnK.style.color = mode === 'kanban' ? '#fff' : 'var(--text-muted)';
+      }
+      if (btnC) {
+        btnC.style.background = mode === 'calendar' ? 'rgba(255,255,255,0.15)' : 'transparent';
+        btnC.style.color = mode === 'calendar' ? '#fff' : 'var(--text-muted)';
+      }
+      if (mode === 'calendar') renderCalendar();
+      else renderBoard();
+    },
+    prevMonth() {
+      currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1);
+      renderCalendar();
+    },
+    nextMonth() {
+      currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1);
+      renderCalendar();
+    },
+    todayMonth() {
+      currentCalendarDate = new Date();
+      renderCalendar();
+    },
     filterPlatform(plat) {
       activePlatformFilter = plat;
-      renderBoard();
+      if (activeViewMode === 'calendar') renderCalendar();
+      else renderBoard();
     },
     filterChannel(chan) {
       activeChannelFilter = chan;
-      renderBoard();
+      if (activeViewMode === 'calendar') renderCalendar();
+      else renderBoard();
     },
     onChannelChange(channelKey) {
       updateCategoryOptions(channelKey);
@@ -788,6 +1009,11 @@ window.APP_MODULES.social = async function(container) {
       }
 
       if (window.showToast) window.showToast('⚡ Post fields auto-filled from AI brief!', 'success');
+    },
+    async openPostModalWithDate(dateStr) {
+      await this.openPostModal();
+      const dateEl = document.getElementById('spDate');
+      if (dateEl && dateStr) dateEl.value = dateStr;
     },
     async openPostModal() {
       if (clientsData.length === 0) {
@@ -977,5 +1203,6 @@ window.APP_MODULES.social = async function(container) {
 
   await loadInitialData();
 };
+
 
 
