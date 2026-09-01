@@ -71,6 +71,13 @@ const btnSendNextLead = document.getElementById('btnSendNextLead');
 const btnResetTemplate = document.getElementById('btnResetTemplate');
 const chkAutoSendWhatsApp = document.getElementById('chkAutoSendWhatsApp');
 
+// Social Publisher Elements
+const socialPostsListContainer = document.getElementById('socialPostsListContainer');
+const socialApprovedCount = document.getElementById('socialApprovedCount');
+const socialQueueCountLabel = document.getElementById('socialQueueCountLabel');
+const btnRefreshSocialQueue = document.getElementById('btnRefreshSocialQueue');
+const btnMarkAllPosted = document.getElementById('btnMarkAllPosted');
+
 // Initialize
 document.addEventListener('DOMContentLoaded', async () => {
   setupTabs();
@@ -80,6 +87,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   renderQueueList();
   renderHarvestGrid();
   renderLeadsList();
+  fetchSocialPostsQueue();
 });
 
 // Tab Switcher
@@ -201,6 +209,25 @@ Firoz`;
       renderLeadsList();
       saveState();
       showToast('🔄 All lead statuses reset to Pending!');
+    });
+  }
+
+  // Social Publisher Listeners
+  if (btnRefreshSocialQueue) {
+    btnRefreshSocialQueue.addEventListener('click', () => {
+      fetchSocialPostsQueue();
+      showToast('🔄 Syncing approved posts from GRO10X OS...');
+    });
+  }
+
+  if (btnMarkAllPosted) {
+    btnMarkAllPosted.addEventListener('click', () => {
+      if (STATE.socialPosts && STATE.socialPosts.length > 0) {
+        const topPost = STATE.socialPosts[0];
+        markPostAsPosted(topPost.id);
+      } else {
+        showToast('No approved posts in queue.', 'error');
+      }
     });
   }
 }
@@ -530,3 +557,170 @@ function showToast(msg, type = 'success') {
   t.style.color = type === 'error' ? '#fff' : '#070b12';
   setTimeout(() => { t.style.display = 'none'; }, 3000);
 }
+
+// ── SOCIAL MEDIA PUBLISHER (ENGINE 5) ──
+async function fetchSocialPostsQueue() {
+  try {
+    let posts = [];
+    const endpoints = [
+      'https://gro10x.ai/api/posts',
+      'https://gro10x-ai.vercel.app/api/posts',
+      'http://localhost:3000/api/posts'
+    ];
+
+    for (const url of endpoints) {
+      try {
+        const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data)) {
+            posts = data;
+            break;
+          }
+        }
+      } catch (e) {}
+    }
+
+    // Filter for approved / scheduled posts
+    const approvedPosts = posts.filter(p => p.status === 'Approved' || p.status === 'Scheduled');
+    STATE.socialPosts = approvedPosts;
+
+    if (socialApprovedCount) socialApprovedCount.textContent = approvedPosts.length;
+    if (socialQueueCountLabel) socialQueueCountLabel.textContent = `${approvedPosts.length} Approved`;
+
+    renderSocialPostsQueue();
+  } catch (err) {
+    console.error('[Social Publisher] Queue fetch error:', err);
+    renderSocialPostsQueue();
+  }
+}
+
+function renderSocialPostsQueue() {
+  if (!socialPostsListContainer) return;
+  const list = STATE.socialPosts || [];
+
+  if (list.length === 0) {
+    socialPostsListContainer.innerHTML = `
+      <div class="empty-state" style="padding: 20px; text-align: center; color: var(--text-muted); font-size: 11px;">
+        No approved posts in queue. Approve posts in Social Planner first.
+      </div>
+    `;
+    return;
+  }
+
+  socialPostsListContainer.innerHTML = list.map(p => {
+    const platIcon = p.platform === 'YouTube' ? '🎬' : (p.platform === 'TikTok' ? '🎵' : (p.platform === 'Instagram' ? '📸' : '📘'));
+    const isOverdue = p.scheduledDate && new Date(p.scheduledDate) < new Date();
+
+    return `
+      <div class="queue-item" style="display: flex; flex-direction: column; gap: 6px; padding: 10px; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 8px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span class="badge" style="background: rgba(6,182,212,0.15); color: #06b6d4; font-size: 10px; font-weight: 800;">
+            ${escapeHTML(p.channel || 'Grow Bangla')}
+          </span>
+          <span style="font-size: 10px; color: ${isOverdue ? '#ef4444' : 'var(--text-muted)'}; font-weight: 700;">
+            📅 ${escapeHTML(p.scheduledDate || 'Today')} ${p.scheduledTime || ''}
+          </span>
+        </div>
+
+        <div style="font-size: 12px; font-weight: 800; color: #fff; line-height: 1.3;">
+          ${platIcon} ${escapeHTML(p.title)}
+        </div>
+
+        <div style="font-size: 11px; color: var(--text-muted); line-height: 1.4; max-height: 48px; overflow: hidden; text-overflow: ellipsis; white-space: pre-wrap;">
+          ${escapeHTML(p.caption || 'No copy')}
+        </div>
+
+        ${p.firstComment ? `
+          <div style="background: rgba(168,85,247,0.08); border-radius: 4px; padding: 4px 6px; font-size: 10px; color: #d8b4fe;">
+            💬 1st Comment: ${escapeHTML(p.firstComment.slice(0, 60))}...
+          </div>
+        ` : ''}
+
+        <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 6px; margin-top: 4px;">
+          <button class="btn-primary" style="font-size: 10px; padding: 6px;" onclick="window.dispatchSocialPost('${p.id}')">
+            🚀 Open & Auto-Fill
+          </button>
+          <button class="btn-secondary" style="font-size: 10px; padding: 6px;" onclick="window.copyAndMarkPosted('${p.id}')">
+            📋 Mark Posted
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function escapeHTML(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+window.dispatchSocialPost = async function(postId) {
+  const post = (STATE.socialPosts || []).find(p => p.id === postId);
+  if (!post) return;
+
+  let targetUrl = 'https://business.facebook.com/';
+  if (post.platform === 'YouTube') {
+    targetUrl = 'https://studio.youtube.com/';
+  } else if (post.platform === 'TikTok') {
+    targetUrl = 'https://www.tiktok.com/creator-center/upload';
+  }
+
+  // Copy copy to clipboard
+  const fullText = [post.caption, post.firstComment ? `\n1st Comment:\n${post.firstComment}` : '', post.hashtags].filter(Boolean).join('\n\n');
+  navigator.clipboard.writeText(fullText);
+
+  // Open target studio in new tab
+  const tab = await chrome.tabs.create({ url: targetUrl });
+  showToast(`🚀 Opening ${post.platform} Studio! Post copy copied to clipboard.`);
+
+  // Send payload to content script in active tab after load
+  setTimeout(() => {
+    if (tab && tab.id) {
+      chrome.tabs.sendMessage(tab.id, {
+        type: 'AUTO_PUBLISH_SOCIAL_POST',
+        payload: post
+      }).catch(() => {});
+    }
+  }, 2500);
+};
+
+window.copyAndMarkPosted = async function(postId) {
+  const post = (STATE.socialPosts || []).find(p => p.id === postId);
+  if (!post) return;
+
+  const fullText = [post.caption, post.firstComment ? `\n1st Comment:\n${post.firstComment}` : '', post.hashtags].filter(Boolean).join('\n\n');
+  navigator.clipboard.writeText(fullText);
+
+  await markPostAsPosted(postId);
+  showToast('📋 Copied & marked as Posted ✅ in GRO10X OS!');
+};
+
+async function markPostAsPosted(postId) {
+  try {
+    const endpoints = [
+      `https://gro10x.ai/api/posts/${postId}/posted`,
+      `https://gro10x-ai.vercel.app/api/posts/${postId}/posted`,
+      `http://localhost:3000/api/posts/${postId}/posted`
+    ];
+
+    for (const url of endpoints) {
+      try {
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({})
+        });
+        if (res.ok) break;
+      } catch (e) {}
+    }
+
+    STATE.socialPosts = (STATE.socialPosts || []).filter(p => p.id !== postId);
+    if (socialApprovedCount) socialApprovedCount.textContent = STATE.socialPosts.length;
+    if (socialQueueCountLabel) socialQueueCountLabel.textContent = `${STATE.socialPosts.length} Approved`;
+    renderSocialPostsQueue();
+  } catch (err) {
+    console.error('[Social Publisher] markPostAsPosted error:', err);
+  }
+}
+

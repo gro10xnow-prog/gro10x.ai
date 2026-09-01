@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "GRO10X DBM Copilot",
-  "version": "0.1.1",
-  "description": "Batch AI prompting, asset harvesting, and DBM Studio synchronization copilot for GRO10X Digital Brand Managers.",
+  "version": "0.2.0",
+  "description": "Batch AI prompting, asset harvesting, relationship WhatsApp outreach, and Social Media Publisher for GRO10X.",
   "permissions": [
     "sidePanel",
     "storage",
@@ -11,7 +11,11 @@
     "scripting"
   ],
   "host_permissions": [
-    "<all_urls>"
+    "<all_urls>",
+    "https://*.facebook.com/*",
+    "https://*.youtube.com/*",
+    "https://gro10x-ai.vercel.app/*",
+    "https://gro10x.ai/*"
   ],
   "background": {
     "service_worker": "service-worker.js"

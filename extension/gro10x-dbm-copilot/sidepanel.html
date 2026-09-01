@@ -25,6 +25,7 @@
     <!-- Navigation Tabs -->
     <nav class="nav-tabs">
       <button class="tab-btn active" data-tab="outreach">💬 WhatsApp</button>
+      <button class="tab-btn" data-tab="social">📱 Social (<span id="socialApprovedCount">0</span>)</button>
       <button class="tab-btn" data-tab="generator">🚀 DBM Studio</button>
       <button class="tab-btn" data-tab="queue">📋 Prompts</button>
       <button class="tab-btn" data-tab="harvest">📦 Harvest (<span id="harvestCount">0</span>)</button>
@@ -113,6 +114,43 @@ Firoz</textarea>
 
         <div class="queue-list" id="leadsListContainer" style="max-height: 240px;">
           <!-- Dynamically populated leads -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab: 📱 Social Media Publisher (Engine 5) -->
+    <section class="tab-content" id="tab-social">
+      <div class="card" style="border-left: 3px solid var(--color-cyan);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+          <strong style="font-size: 11px; color: var(--color-cyan); text-transform: uppercase;">🚀 Engine 5 Publisher</strong>
+          <span class="badge" style="background: rgba(6,182,212,0.15); color: #06b6d4;">Auto-Poster</span>
+        </div>
+        <div style="font-size: 11px; font-weight: 700; color: #fff;">
+          Publish Approved Posts to Facebook & YouTube
+        </div>
+      </div>
+
+      <div class="controls-card card">
+        <div class="progress-labels">
+          <span>Approved Queue</span>
+          <span id="socialQueueCountLabel" style="color: var(--color-cyan);">0 Approved</span>
+        </div>
+        <div style="display: flex; gap: 6px; margin-top: 8px;">
+          <button class="btn-primary" id="btnRefreshSocialQueue" style="flex: 1;">
+            🔄 Sync from GRO10X OS
+          </button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <label>📋 Approved Post Queue</label>
+          <button class="btn-text" id="btnMarkAllPosted" style="color: var(--color-primary);">✅ Mark Top Posted</button>
+        </div>
+        <div class="queue-list" id="socialPostsListContainer" style="max-height: 320px;">
+          <div class="empty-state" style="padding: 20px; text-align: center; color: var(--text-muted); font-size: 11px;">
+            No approved posts in queue. Approve posts in Social Planner first.
+          </div>
         </div>
       </div>
     </section>

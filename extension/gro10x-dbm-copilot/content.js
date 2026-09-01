@@ -158,6 +158,68 @@
       sendResponse({ received: true, status: 'started' });
       return true;
     }
+
+    if (type === 'AUTO_PUBLISH_SOCIAL_POST') {
+      const post = payload || {};
+      const fullText = [post.caption, post.firstComment ? `\n1st Comment:\n${post.firstComment}` : '', post.hashtags].filter(Boolean).join('\n\n');
+
+      // Floating Action Banner
+      const banner = document.createElement('div');
+      banner.id = 'gro10x-social-auto-banner';
+      banner.style.cssText = `
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #0f172a;
+        border: 2px solid #06b6d4;
+        color: #fff;
+        padding: 12px 20px;
+        border-radius: 12px;
+        font-family: system-ui, sans-serif;
+        font-size: 13px;
+        z-index: 99999999;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.8);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      `;
+
+      banner.innerHTML = `
+        <span style="font-size: 18px;">🚀</span>
+        <div>
+          <strong style="color: #06b6d4;">GRO10X Copilot Ready:</strong>
+          <span>${post.channel || 'Grow Bangla'} · ${post.title ? post.title.slice(0, 35) : 'Post'}</span>
+        </div>
+        <button id="gro10x-paste-btn" style="background: #06b6d4; color: #070b12; border: none; font-weight: 800; padding: 6px 12px; border-radius: 6px; cursor: pointer;">
+          ⚡ Paste to Composer
+        </button>
+        <button id="gro10x-close-banner-btn" style="background: transparent; border: none; color: #94a3b8; cursor: pointer; font-size: 14px;">✕</button>
+      `;
+
+      document.body.appendChild(banner);
+
+      document.getElementById('gro10x-close-banner-btn')?.addEventListener('click', () => banner.remove());
+      document.getElementById('gro10x-paste-btn')?.addEventListener('click', () => {
+        // Try locating composer textarea / contenteditable on Facebook / YouTube
+        const composer = document.querySelector('div[role="textbox"], textarea[aria-label*="What\'s on your mind"], textarea[placeholder*="Description"], textarea, div[contenteditable="true"]');
+        if (composer) {
+          composer.focus();
+          if (composer.tagName === 'TEXTAREA' || composer.tagName === 'INPUT') {
+            composer.value = fullText;
+            composer.dispatchEvent(new Event('input', { bubbles: true }));
+          } else {
+            document.execCommand('insertText', false, fullText);
+          }
+        }
+        navigator.clipboard.writeText(fullText);
+        banner.innerHTML = `<span style="font-size: 18px;">✅</span> <strong>Post copy pasted & copied to clipboard!</strong>`;
+        setTimeout(() => banner.remove(), 3500);
+      });
+
+      sendResponse({ received: true });
+      return true;
+    }
   });
 
   initWhatsAppAutoSender();
