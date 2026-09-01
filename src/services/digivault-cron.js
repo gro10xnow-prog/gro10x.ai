@@ -115,12 +115,53 @@ async function runDigiVaultRenewalCheck() {
     } catch (e) {}
   }
 
-  console.log(`✅ [DigiVault Retention Cron] Finished. ${dueOrders.length} due, ${remindersSent} reminders dispatched.`);
+  // 4. Prune Abandoned Bot Sessions
+  let prunedSessionsCount = 0;
+  try {
+    const pruneRes = await pruneAbandonedBotSessions(7);
+    prunedSessionsCount = pruneRes.deleted || 0;
+  } catch (e) {}
+
+  console.log(`✅ [DigiVault Retention Cron] Finished. ${dueOrders.length} due, ${remindersSent} reminders dispatched, ${prunedSessionsCount} stale sessions pruned.`);
   return {
     success: true,
     processed: orders.length,
     remindersSent,
-    dueOrders
+    dueOrders,
+    prunedSessions: prunedSessionsCount
+  };
+}
+
+/**
+ * Prunes abandoned or inactive Telegram bot sessions older than maxAgeDays.
+ * @param {number} maxAgeDays Default is 7 days
+ * @returns {Promise<{ success: boolean, deleted: number }>}
+ */
+async function pruneAbandonedBotSessions(maxAgeDays = 7) {
+  console.log(`🧹 [DigiVault Cron] Pruning bot sessions older than ${maxAgeDays} days...`);
+  let deletedCount = 0;
+
+  if (isSupabaseConfigured()) {
+    try {
+      const cutoff = new Date(Date.now() - maxAgeDays * 24 * 60 * 60 * 1000).toISOString();
+      const { data, error } = await supabase
+        .from('digi_bot_sessions')
+        .delete()
+        .lt('updated_at', cutoff)
+        .select();
+
+      if (!error && data) {
+        deletedCount = data.length;
+      }
+    } catch (err) {
+      console.error('❌ [DigiVault Cron] Session pruning error:', err.message);
+    }
+  }
+
+  console.log(`✅ [DigiVault Cron] Pruned ${deletedCount} abandoned bot sessions.`);
+  return {
+    success: true,
+    deleted: deletedCount
   };
 }
 
@@ -148,5 +189,6 @@ function initDigiVaultCron() {
 
 module.exports = {
   runDigiVaultRenewalCheck,
+  pruneAbandonedBotSessions,
   initDigiVaultCron
 };

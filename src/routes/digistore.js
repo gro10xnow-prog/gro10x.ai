@@ -1690,11 +1690,18 @@ router.post('/orders/:id/payment-proof', upload.single('screenshot'), asyncHandl
   return ok(res, { success: true, proofUrl });
 }));
 
-// ── 9. Automated Retention Cron Trigger Route ──────────────────────────────────
+// ── 9. Automated Retention & Maintenance Cron Trigger Routes ───────────────────
 router.post('/cron/trigger-renewals', requireAuth, requireManager, asyncHandler(async (req, res) => {
   const { runDigiVaultRenewalCheck } = require('../services/digivault-cron');
   const result = await runDigiVaultRenewalCheck();
   return ok(res, result);
+}));
+
+router.post('/cron/prune-sessions', requireAuth, requireManager, asyncHandler(async (req, res) => {
+  const { pruneAbandonedBotSessions } = require('../services/digivault-cron');
+  const { maxAgeDays = 7 } = req.body;
+  const result = await pruneAbandonedBotSessions(Number(maxAgeDays));
+  return ok(res, result, `Pruned ${result.deleted || 0} abandoned bot sessions`);
 }));
 
 // ── 10. Customer CRM & History Endpoints ─────────────────────────────────────
