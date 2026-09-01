@@ -1,7 +1,7 @@
 /**
  * public/app/modules/social.js
  * Social Media Planner & Engine 5 Content Command Center
- * v3.0 — Channel-Aware Rebuild (Phase 1)
+ * v4.0 — Channel-Aware + AI Content Brief Generator + AI QC Engine (Phase 1 & Phase 2)
  * Channels: Grow Bangla, PILUTICS, Bong Hits, GRO10X Brand, Client Accounts
  * 5-Stage Kanban: Drafts → Internal QC → Review → Approved → Posted
  */
@@ -12,6 +12,7 @@ window.APP_MODULES.social = async function(container) {
   let clientsData = [];
   let isLoading = true;
   let hasError = false;
+  let activeGeneratedBrief = null;
 
   const CHANNELS = [
     {
@@ -101,6 +102,40 @@ window.APP_MODULES.social = async function(container) {
     };
   }
 
+  function evaluatePostQC(post) {
+    const warnings = [];
+    const plat = post.platform || 'Facebook';
+    const limit = PLATFORM_LIMITS[plat] || 5000;
+    const captionLen = (post.caption || '').length;
+
+    if (captionLen === 0) {
+      warnings.push('Missing caption / copy');
+    } else if (captionLen > limit) {
+      warnings.push(`Caption exceeds ${plat} limit (${captionLen}/${limit})`);
+    }
+
+    if (plat === 'Instagram') {
+      const tags = (post.hashtags || '').split(/[,\s#]+/).filter(Boolean);
+      if (tags.length > 30) warnings.push(`Instagram hashtag limit exceeded (${tags.length}/30)`);
+      if (!post.firstComment || post.firstComment.trim().length === 0) {
+        warnings.push('Missing Instagram 1st comment stack');
+      }
+    }
+
+    const firstLine = (post.caption || '').split('\n')[0].trim();
+    if (firstLine.length > 0 && firstLine.split(/\s+/).length < 3) {
+      warnings.push('Hook is very short (<3 words)');
+    }
+
+    if (warnings.length === 0) {
+      return { status: 'pass', label: '🟢 All QC Passed', color: '#10b981', bg: 'rgba(16,185,129,0.1)', border: 'rgba(16,185,129,0.3)', warnings };
+    } else if (warnings.length <= 2) {
+      return { status: 'warn', label: `🟡 ${warnings.length} QC Notice${warnings.length > 1 ? 's' : ''}`, color: '#f59e0b', bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.3)', warnings };
+    } else {
+      return { status: 'fail', label: `🔴 ${warnings.length} Fixes Needed`, color: '#ef4444', bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.3)', warnings };
+    }
+  }
+
   async function loadInitialData() {
     isLoading = true;
     hasError = false;
@@ -137,7 +172,7 @@ window.APP_MODULES.social = async function(container) {
             </span>
           </div>
           <div style="font-size: 0.88rem; color: var(--text-muted); margin-top:0.25rem;">
-            Channel-aware content pipeline for Grow Bangla, PILUTICS, Bong Hits, GRO10X brand, and client retainers.
+            Channel-aware content pipeline with Gemini AI Brief Generator & QC review engine.
           </div>
         </div>
         <div style="display:flex; gap:0.6rem; align-items:center;">
@@ -187,11 +222,11 @@ window.APP_MODULES.social = async function(container) {
 
       <!-- Draft / Edit Post Modal -->
       <div class="modal-overlay" id="postModal">
-        <div class="modal-box" style="max-width: 580px; max-height: 90vh; overflow-y:auto;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1.2rem; border-bottom:1px solid var(--border-subtle); padding-bottom:0.8rem;">
+        <div class="modal-box" style="max-width: 640px; max-height: 92vh; overflow-y:auto;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1rem; border-bottom:1px solid var(--border-subtle); padding-bottom:0.8rem;">
             <div>
               <h2 style="color:#fff; font-size:1.25rem; margin:0; font-family:var(--font-heading);" id="postModalTitle">📱 Draft New Social Post</h2>
-              <div style="font-size:0.78rem; color:var(--text-muted); margin-top:0.2rem;">Configure channel, category, copy, and scheduling dispatches.</div>
+              <div style="font-size:0.78rem; color:var(--text-muted); margin-top:0.2rem;">AI-assisted content creation for Engine 5 and agency brands.</div>
             </div>
             <button onclick="window.SOCIAL_MODULE.closePostModal()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
           </div>
@@ -252,10 +287,20 @@ window.APP_MODULES.social = async function(container) {
               </div>
             </div>
 
-            <!-- Post Title / Topic -->
+            <!-- Post Title / Topic + AI Button -->
             <div class="form-group">
-              <label class="form-label">Post Title / Content Topic *</label>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.3rem;">
+                <label class="form-label" style="margin:0;">Post Title / Content Topic *</label>
+                <button type="button" class="btn-primary btn-sm" id="btnAiBrief" style="font-size:0.75rem; padding:0.25rem 0.65rem; background:linear-gradient(135deg, #a855f7, #6366f1); border:none;" onclick="window.SOCIAL_MODULE.generateAIBrief()">
+                  ✨ Generate AI Brief
+                </button>
+              </div>
               <input type="text" id="spTitle" class="input-text" placeholder="e.g. 5 Common Pronunciation Mistakes Bangalis Make" required>
+            </div>
+
+            <!-- AI Brief Result Panel (Collapsible) -->
+            <div id="aiBriefContainer" style="display:none; background:rgba(168,85,247,0.06); border:1px solid rgba(168,85,247,0.3); border-radius:12px; padding:1rem; flex-direction:column; gap:0.75rem;">
+              <!-- Populated via JavaScript on AI generation -->
             </div>
 
             <!-- Caption / Copywriting -->
@@ -434,6 +479,7 @@ window.APP_MODULES.social = async function(container) {
       const isRevision = p.status === 'Revision Requested';
       const hasMedia = Array.isArray(p.mediaUrls) && p.mediaUrls.length > 0;
       const mediaThumb = hasMedia ? p.mediaUrls[0] : null;
+      const qc = evaluatePostQC(p);
 
       return `
         <div class="post-card" style="background:rgba(255,255,255,0.03); border:1px solid var(--border-subtle); border-radius:12px; padding:0.9rem; display:flex; flex-direction:column; gap:0.6rem; transition:transform 0.15s ease, border-color 0.15s ease;">
@@ -455,6 +501,14 @@ window.APP_MODULES.social = async function(container) {
           <div style="font-weight:800; color:var(--text-primary); font-size:0.92rem; line-height:1.35;">
             ${escapeHTML(p.title)}
           </div>
+
+          <!-- Internal QC Evaluation Badge (shown in Internal QC stage) -->
+          ${stageKey === 'internal' ? `
+            <div style="background:${qc.bg}; border:1px solid ${qc.border}; border-radius:6px; padding:0.35rem 0.5rem; font-size:0.72rem; color:${qc.color}; display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-weight:800;">${qc.label}</span>
+              ${qc.warnings.length > 0 ? `<span style="font-size:0.65rem; color:var(--text-muted); cursor:help;" title="${escapeHTML(qc.warnings.join(' • '))}">ℹ️ Details</span>` : ''}
+            </div>
+          ` : ''}
 
           <!-- Media Thumbnail -->
           ${mediaThumb ? `
@@ -607,6 +661,134 @@ window.APP_MODULES.social = async function(container) {
       navigator.clipboard.writeText(text);
       if (window.showToast) window.showToast('📋 Post copy and tags copied to clipboard!', 'success');
     },
+    async generateAIBrief() {
+      const btn = document.getElementById('btnAiBrief');
+      const container = document.getElementById('aiBriefContainer');
+      const channelKey = document.getElementById('spChannel')?.value || 'grow-bangla';
+      const channelObj = getChannelConfig(channelKey);
+      const contentCategory = document.getElementById('spCategory')?.value || 'English Lesson';
+      const platform = document.getElementById('spPlatform')?.value || 'YouTube';
+      const topic = document.getElementById('spTitle')?.value || '';
+
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '✨ Generating Brief...';
+      }
+
+      if (container) {
+        container.style.display = 'flex';
+        container.innerHTML = `
+          <div style="text-align:center; padding:1rem; color:var(--purple-light); font-size:0.85rem;">
+            <div style="font-size:1.4rem; margin-bottom:0.3rem;">🤖</div>
+            Gemini AI crafting structured content blueprint for <strong>${escapeHTML(channelObj.name)}</strong>...
+          </div>
+        `;
+      }
+
+      try {
+        const res = await APP_API.post('/ai/social-brief', {
+          channel: channelObj.name,
+          contentCategory,
+          platform,
+          topic
+        });
+
+        if (res && res.success && res.brief) {
+          activeGeneratedBrief = res.brief;
+          this.renderAIBriefPanel(res.brief, res.generatedBy);
+          if (window.showToast) window.showToast('✨ AI Content Brief generated successfully!', 'success');
+        } else {
+          throw new Error((res && res.error) || 'Failed to generate brief');
+        }
+      } catch (err) {
+        console.error('[AI Brief] Error:', err);
+        if (container) {
+          container.innerHTML = `
+            <div style="color:#fca5a5; font-size:0.82rem; padding:0.5rem;">
+              ⚠️ AI generation error: ${escapeHTML(err.message)}
+            </div>
+          `;
+        }
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = '✨ Generate AI Brief';
+        }
+      }
+    },
+    renderAIBriefPanel(brief, generatedBy) {
+      const container = document.getElementById('aiBriefContainer');
+      if (!container) return;
+
+      container.style.display = 'flex';
+      container.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(168,85,247,0.2); padding-bottom:0.4rem;">
+          <span style="font-size:0.8rem; font-weight:800; color:#d8b4fe;">
+            ✨ AI Content Blueprint (${escapeHTML(generatedBy || 'gemini')})
+          </span>
+          <button type="button" class="btn-primary btn-sm" style="font-size:0.7rem; padding:0.2rem 0.5rem; background:#10b981; border:none;" onclick="window.SOCIAL_MODULE.applyAllBriefFields()">
+            ⚡ Auto-Fill Post Form
+          </button>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr; gap:0.5rem; font-size:0.78rem;">
+          <div>
+            <strong style="color:#ffffff;">🎯 Viral Hook:</strong>
+            <div style="color:#a7f3d0; margin-top:0.15rem;">"${escapeHTML(brief.hook)}"</div>
+          </div>
+          <div>
+            <strong style="color:#ffffff;">📐 Angle:</strong>
+            <span style="color:var(--text-muted);">${escapeHTML(brief.angle)}</span>
+          </div>
+          ${Array.isArray(brief.keyPoints) && brief.keyPoints.length > 0 ? `
+            <div>
+              <strong style="color:#ffffff;">🔑 Key Points:</strong>
+              <ul style="margin:0.2rem 0 0 1.2rem; padding:0; color:var(--text-secondary);">
+                ${brief.keyPoints.map(p => `<li>${escapeHTML(p)}</li>`).join('')}
+              </ul>
+            </div>
+          ` : ''}
+          <div style="background:rgba(0,0,0,0.25); border-radius:6px; padding:0.5rem; border:1px solid rgba(255,255,255,0.05);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.2rem;">
+              <strong style="color:#ffffff;">🎬 Visual Brief (CapCut/Canva):</strong>
+              <button type="button" class="btn-ghost btn-sm" style="font-size:0.65rem; padding:0.1rem 0.4rem;" onclick="navigator.clipboard.writeText('${escapeHTML(brief.visualBrief).replace(/'/g, "\\'")}'); if(window.showToast) window.showToast('Visual brief copied!','success');">📋 Copy</button>
+            </div>
+            <div style="color:var(--text-muted); font-size:0.74rem;">${escapeHTML(brief.visualBrief)}</div>
+          </div>
+          <div style="background:rgba(0,0,0,0.25); border-radius:6px; padding:0.5rem; border:1px solid rgba(255,255,255,0.05);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.2rem;">
+              <strong style="color:#ffffff;">🎙️ 30s Talking Script:</strong>
+              <button type="button" class="btn-ghost btn-sm" style="font-size:0.65rem; padding:0.1rem 0.4rem;" onclick="navigator.clipboard.writeText('${escapeHTML(brief.voiceNote).replace(/'/g, "\\'")}'); if(window.showToast) window.showToast('Voice script copied!','success');">📋 Copy</button>
+            </div>
+            <div style="color:var(--text-muted); font-size:0.74rem;">${escapeHTML(brief.voiceNote)}</div>
+          </div>
+        </div>
+      `;
+    },
+    applyAllBriefFields() {
+      if (!activeGeneratedBrief) return;
+      const b = activeGeneratedBrief;
+      const captionEl = document.getElementById('spCaption');
+      const firstCommentEl = document.getElementById('spFirstComment');
+      const hashtagsEl = document.getElementById('spHashtags');
+      const titleEl = document.getElementById('spTitle');
+
+      if (captionEl && b.caption) {
+        captionEl.value = b.caption;
+        this.updateCharCount(captionEl);
+      }
+      if (firstCommentEl && b.firstComment) {
+        firstCommentEl.value = b.firstComment;
+      }
+      if (hashtagsEl && b.hashtags) {
+        hashtagsEl.value = b.hashtags;
+      }
+      if (titleEl && (!titleEl.value || titleEl.value.trim().length === 0) && b.hook) {
+        titleEl.value = b.hook;
+      }
+
+      if (window.showToast) window.showToast('⚡ Post fields auto-filled from AI brief!', 'success');
+    },
     async openPostModal() {
       if (clientsData.length === 0) {
         try {
@@ -615,6 +797,10 @@ window.APP_MODULES.social = async function(container) {
         } catch(e) {}
       }
       populateClientDropdown();
+      activeGeneratedBrief = null;
+      const briefBox = document.getElementById('aiBriefContainer');
+      if (briefBox) { briefBox.style.display = 'none'; briefBox.innerHTML = ''; }
+
       document.getElementById('spEditId').value = '';
       document.getElementById('postModalTitle').textContent = '📱 Draft New Social Post';
       document.getElementById('spTitle').value = '';
@@ -640,6 +826,10 @@ window.APP_MODULES.social = async function(container) {
         } catch(e) {}
       }
       populateClientDropdown();
+      activeGeneratedBrief = null;
+      const briefBox = document.getElementById('aiBriefContainer');
+      if (briefBox) { briefBox.style.display = 'none'; briefBox.innerHTML = ''; }
+
       const post = postsData.find(p => p.id === id);
       if (!post) return;
 
@@ -787,4 +977,5 @@ window.APP_MODULES.social = async function(container) {
 
   await loadInitialData();
 };
+
 

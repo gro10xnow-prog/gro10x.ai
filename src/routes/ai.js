@@ -632,6 +632,93 @@ router.post('/mockup-prompts', requireAuth, async (req, res) => {
   }
 });
 
+// POST /api/ai/social-brief — Engine 5 Structured Content Blueprint Generator
+router.post('/social-brief', requireAuth, async (req, res) => {
+  const { channel, contentCategory, platform, topic } = req.body;
+  const chanName = channel || 'Grow Bangla';
+  const category = contentCategory || 'English Lesson';
+  const plat = platform || 'YouTube';
+  const postTopic = topic || `${category} on ${chanName}`;
+
+  const deterministicFallback = {
+    hook: `Stop making this mistake in ${category}! 🛑`,
+    angle: `Direct, high-retention breakdown tailored for ${chanName} audience.`,
+    keyPoints: [
+      `Break down the most common misconception in ${category}`,
+      `Provide an immediate, actionable correction with real examples`,
+      `Deliver a memorable mnemonic or takeaway rule`
+    ],
+    caption: `🔥 Quick ${category} breakdown for you!\n\nIf you've ever struggled with this, you are not alone. Here is the exact way to get it right every single time.\n\n📌 Save this post so you don't forget it!\n💬 Drop a comment below if you want Part 2!`,
+    hashtags: `#${chanName.replace(/[^a-zA-Z0-9]/g, '')} #${category.replace(/[^a-zA-Z0-9]/g, '')} #GRO10X #ContentScale #${plat}`,
+    firstComment: `#${chanName.replace(/[^a-zA-Z0-9]/g, '')} #LearnDaily #Bangladesh #Viral2026 #DailyTips`,
+    visualBrief: `Facecam intro with high-contrast text overlay on top 20% of screen. Split-screen visual example with green checkmark vs red X.`,
+    voiceNote: `Start immediately with the hook: "90% of people get this wrong..." (0-3s). Demonstrate the common flaw (3-12s). Reveal the correct method with energy (12-25s). Strong CTA: "Follow for daily breakthroughs" (25-30s).`
+  };
+
+  const key = process.env.GEMINI_API_KEY;
+  if (!key) {
+    return res.json({ success: true, brief: deterministicFallback, generatedBy: 'deterministic_template' });
+  }
+
+  const prompt =
+    `You are the Chief Content Strategist for GRO10X Media and Engine 5 (Video & Media Scale).\n` +
+    `Generate a high-converting, viral-optimized social media content brief for:\n` +
+    `• Channel: "${chanName}" (Context: Grow Bangla=Spoken English learning for Bangladeshis; PILUTICS=Geopolitics & travel; Bong Hits=Humor, pop culture & TikTok; GRO10X Brand=AI agency & B2B)\n` +
+    `• Content Category: "${category}"\n` +
+    `• Target Platform: "${plat}"\n` +
+    `• Topic/Concept: "${postTopic}"\n\n` +
+    `CRITICAL REQUIREMENTS:\n` +
+    `1. Hook: Punchy, stop-the-scroll opening (5-8 words max, highly emotional/curiosity-driven).\n` +
+    `2. Angle: Why the viewer must watch/read this right now.\n` +
+    `3. Key Points: Array of 3 specific, actionable points.\n` +
+    `4. Caption: Complete ready-to-post copy with emojis, line breaks, and clear CTA, formatted safely for ${plat}.\n` +
+    `5. Hashtags: 8-15 high-reach, targeted hashtags as a single string.\n` +
+    `6. First Comment: Hashtag stack and engagement starter for Instagram/TikTok first comment.\n` +
+    `7. Visual Brief: Concrete visual direction for CapCut/Canva/Facecam shooting (framing, props, on-screen text overlays).\n` +
+    `8. Voice Note: 30-second talking script broken down by timestamps (0-5s Hook, 5-20s Body, 20-30s CTA).\n\n` +
+    `Output STRICT JSON ONLY with keys: "hook", "angle", "keyPoints", "caption", "hashtags", "firstComment", "visualBrief", "voiceNote". Do NOT wrap in markdown code blocks.`;
+
+  try {
+    let resultText = null;
+    for (const model of MODELS) {
+      try {
+        resultText = await callSingle(model, prompt, key);
+        if (resultText) break;
+      } catch (e) {
+        console.warn('[Social Brief] Skip model ' + model + ':', e.message);
+      }
+    }
+
+    if (!resultText) throw new Error('No output from Gemini');
+
+    const cleaned = resultText.replace(/```json/gi, '').replace(/```/g, '').trim();
+    const parsed = JSON.parse(cleaned);
+
+    return res.json({
+      success: true,
+      brief: {
+        hook: parsed.hook || deterministicFallback.hook,
+        angle: parsed.angle || deterministicFallback.angle,
+        keyPoints: Array.isArray(parsed.keyPoints) ? parsed.keyPoints : deterministicFallback.keyPoints,
+        caption: parsed.caption || deterministicFallback.caption,
+        hashtags: parsed.hashtags || deterministicFallback.hashtags,
+        firstComment: parsed.firstComment || deterministicFallback.firstComment,
+        visualBrief: parsed.visualBrief || deterministicFallback.visualBrief,
+        voiceNote: parsed.voiceNote || deterministicFallback.voiceNote
+      },
+      generatedBy: 'gemini'
+    });
+  } catch (err) {
+    console.warn('[Social Brief Gemini fallback]:', err.message);
+    return res.json({
+      success: true,
+      brief: deterministicFallback,
+      generatedBy: 'deterministic_template'
+    });
+  }
+});
+
 router.get('/status', requireAuth, (req, res) => res.json({ success: true, configured: !!process.env.GEMINI_API_KEY, models: MODELS }));
 
 module.exports = router;
+
