@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GRO10X WhatsApp Friendly Outreach</title>
+  <style>
+    :root {
+      --bg: #070b12;
+      --card: #0e1726;
+      --border: rgba(255, 255, 255, 0.08);
+      --primary: #00df89;
+      --cyan: #06b6d4;
+      --wa: #25D366;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      padding: 24px;
+      line-height: 1.5;
+    }
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-top: 12px;
+    }
+    th, td {
+      padding: 12px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    th {
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      font-weight: 800;
+    }
+    .btn-wa {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--wa);
+      color: #fff;
+      text-decoration: none;
+      font-weight: 800;
+      font-size: 12px;
+      padding: 8px 14px;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+    .btn-wa:hover {
+      background: #20ba5c;
+      transform: translateY(-1px);
+    }
+    .badge {
+      font-size: 10px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 12px;
+      background: rgba(0,223,137,0.15);
+      color: var(--primary);
+    }
+    pre {
+      background: rgba(0,0,0,0.3);
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      color: #cbd5e1;
+      white-space: pre-wrap;
+      border: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <h1 style="font-size: 22px; font-weight: 900;">💬 GRO10X Relationship-First WhatsApp Outreach</h1>
+        <p style="color: var(--muted); font-size: 13px; margin-top: 4px;">
+          Product: <strong>Gemini Pro 18-Month Exclusive Partnership Access</strong> (No Cold Links)
+        </p>
+      </div>
+      <span class="badge">8 Leads Ready</span>
+    </header>
+
+    <div class="card">
+      <h4 style="color: var(--cyan); font-size: 12px; text-transform: uppercase; margin-bottom: 6px;">📝 Sample Message Preview:</h4>
+      <pre>Assalamu Alaikum Abu Jafar bhai,
+
+This is Firoz. I hope you and your family are doing great.
+
+I've been working with the Google AI ecosystem for the last 1.5 years and recently secured a special partnership access. I have a very limited number of 18-month Gemini Pro subscriptions available at a massive discount.
+
+Knowing you work as Commercial Documentation Manager, I thought this could be incredibly useful for drafting commercial documents, managing international emails, data verification, and your overall daily workflow. I also help professionals and teams integrate Google AI into their daily tasks to save hours of manual paperwork.
+
+If you or your team might be interested in the Gemini subscription or AI integration, just let me know! I'd love to share the details with you.
+
+Warm regards,
+Firoz</pre>
+    </div>
+
+    <div class="card">
+      <h3 style="font-size: 14px; font-weight: 800; color: var(--primary); text-transform: uppercase; margin-bottom: 8px;">
+        🎯 1-Click WhatsApp Direct Dispatch Table
+      </h3>
+      <p style="font-size: 12px; color: var(--muted);">
+        Click <strong>"Send WhatsApp"</strong> on any contact below to open WhatsApp Web with this friendly message pre-typed in their chat!
+      </p>
+
+      <div id="leadsTableContainer"></div>
+    </div>
+  </div>
+
+  <script>
+    const LEADS = [
+      { id: 'ARW_001', name: 'Abu Jafar', phone: '8801322276099', email: 'export.docs1955@gmail.com', designation: 'Commercial Documentation Manager', honorific: 'bhai' },
+      { id: 'ARW_006', name: 'Himel Sikder', phone: '8801687369350', email: 'himel.himu009@gmail.com', designation: 'Commercial Document Executive', honorific: 'bhai' },
+      { id: 'ARW_007', name: 'Md. Sanjid Ahmed', phone: '8801716698337', email: 'sanjid5000@gmail.com', designation: 'Commercial Document Executive', honorific: 'bhai' },
+      { id: 'ARW_008', name: 'Jahanara Sultana', phone: '8801755611170', email: 'jahanara.sultana2202@gmail.com', designation: 'Commercial Document Executive', honorific: 'apu' },
+      { id: 'ARW_009', name: 'Zakia Ishrat', phone: '8801632122589', email: 'zakiaishrat500@gmail.com', designation: 'Commercial Document Executive', honorific: 'apu' },
+      { id: 'ARW_010', name: 'Akm Faruque Chowdhury', phone: '8801847355734', email: 'aglfaruque@gmail.com', designation: 'Sr Commercial Document Executive', honorific: 'bhai' },
+      { id: 'ARW_011', name: 'Md. Didarul Islam', phone: '8801719052685', email: 'didar007@gmail.com', designation: 'Asst Commercial Document Manager', honorific: 'bhai' },
+      { id: 'ARW_012', name: 'Md. Jahid Newaj Islam', phone: '8801757838717', email: 'jnewaj@gmail.com', designation: 'Commercial Documentation Manager', honorific: 'bhai' }
+    ];
+
+    function buildMessage(lead) {
+      return `Assalamu Alaikum ${lead.name} ${lead.honorific},
+
+This is Firoz. I hope you and your family are doing great.
+
+I've been working with the Google AI ecosystem for the last 1.5 years and recently secured a special partnership access. I have a very limited number of 18-month Gemini Pro subscriptions available at a massive discount.
+
+Knowing you work as ${lead.designation}, I thought this could be incredibly useful for drafting commercial documents, managing international emails, data verification, and your overall daily workflow. I also help professionals and teams integrate Google AI into their daily tasks to save hours of manual paperwork.
+
+If you or your team might be interested in the Gemini subscription or AI integration, just let me know! I'd love to share the details with you.
+
+Warm regards,
+Firoz`;
+    }
+
+    const container = document.getElementById('leadsTableContainer');
+    let html = `
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name & Honorific</th>
+            <th>Designation</th>
+            <th>Phone</th>
+            <th style="text-align: right;">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+
+    LEADS.forEach(l => {
+      const msg = buildMessage(l);
+      const url = `https://web.whatsapp.com/send?phone=${l.phone}&text=${encodeURIComponent(msg)}`;
+      html += `
+        <tr>
+          <td><code style="color:var(--cyan); font-weight:bold;">${l.id}</code></td>
+          <td><strong style="color:#fff;">${l.name} (${l.honorific})</strong></td>
+          <td style="color:var(--muted);">${l.designation}</td>
+          <td><span style="font-family:monospace; color:#38bdf8;">+${l.phone}</span></td>
+          <td style="text-align: right;">
+            <a href="${url}" target="_blank" class="btn-wa">
+              💬 Send WhatsApp
+            </a>
+          </td>
+        </tr>
+      `;
+    });
+
+    html += `</tbody></table>`;
+    container.innerHTML = html;
+  </script>
+</body>
+</html>

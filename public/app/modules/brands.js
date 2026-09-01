@@ -596,8 +596,11 @@ window.APP_MODULES.brands = async function(container) {
 
       <!-- TABS NAVIGATION BAR -->
       <div style="display:flex; gap:0.5rem; background:var(--surface-card, #181824); padding:0.4rem; border-radius:12px; border:1px solid var(--border-subtle, #2e2e3e); margin-bottom:1.5rem; overflow-x:auto;">
+        <button class="brands-tab-btn ${currentTab === 'matrix' ? 'active' : ''}" style="background:${currentTab === 'matrix' ? 'var(--brand-primary, #00df89)' : 'rgba(0,223,137,0.1)'}; color:${currentTab === 'matrix' ? '#070b12' : '#00df89'}; border:1px solid rgba(0,223,137,0.4); font-weight:800;" onclick="window.BrandsModule.switchTab('matrix')">
+          👑 5-Engine Brand Matrix & GTM
+        </button>
         <button class="brands-tab-btn ${currentTab === 'portfolio' ? 'active' : ''}" onclick="window.BrandsModule.switchTab('portfolio')">
-          📊 Portfolio Overview
+          📊 Digital Asset Portfolio
         </button>
         <button class="brands-tab-btn ${currentTab === 'roster' ? 'active' : ''}" onclick="window.BrandsModule.switchTab('roster')">
           🏪 Brand Roster (${state.brands.length})
@@ -690,7 +693,9 @@ window.APP_MODULES.brands = async function(container) {
     const tabContainer = document.getElementById('brands-tab-container');
     if (!tabContainer) return;
 
-    if (tab === 'portfolio') {
+    if (tab === 'matrix') {
+      renderMatrixTab(tabContainer);
+    } else if (tab === 'portfolio') {
       renderPortfolioTab(tabContainer);
     } else if (tab === 'roster') {
       renderRosterTab(tabContainer);
@@ -705,6 +710,279 @@ window.APP_MODULES.brands = async function(container) {
     } else if (tab === 'lifecycle') {
       renderLifecycleTab(tabContainer);
     }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // TAB 0: 5-ENGINE BRAND MATRIX & GTM ARCHITECTURE
+  // ─────────────────────────────────────────────────────────────────────────
+  function renderMatrixTab(container) {
+    container.innerHTML = `
+      <!-- BRAND STRATEGY NORTH STAR BANNER -->
+      <div style="background:linear-gradient(135deg, rgba(0,223,137,0.12) 0%, rgba(6,182,212,0.08) 100%); border:1px solid rgba(0,223,137,0.35); border-radius:18px; padding:1.5rem; margin-bottom:1.5rem; box-shadow:0 10px 30px rgba(0,0,0,0.25);">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem;">
+          <div>
+            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.25rem;">
+              <span style="font-size:1.5rem;">👑</span>
+              <h2 style="font-size:1.3rem; font-weight:900; font-family:var(--font-heading); color:#ffffff; margin:0;">
+                GRO10X Holding — 5-Engine Brand & GTM Architecture
+              </h2>
+            </div>
+            <p style="color:var(--text-secondary); font-size:0.85rem; margin:0.35rem 0 0 0; max-width:820px; line-height:1.45;">
+              <strong>One-Sentence Core Identity:</strong> GRO10X is the technology agency that builds AI-powered operating systems for businesses — we take your vertical (clinic, hotel, agency, laundry, wholesale, commerce) and ship you a full OS in weeks.
+            </p>
+          </div>
+          <div style="text-align:right; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.08); padding:0.6rem 1rem; border-radius:12px;">
+            <span style="font-size:0.68rem; color:#00df89; font-weight:800; text-transform:uppercase;">Focus Rule (Decision Filter)</span>
+            <div style="font-size:0.88rem; font-weight:800; color:#ffffff; margin-top:0.15rem;">
+              ⚡ 30-Day Revenue Potential
+            </div>
+            <span style="font-size:0.68rem; color:var(--text-muted);">Otherwise Parked until E4 stable</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5-ENGINE BRAND HIERARCHY TREE -->
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:1.25rem; margin-bottom:1.75rem;">
+        
+        <!-- ENGINE 1 CARD -->
+        <div style="background:var(--surface-card, #181824); border:1px solid rgba(0,223,137,0.3); border-radius:16px; padding:1.25rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+            <div style="display:flex; align-items:center; gap:0.5rem;">
+              <span style="font-size:1.3rem;">💻</span>
+              <strong style="color:#ffffff; font-size:0.95rem;">Engine 1: Micro-SaaS</strong>
+            </div>
+            <span style="font-size:0.68rem; font-weight:800; padding:0.15rem 0.5rem; border-radius:6px; background:rgba(0,223,137,0.15); color:#00df89;">7 Platforms</span>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:0.4rem; font-size:0.78rem;">
+            <div style="display:flex; justify-content:space-between; padding:0.35rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:6px;">
+              <span>🎓 GroUp Academy</span>
+              <span style="color:#fbbf24; font-weight:700;">Near-Launch QA</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; padding:0.35rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:6px;">
+              <span>🏆 GRO10X Capital</span>
+              <span style="color:#00df89; font-weight:700;">v0.8.5 Ready</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; padding:0.35rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:6px;">
+              <span>🔧 ServiQ (Home Services)</span>
+              <span style="color:#00df89; font-weight:700;">95% Built · Next Launch</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; padding:0.35rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:6px;">
+              <span>🤖 Telegrab (BPaaS Mesh)</span>
+              <span style="color:#06b6d4; font-weight:700;">Active Bot Engine</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; padding:0.35rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:6px;">
+              <span>📚 Pathshala.ai</span>
+              <span style="color:var(--text-muted);">Parked (v0.5 Live)</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; padding:0.35rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:6px;">
+              <span>🐾 PawsomeBD</span>
+              <span style="color:var(--text-muted);">Etsy Crossover</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; padding:0.35rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:6px;">
+              <span>🛠️ Orjon.app</span>
+              <span style="color:var(--text-muted);">Parked (MVP v0.5)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ENGINE 2 CARD -->
+        <div style="background:var(--surface-card, #181824); border:1px solid rgba(6,182,212,0.3); border-radius:16px; padding:1.25rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+            <div style="display:flex; align-items:center; gap:0.5rem;">
+              <span style="font-size:1.3rem;">⚡</span>
+              <strong style="color:#ffffff; font-size:0.95rem;">Engine 2: Platform Revenue</strong>
+            </div>
+            <span style="font-size:0.68rem; font-weight:800; padding:0.15rem 0.5rem; border-radius:6px; background:rgba(6,182,212,0.15); color:#06b6d4;">Fiverr + Web Store</span>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:0.4rem; font-size:0.78rem;">
+            <div style="display:flex; justify-content:space-between; padding:0.35rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:6px;">
+              <span>🎯 Fiverr / Upwork Agency Gigs</span>
+              <span style="color:#00df89; font-weight:700;">🟢 4 Gigs Live</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; padding:0.35rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:6px;">
+              <span>🧩 DBM Copilot Extension</span>
+              <span style="color:#06b6d4; font-weight:700;">Chrome Store Ready</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; padding:0.35rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:6px;">
+              <span>🛍️ Shopify App Ecosystem</span>
+              <span style="color:var(--text-muted);">Future Roadmap</span>
+            </div>
+          </div>
+          <div style="margin-top:1rem; text-align:center;">
+            <a href="#gigs" class="btn-primary btn-sm" style="background:#06b6d4; color:#09090b; font-weight:800; text-decoration:none; display:inline-block; width:100%;">⚡ Open Marketplace Gigs</a>
+          </div>
+        </div>
+
+        <!-- ENGINE 3 CARD -->
+        <div style="background:var(--surface-card, #181824); border:1px solid rgba(168,85,247,0.3); border-radius:16px; padding:1.25rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+            <div style="display:flex; align-items:center; gap:0.5rem;">
+              <span style="font-size:1.3rem;">📦</span>
+              <strong style="color:#ffffff; font-size:0.95rem;">Engine 3: Digital Assets</strong>
+            </div>
+            <span style="font-size:0.68rem; font-weight:800; padding:0.15rem 0.5rem; border-radius:6px; background:rgba(168,85,247,0.15); color:#a855f7;">14 Brands</span>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:0.4rem; font-size:0.78rem;">
+            <div style="display:flex; justify-content:space-between; padding:0.35rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:6px;">
+              <span>🏪 DigiVault (BD AI Subs)</span>
+              <span style="color:#00df89; font-weight:700;">🟢 Active Outreach</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; padding:0.35rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:6px;">
+              <span>👑 PlannerQueenGro</span>
+              <span style="color:#a855f7; font-weight:700;">100 Products Ready</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; padding:0.35rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:6px;">
+              <span>🐕 WildMutt Co. (POD+Digital)</span>
+              <span style="color:#a855f7; font-weight:700;">100 Products Ready</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; padding:0.35rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:6px;">
+              <span>📁 11 Other Etsy/POD Brands</span>
+              <span style="color:var(--text-muted);">1,100 Catalog Target</span>
+            </div>
+          </div>
+          <div style="margin-top:1rem; text-align:center;">
+            <a href="#digistore" class="btn-primary btn-sm" style="background:#a855f7; color:#ffffff; font-weight:800; text-decoration:none; display:inline-block; width:100%;">🏪 Launch DigiVault Store</a>
+          </div>
+        </div>
+
+        <!-- ENGINE 4 CARD -->
+        <div style="background:var(--surface-card, #181824); border:1px solid rgba(245,158,11,0.4); border-radius:16px; padding:1.25rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+            <div style="display:flex; align-items:center; gap:0.5rem;">
+              <span style="font-size:1.3rem;">🤝</span>
+              <strong style="color:#ffffff; font-size:0.95rem;">Engine 4: Agency OS Studio</strong>
+            </div>
+            <span style="font-size:0.68rem; font-weight:800; padding:0.15rem 0.5rem; border-radius:6px; background:rgba(245,158,11,0.15); color:#f59e0b;">Primary Focus</span>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:0.4rem; font-size:0.78rem;">
+            <div style="display:flex; justify-content:space-between; padding:0.35rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:6px;">
+              <span>🏢 Agency OS (PurpleOS)</span>
+              <span style="color:#f59e0b; font-weight:700;">Proposal Out (৳35k)</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; padding:0.35rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:6px;">
+              <span>🧺 Laundry Mama OS</span>
+              <span style="color:#ef4444; font-weight:700;">Stuck Implementation</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; padding:0.35rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:6px;">
+              <span>🏥 Clinic OS (Shams Dental)</span>
+              <span style="color:#00df89; font-weight:700;">95% Ready to Pitch</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; padding:0.35rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:6px;">
+              <span>🏨 Hospitality OS (BellaVista)</span>
+              <span style="color:#00df89; font-weight:700;">71% Ready to Pitch</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; padding:0.35rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:6px;">
+              <span>🛒 Wholesale OS (DWC)</span>
+              <span style="color:#00df89; font-weight:700;">88% Ready to Pitch</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; padding:0.35rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:6px;">
+              <span>🚚 Distribution OS (Tarangini)</span>
+              <span style="color:#00df89; font-weight:700;">Hyperlocal Franchise</span>
+            </div>
+          </div>
+          <div style="margin-top:1rem; text-align:center;">
+            <a href="#proposals" class="btn-primary btn-sm" style="background:#f59e0b; color:#09090b; font-weight:800; text-decoration:none; display:inline-block; width:100%;">💼 View Retainer Proposals</a>
+          </div>
+        </div>
+
+        <!-- ENGINE 5 CARD -->
+        <div style="background:var(--surface-card, #181824); border:1px solid rgba(239,68,68,0.3); border-radius:16px; padding:1.25rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+            <div style="display:flex; align-items:center; gap:0.5rem;">
+              <span style="font-size:1.3rem;">🎬</span>
+              <strong style="color:#ffffff; font-size:0.95rem;">Engine 5: Video & Media</strong>
+            </div>
+            <span style="font-size:0.68rem; font-weight:800; padding:0.15rem 0.5rem; border-radius:6px; background:rgba(239,68,68,0.15); color:#ef4444;">Passive Stream</span>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:0.4rem; font-size:0.78rem;">
+            <div style="display:flex; justify-content:space-between; padding:0.35rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:6px;">
+              <span>📺 Grow Bangla</span>
+              <span style="color:#00df89; font-weight:700;">427 Subs (English Niche)</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; padding:0.35rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:6px;">
+              <span>✈️ PILUTICS</span>
+              <span style="color:#06b6d4; font-weight:700;">218 Subs (Travel)</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; padding:0.35rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:6px;">
+              <span>🎵 Bong Hits</span>
+              <span style="color:#a855f7; font-weight:700;">85 Subs (YT + TikTok)</span>
+            </div>
+          </div>
+          <div style="margin-top:1rem; text-align:center;">
+            <a href="#social" class="btn-ghost btn-sm" style="text-decoration:none; display:inline-block; width:100%;">📱 Social Planner</a>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 5-LEVEL GTM (GO-TO-MARKET) STANDARD SECTION -->
+      <div style="background:var(--surface-card, #181824); border:1px solid var(--border-subtle, #2e2e3e); border-radius:18px; padding:1.5rem; margin-bottom:1.5rem;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1rem;">
+          <div>
+            <h3 style="font-size:1.15rem; font-weight:900; font-family:var(--font-heading); color:#ffffff; margin:0;">
+              🗺️ 5-Level Universal GTM (Go-To-Market) Standard
+            </h3>
+            <p style="color:var(--text-secondary); font-size:0.8rem; margin:0.25rem 0 0 0;">
+              Standardized geographic targeting hierarchy across both Bangladesh local distribution and global SaaS markets.
+            </p>
+          </div>
+          <span style="font-size:0.72rem; font-weight:800; padding:0.25rem 0.6rem; border-radius:8px; background:rgba(6,182,212,0.15); color:#06b6d4; border:1px solid rgba(6,182,212,0.3);">
+            Territory Manager Standard
+          </span>
+        </div>
+
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(190px, 1fr)); gap:0.75rem; margin-bottom:1.25rem;">
+          <div style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.06); padding:0.85rem; border-radius:10px;">
+            <span style="font-size:0.68rem; color:#00df89; font-weight:800;">LEVEL 1</span>
+            <div style="font-size:0.95rem; font-weight:800; color:#ffffff;">Country</div>
+            <span style="font-size:0.7rem; color:var(--text-muted);">Bangladesh / US / UK / Global</span>
+          </div>
+          <div style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.06); padding:0.85rem; border-radius:10px;">
+            <span style="font-size:0.68rem; color:#06b6d4; font-weight:800;">LEVEL 2</span>
+            <div style="font-size:0.95rem; font-weight:800; color:#ffffff;">Region / Division</div>
+            <span style="font-size:0.7rem; color:var(--text-muted);">Dhaka, Chittagong, Sylhet, etc.</span>
+          </div>
+          <div style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.06); padding:0.85rem; border-radius:10px;">
+            <span style="font-size:0.68rem; color:#a855f7; font-weight:800;">LEVEL 3</span>
+            <div style="font-size:0.95rem; font-weight:800; color:#ffffff;">City / District</div>
+            <span style="font-size:0.7rem; color:var(--text-muted);">Dhaka North, Dhaka South, Gazipur</span>
+          </div>
+          <div style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.06); padding:0.85rem; border-radius:10px;">
+            <span style="font-size:0.68rem; color:#f59e0b; font-weight:800;">LEVEL 4</span>
+            <div style="font-size:0.95rem; font-weight:800; color:#ffffff;">Area / Thana</div>
+            <span style="font-size:0.7rem; color:var(--text-muted);">Banani, Gulshan, Dhanmondi, Uttara</span>
+          </div>
+          <div style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.06); padding:0.85rem; border-radius:10px;">
+            <span style="font-size:0.68rem; color:#ef4444; font-weight:800;">LEVEL 5</span>
+            <div style="font-size:0.95rem; font-weight:800; color:#ffffff;">Route / Beat / Zone</div>
+            <span style="font-size:0.7rem; color:var(--text-muted);">Commercial sales beats & couriers</span>
+          </div>
+        </div>
+
+        <!-- CLIENT CLASSIFICATION & PRODUCT VARIANT ENGINE -->
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+          <div style="background:rgba(0,0,0,0.2); padding:1rem; border-radius:12px; border:1px solid rgba(255,255,255,0.05);">
+            <h4 style="font-size:0.88rem; font-weight:800; color:#ffffff; margin:0 0 0.5rem 0;">👥 Client Classification Matrix</h4>
+            <div style="font-size:0.75rem; color:var(--text-secondary); display:flex; flex-direction:column; gap:0.4rem;">
+              <div><strong style="color:#00df89;">B2B Corporate:</strong> SMEs & Mid-Market enterprises (PurpleBot, Dexian, ORO Roasters)</div>
+              <div><strong style="color:#06b6d4;">B2B Institutional:</strong> Schools, Clinics, Hospitals, NGOs, Financial Banks</div>
+              <div><strong style="color:#a855f7;">B2B Agency Partners:</strong> White-label agencies reselling GRO10X OS engines</div>
+              <div><strong style="color:#f59e0b;">B2C Consumers:</strong> Working professionals, university students, solopreneurs & creators</div>
+            </div>
+          </div>
+
+          <div style="background:rgba(0,0,0,0.2); padding:1rem; border-radius:12px; border:1px solid rgba(255,255,255,0.05);">
+            <h4 style="font-size:0.88rem; font-weight:800; color:#ffffff; margin:0 0 0.5rem 0;">🎛️ Product Variant Engine Dimensions</h4>
+            <div style="font-size:0.75rem; color:var(--text-secondary); display:flex; flex-direction:column; gap:0.4rem;">
+              <div><strong style="color:#00df89;">1. Sales Channel:</strong> Etsy vs DigiVault vs WhatsApp Outreach vs Direct Invoice</div>
+              <div><strong style="color:#06b6d4;">2. Geography / Currency:</strong> Bangladesh Local (BDT ৳) vs Global International (USD $)</div>
+              <div><strong style="color:#a855f7;">3. Audience Tier:</strong> Student Discount vs Professional License vs Enterprise Retainer</div>
+              <div><strong style="color:#f59e0b;">4. Delivery Method:</strong> Instant Digital Download vs Cloud BaaS vs Turnkey White-Label</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -2433,7 +2711,10 @@ window.APP_MODULES.brands = async function(container) {
       if (!brandIdStr) return;
       const brandId = Number(brandIdStr);
       const b = state.brands.find(x => x.id === brandId);
-      if (!b) return alert('Invalid Brand ID');
+      if (!b) {
+        if (window.showToast) window.showToast('Invalid Brand ID', 'error');
+        return;
+      }
 
       const amountStr = prompt(`Enter Gross Revenue for ${b.name} ($ USD):`, '500');
       const amount = Number(amountStr);
@@ -5349,29 +5630,12 @@ window.APP_MODULES.brands = async function(container) {
     },
 
     async openDBMStandupModal() {
-      const dbmIdStr = prompt('Select DBM (1, 2, 3, or 4):', '1');
-      if (!dbmIdStr) return;
-      const dbmId = Number(dbmIdStr);
-
-      const brandName = prompt('Brand Name worked on today:', 'PlannerQueenGro');
-      if (!brandName) return;
-
-      const listed = Number(prompt('How many products were listed today?', '8')) || 0;
-      const revenue = Number(prompt('Revenue generated today ($ USD, enter 0 if pre-launch):', '0')) || 0;
-      const notes = prompt('Standup notes / wins / blockers:', 'Completed design & upload for daily batch') || '';
-
-      if (window.APP_API) {
-        window.APP_API.post('/brands/dbm-logs', {
-          dbmId,
-          brandName,
-          listed,
-          revenue,
-          notes
-        }).catch(err => console.warn('[Standup API] Note:', err.message));
+      if (window.DBMModule && typeof window.DBMModule.openLogStandupModal === 'function') {
+        window.DBMModule.openLogStandupModal();
+      } else {
+        window.BrandsModule.switchTab('dbm');
+        if (window.showToast) window.showToast('Switched to DBM Standup & EOD Workstation', 'info');
       }
-
-      if (window.showToast) window.showToast(`Logged Standup for DBM ${dbmId} successfully!`, 'success');
-      render();
     },
 
     openAddProductModal() {
@@ -6524,10 +6788,37 @@ window.APP_MODULES.brands = async function(container) {
         status: 'Draft',
         customIdea: customIdea || undefined
       };
-      state.productsCatalog[brandId].push(newProductObj);
+      
+      const existingIdx = state.productsCatalog[brandId].findIndex(p => p.code === code);
+      if (existingIdx >= 0) {
+        state.productsCatalog[brandId][existingIdx] = { ...state.productsCatalog[brandId][existingIdx], ...newProductObj };
+      } else {
+        state.productsCatalog[brandId].push(newProductObj);
+      }
 
       saveBrandsStateLocally(state);
-      if (window.showToast) window.showToast(`✅ Added ${code}: ${name} to catalog!`, 'success');
+
+      // Async backend persistence to Supabase via studio-save endpoint
+      try {
+        const headers = getStudioAuthHeaders({ 'Content-Type': 'application/json' });
+        await fetch(`/api/brands/${brandId}/product/${encodeURIComponent(code)}/studio-save`, {
+          method: 'POST',
+          headers,
+          credentials: 'same-origin',
+          body: JSON.stringify({
+            name,
+            category,
+            price,
+            format: 'Digital PDF',
+            status: 'Draft',
+            customIdea: customIdea || undefined
+          })
+        });
+      } catch (saveErr) {
+        console.warn('[BrandsModule] Backend studio-save notice:', saveErr.message);
+      }
+
+      if (window.showToast) window.showToast(`✅ Added ${code}: ${name} to catalog & saved to cloud!`, 'success');
       document.getElementById('addProductModal').style.display = 'none';
       renderTabContent(currentTab);
 
@@ -6568,82 +6859,6 @@ window.APP_MODULES.brands = async function(container) {
       } catch (err) {
         if (window.showToast) window.showToast(`Error: ${err.message}`, 'error');
       }
-    },
-
-    openAddProductToBrandModal(brandId) {
-      const modal = document.getElementById('addProductModal');
-      const content = document.getElementById('addProductModalContent');
-      if (!modal || !content) return;
-
-      const b = state.brands.find(x => x.id === brandId) || state.brands[0];
-      const nextNum = (state.productsCatalog[b.id]?.length || 0) + 1;
-      const codePrefix = b.name.substring(0, 3).toUpperCase();
-      const defaultCode = `${codePrefix}-${nextNum.toString().padStart(2, '0')}`;
-
-      content.innerHTML = `
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:0.75rem;">
-          <h3 style="font-size:1.2rem; font-weight:900; color:#fff; margin:0;">📦 Add Product to ${b.name}</h3>
-          <button onclick="document.getElementById('addProductModal').style.display='none'" style="background:none; border:none; color:var(--text-muted); font-size:1.5rem; cursor:pointer;">✕</button>
-        </div>
-
-        <div style="display:flex; flex-direction:column; gap:1rem;">
-          <div style="display:grid; grid-template-columns:1fr 2fr; gap:0.75rem;">
-            <div>
-              <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.3rem;">SKU / Code</label>
-              <input type="text" id="newProdCode" value="${defaultCode}" style="width:100%; font-size:0.85rem; padding:0.6rem; background:rgba(255,255,255,0.04); border:1px solid var(--border-subtle); border-radius:8px; color:#06b6d4; font-weight:800;">
-            </div>
-            <div>
-              <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.3rem;">Product Name</label>
-              <input type="text" id="newProdName" placeholder="e.g. 2026 Ultimate Habit Tracker" style="width:100%; font-size:0.85rem; padding:0.6rem; background:rgba(255,255,255,0.04); border:1px solid var(--border-subtle); border-radius:8px; color:#fff;">
-            </div>
-          </div>
-
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
-            <div>
-              <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.3rem;">Category / Section</label>
-              <input type="text" id="newProdCategory" placeholder="e.g. Habit Trackers" style="width:100%; font-size:0.85rem; padding:0.6rem; background:rgba(255,255,255,0.04); border:1px solid var(--border-subtle); border-radius:8px; color:#fff;">
-            </div>
-            <div>
-              <label style="font-size:0.75rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.3rem;">Retail Price ($ USD)</label>
-              <input type="number" step="0.01" id="newProdPrice" value="4.99" style="width:100%; font-size:0.85rem; padding:0.6rem; background:rgba(255,255,255,0.04); border:1px solid var(--border-subtle); border-radius:8px; color:#00df89; font-weight:800;">
-            </div>
-          </div>
-
-          <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:0.5rem;">
-            <button class="btn-ghost" onclick="document.getElementById('addProductModal').style.display='none'">Cancel</button>
-            <button class="btn-primary" onclick="window.BrandsModule.saveNewProduct(${b.id})">✨ Add to Catalog</button>
-          </div>
-        </div>
-      `;
-
-      modal.style.display = 'flex';
-    },
-
-    async saveNewProduct(brandId) {
-      const code = document.getElementById('newProdCode')?.value?.trim();
-      const name = document.getElementById('newProdName')?.value?.trim();
-      const category = document.getElementById('newProdCategory')?.value?.trim() || 'General';
-      const price = parseFloat(document.getElementById('newProdPrice')?.value || '4.99');
-
-      if (!code || !name) {
-        if (window.showToast) window.showToast('Please provide product code and name', 'warning');
-        return;
-      }
-
-      if (!state.productsCatalog[brandId]) state.productsCatalog[brandId] = [];
-      state.productsCatalog[brandId].push({
-        code,
-        name,
-        category,
-        price,
-        format: 'Digital PDF',
-        status: 'Pending'
-      });
-
-      saveBrandsStateLocally(state);
-      if (window.showToast) window.showToast(`✅ Added ${code}: ${name} to catalog!`, 'success');
-      document.getElementById('addProductModal').style.display = 'none';
-      renderTabContent(currentTab);
     },
 
     async deleteProduct(brandId, productCode) {
@@ -7003,8 +7218,6 @@ window.APP_MODULES.brands = async function(container) {
       if (missing.length > 0) {
         if (window.showToast) {
           window.showToast(`❌ Cannot Publish ${prod.code}:\n• ${missing.join('\n• ')}`, 'error');
-        } else {
-          alert(`Cannot Publish ${prod.code}:\n- ${missing.join('\n- ')}\n\nPlease open Studio (⚡) to complete.`);
         }
         return;
       }
@@ -7110,8 +7323,7 @@ window.APP_MODULES.brands = async function(container) {
           pubBtn.disabled = false;
           pubBtn.innerHTML = origBtnHtml || '🚀 Publish to Live Etsy ($0.20 Fee)';
         }
-        if (window.showToast) window.showToast(e.message, 'error');
-        alert(`Listing Submission Note:\n${e.message}`);
+        if (window.showToast) window.showToast(`Listing Submission Note: ${e.message}`, 'error');
       }
     },
 
@@ -7230,8 +7442,9 @@ window.APP_MODULES.brands = async function(container) {
         const data = await res.json();
         if (!data.success) throw new Error(data.error || 'Evaluation failed');
 
-        if (window.showToast) window.showToast('📢 20th Mid-Month evaluation brief generated!', 'success');
-        alert(`📊 GRO10X 20th Mid-Month Evaluation Generated:\n\n${data.summaryText}`);
+        if (window.showToast) {
+          window.showToast('📢 20th Mid-Month evaluation brief generated & sent to Telegram!', 'success');
+        }
       } catch (err) {
         if (window.showToast) window.showToast(err.message, 'error');
       }

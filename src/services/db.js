@@ -63,24 +63,24 @@ async function readDB() {
       { data: quotes },
       { data: leaves }
     ] = await Promise.all([
-      supabase.from('profiles').select('*').limit(200),
-      supabase.from('clients').select('*').limit(200),
-      supabase.from('tasks').select('*').limit(500),
-      supabase.from('invoices').select('*').limit(500),
-      supabase.from('services').select('*').limit(100),
-      supabase.from('reviews').select('*').limit(200),
-      supabase.from('expenses').select('*').limit(500),
-      supabase.from('assets').select('*').limit(200),
-      supabase.from('attendance').select('*').limit(500),
-      supabase.from('eod_reports').select('*').limit(500),
-      supabase.from('auth_pins').select('*').limit(200),
-      supabase.from('projects').select('*').limit(200),
-      supabase.from('subtasks').select('*').limit(500),
-      supabase.from('project_workflows').select('*').limit(200),
-      supabase.from('tickets').select('*').limit(500),
-      supabase.from('social_posts').select('*').limit(200),
-      supabase.from('quotes').select('*').limit(200),
-      supabase.from('leaves').select('*').limit(500)
+      supabase.from('profiles').select('*').limit(1000),
+      supabase.from('clients').select('*').limit(2000),
+      supabase.from('tasks').select('*').limit(5000),
+      supabase.from('invoices').select('*').limit(5000),
+      supabase.from('services').select('*').limit(500),
+      supabase.from('reviews').select('*').limit(2000),
+      supabase.from('expenses').select('*').limit(5000),
+      supabase.from('assets').select('*').limit(2000),
+      supabase.from('attendance').select('*').limit(5000),
+      supabase.from('eod_reports').select('*').limit(5000),
+      supabase.from('auth_pins').select('*').limit(2000),
+      supabase.from('projects').select('*').limit(2000),
+      supabase.from('subtasks').select('*').limit(5000),
+      supabase.from('project_workflows').select('*').limit(1000),
+      supabase.from('tickets').select('*').limit(5000),
+      supabase.from('social_posts').select('*').limit(2000),
+      supabase.from('quotes').select('*').limit(2000),
+      supabase.from('leaves').select('*').limit(5000)
     ]);
 
     cachedDBState = {

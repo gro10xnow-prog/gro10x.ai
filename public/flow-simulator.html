@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Google Flow & AI Generation Simulator — GRO10X Testbed</title>
+  <style>
+    :root {
+      --bg-deep: #070b12;
+      --bg-card: #0e1726;
+      --border: rgba(255, 255, 255, 0.08);
+      --primary: #00df89;
+      --cyan: #06b6d4;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg-deep);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      padding: 24px;
+      min-height: 100vh;
+    }
+    .simulator-container {
+      max-width: 1000px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .badge {
+      background: rgba(6, 182, 212, 0.15);
+      color: var(--cyan);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .instruction-card {
+      background: rgba(0, 223, 137, 0.05);
+      border: 1px solid rgba(0, 223, 137, 0.2);
+      border-radius: 12px;
+      padding: 16px 20px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .instruction-card strong { color: var(--primary); }
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    textarea {
+      width: 100%;
+      height: 120px;
+      background: #06090e;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: #fff;
+      padding: 12px;
+      font-family: monospace;
+      font-size: 13px;
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    textarea:focus {
+      border-color: var(--primary);
+    }
+    button.btn-generate {
+      background: var(--primary);
+      color: #070b12;
+      font-weight: 800;
+      font-size: 14px;
+      padding: 12px 20px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    button.btn-generate:hover {
+      background: #00f597;
+      transform: translateY(-1px);
+    }
+    .render-gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 12px;
+      max-height: 380px;
+      overflow-y: auto;
+      padding: 4px;
+    }
+    .render-tile {
+      background: #06090e;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      aspect-ratio: 3/4;
+      position: relative;
+    }
+    .render-canvas-preview {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 8px;
+      text-align: center;
+      font-size: 10px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .render-tile-label {
+      position: absolute;
+      bottom: 4px;
+      left: 4px;
+      right: 4px;
+      background: rgba(0,0,0,0.8);
+      font-size: 9px;
+      padding: 2px 4px;
+      border-radius: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .status-log {
+      background: #06090e;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      font-family: monospace;
+      font-size: 11px;
+      color: var(--muted);
+      height: 140px;
+      overflow-y: auto;
+      line-height: 1.6;
+    }
+    .log-success { color: var(--primary); }
+    .log-info { color: var(--cyan); }
+  </style>
+</head>
+<body>
+  <div class="simulator-container">
+    <header>
+      <div>
+        <h1 style="font-size: 20px; font-weight: 900;">🧪 Google Flow & AI Canvas Simulator</h1>
+        <p style="color: var(--muted); font-size: 13px; margin-top: 4px;">Official GRO10X Testbed for DBM Browser Automation & Batch Prompting</p>
+      </div>
+      <span class="badge">Local Sandbox</span>
+    </header>
+
+    <div class="instruction-card">
+      <strong>🚀 How to Test the GRO10X DBM Copilot Extension:</strong><br>
+      1. Open the <strong>GRO10X DBM Copilot Side Panel</strong> in Chrome.<br>
+      2. Choose a SKU (e.g. <code>PLA-14</code>) and select <strong>"16 Interior Spreads"</strong> or <strong>"10 Etsy Mockups"</strong>.<br>
+      3. Click <strong>"▶ Start Batch Run"</strong> — watch the extension automatically type the prompts into this box, trigger renders, and harvest output tiles!
+    </div>
+
+    <div class="main-grid">
+      <!-- Input Panel -->
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <label style="font-size: 12px; font-weight: 800; text-transform: uppercase; color: var(--cyan);">Prompt Input Canvas</label>
+          <span id="charCount" style="font-size: 11px; color: var(--muted);">0 Chars</span>
+        </div>
+
+        <textarea id="flowPromptInput" placeholder="Enter prompt or let GRO10X Copilot inject batch prompts automatically..."></textarea>
+
+        <button class="btn-generate" id="btnFlowGenerate">
+          <span>✨ Generate Visual Spread (3:4)</span>
+        </button>
+
+        <div>
+          <label style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 6px;">Live Generation Activity Log</label>
+          <div class="status-log" id="statusLog">
+            <div>[00:00:00] Simulator initialized and waiting for batch triggers...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Output Gallery Panel -->
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <label style="font-size: 12px; font-weight: 800; text-transform: uppercase; color: var(--primary);">Rendered Spreads & Mockup Gallery (<span id="renderCount">0</span>)</label>
+          <button onclick="clearGallery()" style="background: transparent; border: none; color: var(--muted); font-size: 11px; cursor: pointer;">Clear All</button>
+        </div>
+
+        <div class="render-gallery" id="renderGallery">
+          <div style="grid-column: 1/-1; text-align: center; color: var(--muted); font-size: 12px; padding: 40px 0;">
+            Rendered visual spreads will appear here in real time.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const input = document.getElementById('flowPromptInput');
+    const btn = document.getElementById('btnFlowGenerate');
+    const log = document.getElementById('statusLog');
+    const gallery = document.getElementById('renderGallery');
+    const renderCount = document.getElementById('renderCount');
+    const charCount = document.getElementById('charCount');
+
+    let totalRenders = 0;
+    const PALETTES = [
+      ['#8B5A7A', '#FAF3E8'],
+      ['#1e293b', '#38bdf8'],
+      ['#14532d', '#86efac'],
+      ['#701a75', '#f472b6'],
+      ['#7c2d12', '#fdba74']
+    ];
+
+    input.addEventListener('input', () => {
+      charCount.textContent = `${input.value.length} Chars`;
+    });
+
+    btn.addEventListener('click', () => {
+      const prompt = input.value.trim();
+      if (!prompt) return;
+      handleGenerate(prompt);
+    });
+
+    function addLog(msg, type = 'info') {
+      const time = new Date().toLocaleTimeString();
+      const div = document.createElement('div');
+      div.className = type === 'success' ? 'log-success' : 'log-info';
+      div.textContent = `[${time}] ${msg}`;
+      log.appendChild(div);
+      log.scrollTop = log.scrollHeight;
+    }
+
+    function handleGenerate(promptText) {
+      addLog(`Received prompt: "${promptText.substring(0, 35)}..."`, 'info');
+      btn.disabled = true;
+      btn.innerHTML = '⏳ Rendering 3:4 Layout...';
+
+      setTimeout(() => {
+        totalRenders++;
+        renderCount.textContent = totalRenders;
+
+        // Generate SVG preview data URL
+        const colorPair = PALETTES[(totalRenders - 1) % PALETTES.length];
+        const svgContent = `
+          <svg xmlns="http://www.w3.org/2000/svg" width="300" height="400" viewBox="0 0 300 400">
+            <rect width="300" height="400" fill="${colorPair[1]}" rx="12"/>
+            <rect x="15" y="15" width="270" height="370" fill="none" stroke="${colorPair[0]}" stroke-width="2" stroke-dasharray="4,4" rx="8"/>
+            <rect x="25" y="25" width="250" height="60" fill="${colorPair[0]}" rx="6"/>
+            <text x="150" y="60" fill="#ffffff" font-size="14" font-weight="bold" text-anchor="middle" font-family="sans-serif">SPREAD #${totalRenders}</text>
+            <text x="150" y="160" fill="${colorPair[0]}" font-size="12" font-weight="bold" text-anchor="middle" font-family="sans-serif">PlannerQueenGro</text>
+            <rect x="35" y="190" width="230" height="15" fill="${colorPair[0]}" opacity="0.2" rx="3"/>
+            <rect x="35" y="215" width="230" height="15" fill="${colorPair[0]}" opacity="0.2" rx="3"/>
+            <rect x="35" y="240" width="230" height="15" fill="${colorPair[0]}" opacity="0.2" rx="3"/>
+            <rect x="35" y="265" width="230" height="15" fill="${colorPair[0]}" opacity="0.2" rx="3"/>
+            <text x="150" y="340" fill="#64748b" font-size="10" text-anchor="middle" font-family="sans-serif">© 2026 GRO10X OS</text>
+          </svg>
+        `;
+        const dataUrl = `data:image/svg+xml;utf8,${encodeURIComponent(svgContent)}`;
+
+        // Append to gallery
+        if (totalRenders === 1) gallery.innerHTML = '';
+
+        const tile = document.createElement('div');
+        tile.className = 'render-tile';
+        tile.innerHTML = `
+          <img src="${dataUrl}" style="width:100%; height:100%; object-fit:cover;" />
+          <span class="render-tile-label">#${totalRenders} · ${promptText.substring(0, 20)}</span>
+        `;
+        gallery.prepend(tile);
+
+        addLog(`✅ Render #${totalRenders} completed! (300 DPI 3:4 Layout)`, 'success');
+
+        // Dispatch window event for Chrome Extension harvester
+        window.dispatchEvent(new CustomEvent('GRO10X_RENDER_COMPLETE', {
+          detail: {
+            url: dataUrl,
+            title: `Spread #${totalRenders}`,
+            slot: totalRenders,
+            prompt: promptText
+          }
+        }));
+
+        btn.disabled = false;
+        btn.innerHTML = '✨ Generate Visual Spread (3:4)';
+      }, 1500);
+    }
+
+    function clearGallery() {
+      totalRenders = 0;
+      renderCount.textContent = 0;
+      gallery.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: var(--muted); font-size: 12px; padding: 40px 0;">Rendered visual spreads will appear here in real time.</div>';
+      addLog('Gallery reset.', 'info');
+    }
+  </script>
+</body>
+</html>

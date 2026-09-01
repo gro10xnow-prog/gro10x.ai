@@ -205,6 +205,7 @@ window.APP_MODULES.finance = async function(container) {
           </div>
         </div>
         <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+          <button class="btn-secondary" onclick="window.FINANCE_MODULE.exportInvoicesCSV()">📤 Export Invoices (CSV)</button>
           <button class="btn-secondary" onclick="window.FINANCE_MODULE.openImportModal()">📥 Import Invoices (CSV)</button>
           <button class="btn-primary" onclick="window.FINANCE_MODULE.openInvoiceModal()">+ Create Invoice</button>
           <button class="btn-secondary" onclick="window.FINANCE_MODULE.openQuoteModal()">+ Generate Quote</button>
@@ -256,143 +257,149 @@ window.APP_MODULES.finance = async function(container) {
       <!-- Expense Log Modal -->
       <div class="modal-overlay" id="expModal">
         <div class="modal-box">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h2 style="color:#fff; font-size:1.2rem; margin:0;">💸 Log Expense Claim</h2>
-            <button onclick="window.FINANCE_MODULE.closeExpenseModal()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
-          </div>
-
-          <div class="form-group" style="margin-top:1rem;">
-            <label class="form-label">Expense Description *</label>
-            <input type="text" id="fnExpTitle" class="input-text" placeholder="e.g. Transport for Commercial Shoot" required>
-          </div>
-
-          <div style="display:flex; gap:1rem;">
-            <div class="form-group" style="flex:1;">
-              <label class="form-label">Category</label>
-              <select id="fnExpCat" class="input-text">
-                <option value="Transport">Transport</option>
-                <option value="Food & Catering">Food & Catering</option>
-                <option value="Equipment">Equipment & Gear</option>
-                <option value="Software / SaaS">Software / SaaS</option>
-                <option value="Miscellaneous">Miscellaneous</option>
-              </select>
+          <form onsubmit="event.preventDefault(); window.FINANCE_MODULE.submitExpense();">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <h2 style="color:#fff; font-size:1.2rem; margin:0;">💸 Log Expense Claim</h2>
+              <button type="button" onclick="window.FINANCE_MODULE.closeExpenseModal()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
             </div>
-            <div class="form-group" style="flex:1;">
-              <label class="form-label">Amount (BDT ৳) *</label>
-              <input type="number" id="fnExpAmount" class="input-text" placeholder="1500" required>
+
+            <div class="form-group" style="margin-top:1rem;">
+              <label class="form-label">Expense Description *</label>
+              <input type="text" id="fnExpTitle" class="input-text" placeholder="e.g. Transport for Commercial Shoot" required>
             </div>
-          </div>
 
-          <div class="form-group">
-            <label class="form-label">Receipt Image (Optional)</label>
-            <input type="file" id="fnExpReceipt" class="input-text" accept="image/*" style="padding-top:0.4rem;">
-          </div>
+            <div style="display:flex; gap:1rem;">
+              <div class="form-group" style="flex:1;">
+                <label class="form-label">Category</label>
+                <select id="fnExpCat" class="input-text">
+                  <option value="Transport">Transport</option>
+                  <option value="Food & Catering">Food & Catering</option>
+                  <option value="Equipment">Equipment & Gear</option>
+                  <option value="Software / SaaS">Software / SaaS</option>
+                  <option value="Miscellaneous">Miscellaneous</option>
+                </select>
+              </div>
+              <div class="form-group" style="flex:1;">
+                <label class="form-label">Amount (BDT ৳) *</label>
+                <input type="number" id="fnExpAmount" class="input-text" placeholder="1500" required>
+              </div>
+            </div>
 
-          <div style="display:flex; justify-content:flex-end; gap:0.75rem; margin-top:1rem;">
-            <button type="button" class="btn-secondary" onclick="window.FINANCE_MODULE.closeExpenseModal()">Cancel</button>
-            <button type="button" class="btn-primary" onclick="window.FINANCE_MODULE.submitExpense()">🚀 Submit Expense Claim</button>
-          </div>
+            <div class="form-group">
+              <label class="form-label">Receipt Image (Optional)</label>
+              <input type="file" id="fnExpReceipt" class="input-text" accept="image/*" style="padding-top:0.4rem;">
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; gap:0.75rem; margin-top:1rem;">
+              <button type="button" class="btn-secondary" onclick="window.FINANCE_MODULE.closeExpenseModal()">Cancel</button>
+              <button type="submit" class="btn-primary">🚀 Submit Expense Claim</button>
+            </div>
+          </form>
         </div>
       </div>
 
       <!-- Quote Generator Modal -->
       <div class="modal-overlay" id="quoteModal">
         <div class="modal-box">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h2 style="color:#fff; font-size:1.2rem; margin:0;">📜 Generate Price Quote</h2>
-            <button onclick="window.FINANCE_MODULE.closeQuoteModal()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
-          </div>
-
-          <div class="form-group" style="margin-top:1rem;">
-            <label class="form-label">Client Account *</label>
-            <select id="fnQuoteClientSelect" class="input-text" required onchange="window.FINANCE_MODULE.syncQuoteClient(this)">
-              <option value="">-- Select Client from CRM --</option>
-            </select>
-            <input type="hidden" id="fnQuoteClient" value="">
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Description of Services</label>
-            <input type="text" id="fnQuoteDesc" class="input-text" placeholder="e.g. 3-Month Retainer (Social Media)">
-          </div>
-
-          <div style="display:flex; gap:1rem;">
-            <div class="form-group" style="flex:1;">
-              <label class="form-label">Quoted Amount (BDT) *</label>
-              <input type="number" id="fnQuoteAmt" class="input-text" placeholder="50000" required>
+          <form onsubmit="event.preventDefault(); window.FINANCE_MODULE.submitQuote();">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <h2 style="color:#fff; font-size:1.2rem; margin:0;">📜 Generate Price Quote</h2>
+              <button type="button" onclick="window.FINANCE_MODULE.closeQuoteModal()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
             </div>
-            <div class="form-group" style="flex:1;">
-              <label class="form-label">Valid Until (Days)</label>
-              <input type="number" id="fnQuoteValid" class="input-text" value="14">
-            </div>
-          </div>
 
-          <div style="display:flex; justify-content:flex-end; gap:0.75rem; margin-top:1rem;">
-            <button type="button" class="btn-secondary" onclick="window.FINANCE_MODULE.closeQuoteModal()">Cancel</button>
-            <button type="button" class="btn-primary" onclick="window.FINANCE_MODULE.submitQuote()">📜 Generate & Save Quote</button>
-          </div>
+            <div class="form-group" style="margin-top:1rem;">
+              <label class="form-label">Client Account *</label>
+              <select id="fnQuoteClientSelect" class="input-text" required onchange="window.FINANCE_MODULE.syncQuoteClient(this)">
+                <option value="">-- Select Client from CRM --</option>
+              </select>
+              <input type="hidden" id="fnQuoteClient" value="">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Description of Services</label>
+              <input type="text" id="fnQuoteDesc" class="input-text" placeholder="e.g. 3-Month Retainer (Social Media)">
+            </div>
+
+            <div style="display:flex; gap:1rem;">
+              <div class="form-group" style="flex:1;">
+                <label class="form-label">Quoted Amount (BDT) *</label>
+                <input type="number" id="fnQuoteAmt" class="input-text" placeholder="50000" required>
+              </div>
+              <div class="form-group" style="flex:1;">
+                <label class="form-label">Valid Until (Days)</label>
+                <input type="number" id="fnQuoteValid" class="input-text" value="14">
+              </div>
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; gap:0.75rem; margin-top:1rem;">
+              <button type="button" class="btn-secondary" onclick="window.FINANCE_MODULE.closeQuoteModal()">Cancel</button>
+              <button type="submit" class="btn-primary">📜 Generate & Save Quote</button>
+            </div>
+          </form>
         </div>
       </div>
 
       <!-- Invoice Generator Modal -->
       <div class="modal-overlay" id="invoiceModal">
         <div class="modal-box">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h2 style="color:#fff; font-size:1.2rem; margin:0;">🧾 Create Invoice</h2>
-            <button onclick="window.FINANCE_MODULE.closeInvoiceModal()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
-          </div>
-
-          <div class="form-group" style="margin-top:1rem;">
-            <label class="form-label">Client Account *</label>
-            <select id="fnInvClientSelect" class="input-text" required onchange="window.FINANCE_MODULE.syncInvClient(this)">
-              <option value="">-- Select Client from CRM --</option>
-            </select>
-            <input type="hidden" id="fnInvClient" value="">
-            <input type="hidden" id="fnInvClientId" value="">
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Description of Services</label>
-            <input type="text" id="fnInvDesc" class="input-text" placeholder="e.g. 3-Month Retainer (Social Media)">
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Attributed Growth Engine</label>
-            <select id="fnInvEngine" class="input-text">
-              <option value="engine2" selected>🚀 Engine 2: Dedicated Client Retainers (25%)</option>
-              <option value="engine1">⚡ Engine 1: Freelance & Enterprise AI Scale (35%)</option>
-              <option value="engine3">📦 Engine 3: Digital AI Products & Templates (20%)</option>
-              <option value="engine4">🤝 Engine 4: Affiliate & Partnership Ecosystem (15%)</option>
-              <option value="engine5">🎬 Engine 5: Studio & Micro Media Lab (5%)</option>
-            </select>
-          </div>
-
-          <div style="display:flex; gap:1rem;">
-            <div class="form-group" style="flex:1;">
-              <label class="form-label">Subtotal (BDT) *</label>
-              <input type="number" id="fnInvAmt" class="input-text" placeholder="50000" oninput="window.FINANCE_MODULE.calcInvoiceTotal()" required>
+          <form onsubmit="event.preventDefault(); window.FINANCE_MODULE.submitInvoice();">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <h2 style="color:#fff; font-size:1.2rem; margin:0;">🧾 Create Invoice</h2>
+              <button type="button" onclick="window.FINANCE_MODULE.closeInvoiceModal()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
             </div>
-            <div class="form-group" style="flex:1;">
-              <label class="form-label">VAT Rate (%)</label>
-              <input type="number" id="fnInvVat" class="input-text" value="15" oninput="window.FINANCE_MODULE.calcInvoiceTotal()">
-            </div>
-          </div>
 
-          <div style="display:flex; gap:1rem;">
-            <div class="form-group" style="flex:1;">
-              <label class="form-label">Discount (BDT)</label>
-              <input type="number" id="fnInvDisc" class="input-text" value="0" oninput="window.FINANCE_MODULE.calcInvoiceTotal()">
+            <div class="form-group" style="margin-top:1rem;">
+              <label class="form-label">Client Account *</label>
+              <select id="fnInvClientSelect" class="input-text" required onchange="window.FINANCE_MODULE.syncInvClient(this)">
+                <option value="">-- Select Client from CRM --</option>
+              </select>
+              <input type="hidden" id="fnInvClient" value="">
+              <input type="hidden" id="fnInvClientId" value="">
             </div>
-            <div class="form-group" style="flex:1;">
-              <label class="form-label">Calculated Total</label>
-              <input type="text" id="fnInvTotal" class="input-text" disabled style="font-weight:bold; color:var(--emerald-brand);">
-            </div>
-          </div>
 
-          <div style="display:flex; justify-content:flex-end; gap:0.75rem; margin-top:1rem;">
-            <button type="button" class="btn-secondary" onclick="window.FINANCE_MODULE.closeInvoiceModal()">Cancel</button>
-            <button type="button" class="btn-primary" onclick="window.FINANCE_MODULE.submitInvoice()">🧾 Create Invoice</button>
-          </div>
+            <div class="form-group">
+              <label class="form-label">Description of Services</label>
+              <input type="text" id="fnInvDesc" class="input-text" placeholder="e.g. 3-Month Retainer (Social Media)">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Attributed Growth Engine</label>
+              <select id="fnInvEngine" class="input-text">
+                <option value="engine2" selected>🚀 Engine 2: Dedicated Client Retainers (25%)</option>
+                <option value="engine1">⚡ Engine 1: Freelance & Enterprise AI Scale (35%)</option>
+                <option value="engine3">📦 Engine 3: Digital AI Products & Templates (20%)</option>
+                <option value="engine4">🤝 Engine 4: Affiliate & Partnership Ecosystem (15%)</option>
+                <option value="engine5">🎬 Engine 5: Studio & Micro Media Lab (5%)</option>
+              </select>
+            </div>
+
+            <div style="display:flex; gap:1rem;">
+              <div class="form-group" style="flex:1;">
+                <label class="form-label">Subtotal (BDT) *</label>
+                <input type="number" id="fnInvAmt" class="input-text" placeholder="50000" oninput="window.FINANCE_MODULE.calcInvoiceTotal()" required>
+              </div>
+              <div class="form-group" style="flex:1;">
+                <label class="form-label">VAT Rate (%)</label>
+                <input type="number" id="fnInvVat" class="input-text" value="15" oninput="window.FINANCE_MODULE.calcInvoiceTotal()">
+              </div>
+            </div>
+
+            <div style="display:flex; gap:1rem;">
+              <div class="form-group" style="flex:1;">
+                <label class="form-label">Discount (BDT)</label>
+                <input type="number" id="fnInvDisc" class="input-text" value="0" oninput="window.FINANCE_MODULE.calcInvoiceTotal()">
+              </div>
+              <div class="form-group" style="flex:1;">
+                <label class="form-label">Calculated Total</label>
+                <input type="text" id="fnInvTotal" class="input-text" disabled style="font-weight:bold; color:var(--emerald-brand);">
+              </div>
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; gap:0.75rem; margin-top:1rem;">
+              <button type="button" class="btn-secondary" onclick="window.FINANCE_MODULE.closeInvoiceModal()">Cancel</button>
+              <button type="submit" class="btn-primary">🧾 Create Invoice</button>
+            </div>
+          </form>
         </div>
       </div>
     `;
@@ -1153,6 +1160,31 @@ window.APP_MODULES.finance = async function(container) {
       } catch (e) {
         if (window.showToast) window.showToast('Failed to reject expense: ' + e.message, 'error');
       }
+    },
+    exportInvoicesCSV() {
+      if (!currentInvoices || currentInvoices.length === 0) {
+        if (window.showToast) window.showToast('No invoices found to export.', 'warning');
+        return;
+      }
+      const headers = ['Invoice ID', 'Client Name', 'Amount (BDT)', 'Status', 'Due Date', 'Created Date'];
+      const rows = currentInvoices.map(inv => [
+        `"${inv.id || ''}"`,
+        `"${(inv.client || '').replace(/"/g, '""')}"`,
+        inv.amount || 0,
+        `"${inv.status || 'Pending'}"`,
+        `"${inv.due_date || inv.dueDate || ''}"`,
+        `"${inv.created_at ? inv.created_at.split('T')[0] : ''}"`
+      ]);
+      const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', `gro10x_invoices_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      if (window.showToast) window.showToast('✅ Exported invoices CSV successfully!', 'success');
     }
   };
 

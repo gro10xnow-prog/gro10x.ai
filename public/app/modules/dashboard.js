@@ -133,51 +133,51 @@ window.APP_MODULES.dashboard = async function(container) {
               <div style="width:100%; height:8px; background:rgba(255,255,255,0.08); border-radius:999px; overflow:hidden;">
                 <div style="height:100%; width:35%; background:linear-gradient(90deg, #00df89, #06b6d4); border-radius:999px;"></div>
               </div>
-              <div style="font-size:0.72rem; color:var(--text-muted); margin-top:0.25rem;">Target: ${isUSD ? '$2,916/mo' : '৳3.44L/mo'}</div>
+              <div style="font-size:0.72rem; color:var(--text-muted); margin-top:0.25rem;">GroUp Academy · ServiQ · Telegrab</div>
             </div>
 
             <div>
               <div style="display:flex; justify-content:space-between; font-size:0.82rem; font-weight:700; margin-bottom:0.35rem;">
-                <span style="color:var(--text-primary);">🛠️ 2. Freelance (25%)</span>
+                <span style="color:var(--text-primary);">⚡ 2. Platform Revenue (25%)</span>
                 <strong style="color:var(--cyan-brand, #06b6d4);">${isUSD ? '$25,000' : '৳29.5L'}</strong>
               </div>
               <div style="width:100%; height:8px; background:rgba(255,255,255,0.08); border-radius:999px; overflow:hidden;">
                 <div style="height:100%; width:25%; background:linear-gradient(90deg, #06b6d4, #3b82f6); border-radius:999px;"></div>
               </div>
-              <div style="font-size:0.72rem; color:var(--text-muted); margin-top:0.25rem;">Target: ${isUSD ? '$2,083/mo' : '৳2.45L/mo'}</div>
+              <div style="font-size:0.72rem; color:var(--text-muted); margin-top:0.25rem;">Fiverr (4 Gigs Live) · Chrome Store</div>
             </div>
 
             <div>
               <div style="display:flex; justify-content:space-between; font-size:0.82rem; font-weight:700; margin-bottom:0.35rem;">
-                <span style="color:var(--text-primary);">🛍️ 3. Etsy Assets (20%)</span>
+                <span style="color:var(--text-primary);">📦 3. Digital Assets (20%)</span>
                 <strong style="color:#f59e0b;">${isUSD ? '$20,000' : '৳23.6L'}</strong>
               </div>
               <div style="width:100%; height:8px; background:rgba(255,255,255,0.08); border-radius:999px; overflow:hidden;">
                 <div style="height:100%; width:20%; background:linear-gradient(90deg, #f59e0b, #ec4899); border-radius:999px;"></div>
               </div>
-              <div style="font-size:0.72rem; color:var(--text-muted); margin-top:0.25rem;">Target: ${isUSD ? '$1,666/mo' : '৳1.96L/mo'}</div>
+              <div style="font-size:0.72rem; color:var(--text-muted); margin-top:0.25rem;">DigiVault (AI Subs) · 13 Etsy Stores</div>
             </div>
 
             <div>
               <div style="display:flex; justify-content:space-between; font-size:0.82rem; font-weight:700; margin-bottom:0.35rem;">
-                <span style="color:var(--text-primary);">🤝 4. Retainers (15%)</span>
-                <strong style="color:#06b6d4;">${isUSD ? '$15,000' : '৳17.7L'}</strong>
+                <span style="color:var(--text-primary);">🤝 4. Agency OS Studio (15%)</span>
+                <strong style="color:#00df89;">${isUSD ? '$15,000' : '৳17.7L'}</strong>
               </div>
               <div style="width:100%; height:8px; background:rgba(255,255,255,0.08); border-radius:999px; overflow:hidden;">
-                <div style="height:100%; width:15%; background:linear-gradient(90deg, #06b6d4, #00df89); border-radius:999px;"></div>
+                <div style="height:100%; width:15%; background:linear-gradient(90deg, #00df89, #f59e0b); border-radius:999px;"></div>
               </div>
-              <div style="font-size:0.72rem; color:var(--text-muted); margin-top:0.25rem;">Target: ${isUSD ? '$1,250/mo' : '৳1.47L/mo'}</div>
+              <div style="font-size:0.72rem; color:var(--text-muted); margin-top:0.25rem;">8 OS Templates · ৳35k/mo Retainer Baseline</div>
             </div>
 
             <div>
               <div style="display:flex; justify-content:space-between; font-size:0.82rem; font-weight:700; margin-bottom:0.35rem;">
-                <span style="color:var(--text-primary);">🎥 5. YouTube (5%)</span>
+                <span style="color:var(--text-primary);">🎬 5. Video & Media (5%)</span>
                 <strong style="color:#ef4444;">${isUSD ? '$5,000' : '৳5.9L'}</strong>
               </div>
               <div style="width:100%; height:8px; background:rgba(255,255,255,0.08); border-radius:999px; overflow:hidden;">
                 <div style="height:100%; width:5%; background:#ef4444; border-radius:999px;"></div>
               </div>
-              <div style="font-size:0.72rem; color:var(--text-muted); margin-top:0.25rem;">Target: ${isUSD ? '$416/mo' : '৳49k/mo'}</div>
+              <div style="font-size:0.72rem; color:var(--text-muted); margin-top:0.25rem;">Grow Bangla (427) · PILUTICS · Bong Hits</div>
             </div>
 
           </div>
@@ -356,6 +356,88 @@ window.APP_MODULES.dashboard = async function(container) {
     localStorage.setItem('gro10x_currency', curr);
     renderDashboard();
   };
+
+  // Executive Action Center Handlers
+  window.execApproveExpense = async function(id) {
+    try {
+      if (window.APP_API) {
+        await window.APP_API.post(`/expenses/${id}/approve-tier2`, {});
+      } else {
+        const token = localStorage.getItem('gro10x_token') || '';
+        await fetch(`/api/expenses/${id}/approve-tier2`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+        });
+      }
+      if (window.showToast) window.showToast('👑 Expense Claim Approved by Executive!', 'success');
+      renderDashboard();
+    } catch (err) {
+      if (window.showToast) window.showToast('Approval failed: ' + err.message, 'error');
+    }
+  };
+
+  window.execRejectExpense = async function(id) {
+    try {
+      if (window.APP_API) {
+        await window.APP_API.patch(`/expenses/${id}`, { status: 'Rejected' });
+      } else {
+        const token = localStorage.getItem('gro10x_token') || '';
+        await fetch(`/api/expenses/${id}`, {
+          method: 'PATCH',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'Rejected' })
+        });
+      }
+      if (window.showToast) window.showToast('Expense Claim Rejected.', 'info');
+      renderDashboard();
+    } catch (err) {
+      if (window.showToast) window.showToast('Rejection failed: ' + err.message, 'error');
+    }
+  };
+
+  window.execApproveLeave = async function(id) {
+    try {
+      if (window.APP_API) {
+        await window.APP_API.post(`/leaves/${id}/approve`, {});
+      } else {
+        const token = localStorage.getItem('gro10x_token') || '';
+        await fetch(`/api/leaves/${id}/approve`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+        });
+      }
+      if (window.showToast) window.showToast('🌴 Leave Application Signed Off!', 'success');
+      renderDashboard();
+    } catch (err) {
+      if (window.showToast) window.showToast('Leave approval failed: ' + err.message, 'error');
+    }
+  };
+
+  window.execRejectLeave = async function(id) {
+    try {
+      if (window.APP_API) {
+        await window.APP_API.post(`/leaves/${id}/reject`, {});
+      } else {
+        const token = localStorage.getItem('gro10x_token') || '';
+        await fetch(`/api/leaves/${id}/reject`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+        });
+      }
+      if (window.showToast) window.showToast('Leave Application Declined.', 'info');
+      renderDashboard();
+    } catch (err) {
+      if (window.showToast) window.showToast('Leave decline failed: ' + err.message, 'error');
+    }
+  };
+
+  // Cross-tab currency sync
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'gro10x_currency' && e.newValue && e.newValue !== currentDashCurrency) {
+      currentDashCurrency = e.newValue;
+      renderDashboard();
+    }
+  });
 
   await renderDashboard();
 };

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * public/app/api.js
  * ─────────────────────────────────────────────────────────────────────────────
  * PurpleOS Admin Portal API Client & Data Store v3.0
@@ -150,7 +150,8 @@ window.APP_SSE = {
         'team_update', 'attendance_update', 'eod_update', 'review_update',
         'review_comment_update', 'post_update', 'social_post_update',
         'ticket_update', 'project_update', 'quote_update', 'cms_update',
-        'workflow_update', 'custom_field_update', 'label_update', 'template_update'
+        'workflow_update', 'custom_field_update', 'label_update', 'template_update',
+        'digistore_order_updated', 'brands_updated', 'etsy_sync_update', 'product_qc_update'
       ];
 
       eventNames.forEach(evt => {

@@ -1052,6 +1052,75 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
       });
     }
 
+    // TRIGGER 25: Product QC Approved -> Alert DBM & Broadcast SSE (AUT-030)
+    if (eventType === 'product_qc_approved') {
+      const { brandId, productCode, productName, approvedBy, dbmTelegramId, dbmName } = eventData || {};
+      const targetName = productCode ? `${productCode} (${productName || 'Product'})` : 'Product';
+
+      if (dbmTelegramId) {
+        const msgText =
+          `🎉 *PRODUCT QC APPROVED!*\n\n` +
+          `✅ Your product *${productCode}* (${productName || 'Catalog SKU'}) has been approved by ${approvedBy || 'Admin'}.\n` +
+          `💰 *Listing Incentive Earned:* +$6.99 USD\n` +
+          `🚀 Status: Marked LIVE for Etsy Storefront.`;
+        sendTelegramNotification(dbmTelegramId, msgText, [
+          [{ text: '🛍️ Open Studio', url: 'https://gro10x-ai.vercel.app/dbm#studio' }]
+        ], true);
+      }
+
+      if (typeof broadcast === 'function') {
+        broadcast('product_qc_update', { brandId, productCode, status: 'Live', approvedBy });
+        broadcast('brands_updated', { brandId, productCode });
+      }
+
+      recordAutomationLog(db, {
+        id: `LOG-${Date.now()}`,
+        rule: 'AUT-030 (DBM Product QC Approved)',
+        event: eventType,
+        target: targetName,
+        status: 'Executed',
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    // TRIGGER 26: DigiVault Payment Verified -> Broadcast SSE & Update Pipeline (AUT-031)
+    if (eventType === 'digi_payment_verified') {
+      const { orderId, orderNumber, productName, customerName, salePrice, verifiedBy } = eventData || {};
+      const targetName = orderNumber || orderId || 'DigiVault Order';
+
+      if (typeof broadcast === 'function') {
+        broadcast('digistore_order_updated', { orderId, orderNumber, paymentStatus: 'verified', verifiedBy });
+      }
+
+      recordAutomationLog(db, {
+        id: `LOG-${Date.now()}`,
+        rule: 'AUT-031 (DigiVault Payment Verified)',
+        event: eventType,
+        target: targetName,
+        status: 'Executed',
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    // TRIGGER 27: DBM Standup Submitted -> Log Streak & Broadcast (AUT-032)
+    if (eventType === 'dbm_standup_submitted') {
+      const { dbmName, empCode, productsCompleted, hoursWorked } = eventData || {};
+      const targetName = dbmName || empCode || 'Brand Manager';
+
+      if (typeof broadcast === 'function') {
+        broadcast('eod_update', { empCode, name: dbmName, productsCompleted });
+      }
+
+      recordAutomationLog(db, {
+        id: `LOG-${Date.now()}`,
+        rule: 'AUT-032 (DBM Standup Submitted)',
+        event: eventType,
+        target: targetName,
+        status: 'Executed',
+        timestamp: new Date().toISOString()
+      });
+    }
+
     const logs = db.automationLogs || [];
     if (logs.length > 50) db.automationLogs = logs.slice(0, 50);
 

@@ -1011,18 +1011,48 @@ router.get('/dbm-standup-reminder', async (req, res) => {
     const todayStr = new Date().toISOString().split('T')[0];
     let submittedEmpCodes = [];
     try {
-      const { data: logsData } = await supabase
-        .from('custom_fields')
-        .select('value')
-        .eq('entity_type', 'brand_empire')
-        .eq('field_name', 'dbm_eod_logs')
-        .maybeSingle();
+      if (isSupabaseConfigured()) {
+        // 1. Primary KV Store: app_settings (key: dbm_standup_logs)
+        const { data: settingData } = await supabase
+          .from('app_settings')
+          .select('value')
+          .eq('key', 'dbm_standup_logs')
+          .maybeSingle();
+        
+        let logs = (settingData && Array.isArray(settingData.value)) ? settingData.value : [];
 
-      const logs = logsData?.value || [];
-      submittedEmpCodes = logs
-        .filter(l => l.date === todayStr)
-        .map(l => l.empCode || l.emp_code || l.dbmName);
-    } catch (e) {}
+        // 2. Fallback to custom_fields if app_settings is empty
+        if (!logs.length) {
+          const { data: logsData } = await supabase
+            .from('custom_fields')
+            .select('value')
+            .eq('entity_type', 'brand_empire')
+            .eq('field_name', 'dbm_eod_logs')
+            .maybeSingle();
+          logs = logsData?.value || [];
+        }
+
+        submittedEmpCodes = logs
+          .filter(l => l && (l.date === todayStr || (l.timestamp && l.timestamp.startsWith(todayStr))))
+          .map(l => l.empCode || l.emp_code || l.dbmName || l.dbm_name || l.name);
+
+        // 3. Also check relational eod_reports table
+        const { data: eodData } = await supabase
+          .from('eod_reports')
+          .select('emp_code, name, created_at')
+          .gte('created_at', `${todayStr}T00:00:00.000Z`)
+          .limit(100);
+
+        if (eodData && Array.isArray(eodData)) {
+          eodData.forEach(e => {
+            if (e.emp_code) submittedEmpCodes.push(e.emp_code);
+            if (e.name) submittedEmpCodes.push(e.name);
+          });
+        }
+      }
+    } catch (e) {
+      console.warn('[Cron DBM Standup Reminder] Error checking submission state:', e.message);
+    }
 
     let sentCount = 0;
     for (const dbm of dbmUsers) {

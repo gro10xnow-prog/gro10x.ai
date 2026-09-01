@@ -67,18 +67,18 @@ async function saveFreelanceState(state) {
     // Read-only filesystem on Vercel — in-memory and Supabase handle persistence
   }
 
-  // Asynchronous backup to Supabase settings table if configured
+  // Asynchronous backup to Supabase app_settings table if configured
   if (isSupabaseConfigured && isSupabaseConfigured()) {
     try {
       await supabase
-        .from('settings')
+        .from('app_settings')
         .upsert({
           key: 'freelance_gigs_state',
           value: state,
           updated_at: new Date().toISOString()
         }, { onConflict: 'key' });
     } catch (sbErr) {
-      console.warn('[GigStore] Supabase backup notice:', sbErr.message);
+      console.warn('[GigStore] Supabase app_settings backup notice:', sbErr.message);
     }
   }
 

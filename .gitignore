@@ -18,3 +18,5 @@ tmp_test_assets/
 Screenshot*.png
 scratch/
 .chrome-test-profile/
+__pycache__/
+*.pyc

@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GRO10X DBM Copilot</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="copilot-container">
+    <!-- Header -->
+    <header class="copilot-header">
+      <div class="brand-title">
+        <span class="logo-icon">⚡</span>
+        <div>
+          <h2>GRO10X Copilot</h2>
+          <span class="version-tag">v0.2 Outreach & DBM</span>
+        </div>
+      </div>
+      <div class="status-indicator online" id="connectionStatus" title="Connected to GRO10X OS">
+        <span class="dot"></span> Online
+      </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="nav-tabs">
+      <button class="tab-btn active" data-tab="outreach">💬 WhatsApp</button>
+      <button class="tab-btn" data-tab="generator">🚀 DBM Studio</button>
+      <button class="tab-btn" data-tab="queue">📋 Prompts</button>
+      <button class="tab-btn" data-tab="harvest">📦 Harvest (<span id="harvestCount">0</span>)</button>
+    </nav>
+
+    <!-- Tab 1: WhatsApp Outreach & Promo Engine -->
+    <section class="tab-content active" id="tab-outreach">
+      <!-- Target Campaign Banner -->
+      <div class="card" style="border-left: 3px solid var(--color-primary);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+          <strong style="font-size: 11px; color: var(--color-primary); text-transform: uppercase;">🎯 Friendly Outreach</strong>
+          <span class="badge" style="background: rgba(0,223,137,0.15); color: #00df89;">Relationship-First</span>
+        </div>
+        <div style="font-size: 11px; font-weight: 700; color: #fff;">
+          Gemini Pro 18-Month Exclusive Partnership
+        </div>
+      </div>
+
+      <!-- Customizable Message Template -->
+      <div class="card">
+        <div class="card-header">
+          <label>📝 Message Template (No Cold Links)</label>
+          <button class="btn-text" id="btnResetTemplate">Reset</button>
+        </div>
+        <textarea id="outreachTemplate" class="prompt-preview" rows="8">Assalamu Alaikum {{Name}} {{Honorific}},
+
+This is Firoz. I hope you and your family are doing great.
+
+I've been working with the Google AI ecosystem for the last 1.5 years and recently secured a special partnership access. I have a very limited number of 18-month Gemini Pro subscriptions available at a massive discount.
+
+Knowing you work as {{Designation}}, I thought this could be incredibly useful for drafting commercial documents, managing international emails, data verification, and your overall daily workflow. I also help professionals and teams integrate Google AI into their daily tasks to save hours of manual paperwork.
+
+If you or your team might be interested in the Gemini subscription or AI integration, just let me know! I'd love to share the details with you.
+
+Warm regards,
+Firoz</textarea>
+        <small class="text-muted" style="display: block; margin-top: 4px; font-size: 10px;">Auto-replaces: <code>{{Name}}</code>, <code>{{Honorific}}</code> (ভাই/আপু), <code>{{Designation}}</code></small>
+      </div>
+
+      <!-- Campaign Queue Control -->
+      <div class="controls-card card">
+        <div class="progress-labels">
+          <span>Outreach Progress</span>
+          <span id="outreachCountLabel" style="color: var(--color-primary);">0 / 8 Sent</span>
+        </div>
+        <div class="progress-bar-container">
+          <div class="progress-bar" id="outreachProgressBar" style="width: 0%;"></div>
+        </div>
+
+        <!-- Pacing & Auto-Send Controls -->
+        <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px; padding: 8px; background: rgba(0,0,0,0.25); border-radius: 8px; border: 1px solid var(--border-color);">
+          <div style="display: flex; align-items: center; justify-content: space-between; font-size: 11px;">
+            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; color: #cbd5e1;">
+              <input type="checkbox" id="chkAutoSendWhatsApp" checked style="accent-color: var(--color-primary);">
+              ⚡ <strong>Auto-Click Send Button</strong>
+            </label>
+            <span id="pacingLabel" style="color: var(--color-cyan); font-weight: 800; font-size: 10px;">18s Delay</span>
+          </div>
+          
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 10px; color: var(--text-muted);">Pacing:</span>
+            <input type="range" id="outreachDelaySlider" min="10" max="45" value="18" step="1" style="flex: 1; accent-color: var(--color-primary);">
+          </div>
+        </div>
+
+        <div id="liveCountdownBox" style="display: none; background: rgba(0,223,137,0.1); border: 1px solid rgba(0,223,137,0.3); border-radius: 6px; padding: 6px 10px; margin-top: 8px; font-size: 11px; text-align: center; color: var(--color-primary);">
+          ⏳ Sending next contact in <strong id="countdownSecondsText">18</strong>s...
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 8px;">
+          <button class="btn-primary" id="btnStartOutreachQueue">
+            <span>▶</span> Start Auto-Queue
+          </button>
+          <button class="btn-secondary" id="btnSendNextLead">
+            <span>👉</span> Open Next (1-Click)
+          </button>
+        </div>
+      </div>
+
+      <!-- Lead Contacts List -->
+      <div class="card">
+        <div class="card-header">
+          <label>👥 Lead Contacts (8 Leads)</label>
+          <button class="btn-text" id="btnResetLeadStatuses" style="color: var(--color-cyan);">🔄 Reset All</button>
+        </div>
+
+        <div class="queue-list" id="leadsListContainer" style="max-height: 240px;">
+          <!-- Dynamically populated leads -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab 2: Generator & DBM Studio Prompts -->
+    <section class="tab-content" id="tab-generator">
+      <div class="card">
+        <div class="card-header">
+          <label for="skuSelect">🎯 Target Brand SKU</label>
+          <button class="btn-text" id="btnRefreshCatalog">🔄 Refresh</button>
+        </div>
+        <select id="skuSelect" class="form-control">
+          <option value="PLA-14">PLA-14 · Daily & Weekly Planners (PlannerQueenGro)</option>
+          <option value="PLA-01">PLA-01 · Executive Focus Matrix (PlannerQueenGro)</option>
+          <option value="WLD-01">WLD-01 · Adventure Dog Harness Pack (WildMutt Co.)</option>
+          <option value="PRM-01">PRM-01 · Midjourney 10k Prompt Vault (PromptVault)</option>
+        </select>
+      </div>
+
+      <div class="mode-grid">
+        <button class="mode-btn active" data-mode="spreads">
+          <span class="mode-icon">📖</span>
+          <div class="mode-info">
+            <strong>16 Interior Spreads</strong>
+            <small>Sequential layout</small>
+          </div>
+        </button>
+        <button class="mode-btn" data-mode="mockups">
+          <span class="mode-icon">🖼️</span>
+          <div class="mode-info">
+            <strong>10 Etsy Mockups</strong>
+            <small>Lifestyles & flatlays</small>
+          </div>
+        </button>
+      </div>
+
+      <div class="controls-card card">
+        <div class="progress-bar-container">
+          <div class="progress-bar" id="progressBar" style="width: 0%;"></div>
+        </div>
+        <div class="progress-labels">
+          <span id="queueProgressLabel">Ready to dispatch</span>
+          <span id="queueCountLabel">0 / 16</span>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn-primary" id="btnStartBatch">
+            <span class="icon">▶</span> Start Batch
+          </button>
+          <button class="btn-secondary" id="btnPauseBatch" disabled>
+            <span class="icon">⏸</span> Pause
+          </button>
+          <button class="btn-danger" id="btnStopBatch" disabled>
+            <span class="icon">⏹</span> Stop
+          </button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <label>👁️ Current Prompt Preview</label>
+          <button class="btn-text" id="btnCopyCurrentPrompt">📋 Copy</button>
+        </div>
+        <textarea id="promptPreviewText" class="prompt-preview" readonly rows="3"></textarea>
+      </div>
+    </section>
+
+    <!-- Tab 3: Queue Details -->
+    <section class="tab-content" id="tab-queue">
+      <div class="card">
+        <div class="card-header">
+          <label>📜 Prompt Pipeline Queue</label>
+          <span class="badge" id="queueTotalBadge">16 Prompts</span>
+        </div>
+        <div class="queue-list" id="queueItemsList"></div>
+      </div>
+    </section>
+
+    <!-- Tab 4: Harvested Assets & Studio Sync -->
+    <section class="tab-content" id="tab-harvest">
+      <div class="card">
+        <div class="card-header">
+          <label>📦 Harvested Image Renders</label>
+          <button class="btn-text" id="btnClearHarvest">Clear</button>
+        </div>
+        <div class="harvest-grid" id="harvestGrid">
+          <div class="empty-state">No assets harvested yet.</div>
+        </div>
+        <button class="btn-accent" id="btnSyncToStudio" style="width: 100%; margin-top: 1rem;">
+          ⚡ Sync All Assets to GRO10X DBM Studio
+        </button>
+      </div>
+    </section>
+
+    <!-- Footer Toast -->
+    <div class="copilot-toast" id="copilotToast"></div>
+  </div>
+
+  <script src="sidepanel.js"></script>
+</body>
+</html>

@@ -32,12 +32,31 @@ window.APP_MODULES.dbm = async function(container) {
   }
 
   async function getDBMLogs() {
+    let serverLogs = null;
     try {
       if (window.APP_API) {
         const res = await window.APP_API.get('/brands/dbm-logs');
-        if (res && res.logs) return res.logs;
+        if (res && res.logs) serverLogs = res.logs;
       }
     } catch (e) {}
+
+    // Flush any pending offline queue to server if online
+    try {
+      const offlineQueue = localStorage.getItem('gro10x_offline_standup_queue');
+      if (offlineQueue && serverLogs) {
+        const queuedItems = JSON.parse(offlineQueue);
+        if (Array.isArray(queuedItems) && queuedItems.length > 0) {
+          for (const item of queuedItems) {
+            await window.APP_API.post('/brands/dbm-logs', item).catch(() => {});
+          }
+          localStorage.removeItem('gro10x_offline_standup_queue');
+          const refreshed = await window.APP_API.get('/brands/dbm-logs').catch(() => null);
+          if (refreshed && refreshed.logs) serverLogs = refreshed.logs;
+        }
+      }
+    } catch (e) {}
+
+    if (serverLogs) return serverLogs;
 
     try {
       const saved = localStorage.getItem('gro10x_dbm_standups');

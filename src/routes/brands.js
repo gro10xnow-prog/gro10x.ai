@@ -533,9 +533,19 @@ function getMockupKey(brandId, productCode, rank) {
   return `mkp_${brandId}_${getCleanCode(productCode)}_${Number(rank) || 1}`;
 }
 
-// ─── DURABLE SUPABASE KV STORE (custom_fields backed) ────────────────────────
+// ─── DURABLE SUPABASE KV STORE (app_settings primary with custom_fields fallback) ──
 async function dbGet(key) {
   if (!isSupabaseConfigured()) return null;
+  // 1. Try public.app_settings FIRST (canonical KV table)
+  try {
+    const { data: asData, error: asError } = await supabase.from('app_settings')
+      .select('value')
+      .eq('key', key)
+      .maybeSingle();
+    if (!asError && asData && asData.value !== undefined && asData.value !== null) return asData.value;
+  } catch (e) {}
+
+  // 2. Fallback to custom_fields (historical records)
   try {
     const { data, error } = await supabase.from('custom_fields')
       .select('options')
@@ -548,6 +558,18 @@ async function dbGet(key) {
 
 async function dbSet(key, value, entityType = 'app_setting') {
   if (!isSupabaseConfigured()) return;
+  // 1. Primary write to public.app_settings
+  try {
+    await supabase.from('app_settings').upsert({
+      key: key,
+      value: value,
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'key' });
+  } catch (e) {
+    console.warn(`[Supabase app_settings] Error writing ${key}:`, e.message);
+  }
+
+  // 2. Mirror to custom_fields for backward compatibility
   try {
     await supabase.from('custom_fields').upsert({
       id: key,
@@ -556,13 +578,22 @@ async function dbSet(key, value, entityType = 'app_setting') {
       field_type: 'json',
       options: value
     }, { onConflict: 'id' });
-  } catch (e) {
-    console.warn(`[Supabase KV] Error writing ${key}:`, e.message);
-  }
+  } catch (e) {}
 }
 
 async function dbList(prefix) {
   if (!isSupabaseConfigured()) return [];
+  // 1. Query app_settings first
+  try {
+    const { data: asData, error: asError } = await supabase.from('app_settings')
+      .select('key, value')
+      .like('key', `${prefix}%`);
+    if (!asError && Array.isArray(asData) && asData.length > 0) {
+      return asData.map(d => ({ key: d.key, value: d.value })).filter(d => d.value !== undefined && d.value !== null);
+    }
+  } catch (e) {}
+
+  // 2. Fallback to custom_fields
   try {
     const { data, error } = await supabase.from('custom_fields')
       .select('id, options')
@@ -758,17 +789,52 @@ async function persistBrandsState(state) {
 }
 
 async function loadDbmLogs() {
+  let combinedLogs = Array.isArray(memoryDbmLogs) ? [...memoryDbmLogs] : [];
+
   if (isSupabaseConfigured()) {
     try {
-      const logs = await dbGet('dbm_standup_logs');
-      if (logs && Array.isArray(logs)) {
-        return logs;
+      const [kvLogs, eodRes] = await Promise.all([
+        dbGet('dbm_standup_logs'),
+        supabase.from('eod_reports').select('*').order('created_at', { ascending: false }).limit(100)
+      ]);
+
+      if (kvLogs && Array.isArray(kvLogs)) {
+        combinedLogs = kvLogs;
+      }
+
+      if (eodRes && eodRes.data && Array.isArray(eodRes.data)) {
+        const botLogs = eodRes.data.map(eod => ({
+          id: eod.id || `eod_${eod.report_date}_${eod.employee_id}`,
+          date: eod.report_date || (eod.created_at ? eod.created_at.split('T')[0] : new Date().toISOString().split('T')[0]),
+          timestamp: eod.created_at || new Date().toISOString(),
+          dbmId: 1,
+          dbmName: eod.employee_name || 'Team Member',
+          brandName: 'PurpleOS Team Standup',
+          listed: 0,
+          revenue: 0,
+          notes: `[Bot EOD] Tasks: ${eod.tasks_done || 'None'}${eod.tasks_tomorrow ? ' | Next: ' + eod.tasks_tomorrow : ''}${eod.blockers ? ' | Blocker: ' + eod.blockers : ''}`,
+          isBlocker: Boolean(eod.blockers && eod.blockers.trim() && !['none', 'no', 'nil', 'n/a'].includes(eod.blockers.toLowerCase().trim())),
+          productCodes: '',
+          source: 'telegram_bot'
+        }));
+
+        // Merge without duplicate IDs
+        const existingIds = new Set(combinedLogs.map(l => String(l.id)));
+        botLogs.forEach(bl => {
+          if (!existingIds.has(String(bl.id))) {
+            combinedLogs.push(bl);
+            existingIds.add(String(bl.id));
+          }
+        });
       }
     } catch (e) {
       console.warn('[DBM Logs] Error loading logs:', e.message);
     }
   }
-  return memoryDbmLogs;
+
+  // Sort descending by date/timestamp
+  combinedLogs.sort((a, b) => new Date(b.timestamp || b.date).getTime() - new Date(a.timestamp || a.date).getTime());
+  return combinedLogs;
 }
 
 async function persistDbmLogs(logs) {
@@ -1886,13 +1952,24 @@ router.post('/:id/product/:code/studio-save', requireAuth, async (req, res) => {
     if (!prod) {
       prod = {
         code: productCode,
-        name: `Product ${productCode}`,
-        category: brand.categories?.[0] || 'General',
-        format: 'Digital PDF',
-        price: 4.99,
-        status: 'Draft'
+        name: req.body.name || `Product ${productCode}`,
+        category: req.body.category || brand.categories?.[0] || 'General',
+        format: req.body.format || 'Digital PDF',
+        price: Number(req.body.price) || 4.99,
+        status: req.body.status || 'Draft',
+        customIdea: req.body.customIdea || undefined
       };
       state.productsCatalog[brandId].push(prod);
+    } else {
+      if (req.body.name) prod.name = req.body.name;
+      if (req.body.category) prod.category = req.body.category;
+      if (req.body.format) prod.format = req.body.format;
+      if (req.body.price !== undefined && !isNaN(Number(req.body.price))) {
+        prod.price = Number(req.body.price);
+        prod.retailPrice = Number(req.body.price);
+      }
+      if (req.body.status) prod.status = req.body.status;
+      if (req.body.customIdea !== undefined) prod.customIdea = req.body.customIdea;
     }
 
     // 1. Handle tab-based or full-bundle saving

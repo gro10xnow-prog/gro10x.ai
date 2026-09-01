@@ -26,7 +26,7 @@ function generate4DigitPin() {
 const inMemoryPins = new Map();
 
 // ─────────────────────────────────────────────────────────────
-// Supabase & In-Memory persistence layer
+// Supabase & In-Memory persistence layer (auth_pins table)
 // ─────────────────────────────────────────────────────────────
 
 async function findPinRecordSupabase(norm) {
@@ -37,37 +37,36 @@ async function findPinRecordSupabase(norm) {
   const mem = inMemoryPins.get(norm) || inMemoryPins.get(last10);
   if (mem) return mem;
 
-  // 2. Check profiles table in Supabase
+  // 2. Check canonical auth_pins table in Supabase
   if (isSupabaseConfigured()) {
     try {
-      const { data: profile } = await supabase
-        .from('profiles')
+      const { data: pinRow, error } = await supabase
+        .from('auth_pins')
         .select('*')
-        .ilike('phone', `%${last10}%`)
+        .or(`norm_phone.eq.${norm},norm_phone.eq.${last10},norm_phone.ilike.%${last10}%`)
         .maybeSingle();
 
-      if (profile && profile.pin_hash) {
-        const isVerified = Boolean(profile.is_verified);
+      if (!error && pinRow && pinRow.pin) {
         const rec = {
-          phone: profile.phone,
-          norm_phone: norm,
-          normPhone: norm,
-          pin: profile.pin_hash,
-          is_temp: !isVerified,
-          isTemp: !isVerified,
-          linked_id: profile.emp_code,
-          linkedId: profile.emp_code,
-          linked_type: 'team',
-          linkedType: 'team',
-          email: profile.email || '',
-          attempts: 0
+          phone: pinRow.phone,
+          norm_phone: pinRow.norm_phone,
+          normPhone: pinRow.norm_phone,
+          pin: String(pinRow.pin).trim(),
+          is_temp: Boolean(pinRow.is_temp),
+          isTemp: Boolean(pinRow.is_temp),
+          linked_id: pinRow.linked_id,
+          linkedId: pinRow.linked_id,
+          linked_type: pinRow.linked_type || 'team',
+          linkedType: pinRow.linked_type || 'team',
+          email: pinRow.email || '',
+          attempts: Number(pinRow.attempts) || 0
         };
         inMemoryPins.set(norm, rec);
         inMemoryPins.set(last10, rec);
         return rec;
       }
     } catch (e) {
-      console.warn('findPinRecordSupabase profiles query note:', e.message);
+      console.warn('findPinRecordSupabase auth_pins query note:', e.message);
     }
   }
 
@@ -85,17 +84,21 @@ async function upsertPinRecordSupabase(record) {
   if (!isSupabaseConfigured()) return true;
 
   try {
-    const updatePayload = {
-      pin_hash: record.pin,
+    const payload = {
+      phone: record.phone || norm,
+      norm_phone: norm,
+      pin: String(record.pin).trim(),
+      is_temp: Boolean(record.isTemp !== undefined ? record.isTemp : record.is_temp),
+      linked_id: record.linkedId || record.linked_id || '',
+      linked_type: record.linkedType || record.linked_type || 'team',
+      email: record.email || '',
+      attempts: Number(record.attempts) || 0,
       updated_at: new Date().toISOString()
     };
-    if (record.isTemp === false || record.is_temp === false) {
-      updatePayload.is_verified = true;
-    }
+
     await supabase
-      .from('profiles')
-      .update(updatePayload)
-      .ilike('phone', `%${last10}%`);
+      .from('auth_pins')
+      .upsert(payload, { onConflict: 'norm_phone' });
 
     return true;
   } catch (e) {
@@ -254,7 +257,7 @@ async function verifyPin(phone, inputPin, requestedPortal = null) {
         if (requestedPortal !== 'client') {
           const { data: profile } = await supabase.from('profiles').select('*').ilike('phone', `%${norm.slice(-10)}%`).maybeSingle();
           if (profile) {
-            userObj = { id: profile.emp_code, emp_code: profile.emp_code, name: profile.name, role: profile.role, phone: profile.phone, email: profile.email, accessLevel: profile.access_level, pin_hash: profile.pin_hash };
+            userObj = { id: profile.emp_code, emp_code: profile.emp_code, name: profile.name, role: profile.role, phone: profile.phone, email: profile.email, accessLevel: profile.access_level };
             linkedType = 'team';
           }
         }
@@ -297,8 +300,7 @@ async function verifyPin(phone, inputPin, requestedPortal = null) {
           role: emp.role,
           phone: emp.phone,
           email: emp.email,
-          accessLevel: emp.accessLevel,
-          pin_hash: emp.pin_hash || emp.pinHash
+          accessLevel: emp.accessLevel
         };
         linkedType = 'team';
       }
@@ -315,7 +317,7 @@ async function verifyPin(phone, inputPin, requestedPortal = null) {
       record = {
         phone: userObj.phone,
         normPhone: norm,
-        pin: userObj.pin_hash || '8465',
+        pin: getDeterministicPin(norm),
         isTemp: true,
         linkedId: userObj.id || userObj.emp_code,
         linkedType,
@@ -435,20 +437,15 @@ async function setPermanentPin(phone, newPin, email = '') {
 
   await upsertPinRecordSupabase(updatedRecord);
 
-  if (isSupabaseConfigured()) {
+  if (isSupabaseConfigured() && email && email.trim()) {
     try {
       const last10 = norm.slice(-10);
-      const updateData = {
-        pin_hash: String(newPin).trim(),
-        is_verified: true,
+      await supabase.from('profiles').update({
+        email: email.trim(),
         updated_at: new Date().toISOString()
-      };
-      if (email && email.trim()) {
-        updateData.email = email.trim();
-      }
-      await supabase.from('profiles').update(updateData).ilike('phone', `%${last10}%`);
+      }).ilike('phone', `%${last10}%`);
     } catch (e) {
-      console.warn('setPermanentPin Supabase err:', e.message);
+      console.warn('setPermanentPin profile email update notice:', e.message);
     }
   }
 
