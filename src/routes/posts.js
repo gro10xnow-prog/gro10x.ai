@@ -10,6 +10,9 @@ function mapPost(p) {
   if (!p) return null;
   return {
     id: p.id,
+    channel: p.channel || p.channel_name || 'Client Account',
+    contentCategory: p.content_category || p.contentCategory || 'General',
+    firstComment: p.first_comment || p.firstComment || '',
     clientId: p.client_id || null,
     clientName: p.client_name || 'General Client',
     platform: p.platform || 'Facebook',
@@ -20,11 +23,12 @@ function mapPost(p) {
     mediaUrls: p.media_urls || [],
     scheduledDate: p.scheduled_date || '',
     scheduledTime: p.scheduled_time || '18:00',
-    assignedPublisher: p.assigned_publisher || 'Unassigned',
+    assignedPublisher: p.assigned_publisher || 'Firoz',
     status: p.status || 'Draft',
     clientFeedback: p.client_feedback || null,
     approvedBy: p.approved_by || null,
     approvedAt: p.approved_at || null,
+    postedAt: p.posted_at || null,
     createdAt: p.created_at,
     updatedAt: p.updated_at
   };
@@ -177,6 +181,9 @@ router.post('/', requireAuth, async (req, res) => {
 
     const payload = {
       id: newId,
+      channel: req.body.channel || req.body.channel_name || 'Client Account',
+      content_category: req.body.contentCategory || req.body.content_category || 'General',
+      first_comment: req.body.firstComment || req.body.first_comment || '',
       client_id: req.body.clientId || req.body.client_id || '',
       client_name: req.body.clientName || req.body.client_name || 'General Client',
       platform: req.body.platform || 'Facebook',
@@ -187,7 +194,7 @@ router.post('/', requireAuth, async (req, res) => {
       media_urls: req.body.mediaUrls || (req.body.mediaUrl ? [req.body.mediaUrl] : []),
       scheduled_date: req.body.scheduledDate || req.body.scheduled_date || new Date().toISOString().split('T')[0],
       scheduled_time: req.body.scheduledTime || req.body.scheduled_time || '18:00',
-      assigned_publisher: req.body.assignedPublisher || req.body.assigned_publisher || req.user?.name || 'Unassigned',
+      assigned_publisher: req.body.assignedPublisher || req.body.assigned_publisher || req.user?.name || 'Firoz',
       status: req.body.status || 'Draft',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
@@ -221,6 +228,9 @@ router.put('/:id', requireAuth, requirePostOwnership, async (req, res) => {
     const updates = { updated_at: new Date().toISOString() };
 
     if (req.body.title) updates.title = req.body.title;
+    if (req.body.channel) updates.channel = req.body.channel;
+    if (req.body.contentCategory !== undefined) updates.content_category = req.body.contentCategory;
+    if (req.body.firstComment !== undefined) updates.first_comment = req.body.firstComment;
     if (req.body.caption !== undefined) updates.caption = req.body.caption;
     if (req.body.hashtags !== undefined) updates.hashtags = req.body.hashtags;
     if (req.body.status) updates.status = req.body.status;
@@ -321,6 +331,37 @@ const handleRejectPost = async (req, res) => {
 
 router.post('/:id/reject', requireAuth, requirePostOwnership, handleRejectPost);
 router.patch('/:id/reject', requireAuth, requirePostOwnership, handleRejectPost);
+
+// POST/PATCH Mark Post as Posted (Engine 5 Loop)
+const handlePosted = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = {
+      status: 'Posted',
+      posted_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
+    const memIdx = inMemoryPosts.findIndex(p => p.id === id);
+    if (memIdx !== -1) {
+      inMemoryPosts[memIdx] = { ...inMemoryPosts[memIdx], ...updates };
+    }
+    const post = mapPost(inMemoryPosts[memIdx] || { id, ...updates });
+
+    if (supabase) {
+      supabase.from('social_posts').update(updates).eq('id', id).then(null, () => {});
+    }
+
+    try { broadcast('post_update', inMemoryPosts.map(mapPost)); } catch (e) {}
+    return res.json({ success: true, post });
+  } catch (err) {
+    console.error('Social Post Posted error:', err.message);
+    return res.status(500).json({ error: err.message });
+  }
+};
+
+router.post('/:id/posted', requireAuth, requirePostOwnership, handlePosted);
+router.patch('/:id/posted', requireAuth, requirePostOwnership, handlePosted);
 
 // PATCH Update Post Status
 router.patch('/:id/status', requireAuth, requirePostOwnership, async (req, res) => {

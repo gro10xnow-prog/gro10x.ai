@@ -91,10 +91,15 @@ function saveState(state) {
 async function renderEnginesView(container) {
   const state = getStoredState();
   let isLive = false;
+  let allPosts = [];
 
   try {
     if (window.APP_API && typeof window.APP_API.get === 'function') {
-      const apiData = await window.APP_API.get('/engines/summary');
+      const [apiData, postsRes] = await Promise.all([
+        window.APP_API.get('/engines/summary').catch(() => null),
+        window.APP_API.get('/posts').catch(() => [])
+      ]);
+      if (Array.isArray(postsRes)) allPosts = postsRes;
       if (apiData && apiData.success && apiData.engines) {
         isLive = true;
         if (apiData.engines.engine1) state.saas.current = Math.max(state.saas.current, apiData.engines.engine1.current || 0);
@@ -107,6 +112,9 @@ async function renderEnginesView(container) {
   } catch (e) {
     console.log('[Engines] Using local fallback state:', e.message);
   }
+
+  const e5Published = allPosts.filter(p => (p.status === 'Posted' || p.status === 'Published') && (String(p.channel||'').toLowerCase().includes('grow') || String(p.channel||'').toLowerCase().includes('pilutics') || String(p.channel||'').toLowerCase().includes('bong'))).length;
+  const e5Scheduled = allPosts.filter(p => (p.status === 'Approved' || p.status === 'Scheduled') && (String(p.channel||'').toLowerCase().includes('grow') || String(p.channel||'').toLowerCase().includes('pilutics') || String(p.channel||'').toLowerCase().includes('bong'))).length;
 
   const totalTarget = 100000;
   const totalCurrent = state.saas.current + state.sprints.current + state.assets.current + state.retainers.current + state.video.current;
@@ -393,31 +401,33 @@ async function renderEnginesView(container) {
 
           <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:0.5rem; background:rgba(0,0,0,0.2); padding:0.75rem; border-radius:10px; margin-bottom:1rem;">
             <div>
-              <span style="font-size:0.7rem; color:var(--text-muted);">Monthly Views</span>
-              <div style="font-size:1.1rem; font-weight:800; color:#ef4444;">${state.video.monthlyViews.toLocaleString()}</div>
+              <span style="font-size:0.7rem; color:var(--text-muted);">Posts Published</span>
+              <div style="font-size:1.1rem; font-weight:800; color:#10b981;">${e5Published} <span style="font-size:0.72rem; color:var(--text-muted); font-weight:normal;">live</span></div>
             </div>
             <div>
-              <span style="font-size:0.7rem; color:var(--text-muted);">Avg RPM Yield</span>
-              <div style="font-size:1.1rem; font-weight:800; color:#ffffff;">$${state.video.avgRPM}</div>
+              <span style="font-size:0.7rem; color:var(--text-muted);">In Queue / Sched.</span>
+              <div style="font-size:1.1rem; font-weight:800; color:#60a5fa;">${e5Scheduled} <span style="font-size:0.72rem; color:var(--text-muted); font-weight:normal;">posts</span></div>
             </div>
           </div>
 
           <h4 style="font-size:0.78rem; color:var(--text-muted); text-transform:uppercase; margin-bottom:0.5rem;">Active Channels & Feeds</h4>
           <div style="display:flex; flex-direction:column; gap:0.4rem;">
-            ${state.video.channels.map(c => `
+            ${state.video.channels.map(c => {
+              const cPosts = allPosts.filter(p => String(p.channel||'').toLowerCase().includes(c.name.toLowerCase())).length;
+              return `
               <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:0.4rem 0.6rem; border-radius:8px; font-size:0.8rem;">
                 <div>
                   <strong style="color:#ffffff;">${c.name}</strong>
-                  <div style="font-size:0.7rem; color:var(--text-muted);">${c.subs} Subs · ${c.monthlyViews} views/mo</div>
+                  <div style="font-size:0.7rem; color:var(--text-muted);">${c.subs} Subs · ${cPosts} posts in Planner</div>
                 </div>
                 <span style="color:#ef4444; font-weight:700;">+$${c.yield}/mo</span>
               </div>
-            `).join('')}
+            `}).join('')}
           </div>
         </div>
         <div style="margin-top:1rem; padding-top:0.75rem; border-top:1px solid rgba(255,255,255,0.05); display:flex; justify-content:space-between; align-items:center;">
-          <a href="#social" class="btn-ghost btn-sm">Open Social Planner</a>
-          <button class="btn-secondary btn-sm" onclick="alert('Autonomous Video Batch Dispatch triggers ComfyUI & ElevenLabs rendering pipeline.')">Queue Video Batch</button>
+          <a href="#social" class="btn-ghost btn-sm">📱 Open Social Planner</a>
+          <a href="#social" class="btn-primary btn-sm" style="font-size:0.75rem;">+ Plan Content</a>
         </div>
       </div>
 
