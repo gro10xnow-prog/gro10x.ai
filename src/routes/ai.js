@@ -825,9 +825,9 @@ router.post('/social-brief', requireAuth, aiRateLimiter, async (req, res) => {
   const chunkCount = isVideoType ? Math.max(1, Math.min(18, Math.ceil(durationSec / 10))) : 0;
 
   // Build rich, character-driven VEO 3 scene blueprints — STRICT NO TEXT OVERLAY + PURE ENGLISH VISUAL PROMPTS + VERBATIM NATURAL SPOKEN SCRIPT
-  function buildCinematicVeoScenes(chan, postTop, cat, durSec, l, count) {
-    const isGb = chan.toLowerCase().includes('grow bangla') || cat.toLowerCase().includes('english') || cat.toLowerCase().includes('career');
-    const isPilutics = chan.toLowerCase().includes('pilutics') || cat.toLowerCase().includes('geopolit') || cat.toLowerCase().includes('documentary');
+  function buildCinematicVeoScenes(chan, postTop, cat, durSec, l, count, vf = null) {
+    const isGb = chan.toLowerCase().includes('grow bangla') || cat.toLowerCase().includes('english') || cat.toLowerCase().includes('career') || (vf && vf.protagonist && vf.protagonist.gender === 'female');
+    const isPilutics = chan.toLowerCase().includes('pilutics') || cat.toLowerCase().includes('geopolit') || cat.toLowerCase().includes('documentary') || (vf && vf.protagonist && vf.protagonist.gender === 'male' && vf.aesthetic && vf.aesthetic.setting && vf.aesthetic.setting.includes('command center'));
     const isBongHits = chan.toLowerCase().includes('bong') || cat.toLowerCase().includes('music') || cat.toLowerCase().includes('entertainment');
     const isGro10x = chan.toLowerCase().includes('gro10x') || cat.toLowerCase().includes('saas') || cat.toLowerCase().includes('ai') || cat.toLowerCase().includes('tech');
 
@@ -851,12 +851,12 @@ router.post('/social-brief', requireAuth, aiRateLimiter, async (req, res) => {
       let visualCue = '';
 
       if (isGb) {
-        // ─── GROW BANGLA — Host Saira, Modern Educator Studio ───────────────────
+        // ─── GROW BANGLA — Female-Contoured Signature Orange Mannequin, Fern Approach ───────────────────
         if (i === 1) {
           section = 'The Hook (Urgent Warning)';
-          characterAction = 'Saira delivering an urgent warning directly to camera with an intense, engaging expression and a decisive pointing gesture.';
-          cameraMove = 'Cinematic studio medium shot, subtle 35mm slow push-in, shallow depth of field (f/1.8).';
-          prompt = `Cinematic studio medium shot. Young professional Bangladeshi female educator Saira delivering an urgent warning to camera with an intense, engaging expression. Warm key lighting, dark acoustic wood slat wall background with vivid cyan LED backlight. 4K 60fps photorealistic.`;
+          characterAction = 'The Female-Contoured Signature Orange Mannequin wearing a sharp modern cream professional suit (blazer and trousers) delivering an urgent warning directly to camera with an empowering, mentor gesture.';
+          cameraMove = 'Cinematic studio medium shot, smooth optimistic camera pan, gentle push-in, shallow depth of field (f/1.8).';
+          prompt = `Cinematic medium shot, gentle push-in. Female-Contoured Signature Orange Mannequin wearing a sharp, modern cream professional suit with blazer and trousers, delivering an urgent warning directly to camera. Sunlit modern high-rise office with minimalist glass walls and lush green corporate park view. Bright warm golden natural light mixed with clean cyan accents, professional bokeh. 4K 60fps photorealistic.`;
           voiceLine = isInterview
             ? `ইন্টারভিউতে 'Tell Me About Yourself' জিজ্ঞেস করলেই এই ৩টি মারাত্মক ভুল কখনোই করবে না! প্রথম ৩০ সেকেন্ডেই ইন্টারভিউয়ার সিদ্ধান্ত নিয়ে নেয় তোমাকে নেবে কি না!`
             : (isSalary
@@ -866,17 +866,17 @@ router.post('/social-brief', requireAuth, aiRateLimiter, async (req, res) => {
                     : (isEmail
                         ? `কর্পোরেট ইমেইলে প্রথম লাইনেই এই মারাত্মক ভুলটা করলে রিসিভার কখনো তোমার ইমেইল রিপ্লাই করবে না!`
                         : `এই বিষয়ে এই মারাত্মক ভুলটা কখনোই করবে না! ৯৫% চাকরিপ্রার্থী শুরুতেই এই ফাঁদে পড়ে বাদ পড়ে যায়!`)));
-          visualCue = `Glowing stop-sign alert icon graphic with pulsing amber spotlight. (NO text overlay)`;
+          visualCue = `Vibrant glowing cyan 3D holographic career roadmap overlay. (NO text overlay)`;
 
         } else if (i === 2) {
           section = 'The Common Mistake — Live Demo';
           characterAction = isPronunciation
-            ? 'Saira demonstrating flawed mouth shape and hesitant pronunciation with a puzzled, relatable expression.'
+            ? 'The Female-Contoured Signature Orange Mannequin in sharp cream suit demonstrating hesitant posture and common pronunciation barrier.'
             : (isSalary
-                ? 'Saira acting out a nervous candidate blurting out an unsure number with slumped shoulders.'
-                : 'Saira acting out a hesitant, confused candidate posture — slumped shoulders, unsure tone, looking away.');
-          cameraMove = 'Medium shot, static camera with subtle handheld texture, side warm amber fill.';
-          prompt = `Studio medium shot. Female educator Saira acting out a relatable, hesitant mistake during a high-stakes professional scenario. Warm amber side lighting, modern studio background, high visual clarity.`;
+                ? 'The Female-Contoured Signature Orange Mannequin in sharp cream suit illustrating a nervous candidate with slumped shoulders.'
+                : 'The Female-Contoured Signature Orange Mannequin in sharp cream suit acting out a hesitant, confused candidate posture.');
+          cameraMove = 'Medium shot, static camera with subtle texture, warm golden side fill.';
+          prompt = `Studio medium shot. Female-Contoured Signature Orange Mannequin in a modern cream blazer and trousers suit illustrating a common professional career barrier. Minimalist seminar room with glass walls, bright warm golden natural light with soft cyan ambient glow. 4K 60fps.`;
           voiceLine = isInterview
             ? `সবচেয়ে কমন ভুল — শুরুতেই নিজের নাম, বয়স আর পুরো জীবনী মুখস্থ বলা শুরু করা। এতে ইন্টারভিউয়ার প্রথম ৫ সেকেন্ডেই আগ্রহ হারিয়ে ফেলে!`
             : (isSalary
@@ -886,13 +886,13 @@ router.post('/social-brief', requireAuth, aiRateLimiter, async (req, res) => {
                     : (isEmail
                         ? `"I am writing to inform you…" — এই পুরোনো ও দুর্বল ওপেনার দিয়ে শুরু করলে প্রফেশনাল ইম্প্রেশন শুরুতেই শেষ!`
                         : `কোনো প্রিপারেশন ছাড়া এলোমেলোভাবে কথা বলা শুরু করলে শ্রোতা প্রথম কয়েক সেকেন্ডেই আগ্রহ হারিয়ে ফেলে!`)));
-          visualCue = `Split-screen visual: Glowing Red 'X' failure icon graphic on left side. (NO text overlay)`;
+          visualCue = `Split-screen visual: Glowing Red 'X' 3D holographic icon graphic on left side. (NO text overlay)`;
 
         } else if (i === 3) {
           section = 'The Strategic Pivot — Reveal';
-          characterAction = 'Saira leaning slightly forward with an encouraging, confident smile and a reassuring nod.';
+          characterAction = 'The Female-Contoured Signature Orange Mannequin leaning slightly forward with an empowering, confident nod, navigating an aspirational world.';
           cameraMove = 'Medium close-up, smooth camera glide forward, eye-level framing.';
-          prompt = `Studio medium close-up. Female educator Saira nodding knowingly with an encouraging, confident smile, preparing to share the winning strategy. Cyan and warm golden rim light.`;
+          prompt = `Studio medium close-up, gentle push-in. Female-Contoured Signature Orange Mannequin in modern cream suit preparing to share the winning strategy. Vibrant glowing cyan 3D skill tree holographic overlay branching upward, sunlit modern high-rise office background. 4K 60fps.`;
           voiceLine = isInterview
             ? `কিন্তু স্মার্ট প্রফেশনালরা উত্তর দেয় অন্যভাবে — তারা ব্যবহার করে ৩-স্টেপ প্রেজেন্ট-পাস্ট-ফিউচার উইনিং ফর্মুলা!`
             : (isSalary
@@ -902,15 +902,13 @@ router.post('/social-brief', requireAuth, aiRateLimiter, async (req, res) => {
                     : (isEmail
                         ? `স্মার্ট প্রফেশনালরা সরাসরি অ্যাকশন পয়েন্টে আসে এবং ব্যবহার করে হাই-কনভার্টিং ৩-স্টেপ ওপেনার!`
                         : `কিন্তু স্মার্ট প্রফেশনালরা ফলো করে প্রমাণিত ৩-স্টেপ স্ট্র্যাটেজি যা শুরুতেই শক্তিশালী ইমপ্যাক্ট তৈরি করে!`)));
-          visualCue = `Illuminated lightning spark transition graphic with glowing cyan rim lighting. (NO text overlay)`;
+          visualCue = `Vibrant glowing cyan 3D holographic skill tree branching upward. (NO text overlay)`;
 
         } else if (i === 4) {
           section = 'The Correct Solution — Step-by-Step';
-          characterAction = isPronunciation
-            ? 'Saira demonstrating crisp mouth opening and clear phonetic resonance with confident eye contact.'
-            : 'Saira walking through each solution step using deliberate hand signals, sharp eye contact, authoritative but warm tone.';
-          cameraMove = 'Crisp close-up shot, sharp focus on facial expression and clear articulation.';
-          prompt = `Close-up shot of female educator Saira articulating clearly with confident expressions and authoritative hand gestures. High-contrast studio lighting, sharp facial focus.`;
+          characterAction = 'The Female-Contoured Signature Orange Mannequin walking through each solution step using deliberate, mentor hand signals and empowering posture.';
+          cameraMove = 'Crisp close-up shot, sharp focus and smooth camera glide.';
+          prompt = `Close-up shot. Female-Contoured Signature Orange Mannequin in sharp cream professional suit articulating solution steps with mentor hand gestures. Minimalist seminar room with glass walls, clean cyan accents, high visual clarity. 4K 60fps.`;
           voiceLine = isInterview
             ? `সঠিক ৩-স্টেপ মেথড: প্রথমে তোমার বর্তমান রোল ও কাজের পরিচয়। দ্বিতীয়ত সেরা একটা রিয়েল অ্যাচিভমেন্ট। এবং শেষে এই কোম্পানিতে তুমি কী ভ্যালু আনবে তা সরাসরি বলো!`
             : (isSalary
@@ -920,13 +918,13 @@ router.post('/social-brief', requireAuth, aiRateLimiter, async (req, res) => {
                     : (isEmail
                         ? `উইনিং ওপেনার: "Hope you're having a productive week — reaching out specifically regarding [point]." এরপর ১ লাইনে ক্লিয়ার কল-টু-অ্যাকশন রাখো!`
                         : `সঠিক পদ্ধতি: ১) ক্লিয়ার গোল সেট করা, ২) হাই-ডিমান্ড স্কিল প্রতিদিন প্র্যাকটিস করা, ৩) রেগুলার ফিডব্যাক নিয়ে নিজেকে ইম্প্রুভ করা!`)));
-          visualCue = `Split-screen visual: Bright glowing green checkmark icon graphic with smooth animated check. (NO text overlay)`;
+          visualCue = `Bright glowing green checkmark 3D holographic badge icon. (NO text overlay)`;
 
         } else if (i === 5) {
           section = 'The Golden Rule — Memorable Takeaway';
-          characterAction = 'Saira counting structured formula steps on 3 fingers with high energy and a big confident smile.';
-          cameraMove = 'Medium shot, dynamic fast zoom-in on beat, subject-motion sync.';
-          prompt = `Studio medium shot. Female educator Saira enthusiastically demonstrating a 3-part framework using 3 raised fingers with high energy and an encouraging smile. Modern glass whiteboard with neon cyan accent.`;
+          characterAction = 'The Female-Contoured Signature Orange Mannequin demonstrating structured formula with an organized, high-energy mentor stance.';
+          cameraMove = 'Medium shot, smooth optimistic camera pan, subject-motion sync.';
+          prompt = `Studio medium shot, smooth optimistic pan. Female-Contoured Signature Orange Mannequin in sharp cream suit revealing the core golden rule. Vibrant glowing cyan 3D growth chart holographic overlay floating beside. Sunlit corporate park background. 4K 60fps.`;
           voiceLine = isInterview
             ? `এই গোল্ডেন রুলটা মনে রাখো — প্রেজেন্ট, পাস্ট, ফিউচার: এই ৩টা লাইনেই তোমার পুরো অ্যানসার শেষ করো!`
             : (isSalary
@@ -936,42 +934,42 @@ router.post('/social-brief', requireAuth, aiRateLimiter, async (req, res) => {
                     : (isEmail
                         ? `গোল্ডেন রুল — সাবজেক্ট লাইন ছোট রাখো, ফার্স্ট লাইনেই ভ্যালু বলো, আর শেষে একটা নির্দিষ্ট ডেডলাইন রাখো!`
                         : `গোল্ডেন রুল — কনসিস্টেন্সি আর রাইট টেকনিকই যেকোনো ফিল্ডে সফলতার একমাত্র চাবিকাঠি!`)));
-          visualCue = `Three glowing circular step icons (1, 2, 3) illuminated in cyan neon. (NO text overlay)`;
+          visualCue = `Vibrant glowing cyan 3D growth chart holographic overlay. (NO text overlay)`;
 
         } else {
           section = 'CTA & Brand Signoff';
-          characterAction = 'Saira smiling brightly, warm wave and energetic pointing gesture toward subscription button.';
-          cameraMove = 'Smooth camera pull-back showing full high-end studio workspace and branding.';
-          prompt = `Wide pull-back shot. Female educator Saira smiling warmly and waving, revealing full modern studio set with wood acoustic panels and glowing Grow Bangla ambient lighting.`;
+          characterAction = 'The Female-Contoured Signature Orange Mannequin gesturing warmly toward subscription indicator with inspiring, high-end presence.';
+          cameraMove = 'Smooth camera pull-back showing sunlit modern high-rise office overlooking city skyline.';
+          prompt = `Wide pull-back shot. Female-Contoured Signature Orange Mannequin in modern cream blazer and trousers suit in sunlit modern high-rise office overlooking panoramic city skyline. Warm golden sunset light, clean cyan accents, inspiring atmosphere. 4K 60fps.`;
           voiceLine = `ক্যারিয়ার ও স্পোকেন ইংলিশের আরও প্র্যাকটিক্যাল গাইডের জন্য Grow Bangla-তে এখনই সাবস্ক্রাইব করো — প্রতিদিনের ক্যারিয়ার মাস্টারি মিস করবে না!`;
           visualCue = `Grow Bangla official brand icon badge with animated pulsing subscribe bell graphic. (NO text overlay)`;
         }
 
       } else if (isPilutics) {
-        // ─── PILUTICS — Geopolitical War Room & Deep Analysis ───────────────────
+        // ─── PILUTICS — Male-Contoured Signature Orange Mannequin, Fern Geopolitical War Room ───────────────────
         if (i === 1) {
           section = 'Geopolitical Crisis Hook';
-          characterAction = 'Analyst host standing before holographic world map display with stern, analytical expression.';
-          cameraMove = 'Dramatic tracking shot entering dark studio, deep blue and crimson ambient lighting.';
-          prompt = `Cinematic documentary studio. Strategic geopolitical analyst standing before glowing holographic world map display analyzing international conflict. Moody dark-mode command center, deep navy and crimson rim lights. 4K 60fps.`;
+          characterAction = 'The Male-Contoured Signature Orange Mannequin in a sharp, authoritative charcoal grey slim-fit business suit standing before a monumental 3D holographic tactical map display with intense, analytical focus.';
+          cameraMove = 'Slow, smooth cinematic glide, low-angle shot for monumental feel, atmospheric smoke and haze.';
+          prompt = `Cinematic documentary wide shot, low-angle. Male-Contoured Signature Orange Mannequin in a sharp authoritative charcoal grey slim-fit business suit in a dark atmospheric strategic command center. Cinematic high-contrast lighting with deep shadows, intense cyan and red hazard glows. Monumental glowing 3D tactical map hologram, atmospheric smoke and haze. 4K 60fps.`;
           voiceLine = `বিশ্ব রাজনীতিতে এমন এক সংকট তৈরি হচ্ছে যা পুরো আন্তর্জাতিক ক্ষমতার ভারসাম্য বদলে দিচ্ছে। আজকের এই গভীর বিশ্লেষণে জানুন এর আসল পেছনের কারণ।`;
-          visualCue = `Interactive holographic globe display with pulsing crimson crisis hotspot beacon graphic. (NO text overlay)`;
+          visualCue = `Monumental glowing 3D tactical map hologram with pulsing crimson crisis hotspot beacon. (NO text overlay)`;
 
         } else if (i === 2) {
           section = 'Historical Context & Root Causes';
-          characterAction = 'Analyst referencing archival footage and satellite data on screen with pointer, deep thoughtful expression.';
-          cameraMove = 'Medium shot pushing toward archival data screen, cinematic depth of field.';
-          prompt = `Documentary studio. Analyst reviewing historical conflict data on dual monitor telemetry array. Deep navy blue lighting, cinematic film color grade.`;
+          characterAction = 'The Male-Contoured Signature Orange Mannequin referencing archival data on glowing 3D sonar grid display with steady analytical pointer.';
+          cameraMove = 'Medium shot, slow cinematic glide pushing toward glowing 3D telemetry grid.';
+          prompt = `Documentary studio medium shot. Male-Contoured Signature Orange Mannequin in charcoal grey suit reviewing historical conflict data on monumental 3D sonar grid telemetry. Shadowy war-room setting, high-contrast cyan and deep crimson lighting, atmospheric depth. 4K 60fps.`;
           voiceLine = `এই ঘটনা বোঝার জন্য আগে ইতিহাসের প্রেক্ষাপট জানতে হবে। বিগত দশকের যে নীতিগত সিদ্ধান্তগুলো নেওয়া হয়েছিল — সেগুলোই আজকের এই পরিস্থিতির মূল কারণ।`;
-          visualCue = `Archival timeline infographic graphic with glowing milestone node markers. (NO text overlay)`;
+          visualCue = `Monumental 3D sonar grid hologram with historical timeline milestone markers. (NO text overlay)`;
 
         } else if (i === count) {
           section = 'Strategic Conclusion & CTA';
-          characterAction = 'Analyst looking directly into lens with thought-provoking gaze and steady hand gesture.';
-          cameraMove = 'Slow pull-back to wide command room view.';
-          prompt = `Wide shot of analyst at glass briefing table surrounded by glowing analytical screens. Dramatic cinematic dark lighting.`;
+          characterAction = 'The Male-Contoured Signature Orange Mannequin at glass briefing table surrounded by monumental 3D holographic displays with analytical, authoritative presence.';
+          cameraMove = 'Monumental wide pull-back shot with slow dramatic glide.';
+          prompt = `Monumental wide pull-back shot. Male-Contoured Signature Orange Mannequin in sharp charcoal grey slim-fit business suit at glass briefing table surrounded by monumental 3D tactical holographic displays in dark strategic command room. Dramatic atmospheric smoke, intense cyan and red rim lighting. 4K 60fps.`;
           voiceLine = `এই সংঘাতের পরবর্তী ভূরাজনৈতিক অধ্যায় কী হতে চলেছে? বিশ্ব রাজনীতি ও আন্তর্জাতিক সংঘাতের গভীর বিশ্লেষণের জন্য PILUTICS ফলো করুন।`;
-          visualCue = `PILUTICS signature nautical compass seal graphic with animated rotation pulse. (NO text overlay)`;
+          visualCue = `PILUTICS signature nautical compass seal graphic with monumental rotating 3D pulse. (NO text overlay)`;
 
         } else {
           const analysisLines = [
@@ -982,11 +980,11 @@ router.post('/social-brief', requireAuth, aiRateLimiter, async (req, res) => {
           ];
           const lineIndex = Math.max(0, Math.min(i - 3, analysisLines.length - 1));
           section = `Strategic Deep Analysis — Layer ${i - 1}`;
-          characterAction = 'Analyst pointing to key trade routes and defense corridors with precise visual pacing.';
-          cameraMove = 'Medium close-up with slow pan across satellite telemetry displays.';
-          prompt = `Medium shot of documentary analyst gesturing toward illuminated satellite map overlays, high visual clarity and photorealistic textures.`;
+          characterAction = 'The Male-Contoured Signature Orange Mannequin in navy business suit gesturing toward trade corridors and defense choke-points on monumental holographic globe.';
+          cameraMove = 'Medium close-up, dramatic slow pull with low-angle framing, deep shadows.';
+          prompt = `Documentary medium shot, slow dramatic pull. Male-Contoured Signature Orange Mannequin in navy slim-fit suit analyzing international maritime trade corridors on a monumental 3D holographic globe display. Dark atmospheric command center, atmospheric haze, intense cyan and red hazard glows. 4K 60fps.`;
           voiceLine = analysisLines[lineIndex];
-          visualCue = `Maritime shipping corridor choke-point icon graphic with animated energy flow lines. (NO text overlay)`;
+          visualCue = `Monumental 3D holographic globe with glowing cyan trade corridors and red tension hazard choke-points. (NO text overlay)`;
         }
 
       } else if (isBongHits) {
@@ -1101,7 +1099,7 @@ router.post('/social-brief', requireAuth, aiRateLimiter, async (req, res) => {
     }).join('\n\n');
   }
 
-  const fallbackScenes = isVideoType ? buildCinematicVeoScenes(chanName, postTopic, category, durationSec, lang, chunkCount) : [];
+  const fallbackScenes = isVideoType ? buildCinematicVeoScenes(chanName, postTopic, category, durationSec, lang, chunkCount, brandProfile.visualFramework) : [];
 
   const fallbackPdfSlides = isPdfType ? [
     { slideNumber: 1, type: 'Cover', headline: `${postTopic}`, bullets: [`The Complete Executive Breakdown`, `By GRO10X Media for ${chanName}`], visualNote: 'Bold contrasting layout on dark gradient backdrop with brand icon.' },
@@ -1267,6 +1265,29 @@ Each item in "carouselSlides" MUST have:
     // Non-blocking
   }
 
+  // Phase 4: Brand Visual Style & Narrative Framework Enforcement
+  let visualFrameworkSection = '';
+  const vf = brandProfile.visualFramework;
+  if (vf && typeof vf === 'object') {
+    const prog = vf.protagonist
+      ? `• Protagonist: ${vf.protagonist.character || ''} (${vf.protagonist.costumeRules || ''})\n  - Vibe: ${vf.protagonist.vibe || ''}\n`
+      : '';
+    const st = vf.storytellingMode
+      ? `• Storytelling Mode: ${vf.storytellingMode.approach || ''} — ${vf.storytellingMode.metaphorStyle || ''}\n  - Host Role: ${vf.storytellingMode.hostRole || ''}\n`
+      : '';
+    const aes = vf.aesthetic
+      ? `• Aesthetic & Environment:\n  - Setting: ${vf.aesthetic.setting || ''}\n  - Lighting: ${vf.aesthetic.lighting || ''}\n  - Holographics: ${vf.aesthetic.holographics || ''}\n`
+      : '';
+    const cine = vf.cinematography
+      ? `• Cinematography: ${vf.cinematography}\n`
+      : '';
+
+    visualFrameworkSection =
+      `🎬 BRAND VISUAL FRAMEWORK & CINEMATIC RULES (MANDATORY — NON-NEGOTIABLE):\n` +
+      `${prog}${st}${aes}${cine}` +
+      `⚠️ STRICT ENFORCEMENT: Every "visualBrief" and scene description must precisely follow these character, costume, and cinematic rules. Never deviate.\n\n`;
+  }
+
   const prompt =
     `• Brand: "${brandProfile.name || chanName}"\n` +
     `  - Mission: "${brandProfile.mission || brandProfile.tagline || ''}"\n` +
@@ -1281,7 +1302,8 @@ Each item in "carouselSlides" MUST have:
     `• Target Duration: "${durationSec} seconds"\n` +
     `• Topic / Concept: "${postTopic}"\n` +
     `• 🔴 PRIMARY LANGUAGE (MANDATORY): "${lang}"\n\n` +
-    (learnedRevisionLessons.length > 0 ? `PRIOR REVISION FEEDBACK MEMORY FOR THIS CHANNEL (LEARNED EDITORIAL RULES):\nThe content team and client flagged the following areas for continuous improvement in recent drafts:\n${learnedRevisionLessons.join('\n')}\nStrictly ensure your generated brief resolves and incorporates these learned points!\n\n` : '') +
+    (visualFrameworkSection || '') +
+    (learnedRevisionLessons.length > 0 ? `PRIOR REVISION FEEDBACK MEMORY FOR THIS CHANNEL (LEARNED EDITORIAL RULES):\n${learnedRevisionLessons.join('\n')}\nStrictly ensure your generated brief resolves and incorporates these learned points!\n\n` : '') +
     `CRITICAL DIRECTIVES:\n` +
     `1. STRICT OVERLAY DIRECTIVE: NO TEXT OVERLAYS ON SCREEN. All visual cues and overlay directions must use GRAPHICAL ICONS, ILLUSTRATIONS, SPLIT-SCREENS, OR BADGES ONLY without text or typography.\n` +
     `2. PURE ENGLISH VEO PROMPTS: All Google VEO 3 visual prompts must be 100% in pure English describing cinematic cameras, lighting, and physical subject action. Never insert Bengali/Banglish sentences into the visual prompt.\n` +

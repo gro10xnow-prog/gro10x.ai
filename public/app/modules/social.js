@@ -1756,6 +1756,109 @@ window.APP_MODULES.social = async function(container) {
           </div>
         </div>
 
+        <!-- Layer 1B: Brand Visual Style & Narrative Framework Card -->
+        ${(() => {
+          const vf = brand.visualFramework || {};
+          const prog = vf.protagonist || {};
+          const st = vf.storytellingMode || {};
+          const aes = vf.aesthetic || {};
+          const cine = vf.cinematography || '';
+          const hasVf = Boolean(prog.character || aes.setting);
+
+          return `
+            <div style="background:linear-gradient(135deg, rgba(15,23,42,0.9), rgba(30,27,75,0.35)); border:1px solid rgba(14,165,233,0.35); border-radius:14px; padding:1.25rem; display:flex; flex-direction:column; gap:1rem; box-shadow:0 8px 24px rgba(0,0,0,0.25);">
+              
+              <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.8rem; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:0.75rem;">
+                <div style="display:flex; align-items:center; gap:0.6rem;">
+                  <span style="font-size:1.4rem;">🎬</span>
+                  <div>
+                    <div style="font-weight:900; color:#fff; font-size:1.05rem; display:flex; align-items:center; gap:0.5rem;">
+                      Brand Visual Style & Narrative Framework
+                      <span class="badge ${hasVf ? 'badge-emerald' : 'badge-warning'}" style="font-size:0.68rem;">
+                        ${hasVf ? '🔒 Cinematic DNA Enforced' : '⚙️ Needs Configuration'}
+                      </span>
+                    </div>
+                    <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.15rem;">
+                      Protagonist character, Fern visual metaphors, lighting, holographics & cinematic camera DNA injected into all AI Briefs, Calendars & VEO scene blueprints.
+                    </div>
+                  </div>
+                </div>
+
+                <button type="button" class="btn-secondary btn-sm" style="border-color:rgba(14,165,233,0.5); color:#38bdf8; font-weight:800; font-size:0.78rem; padding:0.35rem 0.9rem;" onclick="window.SOCIAL_MODULE.openEditVisualFrameworkModal('${brand.slug}')">
+                  ✏️ Edit Visual Framework
+                </button>
+              </div>
+
+              <!-- 4 Framework Pillars Grid -->
+              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:0.85rem;">
+                
+                <!-- Pillar 1: Protagonist -->
+                <div style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.06); border-radius:10px; padding:0.85rem; display:flex; flex-direction:column; gap:0.4rem;">
+                  <div style="display:flex; align-items:center; gap:0.4rem; font-size:0.75rem; font-weight:800; color:#38bdf8; text-transform:uppercase; letter-spacing:0.5px;">
+                    <span>👤</span> The Protagonist
+                  </div>
+                  <div style="font-size:0.85rem; font-weight:800; color:#fff;">
+                    ${escapeHTML(prog.character || 'Not configured')}
+                  </div>
+                  <div style="font-size:0.74rem; color:var(--text-secondary); line-height:1.4;">
+                    <strong style="color:var(--text-main);">Costume:</strong> ${escapeHTML(prog.costumeRules || 'Sharp professional attire')}
+                  </div>
+                  <div style="font-size:0.72rem; color:#f59e0b; margin-top:auto;">
+                    <strong>Vibe:</strong> ${escapeHTML(prog.vibe || 'Empowering & organized')}
+                  </div>
+                </div>
+
+                <!-- Pillar 2: Storytelling Mode -->
+                <div style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.06); border-radius:10px; padding:0.85rem; display:flex; flex-direction:column; gap:0.4rem;">
+                  <div style="display:flex; align-items:center; gap:0.4rem; font-size:0.75rem; font-weight:800; color:#c084fc; text-transform:uppercase; letter-spacing:0.5px;">
+                    <span>📖</span> Storytelling Mode
+                  </div>
+                  <div style="font-size:0.85rem; font-weight:800; color:#fff;">
+                    ${escapeHTML(st.approach || 'The Fern Approach')}
+                  </div>
+                  <div style="font-size:0.74rem; color:var(--text-secondary); line-height:1.4;">
+                    <strong style="color:var(--text-main);">Metaphors:</strong> ${escapeHTML(st.metaphorStyle || 'Cinematic conceptual metaphors')}
+                  </div>
+                  <div style="font-size:0.72rem; color:#a855f7; margin-top:auto;">
+                    <strong>Role:</strong> ${escapeHTML(st.hostRole || 'Mentor navigating aspirational world')}
+                  </div>
+                </div>
+
+                <!-- Pillar 3: Aesthetic & Environment -->
+                <div style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.06); border-radius:10px; padding:0.85rem; display:flex; flex-direction:column; gap:0.4rem;">
+                  <div style="display:flex; align-items:center; gap:0.4rem; font-size:0.75rem; font-weight:800; color:#34d399; text-transform:uppercase; letter-spacing:0.5px;">
+                    <span>🏛️</span> Aesthetic & Lighting
+                  </div>
+                  <div style="font-size:0.74rem; color:var(--text-secondary); line-height:1.4;">
+                    <strong style="color:var(--text-main);">Setting:</strong> ${escapeHTML(aes.setting || 'Modern architectural spaces')}
+                  </div>
+                  <div style="font-size:0.74rem; color:var(--text-secondary); line-height:1.4;">
+                    <strong style="color:var(--text-main);">Lighting:</strong> ${escapeHTML(aes.lighting || 'Cinematic natural & cyan')}
+                  </div>
+                  <div style="font-size:0.72rem; color:#34d399; margin-top:auto;">
+                    <strong>Holographics:</strong> ${escapeHTML(aes.holographics || '3D glowing cyan/red displays')}
+                  </div>
+                </div>
+
+                <!-- Pillar 4: Cinematography -->
+                <div style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.06); border-radius:10px; padding:0.85rem; display:flex; flex-direction:column; gap:0.4rem;">
+                  <div style="display:flex; align-items:center; gap:0.4rem; font-size:0.75rem; font-weight:800; color:#fbbf24; text-transform:uppercase; letter-spacing:0.5px;">
+                    <span>🎥</span> Cinematography
+                  </div>
+                  <div style="font-size:0.76rem; color:#f3f4f6; line-height:1.45;">
+                    ${escapeHTML(cine || 'Smooth cinematic pans, gentle push-ins, low-angle depth with high-end texture.')}
+                  </div>
+                  <div style="font-size:0.72rem; color:#10b981; margin-top:auto;">
+                    ✨ Auto-enforced on VEO 3 prompts & AI briefs
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+          `;
+        })()}
+
         <!-- Channel Status Matrix Cards with Setup Checklist -->
         <div style="background:var(--surface-card, #14141e); border:1px solid var(--border-subtle); border-radius:14px; padding:1.25rem; display:flex; flex-direction:column; gap:1rem;">
           <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-subtle); padding-bottom:0.7rem; flex-wrap:wrap; gap:0.6rem;">
@@ -4338,6 +4441,156 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
       const tModal = document.getElementById('teleprompterModal');
       if (tModal) tModal.style.display = 'none';
       releaseFocus();
+    },
+
+    openEditVisualFrameworkModal(brandSlug) {
+      const state = brandData || [];
+      const brand = (state || []).find(b => b.slug === brandSlug || b.id === brandSlug) || currentActiveBrand;
+      if (!brand) return;
+
+      const vf = brand.visualFramework || {};
+      const prog = vf.protagonist || {};
+      const st = vf.storytellingMode || {};
+      const aes = vf.aesthetic || {};
+      const cine = vf.cinematography || '';
+
+      let vfModal = document.getElementById('visualFrameworkModal');
+      if (!vfModal) {
+        vfModal = document.createElement('div');
+        vfModal.id = 'visualFrameworkModal';
+        vfModal.setAttribute('role', 'dialog');
+        vfModal.setAttribute('aria-modal', 'true');
+        vfModal.style.cssText = 'position:fixed; inset:0; background:rgba(4,7,14,0.94); backdrop-filter:blur(10px); z-index:var(--z-modal); display:flex; align-items:center; justify-content:center; padding:1.5rem;';
+        document.body.appendChild(vfModal);
+      }
+      vfModal.style.display = 'flex';
+      trapFocus(vfModal);
+
+      vfModal.innerHTML = `
+        <div style="background:#0f172a; border:1px solid rgba(14,165,233,0.4); border-radius:16px; width:100%; max-width:760px; max-height:90vh; overflow-y:auto; padding:1.75rem; display:flex; flex-direction:column; gap:1.25rem; box-shadow:0 20px 40px rgba(0,0,0,0.6);">
+          <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:0.9rem;">
+            <div style="display:flex; align-items:center; gap:0.6rem;">
+              <span style="font-size:1.6rem;">🎬</span>
+              <div>
+                <h3 style="margin:0; font-size:1.15rem; color:#fff; font-family:var(--font-heading);">
+                  Edit Brand Visual Framework — ${escapeHTML(brand.name)}
+                </h3>
+                <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.15rem;">
+                  Configure the cinematic rules that govern character, costume, lighting, and camera moves for this brand.
+                </div>
+              </div>
+            </div>
+            <button type="button" class="btn-ghost btn-sm" onclick="window.SOCIAL_MODULE.closeEditVisualFrameworkModal()" style="font-size:1.2rem; cursor:pointer;">✕</button>
+          </div>
+
+          <form onsubmit="event.preventDefault(); window.SOCIAL_MODULE.saveVisualFramework('${brand.slug}');" style="display:flex; flex-direction:column; gap:1rem;">
+            
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.9rem;">
+              <div class="form-group" style="margin:0;">
+                <label class="form-label" style="font-size:0.75rem; font-weight:800; color:#38bdf8;">👤 Protagonist Character Name/Form</label>
+                <input type="text" id="inpVfCharacter" class="input-text" style="font-size:0.8rem;" value="${escapeHTML(prog.character || '')}" placeholder="e.g. Female-Contoured Signature Orange Mannequin" required>
+              </div>
+
+              <div class="form-group" style="margin:0;">
+                <label class="form-label" style="font-size:0.75rem; font-weight:800; color:#38bdf8;">👔 Costume & Wardrobe Rules (Mandatory)</label>
+                <input type="text" id="inpVfCostume" class="input-text" style="font-size:0.8rem;" value="${escapeHTML(prog.costumeRules || '')}" placeholder="e.g. MUST always wear a sharp, modern cream or light grey professional suit..." required>
+              </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.9rem;">
+              <div class="form-group" style="margin:0;">
+                <label class="form-label" style="font-size:0.75rem; font-weight:800; color:#38bdf8;">✨ Character Vibe / Persona</label>
+                <input type="text" id="inpVfVibe" class="input-text" style="font-size:0.8rem;" value="${escapeHTML(prog.vibe || '')}" placeholder="e.g. Empowering, approachable, and highly organized">
+              </div>
+
+              <div class="form-group" style="margin:0;">
+                <label class="form-label" style="font-size:0.75rem; font-weight:800; color:#c084fc;">📖 Storytelling Approach</label>
+                <input type="text" id="inpVfApproach" class="input-text" style="font-size:0.8rem;" value="${escapeHTML(st.approach || 'The Fern Approach')}" placeholder="e.g. The Fern Approach">
+              </div>
+            </div>
+
+            <div class="form-group" style="margin:0;">
+              <label class="form-label" style="font-size:0.75rem; font-weight:800; color:#c084fc;">🌌 Visual Metaphors & Narrative Style</label>
+              <textarea id="inpVfMetaphor" class="input-text" rows="2" style="font-size:0.8rem;" placeholder="e.g. Use cinematic visual metaphors to illustrate career and business growth...">${escapeHTML(st.metaphorStyle || '')}</textarea>
+            </div>
+
+            <div class="form-group" style="margin:0;">
+              <label class="form-label" style="font-size:0.75rem; font-weight:800; color:#34d399;">🏛️ Setting & Environment DNA</label>
+              <textarea id="inpVfSetting" class="input-text" rows="2" style="font-size:0.8rem;" placeholder="e.g. Sunlit modern high-rise offices, minimalist seminar rooms with glass walls...">${escapeHTML(aes.setting || '')}</textarea>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.9rem;">
+              <div class="form-group" style="margin:0;">
+                <label class="form-label" style="font-size:0.75rem; font-weight:800; color:#34d399;">💡 Lighting & Color Palette</label>
+                <input type="text" id="inpVfLighting" class="input-text" style="font-size:0.8rem;" value="${escapeHTML(aes.lighting || '')}" placeholder="e.g. Bright warm golden natural light + clean cyan accents">
+              </div>
+
+              <div class="form-group" style="margin:0;">
+                <label class="form-label" style="font-size:0.75rem; font-weight:800; color:#34d399;">🔮 3D Holographics & Data Displays</label>
+                <input type="text" id="inpVfHolographics" class="input-text" style="font-size:0.8rem;" value="${escapeHTML(aes.holographics || '')}" placeholder="e.g. Career roadmaps and skill trees rendered as glowing cyan 3D overlays">
+              </div>
+            </div>
+
+            <div class="form-group" style="margin:0;">
+              <label class="form-label" style="font-size:0.75rem; font-weight:800; color:#fbbf24;">🎥 Cinematography & Camera Movement</label>
+              <textarea id="inpVfCinematography" class="input-text" rows="2" style="font-size:0.8rem;" placeholder="e.g. Smooth, optimistic camera pans and gentle push-ins. Focus on clarity and a high-end feel.">${escapeHTML(cine || '')}</textarea>
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; gap:0.6rem; border-top:1px solid rgba(255,255,255,0.1); padding-top:0.9rem; margin-top:0.4rem;">
+              <button type="button" class="btn-secondary" onclick="window.SOCIAL_MODULE.closeEditVisualFrameworkModal()">Cancel</button>
+              <button type="submit" class="btn-primary" style="background:linear-gradient(135deg, #0284c7, #0369a1); font-weight:800;">💾 Save Framework</button>
+            </div>
+
+          </form>
+        </div>
+      `;
+    },
+
+    closeEditVisualFrameworkModal() {
+      const vfModal = document.getElementById('visualFrameworkModal');
+      if (vfModal) vfModal.style.display = 'none';
+      releaseFocus();
+    },
+
+    async saveVisualFramework(brandSlug) {
+      try {
+        const payload = {
+          protagonist: {
+            character: document.getElementById('inpVfCharacter')?.value?.trim() || '',
+            costumeRules: document.getElementById('inpVfCostume')?.value?.trim() || '',
+            vibe: document.getElementById('inpVfVibe')?.value?.trim() || ''
+          },
+          storytellingMode: {
+            approach: document.getElementById('inpVfApproach')?.value?.trim() || '',
+            metaphorStyle: document.getElementById('inpVfMetaphor')?.value?.trim() || ''
+          },
+          aesthetic: {
+            setting: document.getElementById('inpVfSetting')?.value?.trim() || '',
+            lighting: document.getElementById('inpVfLighting')?.value?.trim() || '',
+            holographics: document.getElementById('inpVfHolographics')?.value?.trim() || ''
+          },
+          cinematography: document.getElementById('inpVfCinematography')?.value?.trim() || ''
+        };
+
+        const res = await APP_API.put(`/api/social-brands/${encodeURIComponent(brandSlug)}/visual-framework`, payload);
+        if (res && res.success) {
+          if (window.showToast) window.showToast('🎬 Brand Visual Framework saved & synced!', 'success');
+          this.closeEditVisualFrameworkModal();
+          // Update in-memory brand profile
+          const target = (brandData || []).find(b => b.slug === brandSlug || b.id === brandSlug);
+          if (target) {
+            target.visualFramework = res.visualFramework || payload;
+          }
+          if (currentActiveBrand && (currentActiveBrand.slug === brandSlug || currentActiveBrand.id === brandSlug)) {
+            currentActiveBrand.visualFramework = res.visualFramework || payload;
+          }
+          this.renderContentOS();
+        } else {
+          throw new Error(res?.error || 'Failed to save visual framework');
+        }
+      } catch (err) {
+        if (window.showToast) window.showToast('Save Error: ' + err.message, 'error');
+      }
     },
     // Phase 2.6: Per-Scene VEO Prompt Regeneration
     async regenerateVeoScene(sceneIndex) {

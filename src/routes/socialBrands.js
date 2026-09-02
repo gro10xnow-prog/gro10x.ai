@@ -42,6 +42,25 @@ const SEED_DATA = {
       standardCta: 'Subscribe to Grow Bangla for weekly job interview mastery & spoken English breakdowns! Link in bio.',
       logoUrl: '',
       assets: [],
+      visualFramework: {
+        protagonist: {
+          gender: 'female',
+          character: 'Female-Contoured Signature Orange Mannequin',
+          costumeRules: 'MUST always wear a sharp, modern cream or light grey professional suit (blazer and trousers).',
+          vibe: 'Empowering, approachable, and highly organized'
+        },
+        storytellingMode: {
+          approach: 'The Fern Approach',
+          metaphorStyle: 'Cinematic visual metaphors to illustrate career and business growth',
+          hostRole: 'The mannequin acts as a mentor or guide navigating an aspirational world'
+        },
+        aesthetic: {
+          setting: 'Sunlit modern high-rise offices, minimalist seminar rooms with glass walls, or lush green corporate parks',
+          lighting: 'Bright, warm golden natural light mixed with clean cyan accents. Use professional bokeh with city or garden views.',
+          holographics: 'Concepts like career roadmaps, skill trees, and growth charts rendered as vibrant, glowing cyan 3D holographic overlays'
+        },
+        cinematography: 'Smooth, optimistic camera pans and gentle push-ins. Focus on clarity and a high-end, inspiring feel.'
+      },
       channels: [
         {
           id: 'gb-youtube',
@@ -190,6 +209,25 @@ const SEED_DATA = {
       standardCta: 'Subscribe to PILUTICS for weekly deep-dive geopolitical documentaries! Link in bio.',
       logoUrl: '',
       assets: [],
+      visualFramework: {
+        protagonist: {
+          gender: 'male',
+          character: 'Male-Contoured Signature Orange Mannequin',
+          costumeRules: 'MUST always wear a sharp, authoritative charcoal grey or navy slim-fit business suit.',
+          vibe: 'Analytical, intense, and strategically focused'
+        },
+        storytellingMode: {
+          approach: 'The Fern Approach',
+          metaphorStyle: 'Epic, high-stakes visual metaphors to illustrate geopolitical and historical analysis',
+          hostRole: 'The mannequin acts as a strategic analyst within a monumental or shadowy world'
+        },
+        aesthetic: {
+          setting: 'Dark, atmospheric strategic command centers, shadowy war-rooms, or fractured historical sites',
+          lighting: 'Cinematic high-contrast lighting with deep shadows. Use intense cyan and red hazard glows to represent tension and data.',
+          holographics: 'Tactical maps, sonar grids, and fractured global icons rendered as monumental, glowing 3D holographic displays'
+        },
+        cinematography: 'Slow, smooth cinematic glides, low-angle shots for a monumental feel, and dramatic pulls. Use atmospheric smoke or haze for depth.'
+      },
       channels: [
         {
           id: 'pilutics-youtube',
@@ -376,12 +414,33 @@ const SEED_DATA = {
   ]
 };
 
+function patchMissingVisualFrameworks(state) {
+  if (!state || !Array.isArray(state.brands)) return false;
+  let modified = false;
+  for (const seedBrand of SEED_DATA.brands) {
+    if (!seedBrand.visualFramework) continue;
+    const target = state.brands.find(b => b.slug === seedBrand.slug || b.id === seedBrand.id);
+    if (target && !target.visualFramework) {
+      target.visualFramework = JSON.parse(JSON.stringify(seedBrand.visualFramework));
+      modified = true;
+    }
+  }
+  return modified;
+}
+
 function loadState() {
   try {
     if (fs.existsSync(DATA_FILE)) {
       const raw = fs.readFileSync(DATA_FILE, 'utf8');
       const parsed = JSON.parse(raw);
       if (parsed && Array.isArray(parsed.brands) && parsed.brands.length > 0) {
+        if (patchMissingVisualFrameworks(parsed)) {
+          try {
+            const dir = path.dirname(DATA_FILE);
+            if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+            fs.writeFileSync(DATA_FILE, JSON.stringify(parsed, null, 2), 'utf8');
+          } catch (_) {}
+        }
         _stateCache = parsed;
         _cacheTimestamp = Date.now();
         return parsed;
@@ -522,9 +581,57 @@ router.put('/:brandSlug', requireAuth, (req, res) => {
   if (monthlyFocus !== undefined) {
     brand.monthlyFocus = typeof monthlyFocus === 'object' && monthlyFocus !== null ? { ...(brand.monthlyFocus || {}), ...monthlyFocus } : brand.monthlyFocus;
   }
+  if (req.body.visualFramework !== undefined && typeof req.body.visualFramework === 'object') {
+    brand.visualFramework = {
+      ...(brand.visualFramework || {}),
+      ...req.body.visualFramework
+    };
+  }
 
   saveState(current);
   res.json({ success: true, brand });
+});
+
+// 3B. UPDATE BRAND VISUAL FRAMEWORK
+router.put('/:brandSlug/visual-framework', requireAuth, requireManager, (req, res) => {
+  const current = loadState();
+  const brand = (current.brands || []).find(b => b.slug === req.params.brandSlug || b.id === req.params.brandSlug);
+
+  if (!brand) {
+    return res.status(404).json({ success: false, error: 'Brand not found' });
+  }
+
+  const { protagonist, storytellingMode, aesthetic, cinematography } = req.body || {};
+
+  brand.visualFramework = brand.visualFramework || {};
+
+  if (protagonist && typeof protagonist === 'object') {
+    brand.visualFramework.protagonist = {
+      ...(brand.visualFramework.protagonist || {}),
+      ...protagonist
+    };
+  }
+
+  if (storytellingMode && typeof storytellingMode === 'object') {
+    brand.visualFramework.storytellingMode = {
+      ...(brand.visualFramework.storytellingMode || {}),
+      ...storytellingMode
+    };
+  }
+
+  if (aesthetic && typeof aesthetic === 'object') {
+    brand.visualFramework.aesthetic = {
+      ...(brand.visualFramework.aesthetic || {}),
+      ...aesthetic
+    };
+  }
+
+  if (cinematography !== undefined) {
+    brand.visualFramework.cinematography = String(cinematography);
+  }
+
+  saveState(current, { brandSlug: req.params.brandSlug, action: 'visual_framework_updated' });
+  res.json({ success: true, brand, visualFramework: brand.visualFramework });
 });
 
 // 4. ADD / EDIT CHANNEL
@@ -1037,6 +1144,19 @@ router.post('/:brandSlug/channels/:channelId/generate-calendar', requireAuth, as
 '- Top Videos: ' + (kb.topPerformers || []).slice(0, 4).map(p => '"' + p.title + '" (' + p.views + ' views, ' + p.subs + ' subs)').join('; ') + '\n' +
 '- Peak Release Windows: ' + (kb.bestPostingDays || ['Friday 18:00', 'Tuesday 19:00']).join(', ') : '') +
 (effectiveFocusNote ? '\nSpecial Monthly Campaign Focus Thesis: "' + effectiveFocusNote + '"' : '');
+
+    const vf = brand.visualFramework;
+    let visualFrameworkBlock = '';
+    if (vf && typeof vf === 'object') {
+      const prog = vf.protagonist ? `- Protagonist: ${vf.protagonist.character || ''} (${vf.protagonist.costumeRules || ''}, Vibe: ${vf.protagonist.vibe || ''})\n` : '';
+      const st = vf.storytellingMode ? `- Storytelling Mode: ${vf.storytellingMode.approach || ''} — ${vf.storytellingMode.metaphorStyle || ''} (${vf.storytellingMode.hostRole || ''})\n` : '';
+      const aes = vf.aesthetic ? `- Aesthetic: Setting: ${vf.aesthetic.setting || ''} | Lighting: ${vf.aesthetic.lighting || ''} | Holographics: ${vf.aesthetic.holographics || ''}\n` : '';
+      const cine = vf.cinematography ? `- Cinematography: ${vf.cinematography}\n` : '';
+      visualFrameworkBlock = `\n🎬 BRAND VISUAL IDENTITY & CINEMATIC RULES (MANDATORY FOR HOOK & TOPIC WRITING):\n${prog}${st}${aes}${cine}Every topic idea and hook in the plan must be written with this visual identity in mind.\n`;
+    }
+    if (visualFrameworkBlock) {
+      systemPrompt += visualFrameworkBlock;
+    }
 
     if (anchorPillars.length > 0 && anchorChannel) {
       systemPrompt += '\n\nANCHOR CHANNEL CONTENT SYNERGY:\n' +
