@@ -1160,15 +1160,30 @@ window.APP_MODULES.social = async function(container) {
     const approved = filteredPosts.filter(p => p.status === 'Approved' || p.status === 'Scheduled' || p.status === 'Due Today');
     const posted = filteredPosts.filter(p => p.status === 'Posted' || p.status === 'Published');
 
-    // Phase 5.1: Client Portal Dedicated Board Layout
-    if (isClientRole()) {
+    // Phase 3.5 & Phase 5.1: Client Portal Dedicated Board Layout & Banner
+    const isClient = isClientRole();
+    const isClientChannelFilter = activeChannelFilter === 'client';
+    const showClientBanner = isClient || isClientChannelFilter;
+
+    if (isClient) {
       board.innerHTML = `
+        <div style="background:linear-gradient(135deg, rgba(6,182,212,0.12), rgba(0,223,137,0.12)); border:1px solid rgba(6,182,212,0.35); border-radius:12px; padding:0.9rem 1.25rem; margin-bottom:1.25rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
+          <div style="display:flex; align-items:center; gap:0.75rem;">
+            <span style="font-size:1.6rem;">👑</span>
+            <div>
+              <div style="font-weight:900; font-size:0.95rem; color:#fff; font-family:var(--font-heading);">Client Partner Content Approval Portal</div>
+              <div style="font-size:0.75rem; color:var(--text-secondary); margin-top:0.15rem;">Review upcoming scheduled posts, inspect media assets, and approve or request revisions directly with your content production team.</div>
+            </div>
+          </div>
+          <span class="badge badge-emerald" style="font-weight:800; padding:0.3rem 0.75rem;">Client Access Active</span>
+        </div>
+
         <div class="social-board" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:1rem; overflow-x:auto; padding-bottom:1rem;">
           <!-- Col 1: Awaiting Client Review -->
           <div class="social-col" style="background:var(--surface-card, #14141e); border:1px solid rgba(245,158,11,0.3); border-radius:14px; padding:1rem; display:flex; flex-direction:column; min-height:550px;">
             <div style="display:flex; justify-content:space-between; align-items:center; font-weight:800; font-size:0.85rem; color:var(--amber-brand); margin-bottom:0.9rem; padding-bottom:0.5rem; border-bottom:1px solid rgba(245,158,11,0.2);">
               <span>💬 Awaiting Your Review & Feedback</span>
-              <span class="badge badge-amber">${client.length}</span>
+              <span class="badge badge-amber col-count-pill">${client.length}</span>
             </div>
             <div style="display:flex; flex-direction:column; gap:0.85rem; flex:1;">
               ${renderColumnCards(client, 'client')}
@@ -1179,7 +1194,7 @@ window.APP_MODULES.social = async function(container) {
           <div class="social-col" style="background:var(--surface-card, #14141e); border:1px solid rgba(16,185,129,0.3); border-radius:14px; padding:1rem; display:flex; flex-direction:column; min-height:550px;">
             <div style="display:flex; justify-content:space-between; align-items:center; font-weight:800; font-size:0.85rem; color:#10b981; margin-bottom:0.9rem; padding-bottom:0.5rem; border-bottom:1px solid rgba(16,185,129,0.2);">
               <span>✨ Approved by You (Ready to Publish)</span>
-              <span class="badge badge-emerald">${approved.length}</span>
+              <span class="badge badge-emerald col-count-pill">${approved.length}</span>
             </div>
             <div style="display:flex; flex-direction:column; gap:0.85rem; flex:1;">
               ${renderColumnCards(approved, 'approved')}
@@ -1190,7 +1205,7 @@ window.APP_MODULES.social = async function(container) {
           <div class="social-col" style="background:var(--surface-card, #14141e); border:1px solid rgba(59,130,246,0.3); border-radius:14px; padding:1rem; display:flex; flex-direction:column; min-height:550px;">
             <div style="display:flex; justify-content:space-between; align-items:center; font-weight:800; font-size:0.85rem; color:#60a5fa; margin-bottom:0.9rem; padding-bottom:0.5rem; border-bottom:1px solid rgba(59,130,246,0.2);">
               <span>🚀 Published & Live</span>
-              <span class="badge badge-blue">${posted.length}</span>
+              <span class="badge badge-blue col-count-pill">${posted.length}</span>
             </div>
             <div style="display:flex; flex-direction:column; gap:0.85rem; flex:1;">
               ${renderColumnCards(posted, 'posted')}
@@ -1202,12 +1217,25 @@ window.APP_MODULES.social = async function(container) {
     }
 
     board.innerHTML = `
+      ${isClientChannelFilter ? `
+        <div style="background:linear-gradient(135deg, rgba(6,182,212,0.1), rgba(0,223,137,0.1)); border:1px solid rgba(6,182,212,0.3); border-radius:12px; padding:0.8rem 1.2rem; margin-bottom:1.2rem; display:flex; justify-content:space-between; align-items:center;">
+          <div style="display:flex; align-items:center; gap:0.65rem;">
+            <span style="font-size:1.4rem;">🤝</span>
+            <div>
+              <div style="font-weight:800; font-size:0.9rem; color:#fff;">CRM Client Posts Pipeline</div>
+              <div style="font-size:0.72rem; color:var(--text-secondary);">Posts associated with retainers and CRM client accounts awaiting internal QC or client approval.</div>
+            </div>
+          </div>
+          <span class="badge badge-purple" style="font-weight:700;">Client Filter Active</span>
+        </div>
+      ` : ''}
+
       <div class="social-board" style="display:grid; grid-template-columns:repeat(5, minmax(280px, 1fr)); gap:1rem; overflow-x:auto; padding-bottom:1rem;">
         <!-- Col 1: Drafts -->
         <div class="social-col" data-stage="draft" ondragover="window.SOCIAL_MODULE.handleDragOver(event)" ondragleave="window.SOCIAL_MODULE.handleDragLeave(event)" ondrop="window.SOCIAL_MODULE.handleDrop(event, 'draft')" style="background:var(--surface-card, #14141e); border:1px solid var(--border-subtle); border-radius:14px; padding:1rem; display:flex; flex-direction:column; min-height:550px;">
           <div style="display:flex; justify-content:space-between; align-items:center; font-weight:800; font-size:0.85rem; color:var(--text-secondary); margin-bottom:0.9rem; padding-bottom:0.5rem; border-bottom:1px solid var(--border-subtle);">
             <span>📝 Drafts & Concepts</span>
-            <span class="badge badge-gray">${drafts.length}</span>
+            <span class="badge badge-gray col-count-pill">${drafts.length}</span>
           </div>
           <div style="display:flex; flex-direction:column; gap:0.85rem; flex:1;">
             ${renderColumnCards(drafts, 'draft')}
@@ -1218,7 +1246,7 @@ window.APP_MODULES.social = async function(container) {
         <div class="social-col" data-stage="internal" ondragover="window.SOCIAL_MODULE.handleDragOver(event)" ondragleave="window.SOCIAL_MODULE.handleDragLeave(event)" ondrop="window.SOCIAL_MODULE.handleDrop(event, 'internal')" style="background:var(--surface-card, #14141e); border:1px solid var(--border-subtle); border-radius:14px; padding:1rem; display:flex; flex-direction:column; min-height:550px;">
           <div style="display:flex; justify-content:space-between; align-items:center; font-weight:800; font-size:0.85rem; color:var(--purple-light); margin-bottom:0.9rem; padding-bottom:0.5rem; border-bottom:1px solid var(--border-subtle);">
             <span>👁️ Internal QC</span>
-            <span class="badge badge-purple">${internal.length}</span>
+            <span class="badge badge-purple col-count-pill">${internal.length}</span>
           </div>
           <div style="display:flex; flex-direction:column; gap:0.85rem; flex:1;">
             ${renderColumnCards(internal, 'internal')}
@@ -1229,7 +1257,7 @@ window.APP_MODULES.social = async function(container) {
         <div class="social-col" data-stage="client" ondragover="window.SOCIAL_MODULE.handleDragOver(event)" ondragleave="window.SOCIAL_MODULE.handleDragLeave(event)" ondrop="window.SOCIAL_MODULE.handleDrop(event, 'client')" style="background:var(--surface-card, #14141e); border:1px solid var(--border-subtle); border-radius:14px; padding:1rem; display:flex; flex-direction:column; min-height:550px;">
           <div style="display:flex; justify-content:space-between; align-items:center; font-weight:800; font-size:0.85rem; color:var(--amber-brand); margin-bottom:0.9rem; padding-bottom:0.5rem; border-bottom:1px solid var(--border-subtle);">
             <span>💬 Review & Feedback</span>
-            <span class="badge badge-amber">${client.length}</span>
+            <span class="badge badge-amber col-count-pill">${client.length}</span>
           </div>
           <div style="display:flex; flex-direction:column; gap:0.85rem; flex:1;">
             ${renderColumnCards(client, 'client')}
@@ -1240,7 +1268,7 @@ window.APP_MODULES.social = async function(container) {
         <div class="social-col" data-stage="approved" ondragover="window.SOCIAL_MODULE.handleDragOver(event)" ondragleave="window.SOCIAL_MODULE.handleDragLeave(event)" ondrop="window.SOCIAL_MODULE.handleDrop(event, 'approved')" style="background:var(--surface-card, #14141e); border:1px solid rgba(16,185,129,0.3); border-radius:14px; padding:1rem; display:flex; flex-direction:column; min-height:550px;">
           <div style="display:flex; justify-content:space-between; align-items:center; font-weight:800; font-size:0.85rem; color:#10b981; margin-bottom:0.9rem; padding-bottom:0.5rem; border-bottom:1px solid rgba(16,185,129,0.2);">
             <span>🚀 Approved & Scheduled</span>
-            <span class="badge badge-emerald">${approved.length}</span>
+            <span class="badge badge-emerald col-count-pill">${approved.length}</span>
           </div>
           <div style="display:flex; flex-direction:column; gap:0.85rem; flex:1;">
             ${renderColumnCards(approved, 'approved')}
@@ -1251,7 +1279,7 @@ window.APP_MODULES.social = async function(container) {
         <div class="social-col" data-stage="posted" ondragover="window.SOCIAL_MODULE.handleDragOver(event)" ondragleave="window.SOCIAL_MODULE.handleDragLeave(event)" ondrop="window.SOCIAL_MODULE.handleDrop(event, 'posted')" style="background:var(--surface-card, #14141e); border:1px solid rgba(59,130,246,0.3); border-radius:14px; padding:1rem; display:flex; flex-direction:column; min-height:550px;">
           <div style="display:flex; justify-content:space-between; align-items:center; font-weight:800; font-size:0.85rem; color:#60a5fa; margin-bottom:0.9rem; padding-bottom:0.5rem; border-bottom:1px solid rgba(59,130,246,0.2);">
             <span>✅ Posted & Live</span>
-            <span class="badge badge-blue">${posted.length}</span>
+            <span class="badge badge-blue col-count-pill">${posted.length}</span>
           </div>
           <div style="display:flex; flex-direction:column; gap:0.85rem; flex:1;">
             ${renderColumnCards(posted, 'posted')}
@@ -2501,6 +2529,24 @@ function renderBrandAssetsKitHTML(brand) {
     `;
   }
 
+  function getClientStatusLabel(status) {
+    const map = {
+      'Draft': '📝 Team Drafting',
+      'Pending Draft': '📝 Team Drafting',
+      'Internal QC': '🔍 Quality Inspection',
+      'Internal Review': '🔍 Quality Inspection',
+      'Pending Client Approval': '⏳ Awaiting Your Review',
+      'Client Review': '⏳ Awaiting Your Review',
+      'Revision Requested': '🔄 In Revision with Team',
+      'Approved': '✅ Approved by You',
+      'Scheduled': '📅 Scheduled to Publish',
+      'Due Today': '🚨 Publishing Today',
+      'Posted': '🚀 Published Live',
+      'Published': '🚀 Published Live'
+    };
+    return map[status] || status || 'Pending Review';
+  }
+
   function renderColumnCards(list, stageKey) {
     if (!list || list.length === 0) {
       const stageEmptyMeta = {
@@ -2521,12 +2567,14 @@ function renderBrandAssetsKitHTML(brand) {
       `;
     }
 
+    const isClient = isClientRole();
     return list.map(p => {
       const chanCfg = getChannelConfig(p.channel);
       const icon = PLATFORM_ICONS[p.platform] || '📱';
       const isRevision = p.status === 'Revision Requested';
       const hasMedia = Array.isArray(p.mediaUrls) && p.mediaUrls.length > 0;
       const mediaThumb = hasMedia ? p.mediaUrls[0] : null;
+      const isImg = mediaThumb ? (mediaThumb.startsWith('data:image') || mediaThumb.match(/\.(jpg|jpeg|png|gif|webp)(\?|$)/i)) : false;
       const qc = evaluatePostQC(p);
 
       // Check if scheduled date has passed and post is not yet published
@@ -2535,75 +2583,86 @@ function renderBrandAssetsKitHTML(brand) {
         !['Posted', 'Published'].includes(p.status);
 
       return `
-        <div class="post-card" tabindex="0" role="article" aria-label="Social post: ${escapeHTML(p.title)}" draggable="${!isClientRole()}" data-post-id="${p.id}" ondragstart="window.SOCIAL_MODULE.handleDragStart(event, '${p.id}')" ondragend="window.SOCIAL_MODULE.handleDragEnd(event)" onkeydown="if((event.key==='Enter'||event.key===' ') && !event.target.closest('button, a, input, select')){ event.preventDefault(); window.SOCIAL_MODULE.openEditModal('${p.id}'); }" style="background:rgba(255,255,255,0.03); border:1px solid ${isOverdue ? 'rgba(239,68,68,0.4)' : 'var(--border-subtle)'}; border-radius:12px; padding:0.9rem; display:flex; flex-direction:column; gap:0.6rem; transition:transform 0.15s ease, border-color 0.15s ease;">
+        <div class="post-card ${isClient ? 'client-portal-card' : ''}" tabindex="0" role="article" aria-label="Social post: ${escapeHTML(p.title)}" draggable="${!isClient}" data-post-id="${p.id}" ondragstart="window.SOCIAL_MODULE.handleDragStart(event, '${p.id}')" ondragend="window.SOCIAL_MODULE.handleDragEnd(event)" onkeydown="if((event.key==='Enter'||event.key===' ') && !event.target.closest('button, a, input, select')){ event.preventDefault(); window.SOCIAL_MODULE.openEditModal('${p.id}'); }" style="background:rgba(255,255,255,0.03); border:1px solid ${isOverdue ? 'rgba(239,68,68,0.4)' : 'var(--border-subtle)'}; border-radius:12px; padding:0.85rem; display:flex; flex-direction:column; gap:0.55rem;">
           
-          <!-- Channel & Platform Badges Header -->
+          <!-- Row 1: Drag Handle (Team only) + Channel & Platform Badges + Quick Toggle -->
           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.3rem;">
-            <span class="badge ${chanCfg.badgeClass}" style="font-size:0.72rem; font-weight:800;">
-              ${escapeHTML(chanCfg.name)}
-            </span>
-            <div style="display:flex; gap:0.3rem; align-items:center;">
+            <div style="display:flex; align-items:center; gap:0.35rem;">
+              ${!isClient ? `<span class="card-drag-handle" title="Drag to move card" style="cursor:grab; font-size:1.05rem; color:var(--text-muted); opacity:0.6; line-height:1; user-select:none;">⠿</span>` : ''}
+              <span class="badge ${chanCfg.badgeClass}" style="font-size:0.72rem; font-weight:800;">
+                ${escapeHTML(chanCfg.name)}
+              </span>
               ${isOverdue ? `<span class="badge badge-danger" style="font-size:0.62rem; font-weight:800; background:rgba(239,68,68,0.2); color:#f87171; border:1px solid rgba(239,68,68,0.4);">⚠️ OVERDUE</span>` : ''}
+            </div>
+            
+            <div style="display:flex; gap:0.3rem; align-items:center;">
               <span class="badge badge-gray" style="font-size:0.68rem;">
                 ${icon} ${escapeHTML(p.platform)}
               </span>
-              ${p.contentType ? `<span class="badge badge-blue" style="font-size:0.62rem;">${escapeHTML(p.contentType)}</span>` : ''}
-              ${p.contentCategory ? `<span class="badge badge-purple" style="font-size:0.62rem;">${escapeHTML(p.contentCategory)}</span>` : ''}
+              <button type="button" class="btn-ghost btn-xs" style="color:var(--text-dim); font-size:0.65rem; padding:0.1rem 0.35rem; border:1px solid rgba(255,255,255,0.08); border-radius:4px;" onclick="window.SOCIAL_MODULE.toggleCardDetails('${p.id}')" title="Toggle full caption and strategy">
+                <span id="toggle-icon-${p.id}">▾</span> Details
+              </button>
             </div>
           </div>
 
-          <!-- Post Title -->
-          <div style="font-weight:800; color:var(--text-primary); font-size:0.92rem; line-height:1.35;">
+          <!-- Row 2: Post Title (Click to Edit / View) -->
+          <div style="font-weight:800; color:var(--text-primary); font-size:0.92rem; line-height:1.35; cursor:pointer;" onclick="window.SOCIAL_MODULE.openEditModal('${p.id}')" title="Click to view details">
             ${escapeHTML(p.title)}
           </div>
 
-          <!-- Internal QC Evaluation Badge -->
-          ${stageKey === 'internal' ? `
+          <!-- Row 3: Media Thumbnail (Prominent 150px on Client Card / 82px Compact on Team Card) -->
+          ${mediaThumb ? `
+            <div class="card-media-wrap" style="position:relative; height:${isClient ? '150px' : '82px'}; border-radius:8px; overflow:hidden; background:rgba(0,0,0,0.5); border:1px solid var(--border-subtle); display:flex; align-items:center; justify-content:center; cursor:pointer;" onclick="window.SOCIAL_MODULE.openMediaLightbox('${escapeHTML(mediaThumb)}', '${escapeHTML(p.title).replace(/'/g, "\\'")}')" title="Click to inspect media fullscreen">
+              ${isImg ? `
+                <img src="${escapeHTML(mediaThumb)}" style="width:100%; height:100%; object-fit:cover;" alt="Media Thumbnail" onerror="this.parentElement.style.display='none'">
+                <div class="card-media-zoom-hint">🔍 View Fullscreen</div>
+              ` : `
+                <div style="font-size:0.82rem; color:#fff; display:flex; align-items:center; gap:0.4rem;">
+                  <span>🎬</span> Media Asset Attached
+                  <span style="font-size:0.68rem; color:var(--brand-primary); margin-left:0.4rem;">🔍 Inspect</span>
+                </div>
+              `}
+            </div>
+          ` : ''}
+
+          <!-- Row 4: Internal QC Evaluation Badge (Internal only) -->
+          ${stageKey === 'internal' && !isClient ? `
             <div style="background:${qc.bg}; border:1px solid ${qc.border}; border-radius:6px; padding:0.35rem 0.5rem; font-size:0.72rem; color:${qc.color}; display:flex; justify-content:space-between; align-items:center;">
               <span style="font-weight:800;">${qc.label}</span>
               ${qc.warnings.length > 0 ? `<span style="font-size:0.65rem; color:var(--text-muted); cursor:help;" title="${escapeHTML(qc.warnings.join(' • '))}">ℹ️ Details</span>` : ''}
             </div>
           ` : ''}
 
-          <!-- Media Thumbnail -->
-          ${mediaThumb ? `
-            <div style="height:110px; border-radius:8px; overflow:hidden; background:rgba(0,0,0,0.4); border:1px solid var(--border-subtle); display:flex; align-items:center; justify-content:center;">
-              ${mediaThumb.startsWith('data:image') || mediaThumb.match(/\.(jpg|jpeg|png|gif|webp)(\?|$)/i) ? `
-                <img src="${escapeHTML(mediaThumb)}" style="width:100%; height:100%; object-fit:cover;" alt="Media Thumbnail" onerror="this.parentElement.style.display='none'">
-              ` : `
-                <div style="font-size:0.8rem; color:#fff; display:flex; align-items:center; gap:0.4rem;">
-                  <span>🎬</span> Media Asset Attached
-                </div>
-              `}
-            </div>
-          ` : ''}
-
-          <!-- Caption Preview -->
-          <div style="font-size:0.78rem; color:var(--text-muted); line-height:1.45; white-space:pre-wrap; max-height:75px; overflow:hidden; text-overflow:ellipsis;">
-            ${escapeHTML(p.caption || 'No copy written yet')}
-          </div>
-
-          <!-- First Comment / Hashtag Stack Preview -->
-          ${p.firstComment ? `
-            <div style="background:rgba(168,85,247,0.06); border:1px solid rgba(168,85,247,0.2); border-radius:6px; padding:0.35rem 0.5rem; font-size:0.7rem; color:#d8b4fe; line-height:1.3;">
-              💬 <strong>1st Comment:</strong> ${escapeHTML(p.firstComment.slice(0, 70))}${p.firstComment.length > 70 ? '...' : ''}
-            </div>
-          ` : ''}
-
-          <!-- Scheduling & Publisher Meta -->
-          <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.72rem; color:var(--text-dim); border-top:1px solid rgba(255,255,255,0.04); padding-top:0.4rem;">
+          <!-- Row 5: Compact Meta (Schedule Date & Plain Language Status / Publisher) -->
+          <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.72rem; color:var(--text-dim); border-top:1px solid rgba(255,255,255,0.04); padding-top:0.35rem;">
             <span>📅 ${escapeHTML(p.scheduledDate || 'TBD')} ${p.scheduledTime ? `· ⏰ ${escapeHTML(p.scheduledTime)}` : ''}</span>
-            <span>👤 ${escapeHTML(p.assignedPublisher || 'Unassigned')}</span>
+            <span>${isClient ? `<strong style="color:#38bdf8;">${getClientStatusLabel(p.status)}</strong>` : `👤 ${escapeHTML(p.assignedPublisher || 'Unassigned')}`}</span>
           </div>
 
-          ${isRevision ? `
-            <div style="background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.25); border-radius:6px; padding:0.4rem 0.6rem; font-size:0.72rem; color:#fca5a5;">
-              💬 <strong>Revisions:</strong> ${escapeHTML(p.clientFeedback || 'Revision requested')}
+          <!-- Row 6: Expandable Details Pane (Tier 2 - Collapsible) -->
+          <div id="card-details-${p.id}" style="display:none; flex-direction:column; gap:0.45rem; border-top:1px dashed rgba(255,255,255,0.1); padding-top:0.45rem; margin-top:0.15rem;">
+            <div style="font-size:0.76rem; color:var(--text-muted); line-height:1.45; white-space:pre-wrap; background:rgba(0,0,0,0.3); padding:0.5rem; border-radius:6px; max-height:160px; overflow-y:auto;">
+              ${escapeHTML(p.caption || 'No copy written yet')}
             </div>
-          ` : ''}
+            ${p.firstComment ? `
+              <div style="background:rgba(168,85,247,0.06); border:1px solid rgba(168,85,247,0.2); border-radius:6px; padding:0.35rem 0.5rem; font-size:0.7rem; color:#d8b4fe; line-height:1.3;">
+                💬 <strong>1st Comment:</strong> ${escapeHTML(p.firstComment)}
+              </div>
+            ` : ''}
+            ${p.hashtags ? `
+              <div style="font-size:0.7rem; color:#38bdf8;">
+                🏷️ ${escapeHTML(p.hashtags)}
+              </div>
+            ` : ''}
+            ${isRevision ? `
+              <div style="background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.25); border-radius:6px; padding:0.4rem 0.6rem; font-size:0.72rem; color:#fca5a5;">
+                💬 <strong>Revisions:</strong> ${escapeHTML(p.clientFeedback || 'Revision requested')}
+              </div>
+            ` : ''}
+          </div>
 
-          <!-- Contextual Stage Controls -->
-          <div class="post-card-actions" style="display:flex; gap:0.4rem; align-items:center; margin-top:0.3rem;">
+          <!-- Row 7: Contextual Stage Controls -->
+          <div class="post-card-actions" style="display:flex; gap:0.4rem; align-items:center; margin-top:0.25rem;">
             ${renderCardButtons(p, stageKey)}
           </div>
         </div>
@@ -2618,9 +2677,9 @@ function renderBrandAssetsKitHTML(brand) {
     if (isClient) {
       if (stageKey === 'client') {
         btns += `
-          <button class="btn-emerald btn-sm" style="font-size:0.72rem; flex:1; font-weight:800;" aria-label="Approve post" onclick="window.SOCIAL_MODULE.approvePost('${p.id}')">✅ Approve</button>
-          <button class="btn-secondary btn-sm" style="font-size:0.72rem; color:#fca5a5;" aria-label="Request revisions" onclick="window.SOCIAL_MODULE.promptRejectPost('${p.id}')">🔴 Revisions</button>
-          <button class="btn-secondary btn-xs" aria-label="View post details" title="View Details" onclick="window.SOCIAL_MODULE.openEditModal('${p.id}')">👁️ View</button>
+          <button class="btn-emerald btn-sm" style="font-size:0.75rem; flex:1; font-weight:800;" aria-label="Approve post" onclick="window.SOCIAL_MODULE.approvePost('${p.id}')">✅ Approve</button>
+          <button class="btn-secondary btn-sm" style="font-size:0.75rem; color:#fca5a5;" aria-label="Request revisions" onclick="window.SOCIAL_MODULE.promptRejectPost('${p.id}')">🔴 Revisions</button>
+          <button class="btn-secondary btn-xs" aria-label="View post details" title="View Full Details" onclick="window.SOCIAL_MODULE.openEditModal('${p.id}')">👁️ View</button>
         `;
       } else if (stageKey === 'approved') {
         btns += `
@@ -4802,9 +4861,16 @@ Return strictly JSON: { "prompt": "...", "visualCue": "..." }`;
         renderKPIs();
         renderBoard();
       }
+
+      // Phase 3.9: Approval celebration microinteraction
+      const card = document.querySelector(`.post-card[data-post-id="${id}"]`);
+      if (card) {
+        card.classList.add('card-approved-celebrate');
+      }
+
       try {
         await APP_API.post(`/posts/${id}/approve`, {});
-        if (window.showToast) window.showToast('🎉 Social post approved!', 'success');
+        if (window.showToast) window.showToast('🎉 Content Approved! Ready for scheduling & publishing.', 'success');
         loadInitialData(false);
       } catch (err) {
         if (p && prev) { p.status = prev; renderKPIs(); renderBoard(); }
@@ -4830,13 +4896,14 @@ Return strictly JSON: { "prompt": "...", "visualCue": "..." }`;
     },
     promptRejectPost(id) {
       let selectedTags = [];
+      // Phase 3.8: Constructive cyan/teal tag selection
       window._toggleRevTag = (btn, tag) => {
         const idx = selectedTags.indexOf(tag);
         if (idx === -1) {
           selectedTags.push(tag);
-          btn.style.background = 'rgba(239,68,68,0.25)';
-          btn.style.borderColor = '#ef4444';
-          btn.style.color = '#fff';
+          btn.style.background = 'rgba(6, 182, 212, 0.2)';
+          btn.style.borderColor = '#06b6d4';
+          btn.style.color = '#67e8f9';
         } else {
           selectedTags.splice(idx, 1);
           btn.style.background = 'transparent';
@@ -4848,7 +4915,7 @@ Return strictly JSON: { "prompt": "...", "visualCue": "..." }`;
       const html = `
         <div style="display:flex; flex-direction:column; gap:0.9rem;">
           <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-subtle); padding-bottom:0.6rem;">
-            <div style="font-weight:800; font-size:1.1rem; color:#f87171; font-family:var(--font-heading);">🔴 Structured Revision Feedback</div>
+            <div style="font-weight:800; font-size:1.1rem; color:#38bdf8; font-family:var(--font-heading);">📝 Structured Revision Feedback</div>
             <button type="button" class="btn-ghost btn-sm" onclick="window.SOCIAL_MODULE.closeSocialDialog()">✕</button>
           </div>
           <div style="font-size:0.8rem; color:var(--text-muted);">Select key revision focus areas:</div>
@@ -4885,6 +4952,66 @@ Return strictly JSON: { "prompt": "...", "visualCue": "..." }`;
       } catch (err) {
         if (window.showToast) window.showToast('Revision request failed: ' + err.message, 'error');
       }
+    },
+
+    // Phase 3.1 & 3.6: Card Details Toggle & Media Lightbox Overlay
+    toggleCardDetails(postId) {
+      const pane = document.getElementById(`card-details-${postId}`);
+      const icon = document.getElementById(`toggle-icon-${postId}`);
+      if (!pane) return;
+      const isOpen = pane.style.display === 'flex';
+      pane.style.display = isOpen ? 'none' : 'flex';
+      if (icon) icon.textContent = isOpen ? '▾' : '▴';
+    },
+
+    openMediaLightbox(url, title = '') {
+      if (!url) return;
+      let lb = document.getElementById('spMediaLightbox');
+      if (!lb) {
+        lb = document.createElement('div');
+        lb.id = 'spMediaLightbox';
+        lb.setAttribute('role', 'dialog');
+        lb.setAttribute('aria-modal', 'true');
+        lb.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.92); backdrop-filter:blur(10px); z-index:var(--z-toast-notification); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:2rem;';
+        document.body.appendChild(lb);
+      }
+      lb.style.display = 'flex';
+      trapFocus(lb);
+
+      const isVideo = url.match(/\.(mp4|webm|mov|mkv)(\?|$)/i);
+
+      lb.innerHTML = `
+        <div style="position:absolute; top:1.5rem; right:1.5rem; display:flex; gap:0.6rem; align-items:center;">
+          <a href="${escapeHTML(url)}" download target="_blank" class="btn-secondary btn-sm" style="text-decoration:none;">⬇️ Download</a>
+          <button type="button" class="btn-ghost btn-sm" style="font-size:1.4rem; color:#fff;" onclick="window.SOCIAL_MODULE.closeMediaLightbox()" aria-label="Close Lightbox">✕</button>
+        </div>
+        <div style="max-width:90vw; max-height:82vh; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+          ${isVideo ? `
+            <video controls autoplay src="${escapeHTML(url)}" style="max-width:100%; max-height:80vh; border-radius:12px; border:1px solid rgba(255,255,255,0.2); box-shadow:0 0 30px rgba(0,0,0,0.8);"></video>
+          ` : `
+            <img src="${escapeHTML(url)}" alt="${escapeHTML(title || 'Media')}" style="max-width:100%; max-height:80vh; object-fit:contain; border-radius:12px; border:1px solid rgba(255,255,255,0.2); box-shadow:0 0 30px rgba(0,0,0,0.8);">
+          `}
+          ${title ? `<div style="color:var(--text-secondary); font-size:0.85rem; margin-top:0.75rem; text-align:center;">${escapeHTML(title)}</div>` : ''}
+        </div>
+      `;
+
+      lb.onclick = (e) => {
+        if (e.target === lb) window.SOCIAL_MODULE.closeMediaLightbox();
+      };
+
+      const escHandler = (e) => {
+        if (e.key === 'Escape') {
+          window.SOCIAL_MODULE.closeMediaLightbox();
+          window.removeEventListener('keydown', escHandler);
+        }
+      };
+      window.addEventListener('keydown', escHandler);
+    },
+
+    closeMediaLightbox() {
+      const lb = document.getElementById('spMediaLightbox');
+      if (lb) lb.style.display = 'none';
+      releaseFocus();
     },
     deletePost(id) {
       this.showConfirmDialog({
