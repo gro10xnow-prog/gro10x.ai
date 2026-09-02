@@ -156,7 +156,28 @@ window.APP_MODULES.social = async function(container) {
     if (!channelNameOrId) return CHANNELS[4]; // Default to Client Account
     const lower = String(channelNameOrId).toLowerCase();
     const found = CHANNELS.find(c => c.id === lower || c.name.toLowerCase().includes(lower) || lower.includes(c.id));
-    return found || {
+    if (found) return found;
+
+    // Check dynamic socialBrandsData
+    const brand = (socialBrandsData || []).find(b => b.slug === lower || b.id === lower || (b.name && b.name.toLowerCase().includes(lower)));
+    if (brand) {
+      const ch = (brand.channels || [])[0];
+      const cats = (ch && ch.analyticsKnowledgeBase && ch.analyticsKnowledgeBase.topCategories && ch.analyticsKnowledgeBase.topCategories.length > 0)
+        ? ch.analyticsKnowledgeBase.topCategories
+        : ['General', 'Strategic Breakdown', 'Core Track'];
+      return {
+        id: brand.slug,
+        name: brand.name,
+        engine: 'Brand Hub',
+        badgeClass: 'badge-purple',
+        defaultPlatform: ch ? ch.platform : 'YouTube',
+        defaultContentType: ch ? ch.defaultContentType : 'Short-form Video',
+        targetPerWeek: ch ? ch.targetCadencePerWeek : 3,
+        categories: cats
+      };
+    }
+
+    return {
       id: 'custom',
       name: channelNameOrId,
       engine: 'Custom',
@@ -165,6 +186,32 @@ window.APP_MODULES.social = async function(container) {
       targetPerWeek: 2,
       categories: ['General', 'Promo', 'Update']
     };
+  }
+
+  function populateBrandChannelDropdown(selectedVal = '') {
+    const spChannel = document.getElementById('spChannel');
+    if (!spChannel) return;
+    const brands = (socialBrandsData && socialBrandsData.length > 0) ? socialBrandsData : [
+      { slug: 'grow-bangla', name: 'Grow Bangla', channels: [{ audienceLabel: '427 subs' }] },
+      { slug: 'pilutics', name: 'PILUTICS', channels: [{ audienceLabel: '218 subs' }] },
+      { slug: 'bong-hits', name: 'Bong Hits', channels: [{ audienceLabel: '85 subs' }] },
+      { slug: 'gro10x', name: 'GRO10X Brand', channels: [{ audienceLabel: 'Agency' }] }
+    ];
+
+    const currentVal = selectedVal || spChannel.value || activeBrandSlug || 'grow-bangla';
+    
+    let html = brands.map(b => {
+      const icon = b.slug === 'grow-bangla' ? '🎓' :
+                   b.slug === 'pilutics' ? '🗺️' :
+                   b.slug === 'bong-hits' ? '🎭' :
+                   b.slug === 'gro10x' ? '📢' : '🏛️';
+      const aud = (b.channels && b.channels[0] && b.channels[0].audienceLabel) ? ` (${b.channels[0].audienceLabel})` : '';
+      return `<option value="${escapeHTML(b.slug || b.id)}" ${(b.slug === currentVal || b.id === currentVal) ? 'selected' : ''}>${icon} ${escapeHTML(b.name)}${escapeHTML(aud)}</option>`;
+    }).join('');
+
+    html += `<option value="client" ${currentVal === 'client' ? 'selected' : ''}>🏢 Client Account (CRM Retainer)</option>`;
+    spChannel.innerHTML = html;
+    if (currentVal) spChannel.value = currentVal;
   }
 
   function evaluatePostQC(post) {
@@ -215,6 +262,13 @@ window.APP_MODULES.social = async function(container) {
       postsData = Array.isArray(postsRes) ? postsRes : [];
       clientsData = Array.isArray(clientsRes) ? clientsRes : [];
       socialBrandsData = (brandsRes && Array.isArray(brandsRes.brands)) ? brandsRes.brands : [];
+
+      // Sync monthlyFocusNote for currently active brand & month
+      const activeBrand = (socialBrandsData || []).find(b => b.slug === activeBrandSlug || b.id === activeBrandSlug);
+      const mIdx = new Date(selectedPlanMonth + ' 1, ' + selectedPlanYear).getMonth();
+      const mKey = `${selectedPlanYear}-${String(mIdx + 1).padStart(2, '0')}`;
+      monthlyFocusNote = (activeBrand && activeBrand.monthlyFocus && activeBrand.monthlyFocus[mKey] && activeBrand.monthlyFocus[mKey].thesis) || '';
+
       isLoading = false;
       renderContent();
     } catch (err) {
@@ -633,7 +687,8 @@ window.APP_MODULES.social = async function(container) {
       renderBoard();
     }
     populateClientDropdown();
-    updateCategoryOptions('grow-bangla');
+    populateBrandChannelDropdown(activeBrandSlug);
+    updateCategoryOptions(activeBrandSlug || 'grow-bangla');
   }
 
   function updateCategoryOptions(channelKey, selectedCategory = '') {
@@ -2058,9 +2113,9 @@ function renderBrandAssetsKitHTML(brand) {
       const brand = (socialBrandsData || []).find(b => b.slug === brandSlug || b.id === brandSlug);
       const mIdx = new Date(selectedPlanMonth + ' 1, ' + selectedPlanYear).getMonth();
       const mKey = `${selectedPlanYear}-${String(mIdx + 1).padStart(2, '0')}`;
-      if (brand && brand.monthlyFocus && brand.monthlyFocus[mKey] && brand.monthlyFocus[mKey].thesis) {
-        monthlyFocusNote = brand.monthlyFocus[mKey].thesis;
-      }
+      monthlyFocusNote = (brand && brand.monthlyFocus && brand.monthlyFocus[mKey] && brand.monthlyFocus[mKey].thesis) || '';
+      populateBrandChannelDropdown(brandSlug);
+      updateCategoryOptions(brandSlug);
       renderContentOS();
     },
     switchBrandSubTab(tab) {
@@ -2071,6 +2126,10 @@ function renderBrandAssetsKitHTML(brand) {
     openChannelWorkspace(channelId) {
       activeBrandSubTab = 'channel';
       activeChannelId = channelId;
+      const brand = (socialBrandsData || []).find(b => b.slug === activeBrandSlug || b.id === activeBrandSlug);
+      const mIdx = new Date(selectedPlanMonth + ' 1, ' + selectedPlanYear).getMonth();
+      const mKey = `${selectedPlanYear}-${String(mIdx + 1).padStart(2, '0')}`;
+      monthlyFocusNote = (brand && brand.monthlyFocus && brand.monthlyFocus[mKey] && brand.monthlyFocus[mKey].thesis) || '';
       renderContentOS();
     },
     changePlanMonth(m) {
@@ -2078,9 +2137,7 @@ function renderBrandAssetsKitHTML(brand) {
       const brand = (socialBrandsData || []).find(b => b.slug === activeBrandSlug || b.id === activeBrandSlug);
       const mIdx = new Date(selectedPlanMonth + ' 1, ' + selectedPlanYear).getMonth();
       const mKey = `${selectedPlanYear}-${String(mIdx + 1).padStart(2, '0')}`;
-      if (brand && brand.monthlyFocus && brand.monthlyFocus[mKey] && brand.monthlyFocus[mKey].thesis) {
-        monthlyFocusNote = brand.monthlyFocus[mKey].thesis;
-      }
+      monthlyFocusNote = (brand && brand.monthlyFocus && brand.monthlyFocus[mKey] && brand.monthlyFocus[mKey].thesis) || '';
       renderContentOS();
     },
     changePlanYear(y) {
@@ -2088,9 +2145,7 @@ function renderBrandAssetsKitHTML(brand) {
       const brand = (socialBrandsData || []).find(b => b.slug === activeBrandSlug || b.id === activeBrandSlug);
       const mIdx = new Date(selectedPlanMonth + ' 1, ' + selectedPlanYear).getMonth();
       const mKey = `${selectedPlanYear}-${String(mIdx + 1).padStart(2, '0')}`;
-      if (brand && brand.monthlyFocus && brand.monthlyFocus[mKey] && brand.monthlyFocus[mKey].thesis) {
-        monthlyFocusNote = brand.monthlyFocus[mKey].thesis;
-      }
+      monthlyFocusNote = (brand && brand.monthlyFocus && brand.monthlyFocus[mKey] && brand.monthlyFocus[mKey].thesis) || '';
       renderContentOS();
     },
     prevMonth() {
@@ -2435,7 +2490,7 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
 
       if (!item) return;
 
-      this.openPostModal();
+      this.openPostModal(brandSlug);
       const titleEl = document.getElementById('spTitle');
       const dateEl = document.getElementById('spDate');
       const timeEl = document.getElementById('spTime');
@@ -2448,13 +2503,12 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
       if (dateEl && item.scheduledDate) dateEl.value = item.scheduledDate;
       if (timeEl && item.suggestedTime) timeEl.value = item.suggestedTime;
 
-      const chanCfg = CHANNELS.find(c => (brand.name || '').includes(c.name) || (brand.slug || '').includes(c.id));
-      if (chanCfg && chanEl) {
-        chanEl.value = chanCfg.id;
-        this.onChannelChange(chanCfg.id);
+      if (chanEl) {
+        chanEl.value = brandSlug;
+        this.onChannelChange(brandSlug);
       }
 
-      if (platEl && channel.platform) {
+      if (platEl && channel && channel.platform) {
         platEl.value = channel.platform;
         this.onPlatformChange(platEl);
       }
@@ -2503,12 +2557,8 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
         });
 
         if (res && res.success) {
-          const brand = (socialBrandsData || []).find(b => b.slug === brandSlug || b.id === brandSlug);
-          if (brand) {
-            brand.monthlyFocus = res.brand?.monthlyFocus || brand.monthlyFocus || {};
-            brand.monthlyFocus[monthKey] = res.focus;
-          }
           monthlyFocusNote = thesis;
+          await loadInitialData();
           if (window.showToast) window.showToast(`✨ Brand Monthly Focus saved & synced across all channels!`, 'success');
           renderContentOS();
         } else {
@@ -2869,9 +2919,9 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
     async generateAIBrief() {
       const btn = document.getElementById('btnAiBrief');
       const container = document.getElementById('aiBriefContainer');
-      const channelKey = document.getElementById('spChannel')?.value || 'grow-bangla';
+      const channelKey = document.getElementById('spChannel')?.value || activeBrandSlug || 'grow-bangla';
       const channelObj = getChannelConfig(channelKey);
-      const contentCategory = document.getElementById('spCategory')?.value || 'English Lesson';
+      const contentCategory = document.getElementById('spCategory')?.value || (channelObj.categories && channelObj.categories[0]) || 'English Lesson';
       const platform = document.getElementById('spPlatform')?.value || 'YouTube';
       const contentType = document.getElementById('spContentType')?.value || 'Short-form Video';
       const targetDuration = document.getElementById('spTargetDuration')?.value || '60s';
@@ -2880,12 +2930,23 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
       const referenceContext = activeReferenceAsset ? JSON.stringify(activeReferenceAsset) : null;
 
       // Resolve primary language from active brand/channel context
-      const activeBrand = (socialBrandsData || []).find(b => b.slug === channelKey || b.id === channelKey ||
+      const activeBrand = (socialBrandsData || []).find(b => b.slug === channelKey || b.id === channelKey || b.slug === activeBrandSlug ||
         (b.channels || []).some(c => c.id === channelKey || c.slug === channelKey));
       const activeChannel = activeBrand && (activeBrand.channels || []).find(c =>
-        c.id === channelKey || c.slug === channelKey || activeBrand.slug === channelKey);
+        c.id === channelKey || c.slug === channelKey || (activeChannelId && (c.id === activeChannelId || c.slug === activeChannelId)));
+
+      const BRAND_LANG_MAP = {
+        'grow-bangla': 'Bangla + English (Banglish / Spoken)',
+        'pilutics': 'Bangla / Bengali (Documentary & Analysis)',
+        'bong-hits': 'Bengali (Music, Skits & Pop Culture)',
+        'gro10x': 'English (Global B2B & Tech)'
+      };
+
       const primaryLanguage = (activeChannel && activeChannel.primaryLanguage) ||
         (activeBrand && activeBrand.primaryLanguage) ||
+        BRAND_LANG_MAP[channelKey] ||
+        BRAND_LANG_MAP[activeBrand?.slug] ||
+        BRAND_LANG_MAP[activeBrandSlug] ||
         'Bangla + English (Banglish / Spoken)';
 
       if (btn) {
@@ -3196,7 +3257,7 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
       const dateEl = document.getElementById('spDate');
       if (dateEl && dateStr) dateEl.value = dateStr;
     },
-    async openPostModal() {
+    async openPostModal(brandSlugOverride = null) {
       if (clientsData.length === 0) {
         try {
           const res = await APP_API.get('/clients').catch(() => []);
@@ -3222,8 +3283,13 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
       this.clearUploadedMedia();
       document.getElementById('spDate').value = new Date().toISOString().split('T')[0];
       document.getElementById('spTime').value = '18:00';
-      document.getElementById('spChannel').value = 'grow-bangla';
-      this.onChannelChange('grow-bangla');
+
+      const targetBrand = brandSlugOverride || activeBrandSlug || 'grow-bangla';
+      populateBrandChannelDropdown(targetBrand);
+      const spChannel = document.getElementById('spChannel');
+      if (spChannel) spChannel.value = targetBrand;
+      this.onChannelChange(targetBrand);
+
       document.getElementById('spClientSelect').value = '';
       document.getElementById('spClientName').value = '';
       this.updateCharCount({ value: '' }, 'YouTube');
@@ -3258,8 +3324,9 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
       document.getElementById('spTime').value = post.scheduledTime || '18:00';
       document.getElementById('spPlatform').value = post.platform || 'YouTube';
       
+      const channelVal = post.channel ? (CHANNELS.find(c => c.name.includes(post.channel) || c.id === post.channel)?.id || (socialBrandsData || []).find(b => (b.name && b.name.includes(post.channel)) || b.slug === post.channel)?.slug || 'grow-bangla') : 'grow-bangla';
+      populateBrandChannelDropdown(channelVal);
       const channelSelect = document.getElementById('spChannel');
-      const channelVal = post.channel ? (CHANNELS.find(c => c.name.includes(post.channel) || c.id === post.channel)?.id || 'grow-bangla') : 'grow-bangla';
       if (channelSelect) channelSelect.value = channelVal;
       this.onChannelChange(channelVal);
 
@@ -3528,10 +3595,13 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
       }
     },
     async findMeTopic() {
-      const channelKey = document.getElementById('spChannel')?.value || 'grow-bangla';
-      const activeBrand = (socialBrandsData || []).find(b => b.slug === channelKey || b.id === channelKey ||
-        (b.channels || []).some(c => c.id === channelKey || c.slug === channelKey)) || socialBrandsData[0];
-      const activeChannel = activeBrand && (activeBrand.channels || []).find(c => c.id === channelKey || c.slug === channelKey) || activeBrand?.channels?.[0];
+      const channelKey = document.getElementById('spChannel')?.value || activeBrandSlug || 'grow-bangla';
+      const activeBrand = (socialBrandsData || []).find(b => b.slug === channelKey || b.id === channelKey || b.slug === activeBrandSlug ||
+        (b.channels || []).some(c => c.id === channelKey || c.slug === channelKey)) || 
+        (socialBrandsData || []).find(b => b.slug === activeBrandSlug) || 
+        socialBrandsData[0];
+      const activeChannel = (activeBrand && (activeBrand.channels || []).find(c => c.id === channelKey || c.slug === channelKey || (activeChannelId && (c.id === activeChannelId || c.slug === activeChannelId)))) || 
+        activeBrand?.channels?.[0];
 
       const contentType = document.getElementById('spContentType')?.value || 'Short-form Video';
       const platform = document.getElementById('spPlatform')?.value || 'YouTube';
@@ -3541,10 +3611,15 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
 
       if (window.showToast) window.showToast('🎯 Scanning channel knowledge base & monthly campaign focus...', 'info');
 
+      const targetBrandSlug = activeBrand?.slug || activeBrandSlug || 'grow-bangla';
+      const defaultChannelId = targetBrandSlug === 'pilutics' ? 'pilutics-youtube' : 
+                               (targetBrandSlug === 'bong-hits' ? 'bh-youtube' : 
+                               (targetBrandSlug === 'gro10x' ? 'gro10x-youtube' : 'gb-youtube'));
+
       try {
         const res = await APP_API.post('/ai/suggest-topic', {
-          brandSlug: activeBrand?.slug || 'grow-bangla',
-          channelId: activeChannel?.id || 'gb-youtube',
+          brandSlug: targetBrandSlug,
+          channelId: activeChannel?.id || defaultChannelId,
           contentType,
           platform,
           month: selectedPlanMonth,
