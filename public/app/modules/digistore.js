@@ -1071,7 +1071,9 @@ const DigistoreModule = {
                   ${(p.stock_status || p.stockStatus) === 'out_of_stock' ? '🔴 Stock Out' : '🟢 In Stock'}
                 </button>
                 <div style="display: flex; gap: 6px; align-items: center;">
-                  <span style="font-size: 11px; color: #64748b;">${p.vendorName ? p.vendorName.split(' ')[0] : 'Supplier'}</span>
+                  <button class="btn btn-sm btn-secondary btn-edit-product" data-prod-id="${p.id}" title="Edit Product">
+                    ✏️ Edit
+                  </button>
                   <button class="btn btn-sm btn-secondary btn-quick-order" data-prod-id="${p.id}" data-prod-name="${p.name}" data-prod-sale="${p.salePrice}" data-prod-cost="${p.vendorPrice}" data-prod-dur="${p.duration}">
                     🛒 Order
                   </button>
@@ -1126,6 +1128,156 @@ const DigistoreModule = {
         const pId = e.currentTarget.getAttribute('data-prod-id');
         this.openNewOrderModal(pId);
       });
+    });
+
+    // Edit product click
+    container.querySelectorAll('.btn-edit-product').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const pId = e.currentTarget.getAttribute('data-prod-id');
+        const product = this.products.find(p => p.id === pId);
+        if (product) this.openEditProductModal(product, container);
+      });
+    });
+  },
+
+  openEditProductModal(product, tabContainer) {
+    const categories = ['AI Tools', 'Streaming', 'Music', 'Creative Tools', 'Productivity', 'Professional', 'Learning', 'VPN'];
+    const deliveryTypes = ['id_pass', 'link', 'file', 'code', 'manual'];
+
+    const modalsEl = document.getElementById('digiModalsContainer');
+    modalsEl.innerHTML = `
+      <div id="editProductModal" style="position: fixed; inset: 0; background: rgba(0,0,0,0.75); display: flex; align-items: center; justify-content: center; z-index: 9999; padding: 20px;">
+        <div class="card" style="width: 100%; max-width: 640px; max-height: 90vh; overflow-y: auto; padding: 28px; position: relative;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3 style="font-size: 18px; font-weight: 700; color: #fff;">✏️ Edit Product</h3>
+            <button id="closeEditProductModal" style="background: none; border: none; color: #94a3b8; font-size: 22px; cursor: pointer; line-height: 1;">✕</button>
+          </div>
+
+          <form id="formEditProduct" style="display: flex; flex-direction: column; gap: 16px;">
+
+            <!-- Product Name -->
+            <div>
+              <label style="font-size: 12px; color: #94a3b8; font-weight: 600; display: block; margin-bottom: 6px;">Product Name</label>
+              <input type="text" id="editProdName" value="${product.name}" required style="width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px 12px; color: #fff; font-size: 14px;" />
+            </div>
+
+            <!-- Category + Duration row -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+              <div>
+                <label style="font-size: 12px; color: #94a3b8; font-weight: 600; display: block; margin-bottom: 6px;">Category</label>
+                <select id="editProdCategory" style="width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px 12px; color: #fff; font-size: 14px;">
+                  ${categories.map(c => `<option value="${c}" ${product.category === c ? 'selected' : ''}>${c}</option>`).join('')}
+                </select>
+              </div>
+              <div>
+                <label style="font-size: 12px; color: #94a3b8; font-weight: 600; display: block; margin-bottom: 6px;">Duration (e.g. "18 Months")</label>
+                <input type="text" id="editProdDuration" value="${product.duration || ''}" style="width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px 12px; color: #fff; font-size: 14px;" />
+              </div>
+            </div>
+
+            <!-- Sale Price + Vendor Cost row -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+              <div>
+                <label style="font-size: 12px; color: #94a3b8; font-weight: 600; display: block; margin-bottom: 6px;">Customer Sale Price (৳)</label>
+                <input type="number" id="editProdSalePrice" value="${product.salePrice}" min="0" required style="width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px 12px; color: #fff; font-size: 14px;" />
+              </div>
+              <div>
+                <label style="font-size: 12px; color: #94a3b8; font-weight: 600; display: block; margin-bottom: 6px;">Supplier Cost (৳)</label>
+                <input type="number" id="editProdVendorPrice" value="${product.vendorPrice}" min="0" style="width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px 12px; color: #fff; font-size: 14px;" />
+              </div>
+            </div>
+
+            <!-- Live Profit Preview -->
+            <div id="editProdProfitPreview" style="background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); border-radius: 8px; padding: 10px 14px; font-size: 13px; color: #10b981; font-weight: 700; text-align: center;">
+              Net Profit: ৳${(product.salePrice - product.vendorPrice).toLocaleString()} (${product.salePrice > 0 ? Math.round(((product.salePrice - product.vendorPrice) / product.salePrice) * 100) : 0}%)
+            </div>
+
+            <!-- Delivery Type -->
+            <div>
+              <label style="font-size: 12px; color: #94a3b8; font-weight: 600; display: block; margin-bottom: 6px;">Delivery Type</label>
+              <select id="editProdDeliveryType" style="width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px 12px; color: #fff; font-size: 14px;">
+                ${deliveryTypes.map(t => `<option value="${t}" ${(product.deliveryType || product.delivery_type) === t ? 'selected' : ''}>${t}</option>`).join('')}
+              </select>
+            </div>
+
+            <!-- Delivery Notes -->
+            <div>
+              <label style="font-size: 12px; color: #94a3b8; font-weight: 600; display: block; margin-bottom: 6px;">Delivery Notes (shown in post copy if no override set)</label>
+              <textarea id="editProdDeliveryNotes" rows="3" style="width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px 12px; color: #fff; font-size: 13px; font-family: inherit; resize: vertical;">${product.deliveryNotes || product.delivery_notes || ''}</textarea>
+            </div>
+
+            <!-- Hero Product Toggle -->
+            <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid var(--border-subtle);">
+              <input type="checkbox" id="editProdIsHero" ${product.isHero ? 'checked' : ''} style="width: 18px; height: 18px; accent-color: #00df89; cursor: pointer;" />
+              <label for="editProdIsHero" style="font-size: 14px; color: #fff; cursor: pointer; font-weight: 600;">
+                ⭐ Mark as Best Seller / Hero Product
+              </label>
+            </div>
+
+            <!-- Actions -->
+            <div style="display: flex; justify-content: flex-end; gap: 12px; padding-top: 8px; border-top: 1px solid var(--border-subtle); margin-top: 4px;">
+              <button type="button" id="cancelEditProductBtn" class="btn btn-secondary">Cancel</button>
+              <button type="submit" class="btn btn-primary" id="submitEditProductBtn" style="min-width: 140px;">
+                💾 Save Changes
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    `;
+
+    // Live profit preview
+    const saleInput = modalsEl.querySelector('#editProdSalePrice');
+    const costInput = modalsEl.querySelector('#editProdVendorPrice');
+    const profitPreview = modalsEl.querySelector('#editProdProfitPreview');
+    const updateProfit = () => {
+      const sale = Number(saleInput.value) || 0;
+      const cost = Number(costInput.value) || 0;
+      const profit = sale - cost;
+      const pct = sale > 0 ? Math.round((profit / sale) * 100) : 0;
+      profitPreview.textContent = `Net Profit: ৳${profit.toLocaleString()} (${pct}%)`;
+      profitPreview.style.color = profit >= 0 ? '#10b981' : '#ef4444';
+    };
+    saleInput.addEventListener('input', updateProfit);
+    costInput.addEventListener('input', updateProfit);
+
+    // Close handlers
+    const closeModal = () => { modalsEl.innerHTML = ''; };
+    modalsEl.querySelector('#closeEditProductModal').addEventListener('click', closeModal);
+    modalsEl.querySelector('#cancelEditProductBtn').addEventListener('click', closeModal);
+    modalsEl.querySelector('#editProductModal').addEventListener('click', (e) => {
+      if (e.target === modalsEl.querySelector('#editProductModal')) closeModal();
+    });
+
+    // Form submit
+    modalsEl.querySelector('#formEditProduct').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = modalsEl.querySelector('#submitEditProductBtn');
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+
+      const payload = {
+        name: modalsEl.querySelector('#editProdName').value.trim(),
+        category: modalsEl.querySelector('#editProdCategory').value,
+        duration: modalsEl.querySelector('#editProdDuration').value.trim(),
+        salePrice: Number(modalsEl.querySelector('#editProdSalePrice').value),
+        vendorPrice: Number(modalsEl.querySelector('#editProdVendorPrice').value),
+        deliveryType: modalsEl.querySelector('#editProdDeliveryType').value,
+        deliveryNotes: modalsEl.querySelector('#editProdDeliveryNotes').value.trim(),
+        isHero: modalsEl.querySelector('#editProdIsHero').checked
+      };
+
+      try {
+        await APP_API.put(`/digistore/products/${product.id}`, payload);
+        this.showToast('✅ Product updated successfully!', 'success');
+        closeModal();
+        await this.loadAllData();
+        this.renderProductsTab(tabContainer);
+      } catch (err) {
+        this.showToast('Error saving: ' + err.message, 'warning');
+        btn.disabled = false;
+        btn.textContent = '💾 Save Changes';
+      }
     });
   },
 
