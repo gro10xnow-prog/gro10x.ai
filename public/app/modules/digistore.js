@@ -150,8 +150,8 @@ const DigistoreModule = {
           <button class="filter-chip" data-tab="vendors">🏪 Verified Suppliers</button>
           <button class="filter-chip" data-tab="renewals">🔔 Renewals Engine</button>
           <button class="filter-chip" data-tab="analytics">📊 Profit Analytics</button>
-          <button class="filter-chip" data-tab="links">🔗 Link Studio (UTM)</button>
-          <button class="filter-chip" data-tab="social">📢 Social Media Studio</button>
+          <button class="filter-chip" data-tab="social">📢 Social & Link Studio</button>
+          <button class="filter-chip" data-tab="links">🔗 Full Link Manager</button>
         </div>
 
         <!-- Tab Views Container -->
@@ -2488,22 +2488,27 @@ const DigistoreModule = {
   },
 
   // ───────────────────────────────────────────────────────────────────────────
-  // TAB 7: 🔗 LINK STUDIO (UTM DEEP-LINK GENERATOR)
+  // TAB 7: 🔗 FULL LINK MANAGER (UTM CAMPAIGN DIRECTORY)
   // ───────────────────────────────────────────────────────────────────────────
   renderLinksTab(container) {
     const links = this.links || [];
 
     container.innerHTML = `
-      <div style="margin-bottom: 20px;">
-        <h3 style="font-size: 18px; font-weight: 700; color: #fff;">🔗 Link Studio — UTM Deep-Link Generator</h3>
-        <p style="color: var(--text-muted); font-size: 13px;">
-          Create tracked deep-links for Facebook posts, WhatsApp status, and Telegram channels. Track clicks, orders, and revenue per channel.
-        </p>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+        <div>
+          <h3 style="font-size: 18px; font-weight: 700; color: #fff;">🔗 Full Link Manager — UTM Tracking Directory</h3>
+          <p style="color: var(--text-muted); font-size: 13px;">
+            Complete ledger of all generated deep-links across Facebook, WhatsApp, Telegram, and LinkedIn campaigns.
+          </p>
+        </div>
+        <button class="btn btn-secondary btn-sm" id="btnGoBackToSocial" style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px;">
+          <span>📢</span> Open Social & Link Studio
+        </button>
       </div>
 
       <!-- Link Generator Form Card -->
       <div class="card" style="padding: 24px; margin-bottom: 24px; border-left: 4px solid var(--primary);">
-        <h4 style="font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 14px;">✨ Generate New Tracked Link</h4>
+        <h4 style="font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 14px;">✨ Create Custom Tracked Deep-Link</h4>
 
         <form id="formGenLink" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; align-items: flex-end;">
           <div>
@@ -2523,6 +2528,7 @@ const DigistoreModule = {
               <option value="facebook">📘 Facebook Post / Group</option>
               <option value="whatsapp">💬 WhatsApp Status / DM</option>
               <option value="telegram">📱 Telegram Channel</option>
+              <option value="linkedin">💼 LinkedIn Post / Article</option>
               <option value="instagram">📸 Instagram Bio / Story</option>
               <option value="direct">🔗 Direct Share</option>
             </select>
@@ -2530,12 +2536,12 @@ const DigistoreModule = {
 
           <div>
             <label style="font-size: 12px; color: #94a3b8; font-weight: 600;">Campaign Tag</label>
-            <input type="text" id="inpLinkCampaign" placeholder="e.g. aug-promo, gemini-blast" value="aug-promo" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px; color: #fff; font-size: 13px; margin-top: 4px;" />
+            <input type="text" id="inpLinkCampaign" placeholder="e.g. sep-2026-blast" value="general-promo" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px; color: #fff; font-size: 13px; margin-top: 4px;" />
           </div>
 
           <div>
             <button type="submit" class="btn btn-primary" style="width: 100%; padding: 11px;">
-              🔗 Create Link
+              🔗 Create Tracked Link
             </button>
           </div>
         </form>
@@ -2552,7 +2558,7 @@ const DigistoreModule = {
                 <th style="padding: 14px 16px; font-size: 12px; color: #64748b; text-transform: uppercase;">Campaign</th>
                 <th style="padding: 14px 16px; font-size: 12px; color: #64748b; text-transform: uppercase;">Clicks</th>
                 <th style="padding: 14px 16px; font-size: 12px; color: #64748b; text-transform: uppercase;">Orders</th>
-                <th style="padding: 14px 16px; font-size: 12px; color: #64748b; text-transform: uppercase;">Shareable Link</th>
+                <th style="padding: 14px 16px; font-size: 12px; color: #64748b; text-transform: uppercase;">Short Code / Link</th>
                 <th style="padding: 14px 16px; font-size: 12px; color: #64748b; text-transform: uppercase; text-align: right;">Action</th>
               </tr>
             </thead>
@@ -2561,37 +2567,42 @@ const DigistoreModule = {
                 <tr>
                   <td colspan="7" style="padding: 40px; text-align: center; color: var(--text-muted);">
                     <div style="font-size: 28px; margin-bottom: 8px;">🔗</div>
-                    <div>No campaign links created yet. Generate one above to track traffic!</div>
+                    <div>No campaign links created yet. Generate one above or from Social Studio!</div>
                   </td>
                 </tr>
               ` : links.map(l => `
-                <tr style="border-bottom: 1px solid var(--border-subtle);">
+                <tr style="border-bottom: 1px solid var(--border-subtle);" data-link-id="${l.id}">
                   <td style="padding: 14px 16px; font-weight: 700; color: #fff;">
                     ${l.productName}
                   </td>
                   <td style="padding: 14px 16px;">
                     <span class="badge" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8;">
-                      ${l.utmSource === 'facebook' ? '📘 Facebook' : l.utmSource === 'whatsapp' ? '💬 WhatsApp' : l.utmSource === 'telegram' ? '📱 Telegram' : '🔗 ' + l.utmSource}
+                      ${l.utmSource === 'facebook' ? '📘 Facebook' : l.utmSource === 'whatsapp' ? '💬 WhatsApp' : l.utmSource === 'telegram' ? '📱 Telegram' : l.utmSource === 'linkedin' ? '💼 LinkedIn' : '🔗 ' + l.utmSource}
                     </span>
                   </td>
                   <td style="padding: 14px 16px; font-family: monospace; color: #a855f7;">
                     ${l.utmCampaign}
                   </td>
                   <td style="padding: 14px 16px; font-weight: 700; color: #38bdf8;">
-                    ${l.clickCount}
+                    ${l.clickCount || 0}
                   </td>
                   <td style="padding: 14px 16px; font-weight: 700; color: #00df89;">
-                    ${l.orderCount}
+                    ${l.orderCount || 0}
                   </td>
                   <td style="padding: 14px 16px;">
-                    <div style="font-size: 11px; color: var(--text-muted); max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: monospace;">
+                    <div style="font-size: 11px; color: var(--text-muted); max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: monospace;" title="${l.fullUrl}">
                       ${l.fullUrl}
                     </div>
                   </td>
                   <td style="padding: 14px 16px; text-align: right;">
-                    <button class="btn btn-sm btn-secondary btn-copy-link" data-url="${l.fullUrl}" title="Copy Link">
-                      📋 Copy
-                    </button>
+                    <div style="display: flex; gap: 6px; justify-content: flex-end;">
+                      <button class="btn btn-sm btn-secondary btn-copy-link" data-url="${l.fullUrl}" data-id="${l.id}" title="Copy Link & Track">
+                        📋 Copy
+                      </button>
+                      <button class="btn btn-sm btn-secondary btn-delete-link" data-id="${l.id}" style="color: #ef4444;" title="Delete Link">
+                        🗑️
+                      </button>
+                    </div>
                   </td>
                 </tr>
               `).join('')}
@@ -2600,6 +2611,11 @@ const DigistoreModule = {
         </div>
       </div>
     `;
+
+    // Shortcut back to social
+    container.querySelector('#btnGoBackToSocial')?.addEventListener('click', () => {
+      this.switchTab('social');
+    });
 
     // Form submit
     const form = container.querySelector('#formGenLink');
@@ -2623,11 +2639,11 @@ const DigistoreModule = {
           utmCampaign: campaign
         });
 
-        alert('Tracked deep link generated successfully!');
+        this.showToast('✅ Tracked deep link created successfully!', 'success');
         await this.loadAllData();
         this.renderLinksTab(container);
       } catch (err) {
-        alert('Error: ' + err.message);
+        this.showToast('Error: ' + err.message, 'warning');
       }
     });
 
@@ -2635,120 +2651,579 @@ const DigistoreModule = {
     container.querySelectorAll('.btn-copy-link').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const url = e.currentTarget.getAttribute('data-url');
+        const linkId = e.currentTarget.getAttribute('data-id');
         navigator.clipboard.writeText(url).then(() => {
-          alert('Link copied to clipboard!');
+          this.showToast('📋 Link copied to clipboard!', 'success');
+          if (linkId) {
+            APP_API.post('/digistore/links/click', { linkId }).catch(() => {});
+          }
         });
+      });
+    });
+
+    // Delete link buttons
+    container.querySelectorAll('.btn-delete-link').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const id = e.currentTarget.getAttribute('data-id');
+        if (confirm('Delete this tracked campaign link?')) {
+          try {
+            await APP_API.delete(`/digistore/links/${id}`);
+            this.showToast('Link removed.', 'info');
+            await this.loadAllData();
+            this.renderLinksTab(container);
+          } catch (err) {
+            this.showToast('Delete error: ' + err.message, 'warning');
+          }
+        }
       });
     });
   },
 
   // ───────────────────────────────────────────────────────────────────────────
-  // TAB 8: 📢 SOCIAL MEDIA STUDIO (FB & WHATSAPP GENERATOR)
+  // TAB 8: 📢 SOCIAL & LINK STUDIO (HUMANIZED, 4 PLATFORMS, AUTO-UTM & IMAGES)
   // ───────────────────────────────────────────────────────────────────────────
   renderSocialTab(container) {
+    if (!this._socialVariant) this._socialVariant = 1;
+    if (!this._socialCopyCounts) this._socialCopyCounts = { fb: 0, en: 0, wa: 0, li: 0 };
+
+    const getInitialCampaign = (prodSlug) => {
+      const prefix = (prodSlug || 'promo').split('-')[0].toLowerCase().substring(0, 10);
+      const now = new Date();
+      const month = now.toLocaleString('en-US', { month: 'short' }).toLowerCase();
+      const year = now.getFullYear();
+      return `${prefix}-${month}-${year}`;
+    };
+
+    const firstProduct = this.products[0] || {};
+    const defaultCampaign = getInitialCampaign(firstProduct.slug);
+
     container.innerHTML = `
-      <div style="margin-bottom: 20px;">
-        <h3 style="font-size: 18px; font-weight: 700; color: #fff;">📢 Social Media & Post Copy Studio</h3>
-        <p style="color: var(--text-muted); font-size: 13px;">
-          Generate high-converting Facebook post captions (Bengali & English) and WhatsApp broadcasts with built-in UTM links.
-        </p>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+        <div>
+          <h3 style="font-size: 18px; font-weight: 700; color: #fff;">📢 Social & Link Studio</h3>
+          <p style="color: var(--text-muted); font-size: 13px; margin-top: 2px;">
+            Generate humanized, multi-platform post captions with auto-created tracked UTM links and creative visual prompts.
+          </p>
+        </div>
+        <button class="btn btn-secondary btn-sm" id="btnSocialOpenLinkManager" style="display: flex; align-items: center; gap: 6px; padding: 8px 14px;">
+          <span>🔗</span> Open Full Link Manager
+        </button>
       </div>
 
-      <!-- Selector Card -->
-      <div class="card" style="padding: 24px; margin-bottom: 24px;">
-        <div style="display: flex; gap: 14px; align-items: flex-end; flex-wrap: wrap;">
-          <div style="flex: 1; min-width: 260px;">
-            <label style="font-size: 12px; color: #94a3b8; font-weight: 600;">Choose Product to Promote</label>
+      <!-- Generator Control Card -->
+      <div class="card" style="padding: 24px; margin-bottom: 24px; border-top: 4px solid var(--primary);">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; align-items: flex-end;">
+          <div>
+            <label style="font-size: 12px; color: #94a3b8; font-weight: 600;">Product to Promote</label>
             <select id="selSocialProduct" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px; color: #fff; font-size: 13px; margin-top: 4px;">
               ${this.products.map(p => `
-                <option value="${p.id}" data-slug="${p.slug}">
+                <option value="${p.id}" data-slug="${p.slug}" data-name="${p.name}">
                   ${p.isHero ? '⭐ ' : ''}${p.name} — ৳${p.salePrice}
                 </option>
               `).join('')}
             </select>
           </div>
 
-          <button id="btnGenerateSocialCopy" class="btn btn-primary" style="padding: 11px 24px;">
-            ✨ Generate Post Copy
-          </button>
+          <div>
+            <label style="font-size: 12px; color: #94a3b8; font-weight: 600;">Campaign Tag (UTM)</label>
+            <input type="text" id="inpSocialCampaign" value="${defaultCampaign}" placeholder="e.g. gemini-sep-2026" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px; color: #fff; font-size: 13px; margin-top: 4px;" />
+          </div>
+
+          <div style="display: flex; gap: 8px;">
+            <button id="btnGenerateSocialCopy" class="btn btn-primary" style="flex: 2; padding: 11px 16px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 6px;">
+              <span>✨</span> Generate Post Copy
+            </button>
+            <button id="btnGenerateLinksOnly" class="btn btn-secondary" style="flex: 1; padding: 11px 12px; font-size: 12px;" title="Create UTM links without generating copy">
+              🔗 Links Only
+            </button>
+          </div>
         </div>
       </div>
 
-      <!-- Output Container -->
+      <!-- Output Container (4 Post Cards) -->
       <div id="socialOutputContainer">
-        <div class="card" style="padding: 40px; text-align: center; color: var(--text-muted);">
-          <div style="font-size: 32px; margin-bottom: 8px;">📢</div>
-          <div>Select a product and click "Generate Post Copy" to view formatted social templates.</div>
+        <div class="card" style="padding: 48px; text-align: center; color: var(--text-muted);">
+          <div style="font-size: 36px; margin-bottom: 12px;">📢</div>
+          <div style="font-size: 16px; font-weight: 700; color: #fff;">Ready to Generate Social Posts</div>
+          <div style="font-size: 13px; margin-top: 4px;">
+            Select a product above and click <strong>"✨ Generate Post Copy"</strong> to produce ready-to-share posts for Facebook, WhatsApp, and LinkedIn with embedded UTM tracking.
+          </div>
+        </div>
+      </div>
+
+      <!-- Image Studio Section (Rendered dynamically after copy generation) -->
+      <div id="socialImageStudioContainer" style="margin-top: 24px;"></div>
+
+      <!-- Inline Product Link Performance Table -->
+      <div id="socialInlineLinksContainer" style="margin-top: 24px;"></div>
+    `;
+
+    // Switch to full link manager button
+    container.querySelector('#btnSocialOpenLinkManager')?.addEventListener('click', () => {
+      this.switchTab('links');
+    });
+
+    // Auto-update campaign tag on product select
+    const selProd = container.querySelector('#selSocialProduct');
+    const inpCamp = container.querySelector('#inpSocialCampaign');
+    if (selProd && inpCamp) {
+      selProd.addEventListener('change', () => {
+        const opt = selProd.options[selProd.selectedIndex];
+        const slug = opt.getAttribute('data-slug');
+        inpCamp.value = getInitialCampaign(slug);
+      });
+    }
+
+    // Generate Copy click
+    const btnGen = container.querySelector('#btnGenerateSocialCopy');
+    btnGen.addEventListener('click', () => this.executeGenerateSocial(container));
+
+    // Links Only click
+    const btnLinksOnly = container.querySelector('#btnGenerateLinksOnly');
+    btnLinksOnly.addEventListener('click', () => this.executeGenerateLinksOnly(container));
+  },
+
+  async executeGenerateSocial(container, variantOverride = null) {
+    const sel = container.querySelector('#selSocialProduct');
+    const opt = sel.options[sel.selectedIndex];
+    const prodId = sel.value;
+    const slug = opt.getAttribute('data-slug');
+    const campaign = container.querySelector('#inpSocialCampaign').value.trim() || undefined;
+
+    if (variantOverride !== null) {
+      this._socialVariant = variantOverride;
+    }
+
+    const out = container.querySelector('#socialOutputContainer');
+    out.innerHTML = `
+      <div class="card" style="padding: 48px; text-align: center; color: var(--text-muted);">
+        <div style="font-size: 32px; margin-bottom: 10px;">✨</div>
+        <div style="font-weight: 700; color: #fff;">Crafting humanized post copy & provisioning UTM links... ⏳</div>
+      </div>
+    `;
+
+    try {
+      const res = await APP_API.post('/digistore/generate-post', {
+        productId: prodId,
+        productSlug: slug,
+        campaign,
+        variant: this._socialVariant
+      });
+
+      const data = res.data || res;
+      this._lastSocialData = data;
+      this._currentPromotedSlug = slug;
+      this._currentPromotedId = prodId;
+
+      this.renderSocialOutput(container, data);
+      this.renderImageStudio(container, data);
+      this.renderInlineLinksTable(container, data);
+
+      // Silently refresh link database state in background
+      this.loadAllData().then(() => this.updateKPIs());
+    } catch (err) {
+      out.innerHTML = `<div class="card" style="padding: 30px; color: #ef4444; text-align: center;">Error generating post: ${err.message}</div>`;
+    }
+  },
+
+  async executeGenerateLinksOnly(container) {
+    const sel = container.querySelector('#selSocialProduct');
+    const opt = sel.options[sel.selectedIndex];
+    const prodId = sel.value;
+    const slug = opt.getAttribute('data-slug');
+    const campaign = container.querySelector('#inpSocialCampaign').value.trim() || undefined;
+
+    try {
+      const res = await APP_API.post('/digistore/generate-post', {
+        productId: prodId,
+        productSlug: slug,
+        campaign,
+        variant: 1
+      });
+
+      const data = res.data || res;
+      this.showToast('✅ 4 Tracked UTM links created!', 'success');
+      this.renderInlineLinksTable(container, data);
+      await this.loadAllData();
+    } catch (err) {
+      this.showToast('Error: ' + err.message, 'warning');
+    }
+  },
+
+  renderSocialOutput(container, data) {
+    const out = container.querySelector('#socialOutputContainer');
+    if (!out) return;
+
+    const links = data.links || {};
+    const fbLink = links.facebook?.fullUrl || '';
+    const waLink = links.whatsapp?.fullUrl || '';
+    const liLink = links.linkedin?.fullUrl || '';
+    const igLink = links.instagram?.fullUrl || '';
+
+    out.innerHTML = `
+      <!-- Variant & Information Header -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span class="badge" style="background: rgba(0, 223, 137, 0.15); color: #00df89; font-weight: 700; font-size: 12px;">
+            ✨ Copy Angle: Variant ${data.variant || 1} of 3
+          </span>
+          <span class="badge" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; font-size: 12px; font-family: monospace;">
+            🏷️ ${data.campaignTag}
+          </span>
+        </div>
+        <button id="btnRegenerateAllVariants" class="btn btn-secondary btn-sm" style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; font-weight: 700;">
+          <span>🔄</span> Try Next Copy Angle (Variant ${(Number(data.variant || 1) % 3) + 1})
+        </button>
+      </div>
+
+      <!-- 4 Platform Output Grid -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 16px;">
+        <!-- Card 1: 🇧🇩 Bengali Facebook -->
+        <div class="card" style="padding: 20px; border-top: 4px solid #38bdf8; display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <h4 style="font-size: 14px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 6px;">
+                <span>🇧🇩</span> Facebook (বাংলা)
+              </h4>
+              <button class="btn btn-sm btn-primary btn-copy-post" data-target="textPostBn" data-link-id="${links.facebook?.id || ''}" data-type="fb">
+                📋 Copy Caption
+              </button>
+            </div>
+            <textarea id="textPostBn" readonly rows="12" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 12px; color: #fff; font-size: 12px; font-family: inherit; line-height: 1.5; resize: vertical;">${data.postBn}</textarea>
+          </div>
+          <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;">
+            <span id="badgeCopyCount-fb" style="font-size: 11px; color: #64748b; font-weight: 600;">📊 ${this._socialCopyCounts.fb || 0} copies</span>
+            <button class="btn btn-sm btn-secondary btn-copy-link-only" data-url="${fbLink}" data-link-id="${links.facebook?.id || ''}" style="font-size: 11px; padding: 3px 8px;">
+              🔗 Copy Link
+            </button>
+          </div>
+        </div>
+
+        <!-- Card 2: 🇬🇧 English Facebook -->
+        <div class="card" style="padding: 20px; border-top: 4px solid var(--primary); display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <h4 style="font-size: 14px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 6px;">
+                <span>🇬🇧</span> Facebook (English)
+              </h4>
+              <button class="btn btn-sm btn-primary btn-copy-post" data-target="textPostEn" data-link-id="${links.facebook?.id || ''}" data-type="en">
+                📋 Copy Caption
+              </button>
+            </div>
+            <textarea id="textPostEn" readonly rows="12" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 12px; color: #fff; font-size: 12px; font-family: inherit; line-height: 1.5; resize: vertical;">${data.postEn}</textarea>
+          </div>
+          <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;">
+            <span id="badgeCopyCount-en" style="font-size: 11px; color: #64748b; font-weight: 600;">📊 ${this._socialCopyCounts.en || 0} copies</span>
+            <button class="btn btn-sm btn-secondary btn-copy-link-only" data-url="${fbLink}" data-link-id="${links.facebook?.id || ''}" style="font-size: 11px; padding: 3px 8px;">
+              🔗 Copy Link
+            </button>
+          </div>
+        </div>
+
+        <!-- Card 3: 💬 WhatsApp Broadcast -->
+        <div class="card" style="padding: 20px; border-top: 4px solid #25d366; display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <h4 style="font-size: 14px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 6px;">
+                <span>💬</span> WhatsApp Broadcast
+              </h4>
+              <button class="btn btn-sm btn-primary btn-copy-post" data-target="textPostWa" data-link-id="${links.whatsapp?.id || ''}" data-type="wa">
+                📋 Copy WA Text
+              </button>
+            </div>
+            <textarea id="textPostWa" readonly rows="12" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 12px; color: #fff; font-size: 12px; font-family: inherit; line-height: 1.5; resize: vertical;">${data.postWa}</textarea>
+          </div>
+          <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;">
+            <span id="badgeCopyCount-wa" style="font-size: 11px; color: #64748b; font-weight: 600;">📊 ${this._socialCopyCounts.wa || 0} copies</span>
+            <button class="btn btn-sm btn-secondary btn-copy-link-only" data-url="${waLink}" data-link-id="${links.whatsapp?.id || ''}" style="font-size: 11px; padding: 3px 8px;">
+              🔗 Copy Link
+            </button>
+          </div>
+        </div>
+
+        <!-- Card 4: 💼 LinkedIn Post -->
+        <div class="card" style="padding: 20px; border-top: 4px solid #0077b5; display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <h4 style="font-size: 14px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 6px;">
+                <span>💼</span> LinkedIn (B2B / Page)
+              </h4>
+              <button class="btn btn-sm btn-primary btn-copy-post" data-target="textPostLi" data-link-id="${links.linkedin?.id || ''}" data-type="li">
+                📋 Copy LinkedIn
+              </button>
+            </div>
+            <textarea id="textPostLi" readonly rows="12" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 12px; color: #fff; font-size: 12px; font-family: inherit; line-height: 1.5; resize: vertical;">${data.postLi}</textarea>
+          </div>
+          <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;">
+            <span id="badgeCopyCount-li" style="font-size: 11px; color: #64748b; font-weight: 600;">📊 ${this._socialCopyCounts.li || 0} copies</span>
+            <button class="btn btn-sm btn-secondary btn-copy-link-only" data-url="${liLink}" data-link-id="${links.linkedin?.id || ''}" style="font-size: 11px; padding: 3px 8px;">
+              🔗 Copy Link
+            </button>
+          </div>
         </div>
       </div>
     `;
 
-    const btnGen = container.querySelector('#btnGenerateSocialCopy');
-    btnGen.addEventListener('click', async () => {
-      const sel = container.querySelector('#selSocialProduct');
-      const opt = sel.options[sel.selectedIndex];
-      const prodId = sel.value;
-      const slug = opt.getAttribute('data-slug');
+    // Regenerate button event
+    container.querySelector('#btnRegenerateAllVariants')?.addEventListener('click', () => {
+      const nextV = (Number(data.variant || 1) % 3) + 1;
+      this.executeGenerateSocial(container, nextV);
+    });
 
-      const out = container.querySelector('#socialOutputContainer');
-      out.innerHTML = `<div class="card" style="padding: 40px; text-align: center; color: var(--text-muted);">Generating copy... ⏳</div>`;
+    // Copy caption events with live click tracking
+    container.querySelectorAll('.btn-copy-post').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const targetId = e.currentTarget.getAttribute('data-target');
+        const linkId = e.currentTarget.getAttribute('data-link-id');
+        const type = e.currentTarget.getAttribute('data-type');
+        const el = document.getElementById(targetId);
+
+        if (el) {
+          navigator.clipboard.writeText(el.value).then(() => {
+            this.showToast('📋 Caption copied to clipboard! (UTM click logged)', 'success');
+            if (type && this._socialCopyCounts[type] !== undefined) {
+              this._socialCopyCounts[type]++;
+              const badge = document.getElementById(`badgeCopyCount-${type}`);
+              if (badge) badge.textContent = `📊 ${this._socialCopyCounts[type]} copies`;
+            }
+            if (linkId) {
+              APP_API.post('/digistore/links/click', { linkId }).catch(() => {});
+            }
+          });
+        }
+      });
+    });
+
+    // Copy Link Only button events
+    container.querySelectorAll('.btn-copy-link-only').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const url = e.currentTarget.getAttribute('data-url');
+        const linkId = e.currentTarget.getAttribute('data-link-id');
+        if (url) {
+          navigator.clipboard.writeText(url).then(() => {
+            this.showToast('🔗 Link copied!', 'success');
+            if (linkId) {
+              APP_API.post('/digistore/links/click', { linkId }).catch(() => {});
+            }
+          });
+        }
+      });
+    });
+  },
+
+  renderImageStudio(container, data) {
+    const studioContainer = container.querySelector('#socialImageStudioContainer');
+    if (!studioContainer) return;
+
+    studioContainer.innerHTML = `
+      <div class="card" style="padding: 24px; border-left: 4px solid #a855f7;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <h4 style="font-size: 16px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px;">
+              <span>🎨</span> Creative Asset Studio — Image Prompt & AI Generation
+            </h4>
+            <p style="color: var(--text-muted); font-size: 13px; margin-top: 2px;">
+              Generate high-impact promotional banners for Facebook, Instagram, WhatsApp, or LinkedIn.
+            </p>
+          </div>
+
+          <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+            <select id="selImagePlatform" style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 8px 12px; color: #fff; font-size: 13px;">
+              <option value="facebook">📘 Facebook (1200x628)</option>
+              <option value="whatsapp">💬 WhatsApp (1080x1080)</option>
+              <option value="linkedin">💼 LinkedIn (1200x627)</option>
+              <option value="instagram">📸 Instagram (1080x1080)</option>
+            </select>
+            <button id="btnGetImagePrompt" class="btn btn-secondary btn-sm" style="padding: 8px 14px; font-weight: 600;">
+              📝 Get Prompt (Free)
+            </button>
+            <button id="btnGenerateAiImage" class="btn btn-primary btn-sm" style="padding: 8px 14px; font-weight: 700; background: #a855f7; border-color: #a855f7; color: #fff;">
+              🖼️ Generate Image (AI)
+            </button>
+          </div>
+        </div>
+
+        <div id="imageStudioResultBox"></div>
+      </div>
+    `;
+
+    const resultBox = studioContainer.querySelector('#imageStudioResultBox');
+    const selPlatform = studioContainer.querySelector('#selImagePlatform');
+
+    // Prompt only click
+    studioContainer.querySelector('#btnGetImagePrompt')?.addEventListener('click', async () => {
+      const platform = selPlatform.value;
+      resultBox.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 20px;">Fetching optimized prompt... ⏳</div>`;
 
       try {
-        const res = await APP_API.post('/digistore/generate-post', {
-          productId: prodId,
-          productSlug: slug,
-          channel: 'facebook'
+        const res = await APP_API.post('/digistore/generate-post-image', {
+          productSlug: data.productSlug,
+          platform,
+          mode: 'prompt'
         });
 
-        const data = res.data || res;
-        this.renderSocialOutput(out, data);
+        const promptData = res.data || res;
+        resultBox.innerHTML = `
+          <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 16px; margin-top: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span style="font-size: 12px; color: #a855f7; font-weight: 700;">📋 Ready-to-Paste Prompt for Canva / Midjourney / Firefly (${promptData.spec}):</span>
+              <button class="btn btn-sm btn-primary" id="btnCopyImagePrompt">📋 Copy Prompt</button>
+            </div>
+            <textarea id="txtImagePromptContent" readonly rows="5" style="width: 100%; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 10px; color: #fff; font-size: 12px; font-family: monospace; line-height: 1.4; resize: none;">${promptData.prompt}</textarea>
+          </div>
+        `;
+
+        document.getElementById('btnCopyImagePrompt')?.addEventListener('click', () => {
+          navigator.clipboard.writeText(promptData.prompt).then(() => {
+            this.showToast('Prompt copied to clipboard!', 'success');
+          });
+        });
       } catch (err) {
-        out.innerHTML = `<div class="card" style="padding: 30px; color: #ef4444;">Error: ${err.message}</div>`;
+        resultBox.innerHTML = `<div style="color: #ef4444; padding: 10px;">Error: ${err.message}</div>`;
+      }
+    });
+
+    // AI Generate Image click
+    studioContainer.querySelector('#btnGenerateAiImage')?.addEventListener('click', async () => {
+      const platform = selPlatform.value;
+      resultBox.innerHTML = `
+        <div style="text-align: center; color: var(--text-muted); padding: 24px;">
+          <div style="font-size: 28px; margin-bottom: 8px;">🎨</div>
+          <div style="font-weight: 700; color: #fff;">Generating promotional image via Gemini AI... ⏳</div>
+          <div style="font-size: 12px; color: #94a3b8; margin-top: 4px;">This usually takes 8–15 seconds.</div>
+        </div>
+      `;
+
+      try {
+        const res = await APP_API.post('/digistore/generate-post-image', {
+          productSlug: data.productSlug,
+          platform,
+          mode: 'generate'
+        });
+
+        const imgData = res.data || res;
+
+        if (imgData.generated && imgData.imageBase64) {
+          const imgSrc = `data:${imgData.imageMimeType || 'image/jpeg'};base64,${imgData.imageBase64}`;
+          resultBox.innerHTML = `
+            <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 16px; margin-top: 10px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+                <span style="font-size: 12px; color: #00df89; font-weight: 700;">✅ Image Generated Successfully (${imgData.spec})</span>
+                <div style="display: flex; gap: 8px;">
+                  <a href="${imgSrc}" download="${data.productSlug}-${platform}-banner.jpg" class="btn btn-sm btn-primary" style="text-decoration: none;">
+                    📥 Download Image
+                  </a>
+                  <button class="btn btn-sm btn-secondary" onclick="DigistoreModule.openLightboxModal('${imgSrc}', 'Generated Promo Banner')">
+                    🔍 View Full
+                  </button>
+                </div>
+              </div>
+              <div style="text-align: center; background: rgba(0,0,0,0.5); padding: 12px; border-radius: 8px;">
+                <img src="${imgSrc}" alt="Generated Promo Banner" style="max-height: 280px; max-width: 100%; border-radius: 6px; box-shadow: 0 4px 20px rgba(0,0,0,0.5);" />
+              </div>
+            </div>
+          `;
+        } else {
+          // Fallback to prompt if Imagen model is not available
+          resultBox.innerHTML = `
+            <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 16px; margin-top: 10px;">
+              <div style="font-size: 12px; color: #f59e0b; margin-bottom: 8px; font-weight: 600;">
+                ℹ️ Direct image generation is standby (${imgData.fallbackReason || 'model initializing'}). Use the prompt below with Canva/Firefly:
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <span style="font-size: 12px; color: #a855f7; font-weight: 700;">📋 Optimized Prompt (${imgData.spec}):</span>
+                <button class="btn btn-sm btn-primary" id="btnCopyFallbackPrompt">📋 Copy Prompt</button>
+              </div>
+              <textarea id="txtFallbackPromptContent" readonly rows="4" style="width: 100%; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 10px; color: #fff; font-size: 12px; font-family: monospace; resize: none;">${imgData.prompt}</textarea>
+            </div>
+          `;
+          document.getElementById('btnCopyFallbackPrompt')?.addEventListener('click', () => {
+            navigator.clipboard.writeText(imgData.prompt).then(() => {
+              this.showToast('Prompt copied to clipboard!', 'success');
+            });
+          });
+        }
+      } catch (err) {
+        resultBox.innerHTML = `<div style="color: #ef4444; padding: 10px;">Error generating image: ${err.message}</div>`;
       }
     });
   },
 
-  renderSocialOutput(container, data) {
-    container.innerHTML = `
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px;">
-        <!-- Bengali Facebook Post -->
-        <div class="card" style="padding: 20px; border-top: 4px solid #38bdf8;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <h4 style="font-size: 15px; font-weight: 700; color: #fff;">🇧🇩 Facebook Post (বাংলা)</h4>
-            <button class="btn btn-sm btn-primary btn-copy-text" data-text-id="textPostBn">📋 Copy Caption</button>
+  renderInlineLinksTable(container, data) {
+    const inlineContainer = container.querySelector('#socialInlineLinksContainer');
+    if (!inlineContainer) return;
+
+    const links = data.links || {};
+    const linkList = Object.entries(links).map(([channel, info]) => ({
+      channel,
+      id: info.id,
+      url: info.fullUrl,
+      shortCode: info.shortCode
+    }));
+
+    inlineContainer.innerHTML = `
+      <div class="card" style="padding: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
+          <div>
+            <h4 style="font-size: 15px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px;">
+              <span>📊</span> Live Campaign Deep-Links for "${data.productName}"
+            </h4>
+            <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
+              Campaign: <strong style="color: #38bdf8; font-family: monospace;">${data.campaignTag}</strong> — links automatically tracked in DigiVault analytics.
+            </div>
           </div>
-          <textarea id="textPostBn" readonly rows="12" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 12px; color: #fff; font-size: 13px; font-family: inherit; line-height: 1.5; resize: none;">${data.postBn}</textarea>
+          <button class="btn btn-secondary btn-sm" onclick="DigistoreModule.switchTab('links')">
+            View All Links in Full Manager ➔
+          </button>
         </div>
 
-        <!-- English Facebook Post -->
-        <div class="card" style="padding: 20px; border-top: 4px solid var(--primary);">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <h4 style="font-size: 15px; font-weight: 700; color: #fff;">🇬🇧 Facebook Post (English)</h4>
-            <button class="btn btn-sm btn-primary btn-copy-text" data-text-id="textPostEn">📋 Copy Caption</button>
-          </div>
-          <textarea id="textPostEn" readonly rows="12" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 12px; color: #fff; font-size: 13px; font-family: inherit; line-height: 1.5; resize: none;">${data.postEn}</textarea>
-        </div>
-
-        <!-- WhatsApp Broadcast Message -->
-        <div class="card" style="padding: 20px; border-top: 4px solid #25d366;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <h4 style="font-size: 15px; font-weight: 700; color: #fff;">💬 WhatsApp Broadcast DM</h4>
-            <button class="btn btn-sm btn-primary btn-copy-text" data-text-id="textPostWa">📋 Copy WA Text</button>
-          </div>
-          <textarea id="textPostWa" readonly rows="12" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 12px; color: #fff; font-size: 13px; font-family: inherit; line-height: 1.5; resize: none;">${data.postWa}</textarea>
+        <div style="overflow-x: auto;">
+          <table class="table" style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
+            <thead>
+              <tr style="background: rgba(0,0,0,0.3); border-bottom: 1px solid var(--border-subtle);">
+                <th style="padding: 10px 14px; color: #64748b; font-size: 11px; text-transform: uppercase;">Channel</th>
+                <th style="padding: 10px 14px; color: #64748b; font-size: 11px; text-transform: uppercase;">Short Ref</th>
+                <th style="padding: 10px 14px; color: #64748b; font-size: 11px; text-transform: uppercase;">Full Tracked URL</th>
+                <th style="padding: 10px 14px; color: #64748b; font-size: 11px; text-transform: uppercase; text-align: right;">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${linkList.map(item => `
+                <tr style="border-bottom: 1px solid var(--border-subtle);">
+                  <td style="padding: 10px 14px; font-weight: 700; color: #fff;">
+                    ${item.channel === 'facebook' ? '📘 Facebook' : item.channel === 'whatsapp' ? '💬 WhatsApp' : item.channel === 'linkedin' ? '💼 LinkedIn' : '📸 Instagram'}
+                  </td>
+                  <td style="padding: 10px 14px; font-family: monospace; color: #38bdf8;">
+                    ${item.shortCode || 'dv_link'}
+                  </td>
+                  <td style="padding: 10px 14px;">
+                    <div style="font-size: 11px; color: var(--text-muted); max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: monospace;">
+                      ${item.url}
+                    </div>
+                  </td>
+                  <td style="padding: 10px 14px; text-align: right;">
+                    <button class="btn btn-sm btn-secondary btn-inline-copy-link" data-url="${item.url}" data-id="${item.id}" style="padding: 4px 10px; font-size: 11px;">
+                      📋 Copy
+                    </button>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
         </div>
       </div>
     `;
 
-    container.querySelectorAll('.btn-copy-text').forEach(btn => {
+    inlineContainer.querySelectorAll('.btn-inline-copy-link').forEach(btn => {
       btn.addEventListener('click', (e) => {
-        const textId = e.currentTarget.getAttribute('data-text-id');
-        const textEl = document.getElementById(textId);
-        if (textEl) {
-          navigator.clipboard.writeText(textEl.value).then(() => {
-            alert('Post caption copied to clipboard!');
-          });
-        }
+        const url = e.currentTarget.getAttribute('data-url');
+        const linkId = e.currentTarget.getAttribute('data-id');
+        navigator.clipboard.writeText(url).then(() => {
+          this.showToast('📋 Link copied to clipboard!', 'success');
+          if (linkId) {
+            APP_API.post('/digistore/links/click', { linkId }).catch(() => {});
+          }
+        });
       });
     });
   }

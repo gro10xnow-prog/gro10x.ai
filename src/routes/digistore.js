@@ -1552,15 +1552,225 @@ router.delete('/links/:id', requireAuth, requireManager, asyncHandler(async (req
 }));
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 7. SOCIAL MEDIA POST GENERATOR (FB & WHATSAPP)
+// 7. SOCIAL MEDIA POST GENERATOR — Humanized, Multi-Platform, UTM-Tracked
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
+ * PRODUCT_COPY_OVERRIDES
+ * Product-specific public-facing copy language overrides.
+ * Use this to control exactly how a product is described in social posts
+ * without touching the internal product name or DB records.
+ */
+const PRODUCT_COPY_OVERRIDES = {
+  'gemini-pro-18m-veo-3': {
+    publicName: 'Gemini Pro 18 Months + VEO 3 Pro',
+    highlights: [
+      'Full 18-Month Official Access',
+      'Limited AI Video generation (VEO 3) included',
+      'Bulk purchase discounts available — contact us',
+      '100% Private, Secure & Guaranteed'
+    ],
+    tone: 'premium-ai'
+  }
+};
+
+/**
+ * buildCampaignTag()
+ * Generates a scalable, human-readable campaign tag.
+ * Format: {product-slug-prefix}-{MMM-YYYY}  e.g. "gemini-sep-2026"
+ * User can override via the `campaign` request param.
+ */
+function buildCampaignTag(slug = '', customTag = '') {
+  if (customTag && customTag.trim()) return customTag.trim().toLowerCase().replace(/\s+/g, '-');
+  const prefix = (slug || 'dv').split('-')[0].toLowerCase().substring(0, 10);
+  const now = new Date();
+  const month = now.toLocaleString('en-US', { month: 'short' }).toLowerCase();
+  const year = now.getFullYear();
+  return `${prefix}-${month}-${year}`;
+}
+
+/**
+ * buildPostCopy()
+ * Returns humanized, conversational copy for all 4 social platforms.
+ * 3 variants per platform (cycle via `variant` param 1|2|3).
+ */
+function buildPostCopy({ publicName, pPrice, pDuration, highlights, fbLink, waLink, liLink, igLink, categoryTag, variant = 1 }) {
+  const v = ((Number(variant) - 1) % 3) + 1;
+  const h = highlights;
+  const cat = (categoryTag || 'AITools').replace(/\s+/g, '');
+
+  // ── 🇧🇩 Bengali Facebook ───────────────────────────────────────────────────
+  const postBnVariants = [
+    `🔥 *${publicName} — মাত্র ৳${pPrice}!*\n\nভাই, একটা কথা বলি — ${pDuration}-এর জন্য মাত্র ৳${pPrice}-এ এই সুযোগ কিন্তু বেশিদিন থাকবে না।\n\n✨ *যা পাচ্ছেন:*\n✅ ${h[0]}\n✅ ${h[1]}\n✅ ${h[2]}\n✅ ${h[3]}\n\n⚡ ১৫-৩০ মিনিটের মধ্যে ডেলিভারি।\n\n🛒 *এখনই অর্ডার করুন:*\n👉 ${fbLink}\n\n📱 টেলিগ্রাম বট: t.me/Digivault20bot\n💬 WhatsApp: wa.me/8801889825025\n\n#DigiVault #${cat} #BangladeshTech #AITools`,
+
+    `⚡ সীমিত সময়ের অফার!\n\n*${publicName}* পাচ্ছেন মাত্র ৳${pPrice}-এ — ${pDuration}-এর জন্য।\n\nএই দামে এত বড় সুবিধা বাংলাদেশে আর কোথাও পাবেন না:\n• ${h[0]}\n• ${h[1]}\n• ${h[2]}\n\nঅর্ডার করুন এখনই 👇\n${fbLink}\n\nসাপোর্টের জন্য: wa.me/8801889825025\n\n#DigiVault #BangladeshTech #DigitalProducts #${cat}`,
+
+    `আপনি কি জানেন ${pDuration}-এর জন্য মাত্র ৳${pPrice}-এ *${publicName}* পাওয়া যায়? 🤔\n\nDigi Vault-এ আমরা দিচ্ছি:\n✔️ ${h[0]}\n✔️ ${h[1]}\n✔️ ${h[2]}\n✔️ ${h[3]}\n\nআজই অর্ডার করুন, ডেলিভারি পাবেন ১৫-৩০ মিনিটের মধ্যে।\n\n👉 ${fbLink}\n📱 t.me/Digivault20bot | 💬 wa.me/8801889825025\n\n#DigiVault #PremiumSubscription #${cat}`
+  ];
+
+  // ── 🇬🇧 English Facebook ───────────────────────────────────────────────────
+  const postEnVariants = [
+    `🔥 *${publicName} — Only ৳${pPrice} BDT!*\n\nWant ${pDuration} of access at a fraction of the official price? We've got you covered. 🙌\n\n✨ *What you're getting:*\n✅ ${h[0]}\n✅ ${h[1]}\n✅ ${h[2]}\n✅ ${h[3]}\n\n⚡ Fast delivery within 15–30 minutes. Zero technical hassle.\n\n🛒 *Order now:*\n👉 ${fbLink}\n\n📱 Telegram Bot: t.me/Digivault20bot\n💬 WhatsApp: wa.me/8801889825025\n\n#DigiVault #${cat} #BangladeshTech #AITools #PremiumSubscription`,
+
+    `🚀 This might be the smartest ৳${pPrice} you spend this month.\n\n*${publicName}* — ${pDuration} of access, instant delivery, fully guaranteed.\n\nHere's what you get:\n• ${h[0]}\n• ${h[1]}\n• ${h[2]}\n\nNo subscription headaches. No hidden fees. Just ৳${pPrice} — once.\n\n👉 ${fbLink}\n\n💬 WhatsApp & Telegram support always available.\n\n#DigiVault #${cat} #DigitalProducts #BangladeshTech`,
+
+    `💡 Did you know you can get *${publicName}* for just ৳${pPrice}?\n\nThat's ${pDuration} of ${h[0].toLowerCase()} — 100% legitimate, instant delivery, fully guaranteed.\n\n✔️ ${h[1]}\n✔️ ${h[2]}\n✔️ ${h[3]}\n\nHundreds of customers across Bangladesh have already made the switch. Your turn? 🎯\n\n🛒 ${fbLink}\n📱 t.me/Digivault20bot | 💬 wa.me/8801889825025\n\n#DigiVault #PremiumSubscription #AITools #${cat}`
+  ];
+
+  // ── 💬 WhatsApp Broadcast ──────────────────────────────────────────────────
+  const postWaVariants = [
+    `Salam! 🌟\n\nGot something you might like — *${publicName}* at only *৳${pPrice}* for ${pDuration}.\n\n✅ ${h[0]}\n✅ Fast delivery (15–30 mins)\n✅ 100% Guaranteed\n\nOrder here: ${waLink}\n\nOr just reply — happy to help! 😊`,
+
+    `Quick one! 🎯\n\n*${publicName}* — ৳${pPrice} for ${pDuration}.\n${h[1]}\n\nOrder: ${waLink}\n\nDM for bulk pricing or more info.`,
+
+    `সালাম! 🌟\n\n*${publicName}* — মাত্র *৳${pPrice}* (${pDuration})\n${h[0]}\nডেলিভারি: ১৫-৩০ মিনিট 🚀\n\nঅর্ডার করুন: ${waLink}\n\nরিপ্লাই দিন — সাহায্য করব! 😊`
+  ];
+
+  // ── 💼 LinkedIn (Professional / Company) ──────────────────────────────────
+  const postLiVariants = [
+    `💡 Affordable access to cutting-edge AI is no longer out of reach.\n\nDigi Vault is offering *${publicName}* at ৳${pPrice} for ${pDuration} — with instant delivery and a full satisfaction guarantee.\n\nKey highlights:\n→ ${h[0]}\n→ ${h[1]}\n→ ${h[2]}\n→ ${h[3]}\n\nThis is part of our mission to make premium digital tools accessible to professionals and businesses across Bangladesh.\n\n🔗 Order here: ${liLink}\n\n#AI #ProductivityTools #BangladeshTech #DigiVault #DigitalTransformation`,
+
+    `The digital tools gap between developed and emerging markets is closing — and DigiVault is part of that story.\n\nWe've helped hundreds of customers in Bangladesh access *${publicName}* at ৳${pPrice} — with ${pDuration} access, instant delivery, and zero technical hassle.\n\nIf you or your team are looking for affordable AI tool access, this is worth a look.\n\n👉 ${liLink}\n\n#AI #BangladeshTech #DigiVault #DigitalTools #Productivity`,
+
+    `📣 DigiVault Update\n\n*${publicName}* — ৳${pPrice} for ${pDuration}.\n\nWhat's included:\n• ${h[0]}\n• ${h[1]}\n• ${h[2]}\n\nFast delivery. Verified access. Satisfaction guaranteed.\n\nInterested? Order directly: ${liLink}\nFor bulk / corporate inquiries: wa.me/8801889825025\n\n#DigiVault #AITools #BangladeshTech #PremiumSubscriptions`
+  ];
+
+  return {
+    postBn: postBnVariants[v - 1],
+    postEn: postEnVariants[v - 1],
+    postWa: postWaVariants[v - 1],
+    postLi: postLiVariants[v - 1]
+  };
+}
+
+/**
+ * createTrackedLink() — internal helper
+ * Inserts a UTM-tagged link into digi_product_links and returns its data.
+ */
+async function createTrackedLink({ product, publicName, utmSource, campaignTag, variant, baseUrl }) {
+  const shortCode = `dv_${Math.random().toString(36).substring(2, 7)}`;
+  const targetPage = `${baseUrl}/digivault/product.html?slug=${product.slug}`;
+  const fullUrl = `${targetPage}&utm_source=${utmSource}&utm_medium=social&utm_campaign=${encodeURIComponent(campaignTag)}&utm_content=social-studio-v${variant}&ref=${shortCode}`;
+
+  const payload = {
+    product_id: product.id || null,
+    product_name: publicName,
+    utm_source: utmSource,
+    utm_medium: 'social',
+    utm_campaign: campaignTag,
+    full_url: fullUrl,
+    short_code: shortCode,
+    click_count: 0,
+    order_count: 0,
+    revenue_generated: 0,
+    created_at: new Date().toISOString()
+  };
+
+  if (isSupabaseConfigured()) {
+    try {
+      const { data } = await supabase.from('digi_product_links').insert([payload]).select().maybeSingle();
+      return { id: data?.id, fullUrl, shortCode };
+    } catch (e) {
+      return { id: null, fullUrl, shortCode };
+    }
+  }
+  return { id: null, fullUrl, shortCode };
+}
+
+/**
  * POST /api/digistore/generate-post
- * Generates ready-to-publish social media captions in English & Bengali
+ * Generates humanized social media captions for 4 platforms.
+ * Uses PRODUCT_COPY_OVERRIDES for product-specific language.
+ * Auto-creates tracked UTM links for each channel in digi_product_links.
+ *
+ * Body: { productId?, productSlug?, campaign?, variant? }
+ *   variant: 1|2|3 — cycles through 3 distinct copy angles
+ *   campaign: override for campaign tag (default: {slug-prefix}-{MMM-YYYY})
  */
 router.post('/generate-post', requireAuth, asyncHandler(async (req, res) => {
-  const { productId, productSlug, channel = 'facebook', campaign = 'promo' } = req.body;
+  const { productId, productSlug, campaign, variant = 1 } = req.body;
+
+  // 1. Fetch product
+  let product = null;
+  if (isSupabaseConfigured()) {
+    let query = supabase.from('digi_products').select('*');
+    if (productId) query = query.eq('id', productId);
+    else if (productSlug) query = query.eq('slug', productSlug);
+    const { data } = await query.maybeSingle();
+    product = data;
+  }
+  if (!product) {
+    try {
+      const { SEED_PRODUCTS } = require('../../scripts/seed-digivault');
+      product = SEED_PRODUCTS('', '').find(p => p.id === productId || p.slug === productSlug) || SEED_PRODUCTS('', '')[0];
+    } catch (e) {}
+  }
+  if (!product) return fail(res, 'Product not found.', 404);
+
+  // 2. Resolve copy parameters — use override if available
+  const override = PRODUCT_COPY_OVERRIDES[product.slug] || null;
+  const publicName = override ? override.publicName : product.name;
+  const pPrice = Number(product.sale_price).toLocaleString();
+  const pDuration = product.duration;
+  const categoryTag = (product.category || 'AITools').replace(/\s+/g, '');
+
+  const highlights = override ? override.highlights : [
+    `Full ${pDuration} Official Access`,
+    product.delivery_notes || 'Instant delivery within 15-30 minutes',
+    'Bulk purchase discounts available — contact us',
+    '100% Private, Secure & Guaranteed'
+  ];
+
+  // 3. Build campaign tag
+  const campaignTag = buildCampaignTag(product.slug, campaign);
+  const BASE_URL = (process.env.BASE_URL || 'https://gro10x-ai.vercel.app').replace(/\/$/, '');
+
+  // 4. Auto-create tracked UTM links for all 4 channels
+  const channels = ['facebook', 'whatsapp', 'linkedin', 'instagram'];
+  const generatedLinks = {};
+  for (const ch of channels) {
+    generatedLinks[ch] = await createTrackedLink({
+      product, publicName, utmSource: ch, campaignTag,
+      variant: Number(variant), baseUrl: BASE_URL
+    });
+  }
+
+  // 5. Build humanized copy using all 4 channel-specific links
+  const copy = buildPostCopy({
+    publicName, pPrice, pDuration, highlights,
+    fbLink: generatedLinks['facebook'].fullUrl,
+    waLink: generatedLinks['whatsapp'].fullUrl,
+    liLink: generatedLinks['linkedin'].fullUrl,
+    igLink: generatedLinks['instagram'].fullUrl,
+    categoryTag, variant: Number(variant)
+  });
+
+  return ok(res, {
+    productName: publicName,
+    productSlug: product.slug,
+    salePrice: product.sale_price,
+    duration: pDuration,
+    campaignTag,
+    variant: Number(variant),
+    links: generatedLinks,
+    postBn: copy.postBn,
+    postEn: copy.postEn,
+    postWa: copy.postWa,
+    postLi: copy.postLi
+  });
+}));
+
+/**
+ * POST /api/digistore/generate-post-image
+ * Returns a structured image prompt (free) and optionally generates
+ * an actual image via Gemini Imagen (uses existing GEMINI_API_KEY).
+ *
+ * Body: { productId?, productSlug?, platform?, mode? }
+ *   platform: "facebook"|"whatsapp"|"linkedin"|"instagram"
+ *   mode: "prompt" (free) | "generate" (Gemini Imagen)
+ */
+router.post('/generate-post-image', requireAuth, asyncHandler(async (req, res) => {
+  const { productId, productSlug, platform = 'facebook', mode = 'prompt' } = req.body;
 
   let product = null;
   if (isSupabaseConfigured()) {
@@ -1570,72 +1780,65 @@ router.post('/generate-post', requireAuth, asyncHandler(async (req, res) => {
     const { data } = await query.maybeSingle();
     product = data;
   }
-
   if (!product) {
-    const { SEED_PRODUCTS } = require('../../scripts/seed-digivault');
-    product = SEED_PRODUCTS('', '').find(p => p.id === productId || p.slug === productSlug) || SEED_PRODUCTS('', '')[0];
+    try {
+      const { SEED_PRODUCTS } = require('../../scripts/seed-digivault');
+      product = SEED_PRODUCTS('', '').find(p => p.id === productId || p.slug === productSlug) || SEED_PRODUCTS('', '')[0];
+    } catch (e) {}
   }
+  if (!product) return fail(res, 'Product not found.', 404);
 
-  const pName = product.name;
+  const override = PRODUCT_COPY_OVERRIDES[product.slug] || null;
+  const publicName = override ? override.publicName : product.name;
   const pPrice = Number(product.sale_price).toLocaleString();
   const pDuration = product.duration;
-  const pNotes = product.delivery_notes || 'Instant delivery within 15-30 minutes.';
-  const link = `https://gro10x-ai.vercel.app/digivault/product.html?slug=${product.slug}&utm_source=${channel}&utm_campaign=${campaign}`;
 
-  // Bengali Post Template
-  const postBn = `🔥 *${pName} — মাত্র ৳${pPrice}!*
+  const specs = {
+    facebook:  { size: '1200x628px (landscape)',  ratio: '16:9' },
+    whatsapp:  { size: '1080x1080px (square)',     ratio: '1:1'  },
+    linkedin:  { size: '1200x627px (landscape)',   ratio: '16:9' },
+    instagram: { size: '1080x1080px (square)',     ratio: '1:1'  }
+  };
+  const spec = specs[platform] || specs['facebook'];
 
-✨ *অফারের বিস্তারিত:*
-✅ মেয়াদ: ${pDuration} ফুল মেয়াদি গ্যারান্টি
-✅ ডেলিভারি: ১৫-৩০ মিনিটের মধ্যে সরাসরি ডেলিভারি
-✅ ${pNotes}
-✅ ১০০% সিকিউর ও প্রাইভেট অ্যাক্সেস
+  const imagePrompt = [
+    `Professional digital product promotion banner for "${publicName}".`,
+    `Design: Dark premium tech aesthetic, deep blue-to-purple gradient background.`,
+    `Bold headline: "${publicName}" with price badge "৳${pPrice}".`,
+    `Visual: Glowing neon accents, verified badge, "Instant Delivery" stamp, DigiVault logo bottom-right.`,
+    `Style: Modern minimalist, high-contrast, premium SaaS — no clutter.`,
+    `Text: Bilingual — English headline + Bengali subtext "মাত্র ৳${pPrice} | ${pDuration}".`,
+    `Platform: ${platform} — ${spec.size}.`,
+    `Colors: Deep navy #0f172a, electric blue #38bdf8, neon green #00df89, white text.`,
+    `Important: NO people or human faces. Pure tech/product aesthetics.`
+  ].join('\n');
 
-🛒 *এখনই অর্ডার করতে ক্লিক করুন:*
-👉 ${link}
+  if (mode === 'prompt') {
+    return ok(res, { prompt: imagePrompt, platform, spec: spec.size, generated: false });
+  }
 
-📱 *টেলিগ্রাম বট দিয়ে সরাসরি অর্ডার:*
-👉 t.me/Digivault20bot
+  if (!process.env.GEMINI_API_KEY) {
+    return ok(res, { prompt: imagePrompt, platform, spec: spec.size, generated: false, fallbackReason: 'GEMINI_API_KEY not configured' });
+  }
 
-💬 *WhatsApp ইনবক্স:*
-👉 wa.me/8801889825025
-
-#DigiVault #Subscription #${product.category.replace(/\s+/g, '')} #BangladeshTech #DigitalProducts`;
-
-  // English Post Template
-  const postEn = `🔥 *${pName} — Only ৳${pPrice} BDT!*
-
-✨ *Key Highlights:*
-✅ Duration: Full ${pDuration} Official Access
-✅ Lightning Fast Delivery (15-30 mins)
-✅ ${pNotes}
-✅ 100% Private, Secure & Guaranteed Warranty
-
-🛒 *Order Online Instantly:*
-👉 ${link}
-
-📱 *Order via Telegram Bot:*
-👉 t.me/Digivault20bot
-
-💬 *WhatsApp Support:*
-👉 wa.me/8801889825025
-
-#DigiVault #PremiumSubscription #${product.category.replace(/\s+/g, '')} #Verified`;
-
-  // WhatsApp Broadcast Template
-  const postWa = `Salam! 🌟 Get *${pName} (${pDuration})* at only *৳${pPrice}* on DigiVault.
-Fast delivery within 15 mins.
-Order here: ${link} or reply to this message!`;
-
-  return ok(res, {
-    productName: pName,
-    salePrice: product.sale_price,
-    duration: pDuration,
-    link,
-    postBn,
-    postEn,
-    postWa
-  });
+  try {
+    const { GoogleGenAI } = require('@google/genai');
+    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+    const response = await ai.models.generateImages({
+      model: 'imagen-3.0-generate-001',
+      prompt: imagePrompt,
+      config: { numberOfImages: 1, outputMimeType: 'image/jpeg', aspectRatio: spec.ratio }
+    });
+    if (response.generatedImages && response.generatedImages.length > 0) {
+      const raw = response.generatedImages[0].image.imageBytes;
+      const b64 = Buffer.isBuffer(raw) ? raw.toString('base64') : Buffer.from(raw).toString('base64');
+      return ok(res, { prompt: imagePrompt, platform, spec: spec.size, imageBase64: b64, imageMimeType: 'image/jpeg', generated: true });
+    }
+    throw new Error('No images returned');
+  } catch (err) {
+    console.warn('[DigiVault] Imagen fallback:', err.message);
+    return ok(res, { prompt: imagePrompt, platform, spec: spec.size, generated: false, fallbackReason: err.message });
+  }
 }));
 
 // ─────────────────────────────────────────────────────────────────────────────

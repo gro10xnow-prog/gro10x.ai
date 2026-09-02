@@ -26,6 +26,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@google/genai": "^2.20.0",
     "@supabase/supabase-js": "^2.110.8",
     "compression": "^1.8.1",
     "cors": "^2.8.5",
