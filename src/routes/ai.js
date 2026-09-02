@@ -714,7 +714,25 @@ router.post('/social-brief', requireAuth, async (req, res) => {
   const category = contentCategory || 'English Lesson';
   const plat = platform || 'YouTube';
   const type = contentType || 'Short-form Video';
-  const postTopic = topic || `${category} on ${chanName}`;
+  // Topic Normalization & Default Archetype Selection
+  let cleanTopic = (topic || '').trim();
+  const isGeneric = !cleanTopic || cleanTopic.toLowerCase() === 'english lesson' || cleanTopic.toLowerCase() === 'general' || cleanTopic.toLowerCase() === 'video' || cleanTopic.toLowerCase().includes('english lesson on');
+
+  const chanLower = chanName.toLowerCase();
+  const isGb = chanLower.includes('grow bangla') || category.toLowerCase().includes('english') || category.toLowerCase().includes('career');
+  const isPilutics = chanLower.includes('pilutics') || category.toLowerCase().includes('geopolit') || category.toLowerCase().includes('documentary');
+  const isBongHits = chanLower.includes('bong') || category.toLowerCase().includes('music') || category.toLowerCase().includes('entertainment');
+  const isGro10x = chanLower.includes('gro10x') || category.toLowerCase().includes('saas') || category.toLowerCase().includes('ai') || category.toLowerCase().includes('tech');
+
+  if (isGeneric) {
+    if (isGb) cleanTopic = 'Corporate Job Interview-e "Tell Me About Yourself"-এর সঠিক ৩টি ফর্মুলা';
+    else if (isPilutics) cleanTopic = 'Middle East Trade Corridor Crisis & Geopolitical Shift';
+    else if (isBongHits) cleanTopic = 'বাঙালির প্রথম প্রেম ও ক্রাশের ৫টি কমন ট্র্যাজেডি';
+    else if (isGro10x) cleanTopic = 'How We Build & Ship Full-Stack AI MVPs in 48 Hours';
+    else cleanTopic = `${category} Masterclass`;
+  }
+
+  const postTopic = cleanTopic;
   const lang = primaryLanguage || 'Bangla + English (Banglish / Spoken)';
 
   // Parse duration
@@ -752,6 +770,11 @@ router.post('/social-brief', requireAuth, async (req, res) => {
     const isBongHits = chan.toLowerCase().includes('bong') || cat.toLowerCase().includes('music') || cat.toLowerCase().includes('entertainment');
     const isGro10x = chan.toLowerCase().includes('gro10x') || cat.toLowerCase().includes('saas') || cat.toLowerCase().includes('ai') || cat.toLowerCase().includes('tech');
 
+    const isPronunciation = /pronunciation|উচ্চারণ|accent|phonetic/i.test(postTop);
+    const isSalary = /salary|বেতন|negotiat|money|offer|increment/i.test(postTop);
+    const isEmail = /email|ইমেইল|mail\b|inbox/i.test(postTop);
+    const isInterview = /interview|ইন্টারভিউ|hire|viva|yourself|freshers/i.test(postTop);
+
     const scenes = [];
     for (let i = 1; i <= count; i++) {
       const startSec = (i - 1) * 10;
@@ -772,36 +795,62 @@ router.post('/social-brief', requireAuth, async (req, res) => {
           section = 'The Hook (Urgent Warning)';
           characterAction = 'Saira delivering an urgent warning with a serious, high-stakes expression, pointing directly toward camera.';
           cameraMove = 'Cinematic studio medium shot, subtle 35mm slow push-in, shallow depth of field (f/1.8).';
-          prompt = `Cinematic studio. Medium shot of young professional Bangladeshi female educator Saira delivering an urgent warning with a serious expression. Warm key lighting, dark acoustic wood slats background with vivid cyan LED backlight. 4K 60fps photorealistic.`;
-          voiceLine = `${cat} নিয়ে এই ভুলটা করলেই ক্যারিয়ার শেষ! এখনই শুধরে নাও!`;
-          visualCue = `Red stop-sign alert badge with kinetic text: "${cat} Big Mistake"`;
+          prompt = `Cinematic studio. Medium shot of young professional Bangladeshi female educator Saira delivering an urgent warning about ${postTop} with an intense, engaging expression. Warm key lighting, dark acoustic wood slats background with vivid cyan LED backlight. 4K 60fps photorealistic.`;
+          voiceLine = isPronunciation 
+            ? `এই ৫টি ইংরেজি শব্দের ভুল উচ্চারণ আজই বন্ধ করো! স্মার্ট ক্যারিয়ারে এটা বড় বাধা!`
+            : (isSalary 
+                ? `HR যখন সেলারি এক্সপেক্টেশন জিজ্ঞেস করে, ভুলেও এই ভুলটা করবে না!` 
+                : (isEmail 
+                    ? `কর্পোরেট ইমেইলে এই ভুলগুলো করলে প্রফেশনাল ইম্প্রেশন সরাসরি নষ্ট হয়!`
+                    : (isInterview
+                        ? `ইন্টারভিউতে 'Tell Me About Yourself' জিজ্ঞেস করলেই এই ৩টি মারাত্মক ভুল কখনোই করবে না!`
+                        : `${postTop} নিয়ে এই মারাত্মক ভুলটা করলেই ক্যারিয়ার শেষ! এখনই শুধরে নাও!`)));
+          visualCue = `Red stop-sign alert badge with kinetic text: "${postTop.slice(0, 28)} 🛑"`;
         } else if (i === 2) {
           section = 'The Common Mistake (Demo)';
-          characterAction = 'Saira acting out a hesitant, confused candidate posture — slumped shoulders, unsure tone, looking away.';
+          characterAction = isPronunciation 
+            ? 'Saira demonstrating flawed mouth shape and hesitant pronunciation of a common word with a puzzled look.'
+            : (isSalary 
+                ? 'Saira acting out nervous candidate blurting out a low salary number with slumped shoulders.'
+                : 'Saira acting out a hesitant, confused candidate posture — slumped shoulders, unsure tone, looking away.');
           cameraMove = 'Medium shot, static camera with subtle handheld texture, side warm amber fill.';
-          prompt = `Studio medium shot. Female educator Saira acting out a nervous, hesitant candidate posture during a high-stakes interview scenario. Warm amber side lighting, modern studio background, high visual clarity.`;
-          voiceLine = `ইন্টারভিউতে এভাবে নার্ভাস হয়ে উত্তর দিলে HR প্রথমেই রিজেক্ট করে দেবে।`;
+          prompt = `Studio medium shot. Female educator Saira acting out a relatable mistake during a high-stakes ${postTop} scenario. Warm amber side lighting, modern studio background, high visual clarity.`;
+          voiceLine = isPronunciation 
+            ? `সবাই যেমন 'Wednesday'-কে ভুল করে 'ওয়েড-নেস-ডে' বলে, ঠিক তেমনই আরও কিছু মারাত্মক ভুল রয়েছে...`
+            : (isSalary 
+                ? `নার্ভাস হয়ে 'আমার ৩০ হাজার হলেই চলবে' বলে ফেললে প্রথমেই তোমার বার্গেইনিং পাওয়ার শেষ!`
+                : (isEmail
+                    ? `ইমেইলের সাবজেক্ট লাইন ও ওপেনিং দুর্বল হলে রিসিভার সেটা পড়বেই না।`
+                    : `শুরুতেই নিজের নাম ও ব্যাকগ্রাউন্ড মুখস্থ বলতে থাকলে HR শুরুতেই আগ্রহ হারিয়ে ফেলে।`));
           visualCue = `Split-screen visual with high-contrast Red 'X' and 'Wrong Way' label.`;
         } else if (i === 3) {
           section = 'The Pivot / Transition';
           characterAction = 'Saira nodding with confident reassurance, leaning slightly forward to reveal the secret formula.';
           cameraMove = 'Medium close-up, smooth camera glide forward, eye-level framing.';
-          prompt = `Studio medium close-up. Female educator Saira nodding knowingly with an encouraging, confident smile, preparing to share the winning strategy. Cyan and warm golden rim light.`;
+          prompt = `Studio medium close-up. Female educator Saira nodding knowingly with an encouraging, confident smile, preparing to share the winning ${postTop} strategy. Cyan and warm golden rim light.`;
           voiceLine = `কিন্তু স্মার্ট প্রফেশনালরা এভাবে বলে না! তারা ব্যবহার করে এই ৩-স্টেপ ম্যাজিক টেকনিক...`;
-          visualCue = `Glowing transition badge: 'Smart Framework ⚡'`;
+          visualCue = `Glowing transition badge: 'Winning 3-Step Strategy ⚡'`;
         } else if (i === 4) {
           section = 'The Correct Solution';
-          characterAction = 'Saira articulating the correct phrase with crisp hand gestures and sharp, authoritative eye contact.';
+          characterAction = isPronunciation
+            ? 'Saira demonstrating crisp mouth opening and clear phonetic resonance with confident eye contact.'
+            : 'Saira articulating the correct phrase with crisp hand gestures and sharp, authoritative eye contact.';
           cameraMove = 'Crisp close-up shot, sharp focus on facial expression and clear articulation.';
-          prompt = `Close-up shot of female educator Saira articulating clearly with confident expressions and authoritative hand gestures. High-contrast studio lighting, sharp focus on eyes and expression.`;
-          voiceLine = `ঠিক এভাবে শুরু করো: "আমার মূল স্ট্রেন্থ হলো..." — সরাসরি ভ্যালু প্রোপোজিশন তুলে ধরো!`;
+          prompt = `Close-up shot of female educator Saira articulating clearly with confident expressions and authoritative hand gestures for ${postTop}. High-contrast studio lighting, sharp focus on eyes and expression.`;
+          voiceLine = isPronunciation 
+            ? `সঠিক উচ্চারণ হলো 'ওয়েনয-ডে' এবং 'Receipt'-এর ক্ষেত্রে 'p' সাইলেন্ট থাকবে, বলতে হবে 'রি-সীট'!`
+            : (isSalary 
+                ? `বলবে: "আমার এক্সপেরিয়েন্স ও মার্কেট ভ্যালু অনুযায়ী আমি এক্সপেক্ট করছি..." — সরাসরি ভ্যালু দেখাও!`
+                : (isEmail
+                    ? `স্মার্ট ওপেনার: "I hope you are having a productive week" — সরাসরি অ্যাকশন পয়েন্টে আসো!`
+                    : `সঠিক ৩-স্টেপ ফর্মুলা: প্রথমে বর্তমান রোল, তারপর সেরা প্রজেক্ট অ্যাচিভমেন্ট, এবং শেষে কোম্পানির জন্য ভ্যালু!`));
           visualCue = `Green checkmark with kinetic phrase overlay in clear Bengali script.`;
         } else if (i === 5) {
           section = 'Actionable Rule & Takeaway';
           characterAction = 'Saira demonstrating the structured formula using 3 distinct finger counts with high energy.';
           cameraMove = 'Medium shot, dynamic fast zoom-in on beat.';
-          prompt = `Studio medium shot. Female educator Saira enthusiastically demonstrating a 3-part framework using hand gestures. Modern glass whiteboard with neon cyan accent.`;
-          voiceLine = `এই গোল্ডেন রুলটা মনে রাখলে কোনো ইন্টারভিউতেই আর আটকে যেতে হবে না!`;
+          prompt = `Studio medium shot. Female educator Saira enthusiastically demonstrating a 3-part framework for ${postTop} using hand gestures. Modern glass whiteboard with neon cyan accent.`;
+          voiceLine = `এই গোল্ডেন রুলটা মনে রাখলে যে কোনো সিচুয়েশনে তুমি কনফিডেন্টলি নিজেকে প্রেজেন্ট করতে পারবে!`;
           visualCue = `3-step numbered framework pill list glowing on screen.`;
         } else {
           section = 'Call to Action & Studio Signoff';
@@ -817,7 +866,7 @@ router.post('/social-brief', requireAuth, async (req, res) => {
           section = 'Geopolitical Crisis Hook';
           characterAction = 'Analyst host standing before holographic world map display with stern, analytical expression.';
           cameraMove = 'Dramatic tracking shot entering dark studio, deep blue and crimson ambient lighting.';
-          prompt = `Cinematic documentary studio. Strategic geopolitical analyst standing before glowing holographic map display. Moody dark-mode command center, deep navy and crimson rim lights. 4K 60fps.`;
+          prompt = `Cinematic documentary studio. Strategic geopolitical analyst standing before glowing holographic map display analyzing ${postTop}. Moody dark-mode command center, deep navy and crimson rim lights. 4K 60fps.`;
           voiceLine = `এই ঘটনাটি বিশ্ব রাজনীতিতে এমন এক পরিবর্তন আনছে যা কেউ আশা করেনি!`;
           visualCue = `Pulsing red geopolitical hotspot marker on interactive map.`;
         } else if (i === count) {
@@ -831,7 +880,7 @@ router.post('/social-brief', requireAuth, async (req, res) => {
           section = `Deep Strategic Breakdown #${i}`;
           characterAction = 'Analyst pointing to key trade routes and defense corridors with precise visual pacing.';
           cameraMove = 'Medium close-up with slow pan across satellite telemetry displays.';
-          prompt = `Medium shot of documentary analyst gesturing toward illuminated satellite map overlays, high visual clarity and photorealistic textures.`;
+          prompt = `Medium shot of documentary analyst gesturing toward illuminated satellite map overlays for ${postTop}, high visual clarity and photorealistic textures.`;
           voiceLine = `পরিস্থিতি বিশ্লেষণ করলে দেখা যায় কৌশলগত কারণে এই সিদ্ধান্ত নেয়া হয়েছে।`;
           visualCue = `Satellite trajectory graphic and statistical comparison chart.`;
         }
@@ -841,7 +890,7 @@ router.post('/social-brief', requireAuth, async (req, res) => {
           section = 'High-Energy Comic / Music Hook';
           characterAction = 'Host delivering explosive comic expression, jumping into frame with high-energy body language.';
           cameraMove = 'Fast snap-zoom into face, vibrant neon purple and cyan lighting.';
-          prompt = `Vibrant urban neon studio. High-energy creator jumping into frame with hilarious expressive face. Dynamic magenta and cyan neon backlight, energetic 60fps motion blur.`;
+          prompt = `Vibrant urban neon studio. High-energy creator jumping into frame with hilarious expressive face about ${postTop}. Dynamic magenta and cyan neon backlight, energetic 60fps motion blur.`;
           voiceLine = `এটা কী দেখলাম ভাই! এই ভিডিও না দেখলে চরম মিস!`;
           visualCue = `Exploding comic text bubble and soundwave pulse.`;
         } else if (i === count) {
@@ -865,7 +914,7 @@ router.post('/social-brief', requireAuth, async (req, res) => {
           section = 'High-Value B2B Hook';
           characterAction = 'Tech founder opening ultra-thin dark-mode laptop, displaying rapid MVP dashboard booting live.';
           cameraMove = 'Macro tracking shot over glassmorphic interface, neon emerald (#00DF89) edge highlights.';
-          prompt = `Cinematic modern SaaS studio. Entrepreneur opening sleek glassmorphic MacBook showing dark-mode Progressive Web App dashboard booting with 60fps fluid charts. Neon emerald and obsidian ambient lighting.`;
+          prompt = `Cinematic modern SaaS studio. Entrepreneur opening sleek glassmorphic MacBook showing dark-mode Progressive Web App dashboard for ${postTop} booting with 60fps fluid charts. Neon emerald and obsidian ambient lighting.`;
           voiceLine = `Stop waiting months for traditional agencies. Here is how we ship full-stack MVPs in 48 hours.`;
           visualCue = `Live 48-Hour Sprint Stopwatch HUD with verified GRO10X badge.`;
         } else if (i === count) {
@@ -938,31 +987,31 @@ router.post('/social-brief', requireAuth, async (req, res) => {
     targetDuration: `${durationSec}s`,
     primaryLanguage: lang,
     hook: isBanglish
-      ? `${category}-e ei mistake korei thako! 🛑`
-      : `Stop making this mistake in ${category}! 🛑`,
+      ? `${postTopic}-এ এই ভুলটা করলেই বিপদ! 🛑`
+      : `Stop making this mistake in ${postTopic}! 🛑`,
     angle: isBanglish
-      ? `${chanName} audience der jonno — ei common mistake-ta kothin bhabe affect kore career. Ekhoni fix koro.`
-      : `Direct, high-retention breakdown tailored for ${chanName} audience on ${plat}.`,
+      ? `🎓 ${chanName} অডিয়েন্সদের জন্য — ${postTopic} কীভাবে প্রফেশনাল ক্যারিয়ার ও ডেইলি কনভারসেশনে সর্বোচ্চ ইমপ্যাক্ট ফেলবে তার কমপ্লিট ব্রেকডাউন।`
+      : `Direct, high-retention breakdown for ${chanName} audience regarding ${postTopic} on ${plat}.`,
     keyPoints: isBanglish
       ? [
-          `${category}-e shobcheye common mistake-ta identify koro`,
-          `Real example diye immediately actionable correction dao`,
-          `Ekta memorable rule diye finish koro jeta matha-te thake`
+          `${postTopic}-এর সবচেয়ে কমন ভুলটি চিহ্নিত করো`,
+          `সরাসরি রিয়েল এক্সাম্পল দিয়ে অ্যাকশনেবল সলিউশন দাও`,
+          `একটি মেমোরেবল রুল বা ফ্রেমওয়ার্ক দিয়ে সামারাইজ করো`
         ]
       : [
-          `Break down the most common misconception in ${category}`,
+          `Break down the most common misconception in ${postTopic}`,
           `Provide an immediate, actionable correction with real examples`,
           `Deliver a memorable mnemonic or takeaway rule`
         ],
     caption: isBanglish
-      ? `🔥 ${category} niye quick breakdown!\n\nEi mistake tumi-o koro? Jano na? Ekhane exactly kothay bhul hocche sheta dekhao.\n\n📌 Save kore rakho — pore kaje ashbe!\n💬 Comment koro Part 2 chailei!`
-      : `🔥 Quick ${category} breakdown for you!\n\nIf you've ever struggled with this, you are not alone. Here is the exact way to get it right every single time.\n\n📌 Save this post so you don't forget it!\n💬 Drop a comment below if you want Part 2!`,
-    hashtags: `#${chanName.replace(/[^a-zA-Z0-9]/g, '')} #${category.replace(/[^a-zA-Z0-9]/g, '')} #GRO10X #ContentScale #${plat.replace(/[^a-zA-Z0-9]/g, '')}`,
-    firstComment: `#${chanName.replace(/[^a-zA-Z0-9]/g, '')} #LearnDaily #Bangladesh #Viral2026 #DailyTips`,
+      ? `🔥 ${postTopic} নিয়ে কুইক ব্রেকডাউন!\n\nতুমি কি এই ভুলটা করতে? এখনই জেনে নাও সঠিক পদ্ধতি।\n\n📌 Save করে রাখো — প্র্যাকটিসের সময় কাজে লাগবে!\n💬 কমেন্ট করো আরও এমন গাইডলাইন চাইলে!`
+      : `🔥 Quick ${postTopic} breakdown for you!\n\nHere is the exact framework to get it right every single time.\n\n📌 Save this post so you don't forget it!\n💬 Drop a comment below if you want Part 2!`,
+    hashtags: `#${chanName.replace(/[^a-zA-Z0-9]/g, '')} #${category.replace(/[^a-zA-Z0-9]/g, '')} #CareerHacks #LearnSpokenEnglish #BanglaTips`,
+    firstComment: `#${chanName.replace(/[^a-zA-Z0-9]/g, '')} #LearnDaily #Bangladesh #Viral2026 #SpokenEnglish`,
     visualBrief: `Facecam intro with high-contrast text overlay on top 20% of screen. Split-screen visual example with green checkmark vs red X. Warm studio lighting with cyan/amber backlight.`,
     voiceNote: isBanglish
-      ? `[0:00-0:03] Hook (Banglish): "${category} niye eta koro na — career shesh hoye jabe!" [0:03-0:12] Common mistake dekhao — candidate kemon kore answer korche wrong way-te. [0:12-0:25] Correct method show koro — exact phrase diye: "Amra eivabe bolbo..." [0:25-${durationSec <= 30 ? '0:30' : '0:60'}] Strong CTA: "Grow Bangla-te subscribe koro daily career tips-er jonno!"`
-      : `Start immediately with the hook: "90% of people get this wrong..." (0-3s). Demonstrate the common flaw (3-12s). Reveal the correct method with energy (12-25s). Strong CTA: "Follow for daily breakthroughs" (25-30s).`,
+      ? `[0:00-0:03] Hook (Banglish): "${postTopic} নিয়ে এই মারাত্মক ভুলটা কখনোই করবে না!" [0:03-0:12] কমন ভুলটা দেখাও — কেন বেশিরভাগ মানুষ এখানে আটকে যায়। [0:12-0:25] সঠিক ৩-স্টেপ মেথড রিভিল করো: সরাসরি প্র্যাকটিকাল উদাহরণ দিয়ে। [0:25-${durationSec <= 30 ? '0:30' : '0:60'}] Strong CTA: "প্রতিদিনের ক্যারিয়ার ও স্পোকেন ইংলিশ মাস্টারির জন্য Grow Bangla-তে এখনই সাবস্ক্রাইব করো!"`
+      : `Start immediately with the hook: "${postTopic} - Stop making this mistake..." (0-3s). Demonstrate the common flaw (3-12s). Reveal the correct method with energy (12-25s). Strong CTA: "Follow for daily breakthroughs" (25-30s).`,
     veoScenes: fallbackScenes,
     masterVeoPrompt: formatMasterVeoPrompt(fallbackScenes),
     pdfOutline: fallbackPdfSlides,

@@ -2756,14 +2756,52 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
         btn.innerHTML = '✨ Generating Brief &amp; Prompts...';
       }
 
+      let progressInterval = null;
       if (container) {
         container.style.display = 'flex';
         container.innerHTML = `
-          <div style="text-align:center; padding:1.2rem; color:var(--purple-light); font-size:0.85rem;">
-            <div style="font-size:1.6rem; margin-bottom:0.3rem;">🤖</div>
-            Gemini AI crafting structured <strong>${escapeHTML(contentType)}</strong> blueprint with VEO 3 prompts for <strong>${escapeHTML(channelObj.name)}</strong>...
+          <div style="width:100%; background:rgba(20,20,35,0.95); border:1px solid rgba(168,85,247,0.3); border-radius:12px; padding:1.4rem; display:flex; flex-direction:column; align-items:center; gap:0.8rem; text-align:center;">
+            <div style="font-size:2rem; animation: pulse 1.2s infinite;">🤖</div>
+            <div style="font-weight:900; font-size:0.95rem; color:#fff;">
+              Crafting Strategic <strong>${escapeHTML(contentType)}</strong> Blueprint
+            </div>
+            <div style="width:100%; max-width:380px; display:flex; flex-direction:column; gap:0.4rem;">
+              <div style="display:flex; justify-content:space-between; font-size:0.75rem; font-weight:800;">
+                <span id="briefProgressStep" style="color:#c084fc;">🎯 Synthesizing Viral Hook &amp; Retention Angle...</span>
+                <span id="briefProgressPercent" style="color:#10b981;">15%</span>
+              </div>
+              <div style="width:100%; height:7px; background:rgba(255,255,255,0.1); border-radius:10px; overflow:hidden;">
+                <div id="briefProgressBar" style="width:15%; height:100%; background:linear-gradient(90deg, #a855f7, #10b981); transition:width 0.22s ease; border-radius:10px;"></div>
+              </div>
+            </div>
+            <div style="font-size:0.72rem; color:var(--text-dim);">
+              Grounding character actions, camera moves &amp; spoken voice lines for <strong>${escapeHTML(channelObj.name)}</strong>...
+            </div>
           </div>
         `;
+
+        let currentPercent = 15;
+        const stepEl = document.getElementById('briefProgressStep');
+        const pctEl = document.getElementById('briefProgressPercent');
+        const barEl = document.getElementById('briefProgressBar');
+
+        progressInterval = setInterval(() => {
+          if (currentPercent < 90) {
+            currentPercent += Math.floor(Math.random() * 12) + 6;
+            if (currentPercent > 90) currentPercent = 90;
+            if (pctEl) pctEl.textContent = `${currentPercent}%`;
+            if (barEl) barEl.style.width = `${currentPercent}%`;
+            if (stepEl) {
+              if (currentPercent < 35) {
+                stepEl.textContent = `🎯 Synthesizing Stop-The-Scroll Hook & Angle...`;
+              } else if (currentPercent < 65) {
+                stepEl.textContent = `🎬 Directing 6 Character-Driven VEO 3 Scenes...`;
+              } else {
+                stepEl.textContent = `🎙️ Syncing Spoken Script & Flow Agent Brief...`;
+              }
+            }
+          }
+        }, 220);
       }
 
       try {
@@ -2777,6 +2815,8 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
           primaryLanguage
         });
 
+        if (progressInterval) clearInterval(progressInterval);
+
         if (res && res.success && res.brief) {
           activeGeneratedBrief = res.brief;
           this.renderAIBriefPanel(res.brief, res.generatedBy);
@@ -2785,6 +2825,7 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
           throw new Error((res && res.error) || 'Failed to generate brief');
         }
       } catch (err) {
+        if (progressInterval) clearInterval(progressInterval);
         console.error('[AI Brief] Error:', err);
         if (container) {
           container.innerHTML = `
@@ -2794,6 +2835,7 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
           `;
         }
       } finally {
+        if (progressInterval) clearInterval(progressInterval);
         if (btn) {
           btn.disabled = false;
           btn.innerHTML = '✨ Generate AI Brief & Prompts';

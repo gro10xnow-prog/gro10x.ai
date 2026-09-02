@@ -34,23 +34,123 @@
           "url": "https://youtube.com/@GrowBangla",
           "defaultContentType": "Short-form Video",
           "targetCadencePerWeek": 9,
-          "audienceCount": 1500,
-          "audienceLabel": "1,500 Active Members",
+          "audienceCount": 406,
+          "audienceLabel": "28,600 Views · 406 Subscribers",
           "analyticsKnowledgeBase": {
-            "source": "Community Metrics Snapshot",
-            "lastUpdated": "2026-09-02T12:45:12.776Z",
-            "totalVideosIndexed": 0,
-            "totalViews": 0,
-            "memberCount": 1500,
+            "source": "GrowBangla_YouTube_Analytics.csv",
+            "lastUpdated": "2026-09-02T13:28:52.241Z",
+            "totalVideosIndexed": 83,
+            "totalViews": 28600,
+            "totalWatchTimeHours": 1144.8,
+            "totalSubscribers": 406,
+            "impressions": 201186,
+            "avgCtr": 2.66,
+            "avgViewDuration": "2:45",
+            "bestPostingDays": [
+              "Friday 18:00",
+              "Tuesday 19:00",
+              "Monday 20:00"
+            ],
             "primaryLanguage": "Bangla + English (Banglish / Spoken)",
+            "topPerformers": [
+              {
+                "rank": 1,
+                "title": "McDonald’s Service Crew Interview Guide | Answer Common Questions in English | Bangla Tutorial",
+                "views": 14013,
+                "watchHours": 757.3926,
+                "subs": 178,
+                "ctr": 8.07,
+                "impressions": 98173,
+                "format": "Long-form",
+                "avgDuration": "3:10"
+              },
+              {
+                "rank": 2,
+                "title": "Shomvob Presents Campus to Career 2024 I First Round Instructions",
+                "views": 6349,
+                "watchHours": 317.9319,
+                "subs": 180,
+                "ctr": 8.32,
+                "impressions": 2332,
+                "format": "Long-form",
+                "avgDuration": "3:10"
+              },
+              {
+                "rank": 3,
+                "title": "Donald Trump on Bangladesh #shorts",
+                "views": 1090,
+                "watchHours": 4.5444,
+                "subs": 0,
+                "ctr": 1.02,
+                "impressions": 293,
+                "format": "Short",
+                "avgDuration": "0:35"
+              },
+              {
+                "rank": 4,
+                "title": "স্টেডফাস্ট কুরিয়ারে (SteadFast Courier) বিজনেস ডেভেলপমেন্ট এক্সিকিউটিভ পদে চাকরির সুযোগ #shorts",
+                "views": 649,
+                "watchHours": 2.6467,
+                "subs": 3,
+                "ctr": 1.34,
+                "impressions": 3807,
+                "format": "Short",
+                "avgDuration": "0:35"
+              },
+              {
+                "rank": 5,
+                "title": "অফিসে ফোনে ইংরেজিতে কথা বলার নিয়ম #education #job #10mshorts #students #placement #english #exam",
+                "views": 501,
+                "watchHours": 0.8169,
+                "subs": 2,
+                "ctr": 2.99,
+                "impressions": 268,
+                "format": "Short",
+                "avgDuration": "0:35"
+              },
+              {
+                "rank": 6,
+                "title": "২৫ বছরের হোম লোন মাত্র ১০ বছরে পরিশোধের গোপন কৌশল! 🔥 (লাখ লাখ টাকা সুদ বাঁচান)",
+                "views": 434,
+                "watchHours": 11.3263,
+                "subs": 3,
+                "ctr": 5.29,
+                "impressions": 7727,
+                "format": "Long-form",
+                "avgDuration": "3:10"
+              },
+              {
+                "rank": 7,
+                "title": "China Office Executive Recruitment: Huzaifa Enterprize #shorts",
+                "views": 339,
+                "watchHours": 0.9935,
+                "subs": 0,
+                "ctr": 0.95,
+                "impressions": 1362,
+                "format": "Short",
+                "avgDuration": "0:35"
+              },
+              {
+                "rank": 8,
+                "title": "২৫ বছরের হোম লোন মাত্র ১০ বছরে পরিশোধের গোপন কৌশল! 🔥 (লাখ লাখ টাকা সুদ বাঁচান)",
+                "views": 337,
+                "watchHours": 0.9387,
+                "subs": 1,
+                "ctr": 1.76,
+                "impressions": 2327,
+                "format": "Long-form",
+                "avgDuration": "3:10"
+              }
+            ],
             "topCategories": [
-              "Job Circulars",
-              "Spoken English Practice",
-              "PDF Interview Guides"
+              "Spoken English & Interview Guides",
+              "Verified Job Circulars & Career Tracks",
+              "AI Operating Systems & Agency Frameworks"
             ],
             "recommendations": [
-              "Morning daily drops show 85% read rate.",
-              "Include direct actionable links and clean bullet formatting for mobile reading."
+              "Format anchored around \"McDonald’s Service Crew Interview Guide | Answer C...\" delivered top velocity (14,013 views).",
+              "Average CTR across channel is 2.66% — optimize thumbnail contrast and bold benefit text.",
+              "Fixed YouTube Production Rule: 2 Weekly Long-form Pillar Deep Dives (Friday & Tuesday) + 1 Daily Short for high discovery."
             ]
           },
           "calendars": {
@@ -686,7 +786,7 @@
               "primaryLanguage": "Bangla + English (Banglish / Spoken)",
               "strategicSummary": "Fixed Production Blueprint for Grow Bangla (YouTube Channel): 28 Daily Shorts (Mon-Sun) + 8 Long-form Pillar Deep Dives (Friday & Tuesday) in Bangla + English (Banglish / Spoken). All topics 100% unique & non-repeating.",
               "theme": "Corporate Job Interview Mastery",
-              "generatedAt": "2026-09-02T13:17:37.245Z",
+              "generatedAt": "2026-09-02T13:33:30.235Z",
               "planItems": [
                 {
                   "id": "plan-grow-bangla-youtube-September-short-1",
@@ -1301,7 +1401,7 @@
                   "formatTag": "🎬 Daily Short"
                 }
               ],
-              "lockedAt": "2026-09-02T13:17:37.250Z",
+              "lockedAt": "2026-09-02T13:33:30.245Z",
               "lockedBy": "Firoz (Super Admin)"
             }
           }
@@ -1350,7 +1450,7 @@
               "primaryLanguage": "Bangla + English (Banglish / Spoken)",
               "strategicSummary": "Cross-Channel Synergized Blueprint for Grow Bangla (Facebook Page): Repurposed from YouTube anchor pillars to maximize omnichannel velocity in Bangla + English (Banglish / Spoken).",
               "theme": "Corporate Job Interview Mastery",
-              "generatedAt": "2026-09-02T13:17:38.934Z",
+              "generatedAt": "2026-09-02T13:33:32.036Z",
               "planItems": [
                 {
                   "id": "plan-grow-bangla-facebook-September-1",
@@ -1775,7 +1875,7 @@
             "Salary Negotiation",
             "CV Power"
           ],
-          "updatedAt": "2026-09-02T13:17:36.539Z",
+          "updatedAt": "2026-09-02T13:33:29.510Z",
           "updatedBy": "Admin"
         }
       }
