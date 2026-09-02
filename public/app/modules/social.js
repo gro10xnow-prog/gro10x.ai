@@ -4061,17 +4061,19 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
       const isPdf = Array.isArray(brief.pdfOutline) && brief.pdfOutline.length > 0;
       const isCarousel = Array.isArray(brief.carouselSlides) && brief.carouselSlides.length > 0;
 
-      // Build spoken script from scene voice lines (verbatim teleprompter) or fall back to voiceNote
+      // Build spoken script from scene voice lines (verbatim teleprompter) or fall back to stored spokenScript / voiceNote
       const spokenScript = (isVideo && brief.veoScenes[0] && brief.veoScenes[0].voiceLine)
-        ? brief.veoScenes.map(s => `[${s.timeRange}] ${s.voiceLine}`).join('\n\n')
-        : (brief.voiceNote || '');
+        ? brief.veoScenes.map(s => `[${s.timeRange || ''}] ${s.voiceLine}`).join('\n\n')
+        : (brief.spokenScript || brief.voiceNote || '');
+
+      const badgeLabel = generatedBy === 'saved' ? 'Saved' : (generatedBy || 'gemini');
 
       container.style.display = 'flex';
       container.innerHTML = `
         <!-- Panel Header: title + Regenerate + Auto-Fill -->
         <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(168,85,247,0.2); padding-bottom:0.5rem; flex-wrap:wrap; gap:0.4rem;">
           <span style="font-size:0.82rem; font-weight:800; color:#d8b4fe;">
-            ✨ ${escapeHTML(brief.contentType || 'Content')} Blueprint (${escapeHTML(generatedBy || 'gemini')})
+            ✨ ${escapeHTML(brief.contentType || 'Content')} Blueprint (${escapeHTML(badgeLabel)})
           </span>
           <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
             <button type="button" class="btn-ghost btn-sm" style="font-size:0.7rem; padding:0.2rem 0.6rem;" onclick="window.SOCIAL_MODULE.generateAIBrief()">
@@ -4154,23 +4156,28 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
               </summary>
               <div class="sp-brief-accordion-body">
                 <div style="display:flex; flex-direction:column; gap:0.5rem; max-height:280px; overflow-y:auto; padding-right:0.2rem;">
-                  ${brief.veoScenes.map((s, idx) => `
+                  ${brief.veoScenes.map((s, idx) => {
+                    const sceneNum = s.scene || s.sceneNumber || (idx + 1);
+                    const timeRange = s.timeRange || '';
+                    const promptText = s.prompt || '';
+                    return `
                     <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-subtle); border-radius:8px; padding:0.6rem 0.8rem; font-size:0.74rem;">
                       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.3rem;">
-                        <span style="font-weight:800; color:#a7f3d0;">[${escapeHTML(s.timeRange)}] Scene ${s.scene}: ${escapeHTML(s.section || '')}</span>
+                        <span style="font-weight:800; color:#a7f3d0;">[${escapeHTML(timeRange)}] Scene ${sceneNum}: ${escapeHTML(s.section || '')}</span>
                         <div style="display:flex; gap:0.35rem;">
                           <button type="button" class="btn-ghost btn-xs" style="color:#38bdf8; border:1px solid rgba(56,189,248,0.3); border-radius:4px; padding:0.1rem 0.4rem;" onclick="window.SOCIAL_MODULE.regenerateVeoScene(${idx})">
                             🔄 Regenerate
                           </button>
-                          <button type="button" class="btn-ghost btn-xs" style="padding:0.1rem 0.4rem;" onclick="navigator.clipboard.writeText('${escapeHTML(s.prompt).replace(/'/g, "\\'")}'); if(window.showToast) window.showToast('Scene ${s.scene} prompt copied!','success');">
+                          <button type="button" class="btn-ghost btn-xs" style="padding:0.1rem 0.4rem;" onclick="navigator.clipboard.writeText('${escapeHTML(promptText).replace(/'/g, "\\'")}'); if(window.showToast) window.showToast('Scene ${sceneNum} prompt copied!','success');">
                             📋 Copy
                           </button>
                         </div>
                       </div>
-                      <div style="color:var(--text-secondary); line-height:1.45;">${escapeHTML(s.prompt)}</div>
+                      <div style="color:var(--text-secondary); line-height:1.45;">${escapeHTML(promptText)}</div>
                       ${s.visualCue ? `<div style="color:#94a3b8; font-size:0.68rem; margin-top:0.25rem;">🎨 <em>On-screen: ${escapeHTML(s.visualCue)}</em></div>` : ''}
                     </div>
-                  `).join('')}
+                  `;
+                  }).join('')}
                 </div>
               </div>
             </details>
@@ -4367,16 +4374,20 @@ Return strictly JSON: { "prompt": "...", "visualCue": "..." }`;
 
       // Build spoken talking script directly from 10-second scene voice lines for a guaranteed verbatim teleprompter read
       const spokenScript = (Array.isArray(b.veoScenes) && b.veoScenes.length > 0 && b.veoScenes[0].voiceLine)
-        ? b.veoScenes.map(s => `[${s.timeRange}] ${s.voiceLine}`).join('\n\n')
-        : (b.voiceNote || '');
+        ? b.veoScenes.map(s => `[${s.timeRange || ''}] ${s.voiceLine}`).join('\n\n')
+        : (b.spokenScript || b.voiceNote || '');
 
       sections.push(`🎙️ SPOKEN TALKING SCRIPT (Read this verbatim on camera, in ${b.primaryLanguage || 'Bangla + English (Banglish / Spoken)'}):`);
       sections.push(spokenScript);
       sections.push('');
 
-      if (b.masterVeoPrompt) {
+      const veoContent = b.masterVeoPrompt || (Array.isArray(b.veoScenes) && b.veoScenes.length > 0
+        ? b.veoScenes.map((s, idx) => `[${s.timeRange || ''}] Scene ${s.scene || s.sceneNumber || (idx + 1)}: ${s.section || ''}\n${s.prompt || ''}`).join('\n\n')
+        : '');
+
+      if (veoContent) {
         sections.push(`🎥 GOOGLE VEO 3 SCENE PROMPTS (10-Second Chunks for Flow Agent):`);
-        sections.push(b.masterVeoPrompt);
+        sections.push(veoContent);
         sections.push('');
       }
 
@@ -4835,6 +4846,34 @@ Return strictly JSON: { "prompt": "...", "visualCue": "..." }`;
             };
           }
         });
+      }
+
+      // Phase DB 2: Rehydrate AI Brief from stored post data if present
+      const hasStoredBrief = (Array.isArray(post.veoPrompts) && post.veoPrompts.length > 0) ||
+                             (Array.isArray(post.pdfOutline) && post.pdfOutline.length > 0) ||
+                             (Array.isArray(post.carouselSlides) && post.carouselSlides.length > 0) ||
+                             Boolean(post.spokenScript) ||
+                             Boolean(post.hook);
+
+      if (hasStoredBrief) {
+        activeGeneratedBrief = {
+          veoScenes: Array.isArray(post.veoPrompts) ? post.veoPrompts : null,
+          pdfOutline: Array.isArray(post.pdfOutline) ? post.pdfOutline : null,
+          carouselSlides: Array.isArray(post.carouselSlides) ? post.carouselSlides : null,
+          spokenScript: post.spokenScript || null,
+          hook: post.hook || null,
+          ctaText: post.ctaText || null,
+          contentType: post.contentType || 'Short-form Video',
+          targetDuration: post.targetDuration || '60s',
+          caption: post.caption || '',
+          hashtags: post.hashtags || '',
+          firstComment: post.firstComment || ''
+        };
+        this.renderAIBriefPanel(activeGeneratedBrief, 'saved');
+      } else {
+        activeGeneratedBrief = null;
+        const briefBox = document.getElementById('aiBriefContainer');
+        if (briefBox) { briefBox.style.display = 'none'; briefBox.innerHTML = ''; }
       }
 
       this.checkAiModelHealth();
