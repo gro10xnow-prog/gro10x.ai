@@ -596,19 +596,47 @@ router.post('/:brandSlug/channels/:channelId/analytics', requireAuth, upload.sin
   const channel = (brand.channels || []).find(c => c.id === req.params.channelId || c.slug === req.params.channelId);
   if (!channel) return res.status(404).json({ success: false, error: 'Channel not found' });
 
-  const { snapshotSource, memberCount, topTopics, notes, csvText: bodyCsvText } = req.body;
+  const { snapshotSource, memberCount, topTopics, notes, csvText: bodyCsvText, type: bodyType } = req.body || {};
+
+  const contentTypeHeader = (req.headers['content-type'] || '').toLowerCase();
+  const isMultipart = contentTypeHeader.includes('multipart/form-data');
 
   let csvContent = '';
   if (req.file) {
     csvContent = req.file.buffer.toString('utf8');
-  } else if (bodyCsvText) {
+  } else if (bodyCsvText && typeof bodyCsvText === 'string') {
     csvContent = bodyCsvText;
   }
 
+  const hasCsv = Boolean(csvContent && csvContent.trim().length > 0);
+  const isJsonSnapshot = (memberCount !== undefined || topTopics !== undefined || bodyType === 'community_snapshot');
+
+  // Guard 1: Multipart upload without valid CSV file
+  if (isMultipart && !hasCsv) {
+    return res.status(400).json({
+      success: false,
+      error: 'No CSV file was received in the multipart upload. Please select a valid .csv file.'
+    });
+  }
+
+  // Guard 2: Missing both CSV data and community snapshot fields
+  if (!hasCsv && !isJsonSnapshot) {
+    return res.status(400).json({
+      success: false,
+      error: 'Unsupported analytics payload. Send either a CSV file (multipart/form-data) or a JSON community snapshot ({ memberCount, topTopics }).'
+    });
+  }
+
   // Case A: CSV Ingestion
-  if (csvContent && csvContent.trim().length > 0) {
+  if (hasCsv) {
     try {
       const lines = csvContent.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+      if (lines.length < 2) {
+        return res.status(400).json({
+          success: false,
+          error: 'CSV file is empty or contains only a header line. At least one row of analytics data is required.'
+        });
+      }
       let parsedVideos = [];
       let totalViews = 0;
       let totalWatchHours = 0;
@@ -670,6 +698,13 @@ router.post('/:brandSlug/channels/:channelId/analytics', requireAuth, upload.sin
           totalImpressions += impressions;
           if (ctr > 0) { totalCtrSum += ctr; validCtrCount++; }
         }
+      }
+
+      if (parsedVideos.length === 0) {
+        return res.status(400).json({
+          success: false,
+          error: 'Could not detect any valid video or post metrics rows in CSV. Please ensure column headers include Title/Content and Views/Plays.'
+        });
       }
 
       parsedVideos.sort((a, b) => b.views - a.views);
@@ -742,9 +777,15 @@ router.post('/:brandSlug/channels/:channelId/analytics', requireAuth, upload.sin
   }
 
   // Case B: Community Snapshot
-  if (memberCount !== undefined || topTopics !== undefined) {
+  if (memberCount !== undefined || topTopics !== undefined || bodyType === 'community_snapshot') {
+    if (memberCount !== undefined) {
+      const parsedCount = Number(memberCount);
+      if (isNaN(parsedCount) || parsedCount < 0) {
+        return res.status(400).json({ success: false, error: 'Invalid memberCount. Please provide a non-negative number.' });
+      }
+    }
     const topicsArr = Array.isArray(topTopics) ? topTopics : (typeof topTopics === 'string' ? topTopics.split(',').map(s => s.trim()).filter(Boolean) : []);
-    const count = Number(memberCount) || channel.audienceCount || 100;
+    const count = (memberCount !== undefined && !isNaN(Number(memberCount))) ? Number(memberCount) : (channel.audienceCount || 100);
 
     channel.audienceCount = count;
     channel.audienceLabel = count.toLocaleString() + ' Active Members';

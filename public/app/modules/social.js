@@ -3195,18 +3195,26 @@ function renderBrandAssetsKitHTML(brand) {
       const brand = (socialBrandsData || []).find(b => b.slug === activeBrandSlug) || socialBrandsData[0];
       const channelId = activeChannelId || (brand && brand.channels && brand.channels[0]?.id);
 
+      if (!brand || !channelId) {
+        if (window.showToast) window.showToast('No active channel selected for snapshot.', 'error');
+        return;
+      }
+
       try {
         const res = await APP_API.post(`/social-brands/${brand.slug}/channels/${channelId}/analytics`, {
           memberCount: Number(memberCount) || 100,
-          topTopics: (typeof topTopics === 'string' ? topTopics.split(',') : topTopics).map(s => s.trim()).filter(Boolean),
+          topTopics: (typeof topTopics === 'string' ? topTopics.split(',') : (Array.isArray(topTopics) ? topTopics : [])).map(s => s.trim()).filter(Boolean),
           notes,
-          snapshotSource: 'Community Metrics Snapshot'
+          snapshotSource: 'Community Metrics Snapshot',
+          type: 'community_snapshot'
         });
 
         if (res && res.success) {
           if (window.showToast) window.showToast('✅ Community metrics snapshot saved!', 'success');
           await loadInitialData();
           this.openChannelWorkspace(channelId);
+        } else {
+          throw new Error(res?.error || 'Failed to save snapshot');
         }
       } catch (err) {
         if (window.showToast) window.showToast('Failed to save snapshot: ' + err.message, 'error');
