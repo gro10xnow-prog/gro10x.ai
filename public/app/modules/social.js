@@ -432,25 +432,25 @@ window.APP_MODULES.social = async function(container) {
         <div style="display:flex; gap:0.6rem; align-items:center; flex-wrap:wrap;">
           <!-- 3-Way Top View Switcher -->
           <div style="display:flex; background:rgba(255,255,255,0.06); border:1px solid var(--border-subtle); border-radius:10px; padding:3px; gap:2px;">
-            <button class="btn-ghost btn-sm" id="btnViewKanban" style="font-size:0.8rem; font-weight:800; padding:0.35rem 0.75rem; border-radius:8px; ${activeViewMode === 'kanban' ? 'background:rgba(255,255,255,0.15); color:#fff;' : 'color:var(--text-muted);'}" onclick="window.SOCIAL_MODULE.switchView('kanban')">📋 Kanban</button>
-            <button class="btn-ghost btn-sm" id="btnViewCalendar" style="font-size:0.8rem; font-weight:800; padding:0.35rem 0.75rem; border-radius:8px; ${activeViewMode === 'calendar' ? 'background:rgba(255,255,255,0.15); color:#fff;' : 'color:var(--text-muted);'}" onclick="window.SOCIAL_MODULE.switchView('calendar')">📅 Calendar</button>
-            <button class="btn-ghost btn-sm" id="btnViewContentOS" style="font-size:0.8rem; font-weight:800; padding:0.35rem 0.75rem; border-radius:8px; ${activeViewMode === 'content_os' ? 'background:linear-gradient(135deg, rgba(168,85,247,0.35), rgba(99,102,241,0.35)); color:#fff; border:1px solid #a855f7;' : 'color:var(--text-muted);'}" onclick="window.SOCIAL_MODULE.switchView('content_os')">🏛️ Content OS & Brand Hub</button>
+            <button class="btn-ghost btn-sm" id="btnViewKanban" data-tooltip="Pipeline Kanban Board" style="font-size:0.8rem; font-weight:800; padding:0.35rem 0.75rem; border-radius:8px; ${activeViewMode === 'kanban' ? 'background:rgba(255,255,255,0.15); color:#fff;' : 'color:var(--text-muted);'}" onclick="window.SOCIAL_MODULE.switchView('kanban')">📋 Kanban</button>
+            <button class="btn-ghost btn-sm" id="btnViewCalendar" data-tooltip="Monthly Publishing Calendar" style="font-size:0.8rem; font-weight:800; padding:0.35rem 0.75rem; border-radius:8px; ${activeViewMode === 'calendar' ? 'background:rgba(255,255,255,0.15); color:#fff;' : 'color:var(--text-muted);'}" onclick="window.SOCIAL_MODULE.switchView('calendar')">📅 Calendar</button>
+            <button class="btn-ghost btn-sm" id="btnViewContentOS" data-tooltip="Multi-Brand Intelligence Hub" style="font-size:0.8rem; font-weight:800; padding:0.35rem 0.75rem; border-radius:8px; ${activeViewMode === 'content_os' ? 'background:linear-gradient(135deg, rgba(168,85,247,0.35), rgba(99,102,241,0.35)); color:#fff; border:1px solid #a855f7;' : 'color:var(--text-muted);'}" onclick="window.SOCIAL_MODULE.switchView('content_os')">🏛️ Content OS & Brand Hub</button>
           </div>
-          <button class="btn-secondary" onclick="window.SOCIAL_MODULE.reload()">🔄 Refresh</button>
+          <button class="btn-secondary" data-tooltip="Reload All Posts & Channels" onclick="window.SOCIAL_MODULE.reload()">🔄 Refresh</button>
           ${!isClientRole() ? `
-            <button class="btn-ghost" style="font-size:0.8rem; border:1px solid rgba(255,255,255,0.12); padding:0.4rem 0.8rem;" onclick="window.SOCIAL_MODULE.openBatchImportModal()">📥 Batch Import</button>
-            <button class="btn-primary" onclick="window.SOCIAL_MODULE.openPostModal()">+ Draft New Post</button>
+            <button class="btn-ghost" data-tooltip="Bulk Import from CSV or Text" style="font-size:0.8rem; border:1px solid rgba(255,255,255,0.12); padding:0.4rem 0.8rem;" onclick="window.SOCIAL_MODULE.openBatchImportModal()">📥 Batch Import</button>
+            <button class="btn-primary" data-tooltip="Open 3-Step Creation Wizard" onclick="window.SOCIAL_MODULE.openPostModal()">+ Draft New Post</button>
           ` : ''}
         </div>
       </div>
 
       <!-- KPI summary bar -->
       <div class="social-kpi-row" id="socialKpiRow" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:1rem; margin-bottom:1.5rem;">
-        <div class="kpi-tile"><div class="kpi-label">Total Posts</div><div class="kpi-val" id="kpiTotal">...</div></div>
-        <div class="kpi-tile"><div class="kpi-label">📝 In Pipeline</div><div class="kpi-val" id="kpiPipeline">...</div></div>
-        <div class="kpi-tile"><div class="kpi-label">💬 In Review</div><div class="kpi-val" id="kpiReview">...</div></div>
-        <div class="kpi-tile"><div class="kpi-label">🚀 Approved / Ready</div><div class="kpi-val" id="kpiApproved">...</div></div>
-        <div class="kpi-tile" style="border-left:3px solid #10b981;"><div class="kpi-label">✅ Published This Month</div><div class="kpi-val" id="kpiPosted" style="color:#10b981;">...</div></div>
+        <div class="kpi-tile"><div class="kpi-label">Total Posts</div><div class="kpi-val" id="kpiTotal"><span class="skeleton-shimmer" style="display:inline-block; height:20px; width:45px;"></span></div></div>
+        <div class="kpi-tile"><div class="kpi-label">📝 In Pipeline</div><div class="kpi-val" id="kpiPipeline"><span class="skeleton-shimmer" style="display:inline-block; height:20px; width:40px;"></span></div></div>
+        <div class="kpi-tile"><div class="kpi-label">💬 In Review</div><div class="kpi-val" id="kpiReview"><span class="skeleton-shimmer" style="display:inline-block; height:20px; width:35px;"></span></div></div>
+        <div class="kpi-tile"><div class="kpi-label">🚀 Approved / Ready</div><div class="kpi-val" id="kpiApproved"><span class="skeleton-shimmer" style="display:inline-block; height:20px; width:40px;"></span></div></div>
+        <div class="kpi-tile" style="border-left:3px solid #10b981;"><div class="kpi-label">✅ Published This Month</div><div class="kpi-val" id="kpiPosted" style="color:#10b981;"><span class="skeleton-shimmer" style="display:inline-block; height:20px; width:40px;"></span></div></div>
       </div>
 
       <!-- Filter Section (Visible in Kanban and Calendar views) -->
@@ -478,12 +478,35 @@ window.APP_MODULES.social = async function(container) {
           <button class="r-pill" id="sp-pill-Twitter" onclick="window.SOCIAL_MODULE.filterPlatform('Twitter')">🐦 Twitter / X</button>
 
           <!-- ISSUE 21: Kanban Search Input -->
-          <input type="search" id="kanbanSearchInput" class="input-text" placeholder="🔍 Search posts by title..." style="margin-left:auto; max-width:220px; font-size:0.76rem; padding:0.3rem 0.7rem; background:rgba(0,0,0,0.35); border-color:rgba(255,255,255,0.1);" oninput="activeBoardSearch = this.value; if(window.SOCIAL_MODULE && typeof renderBoard !== 'undefined') { const rb = window.SOCIAL_MODULE._renderBoard || null; } window.SOCIAL_MODULE.refilterBoard();">
+          <input type="search" id="kanbanSearchInput" class="input-text" placeholder="🔍 Search posts by title..." style="margin-left:auto; max-width:220px; font-size:0.76rem; padding:0.3rem 0.7rem; background:rgba(0,0,0,0.35); border-color:rgba(255,255,255,0.1);" oninput="activeBoardSearch = this.value; window.SOCIAL_MODULE.refilterBoard();">
         </div>
       </div>
 
+      <!-- Phase 4.2: Animated Shimmer Skeleton Board Placeholder -->
       <div id="socialBoardContainer">
-        <div style="padding: 3rem; text-align: center; color: var(--text-muted);">Loading social media content board...</div>
+        <div class="social-board" style="display:grid; grid-template-columns:repeat(5, minmax(280px, 1fr)); gap:1rem; overflow-x:auto; padding-bottom:1rem;">
+          ${[1, 2, 3, 4, 5].map(() => `
+            <div class="skeleton-col">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div class="skeleton-shimmer" style="height:16px; width:120px;"></div>
+                <div class="skeleton-shimmer" style="height:16px; width:28px; border-radius:9999px;"></div>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:0.75rem; flex:1;">
+                ${[1, 2].map(() => `
+                  <div class="skeleton-card">
+                    <div style="display:flex; justify-content:space-between;">
+                      <div class="skeleton-shimmer" style="height:14px; width:70px;"></div>
+                      <div class="skeleton-shimmer" style="height:14px; width:60px;"></div>
+                    </div>
+                    <div class="skeleton-shimmer" style="height:18px; width:85%;"></div>
+                    <div class="skeleton-shimmer" style="height:70px; width:100%; border-radius:8px;"></div>
+                    <div class="skeleton-shimmer" style="height:12px; width:65%;"></div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `).join('')}
+        </div>
       </div>
 
       <!-- Draft / Edit Post Modal (Phase 2: 3-Step Wizard Layout) -->
@@ -704,6 +727,12 @@ window.APP_MODULES.social = async function(container) {
                   <span id="captionCharCount" style="font-size:0.75rem; color:var(--text-dim);">0 / 5,000</span>
                 </div>
                 <textarea id="spCaption" class="input-text" rows="4" placeholder="Write post hook, body, and call-to-action..." oninput="window.SOCIAL_MODULE.updateCharCount(this)" onpaste="setTimeout(() => window.SOCIAL_MODULE.updateCharCount(this), 10)"></textarea>
+                
+                <!-- Live QC Inline Indicator in Step 1 -->
+                <div id="spStep1QcFeedback" style="margin-top:0.4rem; display:flex; align-items:center; justify-content:space-between; font-size:0.72rem; color:var(--text-muted); background:rgba(255,255,255,0.02); border:1px solid var(--border-subtle); border-radius:6px; padding:0.35rem 0.6rem;">
+                  <span id="spStep1QcStatus">✨ Type caption to check quality standards</span>
+                  <span id="spStep1QcBadge" class="badge badge-gray" style="font-size:0.65rem;">Drafting</span>
+                </div>
               </div>
 
               <!-- First Comment & Hashtags Grid -->
@@ -1229,6 +1258,24 @@ window.APP_MODULES.social = async function(container) {
           <span class="badge badge-purple" style="font-weight:700;">Client Filter Active</span>
         </div>
       ` : ''}
+      <!-- Phase 4.7: Monthly Strategic Focus Prominence Chip Bar -->
+      ${monthlyFocusNote ? `
+        <div class="sp-monthly-focus-bar">
+          <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap;">
+            <span class="sp-focus-chip">🎯 ${selectedPlanMonth} ${selectedPlanYear} Core Thesis:</span>
+            <span style="font-size:0.78rem; color:#f1f5f9; font-weight:500;">"${escapeHTML(monthlyFocusNote)}"</span>
+          </div>
+          <button type="button" class="btn-ghost btn-xs" style="color:var(--brand-primary); font-size:0.7rem;" onclick="window.SOCIAL_MODULE.switchView('content_os')" data-tooltip="Switch to Content OS to edit thesis">✏️ Edit Thesis</button>
+        </div>
+      ` : (!isClientRole() ? `
+        <div class="sp-monthly-focus-bar" style="border-style:dashed; opacity:0.85;">
+          <div style="display:flex; align-items:center; gap:0.6rem;">
+            <span class="sp-focus-chip" style="color:var(--text-muted);">🎯 Monthly Strategic Focus:</span>
+            <span style="font-size:0.75rem; color:var(--text-dim);">No monthly focus thesis set for ${selectedPlanMonth} ${selectedPlanYear} yet.</span>
+          </div>
+          <button type="button" class="btn-ghost btn-xs" style="color:var(--brand-primary); font-size:0.7rem;" onclick="window.SOCIAL_MODULE.promptSetMonthlyFocus()" data-tooltip="Define strategic direction for this month">+ Set Focus</button>
+        </div>
+      ` : '')}
 
       <div class="social-board" style="display:grid; grid-template-columns:repeat(5, minmax(280px, 1fr)); gap:1rem; overflow-x:auto; padding-bottom:1rem;">
         <!-- Col 1: Drafts -->
@@ -1515,31 +1562,46 @@ window.APP_MODULES.social = async function(container) {
           </div>
         </div>
 
-        <!-- Phase 4.4: Brand-Scoped KPI Bar -->
+        <!-- Phase 4.4 & 4.5: Brand-Scoped KPI Bar with Momentum Trend Badges -->
         <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:0.6rem;">
           <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-subtle); border-radius:10px; padding:0.65rem 0.85rem; display:flex; flex-direction:column; gap:0.15rem;">
             <div style="font-size:0.68rem; color:var(--text-dim); text-transform:uppercase; font-weight:800; letter-spacing:0.5px;">Brand Posts</div>
-            <div style="font-size:1.25rem; font-weight:900; color:#fff; font-family:var(--font-heading);">${brandPosts.length}</div>
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+              <span style="font-size:1.25rem; font-weight:900; color:#fff; font-family:var(--font-heading);">${brandPosts.length}</span>
+              <span class="brand-trend-up" data-tooltip="Overall channel portfolio velocity">↑ Active</span>
+            </div>
             <div style="font-size:0.65rem; color:var(--text-muted);">${(brand.channels || []).length} active channels</div>
           </div>
           <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-subtle); border-radius:10px; padding:0.65rem 0.85rem; display:flex; flex-direction:column; gap:0.15rem;">
             <div style="font-size:0.68rem; color:var(--text-dim); text-transform:uppercase; font-weight:800; letter-spacing:0.5px;">📝 In Drafting</div>
-            <div style="font-size:1.25rem; font-weight:900; color:#a855f7; font-family:var(--font-heading);">${kpiDrafts}</div>
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+              <span style="font-size:1.25rem; font-weight:900; color:#a855f7; font-family:var(--font-heading);">${kpiDrafts}</span>
+              <span class="brand-trend-stable" data-tooltip="In creator production pipeline">→ Pipeline</span>
+            </div>
             <div style="font-size:0.65rem; color:var(--text-muted);">Creator stage</div>
           </div>
           <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-subtle); border-radius:10px; padding:0.65rem 0.85rem; display:flex; flex-direction:column; gap:0.15rem;">
             <div style="font-size:0.68rem; color:var(--text-dim); text-transform:uppercase; font-weight:800; letter-spacing:0.5px;">🔍 QC Review</div>
-            <div style="font-size:1.25rem; font-weight:900; color:#38bdf8; font-family:var(--font-heading);">${kpiInternal}</div>
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+              <span style="font-size:1.25rem; font-weight:900; color:#38bdf8; font-family:var(--font-heading);">${kpiInternal}</span>
+              <span class="brand-trend-stable" data-tooltip="Manager inspection queue">→ Quality</span>
+            </div>
             <div style="font-size:0.65rem; color:var(--text-muted);">Internal check</div>
           </div>
           <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-subtle); border-radius:10px; padding:0.65rem 0.85rem; display:flex; flex-direction:column; gap:0.15rem;">
             <div style="font-size:0.68rem; color:var(--text-dim); text-transform:uppercase; font-weight:800; letter-spacing:0.5px;">👤 Client Sign-off</div>
-            <div style="font-size:1.25rem; font-weight:900; color:#fbbf24; font-family:var(--font-heading);">${kpiClient}</div>
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+              <span style="font-size:1.25rem; font-weight:900; color:#fbbf24; font-family:var(--font-heading);">${kpiClient}</span>
+              <span class="brand-trend-stable" data-tooltip="Awaiting partner sign-off">→ Review</span>
+            </div>
             <div style="font-size:0.65rem; color:var(--text-muted);">Client approval</div>
           </div>
           <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-subtle); border-radius:10px; padding:0.65rem 0.85rem; display:flex; flex-direction:column; gap:0.15rem;">
             <div style="font-size:0.68rem; color:var(--text-dim); text-transform:uppercase; font-weight:800; letter-spacing:0.5px;">🚀 Live / Posted</div>
-            <div style="font-size:1.25rem; font-weight:900; color:#10b981; font-family:var(--font-heading);">${kpiPosted}</div>
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+              <span style="font-size:1.25rem; font-weight:900; color:#10b981; font-family:var(--font-heading);">${kpiPosted}</span>
+              <span class="brand-trend-hot" data-tooltip="Published live assets">🔥 High Velocity</span>
+            </div>
             <div style="font-size:0.65rem; color:var(--text-muted);">${kpiApproved} approved ready</div>
           </div>
         </div>
@@ -2549,20 +2611,46 @@ function renderBrandAssetsKitHTML(brand) {
 
   function renderColumnCards(list, stageKey) {
     if (!list || list.length === 0) {
+      // Phase 4.4: High-fidelity Cyber Vector SVG Empty States
       const stageEmptyMeta = {
-        draft: { icon: '📝', title: 'No Drafts', desc: 'New concepts and calendar drops start here.', action: '+ Create Draft' },
-        internal: { icon: '🔍', title: 'Queue Empty', desc: 'No posts waiting for Internal QC verification.' },
-        client: { icon: '🤝', title: 'All Clear', desc: 'No posts awaiting client sign-off.' },
-        approved: { icon: '🚀', title: 'Ready to Ship', desc: 'Approved posts lined up for publishing.' },
-        posted: { icon: '🎉', title: 'Archive Empty', desc: 'Published posts will appear here once live.' }
+        draft: {
+          svg: `<svg class="sp-empty-state-svg" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>`,
+          title: 'No Drafts',
+          desc: 'New post concepts and monthly calendar drops start here.',
+          action: '+ Create Draft'
+        },
+        internal: {
+          svg: `<svg class="sp-empty-state-svg" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><path d="m9 11 2 2 4-4"></path></svg>`,
+          title: 'Queue Empty',
+          desc: 'No posts currently waiting for internal QC verification.'
+        },
+        client: {
+          svg: `<svg class="sp-empty-state-svg" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><polyline points="16 11 18 13 22 9"></polyline></svg>`,
+          title: 'All Clear',
+          desc: 'No posts awaiting client sign-off or revision notes.'
+        },
+        approved: {
+          svg: `<svg class="sp-empty-state-svg" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"></path></svg>`,
+          title: 'Ready to Ship',
+          desc: 'Approved posts lined up for publishing schedule.'
+        },
+        posted: {
+          svg: `<svg class="sp-empty-state-svg" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>`,
+          title: 'Archive Empty',
+          desc: 'Published live posts will appear here once live.'
+        }
       };
-      const meta = stageEmptyMeta[stageKey] || { icon: '📄', title: 'Empty Stage', desc: 'No posts in this column.' };
+      const meta = stageEmptyMeta[stageKey] || {
+        svg: `<svg class="sp-empty-state-svg" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="2"></rect></svg>`,
+        title: 'Empty Stage',
+        desc: 'No posts in this column.'
+      };
       return `
-        <div style="text-align:center; color:var(--text-dim); padding:2rem 1rem; border:1px dashed rgba(255,255,255,0.08); border-radius:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.4rem; min-height:160px;">
-          <div style="font-size:1.8rem; opacity:0.6;">${meta.icon}</div>
-          <div style="font-weight:700; color:#fff; font-size:0.85rem;">${meta.title}</div>
-          <div style="font-size:0.72rem; color:var(--text-muted); max-width:180px;">${meta.desc}</div>
-          ${meta.action ? `<button type="button" class="btn-ghost btn-sm" style="font-size:0.7rem; margin-top:0.4rem; padding:0.25rem 0.6rem; border:1px solid rgba(255,255,255,0.15); border-radius:6px;" onclick="window.SOCIAL_MODULE.openPostModal()">${meta.action}</button>` : ''}
+        <div class="sp-empty-state-card" style="text-align:center; color:var(--text-dim); padding:2rem 1rem; border:1px dashed rgba(255,255,255,0.08); border-radius:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.5rem; min-height:170px;">
+          ${meta.svg}
+          <div style="font-weight:700; color:#fff; font-size:0.85rem; margin-top:0.2rem;">${meta.title}</div>
+          <div style="font-size:0.72rem; color:var(--text-muted); max-width:190px; line-height:1.35;">${meta.desc}</div>
+          ${meta.action ? `<button type="button" class="btn-ghost btn-sm" style="font-size:0.7rem; margin-top:0.35rem; padding:0.25rem 0.65rem; border:1px solid rgba(255,255,255,0.15); border-radius:6px;" onclick="window.SOCIAL_MODULE.openPostModal()">${meta.action}</button>` : ''}
         </div>
       `;
     }
@@ -2588,7 +2676,7 @@ function renderBrandAssetsKitHTML(brand) {
           <!-- Row 1: Drag Handle (Team only) + Channel & Platform Badges + Quick Toggle -->
           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.3rem;">
             <div style="display:flex; align-items:center; gap:0.35rem;">
-              ${!isClient ? `<span class="card-drag-handle" title="Drag to move card" style="cursor:grab; font-size:1.05rem; color:var(--text-muted); opacity:0.6; line-height:1; user-select:none;">⠿</span>` : ''}
+              ${!isClient ? `<span class="card-drag-handle" data-tooltip="Drag to move card between pipeline stages" style="cursor:grab; font-size:1.05rem; color:var(--text-muted); opacity:0.6; line-height:1; user-select:none;">⠿</span>` : ''}
               <span class="badge ${chanCfg.badgeClass}" style="font-size:0.72rem; font-weight:800;">
                 ${escapeHTML(chanCfg.name)}
               </span>
@@ -2599,20 +2687,20 @@ function renderBrandAssetsKitHTML(brand) {
               <span class="badge badge-gray" style="font-size:0.68rem;">
                 ${icon} ${escapeHTML(p.platform)}
               </span>
-              <button type="button" class="btn-ghost btn-xs" style="color:var(--text-dim); font-size:0.65rem; padding:0.1rem 0.35rem; border:1px solid rgba(255,255,255,0.08); border-radius:4px;" onclick="window.SOCIAL_MODULE.toggleCardDetails('${p.id}')" title="Toggle full caption and strategy">
+              <button type="button" class="btn-ghost btn-xs" data-tooltip="Toggle caption, strategy & tags preview" style="color:var(--text-dim); font-size:0.65rem; padding:0.1rem 0.35rem; border:1px solid rgba(255,255,255,0.08); border-radius:4px;" onclick="window.SOCIAL_MODULE.toggleCardDetails('${p.id}')">
                 <span id="toggle-icon-${p.id}">▾</span> Details
               </button>
             </div>
           </div>
 
           <!-- Row 2: Post Title (Click to Edit / View) -->
-          <div style="font-weight:800; color:var(--text-primary); font-size:0.92rem; line-height:1.35; cursor:pointer;" onclick="window.SOCIAL_MODULE.openEditModal('${p.id}')" title="Click to view details">
+          <div style="font-weight:800; color:var(--text-primary); font-size:0.92rem; line-height:1.35; cursor:pointer;" onclick="window.SOCIAL_MODULE.openEditModal('${p.id}')" data-tooltip="Click to view full editor">
             ${escapeHTML(p.title)}
           </div>
 
           <!-- Row 3: Media Thumbnail (Prominent 150px on Client Card / 82px Compact on Team Card) -->
           ${mediaThumb ? `
-            <div class="card-media-wrap" style="position:relative; height:${isClient ? '150px' : '82px'}; border-radius:8px; overflow:hidden; background:rgba(0,0,0,0.5); border:1px solid var(--border-subtle); display:flex; align-items:center; justify-content:center; cursor:pointer;" onclick="window.SOCIAL_MODULE.openMediaLightbox('${escapeHTML(mediaThumb)}', '${escapeHTML(p.title).replace(/'/g, "\\'")}')" title="Click to inspect media fullscreen">
+            <div class="card-media-wrap" data-tooltip="Click to inspect asset fullscreen" style="position:relative; height:${isClient ? '150px' : '82px'}; border-radius:8px; overflow:hidden; background:rgba(0,0,0,0.5); border:1px solid var(--border-subtle); display:flex; align-items:center; justify-content:center; cursor:pointer;" onclick="window.SOCIAL_MODULE.openMediaLightbox('${escapeHTML(mediaThumb)}', '${escapeHTML(p.title).replace(/'/g, "\\'")}')">
               ${isImg ? `
                 <img src="${escapeHTML(mediaThumb)}" style="width:100%; height:100%; object-fit:cover;" alt="Media Thumbnail" onerror="this.parentElement.style.display='none'">
                 <div class="card-media-zoom-hint">🔍 View Fullscreen</div>
@@ -2629,7 +2717,7 @@ function renderBrandAssetsKitHTML(brand) {
           ${stageKey === 'internal' && !isClient ? `
             <div style="background:${qc.bg}; border:1px solid ${qc.border}; border-radius:6px; padding:0.35rem 0.5rem; font-size:0.72rem; color:${qc.color}; display:flex; justify-content:space-between; align-items:center;">
               <span style="font-weight:800;">${qc.label}</span>
-              ${qc.warnings.length > 0 ? `<span style="font-size:0.65rem; color:var(--text-muted); cursor:help;" title="${escapeHTML(qc.warnings.join(' • '))}">ℹ️ Details</span>` : ''}
+              ${qc.warnings.length > 0 ? `<span style="font-size:0.65rem; color:var(--text-muted); cursor:help;" data-tooltip="${escapeHTML(qc.warnings.join(' • '))}">ℹ️ Details</span>` : ''}
             </div>
           ` : ''}
 
@@ -2677,48 +2765,48 @@ function renderBrandAssetsKitHTML(brand) {
     if (isClient) {
       if (stageKey === 'client') {
         btns += `
-          <button class="btn-emerald btn-sm" style="font-size:0.75rem; flex:1; font-weight:800;" aria-label="Approve post" onclick="window.SOCIAL_MODULE.approvePost('${p.id}')">✅ Approve</button>
-          <button class="btn-secondary btn-sm" style="font-size:0.75rem; color:#fca5a5;" aria-label="Request revisions" onclick="window.SOCIAL_MODULE.promptRejectPost('${p.id}')">🔴 Revisions</button>
-          <button class="btn-secondary btn-xs" aria-label="View post details" title="View Full Details" onclick="window.SOCIAL_MODULE.openEditModal('${p.id}')">👁️ View</button>
+          <button class="btn-emerald btn-sm" style="font-size:0.75rem; flex:1; font-weight:800;" data-tooltip="Sign off and approve for publishing" aria-label="Approve post" onclick="window.SOCIAL_MODULE.approvePost('${p.id}')">✅ Approve</button>
+          <button class="btn-secondary btn-sm" style="font-size:0.75rem; color:#fca5a5;" data-tooltip="Submit revision feedback to production team" aria-label="Request revisions" onclick="window.SOCIAL_MODULE.promptRejectPost('${p.id}')">🔴 Revisions</button>
+          <button class="btn-secondary btn-xs" data-tooltip="Open full review modal" aria-label="View post details" onclick="window.SOCIAL_MODULE.openEditModal('${p.id}')">👁️ View</button>
         `;
       } else if (stageKey === 'approved') {
         btns += `
           <span class="badge badge-emerald" style="font-size:0.72rem; flex:1; text-align:center; padding:0.3rem;">✅ Approved by You</span>
-          <button class="btn-secondary btn-xs" aria-label="View post details" title="View Details" onclick="window.SOCIAL_MODULE.openEditModal('${p.id}')">👁️ View</button>
+          <button class="btn-secondary btn-xs" data-tooltip="View approved details" aria-label="View post details" onclick="window.SOCIAL_MODULE.openEditModal('${p.id}')">👁️ View</button>
         `;
       } else if (stageKey === 'posted') {
         btns += `
           <span class="badge badge-blue" style="font-size:0.72rem; flex:1; text-align:center; padding:0.3rem;">🚀 Published & Live</span>
-          <button class="btn-secondary btn-xs" aria-label="View post details" title="View Details" onclick="window.SOCIAL_MODULE.openEditModal('${p.id}')">👁️ View</button>
+          <button class="btn-secondary btn-xs" data-tooltip="View live post details" aria-label="View post details" onclick="window.SOCIAL_MODULE.openEditModal('${p.id}')">👁️ View</button>
         `;
       }
       return btns;
     }
 
     if (stageKey === 'draft') {
-      btns += `<button class="btn-primary btn-sm" style="font-size:0.72rem; flex:1;" aria-label="Send post to Internal QC" onclick="window.SOCIAL_MODULE.updatePostStatus('${p.id}', 'Internal QC')">▶ To Internal QC</button>`;
+      btns += `<button class="btn-primary btn-sm" style="font-size:0.72rem; flex:1;" data-tooltip="Move draft to internal QC" aria-label="Send post to Internal QC" onclick="window.SOCIAL_MODULE.updatePostStatus('${p.id}', 'Internal QC')">▶ To Internal QC</button>`;
     } else if (stageKey === 'internal') {
-      btns += `<button class="btn-primary btn-sm" style="font-size:0.72rem; flex:1;" aria-label="Send post to Client Review" onclick="window.SOCIAL_MODULE.updatePostStatus('${p.id}', 'Pending Client Approval')">▶ Send to Review</button>`;
+      btns += `<button class="btn-primary btn-sm" style="font-size:0.72rem; flex:1;" data-tooltip="Pass internal QC and send to Client" aria-label="Send post to Client Review" onclick="window.SOCIAL_MODULE.updatePostStatus('${p.id}', 'Pending Client Approval')">▶ Send to Review</button>`;
     } else if (stageKey === 'client') {
       btns += `
-        <button class="btn-emerald btn-sm" style="font-size:0.72rem; flex:1;" aria-label="Approve post" onclick="window.SOCIAL_MODULE.approvePost('${p.id}')">✅ Approve</button>
-        <button class="btn-secondary btn-sm" style="font-size:0.72rem; color:#fca5a5;" aria-label="Request revisions" onclick="window.SOCIAL_MODULE.promptRejectPost('${p.id}')">🔴 Revisions</button>
+        <button class="btn-emerald btn-sm" style="font-size:0.72rem; flex:1;" data-tooltip="Approve on behalf of client" aria-label="Approve post" onclick="window.SOCIAL_MODULE.approvePost('${p.id}')">✅ Approve</button>
+        <button class="btn-secondary btn-sm" style="font-size:0.72rem; color:#fca5a5;" data-tooltip="Log client revision request" aria-label="Request revisions" onclick="window.SOCIAL_MODULE.promptRejectPost('${p.id}')">🔴 Revisions</button>
       `;
     } else if (stageKey === 'approved') {
       btns += `
-        <button class="btn-emerald btn-sm" style="font-size:0.72rem; flex:1;" aria-label="Mark post as Posted" onclick="window.SOCIAL_MODULE.markAsPosted('${p.id}')">🚀 Mark as Posted</button>
-        <button class="btn-secondary btn-xs" aria-label="Copy post copy and hashtags" title="Copy Copy & Tags" onclick="window.SOCIAL_MODULE.copyPostContent('${p.id}')">📋</button>
+        <button class="btn-emerald btn-sm" style="font-size:0.72rem; flex:1;" data-tooltip="Confirm post is published live" aria-label="Mark post as Posted" onclick="window.SOCIAL_MODULE.markAsPosted('${p.id}')">🚀 Mark as Posted</button>
+        <button class="btn-secondary btn-xs" data-tooltip="Copy caption & hashtags to clipboard" aria-label="Copy post copy and hashtags" onclick="window.SOCIAL_MODULE.copyPostContent('${p.id}')">📋</button>
       `;
     } else if (stageKey === 'posted') {
       btns += `
         <span class="badge badge-emerald" style="font-size:0.72rem; flex:1; text-align:center; padding:0.3rem;">✅ Published</span>
-        <button class="btn-secondary btn-xs" aria-label="Copy post copy" title="Copy Copy" onclick="window.SOCIAL_MODULE.copyPostContent('${p.id}')">📋</button>
+        <button class="btn-secondary btn-xs" data-tooltip="Copy caption to clipboard" aria-label="Copy post copy" onclick="window.SOCIAL_MODULE.copyPostContent('${p.id}')">📋</button>
       `;
     }
 
     btns += `
-      <button class="btn-secondary btn-xs" aria-label="Edit post" title="Edit Post" onclick="window.SOCIAL_MODULE.openEditModal('${p.id}')">✏️</button>
-      <button class="btn-secondary btn-xs" style="color:#ef4444;" aria-label="Delete post" title="Delete Post" onclick="window.SOCIAL_MODULE.deletePost('${p.id}')">🗑️</button>
+      <button class="btn-secondary btn-xs" data-tooltip="Edit post" aria-label="Edit post" onclick="window.SOCIAL_MODULE.openEditModal('${p.id}')">✏️</button>
+      <button class="btn-secondary btn-xs" style="color:#ef4444;" data-tooltip="Delete post draft" aria-label="Delete post" onclick="window.SOCIAL_MODULE.deletePost('${p.id}')">🗑️</button>
     `;
 
     return btns;
@@ -4484,6 +4572,21 @@ Return strictly JSON: { "prompt": "...", "visualCue": "..." }`;
         list.innerHTML = `<span style="color:#34d399;">✅ All quality checks passed. Caption, platform limits, and voice scripts are verified!</span>`;
       } else {
         list.innerHTML = qc.warnings.map(w => `<div style="color:${qc.color}; display:flex; align-items:center; gap:0.4rem; margin-top:0.25rem;"><span>•</span> <span>${escapeHTML(w)}</span></div>`).join('');
+      }
+
+      // Live QC Feedback in Step 1
+      const s1Status = document.getElementById('spStep1QcStatus');
+      const s1Badge = document.getElementById('spStep1QcBadge');
+      if (s1Badge && s1Status) {
+        s1Badge.textContent = qc.label;
+        s1Badge.style.background = qc.bg;
+        s1Badge.style.color = qc.color;
+        s1Badge.style.borderColor = qc.border;
+        if (qc.warnings.length === 0) {
+          s1Status.innerHTML = `<span style="color:#34d399;">✅ Caption & hook checks passed</span>`;
+        } else {
+          s1Status.innerHTML = `<span style="color:${qc.color};">⚠️ ${escapeHTML(qc.warnings[0])}</span>`;
+        }
       }
     },
 

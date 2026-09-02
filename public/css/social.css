@@ -1,0 +1,147 @@
+/* ---------------------------------------------------------------------------
+ * GRO10X Content OS — Dedicated Social Module Stylesheet (social.css)
+ * --------------------------------------------------------------------------- */
+
+/* -- 1. Pure CSS Tooltip System ([data-tooltip]) -------------------------- */
+[data-tooltip] {
+  position: relative;
+}
+
+[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 7px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  background: rgba(15, 23, 42, 0.96);
+  backdrop-filter: blur(10px);
+  color: #f1f5f9;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  padding: 0.28rem 0.65rem;
+  border-radius: 6px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.18s cubic-bezier(0.16, 1, 0.3, 1), transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+}
+
+[data-tooltip]:hover::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* -- 2. Shimmer Skeleton Loader Components ------------------------------- */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.03) 25%, rgba(255, 255, 255, 0.09) 50%, rgba(255, 255, 255, 0.03) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s infinite cubic-bezier(0.4, 0, 0.6, 1);
+  border-radius: 6px;
+}
+
+.skeleton-col {
+  background: var(--surface-card, #14141e);
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  min-height: 540px;
+}
+
+.skeleton-card {
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+/* -- 3. Monthly Focus Strategic Chip Bar ---------------------------------- */
+.sp-monthly-focus-bar {
+  background: linear-gradient(135deg, rgba(0, 223, 137, 0.07) 0%, rgba(6, 182, 212, 0.07) 100%);
+  border: 1px solid rgba(0, 223, 137, 0.22);
+  border-radius: 10px;
+  padding: 0.65rem 1.1rem;
+  margin-bottom: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  backdrop-filter: blur(8px);
+}
+
+.sp-focus-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--brand-primary, #00df89);
+}
+
+/* -- 4. Brand Momentum & Trend Indicators -------------------------------- */
+.brand-trend-up {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #34d399;
+  background: rgba(52, 211, 153, 0.12);
+  border: 1px solid rgba(52, 211, 153, 0.25);
+  padding: 0.15rem 0.45rem;
+  border-radius: 9999px;
+}
+
+.brand-trend-stable {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  padding: 0.15rem 0.45rem;
+  border-radius: 9999px;
+}
+
+.brand-trend-hot {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #fb923c;
+  background: rgba(251, 146, 60, 0.12);
+  border: 1px solid rgba(251, 146, 60, 0.25);
+  padding: 0.15rem 0.45rem;
+  border-radius: 9999px;
+}
+
+/* -- 5. Vector SVG Empty State Styling ------------------------------------ */
+.sp-empty-state-svg {
+  width: 50px;
+  height: 50px;
+  opacity: 0.75;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.sp-empty-state-card:hover .sp-empty-state-svg {
+  opacity: 1;
+  transform: scale(1.05);
+}
