@@ -859,31 +859,394 @@ router.post('/:brandSlug/channels/:channelId/generate-calendar', requireAuth, as
   }
 });
 
-// Deterministic Calendar Engine supporting Dual-Tier YouTube Cadence
+// Deterministic Calendar Engine supporting Dual-Tier YouTube Cadence & Unique Topic Banks
 function generateDeterministicCalendar(brand, channel, month, year, focusNote, kb) {
   const isYouTube = channel.platform === 'YouTube' || channel.type === 'video';
   const monthIndex = new Date(month + ' 1, ' + year).getMonth();
   const monthKey = year + '-' + String(monthIndex + 1).padStart(2, '0');
   const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
   const lang = channel.primaryLanguage || brand.primaryLanguage || 'Bangla + English (Banglish / Spoken)';
+  const bSlug = (brand.slug || brand.id || '').toLowerCase();
 
-  const topTopics = kb?.topPerformers?.map(p => p.title) || [
-    'Job Interview Spoken English Mastery: Common Questions & Real Answers',
-    'Top 5 Mistakes Bangladeshi Freshers Make in Corporate & Bank Interviews',
-    'How to Negotiate Salary, Promotions & Corporate Career Growth',
-    'International Job Placement, Visa & Work Permit Step-by-Step Roadmap',
-    'Corporate Email Writing & Spoken Communication Hacks'
-  ];
+  // Curated 35+ Unique Short-Form Topics & Bengali/Banglish Hooks Per Brand Archetype
+  const BRAND_TOPIC_BANKS = {
+    'grow-bangla': {
+      shorts: [
+        {
+          title: "[Short] 'Tell Me About Yourself'-এর সঠিক ৩টি ফর্মুলা #shorts",
+          hook: "ইন্টারভিউতে 'Tell me about yourself' জিজ্ঞেস করলে এই ৩টা লাইন কখনোই বলবে না! এভাবে শুরু করো...",
+          rationale: "High-search-intent interview opener. Captures freshers and job seekers looking for structured response frameworks."
+        },
+        {
+          title: "[Short] Salary Negotiation-এ HR-কে কী বলবে? #shorts",
+          hook: "HR যখন জিজ্ঞেস করে 'What is your salary expectation?', তখন direct number না বলে এই বাক্যটি বলো...",
+          rationale: "High-converting salary negotiation tactic driving high saves and bookmarks."
+        },
+        {
+          title: "[Short] 'I Don't Know'-এর ৩টি স্মার্ট কর্পোরেট বিকল্প #shorts",
+          hook: "ইন্টারভিউতে কোনো প্রশ্নের উত্তর না জানলে 'I don't know' বলবে না! স্মার্ট প্রফেশনালরা বলে...",
+          rationale: "Solves common confidence crisis in corporate interviews with immediate actionable phrases."
+        },
+        {
+          title: "[Short] BDJobs আর LinkedIn সিভি-র মধ্যে ৩টি বড় পার্থক্য #shorts",
+          hook: "তুমি কি এখনও BDJobs ফরম্যাটের সিভি LinkedIn-এ পাঠাচ্ছো? এই ভুলের কারণে ৯০% ইন্টারভিউ কল মিস হয়!",
+          rationale: "Career infrastructure optimization for Bangladeshi professionals targeting MNCs."
+        },
+        {
+          title: "[Short] কর্পোরেট ইমেইলে 'I am writing to' আর লিখবে না! #shorts",
+          hook: "প্রতিদিন ইমেইলে 'I am writing to inform you' লিখে শুরু করো? সিনিয়র এক্সিকিউটিভরা এই ৪টি পাওয়ারফুল ওপেনার ব্যবহার করে...",
+          rationale: "Business communication enhancement with instant copy-paste practical utility."
+        },
+        {
+          title: "[Short] IELTS Speaking Band 7+ কানেক্টর ওয়ার্ডসের গোপন ট্রিক #shorts",
+          hook: "IELTS Speaking-এ Band 7+ পেতে চাও? 'And' আর 'But' বাদ দিয়ে এই ৩টি অ্যাডভান্সড ট্রানজিশন ব্যবহার করো...",
+          rationale: "High-volume search demand for IELTS speaking fluency and natural transition connectors."
+        },
+        {
+          title: "[Short] 'Why Should We Hire You?'-এর উইনিং আনসার #shorts",
+          hook: "এই প্রশ্নের উত্তর মুখস্থ করে গেলে কখনোই জব হবে না! তোমার ভ্যালু প্রোপোজিশন বোঝানোর ৩-স্টেপ ম্যাজিক ফর্মুলা...",
+          rationale: "Addresses high-stakes corporate aptitude and viva board questions with structured answers."
+        },
+        {
+          title: "[Short] ফ্রেশারদের জন্য ৩টি হাই-ইনকাম স্কিল যা ৬ মাসে শেখা সম্ভব #shorts",
+          hook: "শুধু অনার্স ডিগ্রি দিয়ে ২০২৬-এ ভালো স্যালারির চাকরি পাওয়া কঠিন! এই ৩টি স্কিল এখনই শিখে নাও...",
+          rationale: "Aspirational career development topic driving massive watch-time and repeat viewers."
+        },
+        {
+          title: "[Short] 'Why Do You Want to Leave Your Current Job?' #shorts",
+          hook: "আগের কোম্পানির বদনাম না করে কীভাবে সুন্দর করে বলবে যে তুমি নতুন সুযোগ খুঁজছো? জেনে নাও...",
+          rationale: "Critical career transition question handling without triggering red flags in HR rounds."
+        },
+        {
+          title: "[Short] স্পোকেন ইংলিশে লজ্জা কাটানোর ২ মিনিটের ডেইলি ড্রিল #shorts",
+          hook: "ইংলিশে কথা বলতে গেলে কি আটকে যাও? আয়নার সামনে দাঁড়িয়ে প্রতিদিন এই ২ মিনিটের শ্যাডোয়িং ড্রিল করো...",
+          rationale: "Overcomes speaking inhibition and hesitation for Bengali native speakers."
+        },
+        {
+          title: "[Short] কভার লেটারে এই একটি বাক্য থাকলে রিক্রুটার কল দেবেই! #shorts",
+          hook: "কভার লেটার কি কেউ পড়ে? হ্যাঁ, যদি তুমি প্রথম লাইনেই এই হুক স্টেটমেন্ট ব্যবহার করো...",
+          rationale: "Solves low interview conversion rates with high-impact cover letter openers."
+        },
+        {
+          title: "[Short] 'What Are Your Weaknesses?' প্রশ্নের সেফ উত্তর #shorts",
+          hook: "'I am a perfectionist' বললে রিক্রুটার রিজেক্ট করবে! দুর্বলতাকে শক্তিতে পরিণত করার রিয়েল টেকনিক...",
+          rationale: "De-risks the most dangerous trap question in corporate interviews."
+        },
+        {
+          title: "[Short] LinkedIn-এ HR-কে মেসেজ দেয়ার প্রফেশনাল টেমপ্লেট #shorts",
+          hook: "'Hi sir, looking for job' লিখে মেসেজ দিলে সিন হবে না! এই ৩ লাইনের পিচ পাঠালে রিপ্লাই আসবেই...",
+          rationale: "Inbound networking optimization for direct HR reaching."
+        },
+        {
+          title: "[Short] ইমেইলে 'As per our discussion' না বলে কী বলবে? #shorts",
+          hook: "কর্পোরেট কমিউনিকেশনে বারবার পুরোনো ক্লিশে ফ্রেজ বাদ দাও! এই স্মার্ট এক্সপ্রেশনগুলো ব্যবহার করো...",
+          rationale: "Refines corporate email vocabulary for mid-level professionals."
+        },
+        {
+          title: "[Short] ডেইলি অফিসের ৫টি কনফিউজিং ইংরেজি শব্দ ও সঠিক অর্থ #shorts",
+          hook: "Bandwidth, Deliverables আর Synergy — অফিসের এই buzzwords গুলোর আসল মানে জানো তো?",
+          rationale: "Corporate terminology breakdown with high relatability and humor."
+        },
+        {
+          title: "[Short] ইন্টারভিউ শেষে রিক্রুটারকে ৩টি বুদ্ধিমান প্রশ্ন করো #shorts",
+          hook: "'Do you have any questions for us?' — 'No sir' বললেই ভুল! এই ৩টি প্রশ্ন করলে অফার পাওয়ার চান্স বাড়ে...",
+          rationale: "Closing interview strategy that leaves an elite impression."
+        },
+        {
+          title: "[Short] 'Very' শব্দ বাদ দিয়ে ৫টি স্মার্ট অ্যাডভান্সড ইংরেজি শব্দ #shorts",
+          hook: "'Very tired' না বলে বলো 'Exhausted'! তোমার ইংরেজি ভোকাবুলারি রাতারাতি আপগ্রেড করো...",
+          rationale: "Instant vocabulary leveling for spoken fluency."
+        },
+        {
+          title: "[Short] সিভি-তে 'Responsible for' বাদ দিয়ে এই অ্যাকশন ভার্বগুলো দাও #shorts",
+          hook: "তোমার সিভিতে 'Responsible for' লেখা মানেই বোরিং! বদলে এই ৫টি হাই-ইমপ্যাক্ট অ্যাকশন ভার্ব বসাও...",
+          rationale: "Action-oriented resume restructuring for ATS optimization."
+        },
+        {
+          title: "[Short] মিটিংয়ে নিজের মতামত সুন্দর করে প্রকাশ করার ফর্মুলা #shorts",
+          hook: "অফিস মিটিংয়ে সবাই কথা বলছে আর তুমি চুপ? এভাবে কনফিডেন্সের সাথে নিজের পয়েন্ট প্লেস করো...",
+          rationale: "Meeting participation and leadership presence building."
+        },
+        {
+          title: "[Short] ফ্রিল্যান্সিংয়ে আন্তর্জাতিক ক্লায়েন্টের সাথে রেট বাড়ানোর কৌশল #shorts",
+          hook: "ক্লায়েন্টকে 'Please increase my budget' না বলে কীভাবে ভ্যালু দেখিয়ে রেট ডাবল করবে?",
+          rationale: "Freelance negotiation and foreign currency client retention."
+        },
+        {
+          title: "[Short] 'How Are You?' এর বদলে নেটিভদের মতো উত্তর দাও #shorts",
+          hook: "'I am fine, and you?' যুগ শেষ! নেটিভ স্পিকাররা ক্যাজুয়ালি কীভাবে রেসপন্স করে জেনে নাও...",
+          rationale: "Natural conversational spoken English phrasing."
+        },
+        {
+          title: "[Short] গুগল ও মাইক্রোসফটের ফেভারিট STAR মেথড কী? #shorts",
+          hook: "সিচুয়েশনাল প্রশ্নে আটকে যাও? Situation, Task, Action, Result — এই ৪ স্টেপে গল্প বলো...",
+          rationale: "Structured behavioral interview framework for elite corporate jobs."
+        },
+        {
+          title: "[Short] এক্সপেরিয়েন্স কম হলেও কীভাবে প্রথম জব ক্র্যাক করবে? #shorts",
+          hook: "ফ্রেশারদের অভিজ্ঞতা নেই বলে চাকরি হয় না? তোমার প্রজেক্ট আর ভলান্টিয়ারিং কীভাবে তুলে ধরবে...",
+          rationale: "Entry-level empowerment tackling the experience paradox."
+        },
+        {
+          title: "[Short] কনফারেন্স কলে কথা বলার ৫টি গোল্ডেন রুল #shorts",
+          hook: "Zoom বা Teams মিটিংয়ে ব্যাকগ্রাউন্ড নয়েজ আর ইন্টারাপশন কীভাবে স্মার্টলি হ্যান্ডেল করবে?",
+          rationale: "Remote work communication hygiene and decorum."
+        },
+        {
+          title: "[Short] স্যালারি হাইক চাওয়ার সঠিক সময় ও ড্রাফট স্ক্রিপ্ট #shorts",
+          hook: "বছরের শেষে ইনক্রিমেন্ট চাওয়ার আগে বসের সাথে এই মিটিংটা শিডিউল করো এবং এই স্ক্রিপ্ট বলো...",
+          rationale: "Annual appraisal and promotion conversation blueprint."
+        },
+        {
+          title: "[Short] ইমেইলে 'Thank you for your response' এর স্মার্ট ভার্সন #shorts",
+          hook: "একই 'Thank you' বারবার না বলে প্রফেশনালি একনলেজ করার ৪টি স্টাইলিশ ফ্রেজ...",
+          rationale: "Refined email etiquette for business correspondence."
+        },
+        {
+          title: "[Short] গ্রুপ ডিসকাশন (GD) রাউন্ডে সিলেক্ট হওয়ার গোপন হ্যাক #shorts",
+          hook: "অন্যদের কথার মাঝে চেঁচামেচি না করে কীভাবে আলোচনার লিডারশিপ নেবে? ৩টি হ্যাক...",
+          rationale: "Aptitude assessment and campus recruitment round dominance."
+        },
+        {
+          title: "[Short] 'Where Do You See Yourself in 5 Years?' এর পারফেক্ট উত্তর #shorts",
+          hook: "'CEO হতে চাই' বললে কিন্তু রিজেক্ট হবে! ক্যারিয়ার ভিশন ও কোম্পানির গ্রোথ কানেক্ট করার ফর্মুলা...",
+          rationale: "Long-term ambition alignment without sounding unrealistic."
+        },
+        {
+          title: "[Short] ৩টি ইংরেজি শব্দ যা বাঙালিরা সাধারণত ভুল উচ্চারণ করে #shorts",
+          hook: "Wednesday, Comfortable আর Pronunciation — এই শব্দগুলো কি তুমিও ভুল বলছো?",
+          rationale: "Pronunciation correction reducing regional accent interference."
+        },
+        {
+          title: "[Short] প্রেজেন্টেশন শুরুর প্রথম ৩০ সেকেন্ডে সবার মনোযোগ ধরে রাখো #shorts",
+          hook: "'Good morning everyone' দিয়ে শুরু করলে সবাই ঘুমিয়ে পড়বে! এই স্টোরিটেলিং হুক দিয়ে স্টার্ট করো...",
+          rationale: "Public speaking and executive presentation dynamics."
+        },
+        {
+          title: "[Short] টেকনিক্যাল কাজ জানো কিন্তু ইংলিশে বলতে পারো না? #shorts",
+          hook: "কোডিং বা ডিজাইনে ভালো কিন্তু ক্লায়েন্ট কলে নার্ভাস? এই ৫টি স্টক ফ্রেজ মুখস্থ রাখো...",
+          rationale: "Bridges the technical skill vs communication gap for tech professionals."
+        }
+      ],
+      longForm: [
+        {
+          title: "[Full Class] Complete Corporate Job Interview Simulation (HR Round to Final Offer)",
+          hook: "আজকের ক্লাসে আমরা একটি সম্পূর্ণ রিয়েল কর্পোরেট ইন্টারভিউ সিমুলেশন দেখবো — কীভাবে প্রতিটি প্রশ্নের টেকনিক্যাল ও স্ট্র্যাটেজিক উত্তর দিতে হয়!",
+          rationale: "Comprehensive masterclass driving 40%+ average view duration and massive watch hours on peak Friday releases."
+        },
+        {
+          title: "[Full Class] Salary & Promotion Negotiation Masterclass: Bangladesh & Global Jobs",
+          hook: "কীভাবে ইন্টারভিউ টেবিলে নিজের স্যালারি ২০% থেকে ৫০% পর্যন্ত বাড়িয়ে নেবে? স্টেপ-বাই-স্টেপ সাইকোলজি ও স্ক্রিপ্ট গাইড!",
+          rationale: "High-authority monetization and career value masterclass creating high subscriber conversion on Tuesdays."
+        },
+        {
+          title: "[Full Class] Executive Corporate Email & Business Communication Blueprint",
+          hook: "আন্তর্জাতিক ক্লায়েন্ট ও টপ ম্যানেজমেন্টের সাথে কথা বলার সম্পূর্ণ ইমেইল ও মেসেজিং ফ্রেমওয়ার্ক শিখুন এই একটি ক্লাসে!",
+          rationale: "Professional utility tutorial driving high bookmarking and long-term search evergreen traffic."
+        },
+        {
+          title: "[Full Class] LinkedIn Profile Optimization & High-Ticket Recruiter Outreach Masterclass",
+          hook: "চাকরি খোঁজা বাদ দিয়ে রিক্রুটারদের নিজের প্রোফাইলে আনার সিক্রেট অ্যালগরিদম সেটআপ ও ডিরেক্ট পিচিং সিস্টেম!",
+          rationale: "Evergreen inbound career engine blueprint for Bangladeshi professionals."
+        },
+        {
+          title: "[Full Class] IELTS Speaking Full Mock Test Analysis: Band 6.0 to 7.5 Practical Roadmap",
+          hook: "রিয়েল এক্সামিনার ফিডব্যাক সহ সম্পূর্ণ স্পিকিং মক টেস্ট এবং প্রতিটি সেকশনে মার্কস বাড়ানোর গোপন টেকনিক্স!",
+          rationale: "High-stakes study abroad and immigration search demand driver with long retention."
+        },
+        {
+          title: "[Full Class] MNC & Banking Viva Board Mastery: Situational & Behavioral Questions",
+          hook: "STAR মেথড ব্যবহার করে ইন্টারভিউ বোর্ডের যেকোনো ট্রিকি সিচুয়েশনাল প্রশ্ন হ্যান্ডেল করার ফুল প্র্যাকটিক্যাল গাইড!",
+          rationale: "Deep practical breakdown for competitive banking and MNC aptitude viva boards."
+        },
+        {
+          title: "[Full Class] High-Impact Resume & ATS-Friendly CV Architecture Masterclass",
+          hook: "কেন আপনার সিভি শর্টলিস্ট হচ্ছে না? ATS সফটওয়্যারে ১০০% স্কোর করার লাইভ রিজিউম বিল্ড টিউটোরিয়াল!",
+          rationale: "Fundamental resume building guide with high conversion and comment engagement."
+        },
+        {
+          title: "[Full Class] Global Remote Job Placement & Work Permit Mastery Roadmap",
+          hook: "বাংলাদেশ থেকে কীভাবে ইউএসএ, কানাডা ও ইউরোপের হাই-পেইং রিমোট জবে সরাসরি সিলেক্ট হবেন? ফুল সিস্টেম এক্সপোজড!",
+          rationale: "Highest audience aspiration topic combining foreign currency income and global career positioning."
+        }
+      ]
+    },
+    'pilutics': {
+      shorts: [
+        {
+          title: "[Short] বঙ্গোপসাগরে সাবমেরিন করিডোর: কার নিয়ন্ত্রণে যাচ্ছে সমুদ্রসীমা? #shorts",
+          hook: "বঙ্গোপসাগরের গভীর তলদেশে পরাশক্তিদের গোপন সাবমেরিন মহড়া! বাংলাদেশের কৌশলগত অবস্থান কেন এত গুরুত্বপূর্ণ?",
+          rationale: "Geopolitical maritime security analysis driving high engagement in South Asia."
+        },
+        {
+          title: "[Short] মালদ্বীপ ও ভারতের মধ্যে গোপন কূটনৈতিক দ্বন্দ্বের নেপথ্যে কী? #shorts",
+          hook: "ভারত মহাসাগরে ছোট দেশ মালদ্বীপ কেন পরাশক্তিদের চোখ রাঙানি উপেক্ষা করছে? পেছনের আসল অর্থনৈতিক চুক্তি কী?",
+          rationale: "Regional diplomatic power balance and foreign policy breakdown."
+        },
+        {
+          title: "[Short] চীন-পাকিস্তান অর্থনৈতিক করিডোর (CPEC): গেমচেঞ্জার নাকি ঋণের ফাঁদ? #shorts",
+          hook: "গোয়াদর বন্দর দিয়ে চীন কীভাবে মধ্যপ্রাচ্যের তেল সরাসরি নিজের দেশে নিয়ে যাচ্ছে? ভারতের চিন্তা কোথায়?",
+          rationale: "Belt and road initiative economic corridor strategic breakdown."
+        },
+        {
+          title: "[Short] ডলার বনাম ব্রিকস কারেন্সি: বিশ্ব অর্থনীতিতে মার্কিন প্রভাব কি কমছে? #shorts",
+          hook: "রাশিয়া ও চীন কেন আন্তর্জাতিক বাণিজ্যে ডলার বাদ দিচ্ছে? পেট্রোডলারের ভবিষ্যৎ আসলে কী?",
+          rationale: "Global monetary economics and dedollarization macro analysis."
+        },
+        {
+          title: "[Short] তাইওয়ান প্রণালীতে যুদ্ধের সম্ভাবনা: সেমিকন্ডাক্টর চিপের বৈশ্বিক সংকট #shorts",
+          hook: "বিশ্বের ৯০% অ্যাডভান্সড চিপ তৈরি হয় একটি দ্বীপে! তাইওয়ান আক্রান্ত হলে বিশ্বের প্রযুক্তি বাজারে কী ঘটবে?",
+          rationale: "Semiconductor supply chain vulnerability and high-tech defense analysis."
+        },
+        {
+          title: "[Short] রাশিয়া-ইউক্রেন ড্রোন যুদ্ধ: আধুনিক সামরিক ট্যাকটিক্সে কীভাবে বিপ্লব ঘটলো? #shorts",
+          hook: "কোটি টাকার ট্যাংকের বিরুদ্ধে মাত্র কয়েক লাখ টাকার FPV ড্রোন! আধুনিক যুদ্ধের নিয়ম বদলে গেল কীভাবে?",
+          rationale: "Asymmetric modern military warfare and tactical drone evolution."
+        },
+        {
+          title: "[Short] হরমুজ প্রণালী বন্ধ হলে বিশ্ব তেলের বাজারে কী মহাবিপর্যয় ঘটবে? #shorts",
+          hook: "প্রতিদিন বিশ্বের ২০% তেল পার হয় এই সরু জলপথ দিয়ে! ইরান যদি এই রুট আটকে দেয় তাহলে তেলের দাম কত হবে?",
+          rationale: "Chokepoint geopolitics and global energy security dynamics."
+        },
+        {
+          title: "[Short] সুয়েজ খাল বনাম আফ্রিকার উত্তমাশা অন্তরীপ: লোহিত সাগরের শিপিং সংকট #shorts",
+          hook: "হুতি বিদ্রোহীদের হামলায় বিশ্ব বাণিজ্যের প্রধান রুট কীভাবে আফ্রিকার চারপাশে ঘুরে যেতে বাধ্য হচ্ছে?",
+          rationale: "Global shipping freight logistics and maritime trade corridor disruptions."
+        },
+        {
+          title: "[Short] জাপানের সামরিক বাজেট বৃদ্ধি: এশিয়ায় নতুন সামরিক ভারসাম্যের সূচনা #shorts",
+          hook: "দ্বিতীয় বিশ্বযুদ্ধের পর এই প্রথম জাপান তার সামরিক বাজেট দ্বিগুণ করছে! চীনকে ঠেকাতে টোকিওর মেগা প্ল্যান...",
+          rationale: "East Asian pacifism transformation and Indo-Pacific defense alliance."
+        },
+        {
+          title: "[Short] বাংলাদেশের পারমাণবিক বিদ্যুৎ ও রূপপুর প্রকল্পের ভূরাজনৈতিক তাৎপর্য #shorts",
+          hook: "রূপপুর এনপিপি চালু হলে বাংলাদেশের বিদ্যুৎ গ্রিড ও রাশিয়ার সাথে দ্বিপাক্ষিক সম্পর্কে কী পরিবর্তন আসবে?",
+          rationale: "National energy sovereignty and nuclear geopolitics."
+        }
+      ],
+      longForm: [
+        {
+          title: "[Full Doc] বঙ্গোপসাগরের মহাযুদ্ধ: চীন, ভারত ও মার্কিন নৌঘাঁটির গোপন সমীকরণ",
+          hook: "বঙ্গোপসাগরে বিশ্ব পরাশক্তিদের ত্রিমুখী যুদ্ধক্ষেত্র কেন তৈরি হচ্ছে? স্যাটেলাইট ম্যাপ ও কূটনৈতিক গোপন নথির বিশ্লেষণ!",
+          rationale: "Deep geopolitical documentary driving high retention and authority in Bengali strategic media."
+        },
+        {
+          title: "[Full Doc] বৈশ্বিক সেমিকন্ডাক্টর যুদ্ধ: তাইওয়ান ও এআই সুপারপাওয়ারের সিংহাসন",
+          hook: "সিলিকন চিপ নিয়ে যুক্তরাষ্ট্র ও চীনের মধ্যে কোটি কোটি ডলারের টেক ওয়্যারের ভেতরের গল্প ও ভবিষ্যৎ রূপরেখা!",
+          rationale: "Deep tech and economic sovereignty documentary with evergreen global value."
+        },
+        {
+          title: "[Full Doc] মধ্যপ্রাচ্যের নতুন মানচিত্র: ইরান, সৌদি আরব ও আব্রাহাম চুক্তির প্রভাব",
+          hook: "তেল নির্ভরতা কমিয়ে মধ্যপ্রাচ্যের দেশগুলো কীভাবে বৈশ্বিক বিনিয়োগ ও প্রযুক্তির হাব হচ্ছে? সম্পূর্ণ ভূকৌশলগত বিশ্লেষণ!",
+          rationale: "Middle Eastern diplomacy and energy corridor comprehensive documentary."
+        },
+        {
+          title: "[Full Doc] আফ্রিকার খনিজ সম্পদ ও নতুন শীতল যুদ্ধ: পশ্চিম বনাম চীন ও রাশিয়া",
+          hook: "লিথিয়াম, কোবাল্ট ও ইউরেনিয়ামের ওপর নিয়ন্ত্রণের জন্য আফ্রিকান মহাদেশে পরাশক্তিদের লড়াইয়ের গোপন সত্য!",
+          rationale: "Resource colonialism and global energy transition battlegrounds."
+        }
+      ]
+    },
+    'bong-hits': {
+      shorts: [
+        {
+          title: "[Short] বাঙালি পরিবারে রেজাল্ট দেয়ার দিনের ৩টি চিরন্তন দৃশ্য 😂 #shorts",
+          hook: "পাশের বাসার আন্টি যখন ঠিক সকাল ১০টায় মিষ্টি নিয়ে হাজির হয়! এই ট্র্যাজেডি প্রতিটি বাঙালির পরিচিত...",
+          rationale: "High relatability family humor driving instant shares and viral TikTok audio trends."
+        },
+        {
+          title: "[Short] অফিস ফ্রাইডে বনাম সোমবার সকালের মুড সুইং 😂 #shorts",
+          hook: "শুক্রবার বিকাল ৫টার এনার্জি আর সোমবার সকাল ৯টার অ্যালার্মের সাথে বাঙালির অন্তরের যুদ্ধ!",
+          rationale: "Workplace culture and millennial relatable comedy skit."
+        },
+        {
+          title: "[Short] ব্যাচেলর মেসে রান্না করার পর মেস মেম্বারদের বিচার সভা 😂 #shorts",
+          hook: "আলু সেদ্ধ না হলে রাঁধুনিকে কীভাবে পুরো মেসে বয়কট করা হয়? মেস জীবনের আসল গল্প...",
+          rationale: "Bachelor mess life nostalgia and campus entertainment."
+        },
+        {
+          title: "[Short] বিয়ের দাওয়াতে রোস্ট নেয়ার সিক্রেট টেকনিক 😂 #shorts",
+          hook: "ওয়েটারকে সাইকোলোজিক্যাল প্রেশার দিয়ে অতিরিক্ত লেগ পিস আদায় করার বাঙালি নিনজা টেকনিক!",
+          rationale: "Wedding culture humor with mass viral reach."
+        },
+        {
+          title: "[Short] ট্রাফিকে আটকে থাকা অবস্থায় রিকশাওয়ালার দার্শনিক আলোচনা 😂 #shorts",
+          hook: "ফার্মগেটের জ্যামে বসে রিকশাচালক মামা যখন দেশের রাজনীতি আর বিশ্ব অর্থনীতির সমাধান দিয়ে দেন!",
+          rationale: "Dhaka street culture and humorous slice-of-life storytelling."
+        }
+      ],
+      longForm: [
+        {
+          title: "[Music Video] একাকী শহরের রাত — Official Lyrical Track & Cinematic Visuals",
+          hook: "শহরের নিয়ন আলো আর স্মৃতির কোলাহলে হারিয়ে যাওয়া একাকী রাতের সুর...",
+          rationale: "High emotion musical storytelling and Suno/VEO generated audiovisual production."
+        },
+        {
+          title: "[Comedy Special] বাঙালির প্রথম প্রেম ও ক্রাশের ১০০টি ট্র্যাজেডি",
+          hook: "স্কুল জীবনের ক্রাশকে চিঠি দেয়া থেকে শুরু করে কোচিং সেন্টারের রিজেকশন — সব গল্প একসাথে!",
+          rationale: "Long-form entertainment compilation for weekend watch-parties."
+        }
+      ]
+    },
+    'gro10x': {
+      shorts: [
+        {
+          title: "[Short] 3 AI Tools That Replace a $5,000/mo Content Agency",
+          hook: "Stop paying massive retainer fees for basic social graphics. Here are the 3 autonomous workflows we use...",
+          rationale: "High-intent B2B authority hook driving SaaS and agency lead generation."
+        },
+        {
+          title: "[Short] How We Generate 100+ Videos/Month with Zero Camera Crew",
+          hook: "Content scaling is no longer about cameras and studio lighting. It is about prompt orchestration and VEO pipelines...",
+          rationale: "Enterprise media automation positioning for executive founders."
+        },
+        {
+          title: "[Short] The Exact Cold Outreach Template That Closed a $12K Retainer",
+          hook: "Never pitch your service in the first email. Pitch the diagnostic audit using this 3-sentence framework...",
+          rationale: "B2B client acquisition playbook driving executive engagement."
+        },
+        {
+          title: "[Short] 5 Automations Every 7-Figure Agency Runs in 2026",
+          hook: "If your team is still manually updating spreadsheets and formatting PDF reports, your margins are dying...",
+          rationale: "Agency operations streamlining and margin optimization."
+        },
+        {
+          title: "[Short] Why 90% of AI Video Looks Like Slop (And How to Fix It)",
+          hook: "Stop putting generic prompts into video generators. Here is how cinematic lighting and motion cues make it photorealistic...",
+          rationale: "High-standard AI production authority separating signal from noise."
+        }
+      ],
+      longForm: [
+        {
+          title: "[Full Blueprint] The 100M Video Content Engine: How to Scale Media Without Chaos",
+          hook: "Master the exact multi-channel architecture, persistent analytics memory, and automated locking pipeline built for 2026...",
+          rationale: "Flagship executive blueprint establishing GRO10X as the category leader in autonomous media engines."
+        },
+        {
+          title: "[Executive Masterclass] B2B SaaS Growth & AI Customer Acquisition System",
+          hook: "From organic LinkedIn authority to outbound diagnostic engines: the complete playbook to scale beyond $50K MRR.",
+          rationale: "High-ticket enterprise acquisition masterclass driving corporate consulting inquiries."
+        }
+      ]
+    }
+  };
+
+  const selectedBank = BRAND_TOPIC_BANKS[bSlug] || BRAND_TOPIC_BANKS['grow-bangla'];
+  const shortsList = selectedBank.shorts || BRAND_TOPIC_BANKS['grow-bangla'].shorts;
+  const longList = selectedBank.longForm || BRAND_TOPIC_BANKS['grow-bangla'].longForm;
 
   const planItems = [];
 
   if (isYouTube) {
-    // 1. Daily Shorts (Days 1 to 28)
+    // 1. Daily Shorts (Days 1 to 28) - Guaranteed 100% Unique, Never Repeating
     for (let day = 1; day <= Math.min(28, daysInMonth); day++) {
       const weekNum = Math.ceil(day / 7);
       const dateStr = year + '-' + String(monthIndex + 1).padStart(2, '0') + '-' + String(day).padStart(2, '0');
       const dayOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][(day + monthIndex) % 7];
-      const baseTopic = topTopics[(day - 1) % topTopics.length];
+      
+      // Rotate index uniquely using month offset to prevent month-to-month duplication
+      const topicIndex = (day - 1 + (monthIndex * 3)) % shortsList.length;
+      const topicObj = shortsList[topicIndex];
 
       planItems.push({
         id: 'plan-' + brand.slug + '-' + channel.slug + '-' + month + '-short-' + day,
@@ -891,11 +1254,11 @@ function generateDeterministicCalendar(brand, channel, month, year, focusNote, k
         dayOfWeek,
         scheduledDate: dateStr,
         suggestedTime: '18:00',
-        topicIdea: '[Short] ' + baseTopic.slice(0, 42) + ' #shorts',
-        hook: 'Bangladeshi job seekers, stop making this one spoken English mistake! Here is the fix in 30 seconds.',
+        topicIdea: topicObj.title,
+        hook: topicObj.hook,
         contentType: 'Short-form Video',
         targetDuration: '60s',
-        strategicRationale: 'Daily shorts maximize algorithmic discovery and viewer impressions in ' + lang + '.',
+        strategicRationale: topicObj.rationale + ' Formatted specifically for ' + lang + '.',
         channel: brand.name,
         channelSlug: channel.slug,
         platform: channel.platform,
@@ -904,14 +1267,16 @@ function generateDeterministicCalendar(brand, channel, month, year, focusNote, k
       });
     }
 
-    // 2. 2 Weekly Long-form Pillar Deep Dives (Friday & Tuesday)
+    // 2. 2 Weekly Long-form Pillar Deep Dives (Friday & Tuesday) - Guaranteed 100% Unique
     const longFormDays = ['Fri', 'Tue'];
     let longFormCount = 1;
     for (let week = 1; week <= 4; week++) {
       for (const dayName of longFormDays) {
         const dayOffset = (week - 1) * 7 + (dayName === 'Fri' ? 6 : 3);
         const dateStr = year + '-' + String(monthIndex + 1).padStart(2, '0') + '-' + String(Math.min(28, dayOffset)).padStart(2, '0');
-        const topic = topTopics[(longFormCount - 1) % topTopics.length];
+        
+        const longIndex = (longFormCount - 1 + (monthIndex * 2)) % longList.length;
+        const longObj = longList[longIndex];
 
         planItems.push({
           id: 'plan-' + brand.slug + '-' + channel.slug + '-' + month + '-long-' + longFormCount,
@@ -919,11 +1284,11 @@ function generateDeterministicCalendar(brand, channel, month, year, focusNote, k
           dayOfWeek: dayName,
           scheduledDate: dateStr,
           suggestedTime: '19:00',
-          topicIdea: '[Full Class] ' + topic + ' (Complete Practical Breakdown)',
-          hook: 'Master this complete framework today to ace any corporate interview or salary negotiation with confidence.',
+          topicIdea: longObj.title,
+          hook: longObj.hook,
           contentType: 'Long-form Video',
           targetDuration: '8-10 min',
-          strategicRationale: 'Long-form pillar videos on peak velocity days (' + dayName + ') generate 60%+ of channel watch hours and high-intent subscriber conversions.',
+          strategicRationale: longObj.rationale + ' High retention pillar driving 60%+ watch hours on ' + dayName + ' velocity window in ' + lang + '.',
           channel: brand.name,
           channelSlug: channel.slug,
           platform: channel.platform,
@@ -934,12 +1299,15 @@ function generateDeterministicCalendar(brand, channel, month, year, focusNote, k
       }
     }
   } else {
+    // Other channels: Facebook, TikTok, LinkedIn, etc.
     const count = (channel.targetCadencePerWeek || 3) * 4;
     for (let i = 0; i < count; i++) {
       const weekNum = Math.floor(i / (channel.targetCadencePerWeek || 3)) + 1;
       const dayOffset = (weekNum - 1) * 7 + (i % 7) + 1;
       const dateStr = year + '-' + String(monthIndex + 1).padStart(2, '0') + '-' + String(Math.min(28, dayOffset)).padStart(2, '0');
-      const baseTopic = topTopics[i % topTopics.length];
+      
+      const topicIndex = (i + (monthIndex * 2)) % shortsList.length;
+      const topicObj = shortsList[topicIndex];
 
       planItems.push({
         id: 'plan-' + brand.slug + '-' + channel.slug + '-' + month + '-' + (i + 1),
@@ -947,16 +1315,16 @@ function generateDeterministicCalendar(brand, channel, month, year, focusNote, k
         dayOfWeek: ['Mon', 'Wed', 'Fri', 'Sat'][i % 4],
         scheduledDate: dateStr,
         suggestedTime: '18:00',
-        topicIdea: baseTopic + ' — Part ' + (Math.floor(i / 2) + 1),
-        hook: 'Essential ' + brand.name + ' insight for ' + month + '. Actionable breakdown for ambitious professionals.',
+        topicIdea: topicObj.title.replace('[Short] ', ''),
+        hook: topicObj.hook,
         contentType: channel.defaultContentType || 'Short-form Video',
         targetDuration: channel.type === 'video' ? '60s' : 'N/A',
-        strategicRationale: 'Directly leverages proven watch time retention from "' + baseTopic.slice(0, 45) + '...".',
+        strategicRationale: topicObj.rationale + ' Tailored for ' + channel.platform + ' in ' + lang + '.',
         channel: brand.name,
         channelSlug: channel.slug,
         platform: channel.platform,
         primaryLanguage: lang,
-        formatTag: channel.defaultContentType
+        formatTag: channel.defaultContentType || 'Social Post'
       });
     }
   }
@@ -970,9 +1338,9 @@ function generateDeterministicCalendar(brand, channel, month, year, focusNote, k
     status: 'Draft',
     primaryLanguage: lang,
     strategicSummary: isYouTube 
-      ? 'Fixed Production Blueprint for ' + brand.name + ' (' + channel.name + '): 28 Daily Shorts (Mon-Sun) + 8 Long-form Pillar Deep Dives (Friday & Tuesday) in ' + lang + '.'
-      : 'Targeted 4-week calendar for ' + brand.name + ' (' + channel.name + ') grounded in top lifetime audience conversion formats in ' + lang + '.',
-    theme: focusNote || (month + ' High-Velocity Authority Blueprint'),
+      ? 'Fixed Production Blueprint for ' + brand.name + ' (' + channel.name + '): 28 Daily Shorts (Mon-Sun) + 8 Long-form Pillar Deep Dives (Friday & Tuesday) in ' + lang + '. All topics 100% unique & non-repeating.'
+      : 'Targeted 4-week calendar for ' + brand.name + ' (' + channel.name + ') grounded in proven audience conversion formats in ' + lang + '.',
+    theme: focusNote || (month + ' Authority & High-Velocity Blueprint'),
     generatedAt: new Date().toISOString(),
     planItems
   };
