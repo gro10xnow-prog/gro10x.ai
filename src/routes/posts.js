@@ -149,11 +149,25 @@ router.get('/', requireAuth, async (req, res) => {
   const isClientUser = req.user.role === 'Client' || req.user.linkedType === 'client' || req.user.accessLevel === 'Client Partner';
   const clientName = (req.user.profile?.name || req.user.name || '').toLowerCase();
   const clientId = req.user.linkedId || req.user.id;
+  const { brandSlug, channel, platform, status, month } = req.query;
 
   function getFilteredPosts() {
     let list = inMemoryPosts;
     if (isClientUser) {
       list = list.filter(p => (p.client_id && p.client_id === clientId) || ((p.client_name || p.clientName || '').toLowerCase() === clientName));
+    }
+    if (brandSlug || channel) {
+      const matchChan = (channel || brandSlug).toLowerCase();
+      list = list.filter(p => (p.channel || '').toLowerCase().includes(matchChan));
+    }
+    if (platform && platform !== 'all') {
+      list = list.filter(p => (p.platform || '').toLowerCase() === platform.toLowerCase());
+    }
+    if (status && status !== 'all') {
+      list = list.filter(p => (p.status || '').toLowerCase() === status.toLowerCase());
+    }
+    if (month) {
+      list = list.filter(p => (p.scheduled_date || p.scheduledDate || '').startsWith(month));
     }
     return list.map(mapPost);
   }
@@ -170,6 +184,19 @@ router.get('/', requireAuth, async (req, res) => {
           } else if (clientName) {
             query = query.ilike('client_name', clientName);
           }
+        }
+
+        if (channel || brandSlug) {
+          query = query.ilike('channel', `%${channel || brandSlug}%`);
+        }
+        if (platform && platform !== 'all') {
+          query = query.eq('platform', platform);
+        }
+        if (status && status !== 'all') {
+          query = query.eq('status', status);
+        }
+        if (month) {
+          query = query.gte('scheduled_date', `${month}-01`).lte('scheduled_date', `${month}-31`);
         }
 
         const { data, error } = await query;

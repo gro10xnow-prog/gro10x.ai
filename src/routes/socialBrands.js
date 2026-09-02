@@ -12,6 +12,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const { requireAuth } = require('../middleware/auth');
+const { requireManager } = require('../middleware/rbac');
 const { isSupabaseConfigured, supabase } = require('../services/supabase');
 const aiRoutes = require('./ai');
 
@@ -380,13 +381,29 @@ function loadState() {
       const raw = fs.readFileSync(DATA_FILE, 'utf8');
       const parsed = JSON.parse(raw);
       if (parsed && Array.isArray(parsed.brands) && parsed.brands.length > 0) {
+        _stateCache = parsed;
+        _cacheTimestamp = Date.now();
         return parsed;
       }
     }
   } catch (e) {
     console.warn('[SocialBrands] Failed to read state file, fallback to SEED_DATA:', e.message);
   }
-  return JSON.parse(JSON.stringify(SEED_DATA));
+  _stateCache = JSON.parse(JSON.stringify(SEED_DATA));
+  _cacheTimestamp = Date.now();
+  return _stateCache;
+}
+
+let _stateCache = null;
+let _cacheTimestamp = 0;
+const CACHE_TTL_MS = 10000; // 10s cache to avoid blocking disk I/O on every request
+
+function getCachedState() {
+  const now = Date.now();
+  if (_stateCache && (now - _cacheTimestamp < CACHE_TTL_MS)) {
+    return _stateCache;
+  }
+  return loadState();
 }
 
 function saveState(state) {
@@ -397,6 +414,8 @@ function saveState(state) {
     const tempFile = `${DATA_FILE}.${Date.now()}.${Math.random().toString(36).slice(2, 8)}.tmp`;
     fs.writeFileSync(tempFile, payload, 'utf8');
     fs.renameSync(tempFile, DATA_FILE);
+    _stateCache = state;
+    _cacheTimestamp = Date.now();
   } catch (e) {
     console.error('[SocialBrands] Save state error:', e.message);
   }
@@ -599,6 +618,22 @@ router.post('/:brandSlug/channels/:channelId/analytics', requireAuth, upload.sin
       let totalImpressions = 0;
       let banglaCharCount = 0;
 
+      // Dynamic header mapping from header row
+      const headerLine = lines[0] || '';
+      const headerMatches = headerLine.match(/(?:^|,)("(?:[^"]|"")*"|[^,]*)/g) || [];
+      const headers = headerMatches.map(c => c.replace(/^,/, '').replace(/^"|"$/g, '').trim().toLowerCase());
+      
+      const findColIdx = (keywords) => {
+        return headers.findIndex(h => keywords.some(k => h.includes(k)));
+      };
+
+      const titleIdx = findColIdx(['title', 'video title', 'post title', 'content', 'post']);
+      const viewsIdx = findColIdx(['view', 'reach', 'plays']);
+      const watchHoursIdx = findColIdx(['watch time', 'watch hour', 'duration', 'minutes']);
+      const subsIdx = findColIdx(['subscriber', 'follower', 'sub']);
+      const impressionsIdx = findColIdx(['impression', 'reach']);
+      const ctrIdx = findColIdx(['click-through', 'ctr', 'engagement rate', 'rate']);
+
       for (let i = 1; i < lines.length; i++) {
         const line = lines[i];
         if (line.startsWith('Total')) continue;
@@ -607,12 +642,12 @@ router.post('/:brandSlug/channels/:channelId/analytics', requireAuth, upload.sin
         if (!match) continue;
         const cols = match.map(c => c.replace(/^,/, '').replace(/^"|"$/g, '').trim());
 
-        const title = cols[1] || cols[0];
-        const views = Number(cols[4]) || Number(cols[1]) || 0;
-        const watchHours = Number(cols[5]) || 0;
-        const subs = Number(cols[6]) || 0;
-        const impressions = Number(cols[7]) || 0;
-        const ctr = Number(cols[8]) || Number(cols[cols.length - 1]) || 0;
+        const title = (titleIdx !== -1 && cols[titleIdx]) ? cols[titleIdx] : (cols[1] || cols[0]);
+        const views = (viewsIdx !== -1 && !isNaN(Number(cols[viewsIdx]))) ? Number(cols[viewsIdx]) : (Number(cols[4]) || Number(cols[1]) || 0);
+        const watchHours = (watchHoursIdx !== -1 && !isNaN(Number(cols[watchHoursIdx]))) ? Number(cols[watchHoursIdx]) : (Number(cols[5]) || 0);
+        const subs = (subsIdx !== -1 && !isNaN(Number(cols[subsIdx]))) ? Number(cols[subsIdx]) : (Number(cols[6]) || 0);
+        const impressions = (impressionsIdx !== -1 && !isNaN(Number(cols[impressionsIdx]))) ? Number(cols[impressionsIdx]) : (Number(cols[7]) || 0);
+        const ctr = (ctrIdx !== -1 && !isNaN(Number(cols[ctrIdx]))) ? Number(cols[ctrIdx]) : (Number(cols[8]) || Number(cols[cols.length - 1]) || 0);
 
         if (title && title.length > 2 && views >= 0) {
           if (/[\u0980-\u09FF]/.test(title)) banglaCharCount++;
@@ -1659,6 +1694,152 @@ router.post('/:brandSlug/channels/:channelId/calendars/:monthKey/lock', requireA
       brand
     });
   }
+});
+
+// 12. DELETE BRAND
+router.delete('/:brandSlug', requireAuth, requireManager, async (req, res) => {
+  const current = loadState();
+  const slug = req.params.brandSlug;
+  const brandIdx = (current.brands || []).findIndex(b => b.slug === slug || b.id === slug);
+
+  if (brandIdx === -1) {
+    return res.status(404).json({ success: false, error: 'Brand not found' });
+  }
+
+  const [removed] = current.brands.splice(brandIdx, 1);
+  saveState(current);
+
+  if (isSupabaseConfigured() && supabase) {
+    try {
+      await supabase.from('social_brands').delete().eq('slug', slug);
+    } catch (e) {
+      console.warn('[Delete Brand] Supabase delete note:', e.message);
+    }
+  }
+
+  res.json({ success: true, message: `Brand '${removed.name}' removed successfully`, deletedSlug: slug });
+});
+
+// 13. DELETE CHANNEL FROM BRAND
+router.delete('/:brandSlug/channels/:channelId', requireAuth, requireManager, async (req, res) => {
+  const current = loadState();
+  const brand = (current.brands || []).find(b => b.slug === req.params.brandSlug || b.id === req.params.brandSlug);
+  if (!brand) return res.status(404).json({ success: false, error: 'Brand not found' });
+
+  const channelIdx = (brand.channels || []).findIndex(c => c.id === req.params.channelId || c.slug === req.params.channelId);
+  if (channelIdx === -1) {
+    return res.status(404).json({ success: false, error: 'Channel not found' });
+  }
+
+  const [removedChan] = brand.channels.splice(channelIdx, 1);
+  saveState(current);
+
+  if (isSupabaseConfigured() && supabase) {
+    try {
+      await supabase.from('social_channels').delete().eq('id', req.params.channelId);
+    } catch (e) {
+      console.warn('[Delete Channel] Supabase delete note:', e.message);
+    }
+  }
+
+  res.json({ success: true, message: `Channel '${removedChan.name}' removed from brand`, deletedChannelId: req.params.channelId });
+});
+
+// 14. CLEAR / RESET CHANNEL CALENDAR
+router.delete('/:brandSlug/channels/:channelId/calendars/:monthKey', requireAuth, requireManager, async (req, res) => {
+  const current = loadState();
+  const brand = (current.brands || []).find(b => b.slug === req.params.brandSlug || b.id === req.params.brandSlug);
+  if (!brand) return res.status(404).json({ success: false, error: 'Brand not found' });
+
+  const channel = (brand.channels || []).find(c => c.id === req.params.channelId || c.slug === req.params.channelId);
+  if (!channel) return res.status(404).json({ success: false, error: 'Channel not found' });
+
+  const monthKey = req.params.monthKey;
+  if (channel.calendars && channel.calendars[monthKey]) {
+    delete channel.calendars[monthKey];
+    saveState(current);
+
+    if (isSupabaseConfigured() && supabase) {
+      try {
+        await supabase.from('channel_calendars').delete().eq('channel_id', channel.id).eq('month_key', monthKey);
+      } catch (e) {
+        console.warn('[Clear Calendar] Supabase delete note:', e.message);
+      }
+    }
+    return res.json({ success: true, message: `Calendar for ${monthKey} cleared`, monthKey });
+  }
+
+  return res.status(404).json({ success: false, error: 'No calendar found for this month' });
+});
+
+// 15. EDIT INDIVIDUAL PLAN ITEM
+router.put('/:brandSlug/channels/:channelId/calendars/:monthKey/items/:itemId', requireAuth, async (req, res) => {
+  const current = loadState();
+  const brand = (current.brands || []).find(b => b.slug === req.params.brandSlug || b.id === req.params.brandSlug);
+  if (!brand) return res.status(404).json({ success: false, error: 'Brand not found' });
+
+  const channel = (brand.channels || []).find(c => c.id === req.params.channelId || c.slug === req.params.channelId);
+  if (!channel) return res.status(404).json({ success: false, error: 'Channel not found' });
+
+  const calendar = channel.calendars && channel.calendars[req.params.monthKey];
+  if (!calendar || !Array.isArray(calendar.planItems)) {
+    return res.status(404).json({ success: false, error: 'Calendar or plan items not found' });
+  }
+
+  const itemId = req.params.itemId;
+  let itemIdx = calendar.planItems.findIndex(i => i.id === itemId);
+  if (itemIdx === -1 && !isNaN(Number(itemId))) {
+    itemIdx = Number(itemId);
+  }
+
+  const item = calendar.planItems[itemIdx];
+  if (!item) {
+    return res.status(404).json({ success: false, error: 'Plan item not found' });
+  }
+
+  const { topicIdea, hook, rationale, scheduledDate, suggestedTime, week, contentType, targetDuration, formatTag } = req.body;
+  if (topicIdea !== undefined) item.topicIdea = topicIdea;
+  if (hook !== undefined) item.hook = hook;
+  if (rationale !== undefined) item.rationale = rationale;
+  if (scheduledDate !== undefined) item.scheduledDate = scheduledDate;
+  if (suggestedTime !== undefined) item.suggestedTime = suggestedTime;
+  if (week !== undefined) item.week = week;
+  if (contentType !== undefined) item.contentType = contentType;
+  if (targetDuration !== undefined) item.targetDuration = targetDuration;
+  if (formatTag !== undefined) item.formatTag = formatTag;
+
+  saveState(current);
+  res.json({ success: true, message: 'Plan item updated', item, index: itemIdx });
+});
+
+// 16. DELETE INDIVIDUAL PLAN ITEM
+router.delete('/:brandSlug/channels/:channelId/calendars/:monthKey/items/:itemId', requireAuth, async (req, res) => {
+  const current = loadState();
+  const brand = (current.brands || []).find(b => b.slug === req.params.brandSlug || b.id === req.params.brandSlug);
+  if (!brand) return res.status(404).json({ success: false, error: 'Brand not found' });
+
+  const channel = (brand.channels || []).find(c => c.id === req.params.channelId || c.slug === req.params.channelId);
+  if (!channel) return res.status(404).json({ success: false, error: 'Channel not found' });
+
+  const calendar = channel.calendars && channel.calendars[req.params.monthKey];
+  if (!calendar || !Array.isArray(calendar.planItems)) {
+    return res.status(404).json({ success: false, error: 'Calendar or plan items not found' });
+  }
+
+  const itemId = req.params.itemId;
+  let itemIdx = calendar.planItems.findIndex(i => i.id === itemId);
+  if (itemIdx === -1 && !isNaN(Number(itemId))) {
+    itemIdx = Number(itemId);
+  }
+
+  if (itemIdx === -1 || !calendar.planItems[itemIdx]) {
+    return res.status(404).json({ success: false, error: 'Plan item not found' });
+  }
+
+  const [removedItem] = calendar.planItems.splice(itemIdx, 1);
+  saveState(current);
+
+  res.json({ success: true, message: 'Plan item removed', removedItem, remainingCount: calendar.planItems.length });
 });
 
 module.exports = router;
