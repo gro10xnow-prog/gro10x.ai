@@ -7,11 +7,45 @@
  */
 window.APP_MODULES = window.APP_MODULES || {};
 
-// Inject spinner keyframes
+// Phase 6.5 & 6.6: Inject animations, mobile responsive snapping & drag-and-drop styles
   if (!document.getElementById('socialModuleStyles')) {
     const st = document.createElement('style');
     st.id = 'socialModuleStyles';
-    st.textContent = '@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }';
+    st.textContent = `
+      @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+      .social-board {
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+      }
+      .social-col {
+        scroll-snap-align: start;
+        transition: background-color 0.2s ease, border-color 0.2s ease;
+      }
+      .social-col.drag-over {
+        background: rgba(168, 85, 247, 0.08) !important;
+        border-color: #a855f7 !important;
+      }
+      .post-card[draggable="true"] {
+        cursor: grab;
+      }
+      .post-card.dragging {
+        opacity: 0.35;
+        transform: scale(0.97);
+        border: 2px dashed #a855f7 !important;
+      }
+      @media (max-width: 768px) {
+        .social-board {
+          display: flex !important;
+          overflow-x: auto !important;
+          gap: 0.75rem !important;
+          padding-bottom: 1.25rem !important;
+        }
+        .social-col {
+          min-width: 84vw !important;
+          max-width: 84vw !important;
+        }
+      }
+    `;
     document.head.appendChild(st);
   }
 
@@ -262,10 +296,12 @@ window.APP_MODULES.social = async function(container) {
     }
   }
 
-  async function loadInitialData() {
-    isLoading = true;
-    hasError = false;
-    renderSkeleton();
+  async function loadInitialData(showSkeleton = true) {
+    if (showSkeleton) {
+      isLoading = true;
+      hasError = false;
+      renderSkeleton();
+    }
 
     try {
       const [postsRes, clientsRes, brandsRes] = await Promise.all([
@@ -284,14 +320,18 @@ window.APP_MODULES.social = async function(container) {
       monthlyFocusNote = (activeBrand && activeBrand.monthlyFocus && activeBrand.monthlyFocus[mKey] && activeBrand.monthlyFocus[mKey].thesis) || '';
 
       isLoading = false;
-      renderContent();
+      if (showSkeleton) {
+        renderContent();
+      } else {
+        renderKPIs();
+        if (activeViewMode === 'content_os' || activeViewMode === 'planner_ai') renderContentOS();
+        else if (activeViewMode === 'calendar') renderCalendar();
+        else renderBoard();
+      }
     } catch (err) {
       console.error('[Social Module] Failed to load data:', err);
       isLoading = false;
-      postsData = [];
-      clientsData = [];
-      socialBrandsData = [];
-      renderContent();
+      if (showSkeleton) renderContent();
     }
   }
 
@@ -319,7 +359,10 @@ window.APP_MODULES.social = async function(container) {
             <button class="btn-ghost btn-sm" id="btnViewContentOS" style="font-size:0.8rem; font-weight:800; padding:0.35rem 0.75rem; border-radius:8px; ${activeViewMode === 'content_os' ? 'background:linear-gradient(135deg, rgba(168,85,247,0.35), rgba(99,102,241,0.35)); color:#fff; border:1px solid #a855f7;' : 'color:var(--text-muted);'}" onclick="window.SOCIAL_MODULE.switchView('content_os')">🏛️ Content OS & Brand Hub</button>
           </div>
           <button class="btn-secondary" onclick="window.SOCIAL_MODULE.reload()">🔄 Refresh</button>
-          <button class="btn-primary" onclick="window.SOCIAL_MODULE.openPostModal()">+ Draft New Post</button>
+          ${!isClientRole() ? `
+            <button class="btn-ghost" style="font-size:0.8rem; border:1px solid rgba(255,255,255,0.12); padding:0.4rem 0.8rem;" onclick="window.SOCIAL_MODULE.openBatchImportModal()">📥 Batch Import</button>
+            <button class="btn-primary" onclick="window.SOCIAL_MODULE.openPostModal()">+ Draft New Post</button>
+          ` : ''}
         </div>
       </div>
 
@@ -791,6 +834,64 @@ window.APP_MODULES.social = async function(container) {
           </div>
         </div>
       </div>
+
+      <!-- Phase 6.7: Batch Import UI Modal -->
+      <div class="modal-overlay" id="batchImportModal" style="display:none; z-index:1050;">
+        <div class="modal-box" style="max-width: 650px; max-height:88vh; overflow-y:auto; background:var(--surface-card, #14141e); border:1px solid var(--border-subtle); border-radius:14px; padding:1.25rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; border-bottom:1px solid var(--border-subtle); padding-bottom:0.8rem;">
+            <div>
+              <h3 style="color:#fff; font-size:1.15rem; margin:0; font-family:var(--font-heading);">📥 Batch Import Social Posts</h3>
+              <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.2rem;">Bulk-create drafts via CSV upload or direct text paste into Kanban pipeline</div>
+            </div>
+            <button onclick="window.SOCIAL_MODULE.closeBatchImportModal()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
+          </div>
+
+          <form onsubmit="window.SOCIAL_MODULE.handleBatchImportSubmit(event)" style="display:flex; flex-direction:column; gap:0.9rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.02); border:1px solid var(--border-subtle); border-radius:8px; padding:0.6rem 0.8rem;">
+              <span style="font-size:0.78rem; color:var(--text-muted);">Need standard format?</span>
+              <button type="button" class="btn-ghost btn-sm" style="font-size:0.72rem; color:var(--purple-light); border:1px solid rgba(168,85,247,0.3);" onclick="window.SOCIAL_MODULE.downloadBatchTemplateCsv()">📄 Download CSV Template</button>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.8rem;">
+              <div class="form-group">
+                <label class="form-label" style="font-size:0.82rem; font-weight:700;">Target Channel *</label>
+                <select id="batchImportChannel" class="input-text" required>
+                  <option value="grow-bangla">🎓 Grow Bangla</option>
+                  <option value="pilutics">🗺️ PILUTICS</option>
+                  <option value="bong-hits">🎬 Bong Hits</option>
+                  <option value="gro10x">⚡ GRO10X Brand</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" style="font-size:0.82rem; font-weight:700;">Default Platform *</label>
+                <select id="batchImportPlatform" class="input-text" required>
+                  <option value="YouTube">YouTube</option>
+                  <option value="Facebook">Facebook</option>
+                  <option value="Instagram">Instagram</option>
+                  <option value="LinkedIn">LinkedIn</option>
+                  <option value="TikTok">TikTok</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" style="font-size:0.82rem; font-weight:700;">Upload CSV File</label>
+              <input type="file" id="batchImportFileInput" class="input-text" accept=".csv,text/csv" onchange="window.SOCIAL_MODULE.handleBatchCsvFile(this)">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" style="font-size:0.82rem; font-weight:700;">Or Paste CSV Lines (Title, ScheduledDate, Caption, Category)</label>
+              <textarea id="batchImportText" class="input-text" rows="6" placeholder="Topic Title, 2026-09-15, Catchy caption copy here..., Tutorial&#10;Next Video Idea, 2026-09-18, Another hook here..., Case Study" style="font-family:monospace; font-size:0.78rem;"></textarea>
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; gap:0.6rem; border-top:1px solid var(--border-subtle); padding-top:0.8rem;">
+              <button type="button" class="btn-secondary" onclick="window.SOCIAL_MODULE.closeBatchImportModal()">Cancel</button>
+              <button type="submit" class="btn-primary" id="btnRunBatchImport">🚀 Process Batch Import</button>
+            </div>
+          </form>
+        </div>
+      </div>
     `;
   }
 
@@ -939,7 +1040,7 @@ window.APP_MODULES.social = async function(container) {
     board.innerHTML = `
       <div class="social-board" style="display:grid; grid-template-columns:repeat(5, minmax(280px, 1fr)); gap:1rem; overflow-x:auto; padding-bottom:1rem;">
         <!-- Col 1: Drafts -->
-        <div class="social-col" style="background:var(--surface-card, #14141e); border:1px solid var(--border-subtle); border-radius:14px; padding:1rem; display:flex; flex-direction:column; min-height:550px;">
+        <div class="social-col" data-stage="draft" ondragover="window.SOCIAL_MODULE.handleDragOver(event)" ondragleave="window.SOCIAL_MODULE.handleDragLeave(event)" ondrop="window.SOCIAL_MODULE.handleDrop(event, 'draft')" style="background:var(--surface-card, #14141e); border:1px solid var(--border-subtle); border-radius:14px; padding:1rem; display:flex; flex-direction:column; min-height:550px;">
           <div style="display:flex; justify-content:space-between; align-items:center; font-weight:800; font-size:0.85rem; color:var(--text-secondary); margin-bottom:0.9rem; padding-bottom:0.5rem; border-bottom:1px solid var(--border-subtle);">
             <span>📝 Drafts & Concepts</span>
             <span class="badge badge-gray">${drafts.length}</span>
@@ -950,7 +1051,7 @@ window.APP_MODULES.social = async function(container) {
         </div>
 
         <!-- Col 2: Internal QC -->
-        <div class="social-col" style="background:var(--surface-card, #14141e); border:1px solid var(--border-subtle); border-radius:14px; padding:1rem; display:flex; flex-direction:column; min-height:550px;">
+        <div class="social-col" data-stage="internal" ondragover="window.SOCIAL_MODULE.handleDragOver(event)" ondragleave="window.SOCIAL_MODULE.handleDragLeave(event)" ondrop="window.SOCIAL_MODULE.handleDrop(event, 'internal')" style="background:var(--surface-card, #14141e); border:1px solid var(--border-subtle); border-radius:14px; padding:1rem; display:flex; flex-direction:column; min-height:550px;">
           <div style="display:flex; justify-content:space-between; align-items:center; font-weight:800; font-size:0.85rem; color:var(--purple-light); margin-bottom:0.9rem; padding-bottom:0.5rem; border-bottom:1px solid var(--border-subtle);">
             <span>👁️ Internal QC</span>
             <span class="badge badge-purple">${internal.length}</span>
@@ -961,7 +1062,7 @@ window.APP_MODULES.social = async function(container) {
         </div>
 
         <!-- Col 3: Review -->
-        <div class="social-col" style="background:var(--surface-card, #14141e); border:1px solid var(--border-subtle); border-radius:14px; padding:1rem; display:flex; flex-direction:column; min-height:550px;">
+        <div class="social-col" data-stage="client" ondragover="window.SOCIAL_MODULE.handleDragOver(event)" ondragleave="window.SOCIAL_MODULE.handleDragLeave(event)" ondrop="window.SOCIAL_MODULE.handleDrop(event, 'client')" style="background:var(--surface-card, #14141e); border:1px solid var(--border-subtle); border-radius:14px; padding:1rem; display:flex; flex-direction:column; min-height:550px;">
           <div style="display:flex; justify-content:space-between; align-items:center; font-weight:800; font-size:0.85rem; color:var(--amber-brand); margin-bottom:0.9rem; padding-bottom:0.5rem; border-bottom:1px solid var(--border-subtle);">
             <span>💬 Review & Feedback</span>
             <span class="badge badge-amber">${client.length}</span>
@@ -972,7 +1073,7 @@ window.APP_MODULES.social = async function(container) {
         </div>
 
         <!-- Col 4: Approved & Scheduled -->
-        <div class="social-col" style="background:var(--surface-card, #14141e); border:1px solid rgba(16,185,129,0.3); border-radius:14px; padding:1rem; display:flex; flex-direction:column; min-height:550px;">
+        <div class="social-col" data-stage="approved" ondragover="window.SOCIAL_MODULE.handleDragOver(event)" ondragleave="window.SOCIAL_MODULE.handleDragLeave(event)" ondrop="window.SOCIAL_MODULE.handleDrop(event, 'approved')" style="background:var(--surface-card, #14141e); border:1px solid rgba(16,185,129,0.3); border-radius:14px; padding:1rem; display:flex; flex-direction:column; min-height:550px;">
           <div style="display:flex; justify-content:space-between; align-items:center; font-weight:800; font-size:0.85rem; color:#10b981; margin-bottom:0.9rem; padding-bottom:0.5rem; border-bottom:1px solid rgba(16,185,129,0.2);">
             <span>🚀 Approved & Scheduled</span>
             <span class="badge badge-emerald">${approved.length}</span>
@@ -983,7 +1084,7 @@ window.APP_MODULES.social = async function(container) {
         </div>
 
         <!-- Col 5: Posted -->
-        <div class="social-col" style="background:var(--surface-card, #14141e); border:1px solid rgba(59,130,246,0.3); border-radius:14px; padding:1rem; display:flex; flex-direction:column; min-height:550px;">
+        <div class="social-col" data-stage="posted" ondragover="window.SOCIAL_MODULE.handleDragOver(event)" ondragleave="window.SOCIAL_MODULE.handleDragLeave(event)" ondrop="window.SOCIAL_MODULE.handleDrop(event, 'posted')" style="background:var(--surface-card, #14141e); border:1px solid rgba(59,130,246,0.3); border-radius:14px; padding:1rem; display:flex; flex-direction:column; min-height:550px;">
           <div style="display:flex; justify-content:space-between; align-items:center; font-weight:800; font-size:0.85rem; color:#60a5fa; margin-bottom:0.9rem; padding-bottom:0.5rem; border-bottom:1px solid rgba(59,130,246,0.2);">
             <span>✅ Posted & Live</span>
             <span class="badge badge-blue">${posted.length}</span>
@@ -2270,7 +2371,7 @@ function renderBrandAssetsKitHTML(brand) {
         !['Posted', 'Published'].includes(p.status);
 
       return `
-        <div class="post-card" style="background:rgba(255,255,255,0.03); border:1px solid ${isOverdue ? 'rgba(239,68,68,0.4)' : 'var(--border-subtle)'}; border-radius:12px; padding:0.9rem; display:flex; flex-direction:column; gap:0.6rem; transition:transform 0.15s ease, border-color 0.15s ease;">
+        <div class="post-card" draggable="${!isClientRole()}" data-post-id="${p.id}" ondragstart="window.SOCIAL_MODULE.handleDragStart(event, '${p.id}')" ondragend="window.SOCIAL_MODULE.handleDragEnd(event)" style="background:rgba(255,255,255,0.03); border:1px solid ${isOverdue ? 'rgba(239,68,68,0.4)' : 'var(--border-subtle)'}; border-radius:12px; padding:0.9rem; display:flex; flex-direction:column; gap:0.6rem; transition:transform 0.15s ease, border-color 0.15s ease;">
           
           <!-- Channel & Platform Badges Header -->
           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.3rem;">
@@ -2409,10 +2510,13 @@ function renderBrandAssetsKitHTML(brand) {
     `).join('') + '<option value="custom" data-name="General Client">+ General / Manual Client</option>';
   }
 
-  // Subscribe to real-time updates via SSE
-  let sseUnsub = null;
+  // Phase 6.3: Subscribe to real-time updates via SSE with memory leak prevention
+  if (window._socialSseUnsub && typeof window._socialSseUnsub === 'function') {
+    window._socialSseUnsub();
+    window._socialSseUnsub = null;
+  }
   if (window.APP_SSE && window.APP_SSE.subscribe) {
-    sseUnsub = window.APP_SSE.subscribe('post_update', (updatedPosts) => {
+    window._socialSseUnsub = window.APP_SSE.subscribe('post_update', (updatedPosts) => {
       if (Array.isArray(updatedPosts)) {
         postsData = updatedPosts;
         renderKPIs();
@@ -2425,7 +2529,13 @@ function renderBrandAssetsKitHTML(brand) {
 
   window.SOCIAL_MODULE = {
     reload() {
-      loadInitialData();
+      loadInitialData(false);
+    },
+    destroy() {
+      if (window._socialSseUnsub && typeof window._socialSseUnsub === 'function') {
+        window._socialSseUnsub();
+        window._socialSseUnsub = null;
+      }
     },
     switchView(mode) {
       activeViewMode = mode;
@@ -4082,7 +4192,7 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
         }
 
         this.closePostModal(true);
-        loadInitialData();
+        loadInitialData(false);
       } catch (err) {
         if (window.showToast) window.showToast('Failed to save post: ' + err.message, 'error');
       } finally {
@@ -4090,29 +4200,53 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
       }
     },
     async updatePostStatus(id, newStatus) {
+      const p = postsData.find(x => x.id === id);
+      const prev = p ? p.status : null;
+      if (p) {
+        p.status = newStatus;
+        renderKPIs();
+        renderBoard();
+      }
       try {
         await APP_API.patch(`/posts/${id}/status`, { status: newStatus });
         if (window.showToast) window.showToast(`Post stage updated to "${newStatus}"`, 'success');
-        loadInitialData();
+        loadInitialData(false);
       } catch (err) {
+        if (p && prev) { p.status = prev; renderKPIs(); renderBoard(); }
         if (window.showToast) window.showToast('Status update failed: ' + err.message, 'error');
       }
     },
     async approvePost(id) {
+      const p = postsData.find(x => x.id === id);
+      const prev = p ? p.status : null;
+      if (p) {
+        p.status = 'Approved';
+        renderKPIs();
+        renderBoard();
+      }
       try {
         await APP_API.post(`/posts/${id}/approve`, {});
         if (window.showToast) window.showToast('🎉 Social post approved!', 'success');
-        loadInitialData();
+        loadInitialData(false);
       } catch (err) {
+        if (p && prev) { p.status = prev; renderKPIs(); renderBoard(); }
         if (window.showToast) window.showToast('Approval failed: ' + err.message, 'error');
       }
     },
     async markAsPosted(id) {
+      const p = postsData.find(x => x.id === id);
+      const prev = p ? p.status : null;
+      if (p) {
+        p.status = 'Posted';
+        renderKPIs();
+        renderBoard();
+      }
       try {
         await APP_API.post(`/posts/${id}/posted`, {});
         if (window.showToast) window.showToast('✅ Post marked as Posted & Live!', 'success');
-        loadInitialData();
+        loadInitialData(false);
       } catch (err) {
+        if (p && prev) { p.status = prev; renderKPIs(); renderBoard(); }
         if (window.showToast) window.showToast('Failed to mark as posted: ' + err.message, 'error');
       }
     },
@@ -4169,7 +4303,7 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
       try {
         await APP_API.post(`/posts/${id}/reject`, { feedback, tags });
         if (window.showToast) window.showToast('🔴 Revision request submitted & logged.', 'info');
-        loadInitialData();
+        loadInitialData(false);
       } catch (err) {
         if (window.showToast) window.showToast('Revision request failed: ' + err.message, 'error');
       }
@@ -4185,7 +4319,7 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
           try {
             await APP_API.delete(`/posts/${id}`);
             if (window.showToast) window.showToast('Post deleted.', 'info');
-            loadInitialData();
+            loadInitialData(false);
           } catch (err) {
             if (window.showToast) window.showToast('Delete failed: ' + err.message, 'error');
           }
@@ -4841,6 +4975,179 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
       if (fileInput) fileInput.value = '';
 
       if (window.showToast) window.showToast('Reference asset removed.', 'info');
+    },
+
+    // Phase 6.6: HTML5 Drag-and-Drop Kanban Engine
+    handleDragStart(e, postId) {
+      if (isClientRole()) return;
+      if (e.dataTransfer) {
+        e.dataTransfer.setData('text/plain', postId);
+        e.dataTransfer.effectAllowed = 'move';
+      }
+      window._draggedPostId = postId;
+      setTimeout(() => {
+        if (e.target && e.target.classList) e.target.classList.add('dragging');
+      }, 0);
+    },
+    handleDragEnd(e) {
+      window._draggedPostId = null;
+      if (e.target && e.target.classList) e.target.classList.remove('dragging');
+      document.querySelectorAll('.social-col.drag-over').forEach(c => c.classList.remove('drag-over'));
+    },
+    handleDragOver(e) {
+      if (isClientRole()) return;
+      e.preventDefault();
+      if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+      const col = e.currentTarget;
+      if (col && !col.classList.contains('drag-over')) col.classList.add('drag-over');
+    },
+    handleDragLeave(e) {
+      const col = e.currentTarget;
+      if (col && !col.contains(e.relatedTarget)) col.classList.remove('drag-over');
+    },
+    async handleDrop(e, targetStageKey) {
+      e.preventDefault();
+      const col = e.currentTarget;
+      if (col) col.classList.remove('drag-over');
+      if (isClientRole()) return;
+
+      const postId = (e.dataTransfer && e.dataTransfer.getData('text/plain')) || window._draggedPostId;
+      if (!postId) return;
+
+      const stageMap = {
+        draft: 'Draft',
+        internal: 'Internal QC',
+        client: 'Pending Client Approval',
+        approved: 'Approved',
+        posted: 'Posted'
+      };
+      const targetStatus = stageMap[targetStageKey] || 'Draft';
+
+      const post = postsData.find(p => p.id === postId);
+      if (!post || post.status === targetStatus) return;
+
+      const prevStatus = post.status;
+      post.status = targetStatus;
+
+      // Optimistic instant re-render (0ms latency, no skeleton)
+      renderKPIs();
+      renderBoard();
+
+      try {
+        await APP_API.patch(`/posts/${postId}/status`, { status: targetStatus });
+        if (window.showToast) window.showToast(`Post moved to ${targetStatus}`, 'success');
+      } catch (err) {
+        post.status = prevStatus;
+        renderBoard();
+        if (window.showToast) window.showToast('Failed to update stage: ' + err.message, 'error');
+      }
+    },
+
+    // Phase 6.7: Batch Import UI Methods
+    openBatchImportModal() {
+      const modal = document.getElementById('batchImportModal');
+      if (modal) modal.style.display = 'flex';
+    },
+    closeBatchImportModal() {
+      const modal = document.getElementById('batchImportModal');
+      if (modal) modal.style.display = 'none';
+    },
+    downloadBatchTemplateCsv() {
+      const csv = "Title,ScheduledDate,ScheduledTime,Caption,Category,ContentType,Duration\n" +
+        "\"5 Corporate English Interview Mistakes\",\"2026-09-15\",\"18:00\",\"Stop making these 5 mistakes when answering interview questions in English! #GrowBangla\",\"English Lesson\",\"Short-form Video\",\"60s\"\n" +
+        "\"Geopolitics of the Malacca Strait\",\"2026-09-18\",\"19:00\",\"Why 80,000 ships pass through this narrow choke point every year. Full breakdown. #PILUTICS\",\"Geopolitics\",\"Long-form Video\",\"12m\"\n";
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', 'gro10x-social-posts-batch-template.csv');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      if (window.showToast) window.showToast('📥 CSV Template downloaded!', 'success');
+    },
+    handleBatchCsvFile(input) {
+      const file = (input && input.files) ? input.files[0] : null;
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const text = e.target?.result || '';
+        const textarea = document.getElementById('batchImportText');
+        if (textarea) textarea.value = text;
+        if (window.showToast) window.showToast(`Loaded ${file.name} into import preview.`, 'info');
+      };
+      reader.readAsText(file);
+    },
+    async handleBatchImportSubmit(e) {
+      e.preventDefault();
+      const rawText = document.getElementById('batchImportText')?.value.trim();
+      if (!rawText) {
+        if (window.showToast) window.showToast('Please provide CSV data or upload a file.', 'error');
+        return;
+      }
+
+      const channelSlug = document.getElementById('batchImportChannel')?.value || 'grow-bangla';
+      const channelCfg = getChannelConfig(channelSlug);
+      const platform = document.getElementById('batchImportPlatform')?.value || 'YouTube';
+      const submitBtn = document.getElementById('btnRunBatchImport');
+
+      if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = '⏳ Importing...'; }
+
+      try {
+        const lines = rawText.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+        if (lines.length === 0) throw new Error('No lines found in text');
+
+        let startIndex = 0;
+        const firstLineLower = lines[0].toLowerCase();
+        if (firstLineLower.includes('title') || firstLineLower.includes('topic') || firstLineLower.includes('scheduled')) {
+          startIndex = 1;
+        }
+
+        const itemsToCreate = [];
+        for (let i = startIndex; i < lines.length; i++) {
+          const line = lines[i];
+          const match = line.match(/(?:[^\s,"]|"(?:\\.|[^"])*")+/g);
+          const cols = match ? match.map(c => c.replace(/^"|"$/g, '').trim()) : line.split(',').map(c => c.trim());
+          if (cols.length === 0 || !cols[0]) continue;
+
+          const title = cols[0];
+          const scheduledDate = cols[1] || new Date().toISOString().split('T')[0];
+          const scheduledTime = cols[2] && cols[2].includes(':') ? cols[2] : '18:00';
+          const caption = cols[3] || '';
+          const category = cols[4] || 'General';
+          const contentType = cols[5] || 'Short-form Video';
+          const targetDuration = cols[6] || '60s';
+
+          itemsToCreate.push({
+            title,
+            scheduledDate,
+            scheduledTime,
+            caption,
+            contentCategory: category,
+            contentType,
+            targetDuration,
+            platform,
+            channel: channelCfg.name,
+            status: 'Draft'
+          });
+        }
+
+        if (itemsToCreate.length === 0) throw new Error('No valid post rows found');
+
+        const res = await APP_API.post('/posts/batch', { posts: itemsToCreate });
+        if (res && res.success) {
+          if (window.showToast) window.showToast(`🚀 Successfully batch-imported ${res.count || itemsToCreate.length} posts!`, 'success');
+          this.closeBatchImportModal();
+          await loadInitialData(false);
+        } else {
+          throw new Error(res?.error || 'Batch import failed');
+        }
+      } catch (err) {
+        if (window.showToast) window.showToast('Batch import notice: ' + err.message, 'error');
+      } finally {
+        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '🚀 Process Batch Import'; }
+      }
     }
   };
 

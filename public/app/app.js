@@ -165,9 +165,18 @@
     }
   }
 
+  // Phase 6.4: Debounced Sidebar Badges Engine (prevents 5x parallel API flood on SSE bursts)
+  let badgeSyncTimeout = null;
+  function debouncedUpdateSidebarBadges(delay = 2500) {
+    if (badgeSyncTimeout) clearTimeout(badgeSyncTimeout);
+    badgeSyncTimeout = setTimeout(() => {
+      updateSidebarBadges();
+    }, delay);
+  }
+
   function initSSEBadgeSync() {
     if (window.APP_SSE) {
-      window.APP_SSE.onAny(() => updateSidebarBadges());
+      window.APP_SSE.onAny(() => debouncedUpdateSidebarBadges(2500));
     }
     // Periodic badge check every 45s
     setInterval(updateSidebarBadges, 45000);
