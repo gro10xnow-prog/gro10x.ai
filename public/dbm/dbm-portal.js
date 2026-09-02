@@ -2537,10 +2537,92 @@
     }
   }
 
+  // DBM Real-Time Event Consumer (SSE)
+  let _dbmSseSource = null;
+
+  function initDBMSSE() {
+    if (typeof window === 'undefined' || !window.EventSource) return;
+    if (_dbmSseSource) {
+      try { _dbmSseSource.close(); } catch (_) {}
+      _dbmSseSource = null;
+    }
+
+    try {
+      const token = localStorage.getItem('gro10x_token') || sessionStorage.getItem('gro10x_token') || '';
+      const empCode = getUserEmpCode();
+      const sseUrl = token
+        ? `/api/sync?token=${encodeURIComponent(token)}&role=dbm&emp_code=${encodeURIComponent(empCode)}`
+        : `/api/sync?role=dbm&emp_code=${encodeURIComponent(empCode)}`;
+
+      _dbmSseSource = new EventSource(sseUrl);
+
+      _dbmSseSource.onmessage = (e) => {
+        try {
+          const payload = JSON.parse(e.data);
+          const evtType = payload.type || 'message';
+          handleDBMSSEEvent(evtType, payload.data || payload);
+        } catch (_) {}
+      };
+
+      const dbmEvents = [
+        'brands_updated',
+        'etsy_sync_update',
+        'product_qc_update',
+        'digistore_product_update',
+        'digistore_product_updated',
+        'digistore_order_created',
+        'digistore_order_updated',
+        'social_post_update'
+      ];
+
+      dbmEvents.forEach(evt => {
+        _dbmSseSource.addEventListener(evt, (e) => {
+          try {
+            const data = JSON.parse(e.data);
+            handleDBMSSEEvent(evt, data);
+          } catch (_) {}
+        });
+      });
+
+      _dbmSseSource.onerror = () => {
+        if (_dbmSseSource) {
+          _dbmSseSource.close();
+          _dbmSseSource = null;
+        }
+        setTimeout(initDBMSSE, 8000);
+      };
+    } catch (err) {
+      console.warn('[DBM SSE] Connection init error:', err);
+    }
+  }
+
+  async function handleDBMSSEEvent(evt, data) {
+    try {
+      await reloadState();
+      renderCurrentRoute();
+
+      if (evt === 'product_qc_update' && data && data.title) {
+        showToast(`QC Alert: "${data.title}" status updated to ${data.status || 'reviewed'}`);
+      } else if (evt === 'etsy_sync_update') {
+        showToast('Etsy inventory sync completed');
+      } else if (evt === 'digistore_order_created') {
+        showToast('🛒 New DigiStore order received!');
+      } else if (evt === 'brands_updated') {
+        showToast('📡 Brand catalogue updated');
+      }
+    } catch (e) {
+      console.warn('[DBM SSE] Event processing warning:', e);
+    }
+  }
+
+  window.initDBMSSE = initDBMSSE;
+  window.handleDBMSSEEvent = handleDBMSSEEvent;
+
   // Boot
   document.addEventListener('DOMContentLoaded', async () => {
     startDhakaClock();
     await reloadState();
     initRouter();
+    initDBMSSE();
   });
 })();

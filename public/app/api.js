@@ -149,13 +149,19 @@ window.APP_SSE = {
       };
 
       const eventNames = [
-        'task_update', 'subtask_update', 'lead_update', 'client_update',
+        'task_update', 'subtask_update', 'lead_update', 'client_update', 'clients_update',
         'invoice_update', 'payment_update', 'expense_update', 'leave_update',
         'team_update', 'attendance_update', 'eod_update', 'review_update',
         'review_comment_update', 'post_update', 'social_post_update',
         'ticket_update', 'project_update', 'quote_update', 'cms_update',
         'workflow_update', 'custom_field_update', 'label_update', 'template_update',
-        'digistore_order_updated', 'brands_updated', 'etsy_sync_update', 'product_qc_update'
+        'digistore_order_updated', 'brands_updated', 'etsy_sync_update', 'product_qc_update',
+        'drawing_update', 'studio_booking_update', 'task_comment_added',
+        'task_time_logged', 'task_label_update', 'task_qc_rejected',
+        'task_reassigned', 'chat_message', 'meeting_update',
+        'digistore_product_update', 'digistore_product_updated',
+        'digistore_order_created', 'digistore_delivery_completed',
+        'asset_update', 'group_update'
       ];
 
       eventNames.forEach(evt => {
