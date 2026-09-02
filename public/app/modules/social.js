@@ -3197,12 +3197,13 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
         sections.push('');
       }
 
-      sections.push(`🎬 VISUAL BRIEF (Aesthetic Direction for Editor):`);
-      sections.push(b.visualBrief || '');
-      sections.push('');
+      // Build spoken talking script directly from 10-second scene voice lines for a guaranteed verbatim teleprompter read
+      const spokenScript = (Array.isArray(b.veoScenes) && b.veoScenes.length > 0 && b.veoScenes[0].voiceLine)
+        ? b.veoScenes.map(s => `[${s.timeRange}] ${s.voiceLine}`).join('\n\n')
+        : (b.voiceNote || '');
 
-      sections.push(`🎙️ SPOKEN TALKING SCRIPT (Read this verbatim, in ${b.primaryLanguage || 'Bangla + English (Banglish / Spoken)'}):`);
-      sections.push(b.voiceNote || '');
+      sections.push(`🎙️ SPOKEN TALKING SCRIPT (Read this verbatim on camera, in ${b.primaryLanguage || 'Bangla + English (Banglish / Spoken)'}):`);
+      sections.push(spokenScript);
       sections.push('');
 
       if (b.masterVeoPrompt) {

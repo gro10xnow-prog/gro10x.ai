@@ -771,19 +771,17 @@ router.post('/social-brief', requireAuth, async (req, res) => {
 
   const chunkCount = isVideoType ? Math.max(1, Math.min(18, Math.ceil(durationSec / 10))) : 0;
 
-  // Build rich, character-driven VEO 3 scene blueprints — FULLY TOPIC-AWARE on every scene
+  // Build rich, character-driven VEO 3 scene blueprints — STRICT NO TEXT OVERLAY + PURE ENGLISH VISUAL PROMPTS + VERBATIM NATURAL SPOKEN SCRIPT
   function buildCinematicVeoScenes(chan, postTop, cat, durSec, l, count) {
     const isGb = chan.toLowerCase().includes('grow bangla') || cat.toLowerCase().includes('english') || cat.toLowerCase().includes('career');
     const isPilutics = chan.toLowerCase().includes('pilutics') || cat.toLowerCase().includes('geopolit') || cat.toLowerCase().includes('documentary');
     const isBongHits = chan.toLowerCase().includes('bong') || cat.toLowerCase().includes('music') || cat.toLowerCase().includes('entertainment');
     const isGro10x = chan.toLowerCase().includes('gro10x') || cat.toLowerCase().includes('saas') || cat.toLowerCase().includes('ai') || cat.toLowerCase().includes('tech');
 
-    const isPronunciation = /pronunciation|উচ্চারণ|accent|phonetic/i.test(postTop);
+    const isPronunciation = /pronunciation|উচ্চারণ|accent|phonetic|word/i.test(postTop);
     const isSalary = /salary|বেতন|negotiat|money|offer|increment/i.test(postTop);
-    const isEmail = /email|ইমেইল|mail\b|inbox/i.test(postTop);
-    const isInterview = /interview|ইন্টারভিউ|hire|viva|yourself|freshers/i.test(postTop);
-    // Shortened topic handle for natural mid-sentence usage
-    const tShort = postTop.length > 35 ? postTop.slice(0, 35) + '...' : postTop;
+    const isEmail = /email|ইমেইল|mail\b|inbox|corporate/i.test(postTop);
+    const isInterview = /interview|ইন্টারভিউ|hire|viva|yourself|freshers|hr/i.test(postTop);
 
     const scenes = [];
     for (let i = 1; i <= count; i++) {
@@ -803,89 +801,97 @@ router.post('/social-brief', requireAuth, async (req, res) => {
         // ─── GROW BANGLA — Host Saira, Modern Educator Studio ───────────────────
         if (i === 1) {
           section = 'The Hook (Urgent Warning)';
-          characterAction = 'Saira delivering an urgent warning with a serious, high-stakes expression, pointing directly toward camera.';
+          characterAction = 'Saira delivering an urgent warning directly to camera with an intense, engaging expression and a decisive pointing gesture.';
           cameraMove = 'Cinematic studio medium shot, subtle 35mm slow push-in, shallow depth of field (f/1.8).';
-          prompt = `Cinematic studio. Medium shot of young professional Bangladeshi female educator Saira delivering an urgent warning about ${postTop} with an intense, engaging expression. Warm key lighting, dark acoustic wood slats background with vivid cyan LED backlight. 4K 60fps photorealistic.`;
-          voiceLine = isPronunciation
-            ? `"${tShort}" — এই ৫টি ইংরেজি শব্দের ভুল উচ্চারণ তোমার ইন্টারভিউ মুহূর্তেই নষ্ট করে দিচ্ছে। আজই বন্ধ করো এই ভুল!`
+          prompt = `Cinematic studio medium shot. Young professional Bangladeshi female educator Saira delivering an urgent warning to camera with an intense, engaging expression. Warm key lighting, dark acoustic wood slat wall background with vivid cyan LED backlight. 4K 60fps photorealistic.`;
+          voiceLine = isInterview
+            ? `ইন্টারভিউতে 'Tell Me About Yourself' জিজ্ঞেস করলেই এই ৩টি মারাত্মক ভুল কখনোই করবে না! প্রথম ৩০ সেকেন্ডেই ইন্টারভিউয়ার সিদ্ধান্ত নিয়ে নেয় তোমাকে নেবে কি না!`
             : (isSalary
-                ? `HR যখন "${tShort}" জিজ্ঞেস করে, ভুলেও এই একটা কথা বলবে না — এই ভুলেই হাজারো স্মার্ট ক্যান্ডিডেট শেষ হয়ে যায়!`
-                : (isEmail
-                    ? `কর্পোরেট ইমেইলে "${tShort}" নিয়ে প্রথম লাইনেই এই ভুলটা করলে রিসিভার কখনো রিপ্লাই করবে না!`
-                    : (isInterview
-                        ? `"${tShort}" — ইন্টারভিউতে এই প্রশ্নটা করলেই ৯৫% ক্যান্ডিডেট এই ৩টি মারাত্মক ভুল করে ফেলে!`
-                        : `"${tShort}" — এই টপিকে এই মারাত্মক ভুলটা করলেই ক্যারিয়ার শেষ! ৯৫% চাকরিপ্রার্থী এই ফাঁদে পড়ে!`)));
-          visualCue = `Red stop-sign alert badge with kinetic text: "${postTop.slice(0, 28)} 🛑"`;
+                ? `HR যখন স্যালারি এক্সপেক্টেশন জিজ্ঞেস করে, ভুলেও সরাসরি কোনো অ্যামাউন্ট বলবে না! এই একটা ভুলেই তোমার পুরো বার্গেইনিং পাওয়ার শেষ হয়ে যায়!`
+                : (isPronunciation
+                    ? `এই কমন ইংরেজি শব্দগুলোর ভুল উচ্চারণ আজই বন্ধ করো! ইন্টারভিউ আর ডেইলি স্পোকেনে এটা তোমার ইম্প্রেশন নষ্ট করে দিচ্ছে!`
+                    : (isEmail
+                        ? `কর্পোরেট ইমেইলে প্রথম লাইনেই এই মারাত্মক ভুলটা করলে রিসিভার কখনো তোমার ইমেইল রিপ্লাই করবে না!`
+                        : `এই বিষয়ে এই মারাত্মক ভুলটা কখনোই করবে না! ৯৫% চাকরিপ্রার্থী শুরুতেই এই ফাঁদে পড়ে বাদ পড়ে যায়!`)));
+          visualCue = `Glowing stop-sign alert icon graphic with pulsing amber spotlight. (NO text overlay)`;
 
         } else if (i === 2) {
           section = 'The Common Mistake — Live Demo';
           characterAction = isPronunciation
-            ? 'Saira demonstrating flawed mouth shape and hesitant pronunciation with a puzzled, self-aware look.'
+            ? 'Saira demonstrating flawed mouth shape and hesitant pronunciation with a puzzled, relatable expression.'
             : (isSalary
-                ? 'Saira acting out nervous candidate blurting out a low salary with slumped shoulders and a defeated face.'
-                : 'Saira acting out a hesitant, confused candidate posture — slumped shoulders, unsure tone, looking away from the imaginary interviewer.');
+                ? 'Saira acting out a nervous candidate blurting out an unsure number with slumped shoulders.'
+                : 'Saira acting out a hesitant, confused candidate posture — slumped shoulders, unsure tone, looking away.');
           cameraMove = 'Medium shot, static camera with subtle handheld texture, side warm amber fill.';
-          prompt = `Studio medium shot. Female educator Saira acting out a relatable mistake during a high-stakes ${postTop} scenario. Warm amber side lighting, modern studio background, high visual clarity.`;
-          voiceLine = isPronunciation
-            ? `সবাই যেমন 'Wednesday' কে ভুলে 'ওয়েড-নেস-ডে' বলে — "${tShort}" নিয়েও ঠিক একই ধরনের ভুল প্রতিদিন হচ্ছে। এটা শুনতে ছোট মনে হলেও ইন্টারভিউতে মুহূর্তেই বিশ্বাসযোগ্যতা নষ্ট করে।`
+          prompt = `Studio medium shot. Female educator Saira acting out a relatable, hesitant mistake during a high-stakes professional scenario. Warm amber side lighting, modern studio background, high visual clarity.`;
+          voiceLine = isInterview
+            ? `সবচেয়ে কমন ভুল — শুরুতেই নিজের নাম, বয়স আর পুরো জীবনী মুখস্থ বলা শুরু করা। এতে ইন্টারভিউয়ার প্রথম ৫ সেকেন্ডেই আগ্রহ হারিয়ে ফেলে!`
             : (isSalary
-                ? `ক্যান্ডিডেট যখন বলে "আমার এতো হলেই চলবে" — "${tShort}"-এর ক্ষেত্রে এই একটা লাইনেই সে তার সমস্ত বার্গেইনিং পাওয়ার হারিয়ে ফেলে।`
-                : (isEmail
-                    ? `"I am writing to inform you…" দিয়ে শুরু করলে "${tShort}" কখনো কাজ করবে না। প্রফেশনাল ইম্প্রেশন প্রথম লাইনেই শেষ হয়ে যায়।`
-                    : `শুরুতেই নিজের নাম, বয়স ও পুরো জীবনী বলতে থাকলে — "${tShort}"-এর ক্ষেত্রে HR মাত্র ৫ সেকেন্ডেই আগ্রহ হারিয়ে ফেলে।`));
-          visualCue = `Split-screen: Red 'X' side showing the mistake, Green side teasing the correct approach for ${postTop.slice(0,20)}.`;
+                ? `নার্ভাস হয়ে 'আমার ৩০ হাজার হলেই চলবে' বলে ফেলা — এই একটা ভুলেই শুরুতেই তোমার সমস্ত মার্কেট ভ্যালু শেষ হয়ে যায়!`
+                : (isPronunciation
+                    ? `যেমন অনেকেই 'Wednesday'-কে ভুল করে 'ওয়েড-নেস-ডে' বলে, কিংবা 'Receipt'-কে বলে 'রিসিপ্ট'। এতে প্রফেশনাল স্ট্যান্ডার্ড নষ্ট হয়!`
+                    : (isEmail
+                        ? `"I am writing to inform you…" — এই পুরোনো ও দুর্বল ওপেনার দিয়ে শুরু করলে প্রফেশনাল ইম্প্রেশন শুরুতেই শেষ!`
+                        : `কোনো প্রিপারেশন ছাড়া এলোমেলোভাবে কথা বলা শুরু করলে শ্রোতা প্রথম কয়েক সেকেন্ডেই আগ্রহ হারিয়ে ফেলে!`)));
+          visualCue = `Split-screen visual: Glowing Red 'X' failure icon graphic on left side. (NO text overlay)`;
 
         } else if (i === 3) {
           section = 'The Strategic Pivot — Reveal';
-          characterAction = 'Saira nodding with confident reassurance, leaning slightly forward with an encouraging knowing smile.';
+          characterAction = 'Saira leaning slightly forward with an encouraging, confident smile and a reassuring nod.';
           cameraMove = 'Medium close-up, smooth camera glide forward, eye-level framing.';
-          prompt = `Studio medium close-up. Female educator Saira nodding knowingly with an encouraging, confident smile, preparing to share the winning ${postTop} strategy. Cyan and warm golden rim light.`;
-          voiceLine = isPronunciation
-            ? `কিন্তু সঠিক phonetic breakdown জানলে "${tShort}"-এর প্রতিটি শব্দ নেটিভ স্পিকারদের মতোই বলা যায়। এবার দেখো কীভাবে।`
+          prompt = `Studio medium close-up. Female educator Saira nodding knowingly with an encouraging, confident smile, preparing to share the winning strategy. Cyan and warm golden rim light.`;
+          voiceLine = isInterview
+            ? `কিন্তু স্মার্ট প্রফেশনালরা উত্তর দেয় অন্যভাবে — তারা ব্যবহার করে ৩-স্টেপ প্রেজেন্ট-পাস্ট-ফিউচার উইনিং ফর্মুলা!`
             : (isSalary
-                ? `কিন্তু স্মার্ট ক্যান্ডিডেটরা "${tShort}"-এ সরাসরি নাম্বার বলে না — তারা এই ৩-স্টেপ কাউন্টার-অফার স্ট্র্যাটেজি ব্যবহার করে যা আমি এখন দেখাবো।`
-                : (isEmail
-                    ? `কিন্তু "${tShort}"-এর জন্য যে ৫টি ওপেনার ব্যবহার করলে ৮০% ক্ষেত্রে দ্রুত রিপ্লাই আসে, সেগুলো এবার শেয়ার করছি।`
-                    : `কিন্তু স্মার্ট প্রফেশনালরা "${tShort}"-এ এভাবে বলে না! তারা ব্যবহার করে এই ৩-স্টেপ ম্যাজিক ফর্মুলা — HR-এর মনে তাৎক্ষণিক ইমপ্যাক্ট ফেলার জন্য।`));
-          visualCue = `Glowing pivot badge: 'The Winning Formula for ${postTop.slice(0,18)} ⚡' with spark animation.`;
+                ? `কিন্তু স্মার্ট ক্যান্ডিডেটরা কখনো আগে নাম্বার বলে না — তারা ব্যবহার করে ৩-স্টেপ ভ্যালু-বেসড কাউন্টার স্ট্র্যাটেজি!`
+                : (isPronunciation
+                    ? `কিন্তু সঠিক phonetic rule জানলে প্রতিটি শব্দ নেটিভ স্পিকারদের মতোই পারফেক্টলি উচ্চারণ করা সম্ভব!`
+                    : (isEmail
+                        ? `স্মার্ট প্রফেশনালরা সরাসরি অ্যাকশন পয়েন্টে আসে এবং ব্যবহার করে হাই-কনভার্টিং ৩-স্টেপ ওপেনার!`
+                        : `কিন্তু স্মার্ট প্রফেশনালরা ফলো করে প্রমাণিত ৩-স্টেপ স্ট্র্যাটেজি যা শুরুতেই শক্তিশালী ইমপ্যাক্ট তৈরি করে!`)));
+          visualCue = `Illuminated lightning spark transition graphic with glowing cyan rim lighting. (NO text overlay)`;
 
         } else if (i === 4) {
           section = 'The Correct Solution — Step-by-Step';
           characterAction = isPronunciation
-            ? 'Saira demonstrating crisp phonetic articulation with exaggerated but clear mouth movements and warm confident eye contact.'
+            ? 'Saira demonstrating crisp mouth opening and clear phonetic resonance with confident eye contact.'
             : 'Saira walking through each solution step using deliberate hand signals, sharp eye contact, authoritative but warm tone.';
           cameraMove = 'Crisp close-up shot, sharp focus on facial expression and clear articulation.';
-          prompt = `Close-up shot of female educator Saira articulating clearly with confident expressions and authoritative hand gestures, teaching the correct approach for ${postTop}. High-contrast studio lighting, sharp focus on eyes and expression.`;
-          voiceLine = isPronunciation
-            ? `"${tShort}"-এর সঠিক উচ্চারণ: প্রতিটি শব্দে silent letter আলাদাভাবে চিহ্নিত করো। যেমন 'Wednesday' হবে 'ওয়েন-ডে', 'Receipt' হবে 'রি-সীট'। আজ থেকেই এই phonetic chart প্র্যাকটিস করো!`
+          prompt = `Close-up shot of female educator Saira articulating clearly with confident expressions and authoritative hand gestures. High-contrast studio lighting, sharp facial focus.`;
+          voiceLine = isInterview
+            ? `সঠিক ৩-স্টেপ মেথড: প্রথমে তোমার বর্তমান রোল ও কাজের পরিচয়। দ্বিতীয়ত সেরা একটা রিয়েল অ্যাচিভমেন্ট। এবং শেষে এই কোম্পানিতে তুমি কী ভ্যালু আনবে তা সরাসরি বলো!`
             : (isSalary
-                ? `"${tShort}"-এর সেরা উত্তর: "আমার অভিজ্ঞতা ও মার্কেট রিসার্চ অনুযায়ী আমি এক্সপেক্ট করছি [রেঞ্জ] — তবে পুরো প্যাকেজটা দেখে আলোচনা করতে রাজি।" এই ফ্রেমিংটাই আসল গেম চেঞ্জার।`
-                : (isEmail
-                    ? `"${tShort}"-এর জন্য উইনিং ওপেনার: "Hope you're having a productive week — reaching out specifically regarding [point]." এরপরেই সরাসরি অ্যাকশনে যাও। এই স্ট্রাকচারে রিপ্লাই রেট ৩ গুণ বাড়ে।`
-                    : `"${tShort}"-এর সঠিক ৩-স্টেপ ফর্মুলা: ১) বর্তমান রোল ১ লাইনে। ২) সেরা রিলেভ্যান্ট অ্যাচিভমেন্ট সংখ্যা দিয়ে। ৩) কোম্পানির জন্য তোমার নির্দিষ্ট ভ্যালু স্পষ্টভাবে।`));
-          visualCue = `Green checkmark with kinetic step-by-step overlay in bold Bengali/English script for ${postTop.slice(0,20)}.`;
+                ? `সেরা উত্তর: "আমার অভিজ্ঞতা ও মার্কেট রিসার্চ অনুযায়ী আমি এক্সপেক্ট করছি [রেঞ্জ] — তবে পুরো রেসপনসিবিলিটি দেখে আলোচনা করতে রাজি।" সরাসরি ভ্যালু দেখাও!`
+                : (isPronunciation
+                    ? `সঠিক উচ্চারণ: 'Wednesday' হবে 'ওয়েনয-ডে', আর 'Receipt'-এর ক্ষেত্রে 'p' সাইলেন্ট থাকবে, বলতে হবে 'রি-সীট'!`
+                    : (isEmail
+                        ? `উইনিং ওপেনার: "Hope you're having a productive week — reaching out specifically regarding [point]." এরপর ১ লাইনে ক্লিয়ার কল-টু-অ্যাকশন রাখো!`
+                        : `সঠিক পদ্ধতি: ১) ক্লিয়ার গোল সেট করা, ২) হাই-ডিমান্ড স্কিল প্রতিদিন প্র্যাকটিস করা, ৩) রেগুলার ফিডব্যাক নিয়ে নিজেকে ইম্প্রুভ করা!`)));
+          visualCue = `Split-screen visual: Bright glowing green checkmark icon graphic with smooth animated check. (NO text overlay)`;
 
         } else if (i === 5) {
           section = 'The Golden Rule — Memorable Takeaway';
           characterAction = 'Saira counting structured formula steps on 3 fingers with high energy and a big confident smile.';
           cameraMove = 'Medium shot, dynamic fast zoom-in on beat, subject-motion sync.';
-          prompt = `Studio medium shot. Female educator Saira enthusiastically demonstrating a 3-part framework for ${postTop} using clear hand gestures. Modern glass whiteboard with neon cyan accent.`;
-          voiceLine = isPronunciation
-            ? `গোল্ডেন রুল — "${tShort}" practice করতে গেলে প্রতিদিন IPA chart দেখো এবং phonetic shadowing করো। এই একটা হ্যাবিট ৬ মাসে তোমার উচ্চারণ সম্পূর্ণ বদলে দেবে।`
+          prompt = `Studio medium shot. Female educator Saira enthusiastically demonstrating a 3-part framework using 3 raised fingers with high energy and an encouraging smile. Modern glass whiteboard with neon cyan accent.`;
+          voiceLine = isInterview
+            ? `এই গোল্ডেন রুলটা মনে রাখো — প্রেজেন্ট, পাস্ট, ফিউচার: এই ৩টা লাইনেই তোমার পুরো অ্যানসার শেষ করো!`
             : (isSalary
-                ? `গোল্ডেন রুল — "${tShort}"-এ কখনো আগে নাম্বার বলবে না। সবসময় ভ্যালু দিয়ে শুরু করো, তারপর রেঞ্জ দাও। এই ক্রমটাই সব পার্থক্য তৈরি করে।`
-                : (isEmail
-                    ? `গোল্ডেন রুল — "${tShort}"-এর সাবজেক্ট লাইন ২০ character-এর মধ্যে রাখো। কখনো "I am writing" দিয়ে শুরু করবে না। শেষে সবসময় একটি নির্দিষ্ট CTA রাখো।`
-                    : `গোল্ডেন রুল — "${tShort}"-এ শুধু ৩টি পয়েন্ট: বর্তমান কাজ, সেরা অ্যাচিভমেন্ট, আর কোম্পানির জন্য তোমার নির্দিষ্ট ভ্যালু। এই ৩টাই যথেষ্ট।`));
-          visualCue = `3-step numbered framework pill list in cyan/white for ${postTop.slice(0,18)} glowing on screen.`;
+                ? `গোল্ডেন রুল — সবসময় ভ্যালু দিয়ে শুরু করো, তারপর রেঞ্জ দাও। কখনো আগে ফিক্সড অ্যামাউন্ট বলবে না!`
+                : (isPronunciation
+                    ? `গোল্ডেন রুল — প্রতিদিন ৫ মিনিট IPA chart দেখে phonetic shadowing করো, উচ্চারণ নিজে থেকেই ন্যাচারাল হয়ে যাবে!`
+                    : (isEmail
+                        ? `গোল্ডেন রুল — সাবজেক্ট লাইন ছোট রাখো, ফার্স্ট লাইনেই ভ্যালু বলো, আর শেষে একটা নির্দিষ্ট ডেডলাইন রাখো!`
+                        : `গোল্ডেন রুল — কনসিস্টেন্সি আর রাইট টেকনিকই যেকোনো ফিল্ডে সফলতার একমাত্র চাবিকাঠি!`)));
+          visualCue = `Three glowing circular step icons (1, 2, 3) illuminated in cyan neon. (NO text overlay)`;
 
         } else {
           section = 'CTA & Brand Signoff';
           characterAction = 'Saira smiling brightly, warm wave and energetic pointing gesture toward subscription button.';
           cameraMove = 'Smooth camera pull-back showing full high-end studio workspace and branding.';
-          prompt = `Wide pull-back shot. Female educator Saira smiling warmly and waving, revealing full modern studio set with wood acoustic panels and glowing Grow Bangla branding.`;
-          voiceLine = `"${tShort}"-এর মতো আরও প্র্যাকটিক্যাল ক্যারিয়ার ও ইংলিশ গাইডের জন্য Grow Bangla-তে এখনই সাবস্ক্রাইব করো — প্রতিদিনের ক্যারিয়ার মাস্টারি মিস করবে না!`;
-          visualCue = `Grow Bangla brand card with topic reminder "${postTop.slice(0,22)}" + Subscribe animation.`;
+          prompt = `Wide pull-back shot. Female educator Saira smiling warmly and waving, revealing full modern studio set with wood acoustic panels and glowing Grow Bangla ambient lighting.`;
+          voiceLine = `ক্যারিয়ার ও স্পোকেন ইংলিশের আরও প্র্যাকটিক্যাল গাইডের জন্য Grow Bangla-তে এখনই সাবস্ক্রাইব করো — প্রতিদিনের ক্যারিয়ার মাস্টারি মিস করবে না!`;
+          visualCue = `Grow Bangla official brand icon badge with animated pulsing subscribe bell graphic. (NO text overlay)`;
         }
 
       } else if (isPilutics) {
@@ -894,40 +900,40 @@ router.post('/social-brief', requireAuth, async (req, res) => {
           section = 'Geopolitical Crisis Hook';
           characterAction = 'Analyst host standing before holographic world map display with stern, analytical expression.';
           cameraMove = 'Dramatic tracking shot entering dark studio, deep blue and crimson ambient lighting.';
-          prompt = `Cinematic documentary studio. Strategic geopolitical analyst standing before glowing holographic map display analyzing ${postTop}. Moody dark-mode command center, deep navy and crimson rim lights. 4K 60fps.`;
-          voiceLine = `"${tShort}" — এই ঘটনাটি বিশ্ব রাজনীতিতে এমন এক পরিবর্তন আনছে যা কেউ আশা করেনি। আজকের বিশ্লেষণে জানুন কীভাবে এটি পুরো ভারসাম্য বদলে দিচ্ছে।`;
-          visualCue = `Pulsing red hotspot marker on map with "${postTop.slice(0,22)}" title card overlay.`;
+          prompt = `Cinematic documentary studio. Strategic geopolitical analyst standing before glowing holographic world map display analyzing international conflict. Moody dark-mode command center, deep navy and crimson rim lights. 4K 60fps.`;
+          voiceLine = `বিশ্ব রাজনীতিতে এমন এক সংকট তৈরি হচ্ছে যা পুরো আন্তর্জাতিক ক্ষমতার ভারসাম্য বদলে দিচ্ছে। আজকের এই গভীর বিশ্লেষণে জানুন এর আসল পেছনের কারণ।`;
+          visualCue = `Interactive holographic globe display with pulsing crimson crisis hotspot beacon graphic. (NO text overlay)`;
 
         } else if (i === 2) {
           section = 'Historical Context & Root Causes';
-          characterAction = 'Analyst referencing archival footage on screen with pointer, deep thoughtful expression.';
+          characterAction = 'Analyst referencing archival footage and satellite data on screen with pointer, deep thoughtful expression.';
           cameraMove = 'Medium shot pushing toward archival data screen, cinematic depth of field.';
-          prompt = `Documentary studio. Analyst reviewing historical data relevant to ${postTop} on dual monitor array. Deep navy blue lighting, cinematic color grade.`;
-          voiceLine = `"${tShort}" বোঝার জন্য আগে ইতিহাসের প্রেক্ষাপট জানতে হবে। ৫ বছর আগের যে কৌশলগত সিদ্ধান্তগুলো নেওয়া হয়েছিল — সেগুলোই আজকের এই পরিস্থিতির মূল কারণ।`;
-          visualCue = `Historical timeline graphic with key milestones for ${postTop.slice(0,18)} highlighted.`;
+          prompt = `Documentary studio. Analyst reviewing historical conflict data on dual monitor telemetry array. Deep navy blue lighting, cinematic film color grade.`;
+          voiceLine = `এই ঘটনা বোঝার জন্য আগে ইতিহাসের প্রেক্ষাপট জানতে হবে। বিগত দশকের যে নীতিগত সিদ্ধান্তগুলো নেওয়া হয়েছিল — সেগুলোই আজকের এই পরিস্থিতির মূল কারণ।`;
+          visualCue = `Archival timeline infographic graphic with glowing milestone node markers. (NO text overlay)`;
 
         } else if (i === count) {
           section = 'Strategic Conclusion & CTA';
           characterAction = 'Analyst looking directly into lens with thought-provoking gaze and steady hand gesture.';
           cameraMove = 'Slow pull-back to wide command room view.';
-          prompt = `Wide shot of analyst at glass briefing table surrounded by glowing analytical screens about ${postTop}. Dramatic cinematic lighting.`;
-          voiceLine = `"${tShort}" — এই সংঘাতের পরবর্তী অধ্যায় কী হবে? ভূরাজনীতি ও বিশ্ব সংঘাতের গভীর বিশ্লেষণের জন্য PILUTICS ফলো করুন।`;
-          visualCue = `PILUTICS compass seal with topic title card "${postTop.slice(0,22)}" and Subscribe overlay.`;
+          prompt = `Wide shot of analyst at glass briefing table surrounded by glowing analytical screens. Dramatic cinematic dark lighting.`;
+          voiceLine = `এই সংঘাতের পরবর্তী ভূরাজনৈতিক অধ্যায় কী হতে চলেছে? বিশ্ব রাজনীতি ও আন্তর্জাতিক সংঘাতের গভীর বিশ্লেষণের জন্য PILUTICS ফলো করুন।`;
+          visualCue = `PILUTICS signature nautical compass seal graphic with animated rotation pulse. (NO text overlay)`;
 
         } else {
           const analysisLines = [
-            `"${tShort}"-এর পেছনের কৌশলগত কারণ বিশ্লেষণ করলে স্পষ্ট হয় কীভাবে বড় শক্তিগুলো তাদের দীর্ঘমেয়াদী স্বার্থ রক্ষা করছে — এবং ছোট দেশগুলো এই দাবায় মোহরা হিসেবে ব্যবহৃত হচ্ছে।`,
-            `"${tShort}"-এ সামরিক ও অর্থনৈতিক মাত্রা একসাথে দেখতে হবে। শুধু রাজনৈতিক দৃষ্টিকোণ থেকে বিশ্লেষণ করলে পুরো চিত্র পাওয়া যায় না — মূল খেলাটা চলছে সম্পদ ও সাপ্লাই চেইনের নিয়ন্ত্রণকে কেন্দ্র করে।`,
-            `"${tShort}" সম্পর্কিত তথ্যের মধ্যে কোনটা পশ্চিমা মিডিয়ার ন্যারেটিভ আর কোনটা মাঠের বাস্তবতা — এই পার্থক্যটাই আসল বিশ্লেষণের চাবিকাঠি।`,
-            `"${tShort}"-এর প্রভাব শুধু ওই অঞ্চলে সীমাবদ্ধ নয়। বাংলাদেশসহ দক্ষিণ এশিয়ার দেশগুলোতে এর সরাসরি বাণিজ্যিক ও কূটনৈতিক প্রভাব ইতিমধ্যে পড়তে শুরু করেছে।`,
+            `এর পেছনের কৌশলগত কারণ বিশ্লেষণ করলে স্পষ্ট হয় কীভাবে বড় পরাশক্তিগুলো তাদের দীর্ঘমেয়াদী অর্থনৈতিক ও বাণিজ্যিক স্বার্থ রক্ষা করছে।`,
+            `এখানে সামরিক ও অর্থনৈতিক মাত্রা একসাথে দেখতে হবে — শুধু রাজনৈতিক দৃষ্টিকোণ থেকে বিশ্লেষণ করলে পুরো চিত্র কখনো পাওয়া যায় না।`,
+            `আন্তর্জাতিক গণমাধ্যমের ন্যারেটিভ আর মাঠপর্যায়ের ভূকৌশলগত বাস্তবতা — এই দুইয়ের পার্থক্যটাই আসল বিশ্লেষণের চাবিকাঠি।`,
+            `এর প্রভাব শুধু নির্দিষ্ট অঞ্চলেই সীমাবদ্ধ নয় — দক্ষিণ এশিয়া ও আন্তর্জাতিক সাপ্লাই চেইনে এর সরাসরি বাণিজ্যিক প্রভাব ইতিমধ্যে পড়তে শুরু করেছে।`,
           ];
           const lineIndex = Math.max(0, Math.min(i - 3, analysisLines.length - 1));
           section = `Strategic Deep Analysis — Layer ${i - 1}`;
-          characterAction = 'Analyst pointing to key strategic corridors with precise visual pacing, cross-referencing satellite data.';
+          characterAction = 'Analyst pointing to key trade routes and defense corridors with precise visual pacing.';
           cameraMove = 'Medium close-up with slow pan across satellite telemetry displays.';
-          prompt = `Medium shot of documentary analyst gesturing toward illuminated satellite map overlays for ${postTop}. High visual clarity, photorealistic cinematic textures.`;
+          prompt = `Medium shot of documentary analyst gesturing toward illuminated satellite map overlays, high visual clarity and photorealistic textures.`;
           voiceLine = analysisLines[lineIndex];
-          visualCue = `Satellite trajectory graphic and statistical comparison chart for "${postTop.slice(0,20)}".`;
+          visualCue = `Maritime shipping corridor choke-point icon graphic with animated energy flow lines. (NO text overlay)`;
         }
 
       } else if (isBongHits) {
@@ -936,55 +942,82 @@ router.post('/social-brief', requireAuth, async (req, res) => {
           section = 'High-Energy Comic / Music Hook';
           characterAction = 'Host delivering explosive comic expression, jumping into frame with high-energy body language.';
           cameraMove = 'Fast snap-zoom into face, vibrant neon purple and cyan lighting.';
-          prompt = `Vibrant urban neon studio. High-energy creator jumping into frame with hilarious expressive face about ${postTop}. Dynamic magenta and cyan neon backlight, energetic 60fps motion blur.`;
-          voiceLine = `"${tShort}" নিয়ে এইটা না দেখলে জীবনে বড় কিছু মিস করে ফেলবে ভাই! আমি গ্যারান্টি দিচ্ছি!`;
-          visualCue = `Exploding comic text bubble with "${postTop.slice(0,15)}" title and soundwave pulse.`;
+          prompt = `Vibrant urban neon creator loft. High-energy creator jumping into frame with hilarious shocked facial expression. Dynamic magenta and cyan neon backlight, energetic 60fps motion blur.`;
+          voiceLine = `এই জিনিসটা না দেখলে জীবনে চরম মিস করে ফেলবে ভাই! আমি গ্যারান্টি দিচ্ছি এরকম অভিজ্ঞতা আর কোথাও পাবে না!`;
+          visualCue = `Exploding comic book shockwave icon graphic with animated soundwave burst. (NO text overlay)`;
 
         } else if (i === 2) {
           section = 'Setup & Scene Introduction';
-          characterAction = 'Host setting the scene with exaggerated dramatic hand gestures and side-eye reaction.';
+          characterAction = 'Host setting the scene with exaggerated dramatic hand gestures and comedic side-eye reaction.';
           cameraMove = 'Medium dutch angle, rhythm-cut editing style.';
-          prompt = `Studio medium shot of creator dramatically setting up the comedic scenario for ${postTop}. Neon-lit background, high-energy visual grading.`;
-          voiceLine = `"${tShort}"-এর ঘটনাটা শোনো — এই জিনিস বাংলাদেশে শুধু আমাদের সাথেই হতে পারে, বিশ্বের আর কোথাও না!`;
-          visualCue = `Comic setup text card with emoji reaction burst for "${postTop.slice(0,15)}".`;
+          prompt = `Studio medium shot of creator dramatically setting up a comedic scenario. Neon-lit background, high-energy visual grading.`;
+          voiceLine = `আসল ঘটনাটা শোনো — এই অদ্ভুত কাণ্ড আমাদের দেশেই শুধু ঘটতে পারে, বিশ্বের আর কোথাও এরকম জিনিস কল্পনাও করতে পারবে না!`;
+          visualCue = `Animated split-screen reaction icon with sweat-drop emoji graphic. (NO text overlay)`;
 
         } else if (i === count) {
           section = 'Viral Outro & Share Prompt';
           characterAction = 'Host laughing with friends, pointing enthusiastically at screen, calling for shares.';
           cameraMove = 'Quick whip-pan to full vibrant set.';
-          voiceLine = `বন্ধুদের সাথে শেয়ার করো আর Bong Hits-এ সাবস্ক্রাইব করে বেল বাজিয়ে দাও!`;
-          visualCue = `Bong Hits neon logo pulse and Share button animation.`;
+          prompt = `Wide energetic shot of creator laughing and dancing in neon-lit creator loft, bold pop culture aesthetic.`;
+          voiceLine = `ভিডিওটা বন্ধুদের সাথে শেয়ার করো আর Bong Hits-এ সাবস্ক্রাইব করে বেল বাজিয়ে দাও — প্রতিদিনের এন্টারটেইনমেন্ট মিস করবে না!`;
+          visualCue = `Bong Hits neon brand logo graphic with animated bell icon pulse. (NO text overlay)`;
+
         } else {
-          section = `Entertainment Skit Beat #${i}`;
+          const comedyLines = [
+            `এখন আসল ঘটনা বলি — ঠিক যখন সবাই ভাবলো সব ঠিকঠাক, তখনই ঘটলো সবচেয়ে হাস্যকর টুইস্টটা!`,
+            `এরপর যা হলো সেটা কেউ আশা করেনি — এমনকি আমিও না! এই জিনিস সিনেমায় দেখালেও কেউ বিশ্বাস করত না!`,
+            `পুরো পরিস্থিতি যখন একদম হাতের বাইরে চলে গেল — তখন যা ঘটলো সেটা দেখে আমি ৫ মিনিট কথা বলতে পারিনি!`,
+            `আর একদম শেষ মুহূর্তের ক্লাইম্যাক্স? সেটা না দেখলে এই পুরো গল্পের মজাই অপূর্ণ থেকে যাবে!`,
+          ];
+          const lineIndex = Math.max(0, Math.min(i - 3, comedyLines.length - 1));
+          section = `Entertainment Beat #${i} — Rising Action`;
           characterAction = 'Expressive comedic acting, dynamic hand gestures and exaggerated relatable expressions.';
           cameraMove = 'Medium dutch angle with rhythmic quick cuts.';
-          prompt = `Medium shot of creator acting out funny relatable situation in colorful urban room, sharp focus and vibrant grading.`;
-          voiceLine = `সবাই যখন ভাবলো সব শেষ, তখনই ঘটলো আসল টুইস্ট!`;
-          visualCue = `Relatable reaction emoji burst and sound effect pop.`;
+          prompt = `Medium shot of creator acting out a funny relatable situation in colorful urban room, sharp focus and vibrant grading.`;
+          voiceLine = comedyLines[lineIndex];
+          visualCue = `Double exclamation mark icon graphic with confetti burst animation. (NO text overlay)`;
         }
+
       } else {
-        // GRO10X Brand / Global Tech
+        // ─── GRO10X / Global Tech & SaaS ────────────────────────────────────────
         if (i === 1) {
           section = 'High-Value B2B Hook';
           characterAction = 'Tech founder opening ultra-thin dark-mode laptop, displaying rapid MVP dashboard booting live.';
           cameraMove = 'Macro tracking shot over glassmorphic interface, neon emerald (#00DF89) edge highlights.';
-          prompt = `Cinematic modern SaaS studio. Entrepreneur opening sleek glassmorphic MacBook showing dark-mode Progressive Web App dashboard for ${postTop} booting with 60fps fluid charts. Neon emerald and obsidian ambient lighting.`;
-          voiceLine = `Stop waiting months for traditional agencies. Here is how we ship full-stack MVPs in 48 hours.`;
-          visualCue = `Live 48-Hour Sprint Stopwatch HUD with verified GRO10X badge.`;
+          prompt = `Cinematic modern SaaS studio. Entrepreneur opening sleek glassmorphic MacBook showing dark-mode PWA dashboard booting with 60fps fluid charts. Neon emerald and obsidian ambient lighting.`;
+          voiceLine = `Stop waiting months for traditional agencies. Here is how modern product teams ship full-stack MVPs in under 48 hours.`;
+          visualCue = `Glowing stopwatch timer icon graphic with animated 48-hour sprint countdown ring. (NO text overlay)`;
+
+        } else if (i === 2) {
+          section = 'Why Most Teams Fail';
+          characterAction = 'Founder gesturing at broken legacy tech stack diagram on interactive screen with composed frustration.';
+          cameraMove = 'Close-up on screen data with slow dolly out to reveal confident founder posture.';
+          prompt = `Modern tech studio. Entrepreneur pointing at legacy architecture failure diagram. Dark-mode glassmorphic overlay, neon emerald ambient.`;
+          voiceLine = `Most tech teams fail for three reasons: wrong stack choice, zero code ownership, and building in the wrong sequence. Here is how we avoid every single one.`;
+          visualCue = `Red broken server icon graphic contrasted with clean glowing green server stack graphic. (NO text overlay)`;
+
         } else if (i === count) {
           section = 'Executive CTA';
           characterAction = 'Founder looking into camera with confident smile, closing laptop smoothly.';
           cameraMove = 'Medium pull-back revealing modern minimalist tech agency loft.';
           prompt = `Medium wide shot of tech executive standing in high-end glass office overlooking city skyline, emerald ambient lights.`;
-          voiceLine = `Ready to scale your product engine? Visit gro10x.ai or message us today.`;
-          visualCue = `GRO10X OS logo and 1-Click Consultation CTA link.`;
+          voiceLine = `Ready to scale your product engine without vendor lock-in or wasted months? Visit gro10x.ai or message us today.`;
+          visualCue = `GRO10X emerald geometric brand seal graphic with glowing arrow link icon. (NO text overlay)`;
+
         } else {
-          section = `Architecture & Feature Demo #${i}`;
-          characterAction = 'Hands interacting smoothly with responsive web application on smartphone and desktop monitors.';
+          const techLines = [
+            `The architecture that consistently scales: Node.js API layer, Supabase PostgreSQL with RLS, and serverless edge deployment with complete ownership.`,
+            `The core rule: never build from scratch what you can configure, but always own 100% of the underlying codebase and data schema.`,
+            `Our execution timeline: Day 1 schema and auth, Day 2 core API routes, Day 3 frontend integration, Day 4 automated QA and production deployment.`,
+            `The only metric that matters is time-to-first-value for the client — everything else is unnecessary engineering complexity.`,
+          ];
+          const lineIndex = Math.max(0, Math.min(i - 3, techLines.length - 1));
+          section = `Architecture Deep Dive — Layer ${i - 1}`;
+          characterAction = 'Hands interacting smoothly with live responsive application on dual vertical monitors.';
           cameraMove = 'Isometric close-up sliding across real-time data visualizations.';
           prompt = `Close-up isometric view of holographic node architecture connecting Node.js backend to Supabase PostgreSQL real-time database with lightning data pulses.`;
-          voiceLine = `Powered by modern serverless architecture with 100% full source code ownership and zero vendor lock-in.`;
-          visualCue = `Interactive cloud infrastructure flowchart with Supabase and Node.js badges.`;
+          voiceLine = techLines[lineIndex];
+          visualCue = `Holographic cloud node flowchart graphic with pulsing real-time database connection lines. (NO text overlay)`;
         }
       }
 
@@ -1011,15 +1044,15 @@ router.post('/social-brief', requireAuth, async (req, res) => {
         `• Character Action: ${s.characterAction || 'Engaged on-camera subject'}\n` +
         `• Camera & Lighting: ${s.cameraMove || 'Cinematic 4K studio framing'}\n` +
         `• Spoken Line: "${s.voiceLine || ''}"\n` +
-        `• Visual Cue / Overlay: ${s.visualCue || 'None'}`;
+        `• Visual Overlay (Graphics/Icons only, NO text): ${s.visualCue || 'None'}`;
     }).join('\n\n');
   }
 
   const fallbackScenes = isVideoType ? buildCinematicVeoScenes(chanName, postTopic, category, durationSec, lang, chunkCount) : [];
 
   const fallbackPdfSlides = isPdfType ? [
-    { slideNumber: 1, type: 'Cover', headline: `${postTopic}`, bullets: [`The Complete Executive Breakdown`, `By GRO10X Media for ${chanName}`], visualNote: 'Bold contrasting typography on dark gradient backdrop with brand icon.' },
-    { slideNumber: 2, type: 'The Problem', headline: `Why Most Creators & Teams Fail at ${category}`, bullets: [`Misunderstanding the fundamental workflow`, `Spending 80% of effort on low-leverage tasks`, `Lack of systematic automation`], visualNote: 'Red callout badge with side-by-side comparison diagram.' },
+    { slideNumber: 1, type: 'Cover', headline: `${postTopic}`, bullets: [`The Complete Executive Breakdown`, `By GRO10X Media for ${chanName}`], visualNote: 'Bold contrasting layout on dark gradient backdrop with brand icon.' },
+    { slideNumber: 2, type: 'The Problem', headline: `Why Most Creators & Teams Fail at ${category}`, bullets: [`Misunderstanding the fundamental workflow`, `Spending 80% of effort on low-leverage tasks`, `Lack of systematic automation`], visualNote: 'Warning icon badge with side-by-side comparison diagram.' },
     { slideNumber: 3, type: 'The Framework', headline: `The 3-Step Execution Model`, bullets: [`Step 1: AI Blueprint Grounding`, `Step 2: Rapid Modular Production`, `Step 3: Multi-Channel Distribution`], visualNote: '3-tier pyramid / process flow infographic.' },
     { slideNumber: 4, type: 'Deep Dive Step 1', headline: `Phase 1: Input & Context Strategy`, bullets: [`Structuring high-retention briefing prompts`, `Aligning tone with target audience persona`], visualNote: 'Checklist style cards with green check icons.' },
     { slideNumber: 5, type: 'Deep Dive Step 2', headline: `Phase 2: Execution & Quality Control`, bullets: [`Reviewing against platform constraints`, `Ensuring first-comment and SEO tag readiness`], visualNote: 'Split-screen UI preview.' },
@@ -1028,48 +1061,83 @@ router.post('/social-brief', requireAuth, async (req, res) => {
   ] : null;
 
   const fallbackCarouselSlides = isCarouselType ? [
-    { slide: 1, headline: `Stop Doing ${category} the Hard Way 🛑`, copy: `Swipe to see the exact 5-step method we use at ${chanName}...`, visualCue: 'High-contrast bold cover slide with swipe indicator.' },
-    { slide: 2, headline: `1. The Common Mistake`, copy: `Most people rush without a clear angle. Here's what goes wrong.`, visualCue: 'Warning icon with problem breakdown.' },
-    { slide: 3, headline: `2. The Smart Shift`, copy: `Instead, use this exact structure to hold retention.`, visualCue: 'Step-by-step numbered visual.' },
-    { slide: 4, headline: `3. Actionable Rule`, copy: `Apply this simple formula on your next draft.`, visualCue: 'Formula box.' },
-    { slide: 5, headline: `Save This Post! 📌`, copy: `Share with someone who needs this today. Follow for more!`, visualCue: 'Save icon and brand badge.' }
+    { slide: 1, headline: `Stop Doing ${category} the Hard Way 🛑`, copy: `Swipe to see the exact 5-step method we use at ${chanName}...`, visualCue: 'High-contrast bold cover slide with swipe indicator icon.' },
+    { slide: 2, headline: `1. The Common Mistake`, copy: `Most people rush without a clear angle. Here's what goes wrong.`, visualCue: 'Warning icon with problem breakdown diagram.' },
+    { slide: 3, headline: `2. The Smart Shift`, copy: `Instead, use this exact structure to hold retention.`, visualCue: 'Step-by-step numbered visual chart.' },
+    { slide: 4, headline: `3. Actionable Rule`, copy: `Apply this simple formula on your next draft.`, visualCue: 'Formula box graphic.' },
+    { slide: 5, headline: `Save This Post! 📌`, copy: `Share with someone who needs this today. Follow for more!`, visualCue: 'Save bookmark icon and brand badge.' }
   ] : null;
 
   const isBanglish = lang.toLowerCase().includes('bangla') || lang.toLowerCase().includes('bengali');
+  const isInterviewTopic = /interview|ইন্টারভিউ|hire|viva|yourself|freshers|hr/i.test(postTopic);
+  const isSalaryTopic = /salary|বেতন|negotiat|money|offer|increment/i.test(postTopic);
+  const isPronunciationTopic = /pronunciation|উচ্চারণ|accent|phonetic|word/i.test(postTopic);
+  const isEmailTopic = /email|ইমেইল|mail\b|inbox|corporate/i.test(postTopic);
+  const isPiluticsChan = chanName.toLowerCase().includes('pilutics');
+  const isBongHitsChan = chanName.toLowerCase().includes('bong');
+  const isGro10xChan = chanName.toLowerCase().includes('gro10x');
+
+  const resolvedHook = isBanglish
+    ? (isInterviewTopic
+        ? "Job Interview-এ 'Tell Me About Yourself' জিজ্ঞেস করলেই এই ৩টি মারাত্মক ভুল কখনোই করবে না! 🛑"
+        : (isSalaryTopic
+            ? "HR যখন Salary Expectation জিজ্ঞেস করে, ভুলেও এই একটা কথা বলবে না! 🛑"
+            : (isPronunciationTopic
+                ? "এই কমন ইংরেজি শব্দগুলোর মারাত্মক ভুল উচ্চারণ আজই বন্ধ করো! 🛑"
+                : (isEmailTopic
+                    ? "Corporate Email-এ এই ভুলটা করলে কখনোই রিপ্লাই পাবে না! 🛑"
+                    : (isPiluticsChan
+                        ? "বিশ্ব রাজনীতিতে এমন এক সংকট তৈরি হচ্ছে যা পুরো হিসাব বদলে দিচ্ছে! 🛑"
+                        : (isBongHitsChan
+                            ? "এই জিনিসটা না দেখলে জীবনে চরম মিস করে ফেলবে! 🛑"
+                            : (isGro10xChan
+                                ? "Stop waiting months for slow agencies — ship full MVPs in 48 hours! 🛑"
+                                : `${postTopic} নিয়ে এই মারাত্মক ভুলটা কখনোই করবে না! 🛑`)))))))
+    : `Stop making this mistake in ${postTopic}! 🛑`;
+
+  const resolvedAngle = isBanglish
+    ? (isPiluticsChan
+        ? `🗺️ PILUTICS গভীর বিশ্লেষণ — কীভাবে এই আন্তর্জাতিক ঘটনা বিশ্ব ক্ষমতার ভারসাম্য ও ভূরাজনীতিতে স্থায়ী পরিবর্তন আনছে তার সম্পূর্ণ স্ট্র্যাটেজিক ব্রেকডাউন।`
+        : (isBongHitsChan
+            ? `🎭 Bong Hits এক্সক্লুসিভ — দৈনন্দিন জীবনের এক চরম রিলেটেবল ঘটনা ও অপ্রত্যাশিত টুইস্টের হাই-এনার্জি বিনোদনমূলক উপস্থাপনা।`
+            : (isGro10xChan
+                ? `⚡ GRO10X ইঞ্জিনিয়ারিং — ট্র্যাডিশনাল এজেন্সির মাসের পর মাস অপেক্ষা বন্ধ করে মাত্র ৪৮ ঘণ্টায় প্রোডাকশন-রেডি MVP ডেলিভারির ফুল-স্ট্যাক মেথডোলজি।`
+                : `🎓 Grow Bangla অডিয়েন্সদের জন্য — কীভাবে সঠিক ফ্রেমওয়ার্ক ব্যবহার করে ইন্টারভিউ ও প্রফেশনাল কমিউনিকেশনে সফল হওয়া যায় তার কমপ্লিট গাইড।`)))
+    : `Direct, high-retention breakdown for ${chanName} audience regarding ${postTopic} on ${plat}.`;
+
+  const verbatimScript = fallbackScenes.length > 0
+    ? fallbackScenes.map(s => `[${s.timeRange}] ${s.voiceLine}`).join('\n\n')
+    : (isBanglish
+        ? `[0:00-0:10] "${resolvedHook}"\n\n[0:10-0:30] "সবচেয়ে বড় ভুল হলো কোনো স্ট্র্যাটেজি ছাড়া মুখস্থ বলা শুরু করা।"\n\n[0:30-0:50] "সঠিক পদ্ধতি: ১) বর্তমান কাজ, ২) সেরা অ্যাচিভমেন্ট, ৩) কোম্পানির জন্য তোমার নির্দিষ্ট ভ্যালু!"\n\n[0:50-1:00] "প্রতিদিনের ক্যারিয়ার মাস্টারির জন্য Grow Bangla-তে এখনই সাবস্ক্রাইব করো!"`
+        : `[0:00-0:10] "${resolvedHook}"\n\n[0:10-0:30] "The most common failure is building without clear architectural ownership."\n\n[0:30-0:50] "The 3-step solution: 1) Modern stack, 2) Serverless edge, 3) 100% code ownership."\n\n[0:50-1:00] "Visit gro10x.ai to scale your product engine today!"`);
+
   const deterministicFallback = {
     contentType: type,
     targetDuration: `${durationSec}s`,
     primaryLanguage: lang,
-    hook: isBanglish
-      ? `${postTopic}-এ এই ভুলটা করলেই বিপদ! 🛑`
-      : `Stop making this mistake in ${postTopic}! 🛑`,
-    angle: isBanglish
-      ? `🎓 ${chanName} অডিয়েন্সদের জন্য — ${postTopic} কীভাবে প্রফেশনাল ক্যারিয়ার ও ডেইলি কনভারসেশনে সর্বোচ্চ ইমপ্যাক্ট ফেলবে তার কমপ্লিট ব্রেকডাউন।`
-      : `Direct, high-retention breakdown for ${chanName} audience regarding ${postTopic} on ${plat}.`,
+    hook: resolvedHook,
+    angle: resolvedAngle,
     keyPoints: isBanglish
       ? [
-          `${postTopic}-এর সবচেয়ে কমন ভুলটি চিহ্নিত করো`,
-          `সরাসরি রিয়েল এক্সাম্পল দিয়ে অ্যাকশনেবল সলিউশন দাও`,
-          `একটি মেমোরেবল রুল বা ফ্রেমওয়ার্ক দিয়ে সামারাইজ করো`
+          `ইন্টারভিউ ও ক্যারিয়ারের সবচেয়ে মারাত্মক ভুলটি চিহ্নিত করো`,
+          `সরাসরি রিয়েল এক্সাম্পল দিয়ে ৩-স্টেপ অ্যাকশনেবল সলিউশন দাও`,
+          `একটি সহজ ও মেমোরেবল গোল্ডেন রুল দিয়ে শেষ করো`
         ]
       : [
-          `Break down the most common misconception in ${postTopic}`,
-          `Provide an immediate, actionable correction with real examples`,
-          `Deliver a memorable mnemonic or takeaway rule`
+          `Identify the most common failure point in ${postTopic}`,
+          `Provide an immediate 3-step actionable correction with real examples`,
+          `Deliver a memorable golden takeaway rule`
         ],
     caption: isBanglish
-      ? `🔥 ${postTopic} নিয়ে কুইক ব্রেকডাউন!\n\nতুমি কি এই ভুলটা করতে? এখনই জেনে নাও সঠিক পদ্ধতি।\n\n📌 Save করে রাখো — প্র্যাকটিসের সময় কাজে লাগবে!\n💬 কমেন্ট করো আরও এমন গাইডলাইন চাইলে!`
-      : `🔥 Quick ${postTopic} breakdown for you!\n\nHere is the exact framework to get it right every single time.\n\n📌 Save this post so you don't forget it!\n💬 Drop a comment below if you want Part 2!`,
+      ? `🔥 ${resolvedHook}\n\nতুমি কি এই ভুলটা করতে? কমেন্টে জানাও!\n\n📌 Save করে রাখো — ইন্টারভিউ ও প্র্যাকটিসের সময় কাজে লাগবে!\n💬 আরও এমন প্র্যাকটিক্যাল গাইড চাইলে Follow করে রাখো!`
+      : `🔥 ${resolvedHook}\n\nHere is the exact framework to get it right every single time.\n\n📌 Save this post so you don't forget it!\n💬 Drop a comment below if you want Part 2!`,
     hashtags: `#${chanName.replace(/[^a-zA-Z0-9]/g, '')} #${category.replace(/[^a-zA-Z0-9]/g, '')} #CareerHacks #LearnSpokenEnglish #BanglaTips`,
     firstComment: `#${chanName.replace(/[^a-zA-Z0-9]/g, '')} #LearnDaily #Bangladesh #Viral2026 #SpokenEnglish`,
-    visualBrief: `Facecam intro with high-contrast text overlay on top 20% of screen. Split-screen visual example with green checkmark vs red X. Warm studio lighting with cyan/amber backlight.`,
-    voiceNote: isBanglish
-      ? `[0:00-0:03] Hook (Banglish): "${postTopic} নিয়ে এই মারাত্মক ভুলটা কখনোই করবে না!" [0:03-0:12] কমন ভুলটা দেখাও — কেন বেশিরভাগ মানুষ এখানে আটকে যায়। [0:12-0:25] সঠিক ৩-স্টেপ মেথড রিভিল করো: সরাসরি প্র্যাকটিকাল উদাহরণ দিয়ে। [0:25-${durationSec <= 30 ? '0:30' : '0:60'}] Strong CTA: "প্রতিদিনের ক্যারিয়ার ও স্পোকেন ইংলিশ মাস্টারির জন্য Grow Bangla-তে এখনই সাবস্ক্রাইব করো!"`
-      : `Start immediately with the hook: "${postTopic} - Stop making this mistake..." (0-3s). Demonstrate the common flaw (3-12s). Reveal the correct method with energy (12-25s). Strong CTA: "Follow for daily breakthroughs" (25-30s).`,
+    visualBrief: `Facecam intro with warm studio lighting and cyan/amber LED backlight. Split-screen visual example with green checkmark vs red X graphical icons. (STRICT: NO text overlays on screen).`,
+    voiceNote: verbatimScript,
     veoScenes: fallbackScenes,
     masterVeoPrompt: formatMasterVeoPrompt(fallbackScenes),
     pdfOutline: fallbackPdfSlides,
-    masterPdfOutline: fallbackPdfSlides ? fallbackPdfSlides.map(s => `### Slide ${s.slideNumber}: ${s.headline} (${s.type})\n${s.bullets.map(b => `- ${b}`).join('\n')}\n*Visual Direction:* ${s.visualNote}`).join('\n\n') : null,
     carouselSlides: fallbackCarouselSlides
   };
 
@@ -1090,9 +1158,9 @@ Each item in "veoScenes" MUST have:
 - "section": string (e.g. "The Hook", "The Common Mistake", "The Pivot", "The Correction", "Actionable Takeaway", "Call to Action")
 - "characterAction": string (Specific physical body language, facial expression, and hand gestures of the host/character)
 - "cameraMove": string (Specific camera framing, angle, and motion e.g. "Medium shot with slow 35mm push-in")
-- "prompt": string (A full, standalone, photorealistic prompt for Google VEO 3 describing subject, environment, atmospheric studio lighting, color accents, and motion)
-- "voiceLine": string (The exact spoken dialogue or voiceover line for this 10-second chunk in ${lang})
-- "visualCue": string (Brief on-screen kinetic typography, split-screen, checkmark/X overlay for editors)
+- "prompt": string (A full, standalone, photorealistic prompt for Google VEO 3 in PURE ENGLISH ONLY describing subject, environment, atmospheric studio lighting, color accents, and camera motion. STRICT: NEVER insert non-English or Bengali sentences inside this visual prompt)
+- "voiceLine": string (The exact spoken dialogue or voiceover line for this 10-second chunk in ${lang}. Must be fluent, natural, teleprompter-ready verbatim speech. NEVER truncate words with ellipses or repeat long titles mechanically)
+- "visualCue": string (STRICT: GRAPHICS/ICONS ONLY. e.g. "Split-screen with red X icon vs green checkmark graphic", "Pulsing radar beacon graphic", "3-step illuminated circular badges". STRICT: NEVER include text overlays, titles, or typography on screen)
 `;
   } else if (isPdfType) {
     specificPromptInstructions = `
@@ -1127,12 +1195,11 @@ Each item in "carouselSlides" MUST have:
     `• Target Duration: "${durationSec} seconds"\n` +
     `• Topic / Concept: "${postTopic}"\n` +
     `• 🔴 PRIMARY LANGUAGE (MANDATORY): "${lang}"\n\n` +
-    `CRITICAL LANGUAGE ENFORCEMENT RULES:\n` +
-    `ALL content — hook, angle, keyPoints, caption, voiceNote, and talking script — MUST be written in "${lang}".\n` +
-    `For "Bangla + English (Banglish / Spoken)": Write the hook, angle, and key points in natural spoken Banglish (as a young Bangladeshi would naturally speak — mix of Bangla words and English structure). The voiceNote/talking script MUST be fully in spoken Banglish.\n` +
-    `For "Bangla / Bengali": Write primarily in standard Bengali script/romanized Bengali.\n` +
-    `For "English (Global B2B & Tech)": Write formally in English.\n` +
-    `NEVER generate the voiceNote/talking script in pure English if the language is not English.\n\n` +
+    `CRITICAL DIRECTIVES:\n` +
+    `1. STRICT OVERLAY DIRECTIVE: NO TEXT OVERLAYS ON SCREEN. All visual cues and overlay directions must use GRAPHICAL ICONS, ILLUSTRATIONS, SPLIT-SCREENS, OR BADGES ONLY without text or typography.\n` +
+    `2. PURE ENGLISH VEO PROMPTS: All Google VEO 3 visual prompts must be 100% in pure English describing cinematic cameras, lighting, and physical subject action. Never insert Bengali/Banglish sentences into the visual prompt.\n` +
+    `3. COMPLETE VERBATIM TALKING SCRIPT: "voiceNote" MUST BE A COMPLETE, TELEPROMPTER-READY VERBATIM SCRIPT containing the exact word-for-word spoken dialogue with timestamps [0:00-0:10], [0:10-0:20], etc. corresponding to the scenes. Do NOT output generic instructions like "show mistake" — write the actual spoken sentences in ${lang}.\n` +
+    `4. NATURAL LANGUAGE: ALL content — hook, angle, keyPoints, caption, voiceNote, and scene voice lines — MUST be written fluently in "${lang}" without robotic ellipses or mechanical topic string repetition.\n\n` +
     specificPromptInstructions +
     `\nSTANDARD REQUIRED FIELDS:\n` +
     `1. "hook": Punchy, stop-the-scroll opening in ${lang} (5-8 words max, curiosity/emotion driven).\n` +
@@ -1141,8 +1208,8 @@ Each item in "carouselSlides" MUST have:
     `4. "caption": Complete ready-to-post copy in ${lang} with emojis, line breaks, and clear CTA, formatted safely for ${plat}.\n` +
     `5. "hashtags": 8-15 high-reach hashtags as a single string (mix local + global for ${plat}).\n` +
     `6. "firstComment": Engagement hook and first-comment hashtag stack for Instagram/TikTok.\n` +
-    `7. "visualBrief": Clear overall visual direction (framing, color palette, props, CapCut style direction).\n` +
-    `8. "voiceNote": Full verbatim spoken talking script WITH timestamps, written ENTIRELY in ${lang}. This is what the host will read out loud on camera, word for word.\n` +
+    `7. "visualBrief": Clear overall visual direction (framing, color palette, props, split-screen icons — strictly NO text overlays).\n` +
+    `8. "voiceNote": Full verbatim spoken talking script WITH timestamps [0:00-0:10] etc., written ENTIRELY in ${lang} for the host to read word-for-word.\n` +
     `9. "primaryLanguage": "${lang}" (include this in the JSON output)\n\n` +
     `Output STRICT JSON ONLY. Do NOT wrap in markdown code blocks.`;
 
