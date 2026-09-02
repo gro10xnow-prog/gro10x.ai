@@ -2214,9 +2214,18 @@ window.APP_MODULES.social = async function(container) {
       const targetDuration = document.getElementById('spTargetDuration')?.value || '60s';
       const topic = document.getElementById('spTitle')?.value || '';
 
+      // Resolve primary language from active brand/channel context
+      const activeBrand = (socialBrandsData || []).find(b => b.slug === channelKey || b.id === channelKey ||
+        (b.channels || []).some(c => c.id === channelKey || c.slug === channelKey));
+      const activeChannel = activeBrand && (activeBrand.channels || []).find(c =>
+        c.id === channelKey || c.slug === channelKey || activeBrand.slug === channelKey);
+      const primaryLanguage = (activeChannel && activeChannel.primaryLanguage) ||
+        (activeBrand && activeBrand.primaryLanguage) ||
+        'Bangla + English (Banglish / Spoken)';
+
       if (btn) {
         btn.disabled = true;
-        btn.innerHTML = '✨ Generating Brief & Prompts...';
+        btn.innerHTML = '✨ Generating Brief &amp; Prompts...';
       }
 
       if (container) {
@@ -2236,7 +2245,8 @@ window.APP_MODULES.social = async function(container) {
           platform,
           contentType,
           targetDuration,
-          topic
+          topic,
+          primaryLanguage
         });
 
         if (res && res.success && res.brief) {
@@ -2306,8 +2316,8 @@ window.APP_MODULES.social = async function(container) {
                 <div style="font-weight:800; color:#c084fc; font-size:0.82rem; display:flex; align-items:center; gap:0.4rem;">
                   <span>🎬</span> Google VEO 3 Prompt Studio (${brief.targetDuration || '60s'} · ${brief.veoScenes.length} Chunks of 10s)
                 </div>
-                <button type="button" class="btn-primary btn-sm" style="font-size:0.68rem; padding:0.2rem 0.55rem; background:#6366f1; border:none;" onclick="window.SOCIAL_MODULE.copyAllVeoPrompts()">
-                  📋 Copy All VEO Prompts (For Flow Agent)
+                <button type="button" class="btn-primary btn-sm" style="font-size:0.68rem; padding:0.25rem 0.65rem; background:linear-gradient(135deg,#a855f7,#6366f1); border:none; font-weight:800;" onclick="window.SOCIAL_MODULE.copyAllVeoPrompts()">
+                  📋 Copy Full Flow Agent Brief (Angle + Script + VEO)
                 </button>
               </div>
               <div style="display:flex; flex-direction:column; gap:0.5rem; max-height:240px; overflow-y:auto; padding-right:0.2rem;">
@@ -2392,9 +2402,50 @@ window.APP_MODULES.social = async function(container) {
       `;
     },
     copyAllVeoPrompts() {
-      if (!activeGeneratedBrief || !activeGeneratedBrief.masterVeoPrompt) return;
-      navigator.clipboard.writeText(activeGeneratedBrief.masterVeoPrompt);
-      if (window.showToast) window.showToast('📋 All VEO 3 scene prompts copied! Ready to paste into flow agent.', 'success');
+      if (!activeGeneratedBrief) return;
+      const b = activeGeneratedBrief;
+
+      // Build a complete, structured brief that the Flow agent can consume directly
+      const sections = [];
+
+      sections.push(`===== 🎬 SHORT-FORM VIDEO FLOW AGENT BRIEF =====`);
+      sections.push(`Language: ${b.primaryLanguage || 'Bangla + English (Banglish / Spoken)'}`);
+      sections.push(`Duration: ${b.targetDuration || '60s'} | Format: ${b.contentType || 'Short-form Video'}`);
+      sections.push('');
+
+      sections.push(`🎯 VIRAL HOOK:`);
+      sections.push(`"${b.hook}"`);
+      sections.push('');
+
+      sections.push(`📐 ANGLE (Why This Resonates):`);
+      sections.push(b.angle || '');
+      sections.push('');
+
+      if (Array.isArray(b.keyPoints) && b.keyPoints.length > 0) {
+        sections.push(`🔑 KEY POINTS TO COVER:`);
+        b.keyPoints.forEach((p, i) => sections.push(`  ${i + 1}. ${p}`));
+        sections.push('');
+      }
+
+      sections.push(`🎬 VISUAL BRIEF (Aesthetic Direction for Editor):`);
+      sections.push(b.visualBrief || '');
+      sections.push('');
+
+      sections.push(`🎙️ SPOKEN TALKING SCRIPT (Read this verbatim, in ${b.primaryLanguage || 'Bangla + English (Banglish / Spoken)'}):`);
+      sections.push(b.voiceNote || '');
+      sections.push('');
+
+      if (b.masterVeoPrompt) {
+        sections.push(`🎥 GOOGLE VEO 3 SCENE PROMPTS (10-Second Chunks for Flow Agent):`);
+        sections.push(b.masterVeoPrompt);
+        sections.push('');
+      }
+
+      sections.push(`===== END OF FLOW AGENT BRIEF =====`);
+
+      const fullBrief = sections.join('\n');
+      navigator.clipboard.writeText(fullBrief);
+      if (window.showToast) window.showToast('📋 Complete Flow Agent Brief copied! Angle + Key Points + Visual Brief + Talking Script + VEO Prompts all bundled.', 'success');
     },
     copyAllPdfSlides() {
       if (!activeGeneratedBrief || !activeGeneratedBrief.masterPdfOutline) return;

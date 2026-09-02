@@ -706,7 +706,8 @@ router.post('/social-brief', requireAuth, async (req, res) => {
     topic,
     contentType,
     targetDuration,
-    targetDurationSeconds
+    targetDurationSeconds,
+    primaryLanguage
   } = req.body;
 
   const chanName = channel || 'Grow Bangla';
@@ -714,6 +715,7 @@ router.post('/social-brief', requireAuth, async (req, res) => {
   const plat = platform || 'YouTube';
   const type = contentType || 'Short-form Video';
   const postTopic = topic || `${category} on ${chanName}`;
+  const lang = primaryLanguage || 'Bangla + English (Banglish / Spoken)';
 
   // Parse duration
   let durationSec = 30;
@@ -778,21 +780,37 @@ router.post('/social-brief', requireAuth, async (req, res) => {
     { slide: 5, headline: `Save This Post! 📌`, copy: `Share with someone who needs this today. Follow for more!`, visualCue: 'Save icon and brand badge.' }
   ] : null;
 
+  const isBanglish = lang.toLowerCase().includes('bangla') || lang.toLowerCase().includes('bengali');
   const deterministicFallback = {
     contentType: type,
     targetDuration: `${durationSec}s`,
-    hook: `Stop making this mistake in ${category}! 🛑`,
-    angle: `Direct, high-retention breakdown tailored for ${chanName} audience on ${plat}.`,
-    keyPoints: [
-      `Break down the most common misconception in ${category}`,
-      `Provide an immediate, actionable correction with real examples`,
-      `Deliver a memorable mnemonic or takeaway rule`
-    ],
-    caption: `🔥 Quick ${category} breakdown for you!\n\nIf you've ever struggled with this, you are not alone. Here is the exact way to get it right every single time.\n\n📌 Save this post so you don't forget it!\n💬 Drop a comment below if you want Part 2!`,
+    primaryLanguage: lang,
+    hook: isBanglish
+      ? `${category}-e ei mistake korei thako! 🛑`
+      : `Stop making this mistake in ${category}! 🛑`,
+    angle: isBanglish
+      ? `${chanName} audience der jonno — ei common mistake-ta kothin bhabe affect kore career. Ekhoni fix koro.`
+      : `Direct, high-retention breakdown tailored for ${chanName} audience on ${plat}.`,
+    keyPoints: isBanglish
+      ? [
+          `${category}-e shobcheye common mistake-ta identify koro`,
+          `Real example diye immediately actionable correction dao`,
+          `Ekta memorable rule diye finish koro jeta matha-te thake`
+        ]
+      : [
+          `Break down the most common misconception in ${category}`,
+          `Provide an immediate, actionable correction with real examples`,
+          `Deliver a memorable mnemonic or takeaway rule`
+        ],
+    caption: isBanglish
+      ? `🔥 ${category} niye quick breakdown!\n\nEi mistake tumi-o koro? Jano na? Ekhane exactly kothay bhul hocche sheta dekhao.\n\n📌 Save kore rakho — pore kaje ashbe!\n💬 Comment koro Part 2 chailei!`
+      : `🔥 Quick ${category} breakdown for you!\n\nIf you've ever struggled with this, you are not alone. Here is the exact way to get it right every single time.\n\n📌 Save this post so you don't forget it!\n💬 Drop a comment below if you want Part 2!`,
     hashtags: `#${chanName.replace(/[^a-zA-Z0-9]/g, '')} #${category.replace(/[^a-zA-Z0-9]/g, '')} #GRO10X #ContentScale #${plat.replace(/[^a-zA-Z0-9]/g, '')}`,
     firstComment: `#${chanName.replace(/[^a-zA-Z0-9]/g, '')} #LearnDaily #Bangladesh #Viral2026 #DailyTips`,
-    visualBrief: `Facecam intro with high-contrast text overlay on top 20% of screen. Split-screen visual example with green checkmark vs red X.`,
-    voiceNote: `Start immediately with the hook: "90% of people get this wrong..." (0-3s). Demonstrate the common flaw (3-12s). Reveal the correct method with energy (12-25s). Strong CTA: "Follow for daily breakthroughs" (25-30s).`,
+    visualBrief: `Facecam intro with high-contrast text overlay on top 20% of screen. Split-screen visual example with green checkmark vs red X. Warm studio lighting.`,
+    voiceNote: isBanglish
+      ? `[0:00-0:03] Hook (Banglish): "${category} niye eta koro na — career shesh hoye jabe!" [0:03-0:12] Common mistake dekhao — candidate kemon kore answer korche wrong way-te. [0:12-0:25] Correct method show koro — exact phrase diye: "Amra eivabe bolbo..." [0:25-${durationSec <= 30 ? '0:30' : '0:60'}] Strong CTA: "Grow Bangla-te subscribe koro daily career tips-er jonno!"`
+      : `Start immediately with the hook: "90% of people get this wrong..." (0-3s). Demonstrate the common flaw (3-12s). Reveal the correct method with energy (12-25s). Strong CTA: "Follow for daily breakthroughs" (25-30s).`,
     veoScenes: fallbackScenes,
     masterVeoPrompt: fallbackScenes.map(s => `[${s.timeRange} - Scene ${s.scene}]: ${s.prompt}`).join('\n\n'),
     pdfOutline: fallbackPdfSlides,
@@ -849,17 +867,25 @@ Each item in "carouselSlides" MUST have:
     `• Content Type: "${type}"\n` +
     `• Target Platform: "${plat}"\n` +
     `• Target Duration: "${durationSec} seconds"\n` +
-    `• Topic / Concept: "${postTopic}"\n\n` +
+    `• Topic / Concept: "${postTopic}"\n` +
+    `• 🔴 PRIMARY LANGUAGE (MANDATORY): "${lang}"\n\n` +
+    `CRITICAL LANGUAGE ENFORCEMENT RULES:\n` +
+    `ALL content — hook, angle, keyPoints, caption, voiceNote, and talking script — MUST be written in "${lang}".\n` +
+    `For "Bangla + English (Banglish / Spoken)": Write the hook, angle, and key points in natural spoken Banglish (as a young Bangladeshi would naturally speak — mix of Bangla words and English structure). The voiceNote/talking script MUST be fully in spoken Banglish.\n` +
+    `For "Bangla / Bengali": Write primarily in standard Bengali script/romanized Bengali.\n` +
+    `For "English (Global B2B & Tech)": Write formally in English.\n` +
+    `NEVER generate the voiceNote/talking script in pure English if the language is not English.\n\n` +
     specificPromptInstructions +
     `\nSTANDARD REQUIRED FIELDS:\n` +
-    `1. "hook": Punchy, stop-the-scroll opening (5-8 words max, curiosity/emotion driven).\n` +
-    `2. "angle": 1-2 sentence compelling thesis of why the audience must watch/read this right now.\n` +
-    `3. "keyPoints": Array of 3 specific, high-value takeaways.\n` +
-    `4. "caption": Complete ready-to-post copy with emojis, line breaks, and clear CTA, formatted safely for ${plat}.\n` +
-    `5. "hashtags": 8-15 high-reach hashtags as a single string.\n` +
+    `1. "hook": Punchy, stop-the-scroll opening in ${lang} (5-8 words max, curiosity/emotion driven).\n` +
+    `2. "angle": 1-2 sentence compelling thesis in ${lang} of why the audience must watch/read this right now.\n` +
+    `3. "keyPoints": Array of 3 specific, high-value takeaways written in ${lang}.\n` +
+    `4. "caption": Complete ready-to-post copy in ${lang} with emojis, line breaks, and clear CTA, formatted safely for ${plat}.\n` +
+    `5. "hashtags": 8-15 high-reach hashtags as a single string (mix local + global for ${plat}).\n` +
     `6. "firstComment": Engagement hook and first-comment hashtag stack for Instagram/TikTok.\n` +
-    `7. "visualBrief": Clear overall visual direction (framing, color palette, props).\n` +
-    `8. "voiceNote": 30-60 second spoken narrative script with timestamps.\n\n` +
+    `7. "visualBrief": Clear overall visual direction (framing, color palette, props, CapCut style direction).\n` +
+    `8. "voiceNote": Full verbatim spoken talking script WITH timestamps, written ENTIRELY in ${lang}. This is what the host will read out loud on camera, word for word.\n` +
+    `9. "primaryLanguage": "${lang}" (include this in the JSON output)\n\n` +
     `Output STRICT JSON ONLY. Do NOT wrap in markdown code blocks.`;
 
   try {
@@ -887,6 +913,7 @@ Each item in "carouselSlides" MUST have:
       brief: {
         contentType: type,
         targetDuration: `${durationSec}s`,
+        primaryLanguage: lang,
         hook: parsed.hook || deterministicFallback.hook,
         angle: parsed.angle || deterministicFallback.angle,
         keyPoints: Array.isArray(parsed.keyPoints) ? parsed.keyPoints : deterministicFallback.keyPoints,
