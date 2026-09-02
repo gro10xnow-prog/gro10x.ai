@@ -4852,6 +4852,7 @@ Return strictly JSON: { "prompt": "...", "visualCue": "..." }`;
         }
       }
       document.getElementById('postModal').classList.remove('active');
+      activeGeneratedBrief = null;
       releaseFocus();
     },
     async handleFormSubmit(e) {
@@ -4903,6 +4904,18 @@ Return strictly JSON: { "prompt": "...", "visualCue": "..." }`;
           ? currentPostMediaUrls
           : (mediaUrl ? [mediaUrl] : []);
 
+        // Capture AI brief data if generated during this session
+        const briefSnapshot = activeGeneratedBrief ? {
+          veoPrompts: activeGeneratedBrief.veoScenes || activeGeneratedBrief.veoPrompts || null,
+          pdfOutline: activeGeneratedBrief.pdfOutline || null,
+          carouselSlides: activeGeneratedBrief.carouselSlides || null,
+          spokenScript: (Array.isArray(activeGeneratedBrief.veoScenes) && activeGeneratedBrief.veoScenes[0]?.voiceLine)
+            ? activeGeneratedBrief.veoScenes.map(s => `[${s.timeRange}] ${s.voiceLine}`).join('\n\n')
+            : (activeGeneratedBrief.spokenScript || activeGeneratedBrief.voiceNote || null),
+          hook: activeGeneratedBrief.hook || null,
+          ctaText: activeGeneratedBrief.ctaText || null
+        } : {};
+
         const payload = {
           title,
           caption,
@@ -4918,7 +4931,9 @@ Return strictly JSON: { "prompt": "...", "visualCue": "..." }`;
           clientId,
           clientName,
           assignedPublisher: window.CURRENT_USER?.name || window.APP_STATE?.user?.name || 'Content Team',
-          mediaUrls: resolvedMedia
+          mediaUrls: resolvedMedia,
+          brandSlug: activeBrandSlug || 'grow-bangla',
+          ...briefSnapshot
         };
 
         if (editId) {

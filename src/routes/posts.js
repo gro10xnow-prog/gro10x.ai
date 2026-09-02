@@ -29,11 +29,16 @@ function mapPost(p) {
   return {
     id: p.id,
     channel: p.channel || p.channel_name || 'Client Account',
+    brandSlug: p.brand_slug || p.brandSlug || null,
     contentCategory: p.content_category || p.contentCategory || 'General',
     contentType: p.content_type || p.contentType || 'Short-form Video',
     targetDuration: p.target_duration || p.targetDuration || '30s',
     veoPrompts: p.veo_prompts || p.veoPrompts || null,
     pdfOutline: p.pdf_outline || p.pdfOutline || null,
+    carouselSlides: p.carousel_slides || p.carouselSlides || null,
+    spokenScript: p.spoken_script || p.spokenScript || null,
+    hook: p.hook || null,
+    ctaText: p.cta_text || p.ctaText || null,
     firstComment: p.first_comment || p.firstComment || '',
     clientId: p.client_id || null,
     clientName: p.client_name || 'General Client',
@@ -337,6 +342,11 @@ router.post('/batch', requireAuth, async (req, res) => {
         target_duration: p.targetDuration || p.target_duration || '30s',
         veo_prompts: p.veoPrompts || p.veo_prompts || null,
         pdf_outline: p.pdfOutline || p.pdf_outline || null,
+        carousel_slides: p.carouselSlides || p.carousel_slides || null,
+        spoken_script: p.spokenScript || p.spoken_script || null,
+        hook: p.hook || null,
+        cta_text: p.ctaText || p.cta_text || null,
+        brand_slug: p.brandSlug || p.brand_slug || null,
         first_comment: p.firstComment || p.first_comment || '',
         client_id: p.clientId || p.client_id || '',
         client_name: p.clientName || p.client_name || 'General Client',
@@ -390,6 +400,11 @@ router.post('/', requireAuth, async (req, res) => {
       target_duration: req.body.targetDuration || req.body.target_duration || '30s',
       veo_prompts: req.body.veoPrompts || req.body.veo_prompts || null,
       pdf_outline: req.body.pdfOutline || req.body.pdf_outline || null,
+      carousel_slides: req.body.carouselSlides || req.body.carousel_slides || null,
+      spoken_script: req.body.spokenScript || req.body.spoken_script || null,
+      hook: req.body.hook || null,
+      cta_text: req.body.ctaText || req.body.cta_text || null,
+      brand_slug: req.body.brandSlug || req.body.brand_slug || null,
       first_comment: req.body.firstComment || req.body.first_comment || '',
       client_id: req.body.clientId || req.body.client_id || '',
       client_name: req.body.clientName || req.body.client_name || 'General Client',
@@ -441,6 +456,11 @@ router.put('/:id', requireAuth, requirePostOwnership, async (req, res) => {
     if (req.body.targetDuration !== undefined) updates.target_duration = req.body.targetDuration;
     if (req.body.veoPrompts !== undefined) updates.veo_prompts = req.body.veoPrompts;
     if (req.body.pdfOutline !== undefined) updates.pdf_outline = req.body.pdfOutline;
+    if (req.body.carouselSlides !== undefined) updates.carousel_slides = req.body.carouselSlides;
+    if (req.body.spokenScript !== undefined) updates.spoken_script = req.body.spokenScript;
+    if (req.body.hook !== undefined) updates.hook = req.body.hook;
+    if (req.body.ctaText !== undefined) updates.cta_text = req.body.ctaText;
+    if (req.body.brandSlug !== undefined) updates.brand_slug = req.body.brandSlug;
     if (req.body.firstComment !== undefined) updates.first_comment = req.body.firstComment;
     if (req.body.caption !== undefined) updates.caption = req.body.caption;
     if (req.body.hashtags !== undefined) updates.hashtags = req.body.hashtags;
