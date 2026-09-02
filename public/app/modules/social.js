@@ -49,6 +49,14 @@ window.APP_MODULES.social = async function(container) {
   let isGeneratingCalendar = false;
   let isUploadingAnalytics = false;
 
+  // Topic Intelligence & Multi-modal State
+  let activeTopicInputMode = 'type';
+  let speechRecognitionInstance = null;
+  let isVoiceRecordingActive = false;
+  let activeSuggestedTopics = [];
+  let currentSuggestedIndex = 0;
+  let activeReferenceAsset = null;
+
   const CHANNELS = [
     {
       id: 'grow-bangla',
@@ -401,15 +409,142 @@ window.APP_MODULES.social = async function(container) {
               </div>
             </div>
 
-            <!-- Post Title / Topic + AI Button -->
-            <div class="form-group">
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.3rem;">
-                <label class="form-label" style="margin:0;">Post Title / Content Topic *</label>
-                <button type="button" class="btn-primary btn-sm" id="btnAiBrief" style="font-size:0.75rem; padding:0.25rem 0.65rem; background:linear-gradient(135deg, #a855f7, #6366f1); border:none;" onclick="window.SOCIAL_MODULE.generateAIBrief()">
-                  ✨ Generate AI Brief & Prompts
+            <!-- Multi-Modal Topic Intelligence Input Panel -->
+            <div class="form-group" style="background:rgba(255,255,255,0.02); border:1px solid rgba(168,85,247,0.25); border-radius:12px; padding:0.9rem 1rem; display:flex; flex-direction:column; gap:0.65rem;">
+              
+              <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+                <div style="display:flex; align-items:center; gap:0.5rem;">
+                  <label class="form-label" style="margin:0; font-weight:800; color:#fff; font-size:0.84rem;">
+                    💡 Topic & Strategic Concept *
+                  </label>
+                  <span style="font-size:0.65rem; padding:0.12rem 0.45rem; border-radius:12px; background:rgba(168,85,247,0.18); color:#c084fc; font-weight:700;">Multi-Modal</span>
+                </div>
+                
+                <div style="display:flex; gap:0.35rem; align-items:center;">
+                  <button type="button" class="btn-ghost btn-sm" id="btnFindTopic" style="font-size:0.72rem; padding:0.22rem 0.6rem; color:#38bdf8; border:1px solid rgba(56,189,248,0.3); border-radius:8px;" onclick="window.SOCIAL_MODULE.findMeTopic()">
+                    🎯 Find Me a Topic
+                  </button>
+                  <button type="button" class="btn-primary btn-sm" id="btnAiBrief" style="font-size:0.75rem; padding:0.25rem 0.7rem; background:linear-gradient(135deg, #a855f7, #6366f1); border:none;" onclick="window.SOCIAL_MODULE.generateAIBrief()">
+                    ✨ Generate AI Brief & Prompts
+                  </button>
+                </div>
+              </div>
+
+              <!-- Mode Switcher Tabs -->
+              <div style="display:flex; background:rgba(0,0,0,0.35); padding:0.2rem; border-radius:8px; gap:0.3rem; border:1px solid var(--border-subtle);">
+                <button type="button" id="tabModeType" class="btn-sm btn-primary" style="flex:1; font-size:0.72rem; padding:0.25rem 0.45rem; text-align:center;" onclick="window.SOCIAL_MODULE.switchTopicInputMode('type')">
+                  ✍️ Type Concept
+                </button>
+                <button type="button" id="tabModeVoice" class="btn-sm btn-ghost" style="flex:1; font-size:0.72rem; padding:0.25rem 0.45rem; text-align:center;" onclick="window.SOCIAL_MODULE.switchTopicInputMode('voice')">
+                  🎤 Speak Idea (Voice)
+                </button>
+                <button type="button" id="tabModeRef" class="btn-sm btn-ghost" style="flex:1; font-size:0.72rem; padding:0.25rem 0.45rem; text-align:center;" onclick="window.SOCIAL_MODULE.switchTopicInputMode('reference')">
+                  📎 Upload Reference (50MB)
                 </button>
               </div>
-              <input type="text" id="spTitle" class="input-text" placeholder="e.g. 5 Common Pronunciation Mistakes Bangalis Make" required>
+
+              <!-- Sub-View A: Type Input -->
+              <div id="topicModeTypeContainer" style="display:flex; flex-direction:column; gap:0.4rem;">
+                <input type="text" id="spTitle" class="input-text" placeholder="e.g. Corporate Interview-e 'Tell Me About Yourself'-এর সঠিক ৩টি ফর্মুলা" required oninput="window.SOCIAL_MODULE.onTopicInputChange(this)">
+              </div>
+
+              <!-- Sub-View B: Voice Capture -->
+              <div id="topicModeVoiceContainer" style="display:none; flex-direction:column; align-items:center; gap:0.6rem; padding:0.8rem; background:rgba(0,0,0,0.25); border-radius:10px; border:1px dashed rgba(168,85,247,0.4); text-align:center;">
+                <div id="voiceStatusIndicator" style="display:flex; align-items:center; gap:0.5rem; font-size:0.78rem; color:var(--text-muted);">
+                  <span id="voicePulseDot" style="width:10px; height:10px; border-radius:50%; background:#6b7280; display:inline-block;"></span>
+                  <span id="voiceStatusText">Press the microphone and speak your concept in Bangla, Banglish, or English</span>
+                </div>
+                <div style="display:flex; gap:0.6rem; align-items:center;">
+                  <button type="button" id="btnToggleVoice" class="btn-primary btn-sm" style="font-size:0.8rem; padding:0.4rem 1.2rem; background:linear-gradient(135deg, #ef4444, #dc2626); border:none; font-weight:800;" onclick="window.SOCIAL_MODULE.toggleVoiceRecording()">
+                    🎙️ Start Recording Voice
+                  </button>
+                </div>
+                <div style="font-size:0.7rem; color:var(--text-dim);">Live audio is transcribed directly into your post topic field using Chrome Speech AI.</div>
+              </div>
+
+              <!-- Sub-View C: Reference Upload (Up to 50MB) -->
+              <div id="topicModeRefContainer" style="display:none; flex-direction:column; gap:0.6rem;">
+                <div id="topicRefDropzone" style="border:2px dashed rgba(56,189,248,0.4); border-radius:10px; padding:1.2rem; text-align:center; background:rgba(0,0,0,0.25); cursor:pointer; transition:all 0.2s ease;"
+                     onclick="document.getElementById('spRefFileInput').click()"
+                     ondragover="event.preventDefault(); this.style.borderColor='#10b981'; this.style.background='rgba(16,185,129,0.08)';"
+                     ondragleave="event.preventDefault(); this.style.borderColor='rgba(56,189,248,0.4)'; this.style.background='rgba(0,0,0,0.25)';"
+                     ondrop="event.preventDefault(); this.style.borderColor='rgba(56,189,248,0.4)'; this.style.background='rgba(0,0,0,0.25)'; const f = event.dataTransfer.files && event.dataTransfer.files[0]; if(f) window.SOCIAL_MODULE.handleReferenceUpload(f);">
+                  <input type="file" id="spRefFileInput" style="display:none;" accept="image/*,.pdf,.doc,.docx,.txt,.md" onchange="window.SOCIAL_MODULE.handleReferenceUpload(this.files && this.files[0])">
+                  
+                  <div id="refDefaultPrompt">
+                    <div style="font-size:1.6rem; margin-bottom:0.2rem;">📎</div>
+                    <div style="font-weight:800; font-size:0.85rem; color:#fff;">Drop Screenshot, Blueprint PDF, Document or Slide</div>
+                    <div style="font-size:0.72rem; color:var(--text-dim); margin-top:0.2rem;">Supports PDF, PNG, JPG, DOCX, TXT up to <strong>50MB</strong>. Automatically analyzes visual charts and extracts topic & angle.</div>
+                  </div>
+
+                  <!-- Reference Loading Progress Bar -->
+                  <div id="refUploadProgressBox" style="display:none; flex-direction:column; align-items:center; gap:0.5rem; padding:0.4rem 0;">
+                    <div style="display:flex; justify-content:space-between; width:100%; max-width:340px; font-size:0.75rem; font-weight:800;">
+                      <span id="refProgressStep" style="color:#38bdf8;">🔍 Reading Document & Extracting Core Theme...</span>
+                      <span id="refProgressPct" style="color:#10b981;">20%</span>
+                    </div>
+                    <div style="width:100%; max-width:340px; height:6px; background:rgba(255,255,255,0.1); border-radius:10px; overflow:hidden;">
+                      <div id="refProgressBar" style="width:20%; height:100%; background:linear-gradient(90deg, #38bdf8, #10b981); transition:width 0.2s ease;"></div>
+                    </div>
+                  </div>
+
+                </div>
+
+                <!-- Reference Ingestion Result Pill -->
+                <div id="refResultPill" style="display:none; align-items:center; justify-content:space-between; background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.3); border-radius:8px; padding:0.5rem 0.75rem; font-size:0.75rem;">
+                  <div style="display:flex; align-items:center; gap:0.5rem; overflow:hidden;">
+                    <span>📄</span>
+                    <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                      <strong id="refFileNameLabel" style="color:#fff;">document.pdf</strong>
+                      <span id="refMetaLabel" style="color:var(--text-dim); margin-left:0.3rem;">(Extracted Topic & Angle)</span>
+                    </div>
+                  </div>
+                  <button type="button" class="btn-ghost btn-sm" style="font-size:0.68rem; padding:0.15rem 0.45rem; color:#f87171;" onclick="window.SOCIAL_MODULE.clearReferenceAsset()">
+                    ✕ Remove
+                  </button>
+                </div>
+
+              </div>
+
+              <!-- Smart Topic Suggestion Card (Populated when Find Me a Topic is clicked) -->
+              <div id="topicSuggestionCard" style="display:none; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.35); border-radius:10px; padding:0.85rem; flex-direction:column; gap:0.5rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <div style="display:flex; align-items:center; gap:0.4rem; font-size:0.78rem; font-weight:800; color:#38bdf8;">
+                    <span>💡 Smart Suggested Topic</span>
+                    <span id="suggIndexBadge" style="font-size:0.68rem; background:rgba(56,189,248,0.2); color:#e0f2fe; padding:0.1rem 0.4rem; border-radius:10px;">1 of 5</span>
+                  </div>
+                  <button type="button" class="btn-ghost btn-sm" style="font-size:0.7rem; color:var(--text-dim);" onclick="document.getElementById('topicSuggestionCard').style.display='none'">✕</button>
+                </div>
+                
+                <div id="suggTopicTitle" style="font-weight:900; font-size:0.92rem; color:#fff; font-family:var(--font-heading);">
+                  Topic Title...
+                </div>
+
+                <div id="suggRationale" style="font-size:0.72rem; color:#cbd5e1; line-height:1.35; background:rgba(0,0,0,0.25); padding:0.4rem 0.6rem; border-radius:6px;">
+                  Rationale explanation...
+                </div>
+
+                <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:0.2rem;">
+                  <button type="button" class="btn-secondary btn-sm" style="font-size:0.72rem; padding:0.25rem 0.65rem;" onclick="window.SOCIAL_MODULE.cycleNextTopicSuggestion()">
+                    🔄 Suggest Another
+                  </button>
+                  <button type="button" class="btn-primary btn-sm" style="font-size:0.72rem; padding:0.25rem 0.75rem; background:#10b981; border:none; font-weight:800;" onclick="window.SOCIAL_MODULE.acceptSuggestedTopic()">
+                    ✅ Use This Topic
+                  </button>
+                </div>
+              </div>
+
+              <!-- Supporting Strategic Angle Field -->
+              <div style="display:flex; flex-direction:column; gap:0.3rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <label class="form-label" style="margin:0; font-size:0.74rem; color:#a78bfa; font-weight:700;">
+                    🎯 Strategic Angle / Direction <span style="font-weight:400; color:var(--text-dim);">(Optional)</span>
+                  </label>
+                  <span style="font-size:0.68rem; color:var(--text-dim);">Guides AI prompt tone & hook psychology</span>
+                </div>
+                <input type="text" id="spAngle" class="input-text" style="font-size:0.78rem; padding:0.38rem 0.65rem;" placeholder="e.g. Show why common interview advice fails and give the contrarian 3-step fix">
+              </div>
+
             </div>
 
             <!-- AI Brief Result Panel (Collapsible) -->
@@ -2741,6 +2876,8 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
       const contentType = document.getElementById('spContentType')?.value || 'Short-form Video';
       const targetDuration = document.getElementById('spTargetDuration')?.value || '60s';
       const topic = document.getElementById('spTitle')?.value || '';
+      const angle = document.getElementById('spAngle')?.value || '';
+      const referenceContext = activeReferenceAsset ? JSON.stringify(activeReferenceAsset) : null;
 
       // Resolve primary language from active brand/channel context
       const activeBrand = (socialBrandsData || []).find(b => b.slug === channelKey || b.id === channelKey ||
@@ -2812,6 +2949,8 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
           contentType,
           targetDuration,
           topic,
+          angle,
+          referenceContext,
           primaryLanguage
         });
 
@@ -3262,6 +3401,295 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
       } catch (err) {
         if (window.showToast) window.showToast('Delete failed: ' + err.message, 'error');
       }
+    },
+    switchTopicInputMode(mode) {
+      activeTopicInputMode = mode;
+      const tabType = document.getElementById('tabModeType');
+      const tabVoice = document.getElementById('tabModeVoice');
+      const tabRef = document.getElementById('tabModeRef');
+
+      const cType = document.getElementById('topicModeTypeContainer');
+      const cVoice = document.getElementById('topicModeVoiceContainer');
+      const cRef = document.getElementById('topicModeRefContainer');
+
+      if (tabType) tabType.className = mode === 'type' ? 'btn-sm btn-primary' : 'btn-sm btn-ghost';
+      if (tabVoice) tabVoice.className = mode === 'voice' ? 'btn-sm btn-primary' : 'btn-sm btn-ghost';
+      if (tabRef) tabRef.className = mode === 'reference' ? 'btn-sm btn-primary' : 'btn-sm btn-ghost';
+
+      if (cType) cType.style.display = (mode === 'type' || mode === 'voice' || mode === 'reference') ? 'flex' : 'none';
+      if (cVoice) cVoice.style.display = mode === 'voice' ? 'flex' : 'none';
+      if (cRef) cRef.style.display = mode === 'reference' ? 'flex' : 'none';
+    },
+    onTopicInputChange(input) {
+      const val = (input?.value || '').trim();
+      if (val.length > 5) {
+        const card = document.getElementById('topicSuggestionCard');
+        if (card && card.style.display !== 'none') {
+          card.style.display = 'none';
+        }
+      }
+    },
+    toggleVoiceRecording() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        if (window.showToast) window.showToast('⚠️ Voice recognition is not supported in this browser. Please use Chrome.', 'error');
+        return;
+      }
+
+      const pulseDot = document.getElementById('voicePulseDot');
+      const statusText = document.getElementById('voiceStatusText');
+      const btn = document.getElementById('btnToggleVoice');
+      const titleInput = document.getElementById('spTitle');
+
+      if (isVoiceRecordingActive) {
+        if (speechRecognitionInstance) {
+          try { speechRecognitionInstance.stop(); } catch (e) {}
+        }
+        isVoiceRecordingActive = false;
+        if (pulseDot) { pulseDot.style.background = '#6b7280'; pulseDot.style.animation = 'none'; }
+        if (statusText) statusText.textContent = 'Voice capture stopped. You can edit the text above.';
+        if (btn) {
+          btn.innerHTML = '🎙️ Start Recording Voice';
+          btn.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+        }
+        return;
+      }
+
+      try {
+        const recog = new SpeechRecognition();
+        speechRecognitionInstance = recog;
+        recog.continuous = true;
+        recog.interimResults = true;
+
+        const channelKey = document.getElementById('spChannel')?.value || 'grow-bangla';
+        const activeBrand = (socialBrandsData || []).find(b => b.slug === channelKey || b.id === channelKey ||
+          (b.channels || []).some(c => c.id === channelKey || c.slug === channelKey));
+        const activeChannel = activeBrand && (activeBrand.channels || []).find(c => c.id === channelKey || c.slug === channelKey);
+        const lang = (activeChannel && activeChannel.primaryLanguage) || (activeBrand && activeBrand.primaryLanguage) || '';
+
+        if (lang.includes('Bangla') || lang.includes('Bengali')) {
+          recog.lang = 'bn-BD';
+        } else {
+          recog.lang = 'en-US';
+        }
+
+        recog.onstart = () => {
+          isVoiceRecordingActive = true;
+          if (pulseDot) { pulseDot.style.background = '#ef4444'; pulseDot.style.animation = 'pulse 1s infinite'; }
+          if (statusText) statusText.textContent = '🔴 Listening... speak your concept in Bangla / English';
+          if (btn) {
+            btn.innerHTML = '⏹️ Stop Recording';
+            btn.style.background = '#374151';
+          }
+          if (window.showToast) window.showToast('🎙️ Microphone active! Speak your concept...', 'info');
+        };
+
+        recog.onresult = (event) => {
+          let interimTranscript = '';
+          let finalTranscript = '';
+          for (let i = event.resultIndex; i < event.results.length; ++i) {
+            if (event.results[i].isFinal) {
+              finalTranscript += event.results[i][0].transcript;
+            } else {
+              interimTranscript += event.results[i][0].transcript;
+            }
+          }
+          const spoken = (finalTranscript || interimTranscript).trim();
+          if (titleInput && spoken) {
+            titleInput.value = spoken;
+          }
+        };
+
+        recog.onerror = (event) => {
+          console.warn('Speech recognition error:', event.error);
+          isVoiceRecordingActive = false;
+          if (pulseDot) { pulseDot.style.background = '#6b7280'; pulseDot.style.animation = 'none'; }
+          if (statusText) statusText.textContent = `Microphone notice: ${event.error}`;
+          if (btn) {
+            btn.innerHTML = '🎙️ Start Recording Voice';
+            btn.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+          }
+        };
+
+        recog.onend = () => {
+          isVoiceRecordingActive = false;
+          if (pulseDot) { pulseDot.style.background = '#6b7280'; pulseDot.style.animation = 'none'; }
+          if (statusText) statusText.textContent = 'Recording finished. Ready to generate brief!';
+          if (btn) {
+            btn.innerHTML = '🎙️ Start Recording Voice';
+            btn.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+          }
+        };
+
+        recog.start();
+      } catch (err) {
+        console.error('Speech start error:', err);
+        if (window.showToast) window.showToast('Microphone error: ' + err.message, 'error');
+      }
+    },
+    async findMeTopic() {
+      const channelKey = document.getElementById('spChannel')?.value || 'grow-bangla';
+      const activeBrand = (socialBrandsData || []).find(b => b.slug === channelKey || b.id === channelKey ||
+        (b.channels || []).some(c => c.id === channelKey || c.slug === channelKey)) || socialBrandsData[0];
+      const activeChannel = activeBrand && (activeBrand.channels || []).find(c => c.id === channelKey || c.slug === channelKey) || activeBrand?.channels?.[0];
+
+      const contentType = document.getElementById('spContentType')?.value || 'Short-form Video';
+      const platform = document.getElementById('spPlatform')?.value || 'YouTube';
+
+      const btn = document.getElementById('btnFindTopic');
+      if (btn) { btn.disabled = true; btn.textContent = '🔍 Finding...'; }
+
+      if (window.showToast) window.showToast('🎯 Scanning channel knowledge base & monthly campaign focus...', 'info');
+
+      try {
+        const res = await APP_API.post('/ai/suggest-topic', {
+          brandSlug: activeBrand?.slug || 'grow-bangla',
+          channelId: activeChannel?.id || 'gb-youtube',
+          contentType,
+          platform,
+          month: selectedPlanMonth,
+          year: selectedPlanYear
+        });
+
+        if (res && res.success && Array.isArray(res.suggestions) && res.suggestions.length > 0) {
+          activeSuggestedTopics = res.suggestions;
+          currentSuggestedIndex = 0;
+          this.renderSuggestedTopicCard();
+        } else {
+          throw new Error(res?.error || 'No suggestions available');
+        }
+      } catch (err) {
+        console.error('Find Topic Error:', err);
+        if (window.showToast) window.showToast('Topic suggestion notice: ' + err.message, 'error');
+      } finally {
+        if (btn) { btn.disabled = false; btn.textContent = '🎯 Find Me a Topic'; }
+      }
+    },
+    renderSuggestedTopicCard() {
+      const card = document.getElementById('topicSuggestionCard');
+      const titleEl = document.getElementById('suggTopicTitle');
+      const ratEl = document.getElementById('suggRationale');
+      const badgeEl = document.getElementById('suggIndexBadge');
+
+      if (!card || activeSuggestedTopics.length === 0) return;
+
+      const item = activeSuggestedTopics[currentSuggestedIndex];
+      card.style.display = 'flex';
+      if (titleEl) titleEl.textContent = item.topic;
+      if (ratEl) ratEl.innerHTML = `📌 <strong>Strategic Rationale:</strong> ${escapeHTML(item.rationale)} ${item.hook ? `<br>🎯 <em>Hook: "${escapeHTML(item.hook)}"</em>` : ''}`;
+      if (badgeEl) badgeEl.textContent = `${currentSuggestedIndex + 1} of ${activeSuggestedTopics.length}`;
+    },
+    cycleNextTopicSuggestion() {
+      if (activeSuggestedTopics.length === 0) return;
+      currentSuggestedIndex = (currentSuggestedIndex + 1) % activeSuggestedTopics.length;
+      this.renderSuggestedTopicCard();
+    },
+    acceptSuggestedTopic() {
+      if (activeSuggestedTopics.length === 0) return;
+      const item = activeSuggestedTopics[currentSuggestedIndex];
+      const titleInput = document.getElementById('spTitle');
+      const angleInput = document.getElementById('spAngle');
+      const card = document.getElementById('topicSuggestionCard');
+
+      if (titleInput) titleInput.value = item.topic;
+      if (angleInput && item.rationale) angleInput.value = item.rationale;
+      if (card) card.style.display = 'none';
+
+      this.switchTopicInputMode('type');
+      if (window.showToast) window.showToast(`✅ Topic applied: "${item.topic.slice(0, 35)}..."`, 'success');
+    },
+    async handleReferenceUpload(file) {
+      if (!file) return;
+
+      if (file.size > 50 * 1024 * 1024) {
+        if (window.showToast) window.showToast('⚠️ Reference file exceeds 50MB maximum limit.', 'error');
+        return;
+      }
+
+      const promptBox = document.getElementById('refDefaultPrompt');
+      const progressBox = document.getElementById('refUploadProgressBox');
+      const pctEl = document.getElementById('refProgressPct');
+      const barEl = document.getElementById('refProgressBar');
+      const stepEl = document.getElementById('refProgressStep');
+      const pillEl = document.getElementById('refResultPill');
+      const fileNameEl = document.getElementById('refFileNameLabel');
+      const metaLabelEl = document.getElementById('refMetaLabel');
+
+      if (promptBox) promptBox.style.display = 'none';
+      if (progressBox) progressBox.style.display = 'flex';
+
+      let currentPct = 20;
+      const interval = setInterval(() => {
+        if (currentPct < 90) {
+          currentPct += Math.floor(Math.random() * 15) + 8;
+          if (currentPct > 90) currentPct = 90;
+          if (pctEl) pctEl.textContent = `${currentPct}%`;
+          if (barEl) barEl.style.width = `${currentPct}%`;
+          if (stepEl) {
+            if (currentPct < 50) stepEl.textContent = '🔍 Reading document & extracting key concepts...';
+            else stepEl.textContent = '🧠 Analyzing visual charts & formatting strategic angle...';
+          }
+        }
+      }, 200);
+
+      if (window.showToast) window.showToast(`📎 Ingesting reference: ${file.name} (up to 50MB)...`, 'info');
+
+      try {
+        const formData = new FormData();
+        formData.append('referenceFile', file);
+
+        const token = localStorage.getItem('token') || '';
+        const res = await fetch('/api/ai/analyze-reference', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+          body: formData
+        });
+
+        const json = await res.json();
+        clearInterval(interval);
+
+        if (pctEl) pctEl.textContent = '100%';
+        if (barEl) barEl.style.width = '100%';
+
+        if (json && json.success) {
+          activeReferenceAsset = json;
+
+          const titleInput = document.getElementById('spTitle');
+          const angleInput = document.getElementById('spAngle');
+
+          if (titleInput && json.suggestedTopic) titleInput.value = json.suggestedTopic;
+          if (angleInput && json.angle) angleInput.value = json.angle;
+
+          if (progressBox) progressBox.style.display = 'none';
+          if (pillEl) pillEl.style.display = 'flex';
+          if (fileNameEl) fileNameEl.textContent = json.fileName;
+          if (metaLabelEl) metaLabelEl.textContent = `(${json.visualSummary || 'Analyzed'})`;
+
+          if (window.showToast) window.showToast('✨ Reference analyzed! Topic & Strategic Angle applied.', 'success');
+        } else {
+          throw new Error(json?.error || 'Analysis failed');
+        }
+      } catch (err) {
+        clearInterval(interval);
+        console.error('Reference analysis error:', err);
+        if (window.showToast) window.showToast('Reference notice: ' + err.message, 'error');
+        if (progressBox) progressBox.style.display = 'none';
+        if (promptBox) promptBox.style.display = 'block';
+      }
+    },
+    clearReferenceAsset() {
+      activeReferenceAsset = null;
+      const pillEl = document.getElementById('refResultPill');
+      const promptBox = document.getElementById('refDefaultPrompt');
+      const fileInput = document.getElementById('spRefFileInput');
+
+      if (pillEl) pillEl.style.display = 'none';
+      if (promptBox) promptBox.style.display = 'block';
+      if (fileInput) fileInput.value = '';
+
+      if (window.showToast) window.showToast('Reference asset removed.', 'info');
     }
   };
 

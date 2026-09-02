@@ -1,6 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const https = require('https');
+const fs = require('fs');
+const path = require('path');
+const multer = require('multer');
+const upload = multer({ limits: { fileSize: 50 * 1024 * 1024 } }); // 50MB file size limit
+let pdfParse = null;
+try { pdfParse = require('pdf-parse'); } catch (e) { console.warn('pdf-parse module load warning:', e.message); }
 const { requireAuth } = require('../middleware/auth');
 const { requireManager } = require('../middleware/rbac');
 const { getFirstName } = require('../utils/name');
@@ -704,6 +710,8 @@ router.post('/social-brief', requireAuth, async (req, res) => {
     contentCategory,
     platform,
     topic,
+    angle,
+    referenceContext,
     contentType,
     targetDuration,
     targetDurationSeconds,
@@ -1478,6 +1486,315 @@ router.post('/music-lrc', requireAuth, async (req, res) => {
   } catch (err) {
     console.warn('[Music LRC fallback]:', err.message);
     return res.json({ success: true, data: deterministicResponse, generatedBy: 'deterministic_template' });
+  }
+});
+
+// POST /api/ai/suggest-topic — Context-Aware Topic Suggester
+router.post('/suggest-topic', requireAuth, async (req, res) => {
+  const { brandSlug, channelId, contentType, platform, month, year } = req.body;
+
+  try {
+    const STATE_FILE = path.join(__dirname, '../../data/social_brands_state.json');
+    let state = { brands: [] };
+    if (fs.existsSync(STATE_FILE)) {
+      state = JSON.parse(fs.readFileSync(STATE_FILE, 'utf8'));
+    }
+
+    const brand = (state.brands || []).find(b => b.slug === brandSlug || b.id === brandSlug) || state.brands[0];
+    const channel = brand && (brand.channels || []).find(c => c.id === channelId || c.slug === channelId) || (brand?.channels?.[0]);
+
+    const m = month || 'September';
+    const y = year || 2026;
+    const monthIndex = new Date(`${m} 1, ${y}`).getMonth();
+    const monthKey = `${y}-${String(monthIndex + 1).padStart(2, '0')}`;
+
+    // Collect all done topic titles across all channel calendars to avoid duplicate ideas
+    const doneTopics = new Set();
+    if (channel && channel.calendars) {
+      for (const cal of Object.values(channel.calendars)) {
+        if (Array.isArray(cal.planItems)) {
+          for (const item of cal.planItems) {
+            const t = (item.topicIdea || item.title || '').trim().toLowerCase();
+            if (t) doneTopics.add(t);
+          }
+        }
+      }
+    }
+
+    // Monthly Focus context
+    const focus = brand?.monthlyFocus?.[monthKey] || {};
+    const thesis = focus.thesis || '';
+    const campaignTags = Array.isArray(focus.campaignTags) ? focus.campaignTags : [];
+    const focusKeywords = (thesis + ' ' + campaignTags.join(' ')).toLowerCase().split(/[\s,·/]+/).filter(w => w.length > 2);
+
+    // Curated topic banks per brand archetype
+    const brandSlugLower = (brand?.slug || '').toLowerCase();
+    const isGb = brandSlugLower.includes('grow-bangla') || (channel?.name || '').toLowerCase().includes('bangla');
+    const isPilutics = brandSlugLower.includes('pilutics');
+    const isBongHits = brandSlugLower.includes('bong');
+    const isGro10x = brandSlugLower.includes('gro10x');
+
+    let candidatePool = [];
+
+    if (isGb) {
+      candidatePool = [
+        {
+          topic: "Corporate Job Interview-e 'Tell Me About Yourself'-এর সঠিক ৩টি ফর্মুলা",
+          category: "Job Interview & Spoken English",
+          hook: "ইন্টারভিউতে 'Tell Me About Yourself' জিজ্ঞেস করলে এই ৩টি লাইন কখনোই বলবে না! 🛑",
+          rationale: "Top-converting interview pillar with proven retention in Bangladesh job seeker demographic.",
+          contentType: contentType || "Short-form Video"
+        },
+        {
+          topic: "HR যখন Salary Expectation জিজ্ঞেস করে — ৩টি উইনিং কাউন্টার-অফার স্ক্রিপ্ট",
+          category: "Salary & Career Growth",
+          hook: "HR যখন সেলারি এক্সপেক্টেশন জিজ্ঞেস করে, সরাসরি কোনো নাম্বার বলবে না! 🛑",
+          rationale: "High-intent negotiation framework maximizing freshers' starting salary.",
+          contentType: contentType || "Short-form Video"
+        },
+        {
+          topic: "৫টি ইংরেজি শব্দের মারাত্মক ভুল উচ্চারণ যা সবাই করে (Silent Letters)",
+          category: "Spoken English & Pronunciation",
+          hook: "এই ৫টি ইংরেজি শব্দের ভুল উচ্চারণ আজই বন্ধ করো! 🛑",
+          rationale: "Broad reach viral lesson targeting everyday spoken English mistakes.",
+          contentType: contentType || "Short-form Video"
+        },
+        {
+          topic: "Corporate Email Writing: ৫টি উইনিং ওপেনার যা ইনস্ট্যান্ট রিপ্লাই এনে দেয়",
+          category: "Business Communication",
+          hook: "কর্পোরেট ইমেইলে 'I am writing to inform you' আর লিখবে না! 🛑",
+          rationale: "Actionable executive communication toolkit for young professionals.",
+          contentType: contentType || "Short-form Video"
+        },
+        {
+          topic: "LinkedIn Profile Optimization: জব অফার ইনবক্সে আনার ৩টি সিক্রেট সেটিংস",
+          category: "Career & Tech Skills",
+          hook: "সিভি ড্রপ করে বসে আছো? LinkedIn-এর এই ৩টি সেটিংস অন না করলে রিক্রুটাররা খুঁজে পাবে না! 🛑",
+          rationale: "High-value lead magnet and direct profile transformation guide.",
+          contentType: contentType || "Short-form Video"
+        },
+        {
+          topic: "BDJobs vs LinkedIn: কোন প্ল্যাটফর্মে সিভি কীভাবে পাঠালে ইন্টারভিউ কল আসবে?",
+          category: "Verified Job Tracks",
+          hook: "একই সিভি সব জবে পাঠাচ্ছো? কেন তোমার ইন্টারভিউ কল আসে না জেনে নাও! 🛑",
+          rationale: "Practical comparison addressing #1 fresher pain point in Bangladesh.",
+          contentType: contentType || "Short-form Video"
+        }
+      ];
+    } else if (isPilutics) {
+      candidatePool = [
+        {
+          topic: "Middle East Strategic Trade Corridor & The Global Supply Chain Shift",
+          category: "Geopolitical Strategy",
+          hook: "বিশ্ব বাণিজ্যের সবচেয়ে গুরুত্বপূর্ণ সমুদ্রপথে এমন এক সংকট তৈরি হচ্ছে যা সবার হিসাব বদলে দিচ্ছে!",
+          rationale: "Deep analytical investigation into maritime security and energy corridors.",
+          contentType: contentType || "Short-form Video"
+        },
+        {
+          topic: "Red Sea Maritime Crisis: How Global Shipping Routes Are Being Redrawn",
+          category: "Defense & Shipping",
+          hook: "লোহিত সাগরে চলমান সংঘাতের কারণে বিশ্ব অর্থনীতিতে প্রতিদিন কত কোটি ডলার ক্ষতি হচ্ছে?",
+          rationale: "Data-grounded geopolitical breakdown with satellite telemetry visuals.",
+          contentType: contentType || "Short-form Video"
+        },
+        {
+          topic: "Dollar Dominance vs BRICS Currency Expansion in 2026",
+          category: "Global Macroeconomics",
+          hook: "ডলারের বিকল্প মুদ্রা কি সত্যি বিশ্ব বাণিজ্যে আধিপত্য বিস্তার করতে পারবে?",
+          rationale: "Macroeconomic power balance analysis for strategic viewers.",
+          contentType: contentType || "Short-form Video"
+        }
+      ];
+    } else if (isBongHits) {
+      candidatePool = [
+        {
+          topic: "বাঙালির প্রথম প্রেম ও ক্রাশের ৫টি কমন ট্র্যাজেডি",
+          category: "Comedy & Youth Culture",
+          hook: "কোচিং সেন্টারের ক্রাশকে চিঠি দিতে গিয়ে ধরা খাওয়ার সেই ঐতিহাসিক মুহূর্ত! 😂",
+          rationale: "High-velocity relatable Bengali comedy skit with mass shareability.",
+          contentType: contentType || "Short-form Video"
+        },
+        {
+          topic: "মেস লাইফের রান্নার বিচার সভা ও আলু সেদ্ধ না হওয়ার রহস্য",
+          category: "Campus & Mess Nostalgia",
+          hook: "মেসে যেদিন রান্না খারাপ হয়, সেদিন মেম্বারদের রিয়াকশন কেমন হয় দেখুন! 😂",
+          rationale: "Campus mess life nostalgia driving community commentary.",
+          contentType: contentType || "Short-form Video"
+        }
+      ];
+    } else {
+      candidatePool = [
+        {
+          topic: "How We Build & Ship Full-Stack AI MVPs in 48 Hours with Node.js & Supabase",
+          category: "AI SaaS Infrastructure",
+          hook: "Stop waiting months for agency MVPs. Here is the 48-hour architecture sprint.",
+          rationale: "B2B client acquisition case study demonstrating rapid execution velocity.",
+          contentType: contentType || "Short-form Video"
+        },
+        {
+          topic: "The 2026 AI Agency Tech Stack: Zero Vendor Lock-in & Full Code Ownership",
+          category: "Agency Operating Systems",
+          hook: "Why low-code tools fail at scale and how modern serverless codebases win.",
+          rationale: "High-authority thought leadership for founders and enterprise decision-makers.",
+          contentType: contentType || "Short-form Video"
+        }
+      ];
+    }
+
+    const topCategories = (channel?.analyticsKnowledgeBase?.topCategories || []).map(c => c.toLowerCase());
+
+    const scored = candidatePool.map(cand => {
+      let score = 0;
+      const tLower = cand.topic.toLowerCase();
+      const isDone = doneTopics.has(tLower) || Array.from(doneTopics).some(d => d.includes(tLower) || tLower.includes(d));
+      
+      if (!isDone) score += 25;
+      else score -= 30;
+
+      for (const kw of focusKeywords) {
+        if (tLower.includes(kw) || cand.category.toLowerCase().includes(kw)) {
+          score += 15;
+        }
+      }
+
+      for (const cat of topCategories) {
+        if (cand.category.toLowerCase().includes(cat) || cat.includes(cand.category.toLowerCase())) {
+          score += 10;
+        }
+      }
+
+      let rationale = cand.rationale;
+      if (focusKeywords.length > 0 && score >= 35) {
+        rationale += ` Aligned with ${m} focus: "${thesis.slice(0, 40)}...".`;
+      }
+
+      return {
+        ...cand,
+        score,
+        rationale
+      };
+    });
+
+    scored.sort((a, b) => b.score - a.score);
+
+    return res.json({
+      success: true,
+      suggestions: scored.slice(0, 5),
+      channelName: channel?.name || 'Channel',
+      totalCandidates: scored.length
+    });
+  } catch (err) {
+    console.error('[Suggest Topic Error]:', err);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// POST /api/ai/analyze-reference — Reference Document / Image / PDF Analyzer
+router.post('/analyze-reference', requireAuth, upload.single('referenceFile'), async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ success: false, error: 'No reference file provided' });
+  }
+
+  try {
+    const file = req.file;
+    const mime = file.mimetype || '';
+    const origName = file.originalname || 'reference';
+    const isPdf = mime.includes('pdf') || origName.toLowerCase().endsWith('.pdf');
+    const isImage = mime.startsWith('image/') || /\.(png|jpg|jpeg|webp)$/i.test(origName);
+    const isText = mime.startsWith('text/') || /\.(txt|md|csv|json)$/i.test(origName);
+
+    let extractedText = '';
+    let visualSummary = '';
+
+    if (isPdf) {
+      if (pdfParse) {
+        try {
+          const parsedPdf = await pdfParse(file.buffer);
+          extractedText = (parsedPdf.text || '').replace(/\s+/g, ' ').trim();
+          visualSummary = `PDF Document (${parsedPdf.numpages || 1} pages, ${Math.round(file.size / 1024)} KB)`;
+        } catch (e) {
+          console.warn('PDF parse fallback:', e.message);
+          extractedText = file.buffer.toString('utf8', 0, 4000).replace(/[^\x20-\x7E\u0980-\u09FF]/g, ' ');
+          visualSummary = `PDF Document (${Math.round(file.size / 1024)} KB)`;
+        }
+      } else {
+        extractedText = file.buffer.toString('utf8', 0, 4000).replace(/[^\x20-\x7E\u0980-\u09FF]/g, ' ');
+        visualSummary = `PDF Document (${Math.round(file.size / 1024)} KB)`;
+      }
+    } else if (isText) {
+      extractedText = file.buffer.toString('utf8', 0, 5000);
+      visualSummary = `Text Document (${Math.round(file.size / 1024)} KB)`;
+    } else if (isImage) {
+      visualSummary = `Image Asset: ${origName} (${Math.round(file.size / 1024)} KB)`;
+    }
+
+    let suggestedTopic = '';
+    let angle = '';
+    let hook = '';
+
+    const key = process.env.GEMINI_API_KEY;
+    if (key && (extractedText.length > 50 || isImage)) {
+      try {
+        let aiPrompt = '';
+        if (isImage) {
+          aiPrompt = `Analyze this reference image/screenshot named "${origName}". Propose a high-performing YouTube/Social media post topic, angle, and viral hook inspired by it.
+Return JSON ONLY with keys:
+"suggestedTopic": (String, punchy title under 60 chars),
+"angle": (String, 1-2 sentence core perspective or reason it resonates),
+"hook": (String, 1st 3 seconds stop-the-scroll hook in Banglish/English).`;
+        } else {
+          aiPrompt = `Read this reference text from "${origName}":
+"""${extractedText.slice(0, 3000)}"""
+
+Propose a high-performing YouTube/Social media post topic, angle, and viral hook inspired by this document.
+Return JSON ONLY with keys:
+"suggestedTopic": (String, punchy title under 60 chars),
+"angle": (String, 1-2 sentence core perspective or reason it resonates),
+"hook": (String, 1st 3 seconds stop-the-scroll hook in Banglish/English).`;
+        }
+
+        const aiRes = await router.callGeminiPrompt(aiPrompt, { json: true });
+        if (aiRes) {
+          const parsed = cleanJSONText(aiRes);
+          if (parsed && parsed.suggestedTopic) {
+            suggestedTopic = parsed.suggestedTopic;
+            angle = parsed.angle || '';
+            hook = parsed.hook || '';
+          }
+        }
+      } catch (aiErr) {
+        console.warn('AI reference analysis fallback:', aiErr.message);
+      }
+    }
+
+    if (!suggestedTopic) {
+      const cleanName = origName.replace(/\.[^/.]+$/, '').replace(/[-_]+/g, ' ');
+      if (isPdf || isText) {
+        const firstLine = (extractedText.split(/[.\n]/)[0] || '').slice(0, 60).trim();
+        suggestedTopic = firstLine.length > 8 ? firstLine : `Core Strategic Blueprint: ${cleanName}`;
+        angle = `Actionable synthesis extracted from ${origName} highlighting proven framework steps.`;
+        hook = `${suggestedTopic} নিয়ে এই ৩টি গুরুত্বপূর্ণ পয়েন্ট কখনোই মিস করবে না! 🛑`;
+      } else {
+        suggestedTopic = `Visual Analysis & Breakdown: ${cleanName}`;
+        angle = `Visual demonstration and practical breakdown inspired by ${origName}.`;
+        hook = `এই চার্ট/স্ক্রিনশটটা দেখলে পুরো স্ট্র্যাটেজি একদম পরিষ্কার হয়ে যাবে! 🛑`;
+      }
+    }
+
+    return res.json({
+      success: true,
+      fileName: origName,
+      fileSize: file.size,
+      fileType: mime,
+      visualSummary,
+      suggestedTopic,
+      angle,
+      hook,
+      extractedSnippet: extractedText ? extractedText.slice(0, 300) : null
+    });
+  } catch (err) {
+    console.error('[Analyze Reference Error]:', err);
+    return res.status(500).json({ success: false, error: 'Failed to analyze reference: ' + err.message });
   }
 });
 

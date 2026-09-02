@@ -34,7 +34,8 @@
     "express": "^4.19.2",
     "express-rate-limit": "^8.6.1",
     "multer": "^2.2.0",
-    "node-telegram-bot-api": "^0.66.0"
+    "node-telegram-bot-api": "^0.66.0",
+    "pdf-parse": "^2.4.5"
   },
   "devDependencies": {
     "jest": "^30.4.2",
