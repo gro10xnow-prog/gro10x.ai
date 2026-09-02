@@ -45,6 +45,7 @@ window.APP_MODULES.social = async function(container) {
   let selectedPlanYear = new Date().getFullYear();
   let alignAnchorSynergy = true;
   let activeCalendarFilter = "all"; // "all" | "long_form" | "shorts"
+  let activeBoardSearch = ''; // Kanban title search term (ISSUE 21)
   let monthlyFocusNote = '';
   let isGeneratingCalendar = false;
   let isUploadingAnalytics = false;
@@ -341,6 +342,9 @@ window.APP_MODULES.social = async function(container) {
           <button class="r-pill" id="sp-pill-Facebook" onclick="window.SOCIAL_MODULE.filterPlatform('Facebook')">📘 Facebook</button>
           <button class="r-pill" id="sp-pill-LinkedIn" onclick="window.SOCIAL_MODULE.filterPlatform('LinkedIn')">💼 LinkedIn</button>
           <button class="r-pill" id="sp-pill-Twitter" onclick="window.SOCIAL_MODULE.filterPlatform('Twitter')">🐦 Twitter / X</button>
+
+          <!-- ISSUE 21: Kanban Search Input -->
+          <input type="search" id="kanbanSearchInput" class="input-text" placeholder="🔍 Search posts by title..." style="margin-left:auto; max-width:220px; font-size:0.76rem; padding:0.3rem 0.7rem; background:rgba(0,0,0,0.35); border-color:rgba(255,255,255,0.1);" oninput="activeBoardSearch = this.value; if(window.SOCIAL_MODULE && typeof renderBoard !== 'undefined') { const rb = window.SOCIAL_MODULE._renderBoard || null; } window.SOCIAL_MODULE.refilterBoard();">
         </div>
       </div>
 
@@ -729,6 +733,15 @@ window.APP_MODULES.social = async function(container) {
         const pChan = (p.channel || '').toLowerCase();
         return pChan.includes(activeChannelFilter.toLowerCase()) || (activeChannelFilter === 'client' && (pChan.includes('client') || !pChan));
       });
+    }
+
+    // ISSUE 21 FIX: Filter by title search text (real-time search)
+    const searchVal = (document.getElementById('kanbanSearchInput')?.value || activeBoardSearch || '').trim().toLowerCase();
+    if (searchVal) {
+      filteredPosts = filteredPosts.filter(p =>
+        (p.title || '').toLowerCase().includes(searchVal) ||
+        (p.caption || '').toLowerCase().includes(searchVal)
+      );
     }
 
     // Update active pill states
@@ -1270,11 +1283,17 @@ window.APP_MODULES.social = async function(container) {
 
           <div style="display:flex; flex-direction:column; gap:0.9rem;">
             ${[1, 2, 3, 4].map(weekNum => {
+              // ISSUE 15 FIX: Compute real calendar date ranges for each week
+              const daysInMonth = new Date(selectedPlanYear, monthIndex + 1, 0).getDate();
+              const weekStartDay = (weekNum - 1) * 7 + 1;
+              const weekEndDay = Math.min(daysInMonth, weekNum * 7);
+              const monthShort = new Date(selectedPlanYear, monthIndex).toLocaleString('default', { month: 'short' });
+              const weekDateLabel = `${monthShort} ${weekStartDay}–${weekEndDay}`;
               return `
                 <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-subtle); border-radius:10px; padding:0.9rem; display:flex; flex-direction:column; gap:0.65rem;">
                   <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.04); padding-bottom:0.45rem;">
                     <div style="font-weight:900; color:#c084fc; font-size:0.85rem; display:flex; align-items:center; gap:0.4rem;">
-                      <span>📅</span> Week ${weekNum} (${selectedPlanMonth} Days ${(weekNum - 1) * 7 + 1}–${Math.min(28, weekNum * 7)})
+                      <span>📅</span> Week ${weekNum} (${weekDateLabel})
                     </div>
                   </div>
 
@@ -1283,7 +1302,7 @@ window.APP_MODULES.social = async function(container) {
                       const icon = PLATFORM_ICONS[ch.platform] || '📱';
                       const cal = ch.calendars && ch.calendars[currentMonthKey];
                       const weekItems = cal && Array.isArray(cal.planItems) 
-                        ? cal.planItems.filter(item => (item.week || '').includes(String(weekNum)))
+                        ? cal.planItems.filter(item => (item.week || '') === `Week ${weekNum}`)
                         : [];
                       const isLocked = cal && cal.status === 'Locked';
                       const longCount = weekItems.filter(i => i.contentType === 'Long-form Video' || i.formatTag?.includes('Long-form')).length;
@@ -2192,6 +2211,12 @@ function renderBrandAssetsKitHTML(brand) {
         if (container) container.innerHTML = renderChannelWorkspaceHTML(brand, channel);
       }
     },
+    refilterBoard() {
+      // Called by Kanban search input — re-reads activeBoardSearch from the input and re-renders
+      const input = document.getElementById('kanbanSearchInput');
+      if (input) activeBoardSearch = input.value || '';
+      renderBoard();
+    },
     async handleChannelCsvUpload(input, brandSlug, channelId) {
       const file = (input && input.files) ? input.files[0] : (input instanceof File ? input : null);
       if (!file) return;
@@ -2349,7 +2374,7 @@ function renderBrandAssetsKitHTML(brand) {
 
             <div>
               <label class="form-label">Top Discussed Topics & Questions (comma-separated)</label>
-              <input type="text" id="snapTopTopics" class="input-text" value="Daily Job Circulars, Interview Q&A, PDF Study Guides">
+              <input type="text" id="snapTopTopics" class="input-text" value="${escapeHTML(channel?.analyticsKnowledgeBase?.topCategories?.join(', ') || '')}" placeholder="e.g. Job Interview English, Career Growth, Skill Development...">
             </div>
 
             <div>
@@ -2493,9 +2518,23 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
       try {
         const res = await APP_API.post(`/social-brands/${brandSlug}/channels/${channelId}/calendars/${monthKey}/lock`, {});
         if (res && res.success) {
-          if (window.showToast) window.showToast(res.message || '🎉 Calendar locked and drafts created!', 'success');
+          // Get plan item count before reload for the toast
+          const brand = (socialBrandsData || []).find(b => b.slug === brandSlug || b.id === brandSlug);
+          const ch = brand && (brand.channels || []).find(c => c.id === channelId || c.slug === channelId);
+          const planItems = ch && ch.calendars && ch.calendars[monthKey] && ch.calendars[monthKey].planItems;
+          const draftCount = (planItems && planItems.length) || (res.draftsCreated || 0);
+
+          // ISSUE 22 FIX: Informative toast with draft count + Kanban link action
+          const msg = `🔒 ${selectedPlanMonth} locked! ${draftCount} drafts → Kanban pipeline.`;
+          if (window.showToast) window.showToast(msg, 'success');
+
           await loadInitialData();
           this.openChannelWorkspace(channelId);
+
+          // Show a second actionable toast with view-in-kanban option
+          setTimeout(() => {
+            if (window.showToast) window.showToast('👀 Switch to Kanban view to see your new drafts', 'info');
+          }, 1500);
         } else {
           throw new Error(res?.error || 'Lock failed');
         }
