@@ -1,0 +1,194 @@
+/**
+ * public/css/social-modal.css
+ * -----------------------------------------------------------------------------
+ * GRO10X Content OS — Post Creation Modal Wizard & Modern Media Studio
+ * 3-Step tabbed layout, drag-drop media upload, accordions, and teleprompter.
+ * -----------------------------------------------------------------------------
+ */
+
+.sp-wizard-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 0.3rem;
+  margin-bottom: 1.25rem;
+  gap: 0.35rem;
+}
+
+.sp-wizard-step-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: 8px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.sp-wizard-step-btn:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary);
+}
+
+.sp-wizard-step-btn.active {
+  background: linear-gradient(135deg, rgba(0, 223, 137, 0.18), rgba(6, 182, 212, 0.18));
+  color: var(--brand-primary);
+  border: 1px solid rgba(0, 223, 137, 0.4);
+  box-shadow: 0 0 12px rgba(0, 223, 137, 0.2);
+}
+
+.sp-wizard-step-btn.completed {
+  color: var(--emerald-light);
+}
+
+.sp-wizard-pane {
+  display: none;
+  flex-direction: column;
+  gap: 1rem;
+  animation: spFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sp-wizard-pane.active {
+  display: flex;
+}
+
+@keyframes spFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Drag-and-drop Media Zone */
+.sp-media-dropzone {
+  border: 2px dashed rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 1.5rem 1rem;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.sp-media-dropzone.drag-active {
+  border-color: var(--brand-primary) !important;
+  background: rgba(0, 223, 137, 0.08) !important;
+  box-shadow: 0 0 20px rgba(0, 223, 137, 0.25);
+}
+
+/* Media Thumbnail Grid */
+.sp-media-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+  gap: 0.6rem;
+  margin-top: 0.6rem;
+}
+
+.sp-media-thumb-item {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+  background: #000;
+}
+
+.sp-media-thumb-item img,
+.sp-media-thumb-item video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.sp-media-thumb-remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(239, 68, 68, 0.9);
+  color: #fff;
+  border: none;
+  font-size: 0.7rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0.85;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.sp-media-thumb-remove:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+/* Accordion Brief Sections */
+.sp-brief-accordion {
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  overflow: hidden;
+  margin-bottom: 0.6rem;
+}
+
+.sp-brief-accordion summary {
+  padding: 0.65rem 0.9rem;
+  font-weight: 700;
+  font-size: 0.82rem;
+  color: var(--text-primary);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.03);
+  user-select: none;
+  list-style: none;
+}
+
+.sp-brief-accordion summary::-webkit-details-marker {
+  display: none;
+}
+
+.sp-brief-accordion-body {
+  padding: 0.85rem 0.9rem;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  border-top: 1px solid var(--border-subtle);
+  line-height: 1.5;
+}
+
+/* Teleprompter Script Card */
+.sp-teleprompter-box {
+  background: rgba(0, 223, 137, 0.05);
+  border-left: 4px solid var(--brand-primary);
+  border-radius: 8px;
+  padding: 1rem;
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  line-height: 1.85;
+  color: #f0fdf4;
+}
+
+.sp-teleprompter-badge {
+  display: inline-block;
+  background: rgba(0, 223, 137, 0.2);
+  color: var(--brand-primary);
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 0.15rem 0.5rem;
+  border-radius: 12px;
+  margin-right: 0.4rem;
+}

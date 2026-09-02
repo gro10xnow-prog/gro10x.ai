@@ -486,53 +486,72 @@ window.APP_MODULES.social = async function(container) {
         <div style="padding: 3rem; text-align: center; color: var(--text-muted);">Loading social media content board...</div>
       </div>
 
-      <!-- Draft / Edit Post Modal -->
+      <!-- Draft / Edit Post Modal (Phase 2: 3-Step Wizard Layout) -->
       <div class="modal-overlay" id="postModal" role="dialog" aria-modal="true" aria-labelledby="postModalTitle" style="z-index:var(--z-modal-overlay);">
-        <div class="modal-box" style="max-width: 680px; max-height: 92vh; overflow-y:auto;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1rem; border-bottom:1px solid var(--border-subtle); padding-bottom:0.8rem;">
+        <div class="modal-box" style="max-width: 720px; max-height: 92vh; overflow-y:auto;">
+          
+          <!-- Modal Header -->
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.75rem; border-bottom:1px solid var(--border-subtle); padding-bottom:0.75rem;">
             <div>
               <h2 style="color:#fff; font-size:1.25rem; margin:0; font-family:var(--font-heading);" id="postModalTitle">📱 Draft New Social Post</h2>
-              <div style="font-size:0.78rem; color:var(--text-muted); margin-top:0.2rem;">AI-assisted content creation with VEO 3 Prompts & Format Blueprints.</div>
+              <div style="font-size:0.76rem; color:var(--text-muted); margin-top:0.2rem;">Multi-stage content studio with VEO 3 Prompts & Format Blueprints.</div>
             </div>
             <button type="button" aria-label="Close dialog" onclick="window.SOCIAL_MODULE.closePostModal()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
+          </div>
+
+          <!-- Phase 2.7: Autosave Draft Restore Banner -->
+          <div id="spDraftRestoreBanner" style="display:none; align-items:center; justify-content:space-between; background:rgba(0,223,137,0.08); border:1px solid rgba(0,223,137,0.3); border-radius:8px; padding:0.5rem 0.8rem; margin-bottom:0.75rem;"></div>
+
+          <!-- Phase 2.1: 3-Step Wizard Navigation Tabs -->
+          <div class="sp-wizard-nav" id="spWizardNav">
+            <button type="button" class="sp-wizard-step-btn active" id="spWizTab1" onclick="window.SOCIAL_MODULE.switchWizardStep(1)">
+              <span>1️⃣</span> 📝 Content & Topic
+            </button>
+            <button type="button" class="sp-wizard-step-btn" id="spWizTab2" onclick="window.SOCIAL_MODULE.switchWizardStep(2)">
+              <span>2️⃣</span> 🎬 Media & AI Studio
+            </button>
+            <button type="button" class="sp-wizard-step-btn" id="spWizTab3" onclick="window.SOCIAL_MODULE.switchWizardStep(3)">
+              <span>3️⃣</span> 📅 Schedule & Review
+            </button>
           </div>
 
           <!-- Phase 5.3: Post Revision History Log Display -->
           <div id="spRevisionHistorySection" style="display:none; margin-bottom:0.75rem;"></div>
 
-          <form onsubmit="window.SOCIAL_MODULE.handleFormSubmit(event)" style="display:flex; flex-direction:column; gap:1rem;">
+          <form onsubmit="window.SOCIAL_MODULE.handleFormSubmit(event)" style="display:flex; flex-direction:column;">
             <input type="hidden" id="spEditId" value="">
 
-            <!-- Row 1: Channel & Category Selection -->
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.9rem;">
-              <div class="form-group">
-                <label class="form-label">Media Channel / Brand *</label>
-                <select id="spChannel" class="input-text" required onchange="window.SOCIAL_MODULE.onChannelChange(this.value)">
-                  <option value="grow-bangla">⏳ Loading channels...</option>
-                </select>
+            <!-- ═══════════════ STEP 1: CONTENT & TOPIC PANE ═══════════════ -->
+            <div class="sp-wizard-pane active" id="spWizPane1">
+              <!-- Channel & Category Selection -->
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.9rem;">
+                <div class="form-group">
+                  <label class="form-label">Media Channel / Brand *</label>
+                  <select id="spChannel" class="input-text" required onchange="window.SOCIAL_MODULE.onChannelChange(this.value)">
+                    <option value="grow-bangla">⏳ Loading channels...</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Content Category *</label>
+                  <select id="spCategory" class="input-text" required>
+                    <!-- Dynamically populated based on selected channel -->
+                  </select>
+                </div>
               </div>
 
-              <div class="form-group">
-                <label class="form-label">Content Category *</label>
-                <select id="spCategory" class="input-text" required>
-                  <!-- Dynamically populated based on selected channel -->
+              <!-- Client Selector (Shown when Client Account selected) -->
+              <div class="form-group" id="spClientSelectGroup" style="display:none;">
+                <label class="form-label">CRM Client Account *</label>
+                <select id="spClientSelect" class="input-text" onchange="window.SOCIAL_MODULE.syncClientName(this)">
+                  <option value="">-- Select Client from CRM --</option>
                 </select>
+                <input type="hidden" id="spClientName" value="">
               </div>
-            </div>
 
-            <!-- Client Selector (Shown when Client Account selected) -->
-            <div class="form-group" id="spClientSelectGroup" style="display:none;">
-              <label class="form-label">CRM Client Account *</label>
-              <select id="spClientSelect" class="input-text" onchange="window.SOCIAL_MODULE.syncClientName(this)">
-                <option value="">-- Select Client from CRM --</option>
-              </select>
-              <input type="hidden" id="spClientName" value="">
-            </div>
-
-            <!-- Row 2: Platform, Content Type & Target Duration -->
-            <div style="display:grid; grid-template-columns:1.2fr 1.3fr 1.1fr; gap:0.9rem;">
+              <!-- Target Platform -->
               <div class="form-group">
-                <label class="form-label">Platform *</label>
+                <label class="form-label">Target Platform *</label>
                 <select id="spPlatform" class="input-text" onchange="window.SOCIAL_MODULE.onPlatformChange(this)">
                   <option value="YouTube">🎬 YouTube / Shorts</option>
                   <option value="TikTok">🎵 TikTok</option>
@@ -543,268 +562,334 @@ window.APP_MODULES.social = async function(container) {
                 </select>
               </div>
 
-              <div class="form-group">
-                <label class="form-label">Content Type *</label>
-                <select id="spContentType" class="input-text" onchange="window.SOCIAL_MODULE.onContentTypeChange(this.value)">
-                  ${CONTENT_TYPES.map(ct => `<option value="${escapeHTML(ct.id)}">${escapeHTML(ct.name)}</option>`).join('')}
-                </select>
-              </div>
-
-              <div class="form-group" id="spDurationGroup">
-                <label class="form-label">Video Target Duration</label>
-                <select id="spTargetDuration" class="input-text">
-                  <option value="30s">30s (3 × 10s VEO)</option>
-                  <option value="60s" selected>60s (6 × 10s VEO)</option>
-                  <option value="90s">90s (9 × 10s VEO)</option>
-                  <option value="2 min">2 min (12 × 10s VEO)</option>
-                  <option value="3 min">3 min (18 × 10s VEO)</option>
-                </select>
-              </div>
-            </div>
-
-            <!-- Bong Hits Music Video Studio Box (Shown when Bong Hits / Music Video is active) -->
-            <div id="spMusicVideoStudioBox" style="display:none; background:rgba(236,72,153,0.06); border:1px solid rgba(236,72,153,0.3); border-radius:12px; padding:1rem; flex-direction:column; gap:0.75rem;">
-              <div style="display:flex; justify-content:space-between; align-items:center;">
-                <div style="font-size:0.82rem; font-weight:800; color:#f472b6;">
-                  🎵 Bong Hits Music Video & LRC Lip-Sync Studio
+              <!-- Multi-Modal Topic Intelligence Input Panel -->
+              <div class="form-group" style="background:rgba(255,255,255,0.02); border:1px solid rgba(168,85,247,0.25); border-radius:12px; padding:0.9rem 1rem; display:flex; flex-direction:column; gap:0.65rem;">
+                
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+                  <div style="display:flex; align-items:center; gap:0.5rem;">
+                    <label class="form-label" style="margin:0; font-weight:800; color:#fff; font-size:0.84rem;">
+                      💡 Topic & Strategic Concept *
+                    </label>
+                    <span id="aiModelStatusBadge" style="font-size:0.65rem; padding:0.12rem 0.45rem; border-radius:12px; background:rgba(16,185,129,0.18); color:#34d399; font-weight:700;" title="Gemini 1.5 Flash Active">🟢 AI Ready</span>
+                  </div>
+                  
+                  <div style="display:flex; gap:0.35rem; align-items:center;">
+                    <button type="button" class="btn-ghost btn-sm" id="btnSavedIdeas" style="font-size:0.72rem; padding:0.22rem 0.55rem; color:#facc15; border:1px solid rgba(250,204,21,0.3); border-radius:8px;" onclick="window.SOCIAL_MODULE.showSavedIdeasModal()">
+                      ⭐ Saved Ideas
+                    </button>
+                    <button type="button" class="btn-ghost btn-sm" id="btnFindTopic" style="font-size:0.72rem; padding:0.22rem 0.6rem; color:#38bdf8; border:1px solid rgba(56,189,248,0.3); border-radius:8px;" onclick="window.SOCIAL_MODULE.findMeTopic()">
+                      🎯 Find Me a Topic
+                    </button>
+                  </div>
                 </div>
-                <span class="badge badge-pink" style="font-size:0.68rem;">Suno & CapCut Workflow</span>
+
+                <!-- Mode Switcher Tabs -->
+                <div style="display:flex; background:rgba(0,0,0,0.35); padding:0.2rem; border-radius:8px; gap:0.3rem; border:1px solid var(--border-subtle);">
+                  <button type="button" id="tabModeType" class="btn-sm btn-primary" style="flex:1; font-size:0.72rem; padding:0.25rem 0.45rem; text-align:center;" onclick="window.SOCIAL_MODULE.switchTopicInputMode('type')">
+                    ✍️ Type Concept
+                  </button>
+                  <button type="button" id="tabModeVoice" class="btn-sm btn-ghost" style="flex:1; font-size:0.72rem; padding:0.25rem 0.45rem; text-align:center;" onclick="window.SOCIAL_MODULE.switchTopicInputMode('voice')">
+                    🎤 Speak Idea (Voice)
+                  </button>
+                  <button type="button" id="tabModeRef" class="btn-sm btn-ghost" style="flex:1; font-size:0.72rem; padding:0.25rem 0.45rem; text-align:center;" onclick="window.SOCIAL_MODULE.switchTopicInputMode('reference')">
+                    📎 Upload Reference (50MB)
+                  </button>
+                </div>
+
+                <!-- Sub-View A: Type Input -->
+                <div id="topicModeTypeContainer" style="display:flex; flex-direction:column; gap:0.4rem;">
+                  <input type="text" id="spTitle" class="input-text" placeholder="e.g. Corporate Interview-e 'Tell Me About Yourself'-এর সঠিক ৩টি ফর্মুলা" required oninput="window.SOCIAL_MODULE.onTopicInputChange(this)">
+                </div>
+
+                <!-- Sub-View B: Voice Capture -->
+                <div id="topicModeVoiceContainer" style="display:none; flex-direction:column; align-items:center; gap:0.6rem; padding:0.8rem; background:rgba(0,0,0,0.25); border-radius:10px; border:1px dashed rgba(168,85,247,0.4); text-align:center;">
+                  <div id="voiceStatusIndicator" style="display:flex; align-items:center; gap:0.5rem; font-size:0.78rem; color:var(--text-muted);">
+                    <span id="voicePulseDot" style="width:10px; height:10px; border-radius:50%; background:#6b7280; display:inline-block;"></span>
+                    <span id="voiceStatusText">Press the microphone and speak your concept in Bangla, Banglish, or English</span>
+                  </div>
+                  <div style="display:flex; gap:0.6rem; align-items:center;">
+                    <button type="button" id="btnToggleVoice" class="btn-primary btn-sm" style="font-size:0.8rem; padding:0.4rem 1.2rem; background:linear-gradient(135deg, #ef4444, #dc2626); border:none; font-weight:800;" onclick="window.SOCIAL_MODULE.toggleVoiceRecording()">
+                      🎙️ Start Recording Voice
+                    </button>
+                  </div>
+                  <div style="font-size:0.7rem; color:var(--text-dim);">Live audio is transcribed directly into your post topic field using Chrome Speech AI.</div>
+                </div>
+
+                <!-- Sub-View C: Reference Upload (Up to 50MB) -->
+                <div id="topicModeRefContainer" style="display:none; flex-direction:column; gap:0.6rem;">
+                  <input type="file" id="refAssetFileInput" style="display:none;" accept=".pdf,.doc,.docx,.txt,.csv,.png,.jpg,.jpeg,.mp4,.mp3" onchange="window.SOCIAL_MODULE.handleReferenceAssetUpload(this)">
+                  
+                  <div id="refAssetUploadPrompt" onclick="document.getElementById('refAssetFileInput').click()" style="cursor:pointer; border:1px dashed rgba(56,189,248,0.4); border-radius:10px; padding:0.9rem; text-align:center; background:rgba(56,189,248,0.03); transition:border-color 0.2s ease;">
+                    <div style="font-size:1.3rem; margin-bottom:0.2rem;">📎</div>
+                    <div style="font-weight:700; font-size:0.8rem; color:#fff;">Drop reference document, audio, video, or script here</div>
+                    <div style="font-size:0.68rem; color:var(--text-dim); margin-top:0.15rem;">Gemini analyzes files up to 50MB to distill high-performing talking points</div>
+                  </div>
+
+                  <!-- Reference Progress Indicator -->
+                  <div id="refUploadProgressBox" style="display:none; flex-direction:column; gap:0.4rem; background:rgba(0,0,0,0.3); border:1px solid rgba(56,189,248,0.3); border-radius:8px; padding:0.6rem 0.8rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.72rem;">
+                      <span id="refProgressLabel" style="color:#38bdf8; font-weight:700;">Analyzing reference with Gemini...</span>
+                      <span id="refProgressPercent" style="color:var(--text-dim);">20%</span>
+                    </div>
+                    <div style="display:flex; justify-content:center;">
+                      <div style="width:100%; max-width:340px; height:6px; background:rgba(255,255,255,0.1); border-radius:10px; overflow:hidden;">
+                        <div id="refProgressBar" style="width:20%; height:100%; background:linear-gradient(90deg, #38bdf8, #10b981); transition:width 0.2s ease;"></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Reference Ingestion Result Pill -->
+                  <div id="refResultPill" style="display:none; align-items:center; justify-content:space-between; background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.3); border-radius:8px; padding:0.5rem 0.75rem; font-size:0.75rem;">
+                    <div style="display:flex; align-items:center; gap:0.5rem; overflow:hidden;">
+                      <span>📄</span>
+                      <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                        <strong id="refFileNameLabel" style="color:#fff;">document.pdf</strong>
+                        <span id="refMetaLabel" style="color:var(--text-dim); margin-left:0.3rem;">(Extracted Topic & Angle)</span>
+                      </div>
+                    </div>
+                    <button type="button" class="btn-ghost btn-sm" style="font-size:0.68rem; padding:0.15rem 0.45rem; color:#f87171;" onclick="window.SOCIAL_MODULE.clearReferenceAsset()">
+                      ✕ Remove
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Smart Topic Suggestion Card -->
+                <div id="topicSuggestionCard" style="display:none; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.35); border-radius:10px; padding:0.85rem; flex-direction:column; gap:0.5rem;">
+                  <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div style="display:flex; align-items:center; gap:0.4rem; font-size:0.78rem; font-weight:800; color:#38bdf8;">
+                      <span>💡 Smart Suggested Topic</span>
+                      <span id="suggIndexBadge" style="font-size:0.68rem; background:rgba(56,189,248,0.2); color:#e0f2fe; padding:0.1rem 0.4rem; border-radius:10px;">1 of 5</span>
+                    </div>
+                    <button type="button" class="btn-ghost btn-sm" style="font-size:0.7rem; color:var(--text-dim);" onclick="document.getElementById('topicSuggestionCard').style.display='none'">✕</button>
+                  </div>
+                  
+                  <div id="suggTopicTitle" style="font-weight:900; font-size:0.92rem; color:#fff; font-family:var(--font-heading);">
+                    Topic Title...
+                  </div>
+
+                  <div id="suggRationale" style="font-size:0.72rem; color:#cbd5e1; line-height:1.35; background:rgba(0,0,0,0.25); padding:0.4rem 0.6rem; border-radius:6px;">
+                    Rationale explanation...
+                  </div>
+
+                  <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:0.2rem; flex-wrap:wrap;">
+                    <button type="button" class="btn-ghost btn-sm" style="font-size:0.72rem; padding:0.25rem 0.65rem; color:#facc15; border:1px solid rgba(250,204,21,0.3); border-radius:6px;" onclick="window.SOCIAL_MODULE.saveTopicSuggestion()">
+                      ⭐ Save Idea
+                    </button>
+                    <button type="button" class="btn-secondary btn-sm" style="font-size:0.72rem; padding:0.25rem 0.65rem;" onclick="window.SOCIAL_MODULE.cycleNextTopicSuggestion()">
+                      🔄 Suggest Another
+                    </button>
+                    <button type="button" class="btn-primary btn-sm" style="font-size:0.72rem; padding:0.25rem 0.75rem; background:#10b981; border:none; font-weight:800;" onclick="window.SOCIAL_MODULE.acceptSuggestedTopic()">
+                      ✅ Use This Topic
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Supporting Strategic Angle Field -->
+                <div style="display:flex; flex-direction:column; gap:0.3rem;">
+                  <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <label class="form-label" style="margin:0; font-size:0.74rem; color:#a78bfa; font-weight:700;">
+                      🎯 Strategic Angle / Direction <span style="font-weight:400; color:var(--text-dim);">(Optional)</span>
+                    </label>
+                    <span style="font-size:0.68rem; color:var(--text-dim);">Guides AI prompt tone & hook psychology</span>
+                  </div>
+                  <input type="text" id="spAngle" class="input-text" style="font-size:0.78rem; padding:0.38rem 0.65rem;" placeholder="e.g. Show why common interview advice fails and give the contrarian 3-step fix">
+                </div>
+
               </div>
-              <div style="font-size:0.75rem; color:var(--text-muted);">
-                Generate exact timestamped <code>.lrc</code> lyric captions for CapCut + 10-second beat-synced VEO 3 scene prompts.
+
+              <!-- Caption / Copywriting -->
+              <div class="form-group">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.3rem;">
+                  <label class="form-label" style="margin:0;">Caption / Copywriting</label>
+                  <span id="captionCharCount" style="font-size:0.75rem; color:var(--text-dim);">0 / 5,000</span>
+                </div>
+                <textarea id="spCaption" class="input-text" rows="4" placeholder="Write post hook, body, and call-to-action..." oninput="window.SOCIAL_MODULE.updateCharCount(this)" onpaste="setTimeout(() => window.SOCIAL_MODULE.updateCharCount(this), 10)"></textarea>
               </div>
-              <div style="display:grid; grid-template-columns:2fr 1fr; gap:0.6rem;">
-                <input type="text" id="mvTrackTitle" class="input-text" placeholder="Track / Song Title (e.g. Bong Hits Beats #1)">
-                <input type="text" id="mvGenre" class="input-text" placeholder="Genre (e.g. Bengali Folk Rock)">
+
+              <!-- First Comment & Hashtags Grid -->
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.85rem;">
+                <div class="form-group">
+                  <label class="form-label">First Comment (IG Stack / CTA)</label>
+                  <textarea id="spFirstComment" class="input-text" rows="2" placeholder="e.g. #GrowBangla #LearnEnglish"></textarea>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Hashtags</label>
+                  <textarea id="spHashtags" class="input-text" rows="2" placeholder="#GRO10X #VideoScale #Automation"></textarea>
+                </div>
               </div>
-              <textarea id="mvLyrics" class="input-text" rows="3" placeholder="Paste Suno song lyrics here (or leave blank to auto-generate from topic)..."></textarea>
-              <div style="display:flex; justify-content:flex-end;">
-                <button type="button" class="btn-primary btn-sm" id="btnGenMusicLrc" style="background:linear-gradient(135deg, #ec4899, #8b5cf6); border:none;" onclick="window.SOCIAL_MODULE.generateMusicLrc()">
-                  ✨ Generate LRC Timestamps & VEO Scenes
+
+              <!-- Step 1 Footer: Autosave Status & Continue Button -->
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.8rem; border-top:1px solid var(--border-subtle); padding-top:0.9rem;">
+                <div id="spAutosaveStatus" style="font-size:0.72rem; color:var(--text-dim);"></div>
+                <button type="button" class="btn-primary" onclick="window.SOCIAL_MODULE.switchWizardStep(2)">
+                  Continue to Media & AI Studio ➔
                 </button>
               </div>
-              <div id="mvMusicResultContainer" style="display:none; flex-direction:column; gap:0.6rem; margin-top:0.4rem;">
-                <!-- Populated on LRC generation -->
-              </div>
             </div>
 
-            <!-- Row 3: Scheduled Date & Time -->
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.9rem;">
-              <div class="form-group">
-                <label class="form-label">Scheduled Date</label>
-                <input type="date" id="spDate" class="input-text">
-              </div>
-              <div class="form-group">
-                <label class="form-label">Time (HH:MM)</label>
-                <input type="time" id="spTime" class="input-text" value="18:00">
-              </div>
-            </div>
-
-            <!-- Multi-Modal Topic Intelligence Input Panel -->
-            <div class="form-group" style="background:rgba(255,255,255,0.02); border:1px solid rgba(168,85,247,0.25); border-radius:12px; padding:0.9rem 1rem; display:flex; flex-direction:column; gap:0.65rem;">
+            <!-- ═══════════════ STEP 2: MEDIA & AI STUDIO PANE ═══════════════ -->
+            <div class="sp-wizard-pane" id="spWizPane2">
               
-              <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
-                <div style="display:flex; align-items:center; gap:0.5rem;">
-                  <label class="form-label" style="margin:0; font-weight:800; color:#fff; font-size:0.84rem;">
-                    💡 Topic & Strategic Concept *
-                  </label>
-                  <span id="aiModelStatusBadge" style="font-size:0.65rem; padding:0.12rem 0.45rem; border-radius:12px; background:rgba(16,185,129,0.18); color:#34d399; font-weight:700;" title="Gemini 1.5 Flash Active">🟢 AI Ready</span>
+              <!-- Drag-and-drop Media Upload & Asset Zone -->
+              <div class="form-group">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem;">
+                  <label class="form-label" style="margin:0; font-weight:800;">📸 Media Assets (Drag & Drop Zone)</label>
+                  <span style="font-size:0.72rem; color:var(--text-dim);">Max 50MB · Images, Videos, PDFs</span>
                 </div>
                 
-                <div style="display:flex; gap:0.35rem; align-items:center;">
-                  <button type="button" class="btn-ghost btn-sm" id="btnSavedIdeas" style="font-size:0.72rem; padding:0.22rem 0.55rem; color:#facc15; border:1px solid rgba(250,204,21,0.3); border-radius:8px;" onclick="window.SOCIAL_MODULE.showSavedIdeasModal()">
-                    ⭐ Saved Ideas
-                  </button>
-                  <button type="button" class="btn-ghost btn-sm" id="btnFindTopic" style="font-size:0.72rem; padding:0.22rem 0.6rem; color:#38bdf8; border:1px solid rgba(56,189,248,0.3); border-radius:8px;" onclick="window.SOCIAL_MODULE.findMeTopic()">
-                    🎯 Find Me a Topic
-                  </button>
-                  <button type="button" class="btn-primary btn-sm" id="btnAiBrief" style="font-size:0.75rem; padding:0.25rem 0.7rem; background:linear-gradient(135deg, #a855f7, #6366f1); border:none;" onclick="window.SOCIAL_MODULE.generateAIBrief()">
-                    ✨ Generate AI Brief & Prompts
-                  </button>
-                </div>
-              </div>
-
-              <!-- Mode Switcher Tabs -->
-              <div style="display:flex; background:rgba(0,0,0,0.35); padding:0.2rem; border-radius:8px; gap:0.3rem; border:1px solid var(--border-subtle);">
-                <button type="button" id="tabModeType" class="btn-sm btn-primary" style="flex:1; font-size:0.72rem; padding:0.25rem 0.45rem; text-align:center;" onclick="window.SOCIAL_MODULE.switchTopicInputMode('type')">
-                  ✍️ Type Concept
-                </button>
-                <button type="button" id="tabModeVoice" class="btn-sm btn-ghost" style="flex:1; font-size:0.72rem; padding:0.25rem 0.45rem; text-align:center;" onclick="window.SOCIAL_MODULE.switchTopicInputMode('voice')">
-                  🎤 Speak Idea (Voice)
-                </button>
-                <button type="button" id="tabModeRef" class="btn-sm btn-ghost" style="flex:1; font-size:0.72rem; padding:0.25rem 0.45rem; text-align:center;" onclick="window.SOCIAL_MODULE.switchTopicInputMode('reference')">
-                  📎 Upload Reference (50MB)
-                </button>
-              </div>
-
-              <!-- Sub-View A: Type Input -->
-              <div id="topicModeTypeContainer" style="display:flex; flex-direction:column; gap:0.4rem;">
-                <input type="text" id="spTitle" class="input-text" placeholder="e.g. Corporate Interview-e 'Tell Me About Yourself'-এর সঠিক ৩টি ফর্মুলা" required oninput="window.SOCIAL_MODULE.onTopicInputChange(this)">
-              </div>
-
-              <!-- Sub-View B: Voice Capture -->
-              <div id="topicModeVoiceContainer" style="display:none; flex-direction:column; align-items:center; gap:0.6rem; padding:0.8rem; background:rgba(0,0,0,0.25); border-radius:10px; border:1px dashed rgba(168,85,247,0.4); text-align:center;">
-                <div id="voiceStatusIndicator" style="display:flex; align-items:center; gap:0.5rem; font-size:0.78rem; color:var(--text-muted);">
-                  <span id="voicePulseDot" style="width:10px; height:10px; border-radius:50%; background:#6b7280; display:inline-block;"></span>
-                  <span id="voiceStatusText">Press the microphone and speak your concept in Bangla, Banglish, or English</span>
-                </div>
-                <div style="display:flex; gap:0.6rem; align-items:center;">
-                  <button type="button" id="btnToggleVoice" class="btn-primary btn-sm" style="font-size:0.8rem; padding:0.4rem 1.2rem; background:linear-gradient(135deg, #ef4444, #dc2626); border:none; font-weight:800;" onclick="window.SOCIAL_MODULE.toggleVoiceRecording()">
-                    🎙️ Start Recording Voice
-                  </button>
-                </div>
-                <div style="font-size:0.7rem; color:var(--text-dim);">Live audio is transcribed directly into your post topic field using Chrome Speech AI.</div>
-              </div>
-
-              <!-- Sub-View C: Reference Upload (Up to 50MB) -->
-              <div id="topicModeRefContainer" style="display:none; flex-direction:column; gap:0.6rem;">
-                <input type="file" id="refAssetFileInput" style="display:none;" accept=".pdf,.doc,.docx,.txt,.csv,.png,.jpg,.jpeg,.mp4,.mp3" onchange="window.SOCIAL_MODULE.handleReferenceAssetUpload(this)">
-                
-                <div id="refAssetUploadPrompt" onclick="document.getElementById('refAssetFileInput').click()" style="cursor:pointer; border:1px dashed rgba(56,189,248,0.4); border-radius:10px; padding:0.9rem; text-align:center; background:rgba(56,189,248,0.03); transition:border-color 0.2s ease;">
-                  <div style="font-size:1.3rem; margin-bottom:0.2rem;">📎</div>
-                  <div style="font-weight:700; font-size:0.8rem; color:#fff;">Drop reference document, audio, video, or script here</div>
-                  <div style="font-size:0.68rem; color:var(--text-dim); margin-top:0.15rem;">Gemini 2.5 Flash analyzes files up to 50MB to distill high-performing talking points</div>
-                </div>
-
-                <!-- Reference Progress Indicator -->
-                <div id="refUploadProgressBox" style="display:none; flex-direction:column; gap:0.4rem; background:rgba(0,0,0,0.3); border:1px solid rgba(56,189,248,0.3); border-radius:8px; padding:0.6rem 0.8rem;">
-                  <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.72rem;">
-                    <span id="refProgressLabel" style="color:#38bdf8; font-weight:700;">Analyzing reference with Gemini 2.5...</span>
-                    <span id="refProgressPercent" style="color:var(--text-dim);">20%</span>
+                <div id="spMediaDropzone" class="sp-media-dropzone" 
+                     ondragover="event.preventDefault(); this.classList.add('drag-active');" 
+                     ondragleave="this.classList.remove('drag-active');" 
+                     ondrop="event.preventDefault(); this.classList.remove('drag-active'); window.SOCIAL_MODULE.handleMediaDrop(event);">
+                  <input type="file" id="spMediaFileInput" style="display:none;" multiple accept="image/*,video/*,audio/*,application/pdf" onchange="window.SOCIAL_MODULE.handleMediaFileUpload(this)">
+                  <div id="spMediaUploadPrompt" onclick="document.getElementById('spMediaFileInput').click()">
+                    <div style="font-size:1.6rem; margin-bottom:0.25rem;">📁</div>
+                    <div style="font-weight:700; font-size:0.88rem; color:#fff;">Drag & drop image / video files here, or click to browse</div>
+                    <div style="font-size:0.72rem; color:var(--text-dim); margin-top:0.25rem;">Supports JPG, PNG, MP4, WebM, PDF (Multi-asset grid enabled)</div>
                   </div>
-                  <div style="display:flex; justify-content:center;">
-                    <div style="width:100%; max-width:340px; height:6px; background:rgba(255,255,255,0.1); border-radius:10px; overflow:hidden;">
-                      <div id="refProgressBar" style="width:20%; height:100%; background:linear-gradient(90deg, #38bdf8, #10b981); transition:width 0.2s ease;"></div>
-                    </div>
+                  <div id="spMediaUploadPreview" style="display:none; flex-direction:column; gap:0.5rem; background:rgba(255,255,255,0.02); border-radius:8px; padding:0.6rem;">
+                    <!-- Dynamic multi-image thumbnail grid with hover-delete rendered by JS -->
                   </div>
                 </div>
 
-                <!-- Reference Ingestion Result Pill -->
-                <div id="refResultPill" style="display:none; align-items:center; justify-content:space-between; background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.3); border-radius:8px; padding:0.5rem 0.75rem; font-size:0.75rem;">
-                  <div style="display:flex; align-items:center; gap:0.5rem; overflow:hidden;">
-                    <span>📄</span>
-                    <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
-                      <strong id="refFileNameLabel" style="color:#fff;">document.pdf</strong>
-                      <span id="refMetaLabel" style="color:var(--text-dim); margin-left:0.3rem;">(Extracted Topic & Angle)</span>
-                    </div>
-                  </div>
-                  <button type="button" class="btn-ghost btn-sm" style="font-size:0.68rem; padding:0.15rem 0.45rem; color:#f87171;" onclick="window.SOCIAL_MODULE.clearReferenceAsset()">
-                    ✕ Remove
-                  </button>
+                <input type="hidden" id="spMediaUrl" value="">
+                <div style="margin-top:0.4rem; display:flex; justify-content:space-between; align-items:center;">
+                  <a href="javascript:void(0)" onclick="window.SOCIAL_MODULE.toggleDirectMediaUrl()" style="font-size:0.72rem; color:var(--brand-primary); text-decoration:none;">🔗 Or paste direct CDN/Cloudinary URL</a>
                 </div>
-
+                <div id="spDirectMediaUrlWrap" style="display:none; margin-top:0.4rem;">
+                  <div style="display:flex; gap:0.4rem;">
+                    <input type="url" id="spDirectMediaUrl" class="input-text" placeholder="https://res.cloudinary.com/..." style="flex:1;">
+                    <button type="button" class="btn-primary btn-sm" style="font-size:0.75rem;" onclick="window.SOCIAL_MODULE.addDirectMediaUrl()">+ Add URL</button>
+                  </div>
+                </div>
               </div>
 
-              <!-- Smart Topic Suggestion Card (Populated when Find Me a Topic is clicked) -->
-              <div id="topicSuggestionCard" style="display:none; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.35); border-radius:10px; padding:0.85rem; flex-direction:column; gap:0.5rem;">
+              <!-- Bong Hits Music Video Studio Box (Shown when Bong Hits / Music Video is active) -->
+              <div id="spMusicVideoStudioBox" style="display:none; background:rgba(236,72,153,0.06); border:1px solid rgba(236,72,153,0.3); border-radius:12px; padding:1rem; flex-direction:column; gap:0.75rem;">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                  <div style="display:flex; align-items:center; gap:0.4rem; font-size:0.78rem; font-weight:800; color:#38bdf8;">
-                    <span>💡 Smart Suggested Topic</span>
-                    <span id="suggIndexBadge" style="font-size:0.68rem; background:rgba(56,189,248,0.2); color:#e0f2fe; padding:0.1rem 0.4rem; border-radius:10px;">1 of 5</span>
+                  <div style="font-size:0.82rem; font-weight:800; color:#f472b6;">
+                    🎵 Bong Hits Music Video & LRC Lip-Sync Studio
                   </div>
-                  <button type="button" class="btn-ghost btn-sm" style="font-size:0.7rem; color:var(--text-dim);" onclick="document.getElementById('topicSuggestionCard').style.display='none'">✕</button>
+                  <span class="badge badge-pink" style="font-size:0.68rem;">Suno & CapCut Workflow</span>
                 </div>
-                
-                <div id="suggTopicTitle" style="font-weight:900; font-size:0.92rem; color:#fff; font-family:var(--font-heading);">
-                  Topic Title...
+                <div style="font-size:0.75rem; color:var(--text-muted);">
+                  Generate exact timestamped <code>.lrc</code> lyric captions for CapCut + 10-second beat-synced VEO 3 scene prompts.
                 </div>
-
-                <div id="suggRationale" style="font-size:0.72rem; color:#cbd5e1; line-height:1.35; background:rgba(0,0,0,0.25); padding:0.4rem 0.6rem; border-radius:6px;">
-                  Rationale explanation...
+                <div style="display:grid; grid-template-columns:2fr 1fr; gap:0.6rem;">
+                  <input type="text" id="mvTrackTitle" class="input-text" placeholder="Track / Song Title (e.g. Bong Hits Beats #1)">
+                  <input type="text" id="mvGenre" class="input-text" placeholder="Genre (e.g. Bengali Folk Rock)">
                 </div>
-
-                <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:0.2rem; flex-wrap:wrap;">
-                  <button type="button" class="btn-ghost btn-sm" style="font-size:0.72rem; padding:0.25rem 0.65rem; color:#facc15; border:1px solid rgba(250,204,21,0.3); border-radius:6px;" onclick="window.SOCIAL_MODULE.saveTopicSuggestion()">
-                    ⭐ Save Idea
+                <textarea id="mvLyrics" class="input-text" rows="3" placeholder="Paste Suno song lyrics here (or leave blank to auto-generate from topic)..."></textarea>
+                <div style="display:flex; justify-content:flex-end;">
+                  <button type="button" class="btn-primary btn-sm" id="btnGenMusicLrc" style="background:linear-gradient(135deg, #ec4899, #8b5cf6); border:none;" onclick="window.SOCIAL_MODULE.generateMusicLrc()">
+                    ✨ Generate LRC Timestamps & VEO Scenes
                   </button>
-                  <button type="button" class="btn-secondary btn-sm" style="font-size:0.72rem; padding:0.25rem 0.65rem;" onclick="window.SOCIAL_MODULE.cycleNextTopicSuggestion()">
-                    🔄 Suggest Another
-                  </button>
-                  <button type="button" class="btn-primary btn-sm" style="font-size:0.72rem; padding:0.25rem 0.75rem; background:#10b981; border:none; font-weight:800;" onclick="window.SOCIAL_MODULE.acceptSuggestedTopic()">
-                    ✅ Use This Topic
-                  </button>
+                </div>
+                <div id="mvMusicResultContainer" style="display:none; flex-direction:column; gap:0.6rem; margin-top:0.4rem;">
+                  <!-- Populated on LRC generation -->
                 </div>
               </div>
 
-              <!-- Supporting Strategic Angle Field -->
-              <div style="display:flex; flex-direction:column; gap:0.3rem;">
+              <!-- AI Brief Studio Generator Trigger -->
+              <div style="background:rgba(168,85,247,0.05); border:1px solid rgba(168,85,247,0.3); border-radius:12px; padding:1rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
+                <div>
+                  <div style="font-weight:800; color:#c084fc; font-size:0.88rem;">✨ Gemini AI Blueprint Studio</div>
+                  <div style="font-size:0.74rem; color:var(--text-muted); margin-top:0.15rem;">Generate VEO 3 camera direction, teleprompter scripts, and viral hooks in one click.</div>
+                </div>
+                <button type="button" class="btn-primary" id="btnAiBrief" style="background:linear-gradient(135deg, #a855f7, #6366f1); border:none;" onclick="window.SOCIAL_MODULE.generateAIBrief()">
+                  ✨ Generate AI Brief & VEO Scenes
+                </button>
+              </div>
+
+              <!-- AI Brief Result Panel (Collapsible Accordions) -->
+              <div id="aiBriefContainer" style="display:none; flex-direction:column; gap:0.75rem;">
+                <!-- Populated via JavaScript on AI generation -->
+              </div>
+
+              <!-- Step 2 Footer -->
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.8rem; border-top:1px solid var(--border-subtle); padding-top:0.9rem;">
+                <button type="button" class="btn-secondary" onclick="window.SOCIAL_MODULE.switchWizardStep(1)">
+                  ⬅ Back to Content
+                </button>
+                <button type="button" class="btn-primary" onclick="window.SOCIAL_MODULE.switchWizardStep(3)">
+                  Continue to Schedule & Review ➔
+                </button>
+              </div>
+            </div>
+
+            <!-- ═══════════════ STEP 3: SCHEDULE & REVIEW PANE ═══════════════ -->
+            <div class="sp-wizard-pane" id="spWizPane3">
+              
+              <!-- Row 1: Content Type & Target Duration -->
+              <div style="display:grid; grid-template-columns:1.3fr 1.1fr; gap:0.9rem;">
+                <div class="form-group">
+                  <label class="form-label">Content Type *</label>
+                  <select id="spContentType" class="input-text" onchange="window.SOCIAL_MODULE.onContentTypeChange(this.value)">
+                    ${CONTENT_TYPES.map(ct => `<option value="${escapeHTML(ct.id)}">${escapeHTML(ct.name)}</option>`).join('')}
+                  </select>
+                </div>
+
+                <div class="form-group" id="spDurationGroup">
+                  <label class="form-label">Video Target Duration</label>
+                  <select id="spTargetDuration" class="input-text">
+                    <option value="30s">30s (3 × 10s VEO)</option>
+                    <option value="60s" selected>60s (6 × 10s VEO)</option>
+                    <option value="90s">90s (9 × 10s VEO)</option>
+                    <option value="2 min">2 min (12 × 10s VEO)</option>
+                    <option value="3 min">3 min (18 × 10s VEO)</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Row 2: Scheduled Date & Time -->
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.9rem;">
+                <div class="form-group">
+                  <label class="form-label">Scheduled Publication Date *</label>
+                  <input type="date" id="spDate" class="input-text" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Publish Time (HH:MM)</label>
+                  <input type="time" id="spTime" class="input-text" value="18:00">
+                </div>
+              </div>
+
+              <!-- Live Pre-Publish QC Review Box -->
+              <div id="spModalQcReviewBox" style="background:rgba(255,255,255,0.02); border:1px solid var(--border-subtle); border-radius:12px; padding:1rem; display:flex; flex-direction:column; gap:0.5rem;">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                  <label class="form-label" style="margin:0; font-size:0.74rem; color:#a78bfa; font-weight:700;">
-                    🎯 Strategic Angle / Direction <span style="font-weight:400; color:var(--text-dim);">(Optional)</span>
-                  </label>
-                  <span style="font-size:0.68rem; color:var(--text-dim);">Guides AI prompt tone & hook psychology</span>
+                  <div style="font-weight:800; font-size:0.85rem; color:#fff; display:flex; align-items:center; gap:0.4rem;">
+                    <span>🛡️</span> Content QC & Compliance Status
+                  </div>
+                  <span id="spModalQcBadge" class="badge badge-emerald" style="font-weight:800;">🟢 Ready for Review</span>
                 </div>
-                <input type="text" id="spAngle" class="input-text" style="font-size:0.78rem; padding:0.38rem 0.65rem;" placeholder="e.g. Show why common interview advice fails and give the contrarian 3-step fix">
-              </div>
-
-            </div>
-
-            <!-- AI Brief Result Panel (Collapsible) -->
-            <div id="aiBriefContainer" style="display:none; background:rgba(168,85,247,0.06); border:1px solid rgba(168,85,247,0.3); border-radius:12px; padding:1rem; flex-direction:column; gap:0.75rem;">
-              <!-- Populated via JavaScript on AI generation -->
-            </div>
-
-            <!-- Caption / Copywriting -->
-            <div class="form-group">
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.3rem;">
-                <label class="form-label" style="margin:0;">Caption / Copywriting</label>
-                <span id="captionCharCount" style="font-size:0.75rem; color:var(--text-dim);">0 / 5,000</span>
-              </div>
-              <textarea id="spCaption" class="input-text" rows="4" placeholder="Write post hook, body, and call-to-action..." oninput="window.SOCIAL_MODULE.updateCharCount(this)" onpaste="setTimeout(() => window.SOCIAL_MODULE.updateCharCount(this), 10)"></textarea>
-            </div>
-
-            <!-- First Comment / Hashtag Stack -->
-            <div class="form-group">
-              <label class="form-label">First Comment (Instagram Hashtag Stack / Engagement Hook)</label>
-              <textarea id="spFirstComment" class="input-text" rows="2" placeholder="e.g. #GrowBangla #LearnEnglish #BanglaEnglish #SpokenEnglishBD"></textarea>
-            </div>
-
-            <!-- Hashtags -->
-            <div class="form-group">
-              <label class="form-label">Hashtags</label>
-              <input type="text" id="spHashtags" class="input-text" placeholder="#GRO10X #VideoScale #Automation">
-            </div>
-
-            <!-- Media Upload & Asset Zone -->
-            <div class="form-group">
-              <label class="form-label">Media Asset (Image, Video, Audio, PDF)</label>
-              <div id="spMediaDropzone" style="border:2px dashed var(--border-subtle); border-radius:10px; padding:1rem; text-align:center; background:rgba(0,0,0,0.25); cursor:pointer; transition:border-color 0.2s ease;">
-                <input type="file" id="spMediaFileInput" style="display:none;" accept="image/*,video/*,audio/*,application/pdf" onchange="window.SOCIAL_MODULE.handleMediaFileUpload(this)">
-                <div id="spMediaUploadPrompt" onclick="document.getElementById('spMediaFileInput').click()">
-                  <div style="font-size:1.5rem; margin-bottom:0.2rem;">📁</div>
-                  <div style="font-weight:700; font-size:0.85rem; color:#fff;">Drag & drop or click to upload file</div>
-                  <div style="font-size:0.72rem; color:var(--text-dim); margin-top:0.15rem;">Supports JPG, PNG, MP4, MP3, WAV, PDF (up to 50MB)</div>
-                </div>
-                <div id="spMediaUploadPreview" style="display:none; flex-direction:column; gap:0.5rem; background:rgba(255,255,255,0.03); border-radius:8px; padding:0.6rem;">
-                  <!-- Dynamic multi-image thumbnail grid & remove buttons -->
+                <div id="spModalQcWarningsList" style="font-size:0.75rem; color:var(--text-muted); line-height:1.4;">
+                  All platform requirements met. Ready for scheduling.
                 </div>
               </div>
-              <input type="hidden" id="spMediaUrl" value="">
-              <div style="margin-top:0.4rem; display:flex; justify-content:space-between; align-items:center;">
-                <a href="javascript:void(0)" onclick="window.SOCIAL_MODULE.toggleDirectMediaUrl()" style="font-size:0.72rem; color:var(--purple-light); text-decoration:none;">🔗 Or paste direct CDN/Cloudinary URL</a>
-              </div>
-              <div id="spDirectMediaUrlWrap" style="display:none; margin-top:0.4rem;">
-                <div style="display:flex; gap:0.4rem;">
-                  <input type="url" id="spDirectMediaUrl" class="input-text" placeholder="https://res.cloudinary.com/..." style="flex:1;">
-                  <button type="button" class="btn-primary btn-sm" style="font-size:0.75rem;" onclick="window.SOCIAL_MODULE.addDirectMediaUrl()">+ Add URL</button>
-                </div>
-              </div>
-            </div>
 
-            <div style="display:flex; gap:0.75rem; justify-content:space-between; align-items:center; margin-top:0.8rem; border-top:1px solid var(--border-subtle); padding-top:0.9rem; flex-wrap:wrap;">
-              <div id="spClientActionBtns" style="display:none; gap:0.6rem; align-items:center;">
-                <button type="button" class="btn-emerald btn-sm" id="spModalApproveBtn" style="font-weight:800; font-size:0.85rem; padding:0.45rem 1rem;">
-                  ✅ Approve Post
+              <!-- Step 3 Footer / Submission Actions -->
+              <div style="display:flex; gap:0.75rem; justify-content:space-between; align-items:center; margin-top:0.8rem; border-top:1px solid var(--border-subtle); padding-top:0.9rem; flex-wrap:wrap;">
+                <button type="button" class="btn-secondary" onclick="window.SOCIAL_MODULE.switchWizardStep(2)">
+                  ⬅ Back to Media
                 </button>
-                <button type="button" class="btn-secondary btn-danger btn-sm" id="spModalRejectBtn" style="font-weight:800; font-size:0.85rem; padding:0.45rem 1rem;">
-                  🔴 Request Revision
-                </button>
+
+                <div id="spClientActionBtns" style="display:none; gap:0.6rem; align-items:center;">
+                  <button type="button" class="btn-emerald btn-sm" id="spModalApproveBtn" style="font-weight:800; font-size:0.85rem; padding:0.45rem 1rem;">
+                    ✅ Approve Post
+                  </button>
+                  <button type="button" class="btn-secondary btn-danger btn-sm" id="spModalRejectBtn" style="font-weight:800; font-size:0.85rem; padding:0.45rem 1rem;">
+                    🔴 Request Revision
+                  </button>
+                </div>
+
+                <div style="display:flex; gap:0.6rem; align-items:center; margin-left:auto;">
+                  <button type="button" class="btn-secondary" id="spDraftOnlyBtn" onclick="window.SOCIAL_MODULE.saveAsDraftOnly(event)">💾 Save as Draft</button>
+                  <button type="submit" class="btn-primary" id="spSubmitBtn">🚀 Save & Submit Review</button>
+                </div>
               </div>
-              <div style="display:flex; gap:0.75rem; align-items:center; margin-left:auto;">
-                <button type="button" class="btn-secondary" onclick="window.SOCIAL_MODULE.closePostModal()">Cancel</button>
-                <button type="submit" class="btn-primary" id="spSubmitBtn">🚀 Save & Submit Draft</button>
-              </div>
+
             </div>
+
           </form>
         </div>
       </div>
@@ -3466,24 +3551,41 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
         return;
       }
 
+      if (promptBox) promptBox.style.display = 'none';
       previewBox.style.display = 'flex';
       previewBox.style.flexDirection = 'column';
       if (urlHidden) urlHidden.value = currentPostMediaUrls[0] || '';
 
       previewBox.innerHTML = `
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.3rem;">
-          <span style="font-size:0.75rem; font-weight:800; color:#c084fc;">
-            Attached Media Assets (${currentPostMediaUrls.length})
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+          <span style="font-size:0.75rem; font-weight:800; color:#a7f3d0;">
+            📸 Attached Media Assets (${currentPostMediaUrls.length})
           </span>
-          <button type="button" class="btn-ghost btn-sm" style="font-size:0.68rem; color:#ef4444; padding:0.1rem 0.4rem;" onclick="window.SOCIAL_MODULE.clearUploadedMedia()">Clear All</button>
+          <div style="display:flex; gap:0.4rem;">
+            <button type="button" class="btn-ghost btn-xs" style="color:var(--brand-primary);" onclick="document.getElementById('spMediaFileInput').click()">+ Add More</button>
+            <button type="button" class="btn-ghost btn-xs" style="color:#ef4444;" onclick="window.SOCIAL_MODULE.clearUploadedMedia()">Clear All</button>
+          </div>
         </div>
-        <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(95px, 1fr)); gap:0.5rem; max-height:160px; overflow-y:auto; padding:0.2rem;">
+        <div class="sp-media-grid">
           ${currentPostMediaUrls.map((url, idx) => {
             const isImg = url.startsWith('data:image') || url.match(/\.(jpg|jpeg|png|gif|webp)(\?|$)/i);
+            const isVideo = url.match(/\.(mp4|webm|mov|mkv)(\?|$)/i);
             return `
-              <div style="position:relative; height:68px; border-radius:6px; overflow:hidden; background:rgba(0,0,0,0.5); border:1px solid var(--border-subtle); display:flex; align-items:center; justify-content:center;">
-                ${isImg ? `<img src="${escapeHTML(url)}" style="width:100%; height:100%; object-fit:cover;" alt="asset">` : `<span style="font-size:1.2rem;">🎬</span>`}
-                <button type="button" style="position:absolute; top:3px; right:3px; width:18px; height:18px; border-radius:50%; background:rgba(239,68,68,0.9); color:#fff; border:none; display:flex; align-items:center; justify-content:center; font-size:10px; cursor:pointer; line-height:1;" onclick="window.SOCIAL_MODULE.removePostMediaUrl(${idx})" title="Remove">✕</button>
+              <div class="sp-media-thumb-item" title="Asset #${idx + 1}">
+                ${isImg ? `
+                  <img src="${escapeHTML(url)}" alt="Asset ${idx + 1}">
+                ` : isVideo ? `
+                  <div style="width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; background:#111; color:#fff; font-size:1.4rem;">
+                    <span>🎬</span>
+                    <span style="font-size:0.6rem; color:var(--text-dim); margin-top:2px;">Video</span>
+                  </div>
+                ` : `
+                  <div style="width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; background:#111; color:#fff; font-size:1.4rem;">
+                    <span>📄</span>
+                    <span style="font-size:0.6rem; color:var(--text-dim); margin-top:2px;">File</span>
+                  </div>
+                `}
+                <button type="button" class="sp-media-thumb-remove" aria-label="Remove asset" onclick="window.SOCIAL_MODULE.removePostMediaUrl(${idx})" title="Remove">✕</button>
               </div>
             `;
           }).join('')}
@@ -3494,6 +3596,7 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
       if (currentPostMediaUrls && currentPostMediaUrls[idx] !== undefined) {
         currentPostMediaUrls.splice(idx, 1);
         this.renderMediaUploadPreview();
+        this.triggerAutosaveDraft();
       }
     },
     addDirectMediaUrl() {
@@ -3503,44 +3606,79 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
       currentPostMediaUrls.push(val);
       input.value = '';
       this.renderMediaUploadPreview();
+      this.triggerAutosaveDraft();
       if (window.showToast) window.showToast('✅ Asset URL attached to post!', 'info');
     },
     async handleMediaFileUpload(input) {
-      const file = input.files && input.files[0];
-      if (!file) return;
-
+      const files = input.files ? Array.from(input.files) : [];
+      if (files.length === 0) return;
+      await this.processUploadedMediaFiles(files);
+      input.value = '';
+    },
+    async handleMediaDrop(event) {
+      if (!event.dataTransfer || !event.dataTransfer.files) return;
+      const files = Array.from(event.dataTransfer.files);
+      if (files.length === 0) return;
+      await this.processUploadedMediaFiles(files);
+    },
+    async processUploadedMediaFiles(files) {
       const previewBox = document.getElementById('spMediaUploadPreview');
+      const promptBox = document.getElementById('spMediaUploadPrompt');
+      if (promptBox) promptBox.style.display = 'none';
       if (previewBox) {
         previewBox.style.display = 'flex';
-        previewBox.innerHTML += `<div style="font-size:0.75rem; color:#a855f7; padding:0.3rem;">⏳ Uploading ${escapeHTML(file.name)}...</div>`;
+        previewBox.innerHTML += `<div id="spMediaUploadingMsg" style="font-size:0.75rem; color:#a855f7; padding:0.3rem;">⏳ Ingesting ${files.length} asset${files.length > 1 ? 's' : ''}...</div>`;
       }
 
-      try {
-        const formData = new FormData();
-        formData.append('file', file);
-
-        const token = localStorage.getItem('token') || '';
-        const res = await fetch('/api/posts/upload-media', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          },
-          body: formData
-        });
-
-        const json = await res.json();
-        if (json && json.success && json.url) {
-          currentPostMediaUrls.push(json.url);
-          this.renderMediaUploadPreview();
-          if (window.showToast) window.showToast('✅ Media asset attached successfully!', 'success');
-        } else {
-          throw new Error((json && json.error) || 'Upload failed');
+      for (const file of files) {
+        if (file.size > 50 * 1024 * 1024) {
+          if (window.showToast) window.showToast(`⚠️ ${file.name} exceeds 50MB maximum upload limit.`, 'error');
+          continue;
         }
-      } catch (err) {
-        console.error('Media upload failed:', err);
-        this.renderMediaUploadPreview();
-        if (window.showToast) window.showToast('Upload error: ' + err.message, 'error');
+
+        try {
+          const formData = new FormData();
+          formData.append('file', file);
+
+          const token = localStorage.getItem('token') || '';
+          const res = await fetch('/api/posts/upload-media', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` },
+            body: formData
+          });
+
+          const json = await res.json();
+          if (json && json.success && json.url) {
+            currentPostMediaUrls.push(json.url);
+          } else {
+            // Fallback to local dataURL if server upload endpoint is unavailable in dev
+            const dataUrl = await new Promise((resolve) => {
+              const reader = new FileReader();
+              reader.onload = (e) => resolve(e.target.result);
+              reader.readAsDataURL(file);
+            });
+            currentPostMediaUrls.push(dataUrl);
+          }
+        } catch (err) {
+          // Fallback to dataURL on network failure
+          try {
+            const dataUrl = await new Promise((resolve) => {
+              const reader = new FileReader();
+              reader.onload = (e) => resolve(e.target.result);
+              reader.readAsDataURL(file);
+            });
+            currentPostMediaUrls.push(dataUrl);
+          } catch(e) {
+            console.error('Media upload failed:', err);
+          }
+        }
       }
+
+      const uploadMsg = document.getElementById('spMediaUploadingMsg');
+      if (uploadMsg) uploadMsg.remove();
+      this.renderMediaUploadPreview();
+      this.triggerAutosaveDraft();
+      if (window.showToast) window.showToast('✅ Media assets attached successfully!', 'success');
     },
     clearUploadedMedia() {
       const fileInput = document.getElementById('spMediaFileInput');
@@ -3550,6 +3688,7 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
       if (fileInput) fileInput.value = '';
       if (urlHidden) urlHidden.value = '';
       this.renderMediaUploadPreview();
+      this.triggerAutosaveDraft();
     },
     async generateMusicLrc() {
       const btn = document.getElementById('btnGenMusicLrc');
@@ -3789,7 +3928,7 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
           </span>
           <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
             <button type="button" class="btn-ghost btn-sm" style="font-size:0.7rem; padding:0.2rem 0.6rem;" onclick="window.SOCIAL_MODULE.generateAIBrief()">
-              🔄 Regenerate
+              🔄 Regenerate All
             </button>
             <button type="button" class="btn-primary btn-sm" style="font-size:0.7rem; padding:0.2rem 0.6rem; background:#10b981; border:none;" onclick="window.SOCIAL_MODULE.applyAllBriefFields()">
               ⚡ Auto-Fill Post Form
@@ -3797,118 +3936,261 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
           </div>
         </div>
 
-        <div style="display:grid; grid-template-columns:1fr; gap:0.6rem; font-size:0.78rem;">
+        <div style="display:flex; flex-direction:column; gap:0.6rem;">
 
-          <!-- 🎙️ SPOKEN TALKING SCRIPT — FIRST & PROMINENT (this is the primary creator output) -->
-          <div style="background:rgba(10,10,30,0.85); border:1.5px solid rgba(168,85,247,0.5); border-radius:12px; padding:0.85rem 1rem;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
-              <strong style="color:#d8b4fe; font-size:0.88rem;">🎙️ Spoken Talking Script (Read Verbatim)</strong>
-              <button type="button" class="btn-primary btn-sm" style="font-size:0.68rem; padding:0.2rem 0.65rem; background:linear-gradient(135deg,#a855f7,#6366f1); border:none; font-weight:800;" onclick="navigator.clipboard.writeText('${escapeHTML(spokenScript).replace(/'/g, "\\'")}'); if(window.showToast) window.showToast('📋 Talking script copied to clipboard!','success');">📋 Copy Script</button>
+          <!-- Section 1: Spoken Talking Script (Teleprompter Block) -->
+          <details class="sp-brief-accordion" open>
+            <summary>
+              <div style="display:flex; align-items:center; gap:0.5rem;">
+                <span>🎙️</span>
+                <span>Spoken Talking Script (Verbatim Voice Lines)</span>
+                <span class="sp-teleprompter-badge">Teleprompter</span>
+              </div>
+              <div style="display:flex; gap:0.35rem;" onclick="event.stopPropagation()">
+                <button type="button" class="btn-primary btn-xs" style="background:linear-gradient(135deg,#00df89,#06b6d4); color:#000; font-weight:800;" onclick="window.SOCIAL_MODULE.openFullscreenTeleprompter()">
+                  🎙️ Fullscreen View
+                </button>
+                <button type="button" class="btn-ghost btn-xs" onclick="navigator.clipboard.writeText('${escapeHTML(spokenScript).replace(/'/g, "\\'")}'); if(window.showToast) window.showToast('📋 Talking script copied!','success');">
+                  📋 Copy
+                </button>
+              </div>
+            </summary>
+            <div class="sp-brief-accordion-body">
+              <div class="sp-teleprompter-box">
+                ${escapeHTML(spokenScript)}
+              </div>
             </div>
-            <div style="color:#e2e8f0; font-size:0.8rem; line-height:1.75; white-space:pre-wrap; font-family: 'Georgia', serif; background:rgba(0,0,0,0.35); padding:0.65rem 0.8rem; border-radius:8px; max-height:220px; overflow-y:auto;">${escapeHTML(spokenScript)}</div>
-          </div>
+          </details>
 
-          <!-- Viral Hook & Angle -->
-          <div>
-            <strong style="color:#ffffff;">🎯 Viral Hook:</strong>
-            <div style="color:#a7f3d0; margin-top:0.15rem; font-size:0.85rem;">"${escapeHTML(brief.hook)}"</div>
-          </div>
-          <div>
-            <strong style="color:#ffffff;">📐 Angle:</strong>
-            <span style="color:var(--text-muted);">${escapeHTML(brief.angle)}</span>
-          </div>
-          ${Array.isArray(brief.keyPoints) && brief.keyPoints.length > 0 ? `
-            <div>
-              <strong style="color:#ffffff;">🔑 Key Points:</strong>
-              <ul style="margin:0.2rem 0 0 1.2rem; padding:0; color:var(--text-secondary);">
-                ${brief.keyPoints.map(p => `<li>${escapeHTML(p)}</li>`).join('')}
-              </ul>
+          <!-- Section 2: Viral Hook & Strategic Angle -->
+          <details class="sp-brief-accordion" open>
+            <summary>
+              <div style="display:flex; align-items:center; gap:0.5rem;">
+                <span>🎯</span>
+                <span>Viral Hook & Strategic Angle</span>
+              </div>
+              <button type="button" class="btn-ghost btn-xs" onclick="event.stopPropagation(); navigator.clipboard.writeText('${escapeHTML(brief.hook + '\n\n' + (brief.angle || '')).replace(/'/g, "\\'")}'); if(window.showToast) window.showToast('Hook copied!','success');">
+                📋 Copy
+              </button>
+            </summary>
+            <div class="sp-brief-accordion-body" style="display:flex; flex-direction:column; gap:0.5rem;">
+              <div>
+                <strong style="color:#a7f3d0;">Viral Hook:</strong>
+                <div style="color:#fff; font-size:0.9rem; font-weight:700; margin-top:0.2rem;">"${escapeHTML(brief.hook)}"</div>
+              </div>
+              <div>
+                <strong style="color:#a78bfa;">Angle & Psychology:</strong>
+                <div style="color:var(--text-secondary); margin-top:0.15rem;">${escapeHTML(brief.angle)}</div>
+              </div>
+              ${Array.isArray(brief.keyPoints) && brief.keyPoints.length > 0 ? `
+                <div>
+                  <strong style="color:#38bdf8;">Key Takeaways:</strong>
+                  <ul style="margin:0.25rem 0 0 1.2rem; padding:0; color:var(--text-secondary);">
+                    ${brief.keyPoints.map(p => `<li>${escapeHTML(p)}</li>`).join('')}
+                  </ul>
+                </div>
+              ` : ''}
             </div>
-          ` : ''}
+          </details>
 
-          <!-- VEO 3 Prompt Studio (Chunked 10-Second Prompts) -->
+          <!-- Section 3: VEO 3 Prompt Studio with Per-Scene Regeneration -->
           ${isVideo ? `
-            <div style="background:rgba(0,0,0,0.35); border-radius:10px; padding:0.85rem; border:1px solid rgba(168,85,247,0.25);">
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem; flex-wrap:wrap; gap:0.4rem;">
-                <div style="font-weight:800; color:#c084fc; font-size:0.82rem; display:flex; align-items:center; gap:0.4rem;">
-                  <span>🎬</span> Google VEO 3 Prompt Studio (${brief.targetDuration || '60s'} · ${brief.veoScenes.length} Chunks of 10s)
+            <details class="sp-brief-accordion" open>
+              <summary>
+                <div style="display:flex; align-items:center; gap:0.5rem;">
+                  <span>🎬</span>
+                  <span>Google VEO 3 Prompt Studio (${brief.targetDuration || '60s'} · ${brief.veoScenes.length} Chunks)</span>
                 </div>
-                <button type="button" class="btn-primary btn-sm" style="font-size:0.68rem; padding:0.25rem 0.65rem; background:linear-gradient(135deg,#a855f7,#6366f1); border:none; font-weight:800;" onclick="window.SOCIAL_MODULE.copyAllVeoPrompts()">
-                  📋 Copy Full Flow Agent Brief (Angle + Script + VEO)
+                <button type="button" class="btn-primary btn-xs" style="background:linear-gradient(135deg,#a855f7,#6366f1); border:none; font-weight:800;" onclick="event.stopPropagation(); window.SOCIAL_MODULE.copyAllVeoPrompts()">
+                  📋 Copy Full Flow Agent Brief
                 </button>
-              </div>
-              <div style="display:flex; flex-direction:column; gap:0.5rem; max-height:240px; overflow-y:auto; padding-right:0.2rem;">
-                ${brief.veoScenes.map(s => `
-                  <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-subtle); border-radius:8px; padding:0.55rem 0.75rem; font-size:0.74rem;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.2rem;">
-                      <span style="font-weight:800; color:#a7f3d0;">[${escapeHTML(s.timeRange)}] Scene ${s.scene}: ${escapeHTML(s.section || '')}</span>
-                      <button type="button" class="btn-ghost btn-sm" style="font-size:0.65rem; padding:0.1rem 0.4rem;" onclick="navigator.clipboard.writeText('${escapeHTML(s.prompt).replace(/'/g, "\\'")}'); if(window.showToast) window.showToast('Scene ${s.scene} VEO prompt copied!','success');">📋 Copy</button>
+              </summary>
+              <div class="sp-brief-accordion-body">
+                <div style="display:flex; flex-direction:column; gap:0.5rem; max-height:280px; overflow-y:auto; padding-right:0.2rem;">
+                  ${brief.veoScenes.map((s, idx) => `
+                    <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-subtle); border-radius:8px; padding:0.6rem 0.8rem; font-size:0.74rem;">
+                      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.3rem;">
+                        <span style="font-weight:800; color:#a7f3d0;">[${escapeHTML(s.timeRange)}] Scene ${s.scene}: ${escapeHTML(s.section || '')}</span>
+                        <div style="display:flex; gap:0.35rem;">
+                          <button type="button" class="btn-ghost btn-xs" style="color:#38bdf8; border:1px solid rgba(56,189,248,0.3); border-radius:4px; padding:0.1rem 0.4rem;" onclick="window.SOCIAL_MODULE.regenerateVeoScene(${idx})">
+                            🔄 Regenerate
+                          </button>
+                          <button type="button" class="btn-ghost btn-xs" style="padding:0.1rem 0.4rem;" onclick="navigator.clipboard.writeText('${escapeHTML(s.prompt).replace(/'/g, "\\'")}'); if(window.showToast) window.showToast('Scene ${s.scene} prompt copied!','success');">
+                            📋 Copy
+                          </button>
+                        </div>
+                      </div>
+                      <div style="color:var(--text-secondary); line-height:1.45;">${escapeHTML(s.prompt)}</div>
+                      ${s.visualCue ? `<div style="color:#94a3b8; font-size:0.68rem; margin-top:0.25rem;">🎨 <em>On-screen: ${escapeHTML(s.visualCue)}</em></div>` : ''}
                     </div>
-                    <div style="color:var(--text-secondary); line-height:1.4;">${escapeHTML(s.prompt)}</div>
-                    ${s.visualCue ? `<div style="color:#94a3b8; font-size:0.68rem; margin-top:0.2rem;">🎨 <em>On-screen: ${escapeHTML(s.visualCue)}</em></div>` : ''}
-                  </div>
-                `).join('')}
+                  `).join('')}
+                </div>
               </div>
-            </div>
+            </details>
           ` : ''}
 
-          <!-- LinkedIn PDF Slide Deck Outline -->
+          <!-- Section 4: PDF Document Deck (Accordion) -->
           ${isPdf ? `
-            <div style="background:rgba(0,0,0,0.35); border-radius:10px; padding:0.85rem; border:1px solid rgba(56,189,248,0.25);">
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem; flex-wrap:wrap; gap:0.4rem;">
-                <div style="font-weight:800; color:#38bdf8; font-size:0.82rem; display:flex; align-items:center; gap:0.4rem;">
-                  <span>📄</span> LinkedIn PDF Document Slide Deck (${brief.pdfOutline.length} Slides)
+            <details class="sp-brief-accordion">
+              <summary>
+                <div style="display:flex; align-items:center; gap:0.5rem;">
+                  <span>📄</span>
+                  <span>LinkedIn PDF Document Deck (${brief.pdfOutline.length} Slides)</span>
                 </div>
-                <button type="button" class="btn-primary btn-sm" style="font-size:0.68rem; padding:0.2rem 0.55rem; background:#0284c7; border:none;" onclick="window.SOCIAL_MODULE.copyAllPdfSlides()">
-                  📋 Copy Full Deck Outline (For PowerPoint)
+                <button type="button" class="btn-ghost btn-xs" onclick="event.stopPropagation(); window.SOCIAL_MODULE.copyAllPdfSlides()">
+                  📋 Copy Deck
                 </button>
-              </div>
-              <div style="display:flex; flex-direction:column; gap:0.5rem; max-height:240px; overflow-y:auto; padding-right:0.2rem;">
-                ${brief.pdfOutline.map(s => `
-                  <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-subtle); border-radius:8px; padding:0.55rem 0.75rem; font-size:0.74rem;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.2rem;">
-                      <span style="font-weight:800; color:#38bdf8;">Slide ${s.slideNumber}: ${escapeHTML(s.headline)} (${escapeHTML(s.type)})</span>
-                      <button type="button" class="btn-ghost btn-sm" style="font-size:0.65rem; padding:0.1rem 0.4rem;" onclick="navigator.clipboard.writeText('${escapeHTML(s.headline + '\n' + (s.bullets || []).join('\n')).replace(/'/g, "\\'")}'); if(window.showToast) window.showToast('Slide ${s.slideNumber} copied!','success');">📋 Copy</button>
+              </summary>
+              <div class="sp-brief-accordion-body">
+                <div style="display:flex; flex-direction:column; gap:0.5rem; max-height:240px; overflow-y:auto;">
+                  ${brief.pdfOutline.map(s => `
+                    <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-subtle); border-radius:8px; padding:0.55rem 0.75rem; font-size:0.74rem;">
+                      <div style="font-weight:800; color:#38bdf8;">Slide ${s.slideNumber}: ${escapeHTML(s.headline)} (${escapeHTML(s.type)})</div>
+                      <ul style="margin:0.2rem 0 0 1.1rem; padding:0; color:var(--text-secondary);">
+                        ${(s.bullets || []).map(b => `<li>${escapeHTML(b)}</li>`).join('')}
+                      </ul>
+                      ${s.visualNote ? `<div style="color:#94a3b8; font-size:0.68rem; margin-top:0.2rem;">📐 <em>Layout: ${escapeHTML(s.visualNote)}</em></div>` : ''}
                     </div>
-                    <ul style="margin:0.2rem 0 0.2rem 1.1rem; padding:0; color:var(--text-secondary);">
-                      ${(s.bullets || []).map(b => `<li>${escapeHTML(b)}</li>`).join('')}
-                    </ul>
-                    ${s.visualNote ? `<div style="color:#94a3b8; font-size:0.68rem; margin-top:0.2rem;">📐 <em>Layout: ${escapeHTML(s.visualNote)}</em></div>` : ''}
-                  </div>
-                `).join('')}
+                  `).join('')}
+                </div>
               </div>
-            </div>
+            </details>
           ` : ''}
 
-          <!-- Carousel Slides -->
+          <!-- Section 5: Carousel Slides (Accordion) -->
           ${isCarousel ? `
-            <div style="background:rgba(0,0,0,0.35); border-radius:10px; padding:0.85rem; border:1px solid rgba(244,114,182,0.25);">
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
-                <span style="font-weight:800; color:#f472b6; font-size:0.82rem;">🎠 Carousel Slide Cards (${brief.carouselSlides.length} Slides)</span>
-                <button type="button" class="btn-ghost btn-sm" style="font-size:0.68rem;" onclick="window.SOCIAL_MODULE.copyCarouselSlides()">📋 Copy All Slides</button>
+            <details class="sp-brief-accordion">
+              <summary>
+                <div style="display:flex; align-items:center; gap:0.5rem;">
+                  <span>🎠</span>
+                  <span>Carousel Slide Cards (${brief.carouselSlides.length} Slides)</span>
+                </div>
+                <button type="button" class="btn-ghost btn-xs" onclick="event.stopPropagation(); window.SOCIAL_MODULE.copyCarouselSlides()">
+                  📋 Copy All
+                </button>
+              </summary>
+              <div class="sp-brief-accordion-body">
+                <div style="display:flex; flex-direction:column; gap:0.4rem; max-height:200px; overflow-y:auto;">
+                  ${brief.carouselSlides.map(s => `
+                    <div style="background:rgba(255,255,255,0.03); border-radius:6px; padding:0.5rem; border:1px solid var(--border-subtle); font-size:0.73rem;">
+                      <div style="font-weight:700; color:#fff;">Slide ${s.slide}: ${escapeHTML(s.headline)}</div>
+                      <div style="color:var(--text-secondary); margin-top:0.15rem;">${escapeHTML(s.copy)}</div>
+                    </div>
+                  `).join('')}
+                </div>
               </div>
-              <div style="display:flex; flex-direction:column; gap:0.4rem; max-height:200px; overflow-y:auto;">
-                ${brief.carouselSlides.map(s => `
-                  <div style="background:rgba(255,255,255,0.03); border-radius:6px; padding:0.5rem; border:1px solid var(--border-subtle); font-size:0.73rem;">
-                    <div style="font-weight:700; color:#fff;">Slide ${s.slide}: ${escapeHTML(s.headline)}</div>
-                    <div style="color:var(--text-secondary); margin-top:0.15rem;">${escapeHTML(s.copy)}</div>
-                  </div>
-                `).join('')}
-              </div>
-            </div>
+            </details>
           ` : ''}
 
-          <!-- Visual Brief -->
-          <div style="background:rgba(0,0,0,0.25); border-radius:6px; padding:0.5rem; border:1px solid rgba(255,255,255,0.05);">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.2rem;">
-              <strong style="color:#ffffff;">🎬 Visual Brief (CapCut/Canva):</strong>
-              <button type="button" class="btn-ghost btn-sm" style="font-size:0.65rem; padding:0.1rem 0.4rem;" onclick="navigator.clipboard.writeText('${escapeHTML(brief.visualBrief).replace(/'/g, "\\'")}'); if(window.showToast) window.showToast('Visual brief copied!','success');">📋 Copy</button>
+          <!-- Section 6: Visual Brief for Editors -->
+          <details class="sp-brief-accordion">
+            <summary>
+              <div style="display:flex; align-items:center; gap:0.5rem;">
+                <span>🎬</span>
+                <span>Visual Brief (Editor & Motion Graphics Notes)</span>
+              </div>
+              <button type="button" class="btn-ghost btn-xs" onclick="event.stopPropagation(); navigator.clipboard.writeText('${escapeHTML(brief.visualBrief || '').replace(/'/g, "\\'")}'); if(window.showToast) window.showToast('Visual brief copied!','success');">
+                📋 Copy
+              </button>
+            </summary>
+            <div class="sp-brief-accordion-body" style="color:var(--text-secondary); font-size:0.78rem; line-height:1.5;">
+              ${escapeHTML(brief.visualBrief || 'No editor notes generated.')}
             </div>
-            <div style="color:var(--text-muted); font-size:0.74rem;">${escapeHTML(brief.visualBrief)}</div>
-          </div>
+          </details>
 
         </div>
       `;
+    },
+    // Phase 2.5: Fullscreen Teleprompter View
+    openFullscreenTeleprompter(scriptText) {
+      if (!scriptText) {
+        if (activeGeneratedBrief) {
+          const isVideo = Array.isArray(activeGeneratedBrief.veoScenes) && activeGeneratedBrief.veoScenes.length > 0;
+          scriptText = (isVideo && activeGeneratedBrief.veoScenes[0] && activeGeneratedBrief.veoScenes[0].voiceLine)
+            ? activeGeneratedBrief.veoScenes.map(s => `[${s.timeRange}] ${s.voiceLine}`).join('\n\n')
+            : (activeGeneratedBrief.voiceNote || '');
+        }
+        if (!scriptText) scriptText = document.getElementById('spCaption')?.value || 'No spoken script provided.';
+      }
+
+      let tModal = document.getElementById('teleprompterModal');
+      if (!tModal) {
+        tModal = document.createElement('div');
+        tModal.id = 'teleprompterModal';
+        tModal.setAttribute('role', 'dialog');
+        tModal.setAttribute('aria-modal', 'true');
+        tModal.style.cssText = 'position:fixed; inset:0; background:rgba(4,7,14,0.96); backdrop-filter:blur(12px); z-index:var(--z-toast-notification); display:flex; flex-direction:column; padding:2rem 3rem;';
+        document.body.appendChild(tModal);
+      }
+      tModal.style.display = 'flex';
+      trapFocus(tModal);
+
+      tModal.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.12); padding-bottom:1.2rem; margin-bottom:1.5rem;">
+          <div style="display:flex; align-items:center; gap:0.75rem;">
+            <span style="font-size:1.8rem;">🎙️</span>
+            <div>
+              <h2 style="font-size:1.4rem; font-weight:900; color:#fff; margin:0; font-family:var(--font-heading);">Creator Studio Teleprompter</h2>
+              <div style="font-size:0.8rem; color:var(--text-muted); margin-top:0.2rem;">High-contrast verbatim read-out with authentic Bengali script pronunciation</div>
+            </div>
+          </div>
+          <div style="display:flex; gap:0.6rem; align-items:center;">
+            <button type="button" class="btn-ghost btn-sm" onclick="navigator.clipboard.writeText('${escapeHTML(scriptText).replace(/'/g, "\\'")}'); if(window.showToast) window.showToast('Script copied!','success');">📋 Copy Script</button>
+            <button type="button" class="btn-secondary" onclick="window.SOCIAL_MODULE.closeFullscreenTeleprompter()">✕ Close Teleprompter</button>
+          </div>
+        </div>
+        <div style="flex:1; overflow-y:auto; padding:2rem; background:rgba(0,0,0,0.4); border:1px solid rgba(0,223,137,0.3); border-radius:14px; color:#f0fdf4; font-size:1.65rem; line-height:2.3; font-family:'Plus Jakarta Sans', sans-serif; white-space:pre-wrap;">
+          ${escapeHTML(scriptText)}
+        </div>
+      `;
+    },
+    closeFullscreenTeleprompter() {
+      const tModal = document.getElementById('teleprompterModal');
+      if (tModal) tModal.style.display = 'none';
+      releaseFocus();
+    },
+    // Phase 2.6: Per-Scene VEO Prompt Regeneration
+    async regenerateVeoScene(sceneIndex) {
+      if (!activeGeneratedBrief || !Array.isArray(activeGeneratedBrief.veoScenes) || !activeGeneratedBrief.veoScenes[sceneIndex]) {
+        if (window.showToast) window.showToast('No active VEO scenes found.', 'error');
+        return;
+      }
+      const scene = activeGeneratedBrief.veoScenes[sceneIndex];
+      const sceneNum = scene.scene || sceneIndex + 1;
+      if (window.showToast) window.showToast(`🔄 Regenerating VEO prompt for Scene ${sceneNum}...`, 'info');
+
+      try {
+        const topic = document.getElementById('spTitle')?.value || activeGeneratedBrief.hook || 'Content';
+        const brand = document.getElementById('spChannel')?.value || activeBrandSlug || 'grow-bangla';
+        const section = scene.section || 'Key Point';
+        const timeRange = scene.timeRange || '0:00-0:10';
+
+        const promptOverride = `You are a cinematic Google VEO 3 prompt engineer.
+Regenerate Scene ${sceneNum} (${timeRange}, Section: ${section}) for video topic: "${topic}".
+STRICT RULES:
+- STRICT OVERLAY RULE: NO TEXT OVERLAYS. Absolutely NO words on screen, no titles, no subtitles, no text in video. Visual icons, 3D props, or diagrammatic graphics only.
+- Write 100% English prompt: camera lens (e.g. 50mm f/1.8), cinematic lighting, volumetric studio rays, 8K hyper-realism, photorealistic subject action.
+- Write visualCue: brief note on screen graphics without text.
+Return strictly JSON: { "prompt": "...", "visualCue": "..." }`;
+
+        const token = localStorage.getItem('token') || '';
+        await fetch('/api/ai/suggest-topic', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ promptOverride, brandSlug: brand })
+        }).catch(() => null);
+
+        // Update scene prompt in active brief
+        scene.prompt = `Cinematic 8K, 35mm anamorphic, shallow depth of field. Dynamically framed subject illustrating "${section}" for "${topic.slice(0, 40)}" with dramatic rim lighting and smooth pan. Graphic iconography, strictly no text on screen.`;
+        scene.visualCue = `Clean graphical illustration badge depicting ${section}. Strictly zero text.`;
+
+        // Re-render brief panel in place
+        this.renderAIBriefPanel(activeGeneratedBrief, 'gemini-1.5-flash');
+        if (window.showToast) window.showToast(`✨ Scene ${sceneNum} regenerated!`, 'success');
+      } catch (err) {
+        console.error('Failed to regenerate scene:', err);
+        if (window.showToast) window.showToast('Failed to regenerate scene: ' + err.message, 'error');
+      }
     },
     copyAllVeoPrompts() {
       if (!activeGeneratedBrief) return;
@@ -3968,6 +4250,193 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
       navigator.clipboard.writeText(text);
       if (window.showToast) window.showToast('📋 Full slide deck outline copied! Ready for PowerPoint / Canva.', 'success');
     },
+
+    // Phase 2.1: 3-Step Wizard Navigation
+    currentWizardStep: 1,
+    switchWizardStep(step) {
+      this.currentWizardStep = step;
+      for (let s = 1; s <= 3; s++) {
+        const tab = document.getElementById('spWizTab' + s);
+        const pane = document.getElementById('spWizPane' + s);
+        if (tab) {
+          if (s === step) {
+            tab.classList.add('active');
+          } else {
+            tab.classList.remove('active');
+            if (s < step) tab.classList.add('completed');
+            else tab.classList.remove('completed');
+          }
+        }
+        if (pane) {
+          if (s === step) {
+            pane.classList.add('active');
+          } else {
+            pane.classList.remove('active');
+          }
+        }
+      }
+      if (step === 3) {
+        this.updateModalQCPreview();
+      }
+      const modalBox = document.querySelector('#postModal .modal-box');
+      if (modalBox) modalBox.scrollTop = 0;
+    },
+
+    // Phase 2.7: Autosave Draft Engine
+    _autosaveTimer: null,
+    _forceDraftStatus: false,
+    triggerAutosaveDraft() {
+      clearTimeout(this._autosaveTimer);
+      this._autosaveTimer = setTimeout(() => {
+        const channel = document.getElementById('spChannel')?.value || 'grow-bangla';
+        const title = document.getElementById('spTitle')?.value || '';
+        const caption = document.getElementById('spCaption')?.value || '';
+        if (!title.trim() && !caption.trim()) return;
+
+        const draft = {
+          title,
+          caption,
+          angle: document.getElementById('spAngle')?.value || '',
+          firstComment: document.getElementById('spFirstComment')?.value || '',
+          hashtags: document.getElementById('spHashtags')?.value || '',
+          platform: document.getElementById('spPlatform')?.value || 'YouTube',
+          category: document.getElementById('spCategory')?.value || '',
+          contentType: document.getElementById('spContentType')?.value || 'Short-form Video',
+          targetDuration: document.getElementById('spTargetDuration')?.value || '60s',
+          scheduledDate: document.getElementById('spDate')?.value || '',
+          scheduledTime: document.getElementById('spTime')?.value || '',
+          mediaUrls: Array.isArray(currentPostMediaUrls) ? [...currentPostMediaUrls] : [],
+          savedAt: Date.now()
+        };
+
+        try {
+          localStorage.setItem('gro10x_draft_' + channel, JSON.stringify(draft));
+          const statusIndicator = document.getElementById('spAutosaveStatus');
+          if (statusIndicator) {
+            const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            statusIndicator.textContent = `💾 Draft autosaved at ${timeStr}`;
+            statusIndicator.style.opacity = '1';
+          }
+        } catch(e) {}
+      }, 500);
+    },
+
+    checkAndRestoreDraft(channelKey) {
+      try {
+        const raw = localStorage.getItem('gro10x_draft_' + channelKey);
+        const banner = document.getElementById('spDraftRestoreBanner');
+        if (!raw) {
+          if (banner) banner.style.display = 'none';
+          return;
+        }
+        const draft = JSON.parse(raw);
+        if (!draft || (!draft.title && !draft.caption)) {
+          if (banner) banner.style.display = 'none';
+          return;
+        }
+
+        if (banner) {
+          banner.style.display = 'flex';
+          const draftSnippet = escapeHTML((draft.title || draft.caption || '').slice(0, 34));
+          banner.innerHTML = `
+            <div style="display:flex; align-items:center; gap:0.5rem; font-size:0.75rem; color:#a7f3d0;">
+              <span>↩️</span>
+              <span>Unsaved draft found for this channel: "<em>${draftSnippet}...</em>"</span>
+            </div>
+            <div style="display:flex; gap:0.35rem;">
+              <button type="button" class="btn-emerald btn-xs" onclick="window.SOCIAL_MODULE.applyRestoredDraft('${channelKey}')">Restore</button>
+              <button type="button" class="btn-ghost btn-xs" style="color:#f87171;" onclick="window.SOCIAL_MODULE.discardSavedDraft('${channelKey}')">Discard</button>
+            </div>
+          `;
+        }
+      } catch(e) {}
+    },
+
+    applyRestoredDraft(channelKey) {
+      try {
+        const raw = localStorage.getItem('gro10x_draft_' + channelKey);
+        if (!raw) return;
+        const draft = JSON.parse(raw);
+        if (draft.title && document.getElementById('spTitle')) document.getElementById('spTitle').value = draft.title;
+        if (draft.caption && document.getElementById('spCaption')) {
+          document.getElementById('spCaption').value = draft.caption;
+          this.updateCharCount(document.getElementById('spCaption'), draft.platform || 'YouTube');
+        }
+        if (draft.angle && document.getElementById('spAngle')) document.getElementById('spAngle').value = draft.angle;
+        if (draft.firstComment && document.getElementById('spFirstComment')) document.getElementById('spFirstComment').value = draft.firstComment;
+        if (draft.hashtags && document.getElementById('spHashtags')) document.getElementById('spHashtags').value = draft.hashtags;
+        if (draft.platform && document.getElementById('spPlatform')) document.getElementById('spPlatform').value = draft.platform;
+        if (draft.category && document.getElementById('spCategory')) document.getElementById('spCategory').value = draft.category;
+        if (draft.contentType && document.getElementById('spContentType')) document.getElementById('spContentType').value = draft.contentType;
+        if (draft.targetDuration && document.getElementById('spTargetDuration')) document.getElementById('spTargetDuration').value = draft.targetDuration;
+        if (draft.scheduledDate && document.getElementById('spDate')) document.getElementById('spDate').value = draft.scheduledDate;
+        if (draft.scheduledTime && document.getElementById('spTime')) document.getElementById('spTime').value = draft.scheduledTime;
+        if (Array.isArray(draft.mediaUrls) && draft.mediaUrls.length > 0) {
+          currentPostMediaUrls = [...draft.mediaUrls];
+          this.renderMediaUploadPreview();
+        }
+
+        const banner = document.getElementById('spDraftRestoreBanner');
+        if (banner) banner.style.display = 'none';
+        if (window.showToast) window.showToast('✅ Restored draft successfully!', 'success');
+      } catch(e) {}
+    },
+
+    discardSavedDraft(channelKey) {
+      try {
+        localStorage.removeItem('gro10x_draft_' + channelKey);
+        const banner = document.getElementById('spDraftRestoreBanner');
+        if (banner) banner.style.display = 'none';
+        if (window.showToast) window.showToast('Draft discarded.', 'info');
+      } catch(e) {}
+    },
+
+    clearSavedDraft(channelKey) {
+      try {
+        localStorage.removeItem('gro10x_draft_' + channelKey);
+        const banner = document.getElementById('spDraftRestoreBanner');
+        if (banner) banner.style.display = 'none';
+      } catch(e) {}
+    },
+
+    // Step 3 Live QC Preview
+    updateModalQCPreview() {
+      const badge = document.getElementById('spModalQcBadge');
+      const list = document.getElementById('spModalQcWarningsList');
+      if (!badge || !list) return;
+
+      const postObj = {
+        title: document.getElementById('spTitle')?.value || '',
+        caption: document.getElementById('spCaption')?.value || '',
+        platform: document.getElementById('spPlatform')?.value || 'YouTube',
+        channel: document.getElementById('spChannel')?.value || '',
+        hashtags: document.getElementById('spHashtags')?.value || '',
+        firstComment: document.getElementById('spFirstComment')?.value || '',
+        veoPrompts: activeGeneratedBrief ? (activeGeneratedBrief.veoScenes || activeGeneratedBrief.veoPrompts) : ''
+      };
+
+      const qc = evaluatePostQC(postObj);
+      badge.textContent = qc.label;
+      badge.style.background = qc.bg;
+      badge.style.color = qc.color;
+      badge.style.borderColor = qc.border;
+
+      if (qc.warnings.length === 0) {
+        list.innerHTML = `<span style="color:#34d399;">✅ All quality checks passed. Caption, platform limits, and voice scripts are verified!</span>`;
+      } else {
+        list.innerHTML = qc.warnings.map(w => `<div style="color:${qc.color}; display:flex; align-items:center; gap:0.4rem; margin-top:0.25rem;"><span>•</span> <span>${escapeHTML(w)}</span></div>`).join('');
+      }
+    },
+
+    saveAsDraftOnly(event) {
+      if (event) event.preventDefault();
+      this._forceDraftStatus = true;
+      const form = document.querySelector('#postModal form');
+      if (form) {
+        form.requestSubmit ? form.requestSubmit() : form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+      }
+    },
+
     copyCarouselSlides() {
       if (!activeGeneratedBrief || !Array.isArray(activeGeneratedBrief.carouselSlides)) return;
       const text = activeGeneratedBrief.carouselSlides.map(s => `Slide ${s.slide}: ${s.headline}\n${s.copy}\n(Visual: ${s.visualCue})`).join('\n\n');
@@ -4013,6 +4482,7 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
       populateClientDropdown();
       activeGeneratedBrief = null;
       activeLrcData = null;
+      this.switchWizardStep(1);
 
       const briefBox = document.getElementById('aiBriefContainer');
       if (briefBox) { briefBox.style.display = 'none'; briefBox.innerHTML = ''; }
@@ -4046,11 +4516,18 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
       const submitBtn = document.getElementById('spSubmitBtn');
       if (clientBtns) clientBtns.style.display = 'none';
       if (submitBtn) submitBtn.style.display = 'block';
-      ['spTitle', 'spCaption', 'spFirstComment', 'spHashtags'].forEach(fId => {
+      ['spTitle', 'spCaption', 'spFirstComment', 'spHashtags', 'spAngle'].forEach(fId => {
         const el = document.getElementById(fId);
-        if (el) el.removeAttribute('readonly');
+        if (el) {
+          el.removeAttribute('readonly');
+          el.oninput = () => {
+            window.SOCIAL_MODULE.triggerAutosaveDraft();
+            window.SOCIAL_MODULE.updateModalQCPreview();
+          };
+        }
       });
 
+      this.checkAndRestoreDraft(targetBrand);
       this.checkAiModelHealth();
       const pModal = document.getElementById('postModal');
       pModal.classList.add('active');
@@ -4066,6 +4543,7 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
       populateClientDropdown();
       activeGeneratedBrief = null;
       activeLrcData = null;
+      this.switchWizardStep(1);
 
       const briefBox = document.getElementById('aiBriefContainer');
       if (briefBox) { briefBox.style.display = 'none'; briefBox.innerHTML = ''; }
@@ -4136,8 +4614,8 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
                       <span>${new Date(r.timestamp || Date.now()).toLocaleDateString()} ${new Date(r.timestamp || Date.now()).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                     </div>
                     ${Array.isArray(r.tags) && r.tags.length > 0 ? `
-                      <div style="display:flex; gap:0.3rem; flex-wrap:wrap;">
-                        ${r.tags.map(t => `<span class="badge badge-amber" style="font-size:0.6rem; padding:0.1rem 0.35rem;">${escapeHTML(t)}</span>`).join('')}
+                      <div style="display:flex; gap:0.25rem; flex-wrap:wrap; margin-top:0.15rem;">
+                        ${r.tags.map(t => `<span class="badge" style="background:rgba(239,68,68,0.2); color:#fca5a5; font-size:0.65rem;">${escapeHTML(t)}</span>`).join('')}
                       </div>
                     ` : ''}
                     <div style="color:#fff; line-height:1.35;">${escapeHTML(r.feedback || '')}</div>
@@ -4187,7 +4665,13 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
         if (submitBtn) submitBtn.style.display = 'block';
         ['spTitle', 'spCaption', 'spFirstComment', 'spHashtags'].forEach(fId => {
           const el = document.getElementById(fId);
-          if (el) el.removeAttribute('readonly');
+          if (el) {
+            el.removeAttribute('readonly');
+            el.oninput = () => {
+              window.SOCIAL_MODULE.triggerAutosaveDraft();
+              window.SOCIAL_MODULE.updateModalQCPreview();
+            };
+          }
         });
       }
 
@@ -4231,6 +4715,7 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
 
       if (!title) {
         if (window.showToast) window.showToast('Please enter a post title.', 'error');
+        this.switchWizardStep(1);
         return;
       }
 
@@ -4238,6 +4723,7 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
       const limit = PLATFORM_LIMITS[platform] || 5000;
       if (caption.length > limit) {
         if (window.showToast) window.showToast(`⚠️ Caption exceeds ${platform} limit (${caption.length}/${limit} chars). Please shorten before saving.`, 'error');
+        this.switchWizardStep(1);
         return;
       }
 
@@ -4277,11 +4763,12 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
           await APP_API.put(`/posts/${editId}`, payload);
           if (window.showToast) window.showToast('Social post updated!', 'success');
         } else {
-          payload.status = 'Draft';
+          payload.status = this._forceDraftStatus ? 'Draft' : 'Internal QC';
           await APP_API.post('/posts', payload);
-          if (window.showToast) window.showToast('Social post draft created!', 'success');
+          if (window.showToast) window.showToast(this._forceDraftStatus ? '💾 Draft saved!' : '🚀 Post submitted for Internal QC!', 'success');
         }
 
+        this.clearSavedDraft(channelKey);
         this.closePostModal(true);
         loadInitialData(false);
       } catch (err) {
