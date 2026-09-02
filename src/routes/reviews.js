@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { requireAuth } = require('../middleware/auth');
 const { supabase, isSupabaseConfigured } = require('../services/supabase');
-const { broadcast } = require('../services/sse');
+const { broadcast, broadcastToClient } = require('../services/sse');
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } });
 
@@ -206,6 +206,9 @@ router.post('/', requireAuth, async (req, res) => {
     const review = mapReview(data);
     const { data: allReviews } = await supabase.from('reviews').select('*').order('created_at', { ascending: false });
     broadcast('review_update', (allReviews || []).map(mapReview));
+    if (review.clientId) {
+      broadcastToClient('review_update', [review], [review.clientId]);
+    }
 
     res.json({ success: true, review });
   } catch (err) {
@@ -243,7 +246,11 @@ router.post('/:id/upload', requireAuth, requireReviewOwnership, upload.single('a
 
     const { data: updatedReview } = await supabase.from('reviews').select('*').eq('id', id).maybeSingle();
     if (updatedReview) {
-      broadcast('review_update', [mapReview(updatedReview)]);
+      const mapped = mapReview(updatedReview);
+      broadcast('review_update', [mapped]);
+      if (mapped.clientId) {
+        broadcastToClient('review_update', [mapped], [mapped.clientId]);
+      }
     }
 
     res.json({ success: true, url: publicUrl, mediaType });
@@ -281,7 +288,10 @@ router.post('/:id/comments', requireAuth, requireReviewOwnership, async (req, re
 
     const comment = mapComment(insertedComment);
     broadcast('review_comment_update', { reviewId: id, comment });
-    broadcast('comment_update', { reviewId: id, comment });
+    const cId = review.client_id || review.clientId;
+    if (cId) {
+      broadcastToClient('review_comment_update', { reviewId: id, comment }, [cId]);
+    }
 
     res.json({ success: true, comment });
   } catch (err) {
@@ -310,7 +320,10 @@ router.put('/comments/:commentId/resolve', requireAuth, async (req, res) => {
 
     const comment = mapComment(commentData);
     broadcast('review_comment_update', { reviewId, comment });
-    broadcast('comment_update', { reviewId, comment });
+    const cId = commentData.client_id || commentData.clientId;
+    if (cId) {
+      broadcastToClient('review_comment_update', { reviewId, comment }, [cId]);
+    }
 
     res.json({ success: true, comment });
   } catch (err) {
@@ -428,6 +441,9 @@ router.post('/:id/approve', requireAuth, requireReviewOwnership, async (req, res
     };
 
     broadcast('review_update', [mapped]);
+    if (mapped.clientId) {
+      broadcastToClient('review_update', [mapped], [mapped.clientId]);
+    }
     res.json({ success: true, review: mapped });
   } catch (err) {
     console.error('Review Approve error:', err.message);
@@ -508,6 +524,9 @@ router.post('/:id/request-revisions', requireAuth, requireReviewOwnership, async
     };
 
     broadcast('review_update', [mapped]);
+    if (mapped.clientId) {
+      broadcastToClient('review_update', [mapped], [mapped.clientId]);
+    }
     res.json({ success: true, review: mapped });
   } catch (err) {
     console.error('Review Request Revisions error:', err.message);

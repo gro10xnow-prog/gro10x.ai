@@ -3,12 +3,18 @@ const router = express.Router();
 const { requireAuth } = require('../middleware/auth');
 const { requireAdmin } = require('../middleware/rbac');
 const { supabase } = require('../services/supabase');
-const { broadcast } = require('../services/sse');
+const { broadcast, broadcastToEmployee } = require('../services/sse');
 const cache = require('../services/cache');
 
 function broadcastTaskEvent(eventType, data) {
   cache.delByPrefix('tasks:');
   try {
+    const taskObj = Array.isArray(data) ? data[0] : data;
+    const assignees = Array.isArray(taskObj?.assignees) ? taskObj.assignees : (taskObj?.assignee ? [taskObj.assignee] : []);
+    const empCodes = assignees.filter(a => a && typeof a === 'string' && a !== 'Unassigned');
+    if (empCodes.length > 0) {
+      broadcastToEmployee(eventType, data, empCodes);
+    }
     return broadcast(eventType, data);
   } catch (e) {}
 }

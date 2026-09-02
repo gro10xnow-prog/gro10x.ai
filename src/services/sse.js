@@ -132,7 +132,9 @@ function deliverLocally(eventType, data, filterType = 'all', filterArgs = null) 
         if (filterType === 'employee') {
           const codes = (Array.isArray(filterArgs) ? filterArgs : [filterArgs]).map(code => String(code).toLowerCase());
           const clientCode = String(c.empCode || '').toLowerCase();
-          if (clientCode && codes.includes(clientCode)) {
+          const clientRole = String(c.role || '').toLowerCase();
+          const isManager = ['owner', 'admin', 'manager'].some(r => clientRole.includes(r));
+          if (isManager || (clientCode && codes.includes(clientCode))) {
             sendMsg();
           }
           return true;
@@ -143,7 +145,7 @@ function deliverLocally(eventType, data, filterType = 'all', filterArgs = null) 
           const clientRole = String(c.role || '').toLowerCase();
           const targetId = String(c.clientAccountId || '').toLowerCase();
           const isStaff = ['owner', 'admin', 'manager', 'specialist', 'team'].some(r => clientRole.includes(r));
-          const matches = isStaff || !targetId || idList.includes(targetId) || idList.some(id => targetId.includes(id));
+          const matches = isStaff || (targetId && (idList.includes(targetId) || idList.some(id => targetId.includes(id))));
           if (matches) {
             sendMsg();
           }

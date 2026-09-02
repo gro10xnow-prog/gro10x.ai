@@ -1,4 +1,4 @@
-﻿/**
+/**
  * public/crew/sse.js
  * Real-Time SSE Listener, Notification Bell & Live Sync for Crew Workspace
  */
@@ -199,8 +199,16 @@
 
   // ── Establish SSE Stream ──
   try {
-    const sseToken = window.CREW_API ? window.CREW_API.getToken() : '';
-    const sseEndpoint = sseToken ? `/api/sync?token=${encodeURIComponent(sseToken)}` : '/api/sync';
+    const sseToken = window.CREW_API ? window.CREW_API.getToken() : (localStorage.getItem('sb-access-token') || localStorage.getItem('gro10x_token') || '');
+    let cachedEmp = '';
+    try {
+      const u = JSON.parse(localStorage.getItem('crew_user') || '{}');
+      cachedEmp = u.emp_code || u.empCode || u.id || '';
+    } catch (_) {}
+    const empQuery = cachedEmp ? `&emp_code=${encodeURIComponent(cachedEmp)}` : '';
+    const sseEndpoint = sseToken 
+      ? `/api/sync?token=${encodeURIComponent(sseToken)}&role=crew${empQuery}` 
+      : `/api/sync?role=crew${empQuery}`;
     const evtSource = new EventSource(sseEndpoint);
 
     evtSource.onmessage = function(e) {

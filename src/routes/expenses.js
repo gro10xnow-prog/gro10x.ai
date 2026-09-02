@@ -4,7 +4,7 @@ const router = express.Router();
 const { requireAuth } = require('../middleware/auth');
 const { requireManager } = require('../middleware/rbac');
 const { supabase } = require('../services/supabase');
-const { broadcast } = require('../services/sse');
+const { broadcast, broadcastToEmployee } = require('../services/sse');
 const { uploadFile } = require('../services/storage');
 
 function mapExpense(e) {
@@ -124,7 +124,10 @@ router.post('/', requireAuth, async (req, res) => {
     inMemoryExpenses.unshift(payload);
     const expense = mapExpense(payload);
 
-    try { broadcast('expense_update', inMemoryExpenses.map(mapExpense)); } catch (e) {}
+    try {
+      broadcast('expense_update', inMemoryExpenses.map(mapExpense));
+      if (expense.submittedById) broadcastToEmployee('expense_update', [expense], [expense.submittedById]);
+    } catch (e) {}
 
     try {
       const { automation } = require('../services/automation');
@@ -167,7 +170,10 @@ router.put('/:id/approve', requireAuth, requireManager, async (req, res) => {
       await supabase.from('expenses').update(updates).eq('id', id);
     }
 
-    try { broadcast('expense_update', inMemoryExpenses.map(mapExpense)); } catch (e) {}
+    try {
+      broadcast('expense_update', inMemoryExpenses.map(mapExpense));
+      if (expense.submittedById) broadcastToEmployee('expense_update', [expense], [expense.submittedById]);
+    } catch (e) {}
 
     try {
       const { automation } = require('../services/automation');
@@ -205,7 +211,10 @@ router.post('/:id/approve-tier1', requireAuth, requireManager, async (req, res) 
       await supabase.from('expenses').update(updates).eq('id', id);
     }
 
-    try { broadcast('expense_update', inMemoryExpenses.map(mapExpense)); } catch (e) {}
+    try {
+      broadcast('expense_update', inMemoryExpenses.map(mapExpense));
+      if (expense.submittedById) broadcastToEmployee('expense_update', [expense], [expense.submittedById]);
+    } catch (e) {}
 
     try {
       const { automation } = require('../services/automation');
@@ -243,7 +252,10 @@ router.post('/:id/approve-tier2', requireAuth, requireManager, async (req, res) 
       await supabase.from('expenses').update(updates).eq('id', id);
     }
 
-    try { broadcast('expense_update', inMemoryExpenses.map(mapExpense)); } catch (e) {}
+    try {
+      broadcast('expense_update', inMemoryExpenses.map(mapExpense));
+      if (expense.submittedById) broadcastToEmployee('expense_update', [expense], [expense.submittedById]);
+    } catch (e) {}
 
     try {
       const { automation } = require('../services/automation');
@@ -283,7 +295,10 @@ router.patch('/:id', requireAuth, requireManager, async (req, res) => {
       await supabase.from('expenses').update(updates).eq('id', id);
     }
 
-    try { broadcast('expense_update', inMemoryExpenses.map(mapExpense)); } catch (e) {}
+    try {
+      broadcast('expense_update', inMemoryExpenses.map(mapExpense));
+      if (expense.submittedById) broadcastToEmployee('expense_update', [expense], [expense.submittedById]);
+    } catch (e) {}
 
     try {
       const { automation } = require('../services/automation');

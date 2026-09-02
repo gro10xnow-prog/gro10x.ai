@@ -3,7 +3,7 @@ const router = express.Router();
 const { requireAuth } = require('../middleware/auth');
 const { requireManager } = require('../middleware/rbac');
 const { supabase } = require('../services/supabase');
-const { broadcast } = require('../services/sse');
+const { broadcast, broadcastToEmployee } = require('../services/sse');
 
 function mapLeave(l) {
   if (!l) return null;
@@ -160,7 +160,10 @@ router.post('/', requireAuth, async (req, res) => {
       }
     }
 
-    try { broadcast('leave_update', inMemoryLeaves.map(mapLeave)); } catch (e) {}
+    try {
+      broadcast('leave_update', inMemoryLeaves.map(mapLeave));
+      if (payload.employee_id) broadcastToEmployee('leave_update', [mapLeave(payload)], [payload.employee_id]);
+    } catch (e) {}
 
     try {
       const { automation } = require('../services/automation');
@@ -238,7 +241,10 @@ router.post(['/:id/approve', '/:id/manager-approve'], requireAuth, requireManage
     }
     const leave = mapLeave(leaveData || inMemoryLeaves[memIdx] || { id, ...updates });
 
-    try { broadcast('leave_update', inMemoryLeaves.map(mapLeave)); } catch (e) {}
+    try {
+      broadcast('leave_update', inMemoryLeaves.map(mapLeave));
+      if (leave.employeeId) broadcastToEmployee('leave_update', [leave], [leave.employeeId]);
+    } catch (e) {}
 
     try {
       const { automation } = require('../services/automation');
@@ -327,7 +333,10 @@ router.post('/:id/reject', requireAuth, requireManager, async (req, res) => {
     }
     const leave = mapLeave(leaveData || inMemoryLeaves[memIdx] || { id, ...updates });
 
-    try { broadcast('leave_update', inMemoryLeaves.map(mapLeave)); } catch (e) {}
+    try {
+      broadcast('leave_update', inMemoryLeaves.map(mapLeave));
+      if (leave.employeeId) broadcastToEmployee('leave_update', [leave], [leave.employeeId]);
+    } catch (e) {}
 
     try {
       const { automation } = require('../services/automation');
@@ -398,7 +407,10 @@ router.put('/:id', requireAuth, requireManager, async (req, res) => {
     }
     const leave = mapLeave(leaveData || inMemoryLeaves[memIdx] || { id, ...updates });
 
-    try { broadcast('leave_update', inMemoryLeaves.map(mapLeave)); } catch (e) {}
+    try {
+      broadcast('leave_update', inMemoryLeaves.map(mapLeave));
+      if (leave.employeeId) broadcastToEmployee('leave_update', [leave], [leave.employeeId]);
+    } catch (e) {}
 
     return res.json({ success: true, leave });
   } catch (err) {

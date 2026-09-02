@@ -12,7 +12,7 @@ const upload = multer({
 const { requireAuth } = require('../middleware/auth');
 const { requireAdmin, requireManager } = require('../middleware/rbac');
 const { supabase } = require('../services/supabase');
-const { broadcast } = require('../services/sse');
+const { broadcast, broadcastToClient } = require('../services/sse');
 const { sendInvoiceEmail } = require('../services/resend');
 
 function mapInvoice(i) {
@@ -135,7 +135,10 @@ router.post('/', requireAuth, requireManager, async (req, res) => {
       }
     }
 
-    try { broadcast('invoice_update', inMemoryInvoices.map(mapInvoice)); } catch (e) {}
+    try {
+      broadcast('invoice_update', inMemoryInvoices.map(mapInvoice));
+      if (invoice.clientId) broadcastToClient('invoice_update', [invoice], [invoice.clientId]);
+    } catch (e) {}
     return res.status(201).json({ success: true, invoice });
   } catch (err) {
     console.error('Invoice POST error:', err.message);
@@ -169,7 +172,10 @@ router.put('/:id', requireAuth, requireManager, async (req, res) => {
       }
     }
 
-    try { broadcast('invoice_update', inMemoryInvoices.map(mapInvoice)); } catch (e) {}
+    try {
+      broadcast('invoice_update', inMemoryInvoices.map(mapInvoice));
+      if (invoice.clientId) broadcastToClient('invoice_update', [invoice], [invoice.clientId]);
+    } catch (e) {}
 
     if (req.body.status === 'Paid') {
       try {
@@ -310,7 +316,10 @@ router.post('/:id/pay', requireAuth, upload.single('screenshot'), async (req, re
       await supabase.from('invoices').update(updates).eq('id', id);
     }
 
-    try { broadcast('invoice_update', inMemoryInvoices.map(mapInvoice)); } catch (e) {}
+    try {
+      broadcast('invoice_update', inMemoryInvoices.map(mapInvoice));
+      if (invoice.clientId) broadcastToClient('invoice_update', [invoice], [invoice.clientId]);
+    } catch (e) {}
 
     // Send Telegram alert to Finance Manager
     try {
@@ -467,6 +476,7 @@ router.post('/quotes/:id/convert', requireAuth, requireManager, async (req, res)
     try {
       broadcast('quote_update', inMemoryQuotes.map(mapQuote));
       broadcast('invoice_update', inMemoryInvoices.map(mapInvoice));
+      if (invoice.clientId) broadcastToClient('invoice_update', [invoice], [invoice.clientId]);
     } catch (e) {}
 
     return res.json({ success: true, invoice, quote });

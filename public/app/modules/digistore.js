@@ -174,7 +174,9 @@ const DigistoreModule = {
     if (this._sseConnected) return;
     try {
       if (window.EventSource) {
-        const sse = new EventSource('/api/events');
+        const token = window.APP_API?.getToken() || localStorage.getItem('gro10x_token') || localStorage.getItem('sb-access-token') || '';
+        const sseUrl = token ? `/api/events?token=${encodeURIComponent(token)}&role=admin` : '/api/events?role=admin';
+        const sse = new EventSource(sseUrl);
         sse.onmessage = (e) => {
           try {
             const payload = JSON.parse(e.data);
