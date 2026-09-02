@@ -10,6 +10,33 @@ try { pdfParse = require('pdf-parse'); } catch (e) { console.warn('pdf-parse mod
 const { requireAuth } = require('../middleware/auth');
 const { requireManager } = require('../middleware/rbac');
 const { getFirstName } = require('../utils/name');
+const rateLimit = require('express-rate-limit');
+
+// Phase 4.9: Rate limiter for AI endpoints to prevent abuse and quota exhaustion
+const aiRateLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 45, // 45 requests per minute per IP
+  message: { success: false, error: '⚠️ Too many AI generation requests. Please wait a moment before trying again.' },
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
+// Phase 4.1: Helper to resolve Brand Identity Kit
+const BRANDS_STATE_FILE = path.join(__dirname, '../../data/social_brands_state.json');
+function getBrandProfile(brandSlugOrName) {
+  try {
+    if (fs.existsSync(BRANDS_STATE_FILE)) {
+      const parsed = JSON.parse(fs.readFileSync(BRANDS_STATE_FILE, 'utf8'));
+      const brands = parsed.brands || [];
+      if (!brandSlugOrName) return brands[0] || {};
+      const lower = String(brandSlugOrName).toLowerCase().trim();
+      return brands.find(b => b.slug === lower || b.id === lower || (b.name && b.name.toLowerCase().includes(lower)) || lower.includes(b.slug)) || brands[0] || {};
+    }
+  } catch (e) {
+    // fallback
+  }
+  return {};
+}
 
 const PORTAL = process.env.CREW_PORTAL_URL || 'https://gro10x-ai.vercel.app/crew';
 const BOT_LINK = process.env.TELEGRAM_BOT_LINK || 'https://t.me/Aigeneral01bot';
@@ -706,8 +733,9 @@ router.post('/mockup-prompts', requireAuth, async (req, res) => {
 });
 
 // POST /api/ai/social-brief — Channel & Content-Type Aware Content Blueprint Generator with VEO 3 Chunks & PDF Outlines
-router.post('/social-brief', requireAuth, async (req, res) => {
+router.post('/social-brief', requireAuth, aiRateLimiter, async (req, res) => {
   const {
+    brandSlug,
     channel,
     contentCategory,
     platform,
@@ -721,6 +749,7 @@ router.post('/social-brief', requireAuth, async (req, res) => {
   } = req.body;
 
   const chanName = channel || 'Grow Bangla';
+  const brandProfile = getBrandProfile(brandSlug || chanName);
   const category = contentCategory || 'English Lesson';
   const plat = platform || 'YouTube';
   const type = contentType || 'Short-form Video';
@@ -1188,8 +1217,12 @@ Each item in "carouselSlides" MUST have:
   }
 
   const prompt =
-    `You are the Chief Content Strategist and Video Director for GRO10X Media and Engine 5 (Video & Media Scale).\n` +
-    `Generate a comprehensive, production-ready social media content blueprint for:\n` +
+    `• Brand: "${brandProfile.name || chanName}"\n` +
+    `  - Mission: "${brandProfile.mission || brandProfile.tagline || ''}"\n` +
+    `  - Core Niche: "${brandProfile.niche || ''}"\n` +
+    `  - Tone of Voice: "${brandProfile.tone || 'Authoritative, engaging, high-energy, actionable'}"\n` +
+    `  - Standard Call-to-Action: "${brandProfile.standardCta || ''}"\n` +
+    `  - Standard Brand Hashtags: "${brandProfile.standardHashtags || ''}"\n` +
     `• Channel: "${chanName}" (Context: Grow Bangla=Spoken English learning for Bangladeshis; PILUTICS=Geopolitics & travel analysis; Bong Hits=Humor, music, entertainment & viral TikTok; GRO10X Brand=AI agency, SaaS & B2B growth)\n` +
     `• Content Category: "${category}"\n` +
     `• Content Type: "${type}"\n` +
@@ -1268,7 +1301,7 @@ Each item in "carouselSlides" MUST have:
 });
 
 // POST /api/ai/content-calendar — Generate 4-Week Strategic Monthly Content Plan
-router.post('/content-calendar', requireAuth, async (req, res) => {
+router.post('/content-calendar', requireAuth, aiRateLimiter, async (req, res) => {
   const { channels, month, year, contentMix, analyticsSummary } = req.body;
 
   const targetMonth = month || new Date().toLocaleString('default', { month: 'long' });
@@ -1477,7 +1510,7 @@ router.post('/parse-analytics-csv', requireAuth, async (req, res) => {
 });
 
 // POST /api/ai/music-lrc — Bong Hits Music Video Workflow: Timestamped LRC Generator & VEO Scene Director
-router.post('/music-lrc', requireAuth, async (req, res) => {
+router.post('/music-lrc', requireAuth, aiRateLimiter, async (req, res) => {
   const { title, lyrics, genre, durationSeconds, bpm } = req.body;
   const songTitle = title || 'Bong Hits Track';
   const songDuration = durationSeconds ? Number(durationSeconds) : 60;
@@ -1605,7 +1638,7 @@ router.post('/music-lrc', requireAuth, async (req, res) => {
 });
 
 // POST /api/ai/suggest-topic — Context-Aware Topic Suggester
-router.post('/suggest-topic', requireAuth, async (req, res) => {
+router.post('/suggest-topic', requireAuth, aiRateLimiter, async (req, res) => {
   const { brandSlug, channelId, contentType, platform, month, year } = req.body;
 
   try {
@@ -1737,7 +1770,7 @@ router.post('/suggest-topic', requireAuth, async (req, res) => {
           contentType: contentType || "Short-form Video"
         }
       ];
-    } else {
+    } else if (isGro10x) {
       candidatePool = [
         {
           topic: "How We Build & Ship Full-Stack AI MVPs in 48 Hours with Node.js & Supabase",
@@ -1754,6 +1787,20 @@ router.post('/suggest-topic', requireAuth, async (req, res) => {
           contentType: contentType || "Short-form Video"
         }
       ];
+    } else {
+      // Dynamic topic candidates for custom brands & creator channels
+      const niche = brand?.niche || 'Digital Media';
+      const pillars = (channel?.analyticsKnowledgeBase?.topCategories && channel.analyticsKnowledgeBase.topCategories.length > 0)
+        ? channel.analyticsKnowledgeBase.topCategories
+        : [niche, 'Strategic Execution', 'Case Study', 'Expert Breakdown'];
+
+      candidatePool = pillars.map((p, idx) => ({
+        topic: `${p}: High-Retention Execution Blueprint for ${brand?.name || 'Your Audience'}`,
+        category: p,
+        hook: `Stop making this common mistake in ${p}! 🛑`,
+        rationale: `Custom brand intelligence grounded in verified pillar "${p}" for ${brand?.name || 'Brand'}.`,
+        contentType: contentType || 'Short-form Video'
+      }));
     }
 
     const topCategories = (channel?.analyticsKnowledgeBase?.topCategories || []).map(c => c.toLowerCase());

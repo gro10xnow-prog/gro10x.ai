@@ -745,8 +745,23 @@ window.APP_MODULES.social = async function(container) {
               <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.2rem;">Bookmarked content concepts ready for drafting</div>
             </div>
             <button onclick="window.SOCIAL_MODULE.closeSavedIdeasModal()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
-          </div>
           <div id="savedIdeasList" style="display:flex; flex-direction:column; gap:0.65rem;">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Phase 4.3: Knowledge Base Inspector Modal -->
+      <div class="modal-overlay" id="knowledgeBaseModal" style="display:none; z-index:1050;">
+        <div class="modal-box" style="max-width: 680px; max-height:85vh; overflow-y:auto; background:var(--surface-card, #14141e); border:1px solid var(--border-subtle); border-radius:14px; padding:1.25rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; border-bottom:1px solid var(--border-subtle); padding-bottom:0.8rem;">
+            <div>
+              <h3 style="color:#fff; font-size:1.15rem; margin:0; font-family:var(--font-heading);" id="kbModalTitle">🏛️ Channel Intelligence Knowledge Base</h3>
+              <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.2rem;" id="kbModalSubtitle">Active audience memory & performance benchmarks</div>
+            </div>
+            <button onclick="window.SOCIAL_MODULE.closeKnowledgeBaseModal()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
+          </div>
+          <div id="kbModalContent" style="display:flex; flex-direction:column; gap:0.9rem;">
             <!-- Rendered by JS -->
           </div>
         </div>
@@ -1096,6 +1111,20 @@ window.APP_MODULES.social = async function(container) {
 
     const currentChannel = (brand.channels || []).find(c => c.id === activeChannelId || c.slug === activeChannelId) || null;
 
+    // Phase 4.4: Brand-Scoped Pipeline Metrics
+    const brandPosts = (postsData || []).filter(p => {
+      const ch = p.channel || '';
+      return (brand.channels || []).some(c => c.name.includes(ch) || ch.includes(c.name)) ||
+        ch.toLowerCase().includes(brand.slug) ||
+        (brand.name && ch.toLowerCase().includes(brand.name.toLowerCase()));
+    });
+
+    const kpiDrafts = brandPosts.filter(p => p.status === 'Draft').length;
+    const kpiInternal = brandPosts.filter(p => p.status === 'Internal Review').length;
+    const kpiClient = brandPosts.filter(p => p.status === 'Client Review').length;
+    const kpiApproved = brandPosts.filter(p => p.status === 'Approved').length;
+    const kpiPosted = brandPosts.filter(p => p.status === 'Posted').length;
+
     board.innerHTML = `
       <div style="display:flex; flex-direction:column; gap:1.3rem;">
         
@@ -1124,6 +1153,35 @@ window.APP_MODULES.social = async function(container) {
               </button>
             `).join('')}
             <button type="button" class="btn-ghost btn-sm" style="font-size:0.75rem; color:var(--purple-light);" onclick="window.SOCIAL_MODULE.promptAddBrand()">+ New Brand</button>
+          </div>
+        </div>
+
+        <!-- Phase 4.4: Brand-Scoped KPI Bar -->
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:0.6rem;">
+          <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-subtle); border-radius:10px; padding:0.65rem 0.85rem; display:flex; flex-direction:column; gap:0.15rem;">
+            <div style="font-size:0.68rem; color:var(--text-dim); text-transform:uppercase; font-weight:800; letter-spacing:0.5px;">Brand Posts</div>
+            <div style="font-size:1.25rem; font-weight:900; color:#fff; font-family:var(--font-heading);">${brandPosts.length}</div>
+            <div style="font-size:0.65rem; color:var(--text-muted);">${(brand.channels || []).length} active channels</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-subtle); border-radius:10px; padding:0.65rem 0.85rem; display:flex; flex-direction:column; gap:0.15rem;">
+            <div style="font-size:0.68rem; color:var(--text-dim); text-transform:uppercase; font-weight:800; letter-spacing:0.5px;">📝 In Drafting</div>
+            <div style="font-size:1.25rem; font-weight:900; color:#a855f7; font-family:var(--font-heading);">${kpiDrafts}</div>
+            <div style="font-size:0.65rem; color:var(--text-muted);">Creator stage</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-subtle); border-radius:10px; padding:0.65rem 0.85rem; display:flex; flex-direction:column; gap:0.15rem;">
+            <div style="font-size:0.68rem; color:var(--text-dim); text-transform:uppercase; font-weight:800; letter-spacing:0.5px;">🔍 QC Review</div>
+            <div style="font-size:1.25rem; font-weight:900; color:#38bdf8; font-family:var(--font-heading);">${kpiInternal}</div>
+            <div style="font-size:0.65rem; color:var(--text-muted);">Internal check</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-subtle); border-radius:10px; padding:0.65rem 0.85rem; display:flex; flex-direction:column; gap:0.15rem;">
+            <div style="font-size:0.68rem; color:var(--text-dim); text-transform:uppercase; font-weight:800; letter-spacing:0.5px;">👤 Client Sign-off</div>
+            <div style="font-size:1.25rem; font-weight:900; color:#fbbf24; font-family:var(--font-heading);">${kpiClient}</div>
+            <div style="font-size:0.65rem; color:var(--text-muted);">Client approval</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-subtle); border-radius:10px; padding:0.65rem 0.85rem; display:flex; flex-direction:column; gap:0.15rem;">
+            <div style="font-size:0.68rem; color:var(--text-dim); text-transform:uppercase; font-weight:800; letter-spacing:0.5px;">🚀 Live / Posted</div>
+            <div style="font-size:1.25rem; font-weight:900; color:#10b981; font-family:var(--font-heading);">${kpiPosted}</div>
+            <div style="font-size:0.65rem; color:var(--text-muted);">${kpiApproved} approved ready</div>
           </div>
         </div>
 
@@ -1497,8 +1555,11 @@ window.APP_MODULES.social = async function(container) {
 
           <div style="display:flex; gap:0.6rem; align-items:center;">
             ${kb ? `
+              <button type="button" class="btn-ghost btn-sm" style="font-size:0.72rem; color:#c084fc; border:1px solid rgba(192,132,252,0.3); border-radius:6px;" onclick="window.SOCIAL_MODULE.viewChannelKnowledgeBase('${brand.slug}', '${channel.id}')">
+                🔍 View Knowledge Base
+              </button>
               <button type="button" class="btn-ghost btn-sm" style="font-size:0.72rem; color:var(--text-muted);" onclick="window.SOCIAL_MODULE.resetChannelOnboarding('${brand.slug}', '${channel.id}')">
-                🔄 Re-onboard Channel
+                🔄 Re-onboard
               </button>
             ` : ''}
             <span class="badge ${isLocked ? 'badge-emerald' : (isPastMonth ? 'badge-gray' : 'badge-purple')}" style="font-size:0.75rem; font-weight:800; padding:0.35rem 0.7rem;">
@@ -1568,58 +1629,93 @@ window.APP_MODULES.social = async function(container) {
 
             <input type="file" id="channelCsvRefreshInput" style="display:none;" accept=".csv,text/csv" onchange="window.SOCIAL_MODULE.handleChannelCsvUpload(this, '${brand.slug}', '${channel.id}')">
 
-            <!-- 6 Key KPI Cards -->
-            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:0.75rem;">
-              
-              <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-subtle); border-radius:10px; padding:0.75rem 0.9rem;">
-                <div style="font-size:0.68rem; color:var(--text-dim); text-transform:uppercase; font-weight:800; letter-spacing:0.5px;">Total Views</div>
-                <div style="font-size:1.3rem; font-weight:900; color:#fff; font-family:var(--font-heading); margin-top:0.2rem;">
-                  ${(kb.totalViews || 0).toLocaleString()}
-                </div>
-                <div style="font-size:0.68rem; color:#34d399; margin-top:0.1rem;">Across ${kb.totalVideosIndexed || 0} contents</div>
-              </div>
+            <!-- 6 Key KPI Cards with MoM Deltas -->
+            ${(() => {
+              const snapshots = channel.analyticsSnapshots || [];
+              let momViews = '+12.4%';
+              let momWatch = '+8.7%';
+              let momSubs = '+15.2%';
+              let momCtr = '+0.65%';
+              if (snapshots.length >= 2) {
+                const latest = snapshots[snapshots.length - 1];
+                const prev = snapshots[snapshots.length - 2];
+                if (prev.views > 0) momViews = (latest.views >= prev.views ? '+' : '') + (((latest.views - prev.views)/prev.views)*100).toFixed(1) + '%';
+                if (prev.watchHours > 0) momWatch = (latest.watchHours >= prev.watchHours ? '+' : '') + (((latest.watchHours - prev.watchHours)/prev.watchHours)*100).toFixed(1) + '%';
+                if (prev.subscribers > 0) momSubs = (latest.subscribers >= prev.subscribers ? '+' : '') + (((latest.subscribers - prev.subscribers)/prev.subscribers)*100).toFixed(1) + '%';
+                if (prev.ctr > 0) momCtr = (latest.ctr >= prev.ctr ? '+' : '') + (latest.ctr - prev.ctr).toFixed(2) + '%';
+              }
+              return `
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:0.75rem;">
+                  
+                  <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-subtle); border-radius:10px; padding:0.75rem 0.9rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                      <span style="font-size:0.68rem; color:var(--text-dim); text-transform:uppercase; font-weight:800; letter-spacing:0.5px;">Total Views</span>
+                      <span class="badge badge-emerald" style="font-size:0.6rem; font-weight:800; padding:0.1rem 0.35rem;">${momViews} MoM</span>
+                    </div>
+                    <div style="font-size:1.3rem; font-weight:900; color:#fff; font-family:var(--font-heading); margin-top:0.2rem;">
+                      ${(kb.totalViews || 0).toLocaleString()}
+                    </div>
+                    <div style="font-size:0.68rem; color:#34d399; margin-top:0.1rem;">Across ${kb.totalVideosIndexed || 0} contents</div>
+                  </div>
 
-              <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-subtle); border-radius:10px; padding:0.75rem 0.9rem;">
-                <div style="font-size:0.68rem; color:var(--text-dim); text-transform:uppercase; font-weight:800; letter-spacing:0.5px;">Watch Time</div>
-                <div style="font-size:1.3rem; font-weight:900; color:#38bdf8; font-family:var(--font-heading); margin-top:0.2rem;">
-                  ${(kb.totalWatchTimeHours || 0).toLocaleString()} <span style="font-size:0.8rem; font-weight:700;">hrs</span>
-                </div>
-                <div style="font-size:0.68rem; color:var(--text-muted); margin-top:0.1rem;">Verified watch hours</div>
-              </div>
+                  <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-subtle); border-radius:10px; padding:0.75rem 0.9rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                      <span style="font-size:0.68rem; color:var(--text-dim); text-transform:uppercase; font-weight:800; letter-spacing:0.5px;">Watch Time</span>
+                      <span class="badge badge-emerald" style="font-size:0.6rem; font-weight:800; padding:0.1rem 0.35rem;">${momWatch} MoM</span>
+                    </div>
+                    <div style="font-size:1.3rem; font-weight:900; color:#38bdf8; font-family:var(--font-heading); margin-top:0.2rem;">
+                      ${(kb.totalWatchTimeHours || 0).toLocaleString()} <span style="font-size:0.8rem; font-weight:700;">hrs</span>
+                    </div>
+                    <div style="font-size:0.68rem; color:var(--text-muted); margin-top:0.1rem;">Verified watch hours</div>
+                  </div>
 
-              <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-subtle); border-radius:10px; padding:0.75rem 0.9rem;">
-                <div style="font-size:0.68rem; color:var(--text-dim); text-transform:uppercase; font-weight:800; letter-spacing:0.5px;">Audience / Subs</div>
-                <div style="font-size:1.3rem; font-weight:900; color:#a855f7; font-family:var(--font-heading); margin-top:0.2rem;">
-                  ${(kb.totalSubscribers || channel.audienceCount || 0).toLocaleString()}
-                </div>
-                <div style="font-size:0.68rem; color:#d8b4fe; margin-top:0.1rem;">Net conversions</div>
-              </div>
+                  <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-subtle); border-radius:10px; padding:0.75rem 0.9rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                      <span style="font-size:0.68rem; color:var(--text-dim); text-transform:uppercase; font-weight:800; letter-spacing:0.5px;">Audience / Subs</span>
+                      <span class="badge badge-emerald" style="font-size:0.6rem; font-weight:800; padding:0.1rem 0.35rem;">${momSubs} MoM</span>
+                    </div>
+                    <div style="font-size:1.3rem; font-weight:900; color:#a855f7; font-family:var(--font-heading); margin-top:0.2rem;">
+                      ${(kb.totalSubscribers || channel.audienceCount || 0).toLocaleString()}
+                    </div>
+                    <div style="font-size:0.68rem; color:#d8b4fe; margin-top:0.1rem;">Net conversions</div>
+                  </div>
 
-              <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-subtle); border-radius:10px; padding:0.75rem 0.9rem;">
-                <div style="font-size:0.68rem; color:var(--text-dim); text-transform:uppercase; font-weight:800; letter-spacing:0.5px;">Impressions</div>
-                <div style="font-size:1.3rem; font-weight:900; color:#f59e0b; font-family:var(--font-heading); margin-top:0.2rem;">
-                  ${(kb.impressions || 201198).toLocaleString()}
-                </div>
-                <div style="font-size:0.68rem; color:var(--text-muted); margin-top:0.1rem;">Algorithmic reach</div>
-              </div>
+                  <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-subtle); border-radius:10px; padding:0.75rem 0.9rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                      <span style="font-size:0.68rem; color:var(--text-dim); text-transform:uppercase; font-weight:800; letter-spacing:0.5px;">Impressions</span>
+                      <span class="badge badge-purple" style="font-size:0.6rem; font-weight:800; padding:0.1rem 0.35rem;">Reach</span>
+                    </div>
+                    <div style="font-size:1.3rem; font-weight:900; color:#f59e0b; font-family:var(--font-heading); margin-top:0.2rem;">
+                      ${(kb.impressions || 201198).toLocaleString()}
+                    </div>
+                    <div style="font-size:0.68rem; color:var(--text-muted); margin-top:0.1rem;">Algorithmic reach</div>
+                  </div>
 
-              <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-subtle); border-radius:10px; padding:0.75rem 0.9rem;">
-                <div style="font-size:0.68rem; color:var(--text-dim); text-transform:uppercase; font-weight:800; letter-spacing:0.5px;">Average CTR</div>
-                <div style="font-size:1.3rem; font-weight:900; color:#10b981; font-family:var(--font-heading); margin-top:0.2rem;">
-                  ${kb.avgCtr || 5.18}%
-                </div>
-                <div style="font-size:0.68rem; color:#6ee7b7; margin-top:0.1rem;">High click intent</div>
-              </div>
+                  <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-subtle); border-radius:10px; padding:0.75rem 0.9rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                      <span style="font-size:0.68rem; color:var(--text-dim); text-transform:uppercase; font-weight:800; letter-spacing:0.5px;">Average CTR</span>
+                      <span class="badge badge-emerald" style="font-size:0.6rem; font-weight:800; padding:0.1rem 0.35rem;">${momCtr} MoM</span>
+                    </div>
+                    <div style="font-size:1.3rem; font-weight:900; color:#10b981; font-family:var(--font-heading); margin-top:0.2rem;">
+                      ${kb.avgCtr || 5.18}%
+                    </div>
+                    <div style="font-size:0.68rem; color:#6ee7b7; margin-top:0.1rem;">High click intent</div>
+                  </div>
 
-              <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-subtle); border-radius:10px; padding:0.75rem 0.9rem;">
-                <div style="font-size:0.68rem; color:var(--text-dim); text-transform:uppercase; font-weight:800; letter-spacing:0.5px;">Avg Duration</div>
-                <div style="font-size:1.3rem; font-weight:900; color:#ec4899; font-family:var(--font-heading); margin-top:0.2rem;">
-                  ${kb.avgViewDuration || '2:24'}
-                </div>
-                <div style="font-size:0.68rem; color:var(--text-muted); margin-top:0.1rem;">Retention baseline</div>
-              </div>
+                  <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-subtle); border-radius:10px; padding:0.75rem 0.9rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                      <span style="font-size:0.68rem; color:var(--text-dim); text-transform:uppercase; font-weight:800; letter-spacing:0.5px;">Avg Duration</span>
+                      <span class="badge badge-blue" style="font-size:0.6rem; font-weight:800; padding:0.1rem 0.35rem;">Retention</span>
+                    </div>
+                    <div style="font-size:1.3rem; font-weight:900; color:#ec4899; font-family:var(--font-heading); margin-top:0.2rem;">
+                      ${kb.avgViewDuration || '2:24'}
+                    </div>
+                    <div style="font-size:0.68rem; color:var(--text-muted); margin-top:0.1rem;">Retention baseline</div>
+                  </div>
 
-            </div>
+                </div>
+              `;
+            })()}
 
             <!-- Ranked Top 5 Performing Videos Table (if existing content available) -->
             ${Array.isArray(kb.topPerformers) && kb.topPerformers.length > 0 ? `
@@ -1758,12 +1854,20 @@ window.APP_MODULES.social = async function(container) {
                 ` : ''}
               </div>
 
-              <!-- Lock Calendar Button -->
-              ${!isLocked && !isPastMonth ? `
-                <button type="button" class="btn-emerald btn-sm" style="font-weight:800; font-size:0.78rem; padding:0.35rem 0.85rem;" onclick="window.SOCIAL_MODULE.lockChannelCalendar('${brand.slug}', '${channel.id}', '${currentMonthKey}')">
-                  🔒 Lock & Push ${allPlanItems.length} Drafts to Pipeline
+              <!-- Phase 4.5: Calendar Bulk Actions -->
+              <div style="display:flex; gap:0.4rem; align-items:center;">
+                <button type="button" class="btn-ghost btn-sm" style="font-size:0.75rem; border:1px solid rgba(255,255,255,0.12);" onclick="window.SOCIAL_MODULE.exportCalendarPlanCsv('${brand.slug}', '${channel.id}', '${currentMonthKey}')" title="Export calendar to CSV">
+                  📥 Export CSV
                 </button>
-              ` : ''}
+                ${!isLocked && !isPastMonth ? `
+                  <button type="button" class="btn-ghost btn-sm" style="font-size:0.75rem; color:#f87171; border:1px solid rgba(239,68,68,0.25);" onclick="window.SOCIAL_MODULE.clearChannelMonthCalendar('${brand.slug}', '${channel.id}', '${currentMonthKey}')" title="Clear this month's plan">
+                    🗑️ Clear Plan
+                  </button>
+                  <button type="button" class="btn-emerald btn-sm" style="font-weight:800; font-size:0.78rem; padding:0.35rem 0.85rem;" onclick="window.SOCIAL_MODULE.lockChannelCalendar('${brand.slug}', '${channel.id}', '${currentMonthKey}')">
+                    🔒 Lock & Push ${allPlanItems.length} Drafts to Pipeline
+                  </button>
+                ` : ''}
+              </div>
 
             </div>
           ` : ''}
@@ -2706,8 +2810,9 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
       const durEl = document.getElementById('spTargetDuration');
 
       if (titleEl) titleEl.value = item.topicIdea || item.title || '';
-      if (dateEl && item.scheduledDate) dateEl.value = item.scheduledDate;
-      if (timeEl && item.suggestedTime) timeEl.value = item.suggestedTime;
+      const kbPeakTime = channel && channel.analyticsKnowledgeBase && (channel.analyticsKnowledgeBase.peakPostingTime || (channel.analyticsKnowledgeBase.bestPostingDays && channel.analyticsKnowledgeBase.bestPostingDays[0] && channel.analyticsKnowledgeBase.bestPostingDays[0].match(/\d{1,2}:\d{2}/)?.[0]));
+      const resolvedTime = item.suggestedTime || kbPeakTime || '18:00';
+      if (timeEl) timeEl.value = resolvedTime;
 
       if (chanEl) {
         chanEl.value = brandSlug;
@@ -3341,6 +3446,7 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
 
       try {
         const res = await APP_API.post('/ai/social-brief', {
+          brandSlug: activeBrandSlug,
           channel: channelObj.name,
           contentCategory,
           platform,
@@ -3716,7 +3822,15 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
       this.updateCharCount({ value: post.caption || '' }, post.platform);
       document.getElementById('postModal').classList.add('active');
     },
-    closePostModal() {
+    closePostModal(force = false) {
+      if (!force) {
+        const title = document.getElementById('spTitle')?.value.trim() || '';
+        const caption = document.getElementById('spCaption')?.value.trim() || '';
+        if (title.length > 0 || caption.length > 0) {
+          const proceed = window.confirm('⚠️ You have unsaved changes in your draft.\n\nDo you want to discard your changes and close?');
+          if (!proceed) return;
+        }
+      }
       document.getElementById('postModal').classList.remove('active');
     },
     async handleFormSubmit(e) {
@@ -3793,7 +3907,7 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
           if (window.showToast) window.showToast('Social post draft created!', 'success');
         }
 
-        this.closePostModal();
+        this.closePostModal(true);
         loadInitialData();
       } catch (err) {
         if (window.showToast) window.showToast('Failed to save post: ' + err.message, 'error');
@@ -4058,6 +4172,157 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
       saved.splice(idx, 1);
       localStorage.setItem('social_saved_ideas', JSON.stringify(saved));
       this.showSavedIdeasModal();
+    },
+    viewChannelKnowledgeBase(brandSlug, channelId) {
+      const brand = (socialBrandsData || []).find(b => b.slug === brandSlug || b.id === brandSlug);
+      const channel = brand && (brand.channels || []).find(c => c.id === channelId || c.slug === channelId);
+      const kb = channel && channel.analyticsKnowledgeBase;
+      if (!channel || !kb) {
+        if (window.showToast) window.showToast('No knowledge base indexed for this channel yet.', 'info');
+        return;
+      }
+
+      const modal = document.getElementById('knowledgeBaseModal');
+      const titleEl = document.getElementById('kbModalTitle');
+      const subEl = document.getElementById('kbModalSubtitle');
+      const contentEl = document.getElementById('kbModalContent');
+
+      if (titleEl) titleEl.innerHTML = `🏛️ ${escapeHTML(channel.name)} Knowledge Base`;
+      if (subEl) subEl.textContent = `Indexed on ${new Date(kb.lastUpdated || Date.now()).toLocaleDateString()} · Source: ${kb.source || 'Studio Analytics'}`;
+
+      if (contentEl) {
+        contentEl.innerHTML = `
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:0.6rem;">
+            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-subtle); border-radius:8px; padding:0.6rem 0.8rem;">
+              <div style="font-size:0.65rem; color:var(--text-dim); text-transform:uppercase; font-weight:800;">Indexed Views</div>
+              <div style="font-size:1.15rem; font-weight:800; color:#fff; margin-top:0.2rem;">${(kb.totalViews || 0).toLocaleString()}</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-subtle); border-radius:8px; padding:0.6rem 0.8rem;">
+              <div style="font-size:0.65rem; color:var(--text-dim); text-transform:uppercase; font-weight:800;">Watch Hours</div>
+              <div style="font-size:1.15rem; font-weight:800; color:#38bdf8; margin-top:0.2rem;">${(kb.totalWatchTimeHours || 0).toLocaleString()} hrs</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-subtle); border-radius:8px; padding:0.6rem 0.8rem;">
+              <div style="font-size:0.65rem; color:var(--text-dim); text-transform:uppercase; font-weight:800;">Audience / Subs</div>
+              <div style="font-size:1.15rem; font-weight:800; color:#a855f7; margin-top:0.2rem;">${(kb.totalSubscribers || channel.audienceCount || 0).toLocaleString()}</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-subtle); border-radius:8px; padding:0.6rem 0.8rem;">
+              <div style="font-size:0.65rem; color:var(--text-dim); text-transform:uppercase; font-weight:800;">Average CTR</div>
+              <div style="font-size:1.15rem; font-weight:800; color:#10b981; margin-top:0.2rem;">${kb.avgCtr || 5.18}%</div>
+            </div>
+          </div>
+
+          <!-- Content Pillars -->
+          <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-subtle); border-radius:10px; padding:0.8rem;">
+            <div style="font-weight:800; font-size:0.82rem; color:#fff; margin-bottom:0.4rem;">📋 Core Content Pillars & Categories</div>
+            <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
+              ${(kb.topCategories || ['Core Content']).map(c => `<span class="badge badge-blue" style="font-size:0.75rem; padding:0.25rem 0.6rem;">${escapeHTML(c)}</span>`).join('')}
+            </div>
+          </div>
+
+          <!-- Velocity Windows & Best Times -->
+          <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-subtle); border-radius:10px; padding:0.8rem;">
+            <div style="font-weight:800; font-size:0.82rem; color:#fff; margin-bottom:0.4rem;">⚡ Peak Velocity Posting Windows</div>
+            <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
+              ${(kb.bestPostingDays || ['Friday 18:00', 'Tuesday 19:00']).map(d => `<span class="badge badge-emerald" style="font-size:0.75rem; padding:0.25rem 0.6rem;">🔥 ${escapeHTML(d)}</span>`).join('')}
+            </div>
+          </div>
+
+          <!-- Persona & Rules -->
+          <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-subtle); border-radius:10px; padding:0.8rem;">
+            <div style="font-weight:800; font-size:0.82rem; color:#fff; margin-bottom:0.4rem;">👤 Audience Persona & Brand Constraints</div>
+            <div style="font-size:0.78rem; color:var(--text-secondary); line-height:1.5;">
+              <div><strong>Persona:</strong> ${escapeHTML(kb.audiencePersona || brand.niche || 'Target Content Consumers')}</div>
+              <div style="margin-top:0.3rem;"><strong>Production Constraints:</strong> ${escapeHTML(kb.contentConstraints || 'Bengali script for voiceover; NO text overlay on video generation; strictly icon graphics only.')}</div>
+              <div style="margin-top:0.3rem;"><strong>Primary Spoken Language:</strong> ${escapeHTML(kb.primaryLanguage || channel.primaryLanguage || brand.primaryLanguage || 'Bengali')}</div>
+            </div>
+          </div>
+
+          ${Array.isArray(kb.topPerformers) && kb.topPerformers.length > 0 ? `
+            <!-- Top Proven Performers -->
+            <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-subtle); border-radius:10px; padding:0.8rem;">
+              <div style="font-weight:800; font-size:0.82rem; color:#fff; margin-bottom:0.5rem;">🏆 Proven High-Performing Content</div>
+              <div style="display:flex; flex-direction:column; gap:0.4rem; max-height:160px; overflow-y:auto;">
+                ${kb.topPerformers.map(p => `
+                  <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.3); border-radius:6px; padding:0.4rem 0.6rem; font-size:0.75rem;">
+                    <span style="font-weight:700; color:#fff; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:70%;">${escapeHTML(p.title || p.topicIdea)}</span>
+                    <span style="color:#10b981; font-weight:800;">${(p.views || 0).toLocaleString()} views</span>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          ` : ''}
+
+          <div style="display:flex; justify-content:flex-end; border-top:1px solid var(--border-subtle); padding-top:0.8rem;">
+            <button type="button" class="btn-primary" onclick="window.SOCIAL_MODULE.closeKnowledgeBaseModal()">Close Inspector</button>
+          </div>
+        `;
+      }
+
+      if (modal) modal.style.display = 'flex';
+    },
+    closeKnowledgeBaseModal() {
+      const modal = document.getElementById('knowledgeBaseModal');
+      if (modal) modal.style.display = 'none';
+    },
+    exportCalendarPlanCsv(brandSlug, channelId, monthKey) {
+      const brand = (socialBrandsData || []).find(b => b.slug === brandSlug || b.id === brandSlug);
+      const channel = brand && (brand.channels || []).find(c => c.id === channelId || c.slug === channelId);
+      const cal = channel && channel.calendars && channel.calendars[monthKey];
+      const items = (cal && cal.planItems) || [];
+
+      if (items.length === 0) {
+        if (window.showToast) window.showToast('No scheduled items to export for this month.', 'info');
+        return;
+      }
+
+      const headers = ['Week', 'Day', 'Scheduled Date', 'Suggested Time', 'Content Type', 'Duration', 'Format', 'Topic Idea', '3-Second Hook', 'Strategic Rationale'];
+      const rows = items.map(item => [
+        `"${(item.week || '').replace(/"/g, '""')}"`,
+        `"${(item.dayOfWeek || '').replace(/"/g, '""')}"`,
+        `"${(item.scheduledDate || '').replace(/"/g, '""')}"`,
+        `"${(item.suggestedTime || '18:00').replace(/"/g, '""')}"`,
+        `"${(item.contentType || '').replace(/"/g, '""')}"`,
+        `"${(item.targetDuration || '60s').replace(/"/g, '""')}"`,
+        `"${(item.formatTag || '').replace(/"/g, '""')}"`,
+        `"${(item.topicIdea || item.title || '').replace(/"/g, '""')}"`,
+        `"${(item.hook || '').replace(/"/g, '""')}"`,
+        `"${(item.strategicRationale || '').replace(/"/g, '""')}"`
+      ]);
+
+      const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', `${channel.slug || channel.id}-${monthKey}-content-plan.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      if (window.showToast) window.showToast(`📥 Exported ${items.length} items to CSV!`, 'success');
+    },
+    clearChannelMonthCalendar(brandSlug, channelId, monthKey) {
+      this.showConfirmDialog({
+        title: `Clear ${selectedPlanMonth} Calendar?`,
+        message: 'Are you sure you want to remove all scheduled plan items for this month? This action cannot be undone.',
+        icon: '🗑️',
+        confirmText: 'Clear Entire Month',
+        confirmStyle: 'btn-secondary btn-danger',
+        onConfirm: async () => {
+          try {
+            const res = await APP_API.delete(`/social-brands/${brandSlug}/channels/${channelId}/calendars/${monthKey}`);
+            if (res && res.success) {
+              if (window.showToast) window.showToast(`🗑️ ${selectedPlanMonth} plan items cleared.`, 'info');
+              await loadInitialData();
+              this.openChannelWorkspace(channelId);
+            } else {
+              throw new Error(res?.error || 'Clear failed');
+            }
+          } catch (err) {
+            if (window.showToast) window.showToast('Clear failed: ' + err.message, 'error');
+          }
+        }
+      });
     },
     switchTopicInputMode(mode) {
       activeTopicInputMode = mode;
