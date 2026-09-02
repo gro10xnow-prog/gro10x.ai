@@ -771,7 +771,7 @@ router.post('/social-brief', requireAuth, async (req, res) => {
 
   const chunkCount = isVideoType ? Math.max(1, Math.min(18, Math.ceil(durationSec / 10))) : 0;
 
-  // Build rich, character-driven VEO 3 scene blueprints
+  // Build rich, character-driven VEO 3 scene blueprints — FULLY TOPIC-AWARE on every scene
   function buildCinematicVeoScenes(chan, postTop, cat, durSec, l, count) {
     const isGb = chan.toLowerCase().includes('grow bangla') || cat.toLowerCase().includes('english') || cat.toLowerCase().includes('career');
     const isPilutics = chan.toLowerCase().includes('pilutics') || cat.toLowerCase().includes('geopolit') || cat.toLowerCase().includes('documentary');
@@ -782,6 +782,8 @@ router.post('/social-brief', requireAuth, async (req, res) => {
     const isSalary = /salary|বেতন|negotiat|money|offer|increment/i.test(postTop);
     const isEmail = /email|ইমেইল|mail\b|inbox/i.test(postTop);
     const isInterview = /interview|ইন্টারভিউ|hire|viva|yourself|freshers/i.test(postTop);
+    // Shortened topic handle for natural mid-sentence usage
+    const tShort = postTop.length > 35 ? postTop.slice(0, 35) + '...' : postTop;
 
     const scenes = [];
     for (let i = 1; i <= count; i++) {
@@ -798,114 +800,158 @@ router.post('/social-brief', requireAuth, async (req, res) => {
       let visualCue = '';
 
       if (isGb) {
-        // Grow Bangla — Host Saira, High-contrast modern educator studio
+        // ─── GROW BANGLA — Host Saira, Modern Educator Studio ───────────────────
         if (i === 1) {
           section = 'The Hook (Urgent Warning)';
           characterAction = 'Saira delivering an urgent warning with a serious, high-stakes expression, pointing directly toward camera.';
           cameraMove = 'Cinematic studio medium shot, subtle 35mm slow push-in, shallow depth of field (f/1.8).';
           prompt = `Cinematic studio. Medium shot of young professional Bangladeshi female educator Saira delivering an urgent warning about ${postTop} with an intense, engaging expression. Warm key lighting, dark acoustic wood slats background with vivid cyan LED backlight. 4K 60fps photorealistic.`;
-          voiceLine = isPronunciation 
-            ? `এই ৫টি ইংরেজি শব্দের ভুল উচ্চারণ আজই বন্ধ করো! স্মার্ট ক্যারিয়ারে এটা বড় বাধা!`
-            : (isSalary 
-                ? `HR যখন সেলারি এক্সপেক্টেশন জিজ্ঞেস করে, ভুলেও এই ভুলটা করবে না!` 
-                : (isEmail 
-                    ? `কর্পোরেট ইমেইলে এই ভুলগুলো করলে প্রফেশনাল ইম্প্রেশন সরাসরি নষ্ট হয়!`
+          voiceLine = isPronunciation
+            ? `"${tShort}" — এই ৫টি ইংরেজি শব্দের ভুল উচ্চারণ তোমার ইন্টারভিউ মুহূর্তেই নষ্ট করে দিচ্ছে। আজই বন্ধ করো এই ভুল!`
+            : (isSalary
+                ? `HR যখন "${tShort}" জিজ্ঞেস করে, ভুলেও এই একটা কথা বলবে না — এই ভুলেই হাজারো স্মার্ট ক্যান্ডিডেট শেষ হয়ে যায়!`
+                : (isEmail
+                    ? `কর্পোরেট ইমেইলে "${tShort}" নিয়ে প্রথম লাইনেই এই ভুলটা করলে রিসিভার কখনো রিপ্লাই করবে না!`
                     : (isInterview
-                        ? `ইন্টারভিউতে 'Tell Me About Yourself' জিজ্ঞেস করলেই এই ৩টি মারাত্মক ভুল কখনোই করবে না!`
-                        : `${postTop} নিয়ে এই মারাত্মক ভুলটা করলেই ক্যারিয়ার শেষ! এখনই শুধরে নাও!`)));
+                        ? `"${tShort}" — ইন্টারভিউতে এই প্রশ্নটা করলেই ৯৫% ক্যান্ডিডেট এই ৩টি মারাত্মক ভুল করে ফেলে!`
+                        : `"${tShort}" — এই টপিকে এই মারাত্মক ভুলটা করলেই ক্যারিয়ার শেষ! ৯৫% চাকরিপ্রার্থী এই ফাঁদে পড়ে!`)));
           visualCue = `Red stop-sign alert badge with kinetic text: "${postTop.slice(0, 28)} 🛑"`;
+
         } else if (i === 2) {
-          section = 'The Common Mistake (Demo)';
-          characterAction = isPronunciation 
-            ? 'Saira demonstrating flawed mouth shape and hesitant pronunciation of a common word with a puzzled look.'
-            : (isSalary 
-                ? 'Saira acting out nervous candidate blurting out a low salary number with slumped shoulders.'
-                : 'Saira acting out a hesitant, confused candidate posture — slumped shoulders, unsure tone, looking away.');
+          section = 'The Common Mistake — Live Demo';
+          characterAction = isPronunciation
+            ? 'Saira demonstrating flawed mouth shape and hesitant pronunciation with a puzzled, self-aware look.'
+            : (isSalary
+                ? 'Saira acting out nervous candidate blurting out a low salary with slumped shoulders and a defeated face.'
+                : 'Saira acting out a hesitant, confused candidate posture — slumped shoulders, unsure tone, looking away from the imaginary interviewer.');
           cameraMove = 'Medium shot, static camera with subtle handheld texture, side warm amber fill.';
           prompt = `Studio medium shot. Female educator Saira acting out a relatable mistake during a high-stakes ${postTop} scenario. Warm amber side lighting, modern studio background, high visual clarity.`;
-          voiceLine = isPronunciation 
-            ? `সবাই যেমন 'Wednesday'-কে ভুল করে 'ওয়েড-নেস-ডে' বলে, ঠিক তেমনই আরও কিছু মারাত্মক ভুল রয়েছে...`
-            : (isSalary 
-                ? `নার্ভাস হয়ে 'আমার ৩০ হাজার হলেই চলবে' বলে ফেললে প্রথমেই তোমার বার্গেইনিং পাওয়ার শেষ!`
+          voiceLine = isPronunciation
+            ? `সবাই যেমন 'Wednesday' কে ভুলে 'ওয়েড-নেস-ডে' বলে — "${tShort}" নিয়েও ঠিক একই ধরনের ভুল প্রতিদিন হচ্ছে। এটা শুনতে ছোট মনে হলেও ইন্টারভিউতে মুহূর্তেই বিশ্বাসযোগ্যতা নষ্ট করে।`
+            : (isSalary
+                ? `ক্যান্ডিডেট যখন বলে "আমার এতো হলেই চলবে" — "${tShort}"-এর ক্ষেত্রে এই একটা লাইনেই সে তার সমস্ত বার্গেইনিং পাওয়ার হারিয়ে ফেলে।`
                 : (isEmail
-                    ? `ইমেইলের সাবজেক্ট লাইন ও ওপেনিং দুর্বল হলে রিসিভার সেটা পড়বেই না।`
-                    : `শুরুতেই নিজের নাম ও ব্যাকগ্রাউন্ড মুখস্থ বলতে থাকলে HR শুরুতেই আগ্রহ হারিয়ে ফেলে।`));
-          visualCue = `Split-screen visual with high-contrast Red 'X' and 'Wrong Way' label.`;
+                    ? `"I am writing to inform you…" দিয়ে শুরু করলে "${tShort}" কখনো কাজ করবে না। প্রফেশনাল ইম্প্রেশন প্রথম লাইনেই শেষ হয়ে যায়।`
+                    : `শুরুতেই নিজের নাম, বয়স ও পুরো জীবনী বলতে থাকলে — "${tShort}"-এর ক্ষেত্রে HR মাত্র ৫ সেকেন্ডেই আগ্রহ হারিয়ে ফেলে।`));
+          visualCue = `Split-screen: Red 'X' side showing the mistake, Green side teasing the correct approach for ${postTop.slice(0,20)}.`;
+
         } else if (i === 3) {
-          section = 'The Pivot / Transition';
-          characterAction = 'Saira nodding with confident reassurance, leaning slightly forward to reveal the secret formula.';
+          section = 'The Strategic Pivot — Reveal';
+          characterAction = 'Saira nodding with confident reassurance, leaning slightly forward with an encouraging knowing smile.';
           cameraMove = 'Medium close-up, smooth camera glide forward, eye-level framing.';
           prompt = `Studio medium close-up. Female educator Saira nodding knowingly with an encouraging, confident smile, preparing to share the winning ${postTop} strategy. Cyan and warm golden rim light.`;
-          voiceLine = `কিন্তু স্মার্ট প্রফেশনালরা এভাবে বলে না! তারা ব্যবহার করে এই ৩-স্টেপ ম্যাজিক টেকনিক...`;
-          visualCue = `Glowing transition badge: 'Winning 3-Step Strategy ⚡'`;
-        } else if (i === 4) {
-          section = 'The Correct Solution';
-          characterAction = isPronunciation
-            ? 'Saira demonstrating crisp mouth opening and clear phonetic resonance with confident eye contact.'
-            : 'Saira articulating the correct phrase with crisp hand gestures and sharp, authoritative eye contact.';
-          cameraMove = 'Crisp close-up shot, sharp focus on facial expression and clear articulation.';
-          prompt = `Close-up shot of female educator Saira articulating clearly with confident expressions and authoritative hand gestures for ${postTop}. High-contrast studio lighting, sharp focus on eyes and expression.`;
-          voiceLine = isPronunciation 
-            ? `সঠিক উচ্চারণ হলো 'ওয়েনয-ডে' এবং 'Receipt'-এর ক্ষেত্রে 'p' সাইলেন্ট থাকবে, বলতে হবে 'রি-সীট'!`
-            : (isSalary 
-                ? `বলবে: "আমার এক্সপেরিয়েন্স ও মার্কেট ভ্যালু অনুযায়ী আমি এক্সপেক্ট করছি..." — সরাসরি ভ্যালু দেখাও!`
+          voiceLine = isPronunciation
+            ? `কিন্তু সঠিক phonetic breakdown জানলে "${tShort}"-এর প্রতিটি শব্দ নেটিভ স্পিকারদের মতোই বলা যায়। এবার দেখো কীভাবে।`
+            : (isSalary
+                ? `কিন্তু স্মার্ট ক্যান্ডিডেটরা "${tShort}"-এ সরাসরি নাম্বার বলে না — তারা এই ৩-স্টেপ কাউন্টার-অফার স্ট্র্যাটেজি ব্যবহার করে যা আমি এখন দেখাবো।`
                 : (isEmail
-                    ? `স্মার্ট ওপেনার: "I hope you are having a productive week" — সরাসরি অ্যাকশন পয়েন্টে আসো!`
-                    : `সঠিক ৩-স্টেপ ফর্মুলা: প্রথমে বর্তমান রোল, তারপর সেরা প্রজেক্ট অ্যাচিভমেন্ট, এবং শেষে কোম্পানির জন্য ভ্যালু!`));
-          visualCue = `Green checkmark with kinetic phrase overlay in clear Bengali script.`;
+                    ? `কিন্তু "${tShort}"-এর জন্য যে ৫টি ওপেনার ব্যবহার করলে ৮০% ক্ষেত্রে দ্রুত রিপ্লাই আসে, সেগুলো এবার শেয়ার করছি।`
+                    : `কিন্তু স্মার্ট প্রফেশনালরা "${tShort}"-এ এভাবে বলে না! তারা ব্যবহার করে এই ৩-স্টেপ ম্যাজিক ফর্মুলা — HR-এর মনে তাৎক্ষণিক ইমপ্যাক্ট ফেলার জন্য।`));
+          visualCue = `Glowing pivot badge: 'The Winning Formula for ${postTop.slice(0,18)} ⚡' with spark animation.`;
+
+        } else if (i === 4) {
+          section = 'The Correct Solution — Step-by-Step';
+          characterAction = isPronunciation
+            ? 'Saira demonstrating crisp phonetic articulation with exaggerated but clear mouth movements and warm confident eye contact.'
+            : 'Saira walking through each solution step using deliberate hand signals, sharp eye contact, authoritative but warm tone.';
+          cameraMove = 'Crisp close-up shot, sharp focus on facial expression and clear articulation.';
+          prompt = `Close-up shot of female educator Saira articulating clearly with confident expressions and authoritative hand gestures, teaching the correct approach for ${postTop}. High-contrast studio lighting, sharp focus on eyes and expression.`;
+          voiceLine = isPronunciation
+            ? `"${tShort}"-এর সঠিক উচ্চারণ: প্রতিটি শব্দে silent letter আলাদাভাবে চিহ্নিত করো। যেমন 'Wednesday' হবে 'ওয়েন-ডে', 'Receipt' হবে 'রি-সীট'। আজ থেকেই এই phonetic chart প্র্যাকটিস করো!`
+            : (isSalary
+                ? `"${tShort}"-এর সেরা উত্তর: "আমার অভিজ্ঞতা ও মার্কেট রিসার্চ অনুযায়ী আমি এক্সপেক্ট করছি [রেঞ্জ] — তবে পুরো প্যাকেজটা দেখে আলোচনা করতে রাজি।" এই ফ্রেমিংটাই আসল গেম চেঞ্জার।`
+                : (isEmail
+                    ? `"${tShort}"-এর জন্য উইনিং ওপেনার: "Hope you're having a productive week — reaching out specifically regarding [point]." এরপরেই সরাসরি অ্যাকশনে যাও। এই স্ট্রাকচারে রিপ্লাই রেট ৩ গুণ বাড়ে।`
+                    : `"${tShort}"-এর সঠিক ৩-স্টেপ ফর্মুলা: ১) বর্তমান রোল ১ লাইনে। ২) সেরা রিলেভ্যান্ট অ্যাচিভমেন্ট সংখ্যা দিয়ে। ৩) কোম্পানির জন্য তোমার নির্দিষ্ট ভ্যালু স্পষ্টভাবে।`));
+          visualCue = `Green checkmark with kinetic step-by-step overlay in bold Bengali/English script for ${postTop.slice(0,20)}.`;
+
         } else if (i === 5) {
-          section = 'Actionable Rule & Takeaway';
-          characterAction = 'Saira demonstrating the structured formula using 3 distinct finger counts with high energy.';
-          cameraMove = 'Medium shot, dynamic fast zoom-in on beat.';
-          prompt = `Studio medium shot. Female educator Saira enthusiastically demonstrating a 3-part framework for ${postTop} using hand gestures. Modern glass whiteboard with neon cyan accent.`;
-          voiceLine = `এই গোল্ডেন রুলটা মনে রাখলে যে কোনো সিচুয়েশনে তুমি কনফিডেন্টলি নিজেকে প্রেজেন্ট করতে পারবে!`;
-          visualCue = `3-step numbered framework pill list glowing on screen.`;
+          section = 'The Golden Rule — Memorable Takeaway';
+          characterAction = 'Saira counting structured formula steps on 3 fingers with high energy and a big confident smile.';
+          cameraMove = 'Medium shot, dynamic fast zoom-in on beat, subject-motion sync.';
+          prompt = `Studio medium shot. Female educator Saira enthusiastically demonstrating a 3-part framework for ${postTop} using clear hand gestures. Modern glass whiteboard with neon cyan accent.`;
+          voiceLine = isPronunciation
+            ? `গোল্ডেন রুল — "${tShort}" practice করতে গেলে প্রতিদিন IPA chart দেখো এবং phonetic shadowing করো। এই একটা হ্যাবিট ৬ মাসে তোমার উচ্চারণ সম্পূর্ণ বদলে দেবে।`
+            : (isSalary
+                ? `গোল্ডেন রুল — "${tShort}"-এ কখনো আগে নাম্বার বলবে না। সবসময় ভ্যালু দিয়ে শুরু করো, তারপর রেঞ্জ দাও। এই ক্রমটাই সব পার্থক্য তৈরি করে।`
+                : (isEmail
+                    ? `গোল্ডেন রুল — "${tShort}"-এর সাবজেক্ট লাইন ২০ character-এর মধ্যে রাখো। কখনো "I am writing" দিয়ে শুরু করবে না। শেষে সবসময় একটি নির্দিষ্ট CTA রাখো।`
+                    : `গোল্ডেন রুল — "${tShort}"-এ শুধু ৩টি পয়েন্ট: বর্তমান কাজ, সেরা অ্যাচিভমেন্ট, আর কোম্পানির জন্য তোমার নির্দিষ্ট ভ্যালু। এই ৩টাই যথেষ্ট।`));
+          visualCue = `3-step numbered framework pill list in cyan/white for ${postTop.slice(0,18)} glowing on screen.`;
+
         } else {
-          section = 'Call to Action & Studio Signoff';
-          characterAction = 'Saira smiling brightly, giving a warm wave and energetic pointing gesture toward subscription button.';
+          section = 'CTA & Brand Signoff';
+          characterAction = 'Saira smiling brightly, warm wave and energetic pointing gesture toward subscription button.';
           cameraMove = 'Smooth camera pull-back showing full high-end studio workspace and branding.';
           prompt = `Wide pull-back shot. Female educator Saira smiling warmly and waving, revealing full modern studio set with wood acoustic panels and glowing Grow Bangla branding.`;
-          voiceLine = `প্রতিদিনের ক্যারিয়ার ও স্পোকেন ইংলিশ মাস্টারির জন্য Grow Bangla-তে এখনই সাবস্ক্রাইব করো!`;
-          visualCue = `Grow Bangla official brand card with Subscribe & Follow animation.`;
+          voiceLine = `"${tShort}"-এর মতো আরও প্র্যাকটিক্যাল ক্যারিয়ার ও ইংলিশ গাইডের জন্য Grow Bangla-তে এখনই সাবস্ক্রাইব করো — প্রতিদিনের ক্যারিয়ার মাস্টারি মিস করবে না!`;
+          visualCue = `Grow Bangla brand card with topic reminder "${postTop.slice(0,22)}" + Subscribe animation.`;
         }
+
       } else if (isPilutics) {
-        // PILUTICS — Geopolitical War Room & Analysis
+        // ─── PILUTICS — Geopolitical War Room & Deep Analysis ───────────────────
         if (i === 1) {
           section = 'Geopolitical Crisis Hook';
           characterAction = 'Analyst host standing before holographic world map display with stern, analytical expression.';
           cameraMove = 'Dramatic tracking shot entering dark studio, deep blue and crimson ambient lighting.';
           prompt = `Cinematic documentary studio. Strategic geopolitical analyst standing before glowing holographic map display analyzing ${postTop}. Moody dark-mode command center, deep navy and crimson rim lights. 4K 60fps.`;
-          voiceLine = `এই ঘটনাটি বিশ্ব রাজনীতিতে এমন এক পরিবর্তন আনছে যা কেউ আশা করেনি!`;
-          visualCue = `Pulsing red geopolitical hotspot marker on interactive map.`;
+          voiceLine = `"${tShort}" — এই ঘটনাটি বিশ্ব রাজনীতিতে এমন এক পরিবর্তন আনছে যা কেউ আশা করেনি। আজকের বিশ্লেষণে জানুন কীভাবে এটি পুরো ভারসাম্য বদলে দিচ্ছে।`;
+          visualCue = `Pulsing red hotspot marker on map with "${postTop.slice(0,22)}" title card overlay.`;
+
+        } else if (i === 2) {
+          section = 'Historical Context & Root Causes';
+          characterAction = 'Analyst referencing archival footage on screen with pointer, deep thoughtful expression.';
+          cameraMove = 'Medium shot pushing toward archival data screen, cinematic depth of field.';
+          prompt = `Documentary studio. Analyst reviewing historical data relevant to ${postTop} on dual monitor array. Deep navy blue lighting, cinematic color grade.`;
+          voiceLine = `"${tShort}" বোঝার জন্য আগে ইতিহাসের প্রেক্ষাপট জানতে হবে। ৫ বছর আগের যে কৌশলগত সিদ্ধান্তগুলো নেওয়া হয়েছিল — সেগুলোই আজকের এই পরিস্থিতির মূল কারণ।`;
+          visualCue = `Historical timeline graphic with key milestones for ${postTop.slice(0,18)} highlighted.`;
+
         } else if (i === count) {
           section = 'Strategic Conclusion & CTA';
           characterAction = 'Analyst looking directly into lens with thought-provoking gaze and steady hand gesture.';
           cameraMove = 'Slow pull-back to wide command room view.';
-          prompt = `Wide shot of analyst at glass briefing table surrounded by glowing analytical screens. Dramatic cinematic lighting.`;
-          voiceLine = `ভূরাজনীতি ও বিশ্ব সংঘাতের গভীর বিশ্লেষণের জন্য PILUTICS ফলো করুন।`;
-          visualCue = `PILUTICS signature compass seal and Subscribe overlay.`;
+          prompt = `Wide shot of analyst at glass briefing table surrounded by glowing analytical screens about ${postTop}. Dramatic cinematic lighting.`;
+          voiceLine = `"${tShort}" — এই সংঘাতের পরবর্তী অধ্যায় কী হবে? ভূরাজনীতি ও বিশ্ব সংঘাতের গভীর বিশ্লেষণের জন্য PILUTICS ফলো করুন।`;
+          visualCue = `PILUTICS compass seal with topic title card "${postTop.slice(0,22)}" and Subscribe overlay.`;
+
         } else {
-          section = `Deep Strategic Breakdown #${i}`;
-          characterAction = 'Analyst pointing to key trade routes and defense corridors with precise visual pacing.';
+          const analysisLines = [
+            `"${tShort}"-এর পেছনের কৌশলগত কারণ বিশ্লেষণ করলে স্পষ্ট হয় কীভাবে বড় শক্তিগুলো তাদের দীর্ঘমেয়াদী স্বার্থ রক্ষা করছে — এবং ছোট দেশগুলো এই দাবায় মোহরা হিসেবে ব্যবহৃত হচ্ছে।`,
+            `"${tShort}"-এ সামরিক ও অর্থনৈতিক মাত্রা একসাথে দেখতে হবে। শুধু রাজনৈতিক দৃষ্টিকোণ থেকে বিশ্লেষণ করলে পুরো চিত্র পাওয়া যায় না — মূল খেলাটা চলছে সম্পদ ও সাপ্লাই চেইনের নিয়ন্ত্রণকে কেন্দ্র করে।`,
+            `"${tShort}" সম্পর্কিত তথ্যের মধ্যে কোনটা পশ্চিমা মিডিয়ার ন্যারেটিভ আর কোনটা মাঠের বাস্তবতা — এই পার্থক্যটাই আসল বিশ্লেষণের চাবিকাঠি।`,
+            `"${tShort}"-এর প্রভাব শুধু ওই অঞ্চলে সীমাবদ্ধ নয়। বাংলাদেশসহ দক্ষিণ এশিয়ার দেশগুলোতে এর সরাসরি বাণিজ্যিক ও কূটনৈতিক প্রভাব ইতিমধ্যে পড়তে শুরু করেছে।`,
+          ];
+          const lineIndex = Math.max(0, Math.min(i - 3, analysisLines.length - 1));
+          section = `Strategic Deep Analysis — Layer ${i - 1}`;
+          characterAction = 'Analyst pointing to key strategic corridors with precise visual pacing, cross-referencing satellite data.';
           cameraMove = 'Medium close-up with slow pan across satellite telemetry displays.';
-          prompt = `Medium shot of documentary analyst gesturing toward illuminated satellite map overlays for ${postTop}, high visual clarity and photorealistic textures.`;
-          voiceLine = `পরিস্থিতি বিশ্লেষণ করলে দেখা যায় কৌশলগত কারণে এই সিদ্ধান্ত নেয়া হয়েছে।`;
-          visualCue = `Satellite trajectory graphic and statistical comparison chart.`;
+          prompt = `Medium shot of documentary analyst gesturing toward illuminated satellite map overlays for ${postTop}. High visual clarity, photorealistic cinematic textures.`;
+          voiceLine = analysisLines[lineIndex];
+          visualCue = `Satellite trajectory graphic and statistical comparison chart for "${postTop.slice(0,20)}".`;
         }
+
       } else if (isBongHits) {
-        // Bong Hits — Entertainment, Skits & Music
+        // ─── BONG HITS — Entertainment, Comedy & Music ──────────────────────────
         if (i === 1) {
           section = 'High-Energy Comic / Music Hook';
           characterAction = 'Host delivering explosive comic expression, jumping into frame with high-energy body language.';
           cameraMove = 'Fast snap-zoom into face, vibrant neon purple and cyan lighting.';
           prompt = `Vibrant urban neon studio. High-energy creator jumping into frame with hilarious expressive face about ${postTop}. Dynamic magenta and cyan neon backlight, energetic 60fps motion blur.`;
-          voiceLine = `এটা কী দেখলাম ভাই! এই ভিডিও না দেখলে চরম মিস!`;
-          visualCue = `Exploding comic text bubble and soundwave pulse.`;
+          voiceLine = `"${tShort}" নিয়ে এইটা না দেখলে জীবনে বড় কিছু মিস করে ফেলবে ভাই! আমি গ্যারান্টি দিচ্ছি!`;
+          visualCue = `Exploding comic text bubble with "${postTop.slice(0,15)}" title and soundwave pulse.`;
+
+        } else if (i === 2) {
+          section = 'Setup & Scene Introduction';
+          characterAction = 'Host setting the scene with exaggerated dramatic hand gestures and side-eye reaction.';
+          cameraMove = 'Medium dutch angle, rhythm-cut editing style.';
+          prompt = `Studio medium shot of creator dramatically setting up the comedic scenario for ${postTop}. Neon-lit background, high-energy visual grading.`;
+          voiceLine = `"${tShort}"-এর ঘটনাটা শোনো — এই জিনিস বাংলাদেশে শুধু আমাদের সাথেই হতে পারে, বিশ্বের আর কোথাও না!`;
+          visualCue = `Comic setup text card with emoji reaction burst for "${postTop.slice(0,15)}".`;
+
         } else if (i === count) {
           section = 'Viral Outro & Share Prompt';
-          characterAction = 'Host laughing with friends, pointing enthusiastically at screen for share.';
+          characterAction = 'Host laughing with friends, pointing enthusiastically at screen, calling for shares.';
           cameraMove = 'Quick whip-pan to full vibrant set.';
-          prompt = `Wide energetic shot of creator laughing and dancing in neon-lit creator loft, bold pop culture aesthetic.`;
           voiceLine = `বন্ধুদের সাথে শেয়ার করো আর Bong Hits-এ সাবস্ক্রাইব করে বেল বাজিয়ে দাও!`;
           visualCue = `Bong Hits neon logo pulse and Share button animation.`;
         } else {
