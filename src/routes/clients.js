@@ -4,7 +4,7 @@ const crypto = require('crypto');
 const { requireAuth } = require('../middleware/auth');
 const { requireAdmin, requireManager, requireClientOwnership } = require('../middleware/rbac');
 const { readDB, writeDB } = require('../services/db');
-const { broadcast } = require('../services/sse');
+const { broadcast, broadcastToClient } = require('../services/sse');
 const { supabase, isSupabaseConfigured } = require('../services/supabase');
 const { ok, fail } = require('../utils/response');
 
@@ -508,6 +508,7 @@ router.get('/:id/timeline', requireAuth, requireClientOwnership, async (req, res
 router.post('/:id/meetings', requireAuth, requireClientOwnership, async (req, res) => {
   const { id } = req.params;
   const { meeting_date, notes, action_items } = req.body;
+  let savedMeeting = null;
 
   if (isSupabaseConfigured()) {
     const { data, error } = await supabase.from('client_meetings').insert([{
@@ -517,17 +518,26 @@ router.post('/:id/meetings', requireAuth, requireClientOwnership, async (req, re
       action_items
     }]).select('*').single();
 
-    if (!error) return res.json({ success: true, meeting: data });
+    if (!error && data) {
+      savedMeeting = data;
+    }
   }
 
-  // Fallback to local DB
-  const db = await readDB();
-  db.clientMeetings = db.clientMeetings || [];
-  const newMeeting = { id: `MTG-${Date.now()}`, client_id: id, meeting_date, notes, action_items, created_at: new Date().toISOString() };
-  db.clientMeetings.unshift(newMeeting);
-  try { writeDB(db); } catch (e) {}
+  if (!savedMeeting) {
+    // Fallback to local DB
+    const db = await readDB();
+    db.clientMeetings = db.clientMeetings || [];
+    savedMeeting = { id: `MTG-${Date.now()}`, client_id: id, meeting_date, notes, action_items, created_at: new Date().toISOString() };
+    db.clientMeetings.unshift(savedMeeting);
+    try { writeDB(db); } catch (e) {}
+  }
 
-  res.json({ success: true, meeting: newMeeting });
+  try {
+    broadcastToClient('client_update', { type: 'meeting_created', clientId: id, meeting: savedMeeting }, [id]);
+    broadcast('client_update', { type: 'meeting_created', clientId: id, meeting: savedMeeting });
+  } catch (e) {}
+
+  res.json({ success: true, meeting: savedMeeting });
 });
 
 module.exports = router;

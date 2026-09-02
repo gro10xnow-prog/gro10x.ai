@@ -14,6 +14,7 @@ const fs = require('fs');
 const { requireAuth } = require('../middleware/auth');
 const { requireManager } = require('../middleware/rbac');
 const { isSupabaseConfigured, supabase } = require('../services/supabase');
+const { broadcast } = require('../services/sse');
 const aiRoutes = require('./ai');
 
 const upload = multer({
@@ -406,7 +407,7 @@ function getCachedState() {
   return loadState();
 }
 
-function saveState(state) {
+function saveState(state, broadcastPayload = null) {
   try {
     const dir = path.dirname(DATA_FILE);
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
@@ -416,6 +417,9 @@ function saveState(state) {
     fs.renameSync(tempFile, DATA_FILE);
     _stateCache = state;
     _cacheTimestamp = Date.now();
+    try {
+      broadcast('brands_updated', broadcastPayload || { action: 'state_updated', timestamp: new Date().toISOString() });
+    } catch (_) {}
   } catch (e) {
     console.error('[SocialBrands] Save state error:', e.message);
   }
@@ -1714,7 +1718,11 @@ router.post('/:brandSlug/channels/:channelId/calendars/:monthKey/lock', requireA
       })));
     }
 
-    saveState(current);
+    saveState(current, { brandSlug: req.params.brandSlug, channelId: req.params.channelId, action: 'calendar_locked' });
+    try {
+      broadcast('social_post_update', { brandSlug: req.params.brandSlug, channelId: req.params.channelId, action: 'calendar_locked', count: postsToInsert.length });
+      if (postsToInsert.length > 0) broadcast('post_update', postsToInsert);
+    } catch (_) {}
 
     res.json({
       success: true,
