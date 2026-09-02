@@ -34,86 +34,23 @@
           "url": "https://youtube.com/@GrowBangla",
           "defaultContentType": "Short-form Video",
           "targetCadencePerWeek": 9,
-          "audienceCount": 427,
-          "audienceLabel": "28.6K Views · 427 Subscribers",
+          "audienceCount": 1500,
+          "audienceLabel": "1,500 Active Members",
           "analyticsKnowledgeBase": {
-            "source": "YouTube Studio Lifetime Export",
-            "lastUpdated": "2026-09-02T11:14:16.045Z",
-            "totalVideosIndexed": 114,
-            "totalViews": 28612,
-            "totalWatchTimeHours": 1144.9,
-            "totalSubscribers": 427,
-            "impressions": 201198,
-            "avgCtr": 5.18,
-            "avgViewDuration": "2:24",
-            "bestPostingDays": [
-              "Friday 18:00",
-              "Tuesday 19:00",
-              "Monday 20:00"
-            ],
+            "source": "Community Metrics Snapshot",
+            "lastUpdated": "2026-09-02T12:45:12.776Z",
+            "totalVideosIndexed": 0,
+            "totalViews": 0,
+            "memberCount": 1500,
             "primaryLanguage": "Bangla + English (Banglish / Spoken)",
-            "topPerformers": [
-              {
-                "rank": 1,
-                "title": "McDonald’s Service Crew Interview Guide | Answer Common Questions in English",
-                "views": 14013,
-                "watchHours": 757.4,
-                "subs": 178,
-                "ctr": 8.07,
-                "avgDuration": "3:15",
-                "format": "Long-form"
-              },
-              {
-                "rank": 2,
-                "title": "Shomvob Presents Campus to Career 2024 I First Round Instructions",
-                "views": 6349,
-                "watchHours": 317.9,
-                "subs": 180,
-                "ctr": 8.32,
-                "avgDuration": "3:01",
-                "format": "Long-form"
-              },
-              {
-                "rank": 3,
-                "title": "Donald Trump on Bangladesh #shorts",
-                "views": 1090,
-                "watchHours": 4.5,
-                "subs": 0,
-                "ctr": 1.02,
-                "avgDuration": "0:25",
-                "format": "Short"
-              },
-              {
-                "rank": 4,
-                "title": "SteadFast Courier Business Development Executive Job #shorts",
-                "views": 649,
-                "watchHours": 2.6,
-                "subs": 3,
-                "ctr": 1.34,
-                "avgDuration": "0:24",
-                "format": "Short"
-              },
-              {
-                "rank": 5,
-                "title": "২৫ বছরের হোম লোন মাত্র ১০ বছরে পরিশোধের গোপন কৌশল! (Save Lakhs in Interest)",
-                "views": 434,
-                "watchHours": 11.3,
-                "subs": 3,
-                "ctr": 5.29,
-                "avgDuration": "1:34",
-                "format": "Long-form"
-              }
-            ],
             "topCategories": [
-              "Job Interview English Guides",
-              "Career Tracks & Competitions",
-              "Financial & Salary Strategies",
-              "Skill Development Shorts"
+              "Job Circulars",
+              "Spoken English Practice",
+              "PDF Interview Guides"
             ],
             "recommendations": [
-              "Long-form interview English guides (like McDonald's Crew) deliver over 60% of all watch time and subscriber conversion.",
-              "Career preparation competitions and official job walkthroughs convert viewers at an exceptional 8.3% CTR.",
-              "Fixed YouTube Strategy: 2 Long-form tutorials every week on Friday & Tuesday + 1 Daily Short for maximum discovery."
+              "Morning daily drops show 85% read rate.",
+              "Include direct actionable links and clean bullet formatting for mobile reading."
             ]
           },
           "calendars": {
@@ -1646,8 +1583,38 @@
           "defaultContentType": "Short-form Video",
           "targetCadencePerWeek": 7,
           "audienceCount": 8500,
-          "audienceLabel": "8.5K Followers",
-          "analyticsKnowledgeBase": null,
+          "audienceLabel": "8,500 Audience / Followers",
+          "analyticsKnowledgeBase": {
+            "source": "Channel Discovery Q&A",
+            "lastUpdated": "2026-09-02T12:45:13.916Z",
+            "archetype": "Viral Entertainment, Skits & Pop Culture",
+            "audiencePersona": "Young Bengalis (16–28) loving music and relatable humor",
+            "totalVideosIndexed": 0,
+            "totalViews": 0,
+            "totalWatchTimeHours": 0,
+            "totalSubscribers": 8500,
+            "impressions": 0,
+            "avgCtr": 6,
+            "avgViewDuration": "3:00",
+            "bestPostingDays": [
+              "Thursday 18:00",
+              "Sunday 16:00",
+              "Friday 20:00"
+            ],
+            "primaryLanguage": "Bengali (Music, Skits & Pop Culture)",
+            "topCategories": [
+              "Relatable College Skits",
+              "Original Bengali Tracks",
+              "Trending TikTok Audio Challenges"
+            ],
+            "contentConstraints": "No text overlays in video scenes. Write spoken scripts in genuine script for correct pronunciation.",
+            "recommendations": [
+              "Channel Discovery Baseline established for Viral Entertainment, Skits & Pop Culture in Bengali (Music, Skits & Pop Culture).",
+              "Focus core content engine on Relatable College Skits, Original Bengali Tracks, Trending TikTok Audio Challenges.",
+              "High-Velocity Video Cadence: 5-7 short-form videos per week with strong opening 3-second hook."
+            ],
+            "topPerformers": []
+          },
           "calendars": {}
         }
       ]

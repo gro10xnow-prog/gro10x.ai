@@ -655,6 +655,15 @@ router.post('/:brandSlug/channels/:channelId/analytics', requireAuth, upload.sin
         'Fixed YouTube Production Rule: 2 Weekly Long-form Pillar Deep Dives (Friday & Tuesday) + 1 Daily Short for high discovery.'
       ];
 
+      const platformPostingWindows = {
+        'YouTube': ['Friday 18:00', 'Tuesday 19:00', 'Monday 20:00'],
+        'TikTok': ['Thursday 18:00', 'Sunday 16:00', 'Friday 20:00'],
+        'Facebook': ['Wednesday 09:00', 'Saturday 10:00', 'Sunday 19:00'],
+        'Instagram': ['Wednesday 11:00', 'Friday 14:00', 'Sunday 18:00'],
+        'LinkedIn': ['Tuesday 08:30', 'Thursday 09:00', 'Wednesday 12:00']
+      };
+      const bestPostingDays = platformPostingWindows[channel.platform] || ['Friday 18:00', 'Tuesday 19:00'];
+
       channel.analyticsKnowledgeBase = {
         source: req.file ? req.file.originalname : 'CSV Analytics Report',
         lastUpdated: new Date().toISOString(),
@@ -665,7 +674,7 @@ router.post('/:brandSlug/channels/:channelId/analytics', requireAuth, upload.sin
         impressions: totalImpressions || 201198,
         avgCtr,
         avgViewDuration: '2:45',
-        bestPostingDays: ['Friday 18:00', 'Tuesday 19:00', 'Monday 20:00'],
+        bestPostingDays,
         primaryLanguage: detectedLang,
         topPerformers,
         topCategories: categories,
@@ -724,6 +733,110 @@ router.post('/:brandSlug/channels/:channelId/analytics', requireAuth, upload.sin
   }
 
   return res.status(400).json({ success: false, error: 'No CSV file or snapshot metrics provided' });
+});
+
+// 5B. GUIDED CHANNEL DISCOVERY ONBOARDING (For New Channels without CSV)
+router.post('/:brandSlug/channels/:channelId/onboard', requireAuth, (req, res) => {
+  const current = loadState();
+  const brand = (current.brands || []).find(b => b.slug === req.params.brandSlug || b.id === req.params.brandSlug);
+  if (!brand) return res.status(404).json({ success: false, error: 'Brand not found' });
+
+  const channel = (brand.channels || []).find(c => c.id === req.params.channelId || c.slug === req.params.channelId);
+  if (!channel) return res.status(404).json({ success: false, error: 'Channel not found' });
+
+  const {
+    archetype,
+    primaryLanguage,
+    audiencePersona,
+    pillars,
+    targetAudienceCount,
+    contentConstraints,
+    customNotes
+  } = req.body;
+
+  const detectedLang = primaryLanguage || channel.primaryLanguage || brand.primaryLanguage || 'Bangla + English (Banglish / Spoken)';
+  channel.primaryLanguage = detectedLang;
+
+  const pillarsArray = Array.isArray(pillars) ? pillars : (typeof pillars === 'string' ? pillars.split(',').map(s => s.trim()).filter(Boolean) : []);
+  if (pillarsArray.length === 0) {
+    pillarsArray.push('Core Authority Content', 'High-Engagement Discovery Drops', 'Practical Value Tutorials');
+  }
+
+  const platformPostingWindows = {
+    'YouTube': ['Friday 18:00', 'Tuesday 19:00', 'Monday 20:00'],
+    'TikTok': ['Thursday 18:00', 'Sunday 16:00', 'Friday 20:00'],
+    'Facebook': ['Wednesday 09:00', 'Saturday 10:00', 'Sunday 19:00'],
+    'Instagram': ['Wednesday 11:00', 'Friday 14:00', 'Sunday 18:00'],
+    'LinkedIn': ['Tuesday 08:30', 'Thursday 09:00', 'Wednesday 12:00']
+  };
+
+  const isVideo = channel.platform === 'YouTube' || channel.platform === 'TikTok' || channel.type === 'video';
+  const bestPostingDays = platformPostingWindows[channel.platform] || ['Friday 18:00', 'Tuesday 19:00'];
+
+  const count = Number(targetAudienceCount) || channel.audienceCount || 0;
+  channel.audienceCount = count;
+  channel.audienceLabel = count > 0 ? (count.toLocaleString() + ' Audience / Followers') : 'New Channel Launch';
+
+  const recommendations = [
+    'Channel Discovery Baseline established for ' + (archetype || channel.name) + ' in ' + detectedLang + '.',
+    'Focus core content engine on ' + pillarsArray.slice(0, 3).join(', ') + '.',
+    isVideo 
+      ? (channel.platform === 'YouTube' 
+          ? 'Fixed Cadence: 2 Long-form Tutorials/week (Friday & Tuesday) + 1 Daily Short for algorithmic reach.'
+          : 'High-Velocity Video Cadence: 5-7 short-form videos per week with strong opening 3-second hook.')
+      : 'Maintain steady 3-4 posts per week with high-value carousels and document decks.'
+  ];
+  if (customNotes) recommendations.push(customNotes);
+
+  channel.analyticsKnowledgeBase = {
+    source: 'Channel Discovery Q&A',
+    lastUpdated: new Date().toISOString(),
+    archetype: archetype || 'General Media',
+    audiencePersona: audiencePersona || (brand.name + ' Target Audience'),
+    totalVideosIndexed: 0,
+    totalViews: 0,
+    totalWatchTimeHours: 0,
+    totalSubscribers: count,
+    impressions: 0,
+    avgCtr: 6.0,
+    avgViewDuration: isVideo ? '3:00' : 'N/A',
+    bestPostingDays,
+    primaryLanguage: detectedLang,
+    topCategories: pillarsArray,
+    contentConstraints: contentConstraints || 'No text overlays in video scenes. Write spoken scripts in genuine script for correct pronunciation.',
+    recommendations,
+    topPerformers: []
+  };
+
+  saveState(current);
+
+  return res.json({
+    success: true,
+    insights: channel.analyticsKnowledgeBase,
+    knowledgeBase: channel.analyticsKnowledgeBase,
+    channel,
+    brand
+  });
+});
+
+// 5C. RESET / CLEAR CHANNEL ONBOARDING (Start Fresh)
+router.post('/:brandSlug/channels/:channelId/reset-onboarding', requireAuth, (req, res) => {
+  const current = loadState();
+  const brand = (current.brands || []).find(b => b.slug === req.params.brandSlug || b.id === req.params.brandSlug);
+  if (!brand) return res.status(404).json({ success: false, error: 'Brand not found' });
+
+  const channel = (brand.channels || []).find(c => c.id === req.params.channelId || c.slug === req.params.channelId);
+  if (!channel) return res.status(404).json({ success: false, error: 'Channel not found' });
+
+  channel.analyticsKnowledgeBase = null;
+  saveState(current);
+
+  return res.json({
+    success: true,
+    message: 'Channel memory cleared for ' + channel.name + '. Clean slate ready for onboarding.',
+    channel,
+    brand
+  });
 });
 
 // 6. GENERATE MONTHLY CONTENT CALENDAR (Fixed YouTube Dual-Tier Cadence)

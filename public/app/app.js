@@ -17,6 +17,7 @@
     '#crm':        { module: 'crm.js',        title: 'Clients & Retainers CRM', icon: '👥' },
     '#kanban':     { module: 'kanban.js',     title: 'Production Pipeline Hub', icon: '📋' },
     '#reviews':    { module: 'reviews.js',    title: 'Client Review Room Proofing', icon: '🎬' },
+    '#content-os': { module: 'social.js',     title: 'Content OS & Brand Engine', icon: '🏛️' },
     '#social':     { module: 'social.js',     title: 'Social Media Planner', icon: '📱' },
     '#cms':        { module: 'cms.js',        title: 'Services Catalog & CMS Editor', icon: '📝' },
     '#brands':     { module: 'brands.js',     title: 'Digital Brand Empire Command Center', icon: '🛍️' },
