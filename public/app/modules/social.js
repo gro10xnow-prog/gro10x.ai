@@ -37,8 +37,8 @@ window.APP_MODULES.social = async function(container) {
   let isOnboardingOverride = false;
   let currentCalendarDate = new Date();
 
-  // Brand Hub & Content OS State
-  let activeBrandSlug = 'grow-bangla';
+  // Brand Hub & Content OS State — activeBrandSlug persisted across navigation via localStorage
+  let activeBrandSlug = localStorage.getItem('social_activeBrandSlug') || 'grow-bangla';
   let activeBrandSubTab = 'overview'; // 'overview' | 'channel' | 'assets'
   let activeChannelId = null;
   let selectedPlanMonth = new Date().toLocaleString('default', { month: 'long' });
@@ -367,11 +367,7 @@ window.APP_MODULES.social = async function(container) {
               <div class="form-group">
                 <label class="form-label">Media Channel / Brand *</label>
                 <select id="spChannel" class="input-text" required onchange="window.SOCIAL_MODULE.onChannelChange(this.value)">
-                  <option value="grow-bangla">🎓 Grow Bangla (Engine 5 · 427 subs)</option>
-                  <option value="pilutics">🗺️ PILUTICS (Engine 5 · 218 subs)</option>
-                  <option value="bong-hits">🎭 Bong Hits (Engine 5 · 85 subs)</option>
-                  <option value="gro10x">📢 GRO10X Brand (Agency Official)</option>
-                  <option value="client">🏢 Client Account (CRM Retainer)</option>
+                  <option value="grow-bangla">⏳ Loading channels...</option>
                 </select>
               </div>
 
@@ -978,13 +974,18 @@ window.APP_MODULES.social = async function(container) {
     const board = document.getElementById('socialBoardContainer');
     if (!board) return;
 
-    const brand = (socialBrandsData || []).find(b => b.slug === activeBrandSlug || b.id === activeBrandSlug) || socialBrandsData[0] || {
-      name: 'Grow Bangla',
-      slug: 'grow-bangla',
-      tagline: 'Bridging Career, Language & Professional Growth for Bangladesh',
-      niche: 'Spoken English & Career Preparation',
-      channels: []
-    };
+    // ISSUE 1 FIX: Always ensure brands are available for navigation — fall back to seed data
+    // if the API returned an empty array (file missing, first run, or fetch error)
+    const FALLBACK_BRANDS = [
+      { id: 'brand-grow-bangla', slug: 'grow-bangla', name: 'Grow Bangla', primaryLanguage: 'Bangla + English (Banglish / Spoken)', tagline: 'Bridging Career, Language & Professional Growth for Bangladesh', niche: 'Spoken English & Career Preparation', channels: [] },
+      { id: 'brand-pilutics', slug: 'pilutics', name: 'PILUTICS', primaryLanguage: 'Bangla / Bengali (Documentary & Analysis)', tagline: 'Geopolitical Intelligence & Strategic Analysis', niche: 'Geopolitics & World Affairs', channels: [] },
+      { id: 'brand-bong-hits', slug: 'bong-hits', name: 'Bong Hits', primaryLanguage: 'Bengali (Music, Skits & Pop Culture)', tagline: 'Bengali Entertainment & Music', niche: 'Music, Comedy & Pop Culture', channels: [] },
+      { id: 'brand-gro10x', slug: 'gro10x', name: 'GRO10X Brand', primaryLanguage: 'English (Global B2B & Tech)', tagline: 'AI-Powered Agency & Content Infrastructure', niche: 'B2B AI Agency & SaaS', channels: [] }
+    ];
+    const effectiveBrandsData = (socialBrandsData && socialBrandsData.length > 0) ? socialBrandsData : FALLBACK_BRANDS;
+
+    const brand = effectiveBrandsData.find(b => b.slug === activeBrandSlug || b.id === activeBrandSlug) ||
+      effectiveBrandsData[0] || FALLBACK_BRANDS[0];
 
     const currentChannel = (brand.channels || []).find(c => c.id === activeChannelId || c.slug === activeChannelId) || null;
 
@@ -1010,7 +1011,7 @@ window.APP_MODULES.social = async function(container) {
 
           <!-- Brand Switcher Pills -->
           <div style="display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
-            ${(socialBrandsData || []).map(b => `
+            ${effectiveBrandsData.map(b => `
               <button type="button" class="r-pill ${b.slug === activeBrandSlug ? 'active' : ''}" style="font-size:0.76rem; padding:0.35rem 0.75rem;" onclick="window.SOCIAL_MODULE.switchBrand('${b.slug}')">
                 ${escapeHTML(b.name)}
               </button>
@@ -1335,7 +1336,14 @@ window.APP_MODULES.social = async function(container) {
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     const currentMonthIndex = new Date(`${selectedPlanMonth} 1, ${selectedPlanYear}`).getMonth();
     const currentMonthKey = `${selectedPlanYear}-${String(currentMonthIndex + 1).padStart(2, '0')}`;
-    
+
+    // ISSUE 3 FIX: Always resolve monthly focus from brand data for the current month key,
+    // not from the shared monthlyFocusNote state variable which can be stale on rapid month switches
+    const resolvedMonthFocus = (brand.monthlyFocus && brand.monthlyFocus[currentMonthKey]) || {};
+    const resolvedFocusThesis = resolvedMonthFocus.thesis || '';
+    // Keep the state variable in sync so calendar generation uses correct value
+    monthlyFocusNote = resolvedFocusThesis;
+
     const now = new Date();
     const thisMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
     const isPastMonth = currentMonthKey < thisMonthKey;
@@ -1591,7 +1599,7 @@ window.APP_MODULES.social = async function(container) {
               <!-- Focus / Campaign Note -->
               <div>
                 <label class="form-label" style="margin-bottom:0.2rem;">🎯 Monthly Campaign Focus in ${escapeHTML(lang)}</label>
-                <input type="text" id="inpMonthlyFocusNote" class="input-text" placeholder="e.g. Job interview spoken English simulation & career roadmap..." value="${escapeHTML(monthlyFocusNote)}" oninput="monthlyFocusNote = this.value">
+                <input type="text" id="inpMonthlyFocusNote" class="input-text" placeholder="e.g. Job interview spoken English simulation & career roadmap..." value="${escapeHTML(resolvedFocusThesis)}" oninput="monthlyFocusNote = this.value">
               </div>
 
               <!-- Anchor Synergy Toggle (if channel is not the anchor) -->
@@ -2108,6 +2116,7 @@ function renderBrandAssetsKitHTML(brand) {
     },
     switchBrand(brandSlug) {
       activeBrandSlug = brandSlug;
+      localStorage.setItem('social_activeBrandSlug', brandSlug); // Persist across navigation
       activeBrandSubTab = 'overview';
       activeChannelId = null;
       const brand = (socialBrandsData || []).find(b => b.slug === brandSlug || b.id === brandSlug);
@@ -2141,7 +2150,10 @@ function renderBrandAssetsKitHTML(brand) {
       renderContentOS();
     },
     changePlanYear(y) {
-      selectedPlanYear = Number(y) || 2026;
+      const num = Number(y);
+      // Only re-render when a valid 4-digit year is entered (prevents rerender on each keystroke: 2, 20, 202, 2026)
+      if (!num || num < 2020 || num > 2035) return;
+      selectedPlanYear = num;
       const brand = (socialBrandsData || []).find(b => b.slug === activeBrandSlug || b.id === activeBrandSlug);
       const mIdx = new Date(selectedPlanMonth + ' 1, ' + selectedPlanYear).getMonth();
       const mKey = `${selectedPlanYear}-${String(mIdx + 1).padStart(2, '0')}`;
@@ -2169,6 +2181,16 @@ function renderBrandAssetsKitHTML(brand) {
       activeChannelFilter = chan;
       if (activeViewMode === 'calendar') renderCalendar();
       else renderBoard();
+    },
+    setCalendarFilter(filter) {
+      // Filter the channel workspace plan items list by content type (all / long_form / shorts)
+      activeCalendarFilter = filter;
+      const brand = (socialBrandsData && socialBrandsData.length > 0 ? socialBrandsData : []).find(b => b.slug === activeBrandSlug || b.id === activeBrandSlug) || null;
+      const channel = brand && (brand.channels || []).find(c => c.id === activeChannelId || c.slug === activeChannelId);
+      if (brand && channel) {
+        const container = document.getElementById('brandSubTabBodyContainer');
+        if (container) container.innerHTML = renderChannelWorkspaceHTML(brand, channel);
+      }
     },
     async handleChannelCsvUpload(input, brandSlug, channelId) {
       const file = (input && input.files) ? input.files[0] : (input instanceof File ? input : null);
@@ -3219,8 +3241,14 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
       if (window.showToast) window.showToast('📋 Complete Flow Agent Brief copied! Angle + Key Points + Visual Brief + Talking Script + VEO Prompts all bundled.', 'success');
     },
     copyAllPdfSlides() {
-      if (!activeGeneratedBrief || !activeGeneratedBrief.masterPdfOutline) return;
-      navigator.clipboard.writeText(activeGeneratedBrief.masterPdfOutline);
+      if (!activeGeneratedBrief || !Array.isArray(activeGeneratedBrief.pdfOutline) || activeGeneratedBrief.pdfOutline.length === 0) return;
+      // Build a readable slide deck outline from the pdfOutline array
+      const text = activeGeneratedBrief.pdfOutline.map(s => {
+        const bullets = (s.bullets || []).map(b => `  • ${b}`).join('\n');
+        const visual = s.visualNote ? `  [Layout: ${s.visualNote}]` : '';
+        return `Slide ${s.slideNumber}: ${s.headline} (${s.type})\n${bullets}${visual ? '\n' + visual : ''}`;
+      }).join('\n\n');
+      navigator.clipboard.writeText(text);
       if (window.showToast) window.showToast('📋 Full slide deck outline copied! Ready for PowerPoint / Canva.', 'success');
     },
     copyCarouselSlides() {
@@ -3613,14 +3641,24 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
       if (window.showToast) window.showToast('🎯 Scanning channel knowledge base & monthly campaign focus...', 'info');
 
       const targetBrandSlug = activeBrand?.slug || activeBrandSlug || 'grow-bangla';
-      const defaultChannelId = targetBrandSlug === 'pilutics' ? 'pilutics-youtube' : 
-                               (targetBrandSlug === 'bong-hits' ? 'bh-youtube' : 
-                               (targetBrandSlug === 'gro10x' ? 'gro10x-youtube' : 'gb-youtube'));
+
+      // Resolve channelId dynamically from the brand's loaded channel list — never use hardcoded IDs
+      // Priority: 1) matched by channelKey or activeChannelId, 2) anchor channel, 3) first channel in list
+      const resolvedChannelId = activeChannel?.id ||
+        (activeBrand?.channels || []).find(c => c.isAnchor)?.id ||
+        (activeBrand?.channels || [])[0]?.id ||
+        null;
+
+      if (!resolvedChannelId) {
+        if (window.showToast) window.showToast('⚠️ No channel found for this brand. Open Brand Hub and onboard a channel first.', 'error');
+        if (btn) { btn.disabled = false; btn.textContent = '🎯 Find Me a Topic'; }
+        return;
+      }
 
       try {
         const res = await APP_API.post('/ai/suggest-topic', {
           brandSlug: targetBrandSlug,
-          channelId: activeChannel?.id || defaultChannelId,
+          channelId: resolvedChannelId,
           contentType,
           platform,
           month: selectedPlanMonth,
