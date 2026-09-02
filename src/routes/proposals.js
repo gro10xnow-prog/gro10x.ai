@@ -391,7 +391,7 @@ router.post('/:id/convert-to-project', requireAuth, requireAdmin, async (req, re
 // AI PROPOSAL DRAFTING (Gemini Integration)
 // ─────────────────────────────────────────────────────────────────────────────
 
-const GEMINI_MODELS = ['gemini-3.6-flash', 'gemini-flash-latest'];
+const GEMINI_MODELS = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-pro'];
 
 function callGeminiAPI(model, prompt, key) {
   return new Promise((resolve, reject) => {
@@ -448,7 +448,7 @@ function cleanJSONResponse(rawText) {
 }
 
 // POST /api/proposals/ai-draft — Generate structured proposal draft from raw voice/text context
-router.post('/ai-draft', requireAuth, requireAdmin, async (req, res) => {
+router.post('/ai-draft', requireAuth, async (req, res) => {
   const { notes, clientName, currency } = req.body;
   if (!notes || notes.trim().length < 5) {
     return res.status(400).json({ error: 'Please provide meeting notes or conversation transcript to draft a proposal.' });
