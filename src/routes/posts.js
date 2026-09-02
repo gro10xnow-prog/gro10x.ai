@@ -217,6 +217,8 @@ router.get('/client/:clientName', requireAuth, async (req, res) => {
           posts = data.map(mapPost);
         }
       } catch (e) {}
+    }
+
     if (posts.length === 0) {
       posts = inMemoryPosts.filter(p => 
         (p.client_name && p.client_name.toLowerCase() === decoded.toLowerCase()) ||
