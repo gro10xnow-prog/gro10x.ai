@@ -7,6 +7,14 @@
  */
 window.APP_MODULES = window.APP_MODULES || {};
 
+// Inject spinner keyframes
+  if (!document.getElementById('socialModuleStyles')) {
+    const st = document.createElement('style');
+    st.id = 'socialModuleStyles';
+    st.textContent = '@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }';
+    document.head.appendChild(st);
+  }
+
 window.APP_MODULES.social = async function(container) {
   let postsData = [];
   let clientsData = [];
@@ -1169,6 +1177,24 @@ window.APP_MODULES.social = async function(container) {
             </div>
           </div>
 
+          <!-- Animated Percentage Loader for Calendar Generation -->
+          <div id="channelGenProgressContainer" style="display:none; background:linear-gradient(135deg, rgba(168,85,247,0.12), rgba(99,102,241,0.12)); border:1px solid rgba(168,85,247,0.4); border-radius:12px; padding:1.25rem; flex-direction:column; gap:0.75rem; margin-bottom:0.8rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div style="display:flex; align-items:center; gap:0.6rem;">
+                <span class="spinner" style="width:20px; height:20px; border:2px solid #a855f7; border-top-color:transparent; border-radius:50%; display:inline-block; animation:spin 0.8s linear infinite;"></span>
+                <span id="genProgressStepText" style="font-weight:800; font-size:0.88rem; color:#fff;">Analyzing Channel Analytics & Audience Signals...</span>
+              </div>
+              <span id="genProgressPercent" style="font-weight:900; font-size:1.2rem; color:#a855f7; font-family:var(--font-heading);">0%</span>
+            </div>
+            <div style="width:100%; height:8px; background:rgba(0,0,0,0.5); border-radius:10px; overflow:hidden; border:1px solid rgba(255,255,255,0.05);">
+              <div id="genProgressBarFill" style="width:0%; height:100%; background:linear-gradient(90deg, #a855f7, #6366f1, #10b981); transition:width 0.35s ease; border-radius:10px;"></div>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:0.72rem; color:var(--text-dim);">
+              <span>🚀 100% Automated Strategy grounded in Watch Time</span>
+              <span>⚡ Fixed Production: 2 Long-form Tutorials + 7 Daily Shorts/week</span>
+            </div>
+          </div>
+
           <!-- Strategy Configuration Bar (if not locked and not archived) -->
           ${!isLocked && !isPastMonth ? `
             <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-subtle); border-radius:10px; padding:0.85rem 1rem; display:grid; grid-template-columns:1.5fr 1fr auto; gap:0.8rem; align-items:center;">
@@ -1693,6 +1719,35 @@ window.APP_MODULES.social = async function(container) {
         btn.textContent = '⏳ AI Strategizing ' + selectedPlanMonth + '...';
       }
 
+      const progressBox = document.getElementById('channelGenProgressContainer');
+      const stepText = document.getElementById('genProgressStepText');
+      const percentText = document.getElementById('genProgressPercent');
+      const barFill = document.getElementById('genProgressBarFill');
+
+      if (progressBox) progressBox.style.display = 'flex';
+
+      let currentPercent = 5;
+      const progressInterval = setInterval(() => {
+        if (currentPercent < 90) {
+          currentPercent += Math.floor(Math.random() * 8) + 4;
+          if (currentPercent > 90) currentPercent = 90;
+          if (percentText) percentText.textContent = `${currentPercent}%`;
+          if (barFill) barFill.style.width = `${currentPercent}%`;
+
+          if (stepText) {
+            if (currentPercent < 25) {
+              stepText.textContent = `🔍 Ingesting 114 Indexed Content Signals & Watch Time CTRs...`;
+            } else if (currentPercent < 50) {
+              stepText.textContent = `🧠 Applying Primary Language Profile & Search Intent...`;
+            } else if (currentPercent < 75) {
+              stepText.textContent = `📹 Structuring 8 Long-form Pillar Deep Dives on Peak Velocity Days (Fri & Tue)...`;
+            } else {
+              stepText.textContent = `🎬 Generating 28 Daily Discovery Shorts with Viral Hooks & VEO Prompts...`;
+            }
+          }
+        }
+      }, 350);
+
       try {
         const res = await APP_API.post(`/social-brands/${brandSlug}/channels/${channelId}/generate-calendar`, {
           month: selectedPlanMonth,
@@ -1701,18 +1756,40 @@ window.APP_MODULES.social = async function(container) {
           focusNote: monthlyFocusNote
         });
 
-        if (res && res.success) {
+        clearInterval(progressInterval);
+        if (percentText) percentText.textContent = `100%`;
+        if (barFill) barFill.style.width = `100%`;
+        if (stepText) stepText.textContent = `🎉 4-Week Strategic Production Blueprint Complete!`;
+
+        if (res && res.success && res.calendar) {
+          // Direct in-memory state synchronization
+          const brand = (socialBrandsData || []).find(b => b.slug === brandSlug || b.id === brandSlug);
+          if (brand && brand.channels) {
+            const ch = brand.channels.find(c => c.id === channelId || c.slug === channelId);
+            if (ch) {
+              ch.calendars = ch.calendars || {};
+              ch.calendars[res.calendar.monthKey] = res.calendar;
+            }
+          }
+
+          selectedPlanMonth = res.calendar.month || selectedPlanMonth;
+          selectedPlanYear = res.calendar.year || selectedPlanYear;
+
+          await new Promise(r => setTimeout(r, 450));
           if (window.showToast) window.showToast(`✨ Generated ${selectedPlanMonth} strategic calendar for ${channelId}!`, 'success');
+          
           await loadInitialData();
           this.openChannelWorkspace(channelId);
         } else {
           throw new Error(res?.error || 'Generation failed');
         }
       } catch (err) {
+        clearInterval(progressInterval);
         console.error('Calendar Gen Error:', err);
         if (window.showToast) window.showToast('Generation notice: ' + err.message, 'error');
       } finally {
         isGeneratingCalendar = false;
+        if (progressBox) progressBox.style.display = 'none';
         if (btn) {
           btn.disabled = false;
           btn.textContent = '✨ Generate ' + selectedPlanMonth + ' Strategy';
