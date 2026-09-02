@@ -37,18 +37,19 @@ window.APP_MODULES.social = async function(container) {
   let isOnboardingOverride = false;
   let currentCalendarDate = new Date();
 
-  // Brand Hub & Content OS State — activeBrandSlug persisted across navigation via localStorage
+  // Brand Hub & Content OS State — persisted across navigation
   let activeBrandSlug = localStorage.getItem('social_activeBrandSlug') || 'grow-bangla';
-  let activeBrandSubTab = 'overview'; // 'overview' | 'channel' | 'assets'
-  let activeChannelId = null;
+  let activeBrandSubTab = localStorage.getItem('social_activeBrandSubTab') || 'overview'; // 'overview' | 'channel' | 'assets'
+  let activeChannelId = localStorage.getItem('social_activeChannelId') || null;
   let selectedPlanMonth = new Date().toLocaleString('default', { month: 'long' });
   let selectedPlanYear = new Date().getFullYear();
   let alignAnchorSynergy = true;
   let activeCalendarFilter = "all"; // "all" | "long_form" | "shorts"
-  let activeBoardSearch = ''; // Kanban title search term (ISSUE 21)
+  let activeBoardSearch = sessionStorage.getItem('social_boardSearch') || ''; // Kanban title search term
   let monthlyFocusNote = '';
   let isGeneratingCalendar = false;
   let isUploadingAnalytics = false;
+  let currentPostMediaUrls = []; // Multi-media attachments for current modal
 
   // Topic Intelligence & Multi-modal State
   let activeTopicInputMode = 'type';
@@ -145,8 +146,8 @@ window.APP_MODULES.social = async function(container) {
     YouTube: 5000
   };
 
-  let activePlatformFilter = 'all';
-  let activeChannelFilter = 'all';
+  let activePlatformFilter = sessionStorage.getItem('social_platformFilter') || 'all';
+  let activeChannelFilter = sessionStorage.getItem('social_channelFilter') || 'all';
 
   function escapeHTML(str) {
     if (!str) return '';
@@ -475,6 +476,9 @@ window.APP_MODULES.social = async function(container) {
                 </div>
                 
                 <div style="display:flex; gap:0.35rem; align-items:center;">
+                  <button type="button" class="btn-ghost btn-sm" id="btnSavedIdeas" style="font-size:0.72rem; padding:0.22rem 0.55rem; color:#facc15; border:1px solid rgba(250,204,21,0.3); border-radius:8px;" onclick="window.SOCIAL_MODULE.showSavedIdeasModal()">
+                    ⭐ Saved Ideas
+                  </button>
                   <button type="button" class="btn-ghost btn-sm" id="btnFindTopic" style="font-size:0.72rem; padding:0.22rem 0.6rem; color:#38bdf8; border:1px solid rgba(56,189,248,0.3); border-radius:8px;" onclick="window.SOCIAL_MODULE.findMeTopic()">
                     🎯 Find Me a Topic
                   </button>
@@ -518,30 +522,25 @@ window.APP_MODULES.social = async function(container) {
 
               <!-- Sub-View C: Reference Upload (Up to 50MB) -->
               <div id="topicModeRefContainer" style="display:none; flex-direction:column; gap:0.6rem;">
-                <div id="topicRefDropzone" style="border:2px dashed rgba(56,189,248,0.4); border-radius:10px; padding:1.2rem; text-align:center; background:rgba(0,0,0,0.25); cursor:pointer; transition:all 0.2s ease;"
-                     onclick="document.getElementById('spRefFileInput').click()"
-                     ondragover="event.preventDefault(); this.style.borderColor='#10b981'; this.style.background='rgba(16,185,129,0.08)';"
-                     ondragleave="event.preventDefault(); this.style.borderColor='rgba(56,189,248,0.4)'; this.style.background='rgba(0,0,0,0.25)';"
-                     ondrop="event.preventDefault(); this.style.borderColor='rgba(56,189,248,0.4)'; this.style.background='rgba(0,0,0,0.25)'; const f = event.dataTransfer.files && event.dataTransfer.files[0]; if(f) window.SOCIAL_MODULE.handleReferenceUpload(f);">
-                  <input type="file" id="spRefFileInput" style="display:none;" accept="image/*,.pdf,.doc,.docx,.txt,.md" onchange="window.SOCIAL_MODULE.handleReferenceUpload(this.files && this.files[0])">
-                  
-                  <div id="refDefaultPrompt">
-                    <div style="font-size:1.6rem; margin-bottom:0.2rem;">📎</div>
-                    <div style="font-weight:800; font-size:0.85rem; color:#fff;">Drop Screenshot, Blueprint PDF, Document or Slide</div>
-                    <div style="font-size:0.72rem; color:var(--text-dim); margin-top:0.2rem;">Supports PDF, PNG, JPG, DOCX, TXT up to <strong>50MB</strong>. Automatically analyzes visual charts and extracts topic & angle.</div>
-                  </div>
+                <input type="file" id="refAssetFileInput" style="display:none;" accept=".pdf,.doc,.docx,.txt,.csv,.png,.jpg,.jpeg,.mp4,.mp3" onchange="window.SOCIAL_MODULE.handleReferenceAssetUpload(this)">
+                
+                <div id="refAssetUploadPrompt" onclick="document.getElementById('refAssetFileInput').click()" style="cursor:pointer; border:1px dashed rgba(56,189,248,0.4); border-radius:10px; padding:0.9rem; text-align:center; background:rgba(56,189,248,0.03); transition:border-color 0.2s ease;">
+                  <div style="font-size:1.3rem; margin-bottom:0.2rem;">📎</div>
+                  <div style="font-weight:700; font-size:0.8rem; color:#fff;">Drop reference document, audio, video, or script here</div>
+                  <div style="font-size:0.68rem; color:var(--text-dim); margin-top:0.15rem;">Gemini 2.5 Flash analyzes files up to 50MB to distill high-performing talking points</div>
+                </div>
 
-                  <!-- Reference Loading Progress Bar -->
-                  <div id="refUploadProgressBox" style="display:none; flex-direction:column; align-items:center; gap:0.5rem; padding:0.4rem 0;">
-                    <div style="display:flex; justify-content:space-between; width:100%; max-width:340px; font-size:0.75rem; font-weight:800;">
-                      <span id="refProgressStep" style="color:#38bdf8;">🔍 Reading Document & Extracting Core Theme...</span>
-                      <span id="refProgressPct" style="color:#10b981;">20%</span>
-                    </div>
+                <!-- Reference Progress Indicator -->
+                <div id="refUploadProgressBox" style="display:none; flex-direction:column; gap:0.4rem; background:rgba(0,0,0,0.3); border:1px solid rgba(56,189,248,0.3); border-radius:8px; padding:0.6rem 0.8rem;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.72rem;">
+                    <span id="refProgressLabel" style="color:#38bdf8; font-weight:700;">Analyzing reference with Gemini 2.5...</span>
+                    <span id="refProgressPercent" style="color:var(--text-dim);">20%</span>
+                  </div>
+                  <div style="display:flex; justify-content:center;">
                     <div style="width:100%; max-width:340px; height:6px; background:rgba(255,255,255,0.1); border-radius:10px; overflow:hidden;">
                       <div id="refProgressBar" style="width:20%; height:100%; background:linear-gradient(90deg, #38bdf8, #10b981); transition:width 0.2s ease;"></div>
                     </div>
                   </div>
-
                 </div>
 
                 <!-- Reference Ingestion Result Pill -->
@@ -578,7 +577,10 @@ window.APP_MODULES.social = async function(container) {
                   Rationale explanation...
                 </div>
 
-                <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:0.2rem;">
+                <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:0.2rem; flex-wrap:wrap;">
+                  <button type="button" class="btn-ghost btn-sm" style="font-size:0.72rem; padding:0.25rem 0.65rem; color:#facc15; border:1px solid rgba(250,204,21,0.3); border-radius:6px;" onclick="window.SOCIAL_MODULE.saveTopicSuggestion()">
+                    ⭐ Save Idea
+                  </button>
                   <button type="button" class="btn-secondary btn-sm" style="font-size:0.72rem; padding:0.25rem 0.65rem;" onclick="window.SOCIAL_MODULE.cycleNextTopicSuggestion()">
                     🔄 Suggest Another
                   </button>
@@ -612,7 +614,7 @@ window.APP_MODULES.social = async function(container) {
                 <label class="form-label" style="margin:0;">Caption / Copywriting</label>
                 <span id="captionCharCount" style="font-size:0.75rem; color:var(--text-dim);">0 / 5,000</span>
               </div>
-              <textarea id="spCaption" class="input-text" rows="4" placeholder="Write post hook, body, and call-to-action..." oninput="window.SOCIAL_MODULE.updateCharCount(this)"></textarea>
+              <textarea id="spCaption" class="input-text" rows="4" placeholder="Write post hook, body, and call-to-action..." oninput="window.SOCIAL_MODULE.updateCharCount(this)" onpaste="setTimeout(() => window.SOCIAL_MODULE.updateCharCount(this), 10)"></textarea>
             </div>
 
             <!-- First Comment / Hashtag Stack -->
@@ -637,8 +639,8 @@ window.APP_MODULES.social = async function(container) {
                   <div style="font-weight:700; font-size:0.85rem; color:#fff;">Drag & drop or click to upload file</div>
                   <div style="font-size:0.72rem; color:var(--text-dim); margin-top:0.15rem;">Supports JPG, PNG, MP4, MP3, WAV, PDF (up to 50MB)</div>
                 </div>
-                <div id="spMediaUploadPreview" style="display:none; align-items:center; justify-content:space-between; gap:0.75rem; background:rgba(255,255,255,0.04); border-radius:8px; padding:0.5rem 0.75rem;">
-                  <!-- Dynamic preview thumbnail & remove button -->
+                <div id="spMediaUploadPreview" style="display:none; flex-direction:column; gap:0.5rem; background:rgba(255,255,255,0.03); border-radius:8px; padding:0.6rem;">
+                  <!-- Dynamic multi-image thumbnail grid & remove buttons -->
                 </div>
               </div>
               <input type="hidden" id="spMediaUrl" value="">
@@ -646,7 +648,10 @@ window.APP_MODULES.social = async function(container) {
                 <a href="javascript:void(0)" onclick="window.SOCIAL_MODULE.toggleDirectMediaUrl()" style="font-size:0.72rem; color:var(--purple-light); text-decoration:none;">🔗 Or paste direct CDN/Cloudinary URL</a>
               </div>
               <div id="spDirectMediaUrlWrap" style="display:none; margin-top:0.4rem;">
-                <input type="url" id="spDirectMediaUrl" class="input-text" placeholder="https://res.cloudinary.com/..." oninput="document.getElementById('spMediaUrl').value = this.value">
+                <div style="display:flex; gap:0.4rem;">
+                  <input type="url" id="spDirectMediaUrl" class="input-text" placeholder="https://res.cloudinary.com/..." style="flex:1;">
+                  <button type="button" class="btn-primary btn-sm" style="font-size:0.75rem;" onclick="window.SOCIAL_MODULE.addDirectMediaUrl()">+ Add URL</button>
+                </div>
               </div>
             </div>
 
@@ -655,6 +660,95 @@ window.APP_MODULES.social = async function(container) {
               <button type="submit" class="btn-primary" id="spSubmitBtn">🚀 Save & Submit Draft</button>
             </div>
           </form>
+        </div>
+      </div>
+
+      <!-- Universal Dialog Modal (Confirmations & Dynamic Inputs) -->
+      <div class="modal-overlay" id="socialDialogModal" style="display:none; z-index:1050;">
+        <div class="modal-box" id="socialDialogBox" style="max-width: 520px; background:var(--surface-card, #14141e); border:1px solid var(--border-subtle); border-radius:14px; padding:1.25rem;">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+      <!-- Plan Item Edit Modal -->
+      <div class="modal-overlay" id="planItemEditModal" style="display:none; z-index:1050;">
+        <div class="modal-box" style="max-width: 560px; background:var(--surface-card, #14141e); border:1px solid var(--border-subtle); border-radius:14px; padding:1.25rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; border-bottom:1px solid var(--border-subtle); padding-bottom:0.8rem;">
+            <div>
+              <h3 style="color:#fff; font-size:1.15rem; margin:0; font-family:var(--font-heading);">✏️ Edit Calendar Plan Item</h3>
+              <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.2rem;">Fine-tune schedule, hook, and strategic focus</div>
+            </div>
+            <button onclick="window.SOCIAL_MODULE.closePlanItemEditModal()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
+          </div>
+          <form onsubmit="window.SOCIAL_MODULE.handlePlanItemEditSubmit(event)" style="display:flex; flex-direction:column; gap:0.9rem;">
+            <input type="hidden" id="editPlanBrandSlug">
+            <input type="hidden" id="editPlanChannelId">
+            <input type="hidden" id="editPlanMonthKey">
+            <input type="hidden" id="editPlanIndex">
+            
+            <div class="form-group">
+              <label class="form-label" style="font-size:0.82rem; font-weight:700;">Topic Idea / Title *</label>
+              <input type="text" id="editPlanTopic" class="input-text" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" style="font-size:0.82rem; font-weight:700;">First 3-Second Hook</label>
+              <input type="text" id="editPlanHook" class="input-text" placeholder="e.g. Stop making this critical error...">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" style="font-size:0.82rem; font-weight:700;">Strategic Rationale</label>
+              <input type="text" id="editPlanRationale" class="input-text">
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+              <div class="form-group">
+                <label class="form-label" style="font-size:0.82rem; font-weight:700;">Scheduled Date</label>
+                <input type="date" id="editPlanDate" class="input-text">
+              </div>
+              <div class="form-group">
+                <label class="form-label" style="font-size:0.82rem; font-weight:700;">Suggested Time</label>
+                <input type="time" id="editPlanTime" class="input-text" value="18:00">
+              </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+              <div class="form-group">
+                <label class="form-label" style="font-size:0.82rem; font-weight:700;">Content Type</label>
+                <select id="editPlanContentType" class="input-text">
+                  <option value="Short-form Video">Short-form Video</option>
+                  <option value="Long-form Video">Long-form Video</option>
+                  <option value="Carousel Graphic">Carousel Graphic</option>
+                  <option value="Static Post">Static Post</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" style="font-size:0.82rem; font-weight:700;">Target Duration</label>
+                <input type="text" id="editPlanDuration" class="input-text" placeholder="60s">
+              </div>
+            </div>
+
+            <div style="display:flex; gap:0.6rem; justify-content:flex-end; margin-top:0.6rem; border-top:1px solid var(--border-subtle); padding-top:0.8rem;">
+              <button type="button" class="btn-secondary" onclick="window.SOCIAL_MODULE.closePlanItemEditModal()">Cancel</button>
+              <button type="submit" class="btn-primary" id="btnSavePlanItem">💾 Save Changes</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Saved Topic Ideas Modal -->
+      <div class="modal-overlay" id="savedIdeasModal" style="display:none; z-index:1050;">
+        <div class="modal-box" style="max-width: 580px; max-height:85vh; overflow-y:auto; background:var(--surface-card, #14141e); border:1px solid var(--border-subtle); border-radius:14px; padding:1.25rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; border-bottom:1px solid var(--border-subtle); padding-bottom:0.8rem;">
+            <div>
+              <h3 style="color:#fff; font-size:1.15rem; margin:0; font-family:var(--font-heading);">⭐ Saved Topic Ideas</h3>
+              <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.2rem;">Bookmarked content concepts ready for drafting</div>
+            </div>
+            <button onclick="window.SOCIAL_MODULE.closeSavedIdeasModal()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
+          </div>
+          <div id="savedIdeasList" style="display:flex; flex-direction:column; gap:0.65rem;">
+            <!-- Rendered by JS -->
+          </div>
         </div>
       </div>
     `;
@@ -1712,8 +1806,16 @@ window.APP_MODULES.social = async function(container) {
                     </div>
 
                     <button type="button" class="btn-secondary btn-sm" style="font-size:0.75rem; padding:0.35rem 0.75rem;" onclick="window.SOCIAL_MODULE.draftPostFromPlanItem('${brand.slug}', '${channel.id}', ${idx})">
-                      ✏️ Draft Now
+                      📝 Draft Now
                     </button>
+                    ${!isLocked && !isPastMonth ? `
+                      <button type="button" class="btn-ghost btn-sm" style="font-size:0.75rem; padding:0.35rem 0.55rem; color:var(--text-muted); border:1px solid rgba(255,255,255,0.1); border-radius:6px;" title="Edit plan item" onclick="window.SOCIAL_MODULE.openEditPlanItemModal('${brand.slug}', '${channel.id}', '${currentMonthKey}', ${idx})">
+                        ✏️ Edit
+                      </button>
+                      <button type="button" class="btn-ghost btn-sm" style="font-size:0.75rem; padding:0.35rem 0.55rem; color:#f87171; border:1px solid rgba(239,68,68,0.25); border-radius:6px;" title="Delete plan item" onclick="window.SOCIAL_MODULE.deletePlanItem('${brand.slug}', '${channel.id}', '${currentMonthKey}', ${idx})">
+                        🗑️
+                      </button>
+                    ` : ''}
                   </div>
 
                 </div>
@@ -1966,7 +2068,22 @@ function renderBrandAssetsKitHTML(brand) {
 
   function renderColumnCards(list, stageKey) {
     if (!list || list.length === 0) {
-      return `<div style="text-align:center; color:var(--text-dim); padding:2.5rem 1rem; font-size:0.8rem; border:1px dashed var(--border-subtle); border-radius:12px; height:100%; display:flex; align-items:center; justify-content:center;">No posts in this stage</div>`;
+      const stageEmptyMeta = {
+        draft: { icon: '📝', title: 'No Drafts', desc: 'New concepts and calendar drops start here.', action: '+ Create Draft' },
+        internal: { icon: '🔍', title: 'Queue Empty', desc: 'No posts waiting for Internal QC verification.' },
+        client: { icon: '🤝', title: 'All Clear', desc: 'No posts awaiting client sign-off.' },
+        approved: { icon: '🚀', title: 'Ready to Ship', desc: 'Approved posts lined up for publishing.' },
+        posted: { icon: '🎉', title: 'Archive Empty', desc: 'Published posts will appear here once live.' }
+      };
+      const meta = stageEmptyMeta[stageKey] || { icon: '📄', title: 'Empty Stage', desc: 'No posts in this column.' };
+      return `
+        <div style="text-align:center; color:var(--text-dim); padding:2rem 1rem; border:1px dashed rgba(255,255,255,0.08); border-radius:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.4rem; min-height:160px;">
+          <div style="font-size:1.8rem; opacity:0.6;">${meta.icon}</div>
+          <div style="font-weight:700; color:#fff; font-size:0.85rem;">${meta.title}</div>
+          <div style="font-size:0.72rem; color:var(--text-muted); max-width:180px;">${meta.desc}</div>
+          ${meta.action ? `<button type="button" class="btn-ghost btn-sm" style="font-size:0.7rem; margin-top:0.4rem; padding:0.25rem 0.6rem; border:1px solid rgba(255,255,255,0.15); border-radius:6px;" onclick="window.SOCIAL_MODULE.openPostModal()">${meta.action}</button>` : ''}
+        </div>
+      `;
     }
 
     return list.map(p => {
@@ -1977,8 +2094,13 @@ function renderBrandAssetsKitHTML(brand) {
       const mediaThumb = hasMedia ? p.mediaUrls[0] : null;
       const qc = evaluatePostQC(p);
 
+      // Check if scheduled date has passed and post is not yet published
+      const isOverdue = p.scheduledDate && 
+        new Date(p.scheduledDate + 'T' + (p.scheduledTime || '23:59')) < new Date() && 
+        !['Posted', 'Published'].includes(p.status);
+
       return `
-        <div class="post-card" style="background:rgba(255,255,255,0.03); border:1px solid var(--border-subtle); border-radius:12px; padding:0.9rem; display:flex; flex-direction:column; gap:0.6rem; transition:transform 0.15s ease, border-color 0.15s ease;">
+        <div class="post-card" style="background:rgba(255,255,255,0.03); border:1px solid ${isOverdue ? 'rgba(239,68,68,0.4)' : 'var(--border-subtle)'}; border-radius:12px; padding:0.9rem; display:flex; flex-direction:column; gap:0.6rem; transition:transform 0.15s ease, border-color 0.15s ease;">
           
           <!-- Channel & Platform Badges Header -->
           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.3rem;">
@@ -1986,6 +2108,7 @@ function renderBrandAssetsKitHTML(brand) {
               ${escapeHTML(chanCfg.name)}
             </span>
             <div style="display:flex; gap:0.3rem; align-items:center;">
+              ${isOverdue ? `<span class="badge badge-danger" style="font-size:0.62rem; font-weight:800; background:rgba(239,68,68,0.2); color:#f87171; border:1px solid rgba(239,68,68,0.4);">⚠️ OVERDUE</span>` : ''}
               <span class="badge badge-gray" style="font-size:0.68rem;">
                 ${icon} ${escapeHTML(p.platform)}
               </span>
@@ -2148,12 +2271,18 @@ function renderBrandAssetsKitHTML(brand) {
     },
     switchBrandSubTab(tab) {
       activeBrandSubTab = tab;
-      if (tab !== 'channel') activeChannelId = null;
+      localStorage.setItem('social_activeBrandSubTab', tab);
+      if (tab !== 'channel') {
+        activeChannelId = null;
+        localStorage.removeItem('social_activeChannelId');
+      }
       renderContentOS();
     },
     openChannelWorkspace(channelId) {
       activeBrandSubTab = 'channel';
       activeChannelId = channelId;
+      localStorage.setItem('social_activeBrandSubTab', 'channel');
+      localStorage.setItem('social_activeChannelId', channelId);
       const brand = (socialBrandsData || []).find(b => b.slug === activeBrandSlug || b.id === activeBrandSlug);
       const mIdx = new Date(selectedPlanMonth + ' 1, ' + selectedPlanYear).getMonth();
       const mKey = `${selectedPlanYear}-${String(mIdx + 1).padStart(2, '0')}`;
@@ -2193,11 +2322,13 @@ function renderBrandAssetsKitHTML(brand) {
     },
     filterPlatform(plat) {
       activePlatformFilter = plat;
+      sessionStorage.setItem('social_platformFilter', plat);
       if (activeViewMode === 'calendar') renderCalendar();
       else renderBoard();
     },
     filterChannel(chan) {
       activeChannelFilter = chan;
+      sessionStorage.setItem('social_channelFilter', chan);
       if (activeViewMode === 'calendar') renderCalendar();
       else renderBoard();
     },
@@ -2214,7 +2345,10 @@ function renderBrandAssetsKitHTML(brand) {
     refilterBoard() {
       // Called by Kanban search input — re-reads activeBoardSearch from the input and re-renders
       const input = document.getElementById('kanbanSearchInput');
-      if (input) activeBoardSearch = input.value || '';
+      if (input) {
+        activeBoardSearch = input.value || '';
+        sessionStorage.setItem('social_boardSearch', activeBoardSearch);
+      }
       renderBoard();
     },
     async handleChannelCsvUpload(input, brandSlug, channelId) {
@@ -2332,19 +2466,26 @@ function renderBrandAssetsKitHTML(brand) {
       }
     },
     async resetChannelOnboarding(brandSlug, channelId) {
-      const confirmed = window.confirm('⚠️ Reset Channel Baseline?\n\nThis will clear the current channel analytics knowledge base so you can upload a new CSV report or re-enter baseline metrics.\n\nDo you want to proceed?');
-      if (!confirmed) return;
-      try {
-        const res = await APP_API.post(`/social-brands/${brandSlug}/channels/${channelId}/reset-onboarding`);
-        if (res && res.success) {
-          isOnboardingOverride = true;
-          if (window.showToast) window.showToast('🔄 Channel ready for fresh onboarding!', 'info');
-          await loadInitialData();
-          this.openChannelWorkspace(channelId);
+      this.showConfirmDialog({
+        title: 'Reset Channel Baseline?',
+        message: 'This will clear the current channel analytics knowledge base so you can upload a new CSV report or re-enter baseline metrics.\n\nDo you want to proceed?',
+        icon: '🔄',
+        confirmText: 'Reset Baseline',
+        confirmStyle: 'btn-secondary btn-danger',
+        onConfirm: async () => {
+          try {
+            const res = await APP_API.post(`/social-brands/${brandSlug}/channels/${channelId}/reset-onboarding`);
+            if (res && res.success) {
+              isOnboardingOverride = true;
+              if (window.showToast) window.showToast('🔄 Channel ready for fresh onboarding!', 'info');
+              await loadInitialData();
+              this.openChannelWorkspace(channelId);
+            }
+          } catch (err) {
+            if (window.showToast) window.showToast('Reset notice: ' + err.message, 'error');
+          }
         }
-      } catch (err) {
-        if (window.showToast) window.showToast('Reset notice: ' + err.message, 'error');
-      }
+      });
     },
     openCommunitySnapshotModal() {
       let modal = document.getElementById('communitySnapshotModal');
@@ -2512,37 +2653,40 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
       }
     },
     async lockChannelCalendar(brandSlug, channelId, monthKey) {
-      if (!confirm(`Are you sure you want to LOCK the ${selectedPlanMonth} calendar for this channel? All items will be frozen and auto-created as active drafts in your Kanban pipeline.`)) return;
+      this.showConfirmDialog({
+        title: `Lock ${selectedPlanMonth} Calendar?`,
+        message: `All plan items will be frozen and auto-created as active drafts in your Kanban pipeline for production and approval.\n\nAre you ready to lock?`,
+        icon: '🔒',
+        confirmText: 'Lock & Push Drafts',
+        confirmStyle: 'btn-emerald',
+        onConfirm: async () => {
+          if (window.showToast) window.showToast('🔒 Freezing plan and provisioning drafts in pipeline...', 'info');
+          try {
+            const res = await APP_API.post(`/social-brands/${brandSlug}/channels/${channelId}/calendars/${monthKey}/lock`, {});
+            if (res && res.success) {
+              const brand = (socialBrandsData || []).find(b => b.slug === brandSlug || b.id === brandSlug);
+              const ch = brand && (brand.channels || []).find(c => c.id === channelId || c.slug === channelId);
+              const planItems = ch && ch.calendars && ch.calendars[monthKey] && ch.calendars[monthKey].planItems;
+              const draftCount = (planItems && planItems.length) || (res.draftsCreated || 0);
 
-      if (window.showToast) window.showToast('🔒 Freezing plan and provisioning drafts in pipeline...', 'info');
+              const msg = `🔒 ${selectedPlanMonth} locked! ${draftCount} drafts → Kanban pipeline.`;
+              if (window.showToast) window.showToast(msg, 'success');
 
-      try {
-        const res = await APP_API.post(`/social-brands/${brandSlug}/channels/${channelId}/calendars/${monthKey}/lock`, {});
-        if (res && res.success) {
-          // Get plan item count before reload for the toast
-          const brand = (socialBrandsData || []).find(b => b.slug === brandSlug || b.id === brandSlug);
-          const ch = brand && (brand.channels || []).find(c => c.id === channelId || c.slug === channelId);
-          const planItems = ch && ch.calendars && ch.calendars[monthKey] && ch.calendars[monthKey].planItems;
-          const draftCount = (planItems && planItems.length) || (res.draftsCreated || 0);
+              await loadInitialData();
+              this.openChannelWorkspace(channelId);
 
-          // ISSUE 22 FIX: Informative toast with draft count + Kanban link action
-          const msg = `🔒 ${selectedPlanMonth} locked! ${draftCount} drafts → Kanban pipeline.`;
-          if (window.showToast) window.showToast(msg, 'success');
-
-          await loadInitialData();
-          this.openChannelWorkspace(channelId);
-
-          // Show a second actionable toast with view-in-kanban option
-          setTimeout(() => {
-            if (window.showToast) window.showToast('👀 Switch to Kanban view to see your new drafts', 'info');
-          }, 1500);
-        } else {
-          throw new Error(res?.error || 'Lock failed');
+              setTimeout(() => {
+                if (window.showToast) window.showToast('👀 Switch to Kanban view to see your new drafts', 'info');
+              }, 1500);
+            } else {
+              throw new Error(res?.error || 'Lock failed');
+            }
+          } catch (err) {
+            console.error('Lock error:', err);
+            if (window.showToast) window.showToast('Lock failed: ' + err.message, 'error');
+          }
         }
-      } catch (err) {
-        console.error('Lock error:', err);
-        if (window.showToast) window.showToast('Lock failed: ' + err.message, 'error');
-      }
+      });
     },
     openPostModalFromPlanItem(brandSlug, channelId, monthKey, planIndex) {
       const brand = (socialBrandsData || []).find(b => b.slug === brandSlug || b.id === brandSlug);
@@ -2594,6 +2738,20 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
       if (!calendar && channel && channel.calendars) {
         const keys = Object.keys(channel.calendars);
         if (keys.length > 0) calendar = channel.calendars[keys[0]];
+      }
+
+      const planItem = calendar && calendar.planItems && calendar.planItems[planIndex];
+      const planTopic = (planItem && (planItem.topicIdea || planItem.title)) || '';
+
+      // Item 3.8: Duplicate draft detection
+      if (planTopic && Array.isArray(postsData)) {
+        const existingDraft = postsData.find(p => 
+          p.title && p.title.trim().toLowerCase() === planTopic.trim().toLowerCase()
+        );
+        if (existingDraft) {
+          const proceed = window.confirm(`⚠️ A post with the title "${planTopic}" already exists in your pipeline (${existingDraft.status}).\n\nDo you want to draft another post for this topic anyway?`);
+          if (!proceed) return;
+        }
       }
 
       this.openPostModalFromPlanItem(brandSlug, channelId, (calendar && calendar.monthKey) || currentMonthKey, planIndex);
@@ -2694,13 +2852,63 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
         if (window.showToast) window.showToast('Asset upload failed: ' + err.message, 'error');
       }
     },
+    showDialogModal(html) {
+      const modal = document.getElementById('socialDialogModal');
+      const box = document.getElementById('socialDialogBox');
+      if (modal && box) {
+        box.innerHTML = html;
+        modal.style.display = 'flex';
+      }
+    },
+    closeSocialDialog() {
+      const modal = document.getElementById('socialDialogModal');
+      if (modal) modal.style.display = 'none';
+    },
+    showConfirmDialog({ title, message, icon = '⚠️', confirmText = 'Confirm', confirmStyle = 'btn-primary', onConfirm }) {
+      window._socialModalConfirmAction = onConfirm;
+      const html = `
+        <div style="display:flex; flex-direction:column; gap:0.9rem;">
+          <div style="display:flex; align-items:center; gap:0.6rem;">
+            <span style="font-size:1.6rem;">${icon}</span>
+            <div style="font-weight:800; font-size:1.1rem; color:#fff; font-family:var(--font-heading);">${escapeHTML(title)}</div>
+          </div>
+          <div style="font-size:0.85rem; color:var(--text-muted); line-height:1.45; white-space:pre-wrap;">${escapeHTML(message)}</div>
+          <div style="display:flex; justify-content:flex-end; gap:0.6rem; margin-top:0.4rem; border-top:1px solid var(--border-subtle); padding-top:0.8rem;">
+            <button type="button" class="btn-secondary" onclick="window.SOCIAL_MODULE.closeSocialDialog()">Cancel</button>
+            <button type="button" class="${confirmStyle}" onclick="window.SOCIAL_MODULE.closeSocialDialog(); if (window._socialModalConfirmAction) window._socialModalConfirmAction();">${confirmText}</button>
+          </div>
+        </div>
+      `;
+      this.showDialogModal(html);
+    },
     promptAddBrand() {
-      const name = prompt('Enter New Brand Name:');
-      if (!name) return;
-      const niche = prompt('Enter Core Niche / Topic:', 'Digital Media & AI');
-      if (!niche) return;
-
-      this.createCustomBrand(name, niche);
+      const html = `
+        <div style="display:flex; flex-direction:column; gap:0.9rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-subtle); padding-bottom:0.6rem;">
+            <div style="font-weight:800; font-size:1.1rem; color:#fff; font-family:var(--font-heading);">✨ Create Digital Brand</div>
+            <button type="button" class="btn-ghost btn-sm" onclick="window.SOCIAL_MODULE.closeSocialDialog()">✕</button>
+          </div>
+          <div class="form-group">
+            <label class="form-label" style="font-size:0.82rem; font-weight:700;">Brand Name *</label>
+            <input type="text" id="dlgBrandName" class="input-text" placeholder="e.g. Creator Academy" required autofocus>
+          </div>
+          <div class="form-group">
+            <label class="form-label" style="font-size:0.82rem; font-weight:700;">Core Niche / Focus</label>
+            <input type="text" id="dlgBrandNiche" class="input-text" placeholder="e.g. EdTech & Career Skills" value="Digital Media & AI">
+          </div>
+          <div style="display:flex; justify-content:flex-end; gap:0.6rem; border-top:1px solid var(--border-subtle); padding-top:0.8rem;">
+            <button type="button" class="btn-secondary" onclick="window.SOCIAL_MODULE.closeSocialDialog()">Cancel</button>
+            <button type="button" class="btn-primary" onclick="
+              const name = document.getElementById('dlgBrandName')?.value.trim();
+              const niche = document.getElementById('dlgBrandNiche')?.value.trim() || 'Digital Media & AI';
+              if (!name) { if (window.showToast) window.showToast('Please enter a brand name', 'error'); return; }
+              window.SOCIAL_MODULE.closeSocialDialog();
+              window.SOCIAL_MODULE.createCustomBrand(name, niche);
+            ">🚀 Create Brand</button>
+          </div>
+        </div>
+      `;
+      this.showDialogModal(html);
     },
     async createCustomBrand(name, niche) {
       try {
@@ -2715,13 +2923,46 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
       }
     },
     promptAddChannel() {
-      const name = prompt('Enter Channel Name:', 'TikTok Channel');
-      if (!name) return;
-      const platform = prompt('Enter Platform (YouTube, TikTok, Facebook, Instagram, LinkedIn, WhatsApp):', 'TikTok');
-      if (!platform) return;
-      const handle = prompt('Enter Handle / Profile URL:', '@brand_official');
-
-      this.createCustomChannel(name, platform, handle);
+      const html = `
+        <div style="display:flex; flex-direction:column; gap:0.9rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-subtle); padding-bottom:0.6rem;">
+            <div style="font-weight:800; font-size:1.1rem; color:#fff; font-family:var(--font-heading);">📺 Add Channel</div>
+            <button type="button" class="btn-ghost btn-sm" onclick="window.SOCIAL_MODULE.closeSocialDialog()">✕</button>
+          </div>
+          <div class="form-group">
+            <label class="form-label" style="font-size:0.82rem; font-weight:700;">Channel Name *</label>
+            <input type="text" id="dlgChanName" class="input-text" placeholder="e.g. TikTok Shorts Channel" required autofocus>
+          </div>
+          <div class="form-group">
+            <label class="form-label" style="font-size:0.82rem; font-weight:700;">Platform *</label>
+            <select id="dlgChanPlatform" class="input-text">
+              <option value="YouTube">YouTube</option>
+              <option value="TikTok" selected>TikTok</option>
+              <option value="Facebook">Facebook</option>
+              <option value="Instagram">Instagram</option>
+              <option value="LinkedIn">LinkedIn</option>
+              <option value="WhatsApp">WhatsApp</option>
+              <option value="X">X (Twitter)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" style="font-size:0.82rem; font-weight:700;">Handle / Profile URL</label>
+            <input type="text" id="dlgChanHandle" class="input-text" placeholder="@brand_official">
+          </div>
+          <div style="display:flex; justify-content:flex-end; gap:0.6rem; border-top:1px solid var(--border-subtle); padding-top:0.8rem;">
+            <button type="button" class="btn-secondary" onclick="window.SOCIAL_MODULE.closeSocialDialog()">Cancel</button>
+            <button type="button" class="btn-primary" onclick="
+              const name = document.getElementById('dlgChanName')?.value.trim();
+              const platform = document.getElementById('dlgChanPlatform')?.value || 'TikTok';
+              const handle = document.getElementById('dlgChanHandle')?.value.trim() || '@brand_official';
+              if (!name) { if (window.showToast) window.showToast('Please enter a channel name', 'error'); return; }
+              window.SOCIAL_MODULE.closeSocialDialog();
+              window.SOCIAL_MODULE.createCustomChannel(name, platform, handle);
+            ">🚀 Add Channel</button>
+          </div>
+        </div>
+      `;
+      this.showDialogModal(html);
     },
     async createCustomChannel(name, platform, handle) {
       try {
@@ -2825,18 +3066,66 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
       const wrap = document.getElementById('spDirectMediaUrlWrap');
       if (wrap) wrap.style.display = wrap.style.display === 'none' ? 'block' : 'none';
     },
+    renderMediaUploadPreview() {
+      const previewBox = document.getElementById('spMediaUploadPreview');
+      const promptBox = document.getElementById('spMediaUploadPrompt');
+      const urlHidden = document.getElementById('spMediaUrl');
+      if (!previewBox) return;
+
+      if (!currentPostMediaUrls || currentPostMediaUrls.length === 0) {
+        previewBox.style.display = 'none';
+        if (promptBox) promptBox.style.display = 'block';
+        if (urlHidden) urlHidden.value = '';
+        return;
+      }
+
+      previewBox.style.display = 'flex';
+      previewBox.style.flexDirection = 'column';
+      if (urlHidden) urlHidden.value = currentPostMediaUrls[0] || '';
+
+      previewBox.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.3rem;">
+          <span style="font-size:0.75rem; font-weight:800; color:#c084fc;">
+            Attached Media Assets (${currentPostMediaUrls.length})
+          </span>
+          <button type="button" class="btn-ghost btn-sm" style="font-size:0.68rem; color:#ef4444; padding:0.1rem 0.4rem;" onclick="window.SOCIAL_MODULE.clearUploadedMedia()">Clear All</button>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(95px, 1fr)); gap:0.5rem; max-height:160px; overflow-y:auto; padding:0.2rem;">
+          ${currentPostMediaUrls.map((url, idx) => {
+            const isImg = url.startsWith('data:image') || url.match(/\.(jpg|jpeg|png|gif|webp)(\?|$)/i);
+            return `
+              <div style="position:relative; height:68px; border-radius:6px; overflow:hidden; background:rgba(0,0,0,0.5); border:1px solid var(--border-subtle); display:flex; align-items:center; justify-content:center;">
+                ${isImg ? `<img src="${escapeHTML(url)}" style="width:100%; height:100%; object-fit:cover;" alt="asset">` : `<span style="font-size:1.2rem;">🎬</span>`}
+                <button type="button" style="position:absolute; top:3px; right:3px; width:18px; height:18px; border-radius:50%; background:rgba(239,68,68,0.9); color:#fff; border:none; display:flex; align-items:center; justify-content:center; font-size:10px; cursor:pointer; line-height:1;" onclick="window.SOCIAL_MODULE.removePostMediaUrl(${idx})" title="Remove">✕</button>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    },
+    removePostMediaUrl(idx) {
+      if (currentPostMediaUrls && currentPostMediaUrls[idx] !== undefined) {
+        currentPostMediaUrls.splice(idx, 1);
+        this.renderMediaUploadPreview();
+      }
+    },
+    addDirectMediaUrl() {
+      const input = document.getElementById('spDirectMediaUrl');
+      const val = input ? input.value.trim() : '';
+      if (!val) return;
+      currentPostMediaUrls.push(val);
+      input.value = '';
+      this.renderMediaUploadPreview();
+      if (window.showToast) window.showToast('✅ Asset URL attached to post!', 'info');
+    },
     async handleMediaFileUpload(input) {
       const file = input.files && input.files[0];
       if (!file) return;
 
       const previewBox = document.getElementById('spMediaUploadPreview');
-      const promptBox = document.getElementById('spMediaUploadPrompt');
-      const urlHidden = document.getElementById('spMediaUrl');
-
-      if (promptBox) promptBox.style.display = 'none';
       if (previewBox) {
         previewBox.style.display = 'flex';
-        previewBox.innerHTML = `<span style="font-size:0.8rem; color:#a855f7;">⏳ Uploading ${escapeHTML(file.name)}...</span>`;
+        previewBox.innerHTML += `<div style="font-size:0.75rem; color:#a855f7; padding:0.3rem;">⏳ Uploading ${escapeHTML(file.name)}...</div>`;
       }
 
       try {
@@ -2854,40 +3143,26 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
 
         const json = await res.json();
         if (json && json.success && json.url) {
-          if (urlHidden) urlHidden.value = json.url;
-          
-          const isImg = file.type.startsWith('image/');
-          previewBox.innerHTML = `
-            <div style="display:flex; align-items:center; gap:0.6rem;">
-              ${isImg ? `<img src="${json.url}" style="width:44px; height:44px; object-fit:cover; border-radius:6px;" alt="preview">` : `<span style="font-size:1.4rem;">📁</span>`}
-              <div style="text-align:left;">
-                <div style="font-weight:700; font-size:0.82rem; color:#fff; max-width:260px; overflow:hidden; text-overflow:ellipsis;">${escapeHTML(file.name)}</div>
-                <div style="font-size:0.7rem; color:#10b981;">✅ Uploaded (${Math.round(file.size/1024)} KB)</div>
-              </div>
-            </div>
-            <button type="button" class="btn-ghost btn-sm" style="color:#ef4444; font-size:0.85rem;" onclick="window.SOCIAL_MODULE.clearUploadedMedia()">✕</button>
-          `;
-          if (window.showToast) window.showToast('✅ Media asset uploaded successfully!', 'success');
+          currentPostMediaUrls.push(json.url);
+          this.renderMediaUploadPreview();
+          if (window.showToast) window.showToast('✅ Media asset attached successfully!', 'success');
         } else {
           throw new Error((json && json.error) || 'Upload failed');
         }
       } catch (err) {
         console.error('Media upload failed:', err);
-        if (previewBox) previewBox.style.display = 'none';
-        if (promptBox) promptBox.style.display = 'block';
+        this.renderMediaUploadPreview();
         if (window.showToast) window.showToast('Upload error: ' + err.message, 'error');
       }
     },
     clearUploadedMedia() {
       const fileInput = document.getElementById('spMediaFileInput');
-      const previewBox = document.getElementById('spMediaUploadPreview');
-      const promptBox = document.getElementById('spMediaUploadPrompt');
       const urlHidden = document.getElementById('spMediaUrl');
+      currentPostMediaUrls = [];
 
       if (fileInput) fileInput.value = '';
       if (urlHidden) urlHidden.value = '';
-      if (previewBox) { previewBox.style.display = 'none'; previewBox.innerHTML = ''; }
-      if (promptBox) promptBox.style.display = 'block';
+      this.renderMediaUploadPreview();
     },
     async generateMusicLrc() {
       const btn = document.getElementById('btnGenMusicLrc');
@@ -3403,6 +3678,11 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
       document.getElementById('spFirstComment').value = post.firstComment || '';
       document.getElementById('spHashtags').value = post.hashtags || '';
       document.getElementById('spMediaUrl').value = (post.mediaUrls && post.mediaUrls[0]) || '';
+      
+      // Initialize multi-media preview grid
+      currentPostMediaUrls = Array.isArray(post.mediaUrls) ? [...post.mediaUrls] : ((post.mediaUrls && post.mediaUrls[0]) ? [post.mediaUrls[0]] : []);
+      this.renderMediaUploadPreview();
+
       document.getElementById('spDate').value = post.scheduledDate || new Date().toISOString().split('T')[0];
       document.getElementById('spTime').value = post.scheduledTime || '18:00';
       document.getElementById('spPlatform').value = post.platform || 'YouTube';
@@ -3465,10 +3745,27 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
         return;
       }
 
+      // Platform character limit check
+      const limit = PLATFORM_LIMITS[platform] || 5000;
+      if (caption.length > limit) {
+        if (window.showToast) window.showToast(`⚠️ Caption exceeds ${platform} limit (${caption.length}/${limit} chars). Please shorten before saving.`, 'error');
+        return;
+      }
+
+      // Past scheduled date warning
+      if (scheduledDate && new Date(scheduledDate + 'T00:00:00') < new Date(new Date().toDateString())) {
+        const proceed = window.confirm(`⚠️ Notice: Scheduled date (${scheduledDate}) is in the past.\n\nDo you want to proceed saving with this date?`);
+        if (!proceed) return;
+      }
+
       const submitBtn = document.getElementById('spSubmitBtn');
       if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = '⏳ Saving...'; }
 
       try {
+        const resolvedMedia = (currentPostMediaUrls && currentPostMediaUrls.length > 0)
+          ? currentPostMediaUrls
+          : (mediaUrl ? [mediaUrl] : []);
+
         const payload = {
           title,
           caption,
@@ -3484,7 +3781,7 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
           clientId,
           clientName,
           assignedPublisher: window.CURRENT_USER?.name || window.APP_STATE?.user?.name || 'Content Team',
-          mediaUrls: mediaUrl ? [mediaUrl] : []
+          mediaUrls: resolvedMedia
         };
 
         if (editId) {
@@ -3531,9 +3828,38 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
         if (window.showToast) window.showToast('Failed to mark as posted: ' + err.message, 'error');
       }
     },
-    async promptRejectPost(id) {
-      const feedback = prompt('Describe the revisions needed for this post:');
-      if (feedback === null) return;
+    promptRejectPost(id) {
+      const html = `
+        <div style="display:flex; flex-direction:column; gap:0.9rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-subtle); padding-bottom:0.6rem;">
+            <div style="font-weight:800; font-size:1.1rem; color:#f87171; font-family:var(--font-heading);">🔴 Request Revision</div>
+            <button type="button" class="btn-ghost btn-sm" onclick="window.SOCIAL_MODULE.closeSocialDialog()">✕</button>
+          </div>
+          <div style="font-size:0.8rem; color:var(--text-muted);">Select common revision tags or type custom instructions:</div>
+          <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
+            <button type="button" class="btn-ghost btn-sm" style="font-size:0.7rem; border:1px solid var(--border-subtle);" onclick="const t = document.getElementById('dlgRevText'); t.value = (t.value ? t.value + ', ' : '') + 'Tone needs adjustment';">Tone adjustment</button>
+            <button type="button" class="btn-ghost btn-sm" style="font-size:0.7rem; border:1px solid var(--border-subtle);" onclick="const t = document.getElementById('dlgRevText'); t.value = (t.value ? t.value + ', ' : '') + 'Hook needs more punch';">Stronger hook</button>
+            <button type="button" class="btn-ghost btn-sm" style="font-size:0.7rem; border:1px solid var(--border-subtle);" onclick="const t = document.getElementById('dlgRevText'); t.value = (t.value ? t.value + ', ' : '') + 'Call-to-action missing';">Add clear CTA</button>
+            <button type="button" class="btn-ghost btn-sm" style="font-size:0.7rem; border:1px solid var(--border-subtle);" onclick="const t = document.getElementById('dlgRevText'); t.value = (t.value ? t.value + ', ' : '') + 'Fix Bengali spelling/grammar';">Spelling/Grammar</button>
+          </div>
+          <div class="form-group">
+            <label class="form-label" style="font-size:0.82rem; font-weight:700;">Revision Details *</label>
+            <textarea id="dlgRevText" class="input-text" rows="3" placeholder="Describe the specific changes required..." required autofocus></textarea>
+          </div>
+          <div style="display:flex; justify-content:flex-end; gap:0.6rem; border-top:1px solid var(--border-subtle); padding-top:0.8rem;">
+            <button type="button" class="btn-secondary" onclick="window.SOCIAL_MODULE.closeSocialDialog()">Cancel</button>
+            <button type="button" class="btn-primary" style="background:#ef4444; border:none;" onclick="
+              const fb = document.getElementById('dlgRevText')?.value.trim();
+              if (!fb) { if (window.showToast) window.showToast('Please provide revision feedback', 'error'); return; }
+              window.SOCIAL_MODULE.closeSocialDialog();
+              window.SOCIAL_MODULE.submitPostRejection('${id}', fb);
+            ">Submit Revision Request</button>
+          </div>
+        </div>
+      `;
+      this.showDialogModal(html);
+    },
+    async submitPostRejection(id, feedback) {
       try {
         await APP_API.post(`/posts/${id}/reject`, { feedback });
         if (window.showToast) window.showToast('🔴 Revisions requested.', 'info');
@@ -3542,15 +3868,196 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
         if (window.showToast) window.showToast('Revision request failed: ' + err.message, 'error');
       }
     },
-    async deletePost(id) {
-      if (!confirm('Are you sure you want to delete this social post draft?')) return;
+    deletePost(id) {
+      this.showConfirmDialog({
+        title: 'Delete Social Post?',
+        message: 'Are you sure you want to delete this draft? This action cannot be undone.',
+        icon: '🗑️',
+        confirmText: 'Delete Post',
+        confirmStyle: 'btn-secondary btn-danger',
+        onConfirm: async () => {
+          try {
+            await APP_API.delete(`/posts/${id}`);
+            if (window.showToast) window.showToast('Post deleted.', 'info');
+            loadInitialData();
+          } catch (err) {
+            if (window.showToast) window.showToast('Delete failed: ' + err.message, 'error');
+          }
+        }
+      });
+    },
+    openEditPlanItemModal(brandSlug, channelId, monthKey, planIndex) {
+      const brand = (socialBrandsData || []).find(b => b.slug === brandSlug || b.id === brandSlug);
+      const channel = brand && (brand.channels || []).find(c => c.id === channelId || c.slug === channelId);
+      const calendar = channel && channel.calendars && channel.calendars[monthKey];
+      const item = calendar && calendar.planItems && calendar.planItems[planIndex];
+      if (!item) return;
+
+      document.getElementById('editPlanBrandSlug').value = brandSlug;
+      document.getElementById('editPlanChannelId').value = channelId;
+      document.getElementById('editPlanMonthKey').value = monthKey;
+      document.getElementById('editPlanIndex').value = planIndex;
+
+      document.getElementById('editPlanTopic').value = item.topicIdea || item.title || '';
+      document.getElementById('editPlanHook').value = item.hook || '';
+      document.getElementById('editPlanRationale').value = item.strategicRationale || item.rationale || '';
+      document.getElementById('editPlanDate').value = item.scheduledDate || '';
+      document.getElementById('editPlanTime').value = item.suggestedTime || '18:00';
+      document.getElementById('editPlanContentType').value = item.contentType || 'Short-form Video';
+      document.getElementById('editPlanDuration').value = item.targetDuration || '60s';
+
+      const modal = document.getElementById('planItemEditModal');
+      if (modal) modal.style.display = 'flex';
+    },
+    closePlanItemEditModal() {
+      const modal = document.getElementById('planItemEditModal');
+      if (modal) modal.style.display = 'none';
+    },
+    async handlePlanItemEditSubmit(e) {
+      e.preventDefault();
+      const brandSlug = document.getElementById('editPlanBrandSlug').value;
+      const channelId = document.getElementById('editPlanChannelId').value;
+      const monthKey = document.getElementById('editPlanMonthKey').value;
+      const planIndex = document.getElementById('editPlanIndex').value;
+
+      const payload = {
+        topicIdea: document.getElementById('editPlanTopic').value.trim(),
+        hook: document.getElementById('editPlanHook').value.trim(),
+        rationale: document.getElementById('editPlanRationale').value.trim(),
+        scheduledDate: document.getElementById('editPlanDate').value,
+        suggestedTime: document.getElementById('editPlanTime').value || '18:00',
+        contentType: document.getElementById('editPlanContentType').value,
+        targetDuration: document.getElementById('editPlanDuration').value.trim() || '60s'
+      };
+
+      const btn = document.getElementById('btnSavePlanItem');
+      if (btn) { btn.disabled = true; btn.textContent = '⏳ Saving...'; }
+
       try {
-        await APP_API.delete(`/posts/${id}`);
-        if (window.showToast) window.showToast('Post deleted.', 'info');
-        loadInitialData();
+        const res = await APP_API.put(`/social-brands/${brandSlug}/channels/${channelId}/calendars/${monthKey}/items/${planIndex}`, payload);
+        if (res && res.success) {
+          if (window.showToast) window.showToast('✅ Plan item updated!', 'success');
+          this.closePlanItemEditModal();
+          await loadInitialData();
+          this.openChannelWorkspace(channelId);
+        } else {
+          throw new Error(res?.error || 'Update failed');
+        }
       } catch (err) {
-        if (window.showToast) window.showToast('Delete failed: ' + err.message, 'error');
+        if (window.showToast) window.showToast('Update failed: ' + err.message, 'error');
+      } finally {
+        if (btn) { btn.disabled = false; btn.textContent = '💾 Save Changes'; }
       }
+    },
+    deletePlanItem(brandSlug, channelId, monthKey, planIndex) {
+      this.showConfirmDialog({
+        title: 'Delete Plan Item?',
+        message: 'Are you sure you want to remove this scheduled item from the calendar plan?',
+        icon: '🗑️',
+        confirmText: 'Delete Item',
+        confirmStyle: 'btn-secondary btn-danger',
+        onConfirm: async () => {
+          try {
+            const res = await APP_API.delete(`/social-brands/${brandSlug}/channels/${channelId}/calendars/${monthKey}/items/${planIndex}`);
+            if (res && res.success) {
+              if (window.showToast) window.showToast('Plan item removed.', 'info');
+              await loadInitialData();
+              this.openChannelWorkspace(channelId);
+            } else {
+              throw new Error(res?.error || 'Delete failed');
+            }
+          } catch (err) {
+            if (window.showToast) window.showToast('Delete failed: ' + err.message, 'error');
+          }
+        }
+      });
+    },
+    saveTopicSuggestion() {
+      if (!activeSuggestedTopics || activeSuggestedTopics.length === 0) return;
+      const current = activeSuggestedTopics[currentSuggestedIndex] || activeSuggestedTopics[0];
+      if (!current) return;
+
+      let saved = [];
+      try {
+        saved = JSON.parse(localStorage.getItem('social_saved_ideas') || '[]');
+      } catch (e) { saved = []; }
+
+      const exists = saved.some(s => (s.topicIdea || s.title) === (current.topicIdea || current.title));
+      if (!exists) {
+        saved.push({
+          ...current,
+          savedAt: new Date().toISOString(),
+          brandSlug: activeBrandSlug,
+          channelId: activeChannelId
+        });
+        localStorage.setItem('social_saved_ideas', JSON.stringify(saved));
+        if (window.showToast) window.showToast('⭐ Idea saved to bookmarks!', 'success');
+      } else {
+        if (window.showToast) window.showToast('ℹ️ Idea is already saved.', 'info');
+      }
+    },
+    showSavedIdeasModal() {
+      let saved = [];
+      try {
+        saved = JSON.parse(localStorage.getItem('social_saved_ideas') || '[]');
+      } catch (e) { saved = []; }
+
+      const listEl = document.getElementById('savedIdeasList');
+      if (listEl) {
+        if (saved.length === 0) {
+          listEl.innerHTML = `
+            <div style="text-align:center; padding:2rem 1rem; color:var(--text-dim); font-size:0.85rem;">
+              <div style="font-size:2rem; margin-bottom:0.4rem;">⭐</div>
+              No saved ideas yet. Click "⭐ Save Idea" on any suggested topic to bookmark it here!
+            </div>
+          `;
+        } else {
+          listEl.innerHTML = saved.map((idea, idx) => `
+            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-subtle); border-radius:10px; padding:0.8rem; display:flex; justify-content:space-between; align-items:center; gap:0.75rem;">
+              <div style="flex:1;">
+                <div style="font-weight:700; color:#fff; font-size:0.88rem;">${escapeHTML(idea.topicIdea || idea.title)}</div>
+                ${idea.hook ? `<div style="font-size:0.75rem; color:#a7f3d0; margin-top:0.2rem;">💬 "${escapeHTML(idea.hook)}"</div>` : ''}
+                <div style="font-size:0.68rem; color:var(--text-dim); margin-top:0.2rem;">Saved ${new Date(idea.savedAt).toLocaleDateString()}</div>
+              </div>
+              <div style="display:flex; gap:0.4rem; align-items:center;">
+                <button type="button" class="btn-primary btn-sm" style="font-size:0.72rem; padding:0.25rem 0.65rem;" onclick="window.SOCIAL_MODULE.useSavedIdea(${idx})">Use Topic</button>
+                <button type="button" class="btn-ghost btn-sm" style="font-size:0.75rem; color:#f87171;" onclick="window.SOCIAL_MODULE.removeSavedIdea(${idx})">✕</button>
+              </div>
+            </div>
+          `).join('');
+        }
+      }
+
+      const modal = document.getElementById('savedIdeasModal');
+      if (modal) modal.style.display = 'flex';
+    },
+    closeSavedIdeasModal() {
+      const modal = document.getElementById('savedIdeasModal');
+      if (modal) modal.style.display = 'none';
+    },
+    useSavedIdea(idx) {
+      let saved = [];
+      try {
+        saved = JSON.parse(localStorage.getItem('social_saved_ideas') || '[]');
+      } catch (e) { saved = []; }
+
+      const idea = saved[idx];
+      if (idea) {
+        const titleEl = document.getElementById('spTitle');
+        if (titleEl) titleEl.value = idea.topicIdea || idea.title || '';
+        this.closeSavedIdeasModal();
+        if (window.showToast) window.showToast('✅ Saved topic loaded into post draft!', 'success');
+      }
+    },
+    removeSavedIdea(idx) {
+      let saved = [];
+      try {
+        saved = JSON.parse(localStorage.getItem('social_saved_ideas') || '[]');
+      } catch (e) { saved = []; }
+
+      saved.splice(idx, 1);
+      localStorage.setItem('social_saved_ideas', JSON.stringify(saved));
+      this.showSavedIdeasModal();
     },
     switchTopicInputMode(mode) {
       activeTopicInputMode = mode;
