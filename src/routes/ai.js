@@ -745,22 +745,174 @@ router.post('/social-brief', requireAuth, async (req, res) => {
 
   const chunkCount = isVideoType ? Math.max(1, Math.min(18, Math.ceil(durationSec / 10))) : 0;
 
-  // Build deterministic fallback
-  const fallbackScenes = [];
-  if (isVideoType) {
-    for (let i = 1; i <= chunkCount; i++) {
+  // Build rich, character-driven VEO 3 scene blueprints
+  function buildCinematicVeoScenes(chan, postTop, cat, durSec, l, count) {
+    const isGb = chan.toLowerCase().includes('grow bangla') || cat.toLowerCase().includes('english') || cat.toLowerCase().includes('career');
+    const isPilutics = chan.toLowerCase().includes('pilutics') || cat.toLowerCase().includes('geopolit') || cat.toLowerCase().includes('documentary');
+    const isBongHits = chan.toLowerCase().includes('bong') || cat.toLowerCase().includes('music') || cat.toLowerCase().includes('entertainment');
+    const isGro10x = chan.toLowerCase().includes('gro10x') || cat.toLowerCase().includes('saas') || cat.toLowerCase().includes('ai') || cat.toLowerCase().includes('tech');
+
+    const scenes = [];
+    for (let i = 1; i <= count; i++) {
       const startSec = (i - 1) * 10;
       const endSec = i * 10;
       const formatTime = s => `${Math.floor(s/60)}:${String(s%60).padStart(2, '0')}`;
-      fallbackScenes.push({
+      const timeRange = `${formatTime(startSec)}–${formatTime(endSec)}`;
+
+      let section = 'Core Content Progression';
+      let characterAction = '';
+      let cameraMove = '';
+      let prompt = '';
+      let voiceLine = '';
+      let visualCue = '';
+
+      if (isGb) {
+        // Grow Bangla — Host Saira, High-contrast modern educator studio
+        if (i === 1) {
+          section = 'The Hook (Urgent Warning)';
+          characterAction = 'Saira delivering an urgent warning with a serious, high-stakes expression, pointing directly toward camera.';
+          cameraMove = 'Cinematic studio medium shot, subtle 35mm slow push-in, shallow depth of field (f/1.8).';
+          prompt = `Cinematic studio. Medium shot of young professional Bangladeshi female educator Saira delivering an urgent warning with a serious expression. Warm key lighting, dark acoustic wood slats background with vivid cyan LED backlight. 4K 60fps photorealistic.`;
+          voiceLine = `${cat} নিয়ে এই ভুলটা করলেই ক্যারিয়ার শেষ! এখনই শুধরে নাও!`;
+          visualCue = `Red stop-sign alert badge with kinetic text: "${cat} Big Mistake"`;
+        } else if (i === 2) {
+          section = 'The Common Mistake (Demo)';
+          characterAction = 'Saira acting out a hesitant, confused candidate posture — slumped shoulders, unsure tone, looking away.';
+          cameraMove = 'Medium shot, static camera with subtle handheld texture, side warm amber fill.';
+          prompt = `Studio medium shot. Female educator Saira acting out a nervous, hesitant candidate posture during a high-stakes interview scenario. Warm amber side lighting, modern studio background, high visual clarity.`;
+          voiceLine = `ইন্টারভিউতে এভাবে নার্ভাস হয়ে উত্তর দিলে HR প্রথমেই রিজেক্ট করে দেবে।`;
+          visualCue = `Split-screen visual with high-contrast Red 'X' and 'Wrong Way' label.`;
+        } else if (i === 3) {
+          section = 'The Pivot / Transition';
+          characterAction = 'Saira nodding with confident reassurance, leaning slightly forward to reveal the secret formula.';
+          cameraMove = 'Medium close-up, smooth camera glide forward, eye-level framing.';
+          prompt = `Studio medium close-up. Female educator Saira nodding knowingly with an encouraging, confident smile, preparing to share the winning strategy. Cyan and warm golden rim light.`;
+          voiceLine = `কিন্তু স্মার্ট প্রফেশনালরা এভাবে বলে না! তারা ব্যবহার করে এই ৩-স্টেপ ম্যাজিক টেকনিক...`;
+          visualCue = `Glowing transition badge: 'Smart Framework ⚡'`;
+        } else if (i === 4) {
+          section = 'The Correct Solution';
+          characterAction = 'Saira articulating the correct phrase with crisp hand gestures and sharp, authoritative eye contact.';
+          cameraMove = 'Crisp close-up shot, sharp focus on facial expression and clear articulation.';
+          prompt = `Close-up shot of female educator Saira articulating clearly with confident expressions and authoritative hand gestures. High-contrast studio lighting, sharp focus on eyes and expression.`;
+          voiceLine = `ঠিক এভাবে শুরু করো: "আমার মূল স্ট্রেন্থ হলো..." — সরাসরি ভ্যালু প্রোপোজিশন তুলে ধরো!`;
+          visualCue = `Green checkmark with kinetic phrase overlay in clear Bengali script.`;
+        } else if (i === 5) {
+          section = 'Actionable Rule & Takeaway';
+          characterAction = 'Saira demonstrating the structured formula using 3 distinct finger counts with high energy.';
+          cameraMove = 'Medium shot, dynamic fast zoom-in on beat.';
+          prompt = `Studio medium shot. Female educator Saira enthusiastically demonstrating a 3-part framework using hand gestures. Modern glass whiteboard with neon cyan accent.`;
+          voiceLine = `এই গোল্ডেন রুলটা মনে রাখলে কোনো ইন্টারভিউতেই আর আটকে যেতে হবে না!`;
+          visualCue = `3-step numbered framework pill list glowing on screen.`;
+        } else {
+          section = 'Call to Action & Studio Signoff';
+          characterAction = 'Saira smiling brightly, giving a warm wave and energetic pointing gesture toward subscription button.';
+          cameraMove = 'Smooth camera pull-back showing full high-end studio workspace and branding.';
+          prompt = `Wide pull-back shot. Female educator Saira smiling warmly and waving, revealing full modern studio set with wood acoustic panels and glowing Grow Bangla branding.`;
+          voiceLine = `প্রতিদিনের ক্যারিয়ার ও স্পোকেন ইংলিশ মাস্টারির জন্য Grow Bangla-তে এখনই সাবস্ক্রাইব করো!`;
+          visualCue = `Grow Bangla official brand card with Subscribe & Follow animation.`;
+        }
+      } else if (isPilutics) {
+        // PILUTICS — Geopolitical War Room & Analysis
+        if (i === 1) {
+          section = 'Geopolitical Crisis Hook';
+          characterAction = 'Analyst host standing before holographic world map display with stern, analytical expression.';
+          cameraMove = 'Dramatic tracking shot entering dark studio, deep blue and crimson ambient lighting.';
+          prompt = `Cinematic documentary studio. Strategic geopolitical analyst standing before glowing holographic map display. Moody dark-mode command center, deep navy and crimson rim lights. 4K 60fps.`;
+          voiceLine = `এই ঘটনাটি বিশ্ব রাজনীতিতে এমন এক পরিবর্তন আনছে যা কেউ আশা করেনি!`;
+          visualCue = `Pulsing red geopolitical hotspot marker on interactive map.`;
+        } else if (i === count) {
+          section = 'Strategic Conclusion & CTA';
+          characterAction = 'Analyst looking directly into lens with thought-provoking gaze and steady hand gesture.';
+          cameraMove = 'Slow pull-back to wide command room view.';
+          prompt = `Wide shot of analyst at glass briefing table surrounded by glowing analytical screens. Dramatic cinematic lighting.`;
+          voiceLine = `ভূরাজনীতি ও বিশ্ব সংঘাতের গভীর বিশ্লেষণের জন্য PILUTICS ফলো করুন।`;
+          visualCue = `PILUTICS signature compass seal and Subscribe overlay.`;
+        } else {
+          section = `Deep Strategic Breakdown #${i}`;
+          characterAction = 'Analyst pointing to key trade routes and defense corridors with precise visual pacing.';
+          cameraMove = 'Medium close-up with slow pan across satellite telemetry displays.';
+          prompt = `Medium shot of documentary analyst gesturing toward illuminated satellite map overlays, high visual clarity and photorealistic textures.`;
+          voiceLine = `পরিস্থিতি বিশ্লেষণ করলে দেখা যায় কৌশলগত কারণে এই সিদ্ধান্ত নেয়া হয়েছে।`;
+          visualCue = `Satellite trajectory graphic and statistical comparison chart.`;
+        }
+      } else if (isBongHits) {
+        // Bong Hits — Entertainment, Skits & Music
+        if (i === 1) {
+          section = 'High-Energy Comic / Music Hook';
+          characterAction = 'Host delivering explosive comic expression, jumping into frame with high-energy body language.';
+          cameraMove = 'Fast snap-zoom into face, vibrant neon purple and cyan lighting.';
+          prompt = `Vibrant urban neon studio. High-energy creator jumping into frame with hilarious expressive face. Dynamic magenta and cyan neon backlight, energetic 60fps motion blur.`;
+          voiceLine = `এটা কী দেখলাম ভাই! এই ভিডিও না দেখলে চরম মিস!`;
+          visualCue = `Exploding comic text bubble and soundwave pulse.`;
+        } else if (i === count) {
+          section = 'Viral Outro & Share Prompt';
+          characterAction = 'Host laughing with friends, pointing enthusiastically at screen for share.';
+          cameraMove = 'Quick whip-pan to full vibrant set.';
+          prompt = `Wide energetic shot of creator laughing and dancing in neon-lit creator loft, bold pop culture aesthetic.`;
+          voiceLine = `বন্ধুদের সাথে শেয়ার করো আর Bong Hits-এ সাবস্ক্রাইব করে বেল বাজিয়ে দাও!`;
+          visualCue = `Bong Hits neon logo pulse and Share button animation.`;
+        } else {
+          section = `Entertainment Skit Beat #${i}`;
+          characterAction = 'Expressive comedic acting, dynamic hand gestures and exaggerated relatable expressions.';
+          cameraMove = 'Medium dutch angle with rhythmic quick cuts.';
+          prompt = `Medium shot of creator acting out funny relatable situation in colorful urban room, sharp focus and vibrant grading.`;
+          voiceLine = `সবাই যখন ভাবলো সব শেষ, তখনই ঘটলো আসল টুইস্ট!`;
+          visualCue = `Relatable reaction emoji burst and sound effect pop.`;
+        }
+      } else {
+        // GRO10X Brand / Global Tech
+        if (i === 1) {
+          section = 'High-Value B2B Hook';
+          characterAction = 'Tech founder opening ultra-thin dark-mode laptop, displaying rapid MVP dashboard booting live.';
+          cameraMove = 'Macro tracking shot over glassmorphic interface, neon emerald (#00DF89) edge highlights.';
+          prompt = `Cinematic modern SaaS studio. Entrepreneur opening sleek glassmorphic MacBook showing dark-mode Progressive Web App dashboard booting with 60fps fluid charts. Neon emerald and obsidian ambient lighting.`;
+          voiceLine = `Stop waiting months for traditional agencies. Here is how we ship full-stack MVPs in 48 hours.`;
+          visualCue = `Live 48-Hour Sprint Stopwatch HUD with verified GRO10X badge.`;
+        } else if (i === count) {
+          section = 'Executive CTA';
+          characterAction = 'Founder looking into camera with confident smile, closing laptop smoothly.';
+          cameraMove = 'Medium pull-back revealing modern minimalist tech agency loft.';
+          prompt = `Medium wide shot of tech executive standing in high-end glass office overlooking city skyline, emerald ambient lights.`;
+          voiceLine = `Ready to scale your product engine? Visit gro10x.ai or message us today.`;
+          visualCue = `GRO10X OS logo and 1-Click Consultation CTA link.`;
+        } else {
+          section = `Architecture & Feature Demo #${i}`;
+          characterAction = 'Hands interacting smoothly with responsive web application on smartphone and desktop monitors.';
+          cameraMove = 'Isometric close-up sliding across real-time data visualizations.';
+          prompt = `Close-up isometric view of holographic node architecture connecting Node.js backend to Supabase PostgreSQL real-time database with lightning data pulses.`;
+          voiceLine = `Powered by modern serverless architecture with 100% full source code ownership and zero vendor lock-in.`;
+          visualCue = `Interactive cloud infrastructure flowchart with Supabase and Node.js badges.`;
+        }
+      }
+
+      scenes.push({
         scene: i,
-        timeRange: `${formatTime(startSec)}–${formatTime(endSec)}`,
-        section: i === 1 ? 'Hook & Intro' : (i === chunkCount ? 'CTA & Outro' : `Scene ${i} Progression`),
-        prompt: `Cinematic photorealistic 4K 60fps shot for ${chanName} about ${postTopic}. Scene ${i} (${formatTime(startSec)}-${formatTime(endSec)}): dynamic camera move, shallow depth of field, vivid atmospheric studio lighting, smooth motion, high visual clarity.`,
-        visualCue: `On-screen graphic text overlay highlighting key point #${i}.`
+        timeRange,
+        section,
+        characterAction,
+        cameraMove,
+        prompt,
+        voiceLine,
+        visualCue
       });
     }
+
+    return scenes;
   }
+
+  function formatMasterVeoPrompt(scenes) {
+    if (!Array.isArray(scenes) || scenes.length === 0) return null;
+    return scenes.map(s => {
+      return `Scene ${s.scene} (${s.timeRange}) — ${s.section || 'Beat'}\n` +
+        `• Visual Prompt: ${s.prompt || ''}\n` +
+        `• Character Action: ${s.characterAction || 'Engaged on-camera subject'}\n` +
+        `• Camera & Lighting: ${s.cameraMove || 'Cinematic 4K studio framing'}\n` +
+        `• Spoken Line: "${s.voiceLine || ''}"\n` +
+        `• Visual Cue / Overlay: ${s.visualCue || 'None'}`;
+    }).join('\n\n');
+  }
+
+  const fallbackScenes = isVideoType ? buildCinematicVeoScenes(chanName, postTopic, category, durationSec, lang, chunkCount) : [];
 
   const fallbackPdfSlides = isPdfType ? [
     { slideNumber: 1, type: 'Cover', headline: `${postTopic}`, bullets: [`The Complete Executive Breakdown`, `By GRO10X Media for ${chanName}`], visualNote: 'Bold contrasting typography on dark gradient backdrop with brand icon.' },
@@ -807,12 +959,12 @@ router.post('/social-brief', requireAuth, async (req, res) => {
       : `🔥 Quick ${category} breakdown for you!\n\nIf you've ever struggled with this, you are not alone. Here is the exact way to get it right every single time.\n\n📌 Save this post so you don't forget it!\n💬 Drop a comment below if you want Part 2!`,
     hashtags: `#${chanName.replace(/[^a-zA-Z0-9]/g, '')} #${category.replace(/[^a-zA-Z0-9]/g, '')} #GRO10X #ContentScale #${plat.replace(/[^a-zA-Z0-9]/g, '')}`,
     firstComment: `#${chanName.replace(/[^a-zA-Z0-9]/g, '')} #LearnDaily #Bangladesh #Viral2026 #DailyTips`,
-    visualBrief: `Facecam intro with high-contrast text overlay on top 20% of screen. Split-screen visual example with green checkmark vs red X. Warm studio lighting.`,
+    visualBrief: `Facecam intro with high-contrast text overlay on top 20% of screen. Split-screen visual example with green checkmark vs red X. Warm studio lighting with cyan/amber backlight.`,
     voiceNote: isBanglish
       ? `[0:00-0:03] Hook (Banglish): "${category} niye eta koro na — career shesh hoye jabe!" [0:03-0:12] Common mistake dekhao — candidate kemon kore answer korche wrong way-te. [0:12-0:25] Correct method show koro — exact phrase diye: "Amra eivabe bolbo..." [0:25-${durationSec <= 30 ? '0:30' : '0:60'}] Strong CTA: "Grow Bangla-te subscribe koro daily career tips-er jonno!"`
       : `Start immediately with the hook: "90% of people get this wrong..." (0-3s). Demonstrate the common flaw (3-12s). Reveal the correct method with energy (12-25s). Strong CTA: "Follow for daily breakthroughs" (25-30s).`,
     veoScenes: fallbackScenes,
-    masterVeoPrompt: fallbackScenes.map(s => `[${s.timeRange} - Scene ${s.scene}]: ${s.prompt}`).join('\n\n'),
+    masterVeoPrompt: formatMasterVeoPrompt(fallbackScenes),
     pdfOutline: fallbackPdfSlides,
     masterPdfOutline: fallbackPdfSlides ? fallbackPdfSlides.map(s => `### Slide ${s.slideNumber}: ${s.headline} (${s.type})\n${s.bullets.map(b => `- ${b}`).join('\n')}\n*Visual Direction:* ${s.visualNote}`).join('\n\n') : null,
     carouselSlides: fallbackCarouselSlides
@@ -832,9 +984,12 @@ Because VEO 3 generates video in 10-second segments, you MUST generate an array 
 Each item in "veoScenes" MUST have:
 - "scene": integer (1 to ${chunkCount})
 - "timeRange": string (e.g. "0:00–0:10", "0:10–0:20", etc.)
-- "section": string (e.g. "Hook / Opening Action", "Problem Demonstration", "Core Transformation", "Climax / Payoff", "Call to Action")
-- "prompt": string (A full, standalone, photorealistic prompt for Google VEO 3 describing subject, camera motion like slow zoom-in or tracking pan, cinematic lighting, 4K quality, environment, and physical action)
-- "visualCue": string (Brief on-screen text overlay or graphic cue for video editors in CapCut)
+- "section": string (e.g. "The Hook", "The Common Mistake", "The Pivot", "The Correction", "Actionable Takeaway", "Call to Action")
+- "characterAction": string (Specific physical body language, facial expression, and hand gestures of the host/character)
+- "cameraMove": string (Specific camera framing, angle, and motion e.g. "Medium shot with slow 35mm push-in")
+- "prompt": string (A full, standalone, photorealistic prompt for Google VEO 3 describing subject, environment, atmospheric studio lighting, color accents, and motion)
+- "voiceLine": string (The exact spoken dialogue or voiceover line for this 10-second chunk in ${lang})
+- "visualCue": string (Brief on-screen kinetic typography, split-screen, checkmark/X overlay for editors)
 `;
   } else if (isPdfType) {
     specificPromptInstructions = `
@@ -923,7 +1078,7 @@ Each item in "carouselSlides" MUST have:
         visualBrief: parsed.visualBrief || deterministicFallback.visualBrief,
         voiceNote: parsed.voiceNote || deterministicFallback.voiceNote,
         veoScenes: finalScenes,
-        masterVeoPrompt: finalScenes && finalScenes.length > 0 ? finalScenes.map(s => `[${s.timeRange} - Scene ${s.scene}]: ${s.prompt}`).join('\n\n') : null,
+        masterVeoPrompt: formatMasterVeoPrompt(finalScenes),
         pdfOutline: finalPdf,
         masterPdfOutline: finalPdf ? finalPdf.map(s => `### Slide ${s.slideNumber}: ${s.headline} (${s.type})\n${(s.bullets || []).map(b => `- ${b}`).join('\n')}\n*Visual Direction:* ${s.visualNote}`).join('\n\n') : null,
         carouselSlides: finalCarousel

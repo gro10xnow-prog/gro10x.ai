@@ -865,15 +865,97 @@ window.APP_MODULES.social = async function(container) {
   }
 
   function renderBrandOverviewMatrixHTML(brand) {
-    const currentMonthKey = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
-    const currentMonthName = new Date().toLocaleString('default', { month: 'long' });
+    const monthIndex = new Date(selectedPlanMonth + ' 1, ' + selectedPlanYear).getMonth();
+    const currentMonthKey = `${selectedPlanYear}-${String(monthIndex + 1).padStart(2, '0')}`;
+    const monthlyFocus = (brand.monthlyFocus && brand.monthlyFocus[currentMonthKey]) || {
+      thesis: monthlyFocusNote || '',
+      keyProducts: '',
+      campaignTags: []
+    };
 
     let totalAudience = 0;
     (brand.channels || []).forEach(c => totalAudience += (c.audienceCount || 0));
 
+    // Calculate total scheduled posts across all channels for this month
+    let totalScheduledPosts = 0;
+    let lockedChannelsCount = 0;
+    (brand.channels || []).forEach(ch => {
+      const cal = ch.calendars && ch.calendars[currentMonthKey];
+      if (cal && Array.isArray(cal.planItems)) {
+        totalScheduledPosts += cal.planItems.length;
+        if (cal.status === 'Locked') lockedChannelsCount++;
+      }
+    });
+
+    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
     return `
       <div style="display:flex; flex-direction:column; gap:1.3rem;">
         
+        <!-- Layer 1: Brand Monthly Focus Command Deck -->
+        <div style="background:linear-gradient(135deg, rgba(20,20,30,0.95), rgba(30,27,75,0.4)); border:1px solid rgba(168,85,247,0.35); border-radius:14px; padding:1.25rem; display:flex; flex-direction:column; gap:1rem; box-shadow:0 8px 24px rgba(0,0,0,0.3);">
+          
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.8rem; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:0.75rem;">
+            <div style="display:flex; align-items:center; gap:0.6rem;">
+              <span style="font-size:1.4rem;">🎯</span>
+              <div>
+                <div style="font-weight:900; color:#fff; font-size:1.05rem; display:flex; align-items:center; gap:0.5rem;">
+                  Brand Master Monthly Focus Deck (${selectedPlanMonth} ${selectedPlanYear})
+                  <span class="badge ${monthlyFocus.thesis ? 'badge-emerald' : 'badge-purple'}" style="font-size:0.68rem;">
+                    ${monthlyFocus.thesis ? '✅ Focus Active & Synced' : '📝 Set Strategic Direction'}
+                  </span>
+                </div>
+                <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.15rem;">
+                  Overarching campaign thesis, core offers, and key themes applied across all ${(brand.channels || []).length} connected channels.
+                </div>
+              </div>
+            </div>
+
+            <!-- Month & Year Controls -->
+            <div style="display:flex; align-items:center; gap:0.45rem;">
+              <select class="input-text" style="padding:0.35rem 0.65rem; font-size:0.78rem; background:rgba(0,0,0,0.4); border-color:rgba(168,85,247,0.4); color:#fff;" onchange="window.SOCIAL_MODULE.changePlanMonth(this.value)">
+                ${months.map(m => `<option value="${m}" ${m === selectedPlanMonth ? 'selected' : ''}>${m}</option>`).join('')}
+              </select>
+              <input type="number" class="input-text" style="width:75px; padding:0.35rem 0.65rem; font-size:0.78rem; background:rgba(0,0,0,0.4); border-color:rgba(168,85,247,0.4); color:#fff;" value="${selectedPlanYear}" oninput="window.SOCIAL_MODULE.changePlanYear(this.value)">
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1.5fr 1fr 1fr; gap:0.9rem;">
+            
+            <div class="form-group" style="margin:0;">
+              <label class="form-label" style="font-size:0.72rem; color:#c084fc; font-weight:800; text-transform:uppercase; letter-spacing:0.5px;">
+                💡 Campaign Thesis / Main Monthly Angle
+              </label>
+              <input type="text" id="inpBrandMonthlyThesis" class="input-text" style="font-size:0.82rem; background:rgba(0,0,0,0.3); border-color:rgba(255,255,255,0.1);" placeholder="e.g. Corporate Job Interview Mastery & Salary Negotiation Blueprint..." value="${escapeHTML(monthlyFocus.thesis || '')}" oninput="monthlyFocusNote = this.value">
+            </div>
+
+            <div class="form-group" style="margin:0;">
+              <label class="form-label" style="font-size:0.72rem; color:#c084fc; font-weight:800; text-transform:uppercase; letter-spacing:0.5px;">
+                🎁 Key Products / Lead Magnets
+              </label>
+              <input type="text" id="inpBrandMonthlyProducts" class="input-text" style="font-size:0.82rem; background:rgba(0,0,0,0.3); border-color:rgba(255,255,255,0.1);" placeholder="e.g. Campus to Career Bootcamp · Viva PDF Guide..." value="${escapeHTML(monthlyFocus.keyProducts || '')}">
+            </div>
+
+            <div class="form-group" style="margin:0;">
+              <label class="form-label" style="font-size:0.72rem; color:#c084fc; font-weight:800; text-transform:uppercase; letter-spacing:0.5px;">
+                🏷️ Campaign Tags / Keywords
+              </label>
+              <input type="text" id="inpBrandMonthlyTags" class="input-text" style="font-size:0.82rem; background:rgba(0,0,0,0.3); border-color:rgba(255,255,255,0.1);" placeholder="e.g. Interview English, Salary Negotiation, CV Power" value="${escapeHTML(Array.isArray(monthlyFocus.campaignTags) ? monthlyFocus.campaignTags.join(', ') : (monthlyFocus.campaignTags || ''))}">
+            </div>
+
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; padding-top:0.4rem; border-top:1px solid rgba(255,255,255,0.05);">
+            <div style="font-size:0.72rem; color:var(--text-dim);">
+              ${monthlyFocus.updatedAt ? `🕒 Last saved: ${new Date(monthlyFocus.updatedAt).toLocaleString()}` : 'ℹ️ Save focus to auto-propagate to all channel strategy generations.'}
+            </div>
+            <button type="button" class="btn-primary btn-sm" style="font-weight:800; font-size:0.78rem; padding:0.35rem 0.9rem;" onclick="window.SOCIAL_MODULE.saveBrandMonthlyFocus('${brand.slug}')">
+              💾 Save Brand Monthly Focus
+            </button>
+          </div>
+
+        </div>
+
         <!-- Cross-Channel Quick Metrics -->
         <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:1rem;">
           <div style="background:var(--surface-card, #14141e); border:1px solid var(--border-subtle); border-radius:12px; padding:1rem; display:flex; flex-direction:column; gap:0.25rem;">
@@ -883,9 +965,11 @@ window.APP_MODULES.social = async function(container) {
           </div>
 
           <div style="background:var(--surface-card, #14141e); border:1px solid var(--border-subtle); border-radius:12px; padding:1rem; display:flex; flex-direction:column; gap:0.25rem;">
-            <span style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; font-weight:800;">Current Month Target (${currentMonthName})</span>
-            <span style="font-size:1.6rem; font-weight:900; color:#c084fc;">${(brand.channels || []).reduce((acc, c) => acc + (c.targetCadencePerWeek || 3) * 4, 0)} <span style="font-size:0.85rem; color:var(--text-dim);">Posts Output</span></span>
-            <span style="font-size:0.72rem; color:var(--text-secondary);">Cadence calculated from channel targets</span>
+            <span style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; font-weight:800;">${selectedPlanMonth} Scheduled Output</span>
+            <span style="font-size:1.6rem; font-weight:900; color:#c084fc;">${totalScheduledPosts} <span style="font-size:0.85rem; color:var(--text-dim);">Posts Planned</span></span>
+            <span style="font-size:0.72rem; color:${lockedChannelsCount > 0 ? '#10b981' : 'var(--text-secondary)'};">
+              ${lockedChannelsCount} / ${(brand.channels || []).length} Channels Locked in Pipeline
+            </span>
           </div>
 
           <div style="background:var(--surface-card, #14141e); border:1px solid var(--border-subtle); border-radius:12px; padding:1rem; display:flex; flex-direction:column; gap:0.25rem;">
@@ -900,10 +984,10 @@ window.APP_MODULES.social = async function(container) {
           <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-subtle); padding-bottom:0.7rem; flex-wrap:wrap; gap:0.6rem;">
             <div>
               <h3 style="margin:0; font-size:1.05rem; color:#fff; font-family:var(--font-heading);">
-                📡 Channel Status & Onboarding Matrix (${currentMonthName} ${new Date().getFullYear()})
+                📡 Channel Status & Strategy Command (${selectedPlanMonth} ${selectedPlanYear})
               </h3>
               <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.2rem;">
-                Select a channel below to complete intelligence onboarding, ingest CSV reports, or generate monthly calendars.
+                Manage onboarding memory, generate monthly strategies, and lock plans into your production pipeline.
               </div>
             </div>
             <button type="button" class="btn-emerald btn-sm" onclick="window.SOCIAL_MODULE.openChannelWorkspace(((brand.channels && brand.channels[0] && brand.channels[0].id) || ''))">
@@ -934,8 +1018,8 @@ window.APP_MODULES.social = async function(container) {
                         <div style="font-size:0.72rem; color:var(--text-dim);">${escapeHTML(ch.handle || ch.platform)}</div>
                       </div>
                     </div>
-                    <span class="badge ${hasKnowledge ? (isLocked ? 'badge-emerald' : 'badge-purple') : 'badge-warning'}" style="font-size:0.68rem; font-weight:800;">
-                      ${hasKnowledge ? (isLocked ? '🔒 Locked (' + (cal.planItems || []).length + ' Posts)' : (isDraft ? '📝 Draft Ready' : '🟢 Onboarded')) : '🟡 Needs Onboarding'}
+                    <span class="badge ${hasKnowledge ? (isLocked ? 'badge-emerald' : (isDraft ? 'badge-purple' : 'badge-blue')) : 'badge-warning'}" style="font-size:0.68rem; font-weight:800;">
+                      ${hasKnowledge ? (isLocked ? '🔒 Locked (' + (cal.planItems || []).length + ' Posts)' : (isDraft ? '📝 Draft Ready (' + (cal.planItems || []).length + ')' : '🟢 Onboarded')) : '🟡 Needs Onboarding'}
                     </span>
                   </div>
 
@@ -952,7 +1036,7 @@ window.APP_MODULES.social = async function(container) {
                     </div>
                     <div style="display:flex; align-items:center; justify-content:space-between;">
                       <span style="color:${cal ? '#34d399' : 'var(--text-muted)'};">
-                        ${cal ? '✅' : '🔲'} 2. ${currentMonthName} Production Calendar:
+                        ${cal ? '✅' : '🔲'} 2. ${selectedPlanMonth} Production Calendar:
                       </span>
                       <strong style="color:#fff;">${cal ? (cal.planItems || []).length + ' Posts' : 'Needs Generation'}</strong>
                     </div>
@@ -977,11 +1061,85 @@ window.APP_MODULES.social = async function(container) {
           </div>
         </div>
 
+        <!-- Layer 3: Cross-Channel Weekly Production Matrix -->
+        <div style="background:var(--surface-card, #14141e); border:1px solid var(--border-subtle); border-radius:14px; padding:1.25rem; display:flex; flex-direction:column; gap:1rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-subtle); padding-bottom:0.7rem; flex-wrap:wrap; gap:0.6rem;">
+            <div>
+              <h3 style="margin:0; font-size:1.05rem; color:#fff; font-family:var(--font-heading);">
+                🗓️ Omnichannel Weekly Production Matrix (${selectedPlanMonth} ${selectedPlanYear})
+              </h3>
+              <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.2rem;">
+                Unified weekly content rollout across all active brand channels.
+              </div>
+            </div>
+            <div style="display:flex; gap:0.4rem; align-items:center;">
+              <span class="badge badge-purple" style="font-size:0.7rem; font-weight:800;">Week-by-Week Cross-Channel Synergy</span>
+            </div>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:0.9rem;">
+            ${[1, 2, 3, 4].map(weekNum => {
+              return `
+                <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-subtle); border-radius:10px; padding:0.9rem; display:flex; flex-direction:column; gap:0.65rem;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.04); padding-bottom:0.45rem;">
+                    <div style="font-weight:900; color:#c084fc; font-size:0.85rem; display:flex; align-items:center; gap:0.4rem;">
+                      <span>📅</span> Week ${weekNum} (${selectedPlanMonth} Days ${(weekNum - 1) * 7 + 1}–${Math.min(28, weekNum * 7)})
+                    </div>
+                  </div>
+
+                  <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:0.75rem;">
+                    ${(brand.channels || []).map(ch => {
+                      const icon = PLATFORM_ICONS[ch.platform] || '📱';
+                      const cal = ch.calendars && ch.calendars[currentMonthKey];
+                      const weekItems = cal && Array.isArray(cal.planItems) 
+                        ? cal.planItems.filter(item => (item.week || '').includes(String(weekNum)))
+                        : [];
+                      const isLocked = cal && cal.status === 'Locked';
+                      const longCount = weekItems.filter(i => i.contentType === 'Long-form Video' || i.formatTag?.includes('Long-form')).length;
+                      const shortCount = weekItems.length - longCount;
+
+                      return `
+                        <div style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.05); border-radius:8px; padding:0.65rem 0.8rem; font-size:0.75rem; display:flex; flex-direction:column; gap:0.4rem;">
+                          <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-weight:800; color:#fff; display:flex; align-items:center; gap:0.35rem;">
+                              <span>${icon}</span>
+                              ${escapeHTML(ch.name.replace('Channel','').replace('Page','').trim())}
+                            </span>
+                            <span class="badge ${isLocked ? 'badge-emerald' : (weekItems.length > 0 ? 'badge-purple' : 'badge-ghost')}" style="font-size:0.62rem; padding:0.1rem 0.4rem;">
+                              ${isLocked ? '🔒 Locked' : (weekItems.length > 0 ? '📝 Draft' : '⏳ Unscheduled')}
+                            </span>
+                          </div>
+
+                          ${weekItems.length > 0 ? `
+                            <div style="font-size:0.72rem; color:var(--text-muted); display:flex; gap:0.5rem;">
+                              ${longCount > 0 ? `<span style="color:#10b981; font-weight:700;">📹 ${longCount} Long-form</span>` : ''}
+                              ${shortCount > 0 ? `<span style="color:#a855f7; font-weight:700;">🎬 ${shortCount} ${ch.type === 'video' ? 'Shorts' : 'Posts'}</span>` : ''}
+                            </div>
+                            <div style="font-size:0.7rem; color:var(--text-dim); max-height:42px; overflow:hidden; text-overflow:ellipsis; line-height:1.3;">
+                              • ${escapeHTML(weekItems[0]?.topicIdea || '')}
+                              ${weekItems.length > 1 ? `<br>• ${escapeHTML(weekItems[1]?.topicIdea || '')}` : ''}
+                            </div>
+                          ` : `
+                            <div style="font-size:0.72rem; color:var(--text-dim); font-style:italic; display:flex; justify-content:space-between; align-items:center;">
+                              <span>No schedule generated</span>
+                              <button type="button" class="btn-ghost btn-sm" style="font-size:0.65rem; color:#c084fc; padding:0.1rem 0.35rem;" onclick="window.SOCIAL_MODULE.openChannelWorkspace('${ch.id}')">Generate →</button>
+                            </div>
+                          `}
+                        </div>
+                      `;
+                    }).join('')}
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+
       </div>
     `;
   }
 
-function renderChannelWorkspaceHTML(brand, channel) {
+  function renderChannelWorkspaceHTML(brand, channel) {
     const kb = channel.analyticsKnowledgeBase;
     const isUnonboarded = !kb || isOnboardingOverride;
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -1739,6 +1897,12 @@ function renderBrandAssetsKitHTML(brand) {
       activeBrandSlug = brandSlug;
       activeBrandSubTab = 'overview';
       activeChannelId = null;
+      const brand = (socialBrandsData || []).find(b => b.slug === brandSlug || b.id === brandSlug);
+      const mIdx = new Date(selectedPlanMonth + ' 1, ' + selectedPlanYear).getMonth();
+      const mKey = `${selectedPlanYear}-${String(mIdx + 1).padStart(2, '0')}`;
+      if (brand && brand.monthlyFocus && brand.monthlyFocus[mKey] && brand.monthlyFocus[mKey].thesis) {
+        monthlyFocusNote = brand.monthlyFocus[mKey].thesis;
+      }
       renderContentOS();
     },
     switchBrandSubTab(tab) {
@@ -1753,10 +1917,22 @@ function renderBrandAssetsKitHTML(brand) {
     },
     changePlanMonth(m) {
       selectedPlanMonth = m;
+      const brand = (socialBrandsData || []).find(b => b.slug === activeBrandSlug || b.id === activeBrandSlug);
+      const mIdx = new Date(selectedPlanMonth + ' 1, ' + selectedPlanYear).getMonth();
+      const mKey = `${selectedPlanYear}-${String(mIdx + 1).padStart(2, '0')}`;
+      if (brand && brand.monthlyFocus && brand.monthlyFocus[mKey] && brand.monthlyFocus[mKey].thesis) {
+        monthlyFocusNote = brand.monthlyFocus[mKey].thesis;
+      }
       renderContentOS();
     },
     changePlanYear(y) {
       selectedPlanYear = Number(y) || 2026;
+      const brand = (socialBrandsData || []).find(b => b.slug === activeBrandSlug || b.id === activeBrandSlug);
+      const mIdx = new Date(selectedPlanMonth + ' 1, ' + selectedPlanYear).getMonth();
+      const mKey = `${selectedPlanYear}-${String(mIdx + 1).padStart(2, '0')}`;
+      if (brand && brand.monthlyFocus && brand.monthlyFocus[mKey] && brand.monthlyFocus[mKey].thesis) {
+        monthlyFocusNote = brand.monthlyFocus[mKey].thesis;
+      }
       renderContentOS();
     },
     prevMonth() {
@@ -2087,6 +2263,57 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
 
       if (durEl && item.targetDuration) {
         durEl.value = item.targetDuration;
+      }
+    },
+    draftPostFromPlanItem(brandSlug, channelId, planIndex) {
+      const brand = (socialBrandsData || []).find(b => b.slug === brandSlug || b.id === brandSlug);
+      const channel = (brand && brand.channels || []).find(c => c.id === channelId || c.slug === channelId);
+      const monthIndex = new Date(selectedPlanMonth + ' 1, ' + selectedPlanYear).getMonth();
+      const currentMonthKey = `${selectedPlanYear}-${String(monthIndex + 1).padStart(2, '0')}`;
+      
+      let calendar = channel && channel.calendars && channel.calendars[currentMonthKey];
+      if (!calendar && channel && channel.calendars) {
+        const keys = Object.keys(channel.calendars);
+        if (keys.length > 0) calendar = channel.calendars[keys[0]];
+      }
+
+      this.openPostModalFromPlanItem(brandSlug, channelId, (calendar && calendar.monthKey) || currentMonthKey, planIndex);
+    },
+    async saveBrandMonthlyFocus(brandSlug) {
+      const thesis = document.getElementById('inpBrandMonthlyThesis')?.value || '';
+      const keyProducts = document.getElementById('inpBrandMonthlyProducts')?.value || '';
+      const campaignTags = document.getElementById('inpBrandMonthlyTags')?.value || '';
+
+      const monthIndex = new Date(selectedPlanMonth + ' 1, ' + selectedPlanYear).getMonth();
+      const monthKey = `${selectedPlanYear}-${String(monthIndex + 1).padStart(2, '0')}`;
+
+      if (window.showToast) window.showToast(`💾 Saving Brand Monthly Focus for ${selectedPlanMonth} ${selectedPlanYear}...`, 'info');
+
+      try {
+        const res = await APP_API.post(`/social-brands/${brandSlug}/monthly-focus`, {
+          month: selectedPlanMonth,
+          year: selectedPlanYear,
+          monthKey,
+          thesis,
+          keyProducts,
+          campaignTags
+        });
+
+        if (res && res.success) {
+          const brand = (socialBrandsData || []).find(b => b.slug === brandSlug || b.id === brandSlug);
+          if (brand) {
+            brand.monthlyFocus = res.brand?.monthlyFocus || brand.monthlyFocus || {};
+            brand.monthlyFocus[monthKey] = res.focus;
+          }
+          monthlyFocusNote = thesis;
+          if (window.showToast) window.showToast(`✨ Brand Monthly Focus saved & synced across all channels!`, 'success');
+          renderContentOS();
+        } else {
+          throw new Error(res?.error || 'Save failed');
+        }
+      } catch (err) {
+        console.error('Save Monthly Focus error:', err);
+        if (window.showToast) window.showToast('Save failed: ' + err.message, 'error');
       }
     },
     async saveBrandGuidelines(brandSlug) {

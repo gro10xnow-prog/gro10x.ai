@@ -479,7 +479,7 @@ router.put('/:brandSlug', requireAuth, (req, res) => {
     return res.status(404).json({ success: false, error: 'Brand not found' });
   }
 
-  const { name, tagline, niche, palette, fonts, tone, mission, standardHashtags, standardCta, logoUrl, assets, primaryLanguage } = req.body;
+  const { name, tagline, niche, palette, fonts, tone, mission, standardHashtags, standardCta, logoUrl, assets, primaryLanguage, monthlyFocus } = req.body;
 
   if (name !== undefined) brand.name = name;
   if (primaryLanguage !== undefined) brand.primaryLanguage = primaryLanguage;
@@ -493,6 +493,9 @@ router.put('/:brandSlug', requireAuth, (req, res) => {
   if (standardCta !== undefined) brand.standardCta = standardCta;
   if (logoUrl !== undefined) brand.logoUrl = logoUrl;
   if (assets !== undefined) brand.assets = assets;
+  if (monthlyFocus !== undefined) {
+    brand.monthlyFocus = typeof monthlyFocus === 'object' && monthlyFocus !== null ? { ...(brand.monthlyFocus || {}), ...monthlyFocus } : brand.monthlyFocus;
+  }
 
   saveState(current);
   res.json({ success: true, brand });
@@ -839,7 +842,42 @@ router.post('/:brandSlug/channels/:channelId/reset-onboarding', requireAuth, (re
   });
 });
 
-// 6. GENERATE MONTHLY CONTENT CALENDAR (Fixed YouTube Dual-Tier Cadence)
+// 5D. SAVE OR UPDATE BRAND MONTHLY FOCUS DECK
+router.post('/:brandSlug/monthly-focus', requireAuth, (req, res) => {
+  const current = loadState();
+  const brand = (current.brands || []).find(b => b.slug === req.params.brandSlug || b.id === req.params.brandSlug);
+  if (!brand) return res.status(404).json({ success: false, error: 'Brand not found' });
+
+  const { month, year, monthKey, thesis, keyProducts, campaignTags } = req.body;
+  const targetMonth = month || new Date().toLocaleString('default', { month: 'long' });
+  const targetYear = Number(year) || new Date().getFullYear();
+  const monthIndex = new Date(targetMonth + ' 1, ' + targetYear).getMonth();
+  const mKey = monthKey || (targetYear + '-' + String(monthIndex + 1).padStart(2, '0'));
+
+  brand.monthlyFocus = brand.monthlyFocus || {};
+  brand.monthlyFocus[mKey] = {
+    month: targetMonth,
+    year: targetYear,
+    monthKey: mKey,
+    thesis: (thesis || '').trim(),
+    keyProducts: (keyProducts || '').trim(),
+    campaignTags: Array.isArray(campaignTags) ? campaignTags : (typeof campaignTags === 'string' ? campaignTags.split(',').map(s => s.trim()).filter(Boolean) : []),
+    updatedAt: new Date().toISOString(),
+    updatedBy: req.user?.name || 'Admin'
+  };
+
+  saveState(current);
+
+  return res.json({
+    success: true,
+    message: `Brand Monthly Focus saved for ${targetMonth} ${targetYear}`,
+    monthKey: mKey,
+    focus: brand.monthlyFocus[mKey],
+    brand
+  });
+});
+
+// 6. GENERATE MONTHLY CONTENT CALENDAR (Fixed YouTube Dual-Tier Cadence & Synergy)
 router.post('/:brandSlug/channels/:channelId/generate-calendar', requireAuth, async (req, res) => {
   const current = loadState();
   const brand = (current.brands || []).find(b => b.slug === req.params.brandSlug || b.id === req.params.brandSlug);
@@ -851,10 +889,45 @@ router.post('/:brandSlug/channels/:channelId/generate-calendar', requireAuth, as
   const { month, year, alignAnchor, focusNote } = req.body;
   const targetMonth = month || new Date().toLocaleString('default', { month: 'long' });
   const targetYear = Number(year) || new Date().getFullYear();
+  const monthIndex = new Date(targetMonth + ' 1, ' + targetYear).getMonth();
+  const monthKey = targetYear + '-' + String(monthIndex + 1).padStart(2, '0');
+
+  // Auto-sync focusNote into brand state if provided
+  if (focusNote && focusNote.trim().length > 0) {
+    brand.monthlyFocus = brand.monthlyFocus || {};
+    if (!brand.monthlyFocus[monthKey]) {
+      brand.monthlyFocus[monthKey] = {
+        month: targetMonth,
+        year: targetYear,
+        monthKey,
+        thesis: focusNote.trim(),
+        keyProducts: '',
+        campaignTags: [],
+        updatedAt: new Date().toISOString()
+      };
+    } else {
+      brand.monthlyFocus[monthKey].thesis = focusNote.trim();
+      brand.monthlyFocus[monthKey].updatedAt = new Date().toISOString();
+    }
+  }
+
+  const effectiveFocusNote = focusNote || (brand.monthlyFocus && brand.monthlyFocus[monthKey] && brand.monthlyFocus[monthKey].thesis) || '';
 
   let anchorChannel = null;
+  let anchorPillars = [];
   if (alignAnchor) {
     anchorChannel = (brand.channels || []).find(c => c.isAnchor && c.id !== channel.id);
+    if (anchorChannel && anchorChannel.calendars && anchorChannel.calendars[monthKey]) {
+      const anchorCal = anchorChannel.calendars[monthKey];
+      if (Array.isArray(anchorCal.planItems) && anchorCal.planItems.length > 0) {
+        anchorPillars = anchorCal.planItems
+          .filter(item => item.contentType === 'Long-form Video' || item.formatTag?.includes('Long-form'))
+          .map(item => item.topicIdea || item.title);
+        if (anchorPillars.length === 0) {
+          anchorPillars = anchorCal.planItems.slice(0, 5).map(i => i.topicIdea || i.title);
+        }
+      }
+    }
   }
 
   try {
@@ -862,7 +935,7 @@ router.post('/:brandSlug/channels/:channelId/generate-calendar', requireAuth, as
     const isYouTube = channel.platform === 'YouTube' || channel.type === 'video';
     const lang = channel.primaryLanguage || brand.primaryLanguage || 'Bangla + English (Banglish / Spoken)';
 
-    const systemPrompt = 'You are the Executive Chief Content Strategist for ' + brand.name + ' (' + brand.niche + ').\n' +
+    let systemPrompt = 'You are the Executive Chief Content Strategist for ' + brand.name + ' (' + brand.niche + ').\n' +
 'Create an executive production blueprint for "' + channel.name + '" on ' + channel.platform + ' for ' + targetMonth + ' ' + targetYear + '.\n\n' +
 'Brand Identity & Production Specs:\n' +
 '- Primary Script & Delivery Language: "' + lang + '"\n' +
@@ -880,8 +953,16 @@ router.post('/:brandSlug/channels/:channelId/generate-calendar', requireAuth, as
 '- Top Performing Formats: ' + (kb.topCategories || []).join(', ') + '\n' +
 '- Top Videos: ' + (kb.topPerformers || []).slice(0, 4).map(p => '"' + p.title + '" (' + p.views + ' views, ' + p.subs + ' subs)').join('; ') + '\n' +
 '- Peak Release Windows: ' + (kb.bestPostingDays || ['Friday 18:00', 'Tuesday 19:00']).join(', ') : '') +
-(focusNote ? '\nSpecial Monthly Campaign Focus: "' + focusNote + '"' : '') +
-'\n\nCRITICAL RULES:\n' +
+(effectiveFocusNote ? '\nSpecial Monthly Campaign Focus Thesis: "' + effectiveFocusNote + '"' : '');
+
+    if (anchorPillars.length > 0 && anchorChannel) {
+      systemPrompt += '\n\nANCHOR CHANNEL CONTENT SYNERGY:\n' +
+        'Anchor channel "' + anchorChannel.name + '" (' + anchorChannel.platform + ') has established these key pillars for ' + targetMonth + ':\n' +
+        anchorPillars.map((p, idx) => '• Anchor Pillar ' + (idx + 1) + ': "' + p + '"').join('\n') + '\n' +
+        'Repurpose, adapt, and reinforce these anchor topics into platform-native formats for ' + channel.platform + ' in ' + lang + '.\n';
+    }
+
+    systemPrompt += '\n\nCRITICAL RULES:\n' +
 '1. "strategicSummary": Deep strategic rationale explaining the month core thesis in relation to ' + lang + '.\n' +
 '2. "plan": An array of structured items where each item contains: week, dayOfWeek, topicIdea, hook, contentType, targetDuration, strategicRationale, suggestedTime.\n\n' +
 'Format response strictly as valid JSON with keys: strategicSummary, theme, plan.';
@@ -899,9 +980,6 @@ router.post('/:brandSlug/channels/:channelId/generate-calendar', requireAuth, as
       console.warn('[Calendar AI call notice]:', e.message);
     }
 
-    const monthIndex = new Date(targetMonth + ' 1, ' + targetYear).getMonth();
-    const monthKey = targetYear + '-' + String(monthIndex + 1).padStart(2, '0');
-    
     let generatedCalendar = null;
     if (parsed && Array.isArray(parsed.plan) && parsed.plan.length >= (isYouTube ? 20 : 8)) {
       const planItems = parsed.plan.map((item, idx) => {
@@ -933,13 +1011,13 @@ router.post('/:brandSlug/channels/:channelId/generate-calendar', requireAuth, as
         year: targetYear,
         status: 'Draft',
         primaryLanguage: lang,
-        strategicSummary: parsed.strategicSummary || ('4-Week Dual-Tier YouTube Growth Strategy for ' + brand.name + ' (' + channel.name + ') in ' + lang + '.'),
-        theme: parsed.theme || focusNote || (targetMonth + ' Audience Velocity Blueprint'),
+        strategicSummary: parsed.strategicSummary || ('4-Week Production Blueprint for ' + brand.name + ' (' + channel.name + ') in ' + lang + '.'),
+        theme: parsed.theme || effectiveFocusNote || (targetMonth + ' Audience Velocity Blueprint'),
         generatedAt: new Date().toISOString(),
         planItems
       };
     } else {
-      generatedCalendar = generateDeterministicCalendar(brand, channel, targetMonth, targetYear, focusNote, kb);
+      generatedCalendar = generateDeterministicCalendar(brand, channel, targetMonth, targetYear, effectiveFocusNote, kb, anchorPillars);
     }
 
     channel.calendars = channel.calendars || {};
@@ -954,9 +1032,7 @@ router.post('/:brandSlug/channels/:channelId/generate-calendar', requireAuth, as
     });
   } catch (err) {
     console.error('[Calendar Gen] Error:', err);
-    const fallback = generateDeterministicCalendar(brand, channel, targetMonth, targetYear, focusNote, channel.analyticsKnowledgeBase);
-    const monthIndex = new Date(targetMonth + ' 1, ' + targetYear).getMonth();
-    const monthKey = targetYear + '-' + String(monthIndex + 1).padStart(2, '0');
+    const fallback = generateDeterministicCalendar(brand, channel, targetMonth, targetYear, effectiveFocusNote, channel.analyticsKnowledgeBase, anchorPillars);
     
     channel.calendars = channel.calendars || {};
     channel.calendars[monthKey] = fallback;
@@ -972,8 +1048,8 @@ router.post('/:brandSlug/channels/:channelId/generate-calendar', requireAuth, as
   }
 });
 
-// Deterministic Calendar Engine supporting Dual-Tier YouTube Cadence & Unique Topic Banks
-function generateDeterministicCalendar(brand, channel, month, year, focusNote, kb) {
+// Deterministic Calendar Engine supporting Dual-Tier YouTube Cadence, Topic Banks & Anchor Synergy
+function generateDeterministicCalendar(brand, channel, month, year, focusNote, kb, anchorPillars = []) {
   const isYouTube = channel.platform === 'YouTube' || channel.type === 'video';
   const monthIndex = new Date(month + ' 1, ' + year).getMonth();
   const monthKey = year + '-' + String(monthIndex + 1).padStart(2, '0');
@@ -1345,8 +1421,26 @@ function generateDeterministicCalendar(brand, channel, month, year, focusNote, k
   };
 
   const selectedBank = BRAND_TOPIC_BANKS[bSlug] || BRAND_TOPIC_BANKS['grow-bangla'];
-  const shortsList = selectedBank.shorts || BRAND_TOPIC_BANKS['grow-bangla'].shorts;
-  const longList = selectedBank.longForm || BRAND_TOPIC_BANKS['grow-bangla'].longForm;
+  let shortsList = [...(selectedBank.shorts || BRAND_TOPIC_BANKS['grow-bangla'].shorts)];
+  let longList = [...(selectedBank.longForm || BRAND_TOPIC_BANKS['grow-bangla'].longForm)];
+
+  // Apply Focus Note Keyword Matching to prioritize matching topics in Weeks 1 & 2
+  if (focusNote && typeof focusNote === 'string' && focusNote.trim().length > 0) {
+    const focusWords = focusNote.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(w => w.length >= 3);
+    if (focusWords.length > 0) {
+      const score = item => {
+        const text = ((item.title || '') + ' ' + (item.hook || '') + ' ' + (item.rationale || '')).toLowerCase();
+        return focusWords.reduce((acc, word) => acc + (text.includes(word) ? 1 : 0), 0);
+      };
+      const scoredShorts = shortsList.map((item, idx) => ({ item, score: score(item), idx }));
+      scoredShorts.sort((a, b) => b.score - a.score || a.idx - b.idx);
+      shortsList = scoredShorts.map(s => s.item);
+
+      const scoredLong = longList.map((item, idx) => ({ item, score: score(item), idx }));
+      scoredLong.sort((a, b) => b.score - a.score || a.idx - b.idx);
+      longList = scoredLong.map(s => s.item);
+    }
+  }
 
   const planItems = [];
 
@@ -1419,8 +1513,37 @@ function generateDeterministicCalendar(brand, channel, month, year, focusNote, k
       const dayOffset = (weekNum - 1) * 7 + (i % 7) + 1;
       const dateStr = year + '-' + String(monthIndex + 1).padStart(2, '0') + '-' + String(Math.min(28, dayOffset)).padStart(2, '0');
       
-      const topicIndex = (i + (monthIndex * 2)) % shortsList.length;
-      const topicObj = shortsList[topicIndex];
+      let topicTitle = '';
+      let topicHook = '';
+      let strategicRationale = '';
+
+      if (anchorPillars && anchorPillars.length > 0) {
+        const anchorTopic = anchorPillars[i % anchorPillars.length];
+        const cleanAnchor = anchorTopic.replace(/\[.*?\]\s*/g, '').trim();
+        if (channel.platform === 'Facebook') {
+          topicTitle = `[FB Discussion & PDF] ${cleanAnchor}`;
+          topicHook = `এই টপিক নিয়ে সম্পূর্ণ গাইডলাইন এবং ফ্রি রিসোর্স ডাউনলোড লিংক কমেন্টে দেয়া হলো!`;
+          strategicRationale = `Direct cross-channel Facebook adaptation of YouTube anchor pillar: "${cleanAnchor}". Drives deep community discussion and PDF asset distribution in ${lang}.`;
+        } else if (channel.platform === 'TikTok') {
+          topicTitle = `[TikTok Viral Cut] ${cleanAnchor}`;
+          topicHook = `৩ সেকেন্ডে জানো কীভাবে এটা কাজ করে! মিস করলে লস!`;
+          strategicRationale = `Fast-paced high-retention TikTok cut of YouTube pillar: "${cleanAnchor}". Tailored for viral engagement in ${lang}.`;
+        } else if (channel.platform === 'LinkedIn') {
+          topicTitle = `[Executive Deck] ${cleanAnchor}`;
+          topicHook = `The executive framework and 3 critical takeaways every leader should know this quarter.`;
+          strategicRationale = `B2B slide deck & PDF carousel repurposing YouTube pillar "${cleanAnchor}" for professional decision-makers in ${lang}.`;
+        } else {
+          topicTitle = `[Repurposed Drop] ${cleanAnchor}`;
+          topicHook = `Catch our deep dive breakdown on ${cleanAnchor}!`;
+          strategicRationale = `Synergized cross-channel post reinforcing YouTube anchor pillar "${cleanAnchor}" on ${channel.platform} in ${lang}.`;
+        }
+      } else {
+        const topicIndex = (i + (monthIndex * 2)) % shortsList.length;
+        const topicObj = shortsList[topicIndex];
+        topicTitle = topicObj.title.replace('[Short] ', '');
+        topicHook = topicObj.hook;
+        strategicRationale = topicObj.rationale + ' Tailored for ' + channel.platform + ' in ' + lang + '.';
+      }
 
       planItems.push({
         id: 'plan-' + brand.slug + '-' + channel.slug + '-' + month + '-' + (i + 1),
@@ -1428,11 +1551,11 @@ function generateDeterministicCalendar(brand, channel, month, year, focusNote, k
         dayOfWeek: ['Mon', 'Wed', 'Fri', 'Sat'][i % 4],
         scheduledDate: dateStr,
         suggestedTime: '18:00',
-        topicIdea: topicObj.title.replace('[Short] ', ''),
-        hook: topicObj.hook,
+        topicIdea: topicTitle,
+        hook: topicHook,
         contentType: channel.defaultContentType || 'Short-form Video',
         targetDuration: channel.type === 'video' ? '60s' : 'N/A',
-        strategicRationale: topicObj.rationale + ' Tailored for ' + channel.platform + ' in ' + lang + '.',
+        strategicRationale,
         channel: brand.name,
         channelSlug: channel.slug,
         platform: channel.platform,
@@ -1452,7 +1575,9 @@ function generateDeterministicCalendar(brand, channel, month, year, focusNote, k
     primaryLanguage: lang,
     strategicSummary: isYouTube 
       ? 'Fixed Production Blueprint for ' + brand.name + ' (' + channel.name + '): 28 Daily Shorts (Mon-Sun) + 8 Long-form Pillar Deep Dives (Friday & Tuesday) in ' + lang + '. All topics 100% unique & non-repeating.'
-      : 'Targeted 4-week calendar for ' + brand.name + ' (' + channel.name + ') grounded in proven audience conversion formats in ' + lang + '.',
+      : (anchorPillars && anchorPillars.length > 0 
+          ? 'Cross-Channel Synergized Blueprint for ' + brand.name + ' (' + channel.name + '): Repurposed from YouTube anchor pillars to maximize omnichannel velocity in ' + lang + '.'
+          : 'Targeted 4-week calendar for ' + brand.name + ' (' + channel.name + ') grounded in proven audience conversion formats in ' + lang + '.'),
     theme: focusNote || (month + ' Authority & High-Velocity Blueprint'),
     generatedAt: new Date().toISOString(),
     planItems
