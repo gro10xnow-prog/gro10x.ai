@@ -1548,16 +1548,39 @@ window.APP_MODULES.social = async function(container) {
         ${activeOnboardingPath === 'csv' ? `
           <!-- Path A: CSV Analytics Ingestion -->
           <div style="display:flex; flex-direction:column; gap:1rem;">
-            <div style="background:rgba(255,255,255,0.02); border:2px dashed rgba(168,85,247,0.4); border-radius:12px; padding:2rem 1.5rem; text-align:center; cursor:pointer;" onclick="document.getElementById('channelCsvFileInput').click()">
+            <div id="channelCsvDropzone" style="background:rgba(255,255,255,0.02); border:2px dashed rgba(168,85,247,0.5); border-radius:14px; padding:2.2rem 1.5rem; text-align:center; cursor:pointer; transition:all 0.2s ease;" 
+                 onclick="document.getElementById('channelCsvFileInput').click()"
+                 ondragover="event.preventDefault(); this.style.borderColor='#10b981'; this.style.background='rgba(16,185,129,0.08)';"
+                 ondragleave="event.preventDefault(); this.style.borderColor='rgba(168,85,247,0.5)'; this.style.background='rgba(255,255,255,0.02)';"
+                 ondrop="event.preventDefault(); this.style.borderColor='rgba(168,85,247,0.5)'; this.style.background='rgba(255,255,255,0.02)'; const f = event.dataTransfer.files && event.dataTransfer.files[0]; if(f) window.SOCIAL_MODULE.handleChannelCsvUpload(f, '${brand.slug}', '${channel.id}');">
+              
               <input type="file" id="channelCsvFileInput" style="display:none;" accept=".csv,text/csv" onchange="window.SOCIAL_MODULE.handleChannelCsvUpload(this, '${brand.slug}', '${channel.id}')">
-              <div style="font-size:2.2rem; margin-bottom:0.4rem;">📊</div>
-              <div style="font-weight:800; font-size:1rem; color:#fff;">Drag & Drop or Click to Ingest ${escapeHTML(channel.name)} Analytics CSV</div>
-              <div style="font-size:0.75rem; color:var(--text-dim); margin-top:0.35rem; max-width:550px; margin-left:auto; margin-right:auto;">
-                Supports <strong>YouTube Studio Table Export</strong>, <strong>Meta Creator Studio</strong>, or <strong>TikTok Analytics</strong> CSV files. Automatically indexes total watch hours, impressions, top converting titles, and dialect signals.
+              
+              <div id="csvDefaultDropContent">
+                <div style="font-size:2.4rem; margin-bottom:0.4rem;">📊</div>
+                <div style="font-weight:900; font-size:1.05rem; color:#fff;">Drag & Drop or Click to Ingest ${escapeHTML(channel.name)} Analytics CSV</div>
+                <div style="font-size:0.75rem; color:var(--text-dim); margin-top:0.35rem; max-width:560px; margin-left:auto; margin-right:auto; line-height:1.4;">
+                  Supports <strong>YouTube Studio Table Export</strong>, <strong>Meta Creator Studio</strong>, or <strong>TikTok Analytics</strong> CSV files. Automatically indexes total watch hours, impressions, top converting titles, and dialect signals.
+                </div>
+                <div style="display:flex; justify-content:center; gap:0.6rem; margin-top:1.1rem;">
+                  <button type="button" class="btn-primary btn-sm" style="font-size:0.78rem; background:linear-gradient(135deg,#a855f7,#6366f1); border:none; padding:0.45rem 1.2rem; font-weight:800; pointer-events:none;">
+                    📁 Browse CSV File
+                  </button>
+                </div>
               </div>
-              <button type="button" class="btn-primary btn-sm" style="margin-top:1rem; font-size:0.78rem; background:linear-gradient(135deg,#a855f7,#6366f1); border:none; padding:0.4rem 1rem;">
-                📁 Browse CSV File
-              </button>
+
+              <!-- Animated Progress Box during CSV upload & indexing -->
+              <div id="csvUploadProgressBox" style="display:none; flex-direction:column; align-items:center; gap:0.8rem; padding:0.5rem 0;">
+                <div style="display:flex; justify-content:space-between; align-items:center; width:100%; max-width:420px; font-size:0.82rem; font-weight:800;">
+                  <span id="csvProgressStepText" style="color:#c084fc;">📊 Parsing CSV Rows & Ingesting Video Data...</span>
+                  <span id="csvProgressPercentText" style="color:#10b981;">10%</span>
+                </div>
+                <div style="width:100%; max-width:420px; height:8px; background:rgba(255,255,255,0.1); border-radius:10px; overflow:hidden;">
+                  <div id="csvProgressBarFill" style="width:10%; height:100%; background:linear-gradient(90deg, #a855f7, #10b981); transition:width 0.25s ease; border-radius:10px;"></div>
+                </div>
+                <div style="font-size:0.72rem; color:var(--text-dim);">Grounding channel intelligence memory into persistent brand state...</div>
+              </div>
+
             </div>
           </div>
         ` : `
@@ -1958,8 +1981,38 @@ function renderBrandAssetsKitHTML(brand) {
       else renderBoard();
     },
     async handleChannelCsvUpload(input, brandSlug, channelId) {
-      const file = input.files && input.files[0];
+      const file = (input && input.files) ? input.files[0] : (input instanceof File ? input : null);
       if (!file) return;
+
+      const progressBox = document.getElementById('csvUploadProgressBox');
+      const defaultContent = document.getElementById('csvDefaultDropContent');
+      const stepText = document.getElementById('csvProgressStepText');
+      const percentText = document.getElementById('csvProgressPercentText');
+      const barFill = document.getElementById('csvProgressBarFill');
+
+      if (progressBox && defaultContent) {
+        defaultContent.style.display = 'none';
+        progressBox.style.display = 'flex';
+      }
+
+      let currentPercent = 10;
+      const progressInterval = setInterval(() => {
+        if (currentPercent < 90) {
+          currentPercent += Math.floor(Math.random() * 12) + 6;
+          if (currentPercent > 90) currentPercent = 90;
+          if (percentText) percentText.textContent = `${currentPercent}%`;
+          if (barFill) barFill.style.width = `${currentPercent}%`;
+          if (stepText) {
+            if (currentPercent < 35) {
+              stepText.textContent = `📊 Ingesting CSV rows & verifying retention metrics...`;
+            } else if (currentPercent < 65) {
+              stepText.textContent = `🔍 Indexing watch hours, conversion CTRs & dialect signals...`;
+            } else {
+              stepText.textContent = `🧠 Grounding Channel Intelligence Baseline Card...`;
+            }
+          }
+        }
+      }, 220);
 
       if (window.showToast) window.showToast(`📈 Ingesting ${file.name} into ${channelId} memory...`, 'info');
 
@@ -1977,16 +2030,31 @@ function renderBrandAssetsKitHTML(brand) {
         });
 
         const json = await res.json();
+        clearInterval(progressInterval);
+
+        if (percentText) percentText.textContent = `100%`;
+        if (barFill) barFill.style.width = `100%`;
+        if (stepText) stepText.textContent = `🎉 Ingestion Complete! Memory Indexed.`;
+
         if (json && json.success) {
+          isOnboardingOverride = false;
           if (window.showToast) window.showToast('✅ Channel analytics & audience memory indexed permanently!', 'success');
+          await new Promise(r => setTimeout(r, 450));
           await loadInitialData();
           this.openChannelWorkspace(channelId);
         } else {
           throw new Error(json?.error || 'Failed to upload CSV');
         }
       } catch (err) {
+        clearInterval(progressInterval);
         console.error('CSV upload error:', err);
         if (window.showToast) window.showToast('Upload notice: ' + err.message, 'error');
+        if (progressBox && defaultContent) {
+          defaultContent.style.display = 'block';
+          progressBox.style.display = 'none';
+        }
+      } finally {
+        if (input && input.value) input.value = '';
       }
     },
     toggleOnboardingPath(path) {
