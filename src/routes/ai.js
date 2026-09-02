@@ -183,6 +183,11 @@ async function tryGemini(name, role, dept, stage, key) {
   return null;
 }
 
+/**
+ * POST /api/ai/generate-message
+ * @consumer public/app/modules/hr.js (line 1241)
+ * Generates onboarding and milestone communications for team staff
+ */
 router.post('/generate-message', requireAuth, requireManager, async (req, res) => {
   const { name, role, department, stage, empCode } = req.body;
   if (!name || !stage || !STEPS[stage]) return res.status(400).json({ success: false, error: 'name and valid stage required' });
@@ -193,7 +198,11 @@ router.post('/generate-message', requireAuth, requireManager, async (req, res) =
   return res.json({ success: true, message, stage, generatedBy, member: { name, role, department, empCode } });
 });
 
-// POST /api/ai/summarize-brief — Gemini brief TL;DR for specialists
+/**
+ * POST /api/ai/summarize-brief
+ * @consumer public/crew/modules/tasks.js (line 178)
+ * Generates brief TL;DR for specialists
+ */
 router.post('/summarize-brief', requireAuth, async (req, res) => {
   const { briefText, taskTitle, taskId } = req.body;
   if (!briefText || briefText.trim().length < 10) {
@@ -348,7 +357,11 @@ function injectDeterministicSpreadsIntoDescription(description, spreadInfo, prod
   return `${description}\n\n${spreadBlock}`;
 }
 
-// POST /api/ai/etsy-seo — Generates Category-Aware Etsy SEO Title, 13 Tags, and Listing Description with Complete Spread Breakdown
+/**
+ * POST /api/ai/etsy-seo
+ * @consumer public/app/modules/brands.js (line 4232), public/dbm/dbm-portal.js (line 1496)
+ * Generates Category-Aware Etsy SEO Title, 13 Tags, and Listing Description with Complete Spread Breakdown
+ */
 router.post('/etsy-seo', requireAuth, async (req, res) => {
   const productName = req.body.productName || req.body.title || req.body.name;
   const brandName = req.body.brandName || req.body.brand || 'PlannerQueenGro';
@@ -480,8 +493,11 @@ router.post('/etsy-seo', requireAuth, async (req, res) => {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ─────────────────────────────────────────────────────────────────────────────
-// POST /api/ai/product-blueprint — Generates Category-Intelligent Product Blueprint & Google Flow Prompts
-// ─────────────────────────────────────────────────────────────────────────────
+/**
+ * POST /api/ai/product-blueprint
+ * @consumer public/app/modules/brands.js (line 4007), public/dbm/dbm-portal.js (line 1342)
+ * Generates Category-Intelligent Product Blueprint & Google Flow Prompts
+ */
 const { AVAILABLE_CATEGORIES, generateCategoryBlueprint, generateCategoryMockups } = require('../services/blueprint-generator');
 
 router.post('/product-blueprint', requireAuth, async (req, res) => {
@@ -612,9 +628,11 @@ router.post('/product-blueprint', requireAuth, async (req, res) => {
   }
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
-// POST /api/ai/mockup-prompts — Generates 10 Category-Specific Mockup Prompts + Listing Video Prompt
-// ─────────────────────────────────────────────────────────────────────────────
+/**
+ * POST /api/ai/mockup-prompts
+ * @consumer public/app/modules/brands.js (line 4031)
+ * Generates 10 Category-Specific Mockup Prompts + Listing Video Prompt
+ */
 router.post('/mockup-prompts', requireAuth, async (req, res) => {
   const {
     productName,
@@ -732,7 +750,11 @@ router.post('/mockup-prompts', requireAuth, async (req, res) => {
   }
 });
 
-// POST /api/ai/social-brief — Channel & Content-Type Aware Content Blueprint Generator with VEO 3 Chunks & PDF Outlines
+/**
+ * POST /api/ai/social-brief
+ * @consumer public/app/modules/social.js (line 4016)
+ * Channel & Content-Type Aware Content Blueprint Generator with VEO 3 Chunks & PDF Outlines
+ */
 router.post('/social-brief', requireAuth, aiRateLimiter, async (req, res) => {
   const {
     brandSlug,
@@ -1330,7 +1352,11 @@ Each item in "carouselSlides" MUST have:
   }
 });
 
-// POST /api/ai/content-calendar — Generate 4-Week Strategic Monthly Content Plan
+/**
+ * POST /api/ai/content-calendar
+ * @internal Agency Macro 4-Week Strategic Multi-Channel Planner
+ * Generates cross-channel 4-week content calendar blueprints with target educational/viral/promo mix
+ */
 router.post('/content-calendar', requireAuth, aiRateLimiter, async (req, res) => {
   const { channels, month, year, contentMix, analyticsSummary } = req.body;
 
@@ -1465,8 +1491,12 @@ router.post('/content-calendar', requireAuth, aiRateLimiter, async (req, res) =>
   }
 });
 
-// POST /api/ai/parse-analytics-csv — Parse YouTube Studio / Analytics CSV & Extract Growth Insights
-router.post('/parse-analytics-csv', requireAuth, async (req, res) => {
+/**
+ * POST /api/ai/parse-analytics-csv
+ * @internal Deep Semantic Analytics CSV Interpreter
+ * Parses YouTube Studio / Social Analytics CSV data using Gemini to extract key performance signals
+ */
+router.post('/parse-analytics-csv', requireAuth, aiRateLimiter, async (req, res) => {
   const { csvText, channelName } = req.body;
   if (!csvText || csvText.trim().length < 20) {
     return res.status(400).json({ error: 'csvText content is required' });
@@ -1539,7 +1569,11 @@ router.post('/parse-analytics-csv', requireAuth, async (req, res) => {
   }
 });
 
-// POST /api/ai/music-lrc — Bong Hits Music Video Workflow: Timestamped LRC Generator & VEO Scene Director
+/**
+ * POST /api/ai/music-lrc
+ * @consumer public/app/modules/social.js (line 3859)
+ * Bong Hits Music Video Workflow: Timestamped LRC Generator & VEO Scene Director
+ */
 router.post('/music-lrc', requireAuth, aiRateLimiter, async (req, res) => {
   const { title, lyrics, genre, durationSeconds, bpm } = req.body;
   const songTitle = title || 'Bong Hits Track';
@@ -1667,7 +1701,11 @@ router.post('/music-lrc', requireAuth, aiRateLimiter, async (req, res) => {
   }
 });
 
-// POST /api/ai/suggest-topic — Context-Aware Topic Suggester
+/**
+ * POST /api/ai/suggest-topic
+ * @consumer public/app/modules/social.js (line 5639)
+ * Context-Aware Topic Suggester leveraging Brand Knowledge Base & Monthly Thesis
+ */
 router.post('/suggest-topic', requireAuth, aiRateLimiter, async (req, res) => {
   const { brandSlug, channelId, contentType, platform, month, year } = req.body;
 
@@ -1924,8 +1962,12 @@ IMPORTANT RULES:
   }
 });
 
-// POST /api/ai/analyze-reference — Reference Document / Image / PDF Analyzer
-router.post('/analyze-reference', requireAuth, upload.single('referenceFile'), async (req, res) => {
+/**
+ * POST /api/ai/analyze-reference
+ * @consumer public/app/modules/social.js (line 5826)
+ * Reference Document / Image / PDF Context Analyzer
+ */
+router.post('/analyze-reference', requireAuth, aiRateLimiter, upload.single('referenceFile'), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ success: false, error: 'No reference file provided' });
   }
