@@ -126,7 +126,7 @@ app.use(subdomainRouter);
 app.get(['/api/sync', '/sync', '/api/events'], requireAuth, sseHandler);
 
 // Bot Status Health Check
-app.get(['/api/bot-status', '/bot-status'], async (req, res) => {
+app.get(['/api/bot-status', '/bot-status'], requireAuth, async (req, res) => {
   let team = getTeamBot();
   let client = getClientBot();
   if (!team || !client) {
@@ -233,9 +233,15 @@ app.post(['/api/webhooks/telegram', '/webhooks/telegram'], async (req, res) => {
     ? (process.env.WEBHOOK_SECRET_CLIENT || process.env.WEBHOOK_SECRET_TOKEN || process.env.WEBHOOK_SECRET)
     : (process.env.WEBHOOK_SECRET_TEAM || process.env.WEBHOOK_SECRET_TOKEN || process.env.WEBHOOK_SECRET);
   
-  if (expectedSecret && secretHeader && secretHeader !== expectedSecret) {
-    console.warn(`⚠️ Webhook request rejected (${botType}): Invalid secret token`);
-    return res.status(403).json({ error: 'Forbidden: Invalid secret token' });
+  if (process.env.NODE_ENV === 'production' || expectedSecret) {
+    if (!expectedSecret) {
+      console.error(`[Webhook] WEBHOOK_SECRET not configured for ${botType} bot in production — rejecting payload`);
+      return res.status(403).json({ error: 'Forbidden: Webhook secret not configured' });
+    }
+    if (secretHeader !== expectedSecret) {
+      console.warn(`⚠️ Webhook request rejected (${botType}): Invalid secret token`);
+      return res.status(403).json({ error: 'Forbidden: Invalid secret token' });
+    }
   }
 
   let targetBot = botType === 'client' ? getClientBot() : getTeamBot();

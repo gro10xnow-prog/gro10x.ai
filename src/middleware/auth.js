@@ -128,8 +128,12 @@ async function requireAuth(req, res, next) {
     }
   }
 
-  // 4. Development / Test Fallback ONLY on localhost or test runner (never active on external traffic or Vercel preview/production)
-  if ((process.env.NODE_ENV === 'test' || (process.env.NODE_ENV === 'development' && !process.env.VERCEL && !process.env.FORCE_SUPABASE)) && req.headers['x-disable-dev-auth'] !== 'true') {
+  // 4. Development / Test Fallback ONLY on localhost or test runner (never active on cloud preview/production)
+  const isCloudDeployment = Boolean(process.env.VERCEL || process.env.VERCEL_ENV || process.env.RENDER || process.env.RAILWAY_ENVIRONMENT || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.NODE_ENV === 'production');
+  const isDevOrTest = (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') && !isCloudDeployment && !process.env.FORCE_SUPABASE;
+  const isDevAuthDisabled = req.headers['x-disable-dev-auth'] === 'true' || process.env.DISABLE_DEV_AUTH === 'true';
+
+  if (isDevOrTest && !isDevAuthDisabled) {
     const isLocalhost = req.hostname === 'localhost' || req.hostname === '127.0.0.1' || req.ip === '127.0.0.1' || req.ip === '::1' || req.ip === '::ffff:127.0.0.1';
     if (!isLocalhost && process.env.NODE_ENV !== 'test') {
       return res.status(401).json({ error: 'Unauthorized: Remote requests in development require valid authentication' });
