@@ -1444,7 +1444,7 @@ window.APP_MODULES.social = async function(container) {
                 </div>
               </div>
               <div style="display:flex; gap:0.5rem;">
-                <button type="button" class="btn-secondary btn-sm" style="font-size:0.75rem; font-weight:700;" onclick="document.getElementById('channelCsvFileInput').click()">
+                <button type="button" class="btn-secondary btn-sm" style="font-size:0.75rem; font-weight:700;" onclick="document.getElementById('channelCsvRefreshInput').click()">
                   📈 Ingest New CSV Report
                 </button>
                 <button type="button" class="btn-secondary btn-sm" style="font-size:0.75rem;" onclick="window.SOCIAL_MODULE.openCommunitySnapshotModal()">
@@ -1453,7 +1453,7 @@ window.APP_MODULES.social = async function(container) {
               </div>
             </div>
 
-            <input type="file" id="channelCsvFileInput" style="display:none;" accept=".csv,text/csv" onchange="window.SOCIAL_MODULE.handleChannelCsvUpload(this, '${brand.slug}', '${channel.id}')">
+            <input type="file" id="channelCsvRefreshInput" style="display:none;" accept=".csv,text/csv" onchange="window.SOCIAL_MODULE.handleChannelCsvUpload(this, '${brand.slug}', '${channel.id}')">
 
             <!-- 6 Key KPI Cards -->
             <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:0.75rem;">
@@ -3072,18 +3072,40 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
       const isPdf = Array.isArray(brief.pdfOutline) && brief.pdfOutline.length > 0;
       const isCarousel = Array.isArray(brief.carouselSlides) && brief.carouselSlides.length > 0;
 
+      // Build spoken script from scene voice lines (verbatim teleprompter) or fall back to voiceNote
+      const spokenScript = (isVideo && brief.veoScenes[0] && brief.veoScenes[0].voiceLine)
+        ? brief.veoScenes.map(s => `[${s.timeRange}] ${s.voiceLine}`).join('\n\n')
+        : (brief.voiceNote || '');
+
       container.style.display = 'flex';
       container.innerHTML = `
-        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(168,85,247,0.2); padding-bottom:0.5rem;">
+        <!-- Panel Header: title + Regenerate + Auto-Fill -->
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(168,85,247,0.2); padding-bottom:0.5rem; flex-wrap:wrap; gap:0.4rem;">
           <span style="font-size:0.82rem; font-weight:800; color:#d8b4fe;">
             ✨ ${escapeHTML(brief.contentType || 'Content')} Blueprint (${escapeHTML(generatedBy || 'gemini')})
           </span>
-          <button type="button" class="btn-primary btn-sm" style="font-size:0.7rem; padding:0.2rem 0.6rem; background:#10b981; border:none;" onclick="window.SOCIAL_MODULE.applyAllBriefFields()">
-            ⚡ Auto-Fill Post Form
-          </button>
+          <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
+            <button type="button" class="btn-ghost btn-sm" style="font-size:0.7rem; padding:0.2rem 0.6rem;" onclick="window.SOCIAL_MODULE.generateAIBrief()">
+              🔄 Regenerate
+            </button>
+            <button type="button" class="btn-primary btn-sm" style="font-size:0.7rem; padding:0.2rem 0.6rem; background:#10b981; border:none;" onclick="window.SOCIAL_MODULE.applyAllBriefFields()">
+              ⚡ Auto-Fill Post Form
+            </button>
+          </div>
         </div>
 
         <div style="display:grid; grid-template-columns:1fr; gap:0.6rem; font-size:0.78rem;">
+
+          <!-- 🎙️ SPOKEN TALKING SCRIPT — FIRST & PROMINENT (this is the primary creator output) -->
+          <div style="background:rgba(10,10,30,0.85); border:1.5px solid rgba(168,85,247,0.5); border-radius:12px; padding:0.85rem 1rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+              <strong style="color:#d8b4fe; font-size:0.88rem;">🎙️ Spoken Talking Script (Read Verbatim)</strong>
+              <button type="button" class="btn-primary btn-sm" style="font-size:0.68rem; padding:0.2rem 0.65rem; background:linear-gradient(135deg,#a855f7,#6366f1); border:none; font-weight:800;" onclick="navigator.clipboard.writeText('${escapeHTML(spokenScript).replace(/'/g, "\\'")}'); if(window.showToast) window.showToast('📋 Talking script copied to clipboard!','success');">📋 Copy Script</button>
+            </div>
+            <div style="color:#e2e8f0; font-size:0.8rem; line-height:1.75; white-space:pre-wrap; font-family: 'Georgia', serif; background:rgba(0,0,0,0.35); padding:0.65rem 0.8rem; border-radius:8px; max-height:220px; overflow-y:auto;">${escapeHTML(spokenScript)}</div>
+          </div>
+
+          <!-- Viral Hook & Angle -->
           <div>
             <strong style="color:#ffffff;">🎯 Viral Hook:</strong>
             <div style="color:#a7f3d0; margin-top:0.15rem; font-size:0.85rem;">"${escapeHTML(brief.hook)}"</div>
@@ -3173,21 +3195,13 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
             </div>
           ` : ''}
 
-          <!-- Visual Brief & Voice Note -->
+          <!-- Visual Brief -->
           <div style="background:rgba(0,0,0,0.25); border-radius:6px; padding:0.5rem; border:1px solid rgba(255,255,255,0.05);">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.2rem;">
               <strong style="color:#ffffff;">🎬 Visual Brief (CapCut/Canva):</strong>
               <button type="button" class="btn-ghost btn-sm" style="font-size:0.65rem; padding:0.1rem 0.4rem;" onclick="navigator.clipboard.writeText('${escapeHTML(brief.visualBrief).replace(/'/g, "\\'")}'); if(window.showToast) window.showToast('Visual brief copied!','success');">📋 Copy</button>
             </div>
             <div style="color:var(--text-muted); font-size:0.74rem;">${escapeHTML(brief.visualBrief)}</div>
-          </div>
-
-          <div style="background:rgba(0,0,0,0.25); border-radius:6px; padding:0.5rem; border:1px solid rgba(255,255,255,0.05);">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.2rem;">
-              <strong style="color:#ffffff;">🎙️ Spoken Talking Script:</strong>
-              <button type="button" class="btn-ghost btn-sm" style="font-size:0.65rem; padding:0.1rem 0.4rem;" onclick="navigator.clipboard.writeText('${escapeHTML(brief.voiceNote).replace(/'/g, "\\'")}'); if(window.showToast) window.showToast('Voice script copied!','success');">📋 Copy</button>
-            </div>
-            <div style="color:var(--text-muted); font-size:0.74rem;">${escapeHTML(brief.voiceNote)}</div>
           </div>
 
         </div>
@@ -3610,10 +3624,18 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
         recog.onend = () => {
           isVoiceRecordingActive = false;
           if (pulseDot) { pulseDot.style.background = '#6b7280'; pulseDot.style.animation = 'none'; }
-          if (statusText) statusText.textContent = 'Recording finished. Ready to generate brief!';
           if (btn) {
             btn.innerHTML = '🎙️ Start Recording Voice';
             btn.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+          }
+          // ISSUE 8 FIX: If a transcript was captured, switch to Type mode so user can see/edit it
+          const capturedText = titleInput && titleInput.value && titleInput.value.trim();
+          if (capturedText) {
+            if (statusText) statusText.textContent = '✅ Transcript captured — edit below or generate your brief!';
+            window.SOCIAL_MODULE.switchTopicInputMode('type');
+            if (window.showToast) window.showToast('🎙️ Voice captured! Review your topic below.', 'success');
+          } else {
+            if (statusText) statusText.textContent = 'Recording finished. Ready to generate brief!';
           }
         };
 
@@ -3781,7 +3803,18 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
           if (fileNameEl) fileNameEl.textContent = json.fileName;
           if (metaLabelEl) metaLabelEl.textContent = `(${json.visualSummary || 'Analyzed'})`;
 
-          if (window.showToast) window.showToast('✨ Reference analyzed! Topic & Strategic Angle applied.', 'success');
+          if (window.showToast) window.showToast('✨ Reference analyzed! Topic & Angle applied — review below.', 'success');
+
+          // ISSUE 9 FIX: Auto-switch to Type mode so user can immediately see the auto-filled topic/angle
+          setTimeout(() => {
+            window.SOCIAL_MODULE.switchTopicInputMode('type');
+            // Briefly highlight the auto-filled title field to draw attention
+            if (titleInput) {
+              titleInput.style.transition = 'box-shadow 0.3s ease';
+              titleInput.style.boxShadow = '0 0 0 2px #10b981';
+              setTimeout(() => { titleInput.style.boxShadow = ''; }, 1800);
+            }
+          }, 300);
         } else {
           throw new Error(json?.error || 'Analysis failed');
         }
