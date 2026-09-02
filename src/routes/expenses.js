@@ -81,10 +81,13 @@ router.post('/', requireAuth, async (req, res) => {
     let receiptUrl = req.body.receiptUrl || '';
     if (req.body.receiptBase64) {
       try {
-        const base64Data = req.body.receiptBase64.replace(/^data:image\/\w+;base64,/, '');
+        const mimeMatch = req.body.receiptBase64.match(/^data:(image\/[\w+]+);base64,/);
+        const mimeType = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+        const ext = mimeType.split('/')[1]?.replace('jpeg', 'jpg') || 'jpg';
+        const base64Data = req.body.receiptBase64.replace(/^data:[^;]+;base64,/, '');
         const buffer = Buffer.from(base64Data, 'base64');
-        const filename = `receipts/${newId}_${Date.now()}.png`;
-        const uploadRes = await uploadFile('expenses', filename, buffer, 'image/png');
+        const filename = `receipts/${newId}_${Date.now()}.${ext}`;
+        const uploadRes = await uploadFile('expenses', filename, buffer, mimeType);
         if (uploadRes.url) receiptUrl = uploadRes.url;
       } catch (e) {
         console.error('Receipt upload failed:', e);

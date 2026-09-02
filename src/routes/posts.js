@@ -1,10 +1,16 @@
 const express = require('express');
 const router = express.Router();
+const multer = require('multer');
 const { requireAuth } = require('../middleware/auth');
 const { requireManager } = require('../middleware/rbac');
-const { supabase } = require('../services/supabase');
+const { supabase, isSupabaseConfigured } = require('../services/supabase');
 const { broadcast } = require('../services/sse');
 const { randomUUID } = require('crypto');
+
+const mediaUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 50 * 1024 * 1024 }
+});
 
 function mapPost(p) {
   if (!p) return null;
@@ -12,6 +18,10 @@ function mapPost(p) {
     id: p.id,
     channel: p.channel || p.channel_name || 'Client Account',
     contentCategory: p.content_category || p.contentCategory || 'General',
+    contentType: p.content_type || p.contentType || 'Short-form Video',
+    targetDuration: p.target_duration || p.targetDuration || '30s',
+    veoPrompts: p.veo_prompts || p.veoPrompts || null,
+    pdfOutline: p.pdf_outline || p.pdfOutline || null,
     firstComment: p.first_comment || p.firstComment || '',
     clientId: p.client_id || null,
     clientName: p.client_name || 'General Client',
@@ -173,6 +183,121 @@ router.get('/client/:clientName', requireAuth, async (req, res) => {
   }
 });
 
+// POST Upload Media Asset (Image, Video, Document, PDF, Audio)
+router.post('/upload-media', requireAuth, mediaUpload.single('file'), async (req, res) => {
+  try {
+    const file = req.file;
+    if (!file) {
+      return res.status(400).json({ success: false, error: 'No file provided for upload' });
+    }
+
+    const safeName = file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const storagePath = `social-media/${Date.now()}_${safeName}`;
+    let fileUrl = '';
+
+    if (isSupabaseConfigured() && supabase) {
+      try {
+        const { data: upData, error: upErr } = await supabase.storage
+          .from('social-assets')
+          .upload(storagePath, file.buffer, {
+            contentType: file.mimetype || 'application/octet-stream',
+            upsert: true
+          });
+
+        if (!upErr) {
+          const { data: pubData } = supabase.storage.from('social-assets').getPublicUrl(storagePath);
+          fileUrl = pubData?.publicUrl || '';
+        }
+      } catch (storageErr) {
+        console.warn('[Social Media Upload] Supabase storage note:', storageErr.message);
+      }
+    }
+
+    // Fallback: If not uploaded to Supabase Storage, use data URL for images/small media, or synthetic URL
+    if (!fileUrl) {
+      const mime = file.mimetype || 'application/octet-stream';
+      if (file.size <= 10 * 1024 * 1024) {
+        fileUrl = `data:${mime};base64,${file.buffer.toString('base64')}`;
+      } else {
+        fileUrl = `/uploads/${storagePath}`;
+      }
+    }
+
+    return res.json({
+      success: true,
+      url: fileUrl,
+      filename: file.originalname,
+      size: file.size,
+      mimetype: file.mimetype
+    });
+  } catch (err) {
+    console.error('Media upload error:', err);
+    return res.status(500).json({ success: false, error: err.message || 'Media upload failed' });
+  }
+});
+
+// POST Batch Create Social Posts (from Content Calendar AI)
+router.post('/batch', requireAuth, async (req, res) => {
+  try {
+    const { posts } = req.body;
+    if (!Array.isArray(posts) || posts.length === 0) {
+      return res.status(400).json({ error: 'posts array is required' });
+    }
+
+    const createdPosts = [];
+    const dbPayloads = [];
+
+    for (const p of posts) {
+      const rawUuid = randomUUID ? randomUUID() : 'a0000000-0000-0000-0000-000000000000'.replace(/0/g, () => Math.floor(Math.random()*16).toString(16));
+      const newId = `PST-${rawUuid.split('-')[0].toUpperCase()}`;
+
+      const payload = {
+        id: newId,
+        channel: p.channel || p.channel_name || 'Client Account',
+        content_category: p.contentCategory || p.content_category || 'General',
+        content_type: p.contentType || p.content_type || 'Short-form Video',
+        target_duration: p.targetDuration || p.target_duration || '30s',
+        veo_prompts: p.veoPrompts || p.veo_prompts || null,
+        pdf_outline: p.pdfOutline || p.pdf_outline || null,
+        first_comment: p.firstComment || p.first_comment || '',
+        client_id: p.clientId || p.client_id || '',
+        client_name: p.clientName || p.client_name || 'General Client',
+        platform: p.platform || 'Facebook',
+        target_url: p.targetUrl || p.target_url || '',
+        title: p.title || p.topicIdea || 'Untitled Post',
+        caption: p.caption || (p.hook ? `${p.hook}\n\n` : ''),
+        hashtags: p.hashtags || '',
+        media_urls: p.mediaUrls || (p.mediaUrl ? [p.mediaUrl] : []),
+        scheduled_date: p.scheduledDate || p.scheduled_date || new Date().toISOString().split('T')[0],
+        scheduled_time: p.scheduledTime || p.scheduled_time || '18:00',
+        assigned_publisher: p.assignedPublisher || req.user?.name || 'Firoz',
+        status: p.status || 'Draft',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+
+      inMemoryPosts.unshift(payload);
+      createdPosts.push(mapPost(payload));
+      dbPayloads.push(payload);
+    }
+
+    if (supabase) {
+      supabase.from('social_posts').insert(dbPayloads).then(null, e => {
+        console.warn('[Social API] Supabase batch post insert note:', e.message);
+      });
+    }
+
+    try {
+      broadcast('post_update', inMemoryPosts.map(mapPost));
+    } catch (e) {}
+
+    return res.status(201).json({ success: true, count: createdPosts.length, posts: createdPosts });
+  } catch (err) {
+    console.error('Social Posts batch creation error:', err.message);
+    return res.status(500).json({ error: err.message || 'Batch creation failed' });
+  }
+});
+
 // POST Schedule/Draft Social Post
 router.post('/', requireAuth, async (req, res) => {
   try {
@@ -183,6 +308,10 @@ router.post('/', requireAuth, async (req, res) => {
       id: newId,
       channel: req.body.channel || req.body.channel_name || 'Client Account',
       content_category: req.body.contentCategory || req.body.content_category || 'General',
+      content_type: req.body.contentType || req.body.content_type || 'Short-form Video',
+      target_duration: req.body.targetDuration || req.body.target_duration || '30s',
+      veo_prompts: req.body.veoPrompts || req.body.veo_prompts || null,
+      pdf_outline: req.body.pdfOutline || req.body.pdf_outline || null,
       first_comment: req.body.firstComment || req.body.first_comment || '',
       client_id: req.body.clientId || req.body.client_id || '',
       client_name: req.body.clientName || req.body.client_name || 'General Client',
@@ -230,6 +359,10 @@ router.put('/:id', requireAuth, requirePostOwnership, async (req, res) => {
     if (req.body.title) updates.title = req.body.title;
     if (req.body.channel) updates.channel = req.body.channel;
     if (req.body.contentCategory !== undefined) updates.content_category = req.body.contentCategory;
+    if (req.body.contentType !== undefined) updates.content_type = req.body.contentType;
+    if (req.body.targetDuration !== undefined) updates.target_duration = req.body.targetDuration;
+    if (req.body.veoPrompts !== undefined) updates.veo_prompts = req.body.veoPrompts;
+    if (req.body.pdfOutline !== undefined) updates.pdf_outline = req.body.pdfOutline;
     if (req.body.firstComment !== undefined) updates.first_comment = req.body.firstComment;
     if (req.body.caption !== undefined) updates.caption = req.body.caption;
     if (req.body.hashtags !== undefined) updates.hashtags = req.body.hashtags;

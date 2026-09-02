@@ -88,7 +88,11 @@ window.APP_API = {
       }
 
       if (!response.ok || (data && data.error)) {
-        throw new Error(data?.error || `HTTP ${response.status}`);
+        const errVal = data?.error;
+        const errMsg = typeof errVal === 'string'
+          ? errVal
+          : (errVal?.message || errVal?.details || data?.message || `HTTP ${response.status}`);
+        throw new Error(errMsg);
       }
       
       // Store in cache

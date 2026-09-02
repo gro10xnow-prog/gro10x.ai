@@ -992,7 +992,8 @@ window.APP_MODULES.finance = async function(container) {
         this.closeExpenseModal();
         loadFinance();
       } catch(e) {
-        if (window.showToast) window.showToast('Failed to submit expense claim: ' + e.message, 'error');
+        const errMsg = e?.message || (typeof e === 'string' ? e : 'Unknown error');
+        if (window.showToast) window.showToast('Failed to submit expense claim: ' + errMsg, 'error');
       }
     },
     openQuoteModal() {

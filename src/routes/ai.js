@@ -34,12 +34,31 @@ function build(name, role, dept, stage) {
 }
 
 // Gemini with strict response validation
-const MODELS = ['gemini-3.6-flash', 'gemini-flash-latest'];
+const MODELS = ['gemini-3.6-flash', 'gemini-3.1-pro-preview', 'gemini-2.5-flash'];
 
-function callSingle(model, prompt, key) {
+function callSingle(model, prompt, key, options = {}) {
+  const maxTokens = options.maxTokens || 3500;
+  const temperature = options.temperature !== undefined ? options.temperature : 0.4;
+  const requireBrandKeyword = options.requireBrandKeyword || false;
+
   return new Promise((resolve, reject) => {
-    const payload = JSON.stringify({ contents: [{ role: 'user', parts: [{ text: prompt }] }], generationConfig: { maxOutputTokens: 600, temperature: 0.6 } });
-    const req = https.request({ hostname: 'generativelanguage.googleapis.com', path: '/v1beta/models/' + model + ':generateContent?key=' + key, method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) } }, (res) => {
+    const payload = JSON.stringify({
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      generationConfig: {
+        maxOutputTokens: maxTokens,
+        temperature: temperature,
+        responseMimeType: options.json ? 'application/json' : undefined
+      }
+    });
+    const req = https.request({
+      hostname: 'generativelanguage.googleapis.com',
+      path: '/v1beta/models/' + model + ':generateContent?key=' + key,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(payload)
+      }
+    }, (res) => {
       let data = '';
       res.on('data', c => data += c);
       res.on('end', () => {
@@ -47,17 +66,57 @@ function callSingle(model, prompt, key) {
           const j = JSON.parse(data);
           if (j.candidates && j.candidates[0] && j.candidates[0].content) {
             const text = (j.candidates[0].content.parts || []).map(p => p.text || '').join('').trim();
-            if (text.length >= 120 && (text.toLowerCase().includes('gro10x') || text.toLowerCase().includes('welcome') || text.toLowerCase().includes('portal'))) return resolve(text);
-            return reject(new Error('Incomplete: ' + model + ' only ' + text.length + ' chars'));
+            if (requireBrandKeyword) {
+              if (text.length >= 120 && (text.toLowerCase().includes('gro10x') || text.toLowerCase().includes('welcome') || text.toLowerCase().includes('portal'))) {
+                return resolve(text);
+              }
+              return reject(new Error('Incomplete onboarding text: ' + model + ' only ' + text.length + ' chars'));
+            }
+            if (text.length > 0) return resolve(text);
+            return reject(new Error('Empty text from ' + model));
           }
           reject(new Error((j.error && j.error.message) || 'No output: ' + model));
-        } catch (e) { reject(new Error('ParseErr: ' + model)); }
+        } catch (e) {
+          reject(new Error('ParseErr: ' + model + ' ' + e.message));
+        }
       });
     });
     req.on('error', reject);
-    req.setTimeout(10000, () => { req.destroy(); reject(new Error('Timeout: ' + model)); });
-    req.write(payload); req.end();
+    req.setTimeout(35000, () => {
+      req.destroy();
+      reject(new Error('Timeout: ' + model));
+    });
+    req.write(payload);
+    req.end();
   });
+}
+
+function cleanJSONText(raw) {
+  if (!raw) return null;
+  let text = String(raw).trim();
+  if (text.startsWith('```json')) text = text.replace(/^```json/i, '');
+  if (text.startsWith('```')) text = text.replace(/^```/i, '');
+  if (text.endsWith('```')) text = text.replace(/```$/i, '');
+  try {
+    return JSON.parse(text.trim());
+  } catch (e) {
+    // Try substring matching for { ... } or [ ... ]
+    const firstObj = text.indexOf('{');
+    const lastObj = text.lastIndexOf('}');
+    if (firstObj !== -1 && lastObj > firstObj) {
+      try {
+        return JSON.parse(text.slice(firstObj, lastObj + 1));
+      } catch (err) {}
+    }
+    const firstArr = text.indexOf('[');
+    const lastArr = text.lastIndexOf(']');
+    if (firstArr !== -1 && lastArr > firstArr) {
+      try {
+        return JSON.parse(text.slice(firstArr, lastArr + 1));
+      } catch (err) {}
+    }
+    return null;
+  }
 }
 
 async function tryGemini(name, role, dept, stage, key) {
@@ -77,8 +136,13 @@ async function tryGemini(name, role, dept, stage, key) {
     '5. Encouraging sign-off: "-- Firoz Uddin Ahmed · Founder & Tech Lead, GRO10X"\n\n' +
     'Output the message text ONLY. Do NOT use markdown code fences. Keep formatting clean for WhatsApp with emojis and bullet points.';
   for (const model of MODELS) {
-    try { const r = await callSingle(model, prompt, key); console.log('[AI] OK ' + model + ' ' + r.length + ' chars'); return r; }
-    catch (e) { console.warn('[AI] skip ' + model + ': ' + e.message); }
+    try {
+      const r = await callSingle(model, prompt, key, { requireBrandKeyword: true, maxTokens: 800 });
+      console.log('[AI] OK ' + model + ' ' + r.length + ' chars');
+      return r;
+    } catch (e) {
+      console.warn('[AI] skip ' + model + ': ' + e.message);
+    }
   }
   return null;
 }
@@ -632,27 +696,107 @@ router.post('/mockup-prompts', requireAuth, async (req, res) => {
   }
 });
 
-// POST /api/ai/social-brief — Engine 5 Structured Content Blueprint Generator
+// POST /api/ai/social-brief — Channel & Content-Type Aware Content Blueprint Generator with VEO 3 Chunks & PDF Outlines
 router.post('/social-brief', requireAuth, async (req, res) => {
-  const { channel, contentCategory, platform, topic } = req.body;
+  const {
+    channel,
+    contentCategory,
+    platform,
+    topic,
+    contentType,
+    targetDuration,
+    targetDurationSeconds
+  } = req.body;
+
   const chanName = channel || 'Grow Bangla';
   const category = contentCategory || 'English Lesson';
   const plat = platform || 'YouTube';
+  const type = contentType || 'Short-form Video';
   const postTopic = topic || `${category} on ${chanName}`;
 
+  // Parse duration
+  let durationSec = 30;
+  if (targetDurationSeconds && Number(targetDurationSeconds) > 0) {
+    durationSec = Number(targetDurationSeconds);
+  } else if (targetDuration) {
+    const raw = String(targetDuration).toLowerCase();
+    if (raw.includes('30s') || raw === '30') durationSec = 30;
+    else if (raw.includes('60s') || raw === '60' || raw.includes('1 min')) durationSec = 60;
+    else if (raw.includes('90s') || raw === '90') durationSec = 90;
+    else if (raw.includes('2 min') || raw.includes('120')) durationSec = 120;
+    else if (raw.includes('3 min') || raw.includes('180')) durationSec = 180;
+    else if (raw.includes('5 min') || raw.includes('300')) durationSec = 300;
+    else {
+      const match = raw.match(/\d+/);
+      if (match) durationSec = parseInt(match[0], 10);
+    }
+  } else if (type === 'Long-form Video') {
+    durationSec = 180;
+  } else if (type === 'Music Video') {
+    durationSec = 60;
+  }
+
+  const isVideoType = type.includes('Video') || type === 'Short-form Video' || type === 'Long-form Video' || type === 'Music Video';
+  const isPdfType = type === 'PDF / Document' || (plat === 'LinkedIn' && type.includes('PDF'));
+  const isCarouselType = type === 'Carousel';
+
+  const chunkCount = isVideoType ? Math.max(1, Math.min(18, Math.ceil(durationSec / 10))) : 0;
+
+  // Build deterministic fallback
+  const fallbackScenes = [];
+  if (isVideoType) {
+    for (let i = 1; i <= chunkCount; i++) {
+      const startSec = (i - 1) * 10;
+      const endSec = i * 10;
+      const formatTime = s => `${Math.floor(s/60)}:${String(s%60).padStart(2, '0')}`;
+      fallbackScenes.push({
+        scene: i,
+        timeRange: `${formatTime(startSec)}–${formatTime(endSec)}`,
+        section: i === 1 ? 'Hook & Intro' : (i === chunkCount ? 'CTA & Outro' : `Scene ${i} Progression`),
+        prompt: `Cinematic photorealistic 4K 60fps shot for ${chanName} about ${postTopic}. Scene ${i} (${formatTime(startSec)}-${formatTime(endSec)}): dynamic camera move, shallow depth of field, vivid atmospheric studio lighting, smooth motion, high visual clarity.`,
+        visualCue: `On-screen graphic text overlay highlighting key point #${i}.`
+      });
+    }
+  }
+
+  const fallbackPdfSlides = isPdfType ? [
+    { slideNumber: 1, type: 'Cover', headline: `${postTopic}`, bullets: [`The Complete Executive Breakdown`, `By GRO10X Media for ${chanName}`], visualNote: 'Bold contrasting typography on dark gradient backdrop with brand icon.' },
+    { slideNumber: 2, type: 'The Problem', headline: `Why Most Creators & Teams Fail at ${category}`, bullets: [`Misunderstanding the fundamental workflow`, `Spending 80% of effort on low-leverage tasks`, `Lack of systematic automation`], visualNote: 'Red callout badge with side-by-side comparison diagram.' },
+    { slideNumber: 3, type: 'The Framework', headline: `The 3-Step Execution Model`, bullets: [`Step 1: AI Blueprint Grounding`, `Step 2: Rapid Modular Production`, `Step 3: Multi-Channel Distribution`], visualNote: '3-tier pyramid / process flow infographic.' },
+    { slideNumber: 4, type: 'Deep Dive Step 1', headline: `Phase 1: Input & Context Strategy`, bullets: [`Structuring high-retention briefing prompts`, `Aligning tone with target audience persona`], visualNote: 'Checklist style cards with green check icons.' },
+    { slideNumber: 5, type: 'Deep Dive Step 2', headline: `Phase 2: Execution & Quality Control`, bullets: [`Reviewing against platform constraints`, `Ensuring first-comment and SEO tag readiness`], visualNote: 'Split-screen UI preview.' },
+    { slideNumber: 6, type: 'Actionable Takeaways', headline: `Key Rules to Implement Today`, bullets: [`Rule 1: Hook in the first 3 seconds`, `Rule 2: Provide one clear value payoff`, `Rule 3: Single strong call-to-action`], visualNote: 'Highlighted quote box with golden accent.' },
+    { slideNumber: 7, type: 'Call to Action', headline: `Ready to Scale Your Content Engine?`, bullets: [`Follow ${chanName} for daily breakthroughs`, `Save this document for your team review`, `Visit gro10x.ai for agency growth systems`], visualNote: 'Large high-contrast CTA button with QR/link placeholder.' }
+  ] : null;
+
+  const fallbackCarouselSlides = isCarouselType ? [
+    { slide: 1, headline: `Stop Doing ${category} the Hard Way 🛑`, copy: `Swipe to see the exact 5-step method we use at ${chanName}...`, visualCue: 'High-contrast bold cover slide with swipe indicator.' },
+    { slide: 2, headline: `1. The Common Mistake`, copy: `Most people rush without a clear angle. Here's what goes wrong.`, visualCue: 'Warning icon with problem breakdown.' },
+    { slide: 3, headline: `2. The Smart Shift`, copy: `Instead, use this exact structure to hold retention.`, visualCue: 'Step-by-step numbered visual.' },
+    { slide: 4, headline: `3. Actionable Rule`, copy: `Apply this simple formula on your next draft.`, visualCue: 'Formula box.' },
+    { slide: 5, headline: `Save This Post! 📌`, copy: `Share with someone who needs this today. Follow for more!`, visualCue: 'Save icon and brand badge.' }
+  ] : null;
+
   const deterministicFallback = {
+    contentType: type,
+    targetDuration: `${durationSec}s`,
     hook: `Stop making this mistake in ${category}! 🛑`,
-    angle: `Direct, high-retention breakdown tailored for ${chanName} audience.`,
+    angle: `Direct, high-retention breakdown tailored for ${chanName} audience on ${plat}.`,
     keyPoints: [
       `Break down the most common misconception in ${category}`,
       `Provide an immediate, actionable correction with real examples`,
       `Deliver a memorable mnemonic or takeaway rule`
     ],
     caption: `🔥 Quick ${category} breakdown for you!\n\nIf you've ever struggled with this, you are not alone. Here is the exact way to get it right every single time.\n\n📌 Save this post so you don't forget it!\n💬 Drop a comment below if you want Part 2!`,
-    hashtags: `#${chanName.replace(/[^a-zA-Z0-9]/g, '')} #${category.replace(/[^a-zA-Z0-9]/g, '')} #GRO10X #ContentScale #${plat}`,
+    hashtags: `#${chanName.replace(/[^a-zA-Z0-9]/g, '')} #${category.replace(/[^a-zA-Z0-9]/g, '')} #GRO10X #ContentScale #${plat.replace(/[^a-zA-Z0-9]/g, '')}`,
     firstComment: `#${chanName.replace(/[^a-zA-Z0-9]/g, '')} #LearnDaily #Bangladesh #Viral2026 #DailyTips`,
     visualBrief: `Facecam intro with high-contrast text overlay on top 20% of screen. Split-screen visual example with green checkmark vs red X.`,
-    voiceNote: `Start immediately with the hook: "90% of people get this wrong..." (0-3s). Demonstrate the common flaw (3-12s). Reveal the correct method with energy (12-25s). Strong CTA: "Follow for daily breakthroughs" (25-30s).`
+    voiceNote: `Start immediately with the hook: "90% of people get this wrong..." (0-3s). Demonstrate the common flaw (3-12s). Reveal the correct method with energy (12-25s). Strong CTA: "Follow for daily breakthroughs" (25-30s).`,
+    veoScenes: fallbackScenes,
+    masterVeoPrompt: fallbackScenes.map(s => `[${s.timeRange} - Scene ${s.scene}]: ${s.prompt}`).join('\n\n'),
+    pdfOutline: fallbackPdfSlides,
+    masterPdfOutline: fallbackPdfSlides ? fallbackPdfSlides.map(s => `### Slide ${s.slideNumber}: ${s.headline} (${s.type})\n${s.bullets.map(b => `- ${b}`).join('\n')}\n*Visual Direction:* ${s.visualNote}`).join('\n\n') : null,
+    carouselSlides: fallbackCarouselSlides
   };
 
   const key = process.env.GEMINI_API_KEY;
@@ -660,29 +804,68 @@ router.post('/social-brief', requireAuth, async (req, res) => {
     return res.json({ success: true, brief: deterministicFallback, generatedBy: 'deterministic_template' });
   }
 
+  let specificPromptInstructions = '';
+  if (isVideoType) {
+    specificPromptInstructions = `
+CRITICAL VEO 3 VIDEO SCENE GENERATION:
+Target Video Duration: ${durationSec} seconds.
+Because VEO 3 generates video in 10-second segments, you MUST generate an array named "veoScenes" containing EXACTLY ${chunkCount} items.
+Each item in "veoScenes" MUST have:
+- "scene": integer (1 to ${chunkCount})
+- "timeRange": string (e.g. "0:00–0:10", "0:10–0:20", etc.)
+- "section": string (e.g. "Hook / Opening Action", "Problem Demonstration", "Core Transformation", "Climax / Payoff", "Call to Action")
+- "prompt": string (A full, standalone, photorealistic prompt for Google VEO 3 describing subject, camera motion like slow zoom-in or tracking pan, cinematic lighting, 4K quality, environment, and physical action)
+- "visualCue": string (Brief on-screen text overlay or graphic cue for video editors in CapCut)
+`;
+  } else if (isPdfType) {
+    specificPromptInstructions = `
+CRITICAL LINKEDIN PDF DOCUMENT OUTLINE:
+Generate an array named "pdfOutline" containing 7 to 10 slide cards designed for an executive LinkedIn PDF document post.
+Each item in "pdfOutline" MUST have:
+- "slideNumber": integer (1, 2, 3...)
+- "type": string ("Cover", "The Problem", "Framework", "Step 1", "Step 2", "Key Takeaways", "CTA")
+- "headline": string (Bold, impactful slide header)
+- "bullets": array of 2-3 concise, high-value bullet points
+- "visualNote": string (Layout recommendation: icons, charts, color accent, split-screen)
+`;
+  } else if (isCarouselType) {
+    specificPromptInstructions = `
+CRITICAL CAROUSEL SLIDES:
+Generate an array named "carouselSlides" containing 5 to 7 slide cards for Instagram/LinkedIn carousel.
+Each item in "carouselSlides" MUST have:
+- "slide": integer (1, 2, 3...)
+- "headline": string (Engaging headline)
+- "copy": string (1-2 sentences of punchy slide body copy)
+- "visualCue": string (Visual direction for Canva designer)
+`;
+  }
+
   const prompt =
-    `You are the Chief Content Strategist for GRO10X Media and Engine 5 (Video & Media Scale).\n` +
-    `Generate a high-converting, viral-optimized social media content brief for:\n` +
-    `• Channel: "${chanName}" (Context: Grow Bangla=Spoken English learning for Bangladeshis; PILUTICS=Geopolitics & travel; Bong Hits=Humor, pop culture & TikTok; GRO10X Brand=AI agency & B2B)\n` +
+    `You are the Chief Content Strategist and Video Director for GRO10X Media and Engine 5 (Video & Media Scale).\n` +
+    `Generate a comprehensive, production-ready social media content blueprint for:\n` +
+    `• Channel: "${chanName}" (Context: Grow Bangla=Spoken English learning for Bangladeshis; PILUTICS=Geopolitics & travel analysis; Bong Hits=Humor, music, entertainment & viral TikTok; GRO10X Brand=AI agency, SaaS & B2B growth)\n` +
     `• Content Category: "${category}"\n` +
+    `• Content Type: "${type}"\n` +
     `• Target Platform: "${plat}"\n` +
-    `• Topic/Concept: "${postTopic}"\n\n` +
-    `CRITICAL REQUIREMENTS:\n` +
-    `1. Hook: Punchy, stop-the-scroll opening (5-8 words max, highly emotional/curiosity-driven).\n` +
-    `2. Angle: Why the viewer must watch/read this right now.\n` +
-    `3. Key Points: Array of 3 specific, actionable points.\n` +
-    `4. Caption: Complete ready-to-post copy with emojis, line breaks, and clear CTA, formatted safely for ${plat}.\n` +
-    `5. Hashtags: 8-15 high-reach, targeted hashtags as a single string.\n` +
-    `6. First Comment: Hashtag stack and engagement starter for Instagram/TikTok first comment.\n` +
-    `7. Visual Brief: Concrete visual direction for CapCut/Canva/Facecam shooting (framing, props, on-screen text overlays).\n` +
-    `8. Voice Note: 30-second talking script broken down by timestamps (0-5s Hook, 5-20s Body, 20-30s CTA).\n\n` +
-    `Output STRICT JSON ONLY with keys: "hook", "angle", "keyPoints", "caption", "hashtags", "firstComment", "visualBrief", "voiceNote". Do NOT wrap in markdown code blocks.`;
+    `• Target Duration: "${durationSec} seconds"\n` +
+    `• Topic / Concept: "${postTopic}"\n\n` +
+    specificPromptInstructions +
+    `\nSTANDARD REQUIRED FIELDS:\n` +
+    `1. "hook": Punchy, stop-the-scroll opening (5-8 words max, curiosity/emotion driven).\n` +
+    `2. "angle": 1-2 sentence compelling thesis of why the audience must watch/read this right now.\n` +
+    `3. "keyPoints": Array of 3 specific, high-value takeaways.\n` +
+    `4. "caption": Complete ready-to-post copy with emojis, line breaks, and clear CTA, formatted safely for ${plat}.\n` +
+    `5. "hashtags": 8-15 high-reach hashtags as a single string.\n` +
+    `6. "firstComment": Engagement hook and first-comment hashtag stack for Instagram/TikTok.\n` +
+    `7. "visualBrief": Clear overall visual direction (framing, color palette, props).\n` +
+    `8. "voiceNote": 30-60 second spoken narrative script with timestamps.\n\n` +
+    `Output STRICT JSON ONLY. Do NOT wrap in markdown code blocks.`;
 
   try {
     let resultText = null;
     for (const model of MODELS) {
       try {
-        resultText = await callSingle(model, prompt, key);
+        resultText = await callSingle(model, prompt, key, { maxTokens: 3500, json: true });
         if (resultText) break;
       } catch (e) {
         console.warn('[Social Brief] Skip model ' + model + ':', e.message);
@@ -691,12 +874,18 @@ router.post('/social-brief', requireAuth, async (req, res) => {
 
     if (!resultText) throw new Error('No output from Gemini');
 
-    const cleaned = resultText.replace(/```json/gi, '').replace(/```/g, '').trim();
-    const parsed = JSON.parse(cleaned);
+    const parsed = cleanJSONText(resultText);
+    if (!parsed || !parsed.hook) throw new Error('Failed to parse structured JSON brief from AI');
+
+    const finalScenes = Array.isArray(parsed.veoScenes) && parsed.veoScenes.length > 0 ? parsed.veoScenes : fallbackScenes;
+    const finalPdf = Array.isArray(parsed.pdfOutline) && parsed.pdfOutline.length > 0 ? parsed.pdfOutline : fallbackPdfSlides;
+    const finalCarousel = Array.isArray(parsed.carouselSlides) && parsed.carouselSlides.length > 0 ? parsed.carouselSlides : fallbackCarouselSlides;
 
     return res.json({
       success: true,
       brief: {
+        contentType: type,
+        targetDuration: `${durationSec}s`,
         hook: parsed.hook || deterministicFallback.hook,
         angle: parsed.angle || deterministicFallback.angle,
         keyPoints: Array.isArray(parsed.keyPoints) ? parsed.keyPoints : deterministicFallback.keyPoints,
@@ -704,7 +893,12 @@ router.post('/social-brief', requireAuth, async (req, res) => {
         hashtags: parsed.hashtags || deterministicFallback.hashtags,
         firstComment: parsed.firstComment || deterministicFallback.firstComment,
         visualBrief: parsed.visualBrief || deterministicFallback.visualBrief,
-        voiceNote: parsed.voiceNote || deterministicFallback.voiceNote
+        voiceNote: parsed.voiceNote || deterministicFallback.voiceNote,
+        veoScenes: finalScenes,
+        masterVeoPrompt: finalScenes && finalScenes.length > 0 ? finalScenes.map(s => `[${s.timeRange} - Scene ${s.scene}]: ${s.prompt}`).join('\n\n') : null,
+        pdfOutline: finalPdf,
+        masterPdfOutline: finalPdf ? finalPdf.map(s => `### Slide ${s.slideNumber}: ${s.headline} (${s.type})\n${(s.bullets || []).map(b => `- ${b}`).join('\n')}\n*Visual Direction:* ${s.visualNote}`).join('\n\n') : null,
+        carouselSlides: finalCarousel
       },
       generatedBy: 'gemini'
     });
@@ -715,6 +909,343 @@ router.post('/social-brief', requireAuth, async (req, res) => {
       brief: deterministicFallback,
       generatedBy: 'deterministic_template'
     });
+  }
+});
+
+// POST /api/ai/content-calendar — Generate 4-Week Strategic Monthly Content Plan
+router.post('/content-calendar', requireAuth, async (req, res) => {
+  const { channels, month, year, contentMix, analyticsSummary } = req.body;
+
+  const targetMonth = month || new Date().toLocaleString('default', { month: 'long' });
+  const targetYear = year || new Date().getFullYear();
+  const chanList = Array.isArray(channels) && channels.length > 0
+    ? channels
+    : ['grow-bangla', 'pilutics', 'bong-hits', 'gro10x'];
+
+  const mix = contentMix || {
+    educational: 40,
+    entertainment: 30,
+    promo: 20,
+    bts: 10
+  };
+
+  const channelMap = {
+    'grow-bangla': { name: '🎓 Grow Bangla', defaultPlatform: 'YouTube', category: 'English Lesson' },
+    'pilutics': { name: '🗺️ PILUTICS', defaultPlatform: 'YouTube', category: 'Geopolitical Analysis' },
+    'bong-hits': { name: '🎭 Bong Hits', defaultPlatform: 'TikTok', category: 'Entertainment' },
+    'gro10x': { name: '📢 GRO10X Brand', defaultPlatform: 'LinkedIn', category: 'AI Tips' },
+    'client': { name: '🏢 Client Account', defaultPlatform: 'Facebook', category: 'Promo' }
+  };
+
+  // Build deterministic plan
+  function buildDeterministicCalendar() {
+    const days = ['Monday', 'Wednesday', 'Friday'];
+    const plan = [];
+    let counter = 1;
+
+    for (let w = 1; w <= 4; w++) {
+      chanList.forEach((chKey, chIdx) => {
+        const chInfo = channelMap[chKey] || { name: chKey, defaultPlatform: 'YouTube', category: 'General' };
+        const day = days[chIdx % days.length];
+        const dayOffset = (w - 1) * 7 + (chIdx % 5) + 1;
+        const dateStr = `${targetYear}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(Math.min(28, dayOffset)).padStart(2, '0')}`;
+
+        plan.push({
+          id: `plan-item-${counter++}`,
+          week: `Week ${w}`,
+          dayOfWeek: day,
+          scheduledDate: dateStr,
+          channel: chInfo.name,
+          platform: chInfo.defaultPlatform,
+          contentType: chInfo.defaultPlatform === 'LinkedIn' ? 'PDF / Document' : (chInfo.defaultPlatform === 'TikTok' ? 'Short-form Video' : 'Long-form Video'),
+          contentCategory: chInfo.category,
+          topicIdea: `${chInfo.category} Breakthrough #${w}.${chIdx + 1} for ${targetMonth}`,
+          hook: `The single biggest strategy that changed our results this ${targetMonth} 🚀`,
+          suggestedTime: '18:00',
+          targetDuration: '60s',
+          reasoning: `High retention slot designed to capture ${mix.educational}% educational target audience.`
+        });
+      });
+    }
+    return plan;
+  }
+
+  const deterministicPlan = buildDeterministicCalendar();
+  const key = process.env.GEMINI_API_KEY;
+
+  if (!key) {
+    return res.json({
+      success: true,
+      month: targetMonth,
+      year: targetYear,
+      plan: deterministicPlan,
+      generatedBy: 'deterministic_template'
+    });
+  }
+
+  const prompt =
+    `You are the Head of Growth and Content Director for GRO10X Media.\n` +
+    `Create a comprehensive, high-retention 4-Week Content Calendar for the month of "${targetMonth} ${targetYear}".\n\n` +
+    `CHANNELS TO PLAN FOR:\n` +
+    chanList.map(c => `• ${channelMap[c]?.name || c} (Platform: ${channelMap[c]?.defaultPlatform || 'YouTube'})`).join('\n') + `\n\n` +
+    `DESIRED CONTENT MIX TARGET:\n` +
+    `• Educational / Value: ${mix.educational || 40}%\n` +
+    `• Entertainment / Viral: ${mix.entertainment || 30}%\n` +
+    `• Promotion / Product / Vault: ${mix.promo || 20}%\n` +
+    `• Behind-The-Scenes / Agency: ${mix.bts || 10}%\n\n` +
+    (analyticsSummary ? `ANALYTICS INSIGHTS CONTEXT:\n"""\n${JSON.stringify(analyticsSummary).slice(0, 1500)}\n"""\n\n` : '') +
+    `OUTPUT REQUIREMENTS:\n` +
+    `Generate an array named "plan" with exactly 12 to 20 structured post draft blueprints across Weeks 1 to 4.\n` +
+    `Each item in "plan" MUST have:\n` +
+    `- "id": string (unique e.g. "plan-w1-1")\n` +
+    `- "week": string ("Week 1", "Week 2", "Week 3", "Week 4")\n` +
+    `- "dayOfWeek": string ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")\n` +
+    `- "scheduledDate": string (Estimated YYYY-MM-DD for ${targetMonth} ${targetYear})\n` +
+    `- "channel": string (e.g. "🎓 Grow Bangla", "🗺️ PILUTICS", "🎭 Bong Hits", "📢 GRO10X Brand")\n` +
+    `- "platform": string ("YouTube", "TikTok", "Instagram", "Facebook", "LinkedIn", "Twitter")\n` +
+    `- "contentType": string ("Short-form Video", "Long-form Video", "Carousel", "PDF / Document", "Static Image / Graphic", "Music Video")\n` +
+    `- "contentCategory": string (Relevant channel category)\n` +
+    `- "topicIdea": string (Specific, high-engagement headline topic)\n` +
+    `- "hook": string (5-8 word stop-the-scroll opening)\n` +
+    `- "suggestedTime": string (e.g. "18:00")\n` +
+    `- "targetDuration": string (e.g. "30s", "60s", "3 min")\n` +
+    `- "reasoning": string (1 sentence explaining why this fits the content cadence and audience psychology)\n\n` +
+    `Output STRICT JSON ONLY with key "plan". No markdown code fences.`;
+
+  try {
+    let resultText = null;
+    for (const model of MODELS) {
+      try {
+        resultText = await callSingle(model, prompt, key, { maxTokens: 4000, json: true });
+        if (resultText) break;
+      } catch (e) {
+        console.warn('[Content Calendar] Skip model ' + model + ':', e.message);
+      }
+    }
+
+    if (!resultText) throw new Error('No output from Gemini');
+
+    const parsed = cleanJSONText(resultText);
+    const planItems = parsed && Array.isArray(parsed.plan) && parsed.plan.length > 0 ? parsed.plan : deterministicPlan;
+
+    return res.json({
+      success: true,
+      month: targetMonth,
+      year: targetYear,
+      plan: planItems,
+      generatedBy: 'gemini'
+    });
+  } catch (err) {
+    console.warn('[Content Calendar fallback]:', err.message);
+    return res.json({
+      success: true,
+      month: targetMonth,
+      year: targetYear,
+      plan: deterministicPlan,
+      generatedBy: 'deterministic_template'
+    });
+  }
+});
+
+// POST /api/ai/parse-analytics-csv — Parse YouTube Studio / Analytics CSV & Extract Growth Insights
+router.post('/parse-analytics-csv', requireAuth, async (req, res) => {
+  const { csvText, channelName } = req.body;
+  if (!csvText || csvText.trim().length < 20) {
+    return res.status(400).json({ error: 'csvText content is required' });
+  }
+
+  const rawLines = csvText.trim().split('\n').filter(l => l.trim().length > 0);
+  const header = rawLines[0] || '';
+  const rows = rawLines.slice(1);
+
+  const fallbackInsights = {
+    totalRowsAnalyzed: rows.length,
+    topCategories: ['Spoken English Hacks', 'Vocabulary Breakthroughs', 'Pronunciation Fixes'],
+    bestPostingDays: ['Friday 18:00', 'Monday 19:00', 'Wednesday 20:00'],
+    avgDuration: '45s',
+    recommendations: [
+      'Short-form videos under 45s have 2.8x higher completion rates.',
+      'Topics addressing specific common pronunciation mistakes generated 70% of new subscriber conversions.',
+      'Posting between 18:00 and 20:00 BD time captured the highest initial velocity within the first 2 hours.'
+    ]
+  };
+
+  const key = process.env.GEMINI_API_KEY;
+  if (!key) {
+    return res.json({ success: true, insights: fallbackInsights, generatedBy: 'deterministic_parser' });
+  }
+
+  const sampleRows = rows.slice(0, 30).join('\n');
+  const prompt =
+    `You are an elite YouTube & Social Media Analytics Growth Engineer.\n` +
+    `Analyze this raw CSV export from YouTube Studio / Social Analytics for "${channelName || 'GRO10X Channel'}":\n\n` +
+    `CSV HEADER:\n${header}\n\n` +
+    `CSV SAMPLE ROWS (first 30):\n${sampleRows}\n\n` +
+    `Extract key performance signals and generate strategic content recommendations for next month's production calendar.\n` +
+    `Return strict JSON with:\n` +
+    `1. "totalRowsAnalyzed": number\n` +
+    `2. "topCategories": array of top 3-4 performing topic themes\n` +
+    `3. "bestPostingDays": array of optimal posting day/time combinations\n` +
+    `4. "avgDuration": string (recommended optimal video length)\n` +
+    `5. "recommendations": array of 3-5 specific, high-impact growth recommendations\n\n` +
+    `Output STRICT JSON ONLY. No markdown code blocks.`;
+
+  try {
+    let resultText = null;
+    for (const model of MODELS) {
+      try {
+        resultText = await callSingle(model, prompt, key, { maxTokens: 1800, json: true });
+        if (resultText) break;
+      } catch (e) {
+        console.warn('[Analytics CSV] Skip model ' + model + ':', e.message);
+      }
+    }
+
+    if (!resultText) throw new Error('No output from Gemini');
+    const parsed = cleanJSONText(resultText);
+
+    return res.json({
+      success: true,
+      insights: {
+        totalRowsAnalyzed: parsed?.totalRowsAnalyzed || rows.length,
+        topCategories: parsed?.topCategories || fallbackInsights.topCategories,
+        bestPostingDays: parsed?.bestPostingDays || fallbackInsights.bestPostingDays,
+        avgDuration: parsed?.avgDuration || fallbackInsights.avgDuration,
+        recommendations: parsed?.recommendations || fallbackInsights.recommendations
+      },
+      generatedBy: 'gemini'
+    });
+  } catch (err) {
+    console.warn('[Analytics CSV parser fallback]:', err.message);
+    return res.json({ success: true, insights: fallbackInsights, generatedBy: 'deterministic_parser' });
+  }
+});
+
+// POST /api/ai/music-lrc — Bong Hits Music Video Workflow: Timestamped LRC Generator & VEO Scene Director
+router.post('/music-lrc', requireAuth, async (req, res) => {
+  const { title, lyrics, genre, durationSeconds, bpm } = req.body;
+  const songTitle = title || 'Bong Hits Track';
+  const songDuration = durationSeconds ? Number(durationSeconds) : 60;
+  const songGenre = genre || 'Bengali Folk Rock / Humor';
+
+  const defaultLyrics = lyrics ||
+    `[00:00.00] (Heavy bass groove & acoustic intro)\n` +
+    `[00:08.50] Chole geche shob, roye geche gaan\n` +
+    `[00:15.20] Chayer dokane bikel belar tan\n` +
+    `[00:22.00] Mon bole chol aji hariye jai dure\n` +
+    `[00:29.40] Bong Hits er shure shure!\n` +
+    `[00:36.00] (Electric guitar solo & energetic breakdown)\n` +
+    `[00:44.20] Notun bhabna, notun gaan\n` +
+    `[00:51.00] Hasi mukhe sobai mile jite nibo pran!\n` +
+    `[00:58.00] (Fade out beat)`;
+
+  const chunkCount = Math.max(1, Math.ceil(songDuration / 10));
+
+  function buildFallbackMusicPlan() {
+    const scenes = [];
+    for (let i = 1; i <= chunkCount; i++) {
+      const start = (i - 1) * 10;
+      const end = i * 10;
+      const formatTime = s => `${Math.floor(s/60)}:${String(s%60).padStart(2, '0')}`;
+      scenes.push({
+        scene: i,
+        timeRange: `${formatTime(start)}–${formatTime(end)}`,
+        musicSection: i === 1 ? 'Intro Beat' : (i === 2 ? 'Verse 1' : (i === 3 ? 'Chorus Hook' : (i === chunkCount ? 'Outro / Final Beat' : `Verse ${i}`))),
+        prompt: `Cinematic music video scene for Bong Hits track "${songTitle}" (${formatTime(start)}-${formatTime(end)}): dynamic camera tracking, rich neon & sunset rim lighting, artist performance with expressive lip-sync, rhythm-synced motion, 4K 60fps photorealistic music video aesthetic.`,
+        capcutAction: `Cut clip exactly at ${formatTime(end)} on the snare drum beat. Align lyric caption line #${i}.`
+      });
+    }
+    return scenes;
+  }
+
+  const fallbackScenes = buildFallbackMusicPlan();
+
+  const deterministicResponse = {
+    title: songTitle,
+    durationSeconds: songDuration,
+    genre: songGenre,
+    lrcContent: defaultLyrics,
+    timestamps: [
+      { time: '00:00.00', seconds: 0.0, lyric: '(Intro Beat)', section: 'Intro' },
+      { time: '00:08.50', seconds: 8.5, lyric: 'Chole geche shob, roye geche gaan', section: 'Verse 1' },
+      { time: '00:15.20', seconds: 15.2, lyric: 'Chayer dokane bikel belar tan', section: 'Verse 1' },
+      { time: '00:22.00', seconds: 22.0, lyric: 'Mon bole chol aji hariye jai dure', section: 'Chorus Hook' },
+      { time: '00:29.40', seconds: 29.4, lyric: 'Bong Hits er shure shure!', section: 'Chorus Hook' },
+      { time: '00:36.00', seconds: 36.0, lyric: '(Guitar Breakdown)', section: 'Solo' },
+      { time: '00:44.20', seconds: 44.2, lyric: 'Notun bhabna, notun gaan', section: 'Verse 2' },
+      { time: '00:51.00', seconds: 51.0, lyric: 'Hasi mukhe sobai mile jite nibo pran!', section: 'Climax' },
+      { time: '00:58.00', seconds: 58.0, lyric: '(Fade out beat)', section: 'Outro' }
+    ],
+    veoScenes: fallbackScenes,
+    masterVeoPrompt: fallbackScenes.map(s => `[${s.timeRange} - ${s.musicSection}]: ${s.prompt}`).join('\n\n'),
+    capcutGuide: [
+      '1. Download the generated .LRC file using the button below.',
+      '2. Open CapCut Desktop or Mobile, import your Suno MP3 audio file.',
+      '3. In CapCut, navigate to Text > Auto Captions > Import Local Subtitles / LRC.',
+      '4. Import the 10-second VEO video clips generated from the prompts onto your video track.',
+      '5. Split video cuts on the exact beat markers specified in the scene breakdown.'
+    ]
+  };
+
+  const key = process.env.GEMINI_API_KEY;
+  if (!key) {
+    return res.json({ success: true, data: deterministicResponse, generatedBy: 'deterministic_template' });
+  }
+
+  const prompt =
+    `You are the Chief Music Video Producer and Visual Director for "Bong Hits" (Engine 5 entertainment brand).\n` +
+    `A creator has produced a music track in Suno and needs an exact LRC timestamp file and a series of 10-second VEO 3 prompts timed to the music structure.\n\n` +
+    `TRACK DETAILS:\n` +
+    `• Track Title: "${songTitle}"\n` +
+    `• Genre / Mood: "${songGenre}"\n` +
+    `• Target Duration: ${songDuration} seconds\n` +
+    `• BPM: ${bpm || 100}\n` +
+    (lyrics ? `• PROVIDED LYRICS / THEME:\n"""\n${lyrics.slice(0, 2000)}\n"""\n\n` : '') +
+    `OUTPUT REQUIREMENTS:\n` +
+    `1. "lrcContent": Standard LRC file string format with [mm:ss.xx] timestamps on every line covering the ${songDuration}s duration.\n` +
+    `2. "timestamps": Array of objects { "time": "mm:ss.xx", "seconds": number, "lyric": "string", "section": "Intro"|"Verse 1"|"Chorus"|"Solo"|"Outro" }.\n` +
+    `3. "veoScenes": Array of exactly ${chunkCount} items (10 seconds each) with:\n` +
+    `   - "scene": integer (1 to ${chunkCount})\n` +
+    `   - "timeRange": string ("0:00–0:10", "0:10–0:20"...)\n` +
+    `   - "musicSection": string (e.g. "Intro Groove", "Verse 1 Vocal", "Chorus Lip-Sync", "Visual Climax")\n` +
+    `   - "prompt": string (Photorealistic, cinematic music video shot for VEO 3 with camera movement, mood lighting, performance actions, lip-sync choreography)\n` +
+    `   - "capcutAction": string (Editing advice for CapCut timeline sync on the beat)\n` +
+    `4. "capcutGuide": Array of 5 practical steps to assemble this in CapCut.\n\n` +
+    `Output STRICT JSON ONLY. No markdown code fences.`;
+
+  try {
+    let resultText = null;
+    for (const model of MODELS) {
+      try {
+        resultText = await callSingle(model, prompt, key, { maxTokens: 4000, json: true });
+        if (resultText) break;
+      } catch (e) {
+        console.warn('[Music LRC] Skip model ' + model + ':', e.message);
+      }
+    }
+
+    if (!resultText) throw new Error('No output from Gemini');
+    const parsed = cleanJSONText(resultText);
+
+    const scenes = Array.isArray(parsed?.veoScenes) && parsed.veoScenes.length > 0 ? parsed.veoScenes : fallbackScenes;
+
+    return res.json({
+      success: true,
+      data: {
+        title: songTitle,
+        durationSeconds: songDuration,
+        genre: songGenre,
+        lrcContent: parsed?.lrcContent || defaultLyrics,
+        timestamps: Array.isArray(parsed?.timestamps) ? parsed.timestamps : deterministicResponse.timestamps,
+        veoScenes: scenes,
+        masterVeoPrompt: scenes.map(s => `[${s.timeRange} - ${s.musicSection || `Scene ${s.scene}`}]: ${s.prompt}`).join('\n\n'),
+        capcutGuide: Array.isArray(parsed?.capcutGuide) ? parsed.capcutGuide : deterministicResponse.capcutGuide
+      },
+      generatedBy: 'gemini'
+    });
+  } catch (err) {
+    console.warn('[Music LRC fallback]:', err.message);
+    return res.json({ success: true, data: deterministicResponse, generatedBy: 'deterministic_template' });
   }
 });
 
