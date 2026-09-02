@@ -9,6 +9,10 @@ function validateInput(req, res, next) {
       if (typeof req.body[key] === 'string') {
         req.body[key] = req.body[key].trim();
         
+        // Skip length check for binary image fields
+        if (key === 'receiptBase64' || key === 'imageBase64' || key === 'photoBase64') {
+          continue;
+        }
         // Prevent extremely long string payloads (e.g., > 50,000 chars)
         if (req.body[key].length > 50000) {
           return res.status(400).json({ error: `Field '${key}' exceeds maximum allowed length.` });

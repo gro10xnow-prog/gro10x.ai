@@ -977,9 +977,27 @@ window.APP_MODULES.finance = async function(container) {
 
       let receiptBase64 = '';
       if (receiptFile) {
+        // Compress image client-side before encoding — keeps base64 well under server limits
         receiptBase64 = await new Promise((resolve) => {
           const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result);
+          reader.onloadend = () => {
+            const img = new Image();
+            img.onload = () => {
+              const MAX = 1000;
+              let { width, height } = img;
+              if (width > MAX || height > MAX) {
+                const ratio = Math.min(MAX / width, MAX / height);
+                width = Math.round(width * ratio);
+                height = Math.round(height * ratio);
+              }
+              const canvas = document.createElement('canvas');
+              canvas.width = width;
+              canvas.height = height;
+              canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+              resolve(canvas.toDataURL('image/jpeg', 0.7));
+            };
+            img.src = reader.result;
+          };
           reader.readAsDataURL(receiptFile);
         });
       }
