@@ -393,7 +393,10 @@ function saveState(state) {
   try {
     const dir = path.dirname(DATA_FILE);
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    fs.writeFileSync(DATA_FILE, JSON.stringify(state || loadState(), null, 2), 'utf8');
+    const payload = JSON.stringify(state || loadState(), null, 2);
+    const tempFile = `${DATA_FILE}.${Date.now()}.${Math.random().toString(36).slice(2, 8)}.tmp`;
+    fs.writeFileSync(tempFile, payload, 'utf8');
+    fs.renameSync(tempFile, DATA_FILE);
   } catch (e) {
     console.error('[SocialBrands] Save state error:', e.message);
   }
@@ -1602,20 +1605,20 @@ router.post('/:brandSlug/channels/:channelId/calendars/:monthKey/lock', requireA
 
   calendar.status = 'Locked';
   calendar.lockedAt = new Date().toISOString();
-  calendar.lockedBy = req.user?.name || 'Firoz (Super Admin)';
+  calendar.lockedBy = req.user?.profile?.name || req.user?.name || 'Content Admin';
 
   try {
     const postsToInsert = (calendar.planItems || []).map(item => ({
       title: item.topicIdea || item.title,
       caption: item.hook ? (item.hook + '\n\n' + (brand.standardCta || '') + '\n\n' + (brand.standardHashtags || '')) : '',
-      channel: brand.name,
+      channel: channel.name,
       platform: channel.platform,
       contentType: item.contentType || channel.defaultContentType || 'Short-form Video',
       targetDuration: item.targetDuration || '60s',
       scheduledDate: item.scheduledDate,
       scheduledTime: item.suggestedTime || '18:00',
       status: 'Draft',
-      assignedPublisher: 'Firoz',
+      assignedPublisher: req.user?.profile?.name || req.user?.name || 'Content Team',
       mediaUrls: []
     }));
 

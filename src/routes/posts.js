@@ -9,7 +9,19 @@ const { randomUUID } = require('crypto');
 
 const mediaUpload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 50 * 1024 * 1024 }
+  limits: { fileSize: 50 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const ALLOWED = [
+      'image/jpeg', 'image/png', 'image/webp', 'image/gif',
+      'video/mp4', 'video/quicktime', 'video/webm',
+      'application/pdf', 'audio/mpeg', 'audio/wav', 'audio/mp4'
+    ];
+    if (ALLOWED.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error(`File type '${file.mimetype}' is not permitted for upload`));
+    }
+  }
 });
 
 function mapPost(p) {
@@ -33,7 +45,7 @@ function mapPost(p) {
     mediaUrls: p.media_urls || [],
     scheduledDate: p.scheduled_date || '',
     scheduledTime: p.scheduled_time || '18:00',
-    assignedPublisher: p.assigned_publisher || 'Firoz',
+    assignedPublisher: p.assigned_publisher || p.assignedPublisher || 'Content Team',
     status: p.status || 'Draft',
     clientFeedback: p.client_feedback || null,
     approvedBy: p.approved_by || null,
@@ -74,8 +86,8 @@ async function requirePostOwnership(req, res, next) {
         const memPost = inMemoryPosts.find(p => p.id === req.params.id);
         if (!memPost) return res.status(404).json({ error: 'Post not found' });
         const matchId = memPost.client_id && userLinkedId && String(memPost.client_id).toLowerCase() === String(userLinkedId).toLowerCase();
-        const matchName = memPost.client_name && userName && (memPost.client_name.toLowerCase().includes(userName) || userName.includes(memPost.client_name.toLowerCase()));
-        if (matchId || matchName || !memPost.client_id) return next();
+        const matchName = memPost.client_name && userName && memPost.client_name.toLowerCase() === userName;
+        if (matchId || matchName) return next();
         return res.status(403).json({ error: 'Forbidden: You do not have access to this social post' });
       }
 
@@ -83,9 +95,9 @@ async function requirePostOwnership(req, res, next) {
       const pClientName = (post.client_name || '').toLowerCase();
 
       const matchId = pClientId && userLinkedId && String(pClientId).toLowerCase() === String(userLinkedId).toLowerCase();
-      const matchName = pClientName && userName && (pClientName.includes(userName) || userName.includes(pClientName));
+      const matchName = pClientName && userName && pClientName === userName;
 
-      if (matchId || matchName || !pClientId) {
+      if (matchId || matchName) {
         return next();
       }
       return res.status(403).json({ error: 'Forbidden: You do not have access to this social post' });
@@ -93,6 +105,38 @@ async function requirePostOwnership(req, res, next) {
   }
 
   next();
+}
+
+async function requirePostApprovalAccess(req, res, next) {
+  const user = req.user;
+  if (!user) return res.status(401).json({ error: 'Unauthorized: Authentication required' });
+
+  const access = (user.profile?.accessLevel || user.accessLevel || '').toLowerCase();
+  const role = (user.profile?.role || user.role || '').toLowerCase();
+  const isAdminOrManager =
+    access.includes('admin') || access.includes('owner') || access.includes('director') || access.includes('manager') ||
+    role.includes('admin') || role.includes('owner') || role.includes('director') || role.includes('manager');
+
+  if (isAdminOrManager) {
+    return next();
+  }
+
+  const linkedType = user.linkedType || user.profile?.linkedType || '';
+  const userLinkedId = user.linkedId || user.profile?.linkedId || user.id;
+
+  if (linkedType === 'client' && userLinkedId) {
+    let post = inMemoryPosts.find(p => p.id === req.params.id);
+    if (supabase) {
+      const { data } = await supabase.from('social_posts').select('client_id').eq('id', req.params.id).maybeSingle();
+      if (data) post = data;
+    }
+    if (post && String(post.client_id || '').toLowerCase() === String(userLinkedId).toLowerCase()) {
+      return next();
+    }
+    return res.status(403).json({ error: 'Forbidden: You can only approve or review posts assigned to your client account' });
+  }
+
+  return res.status(403).json({ error: 'Forbidden: Manager or Client privileges required to approve/reject posts' });
 }
 
 const DEFAULT_POSTS = [];
@@ -109,7 +153,7 @@ router.get('/', requireAuth, async (req, res) => {
   function getFilteredPosts() {
     let list = inMemoryPosts;
     if (isClientUser) {
-      list = list.filter(p => (p.client_id && p.client_id === clientId) || ((p.client_name || p.clientName || '').toLowerCase().includes(clientName)));
+      list = list.filter(p => (p.client_id && p.client_id === clientId) || ((p.client_name || p.clientName || '').toLowerCase() === clientName));
     }
     return list.map(mapPost);
   }
@@ -120,8 +164,12 @@ router.get('/', requireAuth, async (req, res) => {
       try {
         let query = supabase.from('social_posts').select('*').order('created_at', { ascending: false });
 
-        if (isClientUser && clientName) {
-          query = query.or(`client_id.eq.${clientId},client_name.ilike.%${clientName}%`);
+        if (isClientUser) {
+          if (clientId) {
+            query = query.eq('client_id', clientId);
+          } else if (clientName) {
+            query = query.ilike('client_name', clientName);
+          }
         }
 
         const { data, error } = await query;
@@ -169,17 +217,17 @@ router.get('/client/:clientName', requireAuth, async (req, res) => {
           posts = data.map(mapPost);
         }
       } catch (e) {}
-    }
-
     if (posts.length === 0) {
-      posts = inMemoryPosts.filter(p => (p.client_name || '').toLowerCase().includes(decoded.toLowerCase())).map(mapPost);
-      if (posts.length === 0) posts = inMemoryPosts.map(mapPost);
+      posts = inMemoryPosts.filter(p => 
+        (p.client_name && p.client_name.toLowerCase() === decoded.toLowerCase()) ||
+        (p.client_id && String(p.client_id).toLowerCase() === decoded.toLowerCase())
+      ).map(mapPost);
     }
 
     res.json(posts);
   } catch (err) {
     console.error('Client Posts GET error:', err.message);
-    res.json(inMemoryPosts.map(mapPost));
+    res.json([]);
   }
 });
 
@@ -270,7 +318,7 @@ router.post('/batch', requireAuth, async (req, res) => {
         media_urls: p.mediaUrls || (p.mediaUrl ? [p.mediaUrl] : []),
         scheduled_date: p.scheduledDate || p.scheduled_date || new Date().toISOString().split('T')[0],
         scheduled_time: p.scheduledTime || p.scheduled_time || '18:00',
-        assigned_publisher: p.assignedPublisher || req.user?.name || 'Firoz',
+        assigned_publisher: p.assignedPublisher || req.user?.profile?.name || req.user?.name || 'Content Team',
         status: p.status || 'Draft',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
@@ -323,7 +371,7 @@ router.post('/', requireAuth, async (req, res) => {
       media_urls: req.body.mediaUrls || (req.body.mediaUrl ? [req.body.mediaUrl] : []),
       scheduled_date: req.body.scheduledDate || req.body.scheduled_date || new Date().toISOString().split('T')[0],
       scheduled_time: req.body.scheduledTime || req.body.scheduled_time || '18:00',
-      assigned_publisher: req.body.assignedPublisher || req.body.assigned_publisher || req.user?.name || 'Firoz',
+      assigned_publisher: req.body.assignedPublisher || req.body.assigned_publisher || req.user?.profile?.name || req.user?.name || 'Content Team',
       status: req.body.status || 'Draft',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
@@ -431,8 +479,8 @@ const handleApprovePost = async (req, res) => {
   }
 };
 
-router.post('/:id/approve', requireAuth, requirePostOwnership, handleApprovePost);
-router.patch('/:id/approve', requireAuth, requirePostOwnership, handleApprovePost);
+router.post('/:id/approve', requireAuth, requirePostApprovalAccess, handleApprovePost);
+router.patch('/:id/approve', requireAuth, requirePostApprovalAccess, handleApprovePost);
 
 // POST/PATCH Reject Post (Client Feedback)
 const handleRejectPost = async (req, res) => {
@@ -462,8 +510,8 @@ const handleRejectPost = async (req, res) => {
   }
 };
 
-router.post('/:id/reject', requireAuth, requirePostOwnership, handleRejectPost);
-router.patch('/:id/reject', requireAuth, requirePostOwnership, handleRejectPost);
+router.post('/:id/reject', requireAuth, requirePostApprovalAccess, handleRejectPost);
+router.patch('/:id/reject', requireAuth, requirePostApprovalAccess, handleRejectPost);
 
 // POST/PATCH Mark Post as Posted (Engine 5 Loop)
 const handlePosted = async (req, res) => {

@@ -2035,7 +2035,7 @@ function renderBrandAssetsKitHTML(brand) {
           <!-- Scheduling & Publisher Meta -->
           <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.72rem; color:var(--text-dim); border-top:1px solid rgba(255,255,255,0.04); padding-top:0.4rem;">
             <span>📅 ${escapeHTML(p.scheduledDate || 'TBD')} ${p.scheduledTime ? `· ⏰ ${escapeHTML(p.scheduledTime)}` : ''}</span>
-            <span>👤 ${escapeHTML(p.assignedPublisher || 'Firoz')}</span>
+            <span>👤 ${escapeHTML(p.assignedPublisher || 'Unassigned')}</span>
           </div>
 
           ${isRevision ? `
@@ -2101,7 +2101,7 @@ function renderBrandAssetsKitHTML(brand) {
       if (Array.isArray(updatedPosts)) {
         postsData = updatedPosts;
         renderKPIs();
-        if (activeViewMode === 'planner_ai') renderPlannerAI();
+        if (activeViewMode === 'content_os' || activeViewMode === 'planner_ai') renderContentOS();
         else if (activeViewMode === 'calendar') renderCalendar();
         else renderBoard();
       }
@@ -2332,7 +2332,8 @@ function renderBrandAssetsKitHTML(brand) {
       }
     },
     async resetChannelOnboarding(brandSlug, channelId) {
-      if (!confirm('Start fresh? This will clear the current channel analytics baseline for onboarding.')) return;
+      const confirmed = window.confirm('⚠️ Reset Channel Baseline?\n\nThis will clear the current channel analytics knowledge base so you can upload a new CSV report or re-enter baseline metrics.\n\nDo you want to proceed?');
+      if (!confirmed) return;
       try {
         const res = await APP_API.post(`/social-brands/${brandSlug}/channels/${channelId}/reset-onboarding`);
         if (res && res.success) {
@@ -3482,7 +3483,7 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
           scheduledTime,
           clientId,
           clientName,
-          assignedPublisher: 'Firoz',
+          assignedPublisher: window.CURRENT_USER?.name || window.APP_STATE?.user?.name || 'Content Team',
           mediaUrls: mediaUrl ? [mediaUrl] : []
         };
 

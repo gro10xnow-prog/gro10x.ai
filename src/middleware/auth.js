@@ -128,8 +128,13 @@ async function requireAuth(req, res, next) {
     }
   }
 
-  // 4. Development / Test Fallback ONLY when explicitly in development or test mode (never active on Vercel preview/production)
+  // 4. Development / Test Fallback ONLY on localhost or test runner (never active on external traffic or Vercel preview/production)
   if ((process.env.NODE_ENV === 'test' || (process.env.NODE_ENV === 'development' && !process.env.VERCEL && !process.env.FORCE_SUPABASE)) && req.headers['x-disable-dev-auth'] !== 'true') {
+    const isLocalhost = req.hostname === 'localhost' || req.hostname === '127.0.0.1' || req.ip === '127.0.0.1' || req.ip === '::1' || req.ip === '::ffff:127.0.0.1';
+    if (!isLocalhost && process.env.NODE_ENV !== 'test') {
+      return res.status(401).json({ error: 'Unauthorized: Remote requests in development require valid authentication' });
+    }
+
     const db = await readDB();
     const defaultEmp = (db.team && db.team[0]) || { name: 'Firoz Uddin Ahmed', role: 'Agency Founder & Master Owner' };
 

@@ -11,15 +11,15 @@ const { requireAuth } = require('../middleware/auth');
 const { requireManager } = require('../middleware/rbac');
 const { getFirstName } = require('../utils/name');
 
-const PORTAL = 'https://gro10x-ai.vercel.app/crew';
-const BOT_LINK = 'https://t.me/Aigeneral01bot';
+const PORTAL = process.env.CREW_PORTAL_URL || 'https://gro10x-ai.vercel.app/crew';
+const BOT_LINK = process.env.TELEGRAM_BOT_LINK || 'https://t.me/Aigeneral01bot';
 
 const STEPS = {
-  no_pin:           '1. Open our Telegram Team Bot (https://t.me/Aigeneral01bot)\n2. Tap /start and press "📱 Verify My Phone Number"\n3. The bot will verify your account and provide your login PIN and Crew Portal access.',
-  temp_pin:         'Log in to https://gro10x-ai.vercel.app/crew with your temporary PIN and set your permanent 6-digit PIN in Profile Settings.',
-  pin_no_tg:        'Launch our Telegram Team Bot (https://t.me/Aigeneral01bot), tap /start, and link your account for daily operations and attendance.',
+  no_pin:           '1. Open our Telegram Team Bot (' + BOT_LINK + ')\n2. Tap /start and press "📱 Verify My Phone Number"\n3. The bot will verify your account and provide your login PIN and Crew Portal access.',
+  temp_pin:         'Log in to ' + PORTAL + ' with your temporary PIN and set your permanent 6-digit PIN in Profile Settings.',
+  pin_no_tg:        'Launch our Telegram Team Bot (' + BOT_LINK + '), tap /start, and link your account for daily operations and attendance.',
   pin_tg_no_survey: 'Open the Telegram Mini App via @Aigeneral01bot, complete your profile survey, and sign your Stage 1 Employment Agreement to activate your DBM workspace.',
-  fully_onboarded:  'Clock in daily via Telegram Bot, access your DBM Brand Studio at https://gro10x-ai.vercel.app/app#brands, and submit your EOD reports.'
+  fully_onboarded:  'Clock in daily via Telegram Bot, access your DBM Brand Studio at ' + PORTAL + '/app#brands, and submit your EOD reports.'
 };
 
 // Rich, complete message for every stage — always reliable
@@ -39,8 +39,10 @@ function build(name, role, dept, stage) {
   return intro + '\n\n📌 Quick Onboarding Steps:\n' + step + '\n\n• Web Crew Portal: ' + PORTAL + '\n• Telegram Bot: ' + BOT_LINK + '\n\nIf you have any questions or need assistance, reply directly to this message.\n\nLooking forward to building great brands together!\n\n-- Firoz Uddin Ahmed · Founder & Tech Lead\nGRO10X';
 }
 
-// Gemini with strict response validation
-const MODELS = ['gemini-3.6-flash', 'gemini-3.1-pro-preview', 'gemini-2.5-flash'];
+// Gemini with strict response validation — Validated model chain
+const MODELS = process.env.GEMINI_MODELS
+  ? process.env.GEMINI_MODELS.split(',').map(m => m.trim()).filter(Boolean)
+  : ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
 
 function callSingle(model, prompt, key, options = {}) {
   const maxTokens = options.maxTokens || 3500;
@@ -1912,6 +1914,13 @@ Return JSON ONLY with keys:
 });
 
 router.get('/status', requireAuth, (req, res) => res.json({ success: true, configured: !!process.env.GEMINI_API_KEY, models: MODELS }));
+router.get('/health', requireAuth, (req, res) => res.json({
+  success: true,
+  status: 'ok',
+  configured: !!process.env.GEMINI_API_KEY,
+  primaryModel: MODELS[0] || null,
+  models: MODELS
+}));
 
 router.callGeminiPrompt = async function(prompt, options = {}) {
   const key = process.env.GEMINI_API_KEY;
