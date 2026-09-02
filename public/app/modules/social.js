@@ -2847,6 +2847,29 @@ function renderBrandAssetsKitHTML(brand) {
         window._socialSseUnsub();
         window._socialSseUnsub = null;
       }
+      activeGeneratedBrief = null;
+    },
+    resetBoardFilters() {
+      activePlatformFilter = 'all';
+      sessionStorage.setItem('social_platformFilter', 'all');
+      activeChannelFilter = 'all';
+      sessionStorage.setItem('social_channelFilter', 'all');
+      activeBoardSearch = '';
+      sessionStorage.removeItem('social_boardSearch');
+      activeGeneratedBrief = null;
+
+      const searchInput = document.getElementById('kanbanSearchInput');
+      if (searchInput) searchInput.value = '';
+
+      ['all', 'Facebook', 'Instagram', 'LinkedIn', 'TikTok', 'Twitter', 'YouTube'].forEach(plat => {
+        const pill = document.getElementById(`sp-pill-${plat}`);
+        if (pill) pill.classList.toggle('active', plat === 'all');
+      });
+
+      ['all', 'grow-bangla', 'pilutics', 'bong-hits', 'gro10x', 'client'].forEach(chan => {
+        const pill = document.getElementById(`sp-chan-${chan}`);
+        if (pill) pill.classList.toggle('active', chan === 'all');
+      });
     },
     switchView(mode) {
       activeViewMode = mode;
@@ -2874,6 +2897,10 @@ function renderBrandAssetsKitHTML(brand) {
       localStorage.setItem('social_activeBrandSlug', brandSlug); // Persist across navigation
       activeBrandSubTab = 'overview';
       activeChannelId = null;
+
+      // Phase DB 3: Reset context-specific board and platform filters to prevent cross-brand state leaks
+      this.resetBoardFilters();
+
       const brand = (socialBrandsData || []).find(b => b.slug === brandSlug || b.id === brandSlug);
       const mIdx = new Date(selectedPlanMonth + ' 1, ' + selectedPlanYear).getMonth();
       const mKey = `${selectedPlanYear}-${String(mIdx + 1).padStart(2, '0')}`;
@@ -2894,6 +2921,7 @@ function renderBrandAssetsKitHTML(brand) {
     openChannelWorkspace(channelId) {
       activeBrandSubTab = 'channel';
       activeChannelId = channelId;
+      activeGeneratedBrief = null;
       localStorage.setItem('social_activeBrandSubTab', 'channel');
       localStorage.setItem('social_activeChannelId', channelId);
       const brand = (socialBrandsData || []).find(b => b.slug === activeBrandSlug || b.id === activeBrandSlug);
