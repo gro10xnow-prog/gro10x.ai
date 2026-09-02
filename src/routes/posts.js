@@ -48,6 +48,7 @@ function mapPost(p) {
     assignedPublisher: p.assigned_publisher || p.assignedPublisher || 'Content Team',
     status: p.status || 'Draft',
     clientFeedback: p.client_feedback || null,
+    revisionHistory: p.revision_history || p.revisionHistory || [],
     approvedBy: p.approved_by || null,
     approvedAt: p.approved_at || null,
     postedAt: p.posted_at || null,
@@ -496,9 +497,24 @@ const handleApprovePost = async (req, res) => {
     try { broadcast('post_update', inMemoryPosts.map(mapPost)); } catch (e) {}
 
     // Fire Automation Engine event non-blockingly
+    // Fire Automation Engine event non-blockingly
     try {
       const { processAutomationEvent } = require('../services/automation');
       processAutomationEvent('social_post_approved', { post }, { clients: [], team: [], tasks: [] }, () => {}, broadcast).catch(() => {});
+    } catch(e) {}
+
+    // Phase 5.2: Telegram Notification on Approval
+    try {
+      const { sendTelegramNotification } = require('../services/bot');
+      const adminTgId = process.env.TELEGRAM_ADMIN_CHAT_ID;
+      if (adminTgId && typeof sendTelegramNotification === 'function') {
+        const msg = `🎉 <b>Social Post Approved!</b>\n\n` +
+          `• <b>Title:</b> ${post.title}\n` +
+          `• <b>Channel:</b> ${post.channel} (${post.platform})\n` +
+          `• <b>Approved by:</b> ${updates.approved_by}\n` +
+          `• <b>Scheduled:</b> ${post.scheduledDate} ${post.scheduledTime}`;
+        sendTelegramNotification(adminTgId, msg, null, true).catch(() => {});
+      }
     } catch(e) {}
 
     return res.json({ success: true, post });
@@ -511,13 +527,32 @@ const handleApprovePost = async (req, res) => {
 router.post('/:id/approve', requireAuth, requirePostApprovalAccess, handleApprovePost);
 router.patch('/:id/approve', requireAuth, requirePostApprovalAccess, handleApprovePost);
 
-// POST/PATCH Reject Post (Client Feedback)
+// POST/PATCH Reject Post (Client Feedback & Revision Log)
 const handleRejectPost = async (req, res) => {
   try {
     const { id } = req.params;
+    const existingPost = inMemoryPosts.find(p => p.id === id) || {};
+    const currentHistory = Array.isArray(existingPost.revision_history || existingPost.revisionHistory)
+      ? [...(existingPost.revision_history || existingPost.revisionHistory)]
+      : [];
+
+    const feedbackText = req.body.feedback || 'Revision requested';
+    const feedbackTags = Array.isArray(req.body.tags) ? req.body.tags : [];
+
+    const newRevision = {
+      id: randomUUID(),
+      timestamp: new Date().toISOString(),
+      by: req.user.name || req.user.profile?.name || 'Reviewer',
+      role: req.user.role || req.user.profile?.role || 'Client Partner',
+      feedback: feedbackText,
+      tags: feedbackTags
+    };
+    currentHistory.unshift(newRevision);
+
     const updates = {
       status: 'Revision Requested',
-      client_feedback: req.body.feedback || 'Revision requested',
+      client_feedback: feedbackText,
+      revision_history: currentHistory,
       updated_at: new Date().toISOString()
     };
 
@@ -532,6 +567,22 @@ const handleRejectPost = async (req, res) => {
     }
 
     try { broadcast('post_update', inMemoryPosts.map(mapPost)); } catch (e) {}
+
+    // Phase 5.2: Telegram Notification on Revision Request
+    try {
+      const { sendTelegramNotification } = require('../services/bot');
+      const adminTgId = process.env.TELEGRAM_ADMIN_CHAT_ID;
+      if (adminTgId && typeof sendTelegramNotification === 'function') {
+        const msg = `🔴 <b>Revisions Requested on Social Post!</b>\n\n` +
+          `• <b>Title:</b> ${post.title}\n` +
+          `• <b>Channel:</b> ${post.channel} (${post.platform})\n` +
+          `• <b>Requested by:</b> ${newRevision.by} (${newRevision.role})\n` +
+          (feedbackTags.length > 0 ? `• <b>Tags:</b> ${feedbackTags.join(', ')}\n` : '') +
+          `• <b>Feedback:</b> ${feedbackText}`;
+        sendTelegramNotification(adminTgId, msg, null, true).catch(() => {});
+      }
+    } catch(e) {}
+
     return res.json({ success: true, post });
   } catch (err) {
     console.error('Social Post Reject error:', err.message);
@@ -599,6 +650,23 @@ router.patch('/:id/status', requireAuth, requirePostOwnership, async (req, res) 
     }
 
     try { broadcast('post_update', inMemoryPosts.map(mapPost)); } catch (e) {}
+
+    // Phase 5.2: Telegram Notification when entering Client Review
+    if (status === 'Client Review') {
+      try {
+        const { sendTelegramNotification } = require('../services/bot');
+        const adminTgId = process.env.TELEGRAM_ADMIN_CHAT_ID;
+        if (adminTgId && typeof sendTelegramNotification === 'function') {
+          const msg = `📱 <b>New Social Post Ready for Client Review!</b>\n\n` +
+            `• <b>Title:</b> ${post.title}\n` +
+            `• <b>Channel:</b> ${post.channel} (${post.platform})\n` +
+            `• <b>Client:</b> ${post.clientName}\n` +
+            `• <b>Scheduled:</b> ${post.scheduledDate} ${post.scheduledTime}`;
+          sendTelegramNotification(adminTgId, msg, null, true).catch(() => {});
+        }
+      } catch(e) {}
+    }
+
     return res.json({ success: true, post });
   } catch (err) {
     console.error('Social Post status update error:', err.message);

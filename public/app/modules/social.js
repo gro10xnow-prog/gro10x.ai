@@ -51,6 +51,18 @@ window.APP_MODULES.social = async function(container) {
   let isUploadingAnalytics = false;
   let currentPostMediaUrls = []; // Multi-media attachments for current modal
 
+  // Phase 5.1: Client Role Detection Helper
+  function getCurrentUser() {
+    return window.CURRENT_USER || JSON.parse(localStorage.getItem('gro10x_user') || '{}');
+  }
+
+  function isClientRole() {
+    const u = getCurrentUser();
+    const role = (u.role || u.accessLevel || '').toLowerCase();
+    const linkedType = (u.linkedType || '').toLowerCase();
+    return role.includes('client') || linkedType === 'client';
+  }
+
   // Topic Intelligence & Multi-modal State
   let activeTopicInputMode = 'type';
   let speechRecognitionInstance = null;
@@ -364,6 +376,9 @@ window.APP_MODULES.social = async function(container) {
             <button onclick="window.SOCIAL_MODULE.closePostModal()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
           </div>
 
+          <!-- Phase 5.3: Post Revision History Log Display -->
+          <div id="spRevisionHistorySection" style="display:none; margin-bottom:0.75rem;"></div>
+
           <form onsubmit="window.SOCIAL_MODULE.handleFormSubmit(event)" style="display:flex; flex-direction:column; gap:1rem;">
             <input type="hidden" id="spEditId" value="">
 
@@ -655,9 +670,19 @@ window.APP_MODULES.social = async function(container) {
               </div>
             </div>
 
-            <div style="display:flex; gap:0.75rem; justify-content:flex-end; margin-top:0.8rem; border-top:1px solid var(--border-subtle); padding-top:0.9rem;">
-              <button type="button" class="btn-secondary" onclick="window.SOCIAL_MODULE.closePostModal()">Cancel</button>
-              <button type="submit" class="btn-primary" id="spSubmitBtn">🚀 Save & Submit Draft</button>
+            <div style="display:flex; gap:0.75rem; justify-content:space-between; align-items:center; margin-top:0.8rem; border-top:1px solid var(--border-subtle); padding-top:0.9rem; flex-wrap:wrap;">
+              <div id="spClientActionBtns" style="display:none; gap:0.6rem; align-items:center;">
+                <button type="button" class="btn-emerald btn-sm" id="spModalApproveBtn" style="font-weight:800; font-size:0.85rem; padding:0.45rem 1rem;">
+                  ✅ Approve Post
+                </button>
+                <button type="button" class="btn-secondary btn-danger btn-sm" id="spModalRejectBtn" style="font-weight:800; font-size:0.85rem; padding:0.45rem 1rem;">
+                  🔴 Request Revision
+                </button>
+              </div>
+              <div style="display:flex; gap:0.75rem; align-items:center; margin-left:auto;">
+                <button type="button" class="btn-secondary" onclick="window.SOCIAL_MODULE.closePostModal()">Cancel</button>
+                <button type="submit" class="btn-primary" id="spSubmitBtn">🚀 Save & Submit Draft</button>
+              </div>
             </div>
           </form>
         </div>
@@ -869,6 +894,47 @@ window.APP_MODULES.social = async function(container) {
     const client = filteredPosts.filter(p => p.status === 'Pending Client Approval' || p.status === 'Client Review' || p.status === 'Revision Requested');
     const approved = filteredPosts.filter(p => p.status === 'Approved' || p.status === 'Scheduled' || p.status === 'Due Today');
     const posted = filteredPosts.filter(p => p.status === 'Posted' || p.status === 'Published');
+
+    // Phase 5.1: Client Portal Dedicated Board Layout
+    if (isClientRole()) {
+      board.innerHTML = `
+        <div class="social-board" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:1rem; overflow-x:auto; padding-bottom:1rem;">
+          <!-- Col 1: Awaiting Client Review -->
+          <div class="social-col" style="background:var(--surface-card, #14141e); border:1px solid rgba(245,158,11,0.3); border-radius:14px; padding:1rem; display:flex; flex-direction:column; min-height:550px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; font-weight:800; font-size:0.85rem; color:var(--amber-brand); margin-bottom:0.9rem; padding-bottom:0.5rem; border-bottom:1px solid rgba(245,158,11,0.2);">
+              <span>💬 Awaiting Your Review & Feedback</span>
+              <span class="badge badge-amber">${client.length}</span>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:0.85rem; flex:1;">
+              ${renderColumnCards(client, 'client')}
+            </div>
+          </div>
+
+          <!-- Col 2: Approved Posts -->
+          <div class="social-col" style="background:var(--surface-card, #14141e); border:1px solid rgba(16,185,129,0.3); border-radius:14px; padding:1rem; display:flex; flex-direction:column; min-height:550px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; font-weight:800; font-size:0.85rem; color:#10b981; margin-bottom:0.9rem; padding-bottom:0.5rem; border-bottom:1px solid rgba(16,185,129,0.2);">
+              <span>✨ Approved by You (Ready to Publish)</span>
+              <span class="badge badge-emerald">${approved.length}</span>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:0.85rem; flex:1;">
+              ${renderColumnCards(approved, 'approved')}
+            </div>
+          </div>
+
+          <!-- Col 3: Published & Live -->
+          <div class="social-col" style="background:var(--surface-card, #14141e); border:1px solid rgba(59,130,246,0.3); border-radius:14px; padding:1rem; display:flex; flex-direction:column; min-height:550px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; font-weight:800; font-size:0.85rem; color:#60a5fa; margin-bottom:0.9rem; padding-bottom:0.5rem; border-bottom:1px solid rgba(59,130,246,0.2);">
+              <span>🚀 Published & Live</span>
+              <span class="badge badge-blue">${posted.length}</span>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:0.85rem; flex:1;">
+              ${renderColumnCards(posted, 'posted')}
+            </div>
+          </div>
+        </div>
+      `;
+      return;
+    }
 
     board.innerHTML = `
       <div class="social-board" style="display:grid; grid-template-columns:repeat(5, minmax(280px, 1fr)); gap:1rem; overflow-x:auto; padding-bottom:1rem;">
@@ -1152,7 +1218,7 @@ window.APP_MODULES.social = async function(container) {
                 ${escapeHTML(b.name)}
               </button>
             `).join('')}
-            <button type="button" class="btn-ghost btn-sm" style="font-size:0.75rem; color:var(--purple-light);" onclick="window.SOCIAL_MODULE.promptAddBrand()">+ New Brand</button>
+            ${!isClientRole() ? `<button type="button" class="btn-ghost btn-sm" style="font-size:0.75rem; color:var(--purple-light);" onclick="window.SOCIAL_MODULE.promptAddBrand()">+ New Brand</button>` : ''}
           </div>
         </div>
 
@@ -2282,6 +2348,28 @@ function renderBrandAssetsKitHTML(brand) {
 
   function renderCardButtons(p, stageKey) {
     let btns = '';
+    const isClient = isClientRole();
+
+    if (isClient) {
+      if (stageKey === 'client') {
+        btns += `
+          <button class="btn-emerald btn-sm" style="font-size:0.72rem; flex:1; font-weight:800;" onclick="window.SOCIAL_MODULE.approvePost('${p.id}')">✅ Approve</button>
+          <button class="btn-secondary btn-sm" style="font-size:0.72rem; color:#fca5a5;" onclick="window.SOCIAL_MODULE.promptRejectPost('${p.id}')">🔴 Revisions</button>
+          <button class="btn-secondary btn-sm" style="padding:0.2rem 0.45rem; font-size:0.75rem;" title="View Details" onclick="window.SOCIAL_MODULE.openEditModal('${p.id}')">👁️ View</button>
+        `;
+      } else if (stageKey === 'approved') {
+        btns += `
+          <span class="badge badge-emerald" style="font-size:0.72rem; flex:1; text-align:center; padding:0.3rem;">✅ Approved by You</span>
+          <button class="btn-secondary btn-sm" style="padding:0.2rem 0.45rem; font-size:0.75rem;" title="View Details" onclick="window.SOCIAL_MODULE.openEditModal('${p.id}')">👁️ View</button>
+        `;
+      } else if (stageKey === 'posted') {
+        btns += `
+          <span class="badge badge-blue" style="font-size:0.72rem; flex:1; text-align:center; padding:0.3rem;">🚀 Published & Live</span>
+          <button class="btn-secondary btn-sm" style="padding:0.2rem 0.45rem; font-size:0.75rem;" title="View Details" onclick="window.SOCIAL_MODULE.openEditModal('${p.id}')">👁️ View</button>
+        `;
+      }
+      return btns;
+    }
 
     if (stageKey === 'draft') {
       btns += `<button class="btn-primary btn-sm" style="font-size:0.72rem; flex:1;" onclick="window.SOCIAL_MODULE.updatePostStatus('${p.id}', 'Internal QC')">▶ To Internal QC</button>`;
@@ -3758,6 +3846,17 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
       document.getElementById('spClientName').value = '';
       this.updateCharCount({ value: '' }, 'YouTube');
 
+      const revSec = document.getElementById('spRevisionHistorySection');
+      if (revSec) { revSec.style.display = 'none'; revSec.innerHTML = ''; }
+      const clientBtns = document.getElementById('spClientActionBtns');
+      const submitBtn = document.getElementById('spSubmitBtn');
+      if (clientBtns) clientBtns.style.display = 'none';
+      if (submitBtn) submitBtn.style.display = 'block';
+      ['spTitle', 'spCaption', 'spFirstComment', 'spHashtags'].forEach(fId => {
+        const el = document.getElementById(fId);
+        if (el) el.removeAttribute('readonly');
+      });
+
       document.getElementById('postModal').classList.add('active');
     },
     async openEditModal(id) {
@@ -3778,7 +3877,6 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
       if (!post) return;
 
       document.getElementById('spEditId').value = post.id;
-      document.getElementById('postModalTitle').textContent = '✏️ Edit Social Post Draft';
       document.getElementById('spTitle').value = post.title || '';
       document.getElementById('spCaption').value = post.caption || '';
       document.getElementById('spFirstComment').value = post.firstComment || '';
@@ -3820,6 +3918,82 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
       document.getElementById('spClientName').value = post.clientName || '';
       
       this.updateCharCount({ value: post.caption || '' }, post.platform);
+
+      // Phase 5.3: Render Revision History Log if revisions exist
+      const revSec = document.getElementById('spRevisionHistorySection');
+      if (revSec) {
+        const revs = post.revisionHistory || [];
+        if (revs.length > 0) {
+          revSec.style.display = 'block';
+          revSec.innerHTML = `
+            <div style="background:rgba(239,68,68,0.06); border:1px solid rgba(239,68,68,0.25); border-radius:10px; padding:0.8rem; display:flex; flex-direction:column; gap:0.5rem;">
+              <div style="font-weight:800; font-size:0.82rem; color:#f87171; display:flex; justify-content:space-between; align-items:center;">
+                <span>📋 Revision History Log (${revs.length})</span>
+                <span style="font-size:0.7rem; color:var(--text-muted);">Chronological Log</span>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:0.45rem; max-height:140px; overflow-y:auto;">
+                ${revs.map(r => `
+                  <div style="background:rgba(0,0,0,0.3); border-radius:6px; padding:0.45rem 0.6rem; font-size:0.75rem; display:flex; flex-direction:column; gap:0.2rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; color:var(--text-dim); font-size:0.68rem;">
+                      <span><strong>${escapeHTML(r.by || 'Reviewer')}</strong> (${escapeHTML(r.role || 'Client')})</span>
+                      <span>${new Date(r.timestamp || Date.now()).toLocaleDateString()} ${new Date(r.timestamp || Date.now()).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                    </div>
+                    ${Array.isArray(r.tags) && r.tags.length > 0 ? `
+                      <div style="display:flex; gap:0.3rem; flex-wrap:wrap;">
+                        ${r.tags.map(t => `<span class="badge badge-amber" style="font-size:0.6rem; padding:0.1rem 0.35rem;">${escapeHTML(t)}</span>`).join('')}
+                      </div>
+                    ` : ''}
+                    <div style="color:#fff; line-height:1.35;">${escapeHTML(r.feedback || '')}</div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `;
+        } else {
+          revSec.style.display = 'none';
+          revSec.innerHTML = '';
+        }
+      }
+
+      // Phase 5.1: Client Role Adaptations
+      const isClient = isClientRole();
+      const clientBtns = document.getElementById('spClientActionBtns');
+      const submitBtn = document.getElementById('spSubmitBtn');
+
+      if (isClient) {
+        document.getElementById('postModalTitle').textContent = '👁️ Review Social Post';
+        if (clientBtns) {
+          clientBtns.style.display = 'flex';
+          const approveBtn = document.getElementById('spModalApproveBtn');
+          const rejectBtn = document.getElementById('spModalRejectBtn');
+          if (approveBtn) {
+            approveBtn.onclick = () => {
+              window.SOCIAL_MODULE.closePostModal(true);
+              window.SOCIAL_MODULE.approvePost(post.id);
+            };
+          }
+          if (rejectBtn) {
+            rejectBtn.onclick = () => {
+              window.SOCIAL_MODULE.closePostModal(true);
+              window.SOCIAL_MODULE.promptRejectPost(post.id);
+            };
+          }
+        }
+        if (submitBtn) submitBtn.style.display = 'none';
+        ['spTitle', 'spCaption', 'spFirstComment', 'spHashtags'].forEach(fId => {
+          const el = document.getElementById(fId);
+          if (el) el.setAttribute('readonly', 'true');
+        });
+      } else {
+        document.getElementById('postModalTitle').textContent = '✏️ Edit Social Post Draft';
+        if (clientBtns) clientBtns.style.display = 'none';
+        if (submitBtn) submitBtn.style.display = 'block';
+        ['spTitle', 'spCaption', 'spFirstComment', 'spHashtags'].forEach(fId => {
+          const el = document.getElementById(fId);
+          if (el) el.removeAttribute('readonly');
+        });
+      }
+
       document.getElementById('postModal').classList.add('active');
     },
     closePostModal(force = false) {
@@ -3943,40 +4117,58 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
       }
     },
     promptRejectPost(id) {
+      let selectedTags = [];
+      window._toggleRevTag = (btn, tag) => {
+        const idx = selectedTags.indexOf(tag);
+        if (idx === -1) {
+          selectedTags.push(tag);
+          btn.style.background = 'rgba(239,68,68,0.25)';
+          btn.style.borderColor = '#ef4444';
+          btn.style.color = '#fff';
+        } else {
+          selectedTags.splice(idx, 1);
+          btn.style.background = 'transparent';
+          btn.style.borderColor = 'var(--border-subtle)';
+          btn.style.color = 'var(--text-muted)';
+        }
+      };
+
       const html = `
         <div style="display:flex; flex-direction:column; gap:0.9rem;">
           <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-subtle); padding-bottom:0.6rem;">
-            <div style="font-weight:800; font-size:1.1rem; color:#f87171; font-family:var(--font-heading);">🔴 Request Revision</div>
+            <div style="font-weight:800; font-size:1.1rem; color:#f87171; font-family:var(--font-heading);">🔴 Structured Revision Feedback</div>
             <button type="button" class="btn-ghost btn-sm" onclick="window.SOCIAL_MODULE.closeSocialDialog()">✕</button>
           </div>
-          <div style="font-size:0.8rem; color:var(--text-muted);">Select common revision tags or type custom instructions:</div>
+          <div style="font-size:0.8rem; color:var(--text-muted);">Select key revision focus areas:</div>
           <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
-            <button type="button" class="btn-ghost btn-sm" style="font-size:0.7rem; border:1px solid var(--border-subtle);" onclick="const t = document.getElementById('dlgRevText'); t.value = (t.value ? t.value + ', ' : '') + 'Tone needs adjustment';">Tone adjustment</button>
-            <button type="button" class="btn-ghost btn-sm" style="font-size:0.7rem; border:1px solid var(--border-subtle);" onclick="const t = document.getElementById('dlgRevText'); t.value = (t.value ? t.value + ', ' : '') + 'Hook needs more punch';">Stronger hook</button>
-            <button type="button" class="btn-ghost btn-sm" style="font-size:0.7rem; border:1px solid var(--border-subtle);" onclick="const t = document.getElementById('dlgRevText'); t.value = (t.value ? t.value + ', ' : '') + 'Call-to-action missing';">Add clear CTA</button>
-            <button type="button" class="btn-ghost btn-sm" style="font-size:0.7rem; border:1px solid var(--border-subtle);" onclick="const t = document.getElementById('dlgRevText'); t.value = (t.value ? t.value + ', ' : '') + 'Fix Bengali spelling/grammar';">Spelling/Grammar</button>
+            <button type="button" class="btn-ghost btn-sm" style="font-size:0.7rem; border:1px solid var(--border-subtle);" onclick="window._toggleRevTag(this, 'Tone adjustment')">🎭 Tone adjustment</button>
+            <button type="button" class="btn-ghost btn-sm" style="font-size:0.7rem; border:1px solid var(--border-subtle);" onclick="window._toggleRevTag(this, 'Stronger hook')">⚡ Stronger hook</button>
+            <button type="button" class="btn-ghost btn-sm" style="font-size:0.7rem; border:1px solid var(--border-subtle);" onclick="window._toggleRevTag(this, 'Add clear CTA')">📣 Add clear CTA</button>
+            <button type="button" class="btn-ghost btn-sm" style="font-size:0.7rem; border:1px solid var(--border-subtle);" onclick="window._toggleRevTag(this, 'Fix Spelling/Grammar')">✍️ Spelling/Grammar</button>
+            <button type="button" class="btn-ghost btn-sm" style="font-size:0.7rem; border:1px solid var(--border-subtle);" onclick="window._toggleRevTag(this, 'Replace Media Asset')">🖼️ Replace Media Asset</button>
+            <button type="button" class="btn-ghost btn-sm" style="font-size:0.7rem; border:1px solid var(--border-subtle);" onclick="window._toggleRevTag(this, 'Caption/Hashtag tweak')">🏷️ Caption/Hashtags</button>
           </div>
           <div class="form-group">
-            <label class="form-label" style="font-size:0.82rem; font-weight:700;">Revision Details *</label>
-            <textarea id="dlgRevText" class="input-text" rows="3" placeholder="Describe the specific changes required..." required autofocus></textarea>
+            <label class="form-label" style="font-size:0.82rem; font-weight:700;">Revision Instructions *</label>
+            <textarea id="dlgRevText" class="input-text" rows="3" placeholder="Provide clear, actionable directions for the creator to revise..." required autofocus></textarea>
           </div>
           <div style="display:flex; justify-content:flex-end; gap:0.6rem; border-top:1px solid var(--border-subtle); padding-top:0.8rem;">
             <button type="button" class="btn-secondary" onclick="window.SOCIAL_MODULE.closeSocialDialog()">Cancel</button>
-            <button type="button" class="btn-primary" style="background:#ef4444; border:none;" onclick="
+            <button type="button" class="btn-primary" style="background:#ef4444; border:none; font-weight:800;" onclick="
               const fb = document.getElementById('dlgRevText')?.value.trim();
-              if (!fb) { if (window.showToast) window.showToast('Please provide revision feedback', 'error'); return; }
+              if (!fb) { if (window.showToast) window.showToast('Please provide revision instructions', 'error'); return; }
               window.SOCIAL_MODULE.closeSocialDialog();
-              window.SOCIAL_MODULE.submitPostRejection('${id}', fb);
+              window.SOCIAL_MODULE.submitPostRejection('${id}', fb, selectedTags);
             ">Submit Revision Request</button>
           </div>
         </div>
       `;
       this.showDialogModal(html);
     },
-    async submitPostRejection(id, feedback) {
+    async submitPostRejection(id, feedback, tags = []) {
       try {
-        await APP_API.post(`/posts/${id}/reject`, { feedback });
-        if (window.showToast) window.showToast('🔴 Revisions requested.', 'info');
+        await APP_API.post(`/posts/${id}/reject`, { feedback, tags });
+        if (window.showToast) window.showToast('🔴 Revision request submitted & logged.', 'info');
         loadInitialData();
       } catch (err) {
         if (window.showToast) window.showToast('Revision request failed: ' + err.message, 'error');
