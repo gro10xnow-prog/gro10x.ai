@@ -44,11 +44,12 @@
   --gradient-amber: linear-gradient(135deg, #d97706 0%, #fbbf24 100%);
   --gradient-surface: linear-gradient(145deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
 
-  /* Text Contrast Hierarchy */
+  /* Text Contrast Hierarchy (WCAG AA Compliant) */
   --text-primary: #f8fafc;
   --text-secondary: #cbd5e1;
-  --text-muted: #94a3b8;
-  --text-dim: #64748b;
+  --text-muted: #a8b5c8;         /* WCAG AA ≥ 4.5:1 on --surface-1 */
+  --text-dim: #8b9ab5;           /* WCAG AA ≥ 4.5:1 on --surface-1 */
+  --text-contrast-safe: #b8c5d6;
   --text-on-brand: #070b12;
 
   /* Borders & Dividers */

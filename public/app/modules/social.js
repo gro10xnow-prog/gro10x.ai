@@ -262,6 +262,64 @@ window.APP_MODULES.social = async function(container) {
     if (currentVal) spChannel.value = currentVal;
   }
 
+  // Phase 1.3: Universal Modal Focus Trap & Restoration Utility (WCAG 2.1.2)
+  let _activeFocusTrapCleanup = null;
+  let _lastFocusedElementBeforeModal = null;
+
+  function trapFocus(modalEl) {
+    if (!modalEl) return;
+    if (_activeFocusTrapCleanup) {
+      _activeFocusTrapCleanup();
+      _activeFocusTrapCleanup = null;
+    }
+    _lastFocusedElementBeforeModal = document.activeElement;
+
+    const focusableSelectors = 'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+    
+    const handleKeyDown = (e) => {
+      if (e.key !== 'Tab') return;
+      const focusables = Array.from(modalEl.querySelectorAll(focusableSelectors)).filter(el => el.offsetParent !== null);
+      if (focusables.length === 0) return;
+      const firstEl = focusables[0];
+      const lastEl = focusables[focusables.length - 1];
+
+      if (e.shiftKey) {
+        if (document.activeElement === firstEl) {
+          lastEl.focus();
+          e.preventDefault();
+        }
+      } else {
+        if (document.activeElement === lastEl) {
+          firstEl.focus();
+          e.preventDefault();
+        }
+      }
+    };
+
+    modalEl.addEventListener('keydown', handleKeyDown);
+    setTimeout(() => {
+      const focusables = Array.from(modalEl.querySelectorAll(focusableSelectors)).filter(el => el.offsetParent !== null);
+      if (focusables.length > 0) {
+        focusables[0].focus();
+      }
+    }, 60);
+
+    _activeFocusTrapCleanup = () => {
+      modalEl.removeEventListener('keydown', handleKeyDown);
+      if (_lastFocusedElementBeforeModal && typeof _lastFocusedElementBeforeModal.focus === 'function') {
+        try { _lastFocusedElementBeforeModal.focus(); } catch (e) {}
+      }
+      _lastFocusedElementBeforeModal = null;
+    };
+  }
+
+  function releaseFocus() {
+    if (_activeFocusTrapCleanup) {
+      _activeFocusTrapCleanup();
+      _activeFocusTrapCleanup = null;
+    }
+  }
+
   function evaluatePostQC(post) {
     const warnings = [];
     const plat = post.platform || 'Facebook';
@@ -311,6 +369,9 @@ window.APP_MODULES.social = async function(container) {
   }
 
   async function loadInitialData(showSkeleton = true) {
+    const boardEl = document.getElementById('socialBoardContainer');
+    if (boardEl) boardEl.setAttribute('aria-busy', 'true');
+
     if (showSkeleton) {
       isLoading = true;
       hasError = false;
@@ -346,6 +407,9 @@ window.APP_MODULES.social = async function(container) {
       console.error('[Social Module] Failed to load data:', err);
       isLoading = false;
       if (showSkeleton) renderContent();
+    } finally {
+      const bEl = document.getElementById('socialBoardContainer');
+      if (bEl) bEl.removeAttribute('aria-busy');
     }
   }
 
@@ -423,14 +487,14 @@ window.APP_MODULES.social = async function(container) {
       </div>
 
       <!-- Draft / Edit Post Modal -->
-      <div class="modal-overlay" id="postModal">
+      <div class="modal-overlay" id="postModal" role="dialog" aria-modal="true" aria-labelledby="postModalTitle" style="z-index:var(--z-modal-overlay);">
         <div class="modal-box" style="max-width: 680px; max-height: 92vh; overflow-y:auto;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1rem; border-bottom:1px solid var(--border-subtle); padding-bottom:0.8rem;">
             <div>
               <h2 style="color:#fff; font-size:1.25rem; margin:0; font-family:var(--font-heading);" id="postModalTitle">📱 Draft New Social Post</h2>
               <div style="font-size:0.78rem; color:var(--text-muted); margin-top:0.2rem;">AI-assisted content creation with VEO 3 Prompts & Format Blueprints.</div>
             </div>
-            <button onclick="window.SOCIAL_MODULE.closePostModal()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
+            <button type="button" aria-label="Close dialog" onclick="window.SOCIAL_MODULE.closePostModal()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
           </div>
 
           <!-- Phase 5.3: Post Revision History Log Display -->
@@ -746,21 +810,21 @@ window.APP_MODULES.social = async function(container) {
       </div>
 
       <!-- Universal Dialog Modal (Confirmations & Dynamic Inputs) -->
-      <div class="modal-overlay" id="socialDialogModal" style="display:none; z-index:1050;">
+      <div class="modal-overlay" id="socialDialogModal" role="dialog" aria-modal="true" style="display:none; z-index:var(--z-modal-overlay);">
         <div class="modal-box" id="socialDialogBox" style="max-width: 520px; background:var(--surface-card, #14141e); border:1px solid var(--border-subtle); border-radius:14px; padding:1.25rem;">
           <!-- Dynamically populated -->
         </div>
       </div>
 
       <!-- Plan Item Edit Modal -->
-      <div class="modal-overlay" id="planItemEditModal" style="display:none; z-index:1050;">
+      <div class="modal-overlay" id="planItemEditModal" role="dialog" aria-modal="true" aria-labelledby="planItemEditTitle" style="display:none; z-index:var(--z-modal-overlay);">
         <div class="modal-box" style="max-width: 560px; background:var(--surface-card, #14141e); border:1px solid var(--border-subtle); border-radius:14px; padding:1.25rem;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; border-bottom:1px solid var(--border-subtle); padding-bottom:0.8rem;">
             <div>
-              <h3 style="color:#fff; font-size:1.15rem; margin:0; font-family:var(--font-heading);">✏️ Edit Calendar Plan Item</h3>
+              <h3 style="color:#fff; font-size:1.15rem; margin:0; font-family:var(--font-heading);" id="planItemEditTitle">✏️ Edit Calendar Plan Item</h3>
               <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.2rem;">Fine-tune schedule, hook, and strategic focus</div>
             </div>
-            <button onclick="window.SOCIAL_MODULE.closePlanItemEditModal()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
+            <button type="button" aria-label="Close dialog" onclick="window.SOCIAL_MODULE.closePlanItemEditModal()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
           </div>
           <form onsubmit="window.SOCIAL_MODULE.handlePlanItemEditSubmit(event)" style="display:flex; flex-direction:column; gap:0.9rem;">
             <input type="hidden" id="editPlanBrandSlug">
@@ -819,14 +883,15 @@ window.APP_MODULES.social = async function(container) {
       </div>
 
       <!-- Saved Topic Ideas Modal -->
-      <div class="modal-overlay" id="savedIdeasModal" style="display:none; z-index:1050;">
+      <div class="modal-overlay" id="savedIdeasModal" role="dialog" aria-modal="true" aria-labelledby="savedIdeasTitle" style="display:none; z-index:var(--z-modal-overlay);">
         <div class="modal-box" style="max-width: 580px; max-height:85vh; overflow-y:auto; background:var(--surface-card, #14141e); border:1px solid var(--border-subtle); border-radius:14px; padding:1.25rem;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; border-bottom:1px solid var(--border-subtle); padding-bottom:0.8rem;">
             <div>
-              <h3 style="color:#fff; font-size:1.15rem; margin:0; font-family:var(--font-heading);">⭐ Saved Topic Ideas</h3>
+              <h3 style="color:#fff; font-size:1.15rem; margin:0; font-family:var(--font-heading);" id="savedIdeasTitle">⭐ Saved Topic Ideas</h3>
               <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.2rem;">Bookmarked content concepts ready for drafting</div>
             </div>
-            <button onclick="window.SOCIAL_MODULE.closeSavedIdeasModal()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
+            <button type="button" aria-label="Close dialog" onclick="window.SOCIAL_MODULE.closeSavedIdeasModal()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
+          </div>
           <div id="savedIdeasList" style="display:flex; flex-direction:column; gap:0.65rem;">
             <!-- Rendered by JS -->
           </div>
@@ -834,14 +899,14 @@ window.APP_MODULES.social = async function(container) {
       </div>
 
       <!-- Phase 4.3: Knowledge Base Inspector Modal -->
-      <div class="modal-overlay" id="knowledgeBaseModal" style="display:none; z-index:1050;">
+      <div class="modal-overlay" id="knowledgeBaseModal" role="dialog" aria-modal="true" aria-labelledby="kbModalTitle" style="display:none; z-index:var(--z-modal-overlay);">
         <div class="modal-box" style="max-width: 680px; max-height:85vh; overflow-y:auto; background:var(--surface-card, #14141e); border:1px solid var(--border-subtle); border-radius:14px; padding:1.25rem;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; border-bottom:1px solid var(--border-subtle); padding-bottom:0.8rem;">
             <div>
               <h3 style="color:#fff; font-size:1.15rem; margin:0; font-family:var(--font-heading);" id="kbModalTitle">🏛️ Channel Intelligence Knowledge Base</h3>
               <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.2rem;" id="kbModalSubtitle">Active audience memory & performance benchmarks</div>
             </div>
-            <button onclick="window.SOCIAL_MODULE.closeKnowledgeBaseModal()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
+            <button type="button" aria-label="Close dialog" onclick="window.SOCIAL_MODULE.closeKnowledgeBaseModal()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
           </div>
           <div id="kbModalContent" style="display:flex; flex-direction:column; gap:0.9rem;">
             <!-- Rendered by JS -->
@@ -850,14 +915,14 @@ window.APP_MODULES.social = async function(container) {
       </div>
 
       <!-- Phase 6.7: Batch Import UI Modal -->
-      <div class="modal-overlay" id="batchImportModal" style="display:none; z-index:1050;">
+      <div class="modal-overlay" id="batchImportModal" role="dialog" aria-modal="true" aria-labelledby="batchImportTitle" style="display:none; z-index:var(--z-modal-overlay);">
         <div class="modal-box" style="max-width: 650px; max-height:88vh; overflow-y:auto; background:var(--surface-card, #14141e); border:1px solid var(--border-subtle); border-radius:14px; padding:1.25rem;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; border-bottom:1px solid var(--border-subtle); padding-bottom:0.8rem;">
             <div>
-              <h3 style="color:#fff; font-size:1.15rem; margin:0; font-family:var(--font-heading);">📥 Batch Import Social Posts</h3>
+              <h3 style="color:#fff; font-size:1.15rem; margin:0; font-family:var(--font-heading);" id="batchImportTitle">📥 Batch Import Social Posts</h3>
               <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.2rem;">Bulk-create drafts via CSV upload or direct text paste into Kanban pipeline</div>
             </div>
-            <button onclick="window.SOCIAL_MODULE.closeBatchImportModal()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
+            <button type="button" aria-label="Close dialog" onclick="window.SOCIAL_MODULE.closeBatchImportModal()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer;">✕</button>
           </div>
 
           <form onsubmit="window.SOCIAL_MODULE.handleBatchImportSubmit(event)" style="display:flex; flex-direction:column; gap:0.9rem;">
@@ -2385,7 +2450,7 @@ function renderBrandAssetsKitHTML(brand) {
         !['Posted', 'Published'].includes(p.status);
 
       return `
-        <div class="post-card" draggable="${!isClientRole()}" data-post-id="${p.id}" ondragstart="window.SOCIAL_MODULE.handleDragStart(event, '${p.id}')" ondragend="window.SOCIAL_MODULE.handleDragEnd(event)" style="background:rgba(255,255,255,0.03); border:1px solid ${isOverdue ? 'rgba(239,68,68,0.4)' : 'var(--border-subtle)'}; border-radius:12px; padding:0.9rem; display:flex; flex-direction:column; gap:0.6rem; transition:transform 0.15s ease, border-color 0.15s ease;">
+        <div class="post-card" tabindex="0" role="article" aria-label="Social post: ${escapeHTML(p.title)}" draggable="${!isClientRole()}" data-post-id="${p.id}" ondragstart="window.SOCIAL_MODULE.handleDragStart(event, '${p.id}')" ondragend="window.SOCIAL_MODULE.handleDragEnd(event)" onkeydown="if((event.key==='Enter'||event.key===' ') && !event.target.closest('button, a, input, select')){ event.preventDefault(); window.SOCIAL_MODULE.openEditModal('${p.id}'); }" style="background:rgba(255,255,255,0.03); border:1px solid ${isOverdue ? 'rgba(239,68,68,0.4)' : 'var(--border-subtle)'}; border-radius:12px; padding:0.9rem; display:flex; flex-direction:column; gap:0.6rem; transition:transform 0.15s ease, border-color 0.15s ease;">
           
           <!-- Channel & Platform Badges Header -->
           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.3rem;">
@@ -2468,48 +2533,48 @@ function renderBrandAssetsKitHTML(brand) {
     if (isClient) {
       if (stageKey === 'client') {
         btns += `
-          <button class="btn-emerald btn-sm" style="font-size:0.72rem; flex:1; font-weight:800;" onclick="window.SOCIAL_MODULE.approvePost('${p.id}')">✅ Approve</button>
-          <button class="btn-secondary btn-sm" style="font-size:0.72rem; color:#fca5a5;" onclick="window.SOCIAL_MODULE.promptRejectPost('${p.id}')">🔴 Revisions</button>
-          <button class="btn-secondary btn-sm" style="padding:0.2rem 0.45rem; font-size:0.75rem;" title="View Details" onclick="window.SOCIAL_MODULE.openEditModal('${p.id}')">👁️ View</button>
+          <button class="btn-emerald btn-sm" style="font-size:0.72rem; flex:1; font-weight:800;" aria-label="Approve post" onclick="window.SOCIAL_MODULE.approvePost('${p.id}')">✅ Approve</button>
+          <button class="btn-secondary btn-sm" style="font-size:0.72rem; color:#fca5a5;" aria-label="Request revisions" onclick="window.SOCIAL_MODULE.promptRejectPost('${p.id}')">🔴 Revisions</button>
+          <button class="btn-secondary btn-xs" aria-label="View post details" title="View Details" onclick="window.SOCIAL_MODULE.openEditModal('${p.id}')">👁️ View</button>
         `;
       } else if (stageKey === 'approved') {
         btns += `
           <span class="badge badge-emerald" style="font-size:0.72rem; flex:1; text-align:center; padding:0.3rem;">✅ Approved by You</span>
-          <button class="btn-secondary btn-sm" style="padding:0.2rem 0.45rem; font-size:0.75rem;" title="View Details" onclick="window.SOCIAL_MODULE.openEditModal('${p.id}')">👁️ View</button>
+          <button class="btn-secondary btn-xs" aria-label="View post details" title="View Details" onclick="window.SOCIAL_MODULE.openEditModal('${p.id}')">👁️ View</button>
         `;
       } else if (stageKey === 'posted') {
         btns += `
           <span class="badge badge-blue" style="font-size:0.72rem; flex:1; text-align:center; padding:0.3rem;">🚀 Published & Live</span>
-          <button class="btn-secondary btn-sm" style="padding:0.2rem 0.45rem; font-size:0.75rem;" title="View Details" onclick="window.SOCIAL_MODULE.openEditModal('${p.id}')">👁️ View</button>
+          <button class="btn-secondary btn-xs" aria-label="View post details" title="View Details" onclick="window.SOCIAL_MODULE.openEditModal('${p.id}')">👁️ View</button>
         `;
       }
       return btns;
     }
 
     if (stageKey === 'draft') {
-      btns += `<button class="btn-primary btn-sm" style="font-size:0.72rem; flex:1;" onclick="window.SOCIAL_MODULE.updatePostStatus('${p.id}', 'Internal QC')">▶ To Internal QC</button>`;
+      btns += `<button class="btn-primary btn-sm" style="font-size:0.72rem; flex:1;" aria-label="Send post to Internal QC" onclick="window.SOCIAL_MODULE.updatePostStatus('${p.id}', 'Internal QC')">▶ To Internal QC</button>`;
     } else if (stageKey === 'internal') {
-      btns += `<button class="btn-primary btn-sm" style="font-size:0.72rem; flex:1;" onclick="window.SOCIAL_MODULE.updatePostStatus('${p.id}', 'Pending Client Approval')">▶ Send to Review</button>`;
+      btns += `<button class="btn-primary btn-sm" style="font-size:0.72rem; flex:1;" aria-label="Send post to Client Review" onclick="window.SOCIAL_MODULE.updatePostStatus('${p.id}', 'Pending Client Approval')">▶ Send to Review</button>`;
     } else if (stageKey === 'client') {
       btns += `
-        <button class="btn-emerald btn-sm" style="font-size:0.72rem; flex:1;" onclick="window.SOCIAL_MODULE.approvePost('${p.id}')">✅ Approve</button>
-        <button class="btn-secondary btn-sm" style="font-size:0.72rem; color:#fca5a5;" onclick="window.SOCIAL_MODULE.promptRejectPost('${p.id}')">🔴 Revisions</button>
+        <button class="btn-emerald btn-sm" style="font-size:0.72rem; flex:1;" aria-label="Approve post" onclick="window.SOCIAL_MODULE.approvePost('${p.id}')">✅ Approve</button>
+        <button class="btn-secondary btn-sm" style="font-size:0.72rem; color:#fca5a5;" aria-label="Request revisions" onclick="window.SOCIAL_MODULE.promptRejectPost('${p.id}')">🔴 Revisions</button>
       `;
     } else if (stageKey === 'approved') {
       btns += `
-        <button class="btn-emerald btn-sm" style="font-size:0.72rem; flex:1;" onclick="window.SOCIAL_MODULE.markAsPosted('${p.id}')">🚀 Mark as Posted</button>
-        <button class="btn-secondary btn-sm" style="font-size:0.72rem;" title="Copy Copy & Tags" onclick="window.SOCIAL_MODULE.copyPostContent('${p.id}')">📋</button>
+        <button class="btn-emerald btn-sm" style="font-size:0.72rem; flex:1;" aria-label="Mark post as Posted" onclick="window.SOCIAL_MODULE.markAsPosted('${p.id}')">🚀 Mark as Posted</button>
+        <button class="btn-secondary btn-xs" aria-label="Copy post copy and hashtags" title="Copy Copy & Tags" onclick="window.SOCIAL_MODULE.copyPostContent('${p.id}')">📋</button>
       `;
     } else if (stageKey === 'posted') {
       btns += `
         <span class="badge badge-emerald" style="font-size:0.72rem; flex:1; text-align:center; padding:0.3rem;">✅ Published</span>
-        <button class="btn-secondary btn-sm" style="font-size:0.72rem;" title="Copy Copy" onclick="window.SOCIAL_MODULE.copyPostContent('${p.id}')">📋</button>
+        <button class="btn-secondary btn-xs" aria-label="Copy post copy" title="Copy Copy" onclick="window.SOCIAL_MODULE.copyPostContent('${p.id}')">📋</button>
       `;
     }
 
     btns += `
-      <button class="btn-secondary btn-sm" style="padding:0.2rem 0.45rem; font-size:0.75rem;" title="Edit Post" onclick="window.SOCIAL_MODULE.openEditModal('${p.id}')">✏️</button>
-      <button class="btn-secondary btn-sm" style="padding:0.2rem 0.45rem; font-size:0.75rem; color:#ef4444;" title="Delete Post" onclick="window.SOCIAL_MODULE.deletePost('${p.id}')">🗑️</button>
+      <button class="btn-secondary btn-xs" aria-label="Edit post" title="Edit Post" onclick="window.SOCIAL_MODULE.openEditModal('${p.id}')">✏️</button>
+      <button class="btn-secondary btn-xs" style="color:#ef4444;" aria-label="Delete post" title="Delete Post" onclick="window.SOCIAL_MODULE.deletePost('${p.id}')">🗑️</button>
     `;
 
     return btns;
@@ -2808,7 +2873,10 @@ function renderBrandAssetsKitHTML(brand) {
       if (!modal) {
         modal = document.createElement('div');
         modal.id = 'communitySnapshotModal';
-        modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; z-index:9999;';
+        modal.setAttribute('role', 'dialog');
+        modal.setAttribute('aria-modal', 'true');
+        modal.setAttribute('aria-labelledby', 'snapModalTitle');
+        modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; z-index:var(--z-modal-overlay);';
         document.body.appendChild(modal);
       }
 
@@ -2818,10 +2886,10 @@ function renderBrandAssetsKitHTML(brand) {
       modal.innerHTML = `
         <div style="background:#181824; border:1px solid var(--border-subtle); border-radius:14px; width:90%; max-width:480px; padding:1.5rem; display:flex; flex-direction:column; gap:1rem;">
           <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-subtle); padding-bottom:0.6rem;">
-            <div style="font-weight:800; font-size:1rem; color:#fff; display:flex; align-items:center; gap:0.4rem;">
+            <div id="snapModalTitle" style="font-weight:800; font-size:1rem; color:#fff; display:flex; align-items:center; gap:0.4rem;">
               <span>📝</span> Log Community & Audience Snapshot
             </div>
-            <button type="button" class="btn-ghost btn-sm" onclick="window.SOCIAL_MODULE.closeCommunitySnapshotModal()">✕</button>
+            <button type="button" aria-label="Close dialog" class="btn-ghost btn-sm" onclick="window.SOCIAL_MODULE.closeCommunitySnapshotModal()">✕</button>
           </div>
 
           <div style="display:flex; flex-direction:column; gap:0.75rem; font-size:0.78rem;">
@@ -2848,10 +2916,12 @@ function renderBrandAssetsKitHTML(brand) {
         </div>
       `;
       modal.style.display = 'flex';
+      trapFocus(modal);
     },
     closeCommunitySnapshotModal() {
       const modal = document.getElementById('communitySnapshotModal');
       if (modal) modal.style.display = 'none';
+      releaseFocus();
     },
     async submitCommunitySnapshot() {
       const count = document.getElementById('snapMemberCount')?.value || 100;
@@ -3982,7 +4052,9 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
       });
 
       this.checkAiModelHealth();
-      document.getElementById('postModal').classList.add('active');
+      const pModal = document.getElementById('postModal');
+      pModal.classList.add('active');
+      trapFocus(pModal);
     },
     async openEditModal(id) {
       if (clientsData.length === 0) {
@@ -4120,7 +4192,9 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
       }
 
       this.checkAiModelHealth();
-      document.getElementById('postModal').classList.add('active');
+      const postModal = document.getElementById('postModal');
+      postModal.classList.add('active');
+      trapFocus(postModal);
     },
     closePostModal(force = false) {
       if (!force) {
@@ -4132,6 +4206,7 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
         }
       }
       document.getElementById('postModal').classList.remove('active');
+      releaseFocus();
     },
     async handleFormSubmit(e) {
       e.preventDefault();
@@ -4363,11 +4438,15 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
       document.getElementById('editPlanDuration').value = item.targetDuration || '60s';
 
       const modal = document.getElementById('planItemEditModal');
-      if (modal) modal.style.display = 'flex';
+      if (modal) {
+        modal.style.display = 'flex';
+        trapFocus(modal);
+      }
     },
     closePlanItemEditModal() {
       const modal = document.getElementById('planItemEditModal');
       if (modal) modal.style.display = 'none';
+      releaseFocus();
     },
     async handlePlanItemEditSubmit(e) {
       e.preventDefault();
@@ -4485,11 +4564,15 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
       }
 
       const modal = document.getElementById('savedIdeasModal');
-      if (modal) modal.style.display = 'flex';
+      if (modal) {
+        modal.style.display = 'flex';
+        trapFocus(modal);
+      }
     },
     closeSavedIdeasModal() {
       const modal = document.getElementById('savedIdeasModal');
       if (modal) modal.style.display = 'none';
+      releaseFocus();
     },
     useSavedIdea(idx) {
       let saved = [];
@@ -4600,11 +4683,15 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
         `;
       }
 
-      if (modal) modal.style.display = 'flex';
+      if (modal) {
+        modal.style.display = 'flex';
+        trapFocus(modal);
+      }
     },
     closeKnowledgeBaseModal() {
       const modal = document.getElementById('knowledgeBaseModal');
       if (modal) modal.style.display = 'none';
+      releaseFocus();
     },
     exportCalendarPlanCsv(brandSlug, channelId, monthKey) {
       const brand = (socialBrandsData || []).find(b => b.slug === brandSlug || b.id === brandSlug);
@@ -5062,11 +5149,15 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
     // Phase 6.7: Batch Import UI Methods
     openBatchImportModal() {
       const modal = document.getElementById('batchImportModal');
-      if (modal) modal.style.display = 'flex';
+      if (modal) {
+        modal.style.display = 'flex';
+        trapFocus(modal);
+      }
     },
     closeBatchImportModal() {
       const modal = document.getElementById('batchImportModal');
       if (modal) modal.style.display = 'none';
+      releaseFocus();
     },
     downloadBatchTemplateCsv() {
       const csv = "Title,ScheduledDate,ScheduledTime,Caption,Category,ContentType,Duration\n" +

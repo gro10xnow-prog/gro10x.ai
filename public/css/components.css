@@ -141,6 +141,13 @@
   border-color: rgba(239, 68, 68, 0.5);
 }
 
+.btn-xs {
+  padding: 0.2rem 0.5rem;
+  font-size: 0.68rem;
+  border-radius: 6px;
+  gap: 0.3rem;
+}
+
 .btn-sm {
   padding: 0.35rem 0.75rem;
   font-size: 0.78rem;
@@ -151,6 +158,28 @@
   padding: 0.85rem 1.75rem;
   font-size: 1rem;
   border-radius: 14px;
+}
+
+/* ───── ACCESSIBILITY: UNIVERSAL FOCUS-VISIBLE RING (WCAG 2.4.7) ───── */
+:focus-visible {
+  outline: 2px solid var(--brand-primary);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--brand-primary) !important;
+  outline-offset: 2px !important;
+}
+
+.post-card:focus-visible {
+  outline: 2px solid var(--brand-accent) !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 16px var(--brand-cyan-glow) !important;
 }
 
 .btn-icon {
