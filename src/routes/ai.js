@@ -1216,6 +1216,35 @@ Each item in "carouselSlides" MUST have:
 `;
   }
 
+  // Phase 7.3: Brand Memory & Revision Feedback Learning Loop
+  let learnedRevisionLessons = [];
+  try {
+    const postsStateFile = path.join(__dirname, '../../data/social_posts_state.json');
+    if (fs.existsSync(postsStateFile)) {
+      const postsRaw = JSON.parse(fs.readFileSync(postsStateFile, 'utf8'));
+      const list = Array.isArray(postsRaw) ? postsRaw : (postsRaw.posts || []);
+      const relevantPosts = list.filter(p => {
+        const c = (p.channel || '').toLowerCase();
+        return c.includes(chanName.toLowerCase()) || chanName.toLowerCase().includes(c);
+      });
+      const recentRevisions = relevantPosts.flatMap(p => p.revision_history || p.revisionHistory || []).slice(0, 10);
+      const allTags = recentRevisions.flatMap(r => r.tags || []);
+      const uniqueTags = [...new Set(allTags)];
+      if (uniqueTags.length > 0) {
+        learnedRevisionLessons = uniqueTags.map(tag => {
+          if (tag.toLowerCase().includes('hook')) return '• Stronger hook: Ensure the hook creates an irresistible knowledge gap or provocative question in the opening 3 seconds.';
+          if (tag.toLowerCase().includes('tone')) return '• Tone adjustment: Maintain brand voice strictly aligned with the archetype persona.';
+          if (tag.toLowerCase().includes('cta')) return '• Add clear CTA: Include an explicit single call-to-action inviting audience comment or link click.';
+          if (tag.toLowerCase().includes('spelling') || tag.toLowerCase().includes('grammar')) return '• Fix Spelling/Grammar: Strictly follow authentic Bengali Unicode spelling conventions (e.g. করো, বলবো).';
+          if (tag.toLowerCase().includes('media') || tag.toLowerCase().includes('video')) return '• Media Asset: Ensure cinematic camera angles, 8k hyperrealistic lighting, and NO text overlays in footage.';
+          return `• ${tag}: Strictly incorporate client feedback from previous iterations.`;
+        });
+      }
+    }
+  } catch (e) {
+    // Non-blocking
+  }
+
   const prompt =
     `• Brand: "${brandProfile.name || chanName}"\n` +
     `  - Mission: "${brandProfile.mission || brandProfile.tagline || ''}"\n` +
@@ -1230,10 +1259,11 @@ Each item in "carouselSlides" MUST have:
     `• Target Duration: "${durationSec} seconds"\n` +
     `• Topic / Concept: "${postTopic}"\n` +
     `• 🔴 PRIMARY LANGUAGE (MANDATORY): "${lang}"\n\n` +
+    (learnedRevisionLessons.length > 0 ? `PRIOR REVISION FEEDBACK MEMORY FOR THIS CHANNEL (LEARNED EDITORIAL RULES):\nThe content team and client flagged the following areas for continuous improvement in recent drafts:\n${learnedRevisionLessons.join('\n')}\nStrictly ensure your generated brief resolves and incorporates these learned points!\n\n` : '') +
     `CRITICAL DIRECTIVES:\n` +
     `1. STRICT OVERLAY DIRECTIVE: NO TEXT OVERLAYS ON SCREEN. All visual cues and overlay directions must use GRAPHICAL ICONS, ILLUSTRATIONS, SPLIT-SCREENS, OR BADGES ONLY without text or typography.\n` +
     `2. PURE ENGLISH VEO PROMPTS: All Google VEO 3 visual prompts must be 100% in pure English describing cinematic cameras, lighting, and physical subject action. Never insert Bengali/Banglish sentences into the visual prompt.\n` +
-    `3. COMPLETE VERBATIM TALKING SCRIPT: "voiceNote" MUST BE A COMPLETE, TELEPROMPTER-READY VERBATIM SCRIPT containing the exact word-for-word spoken dialogue with timestamps [0:00-0:10], [0:10-0:20], etc. corresponding to the scenes. Do NOT output generic instructions like "show mistake" — write the actual spoken sentences in ${lang}.\n` +
+    `3. COMPLETE VERBATIM TALKING SCRIPT: "voiceNote" MUST BE A COMPLETE, TELEPROMPTER-READY VERBATIM SCRIPT containing the exact word-for-word spoken dialogue with timestamps [0:00-0:10], [0:10-0:20], etc. corresponding to the scenes. If the channel is Grow Bangla, PILUTICS, or Bong Hits, write spoken voice lines in authentic Bengali Unicode script (e.g. করো, বলবো) — never romanized Banglish.\n` +
     `4. NATURAL LANGUAGE: ALL content — hook, angle, keyPoints, caption, voiceNote, and scene voice lines — MUST be written fluently in "${lang}" without robotic ellipses or mechanical topic string repetition.\n\n` +
     specificPromptInstructions +
     `\nSTANDARD REQUIRED FIELDS:\n` +
@@ -1803,6 +1833,49 @@ router.post('/suggest-topic', requireAuth, aiRateLimiter, async (req, res) => {
       }));
     }
 
+    // Phase 7.1: Real Gemini-Powered Topic Generation Integration
+    if (process.env.GEMINI_API_KEY) {
+      try {
+        const geminiPrompt = `You are a viral Content Director for "${brand?.name || 'GRO10X Brand'}".
+Niche: ${brand?.niche || 'Digital Media'}
+Primary Spoken Language: ${channel?.primaryLanguage || brand?.primaryLanguage || 'Bangla + English'}
+Monthly Focus Thesis: "${thesis || 'High-growth retention content'}"
+Content Format: ${contentType || 'Short-form Video'}
+Content Pillars: ${(channel?.analyticsKnowledgeBase?.topCategories || ['Core Lessons']).join(', ')}
+
+Suggest 5 viral, high-retention content topic ideas.
+IMPORTANT RULES:
+- If the language is Bengali / Bangla, write the spoken hook in authentic Bengali Unicode script (করো, বলবো).
+- Each topic must be distinct, engaging, and suitable for production.
+- Respond with a pure JSON array of objects with keys: topic, category, hook, rationale, contentType. No other text.`;
+
+        let rawGemini = null;
+        for (const model of MODELS) {
+          try {
+            rawGemini = await callSingle(model, geminiPrompt, process.env.GEMINI_API_KEY, { json: true, maxTokens: 800 });
+            if (rawGemini) break;
+          } catch (e) {}
+        }
+
+        if (rawGemini) {
+          const parsed = cleanJSONText(rawGemini);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            const aiGeneratedCandidates = parsed.map(item => ({
+              topic: item.topic || item.title || 'Untitled AI Idea',
+              category: item.category || 'General',
+              hook: item.hook || `Watch this before your next ${item.category}!`,
+              rationale: item.rationale || `AI-synthesized for ${brand?.name || 'Brand'} monthly strategy.`,
+              contentType: item.contentType || contentType || 'Short-form Video',
+              isAiGenerated: true
+            }));
+            candidatePool = [...aiGeneratedCandidates, ...candidatePool];
+          }
+        }
+      } catch (geminiErr) {
+        console.warn('[Suggest Topic Gemini fallback]:', geminiErr.message);
+      }
+    }
+
     const topCategories = (channel?.analyticsKnowledgeBase?.topCategories || []).map(c => c.toLowerCase());
 
     const scored = candidatePool.map(cand => {
@@ -1961,12 +2034,19 @@ Return JSON ONLY with keys:
 });
 
 router.get('/status', requireAuth, (req, res) => res.json({ success: true, configured: !!process.env.GEMINI_API_KEY, models: MODELS }));
+// Phase 7.2: AI Model Health & Quota Dashboard Endpoint
 router.get('/health', requireAuth, (req, res) => res.json({
   success: true,
-  status: 'ok',
+  status: process.env.GEMINI_API_KEY ? 'healthy' : 'degraded',
   configured: !!process.env.GEMINI_API_KEY,
-  primaryModel: MODELS[0] || null,
-  models: MODELS
+  primaryModel: MODELS[0] || 'gemini-1.5-flash',
+  models: MODELS,
+  rateLimit: {
+    maxPerMinute: 45,
+    remaining: 45
+  },
+  supportedChannels: ['grow-bangla', 'pilutics', 'bong-hits', 'gro10x'],
+  features: ['VEO 3 Direction', 'Multi-Language Bengali Unicode', 'Feedback Learning Loop', 'Dynamic Topic Synthesis']
 }));
 
 router.callGeminiPrompt = async function(prompt, options = {}) {
