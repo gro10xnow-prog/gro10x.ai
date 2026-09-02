@@ -10,11 +10,23 @@ window.APP_MODULES = window.APP_MODULES || {};
 window.APP_MODULES.social = async function(container) {
   let postsData = [];
   let clientsData = [];
+  let socialBrandsData = [];
   let isLoading = true;
   let hasError = false;
   let activeGeneratedBrief = null;
-  let activeViewMode = 'kanban'; // 'kanban' | 'calendar'
+  let activeViewMode = 'kanban'; // 'kanban' | 'calendar' | 'content_os'
   let currentCalendarDate = new Date();
+
+  // Brand Hub & Content OS State
+  let activeBrandSlug = 'grow-bangla';
+  let activeBrandSubTab = 'overview'; // 'overview' | 'channel' | 'assets'
+  let activeChannelId = null;
+  let selectedPlanMonth = new Date().toLocaleString('default', { month: 'long' });
+  let selectedPlanYear = new Date().getFullYear();
+  let alignAnchorSynergy = true;
+  let monthlyFocusNote = '';
+  let isGeneratingCalendar = false;
+  let isUploadingAnalytics = false;
 
   const CHANNELS = [
     {
@@ -166,12 +178,14 @@ window.APP_MODULES.social = async function(container) {
     renderSkeleton();
 
     try {
-      const [postsRes, clientsRes] = await Promise.all([
+      const [postsRes, clientsRes, brandsRes] = await Promise.all([
         APP_API.get('/posts').catch(() => []),
-        APP_API.get('/clients').catch(() => [])
+        APP_API.get('/clients').catch(() => []),
+        APP_API.get('/social-brands').catch(() => ({ brands: [] }))
       ]);
       postsData = Array.isArray(postsRes) ? postsRes : [];
       clientsData = Array.isArray(clientsRes) ? clientsRes : [];
+      socialBrandsData = (brandsRes && Array.isArray(brandsRes.brands)) ? brandsRes.brands : [];
       isLoading = false;
       renderContent();
     } catch (err) {
@@ -179,6 +193,7 @@ window.APP_MODULES.social = async function(container) {
       isLoading = false;
       postsData = [];
       clientsData = [];
+      socialBrandsData = [];
       renderContent();
     }
   }
@@ -196,15 +211,15 @@ window.APP_MODULES.social = async function(container) {
             </span>
           </div>
           <div style="font-size: 0.88rem; color: var(--text-muted); margin-top:0.25rem;">
-            Channel-aware content pipeline with Gemini VEO 3 Prompts, Content Calendar AI & Bong Hits Music Studio.
+            Brand-driven multi-channel architecture with persistent analytics memory, monthly strategy locking & VEO 3 studio.
           </div>
         </div>
         <div style="display:flex; gap:0.6rem; align-items:center; flex-wrap:wrap;">
-          <!-- View Toggle Switcher -->
+          <!-- 3-Way Top View Switcher -->
           <div style="display:flex; background:rgba(255,255,255,0.06); border:1px solid var(--border-subtle); border-radius:10px; padding:3px; gap:2px;">
             <button class="btn-ghost btn-sm" id="btnViewKanban" style="font-size:0.8rem; font-weight:800; padding:0.35rem 0.75rem; border-radius:8px; ${activeViewMode === 'kanban' ? 'background:rgba(255,255,255,0.15); color:#fff;' : 'color:var(--text-muted);'}" onclick="window.SOCIAL_MODULE.switchView('kanban')">📋 Kanban</button>
             <button class="btn-ghost btn-sm" id="btnViewCalendar" style="font-size:0.8rem; font-weight:800; padding:0.35rem 0.75rem; border-radius:8px; ${activeViewMode === 'calendar' ? 'background:rgba(255,255,255,0.15); color:#fff;' : 'color:var(--text-muted);'}" onclick="window.SOCIAL_MODULE.switchView('calendar')">📅 Calendar</button>
-            <button class="btn-ghost btn-sm" id="btnViewPlannerAI" style="font-size:0.8rem; font-weight:800; padding:0.35rem 0.75rem; border-radius:8px; ${activeViewMode === 'planner_ai' ? 'background:linear-gradient(135deg, rgba(168,85,247,0.35), rgba(99,102,241,0.35)); color:#fff; border:1px solid #a855f7;' : 'color:var(--text-muted);'}" onclick="window.SOCIAL_MODULE.switchView('planner_ai')">✨ Content Calendar AI</button>
+            <button class="btn-ghost btn-sm" id="btnViewContentOS" style="font-size:0.8rem; font-weight:800; padding:0.35rem 0.75rem; border-radius:8px; ${activeViewMode === 'content_os' ? 'background:linear-gradient(135deg, rgba(168,85,247,0.35), rgba(99,102,241,0.35)); color:#fff; border:1px solid #a855f7;' : 'color:var(--text-muted);'}" onclick="window.SOCIAL_MODULE.switchView('content_os')">🏛️ Content OS & Brand Hub</button>
           </div>
           <button class="btn-secondary" onclick="window.SOCIAL_MODULE.reload()">🔄 Refresh</button>
           <button class="btn-primary" onclick="window.SOCIAL_MODULE.openPostModal()">+ Draft New Post</button>
@@ -451,9 +466,9 @@ window.APP_MODULES.social = async function(container) {
     renderKPIs();
     const filterSection = document.getElementById('socialFiltersSection');
 
-    if (activeViewMode === 'planner_ai') {
+    if (activeViewMode === 'content_os') {
       if (filterSection) filterSection.style.display = 'none';
-      renderPlannerAI();
+      renderContentOS();
     } else if (activeViewMode === 'calendar') {
       if (filterSection) filterSection.style.display = 'flex';
       renderCalendar();
@@ -746,205 +761,436 @@ window.APP_MODULES.social = async function(container) {
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // 3RD TAB: CONTENT CALENDAR AI PLANNER (Monthly Automated Strategy & CSV Insights)
+  // 3RD VIEW: CONTENT OS & BRAND HUB (Multi-Channel Hierarchy, Memory & Locking)
   // ─────────────────────────────────────────────────────────────────────────────
-  function renderPlannerAI() {
+  function renderContentOS() {
     const board = document.getElementById('socialBoardContainer');
     if (!board) return;
 
-    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    const brand = (socialBrandsData || []).find(b => b.slug === activeBrandSlug || b.id === activeBrandSlug) || socialBrandsData[0] || {
+      name: 'Grow Bangla',
+      slug: 'grow-bangla',
+      tagline: 'Bridging Career, Language & Professional Growth for Bangladesh',
+      niche: 'Spoken English & Career Preparation',
+      channels: []
+    };
+
+    const currentChannel = (brand.channels || []).find(c => c.id === activeChannelId || c.slug === activeChannelId) || null;
 
     board.innerHTML = `
-      <div style="display:flex; flex-direction:column; gap:1.5rem;">
+      <div style="display:flex; flex-direction:column; gap:1.3rem;">
         
-        <!-- Planner Top Bar -->
-        <div style="display:grid; grid-template-columns:1.2fr 1fr; gap:1.2rem; flex-wrap:wrap;">
-          
-          <!-- Step 1 Card: Strategy & Target Setup -->
-          <div style="background:var(--surface-card, #14141e); border:1px solid var(--border-subtle); border-radius:14px; padding:1.25rem; display:flex; flex-direction:column; gap:1rem;">
-            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-subtle); padding-bottom:0.6rem;">
-              <div style="font-weight:800; color:#fff; font-size:1rem; display:flex; align-items:center; gap:0.5rem;">
-                <span>✨</span> Step 1: Campaign Cadence & Channel Targets
-              </div>
-              <span class="badge badge-purple">4-Week Blueprint</span>
-            </div>
-
-            <!-- Target Channels -->
+        <!-- Brand Header with Brand Switcher Tabs -->
+        <div style="background:var(--surface-card, #14141e); border:1px solid var(--border-subtle); border-radius:14px; padding:1rem 1.25rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.9rem;">
+          <div style="display:flex; align-items:center; gap:0.8rem;">
+            <div style="font-size:1.8rem;">🏛️</div>
             <div>
-              <label class="form-label" style="margin-bottom:0.4rem;">Target Media Channels (Click to Toggle)</label>
-              <div style="display:flex; gap:0.5rem; flex-wrap:wrap;" id="plannerChannelPills">
-                ${CHANNELS.map(ch => `
-                  <button type="button" class="r-pill ${plannerSelectedChannels.includes(ch.id) ? 'active' : ''}" style="font-size:0.75rem;" onclick="window.SOCIAL_MODULE.togglePlannerChannel('${ch.id}')">
-                    ${escapeHTML(ch.name)}
-                  </button>
-                `).join('')}
+              <div style="display:flex; align-items:center; gap:0.6rem;">
+                <h2 style="margin:0; font-size:1.3rem; font-family:var(--font-heading); color:#fff;">
+                  ${escapeHTML(brand.name)}
+                </h2>
+                <span class="badge badge-purple" style="font-size:0.72rem; font-weight:800;">${(brand.channels || []).length} Channels Active</span>
+              </div>
+              <div style="font-size:0.78rem; color:var(--text-muted); margin-top:0.2rem;">
+                ${escapeHTML(brand.tagline || brand.niche || 'Digital Brand Content Command')}
+              </div>
+            </div>
+          </div>
+
+          <!-- Brand Switcher Pills -->
+          <div style="display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
+            ${(socialBrandsData || []).map(b => `
+              <button type="button" class="r-pill ${b.slug === activeBrandSlug ? 'active' : ''}" style="font-size:0.76rem; padding:0.35rem 0.75rem;" onclick="window.SOCIAL_MODULE.switchBrand('${b.slug}')">
+                ${escapeHTML(b.name)}
+              </button>
+            `).join('')}
+            <button type="button" class="btn-ghost btn-sm" style="font-size:0.75rem; color:var(--purple-light);" onclick="window.SOCIAL_MODULE.promptAddBrand()">+ New Brand</button>
+          </div>
+        </div>
+
+        <!-- Sub-Nav Switcher: Overview Matrix vs Channels vs Brand Kit -->
+        <div style="display:flex; background:rgba(255,255,255,0.03); border:1px solid var(--border-subtle); border-radius:12px; padding:0.4rem; gap:0.4rem; flex-wrap:wrap; align-items:center;">
+          <button type="button" class="btn-ghost btn-sm" style="font-size:0.78rem; font-weight:800; border-radius:8px; ${activeBrandSubTab === 'overview' ? 'background:rgba(255,255,255,0.15); color:#fff;' : 'color:var(--text-muted);'}" onclick="window.SOCIAL_MODULE.switchBrandSubTab('overview')">
+            📊 Cross-Channel Matrix (Brand Overview)
+          </button>
+          <button type="button" class="btn-ghost btn-sm" style="font-size:0.78rem; font-weight:800; border-radius:8px; ${activeBrandSubTab === 'assets' ? 'background:rgba(255,255,255,0.15); color:#fff;' : 'color:var(--text-muted);'}" onclick="window.SOCIAL_MODULE.switchBrandSubTab('assets')">
+            🎨 Brand Identity & Asset Kit
+          </button>
+          
+          <div style="height:20px; width:1px; background:rgba(255,255,255,0.1); margin:0 0.3rem;"></div>
+          
+          <span style="font-size:0.7rem; color:var(--text-dim); text-transform:uppercase; font-weight:800;">Channels:</span>
+          ${(brand.channels || []).map(ch => {
+            const isSelected = activeBrandSubTab === 'channel' && (activeChannelId === ch.id || activeChannelId === ch.slug);
+            const icon = PLATFORM_ICONS[ch.platform] || '📱';
+            return `
+              <button type="button" class="btn-ghost btn-sm" style="font-size:0.76rem; border-radius:8px; display:flex; align-items:center; gap:0.35rem; ${isSelected ? 'background:linear-gradient(135deg, rgba(168,85,247,0.35), rgba(99,102,241,0.35)); color:#fff; border:1px solid #a855f7;' : 'color:var(--text-muted);'}" onclick="window.SOCIAL_MODULE.openChannelWorkspace('${ch.id}')">
+                <span>${icon}</span>
+                <span>${escapeHTML(ch.name.replace('Channel','').replace('Page','').trim())}</span>
+                ${ch.isAnchor ? `<span style="font-size:0.6rem; color:#10b981; font-weight:900;">⚓</span>` : ''}
+              </button>
+            `;
+          }).join('')}
+          <button type="button" class="btn-ghost btn-sm" style="font-size:0.72rem; color:var(--text-dim);" onclick="window.SOCIAL_MODULE.promptAddChannel()">+ Add Channel</button>
+        </div>
+
+        <!-- Dynamic Body Area based on activeBrandSubTab -->
+        <div id="brandSubTabBodyContainer">
+          ${activeBrandSubTab === 'overview' ? renderBrandOverviewMatrixHTML(brand) : (activeBrandSubTab === 'assets' ? renderBrandAssetsKitHTML(brand) : renderChannelWorkspaceHTML(brand, currentChannel))}
+        </div>
+
+      </div>
+    `;
+  }
+
+  function renderBrandOverviewMatrixHTML(brand) {
+    const currentMonthKey = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
+    const currentMonthName = new Date().toLocaleString('default', { month: 'long' });
+
+    let totalAudience = 0;
+    (brand.channels || []).forEach(c => totalAudience += (c.audienceCount || 0));
+
+    return `
+      <div style="display:flex; flex-direction:column; gap:1.3rem;">
+        
+        <!-- Cross-Channel Quick Metrics -->
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:1rem;">
+          <div style="background:var(--surface-card, #14141e); border:1px solid var(--border-subtle); border-radius:12px; padding:1rem; display:flex; flex-direction:column; gap:0.25rem;">
+            <span style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; font-weight:800;">Total Cross-Channel Audience</span>
+            <span style="font-size:1.6rem; font-weight:900; color:#fff;">${totalAudience.toLocaleString()} <span style="font-size:0.85rem; color:var(--text-dim);">Subs / Followers</span></span>
+            <span style="font-size:0.72rem; color:#10b981;">Across ${(brand.channels || []).length} connected touchpoints</span>
+          </div>
+
+          <div style="background:var(--surface-card, #14141e); border:1px solid var(--border-subtle); border-radius:12px; padding:1rem; display:flex; flex-direction:column; gap:0.25rem;">
+            <span style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; font-weight:800;">Current Month Target (${currentMonthName})</span>
+            <span style="font-size:1.6rem; font-weight:900; color:#c084fc;">${(brand.channels || []).reduce((acc, c) => acc + (c.targetCadencePerWeek || 3) * 4, 0)} <span style="font-size:0.85rem; color:var(--text-dim);">Posts Output</span></span>
+            <span style="font-size:0.72rem; color:var(--text-secondary);">Cadence calculated from channel targets</span>
+          </div>
+
+          <div style="background:var(--surface-card, #14141e); border:1px solid var(--border-subtle); border-radius:12px; padding:1rem; display:flex; flex-direction:column; gap:0.25rem;">
+            <span style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; font-weight:800;">Analytics Knowledge Memory</span>
+            <span style="font-size:1.6rem; font-weight:900; color:#34d399;">${(brand.channels || []).filter(c => c.analyticsKnowledgeBase).length} / ${(brand.channels || []).length} <span style="font-size:0.85rem; color:var(--text-dim);">Indexed</span></span>
+            <span style="font-size:0.72rem; color:var(--text-dim);">Proven retention & velocity signals</span>
+          </div>
+        </div>
+
+        <!-- Channel Status Matrix Cards -->
+        <div style="background:var(--surface-card, #14141e); border:1px solid var(--border-subtle); border-radius:14px; padding:1.25rem; display:flex; flex-direction:column; gap:1rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-subtle); padding-bottom:0.7rem;">
+            <div>
+              <h3 style="margin:0; font-size:1.05rem; color:#fff; font-family:var(--font-heading);">
+                📡 Channel Status & Monthly Locking Matrix (${currentMonthName} ${new Date().getFullYear()})
+              </h3>
+              <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.2rem;">
+                Select a channel below to upload analytics CSVs, generate 100% automated strategic calendars with reasoning, and lock into Kanban.
+              </div>
+            </div>
+            <button type="button" class="btn-emerald btn-sm" onclick="window.SOCIAL_MODULE.openChannelWorkspace(((brand.channels && brand.channels[0] && brand.channels[0].id) || ''))">
+              🚀 Open Anchor Channel
+            </button>
+          </div>
+
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:1rem;">
+            ${(brand.channels || []).map(ch => {
+              const icon = PLATFORM_ICONS[ch.platform] || '📱';
+              const kb = ch.analyticsKnowledgeBase;
+              const cal = ch.calendars && ch.calendars[currentMonthKey];
+              const isLocked = cal && cal.status === 'Locked';
+              const isDraft = cal && cal.status === 'Draft';
+
+              return `
+                <div style="background:rgba(255,255,255,0.02); border:1px solid ${isLocked ? 'rgba(16,185,129,0.4)' : 'var(--border-subtle)'}; border-radius:12px; padding:1rem; display:flex; flex-direction:column; gap:0.75rem; position:relative;">
+                  
+                  <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div style="display:flex; align-items:center; gap:0.5rem;">
+                      <span style="font-size:1.3rem;">${icon}</span>
+                      <div>
+                        <div style="font-weight:800; color:#fff; font-size:0.92rem; display:flex; align-items:center; gap:0.4rem;">
+                          ${escapeHTML(ch.name)}
+                          ${ch.isAnchor ? `<span class="badge badge-emerald" style="font-size:0.6rem; padding:0 0.35rem;">Anchor Channel</span>` : ''}
+                        </div>
+                        <div style="font-size:0.72rem; color:var(--text-dim);">${escapeHTML(ch.handle || ch.platform)}</div>
+                      </div>
+                    </div>
+                    <span class="badge ${isLocked ? 'badge-emerald' : (isDraft ? 'badge-purple' : 'badge-gray')}" style="font-size:0.68rem; font-weight:800;">
+                      ${isLocked ? '🔒 Locked (' + (cal.planItems || []).length + ' Posts)' : (isDraft ? '📝 Draft Ready' : '⏳ Needs Plan')}
+                    </span>
+                  </div>
+
+                  <!-- Audience & Knowledge Base Indicator -->
+                  <div style="background:rgba(0,0,0,0.25); border-radius:8px; padding:0.6rem 0.75rem; font-size:0.72rem; display:flex; flex-direction:column; gap:0.3rem;">
+                    <div style="display:flex; justify-content:space-between;">
+                      <span style="color:var(--text-muted);">Audience:</span>
+                      <strong style="color:#fff;">${escapeHTML(ch.audienceLabel || (ch.audienceCount + ' Subscribers'))}</strong>
+                    </div>
+                    <div style="display:flex; justify-content:space-between;">
+                      <span style="color:var(--text-muted);">Analytics Memory:</span>
+                      <span style="color:${kb ? '#34d399' : '#f59e0b'}; font-weight:700;">
+                        ${kb ? '🟢 ' + (kb.totalVideosIndexed || 0) + ' items (' + (kb.totalViews || 0).toLocaleString() + ' views)' : '🟡 Needs Data Upload'}
+                      </span>
+                    </div>
+                    ${kb && kb.topCategories ? `
+                      <div style="color:var(--text-dim); margin-top:0.2rem;">
+                        <strong>Pillars:</strong> ${(kb.topCategories || []).slice(0, 2).join(', ')}
+                      </div>
+                    ` : ''}
+                  </div>
+
+                  <!-- Quick Action Button -->
+                  <div style="display:flex; gap:0.5rem; align-items:center; margin-top:auto;">
+                    <button type="button" class="btn-secondary btn-sm" style="flex:1; font-size:0.74rem;" onclick="window.SOCIAL_MODULE.openChannelWorkspace('${ch.id}')">
+                      ⚡ Open Strategy & Data Workspace →
+                    </button>
+                  </div>
+
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+
+      </div>
+    `;
+  }
+
+  function renderChannelWorkspaceHTML(brand, channel) {
+    if (!channel) {
+      return `<div style="padding:3rem; text-align:center; color:var(--text-muted);">Channel not found. Please select an active channel from the bar above.</div>`;
+    }
+
+    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    const monthIndex = months.indexOf(selectedPlanMonth);
+    const monthNumStr = String(monthIndex >= 0 ? monthIndex + 1 : 10).padStart(2, '0');
+    const currentMonthKey = `${selectedPlanYear}-${monthNumStr}`;
+    
+    const currDate = new Date();
+    const isPastMonth = selectedPlanYear < currDate.getFullYear() || (selectedPlanYear === currDate.getFullYear() && monthIndex < currDate.getMonth());
+
+    const kb = channel.analyticsKnowledgeBase;
+    const currentCal = channel.calendars && channel.calendars[currentMonthKey];
+    const isLocked = currentCal && currentCal.status === 'Locked';
+    const planItems = (currentCal && currentCal.planItems) || [];
+
+    return `
+      <div style="display:flex; flex-direction:column; gap:1.3rem;">
+        
+        <!-- Channel Top Banner -->
+        <div style="background:var(--surface-card, #14141e); border:1px solid var(--border-subtle); border-radius:14px; padding:1rem 1.25rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.8rem;">
+          <div style="display:flex; align-items:center; gap:0.6rem;">
+            <button type="button" class="btn-ghost btn-sm" style="padding:0.2rem 0.5rem;" onclick="window.SOCIAL_MODULE.switchBrandSubTab('overview')">← Brand Overview</button>
+            <span style="font-size:1.4rem;">${PLATFORM_ICONS[channel.platform] || '📱'}</span>
+            <div>
+              <div style="font-weight:800; font-size:1.15rem; color:#fff; display:flex; align-items:center; gap:0.5rem;">
+                ${escapeHTML(channel.name)}
+                ${channel.isAnchor ? `<span class="badge badge-emerald">Anchor Pillar</span>` : ''}
+              </div>
+              <div style="font-size:0.72rem; color:var(--text-dim);">${escapeHTML(channel.handle || channel.url || channel.platform)} · Target: ${channel.targetCadencePerWeek}× / week</div>
+            </div>
+          </div>
+
+          <div style="display:flex; gap:0.6rem; align-items:center;">
+            <span class="badge ${isLocked ? 'badge-emerald' : (isPastMonth ? 'badge-gray' : 'badge-purple')}" style="font-size:0.75rem; font-weight:800;">
+              ${isLocked ? '🔒 ' + selectedPlanMonth + ' Locked & In Pipeline' : (isPastMonth ? '📁 ' + selectedPlanMonth + ' Archived (Read-Only)' : '✨ ' + selectedPlanMonth + ' Active Planning')}
+            </span>
+          </div>
+        </div>
+
+        <!-- Section 1: Channel Analytics Memory & Ingestion Dropzone -->
+        <div style="background:var(--surface-card, #14141e); border:1px solid var(--border-subtle); border-radius:14px; padding:1.25rem; display:flex; flex-direction:column; gap:1rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-subtle); padding-bottom:0.6rem; flex-wrap:wrap; gap:0.5rem;">
+            <div style="font-weight:800; font-size:0.95rem; color:#fff; display:flex; align-items:center; gap:0.5rem;">
+              <span>📊</span> Channel Analytics Memory & Audience Signals (Persistent Knowledge Base)
+            </div>
+            <div style="display:flex; gap:0.5rem;">
+              <button type="button" class="btn-secondary btn-sm" style="font-size:0.72rem;" onclick="document.getElementById('channelCsvFileInput').click()">
+                📈 Upload Analytics CSV
+              </button>
+              <button type="button" class="btn-secondary btn-sm" style="font-size:0.72rem;" onclick="window.SOCIAL_MODULE.openCommunitySnapshotModal()">
+                📝 Log Metrics Snapshot
+              </button>
+            </div>
+          </div>
+
+          <input type="file" id="channelCsvFileInput" style="display:none;" accept=".csv,text/csv" onchange="window.SOCIAL_MODULE.handleChannelCsvUpload(this, '${brand.slug}', '${channel.id}')">
+
+          <!-- Knowledge Base Content Display -->
+          ${kb ? `
+            <div style="background:rgba(16,185,129,0.04); border:1px solid rgba(16,185,129,0.25); border-radius:12px; padding:1rem; display:flex; flex-direction:column; gap:0.75rem;">
+              <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+                <div style="display:flex; align-items:center; gap:0.6rem;">
+                  <span class="badge badge-emerald" style="font-weight:800; font-size:0.72rem;">✅ Verified Knowledge Indexed</span>
+                  <span style="font-size:0.72rem; color:var(--text-dim);">Source: ${escapeHTML(kb.source || 'CSV Export')} · Updated: ${new Date(kb.lastUpdated || Date.now()).toLocaleDateString()}</span>
+                </div>
+                <span style="font-size:0.75rem; font-weight:800; color:#34d399;">${(kb.totalVideosIndexed || 0)} Content Items · ${(kb.totalViews || 0).toLocaleString()} Views</span>
+              </div>
+
+              <!-- Top Content Pillars -->
+              ${Array.isArray(kb.topCategories) && kb.topCategories.length > 0 ? `
+                <div style="display:flex; gap:0.4rem; flex-wrap:wrap; align-items:center;">
+                  <span style="font-size:0.7rem; color:var(--text-muted); font-weight:800;">High-Velocity Pillars:</span>
+                  ${kb.topCategories.map(c => `<span class="badge badge-blue" style="font-size:0.68rem;">${escapeHTML(c)}</span>`).join('')}
+                </div>
+              ` : ''}
+
+              <!-- Top Performing Content List (if available) -->
+              ${Array.isArray(kb.topPerformers) && kb.topPerformers.length > 0 ? `
+                <div style="display:flex; flex-direction:column; gap:0.35rem; margin-top:0.2rem;">
+                  <span style="font-size:0.72rem; font-weight:800; color:#fff;">🏆 Top Lifetime Converting Content:</span>
+                  <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:0.5rem;">
+                    ${kb.topPerformers.slice(0, 3).map(p => `
+                      <div style="background:rgba(0,0,0,0.3); border-radius:6px; padding:0.4rem 0.6rem; border:1px solid rgba(255,255,255,0.05); font-size:0.7rem; line-height:1.35;">
+                        <div style="color:#fff; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHTML(p.title)}</div>
+                        <div style="color:#a7f3d0; margin-top:0.15rem;">${(p.views || 0).toLocaleString()} Views · ${p.subs || 0} Subs · ${p.ctr ? p.ctr + '% CTR' : ''}</div>
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+              ` : ''}
+
+              <!-- AI Recommendations List -->
+              ${Array.isArray(kb.recommendations) && kb.recommendations.length > 0 ? `
+                <div style="font-size:0.72rem; color:var(--text-secondary); margin-top:0.2rem;">
+                  <ul style="margin:0; padding-left:1.1rem; line-height:1.45;">
+                    ${kb.recommendations.map(r => `<li>${escapeHTML(r)}</li>`).join('')}
+                  </ul>
+                </div>
+              ` : ''}
+            </div>
+          ` : `
+            <div style="border:2px dashed var(--border-subtle); border-radius:12px; padding:1.5rem 1rem; text-align:center; background:rgba(0,0,0,0.25); cursor:pointer;" onclick="document.getElementById('channelCsvFileInput').click()">
+              <div style="font-size:1.8rem; margin-bottom:0.3rem;">📈</div>
+              <div style="font-weight:700; font-size:0.88rem; color:#fff;">Upload ${escapeHTML(channel.name)} Analytics Data</div>
+              <div style="font-size:0.74rem; color:var(--text-dim); margin-top:0.2rem;">
+                Upload YouTube Studio CSV, Meta Suite CSV, TikTok export, or log Community metrics to set permanent memory for AI calendar strategy.
+              </div>
+            </div>
+          `}
+        </div>
+
+        <!-- Section 2: Monthly Content Calendar Strategy & Locking Engine -->
+        <div style="background:var(--surface-card, #14141e); border:1px solid var(--border-subtle); border-radius:14px; padding:1.25rem; display:flex; flex-direction:column; gap:1.1rem;">
+          
+          <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-subtle); padding-bottom:0.8rem; flex-wrap:wrap; gap:0.8rem;">
+            <div>
+              <h3 style="margin:0; font-size:1.05rem; color:#fff; font-family:var(--font-heading);">
+                🗓️ Monthly Strategic Production Blueprint (${selectedPlanMonth} ${selectedPlanYear})
+              </h3>
+              <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.2rem;">
+                100% automated AI strategy with per-post Strategic Rationale. Lock the month to freeze and auto-create active pipeline drafts.
               </div>
             </div>
 
             <!-- Month & Year Selector -->
-            <div style="display:grid; grid-template-columns:1.5fr 1fr; gap:0.8rem;">
-              <div class="form-group">
-                <label class="form-label">Planning Month</label>
-                <select id="plannerMonthSelect" class="input-text" onchange="plannerMonth = this.value">
-                  ${months.map(m => `<option value="${m}" ${m === plannerMonth ? 'selected' : ''}>${m}</option>`).join('')}
-                </select>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Year</label>
-                <input type="number" id="plannerYearInput" class="input-text" value="${plannerYear}" oninput="plannerYear = Number(this.value)">
-              </div>
+            <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
+              <select class="input-text" style="padding:0.35rem 0.6rem; font-size:0.78rem;" onchange="window.SOCIAL_MODULE.changePlanMonth(this.value)">
+                ${months.map(m => `<option value="${m}" ${m === selectedPlanMonth ? 'selected' : ''}>${m}</option>`).join('')}
+              </select>
+              <input type="number" class="input-text" style="width:75px; padding:0.35rem 0.6rem; font-size:0.78rem;" value="${selectedPlanYear}" oninput="window.SOCIAL_MODULE.changePlanYear(this.value)">
             </div>
-
-            <!-- Content Mix Target -->
-            <div>
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
-                <label class="form-label" style="margin:0;">Content Mix Breakdown</label>
-                <span style="font-size:0.72rem; color:var(--text-muted);" id="plannerMixTotal">Total: 100%</span>
-              </div>
-              <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:0.5rem; font-size:0.72rem;">
-                <div style="background:rgba(255,255,255,0.03); border-radius:6px; padding:0.4rem; border:1px solid var(--border-subtle);">
-                  <div style="color:#60a5fa; font-weight:700;">🎓 Educational</div>
-                  <input type="number" class="input-text" style="padding:0.2rem 0.4rem; font-size:0.75rem; margin-top:0.2rem;" value="${plannerMix.educational}" oninput="plannerMix.educational = Number(this.value); window.SOCIAL_MODULE.updateMixDisplay()">
-                </div>
-                <div style="background:rgba(255,255,255,0.03); border-radius:6px; padding:0.4rem; border:1px solid var(--border-subtle);">
-                  <div style="color:#f472b6; font-weight:700;">🎭 Entertainment</div>
-                  <input type="number" class="input-text" style="padding:0.2rem 0.4rem; font-size:0.75rem; margin-top:0.2rem;" value="${plannerMix.entertainment}" oninput="plannerMix.entertainment = Number(this.value); window.SOCIAL_MODULE.updateMixDisplay()">
-                </div>
-                <div style="background:rgba(255,255,255,0.03); border-radius:6px; padding:0.4rem; border:1px solid var(--border-subtle);">
-                  <div style="color:#34d399; font-weight:700;">🛒 Promo / Vault</div>
-                  <input type="number" class="input-text" style="padding:0.2rem 0.4rem; font-size:0.75rem; margin-top:0.2rem;" value="${plannerMix.promo}" oninput="plannerMix.promo = Number(this.value); window.SOCIAL_MODULE.updateMixDisplay()">
-                </div>
-                <div style="background:rgba(255,255,255,0.03); border-radius:6px; padding:0.4rem; border:1px solid var(--border-subtle);">
-                  <div style="color:#fbbf24; font-weight:700;">🏢 Agency BTS</div>
-                  <input type="number" class="input-text" style="padding:0.2rem 0.4rem; font-size:0.75rem; margin-top:0.2rem;" value="${plannerMix.bts}" oninput="plannerMix.bts = Number(this.value); window.SOCIAL_MODULE.updateMixDisplay()">
-                </div>
-              </div>
-            </div>
-
-            <!-- Submit Action -->
-            <button type="button" class="btn-primary" id="btnRunPlannerGen" style="width:100%; padding:0.7rem; font-weight:800; font-size:0.92rem; background:linear-gradient(135deg, #a855f7, #6366f1); border:none;" onclick="window.SOCIAL_MODULE.generateContentCalendarPlan()">
-              ${isPlannerLoading ? '⏳ AI Strategizing 4-Week Plan...' : '✨ Generate 4-Week Strategic Calendar'}
-            </button>
           </div>
 
-          <!-- Step 2 Card: YouTube Studio / Analytics CSV Insights -->
-          <div style="background:var(--surface-card, #14141e); border:1px solid var(--border-subtle); border-radius:14px; padding:1.25rem; display:flex; flex-direction:column; gap:0.9rem;">
-            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-subtle); padding-bottom:0.6rem;">
-              <div style="font-weight:800; color:#fff; font-size:1rem; display:flex; align-items:center; gap:0.5rem;">
-                <span>📊</span> Step 2: YouTube Studio / Analytics CSV (Optional)
+          <!-- Strategy Configuration Bar (if not locked and not archived) -->
+          ${!isLocked && !isPastMonth ? `
+            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-subtle); border-radius:10px; padding:0.85rem 1rem; display:grid; grid-template-columns:1.5fr 1fr auto; gap:0.8rem; align-items:center;">
+              
+              <!-- Focus / Campaign Note -->
+              <div>
+                <label class="form-label" style="margin-bottom:0.2rem;">🎯 Optional Monthly Focus / Theme</label>
+                <input type="text" id="inpMonthlyFocusNote" class="input-text" placeholder="e.g. Fresher interview prep & global job skill series..." value="${escapeHTML(monthlyFocusNote)}" oninput="monthlyFocusNote = this.value">
               </div>
-              <span class="badge badge-emerald">Audience Signals</span>
-            </div>
 
-            <!-- CSV Upload Dropzone -->
-            <div style="border:2px dashed var(--border-subtle); border-radius:10px; padding:1rem; text-align:center; background:rgba(0,0,0,0.25); cursor:pointer;" onclick="document.getElementById('plannerCsvFileInput').click()">
-              <input type="file" id="plannerCsvFileInput" style="display:none;" accept=".csv,text/csv" onchange="window.SOCIAL_MODULE.handleAnalyticsCsvUpload(this)">
-              <div style="font-size:1.6rem; margin-bottom:0.2rem;">📈</div>
-              <div style="font-weight:700; font-size:0.85rem; color:#fff;">Upload YouTube Studio Analytics CSV</div>
-              <div style="font-size:0.72rem; color:var(--text-dim); margin-top:0.15rem;">Export from YouTube Studio > Analytics > Download report</div>
-            </div>
-
-            <!-- Analytics Insights Preview Box -->
-            <div id="plannerAnalyticsInsightsWrap" style="flex:1; display:${plannerAnalytics ? 'flex' : 'none'}; flex-direction:column; gap:0.6rem; background:rgba(16,185,129,0.06); border:1px solid rgba(16,185,129,0.25); border-radius:10px; padding:0.85rem;">
-              ${plannerAnalytics ? renderAnalyticsInsightsHTML(plannerAnalytics) : ''}
-            </div>
-
-            ${!plannerAnalytics ? `
-              <div style="font-size:0.74rem; color:var(--text-dim); line-height:1.45; background:rgba(255,255,255,0.02); padding:0.6rem 0.8rem; border-radius:8px;">
-                💡 <em>Tip: Uploading your channel's export grounds the Gemini generator in your actual audience retention, top-converting formats, and highest-velocity time windows.</em>
+              <!-- Anchor Synergy Toggle (if channel is not the anchor) -->
+              <div>
+                ${!channel.isAnchor ? `
+                  <label class="form-label" style="margin-bottom:0.2rem;">🔗 Anchor Channel Synergy</label>
+                  <label style="display:flex; align-items:center; gap:0.4rem; font-size:0.75rem; color:#fff; cursor:pointer; margin-top:0.35rem;">
+                    <input type="checkbox" style="accent-color:#10b981; width:16px; height:16px;" ${alignAnchorSynergy ? 'checked' : ''} onchange="alignAnchorSynergy = this.checked">
+                    Align with Anchor YouTube Pillars
+                  </label>
+                ` : `
+                  <label class="form-label" style="margin-bottom:0.2rem;">⚓ Anchor Channel</label>
+                  <div style="font-size:0.72rem; color:#34d399; margin-top:0.35rem;">Core Pillar Origin for other channels</div>
+                `}
               </div>
-            ` : ''}
-          </div>
 
-        </div>
-
-        <!-- Generated Plan Review & Batch Creator Section -->
-        <div style="background:var(--surface-card, #14141e); border:1px solid var(--border-subtle); border-radius:14px; padding:1.25rem; display:flex; flex-direction:column; gap:1rem;">
-          
-          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.8rem; border-bottom:1px solid var(--border-subtle); padding-bottom:0.8rem;">
-            <div>
-              <h3 style="margin:0; font-size:1.1rem; color:#fff; font-family:var(--font-heading);">
-                📋 Generated Strategic Production Blueprint (${plannerGeneratedPlan.length} Posts)
-              </h3>
-              <div style="font-size:0.78rem; color:var(--text-muted); margin-top:0.2rem;">
-                Review the 4-week structured schedule below. Check the items you approve, then 1-tap create them as drafts in your Kanban pipeline.
-              </div>
-            </div>
-
-            ${plannerGeneratedPlan.length > 0 ? `
-              <div style="display:flex; gap:0.6rem; align-items:center;">
-                <button type="button" class="btn-secondary btn-sm" onclick="window.SOCIAL_MODULE.toggleAllPlannerRows()">
-                  ${plannerSelectedRows.size === plannerGeneratedPlan.length ? 'Deselect All' : 'Select All (' + plannerGeneratedPlan.length + ')'}
-                </button>
-                <button type="button" class="btn-emerald btn-sm" style="font-weight:800; padding:0.4rem 0.9rem;" onclick="window.SOCIAL_MODULE.createSelectedDraftsFromPlanner()">
-                  🚀 Create Selected Drafts (${plannerSelectedRows.size})
+              <!-- Run AI Generation Button -->
+              <div>
+                <button type="button" class="btn-primary" id="btnRunChannelGen" style="padding:0.6rem 1rem; font-size:0.85rem; font-weight:800; background:linear-gradient(135deg, #a855f7, #6366f1); border:none;" onclick="window.SOCIAL_MODULE.generateChannelCalendarPlan('${brand.slug}', '${channel.id}')">
+                  ${isGeneratingCalendar ? '⏳ AI Strategizing...' : '✨ Generate ' + selectedPlanMonth + ' Strategy'}
                 </button>
               </div>
-            ` : ''}
-          </div>
 
-          <!-- Plan Items Table / Cards -->
-          <div id="plannerPlanItemsContainer" style="display:flex; flex-direction:column; gap:0.8rem;">
-            ${plannerGeneratedPlan.length === 0 ? `
+            </div>
+          ` : ''}
+
+          <!-- Strategic Summary Banner (if plan exists) -->
+          ${currentCal ? `
+            <div style="background:rgba(168,85,247,0.06); border:1px solid rgba(168,85,247,0.25); border-radius:10px; padding:0.85rem 1rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.6rem;">
+              <div>
+                <div style="font-weight:800; font-size:0.82rem; color:#d8b4fe;">💡 Strategy Thesis: ${escapeHTML(currentCal.theme || selectedPlanMonth + ' Blueprint')}</div>
+                <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.15rem;">${escapeHTML(currentCal.strategicSummary || '')}</div>
+              </div>
+
+              <!-- Lock / Pipeline Action Button -->
+              ${!isLocked && !isPastMonth ? `
+                <button type="button" class="btn-emerald btn-sm" style="font-weight:800; padding:0.4rem 0.9rem;" onclick="window.SOCIAL_MODULE.lockChannelCalendar('${brand.slug}', '${channel.id}', '${currentMonthKey}')">
+                  🔒 Lock & Push to Pipeline (${planItems.length} Drafts)
+                </button>
+              ` : (isLocked ? `
+                <div style="display:flex; align-items:center; gap:0.5rem;">
+                  <span class="badge badge-emerald" style="font-weight:800; font-size:0.75rem;">🔒 Locked by ${escapeHTML(currentCal.lockedBy || 'Admin')}</span>
+                  <button type="button" class="btn-secondary btn-sm" style="font-size:0.72rem;" onclick="window.SOCIAL_MODULE.switchView('kanban')">View in Kanban Pipeline →</button>
+                </div>
+              ` : `
+                <span class="badge badge-gray" style="font-size:0.75rem;">📁 Read-Only Archive</span>
+              `)}
+            </div>
+          ` : ''}
+
+          <!-- Blueprint Plan Items Table -->
+          <div style="display:flex; flex-direction:column; gap:0.65rem;">
+            ${planItems.length === 0 ? `
               <div style="text-align:center; padding:3.5rem 1rem; color:var(--text-dim); border:1px dashed var(--border-subtle); border-radius:12px;">
-                <div style="font-size:2.2rem; margin-bottom:0.5rem;">🗓️</div>
-                <div style="font-weight:700; color:#fff; font-size:0.95rem;">No Monthly Plan Generated Yet</div>
-                <div style="font-size:0.8rem; color:var(--text-muted); margin-top:0.25rem; max-width:480px; margin-left:auto; margin-right:auto;">
-                  Configure your channel targets above and click <strong>"Generate 4-Week Strategic Calendar"</strong> to auto-build an executive content schedule.
+                <div style="font-size:2.2rem; margin-bottom:0.4rem;">🗓️</div>
+                <div style="font-weight:700; color:#fff; font-size:0.95rem;">No Content Calendar Generated for ${selectedPlanMonth} ${selectedPlanYear}</div>
+                <div style="font-size:0.78rem; color:var(--text-muted); margin-top:0.2rem; max-width:480px; margin-left:auto; margin-right:auto;">
+                  ${isPastMonth ? 'This month is in the past and has no recorded calendar archive.' : 'Click <strong>"Generate ' + selectedPlanMonth + ' Strategy"</strong> to auto-build a verified 4-week production plan grounded in audience demand.'}
                 </div>
               </div>
-            ` : plannerGeneratedPlan.map((item, idx) => {
-              const isSelected = plannerSelectedRows.has(item.id || String(idx));
-              const chanCfg = getChannelConfig(item.channel);
-              const icon = PLATFORM_ICONS[item.platform] || '📱';
-
+            ` : planItems.map((item, idx) => {
+              const icon = PLATFORM_ICONS[channel.platform] || '📱';
               return `
-                <div style="background:rgba(255,255,255,${isSelected ? '0.05' : '0.02'}); border:1px solid ${isSelected ? '#a855f7' : 'var(--border-subtle)'}; border-radius:12px; padding:1rem; display:grid; grid-template-columns:auto 1.2fr 2.5fr 1fr auto; gap:1rem; align-items:center; transition:border-color 0.15s ease;">
+                <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-subtle); border-radius:10px; padding:0.9rem 1rem; display:grid; grid-template-columns:1fr 2.5fr 1fr auto; gap:0.9rem; align-items:center;">
                   
-                  <!-- Checkbox -->
-                  <div>
-                    <input type="checkbox" style="width:18px; height:18px; accent-color:#a855f7; cursor:pointer;" ${isSelected ? 'checked' : ''} onchange="window.SOCIAL_MODULE.togglePlannerRow('${item.id || String(idx)}')">
-                  </div>
-
-                  <!-- Date & Channel Badges -->
-                  <div style="display:flex; flex-direction:column; gap:0.3rem;">
-                    <div style="display:flex; gap:0.4rem; align-items:center;">
-                      <span class="badge badge-purple" style="font-size:0.68rem; font-weight:800;">${escapeHTML(item.week || 'Week 1')} · ${escapeHTML(item.dayOfWeek || 'Mon')}</span>
-                      <span style="font-size:0.7rem; color:var(--text-dim);">${escapeHTML(item.scheduledDate || '')}</span>
-                    </div>
-                    <div style="display:flex; gap:0.3rem; align-items:center; flex-wrap:wrap;">
-                      <span class="badge ${chanCfg.badgeClass}" style="font-size:0.68rem;">${escapeHTML(chanCfg.name)}</span>
-                      <span class="badge badge-gray" style="font-size:0.65rem;">${icon} ${escapeHTML(item.platform)}</span>
-                    </div>
-                    <span class="badge badge-blue" style="font-size:0.65rem; width:fit-content;">${escapeHTML(item.contentType || 'Short-form Video')}</span>
-                  </div>
-
-                  <!-- Topic Idea & Viral Hook -->
+                  <!-- Timing & Channel Badges -->
                   <div style="display:flex; flex-direction:column; gap:0.25rem;">
-                    <div style="font-weight:800; color:#fff; font-size:0.92rem; line-height:1.35;">
-                      ${escapeHTML(item.topicIdea || item.title)}
+                    <div style="display:flex; gap:0.35rem; align-items:center;">
+                      <span class="badge badge-purple" style="font-size:0.68rem; font-weight:800;">${escapeHTML(item.week)} · ${escapeHTML(item.dayOfWeek)}</span>
+                      <span style="font-size:0.68rem; color:var(--text-dim);">${escapeHTML(item.scheduledDate || '')}</span>
                     </div>
-                    ${item.hook ? `
-                      <div style="font-size:0.75rem; color:#a7f3d0; font-style:italic;">
-                        🎯 "${escapeHTML(item.hook)}"
-                      </div>
-                    ` : ''}
-                    ${item.reasoning ? `
-                      <div style="font-size:0.7rem; color:var(--text-dim);">
-                        💡 ${escapeHTML(item.reasoning)}
-                      </div>
-                    ` : ''}
+                    <span class="badge badge-gray" style="font-size:0.65rem; width:fit-content;">${icon} ${escapeHTML(item.contentType || channel.defaultContentType)}</span>
+                  </div>
+
+                  <!-- Topic Idea & Strategic Rationale -->
+                  <div style="display:flex; flex-direction:column; gap:0.2rem;">
+                    <div style="font-weight:800; color:#fff; font-size:0.9rem; line-height:1.35;">
+                      ${escapeHTML(item.topicIdea)}
+                    </div>
+                    ${item.hook ? `<div style="font-size:0.74rem; color:#a7f3d0; font-style:italic;">🎯 "${escapeHTML(item.hook)}"</div>` : ''}
+                    <div style="font-size:0.7rem; color:#94a3b8; margin-top:0.15rem;">
+                      💡 <strong>Strategic Rationale:</strong> ${escapeHTML(item.strategicRationale || 'Proven audience signal')}
+                    </div>
                   </div>
 
                   <!-- Time & Duration -->
-                  <div style="font-size:0.75rem; color:var(--text-muted); display:flex; flex-direction:column; gap:0.2rem;">
+                  <div style="font-size:0.74rem; color:var(--text-muted); display:flex; flex-direction:column; gap:0.2rem;">
                     <div>⏰ <strong>${escapeHTML(item.suggestedTime || '18:00')}</strong></div>
                     <div>⏱️ <strong>${escapeHTML(item.targetDuration || '60s')}</strong></div>
                   </div>
 
                   <!-- Quick Action Button -->
                   <div>
-                    <button type="button" class="btn-secondary btn-sm" style="font-size:0.72rem; padding:0.3rem 0.6rem;" onclick="window.SOCIAL_MODULE.openPostModalFromPlanItem('${item.id || String(idx)}')">
+                    <button type="button" class="btn-secondary btn-sm" style="font-size:0.72rem; padding:0.3rem 0.6rem;" onclick="window.SOCIAL_MODULE.openPostModalFromPlanItem('${brand.slug}', '${channel.id}', '${currentMonthKey}', ${idx})">
                       ✏️ Draft Now
                     </button>
                   </div>
@@ -960,20 +1206,89 @@ window.APP_MODULES.social = async function(container) {
     `;
   }
 
-  function renderAnalyticsInsightsHTML(insights) {
+  function renderBrandAssetsKitHTML(brand) {
     return `
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.2rem;">
-        <span style="font-weight:800; font-size:0.8rem; color:#10b981;">✅ Verified Audience Signals Extracted</span>
-        <span style="font-size:0.68rem; color:var(--text-dim);">${insights.totalRowsAnalyzed || 0} videos analyzed</span>
-      </div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.4rem; font-size:0.72rem;">
-        <div><strong>Top Formats:</strong> <span style="color:#60a5fa;">${(insights.topCategories || []).slice(0, 2).join(', ')}</span></div>
-        <div><strong>Peak Windows:</strong> <span style="color:#f472b6;">${(insights.bestPostingDays || []).slice(0, 2).join(', ')}</span></div>
-      </div>
-      <div style="font-size:0.72rem; color:var(--text-secondary); margin-top:0.2rem;">
-        <ul style="margin:0; padding-left:1.1rem;">
-          ${(insights.recommendations || []).slice(0, 2).map(r => `<li>${escapeHTML(r)}</li>`).join('')}
-        </ul>
+      <div style="display:grid; grid-template-columns:1.2fr 1fr; gap:1.2rem;">
+        
+        <!-- Brand Identity & Guidelines Form -->
+        <div style="background:var(--surface-card, #14141e); border:1px solid var(--border-subtle); border-radius:14px; padding:1.25rem; display:flex; flex-direction:column; gap:0.9rem;">
+          <div style="font-weight:800; font-size:0.95rem; color:#fff; border-bottom:1px solid var(--border-subtle); padding-bottom:0.6rem;">
+            🎨 Brand Identity & Copy Guidelines (${escapeHTML(brand.name)})
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Brand Tagline</label>
+            <input type="text" id="inpBrandTagline" class="input-text" value="${escapeHTML(brand.tagline || '')}">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Core Niche & Target Audience</label>
+            <input type="text" id="inpBrandNiche" class="input-text" value="${escapeHTML(brand.niche || '')}">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Tone of Voice Guidelines</label>
+            <input type="text" id="inpBrandTone" class="input-text" value="${escapeHTML(brand.tone || '')}">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Brand Mission Statement</label>
+            <textarea id="inpBrandMission" class="input-text" rows="2">${escapeHTML(brand.mission || '')}</textarea>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.8rem;">
+            <div class="form-group">
+              <label class="form-label">Standard Hashtags</label>
+              <input type="text" id="inpBrandHashtags" class="input-text" value="${escapeHTML(brand.standardHashtags || '')}">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Font Pairing</label>
+              <input type="text" id="inpBrandFonts" class="input-text" value="${escapeHTML(brand.fonts || '')}">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Default CTA (Call-to-Action)</label>
+            <textarea id="inpBrandCta" class="input-text" rows="2">${escapeHTML(brand.standardCta || '')}</textarea>
+          </div>
+
+          <div style="display:flex; justify-content:flex-end; margin-top:0.4rem;">
+            <button type="button" class="btn-primary" onclick="window.SOCIAL_MODULE.saveBrandGuidelines('${brand.slug}')">
+              💾 Save Brand Identity Guidelines
+            </button>
+          </div>
+        </div>
+
+        <!-- Reusable Media Assets Library -->
+        <div style="background:var(--surface-card, #14141e); border:1px solid var(--border-subtle); border-radius:14px; padding:1.25rem; display:flex; flex-direction:column; gap:0.9rem;">
+          <div style="font-weight:800; font-size:0.95rem; color:#fff; border-bottom:1px solid var(--border-subtle); padding-bottom:0.6rem; display:flex; justify-content:space-between; align-items:center;">
+            <span>📁 Reusable Media Assets Library</span>
+            <span class="badge badge-purple">${(brand.assets || []).length} Assets</span>
+          </div>
+
+          <div style="border:2px dashed var(--border-subtle); border-radius:10px; padding:1rem; text-align:center; background:rgba(0,0,0,0.25); cursor:pointer;" onclick="document.getElementById('brandAssetUploadInput').click()">
+            <input type="file" id="brandAssetUploadInput" style="display:none;" accept="image/*,video/*,audio/*,application/pdf" onchange="window.SOCIAL_MODULE.handleBrandAssetUpload(this, '${brand.slug}')">
+            <div style="font-size:1.5rem;">☁️</div>
+            <div style="font-weight:700; font-size:0.82rem; color:#fff;">Upload Reusable Brand Asset</div>
+            <div style="font-size:0.7rem; color:var(--text-dim);">Watermarks, Logo PNGs, Intro/Outro Videos, Canva Templates</div>
+          </div>
+
+          <!-- Assets List -->
+          <div style="display:flex; flex-direction:column; gap:0.5rem; max-height:280px; overflow-y:auto;">
+            ${(brand.assets || []).length === 0 ? `
+              <div style="text-align:center; color:var(--text-dim); padding:1.5rem; font-size:0.75rem;">
+                No brand assets uploaded yet. Upload transparent PNG logos, intro clips, and PowerPoint/Canva templates here.
+              </div>
+            ` : brand.assets.map(a => `
+              <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-subtle); border-radius:8px; padding:0.5rem 0.75rem; display:flex; justify-content:space-between; align-items:center; font-size:0.75rem;">
+                <div style="font-weight:700; color:#fff; max-width:220px; overflow:hidden; text-overflow:ellipsis;">${escapeHTML(a.name || 'Asset')}</div>
+                <button type="button" class="btn-ghost btn-sm" style="font-size:0.68rem;" onclick="navigator.clipboard.writeText('${escapeHTML(a.url)}'); if(window.showToast) window.showToast('Asset URL copied!','success');">📋 Copy URL</button>
+              </div>
+            `).join('')}
+          </div>
+
+        </div>
+
       </div>
     `;
   }
@@ -1130,7 +1445,7 @@ window.APP_MODULES.social = async function(container) {
       activeViewMode = mode;
       const btnK = document.getElementById('btnViewKanban');
       const btnC = document.getElementById('btnViewCalendar');
-      const btnP = document.getElementById('btnViewPlannerAI');
+      const btnP = document.getElementById('btnViewContentOS');
 
       if (btnK) {
         btnK.style.background = mode === 'kanban' ? 'rgba(255,255,255,0.15)' : 'transparent';
@@ -1141,11 +1456,35 @@ window.APP_MODULES.social = async function(container) {
         btnC.style.color = mode === 'calendar' ? '#fff' : 'var(--text-muted)';
       }
       if (btnP) {
-        btnP.style.background = mode === 'planner_ai' ? 'linear-gradient(135deg, rgba(168,85,247,0.35), rgba(99,102,241,0.35))' : 'transparent';
-        btnP.style.color = mode === 'planner_ai' ? '#fff' : 'var(--text-muted)';
+        btnP.style.background = mode === 'content_os' ? 'linear-gradient(135deg, rgba(168,85,247,0.35), rgba(99,102,241,0.35))' : 'transparent';
+        btnP.style.color = mode === 'content_os' ? '#fff' : 'var(--text-muted)';
       }
 
       renderContent();
+    },
+    switchBrand(brandSlug) {
+      activeBrandSlug = brandSlug;
+      activeBrandSubTab = 'overview';
+      activeChannelId = null;
+      renderContentOS();
+    },
+    switchBrandSubTab(tab) {
+      activeBrandSubTab = tab;
+      if (tab !== 'channel') activeChannelId = null;
+      renderContentOS();
+    },
+    openChannelWorkspace(channelId) {
+      activeBrandSubTab = 'channel';
+      activeChannelId = channelId;
+      renderContentOS();
+    },
+    changePlanMonth(m) {
+      selectedPlanMonth = m;
+      renderContentOS();
+    },
+    changePlanYear(y) {
+      selectedPlanYear = Number(y) || 2026;
+      renderContentOS();
     },
     prevMonth() {
       currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1);
@@ -1169,135 +1508,125 @@ window.APP_MODULES.social = async function(container) {
       if (activeViewMode === 'calendar') renderCalendar();
       else renderBoard();
     },
-    togglePlannerChannel(chanId) {
-      if (plannerSelectedChannels.includes(chanId)) {
-        if (plannerSelectedChannels.length > 1) {
-          plannerSelectedChannels = plannerSelectedChannels.filter(c => c !== chanId);
-        }
-      } else {
-        plannerSelectedChannels.push(chanId);
-      }
-      renderPlannerAI();
-    },
-    updateMixDisplay() {
-      const total = (plannerMix.educational || 0) + (plannerMix.entertainment || 0) + (plannerMix.promo || 0) + (plannerMix.bts || 0);
-      const el = document.getElementById('plannerMixTotal');
-      if (el) {
-        el.textContent = `Total: ${total}%`;
-        el.style.color = total === 100 ? '#10b981' : '#f59e0b';
-      }
-    },
-    async handleAnalyticsCsvUpload(input) {
+    async handleChannelCsvUpload(input, brandSlug, channelId) {
       const file = input.files && input.files[0];
       if (!file) return;
 
-      if (window.showToast) window.showToast('📈 Parsing YouTube Studio CSV analytics...', 'info');
+      if (window.showToast) window.showToast(`📈 Ingesting ${file.name} into ${channelId} memory...`, 'info');
 
       try {
-        const text = await file.text();
-        const res = await APP_API.post('/ai/parse-analytics-csv', {
-          csvText: text,
-          channelName: plannerSelectedChannels.join(', ')
+        const formData = new FormData();
+        formData.append('csvFile', file);
+
+        const token = localStorage.getItem('token') || '';
+        const res = await fetch(`/api/social-brands/${brandSlug}/channels/${channelId}/analytics`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+          body: formData
         });
 
-        if (res && res.success && res.insights) {
-          plannerAnalytics = res.insights;
-          renderPlannerAI();
-          if (window.showToast) window.showToast('✅ Audience signals & performance insights loaded!', 'success');
+        const json = await res.json();
+        if (json && json.success) {
+          if (window.showToast) window.showToast('✅ Channel analytics & audience memory indexed permanently!', 'success');
+          await loadInitialData();
+          this.openChannelWorkspace(channelId);
+        } else {
+          throw new Error(json?.error || 'Failed to upload CSV');
         }
       } catch (err) {
-        console.error('CSV parse error:', err);
-        if (window.showToast) window.showToast('CSV parse notice: Using standard baseline insights.', 'warning');
+        console.error('CSV upload error:', err);
+        if (window.showToast) window.showToast('Upload notice: ' + err.message, 'error');
       }
     },
-    async generateContentCalendarPlan() {
-      const btn = document.getElementById('btnRunPlannerGen');
-      if (btn) {
-        btn.disabled = true;
-        btn.textContent = '⏳ AI Strategizing 4-Week Plan...';
-      }
-      isPlannerLoading = true;
+    openCommunitySnapshotModal() {
+      const count = prompt('Enter Current Active Member Count:', '1200');
+      if (count === null) return;
+      const topics = prompt('Enter Top Discussed Topics (comma-separated):', 'Daily Job Circulars, Interview Q&A, PDF Guides');
+      if (topics === null) return;
+
+      this.saveCommunitySnapshot(count, topics);
+    },
+    async saveCommunitySnapshot(memberCount, topTopics) {
+      const brand = (socialBrandsData || []).find(b => b.slug === activeBrandSlug) || socialBrandsData[0];
+      const channelId = activeChannelId || (brand && brand.channels && brand.channels[0]?.id);
 
       try {
-        const res = await APP_API.post('/ai/content-calendar', {
-          channels: plannerSelectedChannels,
-          month: plannerMonth,
-          year: plannerYear,
-          contentMix: plannerMix,
-          analyticsSummary: plannerAnalytics
+        const res = await APP_API.post(`/social-brands/${brand.slug}/channels/${channelId}/analytics`, {
+          memberCount: Number(memberCount) || 100,
+          topTopics: topTopics.split(',').map(s => s.trim()).filter(Boolean),
+          snapshotSource: 'Community Metrics Snapshot'
         });
-
-        if (res && res.success && Array.isArray(res.plan)) {
-          plannerGeneratedPlan = res.plan;
-          plannerSelectedRows = new Set(res.plan.map((p, i) => p.id || String(i)));
-          renderPlannerAI();
-          if (window.showToast) window.showToast(`✨ Generated ${res.plan.length} post blueprints for ${plannerMonth}!`, 'success');
-        }
-      } catch (err) {
-        console.error('Planner Gen Error:', err);
-        if (window.showToast) window.showToast('Calendar generation error: ' + err.message, 'error');
-      } finally {
-        isPlannerLoading = false;
-        if (btn) {
-          btn.disabled = false;
-          btn.textContent = '✨ Generate 4-Week Strategic Calendar';
-        }
-      }
-    },
-    togglePlannerRow(rowId) {
-      if (plannerSelectedRows.has(rowId)) {
-        plannerSelectedRows.delete(rowId);
-      } else {
-        plannerSelectedRows.add(rowId);
-      }
-      renderPlannerAI();
-    },
-    toggleAllPlannerRows() {
-      if (plannerSelectedRows.size === plannerGeneratedPlan.length) {
-        plannerSelectedRows.clear();
-      } else {
-        plannerSelectedRows = new Set(plannerGeneratedPlan.map((p, i) => p.id || String(i)));
-      }
-      renderPlannerAI();
-    },
-    async createSelectedDraftsFromPlanner() {
-      const selected = plannerGeneratedPlan.filter((p, i) => plannerSelectedRows.has(p.id || String(i)));
-      if (selected.length === 0) {
-        if (window.showToast) window.showToast('Please select at least one post blueprint.', 'warning');
-        return;
-      }
-
-      if (window.showToast) window.showToast(`🚀 Creating ${selected.length} post drafts in pipeline...`, 'info');
-
-      try {
-        const payloadPosts = selected.map(item => ({
-          title: item.topicIdea || item.title,
-          caption: item.hook ? `${item.hook}\n\n` : '',
-          channel: item.channel,
-          contentCategory: item.contentCategory,
-          contentType: item.contentType || 'Short-form Video',
-          targetDuration: item.targetDuration || '60s',
-          platform: item.platform || 'YouTube',
-          scheduledDate: item.scheduledDate,
-          scheduledTime: item.suggestedTime || '18:00',
-          status: 'Draft',
-          assignedPublisher: 'Firoz'
-        }));
-
-        const res = await APP_API.post('/posts/batch', { posts: payloadPosts });
 
         if (res && res.success) {
-          if (window.showToast) window.showToast(`🎉 Created ${res.count || selected.length} drafts in the pipeline!`, 'success');
+          if (window.showToast) window.showToast('✅ Community metrics snapshot saved!', 'success');
           await loadInitialData();
-          this.switchView('kanban');
+          this.openChannelWorkspace(channelId);
         }
       } catch (err) {
-        console.error('Batch draft creation error:', err);
-        if (window.showToast) window.showToast('Failed to create batch drafts: ' + err.message, 'error');
+        if (window.showToast) window.showToast('Failed to save snapshot: ' + err.message, 'error');
       }
     },
-    openPostModalFromPlanItem(rowId) {
-      const item = plannerGeneratedPlan.find((p, i) => (p.id || String(i)) === rowId);
+    async generateChannelCalendarPlan(brandSlug, channelId) {
+      isGeneratingCalendar = true;
+      const btn = document.getElementById('btnRunChannelGen');
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = '⏳ AI Strategizing ' + selectedPlanMonth + '...';
+      }
+
+      try {
+        const res = await APP_API.post(`/social-brands/${brandSlug}/channels/${channelId}/generate-calendar`, {
+          month: selectedPlanMonth,
+          year: selectedPlanYear,
+          alignAnchor: alignAnchorSynergy,
+          focusNote: monthlyFocusNote
+        });
+
+        if (res && res.success) {
+          if (window.showToast) window.showToast(`✨ Generated ${selectedPlanMonth} strategic calendar for ${channelId}!`, 'success');
+          await loadInitialData();
+          this.openChannelWorkspace(channelId);
+        } else {
+          throw new Error(res?.error || 'Generation failed');
+        }
+      } catch (err) {
+        console.error('Calendar Gen Error:', err);
+        if (window.showToast) window.showToast('Generation notice: ' + err.message, 'error');
+      } finally {
+        isGeneratingCalendar = false;
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = '✨ Generate ' + selectedPlanMonth + ' Strategy';
+        }
+      }
+    },
+    async lockChannelCalendar(brandSlug, channelId, monthKey) {
+      if (!confirm(`Are you sure you want to LOCK the ${selectedPlanMonth} calendar for this channel? All items will be frozen and auto-created as active drafts in your Kanban pipeline.`)) return;
+
+      if (window.showToast) window.showToast('🔒 Freezing plan and provisioning drafts in pipeline...', 'info');
+
+      try {
+        const res = await APP_API.post(`/social-brands/${brandSlug}/channels/${channelId}/calendars/${monthKey}/lock`, {});
+        if (res && res.success) {
+          if (window.showToast) window.showToast(res.message || '🎉 Calendar locked and drafts created!', 'success');
+          await loadInitialData();
+          this.openChannelWorkspace(channelId);
+        } else {
+          throw new Error(res?.error || 'Lock failed');
+        }
+      } catch (err) {
+        console.error('Lock error:', err);
+        if (window.showToast) window.showToast('Lock failed: ' + err.message, 'error');
+      }
+    },
+    openPostModalFromPlanItem(brandSlug, channelId, monthKey, planIndex) {
+      const brand = (socialBrandsData || []).find(b => b.slug === brandSlug || b.id === brandSlug);
+      const channel = (brand && brand.channels || []).find(c => c.id === channelId || c.slug === channelId);
+      const calendar = channel && channel.calendars && channel.calendars[monthKey];
+      const item = calendar && calendar.planItems && calendar.planItems[planIndex];
+
       if (!item) return;
 
       this.openPostModal();
@@ -1313,14 +1642,14 @@ window.APP_MODULES.social = async function(container) {
       if (dateEl && item.scheduledDate) dateEl.value = item.scheduledDate;
       if (timeEl && item.suggestedTime) timeEl.value = item.suggestedTime;
 
-      const chanCfg = CHANNELS.find(c => (item.channel || '').includes(c.name) || (item.channel || '').includes(c.id));
+      const chanCfg = CHANNELS.find(c => (brand.name || '').includes(c.name) || (brand.slug || '').includes(c.id));
       if (chanCfg && chanEl) {
         chanEl.value = chanCfg.id;
         this.onChannelChange(chanCfg.id);
       }
 
-      if (platEl && item.platform) {
-        platEl.value = item.platform;
+      if (platEl && channel.platform) {
+        platEl.value = channel.platform;
         this.onPlatformChange(platEl);
       }
 
@@ -1331,6 +1660,114 @@ window.APP_MODULES.social = async function(container) {
 
       if (durEl && item.targetDuration) {
         durEl.value = item.targetDuration;
+      }
+    },
+    async saveBrandGuidelines(brandSlug) {
+      const tagline = document.getElementById('inpBrandTagline')?.value.trim();
+      const niche = document.getElementById('inpBrandNiche')?.value.trim();
+      const tone = document.getElementById('inpBrandTone')?.value.trim();
+      const mission = document.getElementById('inpBrandMission')?.value.trim();
+      const standardHashtags = document.getElementById('inpBrandHashtags')?.value.trim();
+      const fonts = document.getElementById('inpBrandFonts')?.value.trim();
+      const standardCta = document.getElementById('inpBrandCta')?.value.trim();
+
+      try {
+        const res = await APP_API.put(`/social-brands/${brandSlug}`, {
+          tagline,
+          niche,
+          tone,
+          mission,
+          standardHashtags,
+          fonts,
+          standardCta
+        });
+
+        if (res && res.success) {
+          if (window.showToast) window.showToast('✅ Brand identity guidelines updated!', 'success');
+          await loadInitialData();
+          this.switchBrandSubTab('assets');
+        }
+      } catch (err) {
+        if (window.showToast) window.showToast('Failed to save guidelines: ' + err.message, 'error');
+      }
+    },
+    async handleBrandAssetUpload(input, brandSlug) {
+      const file = input.files && input.files[0];
+      if (!file) return;
+
+      if (window.showToast) window.showToast(`Uploading ${file.name} to brand asset kit...`, 'info');
+
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const token = localStorage.getItem('token') || '';
+        const res = await fetch('/api/posts/upload-media', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: formData
+        });
+
+        const json = await res.json();
+        if (json && json.success && json.url) {
+          const brand = (socialBrandsData || []).find(b => b.slug === brandSlug);
+          const currentAssets = brand?.assets || [];
+          currentAssets.push({ name: file.name, url: json.url, type: file.type, uploadedAt: new Date().toISOString() });
+
+          await APP_API.put(`/social-brands/${brandSlug}`, { assets: currentAssets });
+          if (window.showToast) window.showToast('✅ Asset added to brand library!', 'success');
+          await loadInitialData();
+          this.switchBrandSubTab('assets');
+        }
+      } catch (err) {
+        if (window.showToast) window.showToast('Asset upload failed: ' + err.message, 'error');
+      }
+    },
+    promptAddBrand() {
+      const name = prompt('Enter New Brand Name:');
+      if (!name) return;
+      const niche = prompt('Enter Core Niche / Topic:', 'Digital Media & AI');
+      if (!niche) return;
+
+      this.createCustomBrand(name, niche);
+    },
+    async createCustomBrand(name, niche) {
+      try {
+        const res = await APP_API.post('/social-brands', { name, niche });
+        if (res && res.success) {
+          if (window.showToast) window.showToast(`🎉 Created brand "${name}"!`, 'success');
+          await loadInitialData();
+          this.switchBrand(res.brand.slug);
+        }
+      } catch (err) {
+        if (window.showToast) window.showToast('Failed to create brand: ' + err.message, 'error');
+      }
+    },
+    promptAddChannel() {
+      const name = prompt('Enter Channel Name:', 'TikTok Channel');
+      if (!name) return;
+      const platform = prompt('Enter Platform (YouTube, TikTok, Facebook, Instagram, LinkedIn, WhatsApp):', 'TikTok');
+      if (!platform) return;
+      const handle = prompt('Enter Handle / Profile URL:', '@brand_official');
+
+      this.createCustomChannel(name, platform, handle);
+    },
+    async createCustomChannel(name, platform, handle) {
+      try {
+        const res = await APP_API.post(`/social-brands/${activeBrandSlug}/channels`, {
+          name,
+          platform,
+          handle,
+          targetCadencePerWeek: 3
+        });
+
+        if (res && res.success) {
+          if (window.showToast) window.showToast(`🎉 Added channel "${name}"!`, 'success');
+          await loadInitialData();
+          this.openChannelWorkspace(res.channel.id);
+        }
+      } catch (err) {
+        if (window.showToast) window.showToast('Failed to add channel: ' + err.message, 'error');
       }
     },
     onChannelChange(channelKey) {

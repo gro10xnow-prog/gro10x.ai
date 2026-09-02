@@ -1,0 +1,807 @@
+{
+  "brands": [
+    {
+      "id": "brand-grow-bangla",
+      "slug": "grow-bangla",
+      "name": "Grow Bangla",
+      "tagline": "Bridging Career, Language & Professional Growth for Bangladesh",
+      "niche": "Spoken English & Career Preparation for Bangladeshi Youth",
+      "palette": [
+        "#10b981",
+        "#059669",
+        "#047857",
+        "#1e293b",
+        "#0f172a"
+      ],
+      "fonts": "Hind Siliguri + Inter",
+      "tone": "Empowering, clear, conversational, encouraging and practical",
+      "mission": "Empowering young professionals in Bangladesh with actionable job interview English, global career roadmaps, and high-income skills.",
+      "standardHashtags": "#GrowBangla #LearnEnglish #CareerBangladesh #SpokenEnglishBD",
+      "standardCta": "Subscribe to Grow Bangla for weekly job interview mastery & spoken English breakdowns! Link in bio.",
+      "logoUrl": "",
+      "assets": [],
+      "channels": [
+        {
+          "id": "gb-youtube",
+          "slug": "youtube",
+          "name": "YouTube Channel",
+          "platform": "YouTube",
+          "type": "video",
+          "isAnchor": true,
+          "handle": "@GrowBangla",
+          "url": "https://youtube.com/@GrowBangla",
+          "defaultContentType": "Short-form Video",
+          "targetCadencePerWeek": 4,
+          "audienceCount": 427,
+          "audienceLabel": "28.6K Views · 427 Subscribers",
+          "analyticsKnowledgeBase": {
+            "source": "YouTube Studio Lifetime Export",
+            "lastUpdated": "2026-09-02T10:23:16.101Z",
+            "totalVideosIndexed": 114,
+            "totalViews": 28612,
+            "totalWatchTimeHours": 1144.9,
+            "totalSubscribers": 427,
+            "avgCtr": 5.18,
+            "topPerformers": [
+              {
+                "title": "McDonald’s Service Crew Interview Guide | Answer Common Questions in English",
+                "views": 14013,
+                "watchHours": 757.4,
+                "subs": 178,
+                "ctr": 8.07
+              },
+              {
+                "title": "Shomvob Presents Campus to Career 2024 I First Round Instructions",
+                "views": 6349,
+                "watchHours": 317.9,
+                "subs": 180,
+                "ctr": 8.32
+              },
+              {
+                "title": "Donald Trump on Bangladesh #shorts",
+                "views": 1090,
+                "watchHours": 4.5,
+                "subs": 0,
+                "ctr": 1.02
+              },
+              {
+                "title": "SteadFast Courier Business Development Executive Job #shorts",
+                "views": 649,
+                "watchHours": 2.6,
+                "subs": 3,
+                "ctr": 1.34
+              },
+              {
+                "title": "২৫ বছরের হোম লোন মাত্র ১০ বছরে পরিশোধের গোপন কৌশল! (Save Lakhs in Interest)",
+                "views": 434,
+                "watchHours": 11.3,
+                "subs": 3,
+                "ctr": 5.29
+              }
+            ],
+            "topCategories": [
+              "Job Interview English Guides",
+              "Career Tracks & Competitions",
+              "Financial & Salary Strategies",
+              "Skill Development Shorts"
+            ],
+            "recommendations": [
+              "Long-form interview English guides (like McDonald's Crew) deliver over 60% of all watch time and subscriber conversion.",
+              "Career preparation competitions and official job walkthroughs convert viewers at an exceptional 8.3% CTR.",
+              "Short-form job circular shorts drive fast impressions, while structured tutorials drive retention and loyalty."
+            ]
+          },
+          "calendars": {
+            "2026-10": {
+              "monthKey": "2026-10",
+              "month": "October",
+              "year": 2026,
+              "status": "Locked",
+              "strategicSummary": "Targeted 4-week calendar for Grow Bangla (YouTube Channel) grounded in top lifetime audience conversion formats.",
+              "theme": "Interview preparation and workplace communication",
+              "generatedAt": "2026-09-02T10:26:33.485Z",
+              "planItems": [
+                {
+                  "id": "plan-grow-bangla-youtube-October-1",
+                  "week": "Week 1",
+                  "dayOfWeek": "Mon",
+                  "scheduledDate": "2026-10-01",
+                  "suggestedTime": "18:00",
+                  "topicIdea": "McDonald’s Service Crew Interview Guide | Answer Common Questions in English — Part 1",
+                  "hook": "Did you know 85% of applicants lose the interview in the first 90 seconds? Here is how to fix it for October.",
+                  "contentType": "Short-form Video",
+                  "targetDuration": "60s",
+                  "strategicRationale": "Directly leverages proven watch time retention from \"McDonald’s Service Crew Interview Guide | Ans...\".",
+                  "channel": "Grow Bangla",
+                  "channelSlug": "youtube",
+                  "platform": "YouTube"
+                },
+                {
+                  "id": "plan-grow-bangla-youtube-October-2",
+                  "week": "Week 1",
+                  "dayOfWeek": "Wed",
+                  "scheduledDate": "2026-10-02",
+                  "suggestedTime": "18:00",
+                  "topicIdea": "Shomvob Presents Campus to Career 2024 I First Round Instructions — Part 1",
+                  "hook": "Did you know 85% of applicants lose the interview in the first 90 seconds? Here is how to fix it for October.",
+                  "contentType": "Short-form Video",
+                  "targetDuration": "60s",
+                  "strategicRationale": "Directly leverages proven watch time retention from \"Shomvob Presents Campus to Career 2024 I Firs...\".",
+                  "channel": "Grow Bangla",
+                  "channelSlug": "youtube",
+                  "platform": "YouTube"
+                },
+                {
+                  "id": "plan-grow-bangla-youtube-October-3",
+                  "week": "Week 1",
+                  "dayOfWeek": "Fri",
+                  "scheduledDate": "2026-10-03",
+                  "suggestedTime": "18:00",
+                  "topicIdea": "Donald Trump on Bangladesh #shorts — Part 2",
+                  "hook": "Did you know 85% of applicants lose the interview in the first 90 seconds? Here is how to fix it for October.",
+                  "contentType": "Short-form Video",
+                  "targetDuration": "60s",
+                  "strategicRationale": "Directly leverages proven watch time retention from \"Donald Trump on Bangladesh #shorts...\".",
+                  "channel": "Grow Bangla",
+                  "channelSlug": "youtube",
+                  "platform": "YouTube"
+                },
+                {
+                  "id": "plan-grow-bangla-youtube-October-4",
+                  "week": "Week 1",
+                  "dayOfWeek": "Sat",
+                  "scheduledDate": "2026-10-04",
+                  "suggestedTime": "18:00",
+                  "topicIdea": "SteadFast Courier Business Development Executive Job #shorts — Part 2",
+                  "hook": "Did you know 85% of applicants lose the interview in the first 90 seconds? Here is how to fix it for October.",
+                  "contentType": "Short-form Video",
+                  "targetDuration": "60s",
+                  "strategicRationale": "Directly leverages proven watch time retention from \"SteadFast Courier Business Development Execut...\".",
+                  "channel": "Grow Bangla",
+                  "channelSlug": "youtube",
+                  "platform": "YouTube"
+                },
+                {
+                  "id": "plan-grow-bangla-youtube-October-5",
+                  "week": "Week 2",
+                  "dayOfWeek": "Mon",
+                  "scheduledDate": "2026-10-12",
+                  "suggestedTime": "18:00",
+                  "topicIdea": "২৫ বছরের হোম লোন মাত্র ১০ বছরে পরিশোধের গোপন কৌশল! (Save Lakhs in Interest) — Part 3",
+                  "hook": "Did you know 85% of applicants lose the interview in the first 90 seconds? Here is how to fix it for October.",
+                  "contentType": "Short-form Video",
+                  "targetDuration": "60s",
+                  "strategicRationale": "Directly leverages proven watch time retention from \"২৫ বছরের হোম লোন মাত্র ১০ বছরে পরিশোধের গোপন ...\".",
+                  "channel": "Grow Bangla",
+                  "channelSlug": "youtube",
+                  "platform": "YouTube"
+                },
+                {
+                  "id": "plan-grow-bangla-youtube-October-6",
+                  "week": "Week 2",
+                  "dayOfWeek": "Wed",
+                  "scheduledDate": "2026-10-13",
+                  "suggestedTime": "18:00",
+                  "topicIdea": "McDonald’s Service Crew Interview Guide | Answer Common Questions in English — Part 3",
+                  "hook": "Did you know 85% of applicants lose the interview in the first 90 seconds? Here is how to fix it for October.",
+                  "contentType": "Short-form Video",
+                  "targetDuration": "60s",
+                  "strategicRationale": "Directly leverages proven watch time retention from \"McDonald’s Service Crew Interview Guide | Ans...\".",
+                  "channel": "Grow Bangla",
+                  "channelSlug": "youtube",
+                  "platform": "YouTube"
+                },
+                {
+                  "id": "plan-grow-bangla-youtube-October-7",
+                  "week": "Week 2",
+                  "dayOfWeek": "Fri",
+                  "scheduledDate": "2026-10-14",
+                  "suggestedTime": "18:00",
+                  "topicIdea": "Shomvob Presents Campus to Career 2024 I First Round Instructions — Part 4",
+                  "hook": "Did you know 85% of applicants lose the interview in the first 90 seconds? Here is how to fix it for October.",
+                  "contentType": "Short-form Video",
+                  "targetDuration": "60s",
+                  "strategicRationale": "Directly leverages proven watch time retention from \"Shomvob Presents Campus to Career 2024 I Firs...\".",
+                  "channel": "Grow Bangla",
+                  "channelSlug": "youtube",
+                  "platform": "YouTube"
+                },
+                {
+                  "id": "plan-grow-bangla-youtube-October-8",
+                  "week": "Week 2",
+                  "dayOfWeek": "Sat",
+                  "scheduledDate": "2026-10-08",
+                  "suggestedTime": "18:00",
+                  "topicIdea": "Donald Trump on Bangladesh #shorts — Part 4",
+                  "hook": "Did you know 85% of applicants lose the interview in the first 90 seconds? Here is how to fix it for October.",
+                  "contentType": "Short-form Video",
+                  "targetDuration": "60s",
+                  "strategicRationale": "Directly leverages proven watch time retention from \"Donald Trump on Bangladesh #shorts...\".",
+                  "channel": "Grow Bangla",
+                  "channelSlug": "youtube",
+                  "platform": "YouTube"
+                },
+                {
+                  "id": "plan-grow-bangla-youtube-October-9",
+                  "week": "Week 3",
+                  "dayOfWeek": "Mon",
+                  "scheduledDate": "2026-10-16",
+                  "suggestedTime": "18:00",
+                  "topicIdea": "SteadFast Courier Business Development Executive Job #shorts — Part 5",
+                  "hook": "Did you know 85% of applicants lose the interview in the first 90 seconds? Here is how to fix it for October.",
+                  "contentType": "Short-form Video",
+                  "targetDuration": "60s",
+                  "strategicRationale": "Directly leverages proven watch time retention from \"SteadFast Courier Business Development Execut...\".",
+                  "channel": "Grow Bangla",
+                  "channelSlug": "youtube",
+                  "platform": "YouTube"
+                },
+                {
+                  "id": "plan-grow-bangla-youtube-October-10",
+                  "week": "Week 3",
+                  "dayOfWeek": "Wed",
+                  "scheduledDate": "2026-10-17",
+                  "suggestedTime": "18:00",
+                  "topicIdea": "২৫ বছরের হোম লোন মাত্র ১০ বছরে পরিশোধের গোপন কৌশল! (Save Lakhs in Interest) — Part 5",
+                  "hook": "Did you know 85% of applicants lose the interview in the first 90 seconds? Here is how to fix it for October.",
+                  "contentType": "Short-form Video",
+                  "targetDuration": "60s",
+                  "strategicRationale": "Directly leverages proven watch time retention from \"২৫ বছরের হোম লোন মাত্র ১০ বছরে পরিশোধের গোপন ...\".",
+                  "channel": "Grow Bangla",
+                  "channelSlug": "youtube",
+                  "platform": "YouTube"
+                },
+                {
+                  "id": "plan-grow-bangla-youtube-October-11",
+                  "week": "Week 3",
+                  "dayOfWeek": "Fri",
+                  "scheduledDate": "2026-10-18",
+                  "suggestedTime": "18:00",
+                  "topicIdea": "McDonald’s Service Crew Interview Guide | Answer Common Questions in English — Part 6",
+                  "hook": "Did you know 85% of applicants lose the interview in the first 90 seconds? Here is how to fix it for October.",
+                  "contentType": "Short-form Video",
+                  "targetDuration": "60s",
+                  "strategicRationale": "Directly leverages proven watch time retention from \"McDonald’s Service Crew Interview Guide | Ans...\".",
+                  "channel": "Grow Bangla",
+                  "channelSlug": "youtube",
+                  "platform": "YouTube"
+                },
+                {
+                  "id": "plan-grow-bangla-youtube-October-12",
+                  "week": "Week 3",
+                  "dayOfWeek": "Sat",
+                  "scheduledDate": "2026-10-19",
+                  "suggestedTime": "18:00",
+                  "topicIdea": "Shomvob Presents Campus to Career 2024 I First Round Instructions — Part 6",
+                  "hook": "Did you know 85% of applicants lose the interview in the first 90 seconds? Here is how to fix it for October.",
+                  "contentType": "Short-form Video",
+                  "targetDuration": "60s",
+                  "strategicRationale": "Directly leverages proven watch time retention from \"Shomvob Presents Campus to Career 2024 I Firs...\".",
+                  "channel": "Grow Bangla",
+                  "channelSlug": "youtube",
+                  "platform": "YouTube"
+                },
+                {
+                  "id": "plan-grow-bangla-youtube-October-13",
+                  "week": "Week 4",
+                  "dayOfWeek": "Mon",
+                  "scheduledDate": "2026-10-27",
+                  "suggestedTime": "18:00",
+                  "topicIdea": "Donald Trump on Bangladesh #shorts — Part 7",
+                  "hook": "Did you know 85% of applicants lose the interview in the first 90 seconds? Here is how to fix it for October.",
+                  "contentType": "Short-form Video",
+                  "targetDuration": "60s",
+                  "strategicRationale": "Directly leverages proven watch time retention from \"Donald Trump on Bangladesh #shorts...\".",
+                  "channel": "Grow Bangla",
+                  "channelSlug": "youtube",
+                  "platform": "YouTube"
+                },
+                {
+                  "id": "plan-grow-bangla-youtube-October-14",
+                  "week": "Week 4",
+                  "dayOfWeek": "Wed",
+                  "scheduledDate": "2026-10-28",
+                  "suggestedTime": "18:00",
+                  "topicIdea": "SteadFast Courier Business Development Executive Job #shorts — Part 7",
+                  "hook": "Did you know 85% of applicants lose the interview in the first 90 seconds? Here is how to fix it for October.",
+                  "contentType": "Short-form Video",
+                  "targetDuration": "60s",
+                  "strategicRationale": "Directly leverages proven watch time retention from \"SteadFast Courier Business Development Execut...\".",
+                  "channel": "Grow Bangla",
+                  "channelSlug": "youtube",
+                  "platform": "YouTube"
+                },
+                {
+                  "id": "plan-grow-bangla-youtube-October-15",
+                  "week": "Week 4",
+                  "dayOfWeek": "Fri",
+                  "scheduledDate": "2026-10-22",
+                  "suggestedTime": "18:00",
+                  "topicIdea": "২৫ বছরের হোম লোন মাত্র ১০ বছরে পরিশোধের গোপন কৌশল! (Save Lakhs in Interest) — Part 8",
+                  "hook": "Did you know 85% of applicants lose the interview in the first 90 seconds? Here is how to fix it for October.",
+                  "contentType": "Short-form Video",
+                  "targetDuration": "60s",
+                  "strategicRationale": "Directly leverages proven watch time retention from \"২৫ বছরের হোম লোন মাত্র ১০ বছরে পরিশোধের গোপন ...\".",
+                  "channel": "Grow Bangla",
+                  "channelSlug": "youtube",
+                  "platform": "YouTube"
+                },
+                {
+                  "id": "plan-grow-bangla-youtube-October-16",
+                  "week": "Week 4",
+                  "dayOfWeek": "Sat",
+                  "scheduledDate": "2026-10-23",
+                  "suggestedTime": "18:00",
+                  "topicIdea": "McDonald’s Service Crew Interview Guide | Answer Common Questions in English — Part 8",
+                  "hook": "Did you know 85% of applicants lose the interview in the first 90 seconds? Here is how to fix it for October.",
+                  "contentType": "Short-form Video",
+                  "targetDuration": "60s",
+                  "strategicRationale": "Directly leverages proven watch time retention from \"McDonald’s Service Crew Interview Guide | Ans...\".",
+                  "channel": "Grow Bangla",
+                  "channelSlug": "youtube",
+                  "platform": "YouTube"
+                }
+              ],
+              "lockedAt": "2026-09-02T10:26:34.030Z",
+              "lockedBy": "Firoz (Super Admin)"
+            }
+          }
+        },
+        {
+          "id": "gb-facebook",
+          "slug": "facebook",
+          "name": "Facebook Page",
+          "platform": "Facebook",
+          "type": "social",
+          "isAnchor": false,
+          "handle": "Grow Bangla Official",
+          "url": "https://facebook.com/growbangla",
+          "defaultContentType": "Short-form Video",
+          "targetCadencePerWeek": 5,
+          "audienceCount": 5200,
+          "audienceLabel": "5.2K Followers",
+          "analyticsKnowledgeBase": {
+            "source": "Meta Business Suite Baseline",
+            "lastUpdated": "2026-09-02T10:23:16.101Z",
+            "totalVideosIndexed": 45,
+            "totalViews": 12500,
+            "topCategories": [
+              "Reels Spoken English Hacks",
+              "Job Circular Posters",
+              "Daily Word Challenge"
+            ],
+            "recommendations": [
+              "Reels under 40 seconds with Bengali captions achieve highest shares."
+            ]
+          },
+          "calendars": {}
+        },
+        {
+          "id": "gb-whatsapp",
+          "slug": "whatsapp",
+          "name": "WhatsApp Job Alert Community",
+          "platform": "WhatsApp",
+          "type": "community",
+          "isAnchor": false,
+          "handle": "Grow Bangla Career Alerts",
+          "url": "https://chat.whatsapp.com/growbangla",
+          "defaultContentType": "Text-only",
+          "targetCadencePerWeek": 7,
+          "audienceCount": 1450,
+          "audienceLabel": "1,450 Active Members",
+          "analyticsKnowledgeBase": {
+            "source": "WhatsApp Group Admin Export",
+            "lastUpdated": "2026-09-02T10:26:29.300Z",
+            "totalVideosIndexed": 0,
+            "totalViews": 0,
+            "memberCount": 1450,
+            "topCategories": [
+              "Govt & MNC Job Circulars",
+              "English Interview Q&A",
+              "PDF Worksheets"
+            ],
+            "recommendations": [
+              "Maintain consistent daily morning drops to sustain high read rate and active member responses.",
+              "Include direct actionable links and clean bullet formatting for mobile reading."
+            ]
+          },
+          "calendars": {}
+        },
+        {
+          "id": "gb-tiktok",
+          "slug": "tiktok",
+          "name": "TikTok Channel",
+          "platform": "TikTok",
+          "type": "video",
+          "isAnchor": false,
+          "handle": "@growbangla_official",
+          "url": "https://tiktok.com/@growbangla_official",
+          "defaultContentType": "Short-form Video",
+          "targetCadencePerWeek": 4,
+          "audienceCount": 3100,
+          "audienceLabel": "3.1K Followers",
+          "analyticsKnowledgeBase": null,
+          "calendars": {}
+        },
+        {
+          "id": "gb-instagram",
+          "slug": "instagram",
+          "name": "Instagram Page",
+          "platform": "Instagram",
+          "type": "social",
+          "isAnchor": false,
+          "handle": "@growbangla.ai",
+          "url": "https://instagram.com/growbangla.ai",
+          "defaultContentType": "Carousel",
+          "targetCadencePerWeek": 3,
+          "audienceCount": 1800,
+          "audienceLabel": "1.8K Followers",
+          "analyticsKnowledgeBase": null,
+          "calendars": {}
+        }
+      ]
+    },
+    {
+      "id": "brand-pilutics",
+      "slug": "pilutics",
+      "name": "PILUTICS",
+      "tagline": "Next-Gen Travel, Geopolitics & Regional Deep Dives",
+      "niche": "Geopolitics, Travel Guides, History, Culture, Global Analysis",
+      "palette": [
+        "#3b82f6",
+        "#1d4ed8",
+        "#1e40af",
+        "#0f172a",
+        "#f8fafc"
+      ],
+      "fonts": "Syne + Plus Jakarta Sans",
+      "tone": "Authoritative, inquisitive, cinematic, insightful",
+      "mission": "Explaining complex global geopolitics and immersive travel cultures through compelling narrative and high-fidelity video.",
+      "standardHashtags": "#PILUTICS #Geopolitics #TravelDoc #GlobalAffairs #WorldAnalysis",
+      "standardCta": "Subscribe to PILUTICS for weekly cinematic geopolitics & travel breakdowns.",
+      "logoUrl": "",
+      "assets": [],
+      "channels": [
+        {
+          "id": "pl-youtube",
+          "slug": "youtube",
+          "name": "YouTube Channel",
+          "platform": "YouTube",
+          "type": "video",
+          "isAnchor": true,
+          "handle": "@PILUTICS",
+          "url": "https://youtube.com/@PILUTICS",
+          "defaultContentType": "Long-form Video",
+          "targetCadencePerWeek": 2,
+          "audienceCount": 620,
+          "audienceLabel": "18.4K Views · 620 Subscribers",
+          "analyticsKnowledgeBase": {
+            "source": "YouTube Studio Lifetime Export",
+            "lastUpdated": "2026-09-02T10:23:16.101Z",
+            "totalVideosIndexed": 28,
+            "totalViews": 18400,
+            "topCategories": [
+              "Regional Border Disputes",
+              "Economic Corridor Deep Dives",
+              "Country Case Studies"
+            ],
+            "recommendations": [
+              "10-15 minute cinematic documentary videos capture average 42% retention."
+            ]
+          },
+          "calendars": {}
+        },
+        {
+          "id": "pl-facebook",
+          "slug": "facebook",
+          "name": "Facebook Page",
+          "platform": "Facebook",
+          "type": "social",
+          "isAnchor": false,
+          "handle": "PILUTICS Geopolitics",
+          "url": "https://facebook.com/pilutics",
+          "defaultContentType": "Short-form Video",
+          "targetCadencePerWeek": 3,
+          "audienceCount": 4100,
+          "audienceLabel": "4.1K Followers",
+          "analyticsKnowledgeBase": null,
+          "calendars": {}
+        },
+        {
+          "id": "pl-instagram",
+          "slug": "instagram",
+          "name": "Instagram Page",
+          "platform": "Instagram",
+          "type": "social",
+          "isAnchor": false,
+          "handle": "@pilutics.world",
+          "url": "https://instagram.com/pilutics.world",
+          "defaultContentType": "Carousel",
+          "targetCadencePerWeek": 3,
+          "audienceCount": 2400,
+          "audienceLabel": "2.4K Followers",
+          "analyticsKnowledgeBase": null,
+          "calendars": {}
+        }
+      ]
+    },
+    {
+      "id": "brand-bong-hits",
+      "slug": "bong-hits",
+      "name": "Bong Hits",
+      "tagline": "Pure Bengali Entertainment, Skits, Music & Youth Pop Culture",
+      "niche": "Viral Skits, Bengali Music Videos, Pop Culture, Relatable Humor",
+      "palette": [
+        "#ec4899",
+        "#db2777",
+        "#9d174d",
+        "#18181b",
+        "#fafafa"
+      ],
+      "fonts": "Montserrat + Bangla",
+      "tone": "High-energy, witty, rhythmic, viral, culturally relatable",
+      "mission": "Creating electrifying Bengali music, viral comedy skits, and youth pop culture moments.",
+      "standardHashtags": "#BongHits #BengaliMusic #ViralSkits #BengaliComedy #BengaliBeats",
+      "standardCta": "Stream Bong Hits music on all platforms and subscribe for weekly drops!",
+      "logoUrl": "",
+      "assets": [],
+      "channels": [
+        {
+          "id": "bh-youtube",
+          "slug": "youtube",
+          "name": "YouTube Channel",
+          "platform": "YouTube",
+          "type": "video",
+          "isAnchor": true,
+          "handle": "@BongHitsOfficial",
+          "url": "https://youtube.com/@BongHitsOfficial",
+          "defaultContentType": "Music Video",
+          "targetCadencePerWeek": 3,
+          "audienceCount": 1200,
+          "audienceLabel": "45K Views · 1.2K Subscribers",
+          "analyticsKnowledgeBase": {
+            "source": "YouTube Studio Lifetime Export",
+            "lastUpdated": "2026-09-02T10:23:16.101Z",
+            "totalVideosIndexed": 35,
+            "totalViews": 45000,
+            "topCategories": [
+              "Bengali Rock & Folk Fusion",
+              "Relatable College Skits",
+              "Behind The Mic"
+            ],
+            "recommendations": [
+              "Music video teaser drops 48 hours prior to full song increase premiere attendance by 3.2x."
+            ]
+          },
+          "calendars": {}
+        },
+        {
+          "id": "bh-tiktok",
+          "slug": "tiktok",
+          "name": "TikTok Channel",
+          "platform": "TikTok",
+          "type": "video",
+          "isAnchor": false,
+          "handle": "@bonghits_viral",
+          "url": "https://tiktok.com/@bonghits_viral",
+          "defaultContentType": "Short-form Video",
+          "targetCadencePerWeek": 5,
+          "audienceCount": 8500,
+          "audienceLabel": "8.5K Followers",
+          "analyticsKnowledgeBase": null,
+          "calendars": {}
+        },
+        {
+          "id": "bh-facebook",
+          "slug": "facebook",
+          "name": "Facebook Page",
+          "platform": "Facebook",
+          "type": "social",
+          "isAnchor": false,
+          "handle": "Bong Hits Media",
+          "url": "https://facebook.com/bonghits",
+          "defaultContentType": "Short-form Video",
+          "targetCadencePerWeek": 4,
+          "audienceCount": 12000,
+          "audienceLabel": "12K Followers",
+          "analyticsKnowledgeBase": null,
+          "calendars": {}
+        },
+        {
+          "id": "bh-whatsapp",
+          "slug": "whatsapp",
+          "name": "WhatsApp Fan Hub",
+          "platform": "WhatsApp",
+          "type": "community",
+          "isAnchor": false,
+          "handle": "Bong Hits Squad",
+          "url": "https://chat.whatsapp.com/bonghits",
+          "defaultContentType": "Text-only",
+          "targetCadencePerWeek": 7,
+          "audienceCount": 850,
+          "audienceLabel": "850 Fan Members",
+          "analyticsKnowledgeBase": null,
+          "calendars": {}
+        }
+      ]
+    },
+    {
+      "id": "brand-gro10x",
+      "slug": "gro10x",
+      "name": "GRO10X Brand",
+      "tagline": "AI Operating Systems & Scale Engineering for Modern Businesses",
+      "niche": "AI Workflows, Business Automation, Agency Growth, SaaS, Tech Insights",
+      "palette": [
+        "#a855f7",
+        "#6366f1",
+        "#4f46e5",
+        "#0f172a",
+        "#ffffff"
+      ],
+      "fonts": "Plus Jakarta Sans + JetBrains Mono",
+      "tone": "Executive, sharp, cutting-edge, ROI-driven, thought leadership",
+      "mission": "Transforming knowledge work with autonomous agentic architectures, AI pipelines, and digital brand scaling.",
+      "standardHashtags": "#GRO10X #AIAgency #BusinessAutomation #AIWorkflows #EnterpriseAI",
+      "standardCta": "Visit gro10x.ai to explore custom AI automations & digital scale solutions.",
+      "logoUrl": "",
+      "assets": [],
+      "channels": [
+        {
+          "id": "gr-linkedin",
+          "slug": "linkedin",
+          "name": "LinkedIn Company Page",
+          "platform": "LinkedIn",
+          "type": "social",
+          "isAnchor": true,
+          "handle": "GRO10X Global",
+          "url": "https://linkedin.com/company/gro10x",
+          "defaultContentType": "PDF / Document",
+          "targetCadencePerWeek": 4,
+          "audienceCount": 3400,
+          "audienceLabel": "3.4K Followers",
+          "analyticsKnowledgeBase": {
+            "source": "LinkedIn Analytics Baseline",
+            "lastUpdated": "2026-09-02T10:23:16.101Z",
+            "totalVideosIndexed": 40,
+            "totalViews": 35000,
+            "topCategories": [
+              "Multi-Slide Architecture PDF Decks",
+              "Agency Automation Case Studies",
+              "AI Executive Breakdowns"
+            ],
+            "recommendations": [
+              "PDF carousel slide decks generate 4.1x higher engagement and bookmark rates than single image posts."
+            ]
+          },
+          "calendars": {}
+        },
+        {
+          "id": "gr-youtube",
+          "slug": "youtube",
+          "name": "YouTube Channel",
+          "platform": "YouTube",
+          "type": "video",
+          "isAnchor": false,
+          "handle": "@GRO10X_AI",
+          "url": "https://youtube.com/@GRO10X_AI",
+          "defaultContentType": "Short-form Video",
+          "targetCadencePerWeek": 3,
+          "audienceCount": 890,
+          "audienceLabel": "8.9K Views",
+          "analyticsKnowledgeBase": null,
+          "calendars": {}
+        },
+        {
+          "id": "gr-whatsapp",
+          "slug": "whatsapp",
+          "name": "WhatsApp VIP Agency Insider",
+          "platform": "WhatsApp",
+          "type": "community",
+          "isAnchor": false,
+          "handle": "GRO10X Agency Inner Circle",
+          "url": "https://chat.whatsapp.com/gro10x",
+          "defaultContentType": "Text-only",
+          "targetCadencePerWeek": 5,
+          "audienceCount": 450,
+          "audienceLabel": "450 Agency Leaders",
+          "analyticsKnowledgeBase": null,
+          "calendars": {}
+        }
+      ]
+    },
+    {
+      "id": "brand-tech-ventures-bd-1788344630452",
+      "slug": "tech-ventures-bd",
+      "name": "Tech Ventures BD",
+      "tagline": "",
+      "niche": "SaaS Startups & Automation",
+      "palette": [
+        "#a855f7",
+        "#6366f1",
+        "#1e293b",
+        "#0f172a",
+        "#ffffff"
+      ],
+      "fonts": "Plus Jakarta Sans + Inter",
+      "tone": "Professional, informative, aspirational",
+      "mission": "",
+      "standardHashtags": "#TechVenturesBD",
+      "standardCta": "",
+      "logoUrl": "",
+      "assets": [],
+      "channels": [
+        {
+          "id": "tech-ventures-bd-youtube",
+          "slug": "youtube",
+          "name": "YouTube Channel",
+          "platform": "YouTube",
+          "type": "video",
+          "isAnchor": true,
+          "handle": "@tech-ventures-bd",
+          "url": "",
+          "defaultContentType": "Short-form Video",
+          "targetCadencePerWeek": 3,
+          "audienceCount": 0,
+          "audienceLabel": "0 Subscribers",
+          "analyticsKnowledgeBase": null,
+          "calendars": {}
+        }
+      ]
+    },
+    {
+      "id": "brand-tech-ventures-bd-1788344794483-1788344794708",
+      "slug": "tech-ventures-bd-1788344794483",
+      "name": "Tech Ventures BD 1788344794483",
+      "tagline": "",
+      "niche": "SaaS Startups & Automation",
+      "palette": [
+        "#a855f7",
+        "#6366f1",
+        "#1e293b",
+        "#0f172a",
+        "#ffffff"
+      ],
+      "fonts": "Plus Jakarta Sans + Inter",
+      "tone": "Professional, informative, aspirational",
+      "mission": "",
+      "standardHashtags": "#TechVenturesBD1788344794483",
+      "standardCta": "",
+      "logoUrl": "",
+      "assets": [],
+      "channels": [
+        {
+          "id": "tech-ventures-bd-1788344794483-youtube",
+          "slug": "youtube",
+          "name": "YouTube Channel",
+          "platform": "YouTube",
+          "type": "video",
+          "isAnchor": true,
+          "handle": "@tech-ventures-bd-1788344794483",
+          "url": "",
+          "defaultContentType": "Short-form Video",
+          "targetCadencePerWeek": 3,
+          "audienceCount": 0,
+          "audienceLabel": "0 Subscribers",
+          "analyticsKnowledgeBase": null,
+          "calendars": {}
+        },
+        {
+          "id": "ch-tech-ventures-bd-1788344794483-telegram-1788344795219",
+          "slug": "telegram-1788344795219",
+          "name": "Tech Ventures Telegram",
+          "platform": "Telegram",
+          "type": "community",
+          "isAnchor": false,
+          "handle": "@techventuresbd",
+          "url": "",
+          "defaultContentType": "Static Graphic / Image",
+          "targetCadencePerWeek": 3,
+          "audienceCount": 0,
+          "audienceLabel": "0 Audience",
+          "analyticsKnowledgeBase": null,
+          "calendars": {}
+        }
+      ]
+    }
+  ]
+}

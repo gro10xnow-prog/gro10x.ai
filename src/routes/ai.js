@@ -40,6 +40,7 @@ function callSingle(model, prompt, key, options = {}) {
   const maxTokens = options.maxTokens || 3500;
   const temperature = options.temperature !== undefined ? options.temperature : 0.4;
   const requireBrandKeyword = options.requireBrandKeyword || false;
+  const timeoutMs = options.timeoutMs || (process.env.NODE_ENV === 'test' ? 1500 : 35000);
 
   return new Promise((resolve, reject) => {
     const payload = JSON.stringify({
@@ -82,7 +83,7 @@ function callSingle(model, prompt, key, options = {}) {
       });
     });
     req.on('error', reject);
-    req.setTimeout(35000, () => {
+    req.setTimeout(timeoutMs, () => {
       req.destroy();
       reject(new Error('Timeout: ' + model));
     });
@@ -1250,6 +1251,21 @@ router.post('/music-lrc', requireAuth, async (req, res) => {
 });
 
 router.get('/status', requireAuth, (req, res) => res.json({ success: true, configured: !!process.env.GEMINI_API_KEY, models: MODELS }));
+
+router.callGeminiPrompt = async function(prompt, options = {}) {
+  const key = process.env.GEMINI_API_KEY;
+  if (!key) return null;
+  for (const model of MODELS) {
+    try {
+      const text = await callSingle(model, prompt, key, options);
+      if (text) return text;
+    } catch (e) {
+      console.warn('[callGeminiPrompt] Skip model ' + model + ':', e.message);
+    }
+  }
+  return null;
+};
+router.cleanJSONText = cleanJSONText;
 
 module.exports = router;
 

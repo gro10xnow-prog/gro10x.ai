@@ -68,6 +68,7 @@ const gigsRoutes = require('./gigs');
 const proposalsRoutes = require('./proposals');
 const digistoreRoutes = require('./digistore');
 const digivaultWebhookRoutes = require('./digivault-webhook');
+const socialBrandsRoutes = require('./socialBrands');
 
 // System Version Endpoint
 router.get('/version', (req, res) => {
@@ -184,6 +185,7 @@ router.use('/gigs', gigsRoutes);
 router.use('/proposals', proposalsRoutes);
 router.use('/digistore', digistoreRoutes);
 router.use('/digivault-webhook', digivaultWebhookRoutes);
+router.use('/social-brands', socialBrandsRoutes);
 router.use('/public/proposals', (req, res, next) => {
   req.url = '/public' + req.url;
   proposalsRoutes(req, res, next);
