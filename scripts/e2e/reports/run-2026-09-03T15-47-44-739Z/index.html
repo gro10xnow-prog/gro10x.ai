@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>PurpleOS E2E Test Report — 9/3/2026, 9:52:10 PM</title>
+  <title>PurpleOS E2E Test Report — 9/3/2026, 9:47:44 PM</title>
   <style>
     :root {
       --bg: #0d0d14;
@@ -81,10 +81,10 @@
   <div class="header">
     <div>
       <h1 style="margin:0; font-size:1.6rem; color:var(--pink);">⚡ PurpleOS Browser Automation Report</h1>
-      <p style="margin:0.25rem 0 0; color:var(--text-muted); font-size:0.85rem;">Generated on 9/3/2026, 9:52:10 PM · Automated E2E Regression Suite</p>
+      <p style="margin:0.25rem 0 0; color:var(--text-muted); font-size:0.85rem;">Generated on 9/3/2026, 9:47:44 PM · Automated E2E Regression Suite</p>
     </div>
-    <div class="badge badge-pass" style="font-size:1rem; padding:0.4rem 1rem;">
-      ✅ ALL TESTS PASSING (100%)
+    <div class="badge badge-fail" style="font-size:1rem; padding:0.4rem 1rem;">
+      🚨 2 TESTS FAILED
     </div>
   </div>
 
@@ -95,15 +95,15 @@
     </div>
     <div class="kpi-card">
       <div class="kpi-label">Passed</div>
-      <div class="kpi-val" style="color:var(--green);">10</div>
+      <div class="kpi-val" style="color:var(--green);">8</div>
     </div>
     <div class="kpi-card">
       <div class="kpi-label">Failed</div>
-      <div class="kpi-val" style="color:var(--red);">0</div>
+      <div class="kpi-val" style="color:var(--red);">2</div>
     </div>
     <div class="kpi-card">
       <div class="kpi-label">Pass Rate</div>
-      <div class="kpi-val" style="color:var(--green);">100%</div>
+      <div class="kpi-val" style="color:var(--pink);">80%</div>
     </div>
   </div>
 
@@ -113,7 +113,7 @@
       <div class="phase-header">
         <h3 style="margin:0; font-size:1.05rem;">Suite A - Phase A1: Shell, Auth & Navigation</h3>
         <div>
-          <span class="badge badge-pass">10/10 Passed (24882ms)</span>
+          <span class="badge badge-fail">8/10 Passed (15107ms)</span>
         </div>
       </div>
       <ul class="test-list">
@@ -124,7 +124,7 @@
               
             </div>
             <div>
-              <span class="badge badge-pass">PASSED (1426ms)</span>
+              <span class="badge badge-pass">PASSED (1355ms)</span>
             </div>
           </li>
         
@@ -134,7 +134,7 @@
               
             </div>
             <div>
-              <span class="badge badge-pass">PASSED (2549ms)</span>
+              <span class="badge badge-pass">PASSED (2487ms)</span>
             </div>
           </li>
         
@@ -144,7 +144,7 @@
               
             </div>
             <div>
-              <span class="badge badge-pass">PASSED (4601ms)</span>
+              <span class="badge badge-pass">PASSED (4618ms)</span>
             </div>
           </li>
         
@@ -154,17 +154,17 @@
               
             </div>
             <div>
-              <span class="badge badge-pass">PASSED (328ms)</span>
+              <span class="badge badge-pass">PASSED (304ms)</span>
             </div>
           </li>
         
           <li class="test-item">
             <div>
               <strong>[A1.5]</strong> Verify all 22 Admin Navigation Tabs render active content with Zero JS Errors
-              
+              <div style="color:var(--red); font-size:0.8rem; margin-top:0.3rem;">⚠️ Assertion Failed: Module #engines (Growth Engines) should render HTML content</div>
             </div>
             <div>
-              <span class="badge badge-pass">PASSED (10668ms)</span>
+              <span class="badge badge-fail">FAILED (1251ms)</span>
             </div>
           </li>
         
@@ -174,7 +174,7 @@
               
             </div>
             <div>
-              <span class="badge badge-pass">PASSED (1783ms)</span>
+              <span class="badge badge-pass">PASSED (1871ms)</span>
             </div>
           </li>
         
@@ -184,7 +184,7 @@
               
             </div>
             <div>
-              <span class="badge badge-pass">PASSED (565ms)</span>
+              <span class="badge badge-pass">PASSED (574ms)</span>
             </div>
           </li>
         
@@ -194,7 +194,7 @@
               
             </div>
             <div>
-              <span class="badge badge-pass">PASSED (1612ms)</span>
+              <span class="badge badge-pass">PASSED (1822ms)</span>
             </div>
           </li>
         
@@ -204,17 +204,17 @@
               
             </div>
             <div>
-              <span class="badge badge-pass">PASSED (295ms)</span>
+              <span class="badge badge-pass">PASSED (294ms)</span>
             </div>
           </li>
         
           <li class="test-item">
             <div>
               <strong>[A1.10]</strong> Verify Mobile Viewport Layout Integrity (375x812)
-              
+              <div style="color:var(--red); font-size:0.8rem; margin-top:0.3rem;">⚠️ Assertion Failed: Mobile layout should not have horizontal body overflow</div>
             </div>
             <div>
-              <span class="badge badge-pass">PASSED (1054ms)</span>
+              <span class="badge badge-fail">FAILED (528ms)</span>
             </div>
           </li>
         

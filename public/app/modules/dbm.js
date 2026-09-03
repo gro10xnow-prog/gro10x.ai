@@ -17,19 +17,20 @@ window.APP_MODULES = window.APP_MODULES || {};
 window.APP_MODULES.dbm = async function(container) {
   async function getBrandsState() {
     try {
+      const saved = localStorage.getItem('gro10x_brands_data');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {}
+
+    try {
       if (window.APP_API) {
         const res = await window.APP_API.get('/brands');
         if (res && res.brands) return res;
       }
     } catch (e) {}
 
-    try {
-      const saved = localStorage.getItem('gro10x_brands_data');
-      if (saved) return JSON.parse(saved);
-    } catch (e) {}
-
     return null;
   }
+
 
   async function getDBMLogs() {
     let serverLogs = null;

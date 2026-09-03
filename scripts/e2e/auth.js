@@ -1,8 +1,6 @@
-﻿/**
- * scripts/e2e/auth.js
- * Session & JWT Generator for Multi-Stakeholder E2E Browser Testing
- */
+require('dotenv').config();
 const { signToken } = require('../../src/services/jwt');
+
 
 const USERS = {
   owner: {
@@ -95,17 +93,17 @@ async function injectRoleSession(page, role = 'admin') {
   await page.evaluate(({ token, user }) => {
     try {
       localStorage.setItem('gro10x_token', token);
-      localStorage.setItem('gro10x_token', token);
-      localStorage.setItem('gro10x_token', token);
+      localStorage.setItem('gro10x_user', JSON.stringify(user));
       localStorage.setItem('jwt_token', token);
-      localStorage.setItem('gro10x_token', token);
       localStorage.setItem('purple_user', JSON.stringify(user));
       sessionStorage.setItem('jwt_token', token);
       sessionStorage.setItem('gro10x_token', token);
+      sessionStorage.setItem('gro10x_user', JSON.stringify(user));
     } catch (e) {}
   }, { token, user });
   return token;
 }
+
 
 async function injectAdminSession(page) {
   return injectRoleSession(page, 'owner');

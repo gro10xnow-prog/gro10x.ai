@@ -1,0 +1,251 @@
+{
+  "timestamp": "2026-09-03T15:46:10.514Z",
+  "totalTests": 10,
+  "totalPassed": 3,
+  "totalFailed": 7,
+  "passRate": 30,
+  "totalDurationMs": 8724,
+  "phases": [
+    {
+      "phase": "Suite A - Phase A1: Shell, Auth & Navigation",
+      "total": 10,
+      "passed": 3,
+      "failed": 7,
+      "duration": 8724,
+      "results": [
+        {
+          "id": "A1.1",
+          "title": "Redirect unauthenticated visitor to /auth",
+          "status": "PASSED",
+          "duration": 2269,
+          "error": null
+        },
+        {
+          "id": "A1.2",
+          "title": "Expired JWT triggers 401 redirect to /auth?expired=1",
+          "status": "PASSED",
+          "duration": 2489,
+          "error": null
+        },
+        {
+          "id": "A1.3",
+          "title": "Load Admin OS with Valid Owner Session",
+          "status": "FAILED",
+          "duration": 2299,
+          "error": "Assertion Failed: Admin OS should load, got http://localhost:3000/auth?redirect=%2Fapp%2Findex.html"
+        },
+        {
+          "id": "A1.4",
+          "title": "Verify Live Dhaka BST Clock in Header",
+          "status": "FAILED",
+          "duration": 16,
+          "error": "Assertion Failed: #dhakaClockText must exist in header"
+        },
+        {
+          "id": "A1.5",
+          "title": "Verify all 22 Admin Navigation Tabs render active content with Zero JS Errors",
+          "status": "FAILED",
+          "duration": 619,
+          "error": "Error: failed to find element matching selector \"#app-view\""
+        },
+        {
+          "id": "A1.6",
+          "title": "Open Command Palette, Search and Jump to Route",
+          "status": "FAILED",
+          "duration": 517,
+          "error": "Modal \"#commandPaletteModal\" was expected to be open, but is hidden or absent."
+        },
+        {
+          "id": "A1.7",
+          "title": "Toggle Theme (Dark <-> Light)",
+          "status": "FAILED",
+          "duration": 3,
+          "error": "No element found for selector: #themeToggleBtn"
+        },
+        {
+          "id": "A1.8",
+          "title": "Open Ops Health Telemetry Modal & Refresh",
+          "status": "PASSED",
+          "duration": 2,
+          "error": null
+        },
+        {
+          "id": "A1.9",
+          "title": "Verify Attention Badges Engine DOM Elements Binding",
+          "status": "FAILED",
+          "duration": 2,
+          "error": "Assertion Failed: Attention badge #sidebarBadgeLeads must exist in sidebar DOM"
+        },
+        {
+          "id": "A1.10",
+          "title": "Verify Mobile Viewport Layout Integrity (375x812)",
+          "status": "FAILED",
+          "duration": 508,
+          "error": "Assertion Failed: Mobile layout should not have horizontal body overflow"
+        }
+      ]
+    }
+  ],
+  "consoleAudit": [
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "type": "warn",
+      "text": "[PurpleOS API] 401 Unauthorized — Redirecting to login..."
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "type": "warn",
+      "text": "[PurpleOS API] 401 Unauthorized — Redirecting to login..."
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "type": "warn",
+      "text": "[PurpleOS API] 401 Unauthorized — Redirecting to login..."
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "type": "warn",
+      "text": "[PurpleOS API] 401 Unauthorized — Redirecting to login..."
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "type": "warn",
+      "text": "[PurpleOS API] 401 Unauthorized — Redirecting to login..."
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "type": "warn",
+      "text": "[PurpleOS API] 401 Unauthorized — Redirecting to login..."
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "type": "warn",
+      "text": "[PurpleOS API] 401 Unauthorized — Redirecting to login..."
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/dashboard.js"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "type": "warn",
+      "text": "[PurpleOS API] 401 Unauthorized — Redirecting to login..."
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "type": "warn",
+      "text": "[PurpleOS API] 401 Unauthorized — Redirecting to login..."
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "type": "warn",
+      "text": "[PurpleOS API] 401 Unauthorized — Redirecting to login..."
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "type": "warn",
+      "text": "[PurpleOS API] 401 Unauthorized — Redirecting to login..."
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "type": "warn",
+      "text": "[PurpleOS API] 401 Unauthorized — Redirecting to login..."
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "type": "warn",
+      "text": "[PurpleOS API] 401 Unauthorized — Redirecting to login..."
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "type": "warn",
+      "text": "[PurpleOS API] 401 Unauthorized — Redirecting to login..."
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "type": "warn",
+      "text": "[PurpleOS API] 401 Unauthorized — Redirecting to login..."
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    }
+  ]
+}

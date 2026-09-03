@@ -19,11 +19,11 @@ if (!fs.existsSync(SCREENSHOTS_DIR)) fs.mkdirSync(SCREENSHOTS_DIR, { recursive: 
 
 async function isServerRunning() {
   return new Promise((resolve) => {
-    const req = http.get(`${BASE_URL}/api/system-health`, (res) => {
-      resolve(res.statusCode === 200 || res.statusCode === 401);
+    const req = http.get(`${BASE_URL}/`, (res) => {
+      resolve(res.statusCode < 500);
     });
     req.on('error', () => resolve(false));
-    req.setTimeout(1000, () => {
+    req.setTimeout(3000, () => {
       req.destroy();
       resolve(false);
     });
@@ -39,12 +39,26 @@ async function startServerIfNeeded() {
   console.log(`🚀 Starting Express server on port ${PORT}...`);
   const app = require('../../server.js');
   return new Promise((resolve) => {
-    const server = app.listen(PORT, () => {
-      console.log(`✅ Server listening on ${BASE_URL}`);
-      resolve(server);
-    });
+    try {
+      const server = app.listen(PORT, () => {
+        console.log(`✅ Server listening on ${BASE_URL}`);
+        resolve(server);
+      });
+      server.on('error', (err) => {
+        if (err.code === 'EADDRINUSE') {
+          console.log(`ℹ️ Port ${PORT} already active (${err.code}), using existing instance.`);
+          resolve(null);
+        } else {
+          console.warn(`[E2E Server] Note on start:`, err.message);
+          resolve(null);
+        }
+      });
+    } catch (e) {
+      resolve(null);
+    }
   });
 }
+
 
 async function launchBrowser(options = {}) {
   const browser = await puppeteer.launch({

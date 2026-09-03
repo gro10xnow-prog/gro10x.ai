@@ -14,9 +14,10 @@
  *   node scripts/e2e/runner.js --suite cross       (Runs Suite X: Cross-Portal)
  *   node scripts/e2e/runner.js --suite admin --phase A1
  */
-
+require('dotenv').config();
 const { startServerIfNeeded, launchBrowser, wait, REPORTS_DIR, SCREENSHOTS_DIR } = require('./utils');
 const { generateReport } = require('./report');
+
 
 // Import Suite A Modules (Admin OS)
 const { runPhaseA1 } = require('./suites/suite-a-admin/phase-A1-shell-auth');

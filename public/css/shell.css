@@ -253,6 +253,18 @@ body {
 }
 
 @media (max-width: 768px) {
+  html, body {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+  .top-header {
+    padding: 0 0.75rem;
+    overflow-x: hidden;
+  }
+  .top-header > div:nth-child(2) > div:first-of-type,
+  #opsHealthPill {
+    display: none !important;
+  }
   .sidebar-nav {
     display: none;
   }
@@ -262,11 +274,15 @@ body {
   .content-area {
     padding: 1rem;
     padding-bottom: 84px;
+    max-width: 100vw;
+    box-sizing: border-box;
+    overflow-x: hidden;
   }
   .cmd-trigger-btn, .quick-search-trigger, .dhaka-clock-pill {
     display: none !important;
   }
 }
+
 
 /* ───── PHASE 1: EXECUTIVE SHELL ENHANCEMENTS ───── */
 
