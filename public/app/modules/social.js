@@ -413,6 +413,45 @@ window.APP_MODULES.social = async function(container) {
     }
   }
 
+  // Phase 6.1: Targeted partial state refreshers to eliminate over-fetching
+  async function refreshBrandState(brandSlug = activeBrandSlug) {
+    try {
+      const brandsRes = await APP_API.get('/social-brands').catch(() => ({ brands: [] }));
+      if (brandsRes && Array.isArray(brandsRes.brands)) {
+        socialBrandsData = brandsRes.brands;
+        const targetSlug = brandSlug || activeBrandSlug;
+        const activeBrand = (socialBrandsData || []).find(b => b.slug === targetSlug || b.id === targetSlug) || socialBrandsData[0];
+        if (activeBrand) {
+          activeBrandSlug = activeBrand.slug;
+          const mIdx = new Date(selectedPlanMonth + ' 1, ' + selectedPlanYear).getMonth();
+          const mKey = `${selectedPlanYear}-${String(mIdx + 1).padStart(2, '0')}`;
+          monthlyFocusNote = (activeBrand.monthlyFocus && activeBrand.monthlyFocus[mKey] && activeBrand.monthlyFocus[mKey].thesis) || '';
+        }
+      }
+      renderKPIs();
+      if (activeViewMode === 'content_os' || activeViewMode === 'planner_ai') renderContentOS();
+      else if (activeViewMode === 'calendar') renderCalendar();
+      else renderBoard();
+    } catch (err) {
+      console.warn('[Social] refreshBrandState warning:', err);
+    }
+  }
+
+  async function refreshPostsState() {
+    try {
+      const postsRes = await APP_API.get('/posts').catch(() => []);
+      if (Array.isArray(postsRes)) {
+        postsData = postsRes;
+      }
+      renderKPIs();
+      if (activeViewMode === 'content_os' || activeViewMode === 'planner_ai') renderContentOS();
+      else if (activeViewMode === 'calendar') renderCalendar();
+      else renderBoard();
+    } catch (err) {
+      console.warn('[Social] refreshPostsState warning:', err);
+    }
+  }
+
   function renderSkeleton() {
     container.innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1.5rem; flex-wrap:wrap; gap:1rem;">
@@ -2924,31 +2963,68 @@ function renderBrandAssetsKitHTML(brand) {
     `).join('') + '<option value="custom" data-name="General Client">+ General / Manual Client</option>';
   }
 
-  // Phase 6.3: Subscribe to real-time updates via SSE with memory leak prevention
-  if (window._socialSseUnsub && typeof window._socialSseUnsub === 'function') {
-    window._socialSseUnsub();
-    window._socialSseUnsub = null;
+  // Phase 6.3: Subscribe to real-time updates via SSE with targeted reactivity and memory leak prevention
+  if (Array.isArray(window._socialSseUnsubs)) {
+    window._socialSseUnsubs.forEach(unsub => { try { unsub(); } catch (_) {} });
   }
+  window._socialSseUnsubs = [];
+
   if (window.APP_SSE && window.APP_SSE.subscribe) {
-    window._socialSseUnsub = window.APP_SSE.subscribe('post_update', (updatedPosts) => {
+    // 1. Post updates (bulk or array)
+    const unsubPost = window.APP_SSE.subscribe('post_update', (updatedPosts) => {
       if (Array.isArray(updatedPosts)) {
         postsData = updatedPosts;
         renderKPIs();
         if (activeViewMode === 'content_os' || activeViewMode === 'planner_ai') renderContentOS();
         else if (activeViewMode === 'calendar') renderCalendar();
         else renderBoard();
+      } else {
+        refreshPostsState();
       }
     });
+    window._socialSseUnsubs.push(unsubPost);
+
+    // 2. Incremental social post mutation
+    const unsubSocialPost = window.APP_SSE.subscribe('social_post_update', (data) => {
+      if (data && data.id) {
+        const idx = (postsData || []).findIndex(p => p.id === data.id);
+        if (idx !== -1) {
+          postsData[idx] = { ...postsData[idx], ...data };
+        } else {
+          postsData = [data, ...(postsData || [])];
+        }
+        renderKPIs();
+        if (activeViewMode === 'content_os' || activeViewMode === 'planner_ai') renderContentOS();
+        else if (activeViewMode === 'calendar') renderCalendar();
+        else renderBoard();
+      } else {
+        refreshPostsState();
+      }
+    });
+    window._socialSseUnsubs.push(unsubSocialPost);
+
+    // 3. Brand & Channel configuration mutations
+    const unsubBrands = window.APP_SSE.subscribe('brands_updated', (data) => {
+      const slug = data?.brandSlug || activeBrandSlug;
+      refreshBrandState(slug);
+    });
+    window._socialSseUnsubs.push(unsubBrands);
   }
 
   window.SOCIAL_MODULE = {
     reload() {
       loadInitialData(false);
     },
+    refreshBrandState(brandSlug) {
+      return refreshBrandState(brandSlug);
+    },
+    refreshPostsState() {
+      return refreshPostsState();
+    },
     destroy() {
-      if (window._socialSseUnsub && typeof window._socialSseUnsub === 'function') {
-        window._socialSseUnsub();
-        window._socialSseUnsub = null;
+      if (Array.isArray(window._socialSseUnsubs)) {
+        window._socialSseUnsubs.forEach(unsub => { try { unsub(); } catch (_) {} });
+        window._socialSseUnsubs = [];
       }
       activeGeneratedBrief = null;
     },
@@ -3155,7 +3231,7 @@ function renderBrandAssetsKitHTML(brand) {
           isOnboardingOverride = false;
           if (window.showToast) window.showToast('✅ Channel analytics & audience memory indexed permanently!', 'success');
           await new Promise(r => setTimeout(r, 450));
-          await loadInitialData();
+          await refreshBrandState(brandSlug || activeBrandSlug);
           this.openChannelWorkspace(channelId);
         } else {
           throw new Error(json?.error || 'Failed to upload CSV');
@@ -3200,7 +3276,7 @@ function renderBrandAssetsKitHTML(brand) {
         if (res && res.success) {
           isOnboardingOverride = false;
           if (window.showToast) window.showToast('🎉 Channel Intelligence Onboarding Complete!', 'success');
-          await loadInitialData();
+          await refreshBrandState(brandSlug);
           this.openChannelWorkspace(channelId);
         } else {
           throw new Error(res?.error || 'Failed to complete onboarding');
@@ -3222,7 +3298,7 @@ function renderBrandAssetsKitHTML(brand) {
             if (res && res.success) {
               isOnboardingOverride = true;
               if (window.showToast) window.showToast('🔄 Channel ready for fresh onboarding!', 'info');
-              await loadInitialData();
+              await refreshBrandState(brandSlug);
               this.openChannelWorkspace(channelId);
             }
           } catch (err) {
@@ -3314,7 +3390,7 @@ function renderBrandAssetsKitHTML(brand) {
 
         if (res && res.success) {
           if (window.showToast) window.showToast('✅ Community metrics snapshot saved!', 'success');
-          await loadInitialData();
+          await refreshBrandState(brand.slug);
           this.openChannelWorkspace(channelId);
         } else {
           throw new Error(res?.error || 'Failed to save snapshot');
@@ -3391,7 +3467,7 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
           await new Promise(r => setTimeout(r, 450));
           if (window.showToast) window.showToast(`✨ Generated ${selectedPlanMonth} strategic calendar for ${channelId}!`, 'success');
           
-          await loadInitialData();
+          await refreshBrandState(brandSlug);
           this.openChannelWorkspace(channelId);
         } else {
           throw new Error(res?.error || 'Generation failed');
@@ -3429,7 +3505,7 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
               const msg = `🔒 ${selectedPlanMonth} locked! ${draftCount} drafts → Kanban pipeline.`;
               if (window.showToast) window.showToast(msg, 'success');
 
-              await loadInitialData();
+              await Promise.all([refreshBrandState(brandSlug), refreshPostsState()]);
               this.openChannelWorkspace(channelId);
 
               setTimeout(() => {
@@ -3536,7 +3612,7 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
 
         if (res && res.success) {
           monthlyFocusNote = thesis;
-          await loadInitialData();
+          await refreshBrandState(activeBrandSlug);
           if (window.showToast) window.showToast(`✨ Brand Monthly Focus saved & synced across all channels!`, 'success');
           renderContentOS();
         } else {
@@ -3571,7 +3647,7 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
 
         if (res && res.success) {
           if (window.showToast) window.showToast('✅ Brand identity guidelines updated!', 'success');
-          await loadInitialData();
+          await refreshBrandState(brandSlug);
           this.switchBrandSubTab('assets');
         }
       } catch (err) {
@@ -3603,7 +3679,7 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
 
           await APP_API.put(`/social-brands/${brandSlug}`, { assets: currentAssets });
           if (window.showToast) window.showToast('✅ Asset added to brand library!', 'success');
-          await loadInitialData();
+          await refreshBrandState(brandSlug);
           this.switchBrandSubTab('assets');
         }
       } catch (err) {
@@ -3673,7 +3749,7 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
         const res = await APP_API.post('/social-brands', { name, niche });
         if (res && res.success) {
           if (window.showToast) window.showToast(`🎉 Created brand "${name}"!`, 'success');
-          await loadInitialData();
+          await refreshBrandState(res.brand.slug);
           this.switchBrand(res.brand.slug);
         }
       } catch (err) {
@@ -3733,7 +3809,7 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
 
         if (res && res.success) {
           if (window.showToast) window.showToast(`🎉 Added channel "${name}"!`, 'success');
-          await loadInitialData();
+          await refreshBrandState(activeBrandSlug);
           this.openChannelWorkspace(res.channel.id);
         }
       } catch (err) {
@@ -5275,7 +5351,7 @@ Return strictly JSON: { "prompt": "...", "visualCue": "..." }`;
 
         this.clearSavedDraft(channelKey);
         this.closePostModal(true);
-        loadInitialData(false);
+        refreshPostsState();
       } catch (err) {
         if (window.showToast) window.showToast('Failed to save post: ' + err.message, 'error');
       } finally {
@@ -5293,7 +5369,7 @@ Return strictly JSON: { "prompt": "...", "visualCue": "..." }`;
       try {
         await APP_API.patch(`/posts/${id}/status`, { status: newStatus });
         if (window.showToast) window.showToast(`Post stage updated to "${newStatus}"`, 'success');
-        loadInitialData(false);
+        refreshPostsState();
       } catch (err) {
         if (p && prev) { p.status = prev; renderKPIs(); renderBoard(); }
         if (window.showToast) window.showToast('Status update failed: ' + err.message, 'error');
@@ -5317,7 +5393,7 @@ Return strictly JSON: { "prompt": "...", "visualCue": "..." }`;
       try {
         await APP_API.post(`/posts/${id}/approve`, {});
         if (window.showToast) window.showToast('🎉 Content Approved! Ready for scheduling & publishing.', 'success');
-        loadInitialData(false);
+        refreshPostsState();
       } catch (err) {
         if (p && prev) { p.status = prev; renderKPIs(); renderBoard(); }
         if (window.showToast) window.showToast('Approval failed: ' + err.message, 'error');
@@ -5334,7 +5410,7 @@ Return strictly JSON: { "prompt": "...", "visualCue": "..." }`;
       try {
         await APP_API.post(`/posts/${id}/posted`, {});
         if (window.showToast) window.showToast('✅ Post marked as Posted & Live!', 'success');
-        loadInitialData(false);
+        refreshPostsState();
       } catch (err) {
         if (p && prev) { p.status = prev; renderKPIs(); renderBoard(); }
         if (window.showToast) window.showToast('Failed to mark as posted: ' + err.message, 'error');
@@ -5394,7 +5470,7 @@ Return strictly JSON: { "prompt": "...", "visualCue": "..." }`;
       try {
         await APP_API.post(`/posts/${id}/reject`, { feedback, tags });
         if (window.showToast) window.showToast('🔴 Revision request submitted & logged.', 'info');
-        loadInitialData(false);
+        refreshPostsState();
       } catch (err) {
         if (window.showToast) window.showToast('Revision request failed: ' + err.message, 'error');
       }
@@ -5470,7 +5546,7 @@ Return strictly JSON: { "prompt": "...", "visualCue": "..." }`;
           try {
             await APP_API.delete(`/posts/${id}`);
             if (window.showToast) window.showToast('Post deleted.', 'info');
-            loadInitialData(false);
+            refreshPostsState();
           } catch (err) {
             if (window.showToast) window.showToast('Delete failed: ' + err.message, 'error');
           }
@@ -5533,7 +5609,7 @@ Return strictly JSON: { "prompt": "...", "visualCue": "..." }`;
         if (res && res.success) {
           if (window.showToast) window.showToast('✅ Plan item updated!', 'success');
           this.closePlanItemEditModal();
-          await loadInitialData();
+          await refreshBrandState(brandSlug);
           this.openChannelWorkspace(channelId);
         } else {
           throw new Error(res?.error || 'Update failed');
@@ -5556,7 +5632,7 @@ Return strictly JSON: { "prompt": "...", "visualCue": "..." }`;
             const res = await APP_API.delete(`/social-brands/${brandSlug}/channels/${channelId}/calendars/${monthKey}/items/${planIndex}`);
             if (res && res.success) {
               if (window.showToast) window.showToast('Plan item removed.', 'info');
-              await loadInitialData();
+              await refreshBrandState(brandSlug);
               this.openChannelWorkspace(channelId);
             } else {
               throw new Error(res?.error || 'Delete failed');
@@ -5802,7 +5878,7 @@ Return strictly JSON: { "prompt": "...", "visualCue": "..." }`;
             const res = await APP_API.delete(`/social-brands/${brandSlug}/channels/${channelId}/calendars/${monthKey}`);
             if (res && res.success) {
               if (window.showToast) window.showToast(`🗑️ ${selectedPlanMonth} plan items cleared.`, 'info');
-              await loadInitialData();
+              await refreshBrandState(brandSlug);
               this.openChannelWorkspace(channelId);
             } else {
               throw new Error(res?.error || 'Clear failed');
@@ -6306,7 +6382,7 @@ Return strictly JSON: { "prompt": "...", "visualCue": "..." }`;
         if (res && res.success) {
           if (window.showToast) window.showToast(`🚀 Successfully batch-imported ${res.count || itemsToCreate.length} posts!`, 'success');
           this.closeBatchImportModal();
-          await loadInitialData(false);
+          await refreshPostsState();
         } else {
           throw new Error(res?.error || 'Batch import failed');
         }

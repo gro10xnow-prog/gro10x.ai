@@ -187,7 +187,54 @@ window.APP_SSE = {
 
   _dispatch(eventType, data) {
     if (window.APP_API && window.APP_API._cache) {
-      window.APP_API._cache = {};
+      const EVENT_CACHE_KEY_MAP = {
+        'task_update': ['/tasks', '/api/tasks'],
+        'subtask_update': ['/tasks', '/api/tasks'],
+        'task_comment_added': ['/tasks', '/api/tasks'],
+        'task_time_logged': ['/tasks', '/api/tasks'],
+        'task_label_update': ['/tasks', '/api/tasks'],
+        'task_qc_rejected': ['/tasks', '/api/tasks'],
+        'task_reassigned': ['/tasks', '/api/tasks'],
+        'studio_booking_update': ['/tasks', '/api/tasks'],
+        'client_update': ['/clients', '/api/clients'],
+        'clients_update': ['/clients', '/api/clients'],
+        'meeting_update': ['/clients', '/api/clients'],
+        'invoice_update': ['/invoices', '/api/invoices'],
+        'payment_update': ['/payments', '/api/payments', '/invoices', '/api/invoices'],
+        'expense_update': ['/expenses', '/api/expenses'],
+        'leave_update': ['/leaves', '/api/leaves'],
+        'brands_updated': ['/social-brands', '/api/social-brands'],
+        'social_post_update': ['/posts', '/api/posts'],
+        'post_update': ['/posts', '/api/posts'],
+        'drawing_update': ['/reviews', '/api/reviews'],
+        'review_update': ['/reviews', '/api/reviews'],
+        'review_comment_update': ['/reviews', '/api/reviews'],
+        'digistore_order_updated': ['/digistore', '/api/digistore'],
+        'digistore_order_created': ['/digistore', '/api/digistore'],
+        'digistore_product_update': ['/digistore', '/api/digistore'],
+        'digistore_product_updated': ['/digistore', '/api/digistore'],
+        'digistore_delivery_completed': ['/digistore', '/api/digistore'],
+        'asset_update': ['/assets', '/api/assets'],
+        'cms_update': ['/cms', '/api/cms'],
+        'team_update': ['/team', '/api/team', '/users', '/api/users'],
+        'attendance_update': ['/attendance', '/api/attendance'],
+        'eod_update': ['/eod', '/api/eod'],
+        'group_update': ['/automation', '/api/automation'],
+        'custom_field_update': ['/custom-fields', '/api/custom-fields'],
+        'label_update': ['/labels', '/api/labels']
+      };
+
+      const keysToInvalidate = EVENT_CACHE_KEY_MAP[eventType];
+      if (Array.isArray(keysToInvalidate) && keysToInvalidate.length > 0) {
+        Object.keys(window.APP_API._cache).forEach(cacheKey => {
+          if (keysToInvalidate.some(k => cacheKey.includes(k))) {
+            delete window.APP_API._cache[cacheKey];
+          }
+        });
+      } else {
+        // Unknown or unmapped event — full cache flush to ensure consistency
+        window.APP_API._cache = {};
+      }
     }
     
     if (this._listeners[eventType]) {
