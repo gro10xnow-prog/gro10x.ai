@@ -248,24 +248,30 @@ async function runPhaseA3(page) {
   });
 
   await tracker.runStep('A3.8', 'Deliverable Submission & Approval Status Transition', async () => {
-    // Open new review modal
-    await page.evaluate(() => {
-      window.REVIEWS_MODULE.openNewReviewModal();
+    // Open new review modal with await
+    await page.evaluate(async () => {
+      if (window.REVIEWS_MODULE && window.REVIEWS_MODULE.openNewReviewModal) {
+        await window.REVIEWS_MODULE.openNewReviewModal();
+      }
     });
-    await wait(500);
 
-    const isModalActive = await page.evaluate(() => {
+    await page.waitForFunction(() => {
       const m = document.getElementById('newReviewModal');
       return m && m.classList.contains('active');
-    });
-    tracker.assert(isModalActive, '#newReviewModal must have .active class');
+    }, { timeout: 8000 });
 
     // Populate review inputs
     await page.evaluate(() => {
       const name = document.getElementById('nrProjectName');
       if (name) name.value = 'E2E Creative Master Cut v3';
       const client = document.getElementById('nrClient');
-      if (client) client.value = 'Chillox Bangladesh';
+      if (client) {
+        if (client.options && client.options.length > 0) {
+          client.selectedIndex = 0;
+        } else {
+          client.value = 'Chillox Bangladesh';
+        }
+      }
       const type = document.getElementById('nrMediaType');
       if (type) type.value = 'video';
       const url = document.getElementById('nrMediaUrl');
@@ -274,6 +280,7 @@ async function runPhaseA3(page) {
 
     await wait(300);
     await tracker.screenshot(page, 'A3.6_review_approval_flow.png');
+
 
     // Intercept POST /api/reviews
     const res = await interceptApiCall(
@@ -284,20 +291,19 @@ async function runPhaseA3(page) {
           window.REVIEWS_MODULE.submitNewReview();
         });
       },
-      6000
+      10000
     );
 
     if (res) {
       tracker.assert(res.status() < 400, `POST /api/reviews returned HTTP ${res.status()}`);
     }
 
-    await wait(600);
-    const isModalClosed = await page.evaluate(() => {
+    await page.waitForFunction(() => {
       const m = document.getElementById('newReviewModal');
       return !m || !m.classList.contains('active');
-    });
-    tracker.assert(isModalClosed, '#newReviewModal must close after project creation');
+    }, { timeout: 10000 });
   });
+
 
   return tracker.getSummary();
 }

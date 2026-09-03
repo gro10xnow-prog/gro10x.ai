@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>PurpleOS E2E Test Report — 9/3/2026, 11:55:15 PM</title>
+  <title>PurpleOS E2E Test Report — 9/3/2026, 11:52:09 PM</title>
   <style>
     :root {
       --bg: #0d0d14;
@@ -81,7 +81,7 @@
   <div class="header">
     <div>
       <h1 style="margin:0; font-size:1.6rem; color:var(--pink);">⚡ PurpleOS Browser Automation Report</h1>
-      <p style="margin:0.25rem 0 0; color:var(--text-muted); font-size:0.85rem;">Generated on 9/3/2026, 11:55:15 PM · Automated E2E Regression Suite</p>
+      <p style="margin:0.25rem 0 0; color:var(--text-muted); font-size:0.85rem;">Generated on 9/3/2026, 11:52:09 PM · Automated E2E Regression Suite</p>
     </div>
     <div class="badge badge-pass" style="font-size:1rem; padding:0.4rem 1rem;">
       ✅ ALL TESTS PASSING (100%)
@@ -91,11 +91,11 @@
   <div class="kpi-row">
     <div class="kpi-card">
       <div class="kpi-label">Total Test Assertions</div>
-      <div class="kpi-val" style="color:var(--purple);">8</div>
+      <div class="kpi-val" style="color:var(--purple);">10</div>
     </div>
     <div class="kpi-card">
       <div class="kpi-label">Passed</div>
-      <div class="kpi-val" style="color:var(--green);">8</div>
+      <div class="kpi-val" style="color:var(--green);">10</div>
     </div>
     <div class="kpi-card">
       <div class="kpi-label">Failed</div>
@@ -111,90 +111,110 @@
   
     <div class="phase-card">
       <div class="phase-header">
-        <h3 style="margin:0; font-size:1.05rem;">Suite A - Phase A4: CRM, Leads & Proposals Studio</h3>
+        <h3 style="margin:0; font-size:1.05rem;">Suite A - Phase A1: Shell, Auth & Navigation</h3>
         <div>
-          <span class="badge badge-pass">8/8 Passed (18895ms)</span>
+          <span class="badge badge-pass">10/10 Passed (22180ms)</span>
         </div>
       </div>
       <ul class="test-list">
         
           <li class="test-item">
             <div>
-              <strong>[A4.1]</strong> Load Leads Pipeline Hub & Verify 5 Stage Columns
+              <strong>[A1.1]</strong> Redirect unauthenticated visitor to /auth
               
             </div>
             <div>
-              <span class="badge badge-pass">PASSED (410ms)</span>
+              <span class="badge badge-pass">PASSED (1441ms)</span>
             </div>
           </li>
         
           <li class="test-item">
             <div>
-              <strong>[A4.2]</strong> Lead Creation Modal & Intercept POST /api/leads
+              <strong>[A1.2]</strong> Expired JWT triggers 401 redirect to /auth?expired=1
               
             </div>
             <div>
-              <span class="badge badge-pass">PASSED (3009ms)</span>
+              <span class="badge badge-pass">PASSED (2464ms)</span>
             </div>
           </li>
         
           <li class="test-item">
             <div>
-              <strong>[A4.3]</strong> Lead Profile Slide-Over Drawer & Stage Advancement
+              <strong>[A1.3]</strong> Load Admin OS with Valid Owner Session
               
             </div>
             <div>
-              <span class="badge badge-pass">PASSED (3ms)</span>
+              <span class="badge badge-pass">PASSED (3238ms)</span>
             </div>
           </li>
         
           <li class="test-item">
             <div>
-              <strong>[A4.4]</strong> Client CRM Directory Hub & Live Search Filtering
+              <strong>[A1.4]</strong> Verify Live Dhaka BST Clock in Header
               
             </div>
             <div>
-              <span class="badge badge-pass">PASSED (2801ms)</span>
+              <span class="badge badge-pass">PASSED (354ms)</span>
             </div>
           </li>
         
           <li class="test-item">
             <div>
-              <strong>[A4.5]</strong> Add Client 2-Step Wizard Modal & Intercept POST /api/clients
+              <strong>[A1.5]</strong> Verify all 22 Admin Navigation Tabs render active content with Zero JS Errors
               
             </div>
             <div>
-              <span class="badge badge-pass">PASSED (3428ms)</span>
+              <span class="badge badge-pass">PASSED (9096ms)</span>
             </div>
           </li>
         
           <li class="test-item">
             <div>
-              <strong>[A4.6]</strong> Client Hub Slide-Over Drawer & Meeting Sync Modal
+              <strong>[A1.6]</strong> Open Command Palette, Search and Jump to Route
               
             </div>
             <div>
-              <span class="badge badge-pass">PASSED (1345ms)</span>
+              <span class="badge badge-pass">PASSED (1958ms)</span>
             </div>
           </li>
         
           <li class="test-item">
             <div>
-              <strong>[A4.7]</strong> Proposals Studio Hub (#proposals) & KPI Scorecards
+              <strong>[A1.7]</strong> Toggle Theme (Dark <-> Light)
               
             </div>
             <div>
-              <span class="badge badge-pass">PASSED (2388ms)</span>
+              <span class="badge badge-pass">PASSED (621ms)</span>
             </div>
           </li>
         
           <li class="test-item">
             <div>
-              <strong>[A4.8]</strong> Proposal Creation Modal UI & Scope Breakdown Builder
+              <strong>[A1.8]</strong> Open Ops Health Telemetry Modal & Refresh
               
             </div>
             <div>
-              <span class="badge badge-pass">PASSED (1894ms)</span>
+              <span class="badge badge-pass">PASSED (1630ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[A1.9]</strong> Verify Attention Badges Engine DOM Elements Binding
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (330ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[A1.10]</strong> Verify Mobile Viewport Layout Integrity (375x812)
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (1047ms)</span>
             </div>
           </li>
         

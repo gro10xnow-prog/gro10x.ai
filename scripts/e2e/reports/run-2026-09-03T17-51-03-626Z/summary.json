@@ -1,0 +1,97 @@
+{
+  "timestamp": "2026-09-03T17:51:03.629Z",
+  "totalTests": 8,
+  "totalPassed": 7,
+  "totalFailed": 1,
+  "passRate": 88,
+  "totalDurationMs": 32966,
+  "phases": [
+    {
+      "phase": "Suite A - Phase A4: CRM, Leads & Proposals Studio",
+      "total": 8,
+      "passed": 7,
+      "failed": 1,
+      "duration": 32966,
+      "results": [
+        {
+          "id": "A4.1",
+          "title": "Load Leads Pipeline Hub & Verify 5 Stage Columns",
+          "status": "PASSED",
+          "duration": 304,
+          "error": null
+        },
+        {
+          "id": "A4.2",
+          "title": "Lead Creation Modal & Intercept POST /api/leads",
+          "status": "PASSED",
+          "duration": 3368,
+          "error": null
+        },
+        {
+          "id": "A4.3",
+          "title": "Lead Profile Slide-Over Drawer & Stage Advancement",
+          "status": "PASSED",
+          "duration": 2,
+          "error": null
+        },
+        {
+          "id": "A4.4",
+          "title": "Client CRM Directory Hub & Live Search Filtering",
+          "status": "PASSED",
+          "duration": 2497,
+          "error": null
+        },
+        {
+          "id": "A4.5",
+          "title": "Add Client 2-Step Wizard Modal & Intercept POST /api/clients",
+          "status": "PASSED",
+          "duration": 3195,
+          "error": null
+        },
+        {
+          "id": "A4.6",
+          "title": "Client Hub Slide-Over Drawer & Meeting Sync Modal",
+          "status": "PASSED",
+          "duration": 1340,
+          "error": null
+        },
+        {
+          "id": "A4.7",
+          "title": "Proposals Studio Hub (#proposals) & KPI Scorecards",
+          "status": "FAILED",
+          "duration": 15425,
+          "error": "Waiting failed: 14000ms exceeded"
+        },
+        {
+          "id": "A4.8",
+          "title": "Proposal Creation Modal UI & Scope Breakdown Builder",
+          "status": "PASSED",
+          "duration": 1657,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "consoleAudit": [
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/leads.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/crm.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/proposals.js"
+    }
+  ]
+}

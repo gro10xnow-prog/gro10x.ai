@@ -183,7 +183,6 @@ router.post('/', leadSubmitLimiter, async (req, res) => {
           phone: newLead.phone,
           whatsapp: newLead.whatsapp,
           source: newLead.source,
-          category: newLead.category,
           service: newLead.service,
           value: newLead.value,
           notes: newLead.notes
