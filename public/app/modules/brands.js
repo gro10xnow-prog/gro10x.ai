@@ -403,12 +403,25 @@ function isCurrentUserAdmin() {
 
 
 async function loadBrandsStateFromAPI(forceFresh = false) {
+  if (!forceFresh) {
+    try {
+      const saved = localStorage.getItem('gro10x_brands_data');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && parsed.brands && parsed.brands.length > 0) {
+          return parsed;
+        }
+      }
+    } catch (_) {}
+  }
+
   const headers = getStudioAuthHeaders({ 'Content-Type': 'application/json' });
 
   // 1. Direct fetch with explicit auth headers and credentials
   try {
     const res = await fetch(`/api/brands?_t=${Date.now()}`, { headers, credentials: 'same-origin' });
     if (res.ok) {
+
       const data = await res.json();
       if (data && data.brands && data.productsCatalog) {
         for (const b of data.brands) {
@@ -505,8 +518,18 @@ const BRANDS_CACHE_VERSION = 'v2026-08-27c';
 // MAIN RENDER CONTROLLER
 // ─────────────────────────────────────────────────────────────────────────────
 window.APP_MODULES.brands = async function(container) {
-  let state = await loadBrandsStateFromAPI();
+  let state = DEFAULT_BRANDS_DATA;
+  try {
+    const cached = localStorage.getItem('gro10x_brands_data');
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      if (parsed && parsed.brands && parsed.brands.length > 0) {
+        state = parsed;
+      }
+    }
+  } catch (_) {}
   let currentTab = localStorage.getItem('gro10x_brands_active_tab') || 'portfolio';
+
 
   // Parse OAuth redirect query parameters (P4-5)
   const fullHash = window.location.hash || '';
@@ -7581,4 +7604,13 @@ window.APP_MODULES.brands = async function(container) {
   document.head.appendChild(styleEl);
 
   render();
+
+  // Background sync for fresh catalog and live counts without blocking initial render
+  loadBrandsStateFromAPI(true).then(fresh => {
+    if (fresh && fresh.brands) {
+      state = fresh;
+      render();
+    }
+  }).catch(() => {});
 };
+

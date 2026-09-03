@@ -1461,6 +1461,12 @@ window.APP_MODULES.kanban = async function(container) {
       const task = allTasks.find(t => t.id === taskId);
       if (!task) return;
 
+      const panel = document.getElementById('taskDrawerPanel');
+      const backdrop = document.getElementById('taskDrawerBackdrop');
+      if (panel) panel.classList.add('open');
+      if (backdrop) backdrop.classList.add('open');
+
+
       document.getElementById('drawerStageBadge').textContent = task.stage || 'Briefing';
       document.getElementById('drawerTaskTitle').textContent = task.title;
       document.getElementById('drawerClientName').textContent = `Client: ${task.client || 'Agency'} · Assignee: ${task.assignee || 'Unassigned'}`;

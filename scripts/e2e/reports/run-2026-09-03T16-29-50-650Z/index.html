@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>PurpleOS E2E Test Report — 9/3/2026, 10:37:03 PM</title>
+  <title>PurpleOS E2E Test Report — 9/3/2026, 10:29:50 PM</title>
   <style>
     :root {
       --bg: #0d0d14;
@@ -81,10 +81,10 @@
   <div class="header">
     <div>
       <h1 style="margin:0; font-size:1.6rem; color:var(--pink);">⚡ PurpleOS Browser Automation Report</h1>
-      <p style="margin:0.25rem 0 0; color:var(--text-muted); font-size:0.85rem;">Generated on 9/3/2026, 10:37:03 PM · Automated E2E Regression Suite</p>
+      <p style="margin:0.25rem 0 0; color:var(--text-muted); font-size:0.85rem;">Generated on 9/3/2026, 10:29:50 PM · Automated E2E Regression Suite</p>
     </div>
-    <div class="badge badge-pass" style="font-size:1rem; padding:0.4rem 1rem;">
-      ✅ ALL TESTS PASSING (100%)
+    <div class="badge badge-fail" style="font-size:1rem; padding:0.4rem 1rem;">
+      🚨 2 TESTS FAILED
     </div>
   </div>
 
@@ -95,15 +95,15 @@
     </div>
     <div class="kpi-card">
       <div class="kpi-label">Passed</div>
-      <div class="kpi-val" style="color:var(--green);">8</div>
+      <div class="kpi-val" style="color:var(--green);">6</div>
     </div>
     <div class="kpi-card">
       <div class="kpi-label">Failed</div>
-      <div class="kpi-val" style="color:var(--red);">0</div>
+      <div class="kpi-val" style="color:var(--red);">2</div>
     </div>
     <div class="kpi-card">
       <div class="kpi-label">Pass Rate</div>
-      <div class="kpi-val" style="color:var(--green);">100%</div>
+      <div class="kpi-val" style="color:var(--pink);">75%</div>
     </div>
   </div>
 
@@ -113,7 +113,7 @@
       <div class="phase-header">
         <h3 style="margin:0; font-size:1.05rem;">Suite A - Phase A3: Production Pipeline & Review Room</h3>
         <div>
-          <span class="badge badge-pass">8/8 Passed (17477ms)</span>
+          <span class="badge badge-fail">6/8 Passed (15449ms)</span>
         </div>
       </div>
       <ul class="test-list">
@@ -124,7 +124,7 @@
               
             </div>
             <div>
-              <span class="badge badge-pass">PASSED (393ms)</span>
+              <span class="badge badge-pass">PASSED (399ms)</span>
             </div>
           </li>
         
@@ -134,17 +134,17 @@
               
             </div>
             <div>
-              <span class="badge badge-pass">PASSED (1670ms)</span>
+              <span class="badge badge-pass">PASSED (1683ms)</span>
             </div>
           </li>
         
           <li class="test-item">
             <div>
               <strong>[A3.3]</strong> Task Creation Modal & Intercept POST /api/tasks Mutation
-              
+              <div style="color:var(--red); font-size:0.8rem; margin-top:0.3rem;">⚠️ Assertion Failed: #newTaskModal must be visible</div>
             </div>
             <div>
-              <span class="badge badge-pass">PASSED (3121ms)</span>
+              <span class="badge badge-fail">FAILED (517ms)</span>
             </div>
           </li>
         
@@ -154,17 +154,17 @@
               
             </div>
             <div>
-              <span class="badge badge-pass">PASSED (2ms)</span>
+              <span class="badge badge-pass">PASSED (3ms)</span>
             </div>
           </li>
         
           <li class="test-item">
             <div>
               <strong>[A3.5]</strong> Bulk CSV Import Modal & Drop Zone UI
-              
+              <div style="color:var(--red); font-size:0.8rem; margin-top:0.3rem;">⚠️ Assertion Failed: #importModal must open with parsed CSV data</div>
             </div>
             <div>
-              <span class="badge badge-pass">PASSED (1310ms)</span>
+              <span class="badge badge-fail">FAILED (514ms)</span>
             </div>
           </li>
         
@@ -174,7 +174,7 @@
               
             </div>
             <div>
-              <span class="badge badge-pass">PASSED (1864ms)</span>
+              <span class="badge badge-pass">PASSED (1552ms)</span>
             </div>
           </li>
         
@@ -184,7 +184,7 @@
               
             </div>
             <div>
-              <span class="badge badge-pass">PASSED (1161ms)</span>
+              <span class="badge badge-pass">PASSED (1156ms)</span>
             </div>
           </li>
         
@@ -194,7 +194,7 @@
               
             </div>
             <div>
-              <span class="badge badge-pass">PASSED (2209ms)</span>
+              <span class="badge badge-pass">PASSED (2194ms)</span>
             </div>
           </li>
         

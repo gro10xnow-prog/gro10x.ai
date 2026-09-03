@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>PurpleOS E2E Test Report — 9/3/2026, 10:37:03 PM</title>
+  <title>PurpleOS E2E Test Report — 9/3/2026, 10:32:22 PM</title>
   <style>
     :root {
       --bg: #0d0d14;
@@ -81,29 +81,29 @@
   <div class="header">
     <div>
       <h1 style="margin:0; font-size:1.6rem; color:var(--pink);">⚡ PurpleOS Browser Automation Report</h1>
-      <p style="margin:0.25rem 0 0; color:var(--text-muted); font-size:0.85rem;">Generated on 9/3/2026, 10:37:03 PM · Automated E2E Regression Suite</p>
+      <p style="margin:0.25rem 0 0; color:var(--text-muted); font-size:0.85rem;">Generated on 9/3/2026, 10:32:23 PM · Automated E2E Regression Suite</p>
     </div>
-    <div class="badge badge-pass" style="font-size:1rem; padding:0.4rem 1rem;">
-      ✅ ALL TESTS PASSING (100%)
+    <div class="badge badge-fail" style="font-size:1rem; padding:0.4rem 1rem;">
+      🚨 1 TESTS FAILED
     </div>
   </div>
 
   <div class="kpi-row">
     <div class="kpi-card">
       <div class="kpi-label">Total Test Assertions</div>
-      <div class="kpi-val" style="color:var(--purple);">8</div>
+      <div class="kpi-val" style="color:var(--purple);">10</div>
     </div>
     <div class="kpi-card">
       <div class="kpi-label">Passed</div>
-      <div class="kpi-val" style="color:var(--green);">8</div>
+      <div class="kpi-val" style="color:var(--green);">9</div>
     </div>
     <div class="kpi-card">
       <div class="kpi-label">Failed</div>
-      <div class="kpi-val" style="color:var(--red);">0</div>
+      <div class="kpi-val" style="color:var(--red);">1</div>
     </div>
     <div class="kpi-card">
       <div class="kpi-label">Pass Rate</div>
-      <div class="kpi-val" style="color:var(--green);">100%</div>
+      <div class="kpi-val" style="color:var(--pink);">90%</div>
     </div>
   </div>
 
@@ -111,90 +111,110 @@
   
     <div class="phase-card">
       <div class="phase-header">
-        <h3 style="margin:0; font-size:1.05rem;">Suite A - Phase A3: Production Pipeline & Review Room</h3>
+        <h3 style="margin:0; font-size:1.05rem;">Suite A - Phase A1: Shell, Auth & Navigation</h3>
         <div>
-          <span class="badge badge-pass">8/8 Passed (17477ms)</span>
+          <span class="badge badge-fail">9/10 Passed (31372ms)</span>
         </div>
       </div>
       <ul class="test-list">
         
           <li class="test-item">
             <div>
-              <strong>[A3.1]</strong> Load Kanban Pipeline Hub & Verify 4 Modular Workflows
+              <strong>[A1.1]</strong> Redirect unauthenticated visitor to /auth
               
             </div>
             <div>
-              <span class="badge badge-pass">PASSED (393ms)</span>
+              <span class="badge badge-pass">PASSED (1887ms)</span>
             </div>
           </li>
         
           <li class="test-item">
             <div>
-              <strong>[A3.2]</strong> Workflow Tab Switching & Dynamic Column Stage Presets
+              <strong>[A1.2]</strong> Expired JWT triggers 401 redirect to /auth?expired=1
               
             </div>
             <div>
-              <span class="badge badge-pass">PASSED (1670ms)</span>
+              <span class="badge badge-pass">PASSED (2865ms)</span>
             </div>
           </li>
         
           <li class="test-item">
             <div>
-              <strong>[A3.3]</strong> Task Creation Modal & Intercept POST /api/tasks Mutation
+              <strong>[A1.3]</strong> Load Admin OS with Valid Owner Session
               
             </div>
             <div>
-              <span class="badge badge-pass">PASSED (3121ms)</span>
+              <span class="badge badge-pass">PASSED (3578ms)</span>
             </div>
           </li>
         
           <li class="test-item">
             <div>
-              <strong>[A3.4]</strong> Slide-Over Task Details Drawer (Subtasks, Blocker & Comments)
+              <strong>[A1.4]</strong> Verify Live Dhaka BST Clock in Header
               
             </div>
             <div>
-              <span class="badge badge-pass">PASSED (2ms)</span>
+              <span class="badge badge-pass">PASSED (382ms)</span>
             </div>
           </li>
         
           <li class="test-item">
             <div>
-              <strong>[A3.5]</strong> Bulk CSV Import Modal & Drop Zone UI
-              
+              <strong>[A1.5]</strong> Verify all 22 Admin Navigation Tabs render active content with Zero JS Errors
+              <div style="color:var(--red); font-size:0.8rem; margin-top:0.3rem;">⚠️ Assertion Failed: Module #brands (Brand Command Center) should render HTML content</div>
             </div>
             <div>
-              <span class="badge badge-pass">PASSED (1310ms)</span>
-            </div>
-          </li>
-        
-          <li class="test-item">
-            <div>
-              <strong>[A3.6]</strong> Load Client Review Room Hub & Verify 4 KPI Summary Tiles
-              
-            </div>
-            <div>
-              <span class="badge badge-pass">PASSED (1864ms)</span>
+              <span class="badge badge-fail">FAILED (17852ms)</span>
             </div>
           </li>
         
           <li class="test-item">
             <div>
-              <strong>[A3.7]</strong> Review Room Media Filtering (Video, Image, PDF)
+              <strong>[A1.6]</strong> Open Command Palette, Search and Jump to Route
               
             </div>
             <div>
-              <span class="badge badge-pass">PASSED (1161ms)</span>
+              <span class="badge badge-pass">PASSED (1690ms)</span>
             </div>
           </li>
         
           <li class="test-item">
             <div>
-              <strong>[A3.8]</strong> Deliverable Submission & Approval Status Transition
+              <strong>[A1.7]</strong> Toggle Theme (Dark <-> Light)
               
             </div>
             <div>
-              <span class="badge badge-pass">PASSED (2209ms)</span>
+              <span class="badge badge-pass">PASSED (554ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[A1.8]</strong> Open Ops Health Telemetry Modal & Refresh
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (1423ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[A1.9]</strong> Verify Attention Badges Engine DOM Elements Binding
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (188ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[A1.10]</strong> Verify Mobile Viewport Layout Integrity (375x812)
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (949ms)</span>
             </div>
           </li>
         
