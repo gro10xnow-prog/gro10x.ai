@@ -432,7 +432,7 @@ window.APP_MODULES.automation = async function(container) {
         if (res.success) {
           this.closeCreateRuleModal();
           if (window.showToast) window.showToast(`Rule "${rule_name}" created! ⚡`, 'success');
-          loadData();
+          await loadData();
         }
       } catch (err) {
         if (window.showToast) window.showToast('Failed to create rule: ' + err.message, 'error');
@@ -442,7 +442,7 @@ window.APP_MODULES.automation = async function(container) {
       try {
         await APP_API.put(`/automation/rules/${id}`, { active: newActive });
         if (window.showToast) window.showToast(`Rule ${newActive ? 'enabled' : 'disabled'}`, 'info');
-        loadData();
+        await loadData();
       } catch (err) {
         if (window.showToast) window.showToast('Failed to toggle rule: ' + err.message, 'error');
       }
@@ -452,7 +452,7 @@ window.APP_MODULES.automation = async function(container) {
       try {
         await APP_API.delete(`/automation/rules/${id}`);
         if (window.showToast) window.showToast('Rule deleted', 'info');
-        loadData();
+        await loadData();
       } catch (err) {
         if (window.showToast) window.showToast('Failed to delete rule: ' + err.message, 'error');
       }

@@ -1,0 +1,75 @@
+{
+  "timestamp": "2026-09-03T19:08:10.176Z",
+  "totalTests": 6,
+  "totalPassed": 5,
+  "totalFailed": 1,
+  "passRate": 83,
+  "totalDurationMs": 8643,
+  "phases": [
+    {
+      "phase": "Suite A - Phase A8: Bot Engine & Automation",
+      "total": 6,
+      "passed": 5,
+      "failed": 1,
+      "duration": 8643,
+      "results": [
+        {
+          "id": "A8.1",
+          "title": "Load Bot Engine Hub & Verify System Health Telemetry",
+          "status": "PASSED",
+          "duration": 362,
+          "error": null
+        },
+        {
+          "id": "A8.2",
+          "title": "Subtab Navigation (Logs -> Rules -> Groups)",
+          "status": "PASSED",
+          "duration": 1742,
+          "error": null
+        },
+        {
+          "id": "A8.3",
+          "title": "Create Automation Rule Modal UI & Form Configuration",
+          "status": "PASSED",
+          "duration": 1546,
+          "error": null
+        },
+        {
+          "id": "A8.4",
+          "title": "Submit Rule & Intercept POST /api/automation/rules Mutation",
+          "status": "PASSED",
+          "duration": 37,
+          "error": null
+        },
+        {
+          "id": "A8.5",
+          "title": "Toggle Automation Rule State (Active <-> Inactive)",
+          "status": "PASSED",
+          "duration": 929,
+          "error": null
+        },
+        {
+          "id": "A8.6",
+          "title": "Telegram Broadcast Modal & Intercept POST /api/automation/broadcast",
+          "status": "FAILED",
+          "duration": 406,
+          "error": "Assertion Failed: #autoBroadcastModal must have .active class"
+        }
+      ]
+    }
+  ],
+  "consoleAudit": [
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/automation.js"
+    }
+  ]
+}
