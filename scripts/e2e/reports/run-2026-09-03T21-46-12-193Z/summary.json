@@ -1,0 +1,167 @@
+{
+  "timestamp": "2026-09-03T21:46:12.194Z",
+  "totalTests": 6,
+  "totalPassed": 6,
+  "totalFailed": 0,
+  "passRate": 100,
+  "totalDurationMs": 10539,
+  "phases": [
+    {
+      "phase": "Suite B - Phase B1: Manager Auth & Role Access",
+      "total": 6,
+      "passed": 6,
+      "failed": 0,
+      "duration": 10539,
+      "results": [
+        {
+          "id": "B1.1",
+          "title": "Unauthenticated visitor redirects to /auth",
+          "status": "PASSED",
+          "duration": 1845,
+          "error": null
+        },
+        {
+          "id": "B1.2",
+          "title": "Expired JWT Session Handling",
+          "status": "PASSED",
+          "duration": 1049,
+          "error": null
+        },
+        {
+          "id": "B1.3",
+          "title": "Authenticated Manager Session Injection & Portal Boot",
+          "status": "PASSED",
+          "duration": 2681,
+          "error": null
+        },
+        {
+          "id": "B1.4",
+          "title": "Manager Navigation Tabs Traversal (11 tabs)",
+          "status": "PASSED",
+          "duration": 2917,
+          "error": null
+        },
+        {
+          "id": "B1.5",
+          "title": "Manager Profile Badge & Department Tag Hydration",
+          "status": "PASSED",
+          "duration": 770,
+          "error": null
+        },
+        {
+          "id": "B1.6",
+          "title": "Mobile Viewport & Sidebar Drawer Integrity (375x812)",
+          "status": "PASSED",
+          "duration": 1277,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "consoleAudit": [
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "log",
+      "text": "📌 Manager Portal: Switched to tab 'dashboard'"
+    },
+    {
+      "type": "warn",
+      "text": "Error while trying to use the following icon from the Manifest: http://localhost:3000/images/logo.webp (Download error or resource isn't a valid image)"
+    },
+    {
+      "type": "log",
+      "text": "📌 Manager Portal: Switched to tab 'dashboard'"
+    },
+    {
+      "type": "log",
+      "text": "📌 Manager Portal: Switched to tab 'crm'"
+    },
+    {
+      "type": "log",
+      "text": "📌 Manager Portal: Switched to tab 'kanban'"
+    },
+    {
+      "type": "log",
+      "text": "📌 Manager Portal: Switched to tab 'workload'"
+    },
+    {
+      "type": "log",
+      "text": "📌 Manager Portal: Switched to tab 'hrops'"
+    },
+    {
+      "type": "log",
+      "text": "📌 Manager Portal: Switched to tab 'tickets'"
+    },
+    {
+      "type": "log",
+      "text": "📌 Manager Portal: Switched to tab 'financials'"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: net::ERR_NETWORK_CHANGED"
+    },
+    {
+      "type": "error",
+      "text": "Error loading manager tickets: TypeError: Failed to fetch"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: net::ERR_NETWORK_CHANGED"
+    },
+    {
+      "type": "error",
+      "text": "Error loading manager expenses: TypeError: Failed to fetch"
+    },
+    {
+      "type": "log",
+      "text": "📌 Manager Portal: Switched to tab 'reviewroom'"
+    },
+    {
+      "type": "log",
+      "text": "📌 Manager Portal: Switched to tab 'social'"
+    },
+    {
+      "type": "log",
+      "text": "📌 Manager Portal: Switched to tab 'assets'"
+    },
+    {
+      "type": "log",
+      "text": "📌 Manager Portal: Switched to tab 'chat'"
+    },
+    {
+      "type": "log",
+      "text": "📌 Manager Portal: Switched to tab 'dashboard'"
+    },
+    {
+      "type": "error",
+      "text": "Error loading manager social planner: SyntaxError: Unexpected token '<', \"<!DOCTYPE \"... is not valid JSON"
+    }
+  ]
+}

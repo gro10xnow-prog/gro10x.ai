@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 🟣 PURPLEOS MANAGER PORTAL CONTROLLER (manager.js)
  * Phase MA1 & MA2 — Manager RBAC & Kanban Task Management Hub
  */
@@ -101,7 +101,11 @@ function populateManagerClientDropdowns() {
  */
 async function checkManagerAuth() {
   try {
-    const token = localStorage.getItem('sb-access-token') || sessionStorage.getItem('gro10x_token');
+    const token = (window.GRO10XAuth && window.GRO10XAuth.getToken()) ||
+                  localStorage.getItem('gro10x_token') ||
+                  localStorage.getItem('sb-access-token') ||
+                  sessionStorage.getItem('gro10x_token') ||
+                  localStorage.getItem('jwt_token');
     
     // Attempt session verification from API
     const res = await fetch('/api/auth/me', {
