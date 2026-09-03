@@ -18,22 +18,31 @@ function authorizeCron(req, res, next) {
   const authHeader = req.headers['authorization'];
   const cronHeader = req.headers['x-cron-secret'];
   const isVercelCron = req.headers['x-vercel-cron'] === '1';
+  const isProd = process.env.NODE_ENV === 'production' || Boolean(process.env.VERCEL) || Boolean(process.env.RENDER);
 
+  // In production, CRON_SECRET is strictly mandatory
+  if (isProd && !cronSecret) {
+    console.error('⚠️ [Cron] CRON_SECRET not configured in production environment — blocking execution');
+    return res.status(403).json({ error: 'Cron blocked: CRON_SECRET must be configured in production' });
+  }
+
+  // When CRON_SECRET is configured, require a matching secret (prevent header spoofing of x-vercel-cron)
   if (cronSecret) {
     const isBearerValid = authHeader === `Bearer ${cronSecret}`;
     const isHeaderValid = cronHeader === cronSecret;
-    if (!isBearerValid && !isHeaderValid && !isVercelCron) {
-      console.warn('⚠️ Unauthorized cron attempt blocked');
-      return res.status(401).json({ error: 'Unauthorized cron request' });
+    if (!isBearerValid && !isHeaderValid) {
+      console.warn('⚠️ Unauthorized cron attempt blocked: invalid secret token');
+      return res.status(401).json({ error: 'Unauthorized cron request: invalid or missing secret token' });
     }
-  } else if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
-    if (!isVercelCron) {
-      console.warn('⚠️ Cron invocation rejected: CRON_SECRET not configured and not from Vercel');
-      return res.status(401).json({ error: 'Unauthorized cron request: CRON_SECRET required in production' });
-    }
+    return next();
   }
 
-  next();
+  // In local development / test without CRON_SECRET, allow vercel header or dev access
+  if (isVercelCron || !isProd) {
+    return next();
+  }
+
+  return res.status(401).json({ error: 'Unauthorized cron request' });
 }
 
 /**

@@ -5,10 +5,9 @@ const cors = require('cors');
 const path = require('path');
 const apiRoutes = require('./src/routes/api');
 const subdomainRouter = require('./src/middleware/subdomain');
-const { sseHandler } = require('./src/services/sse');
+const { sseHandler, broadcast, initRealtimePubSub } = require('./src/services/sse');
 const { initBot, getTeamBot, getClientBot } = require('./src/services/bot');
 const { readDB, writeDB } = require('./src/services/db');
-const { broadcast } = require('./src/services/sse');
 
 const { requireAuth } = require('./src/middleware/auth');
 
@@ -94,6 +93,13 @@ try {
   initDigiVaultCron();
 } catch (e) { console.warn('[DigiVault Cron] Init note:', e.message); }
 
+// Eagerly initialize Supabase Realtime pub/sub on boot (cross-pod synchronization)
+try {
+  if (typeof initRealtimePubSub === 'function') {
+    initRealtimePubSub();
+  }
+} catch (e) { console.warn('[Realtime PubSub] Init note:', e.message); }
+
 // Sentry Request Handler
 if (Sentry) {
   app.use(Sentry.Handlers.requestHandler());
@@ -104,10 +110,15 @@ app.use(cors({
   origin: (origin, callback) => {
     // Allow requests with no origin (Telegram Mini App, mobile apps, curl)
     if (!origin) return callback(null, true);
+
+    // Scoped Vercel domain check: only permit GRO10X-owned deployments
+    const isAllowedVercel = /^https:\/\/(gro10x|gro10xnow|purpleos)(-[a-z0-9-]+)?\.vercel\.app$/i.test(origin);
+    const isAllowedCustomDomain = origin.endsWith('.gro10x.ai') || origin === 'https://gro10x.ai';
+
     if (
       ALLOWED_ORIGINS.includes(origin) ||
-      origin.endsWith('.vercel.app') ||
-      origin.endsWith('gro10x.ai') ||
+      isAllowedVercel ||
+      isAllowedCustomDomain ||
       (process.env.NODE_ENV !== 'production' && /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin))
     ) {
       return callback(null, true);
