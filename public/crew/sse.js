@@ -195,6 +195,105 @@
     if (type === 'eod_update') {
       triggerViewRefresh(['#home', '#leaderboard']);
     }
+
+    if (type === 'review_update') {
+      const reviews = Array.isArray(data) ? data : [data];
+      for (const r of reviews) {
+        if (!r) continue;
+        const isApproved = r.isApproved || r.status === 'approved';
+        const isRevision = r.status === 'revision_requested' || !!r.revisionNotes;
+        const icon = isApproved ? '✅' : isRevision ? '✏️' : '🎬';
+        const statusText = isApproved ? 'Approved by Client! 🎉' : isRevision ? `Revision Requested: ${r.revisionNotes || ''}` : 'Updated';
+        const n = {
+          id: Date.now() + Math.random(),
+          icon,
+          text: `Deliverable "${r.projectName || r.project_name || 'Project'}": ${statusText}`,
+          read: false,
+          ts: new Date()
+        };
+        window._crewNotifications.unshift(n);
+        savePersistedNotifications();
+        showNotificationToast(n.text, icon);
+        updateNotificationBell();
+      }
+      triggerViewRefresh(['#deliverables', '#home', '#tasks']);
+    }
+
+    if (type === 'review_comment_update') {
+      const c = data?.comment || data || {};
+      const author = c.author || 'Client';
+      const text = c.text ? (c.text.length > 50 ? c.text.substring(0, 47) + '...' : c.text) : 'New feedback comment';
+      const n = {
+        id: Date.now() + Math.random(),
+        icon: '💬',
+        text: `Review comment from ${author}: ${text}`,
+        read: false,
+        ts: new Date()
+      };
+      window._crewNotifications.unshift(n);
+      savePersistedNotifications();
+      showNotificationToast(n.text, '💬');
+      updateNotificationBell();
+      triggerViewRefresh(['#deliverables']);
+    }
+
+    if (type === 'drawing_update') {
+      const n = {
+        id: Date.now() + Math.random(),
+        icon: '🎨',
+        text: `Client added visual markup annotation on deliverable`,
+        read: false,
+        ts: new Date()
+      };
+      window._crewNotifications.unshift(n);
+      savePersistedNotifications();
+      showNotificationToast(n.text, '🎨');
+      updateNotificationBell();
+      triggerViewRefresh(['#deliverables']);
+    }
+
+    if (type === 'post_update') {
+      const posts = Array.isArray(data) ? data : [data];
+      for (const p of posts) {
+        if (!p) continue;
+        const title = p.title || p.topicIdea || p.topic || 'Post';
+        const status = p.status || 'Updated';
+        const icon = status.includes('Approve') || status === 'approved' ? '✅' : status.includes('Reject') ? '❌' : '📱';
+        const n = {
+          id: Date.now() + Math.random(),
+          icon,
+          text: `Social post "${title}" status: ${status}`,
+          read: false,
+          ts: new Date()
+        };
+        window._crewNotifications.unshift(n);
+        savePersistedNotifications();
+        showNotificationToast(n.text, icon);
+        updateNotificationBell();
+      }
+      triggerViewRefresh(['#social', '#home']);
+    }
+
+    if (type === 'social_post_update') {
+      triggerViewRefresh(['#social', '#home']);
+    }
+
+    if (type === 'studio_booking_update') {
+      const booking = data || {};
+      const slot = booking.title || booking.slot || booking.time || 'Schedule updated';
+      const n = {
+        id: Date.now() + Math.random(),
+        icon: '🎙️',
+        text: `Studio booking updated: ${slot}`,
+        read: false,
+        ts: new Date()
+      };
+      window._crewNotifications.unshift(n);
+      savePersistedNotifications();
+      showNotificationToast(n.text, '🎙️');
+      updateNotificationBell();
+      triggerViewRefresh(['#tasks', '#home']);
+    }
   }
 
   // ── Establish SSE Stream ──
@@ -243,6 +342,31 @@
     evtSource.addEventListener('eod_update', function(e) {
       try { handleCrewEvent('eod_update', JSON.parse(e.data)); } catch(err) {}
     });
+
+    evtSource.addEventListener('review_update', function(e) {
+      try { handleCrewEvent('review_update', JSON.parse(e.data)); } catch(err) {}
+    });
+
+    evtSource.addEventListener('review_comment_update', function(e) {
+      try { handleCrewEvent('review_comment_update', JSON.parse(e.data)); } catch(err) {}
+    });
+
+    evtSource.addEventListener('drawing_update', function(e) {
+      try { handleCrewEvent('drawing_update', JSON.parse(e.data)); } catch(err) {}
+    });
+
+    evtSource.addEventListener('post_update', function(e) {
+      try { handleCrewEvent('post_update', JSON.parse(e.data)); } catch(err) {}
+    });
+
+    evtSource.addEventListener('social_post_update', function(e) {
+      try { handleCrewEvent('social_post_update', JSON.parse(e.data)); } catch(err) {}
+    });
+
+    evtSource.addEventListener('studio_booking_update', function(e) {
+      try { handleCrewEvent('studio_booking_update', JSON.parse(e.data)); } catch(err) {}
+    });
+
 
     evtSource.onerror = function() {
       // Auto-reconnect managed by browser EventSource
