@@ -1397,6 +1397,9 @@ window.APP_MODULES.kanban = async function(container) {
       document.getElementById('ntEstHours').value = preset.estimatedHours;
       document.getElementById('ntDescription').value = preset.description;
     },
+    submitNewTask() {
+      return this.submitNewTaskModal();
+    },
     async submitNewTaskModal() {
       const title = (document.getElementById('ntTitle')?.value || '').trim();
       if (!title) { if (window.showToast) window.showToast('Please enter a task title', 'error'); return; }

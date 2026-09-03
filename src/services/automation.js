@@ -1489,7 +1489,7 @@ const automation = {
           console.warn('[Automation] Snapshot fetch note:', dbErr.message);
         }
       }
-      return processAutomationEvent(eventType, eventData, dbSnapshot, () => {}, broadcast);
+      return processAutomationEvent(eventType, eventData, dbSnapshot, () => {}, defaultBroadcast);
     } catch (err) {
       console.warn(`[Automation] trigger(${eventType}) warning:`, err.message);
     }

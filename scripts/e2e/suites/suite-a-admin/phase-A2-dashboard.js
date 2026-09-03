@@ -162,6 +162,7 @@ async function runPhaseA2(page) {
       setVal('spContentType', 'Short-form Video');
       setVal('spAngle', 'Automated Content Creation Framework');
       setVal('spCaption', 'Testing automated creator pipeline and VEO scene generation.');
+      setVal('spDate', new Date(Date.now() + 86400000).toISOString().split('T')[0]);
     });
 
     await wait(300);

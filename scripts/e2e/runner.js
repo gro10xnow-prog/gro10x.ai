@@ -110,6 +110,10 @@ async function main() {
     consoleLogs.push({ type: msg.type(), text: msg.text() });
   });
 
+  page.on('dialog', async dialog => {
+    await dialog.accept().catch(() => {});
+  });
+
   const phaseResults = [];
 
   try {

@@ -934,12 +934,6 @@ window.APP_MODULES.finance = async function(container) {
         if (window.showToast) window.showToast('Failed to reject expense: ' + e.message, 'error');
       }
     },
-    openExpenseModal() {
-      document.getElementById('expModal').classList.add('active');
-    },
-    closeExpenseModal() {
-      document.getElementById('expModal').classList.remove('active');
-    },
     async verifyPayment(payId) {
       try {
         const res = await APP_API.post(`/payments/${payId}/verify`);
@@ -1181,14 +1175,15 @@ window.APP_MODULES.finance = async function(container) {
       }
     },
     exportInvoicesCSV() {
-      if (!currentInvoices || currentInvoices.length === 0) {
+      const list = invoicesData || [];
+      if (list.length === 0) {
         if (window.showToast) window.showToast('No invoices found to export.', 'warning');
         return;
       }
       const headers = ['Invoice ID', 'Client Name', 'Amount (BDT)', 'Status', 'Due Date', 'Created Date'];
-      const rows = currentInvoices.map(inv => [
+      const rows = list.map(inv => [
         `"${inv.id || ''}"`,
-        `"${(inv.client || '').replace(/"/g, '""')}"`,
+        `"${(inv.clientName || inv.client || '').replace(/"/g, '""')}"`,
         inv.amount || 0,
         `"${inv.status || 'Pending'}"`,
         `"${inv.due_date || inv.dueDate || ''}"`,
