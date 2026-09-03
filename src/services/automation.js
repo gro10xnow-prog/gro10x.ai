@@ -1,4 +1,4 @@
-const { broadcast } = require('./sse');
+const { broadcast: defaultBroadcast } = require('./sse');
 const { supabase, isSupabaseConfigured } = require('./supabase');
 
 // Break circular dependency cleanly via lazy loader
@@ -59,6 +59,11 @@ function findStaffMember(db, { employeeId, empCode, name } = {}) {
 function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
   const sendTelegramNotification = getSendTelegram();
   if (!db) return;
+
+  const effectiveBroadcast = (typeof broadcast === 'function' ? broadcast : defaultBroadcast) || (() => {});
+  const effectiveWriteDB = (typeof writeDB === 'function' ? writeDB : () => {});
+  broadcast = effectiveBroadcast;
+  writeDB = effectiveWriteDB;
 
   try {
     // TRIGGER 1: Task Stage Changed to Editing -> Notify Editor via Telegram

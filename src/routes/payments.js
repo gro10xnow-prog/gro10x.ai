@@ -201,10 +201,11 @@ router.post('/:id/verify', requireAuth, requireManager, async (req, res) => {
         amount: log.amount,
         paidDate: new Date().toISOString().split('T')[0]
       };
-      processAutomationEvent('invoice_paid', { invoice: invoiceObj }, db, null, null);
+      processAutomationEvent('invoice_paid', { invoice: invoiceObj }, db, () => {}, broadcast);
     } catch (autoErr) {
       console.warn('Payment verification automation event error:', autoErr.message);
     }
+
 
     // Send email payment receipt to client
     try {

@@ -1015,4 +1015,8 @@ router.delete('/:id/labels/:labelId', requireAuth, async (req, res) => {
   }
 });
 
+router.mapTask = mapTask;
+router.broadcastTaskEvent = broadcastTaskEvent;
+
 module.exports = router;
+

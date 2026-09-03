@@ -8,6 +8,7 @@ const {
   buildChairmanBriefing
 } = require('../services/automation');
 const { getFirstName } = require('../utils/name');
+const { broadcast } = require('../services/sse');
 
 /**
  * Middleware to authorize Cron requests.
@@ -404,7 +405,7 @@ router.get('/task-overdue', authorizeCron, async (req, res) => {
     });
 
     for (const task of overdueTasks) {
-      await processAutomationEvent('task_overdue', { task }, db, null, null);
+      await processAutomationEvent('task_overdue', { task }, db, () => {}, broadcast);
       triggerCount++;
     }
 
@@ -421,7 +422,7 @@ router.get('/payroll-reminder', authorizeCron, async (req, res) => {
     if (now.getDate() === 25) {
       const db = await fetchSupabaseSnapshot();
       const { processAutomationEvent } = require('../services/automation');
-      await processAutomationEvent('payroll_reminder', {}, db, null, null);
+      await processAutomationEvent('payroll_reminder', {}, db, () => {}, broadcast);
       return res.json({ success: true, message: 'Fired payroll_reminder' });
     }
     return res.json({ success: true, message: 'Not the 25th today.' });
@@ -547,7 +548,7 @@ router.get('/daily-briefing', authorizeCron, async (req, res) => {
   try {
     const db = await fetchSupabaseSnapshot();
     const { processAutomationEvent } = require('../services/automation');
-    await processAutomationEvent('specialist_daily_briefing', {}, db, null, null);
+    await processAutomationEvent('specialist_daily_briefing', {}, db, () => {}, broadcast);
     return res.json({ success: true, message: 'Specialist daily briefings sent', timestamp: new Date().toISOString() });
   } catch (error) {
     console.error('Daily briefing cron error:', error);
@@ -708,7 +709,7 @@ router.get('/eod-evening-digest', authorizeCron, async (req, res) => {
   try {
     const db = await fetchSupabaseSnapshot();
     const { processAutomationEvent } = require('../services/automation');
-    await processAutomationEvent('eod_evening_digest', {}, db, null, null);
+    await processAutomationEvent('eod_evening_digest', {}, db, () => {}, broadcast);
     return res.json({ success: true, message: 'Department manager 7:30 PM EOD digest sent', timestamp: new Date().toISOString() });
   } catch (error) {
     console.error('EOD evening digest cron error:', error);
@@ -721,7 +722,7 @@ router.get('/eod-daily-prompt', authorizeCron, async (req, res) => {
   try {
     const db = await fetchSupabaseSnapshot();
     const { processAutomationEvent } = require('../services/automation');
-    await processAutomationEvent('eod_daily_prompt', {}, db, null, null);
+    await processAutomationEvent('eod_daily_prompt', {}, db, () => {}, broadcast);
     return res.json({ success: true, message: '7:00 PM EOD daily prompt sent to active crew', timestamp: new Date().toISOString() });
   } catch (error) {
     console.error('EOD daily prompt cron error:', error);
@@ -734,7 +735,7 @@ router.get('/morning-executive-briefing', authorizeCron, async (req, res) => {
   try {
     const db = await fetchSupabaseSnapshot();
     const { processAutomationEvent } = require('../services/automation');
-    await processAutomationEvent('morning_executive_briefing', {}, db, null, null);
+    await processAutomationEvent('morning_executive_briefing', {}, db, () => {}, broadcast);
     return res.json({ success: true, message: '9:00 AM morning executive briefing sent to leadership', timestamp: new Date().toISOString() });
   } catch (error) {
     console.error('Morning executive briefing error:', error);
@@ -747,7 +748,7 @@ router.get('/evening-digest', authorizeCron, async (req, res) => {
   try {
     const db = await fetchSupabaseSnapshot();
     const { processAutomationEvent } = require('../services/automation');
-    await processAutomationEvent('evening_digest', {}, db, null, null);
+    await processAutomationEvent('evening_digest', {}, db, () => {}, broadcast);
     return res.json({ success: true, message: '8:30 PM evening executive digest sent to leadership', timestamp: new Date().toISOString() });
   } catch (error) {
     console.error('Evening digest error:', error);
@@ -760,13 +761,14 @@ router.get('/weekly-kpi-summary', authorizeCron, async (req, res) => {
   try {
     const db = await fetchSupabaseSnapshot();
     const { processAutomationEvent } = require('../services/automation');
-    await processAutomationEvent('weekly_kpi_summary', {}, db, null, null);
+    await processAutomationEvent('weekly_kpi_summary', {}, db, () => {}, broadcast);
     return res.json({ success: true, message: 'Weekly executive KPI summary sent to leadership', timestamp: new Date().toISOString() });
   } catch (error) {
     console.error('Weekly KPI summary error:', error);
     return res.status(500).json({ error: error.message });
   }
 });
+
 
 // GET /api/cron/lead-pipeline-summary — Sunday 9:00 AM BD Weekly Lead Pipeline Report
 router.get('/lead-pipeline-summary', authorizeCron, async (req, res) => {

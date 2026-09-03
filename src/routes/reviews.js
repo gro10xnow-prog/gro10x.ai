@@ -2,7 +2,8 @@ const express = require('express');
 const router = express.Router();
 const { requireAuth } = require('../middleware/auth');
 const { supabase, isSupabaseConfigured } = require('../services/supabase');
-const { broadcast, broadcastToClient } = require('../services/sse');
+const { broadcast, broadcastToClient, broadcastToEmployee } = require('../services/sse');
+const { mapTask } = require('./tasks');
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } });
 
@@ -414,12 +415,20 @@ router.post('/:id/approve', requireAuth, requireReviewOwnership, async (req, res
       }).eq('id', taskId)).catch(() => {});
 
       const { data: allTasks } = await supabase.from('tasks').select('*').order('created_at', { ascending: false });
-      if (allTasks) broadcast('task_update', allTasks);
+      const mappedTasks = (allTasks || []).map(mapTask);
+      if (mappedTasks.length > 0) {
+        const linkedTask = mappedTasks.find(t => t.id === taskId);
+        const empCode = linkedTask?.assigneeId || linkedTask?.assignee;
+        if (empCode && empCode !== 'Unassigned') {
+          broadcastToEmployee('task_update', [linkedTask], [empCode]);
+        }
+        broadcast('task_update', mappedTasks);
+      }
 
       // Fire automation event
       try {
         const { processAutomationEvent } = require('../services/automation');
-        const dbSnapshot = { clients: [], team: [], tasks: allTasks || [] };
+        const dbSnapshot = { clients: [], team: [], tasks: mappedTasks };
         await processAutomationEvent('review_approved', {
           reviewId: id,
           taskId: taskId,
@@ -496,7 +505,15 @@ router.post('/:id/request-revisions', requireAuth, requireReviewOwnership, async
       }).eq('id', taskId)).catch(() => {});
 
       const { data: allTasks } = await supabase.from('tasks').select('*').order('created_at', { ascending: false });
-      if (allTasks) broadcast('task_update', allTasks);
+      const mappedTasks = (allTasks || []).map(mapTask);
+      if (mappedTasks.length > 0) {
+        const linkedTask = mappedTasks.find(t => t.id === taskId);
+        const empCode = linkedTask?.assigneeId || linkedTask?.assignee;
+        if (empCode && empCode !== 'Unassigned') {
+          broadcastToEmployee('task_update', [linkedTask], [empCode]);
+        }
+        broadcast('task_update', mappedTasks);
+      }
 
       // Fire automation event for production team alert
       try {
@@ -508,7 +525,7 @@ router.post('/:id/request-revisions', requireAuth, requireReviewOwnership, async
           clientName: reviewData.client,
           revisionNotes: revisionText,
           requestedBy: requesterName
-        }, { clients: [], team: [], tasks: allTasks || [] }, () => {}, broadcast);
+        }, { clients: [], team: [], tasks: mappedTasks }, () => {}, broadcast);
       } catch (autoErr) {
         console.warn('Automation event failed (non-fatal):', autoErr.message);
       }
