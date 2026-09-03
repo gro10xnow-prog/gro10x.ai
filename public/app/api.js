@@ -221,8 +221,18 @@ window.APP_SSE = {
         'eod_update': ['/eod', '/api/eod'],
         'group_update': ['/automation', '/api/automation'],
         'custom_field_update': ['/custom-fields', '/api/custom-fields'],
-        'label_update': ['/labels', '/api/labels']
+        'label_update': ['/labels', '/api/labels'],
+        'lead_update': ['/leads', '/api/leads'],
+        'ticket_update': ['/tickets', '/api/tickets'],
+        'project_update': ['/projects', '/api/projects', '/tasks', '/api/tasks'],
+        'quote_update': ['/quotes', '/api/quotes', '/invoices', '/api/invoices'],
+        'workflow_update': ['/automation', '/api/automation'],
+        'template_update': ['/templates', '/api/templates'],
+        'etsy_sync_update': ['/etsy', '/api/etsy', '/digistore', '/api/digistore'],
+        'product_qc_update': ['/digistore', '/api/digistore', '/social-brands', '/api/social-brands'],
+        'chat_message': ['/messages', '/api/messages']
       };
+
 
       const keysToInvalidate = EVENT_CACHE_KEY_MAP[eventType];
       if (Array.isArray(keysToInvalidate) && keysToInvalidate.length > 0) {
