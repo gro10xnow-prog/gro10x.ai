@@ -1,0 +1,75 @@
+{
+  "timestamp": "2026-09-03T20:03:27.316Z",
+  "totalTests": 6,
+  "totalPassed": 6,
+  "totalFailed": 0,
+  "passRate": 100,
+  "totalDurationMs": 14298,
+  "phases": [
+    {
+      "phase": "Suite A - Phase A8: Bot Engine & Automation",
+      "total": 6,
+      "passed": 6,
+      "failed": 0,
+      "duration": 14298,
+      "results": [
+        {
+          "id": "A8.1",
+          "title": "Load Bot Engine Hub & Verify System Health Telemetry",
+          "status": "PASSED",
+          "duration": 312,
+          "error": null
+        },
+        {
+          "id": "A8.2",
+          "title": "Subtab Navigation (Logs -> Rules -> Groups)",
+          "status": "PASSED",
+          "duration": 1708,
+          "error": null
+        },
+        {
+          "id": "A8.3",
+          "title": "Create Automation Rule Modal UI & Form Configuration",
+          "status": "PASSED",
+          "duration": 1605,
+          "error": null
+        },
+        {
+          "id": "A8.4",
+          "title": "Submit Rule & Intercept POST /api/automation/rules Mutation",
+          "status": "PASSED",
+          "duration": 889,
+          "error": null
+        },
+        {
+          "id": "A8.5",
+          "title": "Toggle Automation Rule State (Active <-> Inactive)",
+          "status": "PASSED",
+          "duration": 1853,
+          "error": null
+        },
+        {
+          "id": "A8.6",
+          "title": "Telegram Broadcast Modal & Intercept POST /api/automation/broadcast",
+          "status": "PASSED",
+          "duration": 3701,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "consoleAudit": [
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/automation.js"
+    }
+  ]
+}

@@ -29,6 +29,7 @@ const { runPhaseA6 } = require('./suites/suite-a-admin/phase-A6-hr');
 const { runPhaseA7 } = require('./suites/suite-a-admin/phase-A7-tickets');
 const { runPhaseA8 } = require('./suites/suite-a-admin/phase-A8-automation');
 const { runPhaseA9 } = require('./suites/suite-a-admin/phase-A9-settings');
+const { runPhaseA10 } = require('./suites/suite-a-admin/phase-A10-ecommerce');
 
 // Import Suite B Modules (Manager)
 const { runPhaseB1 } = require('./suites/suite-b-manager/phase-B1-auth');
@@ -128,6 +129,7 @@ async function main() {
       if (!targetPhase || targetPhase === 'A7') phaseResults.push(await runPhaseA7(page));
       if (!targetPhase || targetPhase === 'A8') phaseResults.push(await runPhaseA8(page));
       if (!targetPhase || targetPhase === 'A9') phaseResults.push(await runPhaseA9(page));
+      if (!targetPhase || targetPhase === 'A10') phaseResults.push(await runPhaseA10(page));
     }
 
     // SUITE B: MANAGER PORTAL

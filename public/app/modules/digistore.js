@@ -3388,4 +3388,6 @@ window.APP_MODULES.digistore = async function(container) {
 };
 
 window.APP_MODULES['digistore.js'] = DigistoreModule;
+window.DigistoreModule = DigistoreModule;
+
 
