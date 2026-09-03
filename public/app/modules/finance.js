@@ -862,7 +862,7 @@ window.APP_MODULES.finance = async function(container) {
       try {
         await APP_API.put(`/invoices/${id}`, { status: 'Paid' });
         if (window.showToast) window.showToast('🎉 Invoice marked as Fully Paid!', 'success');
-        loadFinance();
+        await loadFinance();
         if (typeof window.updateSidebarBadges === 'function') window.updateSidebarBadges();
       } catch (e) {
         if (window.showToast) window.showToast('Failed to mark invoice as paid: ' + e.message, 'error');
@@ -1002,7 +1002,7 @@ window.APP_MODULES.finance = async function(container) {
         });
         if (window.showToast) window.showToast('Expense Claim Submitted! 🚀', 'success');
         this.closeExpenseModal();
-        loadFinance();
+        await loadFinance();
       } catch(e) {
         const errMsg = e?.message || (typeof e === 'string' ? e : 'Unknown error');
         if (window.showToast) window.showToast('Failed to submit expense claim: ' + errMsg, 'error');
@@ -1034,7 +1034,7 @@ window.APP_MODULES.finance = async function(container) {
         });
         if (window.showToast) window.showToast('Quote Generated! 📜', 'success');
         this.closeQuoteModal();
-        loadFinance();
+        await loadFinance();
         
         if (res.quote && window.generateInvoicePDF) {
           const quoteObj = { ...res.quote, id: res.quote.id.replace('INV', 'QTE'), dueDate: res.quote.validUntil };
@@ -1089,7 +1089,7 @@ window.APP_MODULES.finance = async function(container) {
         });
         if (window.showToast) window.showToast('Invoice Created! 🧾', 'success');
         this.closeInvoiceModal();
-        loadFinance();
+        await loadFinance();
       } catch (e) {
         if (window.showToast) window.showToast('Failed to create invoice: ' + e.message, 'error');
       }
