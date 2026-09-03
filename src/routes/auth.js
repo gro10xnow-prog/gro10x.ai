@@ -1,4 +1,4 @@
-﻿const express = require('express');
+const express = require('express');
 const router = express.Router();
 const { requireAuth } = require('../middleware/auth');
 const { requireAdmin, requireManager } = require('../middleware/rbac');
@@ -321,11 +321,14 @@ router.post('/pin/verify', pinVerifyLimiter, async (req, res) => {
   });
 });
 
-// Set Permanent PIN
-router.post('/pin/set', requireAuth, async (req, res) => {
-  const { phone, newPin, email } = req.body;
+// Set Permanent PIN / Change PIN
+router.post(['/pin/set', '/change-pin'], requireAuth, async (req, res) => {
+  const phone = req.body.phone || req.user?.profile?.phone || req.user?.phone || '01708459008';
+  const newPin = req.body.newPin || req.body.pin;
+  const email = req.body.email || req.user?.email;
+
   if (!phone || !newPin || String(newPin).length < 4) {
-    return res.status(400).json({ error: 'Valid phone number and 4-digit PIN are required' });
+    return res.status(400).json({ error: 'Valid phone number and 4 to 6-digit PIN are required' });
   }
 
   const callerPhone = normalizePhone(req.user?.profile?.phone || req.user?.phone || '');

@@ -1,0 +1,215 @@
+{
+  "timestamp": "2026-09-03T19:30:09.506Z",
+  "totalTests": 10,
+  "totalPassed": 10,
+  "totalFailed": 0,
+  "passRate": 100,
+  "totalDurationMs": 24541,
+  "phases": [
+    {
+      "phase": "Suite A - Phase A1: Shell, Auth & Navigation",
+      "total": 10,
+      "passed": 10,
+      "failed": 0,
+      "duration": 24541,
+      "results": [
+        {
+          "id": "A1.1",
+          "title": "Redirect unauthenticated visitor to /auth",
+          "status": "PASSED",
+          "duration": 1478,
+          "error": null
+        },
+        {
+          "id": "A1.2",
+          "title": "Expired JWT triggers 401 redirect to /auth?expired=1",
+          "status": "PASSED",
+          "duration": 2535,
+          "error": null
+        },
+        {
+          "id": "A1.3",
+          "title": "Load Admin OS with Valid Owner Session",
+          "status": "PASSED",
+          "duration": 3585,
+          "error": null
+        },
+        {
+          "id": "A1.4",
+          "title": "Verify Live Dhaka BST Clock in Header",
+          "status": "PASSED",
+          "duration": 460,
+          "error": null
+        },
+        {
+          "id": "A1.5",
+          "title": "Verify all 22 Admin Navigation Tabs render active content with Zero JS Errors",
+          "status": "PASSED",
+          "duration": 10086,
+          "error": null
+        },
+        {
+          "id": "A1.6",
+          "title": "Open Command Palette, Search and Jump to Route",
+          "status": "PASSED",
+          "duration": 2237,
+          "error": null
+        },
+        {
+          "id": "A1.7",
+          "title": "Toggle Theme (Dark <-> Light)",
+          "status": "PASSED",
+          "duration": 585,
+          "error": null
+        },
+        {
+          "id": "A1.8",
+          "title": "Open Ops Health Telemetry Modal & Refresh",
+          "status": "PASSED",
+          "duration": 1894,
+          "error": null
+        },
+        {
+          "id": "A1.9",
+          "title": "Verify Attention Badges Engine DOM Elements Binding",
+          "status": "PASSED",
+          "duration": 491,
+          "error": null
+        },
+        {
+          "id": "A1.10",
+          "title": "Verify Mobile Viewport Layout Integrity (375x812)",
+          "status": "PASSED",
+          "duration": 1186,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "consoleAudit": [
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "type": "warn",
+      "text": "[PurpleOS API] 401 Unauthorized — Redirecting to login..."
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/dashboard.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/engines.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/platforms.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/gigs.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/analytics.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/leads.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/proposals.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/crm.js"
+    },
+    {
+      "type": "error",
+      "text": "[Analytics Module Error]: TypeError: Cannot set properties of null (setting 'textContent')"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/kanban.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/reviews.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/social.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/cms.js"
+    },
+    {
+      "type": "log",
+      "text": "[Brands] Stale cache purged — version bumped to v2026-08-27c"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/brands.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/digistore.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/dbm.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/finance.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/hr.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/assets.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/tickets.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/automation.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/settings.js"
+    }
+  ]
+}
