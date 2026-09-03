@@ -5,7 +5,21 @@ const { supabase, isSupabaseConfigured } = require('../services/supabase');
 const { broadcast, broadcastToClient, broadcastToEmployee } = require('../services/sse');
 const { mapTask } = require('./tasks');
 const multer = require('multer');
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } });
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 50 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const isImage = file.mimetype && file.mimetype.startsWith('image/');
+    const isVideo = file.mimetype && file.mimetype.startsWith('video/');
+    const isPdf = file.mimetype === 'application/pdf';
+    if (isImage || isVideo || isPdf) {
+      cb(null, true);
+    } else {
+      cb(new Error(`File type '${file.mimetype}' is not permitted for review deliverable assets`));
+    }
+  }
+});
+
 
 function mapReview(r) {
   if (!r) return null;

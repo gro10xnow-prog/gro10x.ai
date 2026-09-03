@@ -6,8 +6,17 @@ const path = require('path');
 // Use memory storage — files uploaded directly to Supabase Storage, avoiding ephemeral disk
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 10 * 1024 * 1024 } // 10 MB limit
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB limit
+  fileFilter: (req, file, cb) => {
+    const ALLOWED = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'application/pdf'];
+    if (ALLOWED.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error(`File type '${file.mimetype}' is not permitted for payment proof`));
+    }
+  }
 });
+
 
 const { requireAuth } = require('../middleware/auth');
 const { requireAdmin, requireManager } = require('../middleware/rbac');
@@ -179,10 +188,14 @@ router.put('/:id', requireAuth, requireManager, async (req, res) => {
 
     if (req.body.status === 'Paid') {
       try {
+        broadcast('payment_update', { invoiceId: id, status: 'Paid', amount: invoice.amount });
+      } catch (e) {}
+      try {
         const { processAutomationEvent } = require('../services/automation');
         processAutomationEvent('invoice_paid', { invoice }, { clients: [], team: [] }, () => {}, broadcast).catch(() => {});
       } catch (e) {}
     }
+
 
     return res.json({ success: true, invoice });
   } catch (err) {
@@ -319,7 +332,9 @@ router.post('/:id/pay', requireAuth, upload.single('screenshot'), async (req, re
     try {
       broadcast('invoice_update', inMemoryInvoices.map(mapInvoice));
       if (invoice.clientId) broadcastToClient('invoice_update', [invoice], [invoice.clientId]);
+      broadcast('payment_update', { invoiceId: id, status: 'Verification Pending', amount: Number(paymentPayload.amount) });
     } catch (e) {}
+
 
     // Send Telegram alert to Finance Manager
     try {
