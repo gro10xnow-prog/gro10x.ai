@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>PurpleOS E2E Test Report — 9/3/2026, 10:10:45 PM</title>
+  <title>PurpleOS E2E Test Report — 9/3/2026, 10:07:18 PM</title>
   <style>
     :root {
       --bg: #0d0d14;
@@ -81,10 +81,10 @@
   <div class="header">
     <div>
       <h1 style="margin:0; font-size:1.6rem; color:var(--pink);">⚡ PurpleOS Browser Automation Report</h1>
-      <p style="margin:0.25rem 0 0; color:var(--text-muted); font-size:0.85rem;">Generated on 9/3/2026, 10:10:45 PM · Automated E2E Regression Suite</p>
+      <p style="margin:0.25rem 0 0; color:var(--text-muted); font-size:0.85rem;">Generated on 9/3/2026, 10:07:18 PM · Automated E2E Regression Suite</p>
     </div>
-    <div class="badge badge-pass" style="font-size:1rem; padding:0.4rem 1rem;">
-      ✅ ALL TESTS PASSING (100%)
+    <div class="badge badge-fail" style="font-size:1rem; padding:0.4rem 1rem;">
+      🚨 2 TESTS FAILED
     </div>
   </div>
 
@@ -95,15 +95,15 @@
     </div>
     <div class="kpi-card">
       <div class="kpi-label">Passed</div>
-      <div class="kpi-val" style="color:var(--green);">7</div>
+      <div class="kpi-val" style="color:var(--green);">5</div>
     </div>
     <div class="kpi-card">
       <div class="kpi-label">Failed</div>
-      <div class="kpi-val" style="color:var(--red);">0</div>
+      <div class="kpi-val" style="color:var(--red);">2</div>
     </div>
     <div class="kpi-card">
       <div class="kpi-label">Pass Rate</div>
-      <div class="kpi-val" style="color:var(--green);">100%</div>
+      <div class="kpi-val" style="color:var(--pink);">71%</div>
     </div>
   </div>
 
@@ -113,7 +113,7 @@
       <div class="phase-header">
         <h3 style="margin:0; font-size:1.05rem;">Suite A - Phase A2: Creator & Brand Stakeholder</h3>
         <div>
-          <span class="badge badge-pass">7/7 Passed (13418ms)</span>
+          <span class="badge badge-fail">5/7 Passed (12410ms)</span>
         </div>
       </div>
       <ul class="test-list">
@@ -124,7 +124,7 @@
               
             </div>
             <div>
-              <span class="badge badge-pass">PASSED (388ms)</span>
+              <span class="badge badge-pass">PASSED (402ms)</span>
             </div>
           </li>
         
@@ -134,17 +134,17 @@
               
             </div>
             <div>
-              <span class="badge badge-pass">PASSED (2123ms)</span>
+              <span class="badge badge-pass">PASSED (2152ms)</span>
             </div>
           </li>
         
           <li class="test-item">
             <div>
               <strong>[A2.3]</strong> Set & Persist Monthly Strategic Thesis Note
-              
+              <div style="color:var(--red); font-size:0.8rem; margin-top:0.3rem;">⚠️ Assertion Failed: Monthly focus save API must return success: true</div>
             </div>
             <div>
-              <span class="badge badge-pass">PASSED (1395ms)</span>
+              <span class="badge badge-fail">FAILED (578ms)</span>
             </div>
           </li>
         
@@ -154,7 +154,7 @@
               
             </div>
             <div>
-              <span class="badge badge-pass">PASSED (1493ms)</span>
+              <span class="badge badge-pass">PASSED (1808ms)</span>
             </div>
           </li>
         
@@ -164,7 +164,7 @@
               
             </div>
             <div>
-              <span class="badge badge-pass">PASSED (525ms)</span>
+              <span class="badge badge-pass">PASSED (697ms)</span>
             </div>
           </li>
         
@@ -174,17 +174,17 @@
               
             </div>
             <div>
-              <span class="badge badge-pass">PASSED (615ms)</span>
+              <span class="badge badge-pass">PASSED (629ms)</span>
             </div>
           </li>
         
           <li class="test-item">
             <div>
               <strong>[A2.7]</strong> Toggle View Modes (Board <-> Calendar <-> Content OS)
-              
+              <div style="color:var(--red); font-size:0.8rem; margin-top:0.3rem;">⚠️ Assertion Failed: Kanban board columns must render in kanban view</div>
             </div>
             <div>
-              <span class="badge badge-pass">PASSED (2020ms)</span>
+              <span class="badge badge-fail">FAILED (625ms)</span>
             </div>
           </li>
         

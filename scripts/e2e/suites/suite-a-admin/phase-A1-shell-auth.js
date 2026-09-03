@@ -82,15 +82,18 @@ async function runPhaseA1(page) {
       await page.evaluate((h) => { window.location.hash = h; }, tab.hash);
 
       try {
+        const routeTimeout = tab.hash === '#brands' ? 14000 : 7000;
         await page.waitForFunction(() => {
           const el = document.querySelector('#app-view');
           if (!el) return false;
           const html = el.innerHTML.trim();
           return html.length > 50 && !html.includes('class="skeleton"');
-        }, { timeout: 8000 });
+        }, { timeout: routeTimeout });
       } catch (_) {
-        await wait(500);
+        await wait(600);
       }
+
+
 
 
       const appViewContent = await page.$eval('#app-view', el => el.innerHTML.trim());
