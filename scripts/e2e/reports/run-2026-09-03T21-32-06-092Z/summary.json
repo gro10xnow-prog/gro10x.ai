@@ -1,0 +1,91 @@
+{
+  "timestamp": "2026-09-03T21:32:06.093Z",
+  "totalTests": 6,
+  "totalPassed": 4,
+  "totalFailed": 2,
+  "passRate": 67,
+  "totalDurationMs": 15679,
+  "phases": [
+    {
+      "phase": "Suite A - Phase A11: Engines, Gigs, Platforms, Analytics & CMS",
+      "total": 6,
+      "passed": 4,
+      "failed": 2,
+      "duration": 15679,
+      "results": [
+        {
+          "id": "A11.1",
+          "title": "5-Engine Growth Operations Cockpit (#engines)",
+          "status": "PASSED",
+          "duration": 4743,
+          "error": null
+        },
+        {
+          "id": "A11.2",
+          "title": "Platform Portfolio Registry & Architecture Cockpit (#platforms)",
+          "status": "PASSED",
+          "duration": 2362,
+          "error": null
+        },
+        {
+          "id": "A11.3",
+          "title": "Marketplace Gig Studio & Fiverr/Upwork Copy Studio (#gigs)",
+          "status": "PASSED",
+          "duration": 2822,
+          "error": null
+        },
+        {
+          "id": "A11.4",
+          "title": "Agency Analytics & Performance Intelligence (#analytics)",
+          "status": "PASSED",
+          "duration": 2823,
+          "error": null
+        },
+        {
+          "id": "A11.5",
+          "title": "Services Catalog & Landing Page CMS Editor (#cms)",
+          "status": "FAILED",
+          "duration": 2449,
+          "error": "window.CMS_MODULE.closeModal is not a function"
+        },
+        {
+          "id": "A11.6",
+          "title": "Admin OS 22-Tab Full Integrity Closure Verification",
+          "status": "FAILED",
+          "duration": 1,
+          "error": "Assertion Failed: Active modules registered on APP_MODULES: 5"
+        }
+      ]
+    }
+  ],
+  "consoleAudit": [
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/engines.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/platforms.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/gigs.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/analytics.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/cms.js"
+    }
+  ]
+}

@@ -1,0 +1,785 @@
+{
+  "timestamp": "2026-09-03T21:35:19.350Z",
+  "totalTests": 78,
+  "totalPassed": 78,
+  "totalFailed": 0,
+  "passRate": 100,
+  "totalDurationMs": 144424,
+  "phases": [
+    {
+      "phase": "Suite A - Phase A1: Shell, Auth & Navigation",
+      "total": 10,
+      "passed": 10,
+      "failed": 0,
+      "duration": 28772,
+      "results": [
+        {
+          "id": "A1.1",
+          "title": "Redirect unauthenticated visitor to /auth",
+          "status": "PASSED",
+          "duration": 1361,
+          "error": null
+        },
+        {
+          "id": "A1.2",
+          "title": "Expired JWT triggers 401 redirect to /auth?expired=1",
+          "status": "PASSED",
+          "duration": 2749,
+          "error": null
+        },
+        {
+          "id": "A1.3",
+          "title": "Load Admin OS with Valid Owner Session",
+          "status": "PASSED",
+          "duration": 3561,
+          "error": null
+        },
+        {
+          "id": "A1.4",
+          "title": "Verify Live Dhaka BST Clock in Header",
+          "status": "PASSED",
+          "duration": 558,
+          "error": null
+        },
+        {
+          "id": "A1.5",
+          "title": "Verify all 22 Admin Navigation Tabs render active content with Zero JS Errors",
+          "status": "PASSED",
+          "duration": 14297,
+          "error": null
+        },
+        {
+          "id": "A1.6",
+          "title": "Open Command Palette, Search and Jump to Route",
+          "status": "PASSED",
+          "duration": 1983,
+          "error": null
+        },
+        {
+          "id": "A1.7",
+          "title": "Toggle Theme (Dark <-> Light)",
+          "status": "PASSED",
+          "duration": 570,
+          "error": null
+        },
+        {
+          "id": "A1.8",
+          "title": "Open Ops Health Telemetry Modal & Refresh",
+          "status": "PASSED",
+          "duration": 2046,
+          "error": null
+        },
+        {
+          "id": "A1.9",
+          "title": "Verify Attention Badges Engine DOM Elements Binding",
+          "status": "PASSED",
+          "duration": 493,
+          "error": null
+        },
+        {
+          "id": "A1.10",
+          "title": "Verify Mobile Viewport Layout Integrity (375x812)",
+          "status": "PASSED",
+          "duration": 1151,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite A - Phase A2: Creator & Brand Stakeholder",
+      "total": 7,
+      "passed": 7,
+      "failed": 0,
+      "duration": 10748,
+      "results": [
+        {
+          "id": "A2.1",
+          "title": "Load Content OS & Initialize Brand Hub Matrix",
+          "status": "PASSED",
+          "duration": 541,
+          "error": null
+        },
+        {
+          "id": "A2.2",
+          "title": "Verify Multi-Brand Switcher & Visual Framework Enforcement",
+          "status": "PASSED",
+          "duration": 2258,
+          "error": null
+        },
+        {
+          "id": "A2.3",
+          "title": "Set & Persist Monthly Strategic Thesis Note",
+          "status": "PASSED",
+          "duration": 1487,
+          "error": null
+        },
+        {
+          "id": "A2.4",
+          "title": "Open Post Creation Modal & Verify Form Controls",
+          "status": "PASSED",
+          "duration": 1774,
+          "error": null
+        },
+        {
+          "id": "A2.5",
+          "title": "Generate AI Brief & Verify VEO Scene Breakdown",
+          "status": "PASSED",
+          "duration": 763,
+          "error": null
+        },
+        {
+          "id": "A2.6",
+          "title": "Save Post as Draft & Intercept POST /api/posts API Mutation",
+          "status": "PASSED",
+          "duration": 628,
+          "error": null
+        },
+        {
+          "id": "A2.7",
+          "title": "Toggle View Modes (Board <-> Calendar <-> Content OS)",
+          "status": "PASSED",
+          "duration": 2073,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite A - Phase A3: Production Pipeline & Review Room",
+      "total": 8,
+      "passed": 8,
+      "failed": 0,
+      "duration": 13695,
+      "results": [
+        {
+          "id": "A3.1",
+          "title": "Load Kanban Pipeline Hub & Verify 4 Modular Workflows",
+          "status": "PASSED",
+          "duration": 417,
+          "error": null
+        },
+        {
+          "id": "A3.2",
+          "title": "Workflow Tab Switching & Dynamic Column Stage Presets",
+          "status": "PASSED",
+          "duration": 1686,
+          "error": null
+        },
+        {
+          "id": "A3.3",
+          "title": "Task Creation Modal & Intercept POST /api/tasks Mutation",
+          "status": "PASSED",
+          "duration": 4502,
+          "error": null
+        },
+        {
+          "id": "A3.4",
+          "title": "Slide-Over Task Details Drawer (Subtasks, Blocker & Comments)",
+          "status": "PASSED",
+          "duration": 3,
+          "error": null
+        },
+        {
+          "id": "A3.5",
+          "title": "Bulk CSV Import Modal & Drop Zone UI",
+          "status": "PASSED",
+          "duration": 1432,
+          "error": null
+        },
+        {
+          "id": "A3.6",
+          "title": "Load Client Review Room Hub & Verify 4 KPI Summary Tiles",
+          "status": "PASSED",
+          "duration": 1936,
+          "error": null
+        },
+        {
+          "id": "A3.7",
+          "title": "Review Room Media Filtering (Video, Image, PDF)",
+          "status": "PASSED",
+          "duration": 1170,
+          "error": null
+        },
+        {
+          "id": "A3.8",
+          "title": "Deliverable Submission & Approval Status Transition",
+          "status": "PASSED",
+          "duration": 1310,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite A - Phase A4: CRM, Leads & Proposals Studio",
+      "total": 8,
+      "passed": 8,
+      "failed": 0,
+      "duration": 15567,
+      "results": [
+        {
+          "id": "A4.1",
+          "title": "Load Leads Pipeline Hub & Verify 5 Stage Columns",
+          "status": "PASSED",
+          "duration": 294,
+          "error": null
+        },
+        {
+          "id": "A4.2",
+          "title": "Lead Creation Modal & Intercept POST /api/leads",
+          "status": "PASSED",
+          "duration": 2854,
+          "error": null
+        },
+        {
+          "id": "A4.3",
+          "title": "Lead Profile Slide-Over Drawer & Stage Advancement",
+          "status": "PASSED",
+          "duration": 2,
+          "error": null
+        },
+        {
+          "id": "A4.4",
+          "title": "Client CRM Directory Hub & Live Search Filtering",
+          "status": "PASSED",
+          "duration": 2629,
+          "error": null
+        },
+        {
+          "id": "A4.5",
+          "title": "Add Client 2-Step Wizard Modal & Intercept POST /api/clients",
+          "status": "PASSED",
+          "duration": 2995,
+          "error": null
+        },
+        {
+          "id": "A4.6",
+          "title": "Client Hub Slide-Over Drawer & Meeting Sync Modal",
+          "status": "PASSED",
+          "duration": 1353,
+          "error": null
+        },
+        {
+          "id": "A4.7",
+          "title": "Proposals Studio Hub (#proposals) & KPI Scorecards",
+          "status": "PASSED",
+          "duration": 2434,
+          "error": null
+        },
+        {
+          "id": "A4.8",
+          "title": "Proposal Creation Modal UI & Scope Breakdown Builder",
+          "status": "PASSED",
+          "duration": 1780,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite A - Phase A5: Financial Operations",
+      "total": 8,
+      "passed": 8,
+      "failed": 0,
+      "duration": 12797,
+      "results": [
+        {
+          "id": "A5.1",
+          "title": "Load Finance Hub & Verify 4 KPI Summary Cards",
+          "status": "PASSED",
+          "duration": 325,
+          "error": null
+        },
+        {
+          "id": "A5.2",
+          "title": "Subtab Navigation Across 4 Financial Sub-Ledgers",
+          "status": "PASSED",
+          "duration": 2444,
+          "error": null
+        },
+        {
+          "id": "A5.3",
+          "title": "Create Invoice Modal & Intercept POST /api/invoices",
+          "status": "PASSED",
+          "duration": 2226,
+          "error": null
+        },
+        {
+          "id": "A5.4",
+          "title": "Invoice Lifecycle Status Mutation (Mark Fully Paid)",
+          "status": "PASSED",
+          "duration": 1493,
+          "error": null
+        },
+        {
+          "id": "A5.5",
+          "title": "Log Expense Modal & Intercept POST /api/expenses",
+          "status": "PASSED",
+          "duration": 1789,
+          "error": null
+        },
+        {
+          "id": "A5.6",
+          "title": "Price Quote Generator Modal & Intercept POST /api/invoices/quotes",
+          "status": "PASSED",
+          "duration": 2313,
+          "error": null
+        },
+        {
+          "id": "A5.7",
+          "title": "Client Invoices CSV Export & Table Search Filters",
+          "status": "PASSED",
+          "duration": 628,
+          "error": null
+        },
+        {
+          "id": "A5.8",
+          "title": "P&L Summary Chart & Financial Canvas Verification",
+          "status": "PASSED",
+          "duration": 344,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite A - Phase A6: HR Operations & Team",
+      "total": 7,
+      "passed": 7,
+      "failed": 0,
+      "duration": 13137,
+      "results": [
+        {
+          "id": "A6.1",
+          "title": "Load HR Operations Hub & Verify 4 Summary KPI Scorecards",
+          "status": "PASSED",
+          "duration": 308,
+          "error": null
+        },
+        {
+          "id": "A6.2",
+          "title": "Subtab Navigation Across 5 HR Sub-Ledgers",
+          "status": "PASSED",
+          "duration": 3286,
+          "error": null
+        },
+        {
+          "id": "A6.3",
+          "title": "Staff Profile Slide-Over Drawer & Inspection",
+          "status": "PASSED",
+          "duration": 1534,
+          "error": null
+        },
+        {
+          "id": "A6.4",
+          "title": "Onboard Team Member Modal & Intercept POST /api/team",
+          "status": "PASSED",
+          "duration": 2671,
+          "error": null
+        },
+        {
+          "id": "A6.5",
+          "title": "Leave Approval & Decision Status Mutation",
+          "status": "PASSED",
+          "duration": 514,
+          "error": null
+        },
+        {
+          "id": "A6.6",
+          "title": "Hardware Assets Catalog (#assets) & Category Filtering",
+          "status": "PASSED",
+          "duration": 2079,
+          "error": null
+        },
+        {
+          "id": "A6.7",
+          "title": "Log & Assign Hardware Modal & Intercept POST /api/assets",
+          "status": "PASSED",
+          "duration": 1522,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite A - Phase A7: Support Tickets & SLA",
+      "total": 6,
+      "passed": 6,
+      "failed": 0,
+      "duration": 8321,
+      "results": [
+        {
+          "id": "A7.1",
+          "title": "Load Support Desk Hub & Verify 4 Summary KPI Scorecards",
+          "status": "PASSED",
+          "duration": 288,
+          "error": null
+        },
+        {
+          "id": "A7.2",
+          "title": "Status & Priority Multi-Filter Controls",
+          "status": "PASSED",
+          "duration": 1825,
+          "error": null
+        },
+        {
+          "id": "A7.3",
+          "title": "Create Support Ticket Modal UI & Form Population",
+          "status": "PASSED",
+          "duration": 1320,
+          "error": null
+        },
+        {
+          "id": "A7.4",
+          "title": "Submit Ticket & Intercept POST /api/tickets Mutation",
+          "status": "PASSED",
+          "duration": 334,
+          "error": null
+        },
+        {
+          "id": "A7.5",
+          "title": "Ticket Lifecycle Status Transition (In Progress -> Resolved)",
+          "status": "PASSED",
+          "duration": 1863,
+          "error": null
+        },
+        {
+          "id": "A7.6",
+          "title": "Engineer Assignment & Priority Escalation",
+          "status": "PASSED",
+          "duration": 1465,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite A - Phase A8: Bot Engine & Automation",
+      "total": 6,
+      "passed": 6,
+      "failed": 0,
+      "duration": 11628,
+      "results": [
+        {
+          "id": "A8.1",
+          "title": "Load Bot Engine Hub & Verify System Health Telemetry",
+          "status": "PASSED",
+          "duration": 353,
+          "error": null
+        },
+        {
+          "id": "A8.2",
+          "title": "Subtab Navigation (Logs -> Rules -> Groups)",
+          "status": "PASSED",
+          "duration": 1872,
+          "error": null
+        },
+        {
+          "id": "A8.3",
+          "title": "Create Automation Rule Modal UI & Form Configuration",
+          "status": "PASSED",
+          "duration": 1650,
+          "error": null
+        },
+        {
+          "id": "A8.4",
+          "title": "Submit Rule & Intercept POST /api/automation/rules Mutation",
+          "status": "PASSED",
+          "duration": 875,
+          "error": null
+        },
+        {
+          "id": "A8.5",
+          "title": "Toggle Automation Rule State (Active <-> Inactive)",
+          "status": "PASSED",
+          "duration": 1906,
+          "error": null
+        },
+        {
+          "id": "A8.6",
+          "title": "Telegram Broadcast Modal & Intercept POST /api/automation/broadcast",
+          "status": "PASSED",
+          "duration": 3759,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite A - Phase A9: Workspace Settings & Telemetry",
+      "total": 6,
+      "passed": 6,
+      "failed": 0,
+      "duration": 5948,
+      "results": [
+        {
+          "id": "A9.1",
+          "title": "Load Workspace Settings Hub & Verify Integration Health Cards",
+          "status": "PASSED",
+          "duration": 513,
+          "error": null
+        },
+        {
+          "id": "A9.2",
+          "title": "Server Runtime Telemetry & Security Summary Verification",
+          "status": "PASSED",
+          "duration": 389,
+          "error": null
+        },
+        {
+          "id": "A9.3",
+          "title": "Refresh Telemetry via window.SETTINGS_MODULE.reload()",
+          "status": "PASSED",
+          "duration": 611,
+          "error": null
+        },
+        {
+          "id": "A9.4",
+          "title": "Export System Diagnostics JSON",
+          "status": "PASSED",
+          "duration": 418,
+          "error": null
+        },
+        {
+          "id": "A9.5",
+          "title": "Master Admin PIN Update & Intercept POST /api/auth/change-pin",
+          "status": "PASSED",
+          "duration": 1705,
+          "error": null
+        },
+        {
+          "id": "A9.6",
+          "title": "Quick Management Actions & Cross-Hub Navigation",
+          "status": "PASSED",
+          "duration": 1081,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite A - Phase A10: E-Commerce, Brands & DigiStore",
+      "total": 6,
+      "passed": 6,
+      "failed": 0,
+      "duration": 10649,
+      "results": [
+        {
+          "id": "A10.1",
+          "title": "Load Digital Brand Empire Hub & Verify Portfolio Matrix",
+          "status": "PASSED",
+          "duration": 631,
+          "error": null
+        },
+        {
+          "id": "A10.2",
+          "title": "Brand Studio Drawer & 8-Step Launch Checklist (#brands roster)",
+          "status": "PASSED",
+          "duration": 2543,
+          "error": null
+        },
+        {
+          "id": "A10.3",
+          "title": "Products Catalog Upload Tracker (#brands products)",
+          "status": "PASSED",
+          "duration": 1246,
+          "error": null
+        },
+        {
+          "id": "A10.4",
+          "title": "Load DigiVault Subscription Hub (#digistore) & Verify Order Pipeline",
+          "status": "PASSED",
+          "duration": 1574,
+          "error": null
+        },
+        {
+          "id": "A10.5",
+          "title": "DigiVault Product Catalog & Margin Engine (#digistore products)",
+          "status": "PASSED",
+          "duration": 962,
+          "error": null
+        },
+        {
+          "id": "A10.6",
+          "title": "DBM Operations & Team Tracker Hub (#dbm)",
+          "status": "PASSED",
+          "duration": 2459,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite A - Phase A11: Engines, Gigs, Platforms, Analytics & CMS",
+      "total": 6,
+      "passed": 6,
+      "failed": 0,
+      "duration": 13162,
+      "results": [
+        {
+          "id": "A11.1",
+          "title": "5-Engine Growth Operations Cockpit (#engines)",
+          "status": "PASSED",
+          "duration": 2355,
+          "error": null
+        },
+        {
+          "id": "A11.2",
+          "title": "Platform Portfolio Registry & Architecture Cockpit (#platforms)",
+          "status": "PASSED",
+          "duration": 2480,
+          "error": null
+        },
+        {
+          "id": "A11.3",
+          "title": "Marketplace Gig Studio & Fiverr/Upwork Copy Studio (#gigs)",
+          "status": "PASSED",
+          "duration": 2748,
+          "error": null
+        },
+        {
+          "id": "A11.4",
+          "title": "Agency Analytics & Performance Intelligence (#analytics)",
+          "status": "PASSED",
+          "duration": 2807,
+          "error": null
+        },
+        {
+          "id": "A11.5",
+          "title": "Services Catalog & Landing Page CMS Editor (#cms)",
+          "status": "PASSED",
+          "duration": 2767,
+          "error": null
+        },
+        {
+          "id": "A11.6",
+          "title": "Admin OS 22-Tab Full Integrity Closure Verification",
+          "status": "PASSED",
+          "duration": 2,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "consoleAudit": [
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "type": "warn",
+      "text": "[PurpleOS API] 401 Unauthorized — Redirecting to login..."
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/dashboard.js"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/dashboard.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/engines.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/platforms.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/gigs.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/analytics.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/leads.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/proposals.js"
+    },
+    {
+      "type": "error",
+      "text": "[Analytics Module Error]: TypeError: Cannot set properties of null (setting 'textContent')"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/crm.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/kanban.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/reviews.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/social.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/cms.js"
+    },
+    {
+      "type": "log",
+      "text": "[Brands] Stale cache purged — version bumped to v2026-08-27c"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/brands.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/digistore.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/dbm.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/finance.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/hr.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/assets.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/tickets.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/automation.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/settings.js"
+    }
+  ]
+}

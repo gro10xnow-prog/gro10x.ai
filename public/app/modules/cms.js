@@ -286,6 +286,9 @@ window.APP_MODULES.cms = async function(container) {
     closeServiceModal() {
       document.getElementById('cmsServiceModal').classList.remove('active');
     },
+    closeModal() {
+      this.closeServiceModal();
+    },
     async saveService(e) {
       if (e && e.preventDefault) e.preventDefault();
       const id = document.getElementById('cmsSvcId').value;
