@@ -55,6 +55,30 @@
       triggerViewRefresh(['#invoices', '#home']);
     });
 
+    evtSource.addEventListener('task_update', function(e) {
+      if (window.CLIENT_API) window.CLIENT_API.invalidateCache('/tasks');
+      triggerViewRefresh(['#campaign', '#home']);
+    });
+
+    evtSource.addEventListener('client_update', function(e) {
+      if (window.CLIENT_API) window.CLIENT_API.invalidateCache('/clients');
+      triggerViewRefresh(['#timeline', '#home']);
+    });
+
+    evtSource.addEventListener('clients_update', function(e) {
+      if (window.CLIENT_API) window.CLIENT_API.invalidateCache('/clients');
+      triggerViewRefresh(['#timeline', '#home']);
+    });
+
+    evtSource.addEventListener('quote_update', function(e) {
+      if (window.CLIENT_API) {
+        window.CLIENT_API.invalidateCache('/quotes');
+        window.CLIENT_API.invalidateCache('/invoices');
+      }
+      triggerViewRefresh(['#invoices', '#quotes', '#home']);
+    });
+
+
     evtSource.onerror = function() {
       // Automatic reconnect handled by browser EventSource
     };
