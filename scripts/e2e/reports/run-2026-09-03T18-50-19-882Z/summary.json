@@ -1,0 +1,86 @@
+{
+  "timestamp": "2026-09-03T18:50:19.882Z",
+  "totalTests": 7,
+  "totalPassed": 7,
+  "totalFailed": 0,
+  "passRate": 100,
+  "totalDurationMs": 14886,
+  "phases": [
+    {
+      "phase": "Suite A - Phase A6: HR Operations & Team",
+      "total": 7,
+      "passed": 7,
+      "failed": 0,
+      "duration": 14886,
+      "results": [
+        {
+          "id": "A6.1",
+          "title": "Load HR Operations Hub & Verify 4 Summary KPI Scorecards",
+          "status": "PASSED",
+          "duration": 371,
+          "error": null
+        },
+        {
+          "id": "A6.2",
+          "title": "Subtab Navigation Across 5 HR Sub-Ledgers",
+          "status": "PASSED",
+          "duration": 2960,
+          "error": null
+        },
+        {
+          "id": "A6.3",
+          "title": "Staff Profile Slide-Over Drawer & Inspection",
+          "status": "PASSED",
+          "duration": 1334,
+          "error": null
+        },
+        {
+          "id": "A6.4",
+          "title": "Onboard Team Member Modal & Intercept POST /api/team",
+          "status": "PASSED",
+          "duration": 2328,
+          "error": null
+        },
+        {
+          "id": "A6.5",
+          "title": "Leave Approval & Decision Status Mutation",
+          "status": "PASSED",
+          "duration": 522,
+          "error": null
+        },
+        {
+          "id": "A6.6",
+          "title": "Hardware Assets Catalog (#assets) & Category Filtering",
+          "status": "PASSED",
+          "duration": 2072,
+          "error": null
+        },
+        {
+          "id": "A6.7",
+          "title": "Log & Assign Hardware Modal & Intercept POST /api/assets",
+          "status": "PASSED",
+          "duration": 1183,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "consoleAudit": [
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/hr.js"
+    },
+    {
+      "type": "log",
+      "text": "[PurpleOS Router] Script loaded successfully: /app/modules/assets.js"
+    }
+  ]
+}

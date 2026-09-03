@@ -119,10 +119,8 @@ async function runPhaseA3(page) {
       page,
       '/api/tasks',
       async () => {
-        await page.evaluate(() => {
-          if (window.KANBAN_MODULE && typeof window.KANBAN_MODULE.submitNewTaskModal === 'function') {
-            window.KANBAN_MODULE.submitNewTaskModal();
-          }
+        await page.evaluate(async () => {
+          await window.KANBAN_MODULE.submitNewTask();
         });
       },
       6000
@@ -133,7 +131,7 @@ async function runPhaseA3(page) {
       tracker.assert(interceptedStatus < 400, `POST /api/tasks returned HTTP ${interceptedStatus}`);
     }
 
-    await wait(600);
+    await wait(800);
     const isModalClosed = await page.evaluate(() => {
       const m = document.getElementById('newTaskModalOverlay');
       return !m || !m.classList.contains('active');

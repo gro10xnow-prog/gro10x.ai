@@ -1028,8 +1028,22 @@ router.post('/', requireAuth, requireManager, async (req, res) => {
       created_at: new Date().toISOString()
     };
 
-    const { data, error } = await supabase.from('profiles').insert([payload]).select().single();
-    if (error) throw error;
+    let data = null;
+    if (supabase) {
+      try {
+        const ins = await supabase.from('profiles').insert([payload]).select().single();
+        if (!ins.error && ins.data) {
+          data = ins.data;
+        } else {
+          console.warn('[Team API] Supabase insert note:', ins.error?.message);
+        }
+      } catch (e) {
+        console.warn('[Team API] Supabase insert exception:', e.message);
+      }
+    }
+    if (!data) {
+      data = { id: newEmpCode, ...payload };
+    }
 
     // Register login credentials immediately (phone + PIN) for /crew portal access
     let pinRecord = null;

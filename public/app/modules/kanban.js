@@ -1397,8 +1397,8 @@ window.APP_MODULES.kanban = async function(container) {
       document.getElementById('ntEstHours').value = preset.estimatedHours;
       document.getElementById('ntDescription').value = preset.description;
     },
-    submitNewTask() {
-      return this.submitNewTaskModal();
+    async submitNewTask() {
+      return await this.submitNewTaskModal();
     },
     async submitNewTaskModal() {
       const title = (document.getElementById('ntTitle')?.value || '').trim();
@@ -2127,8 +2127,7 @@ window.APP_MODULES.kanban = async function(container) {
         if (!line) continue;
 
         // Standard CSV cell splitter handling basic quotes
-        const match = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || line.split(',');
-        const values = match.map(v => v.replace(/^"|"$/g, '').trim());
+        const values = line.split(',').map(v => v.replace(/^"|"$/g, '').trim());
 
         const row = {};
         headers.forEach((h, idx) => {
