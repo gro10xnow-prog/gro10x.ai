@@ -1,6 +1,7 @@
 const https = require('https');
 
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'GRO10X <gro10xnow@gmail.com>';
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
 
 /**
  * Sends an email via Resend HTTP API

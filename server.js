@@ -134,7 +134,7 @@ app.use(express.urlencoded({ extended: true, limit: '15mb' }));
 app.use(subdomainRouter);
 
 // SSE Endpoint for real-time synchronization
-app.get(['/api/sync', '/sync', '/api/events'], requireAuth, sseHandler);
+app.get(['/api/sync', '/sync', '/api/events', '/api/sse'], requireAuth, sseHandler);
 
 // Bot Status Health Check
 app.get(['/api/bot-status', '/bot-status'], requireAuth, async (req, res) => {
