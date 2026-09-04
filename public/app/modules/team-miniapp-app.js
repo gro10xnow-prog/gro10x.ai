@@ -1,14 +1,27 @@
-﻿// ══════════════════════════════════════════
+// ══════════════════════════════════════════
   // TELEGRAM WEBAPP INIT
   // ══════════════════════════════════════════
   const tg = window.Telegram?.WebApp;
   if (tg) {
-    tg.expand();
-    tg.ready();
-    if (tg.colorScheme === 'dark') {
-      document.body.classList.add('tg-dark-theme');
+    try {
+      tg.expand();
+      tg.ready();
+      if (tg.colorScheme === 'dark') {
+        document.body.classList.add('tg-dark-theme');
+      }
+      if (tg.setHeaderColor) tg.setHeaderColor('secondary_bg_color');
+    } catch(e) {}
+    if (tg.showAlert) {
+      const origShowAlert = tg.showAlert.bind(tg);
+      tg.showAlert = function(message, callback) {
+        try {
+          origShowAlert(message, callback);
+        } catch(err) {
+          try { alert(message); } catch(e) {}
+          if (typeof callback === 'function') callback();
+        }
+      };
     }
-    if (tg.setHeaderColor) tg.setHeaderColor('secondary_bg_color');
   }
 
   function triggerHaptic(type = 'medium') {
@@ -35,11 +48,20 @@
   // INIT
   // ══════════════════════════════════════════
   async function init() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const qToken = urlParams.get('token');
+    if (qToken) {
+      sessionStorage.setItem('jwt_token', qToken);
+      localStorage.setItem('gro10x_token', qToken);
+      localStorage.setItem('sb-access-token', qToken);
+    }
+
     const tgUser = tg?.initDataUnsafe?.user;
 
     // ── Web (JWT) fallback path ──────────────────────────────────────────────
-    const webToken = localStorage.getItem('sb-access-token') ||
-                     localStorage.getItem('gro10x_token') ||
+    const webToken = qToken ||
+                     sessionStorage.getItem('jwt_token') ||
+                     localStorage.getItem('sb-access-token') ||
                      localStorage.getItem('gro10x_token');
     if (!tgUser && !window.location.search.includes('debug') && !webToken) {
       showLock();
@@ -2201,6 +2223,11 @@
     showPhaseGate('📝', 'EOD Submitted!', 10, `Your end-of-day report has been logged. Your manager will see it in tonight's summary. +10 XP earned!`, () => {});
   }
 
+  function closeEODSheet() {
+    document.getElementById('eodSheet')?.remove();
+    if (tg?.BackButton) tg.BackButton.hide();
+  }
+
   // ══════════════════════════════════════════
   // EXECUTIVE FUNCTIONS (Owner / MD)
   // ══════════════════════════════════════════
@@ -2259,6 +2286,7 @@
                   localStorage.getItem('gro10x_token') || '';
     const sseUrl = token ? `/api/events?role=team&token=${encodeURIComponent(token)}` : '/api/events?role=team';
     sseConnection = new EventSource(sseUrl);
+    window._sseConnection = sseConnection;
     sseConnection.onmessage = (e) => {
       try {
         const payload = JSON.parse(e.data);
@@ -2413,3 +2441,20 @@
   init();
   startClock();
   setupSSE();
+
+  window.showPage = showPage;
+  window.handleClockToggle = handleClockToggle;
+  window.openCreateTaskModal = openCreateTaskModal;
+  window.closeCreateTaskModal = closeCreateTaskModal;
+  window.openLeaveForm = openLeaveForm;
+  window.closeLeaveSheet = closeLeaveSheet;
+  window.submitLeave = submitLeave;
+  window.openExpenseForm = openExpenseForm;
+  window.closeExpenseSheet = closeExpenseSheet;
+  window.submitExpense = submitExpense;
+  window.openEODForm = openEODForm;
+  window.closeEODSheet = closeEODSheet;
+  window.submitEOD = submitEOD;
+  window.loadUserTasks = loadUserTasks;
+  window.setupSSE = setupSSE;
+  window.getCurrentUser = () => currentUser;

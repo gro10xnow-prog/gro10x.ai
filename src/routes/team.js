@@ -215,6 +215,25 @@ router.get('/me', requireMiniAppAuth, async (req, res) => {
         const def = DEFAULT_TEAM.find(t => (uid && (t.emp_code === uid || t.id === uid)) || (phone && (t.phone === phone || t.phone.replace(/\D/g, '').endsWith(phone.replace(/\D/g, '').slice(-10)))));
         if (def) found = { source: 'default', profile: mapProfile(def) };
       }
+      const userName = req.user?.name || req.user?.profile?.name;
+      if (!found && req.user && userName) {
+        found = {
+          source: 'token_claim',
+          profile: mapProfile({
+            emp_code: req.user.emp_code || req.user.linkedId || req.user.id || 'PBD-003',
+            name: userName,
+            role: req.user.role || 'Specialist',
+            department: req.user.department || 'Production',
+            status: 'In Studio',
+            phone: req.user.phone || '+8801711223366',
+            access_level: req.user.accessLevel || req.user.access_level || 'Specialist / Crew',
+            base_salary: 35000,
+            commission_rate: 10,
+            xp: 750,
+            badge: '🔥 Performer'
+          })
+        };
+      }
     }
 
     if (!found) return res.status(404).json({ error: 'Employee not found' });

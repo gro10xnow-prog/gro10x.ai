@@ -28,6 +28,9 @@ async function requireAuth(req, res, next) {
       req.user = {
         id: decodedPayload.userId || decodedPayload.id || 'USER-001',
         email: decodedPayload.email || '',
+        name: decodedPayload.name || decodedPayload.profile?.name || 'Team Member',
+        emp_code: decodedPayload.emp_code || decodedPayload.linkedId || decodedPayload.id || 'PBD-003',
+        phone: decodedPayload.phone || '',
         role: decodedPayload.role || 'Specialist',
         accessLevel: decodedPayload.accessLevel || decodedPayload.access_level || 'Specialist / Crew',
         department: decodedPayload.department || 'Production',

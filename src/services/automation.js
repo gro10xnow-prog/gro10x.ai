@@ -842,7 +842,7 @@ function processAutomationEvent(eventType, eventData, db, writeDB, broadcast) {
         id: `LOG-${Date.now()}`,
         rule: 'AUT-020 (Leave Submitted Alert)',
         event: eventType,
-        target: `${staffRaw} - ${leaveId}`,
+        target: `${staffRaw} - ${leave.id || 'LEAVE-REQ'}`,
         status: 'Executed',
         timestamp: new Date().toISOString()
       });

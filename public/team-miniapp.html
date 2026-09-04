@@ -1370,7 +1370,22 @@
     <div class="card" style="margin-top:0.85rem;">
       <div class="card-title">Quick Actions</div>
       <div class="qa-grid" id="quickActionsGrid">
-        <!-- rendered by JS based on role -->
+        <button class="qa-btn" onclick="triggerHaptic('medium');handleClockToggle()">
+          <div class="qa-icon">📍</div>
+          <div class="qa-label">Clock In</div>
+        </button>
+        <button class="qa-btn" onclick="triggerHaptic('medium');showPage('pageTasks');loadUserTasks();">
+          <div class="qa-icon">📋</div>
+          <div class="qa-label">My Tasks</div>
+        </button>
+        <button class="qa-btn" onclick="triggerHaptic('medium');openExpenseForm();">
+          <div class="qa-icon">🧾</div>
+          <div class="qa-label">Expense</div>
+        </button>
+        <button class="qa-btn" onclick="triggerHaptic('medium');openLeaveForm();">
+          <div class="qa-icon">🌴</div>
+          <div class="qa-label">Leave Req</div>
+        </button>
       </div>
     </div>
 
