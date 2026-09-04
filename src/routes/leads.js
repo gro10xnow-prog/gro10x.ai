@@ -167,53 +167,44 @@ router.post('/', leadSubmitLimiter, async (req, res) => {
 
   newLead.score = calculateLeadScore(newLead);
 
+  const leadRow = {
+    id: newLead.id,
+    name: contactPerson || company || 'Prospective Client',
+    email: newLead.email,
+    phone: newLead.phone,
+    service_interest: req.body.service_interest || newLead.service,
+    source: newLead.source,
+    status: 'new',
+    currency: req.body.currency || 'USD',
+    budget: req.body.budget || null,
+    value: Number(newLead.value) || 0,
+    score: newLead.score || 50,
+    notes: newLead.notes || null,
+    created_at: newLead.created_at,
+    updated_at: newLead.created_at
+  };
+
   if (isSupabaseConfigured()) {
-    const { error } = await supabase.from('leads').insert([newLead]);
+    const { error } = await supabase.from('leads').insert([leadRow]);
     if (error) {
-      console.warn('[Leads API] Full schema insert warning:', error.message);
-      // Fallback insert with core base columns in case migrations are pending in target DB
-      if (error.message && (error.message.includes('column') || error.message.includes('schema'))) {
-        const baseLead = {
-          id: newLead.id,
-          stage: newLead.stage,
-          created_at: newLead.created_at,
-          company: newLead.company,
-          contact_person: newLead.contact_person,
-          email: newLead.email,
-          phone: newLead.phone,
-          whatsapp: newLead.whatsapp,
-          source: newLead.source,
-          service: newLead.service,
-          value: newLead.value,
-          notes: newLead.notes
-        };
-        const { error: retryErr } = await supabase.from('leads').insert([baseLead]);
-        if (retryErr) {
-          console.error('[Leads API] Fallback insert error:', retryErr.message);
-        } else {
-          console.log('✅ [Leads API] Persisted lead with base schema fallback');
-        }
-      }
+      console.warn('[Leads API] Supabase lead insert warning:', error.message);
+    } else {
+      console.log('✅ [Leads API] Lead persisted successfully to Supabase:', leadRow.id);
     }
   }
 
   broadcastLeadEvent('lead_update', [newLead]);
 
-  // Send automated confirmation email to prospect if email provided
+  // Send automated confirmation email asynchronously without blocking HTTP response
   if (email && email.includes('@')) {
-    try {
-      const emailResult = await sendLeadConfirmationEmail({
-        contactPerson: newLead.contact_person,
-        email: newLead.email,
-        service: newLead.service,
-        company: newLead.company
-      });
-      if (emailResult && !emailResult.success && !emailResult.simulated) {
-        console.warn('[Leads API] Lead confirmation email delivery note:', emailResult.error);
-      }
-    } catch (err) {
+    sendLeadConfirmationEmail({
+      contactPerson: leadRow.name,
+      email: leadRow.email,
+      service: leadRow.service_interest,
+      company: company || leadRow.name
+    }).catch(err => {
       console.warn('[Leads API] Confirmation email exception:', err.message);
-    }
+    });
   }
 
   // Tiered Telegram alert to agency owner with dynamic priority & WhatsApp CTA
