@@ -1,0 +1,91 @@
+{
+  "timestamp": "2026-09-04T00:35:51.399Z",
+  "totalTests": 6,
+  "totalPassed": 6,
+  "totalFailed": 0,
+  "passRate": 100,
+  "totalDurationMs": 6044,
+  "phases": [
+    {
+      "phase": "Suite B - Phase B4: Team Operations",
+      "total": 6,
+      "passed": 6,
+      "failed": 0,
+      "duration": 6044,
+      "results": [
+        {
+          "id": "B4.1",
+          "title": "HR Ops Hub Boot & 3-Tier Leave Table",
+          "status": "PASSED",
+          "duration": 4302,
+          "error": null
+        },
+        {
+          "id": "B4.2",
+          "title": "Daily EOD Submissions & Rate Badge",
+          "status": "PASSED",
+          "duration": 20,
+          "error": null
+        },
+        {
+          "id": "B4.3",
+          "title": "Line Manager Leave Action Handlers Verification",
+          "status": "PASSED",
+          "duration": 5,
+          "error": null
+        },
+        {
+          "id": "B4.4",
+          "title": "Resource Allocation & Team Workload Hub Boot (#tab-workload)",
+          "status": "PASSED",
+          "duration": 1400,
+          "error": null
+        },
+        {
+          "id": "B4.5",
+          "title": "Workload Capacity & Team Utilization Metrics",
+          "status": "PASSED",
+          "duration": 4,
+          "error": null
+        },
+        {
+          "id": "B4.6",
+          "title": "Clean Navigation Return to Dashboard",
+          "status": "PASSED",
+          "duration": 311,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "consoleAudit": [
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "log",
+      "text": "📌 Manager Portal: Switched to tab 'dashboard'"
+    },
+    {
+      "type": "warn",
+      "text": "Error while trying to use the following icon from the Manifest: http://localhost:3000/images/logo.webp (Download error or resource isn't a valid image)"
+    },
+    {
+      "type": "log",
+      "text": "📌 Manager Portal: Switched to tab 'hrops'"
+    },
+    {
+      "type": "log",
+      "text": "📌 Manager Portal: Switched to tab 'workload'"
+    },
+    {
+      "type": "log",
+      "text": "📌 Manager Portal: Switched to tab 'dashboard'"
+    }
+  ]
+}

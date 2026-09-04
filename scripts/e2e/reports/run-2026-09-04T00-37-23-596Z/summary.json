@@ -1,0 +1,91 @@
+{
+  "timestamp": "2026-09-04T00:37:23.597Z",
+  "totalTests": 6,
+  "totalPassed": 6,
+  "totalFailed": 0,
+  "passRate": 100,
+  "totalDurationMs": 5665,
+  "phases": [
+    {
+      "phase": "Suite B - Phase B6: Department Tickets",
+      "total": 6,
+      "passed": 6,
+      "failed": 0,
+      "duration": 5665,
+      "results": [
+        {
+          "id": "B6.1",
+          "title": "Manager Support Tickets Hub Boot (#tab-tickets)",
+          "status": "PASSED",
+          "duration": 3899,
+          "error": null
+        },
+        {
+          "id": "B6.2",
+          "title": "Support Ticket Queue & Table Columns Formatting",
+          "status": "PASSED",
+          "duration": 3,
+          "error": null
+        },
+        {
+          "id": "B6.3",
+          "title": "Ticket Status Transition Action Handlers",
+          "status": "PASSED",
+          "duration": 6,
+          "error": null
+        },
+        {
+          "id": "B6.4",
+          "title": "Live Ticket Queue Reload via loadManagerTickets()",
+          "status": "PASSED",
+          "duration": 1446,
+          "error": null
+        },
+        {
+          "id": "B6.5",
+          "title": "Priority Badge & Classification Styling",
+          "status": "PASSED",
+          "duration": 2,
+          "error": null
+        },
+        {
+          "id": "B6.6",
+          "title": "Clean Navigation Return to Dashboard",
+          "status": "PASSED",
+          "duration": 309,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "consoleAudit": [
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "log",
+      "text": "📌 Manager Portal: Switched to tab 'dashboard'"
+    },
+    {
+      "type": "warn",
+      "text": "Error while trying to use the following icon from the Manifest: http://localhost:3000/images/logo.webp (Download error or resource isn't a valid image)"
+    },
+    {
+      "type": "log",
+      "text": "📌 Manager Portal: Switched to tab 'tickets'"
+    },
+    {
+      "type": "log",
+      "text": "📌 Manager Portal: Switched to tab 'dashboard'"
+    },
+    {
+      "type": "log",
+      "text": "🚀 PurpleOS Manager Portal JS Initialized"
+    }
+  ]
+}

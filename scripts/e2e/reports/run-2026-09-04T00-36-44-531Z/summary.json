@@ -1,0 +1,91 @@
+{
+  "timestamp": "2026-09-04T00:36:44.531Z",
+  "totalTests": 6,
+  "totalPassed": 6,
+  "totalFailed": 0,
+  "passRate": 100,
+  "totalDurationMs": 6942,
+  "phases": [
+    {
+      "phase": "Suite B - Phase B5: Finance & Expenses",
+      "total": 6,
+      "passed": 6,
+      "failed": 0,
+      "duration": 6942,
+      "results": [
+        {
+          "id": "B5.1",
+          "title": "Manager Financials Hub Boot & 3-Tier Expense Table",
+          "status": "PASSED",
+          "duration": 4045,
+          "error": null
+        },
+        {
+          "id": "B5.2",
+          "title": "Expense Claim Headers & Column Formatting",
+          "status": "PASSED",
+          "duration": 22,
+          "error": null
+        },
+        {
+          "id": "B5.3",
+          "title": "Submit Expense Claim Flow",
+          "status": "PASSED",
+          "duration": 1563,
+          "error": null
+        },
+        {
+          "id": "B5.4",
+          "title": "Tier 1 & Tier 2 Approval Handlers Verification",
+          "status": "PASSED",
+          "duration": 20,
+          "error": null
+        },
+        {
+          "id": "B5.5",
+          "title": "Live Expense Data Reload via loadManagerExpenses()",
+          "status": "PASSED",
+          "duration": 980,
+          "error": null
+        },
+        {
+          "id": "B5.6",
+          "title": "Clean Navigation Return to Dashboard",
+          "status": "PASSED",
+          "duration": 310,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "consoleAudit": [
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "log",
+      "text": "📌 Manager Portal: Switched to tab 'dashboard'"
+    },
+    {
+      "type": "warn",
+      "text": "Error while trying to use the following icon from the Manifest: http://localhost:3000/images/logo.webp (Download error or resource isn't a valid image)"
+    },
+    {
+      "type": "log",
+      "text": "📌 Manager Portal: Switched to tab 'financials'"
+    },
+    {
+      "type": "log",
+      "text": "🚀 PurpleOS Manager Portal JS Initialized"
+    },
+    {
+      "type": "log",
+      "text": "📌 Manager Portal: Switched to tab 'dashboard'"
+    }
+  ]
+}

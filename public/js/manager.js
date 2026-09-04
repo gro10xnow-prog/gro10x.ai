@@ -796,6 +796,32 @@ async function approveExpenseT2(expId) {
   }
 }
 
+function openSubmitExpenseModal() {
+  const amountStr = prompt('Enter Expense Claim Amount in BDT (৳):', '1500');
+  if (!amountStr) return;
+  const amount = Number(amountStr);
+  if (!amount || isNaN(amount)) return;
+  const category = prompt('Enter Expense Category (e.g. Equipment, Travel, Software, Production):', 'Production');
+  if (!category) return;
+  const desc = prompt('Enter Short Note / Description:', 'Shooting Props & Travel');
+
+  fetch('/api/expenses', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      amount,
+      category,
+      description: desc || 'Manager submitted expense',
+      submittedBy: currentManagerUser?.name || 'Department Manager'
+    })
+  }).then(res => res.json()).then(() => {
+    showManagerToast('✅ Expense claim submitted successfully!', 'success');
+    loadManagerExpenses();
+  }).catch(err => {
+    showManagerToast('Error submitting claim: ' + err.message, 'error');
+  });
+}
+
 /**
  * 7. HR OPS: 3-TIER LEAVES & EOD REVIEWS (Phase MA4)
  */

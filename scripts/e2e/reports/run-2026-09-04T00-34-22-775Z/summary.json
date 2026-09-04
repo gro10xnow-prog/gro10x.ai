@@ -1,0 +1,87 @@
+{
+  "timestamp": "2026-09-04T00:34:22.776Z",
+  "totalTests": 6,
+  "totalPassed": 6,
+  "totalFailed": 0,
+  "passRate": 100,
+  "totalDurationMs": 7611,
+  "phases": [
+    {
+      "phase": "Suite B - Phase B2: Manager Dashboard",
+      "total": 6,
+      "passed": 6,
+      "failed": 0,
+      "duration": 7611,
+      "results": [
+        {
+          "id": "B2.1",
+          "title": "Manager Dashboard Boot & 4 KPI Summary Tiles",
+          "status": "PASSED",
+          "duration": 4083,
+          "error": null
+        },
+        {
+          "id": "B2.2",
+          "title": "Department Production Status Panel",
+          "status": "PASSED",
+          "duration": 12,
+          "error": null
+        },
+        {
+          "id": "B2.3",
+          "title": "Team Today Attendance Roster Widget",
+          "status": "PASSED",
+          "duration": 701,
+          "error": null
+        },
+        {
+          "id": "B2.4",
+          "title": "Universal Command Center Modal Trigger",
+          "status": "PASSED",
+          "duration": 1236,
+          "error": null
+        },
+        {
+          "id": "B2.5",
+          "title": "Live Telemetry & KPI Refresh via loadManagerOverviewKPIs()",
+          "status": "PASSED",
+          "duration": 1574,
+          "error": null
+        },
+        {
+          "id": "B2.6",
+          "title": "Dashboard Responsive Grid Layout",
+          "status": "PASSED",
+          "duration": 1,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "consoleAudit": [
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "log",
+      "text": "📌 Manager Portal: Switched to tab 'dashboard'"
+    },
+    {
+      "type": "warn",
+      "text": "Error while trying to use the following icon from the Manifest: http://localhost:3000/images/logo.webp (Download error or resource isn't a valid image)"
+    },
+    {
+      "type": "log",
+      "text": "📌 Manager Portal: Switched to tab 'dashboard'"
+    },
+    {
+      "type": "log",
+      "text": "🚀 PurpleOS Manager Portal JS Initialized"
+    }
+  ]
+}

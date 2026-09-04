@@ -1,0 +1,569 @@
+{
+  "timestamp": "2026-09-04T00:38:35.064Z",
+  "totalTests": 42,
+  "totalPassed": 41,
+  "totalFailed": 1,
+  "passRate": 98,
+  "totalDurationMs": 36205,
+  "phases": [
+    {
+      "phase": "Suite B - Phase B1: Manager Auth & Role Access",
+      "total": 6,
+      "passed": 6,
+      "failed": 0,
+      "duration": 10262,
+      "results": [
+        {
+          "id": "B1.1",
+          "title": "Unauthenticated visitor redirects to /auth",
+          "status": "PASSED",
+          "duration": 1860,
+          "error": null
+        },
+        {
+          "id": "B1.2",
+          "title": "Expired JWT Session Handling",
+          "status": "PASSED",
+          "duration": 1058,
+          "error": null
+        },
+        {
+          "id": "B1.3",
+          "title": "Authenticated Manager Session Injection & Portal Boot",
+          "status": "PASSED",
+          "duration": 2608,
+          "error": null
+        },
+        {
+          "id": "B1.4",
+          "title": "Manager Navigation Tabs Traversal (11 tabs)",
+          "status": "PASSED",
+          "duration": 3020,
+          "error": null
+        },
+        {
+          "id": "B1.5",
+          "title": "Manager Profile Badge & Department Tag Hydration",
+          "status": "PASSED",
+          "duration": 552,
+          "error": null
+        },
+        {
+          "id": "B1.6",
+          "title": "Mobile Viewport & Sidebar Drawer Integrity (375x812)",
+          "status": "PASSED",
+          "duration": 1164,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite B - Phase B2: Manager Dashboard",
+      "total": 6,
+      "passed": 6,
+      "failed": 0,
+      "duration": 4822,
+      "results": [
+        {
+          "id": "B2.1",
+          "title": "Manager Dashboard Boot & 4 KPI Summary Tiles",
+          "status": "PASSED",
+          "duration": 2639,
+          "error": null
+        },
+        {
+          "id": "B2.2",
+          "title": "Department Production Status Panel",
+          "status": "PASSED",
+          "duration": 1,
+          "error": null
+        },
+        {
+          "id": "B2.3",
+          "title": "Team Today Attendance Roster Widget",
+          "status": "PASSED",
+          "duration": 298,
+          "error": null
+        },
+        {
+          "id": "B2.4",
+          "title": "Universal Command Center Modal Trigger",
+          "status": "PASSED",
+          "duration": 1003,
+          "error": null
+        },
+        {
+          "id": "B2.5",
+          "title": "Live Telemetry & KPI Refresh via loadManagerOverviewKPIs()",
+          "status": "PASSED",
+          "duration": 880,
+          "error": null
+        },
+        {
+          "id": "B2.6",
+          "title": "Dashboard Responsive Grid Layout",
+          "status": "PASSED",
+          "duration": 1,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite B - Phase B3: Manager Task Operations",
+      "total": 6,
+      "passed": 6,
+      "failed": 0,
+      "duration": 5430,
+      "results": [
+        {
+          "id": "B3.1",
+          "title": "Manager Kanban Board & 5 Stage Columns Boot",
+          "status": "PASSED",
+          "duration": 2480,
+          "error": null
+        },
+        {
+          "id": "B3.2",
+          "title": "Department Scoping Filter Toggle (My Dept <-> All Depts)",
+          "status": "PASSED",
+          "duration": 616,
+          "error": null
+        },
+        {
+          "id": "B3.3",
+          "title": "Production Task Creation Modal UI",
+          "status": "PASSED",
+          "duration": 870,
+          "error": null
+        },
+        {
+          "id": "B3.4",
+          "title": "Manage Tags & Labels Modal UI",
+          "status": "PASSED",
+          "duration": 610,
+          "error": null
+        },
+        {
+          "id": "B3.5",
+          "title": "Task Templates Modal UI",
+          "status": "PASSED",
+          "duration": 607,
+          "error": null
+        },
+        {
+          "id": "B3.6",
+          "title": "Task Card Pipeline Verification & Stage Columns",
+          "status": "PASSED",
+          "duration": 247,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite B - Phase B4: Team Operations",
+      "total": 6,
+      "passed": 5,
+      "failed": 1,
+      "duration": 3884,
+      "results": [
+        {
+          "id": "B4.1",
+          "title": "HR Ops Hub Boot & 3-Tier Leave Table",
+          "status": "PASSED",
+          "duration": 2564,
+          "error": null
+        },
+        {
+          "id": "B4.2",
+          "title": "Daily EOD Submissions & Rate Badge",
+          "status": "FAILED",
+          "duration": 2,
+          "error": "Assertion Failed: EOD rate badge must display team rate"
+        },
+        {
+          "id": "B4.3",
+          "title": "Line Manager Leave Action Handlers Verification",
+          "status": "PASSED",
+          "duration": 1,
+          "error": null
+        },
+        {
+          "id": "B4.4",
+          "title": "Resource Allocation & Team Workload Hub Boot (#tab-workload)",
+          "status": "PASSED",
+          "duration": 996,
+          "error": null
+        },
+        {
+          "id": "B4.5",
+          "title": "Workload Capacity & Team Utilization Metrics",
+          "status": "PASSED",
+          "duration": 1,
+          "error": null
+        },
+        {
+          "id": "B4.6",
+          "title": "Clean Navigation Return to Dashboard",
+          "status": "PASSED",
+          "duration": 307,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite B - Phase B5: Finance & Expenses",
+      "total": 6,
+      "passed": 6,
+      "failed": 0,
+      "duration": 4633,
+      "results": [
+        {
+          "id": "B5.1",
+          "title": "Manager Financials Hub Boot & 3-Tier Expense Table",
+          "status": "PASSED",
+          "duration": 2559,
+          "error": null
+        },
+        {
+          "id": "B5.2",
+          "title": "Expense Claim Headers & Column Formatting",
+          "status": "PASSED",
+          "duration": 4,
+          "error": null
+        },
+        {
+          "id": "B5.3",
+          "title": "Submit Expense Claim Flow",
+          "status": "PASSED",
+          "duration": 876,
+          "error": null
+        },
+        {
+          "id": "B5.4",
+          "title": "Tier 1 & Tier 2 Approval Handlers Verification",
+          "status": "PASSED",
+          "duration": 2,
+          "error": null
+        },
+        {
+          "id": "B5.5",
+          "title": "Live Expense Data Reload via loadManagerExpenses()",
+          "status": "PASSED",
+          "duration": 883,
+          "error": null
+        },
+        {
+          "id": "B5.6",
+          "title": "Clean Navigation Return to Dashboard",
+          "status": "PASSED",
+          "duration": 308,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite B - Phase B6: Department Tickets",
+      "total": 6,
+      "passed": 6,
+      "failed": 0,
+      "duration": 4138,
+      "results": [
+        {
+          "id": "B6.1",
+          "title": "Manager Support Tickets Hub Boot (#tab-tickets)",
+          "status": "PASSED",
+          "duration": 2558,
+          "error": null
+        },
+        {
+          "id": "B6.2",
+          "title": "Support Ticket Queue & Table Columns Formatting",
+          "status": "PASSED",
+          "duration": 2,
+          "error": null
+        },
+        {
+          "id": "B6.3",
+          "title": "Ticket Status Transition Action Handlers",
+          "status": "PASSED",
+          "duration": 1,
+          "error": null
+        },
+        {
+          "id": "B6.4",
+          "title": "Live Ticket Queue Reload via loadManagerTickets()",
+          "status": "PASSED",
+          "duration": 1224,
+          "error": null
+        },
+        {
+          "id": "B6.5",
+          "title": "Priority Badge & Classification Styling",
+          "status": "PASSED",
+          "duration": 17,
+          "error": null
+        },
+        {
+          "id": "B6.6",
+          "title": "Clean Navigation Return to Dashboard",
+          "status": "PASSED",
+          "duration": 334,
+          "error": null
+        }
+      ]
+    },
+    {
+      "phase": "Suite B - Phase B7: Real-Time SSE Stream",
+      "total": 6,
+      "passed": 6,
+      "failed": 0,
+      "duration": 3036,
+      "results": [
+        {
+          "id": "B7.1",
+          "title": "Manager SSE Stream Initialized",
+          "status": "PASSED",
+          "duration": 1916,
+          "error": null
+        },
+        {
+          "id": "B7.2",
+          "title": "SSE Event Listeners Verification",
+          "status": "PASSED",
+          "duration": 1,
+          "error": null
+        },
+        {
+          "id": "B7.3",
+          "title": "Real-Time Event Dispatch Simulation",
+          "status": "PASSED",
+          "duration": 2,
+          "error": null
+        },
+        {
+          "id": "B7.4",
+          "title": "Multi-Tab Real-Time Sync Resilience",
+          "status": "PASSED",
+          "duration": 432,
+          "error": null
+        },
+        {
+          "id": "B7.5",
+          "title": "Toast Notification System Verification",
+          "status": "PASSED",
+          "duration": 683,
+          "error": null
+        },
+        {
+          "id": "B7.6",
+          "title": "Suite B Full Integrity & Readiness Closure",
+          "status": "PASSED",
+          "duration": 1,
+          "error": null
+        }
+      ]
+    }
+  ],
+  "consoleAudit": [
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"new-password\"): (More info: https://goo.gl/9p2vKq) %o"
+    },
+    {
+      "type": "log",
+      "text": "📌 Manager Portal: Switched to tab 'dashboard'"
+    },
+    {
+      "type": "warn",
+      "text": "Error while trying to use the following icon from the Manifest: http://localhost:3000/images/logo.webp (Download error or resource isn't a valid image)"
+    },
+    {
+      "type": "log",
+      "text": "📌 Manager Portal: Switched to tab 'dashboard'"
+    },
+    {
+      "type": "log",
+      "text": "📌 Manager Portal: Switched to tab 'crm'"
+    },
+    {
+      "type": "log",
+      "text": "📌 Manager Portal: Switched to tab 'kanban'"
+    },
+    {
+      "type": "log",
+      "text": "📌 Manager Portal: Switched to tab 'workload'"
+    },
+    {
+      "type": "log",
+      "text": "📌 Manager Portal: Switched to tab 'hrops'"
+    },
+    {
+      "type": "log",
+      "text": "📌 Manager Portal: Switched to tab 'tickets'"
+    },
+    {
+      "type": "log",
+      "text": "📌 Manager Portal: Switched to tab 'financials'"
+    },
+    {
+      "type": "log",
+      "text": "📌 Manager Portal: Switched to tab 'reviewroom'"
+    },
+    {
+      "type": "log",
+      "text": "📌 Manager Portal: Switched to tab 'social'"
+    },
+    {
+      "type": "log",
+      "text": "📌 Manager Portal: Switched to tab 'assets'"
+    },
+    {
+      "type": "log",
+      "text": "📌 Manager Portal: Switched to tab 'chat'"
+    },
+    {
+      "type": "error",
+      "text": "Error loading manager social planner: SyntaxError: Unexpected token '<', \"<!DOCTYPE \"... is not valid JSON"
+    },
+    {
+      "type": "log",
+      "text": "📌 Manager Portal: Switched to tab 'dashboard'"
+    },
+    {
+      "type": "log",
+      "text": "🚀 PurpleOS Manager Portal JS Initialized"
+    },
+    {
+      "type": "log",
+      "text": "📌 Manager Portal: Switched to tab 'dashboard'"
+    },
+    {
+      "type": "warn",
+      "text": "Error while trying to use the following icon from the Manifest: http://localhost:3000/images/logo.webp (Download error or resource isn't a valid image)"
+    },
+    {
+      "type": "log",
+      "text": "📌 Manager Portal: Switched to tab 'dashboard'"
+    },
+    {
+      "type": "log",
+      "text": "🚀 PurpleOS Manager Portal JS Initialized"
+    },
+    {
+      "type": "log",
+      "text": "📌 Manager Portal: Switched to tab 'dashboard'"
+    },
+    {
+      "type": "warn",
+      "text": "Error while trying to use the following icon from the Manifest: http://localhost:3000/images/logo.webp (Download error or resource isn't a valid image)"
+    },
+    {
+      "type": "log",
+      "text": "📌 Manager Portal: Switched to tab 'kanban'"
+    },
+    {
+      "type": "log",
+      "text": "🚀 PurpleOS Manager Portal JS Initialized"
+    },
+    {
+      "type": "log",
+      "text": "📌 Manager Portal: Switched to tab 'dashboard'"
+    },
+    {
+      "type": "warn",
+      "text": "Error while trying to use the following icon from the Manifest: http://localhost:3000/images/logo.webp (Download error or resource isn't a valid image)"
+    },
+    {
+      "type": "log",
+      "text": "📌 Manager Portal: Switched to tab 'hrops'"
+    },
+    {
+      "type": "log",
+      "text": "📌 Manager Portal: Switched to tab 'workload'"
+    },
+    {
+      "type": "log",
+      "text": "📌 Manager Portal: Switched to tab 'dashboard'"
+    },
+    {
+      "type": "log",
+      "text": "🚀 PurpleOS Manager Portal JS Initialized"
+    },
+    {
+      "type": "log",
+      "text": "📌 Manager Portal: Switched to tab 'dashboard'"
+    },
+    {
+      "type": "warn",
+      "text": "Error while trying to use the following icon from the Manifest: http://localhost:3000/images/logo.webp (Download error or resource isn't a valid image)"
+    },
+    {
+      "type": "log",
+      "text": "📌 Manager Portal: Switched to tab 'financials'"
+    },
+    {
+      "type": "log",
+      "text": "📌 Manager Portal: Switched to tab 'dashboard'"
+    },
+    {
+      "type": "log",
+      "text": "📌 Manager Portal: Switched to tab 'dashboard'"
+    },
+    {
+      "type": "warn",
+      "text": "Error while trying to use the following icon from the Manifest: http://localhost:3000/images/logo.webp (Download error or resource isn't a valid image)"
+    },
+    {
+      "type": "log",
+      "text": "📌 Manager Portal: Switched to tab 'tickets'"
+    },
+    {
+      "type": "log",
+      "text": "📌 Manager Portal: Switched to tab 'dashboard'"
+    },
+    {
+      "type": "log",
+      "text": "📌 Manager Portal: Switched to tab 'dashboard'"
+    },
+    {
+      "type": "warn",
+      "text": "Error while trying to use the following icon from the Manifest: http://localhost:3000/images/logo.webp (Download error or resource isn't a valid image)"
+    },
+    {
+      "type": "log",
+      "text": "📌 Manager Portal: Switched to tab 'crm'"
+    },
+    {
+      "type": "log",
+      "text": "📌 Manager Portal: Switched to tab 'kanban'"
+    },
+    {
+      "type": "log",
+      "text": "📌 Manager Portal: Switched to tab 'dashboard'"
+    }
+  ]
+}
