@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>PurpleOS E2E Test Report — 9/4/2026, 6:39:30 AM</title>
+  <title>PurpleOS E2E Test Report — 9/4/2026, 7:02:20 AM</title>
   <style>
     :root {
       --bg: #0d0d14;
@@ -81,7 +81,7 @@
   <div class="header">
     <div>
       <h1 style="margin:0; font-size:1.6rem; color:var(--pink);">⚡ PurpleOS Browser Automation Report</h1>
-      <p style="margin:0.25rem 0 0; color:var(--text-muted); font-size:0.85rem;">Generated on 9/4/2026, 6:39:30 AM · Automated E2E Regression Suite</p>
+      <p style="margin:0.25rem 0 0; color:var(--text-muted); font-size:0.85rem;">Generated on 9/4/2026, 7:02:20 AM · Automated E2E Regression Suite</p>
     </div>
     <div class="badge badge-pass" style="font-size:1rem; padding:0.4rem 1rem;">
       ✅ ALL TESTS PASSING (100%)
@@ -91,11 +91,11 @@
   <div class="kpi-row">
     <div class="kpi-card">
       <div class="kpi-label">Total Test Assertions</div>
-      <div class="kpi-val" style="color:var(--purple);">42</div>
+      <div class="kpi-val" style="color:var(--purple);">54</div>
     </div>
     <div class="kpi-card">
       <div class="kpi-label">Passed</div>
-      <div class="kpi-val" style="color:var(--green);">42</div>
+      <div class="kpi-val" style="color:var(--green);">54</div>
     </div>
     <div class="kpi-card">
       <div class="kpi-label">Failed</div>
@@ -111,98 +111,26 @@
   
     <div class="phase-card">
       <div class="phase-header">
-        <h3 style="margin:0; font-size:1.05rem;">Suite B - Phase B1: Manager Auth & Role Access</h3>
+        <h3 style="margin:0; font-size:1.05rem;">Suite D - Phase D1: Client MiniApp Auth</h3>
         <div>
-          <span class="badge badge-pass">6/6 Passed (9931ms)</span>
+          <span class="badge badge-pass">6/6 Passed (4685ms)</span>
         </div>
       </div>
       <ul class="test-list">
         
           <li class="test-item">
             <div>
-              <strong>[B1.1]</strong> Unauthenticated visitor redirects to /auth
+              <strong>[D1.1]</strong> Load Client MiniApp with URL JWT Token
               
             </div>
             <div>
-              <span class="badge badge-pass">PASSED (1778ms)</span>
+              <span class="badge badge-pass">PASSED (3712ms)</span>
             </div>
           </li>
         
           <li class="test-item">
             <div>
-              <strong>[B1.2]</strong> Expired JWT Session Handling
-              
-            </div>
-            <div>
-              <span class="badge badge-pass">PASSED (1053ms)</span>
-            </div>
-          </li>
-        
-          <li class="test-item">
-            <div>
-              <strong>[B1.3]</strong> Authenticated Manager Session Injection & Portal Boot
-              
-            </div>
-            <div>
-              <span class="badge badge-pass">PASSED (2565ms)</span>
-            </div>
-          </li>
-        
-          <li class="test-item">
-            <div>
-              <strong>[B1.4]</strong> Manager Navigation Tabs Traversal (11 tabs)
-              
-            </div>
-            <div>
-              <span class="badge badge-pass">PASSED (2727ms)</span>
-            </div>
-          </li>
-        
-          <li class="test-item">
-            <div>
-              <strong>[B1.5]</strong> Manager Profile Badge & Department Tag Hydration
-              
-            </div>
-            <div>
-              <span class="badge badge-pass">PASSED (629ms)</span>
-            </div>
-          </li>
-        
-          <li class="test-item">
-            <div>
-              <strong>[B1.6]</strong> Mobile Viewport & Sidebar Drawer Integrity (375x812)
-              
-            </div>
-            <div>
-              <span class="badge badge-pass">PASSED (1179ms)</span>
-            </div>
-          </li>
-        
-      </ul>
-    </div>
-  
-    <div class="phase-card">
-      <div class="phase-header">
-        <h3 style="margin:0; font-size:1.05rem;">Suite B - Phase B2: Manager Dashboard</h3>
-        <div>
-          <span class="badge badge-pass">6/6 Passed (4947ms)</span>
-        </div>
-      </div>
-      <ul class="test-list">
-        
-          <li class="test-item">
-            <div>
-              <strong>[B2.1]</strong> Manager Dashboard Boot & 4 KPI Summary Tiles
-              
-            </div>
-            <div>
-              <span class="badge badge-pass">PASSED (2658ms)</span>
-            </div>
-          </li>
-        
-          <li class="test-item">
-            <div>
-              <strong>[B2.2]</strong> Department Production Status Panel
+              <strong>[D1.2]</strong> Verify Stored Session Credentials in Web Storage
               
             </div>
             <div>
@@ -212,151 +140,7 @@
         
           <li class="test-item">
             <div>
-              <strong>[B2.3]</strong> Team Today Attendance Roster Widget
-              
-            </div>
-            <div>
-              <span class="badge badge-pass">PASSED (323ms)</span>
-            </div>
-          </li>
-        
-          <li class="test-item">
-            <div>
-              <strong>[B2.4]</strong> Universal Command Center Modal Trigger
-              
-            </div>
-            <div>
-              <span class="badge badge-pass">PASSED (1075ms)</span>
-            </div>
-          </li>
-        
-          <li class="test-item">
-            <div>
-              <strong>[B2.5]</strong> Live Telemetry & KPI Refresh via loadManagerOverviewKPIs()
-              
-            </div>
-            <div>
-              <span class="badge badge-pass">PASSED (887ms)</span>
-            </div>
-          </li>
-        
-          <li class="test-item">
-            <div>
-              <strong>[B2.6]</strong> Dashboard Responsive Grid Layout
-              
-            </div>
-            <div>
-              <span class="badge badge-pass">PASSED (1ms)</span>
-            </div>
-          </li>
-        
-      </ul>
-    </div>
-  
-    <div class="phase-card">
-      <div class="phase-header">
-        <h3 style="margin:0; font-size:1.05rem;">Suite B - Phase B3: Manager Task Operations</h3>
-        <div>
-          <span class="badge badge-pass">6/6 Passed (5555ms)</span>
-        </div>
-      </div>
-      <ul class="test-list">
-        
-          <li class="test-item">
-            <div>
-              <strong>[B3.1]</strong> Manager Kanban Board & 5 Stage Columns Boot
-              
-            </div>
-            <div>
-              <span class="badge badge-pass">PASSED (2505ms)</span>
-            </div>
-          </li>
-        
-          <li class="test-item">
-            <div>
-              <strong>[B3.2]</strong> Department Scoping Filter Toggle (My Dept <-> All Depts)
-              
-            </div>
-            <div>
-              <span class="badge badge-pass">PASSED (644ms)</span>
-            </div>
-          </li>
-        
-          <li class="test-item">
-            <div>
-              <strong>[B3.3]</strong> Production Task Creation Modal UI
-              
-            </div>
-            <div>
-              <span class="badge badge-pass">PASSED (902ms)</span>
-            </div>
-          </li>
-        
-          <li class="test-item">
-            <div>
-              <strong>[B3.4]</strong> Manage Tags & Labels Modal UI
-              
-            </div>
-            <div>
-              <span class="badge badge-pass">PASSED (628ms)</span>
-            </div>
-          </li>
-        
-          <li class="test-item">
-            <div>
-              <strong>[B3.5]</strong> Task Templates Modal UI
-              
-            </div>
-            <div>
-              <span class="badge badge-pass">PASSED (626ms)</span>
-            </div>
-          </li>
-        
-          <li class="test-item">
-            <div>
-              <strong>[B3.6]</strong> Task Card Pipeline Verification & Stage Columns
-              
-            </div>
-            <div>
-              <span class="badge badge-pass">PASSED (250ms)</span>
-            </div>
-          </li>
-        
-      </ul>
-    </div>
-  
-    <div class="phase-card">
-      <div class="phase-header">
-        <h3 style="margin:0; font-size:1.05rem;">Suite B - Phase B4: Team Operations</h3>
-        <div>
-          <span class="badge badge-pass">6/6 Passed (4313ms)</span>
-        </div>
-      </div>
-      <ul class="test-list">
-        
-          <li class="test-item">
-            <div>
-              <strong>[B4.1]</strong> HR Ops Hub Boot & 3-Tier Leave Table
-              
-            </div>
-            <div>
-              <span class="badge badge-pass">PASSED (2498ms)</span>
-            </div>
-          </li>
-        
-          <li class="test-item">
-            <div>
-              <strong>[B4.2]</strong> Daily EOD Submissions & Rate Badge
-              
-            </div>
-            <div>
-              <span class="badge badge-pass">PASSED (603ms)</span>
-            </div>
-          </li>
-        
-          <li class="test-item">
-            <div>
-              <strong>[B4.3]</strong> Line Manager Leave Action Handlers Verification
+              <strong>[D1.3]</strong> Telegram WebApp SDK Mock Detection & Readiness
               
             </div>
             <div>
@@ -366,17 +150,161 @@
         
           <li class="test-item">
             <div>
-              <strong>[B4.4]</strong> Resource Allocation & Team Workload Hub Boot (#tab-workload)
+              <strong>[D1.4]</strong> Client Header Banner & Workspace Identity Hydration
               
             </div>
             <div>
-              <span class="badge badge-pass">PASSED (903ms)</span>
+              <span class="badge badge-pass">PASSED (283ms)</span>
             </div>
           </li>
         
           <li class="test-item">
             <div>
-              <strong>[B4.5]</strong> Workload Capacity & Team Utilization Metrics
+              <strong>[D1.5]</strong> Bottom Navigation Bar Tabs Rendering
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (1ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[D1.6]</strong> Mobile Responsive Viewport Emulation (375x812)
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (683ms)</span>
+            </div>
+          </li>
+        
+      </ul>
+    </div>
+  
+    <div class="phase-card">
+      <div class="phase-header">
+        <h3 style="margin:0; font-size:1.05rem;">Suite D - Phase D2: Client MiniApp Home</h3>
+        <div>
+          <span class="badge badge-pass">6/6 Passed (2410ms)</span>
+        </div>
+      </div>
+      <ul class="test-list">
+        
+          <li class="test-item">
+            <div>
+              <strong>[D2.1]</strong> Client Hero Card Profile & Workspace Pills Hydration
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (1780ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[D2.2]</strong> Quick Actions Grid (4 Action Buttons Rendered)
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (1ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[D2.3]</strong> Active Campaign Summary & Multi-Stage Progression Bar
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (159ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[D2.4]</strong> Latest Retainer / Project Invoice Quick Tile
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (1ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[D2.5]</strong> Quick Action Trigger to Review Cut Page Transition
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (298ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[D2.6]</strong> Return to Home Navigation Chip
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (171ms)</span>
+            </div>
+          </li>
+        
+      </ul>
+    </div>
+  
+    <div class="phase-card">
+      <div class="phase-header">
+        <h3 style="margin:0; font-size:1.05rem;">Suite D - Phase D3: Campaign Progress</h3>
+        <div>
+          <span class="badge badge-pass">6/6 Passed (2939ms)</span>
+        </div>
+      </div>
+      <ul class="test-list">
+        
+          <li class="test-item">
+            <div>
+              <strong>[D3.1]</strong> Navigate to Campaign Schedule Page & Active Tab Highlight
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (2242ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[D3.2]</strong> Campaign Progress Section & List Container Presence
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (1ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[D3.3]</strong> Campaign Item Card Anatomy (Title, Due Date, Team)
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (107ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[D3.4]</strong> Multi-Stage Visual Pipeline Rendering (Brief, Shoot, Edit, Review, Done)
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (1ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[D3.5]</strong> Active Production Stage Badge Highlight
               
             </div>
             <div>
@@ -386,11 +314,11 @@
         
           <li class="test-item">
             <div>
-              <strong>[B4.6]</strong> Clean Navigation Return to Dashboard
+              <strong>[D3.6]</strong> Dynamic Campaign List Re-Fetch Flow (loadCampaigns)
               
             </div>
             <div>
-              <span class="badge badge-pass">PASSED (306ms)</span>
+              <span class="badge badge-pass">PASSED (585ms)</span>
             </div>
           </li>
         
@@ -399,46 +327,46 @@
   
     <div class="phase-card">
       <div class="phase-header">
-        <h3 style="margin:0; font-size:1.05rem;">Suite B - Phase B5: Finance & Expenses</h3>
+        <h3 style="margin:0; font-size:1.05rem;">Suite D - Phase D4: Review Room Proofing</h3>
         <div>
-          <span class="badge badge-pass">6/6 Passed (4931ms)</span>
+          <span class="badge badge-pass">6/6 Passed (4051ms)</span>
         </div>
       </div>
       <ul class="test-list">
         
           <li class="test-item">
             <div>
-              <strong>[B5.1]</strong> Manager Financials Hub Boot & 3-Tier Expense Table
+              <strong>[D4.1]</strong> Navigate to Review Room Page & Active Tab Highlight
               
             </div>
             <div>
-              <span class="badge badge-pass">PASSED (2551ms)</span>
+              <span class="badge badge-pass">PASSED (1902ms)</span>
             </div>
           </li>
         
           <li class="test-item">
             <div>
-              <strong>[B5.2]</strong> Expense Claim Headers & Column Formatting
+              <strong>[D4.2]</strong> Deliverable Video Player & 4K Quality Overlay
               
             </div>
             <div>
-              <span class="badge badge-pass">PASSED (3ms)</span>
+              <span class="badge badge-pass">PASSED (232ms)</span>
             </div>
           </li>
         
           <li class="test-item">
             <div>
-              <strong>[B5.3]</strong> Submit Expense Claim Flow
+              <strong>[D4.3]</strong> Deliverable Video Title & Metadata Display
               
             </div>
             <div>
-              <span class="badge badge-pass">PASSED (862ms)</span>
+              <span class="badge badge-pass">PASSED (1ms)</span>
             </div>
           </li>
         
           <li class="test-item">
             <div>
-              <strong>[B5.4]</strong> Tier 1 & Tier 2 Approval Handlers Verification
+              <strong>[D4.4]</strong> Timestamped Feedback Input & Textarea Entry
               
             </div>
             <div>
@@ -448,21 +376,21 @@
         
           <li class="test-item">
             <div>
-              <strong>[B5.5]</strong> Live Expense Data Reload via loadManagerExpenses()
+              <strong>[D4.5]</strong> Send Revision Feedback Mutation
               
             </div>
             <div>
-              <span class="badge badge-pass">PASSED (1200ms)</span>
+              <span class="badge badge-pass">PASSED (976ms)</span>
             </div>
           </li>
         
           <li class="test-item">
             <div>
-              <strong>[B5.6]</strong> Clean Navigation Return to Dashboard
+              <strong>[D4.6]</strong> Deliverable Cut Approval Double-Confirmation Flow
               
             </div>
             <div>
-              <span class="badge badge-pass">PASSED (313ms)</span>
+              <span class="badge badge-pass">PASSED (936ms)</span>
             </div>
           </li>
         
@@ -471,26 +399,46 @@
   
     <div class="phase-card">
       <div class="phase-header">
-        <h3 style="margin:0; font-size:1.05rem;">Suite B - Phase B6: Department Tickets</h3>
+        <h3 style="margin:0; font-size:1.05rem;">Suite D - Phase D5: Client Payments & Billing</h3>
         <div>
-          <span class="badge badge-pass">6/6 Passed (4009ms)</span>
+          <span class="badge badge-pass">6/6 Passed (3503ms)</span>
         </div>
       </div>
       <ul class="test-list">
         
           <li class="test-item">
             <div>
-              <strong>[B6.1]</strong> Manager Support Tickets Hub Boot (#tab-tickets)
+              <strong>[D5.1]</strong> Navigate to Payments Page & Active Tab Highlight
               
             </div>
             <div>
-              <span class="badge badge-pass">PASSED (2543ms)</span>
+              <span class="badge badge-pass">PASSED (2825ms)</span>
             </div>
           </li>
         
           <li class="test-item">
             <div>
-              <strong>[B6.2]</strong> Support Ticket Queue & Table Columns Formatting
+              <strong>[D5.2]</strong> Active Invoice Amount Due Card & Reference Numbers
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (151ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[D5.3]</strong> Payment Method Switcher (bKash, Nagad, Bank, Rocket chips)
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (200ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[D5.4]</strong> Payment Instructions Box & Dynamic Account Information
               
             </div>
             <div>
@@ -500,41 +448,21 @@
         
           <li class="test-item">
             <div>
-              <strong>[B6.3]</strong> Ticket Status Transition Action Handlers
+              <strong>[D5.5]</strong> Transaction Reference & Payment Date Form Entry
               
             </div>
             <div>
-              <span class="badge badge-pass">PASSED (1ms)</span>
+              <span class="badge badge-pass">PASSED (168ms)</span>
             </div>
           </li>
         
           <li class="test-item">
             <div>
-              <strong>[B6.4]</strong> Live Ticket Queue Reload via loadManagerTickets()
+              <strong>[D5.6]</strong> Invoice History List & Commercial Status Badges
               
             </div>
             <div>
-              <span class="badge badge-pass">PASSED (1151ms)</span>
-            </div>
-          </li>
-        
-          <li class="test-item">
-            <div>
-              <strong>[B6.5]</strong> Priority Badge & Classification Styling
-              
-            </div>
-            <div>
-              <span class="badge badge-pass">PASSED (1ms)</span>
-            </div>
-          </li>
-        
-          <li class="test-item">
-            <div>
-              <strong>[B6.6]</strong> Clean Navigation Return to Dashboard
-              
-            </div>
-            <div>
-              <span class="badge badge-pass">PASSED (311ms)</span>
+              <span class="badge badge-pass">PASSED (156ms)</span>
             </div>
           </li>
         
@@ -543,26 +471,118 @@
   
     <div class="phase-card">
       <div class="phase-header">
-        <h3 style="margin:0; font-size:1.05rem;">Suite B - Phase B7: Real-Time SSE Stream</h3>
+        <h3 style="margin:0; font-size:1.05rem;">Suite D - Phase D6: Campaign Brief Submissions</h3>
         <div>
-          <span class="badge badge-pass">6/6 Passed (3157ms)</span>
+          <span class="badge badge-pass">6/6 Passed (3805ms)</span>
         </div>
       </div>
       <ul class="test-list">
         
           <li class="test-item">
             <div>
-              <strong>[B7.1]</strong> Manager SSE Stream Initialized
+              <strong>[D6.1]</strong> Quick Action "New Brief" CTA Button Presence on Home
               
             </div>
             <div>
-              <span class="badge badge-pass">PASSED (1912ms)</span>
+              <span class="badge badge-pass">PASSED (1833ms)</span>
             </div>
           </li>
         
           <li class="test-item">
             <div>
-              <strong>[B7.2]</strong> SSE Event Listeners Verification
+              <strong>[D6.2]</strong> Open Campaign Brief Modal Flow (openBriefModal)
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (242ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[D6.3]</strong> Brief Modal Form Controls & Service Categories
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (2ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[D6.4]</strong> Populate Campaign Brief Details
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (259ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[D6.5]</strong> Submit Campaign Brief Mutation Flow (submitMiniBrief)
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (1372ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[D6.6]</strong> Modal Dismissal & Teardown Flow (closeBriefModal)
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (97ms)</span>
+            </div>
+          </li>
+        
+      </ul>
+    </div>
+  
+    <div class="phase-card">
+      <div class="phase-header">
+        <h3 style="margin:0; font-size:1.05rem;">Suite D - Phase D7: Client Support Tickets</h3>
+        <div>
+          <span class="badge badge-pass">6/6 Passed (2940ms)</span>
+        </div>
+      </div>
+      <ul class="test-list">
+        
+          <li class="test-item">
+            <div>
+              <strong>[D7.1]</strong> Navigate to Support Ticket Section & Tab Highlight
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (1861ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[D7.2]</strong> Support Ticket Form Fields Presence & Structure
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (2ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[D7.3]</strong> Support Category Options (Creative Revision, Social Media, Billing, General)
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (2ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[D7.4]</strong> Ticket Priority Options (Low, Medium, High, Urgent)
               
             </div>
             <div>
@@ -572,41 +592,165 @@
         
           <li class="test-item">
             <div>
-              <strong>[B7.3]</strong> Real-Time Event Dispatch Simulation
+              <strong>[D7.5]</strong> Populate Support Ticket Fields
               
             </div>
             <div>
-              <span class="badge badge-pass">PASSED (3ms)</span>
+              <span class="badge badge-pass">PASSED (164ms)</span>
             </div>
           </li>
         
           <li class="test-item">
             <div>
-              <strong>[B7.4]</strong> Multi-Tab Real-Time Sync Resilience
+              <strong>[D7.6]</strong> Submit Support Ticket Mutation & Confirmation Feedback
               
             </div>
             <div>
-              <span class="badge badge-pass">PASSED (450ms)</span>
+              <span class="badge badge-pass">PASSED (909ms)</span>
+            </div>
+          </li>
+        
+      </ul>
+    </div>
+  
+    <div class="phase-card">
+      <div class="phase-header">
+        <h3 style="margin:0; font-size:1.05rem;">Suite D - Phase D8: Agency Contact & POCs</h3>
+        <div>
+          <span class="badge badge-pass">6/6 Passed (2696ms)</span>
+        </div>
+      </div>
+      <ul class="test-list">
+        
+          <li class="test-item">
+            <div>
+              <strong>[D8.1]</strong> Navigate to Contact Section & Verify Active Tab State
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (1599ms)</span>
             </div>
           </li>
         
           <li class="test-item">
             <div>
-              <strong>[B7.5]</strong> Toast Notification System Verification
+              <strong>[D8.2]</strong> Account Manager Profile Card Visibility & Details
               
             </div>
             <div>
-              <span class="badge badge-pass">PASSED (787ms)</span>
+              <span class="badge badge-pass">PASSED (129ms)</span>
             </div>
           </li>
         
           <li class="test-item">
             <div>
-              <strong>[B7.6]</strong> Suite B Full Integrity & Readiness Closure
+              <strong>[D8.3]</strong> Telegram Direct Chat Action Handler Verification
               
             </div>
             <div>
-              <span class="badge badge-pass">PASSED (3ms)</span>
+              <span class="badge badge-pass">PASSED (137ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[D8.4]</strong> Telephone Call Action Protocol Verification
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (134ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[D8.5]</strong> Support Desk Info & Escalation Pathways
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (136ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[D8.6]</strong> Responsive Viewport Contact Card Rendering
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (561ms)</span>
+            </div>
+          </li>
+        
+      </ul>
+    </div>
+  
+    <div class="phase-card">
+      <div class="phase-header">
+        <h3 style="margin:0; font-size:1.05rem;">Suite D - Phase D9: Real-Time SSE Stream</h3>
+        <div>
+          <span class="badge badge-pass">6/6 Passed (3100ms)</span>
+        </div>
+      </div>
+      <ul class="test-list">
+        
+          <li class="test-item">
+            <div>
+              <strong>[D9.1]</strong> SSE Stream Initialized & Window EventSource Support
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (1793ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[D9.2]</strong> Role Parameter & Token Inclusion in SSE Endpoint URL
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (165ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[D9.3]</strong> SSE Event Listeners Registration & State Inspection
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (162ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[D9.4]</strong> Live Event Ingestion & Dynamic Data Refresh Simulation
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (612ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[D9.5]</strong> Auto-Reconnect Fallback Logic & Re-instantiation
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (196ms)</span>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div>
+              <strong>[D9.6]</strong> Resilient Connection Recovery & Error Handling
+              
+            </div>
+            <div>
+              <span class="badge badge-pass">PASSED (172ms)</span>
             </div>
           </li>
         

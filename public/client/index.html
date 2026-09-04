@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
@@ -6,8 +6,16 @@
   <title>GRO10X OS — Client Partner Portal</title>
   <script>
     (function() {
+      try {
+        var params = new URLSearchParams(window.location.search);
+        var qToken = params.get('token');
+        if (qToken) {
+          localStorage.setItem('gro10x_token', qToken);
+          localStorage.setItem('sb-access-token', qToken);
+        }
+      } catch (e) {}
+
       var token = localStorage.getItem('sb-access-token') ||
-                  localStorage.getItem('gro10x_token') ||
                   localStorage.getItem('gro10x_token');
       if (!token) {
         window.location.replace('/auth?redirect=' + encodeURIComponent(window.location.pathname + window.location.hash));
