@@ -68,7 +68,18 @@
     },
 
     isAuthenticated: function() {
-      return !!this.getToken();
+      var token = this.getToken();
+      if (!token) return false;
+      try {
+        var parts = token.split('.');
+        if (parts.length === 3) {
+          var payload = JSON.parse(atob(parts[1]));
+          if (payload.exp && payload.exp * 1000 < Date.now()) {
+            return false;
+          }
+        }
+      } catch (e) {}
+      return !!token;
     },
 
     // ── 2. ROLE-BASED ACCESS GUARDS ──
