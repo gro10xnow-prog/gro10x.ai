@@ -100,6 +100,14 @@ try {
   }
 } catch (e) { console.warn('[Realtime PubSub] Init note:', e.message); }
 
+// Auto-provision required Supabase storage buckets if missing
+try {
+  const { ensureStorageBuckets } = require('./src/services/supabase');
+  if (typeof ensureStorageBuckets === 'function') {
+    ensureStorageBuckets().catch(e => console.warn('[Storage] Bucket provisioning note:', e.message));
+  }
+} catch (e) { console.warn('[Storage] Init note:', e.message); }
+
 // Sentry Request Handler
 if (Sentry) {
   app.use(Sentry.Handlers.requestHandler());

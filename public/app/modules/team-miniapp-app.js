@@ -863,7 +863,7 @@
 
   async function loadMiniappWorkflowStages() {
     try {
-      const res = await fetch('/api/workflows/stages');
+      const res = await fetch('/api/workflows/stages', { headers: authHeaders() });
       const data = await res.json();
       if (data && Object.keys(data).length > 0) {
         Object.keys(data).forEach(k => {
@@ -1098,7 +1098,7 @@
     let task = (window._miniappTasks || []).find(t => t.id === taskId);
     if (!task) {
       try {
-        const res = await fetch('/api/tasks');
+        const res = await fetch('/api/tasks', { headers: authHeaders() });
         const all = await res.json();
         task = (all || []).find(t => t.id === taskId);
       } catch (e) {}
@@ -1228,7 +1228,7 @@
     const list = document.getElementById('sheetSubtasksList');
     list.innerHTML = '<div style="font-size:0.8rem;color:var(--muted);">Loading subtasks...</div>';
     try {
-      const res = await fetch(`/api/tasks/${taskId}/subtasks`);
+      const res = await fetch(`/api/tasks/${taskId}/subtasks`, { headers: authHeaders() });
       const subtasks = await res.json();
       if (!subtasks || subtasks.length === 0) {
         list.innerHTML = '<div style="font-size:0.8rem;color:var(--muted);">No subtasks added yet.</div>';
@@ -1271,7 +1271,7 @@
     const list = document.getElementById('sheetCommentsList');
     list.innerHTML = '<div style="font-size:0.8rem;color:var(--muted);">Loading discussion...</div>';
     try {
-      const res = await fetch(`/api/tasks/${taskId}/comments`);
+      const res = await fetch(`/api/tasks/${taskId}/comments`, { headers: authHeaders() });
       const comments = await res.json();
       if (!comments || comments.length === 0) {
         list.innerHTML = '<div style="font-size:0.8rem;color:var(--muted);">No comments yet. Start the conversation below!</div>';
@@ -1839,7 +1839,7 @@
   // ══════════════════════════════════════════
   async function loadTeamSnapshot() {
     try {
-      const res = await fetch('/api/team/snapshot');
+      const res = await fetch('/api/team/snapshot', { headers: authHeaders() });
       const data = await res.json();
       document.getElementById('statClockedIn').textContent = data.inStudio || 0;
       document.getElementById('statOnShoot').textContent = data.onShoot || 0;
@@ -1947,7 +1947,7 @@
     const list = document.getElementById('userTaskList');
     list.innerHTML = '<div class="empty-state"><div class="empty-icon">⏳</div>Loading roster...</div>';
     try {
-      const res = await fetch('/api/team/roster');
+      const res = await fetch('/api/team/roster', { headers: authHeaders() });
       const team = await res.json();
       const statusIconMap = { 'In Studio': '<span class="status-dot dot-green"></span>', 'On Field Shoot': '<span class="status-dot dot-blue"></span>', 'On Leave': '<span class="status-dot dot-amber"></span>' };
       list.innerHTML = `
@@ -2233,7 +2233,7 @@
   // ══════════════════════════════════════════
   async function loadPendingApprovals() {
     try {
-      const res = await fetch('/api/team/pending-approvals');
+      const res = await fetch('/api/team/pending-approvals', { headers: authHeaders() });
       const data = await res.json();
       const totalAgreements = data.agreements?.length || 0;
       const totalExpenses = data.expenses?.length || 0;
@@ -2251,7 +2251,7 @@
 
   async function loadClientStatus() {
     try {
-      const res = await fetch('/api/tasks?stage=Client+Review');
+      const res = await fetch('/api/tasks?stage=Client+Review', { headers: authHeaders() });
       const tasks = await res.json();
       const inReview = tasks.filter(t => t.stage === 'Client Review');
       const inEdit = tasks.filter(t => t.stage === 'Editing' || t.stage === 'Post Production');

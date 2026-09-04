@@ -46,9 +46,51 @@ function isSupabaseConfigured() {
   return supabase !== null;
 }
 
+async function ensureStorageBuckets() {
+  if (!supabase || !isSupabaseConfigured()) return;
+  const REQUIRED_BUCKETS = [
+    { name: 'review-assets', public: true },
+    { name: 'social-assets', public: true },
+    { name: 'payment-proofs', public: false },
+    { name: 'expenses', public: false },
+    { name: 'avatars', public: true },
+    { name: 'brand-assets', public: true },
+    { name: 'digi-payments', public: true },
+    { name: 'deliverables', public: true }
+  ];
+
+  try {
+    const { data: existingBuckets, error } = await supabase.storage.listBuckets();
+    if (error) {
+      console.warn('⚠️ [Storage] Failed to list existing buckets:', error.message);
+      return;
+    }
+    const existingNames = new Set((existingBuckets || []).map(b => b.name));
+
+    for (const b of REQUIRED_BUCKETS) {
+      if (!existingNames.has(b.name)) {
+        try {
+          const { error: createErr } = await supabase.storage.createBucket(b.name, { public: b.public });
+          if (!createErr) {
+            console.log(`✅ [Storage] Auto-provisioned missing bucket: '${b.name}'`);
+          } else {
+            console.warn(`⚠️ [Storage] Could not create bucket '${b.name}':`, createErr.message);
+          }
+        } catch (e) {
+          console.warn(`⚠️ [Storage] Exception creating bucket '${b.name}':`, e.message);
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('⚠️ [Storage] ensureStorageBuckets error:', err.message);
+  }
+}
+
 module.exports = {
   supabase,
   supabaseAdmin,
   supabaseAnon,
-  isSupabaseConfigured
+  isSupabaseConfigured,
+  ensureStorageBuckets
 };
+

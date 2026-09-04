@@ -385,6 +385,10 @@ async function approvePartnerPost(postId) {
       headers: authHeaders,
       body: JSON.stringify({ approvedBy: currentPartnerClient })
     });
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.error || `Failed with status ${res.status}`);
+    }
     const targetPost = partnerPosts.find(p => p.id === postId);
     if (targetPost) {
       targetPost.status = 'Approved';
@@ -394,13 +398,8 @@ async function approvePartnerPost(postId) {
     showPartnerToast(`✅ Social post ${postId} is APPROVED! Social team alerted for dispatch.`, 'success');
     initPartnerPortal();
   } catch (err) {
-    const targetPost = partnerPosts.find(p => p.id === postId);
-    if (targetPost) {
-      targetPost.status = 'Approved';
-      targetPost.approvedBy = currentPartnerClient;
-      renderPartnerView();
-    }
-    showPartnerToast(`✅ Social post ${postId} is APPROVED!`, 'success');
+    console.error('Error approving post:', err);
+    showPartnerToast(`❌ Error approving post: ${err.message}`, 'error');
   }
 }
 
@@ -418,6 +417,10 @@ async function rejectPartnerPost(postId, customNote) {
       headers: authHeaders,
       body: JSON.stringify({ feedback: note })
     });
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.error || `Failed with status ${res.status}`);
+    }
     const targetPost = partnerPosts.find(p => p.id === postId);
     if (targetPost) {
       targetPost.status = 'Changes Requested';
@@ -427,13 +430,8 @@ async function rejectPartnerPost(postId, customNote) {
     showPartnerToast(`💬 Feedback submitted for post ${postId}. The team will update and re-submit for approval.`, 'info');
     initPartnerPortal();
   } catch (err) {
-    const targetPost = partnerPosts.find(p => p.id === postId);
-    if (targetPost) {
-      targetPost.status = 'Changes Requested';
-      targetPost.clientFeedback = note;
-      renderPartnerView();
-    }
-    showPartnerToast(`💬 Feedback submitted for post ${postId}.`, 'info');
+    console.error('Error rejecting post:', err);
+    showPartnerToast(`❌ Error submitting feedback: ${err.message}`, 'error');
   }
 }
 

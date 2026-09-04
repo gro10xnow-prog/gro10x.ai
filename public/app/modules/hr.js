@@ -30,6 +30,7 @@ window.APP_MODULES.hr = async function(container) {
   ];
 
   async function loadHROps() {
+    if (window.location.hash && window.location.hash !== '#hr') return;
     isLoading = true;
     hasError = false;
     renderSkeleton();
@@ -81,6 +82,7 @@ window.APP_MODULES.hr = async function(container) {
       });
 
       isLoading = false;
+      if (window.location.hash && window.location.hash !== '#hr') return;
       renderHRView();
     } catch (err) {
       console.warn('[HR Module] Load fallback note:', err);
@@ -98,11 +100,13 @@ window.APP_MODULES.hr = async function(container) {
         onboardingComplete: Boolean(m.onboardingComplete)
       }));
       isLoading = false;
+      if (window.location.hash && window.location.hash !== '#hr') return;
       renderHRView();
     }
   }
 
   function renderSkeleton() {
+    if (window.location.hash && window.location.hash !== '#hr') return;
     container.innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1.5rem; flex-wrap:wrap; gap:1rem;">
         <div>
@@ -119,6 +123,7 @@ window.APP_MODULES.hr = async function(container) {
   }
 
   function renderErrorState(message) {
+    if (window.location.hash && window.location.hash !== '#hr') return;
     container.innerHTML = `
       <div style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); border-radius:16px; padding:3rem; text-align:center; color:#fca5a5; margin-top:2rem;">
         <div style="font-size:2.5rem; margin-bottom:0.5rem;">⚠️</div>
@@ -130,6 +135,7 @@ window.APP_MODULES.hr = async function(container) {
   }
 
   function renderHRView() {
+    if (window.location.hash && window.location.hash !== '#hr') return;
     const pendingLeaves = leavesData.filter(l => l.status === 'Pending').length;
     const inStudioCount = teamData.filter(m => (m.status || '').toLowerCase() === 'in studio').length;
     const onLeaveCount = teamData.filter(m => (m.status || '').toLowerCase() === 'on leave').length;

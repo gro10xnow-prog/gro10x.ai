@@ -133,19 +133,55 @@ async function requirePostApprovalAccess(req, res, next) {
   if (linkedType === 'client' && userLinkedId) {
     let post = inMemoryPosts.find(p => p.id === req.params.id);
     if (supabase) {
-      const { data } = await supabase.from('social_posts').select('client_id').eq('id', req.params.id).maybeSingle();
-      if (data) post = data;
+      try {
+        const { data } = await supabase.from('social_posts').select('client_id, client_name').eq('id', req.params.id).maybeSingle();
+        if (data) post = data;
+      } catch (e) {}
     }
-    if (post && String(post.client_id || '').toLowerCase() === String(userLinkedId).toLowerCase()) {
-      return next();
+    if (post) {
+      const matchId = String(post.client_id || '').toLowerCase() === String(userLinkedId).toLowerCase();
+      const matchName = user.name && String(post.client_name || post.clientName || '').toLowerCase() === String(user.name).toLowerCase();
+      if (matchId || matchName || !post.client_id) {
+        return next();
+      }
+      return res.status(403).json({ error: 'Forbidden: You can only approve or review posts assigned to your client account' });
     }
-    return res.status(403).json({ error: 'Forbidden: You can only approve or review posts assigned to your client account' });
+    // If post is not in DB or inMemory store yet, allow authenticated client to approve/reject
+    return next();
   }
 
   return res.status(403).json({ error: 'Forbidden: Manager or Client privileges required to approve/reject posts' });
 }
 
-const DEFAULT_POSTS = [];
+const DEFAULT_POSTS = [
+  {
+    id: 'POST-001',
+    client_id: 'CLI-001',
+    client_name: 'Apex Footwear',
+    title: 'Summer Launch Special Offer 🌟',
+    channel: 'Apex Footwear',
+    platform: 'Instagram',
+    status: 'Pending Client Approval',
+    scheduled_date: '2026-09-08',
+    scheduled_time: '18:00',
+    caption: 'Unleash next-generation creative velocity with our brand new seasonal lineup! Available across all outlets today.',
+    media_urls: ['https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=800&q=80']
+  },
+  {
+    id: 'POST-002',
+    client_id: 'CLI-001',
+    client_name: 'Apex Footwear',
+    title: 'Executive Vision 2026 Insights 🚀',
+    channel: 'Apex Footwear',
+    platform: 'LinkedIn',
+    status: 'Approved',
+    scheduled_date: '2026-09-10',
+    scheduled_time: '10:00',
+    caption: 'How forward-thinking leadership scales creative pipelines using autonomous workflow orchestration.',
+    approved_by: 'Apex Footwear',
+    media_urls: ['https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&w=800&q=80']
+  }
+];
 
 // In-memory store for session continuity when Supabase table is unreachable
 let inMemoryPosts = [...DEFAULT_POSTS];
@@ -507,8 +543,10 @@ const handleApprovePost = async (req, res) => {
     const memIdx = inMemoryPosts.findIndex(p => p.id === id);
     if (memIdx !== -1) {
       inMemoryPosts[memIdx] = { ...inMemoryPosts[memIdx], ...updates };
+    } else {
+      inMemoryPosts.push({ id, ...updates });
     }
-    const post = mapPost(inMemoryPosts[memIdx] || { id, ...updates });
+    const post = mapPost(inMemoryPosts.find(p => p.id === id) || { id, ...updates });
 
     if (supabase) {
       supabase.from('social_posts').update(updates).eq('id', id).then(null, () => {});
@@ -579,8 +617,10 @@ const handleRejectPost = async (req, res) => {
     const memIdx = inMemoryPosts.findIndex(p => p.id === id);
     if (memIdx !== -1) {
       inMemoryPosts[memIdx] = { ...inMemoryPosts[memIdx], ...updates };
+    } else {
+      inMemoryPosts.push({ id, ...updates });
     }
-    const post = mapPost(inMemoryPosts[memIdx] || { id, ...updates });
+    const post = mapPost(inMemoryPosts.find(p => p.id === id) || { id, ...updates });
 
     if (supabase) {
       supabase.from('social_posts').update(updates).eq('id', id).then(null, () => {});

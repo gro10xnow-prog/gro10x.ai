@@ -210,6 +210,57 @@ router.get('/campaigns', requireAuth, async (req, res) => {
   }
 });
 
+// GET /api/clients/invoices — Client invoice listing for Telegram Mini App & Portal
+router.get('/invoices', requireAuth, async (req, res) => {
+  try {
+    let clientRecord = null;
+    const linkedId = req.user?.linkedId || req.user?.id;
+    const linkedType = req.user?.linkedType || '';
+
+    if (linkedType === 'client' && linkedId && supabase && isSupabaseConfigured()) {
+      const { data } = await supabase.from('clients').select('*').eq('id', linkedId).maybeSingle();
+      clientRecord = data;
+    } else if (req.query.telegramId && supabase && isSupabaseConfigured()) {
+      const { data } = await supabase.from('clients').select('*').eq('telegram_id', String(req.query.telegramId)).maybeSingle();
+      clientRecord = data;
+    } else if (req.user?.company || req.user?.name) {
+      const cName = req.user.company || req.user.name;
+      const { data } = await supabase.from('clients').select('*').ilike('name', `%${cName}%`).maybeSingle();
+      clientRecord = data;
+    }
+
+    let invoices = [];
+    if (clientRecord && supabase && isSupabaseConfigured()) {
+      const { data: invData } = await supabase
+        .from('invoices')
+        .select('*')
+        .or(`client_id.eq.${clientRecord.id},client.ilike.%${clientRecord.name}%`)
+        .order('created_at', { ascending: false });
+      invoices = invData || [];
+    }
+
+    if (!invoices.length && supabase && isSupabaseConfigured()) {
+      const isAdminOrManager = (req.user?.role || '').toLowerCase().includes('admin') || (req.user?.role || '').toLowerCase().includes('manager');
+      if (isAdminOrManager) {
+        const { data: allInv } = await supabase.from('invoices').select('*').limit(50);
+        invoices = allInv || [];
+      }
+    }
+
+    return res.json(invoices.map(inv => ({
+      id: inv.id,
+      amount: Number(inv.amount || inv.total || 0),
+      status: inv.status || 'Pending',
+      description: inv.description || inv.notes || `Invoice ${inv.id}`,
+      issueDate: inv.issue_date || inv.created_at?.split('T')[0] || new Date().toISOString().split('T')[0],
+      dueDate: inv.due_date || null
+    })));
+  } catch (err) {
+    console.error('[Clients API] /invoices error:', err.message);
+    return res.json([]);
+  }
+});
+
 // Client Portal Workspace Dashboard Data (Isolated for authenticated client)
 router.get('/:id/dashboard', requireAuth, requireClientOwnership, async (req, res) => {
   const { id } = req.params;

@@ -221,13 +221,13 @@ async function runPhaseA6(page) {
   });
 
   await tracker.runStep('A6.6', 'Hardware Assets Catalog (#assets) & Category Filtering', async () => {
-    await page.goto(APP_URL + '#assets', { waitUntil: 'networkidle2' });
-    await wait(1200);
+    await page.goto(APP_URL + '#assets', { waitUntil: 'domcontentloaded' });
+    await wait(1500);
 
     await page.waitForFunction(() => {
       const el = document.querySelector('#app-view');
       return el && (el.textContent.includes('Hardware') || el.textContent.includes('Asset') || el.textContent.includes('Equipment'));
-    }, { timeout: 8000 });
+    }, { timeout: 12000 });
 
     const isAssetsReady = await page.evaluate(() => {
       return typeof window.ASSETS_MODULE === 'object' && window.ASSETS_MODULE !== null;

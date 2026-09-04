@@ -7,6 +7,24 @@ let currentManagerUser = null;
 let currentKanbanTasks = [];
 let kanbanDeptFilterMode = 'my'; // 'my' vs 'all'
 
+function getManagerToken() {
+  return (window.GRO10XAuth && typeof window.GRO10XAuth.getToken === 'function' && window.GRO10XAuth.getToken()) ||
+         localStorage.getItem('gro10x_token') ||
+         localStorage.getItem('sb-access-token') ||
+         sessionStorage.getItem('gro10x_token') ||
+         localStorage.getItem('jwt_token') || '';
+}
+
+function managerFetch(url, options = {}) {
+  const token = getManagerToken();
+  const baseHeaders = {
+    ...(options.body instanceof FormData ? {} : { 'Content-Type': 'application/json' }),
+    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+  };
+  const headers = { ...baseHeaders, ...(options.headers || {}) };
+  return window.fetch(url, { ...options, headers });
+}
+
 /* -------------------------------------------------------------
  * 🔔 Manager Portal Toast Notification System
  * ------------------------------------------------------------- */
@@ -46,7 +64,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function fetchAppVersion() {
   try {
-    const res = await fetch('/api/version');
+    const res = await managerFetch('/api/version');
     if(res.ok) {
       const data = await res.json();
       const verDisplay = document.getElementById('app-version-display');
@@ -72,8 +90,8 @@ async function loadManagerMetadata() {
   } catch(e) {}
   try {
     const [clientRes, teamRes] = await Promise.all([
-      fetch('/api/clients').catch(() => null),
-      fetch('/api/team').catch(() => null)
+      managerFetch('/api/clients').catch(() => null),
+      managerFetch('/api/team').catch(() => null)
     ]);
     if (clientRes && clientRes.ok) managerClients = await clientRes.json();
     if (teamRes && teamRes.ok) managerTeamMembers = await teamRes.json();
@@ -108,7 +126,7 @@ async function checkManagerAuth() {
                   localStorage.getItem('jwt_token');
     
     // Attempt session verification from API
-    const res = await fetch('/api/auth/me', {
+    const res = await managerFetch('/api/auth/me', {
       headers: token ? { 'Authorization': `Bearer ${token}` } : {}
     });
 
@@ -324,7 +342,7 @@ function switchTab(tabId) {
 
 async function loadManagerKanban() {
   try {
-    const res = await fetch('/api/tasks');
+    const res = await managerFetch('/api/tasks');
     if (!res.ok) throw new Error('Failed to load tasks');
     currentKanbanTasks = await res.json();
     renderManagerKanbanBoard();
@@ -469,7 +487,7 @@ function getPrevStage(currentCol) {
 
 async function advanceTaskStage(taskId, newStage) {
   try {
-    const res = await fetch(`/api/tasks/${taskId}`, {
+    const res = await managerFetch(`/api/tasks/${taskId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ stage: newStage })
@@ -499,7 +517,7 @@ function openManagerTaskModal() {
 
   if (assigneeSelect) {
     // Populate team roster based on manager dept
-    fetch('/api/team')
+    managerFetch('/api/team')
       .then(res => res.json())
       .then(team => {
         assigneeSelect.innerHTML = '';
@@ -548,7 +566,7 @@ async function submitManagerTask(event) {
   });
 
   try {
-    const res = await fetch('/api/tasks', {
+    const res = await managerFetch('/api/tasks', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ title, client, priority, assignee, dueDate, estimatedHours, labelIds, customFields })
@@ -571,7 +589,7 @@ async function submitManagerTask(event) {
  * ------------------------------------------------------------- */
 async function loadManagerLabels() {
   try {
-    const res = await fetch('/api/labels');
+    const res = await managerFetch('/api/labels');
     if (!res.ok) return;
     managerLabels = await res.json();
     populateKanbanLabelFilter();
@@ -664,7 +682,7 @@ async function submitCreateLabel(event) {
   if (!nameInput || !nameInput.value.trim()) return;
 
   try {
-    const res = await fetch('/api/labels', {
+    const res = await managerFetch('/api/labels', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: nameInput.value.trim(), color: colorInput.value })
@@ -685,7 +703,7 @@ async function submitCreateLabel(event) {
 async function deleteCustomLabel(labelId) {
   if (!confirm('Are you sure you want to delete this label?')) return;
   try {
-    const res = await fetch(`/api/labels/${labelId}`, { method: 'DELETE' });
+    const res = await managerFetch(`/api/labels/${labelId}`, { method: 'DELETE' });
     const data = await res.json();
     if (data.success) {
       showManagerToast('🗑️ Label deleted successfully', 'success');
@@ -705,7 +723,7 @@ async function loadManagerExpenses() {
   if (!tbody) return;
 
   try {
-    const res = await fetch('/api/expenses');
+    const res = await managerFetch('/api/expenses');
     if (!res.ok) throw new Error('Failed to fetch expenses');
     const expenses = await res.json();
 
@@ -764,7 +782,7 @@ async function loadManagerExpenses() {
 
 async function approveExpenseT1(expId) {
   try {
-    const res = await fetch(`/api/expenses/${expId}/approve-tier1`, {
+    const res = await managerFetch(`/api/expenses/${expId}/approve-tier1`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ approvedBy: currentManagerUser?.name || 'Line Manager' })
@@ -781,7 +799,7 @@ async function approveExpenseT1(expId) {
 
 async function approveExpenseT2(expId) {
   try {
-    const res = await fetch(`/api/expenses/${expId}/approve-tier2`, {
+    const res = await managerFetch(`/api/expenses/${expId}/approve-tier2`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ approvedBy: currentManagerUser?.name || 'Roksana Islam (Finance Lead)' })
@@ -805,7 +823,7 @@ function openSubmitExpenseModal() {
   if (!category) return;
   const desc = prompt('Enter Short Note / Description:', 'Shooting Props & Travel');
 
-  fetch('/api/expenses', {
+  managerFetch('/api/expenses', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -833,7 +851,7 @@ async function loadManagerHROps() {
   // 1. Fetch & Render Leave Requests
   if (leaveTbody) {
     try {
-      const res = await fetch('/api/leaves');
+      const res = await managerFetch('/api/leaves');
       if (res.ok) {
         const leaves = await res.json();
         leaveTbody.innerHTML = '';
@@ -886,7 +904,7 @@ async function loadManagerHROps() {
   // 2. Fetch & Render Team EOD Reports
   if (eodContainer) {
     try {
-      const res = await fetch('/api/eod');
+      const res = await managerFetch('/api/eod');
       if (res.ok) {
         const eods = await res.json();
         eodContainer.innerHTML = '';
@@ -940,7 +958,7 @@ async function loadManagerHROps() {
 
 async function approveLeaveManager(leaveId) {
   try {
-    const res = await fetch(`/api/leaves/${leaveId}/manager-approve`, {
+    const res = await managerFetch(`/api/leaves/${leaveId}/manager-approve`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ approvedBy: currentManagerUser?.name || 'Line Manager' })
@@ -959,7 +977,7 @@ async function rejectLeaveManager(leaveId, customReason) {
   const reason = customReason || 'Operational schedule conflict';
 
   try {
-    const res = await fetch(`/api/leaves/${leaveId}/reject`, {
+    const res = await managerFetch(`/api/leaves/${leaveId}/reject`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ reviewedBy: currentManagerUser?.name || 'Line Manager', reason })
@@ -982,7 +1000,7 @@ async function loadManagerReviewRoom() {
   if (!tbody) return;
 
   try {
-    const res = await fetch('/api/reviews');
+    const res = await managerFetch('/api/reviews');
     if (!res.ok) throw new Error('Failed to fetch reviews');
     const reviews = await res.json();
 
@@ -1043,7 +1061,7 @@ async function submitManagerReviewCut(event) {
   const videoUrl = document.getElementById('cutVideoUrlInput').value.trim();
 
   try {
-    const res = await fetch('/api/reviews', {
+    const res = await managerFetch('/api/reviews', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -1078,7 +1096,7 @@ async function loadManagerSocialPlanner() {
   if (!tbody) return;
 
   try {
-    const res = await fetch('/api/social-posts');
+    const res = await managerFetch('/api/social-posts');
     if (!res.ok) throw new Error('Failed to fetch social posts');
     let posts = await res.json();
 
@@ -1157,7 +1175,7 @@ async function submitManagerSocialPost(event) {
   const caption = document.getElementById('postCaptionInput').value.trim();
 
   try {
-    const res = await fetch('/api/social-posts', {
+    const res = await managerFetch('/api/social-posts', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -1183,7 +1201,7 @@ async function submitManagerSocialPost(event) {
 
 async function approveSocialPost(postId) {
   try {
-    const res = await fetch(`/api/social-posts/${postId}`, {
+    const res = await managerFetch(`/api/social-posts/${postId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: 'Approved & Scheduled' })
@@ -1204,7 +1222,7 @@ async function approveSocialPost(postId) {
 async function loadManagerOverviewKPIs() {
   try {
     const dept = currentManagerUser?.department || 'Operations';
-    const res = await fetch(`/api/manager/kpis?dept=${encodeURIComponent(dept)}`);
+    const res = await managerFetch(`/api/manager/kpis?dept=${encodeURIComponent(dept)}`);
     if (!res.ok) return;
     const kpis = await res.json();
 
@@ -1229,7 +1247,7 @@ async function loadManagerTickets() {
   if (!tbody) return;
 
   try {
-    const res = await fetch('/api/tickets');
+    const res = await managerFetch('/api/tickets');
     const tickets = await res.json();
 
     if (!Array.isArray(tickets) || tickets.length === 0) {
@@ -1270,7 +1288,7 @@ async function loadManagerTickets() {
 
 async function updateTicketStatus(ticketId, newStatus) {
   try {
-    const res = await fetch(`/api/tickets/${ticketId}`, {
+    const res = await managerFetch(`/api/tickets/${ticketId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: newStatus })
@@ -1344,7 +1362,7 @@ async function loadManagerWorkload() {
   if (!container) return;
 
   try {
-    const res = await fetch('/api/team/workload');
+    const res = await managerFetch('/api/team/workload');
     if (!res.ok) throw new Error('Failed to fetch workload data');
     const workloadList = await res.json();
 
@@ -1420,7 +1438,7 @@ async function suggestBestMatchAssignee() {
   const userDept = currentManagerUser?.department || 'Production';
 
   try {
-    const res = await fetch(`/api/team/best-match?department=${encodeURIComponent(userDept)}&estimatedHours=${estHours}`);
+    const res = await managerFetch(`/api/team/best-match?department=${encodeURIComponent(userDept)}&estimatedHours=${estHours}`);
     const data = await res.json();
     if (data.bestMatch) {
       const assigneeSelect = document.getElementById('taskAssigneeSelect');
@@ -1449,7 +1467,7 @@ async function suggestBestMatchAssignee() {
  * ------------------------------------------------------------- */
 async function loadManagerCustomFields() {
   try {
-    const res = await fetch('/api/custom-fields');
+    const res = await managerFetch('/api/custom-fields');
     if (!res.ok) return;
     managerCustomFields = await res.json();
     renderTaskModalCustomFields();
@@ -1546,7 +1564,7 @@ async function submitCreateCustomField(event) {
   }
 
   try {
-    const res = await fetch('/api/custom-fields', {
+    const res = await managerFetch('/api/custom-fields', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: nameInput.value.trim(), fieldType, options })
@@ -1568,7 +1586,7 @@ async function submitCreateCustomField(event) {
 async function deleteCustomField(fieldId) {
   if (!confirm('Are you sure you want to delete this custom field?')) return;
   try {
-    const res = await fetch(`/api/custom-fields/${fieldId}`, { method: 'DELETE' });
+    const res = await managerFetch(`/api/custom-fields/${fieldId}`, { method: 'DELETE' });
     const data = await res.json();
     if (data.success) {
       showManagerToast('🗑️ Custom field deleted', 'success');
@@ -1584,7 +1602,7 @@ async function deleteCustomField(fieldId) {
  * ------------------------------------------------------------- */
 async function loadManagerTaskTemplates() {
   try {
-    const res = await fetch('/api/task-templates');
+    const res = await managerFetch('/api/task-templates');
     if (!res.ok) return;
     managerTaskTemplates = await res.json();
     populateTaskModalTemplates();
@@ -1674,7 +1692,7 @@ async function submitCreateTaskTemplate(event) {
     : [];
 
   try {
-    const res = await fetch('/api/task-templates', {
+    const res = await managerFetch('/api/task-templates', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -1702,7 +1720,7 @@ async function submitCreateTaskTemplate(event) {
 async function deleteTaskTemplate(templateId) {
   if (!confirm('Are you sure you want to delete this template?')) return;
   try {
-    const res = await fetch(`/api/task-templates/${templateId}`, { method: 'DELETE' });
+    const res = await managerFetch(`/api/task-templates/${templateId}`, { method: 'DELETE' });
     const data = await res.json();
     if (data.success) {
       showManagerToast('🗑️ Template deleted', 'success');
@@ -1720,7 +1738,7 @@ async function deleteTaskTemplate(templateId) {
  */
 async function loadManagerCRM() {
   try {
-    const res = await fetch('/api/clients');
+    const res = await managerFetch('/api/clients');
     if (!res.ok) throw new Error('Failed to fetch clients');
     const clients = await res.json();
     managerClients = clients;
@@ -1779,7 +1797,7 @@ async function loadManagerCRM() {
  */
 async function loadManagerAssets() {
   try {
-    const res = await fetch('/api/assets');
+    const res = await managerFetch('/api/assets');
     if (!res.ok) throw new Error('Failed to fetch assets');
     const assets = await res.json();
 
@@ -1839,7 +1857,7 @@ async function loadManagerAssets() {
 
 async function toggleAssetCheckin(assetId) {
   try {
-    const res = await fetch(`/api/assets/${assetId}/checkin`, {
+    const res = await managerFetch(`/api/assets/${assetId}/checkin`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' }
     });
@@ -1859,7 +1877,7 @@ async function openAssetCheckoutModal(assetId) {
   const borrower = prompt('Enter staff member name to check out to:', 'Farhan Ahmed');
   if (!borrower) return;
   try {
-    const res = await fetch(`/api/assets/${assetId}/checkout`, {
+    const res = await managerFetch(`/api/assets/${assetId}/checkout`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ borrower })
@@ -1889,7 +1907,7 @@ async function loadManagerChat() {
     if (!channelsBox) return;
 
     if (!managerClients || managerClients.length === 0) {
-      const res = await fetch('/api/clients');
+      const res = await managerFetch('/api/clients');
       if (res.ok) managerClients = await res.json();
     }
 
@@ -1957,7 +1975,7 @@ async function sendManagerChatMessage(event) {
   }
 
   try {
-    await fetch('/api/chat/send', {
+    await managerFetch('/api/chat/send', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ command: text, mode: 'team' })
@@ -2069,4 +2087,36 @@ function closeMobileSidebar() {
   if (sidebar) sidebar.classList.remove('is-open');
   if (backdrop) backdrop.style.display = 'none';
 }
+
+// Explicit Window Method Attachments
+window.getManagerToken = getManagerToken;
+window.managerFetch = managerFetch;
+window.switchTab = switchTab;
+window.checkManagerAuth = checkManagerAuth;
+window.loadManagerMetadata = loadManagerMetadata;
+window.loadManagerOverviewKPIs = loadManagerOverviewKPIs;
+window.loadManagerTasks = loadManagerTasks;
+window.openManagerTaskModal = openManagerTaskModal;
+window.closeManagerTaskModal = closeManagerTaskModal;
+window.submitManagerTask = submitManagerTask;
+window.openManageLabelsModal = openManageLabelsModal;
+window.closeManageLabelsModal = closeManageLabelsModal;
+window.openTaskTemplatesModal = openTaskTemplatesModal;
+window.closeTaskTemplatesModal = closeTaskTemplatesModal;
+window.openCustomFieldsModal = openCustomFieldsModal;
+window.closeCustomFieldsModal = closeCustomFieldsModal;
+window.approveLeaveManager = approveLeaveManager;
+window.rejectLeaveManager = rejectLeaveManager;
+window.approveExpenseT1 = approveExpenseT1;
+window.approveExpenseT2 = approveExpenseT2;
+window.updateTicketStatus = updateTicketStatus;
+window.loadManagerTickets = loadManagerTickets;
+window.loadManagerExpenses = loadManagerExpenses;
+window.loadManagerWorkload = loadManagerWorkload;
+window.setupManagerSSE = setupManagerSSE;
+window.showManagerToast = showManagerToast;
+window.toggleCommandCenter = toggleCommandCenter;
+window.toggleMobileSidebar = toggleMobileSidebar;
+window.closeMobileSidebar = closeMobileSidebar;
+
 

@@ -110,9 +110,15 @@ class TestTracker {
   }
 
   async screenshot(page, filename) {
-    const filePath = path.join(SCREENSHOTS_DIR, filename);
-    await page.screenshot({ path: filePath, fullPage: false });
-    return filePath;
+    try {
+      const filePath = path.join(SCREENSHOTS_DIR, filename);
+      if (!fs.existsSync(SCREENSHOTS_DIR)) fs.mkdirSync(SCREENSHOTS_DIR, { recursive: true });
+      await page.screenshot({ path: filePath, fullPage: false });
+      return filePath;
+    } catch (err) {
+      // Non-fatal screenshot failure (e.g., Windows FS file locking)
+      return null;
+    }
   }
 
   getSummary() {

@@ -1083,8 +1083,10 @@
     const list = document.getElementById('campaignList');
     list.innerHTML = '<div class="empty-state"><div class="empty-icon">⏳</div>Loading...</div>';
     try {
+      const token = sessionStorage.getItem('jwt_token') || localStorage.getItem('gro10x_token');
+      const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
       const tgUser = tg?.initDataUnsafe?.user;
-      const res = await fetch(`/api/clients/campaigns?telegramId=${tgUser?.id || 'debug'}`);
+      const res = await fetch(`/api/clients/campaigns?telegramId=${tgUser?.id || 'debug'}`, { headers });
       const campaigns = await res.json();
       const campaignList = (Array.isArray(campaigns) && campaigns.length > 0) ? campaigns : [{
         title: 'Q3 Brand Growth & Social Campaign',
@@ -1115,8 +1117,10 @@
   // ══════════════════════════════════════════
   async function loadInvoices() {
     try {
+      const token = sessionStorage.getItem('jwt_token') || localStorage.getItem('gro10x_token');
+      const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
       const tgUser = tg?.initDataUnsafe?.user;
-      const res = await fetch(`/api/clients/invoices?telegramId=${tgUser?.id || 'debug'}`);
+      const res = await fetch(`/api/clients/invoices?telegramId=${tgUser?.id || 'debug'}`, { headers });
       let invoices = await res.json().catch(() => []);
       if (!Array.isArray(invoices) || invoices.length === 0) {
         invoices = [
