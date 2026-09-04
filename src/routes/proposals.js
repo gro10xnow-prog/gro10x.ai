@@ -391,7 +391,7 @@ router.post('/:id/convert-to-project', requireAuth, requireAdmin, async (req, re
 // AI PROPOSAL DRAFTING (Gemini Integration)
 // ─────────────────────────────────────────────────────────────────────────────
 
-const GEMINI_MODELS = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-pro'];
+const GEMINI_MODELS = ['gemini-3.6-flash', 'gemini-flash-latest', 'gemini-3.5-flash-lite'];
 
 function callGeminiAPI(model, prompt, key) {
   return new Promise((resolve, reject) => {

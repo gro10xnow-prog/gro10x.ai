@@ -69,7 +69,7 @@ function build(name, role, dept, stage) {
 // Gemini with strict response validation — Validated model chain
 const MODELS = process.env.GEMINI_MODELS
   ? process.env.GEMINI_MODELS.split(',').map(m => m.trim()).filter(Boolean)
-  : ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+  : ['gemini-3.5-flash-lite', 'gemini-3.6-flash', 'gemini-flash-lite-latest', 'gemini-flash-latest'];
 
 function callSingle(model, prompt, key, options = {}) {
   const maxTokens = options.maxTokens || 3500;
@@ -2103,7 +2103,7 @@ router.get('/health', requireAuth, (req, res) => res.json({
   success: true,
   status: process.env.GEMINI_API_KEY ? 'healthy' : 'degraded',
   configured: !!process.env.GEMINI_API_KEY,
-  primaryModel: MODELS[0] || 'gemini-1.5-flash',
+  primaryModel: MODELS[0] || 'gemini-3.5-flash-lite',
   models: MODELS,
   rateLimit: {
     maxPerMinute: 45,
