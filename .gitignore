@@ -20,3 +20,4 @@ scratch/
 .chrome-test-profile/
 __pycache__/
 *.pyc
+scripts/e2e/reports/run-*/
