@@ -5899,6 +5899,7 @@ window.APP_MODULES.brands = async function(container) {
       const content = document.getElementById('etsyHealthModalContent');
       if (!modal || !content) return;
 
+      this._lastHealthReport = report;
       const passed = report.passedCount;
       const total = report.total;
       const failedList = report.results.filter(r => !r.passed);
@@ -5978,7 +5979,7 @@ window.APP_MODULES.brands = async function(container) {
         </div>
 
         <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1.5rem; border-top:1px solid rgba(255,255,255,0.1); padding-top:1rem;">
-          <button class="btn-secondary" onclick="navigator.clipboard.writeText(JSON.stringify(${escape(JSON.stringify(report))})); window.showToast('Copied QA Health Report JSON!','success');">
+          <button class="btn-secondary" onclick="window.APP_MODULES['brands.js'].copyQAReport();">
             📋 Copy Full QA Report
           </button>
           <button class="btn-primary" onclick="document.getElementById('etsyHealthModal').style.display='none'">
@@ -5988,6 +5989,18 @@ window.APP_MODULES.brands = async function(container) {
       `;
 
       modal.style.display = 'flex';
+    },
+
+    copyQAReport() {
+      if (!this._lastHealthReport) return;
+      const text = JSON.stringify(this._lastHealthReport, null, 2);
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          if (window.showToast) window.showToast('Copied QA Health Report JSON!', 'success');
+        }).catch(() => {
+          if (window.showToast) window.showToast('Failed to copy report', 'error');
+        });
+      }
     },
 
     formatStoryboardHtml(videoPrompt, prodName, brandName) {

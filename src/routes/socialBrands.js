@@ -428,6 +428,97 @@ function patchMissingVisualFrameworks(state) {
   return modified;
 }
 
+async function syncBrandsToSupabase(brands) {
+  if (!isSupabaseConfigured() || !Array.isArray(brands) || brands.length === 0) return;
+  try {
+    const rows = brands.map(b => ({
+      id: b.id || ('brand-' + b.slug),
+      slug: b.slug,
+      name: b.name,
+      primary_language: b.primaryLanguage || 'Bangla + English (Banglish / Spoken)',
+      tagline: b.tagline || '',
+      niche: b.niche || '',
+      palette: b.palette || ['#10b981', '#059669'],
+      fonts: b.fonts || 'Inter',
+      tone: b.tone || '',
+      mission: b.mission || '',
+      standard_hashtags: b.standardHashtags || '',
+      standard_cta: b.standardCta || '',
+      logo_url: b.logoUrl || '',
+      assets: b.assets || [],
+      visual_framework: {
+        ...(b.visualFramework || {}),
+        _monthlyFocus: b.monthlyFocus || {}
+      },
+      channels: b.channels || [],
+      updated_at: new Date().toISOString()
+    }));
+    await supabase.from('social_brands').upsert(rows, { onConflict: 'slug' });
+  } catch (err) {
+    console.warn('[SocialBrands] Supabase sync warning:', err.message);
+  }
+}
+
+async function loadStateAsync() {
+  const now = Date.now();
+  if (_stateCache && (now - _cacheTimestamp < CACHE_TTL_MS)) {
+    return _stateCache;
+  }
+
+  // 1. In production / cloud environments, read from Supabase first
+  if (isSupabaseConfigured && isSupabaseConfigured()) {
+    try {
+      const { data, error } = await supabase
+        .from('social_brands')
+        .select('*')
+        .order('name');
+      if (!error && Array.isArray(data) && data.length > 0) {
+        const brands = data.map(row => {
+          const vf = row.visual_framework || {};
+          const monthlyFocus = vf._monthlyFocus || row.monthly_focus || {};
+          const cleanVf = { ...vf };
+          delete cleanVf._monthlyFocus;
+
+          return {
+            id: row.id,
+            slug: row.slug,
+            name: row.name,
+            primaryLanguage: row.primary_language || 'Bangla + English (Banglish / Spoken)',
+            tagline: row.tagline || '',
+            niche: row.niche || '',
+            palette: row.palette || ['#10b981', '#059669'],
+            fonts: row.fonts || 'Inter',
+            tone: row.tone || '',
+            mission: row.mission || '',
+            standardHashtags: row.standard_hashtags || '',
+            standardCta: row.standard_cta || '',
+            logoUrl: row.logo_url || '',
+            assets: row.assets || [],
+            visualFramework: cleanVf,
+            monthlyFocus: monthlyFocus,
+            channels: row.channels || []
+          };
+        });
+
+        const state = { brands };
+        _stateCache = state;
+        _cacheTimestamp = Date.now();
+
+        try {
+          fs.writeFileSync(DATA_FILE, JSON.stringify(state, null, 2), 'utf8');
+        } catch (_) {}
+
+        return state;
+      }
+    } catch (err) {
+      console.warn('[SocialBrands] Supabase read fallback:', err.message);
+    }
+  }
+
+  // 2. Fallback to local file or SEED_DATA
+  return loadState();
+}
+
 function loadState() {
   try {
     if (fs.existsSync(DATA_FILE)) {
@@ -447,8 +538,14 @@ function loadState() {
       }
     }
   } catch (e) {
-    console.warn('[SocialBrands] Failed to read state file, fallback to SEED_DATA:', e.message);
+    console.warn('[SocialBrands] Failed to read state file, fallback to cache/SEED_DATA:', e.message);
   }
+
+  // Preserve in-memory cache if available before falling back to static SEED_DATA
+  if (_stateCache && Array.isArray(_stateCache.brands) && _stateCache.brands.length > 0) {
+    return _stateCache;
+  }
+
   _stateCache = JSON.parse(JSON.stringify(SEED_DATA));
   _cacheTimestamp = Date.now();
   return _stateCache;
@@ -468,14 +565,28 @@ function getCachedState() {
 
 function saveState(state, broadcastPayload = null) {
   try {
+    const currentState = state || loadState();
+    _stateCache = currentState;
+    _cacheTimestamp = Date.now();
+
     const dir = path.dirname(DATA_FILE);
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    const payload = JSON.stringify(state || loadState(), null, 2);
-    const tempFile = `${DATA_FILE}.${Date.now()}.${Math.random().toString(36).slice(2, 8)}.tmp`;
-    fs.writeFileSync(tempFile, payload, 'utf8');
-    fs.renameSync(tempFile, DATA_FILE);
-    _stateCache = state;
-    _cacheTimestamp = Date.now();
+    const payload = JSON.stringify(currentState, null, 2);
+
+    // Direct safe write (prevents Windows EPERM file locking from renameSync)
+    try {
+      fs.writeFileSync(DATA_FILE, payload, 'utf8');
+    } catch (writeErr) {
+      const tempFile = `${DATA_FILE}.${Date.now()}.${Math.random().toString(36).slice(2, 8)}.tmp`;
+      fs.writeFileSync(tempFile, payload, 'utf8');
+      fs.renameSync(tempFile, DATA_FILE);
+    }
+
+    // Dual persistence: sync to Supabase in background
+    if (currentState.brands && Array.isArray(currentState.brands)) {
+      syncBrandsToSupabase(currentState.brands).catch(() => {});
+    }
+
     try {
       broadcast('brands_updated', broadcastPayload || { action: 'state_updated', timestamp: new Date().toISOString() });
     } catch (_) {}
@@ -484,15 +595,22 @@ function saveState(state, broadcastPayload = null) {
   }
 }
 
+async function saveStateAsync(state, broadcastPayload = null) {
+  saveState(state, broadcastPayload);
+  if (state && state.brands && Array.isArray(state.brands)) {
+    await syncBrandsToSupabase(state.brands);
+  }
+}
+
 // 1. GET ALL BRANDS
-router.get('/', requireAuth, (req, res) => {
-  const state = loadState();
+router.get('/', requireAuth, async (req, res) => {
+  const state = await loadStateAsync();
   res.json({ success: true, brands: state.brands || [] });
 });
 
 // 2. GET SINGLE BRAND DETAILS
-router.get('/:brandSlug', requireAuth, (req, res) => {
-  const state = loadState();
+router.get('/:brandSlug', requireAuth, async (req, res) => {
+  const state = await loadStateAsync();
   const brand = (state.brands || []).find(b => b.slug === req.params.brandSlug || b.id === req.params.brandSlug);
 
   if (!brand) {
@@ -1184,29 +1302,44 @@ router.post('/:brandSlug/channels/:channelId/generate-calendar', requireAuth, as
     }
 
     let generatedCalendar = null;
-    if (parsed && Array.isArray(parsed.plan) && parsed.plan.length >= (isYouTube ? 20 : 8)) {
-      const planItems = parsed.plan.map((item, idx) => {
-        const weekNum = parseInt((item.week || 'Week 1').replace(/[^0-9]/g, '')) || 1;
+    if (parsed && Array.isArray(parsed.plan) && parsed.plan.length >= 4) {
+      let aiPlanItems = parsed.plan.map((item, idx) => {
+        const weekStr = String(item.week || 'Week 1');
+        const weekNum = parseInt(weekStr.replace(/[^0-9]/g, '')) || (Math.floor(idx / 7) + 1);
         const dayOffset = (weekNum - 1) * 7 + (idx % 7) + 1;
         const dateStr = targetYear + '-' + String(monthIndex + 1).padStart(2, '0') + '-' + String(Math.min(28, dayOffset)).padStart(2, '0');
+        const cType = String(item.contentType || channel.defaultContentType || 'Short-form Video');
+        const isLong = cType === 'Long-form Video' || (item.targetDuration && !String(item.targetDuration).includes('s'));
 
         return {
           id: 'plan-' + brand.slug + '-' + channel.slug + '-' + targetMonth + '-' + (idx + 1),
-          week: item.week || ('Week ' + weekNum),
-          dayOfWeek: item.dayOfWeek || 'Mon',
+          week: typeof item.week === 'string' && item.week.trim() ? item.week : ('Week ' + weekNum),
+          dayOfWeek: String(item.dayOfWeek || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][idx % 7]),
           scheduledDate: dateStr,
-          suggestedTime: item.suggestedTime || '18:00',
-          topicIdea: item.topicIdea || item.title || (brand.name + ' ' + targetMonth + ' Pillar #' + (idx + 1)),
-          hook: item.hook || '',
-          contentType: item.contentType || channel.defaultContentType || 'Short-form Video',
-          targetDuration: item.targetDuration || (item.contentType === 'Long-form Video' ? '8 min' : '60s'),
-          strategicRationale: item.strategicRationale || item.reasoning || ('Proven audience signal from ' + brand.name + ' top performing benchmarks.'),
+          suggestedTime: String(item.suggestedTime || '18:00'),
+          topicIdea: String(item.topicIdea || item.title || (brand.name + ' ' + targetMonth + ' Pillar #' + (idx + 1))),
+          hook: String(item.hook || ''),
+          contentType: cType,
+          targetDuration: String(item.targetDuration || (isLong ? '8 min' : '60s')),
+          strategicRationale: String(item.strategicRationale || item.reasoning || ('Proven audience signal from ' + brand.name + ' top performing benchmarks.')),
           channel: brand.name,
           channelSlug: channel.slug,
           platform: channel.platform,
-          primaryLanguage: lang
+          primaryLanguage: lang,
+          formatTag: String(item.formatTag || (isLong ? '📹 Long-form Pillar' : '🎬 Daily Short'))
         };
       });
+
+      // If YouTube channel requires full 36-item dual-tier cadence and AI returned a partial blueprint (e.g. 10-20 items), pad with deterministic items
+      if (isYouTube && aiPlanItems.length < 28) {
+        const deterministic = generateDeterministicCalendar(brand, channel, targetMonth, targetYear, effectiveFocusNote, kb, anchorPillars);
+        if (deterministic && Array.isArray(deterministic.planItems)) {
+          const missingCount = deterministic.planItems.length - aiPlanItems.length;
+          if (missingCount > 0) {
+            aiPlanItems = aiPlanItems.concat(deterministic.planItems.slice(aiPlanItems.length));
+          }
+        }
+      }
 
       generatedCalendar = {
         monthKey,
@@ -1214,10 +1347,10 @@ router.post('/:brandSlug/channels/:channelId/generate-calendar', requireAuth, as
         year: targetYear,
         status: 'Draft',
         primaryLanguage: lang,
-        strategicSummary: parsed.strategicSummary || ('4-Week Production Blueprint for ' + brand.name + ' (' + channel.name + ') in ' + lang + '.'),
-        theme: parsed.theme || effectiveFocusNote || (targetMonth + ' Audience Velocity Blueprint'),
+        strategicSummary: String(parsed.strategicSummary || ('4-Week Production Blueprint for ' + brand.name + ' (' + channel.name + ') in ' + lang + '.')),
+        theme: String(parsed.theme || effectiveFocusNote || (targetMonth + ' Audience Velocity Blueprint')),
         generatedAt: new Date().toISOString(),
-        planItems
+        planItems: aiPlanItems
       };
     } else {
       generatedCalendar = generateDeterministicCalendar(brand, channel, targetMonth, targetYear, effectiveFocusNote, kb, anchorPillars);
@@ -1225,13 +1358,14 @@ router.post('/:brandSlug/channels/:channelId/generate-calendar', requireAuth, as
 
     channel.calendars = channel.calendars || {};
     channel.calendars[monthKey] = generatedCalendar;
-    saveState(current);
+    await saveStateAsync(current);
 
     res.json({
       success: true,
       calendar: generatedCalendar,
       channel,
-      brand
+      brand,
+      brands: current.brands
     });
   } catch (err) {
     console.error('[Calendar Gen] Error:', err);
@@ -1239,13 +1373,14 @@ router.post('/:brandSlug/channels/:channelId/generate-calendar', requireAuth, as
     
     channel.calendars = channel.calendars || {};
     channel.calendars[monthKey] = fallback;
-    saveState(current);
+    await saveStateAsync(current);
 
     res.json({
       success: true,
       calendar: fallback,
       channel,
       brand,
+      brands: current.brands,
       notice: 'Fallback strategy generated: ' + err.message
     });
   }
@@ -2010,5 +2145,11 @@ router.delete('/:brandSlug/channels/:channelId/calendars/:monthKey/items/:itemId
 
   res.json({ success: true, message: 'Plan item removed', removedItem, remainingCount: calendar.planItems.length });
 });
+
+router.loadState = loadState;
+router.loadStateAsync = loadStateAsync;
+router.saveState = saveState;
+router.saveStateAsync = saveStateAsync;
+router.syncBrandsToSupabase = syncBrandsToSupabase;
 
 module.exports = router;

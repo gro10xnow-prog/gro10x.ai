@@ -398,7 +398,7 @@ function callGeminiAPI(model, prompt, key) {
     const payload = JSON.stringify({
       contents: [{ role: 'user', parts: [{ text: prompt }] }],
       generationConfig: {
-        maxOutputTokens: 1800,
+        maxOutputTokens: 4000,
         temperature: 0.3,
         responseMimeType: 'application/json'
       }
@@ -430,7 +430,7 @@ function callGeminiAPI(model, prompt, key) {
     });
 
     req.on('error', reject);
-    req.setTimeout(15000, () => {
+    req.setTimeout(25000, () => {
       req.destroy();
       reject(new Error(`Gemini Timeout on ${model}`));
     });
@@ -440,11 +440,30 @@ function callGeminiAPI(model, prompt, key) {
 }
 
 function cleanJSONResponse(rawText) {
-  let cleaned = rawText.trim();
-  if (cleaned.startsWith('```json')) cleaned = cleaned.replace(/^```json/, '');
-  if (cleaned.startsWith('```')) cleaned = cleaned.replace(/^```/, '');
-  if (cleaned.endsWith('```')) cleaned = cleaned.replace(/```$/, '');
-  return JSON.parse(cleaned.trim());
+  if (!rawText) return null;
+  let text = String(rawText).trim();
+  if (text.startsWith('```json')) text = text.replace(/^```json/i, '');
+  if (text.startsWith('```')) text = text.replace(/^```/i, '');
+  if (text.endsWith('```')) text = text.replace(/```$/i, '');
+  try {
+    return JSON.parse(text.trim());
+  } catch (e) {
+    const firstObj = text.indexOf('{');
+    const lastObj = text.lastIndexOf('}');
+    if (firstObj !== -1 && lastObj > firstObj) {
+      try {
+        return JSON.parse(text.slice(firstObj, lastObj + 1));
+      } catch (err) {}
+    }
+    const firstArr = text.indexOf('[');
+    const lastArr = text.lastIndexOf(']');
+    if (firstArr !== -1 && lastArr > firstArr) {
+      try {
+        return JSON.parse(text.slice(firstArr, lastArr + 1));
+      } catch (err) {}
+    }
+    return null;
+  }
 }
 
 // POST /api/proposals/ai-draft — Generate structured proposal draft from raw voice/text context

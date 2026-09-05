@@ -445,7 +445,7 @@ router.post('/etsy-seo', requireAuth, async (req, res) => {
     let resultText = null;
     for (const model of MODELS) {
       try {
-        resultText = await callSingle(model, prompt, key);
+        resultText = await callSingle(model, prompt, key, { maxTokens: 4000, json: true });
         if (resultText) break;
       } catch (e) {
         console.warn('[Etsy SEO] Skip model ' + model + ':', e.message);
@@ -454,9 +454,8 @@ router.post('/etsy-seo', requireAuth, async (req, res) => {
 
     if (!resultText) throw new Error('No output from Gemini');
 
-    // Extract JSON block
-    const cleaned = resultText.replace(/```json/gi, '').replace(/```/g, '').trim();
-    const parsed = JSON.parse(cleaned);
+    const parsed = cleanJSONText(resultText);
+    if (!parsed) throw new Error('Failed to parse JSON from Gemini');
 
     // Validate 13 tags length (max 20 chars each)
     let tags = (parsed.tags || []).map(t => String(t).trim().slice(0, 20)).filter(Boolean);
@@ -591,7 +590,7 @@ router.post('/product-blueprint', requireAuth, async (req, res) => {
     let resultText = null;
     for (const model of MODELS) {
       try {
-        resultText = await callSingle(model, prompt, key);
+        resultText = await callSingle(model, prompt, key, { maxTokens: 8192, json: true });
         if (resultText) break;
       } catch (e) {
         console.warn('[Product Blueprint] Skip model ' + model + ':', e.message);
@@ -600,8 +599,8 @@ router.post('/product-blueprint', requireAuth, async (req, res) => {
 
     if (!resultText) throw new Error('No output from Gemini');
 
-    const cleaned = resultText.replace(/```json/gi, '').replace(/```/g, '').trim();
-    const parsed = JSON.parse(cleaned);
+    const parsed = cleanJSONText(resultText);
+    if (!parsed) throw new Error('Failed to parse JSON from Gemini');
 
     return res.json({
       success: true,
@@ -717,7 +716,7 @@ router.post('/mockup-prompts', requireAuth, async (req, res) => {
     let resultText = null;
     for (const model of MODELS) {
       try {
-        resultText = await callSingle(model, prompt, key);
+        resultText = await callSingle(model, prompt, key, { maxTokens: 4000, json: true });
         if (resultText) break;
       } catch (e) {
         console.warn('[Mockup Prompts] Skip model ' + model + ':', e.message);
@@ -726,8 +725,8 @@ router.post('/mockup-prompts', requireAuth, async (req, res) => {
 
     if (!resultText) throw new Error('No output from Gemini');
 
-    const cleaned = resultText.replace(/```json/gi, '').replace(/```/g, '').trim();
-    const parsed = JSON.parse(cleaned);
+    const parsed = cleanJSONText(resultText);
+    if (!parsed) throw new Error('Failed to parse JSON from Gemini');
 
     return res.json({
       success: true,
@@ -822,7 +821,7 @@ router.post('/social-brief', requireAuth, aiRateLimiter, async (req, res) => {
   const isPdfType = type === 'PDF / Document' || (plat === 'LinkedIn' && type.includes('PDF'));
   const isCarouselType = type === 'Carousel';
 
-  const chunkCount = isVideoType ? Math.max(1, Math.min(18, Math.ceil(durationSec / 10))) : 0;
+  const chunkCount = isVideoType ? Math.max(1, Math.min(8, Math.ceil(durationSec / 10))) : 0;
 
   // Build rich, character-driven VEO 3 scene blueprints — STRICT NO TEXT OVERLAY + PURE ENGLISH VISUAL PROMPTS + VERBATIM NATURAL SPOKEN SCRIPT
   function buildCinematicVeoScenes(chan, postTop, cat, durSec, l, count, vf = null) {
@@ -1326,7 +1325,7 @@ Each item in "carouselSlides" MUST have:
     let resultText = null;
     for (const model of MODELS) {
       try {
-        resultText = await callSingle(model, prompt, key, { maxTokens: 3500, json: true });
+        resultText = await callSingle(model, prompt, key, { maxTokens: 8192, json: true });
         if (resultText) break;
       } catch (e) {
         console.warn('[Social Brief] Skip model ' + model + ':', e.message);
@@ -1912,7 +1911,7 @@ IMPORTANT RULES:
         let rawGemini = null;
         for (const model of MODELS) {
           try {
-            rawGemini = await callSingle(model, geminiPrompt, process.env.GEMINI_API_KEY, { json: true, maxTokens: 800 });
+            rawGemini = await callSingle(model, geminiPrompt, process.env.GEMINI_API_KEY, { json: true, maxTokens: 2500 });
             if (rawGemini) break;
           } catch (e) {}
         }

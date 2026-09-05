@@ -418,6 +418,20 @@ window.APP_MODULES.social = async function(container) {
     try {
       const brandsRes = await APP_API.get('/social-brands').catch(() => ({ brands: [] }));
       if (brandsRes && Array.isArray(brandsRes.brands)) {
+        // Deep-merge: Preserve in-memory calendars across all channels so network roundtrips never destroy active calendars
+        if (socialBrandsData && Array.isArray(socialBrandsData)) {
+          brandsRes.brands.forEach(newB => {
+            const existingB = socialBrandsData.find(b => b.slug === newB.slug || b.id === newB.id);
+            if (existingB && Array.isArray(existingB.channels)) {
+              (newB.channels || []).forEach(newCh => {
+                const existingCh = existingB.channels.find(c => c.id === newCh.id || c.slug === newCh.slug);
+                if (existingCh && existingCh.calendars && typeof existingCh.calendars === 'object') {
+                  newCh.calendars = { ...(existingCh.calendars || {}), ...(newCh.calendars || {}) };
+                }
+              });
+            }
+          });
+        }
         socialBrandsData = brandsRes.brands;
         const targetSlug = brandSlug || activeBrandSlug;
         const activeBrand = (socialBrandsData || []).find(b => b.slug === targetSlug || b.id === targetSlug) || socialBrandsData[0];
@@ -2065,6 +2079,20 @@ window.APP_MODULES.social = async function(container) {
   }
 
   function renderChannelWorkspaceHTML(brand, channel) {
+    if (!channel) {
+      channel = (brand && Array.isArray(brand.channels) && brand.channels[0]) || null;
+    }
+    if (!channel) {
+      return `
+        <div style="padding:2.5rem; text-align:center; color:var(--text-dim); background:var(--surface-card, #14141e); border-radius:14px; border:1px solid var(--border-subtle);">
+          <div style="font-size:2rem; margin-bottom:0.5rem;">📡</div>
+          <div style="font-weight:700; color:#fff; font-size:1rem;">No channel selected or configured.</div>
+          <div style="font-size:0.8rem; margin-top:0.3rem;">Please select an active channel from the switcher above or add a new channel.</div>
+        </div>
+      `;
+    }
+    channel.calendars = channel.calendars || {};
+
     const kb = channel.analyticsKnowledgeBase;
     const isUnonboarded = !kb || isOnboardingOverride;
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -2082,7 +2110,16 @@ window.APP_MODULES.social = async function(container) {
     const thisMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
     const isPastMonth = currentMonthKey < thisMonthKey;
 
-    const currentCal = channel.calendars && channel.calendars[currentMonthKey];
+    // Resilient calendar lookup: Check exact monthKey, then month name + year, then any prefix/suffix match
+    let currentCal = channel.calendars && channel.calendars[currentMonthKey];
+    if (!currentCal && channel.calendars && typeof channel.calendars === 'object') {
+      const allCals = Object.values(channel.calendars);
+      currentCal = allCals.find(c => c && (
+        c.monthKey === currentMonthKey ||
+        (c.month === selectedPlanMonth && Number(c.year) === Number(selectedPlanYear)) ||
+        (c.monthKey && c.monthKey.startsWith(String(selectedPlanYear)) && c.monthKey.endsWith(String(currentMonthIndex + 1).padStart(2, '0')))
+      ));
+    }
     const isLocked = currentCal && currentCal.status === 'Locked';
     const allPlanItems = (currentCal && Array.isArray(currentCal.planItems)) ? currentCal.planItems : [];
     
@@ -3452,22 +3489,29 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
 
         if (res && res.success && res.calendar) {
           // Direct in-memory state synchronization
+          if (Array.isArray(res.brands) && res.brands.length > 0) {
+            socialBrandsData = res.brands;
+          }
+
           const brand = (socialBrandsData || []).find(b => b.slug === brandSlug || b.id === brandSlug);
-          if (brand && brand.channels) {
+          if (brand && Array.isArray(brand.channels)) {
             const ch = brand.channels.find(c => c.id === channelId || c.slug === channelId);
             if (ch) {
               ch.calendars = ch.calendars || {};
               ch.calendars[res.calendar.monthKey] = res.calendar;
+              if (res.channel) {
+                Object.assign(ch, res.channel);
+                ch.calendars[res.calendar.monthKey] = res.calendar;
+              }
             }
           }
 
           selectedPlanMonth = res.calendar.month || selectedPlanMonth;
           selectedPlanYear = res.calendar.year || selectedPlanYear;
 
-          await new Promise(r => setTimeout(r, 450));
           if (window.showToast) window.showToast(`✨ Generated ${selectedPlanMonth} strategic calendar for ${channelId}!`, 'success');
           
-          await refreshBrandState(brandSlug);
+          // Immediately re-render channel workspace with newly generated calendar items
           this.openChannelWorkspace(channelId);
         } else {
           throw new Error(res?.error || 'Generation failed');
@@ -4314,7 +4358,7 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
                 <button type="button" class="btn-primary btn-xs" style="background:linear-gradient(135deg,#00df89,#06b6d4); color:#000; font-weight:800;" onclick="window.SOCIAL_MODULE.openFullscreenTeleprompter()">
                   🎙️ Fullscreen View
                 </button>
-                <button type="button" class="btn-ghost btn-xs" onclick="navigator.clipboard.writeText('${escapeHTML(spokenScript).replace(/'/g, "\\'")}'); if(window.showToast) window.showToast('📋 Talking script copied!','success');">
+                <button type="button" class="btn-ghost btn-xs" onclick="window.SOCIAL_MODULE.copyTalkingScript()">
                   📋 Copy
                 </button>
               </div>
@@ -4333,7 +4377,7 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
                 <span>🎯</span>
                 <span>Viral Hook & Strategic Angle</span>
               </div>
-              <button type="button" class="btn-ghost btn-xs" onclick="event.stopPropagation(); navigator.clipboard.writeText('${escapeHTML(brief.hook + '\n\n' + (brief.angle || '')).replace(/'/g, "\\'")}'); if(window.showToast) window.showToast('Hook copied!','success');">
+              <button type="button" class="btn-ghost btn-xs" onclick="event.stopPropagation(); window.SOCIAL_MODULE.copyHookAndAngle()">
                 📋 Copy
               </button>
             </summary>
@@ -4383,7 +4427,7 @@ async generateChannelCalendarPlan(brandSlug, channelId) {
                           <button type="button" class="btn-ghost btn-xs" style="color:#38bdf8; border:1px solid rgba(56,189,248,0.3); border-radius:4px; padding:0.1rem 0.4rem;" onclick="window.SOCIAL_MODULE.regenerateVeoScene(${idx})">
                             🔄 Regenerate
                           </button>
-                          <button type="button" class="btn-ghost btn-xs" style="padding:0.1rem 0.4rem;" onclick="navigator.clipboard.writeText('${escapeHTML(promptText).replace(/'/g, "\\'")}'); if(window.showToast) window.showToast('Scene ${sceneNum} prompt copied!','success');">
+                          <button type="button" class="btn-ghost btn-xs" style="padding:0.1rem 0.4rem;" onclick="window.SOCIAL_MODULE.copyScenePrompt(${idx})">
                             📋 Copy
                           </button>
                         </div>
@@ -4709,6 +4753,32 @@ Return strictly JSON: { "prompt": "...", "visualCue": "..." }`;
       } catch (err) {
         console.error('Failed to regenerate scene:', err);
         if (window.showToast) window.showToast('Failed to regenerate scene: ' + err.message, 'error');
+      }
+    },
+    copyTalkingScript() {
+      if (!activeGeneratedBrief) return;
+      const isVideo = Array.isArray(activeGeneratedBrief.veoScenes) && activeGeneratedBrief.veoScenes.length > 0;
+      const scriptText = (isVideo && activeGeneratedBrief.veoScenes[0] && activeGeneratedBrief.veoScenes[0].voiceLine)
+        ? activeGeneratedBrief.veoScenes.map(s => `[${s.timeRange || ''}] ${s.voiceLine}`).join('\n\n')
+        : (activeGeneratedBrief.spokenScript || activeGeneratedBrief.voiceNote || '');
+      if (scriptText) {
+        navigator.clipboard.writeText(scriptText);
+        if (window.showToast) window.showToast('📋 Talking script copied!', 'success');
+      }
+    },
+    copyHookAndAngle() {
+      if (!activeGeneratedBrief) return;
+      const text = `Viral Hook:\n"${activeGeneratedBrief.hook || ''}"\n\nAngle & Psychology:\n${activeGeneratedBrief.angle || ''}`;
+      navigator.clipboard.writeText(text);
+      if (window.showToast) window.showToast('🎯 Hook & angle copied!', 'success');
+    },
+    copyScenePrompt(idx) {
+      if (!activeGeneratedBrief || !Array.isArray(activeGeneratedBrief.veoScenes)) return;
+      const scene = activeGeneratedBrief.veoScenes[idx];
+      if (scene) {
+        const text = scene.prompt || '';
+        navigator.clipboard.writeText(text);
+        if (window.showToast) window.showToast(`🎬 Scene ${scene.scene || scene.sceneNumber || (idx + 1)} prompt copied!`, 'success');
       }
     },
     copyAllVeoPrompts() {

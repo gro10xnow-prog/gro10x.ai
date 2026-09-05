@@ -1040,11 +1040,12 @@ window.APP_MODULES.hr = async function(container) {
 
         const resultArea = document.getElementById('inviteResultArea');
         if (resultArea && res.success) {
+          this._lastInviteCardText = res.inviteCardText;
           resultArea.style.display = 'block';
           resultArea.innerHTML = `
             <div style="color:var(--emerald-brand); font-weight:700; margin-bottom:0.4rem;">✅ Temp PIN Generated: <span style="font-size:1.1rem; font-family:monospace;">${res.pin}</span></div>
             <div style="color:var(--text-muted); font-size:0.8rem; margin-bottom:0.6rem;">${res.telegramPushed ? '📲 Telegram push notification sent successfully!' : '⚠️ Telegram ID not linked yet for this member. Share via WhatsApp or text below.'}</div>
-            <button class="btn-secondary btn-sm" onclick="navigator.clipboard.writeText(\`${escapeHTML(res.inviteCardText)}\`); if(window.showToast) window.showToast('Invite text copied! 📋', 'success');">📋 Copy Access Card Text</button>
+            <button class="btn-secondary btn-sm" onclick="window.HR_MODULE.copyLastInviteCardText();">📋 Copy Access Card Text</button>
           `;
         }
 
@@ -1052,6 +1053,17 @@ window.APP_MODULES.hr = async function(container) {
         loadHROps();
       } catch (err) {
         if (window.showToast) window.showToast('Failed to generate PIN: ' + (err.message || 'Error'), 'error');
+      }
+    },
+
+    copyLastInviteCardText() {
+      if (!this._lastInviteCardText) return;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(this._lastInviteCardText).then(() => {
+          if (window.showToast) window.showToast('Invite text copied! 📋', 'success');
+        }).catch(() => {
+          if (window.showToast) window.showToast('Failed to copy invite text', 'error');
+        });
       }
     },
 
