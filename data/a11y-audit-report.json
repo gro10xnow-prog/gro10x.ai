@@ -1,0 +1,309 @@
+{
+  "Admin Command Center (App Shell)": {
+    "globalChecks": {
+      "lang": "en",
+      "title": "Stakeholder & Client Portal — GRO10X",
+      "viewport": "width=device-width, initial-scale=1.0",
+      "hasReducedMotionMedia": "Disabled"
+    },
+    "orphanedInputs": [],
+    "unlabeledInteractives": [],
+    "missingAltImages": [],
+    "headingStructure": {
+      "totalHeadings": 1,
+      "headings": [
+        {
+          "level": 1,
+          "tag": "h1",
+          "text": "GRO10X Portal"
+        }
+      ],
+      "issues": []
+    },
+    "smallTapTargets": [
+      {
+        "tag": "a",
+        "width": 117,
+        "height": 16,
+        "text": "← Back to gro10x.ai"
+      },
+      {
+        "tag": "a",
+        "width": 136,
+        "height": 16,
+        "text": "gro10xnow@gmail.com"
+      },
+      {
+        "tag": "a",
+        "width": 112,
+        "height": 16,
+        "text": "+880 1708-459008"
+      }
+    ],
+    "contrastIssues": []
+  },
+  "Sprint 01 Campaign Portal": {
+    "globalChecks": {
+      "lang": "en",
+      "title": "GRO10X — Sprint 01: Idea to Reality (Cohort 1)",
+      "viewport": "width=device-width, initial-scale=1.0",
+      "hasReducedMotionMedia": "Disabled"
+    },
+    "orphanedInputs": [],
+    "unlabeledInteractives": [],
+    "missingAltImages": [],
+    "headingStructure": {
+      "totalHeadings": 7,
+      "headings": [
+        {
+          "level": 1,
+          "tag": "h1",
+          "text": "Turn Your Raw Idea Into a\nMarket-Ready Product in 30 Days"
+        },
+        {
+          "level": 2,
+          "tag": "h2",
+          "text": "Core Sprint Pillars"
+        },
+        {
+          "level": 3,
+          "tag": "h3",
+          "text": "Production Tech & AI"
+        },
+        {
+          "level": 3,
+          "tag": "h3",
+          "text": "Pilots & Beta Users"
+        },
+        {
+          "level": 3,
+          "tag": "h3",
+          "text": "Capital & Investor Readiness"
+        },
+        {
+          "level": 2,
+          "tag": "h2",
+          "text": "The 30-Day Venture Blueprint"
+        },
+        {
+          "level": 2,
+          "tag": "h2",
+          "text": "Apply for Sprint 01"
+        }
+      ],
+      "issues": []
+    },
+    "smallTapTargets": [
+      {
+        "tag": "a",
+        "width": 38,
+        "height": 38,
+        "text": "GRO\n10X"
+      }
+    ],
+    "contrastIssues": []
+  },
+  "Agency Homepage": {
+    "globalChecks": {
+      "lang": "en",
+      "title": "GRO10X — AI-First Growth Agency & Multi-Engine Ecosystem",
+      "viewport": "width=device-width, initial-scale=1.0",
+      "hasReducedMotionMedia": "Disabled"
+    },
+    "orphanedInputs": [],
+    "unlabeledInteractives": [],
+    "missingAltImages": [],
+    "headingStructure": {
+      "totalHeadings": 50,
+      "headings": [
+        {
+          "level": 1,
+          "tag": "h1",
+          "text": "Grow 10x Smarter With Custom AI Solutions"
+        },
+        {
+          "level": 2,
+          "tag": "h2",
+          "text": "The 5 Core AI Product & Solution Suites"
+        },
+        {
+          "level": 3,
+          "tag": "h3",
+          "text": "Proprietary Micro-SaaS Software"
+        },
+        {
+          "level": 3,
+          "tag": "h3",
+          "text": "High-Velocity AI Sprint Squads"
+        },
+        {
+          "level": 3,
+          "tag": "h3",
+          "text": "Curated Generative Asset Bundles"
+        },
+        {
+          "level": 3,
+          "tag": "h3",
+          "text": "Full-Funnel Growth Retainers"
+        },
+        {
+          "level": 3,
+          "tag": "h3",
+          "text": "Autonomous Multi-Format Media"
+        },
+        {
+          "level": 2,
+          "tag": "h2",
+          "text": "Comprehensive AI Service Catalog"
+        },
+        {
+          "level": 3,
+          "tag": "h3",
+          "text": "AI Mobile Apps"
+        },
+        {
+          "level": 3,
+          "tag": "h3",
+          "text": "AI Websites & Software"
+        }
+      ],
+      "issues": []
+    },
+    "smallTapTargets": [
+      {
+        "tag": "button",
+        "width": 77,
+        "height": 27,
+        "text": "🇺🇸 USD ($)"
+      },
+      {
+        "tag": "button",
+        "width": 75,
+        "height": 27,
+        "text": "🇧🇩 BDT (৳)"
+      },
+      {
+        "tag": "button",
+        "width": 170,
+        "height": 37,
+        "text": "🔍 Details"
+      },
+      {
+        "tag": "button",
+        "width": 170,
+        "height": 37,
+        "text": "Get Started →"
+      },
+      {
+        "tag": "button",
+        "width": 170,
+        "height": 37,
+        "text": "🔍 Details"
+      },
+      {
+        "tag": "button",
+        "width": 170,
+        "height": 37,
+        "text": "Get Started →"
+      },
+      {
+        "tag": "button",
+        "width": 170,
+        "height": 37,
+        "text": "🔍 Details"
+      },
+      {
+        "tag": "button",
+        "width": 170,
+        "height": 37,
+        "text": "Get Started →"
+      },
+      {
+        "tag": "button",
+        "width": 170,
+        "height": 37,
+        "text": "🔍 Details"
+      },
+      {
+        "tag": "button",
+        "width": 170,
+        "height": 37,
+        "text": "Get Started →"
+      },
+      {
+        "tag": "button",
+        "width": 170,
+        "height": 37,
+        "text": "🔍 Details"
+      },
+      {
+        "tag": "button",
+        "width": 170,
+        "height": 37,
+        "text": "Get Started →"
+      },
+      {
+        "tag": "button",
+        "width": 170,
+        "height": 37,
+        "text": "🔍 Details"
+      },
+      {
+        "tag": "button",
+        "width": 170,
+        "height": 37,
+        "text": "Get Started →"
+      },
+      {
+        "tag": "button",
+        "width": 170,
+        "height": 37,
+        "text": "🔍 Details"
+      }
+    ],
+    "contrastIssues": []
+  },
+  "Review Room": {
+    "globalChecks": {
+      "lang": "en",
+      "title": "Stakeholder & Client Portal — GRO10X",
+      "viewport": "width=device-width, initial-scale=1.0",
+      "hasReducedMotionMedia": "Disabled"
+    },
+    "orphanedInputs": [],
+    "unlabeledInteractives": [],
+    "missingAltImages": [],
+    "headingStructure": {
+      "totalHeadings": 1,
+      "headings": [
+        {
+          "level": 1,
+          "tag": "h1",
+          "text": "GRO10X Portal"
+        }
+      ],
+      "issues": []
+    },
+    "smallTapTargets": [
+      {
+        "tag": "a",
+        "width": 117,
+        "height": 16,
+        "text": "← Back to gro10x.ai"
+      },
+      {
+        "tag": "a",
+        "width": 136,
+        "height": 16,
+        "text": "gro10xnow@gmail.com"
+      },
+      {
+        "tag": "a",
+        "width": 112,
+        "height": 16,
+        "text": "+880 1708-459008"
+      }
+    ],
+    "contrastIssues": []
+  }
+}

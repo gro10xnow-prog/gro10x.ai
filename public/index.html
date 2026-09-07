@@ -316,25 +316,25 @@
           
           <div class="pb-roadmap-step">
             <div class="step-badge">Stage 1</div>
-            <h4>Audit & Blueprint</h4>
+            <h3>Audit & Blueprint</h3>
             <p>48-hour operational audit to pinpoint high-ROI automation targets, model requirements, and custom pipeline architecture.</p>
           </div>
 
           <div class="pb-roadmap-step">
             <div class="step-badge">Stage 2</div>
-            <h4>Custom Pipeline Setup</h4>
+            <h3>Custom Pipeline Setup</h3>
             <p>Build and fine-tune proprietary ComfyUI nodes, custom AI agents, and secure data pipelines integrated into your tech stack.</p>
           </div>
 
           <div class="pb-roadmap-step">
             <div class="step-badge">Stage 3</div>
-            <h4>Autonomous Deployment</h4>
+            <h3>Autonomous Deployment</h3>
             <p>Deploy automated creative production workflows, train internal team members, and connect interactive review portals.</p>
           </div>
 
           <div class="pb-roadmap-step">
             <div class="step-badge">Stage 4</div>
-            <h4>Scale & Compound</h4>
+            <h3>Scale & Compound</h3>
             <p>Continuous 10x iteration, weekly performance asset dispatch, and multi-channel syndication with dedicated SLA support.</p>
           </div>
 
@@ -501,10 +501,10 @@
               <!-- Slider 1: Monthly Creative & Engineering Budget -->
               <div style="margin-bottom:1.75rem;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem;">
-                  <label style="font-weight:700; font-size:0.92rem; color:#fff;">Current Monthly Spend (Agency/Payroll):</label>
+                  <label for="calcSpendSlider" style="font-weight:700; font-size:0.92rem; color:#fff;">Current Monthly Spend (Agency/Payroll):</label>
                   <span id="calcSpendDisplay" style="font-weight:900; font-size:1.15rem; color:var(--brand-primary, #00df89);">$3,000 / mo</span>
                 </div>
-                <input type="range" id="calcSpendSlider" min="500" max="15000" step="250" value="3000" style="width:100%; accent-color:var(--brand-primary, #00df89); cursor:pointer;" oninput="updateRoiCalc()">
+                <input type="range" id="calcSpendSlider" name="calcSpend" aria-label="Current Monthly Spend" min="500" max="15000" step="250" value="3000" style="width:100%; accent-color:var(--brand-primary, #00df89); cursor:pointer;" oninput="updateRoiCalc()">
                 <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text-muted); margin-top:0.25rem;">
                   <span>$500</span>
                   <span>$5,000</span>
@@ -515,10 +515,10 @@
               <!-- Slider 2: Monthly Asset / Feature Output Volume -->
               <div style="margin-bottom:1.5rem;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem;">
-                  <label style="font-weight:700; font-size:0.92rem; color:#fff;">Monthly Asset & Code Deliverable Volume:</label>
+                  <label for="calcVolumeSlider" style="font-weight:700; font-size:0.92rem; color:#fff;">Monthly Asset & Code Deliverable Volume:</label>
                   <span id="calcVolumeDisplay" style="font-weight:900; font-size:1.15rem; color:var(--cyan-brand, #06b6d4);">20 Deliverables</span>
                 </div>
-                <input type="range" id="calcVolumeSlider" min="5" max="100" step="5" value="20" style="width:100%; accent-color:var(--cyan-brand, #06b6d4); cursor:pointer;" oninput="updateRoiCalc()">
+                <input type="range" id="calcVolumeSlider" name="calcVolume" aria-label="Monthly Asset and Code Deliverable Volume" min="5" max="100" step="5" value="20" style="width:100%; accent-color:var(--cyan-brand, #06b6d4); cursor:pointer;" oninput="updateRoiCalc()">
                 <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text-muted); margin-top:0.25rem;">
                   <span>5 items</span>
                   <span>50 items</span>
@@ -613,24 +613,24 @@
 
             <form id="landingLeadForm" onsubmit="submitLandingLead(event)">
               <div class="pb-form-group">
-                <label>Your Name *</label>
-                <input type="text" id="leadName" class="pb-input" placeholder="e.g. Zahin Khandaker" required>
+                <label for="leadName">Your Name *</label>
+                <input type="text" id="leadName" name="leadName" autocomplete="name" class="pb-input" placeholder="e.g. Zahin Khandaker" required>
               </div>
 
               <div class="pb-form-row">
                 <div class="pb-form-group">
-                  <label>Business Email *</label>
-                  <input type="email" id="leadEmail" class="pb-input" placeholder="name@company.com" required>
+                  <label for="leadEmail">Business Email *</label>
+                  <input type="email" id="leadEmail" name="leadEmail" autocomplete="email" class="pb-input" placeholder="name@company.com" required>
                 </div>
                 <div class="pb-form-group">
-                  <label>WhatsApp / Phone *</label>
-                  <input type="tel" id="leadPhone" class="pb-input" placeholder="+8801708459008" required>
+                  <label for="leadPhone">WhatsApp / Phone *</label>
+                  <input type="tel" id="leadPhone" name="leadPhone" autocomplete="tel" class="pb-input" placeholder="+8801708459008" required>
                 </div>
               </div>
 
               <div class="pb-form-group">
-                <label>Service Interest</label>
-                <select id="leadService" class="pb-input">
+                <label for="leadService">Service Interest</label>
+                <select id="leadService" name="leadService" class="pb-input">
                   <option value="Transactional Setup">🚀 One-Time AI Setup ($1,500 / ৳175k)</option>
                   <option value="Growth Retainer">⭐ Monthly Growth Retainer ($500/mo / ৳60k)</option>
                   <option value="AI Mobile / Web Development">📱 AI Mobile & Web App Development</option>
@@ -642,8 +642,8 @@
               </div>
 
               <div class="pb-form-group">
-                <label>Tell Us About Your Project</label>
-                <textarea id="leadNotes" class="pb-input" rows="3" placeholder="Briefly describe what you'd like to build or automate..."></textarea>
+                <label for="leadNotes">Tell Us About Your Project</label>
+                <textarea id="leadNotes" name="leadNotes" class="pb-input" rows="3" placeholder="Briefly describe what you'd like to build or automate..."></textarea>
               </div>
 
               <button type="submit" id="btnSubmitLead" class="pb-btn-primary" style="width:100%; padding:0.85rem; font-size:1rem;">
@@ -733,7 +733,7 @@
       </div>
 
       <div class="pb-footer-col">
-        <h4>Core Verticals</h4>
+        <h3>Core Verticals</h3>
         <a href="#services" onclick="filterServices('mobile-web')">AI Mobile Apps</a>
         <a href="#services" onclick="filterServices('ai-artists')">ComfyUI & AI Art</a>
         <a href="#services" onclick="filterServices('video')">AI Video Avatars</a>
@@ -742,7 +742,7 @@
       </div>
 
       <div class="pb-footer-col">
-        <h4>Ecosystem</h4>
+        <h3>Ecosystem</h3>
         <a href="#capabilities">AI Capabilities</a>
         <a href="#roadmap">Scaling Roadmap</a>
         <a href="#pricing">Plans & Pricing</a>
@@ -752,7 +752,7 @@
       </div>
 
       <div class="pb-footer-col">
-        <h4>Connect</h4>
+        <h3>Connect</h3>
         <span>📧 gro10xnow@gmail.com</span>
         <span>📱 +8801708459008</span>
         <span>🌐 gro10x.ai</span>
@@ -777,27 +777,27 @@
           Connect directly with GRO10X engineering to audit and automate your workflows.
         </p>
         <form id="modalLeadForm" onsubmit="submitModalLead(event)">
-          <input type="hidden" id="modalServiceType" value="General Setup">
+          <input type="hidden" id="modalServiceType" name="modalServiceType" value="General Setup">
           <div class="pb-form-group">
-            <label>Your Name *</label>
-            <input type="text" id="modalLeadName" class="pb-input" placeholder="Your Full Name" required>
+            <label for="modalLeadName">Your Name *</label>
+            <input type="text" id="modalLeadName" name="modalLeadName" autocomplete="name" class="pb-input" placeholder="Your Full Name" required>
           </div>
           <div class="pb-form-group">
-            <label>Email Address *</label>
-            <input type="email" id="modalLeadEmail" class="pb-input" placeholder="name@company.com" required>
+            <label for="modalLeadEmail">Email Address *</label>
+            <input type="email" id="modalLeadEmail" name="modalLeadEmail" autocomplete="email" class="pb-input" placeholder="name@company.com" required>
           </div>
           <div class="pb-form-group">
-            <label>WhatsApp / Phone *</label>
-            <input type="tel" id="modalLeadPhone" class="pb-input" placeholder="+8801708459008" required>
+            <label for="modalLeadPhone">WhatsApp / Phone *</label>
+            <input type="tel" id="modalLeadPhone" name="modalLeadPhone" autocomplete="tel" class="pb-input" placeholder="+8801708459008" required>
           </div>
           <div class="pb-form-group">
-            <label>Project Details / Requirements</label>
-            <textarea id="modalLeadNotes" class="pb-input" rows="3" placeholder="Tell us what you want to build or automate..."></textarea>
+            <label for="modalLeadNotes">Project Details / Requirements</label>
+            <textarea id="modalLeadNotes" name="modalLeadNotes" class="pb-input" rows="3" placeholder="Tell us what you want to build or automate..."></textarea>
           </div>
           <button type="submit" class="pb-btn-primary" style="width:100%; padding:0.8rem;">
             🚀 Confirm Consultation Request
           </button>
-          <div id="modalLeadFeedback" style="display:none; margin-top:0.75rem; text-align:center; font-size:0.85rem;"></div>
+          <div id="modalLeadFeedback" style="display:none; margin-top:0.75rem; text-align:center; font-size:0.85rem;" role="status"></div>
         </form>
       </div>
     </div>

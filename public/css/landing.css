@@ -111,7 +111,10 @@ body.pb-landing-body {
   font-size: 0.9rem;
   font-weight: 600;
   transition: color 0.2s ease;
-  padding: 0.3rem 0;
+  padding: 0.45rem 0.35rem;
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
 }
 
 .pb-nav-link:hover, .pb-nav-link.active {
@@ -167,6 +170,9 @@ body.pb-landing-body {
   padding: 0.55rem 0.9rem;
   border-radius: 10px;
   transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
 }
 
 .pb-btn-portal:hover {
@@ -181,6 +187,7 @@ body.pb-landing-body {
   font-weight: 800;
   font-size: 0.88rem;
   padding: 0.6rem 1.25rem;
+  min-height: 42px;
   border: none;
   border-radius: 12px;
   cursor: pointer;
@@ -525,7 +532,10 @@ body.pb-landing-body {
   font-family: var(--font-heading);
   font-size: 0.85rem;
   font-weight: 700;
-  padding: 0.55rem 1.1rem;
+  padding: 0.55rem 1.15rem;
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
   border-radius: 24px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -720,6 +730,7 @@ body.pb-landing-body {
   margin-bottom: 0.75rem;
 }
 
+.pb-roadmap-step h3,
 .pb-roadmap-step h4 {
   font-family: var(--font-heading);
   font-size: 1.1rem;
@@ -1136,6 +1147,7 @@ body.pb-landing-body {
   color: var(--text-secondary);
 }
 
+.pb-footer-col h3,
 .pb-footer-col h4 {
   font-family: var(--font-heading);
   font-size: 0.95rem;

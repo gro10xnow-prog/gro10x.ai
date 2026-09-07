@@ -474,23 +474,24 @@
     </section>
 
     <!-- 3 Pillars -->
-    <section class="pillars-grid">
+    <section class="pillars-grid" aria-labelledby="pillars-heading">
+      <h2 id="pillars-heading" style="position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); border:0;">Core Sprint Pillars</h2>
       <div class="pillar-card">
-        <div class="pillar-icon">🛠</div>
+        <div class="pillar-icon" aria-hidden="true">🛠</div>
         <h3 class="pillar-title">Production Tech & AI</h3>
         <p class="pillar-desc">
           No slow freelancers or messy wireframes. Our engineering team designs, builds, and deploys your high-performance web/mobile product from day one.
         </p>
       </div>
       <div class="pillar-card">
-        <div class="pillar-icon">🤝</div>
+        <div class="pillar-icon" aria-hidden="true">🤝</div>
         <h3 class="pillar-title">Pilots & Beta Users</h3>
         <p class="pillar-desc">
           We don't launch into a void. We plug your prototype into active ecosystem channels to land your first 50–100 beta users or corporate pilot LOIs.
         </p>
       </div>
       <div class="pillar-card">
-        <div class="pillar-icon">📈</div>
+        <div class="pillar-icon" aria-hidden="true">📈</div>
         <h3 class="pillar-title">Capital & Investor Readiness</h3>
         <p class="pillar-desc">
           If unit economics and customer validation hold up, we package your deck and introduce you directly to the Gro10x Capital angel investor network.
@@ -499,9 +500,9 @@
     </section>
 
     <!-- Timeline -->
-    <section class="timeline-box">
+    <section class="timeline-box" aria-labelledby="timeline-heading">
       <div class="timeline-header">
-        <h2>The 30-Day Venture Blueprint</h2>
+        <h2 id="timeline-heading">The 30-Day Venture Blueprint</h2>
         <p style="color: var(--text-muted); font-size: 0.9rem;">High-intensity, milestone-driven execution</p>
       </div>
       <div class="timeline-steps">
@@ -524,55 +525,55 @@
     </section>
 
     <!-- Application Form -->
-    <section class="form-wrapper">
+    <section class="form-wrapper" aria-labelledby="form-heading">
       <div id="form-container">
         <div class="form-head">
-          <h2>Apply for Sprint 01</h2>
+          <h2 id="form-heading">Apply for Sprint 01</h2>
           <p>Takes ~3 minutes. No formal business plan or pitch deck required.</p>
         </div>
 
-        <div id="error-box" class="error-msg"></div>
+        <div id="error-box" class="error-msg" role="alert" aria-live="polite"></div>
 
         <form id="sprint-form" onsubmit="handleSprintSubmit(event)">
           <!-- Honeypot -->
-          <input type="text" name="website_url" style="display:none" tabindex="-1" autocomplete="off">
+          <input type="text" name="website_url" style="display:none" tabindex="-1" autocomplete="off" aria-hidden="true">
 
           <div class="form-row">
             <div class="form-group">
-              <label>Your Full Name <span class="req">*</span></label>
-              <input type="text" id="founder-name" required placeholder="e.g. Tanvir Ahmed">
+              <label for="founder-name">Your Full Name <span class="req">*</span></label>
+              <input type="text" id="founder-name" name="founderName" autocomplete="name" required placeholder="e.g. Tanvir Ahmed">
             </div>
             <div class="form-group">
-              <label>Work Email <span class="req">*</span></label>
-              <input type="email" id="founder-email" required placeholder="name@company.com">
+              <label for="founder-email">Work Email <span class="req">*</span></label>
+              <input type="email" id="founder-email" name="founderEmail" autocomplete="email" required placeholder="name@company.com">
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-group">
-              <label>WhatsApp / Phone <span class="req">*</span></label>
-              <input type="tel" id="founder-phone" required placeholder="+880 17... / +1 ...">
+              <label for="founder-phone">WhatsApp / Phone <span class="req">*</span></label>
+              <input type="tel" id="founder-phone" name="founderPhone" autocomplete="tel" required placeholder="+880 17... / +1 ...">
             </div>
             <div class="form-group">
-              <label>Startup / Idea Name <span class="req">*</span></label>
-              <input type="text" id="startup-name" required placeholder="e.g. QuickLogistics AI">
+              <label for="startup-name">Startup / Idea Name <span class="req">*</span></label>
+              <input type="text" id="startup-name" name="startupName" required placeholder="e.g. QuickLogistics AI">
             </div>
           </div>
 
           <div class="form-group">
-            <label>What specific problem are you solving & for whom? <span class="req">*</span></label>
-            <textarea id="idea-problem" required placeholder="Describe the acute pain point and your target customers in 2-3 sentences..."></textarea>
+            <label for="idea-problem">What specific problem are you solving & for whom? <span class="req">*</span></label>
+            <textarea id="idea-problem" name="ideaProblem" required placeholder="Describe the acute pain point and your target customers in 2-3 sentences..."></textarea>
           </div>
 
           <div class="form-group">
-            <label>Why are YOU the right person to build this? <span class="req">*</span></label>
-            <textarea id="founder-edge" required placeholder="Your domain expertise, industry background, or personal connection to this problem..."></textarea>
+            <label for="founder-edge">Why are YOU the right person to build this? <span class="req">*</span></label>
+            <textarea id="founder-edge" name="founderEdge" required placeholder="Your domain expertise, industry background, or personal connection to this problem..."></textarea>
           </div>
 
           <div class="form-row">
             <div class="form-group">
-              <label>Current Status <span class="req">*</span></label>
-              <select id="idea-stage" required>
+              <label for="idea-stage">Current Status <span class="req">*</span></label>
+              <select id="idea-stage" name="ideaStage" required>
                 <option value="Raw Concept">Raw Concept / Idea in mind</option>
                 <option value="Wireframes Ready">Wireframes / Figma Designs ready</option>
                 <option value="Customer Validated">Talked to 10+ potential customers</option>
@@ -580,8 +581,8 @@
               </select>
             </div>
             <div class="form-group">
-              <label>Weekly Time Commitment <span class="req">*</span></label>
-              <select id="founder-commitment" required>
+              <label for="founder-commitment">Weekly Time Commitment <span class="req">*</span></label>
+              <select id="founder-commitment" name="founderCommitment" required>
                 <option value="15-20 hrs/week">15–20 hours/week (Sprint mode)</option>
                 <option value="Full-Time Obsession">Full-Time (30+ hours/week)</option>
               </select>
