@@ -52,19 +52,33 @@ describe('CRM Leads API Integration Tests', () => {
     expect(res.body.lead.score).toBeDefined();
   });
 
-  test('POST /api/leads/:id/onboard generates magic link for lead', async () => {
+  test('POST /api/leads with admin token creates lead with custom stage and budget', async () => {
     const res = await request(app)
-      .post('/api/leads/LED-001/onboard')
-      .set('Authorization', `Bearer ${adminToken}`);
+      .post('/api/leads')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({
+        company: 'Chillox Bangladesh',
+        contactPerson: 'Arman Hossain',
+        email: `chillox_${Date.now()}@agencytest.com`,
+        phone: '01711223344',
+        service: 'Commercial Video & TVC',
+        value: '150000',
+        stage: 'Meeting Scheduled',
+        source: 'Manual Entry'
+      });
     expect(res.statusCode).toBe(200);
     expect(res.body.success).toBe(true);
-    expect(res.body.magicLink).toBeDefined();
+    expect(res.body.lead).toBeDefined();
+    expect(res.body.lead.company).toBe('Chillox Bangladesh');
+    expect(res.body.lead.stage).toBe('Meeting Scheduled');
+    expect(res.body.lead.value).toBe('150000');
   });
 
   afterAll(async () => {
     const { supabase, isSupabaseConfigured } = require('../src/services/supabase');
     if (isSupabaseConfigured()) {
       await supabase.from('leads').delete().ilike('company', '%Unilever Bangladesh%');
+      await supabase.from('leads').delete().ilike('company', '%Chillox Bangladesh%');
     }
   });
 });

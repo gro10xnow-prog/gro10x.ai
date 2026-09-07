@@ -427,7 +427,7 @@ window.APP_MODULES.kanban = async function(container) {
       </div>
 
       <!-- Space Creator & Manager Modal -->
-      <div class="modal-overlay" id="kanbanSpaceModal">
+      <div class="modal-overlay" id="kanbanSpaceModal" onclick="if(event.target === this) window.KANBAN_MODULE.closeSpaceModal()">
         <div class="modal-content" style="max-width: 520px;">
           <div class="modal-header">
             <span style="font-weight: 800; font-family: var(--font-heading);">📁 Workspace Spaces Manager</span>
@@ -443,7 +443,7 @@ window.APP_MODULES.kanban = async function(container) {
             <div id="spaceModalCreateView">
               <div class="form-group">
                 <label class="form-label">Space / Project Name *</label>
-                <input type="text" id="spaceNameInput" class="input-text" placeholder="e.g. Q3 Brand Campaign, E-commerce Launch, Creative Lab" required>
+                <input type="text" id="spaceNameInput" class="input-text" placeholder="e.g. Q3 Brand Campaign, E-commerce Launch, Creative Lab" required onkeydown="if(event.key==='Enter'){event.preventDefault(); window.KANBAN_MODULE.submitNewSpace();}">
               </div>
 
               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; margin-top: 0.75rem;">
@@ -508,7 +508,7 @@ window.APP_MODULES.kanban = async function(container) {
       </div>
 
       <!-- Workflow Pipeline Stage Editor Modal -->
-      <div class="modal-overlay" id="kanbanStageEditorModal">
+      <div class="modal-overlay" id="kanbanStageEditorModal" onclick="if(event.target === this) window.KANBAN_MODULE.closeStageEditor()">
         <div class="modal-content" style="max-width: 640px;">
           <div class="modal-header">
             <span style="font-weight: 800; font-family: var(--font-heading);">⚙️ Workflow Pipeline Stage Manager</span>
@@ -536,7 +536,7 @@ window.APP_MODULES.kanban = async function(container) {
               <div style="display:grid; grid-template-columns: 1.2fr 1fr; gap:0.75rem;">
                 <div class="form-group" style="margin-bottom:0;">
                   <label class="form-label">Workflow Name *</label>
-                  <input type="text" id="newWfNameInput" class="input-text" placeholder="e.g. Influencer Outreach, Podcast" style="font-size:0.82rem; padding:0.35rem 0.65rem;">
+                  <input type="text" id="newWfNameInput" class="input-text" placeholder="e.g. Influencer Outreach, Podcast" style="font-size:0.82rem; padding:0.35rem 0.65rem;" onkeydown="if(event.key==='Enter'){event.preventDefault(); window.KANBAN_MODULE.submitNewCustomWorkflow();}">
                 </div>
                 <div class="form-group" style="margin-bottom:0;">
                   <label class="form-label">Icon / Emoji</label>
@@ -596,8 +596,8 @@ window.APP_MODULES.kanban = async function(container) {
       </div>
 
       <!-- Bulk Import Tasks Modal -->
-      <div class="modal-overlay" id="kanbanImportModal" style="display:none;">
-        <div class="modal-card" style="max-width: 680px; width: 95%;">
+      <div class="modal-overlay" id="kanbanImportModal" style="display:none;" onclick="if(event.target === this) window.KANBAN_MODULE.closeImportModal()">
+        <div class="modal-card" style="max-width: 720px; width: 95%; max-height: 90vh; overflow-y: auto;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
             <div style="font-size:1.15rem; font-weight:800; font-family:var(--font-heading);">
               📥 Bulk Import Tasks & Projects
@@ -606,33 +606,47 @@ window.APP_MODULES.kanban = async function(container) {
           </div>
 
           <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1rem;">
-            Upload an Excel (.csv) file or paste CSV text to pre-populate deliverables, assignees, and deadlines for September 1.
+            Upload an Excel (.csv) file or paste CSV/TSV text to pre-populate deliverables, assignees, and deadlines.
           </div>
 
           <div style="display:flex; gap:0.5rem; margin-bottom:1rem; flex-wrap:wrap;">
             <button type="button" id="kImportTabFile" class="btn-secondary btn-sm" onclick="window.KANBAN_MODULE.switchImportTab('file')">📂 Upload CSV File</button>
-            <button type="button" id="kImportTabPaste" class="btn-ghost btn-sm" onclick="window.KANBAN_MODULE.switchImportTab('paste')">📋 Paste Raw CSV Text</button>
+            <button type="button" id="kImportTabPaste" class="btn-ghost btn-sm" onclick="window.KANBAN_MODULE.switchImportTab('paste')">📋 Paste Raw CSV / TSV</button>
             <button type="button" class="btn-ghost btn-sm" style="margin-left:auto;" onclick="window.KANBAN_MODULE.downloadSampleCSV()">📄 Download Template (.csv)</button>
           </div>
 
-          <div id="kImportFileContainer">
-            <input type="file" id="kImportFileInput" accept=".csv" class="input-text" style="width:100%; padding:0.6rem;" onchange="window.KANBAN_MODULE.handleFileSelect(event)">
+          <!-- Drag and Drop File Upload Container -->
+          <div id="kImportFileContainer" style="border: 2px dashed var(--border-subtle); border-radius: 12px; padding: 1.5rem; text-align: center; background: var(--surface-2); cursor: pointer; transition: all 0.2s ease;"
+               onclick="document.getElementById('kImportFileInput').click()"
+               ondragover="event.preventDefault(); this.style.borderColor='var(--purple-brand)'; this.style.background='var(--surface-3)';"
+               ondragleave="this.style.borderColor='var(--border-subtle)'; this.style.background='var(--surface-2)';"
+               ondrop="event.preventDefault(); this.style.borderColor='var(--border-subtle)'; this.style.background='var(--surface-2)'; window.KANBAN_MODULE.handleFileDrop(event);">
+            <div style="font-size: 2.2rem; margin-bottom: 0.4rem;">📂</div>
+            <div style="font-size: 0.9rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.25rem;">Choose a .CSV file or drag & drop here</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.85rem;">Supports Excel CSV, UTF-8 CSV with BOM, Google Sheets TSV, and Semicolon delimiters</div>
+            <input type="file" id="kImportFileInput" accept=".csv, .tsv, text/csv, text/tab-separated-values" style="display: none;" onchange="window.KANBAN_MODULE.handleFileSelect(event)">
+            <button type="button" class="btn-secondary btn-sm" style="pointer-events:none;">Browse Files</button>
+            <div id="kImportSelectedFileName" style="font-size: 0.78rem; color: var(--purple-light); margin-top: 0.5rem; font-weight: 600;">No file chosen</div>
           </div>
 
+          <!-- Paste Raw Data Container -->
           <div id="kImportPasteContainer" style="display:none;">
-            <textarea id="kImportPasteInput" class="input-text" rows="6" style="width:100%; font-family:monospace; font-size:0.75rem;" placeholder="Task Title,Client Name,Project Name,Assignee,Department,Workflow Type,Stage,Priority,Due Date,Estimated Hours,Description" oninput="window.KANBAN_MODULE.handlePasteInput()"></textarea>
+            <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:0.4rem;">Paste raw rows copied directly from Excel, Google Sheets, or CSV (comma or tab delimited):</div>
+            <textarea id="kImportPasteInput" class="input-text" rows="7" style="width:100%; font-family:monospace; font-size:0.75rem; box-sizing:border-box;" placeholder="Task Title&#9;Client Name&#9;Assignee&#9;Stage&#9;Priority&#9;Due Date&#10;Hero Commercial Cut 1&#9;Apex Footwear Limited&#9;Md. Zahin Khandaker&#9;Editing&#9;High&#9;2026-09-15" oninput="window.KANBAN_MODULE.handlePasteInput()"></textarea>
           </div>
 
           <!-- Preview Table -->
-          <div id="kImportPreviewContainer" style="display:none; margin-top:1rem; max-height:240px; overflow-y:auto; background:var(--surface-2); border:1px solid var(--border-subtle); border-radius:8px; padding:0.6rem;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem; flex-wrap:wrap; gap:0.4rem;">
-              <div style="font-size:0.78rem; font-weight:800;" id="kImportPreviewTitle">Live Preview</div>
-              <button type="button" class="btn-primary btn-sm" id="kAiCleanBtn" style="background: linear-gradient(135deg, #9333ea, #db2777); font-size:0.75rem; padding:0.25rem 0.65rem;" onclick="window.KANBAN_MODULE.aiCleanImportData()">✨ AI Auto-Clean & Standardize</button>
+          <div id="kImportPreviewContainer" style="display:none; margin-top:1rem; max-height:260px; overflow-y:auto; background:var(--surface-2); border:1px solid var(--border-subtle); border-radius:10px; padding:0.75rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem; flex-wrap:wrap; gap:0.5rem;">
+              <div style="font-size:0.82rem; font-weight:800;" id="kImportPreviewTitle">Live Preview</div>
+              <button type="button" class="btn-primary btn-sm" id="kAiCleanBtn" style="background: linear-gradient(135deg, #9333ea, #db2777); font-size:0.75rem; padding:0.3rem 0.75rem;" onclick="window.KANBAN_MODULE.aiCleanImportData()">✨ AI Auto-Clean & Standardize</button>
             </div>
-            <table class="data-table" style="font-size:0.72rem; width:100%;" id="kImportPreviewTable">
-              <thead id="kImportThead"></thead>
-              <tbody id="kImportTbody"></tbody>
-            </table>
+            <div style="overflow-x:auto;">
+              <table class="data-table" style="font-size:0.72rem; width:100%; min-width:600px;" id="kImportPreviewTable">
+                <thead id="kImportThead"></thead>
+                <tbody id="kImportTbody"></tbody>
+              </table>
+            </div>
           </div>
 
           <div style="display:flex; justify-content:flex-end; gap:0.75rem; margin-top:1.25rem;">
@@ -1728,6 +1742,29 @@ window.APP_MODULES.kanban = async function(container) {
     },
 
     /* ── Space Creator & Manager ── */
+    renderSpaceModalList() {
+      const container = document.getElementById('spaceModalListContainer');
+      const tabManage = document.getElementById('spaceModalTabManage');
+      if (tabManage) {
+        tabManage.innerText = `⚙️ Manage Spaces (${spacesData.length})`;
+      }
+      if (!container) return;
+
+      container.innerHTML = spacesData.map(s => `
+        <div style="display:flex; justify-content:space-between; align-items:center; background:var(--surface-2); border:1px solid var(--border-subtle); padding:0.6rem 0.85rem; border-radius:10px;">
+          <div style="display:flex; align-items:center; gap:0.6rem;">
+            <span style="font-size:1.1rem;">${s.icon || (s.type === 'client' ? '🟣' : '🏢')}</span>
+            <div>
+              <div style="font-weight:700; font-size:0.85rem; color:var(--text-primary);">${escapeHTML(s.name)}</div>
+              <div style="font-size:0.7rem; color:var(--text-dim); text-transform:capitalize;">${escapeHTML(s.type || 'Custom Space')}</div>
+            </div>
+          </div>
+          ${s.name !== 'Internal Agency' && s.name !== 'Client Retainers' ? `
+            <button class="btn-danger btn-sm" style="font-size:0.72rem; padding:0.25rem 0.5rem;" onclick="window.KANBAN_MODULE.deleteSpace('${s.id || s.name}', this)">🗑️ Delete</button>
+          ` : '<span style="font-size:0.72rem; color:var(--text-dim);">System Default</span>'}
+        </div>
+      `).join('');
+    },
     openSpaceModal(tab = 'create') {
       const modal = document.getElementById('kanbanSpaceModal');
       if (!modal) return;
@@ -1736,6 +1773,7 @@ window.APP_MODULES.kanban = async function(container) {
       if (nameInp) nameInp.value = '';
       this.selectSpaceIcon('📁');
       this.selectSpaceColor('#a855f7');
+      this.renderSpaceModalList();
       modal.classList.add('active');
     },
     closeSpaceModal() {
@@ -1758,6 +1796,7 @@ window.APP_MODULES.kanban = async function(container) {
         if (tabManage) tabManage.className = 'btn-secondary btn-sm';
         if (viewCreate) viewCreate.style.display = 'none';
         if (viewManage) viewManage.style.display = 'block';
+        this.renderSpaceModalList();
       }
     },
     selectSpaceIcon(icon) {
@@ -1797,12 +1836,15 @@ window.APP_MODULES.kanban = async function(container) {
       const type = document.getElementById('spaceTypeInput')?.value || 'custom';
 
       try {
-        await APP_API.post('/projects/spaces', {
+        const res = await APP_API.post('/projects/spaces', {
           name,
           type,
           icon: selectedSpaceIcon,
           color: selectedSpaceColor
         });
+        const createdSpace = res?.space || { id: 'space_' + Date.now(), name, type, icon: selectedSpaceIcon, color: selectedSpaceColor };
+        spacesData.push(createdSpace);
+        this.renderSpaceModalList();
         if (window.showToast) window.showToast(`✨ Space "${name}" created!`, 'success');
         this.closeSpaceModal();
         await loadData();
@@ -1810,14 +1852,33 @@ window.APP_MODULES.kanban = async function(container) {
         if (window.showToast) window.showToast('Failed to create space: ' + err.message, 'error');
       }
     },
-    async deleteSpace(spaceId) {
-      if (window.confirm && !window.confirm('Are you sure you want to delete this custom space?')) return;
+    async deleteSpace(spaceId, btn) {
+      if (pendingDeleteSpaceId !== spaceId) {
+        pendingDeleteSpaceId = spaceId;
+        if (btn) {
+          btn.innerText = '⚠️ Confirm?';
+          btn.style.background = '#dc2626';
+        }
+        if (deleteSpaceTimer) clearTimeout(deleteSpaceTimer);
+        deleteSpaceTimer = setTimeout(() => {
+          pendingDeleteSpaceId = null;
+          if (btn) {
+            btn.innerText = '🗑️ Delete';
+            btn.style.background = '';
+          }
+        }, 4000);
+        return;
+      }
+      pendingDeleteSpaceId = null;
+      if (deleteSpaceTimer) clearTimeout(deleteSpaceTimer);
+
       try {
-        await APP_API.delete(`/projects/spaces/${encodeURIComponent(spaceId)}`);
+        await APP_API.delete('/projects/spaces/' + encodeURIComponent(spaceId));
         if (window.showToast) window.showToast('Space deleted', 'success');
+        spacesData = spacesData.filter(s => s.id !== spaceId && s.name !== spaceId);
+        this.renderSpaceModalList();
         if (activeSpace === spaceId) activeSpace = 'all';
         await loadData();
-        this.openSpaceModal('manage');
       } catch (err) {
         if (window.showToast) window.showToast('Failed to delete space: ' + err.message, 'error');
       }
@@ -1866,7 +1927,7 @@ window.APP_MODULES.kanban = async function(container) {
       if (actionBtns) {
         if (!['video', 'social', 'branding', 'dev'].includes(editorActiveWf)) {
           actionBtns.innerHTML = `
-            <button type="button" class="btn-danger btn-sm" style="font-size:0.72rem; padding:0.2rem 0.45rem;" onclick="window.KANBAN_MODULE.deleteWorkflow('${editorActiveWf}')">
+            <button type="button" class="btn-danger btn-sm" style="font-size:0.72rem; padding:0.2rem 0.45rem;" onclick="window.KANBAN_MODULE.deleteWorkflow('${editorActiveWf}', this)">
               🗑️ Delete Workflow
             </button>
           `;
@@ -1884,7 +1945,7 @@ window.APP_MODULES.kanban = async function(container) {
         listEl.innerHTML = editorStages.map((stg, idx) => `
           <div style="display: flex; align-items: center; gap: 0.5rem; background: var(--surface-2); border: 1px solid var(--border-subtle); padding: 0.45rem 0.65rem; border-radius: 8px;">
             <span class="badge badge-purple" style="font-size:0.7rem; min-width:24px; text-align:center;">${idx + 1}</span>
-            <input type="text" class="input-text" style="flex:1; padding:0.3rem 0.6rem; font-size:0.82rem;" value="${escapeHTML(stg)}" onchange="window.KANBAN_MODULE.updateStageName(${idx}, this.value)">
+            <input type="text" class="input-text" style="flex:1; padding:0.3rem 0.6rem; font-size:0.82rem;" value="${escapeHTML(stg)}" oninput="window.KANBAN_MODULE.updateStageName(${idx}, this.value)" onchange="window.KANBAN_MODULE.updateStageName(${idx}, this.value)">
             <button type="button" class="btn-secondary btn-sm" style="padding:0.2rem 0.45rem; font-size:0.75rem;" onclick="window.KANBAN_MODULE.moveStage(${idx}, -1)" ${idx === 0 ? 'disabled' : ''} title="Move Earlier">↑</button>
             <button type="button" class="btn-secondary btn-sm" style="padding:0.2rem 0.45rem; font-size:0.75rem;" onclick="window.KANBAN_MODULE.moveStage(${idx}, 1)" ${idx === editorStages.length - 1 ? 'disabled' : ''} title="Move Later">↓</button>
             <button type="button" class="btn-danger btn-sm" style="padding:0.2rem 0.45rem; font-size:0.75rem;" onclick="window.KANBAN_MODULE.removeStage(${idx})" ${editorStages.length <= 2 ? 'disabled' : ''} title="Remove Stage">✕</button>
@@ -1985,6 +2046,7 @@ window.APP_MODULES.kanban = async function(container) {
 
       try {
         await APP_API.put('/workflows/stages', payload);
+        WORKFLOW_TYPES[key] = { name, icon: selectedNewWfIcon, stages };
         if (window.showToast) window.showToast(`✨ Custom Workflow "${name}" created!`, 'success');
         this.toggleNewWorkflowForm(false);
         if (nameInp) nameInp.value = '';
@@ -1994,16 +2056,34 @@ window.APP_MODULES.kanban = async function(container) {
         if (window.showToast) window.showToast('Failed to create workflow: ' + (err.message || 'Error'), 'error');
       }
     },
-    async deleteWorkflow(wfKey) {
+    async deleteWorkflow(wfKey, btn) {
       if (['video', 'social', 'branding', 'dev'].includes(wfKey)) {
         if (window.showToast) window.showToast('Core system workflows cannot be deleted', 'error');
         return;
       }
-      if (window.confirm && !window.confirm(`Are you sure you want to delete this custom workflow pipeline?`)) return;
+      if (pendingDeleteWfKey !== wfKey) {
+        pendingDeleteWfKey = wfKey;
+        if (btn) {
+          btn.innerText = '⚠️ Confirm?';
+          btn.style.background = '#dc2626';
+        }
+        if (deleteWfTimer) clearTimeout(deleteWfTimer);
+        deleteWfTimer = setTimeout(() => {
+          pendingDeleteWfKey = null;
+          if (btn) {
+            btn.innerText = '🗑️ Delete Workflow';
+            btn.style.background = '';
+          }
+        }, 4000);
+        return;
+      }
+      pendingDeleteWfKey = null;
+      if (deleteWfTimer) clearTimeout(deleteWfTimer);
 
       try {
-        await APP_API.delete(`/workflows/${encodeURIComponent(wfKey)}`);
+        await APP_API.delete('/workflows/' + encodeURIComponent(wfKey));
         if (window.showToast) window.showToast('Workflow deleted', 'success');
+        delete WORKFLOW_TYPES[wfKey];
         if (activeWorkflowFilter === wfKey) activeWorkflowFilter = 'all';
         await loadData();
         this.openStageEditor('video');
@@ -2025,6 +2105,9 @@ window.APP_MODULES.kanban = async function(container) {
 
       try {
         await APP_API.put('/workflows/stages', payload);
+        if (WORKFLOW_TYPES[editorActiveWf]) {
+          WORKFLOW_TYPES[editorActiveWf].stages = [...editorStages];
+        }
         if (window.showToast) window.showToast('✅ Workflow pipeline stages saved successfully!', 'success');
         this.closeStageEditor();
         await loadData();
@@ -2032,11 +2115,15 @@ window.APP_MODULES.kanban = async function(container) {
         if (window.showToast) window.showToast('Failed to save stages: ' + (err.message || 'Error'), 'error');
       }
     },
-    // Bulk Import Methods
+
+    /* ── Bulk Import Methods ── */
     parsedImportTasks: [],
     openImportModal() {
       const modal = document.getElementById('kanbanImportModal');
-      if (modal) modal.style.display = 'flex';
+      if (modal) {
+        modal.classList.add('active');
+        modal.style.display = 'flex';
+      }
       this.parsedImportTasks = [];
       const submitBtn = document.getElementById('kImportSubmitBtn');
       if (submitBtn) submitBtn.disabled = true;
@@ -2044,12 +2131,17 @@ window.APP_MODULES.kanban = async function(container) {
       if (preview) preview.style.display = 'none';
       const fileInp = document.getElementById('kImportFileInput');
       if (fileInp) fileInp.value = '';
+      const nameEl = document.getElementById('kImportSelectedFileName');
+      if (nameEl) nameEl.innerText = 'No file chosen';
       const pasteInp = document.getElementById('kImportPasteInput');
       if (pasteInp) pasteInp.value = '';
     },
     closeImportModal() {
       const modal = document.getElementById('kanbanImportModal');
-      if (modal) modal.style.display = 'none';
+      if (modal) {
+        modal.classList.remove('active');
+        modal.style.display = 'none';
+      }
     },
     switchImportTab(tab) {
       const fileCont = document.getElementById('kImportFileContainer');
@@ -2071,10 +2163,10 @@ window.APP_MODULES.kanban = async function(container) {
     },
     downloadSampleCSV() {
       const csvContent = "Task Title,Client Name,Project Name,Assignee,Department,Workflow Type,Stage,Priority,Due Date,Estimated Hours,Description\n" +
-        "Hero Commercial Video Cut 1,Apex Footwear,Apex Autumn 2026 Campaign,Md. Zahin Khandaker,Post Production,video,Editing,High,2026-09-15,12,Main 60s 4K video edit with color grading\n" +
-        "Social Media 15-Grid Creative Suite,Chillox Bangladesh,Chillox September Retainer,Firoz Ahmed,Creative & Content,social,Content Draft,Medium,2026-09-10,16,15 static and carousel banners\n" +
-        "Influencer Campaign Outreach,Aura Cosmetics,Aura Q3 Product Launch,Lead Video Producer,Influencer Marketing,social,Briefing,High,2026-09-08,8,Selection of 10 Tier-1 beauty influencers\n" +
-        "Landing Page UI Redesign,Daraz Bangladesh,Daraz 11.11 Teaser Portal,Mahmudul Hasan,Development & Tech,dev,Wireframe,Urgent,2026-09-12,24,Responsive mobile-first components";
+        "Hero Commercial Video Cut 1,Apex Footwear Limited,Apex Autumn 2026 Campaign,Md. Zahin Khandaker,Post Production,video,Editing,High,2026-09-15,12,Main 60s 4K video edit with color grading\n" +
+        "Social Media 15-Grid Creative Suite,Chillox Bangladesh,Chillox September Retainer,Firoz Uddin Ahmed,Creative & Content,social,Content Draft,Medium,2026-09-10,16,15 static and carousel banners\n" +
+        "Influencer Campaign Outreach,Aura Skincare Ltd,Aura Q3 Product Launch,Lead Producer,Influencer Marketing,social,Briefing,High,2026-09-08,8,Selection of 10 Tier-1 beauty influencers\n" +
+        "Landing Page UI Redesign,ShopWay Supermart,ShopWay E-commerce Portal,Mahmudul Hasan,Development & Tech,dev,Wireframe,Urgent,2026-09-12,24,Responsive mobile-first components";
 
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
@@ -2085,13 +2177,25 @@ window.APP_MODULES.kanban = async function(container) {
       link.click();
       document.body.removeChild(link);
     },
+    handleFileDrop(e) {
+      const file = e.dataTransfer?.files?.[0];
+      if (!file) return;
+      const nameEl = document.getElementById('kImportSelectedFileName');
+      if (nameEl) nameEl.innerText = `📄 ${file.name} (${Math.round(file.size / 1024)} KB)`;
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        this.processCSVText(evt.target.result);
+      };
+      reader.readAsText(file);
+    },
     handleFileSelect(e) {
       const file = e.target.files[0];
       if (!file) return;
+      const nameEl = document.getElementById('kImportSelectedFileName');
+      if (nameEl) nameEl.innerText = `📄 ${file.name} (${Math.round(file.size / 1024)} KB)`;
       const reader = new FileReader();
       reader.onload = (evt) => {
-        const text = evt.target.result;
-        this.processCSVText(text);
+        this.processCSVText(evt.target.result);
       };
       reader.readAsText(file);
     },
@@ -2115,38 +2219,136 @@ window.APP_MODULES.kanban = async function(container) {
       const submitBtn = document.getElementById('kImportSubmitBtn');
       if (submitBtn) submitBtn.disabled = rows.length === 0;
     },
-    parseCSV(text) {
-      const lines = text.trim().split(/\r?\n/).filter(Boolean);
-      if (lines.length < 2) return [];
+    detectDelimiter(lines) {
+      const sample = lines.slice(0, 5).join('\n');
+      const tabCount = (sample.match(/\t/g) || []).length;
+      const commaCount = (sample.match(/,/g) || []).length;
+      const semiCount = (sample.match(/;/g) || []).length;
+      const pipeCount = (sample.match(/\|/g) || []).length;
 
-      const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/['"]/g, ''));
+      if (tabCount > commaCount && tabCount > semiCount) return '\t';
+      if (semiCount > commaCount && semiCount > tabCount) return ';';
+      if (pipeCount > commaCount && pipeCount > tabCount) return '|';
+      return ',';
+    },
+    splitDelimitedLine(line, delimiter) {
+      const cells = [];
+      let inQuotes = false;
+      let cur = '';
+      for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        const next = line[i + 1];
+        if (char === '"') {
+          if (inQuotes && next === '"') {
+            cur += '"';
+            i++;
+          } else {
+            inQuotes = !inQuotes;
+          }
+        } else if (char === delimiter && !inQuotes) {
+          cells.push(cur.trim());
+          cur = '';
+        } else {
+          cur += char;
+        }
+      }
+      cells.push(cur.trim());
+      return cells;
+    },
+    parseCSV(text) {
+      // 1. Strip UTF-8 Byte Order Mark (BOM)
+      let cleanText = text.replace(/^\uFEFF/, '').trim();
+      const lines = cleanText.split(/\r?\n/).filter(l => l.trim().length > 0);
+      if (lines.length < 1) return [];
+
+      const delimiter = this.detectDelimiter(lines);
+      const rawHeaderCells = this.splitDelimitedLine(lines[0], delimiter);
+
+      // Check if line 0 looks like a header or raw data
+      const headerKeywords = ['title', 'task', 'deliverable', 'client', 'company', 'assignee', 'department', 'workflow', 'stage', 'status', 'priority', 'due', 'hours', 'desc', 'description'];
+      const isHeaderRow = rawHeaderCells.some(h => {
+        const lower = h.toLowerCase();
+        return headerKeywords.some(kw => lower.includes(kw));
+      });
+
+      let headers = [];
+      let startIdx = 0;
+
+      if (isHeaderRow) {
+        headers = rawHeaderCells.map(h => h.trim().toLowerCase().replace(/['"]/g, ''));
+        startIdx = 1;
+      } else {
+        headers = ['task title', 'client name', 'project name', 'assignee', 'department', 'workflow type', 'stage', 'priority', 'due date', 'estimated hours', 'description'];
+        startIdx = 0;
+      }
+
+      // Check if first column is an index/sequence number (e.g. '#', 'no', 'sl', 'id')
+      let hasIndexCol = false;
+      if (isHeaderRow && rawHeaderCells.length > 0) {
+        const firstH = headers[0];
+        if (/^(#|no|sl|id|idx|index|num|serial)$/i.test(firstH)) {
+          hasIndexCol = true;
+        }
+      }
+
       const results = [];
 
-      for (let i = 1; i < lines.length; i++) {
+      for (let i = startIdx; i < lines.length; i++) {
         const line = lines[i].trim();
         if (!line) continue;
 
-        // Standard CSV cell splitter handling basic quotes
-        const values = line.split(',').map(v => v.replace(/^"|"$/g, '').trim());
-
+        const values = this.splitDelimitedLine(line, delimiter);
         const row = {};
+
         headers.forEach((h, idx) => {
-          row[h] = values[idx] || '';
+          row[h] = values[idx] !== undefined ? values[idx] : '';
         });
 
-        if (row['task title'] || row.title || row.task) {
+        // Resolve title with synonym mapping
+        let title = row['task title'] || row.title || row.task || row.deliverable || row['deliverable title'] || row.name || '';
+        let client = row['client name'] || row.client || row.company || row.customer || row.brand || 'Agency';
+        let projectName = row['project name'] || row.project || row.campaign || '';
+        let assignee = row.assignee || row['assigned to'] || row.staff || row.specialist || row.owner || '';
+        let department = row.department || row.dept || row.team || 'Production';
+        let workflowType = row['workflow type'] || row.workflow || row.type || row.category || 'video';
+        let stage = row.stage || row.status || 'Briefing';
+        let priority = row.priority || row.urgency || 'Medium';
+        let dueDate = row['due date'] || row.due || row.deadline || row['target date'] || '';
+        let estimatedHours = Number(String(row['estimated hours'] || row.hours || row.est_hours || 8).replace(/[^0-9.]/g, '')) || 8;
+        let description = row.description || row.desc || row.brief || row.notes || '';
+
+        // Anti-Column Shift Safeguard:
+        // If title is purely an integer index (like '1', '2') and client has deliverable title characters
+        if (/^\d+$/.test(title) && values.length >= 4) {
+          if (hasIndexCol || (values[1] && !/^\d+$/.test(values[1]))) {
+            // Shifted by index column!
+            title = values[1] || title;
+            client = values[2] || client;
+            projectName = values[3] || projectName;
+            assignee = values[4] || assignee;
+            department = values[5] || department;
+            workflowType = values[6] || workflowType;
+            stage = values[7] || stage;
+            priority = values[8] || priority;
+            dueDate = values[9] || dueDate;
+            estimatedHours = Number(values[10]) || estimatedHours;
+            description = values[11] || description;
+          }
+        }
+
+        if (title && title.trim()) {
           results.push({
-            title: row['task title'] || row.title || row.task,
-            client: row['client name'] || row.client || row.company || 'Agency',
-            projectName: row['project name'] || row.project || '',
-            assignee: row.assignee || row['assigned to'] || '',
-            department: row.department || row.dept || 'Production',
-            workflowType: row['workflow type'] || row.workflow || 'video',
-            stage: row.stage || row.status || 'Briefing',
-            priority: row.priority || 'Medium',
-            dueDate: row['due date'] || row.due || row.deadline || '',
-            estimatedHours: Number(row['estimated hours'] || row.hours || 8) || 8,
-            description: row.description || row.desc || row.brief || ''
+            title: title.trim(),
+            client: client.trim() || 'Agency',
+            projectName: projectName.trim(),
+            assignee: assignee.trim(),
+            department: department.trim(),
+            workflowType: workflowType.trim().toLowerCase(),
+            stage: stage.trim(),
+            priority: priority.trim(),
+            dueDate: dueDate.trim(),
+            estimatedHours,
+            description: description.trim()
           });
         }
       }
@@ -2163,23 +2365,27 @@ window.APP_MODULES.kanban = async function(container) {
         return;
       }
 
-      if (title) title.innerHTML = isCleaned
-        ? `✨ <span style="color:#10b981;">AI Standardized & Sanitized</span> (${rows.length} Deliverables Ready)`
-        : `👁️ Live Preview (${rows.length} Deliverables Detected)`;
+      const totalHours = rows.reduce((sum, r) => sum + (Number(r.estimatedHours) || 8), 0);
+
+      if (title) {
+        title.innerHTML = isCleaned
+          ? `✨ <span style="color:#10b981;">AI Standardized & Sanitized</span> (${rows.length} Deliverables · ⏱️ ${totalHours}h Est. Workload)`
+          : `👁️ Live Preview (${rows.length} Deliverables Detected · ⏱️ ${totalHours}h Est. Workload)`;
+      }
 
       if (thead) thead.innerHTML = `<tr><th>Task Title</th><th>Client</th><th>Assignee</th><th>Stage</th><th>Priority</th><th>Due Date</th>${isCleaned ? '<th>AI Optimizations</th>' : ''}</tr>`;
       if (tbody) {
         tbody.innerHTML = rows.slice(0, 6).map(r => `
           <tr>
             <td><strong>${escapeHTML(r.title)}</strong></td>
-            <td>${escapeHTML(r.client)}</td>
+            <td><span class="badge badge-purple" style="font-size:0.7rem;">${escapeHTML(r.client)}</span></td>
             <td>${escapeHTML(r.assignee || 'Unassigned')}</td>
             <td><span class="status-badge status-open">${escapeHTML(r.stage)}</span></td>
             <td>${escapeHTML(r.priority)}</td>
             <td><code>${escapeHTML(r.dueDate || 'N/A')}</code></td>
             ${isCleaned ? `<td><span style="font-size:0.68rem; color:#10b981; font-weight:700;">${(r._changes && r._changes.length > 0) ? `✨ ${r._changes.length} field(s) normalized` : '✅ Verified'}</span></td>` : ''}
           </tr>
-        `).join('') + (rows.length > 6 ? `<tr><td colspan="${isCleaned ? 7 : 6}" style="text-align:center; color:var(--text-muted);">...and ${rows.length - 6} more deliverables ready to import</td></tr>` : '');
+        `).join('') + (rows.length > 6 ? `<tr><td colspan="${isCleaned ? 7 : 6}" style="text-align:center; color:var(--text-muted); font-weight:600; padding:0.6rem;">...and ${rows.length - 6} more deliverables ready to import (${totalHours} total hours)</td></tr>` : '');
       }
       if (preview) preview.style.display = 'block';
     },
@@ -2237,6 +2443,39 @@ window.APP_MODULES.kanban = async function(container) {
     }
   };
 
+  // Global Escape key listener for all Production Hub modals
+  if (!window._gro10xKanbanEscapeBound) {
+    window._gro10xKanbanEscapeBound = true;
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        const importModal = document.getElementById('kanbanImportModal');
+        if (importModal && (importModal.classList.contains('active') || importModal.style.display === 'flex')) {
+          window.KANBAN_MODULE.closeImportModal();
+          return;
+        }
+        const spaceModal = document.getElementById('kanbanSpaceModal');
+        if (spaceModal && spaceModal.classList.contains('active')) {
+          window.KANBAN_MODULE.closeSpaceModal();
+          return;
+        }
+        const stageModal = document.getElementById('kanbanStageEditorModal');
+        if (stageModal && stageModal.classList.contains('active')) {
+          window.KANBAN_MODULE.closeStageEditor();
+          return;
+        }
+        const taskModal = document.getElementById('newTaskModalOverlay');
+        if (taskModal && taskModal.classList.contains('active')) {
+          window.KANBAN_MODULE.closeNewTaskModal();
+          return;
+        }
+        const drawerBackdrop = document.getElementById('taskDrawerBackdrop');
+        if (drawerBackdrop && drawerBackdrop.classList.contains('active')) {
+          window.KANBAN_MODULE.closeDrawer();
+          return;
+        }
+      }
+    });
+  }
   await loadData();
 
   if (window.KANBAN_MODULE && window.KANBAN_MODULE.populateFilterDropdowns) {

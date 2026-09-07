@@ -1,5 +1,161 @@
 {
-  "clients": [],
+  "clients": [
+    {
+      "id": "CLI-MTLTKLN8-525533",
+      "name": "Apex Footwear Limited",
+      "contactPerson": "Sabbir Rahman",
+      "email": "partners@apexfootwear.com",
+      "phone": "+8801700998877",
+      "whatsapp": "+8801700998877",
+      "status": "Active Retainer",
+      "category": "Fashion & Retail",
+      "totalSpent": "৳450000",
+      "activeCampaigns": [
+        {
+          "id": "CAMP-001",
+          "name": "Autumn 2026 Collection"
+        },
+        {
+          "id": "CAMP-002",
+          "name": "Moochie Brand Relaunch"
+        }
+      ],
+      "pocs": [
+        {
+          "name": "Sabbir Rahman",
+          "role": "Brand Director",
+          "phone": "+8801700998877",
+          "isPrimary": true
+        },
+        {
+          "name": "Zaima Noor",
+          "role": "Digital Marketing Lead",
+          "phone": "+8801700998878",
+          "isPrimary": false
+        }
+      ]
+    },
+    {
+      "id": "CLI-CHILLOX-001",
+      "name": "Chillox Bangladesh",
+      "contactPerson": "Arman Hossain",
+      "email": "arman@chillox.bd",
+      "phone": "+8801711223344",
+      "whatsapp": "+8801711223344",
+      "status": "Active Retainer",
+      "category": "Food & Beverage",
+      "totalSpent": "৳720000",
+      "activeCampaigns": [
+        {
+          "id": "CAMP-CHL-01",
+          "name": "Smash Burger Viral Launch"
+        },
+        {
+          "id": "CAMP-CHL-02",
+          "name": "Store Opening Rollout"
+        }
+      ],
+      "pocs": [
+        {
+          "name": "Arman Hossain",
+          "role": "Head of Marketing",
+          "phone": "+8801711223344",
+          "isPrimary": true
+        },
+        {
+          "name": "Nafis Iqbal",
+          "role": "Social Lead",
+          "phone": "+8801711223345",
+          "isPrimary": false
+        }
+      ]
+    },
+    {
+      "id": "CLI-AURA-002",
+      "name": "Aura Skincare Ltd",
+      "contactPerson": "Tania Ahmed",
+      "email": "tania@auraskin.com",
+      "phone": "+8801911998877",
+      "whatsapp": "+8801911998877",
+      "status": "Onboarding",
+      "category": "Health & Beauty",
+      "totalSpent": "৳180000",
+      "activeCampaigns": [
+        {
+          "id": "CAMP-AUR-01",
+          "name": "Glow Serum D2C Launch"
+        }
+      ],
+      "pocs": [
+        {
+          "name": "Tania Ahmed",
+          "role": "Founder & CEO",
+          "phone": "+8801911998877",
+          "isPrimary": true
+        }
+      ]
+    },
+    {
+      "id": "CLI-UCB-003",
+      "name": "United Commercial Bank (UCB)",
+      "contactPerson": "Zahin Khandaker",
+      "email": "zahin.digital@ucb.com.bd",
+      "phone": "+8801708459008",
+      "whatsapp": "+8801708459008",
+      "status": "Active Retainer",
+      "category": "Banking & Fintech",
+      "totalSpent": "৳1250000",
+      "activeCampaigns": [
+        {
+          "id": "CAMP-UCB-01",
+          "name": "Upay AI Chatbot Integration"
+        },
+        {
+          "id": "CAMP-UCB-02",
+          "name": "Retail Banking Ad Suite"
+        }
+      ],
+      "pocs": [
+        {
+          "name": "Zahin Khandaker",
+          "role": "VP Digital Banking",
+          "phone": "+8801708459008",
+          "isPrimary": true
+        },
+        {
+          "name": "Farhana Kabir",
+          "role": "Corporate Comms Manager",
+          "phone": "+8801708459009",
+          "isPrimary": false
+        }
+      ]
+    },
+    {
+      "id": "CLI-SHOPWAY-004",
+      "name": "ShopWay Supermart",
+      "contactPerson": "Robert Paul",
+      "email": "ops@shopway.bd",
+      "phone": "+8801812345678",
+      "whatsapp": "+8801812345678",
+      "status": "Project-Based",
+      "category": "E-Commerce & Retail",
+      "totalSpent": "৳320000",
+      "activeCampaigns": [
+        {
+          "id": "CAMP-SHP-01",
+          "name": "Automated Catalog Sync"
+        }
+      ],
+      "pocs": [
+        {
+          "name": "Robert Paul",
+          "role": "Operations Lead",
+          "phone": "+8801812345678",
+          "isPrimary": true
+        }
+      ]
+    }
+  ],
   "services": [
     {
       "id": "SRV-001",

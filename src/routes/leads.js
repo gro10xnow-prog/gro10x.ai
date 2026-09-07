@@ -9,6 +9,7 @@ const { processAutomationEvent } = require('../services/automation');
 const { sendTelegramNotification } = require('../services/bot');
 const { sendClientOnboardingEmail, sendLeadConfirmationEmail } = require('../services/resend');
 const cache = require('../services/cache');
+const { verifyToken } = require('../services/jwt');
 
 // Rate limiter for public lead submissions (10 submissions per 15 min per IP)
 const leadSubmitLimiter = rateLimit({
@@ -16,7 +17,12 @@ const leadSubmitLimiter = rateLimit({
   max: 10,
   standardHeaders: true,
   legacyHeaders: false,
-  skip: (req) => process.env.NODE_ENV === 'test',
+  skip: (req) => {
+    if (process.env.NODE_ENV === 'test') return true;
+    const auth = req.headers.authorization;
+    if (auth && auth.startsWith('Bearer ')) return true;
+    return false;
+  },
   message: { error: 'Too many submissions from this IP. Please try again later or contact us directly at +880 1711-019550.' }
 });
 
@@ -74,6 +80,19 @@ function calculateLeadScore(lead) {
   return Math.max(1, Math.min(100, score)); // Clamp between 1 and 100
 }
 
+function normalizeStage(stage) {
+  if (!stage) return 'New Inquiry';
+  const s = String(stage).trim().toLowerCase();
+  if (['new', 'new inquiry', 'inquiry', 'pending'].includes(s)) return 'New Inquiry';
+  if (['contacted', 'reached_out'].includes(s)) return 'Contacted';
+  if (['proposal', 'proposal sent', 'proposal_sent', 'pitched'].includes(s)) return 'Proposal Sent';
+  if (['meeting', 'meeting scheduled', 'meeting_scheduled', 'call'].includes(s)) return 'Meeting Scheduled';
+  if (['won', 'won / closed', 'closed', 'won_closed', 'converted'].includes(s)) return 'Won / Closed';
+  if (['lost', 'rejected'].includes(s)) return 'Lost';
+  if (['spam', 'junk'].includes(s)) return 'Spam';
+  return stage;
+}
+
 // GET all leads (Internal Team/Admin, Supports ?limit=, ?page=)
 router.get('/', requireAuth, async (req, res) => {
   try {
@@ -90,7 +109,13 @@ router.get('/', requireAuth, async (req, res) => {
     if (isSupabaseConfigured()) {
       const { data, error } = await supabase.from('leads').select('*').order('created_at', { ascending: false }).range(offset, offset + limit - 1);
       if (!error) {
-        const leads = (data || []).map(l => ({ ...l, score: calculateLeadScore(l) }));
+        const leads = (data || []).map(l => ({
+          ...l,
+          stage: normalizeStage(l.stage || l.status),
+          company: l.company || l.name || 'Inquiring Brand',
+          contact_person: l.contact_person || l.name || 'Direct Contact',
+          score: calculateLeadScore(l)
+        }));
         cache.set(cacheKey, leads, 60000);
         return res.json(leads);
       }
@@ -102,8 +127,17 @@ router.get('/', requireAuth, async (req, res) => {
   }
 });
 
-// POST Public Lead Capture (Chat widget, newsletter, landing page form)
+// POST Lead Capture (Supports Public Form AND Authenticated Internal Admin Entry)
 router.post('/', leadSubmitLimiter, async (req, res) => {
+  // Check if requester is authenticated admin/team member
+  let isAuthenticatedAdmin = false;
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const token = authHeader.split(' ')[1];
+    const decoded = verifyToken(token);
+    if (decoded) isAuthenticatedAdmin = true;
+  }
+
   // Honeypot anti-spam check (if automated bot fills hidden field, silently drop)
   const honeypot = (req.body.website_url || req.body.hp_field || req.body.bot_check || '').trim();
   if (honeypot) {
@@ -123,6 +157,7 @@ router.post('/', leadSubmitLimiter, async (req, res) => {
     });
   }
 
+  // Deduplication check for public visitors (authenticated admins can enter multiple leads for repeat campaigns)
   if (isSupabaseConfigured()) {
     if (email || phone) {
       let query = supabase.from('leads').select('id');
@@ -135,7 +170,7 @@ router.post('/', leadSubmitLimiter, async (req, res) => {
       }
       
       const { data: existing } = await query;
-      if (existing && existing.length > 0) {
+      if (!isAuthenticatedAdmin && existing && existing.length > 0) {
         return res.status(200).json({
           success: true,
           isDuplicate: true,
@@ -146,19 +181,20 @@ router.post('/', leadSubmitLimiter, async (req, res) => {
     }
   }
 
+  const startingStage = req.body.stage || 'New Inquiry';
   const newLead = {
     id: await nextLeadId(),
-    stage: 'New Inquiry',
+    stage: startingStage,
     created_at: new Date().toISOString(),
     company: company,
     contact_person: contactPerson,
     email,
     phone,
     whatsapp: req.body.whatsapp || phone,
-    source: req.body.source || 'Website Widget',
+    source: req.body.source || (isAuthenticatedAdmin ? 'Manual Entry' : 'Website Widget'),
     category: req.body.category || 'General',
     service: req.body.service || req.body.serviceTitle || 'General',
-    value: req.body.value || '',
+    value: req.body.value || req.body.budget || '',
     notes: req.body.notes || '',
     utm_source: req.body.utm_source || '',
     utm_medium: req.body.utm_medium || '',
@@ -170,16 +206,22 @@ router.post('/', leadSubmitLimiter, async (req, res) => {
   const leadRow = {
     id: newLead.id,
     name: contactPerson || company || 'Prospective Client',
+    company: company || 'Prospective Client',
+    contact_person: contactPerson,
     email: newLead.email,
     phone: newLead.phone,
     service_interest: req.body.service_interest || newLead.service,
     source: newLead.source,
-    status: 'new',
-    currency: req.body.currency || 'USD',
-    budget: req.body.budget || null,
-    value: Number(newLead.value) || 0,
+    stage: startingStage,
+    status: startingStage === 'Won / Closed' ? 'won' : (startingStage === 'Lost' ? 'lost' : 'new'),
+    currency: req.body.currency || 'BDT',
+    budget: req.body.budget || req.body.value || null,
+    value: parseFloat(String(newLead.value || '0').replace(/[^0-9.]/g, '')) || 0,
     score: newLead.score || 50,
     notes: newLead.notes || null,
+    utm_source: newLead.utm_source || null,
+    utm_medium: newLead.utm_medium || null,
+    utm_campaign: newLead.utm_campaign || null,
     created_at: newLead.created_at,
     updated_at: newLead.created_at
   };

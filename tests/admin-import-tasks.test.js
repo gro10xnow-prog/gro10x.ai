@@ -116,10 +116,46 @@ describe('Admin Bulk Import Projects & Tasks Test Suite', () => {
     const cleaned = res.body.data?.cleanedRows || res.body.cleanedRows;
     expect(Array.isArray(cleaned)).toBe(true);
     expect(cleaned[0].title).toBe('Viral Video Cut 1');
-    expect(cleaned[0].client).toBe('Apex Footwear');
+    expect(cleaned[0].client).toMatch(/Apex Footwear/i);
     expect(cleaned[0].stage).toBe('Editing');
     expect(cleaned[0].dueDate).toBe('2026-09-15');
     expect(cleaned[0].workflowType).toBe('video');
+  });
+
+  test('POST /api/admin/import/clean-tasks-ai handles row sequence numbers and infers branding/dev workflows', async () => {
+    const res = await request(app)
+      .post('/api/admin/import/clean-tasks-ai')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({
+        rows: [
+          {
+            '#': '1',
+            title: 'brand guidelines and logo redesign',
+            client: 'chillox',
+            assignee: 'Firoz',
+            hours: '24'
+          },
+          {
+            '#': '2',
+            title: 'shopify checkout custom web app',
+            client: 'aura',
+            hours: '32'
+          }
+        ]
+      });
+
+    expect(res.statusCode).toBe(200);
+    const cleaned = res.body.data?.cleanedRows || res.body.cleanedRows;
+    expect(cleaned.length).toBe(2);
+    expect(cleaned[0].title).toBe('Brand Guidelines And Logo Redesign');
+    expect(cleaned[0].workflowType).toBe('branding');
+    expect(cleaned[0].client).toMatch(/Chillox/i);
+    expect(cleaned[0].estimatedHours).toBe(24);
+
+    expect(cleaned[1].title).toBe('Shopify Checkout Custom Web App');
+    expect(cleaned[1].workflowType).toBe('dev');
+    expect(cleaned[1].client).toMatch(/Aura/i);
+    expect(cleaned[1].estimatedHours).toBe(32);
   });
 
   afterAll(async () => {

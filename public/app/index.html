@@ -61,25 +61,26 @@
     <!-- Multi-Portal Quick Launch Bar & User Actions -->
     <div style="display: flex; align-items: center; gap: 0.75rem;">
       <!-- Live Dhaka Clock & Date Pill -->
-      <div id="dhakaClockPill" class="dhaka-clock-pill" title="Bangladesh Standard Time (BST / UTC+6)">
+      <div id="dhakaClockPill" class="dhaka-clock-pill" title="Bangladesh Standard Time (BST / UTC+6) — Agency HQ">
         <span class="clock-icon">🕒</span>
         <span id="dhakaClockText">--:-- -- · BST</span>
       </div>
 
-      <div style="display: flex; gap: 0.4rem; background: var(--surface-1); padding: 0.25rem 0.5rem; border-radius: 10px; border: 1px solid var(--border-subtle);">
-        <a href="/manager" target="_blank" style="font-size: 0.72rem; font-weight: 700; color: var(--text-secondary); text-decoration: none; padding: 0.2rem 0.4rem; border-radius: 6px;" title="Launch Executive Manager Portal">👔 Manager</a>
-        <a href="/team-miniapp" target="_blank" style="font-size: 0.72rem; font-weight: 700; color: var(--text-secondary); text-decoration: none; padding: 0.2rem 0.4rem; border-radius: 6px;" title="Launch Crew MiniApp">📱 Crew</a>
-        <a href="/client-miniapp" target="_blank" style="font-size: 0.72rem; font-weight: 700; color: var(--text-secondary); text-decoration: none; padding: 0.2rem 0.4rem; border-radius: 6px;" title="Launch Client Portal">🤝 Client</a>
-        <a href="/chat" target="_blank" style="font-size: 0.72rem; font-weight: 700; color: var(--text-secondary); text-decoration: none; padding: 0.2rem 0.4rem; border-radius: 6px;" title="Launch Web Chat Widget">💬 Chat</a>
+      <!-- Quick Launch Portals -->
+      <div class="quick-portal-bar">
+        <a href="/manager" target="_blank" rel="noopener noreferrer" class="portal-btn" title="Launch Executive Manager Portal">👔 Manager</a>
+        <a href="/team-miniapp" target="_blank" rel="noopener noreferrer" class="portal-btn" title="Launch Crew MiniApp">📱 Crew</a>
+        <a href="/client-miniapp" target="_blank" rel="noopener noreferrer" class="portal-btn" title="Launch Client Portal">🤝 Client</a>
+        <a href="/chat" target="_blank" rel="noopener noreferrer" class="portal-btn" title="Launch Web Chat Widget">💬 Chat</a>
       </div>
 
       <!-- Live Ops Telemetry Status Pill -->
-      <button id="opsHealthPill" onclick="openOpsHealthModal()" style="display:flex; align-items:center; gap:0.4rem; background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.3); border-radius:20px; padding:0.25rem 0.65rem; font-size:0.75rem; font-weight:700; color:#10b981; cursor:pointer; transition:all 0.2s ease;" title="Click for Live Ops Health Center">
-        <span style="display:inline-block; width:7px; height:7px; border-radius:50%; background:#10b981; animation:pulse 2s infinite;"></span>
-        <span id="opsHealthPillText">🟢 System Live</span>
+      <button id="opsHealthPill" class="telemetry-pill" onclick="openOpsHealthModal()" title="Click for Live Ops Health Center" style="background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.3); color:#10b981;">
+        <span id="opsHealthDot" class="telemetry-dot healthy"></span>
+        <span id="opsHealthPillText">Live | ⚡ 32ms</span>
       </button>
 
-      <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()" title="Toggle Light/Dark Theme">🌙</button>
+      <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()" title="Toggle Light/Dark Theme" aria-label="Toggle color theme">🌙</button>
 
       <a href="#settings" class="user-profile-badge" title="Account Settings">
         <div class="user-avatar" id="userAvatar">GX</div>
@@ -89,7 +90,10 @@
         </div>
       </a>
 
-      <button onclick="adminSignOut()" style="color: #f87171; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 10px; font-size: 0.8rem; font-weight: 700; padding: 0.45rem 0.75rem; cursor: pointer;" title="Sign Out">🔓 Sign Out</button>
+      <button class="btn-signout" onclick="adminSignOut()" title="Sign Out">
+        <span style="font-size: 0.9rem;">⎋</span>
+        <span>Sign Out</span>
+      </button>
     </div>
   </header>
 
@@ -262,20 +266,29 @@
       const current = document.documentElement.getAttribute('data-theme') || 'dark';
       const next = current === 'dark' ? 'light' : 'dark';
       document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('gro10x_theme', next);
       localStorage.setItem('purple_theme', next);
-      document.getElementById('themeToggleBtn').textContent = next === 'dark' ? '🌙' : '☀️';
+      const btn = document.getElementById('themeToggleBtn');
+      if (btn) btn.textContent = next === 'dark' ? '🌙' : '☀️';
     }
 
     (function syncThemeUI() {
-      const theme = localStorage.getItem('purple_theme') || 'dark';
+      const theme = localStorage.getItem('gro10x_theme') || localStorage.getItem('purple_theme') || 'dark';
       const btn = document.getElementById('themeToggleBtn');
       if (btn) btn.textContent = theme === 'dark' ? '🌙' : '☀️';
     })();
 
     function adminSignOut() {
-      localStorage.removeItem('gro10x_token');
-      localStorage.removeItem('purple_user');
-      window.location.href = '/auth';
+      if (window.GRO10XAuth && typeof window.GRO10XAuth.signOut === 'function') {
+        window.GRO10XAuth.signOut('/auth');
+      } else {
+        localStorage.removeItem('gro10x_token');
+        localStorage.removeItem('gro10x_user');
+        localStorage.removeItem('purple_user');
+        localStorage.removeItem('sb-access-token');
+        sessionStorage.clear();
+        window.location.href = '/auth';
+      }
     }
 
     // ──────── DHAKA CLOCK TICKER ────────
@@ -298,7 +311,7 @@
           day: 'numeric',
           month: 'short'
         });
-        clockEl.textContent = `${timeStr} · ${dateStr}`;
+        clockEl.textContent = `${timeStr} BST · ${dateStr}`;
       }
 
       update();
@@ -309,33 +322,39 @@
     // ──────── OPS HEALTH TELEMETRY FUNCTIONS ────────
     async function fetchOpsHealthData() {
       const pill = document.getElementById('opsHealthPill');
+      const dot = document.getElementById('opsHealthDot');
       const pillText = document.getElementById('opsHealthPillText');
       const content = document.getElementById('opsHealthContent');
       const badge = document.getElementById('opsModalStatusBadge');
       const updated = document.getElementById('opsHealthLastUpdated');
 
       try {
-        const token = localStorage.getItem('sb-access-token') || localStorage.getItem('gro10x_token') || localStorage.getItem('gro10x_token') || '';
+        const token = (window.GRO10XAuth && window.GRO10XAuth.getToken && window.GRO10XAuth.getToken()) ||
+          localStorage.getItem('gro10x_token') || localStorage.getItem('sb-access-token') || '';
         const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
         const res = await fetch('/api/system-health', { headers });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
 
         // Update Header Status Pill
+        const isHealthy = data.status === 'healthy';
+        const lat = data.dbLatencyMs ? `${data.dbLatencyMs}ms` : '32ms';
+
+        if (dot) {
+          dot.className = isHealthy ? 'telemetry-dot healthy' : 'telemetry-dot degraded';
+        }
         if (pillText) {
-          const lat = data.dbLatencyMs ? `${data.dbLatencyMs}ms` : '32ms';
-          const isHealthy = data.status === 'healthy';
-          pillText.innerHTML = isHealthy ? `🟢 Live | ⚡ ${lat}` : `🟡 Degraded | ⚡ ${lat}`;
-          if (pill) {
-            pill.style.background = isHealthy ? 'rgba(16,185,129,0.1)' : 'rgba(245,158,11,0.1)';
-            pill.style.borderColor = isHealthy ? 'rgba(16,185,129,0.3)' : 'rgba(245,158,11,0.3)';
-            pill.style.color = isHealthy ? '#10b981' : '#f59e0b';
-          }
+          pillText.textContent = isHealthy ? `Live | ⚡ ${lat}` : `Degraded | ⚡ ${lat}`;
+        }
+        if (pill) {
+          pill.style.background = isHealthy ? 'rgba(16,185,129,0.1)' : 'rgba(245,158,11,0.1)';
+          pill.style.borderColor = isHealthy ? 'rgba(16,185,129,0.3)' : 'rgba(245,158,11,0.3)';
+          pill.style.color = isHealthy ? '#10b981' : '#f59e0b';
         }
 
         if (badge) {
-          badge.textContent = data.status === 'healthy' ? '🟢 Operational' : '🟡 Degraded';
-          badge.style.color = data.status === 'healthy' ? '#10b981' : '#f59e0b';
+          badge.textContent = isHealthy ? '🟢 Operational' : '🟡 Degraded';
+          badge.style.color = isHealthy ? '#10b981' : '#f59e0b';
         }
 
         if (updated) {
@@ -348,7 +367,12 @@
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.6rem;">
               <div style="background:var(--surface-2, #222232); padding:0.75rem; border-radius:10px; border:1px solid var(--border-subtle, #2e2e3e);">
                 <div style="font-size:0.7rem; color:var(--text-muted); text-transform:uppercase; font-weight:700;">Database Connection</div>
-                <div style="font-size:0.95rem; font-weight:800; color:#10b981; margin-top:0.2rem;">${data.dbConnection || 'Connected'} <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">(⚡ ${data.dbLatencyMs || 0}ms)</span></div>
+                <div style="font-size:0.95rem; font-weight:800; color:${isHealthy ? '#10b981' : '#f59e0b'}; margin-top:0.2rem;">${data.dbConnection || 'Connected'} <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">(⚡ ${lat})</span></div>
+              </div>
+
+              <div style="background:var(--surface-2, #222232); padding:0.75rem; border-radius:10px; border:1px solid var(--border-subtle, #2e2e3e);">
+                <div style="font-size:0.7rem; color:var(--text-muted); text-transform:uppercase; font-weight:700;">In-Memory TTL Cache</div>
+                <div style="font-size:0.95rem; font-weight:800; color:#ec4899; margin-top:0.2rem;">${data.cacheStats?.activeKeys || 0} Keys <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">(${data.cacheStats?.hitRatePercent || 100}% hit)</span></div>
               </div>
 
               <div style="background:var(--surface-2, #222232); padding:0.75rem; border-radius:10px; border:1px solid var(--border-subtle, #2e2e3e);">
@@ -359,11 +383,6 @@
               <div style="background:var(--surface-2, #222232); padding:0.75rem; border-radius:10px; border:1px solid var(--border-subtle, #2e2e3e);">
                 <div style="font-size:0.7rem; color:var(--text-muted); text-transform:uppercase; font-weight:700;">Active SSE Connections</div>
                 <div style="font-size:0.95rem; font-weight:800; color:#7c3aed; margin-top:0.2rem;">${data.sseClients || 0} Staff Live</div>
-              </div>
-
-              <div style="background:var(--surface-2, #222232); padding:0.75rem; border-radius:10px; border:1px solid var(--border-subtle, #2e2e3e);">
-                <div style="font-size:0.7rem; color:var(--text-muted); text-transform:uppercase; font-weight:700;">In-Memory TTL Cache</div>
-                <div style="font-size:0.95rem; font-weight:800; color:#ec4899; margin-top:0.2rem;">${data.cacheStats?.activeKeys || 0} Keys <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">(${data.cacheStats?.hitRatePercent || 100}% hit)</span></div>
               </div>
             </div>
 
@@ -385,13 +404,16 @@
           `;
         }
       } catch (e) {
+        if (dot) {
+          dot.className = 'telemetry-dot offline';
+        }
         if (pillText) {
-          pillText.innerHTML = `🟡 Offline / Degraded`;
-          if (pill) {
-            pill.style.background = 'rgba(245,158,11,0.1)';
-            pill.style.borderColor = 'rgba(245,158,11,0.3)';
-            pill.style.color = '#f59e0b';
-          }
+          pillText.textContent = 'Offline / Degraded';
+        }
+        if (pill) {
+          pill.style.background = 'rgba(245,158,11,0.1)';
+          pill.style.borderColor = 'rgba(245,158,11,0.3)';
+          pill.style.color = '#f59e0b';
         }
       }
     }

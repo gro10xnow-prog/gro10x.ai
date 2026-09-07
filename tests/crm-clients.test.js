@@ -69,11 +69,42 @@ describe('CRM Clients API Integration Tests', () => {
         category: 'Healthcare',
         contactPerson: 'Mr. Khan',
         email: 'khan@square.com',
-        phone: '01711223344'
+        phone: '01711223344',
+        totalSpent: 250000
       });
     expect(res.statusCode).toBe(200);
     expect(res.body.success).toBe(true);
     expect(res.body.client.name).toBe('Square Pharmaceuticals');
+  });
+
+  test('POST /api/clients with same client name performs idempotent merge without duplicate', async () => {
+    const res = await request(app)
+      .post('/api/clients')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({
+        name: 'Square Pharmaceuticals',
+        category: 'Healthcare & Biotech',
+        contactPerson: 'Mr. Khan',
+        email: 'khan.direct@square.com',
+        phone: '01711223344',
+        pocs: [
+          { name: 'Dr. Rafiq', role: 'Head of Comms', phone: '01711223355' }
+        ]
+      });
+    expect(res.statusCode).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.isExisting).toBe(true);
+    expect(res.body.client.name).toBe('Square Pharmaceuticals');
+  });
+
+  test('POST /api/clients/cleanup/deduplicate consolidates duplicate accounts', async () => {
+    const res = await request(app)
+      .post('/api/clients/cleanup/deduplicate')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({});
+    expect(res.statusCode).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body).toHaveProperty('consolidatedCount');
   });
 
   afterAll(async () => {

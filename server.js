@@ -381,6 +381,10 @@ app.get(['/onboarding', '/team-onboarding'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public/onboarding.html'));
 });
 
+app.get(['/sprint', '/sprint.html'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/sprint.html'));
+});
+
 app.get(['/docs', '/overview'], (req, res) => {
   res.redirect('/');
 });

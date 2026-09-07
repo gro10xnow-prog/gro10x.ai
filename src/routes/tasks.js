@@ -26,16 +26,17 @@ const { sendTelegramNotification } = require('../services/bot');
 
 function mapTask(t) {
   if (!t) return null;
+  const resolvedAssignee = t.assignee || t.assignee_name || t.assigned_to;
   const assigneesArr = Array.isArray(t.assignees) && t.assignees.length > 0 
     ? t.assignees 
-    : (t.assignee ? [t.assignee] : ['Unassigned']);
+    : (resolvedAssignee ? [resolvedAssignee] : ['Unassigned']);
 
   return {
     id: t.id,
     title: t.title,
-    client: t.client || t.company || 'Agency',
-    company: t.company || t.client || 'Agency',
-    space: t.space || t.client || 'Internal Agency',
+    client: t.client || t.client_name || t.company || 'Agency',
+    company: t.company || t.client || t.client_name || 'Agency',
+    space: t.space || t.client || t.client_name || 'Internal Agency',
     clientId: t.client_id || t.clientId,
     projectId: t.project_id || t.projectId,
     parentTaskId: t.parent_task_id || t.parentTaskId,
@@ -44,7 +45,7 @@ function mapTask(t) {
     customStatus: t.custom_status || t.stage || 'To Do',
     statusCategory: t.status_category || 'open',
     priority: t.priority || 'Medium',
-    assignee: t.assignee || assigneesArr[0],
+    assignee: resolvedAssignee || assigneesArr[0],
     assignees: assigneesArr,
     assigneeId: t.assignee_id || t.assigneeId,
     dueDate: t.due_date || t.dueDate,
@@ -208,26 +209,34 @@ router.post('/', requireAuth, async (req, res) => {
       }
     }
 
+    const rawTitle = (req.body.title || '').trim();
+    if (!rawTitle) {
+      return res.status(400).json({ error: 'Task title is required' });
+    }
+
     const rawClientId = req.body.client_id || req.body.clientId;
-    const isClientUUID = rawClientId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(rawClientId);
-    const clientUuid = isClientUUID ? rawClientId : null;
+    const clientUuid = (rawClientId && typeof rawClientId === 'string' && rawClientId.trim() !== '' && rawClientId !== 'null' && rawClientId !== 'undefined') ? rawClientId.trim() : null;
 
     // Default due date: 3 days in future if omitted
     const defaultDueDate = new Date(Date.now() + 3 * 86400000).toISOString().split('T')[0];
     const dueDateVal = (req.body.due_date && req.body.due_date.trim()) ? req.body.due_date.trim() : (req.body.dueDate && req.body.dueDate.trim()) ? req.body.dueDate.trim() : defaultDueDate;
 
+    const assigneeVal = req.body.assignee || 'Unassigned';
     const fullPayload = {
       id: newId,
-      title: req.body.title || 'Untitled Task',
+      title: rawTitle,
       client: req.body.client || req.body.company || 'General Agency',
+      client_name: req.body.client || req.body.company || 'General Agency',
       client_id: clientUuid,
       stage: req.body.stage || 'Briefing',
       priority: req.body.priority || 'Medium',
-      assignee: req.body.assignee || 'Unassigned',
+      assigned_to: assigneeVal,
+      assignee_name: assigneeVal,
       assignee_id: assigneeUuid,
       due_date: dueDateVal,
       department: req.body.department || null,
       category: req.body.category || req.body.workflow_type || null,
+      workflow_type: req.body.workflow_type || req.body.category || 'video',
       description: req.body.description || '',
       estimated_hours: Number(req.body.estimated_hours || req.body.estimatedHours) || 8,
       created_at: new Date().toISOString(),
@@ -253,9 +262,11 @@ router.post('/', requireAuth, async (req, res) => {
             const corePayload = {
               title: fullPayload.title,
               client: fullPayload.client,
+              client_name: fullPayload.client,
               stage: fullPayload.stage,
               priority: fullPayload.priority,
-              assignee: fullPayload.assignee,
+              assigned_to: assigneeVal,
+              assignee_name: assigneeVal,
               due_date: dueDateVal,
               created_at: new Date().toISOString(),
               updated_at: new Date().toISOString()
@@ -443,10 +454,12 @@ router.patch(['/:id', '/:id/stage'], requireAuth, async (req, res) => {
     const newStage = stage;
 
     let data = null;
+    let existing = null;
     if (supabase && isSupabaseConfigured()) {
       try {
         // Fetch existing task to check blockers
-        const { data: existing } = await supabase.from('tasks').select('*').eq('id', id).maybeSingle();
+        const { data: exTask } = await supabase.from('tasks').select('*').eq('id', id).maybeSingle();
+        existing = exTask;
         if (existing && existing.blocked_by) {
           const { data: blocker } = await supabase.from('tasks').select('stage').eq('id', existing.blocked_by).maybeSingle();
           if (blocker && blocker.stage !== 'Approved') {

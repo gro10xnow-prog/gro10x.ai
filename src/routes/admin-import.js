@@ -29,13 +29,17 @@ router.post('/clients', requireAuth, requireAdmin, asyncHandler(async (req, res)
   }
 
   let startIdNum = 1;
+  let existingClients = [];
   if (isSupabaseConfigured()) {
-    const { data: countData } = await supabase.from('clients').select('id');
-    startIdNum = (countData?.length || 0) + 1;
+    const { data: countData } = await supabase.from('clients').select('id, name, email, phone, pocs, total_spent');
+    existingClients = countData || [];
+    startIdNum = existingClients.length + 1;
   }
 
   const validPayloads = [];
   const errors = [];
+  let addedCount = 0;
+  let updatedCount = 0;
 
   rows.forEach((row, idx) => {
     const name = row.name || row.company || row['company name'] || row.client || '';
@@ -44,6 +48,7 @@ router.post('/clients', requireAuth, requireAdmin, asyncHandler(async (req, res)
       return;
     }
 
+    const cleanName = String(name).trim();
     const contactPerson = row.contact || row.contact_person || row.contactPerson || row['contact person'] || '';
     const phone = row.phone || row.whatsapp || row.mobile || row['phone number'] || '';
     const email = row.email || row['contact email'] || row.mail || '';
@@ -52,19 +57,42 @@ router.post('/clients', requireAuth, requireAdmin, asyncHandler(async (req, res)
     const rawBudget = row.budget || row.retainerValue || row.totalSpent || row.total_spent || 0;
     const parsedBudget = typeof rawBudget === 'number' ? rawBudget : Number(String(rawBudget).replace(/[^0-9.]/g, '')) || 0;
 
-    const clientId = `CLI-${String(startIdNum + idx).padStart(4, '0')}`;
-    const pocList = (contactPerson || phone || email) ? [{
-      id: `poc_${Date.now()}_${idx}`,
-      name: contactPerson || name,
-      role: 'Primary POC',
-      phone: phone || '',
-      email: email || '',
-      isPrimary: true
-    }] : [];
+    // Check if client with identical name or contact already exists
+    const existing = existingClients.find(ec =>
+      (ec.name && ec.name.trim().toLowerCase() === cleanName.toLowerCase()) ||
+      (email && ec.email && ec.email.trim().toLowerCase() === email.trim().toLowerCase()) ||
+      (phone && ec.phone && ec.phone.trim() === phone.trim())
+    );
+
+    let clientId;
+    let existingPocs = [];
+
+    if (existing) {
+      clientId = existing.id;
+      existingPocs = Array.isArray(existing.pocs) ? [...existing.pocs] : [];
+      updatedCount++;
+    } else {
+      clientId = `CLI-${String(startIdNum + idx).padStart(4, '0')}`;
+      addedCount++;
+    }
+
+    if (contactPerson || phone || email) {
+      const pocExists = existingPocs.some(p => (p.name && contactPerson && p.name.toLowerCase() === contactPerson.toLowerCase()) || (p.phone && phone && p.phone === phone));
+      if (!pocExists) {
+        existingPocs.push({
+          id: `poc_${Date.now()}_${idx}`,
+          name: contactPerson || cleanName,
+          role: existing ? 'Authorized POC' : 'Primary POC',
+          phone: phone || '',
+          email: email || '',
+          isPrimary: existingPocs.length === 0
+        });
+      }
+    }
 
     validPayloads.push({
       id: clientId,
-      name: String(name).trim(),
+      name: cleanName,
       contact_person: contactPerson ? String(contactPerson).trim() : null,
       phone: phone ? String(phone).trim() : null,
       whatsapp: phone ? String(phone).trim() : null,
@@ -74,7 +102,7 @@ router.post('/clients', requireAuth, requireAdmin, asyncHandler(async (req, res)
       status: String(status).trim(),
       total_spent: parsedBudget ? `৳${parsedBudget.toLocaleString()}` : '$0',
       active_campaigns: [],
-      pocs: pocList,
+      pocs: existingPocs,
       created_at: new Date().toISOString()
     });
   });
@@ -102,8 +130,10 @@ router.post('/clients', requireAuth, requireAdmin, asyncHandler(async (req, res)
 
   return ok(res, {
     success: true,
-    addedCount: imported.length,
+    addedCount,
+    updatedCount,
     imported: imported.length,
+    count: imported.length,
     errorsCount: errors.length,
     errors: errors.length > 0 ? errors : undefined
   });
@@ -318,13 +348,24 @@ router.post('/tasks', requireAuth, requireAdmin, asyncHandler(async (req, res) =
     const rawUuid = require('crypto').randomUUID ? require('crypto').randomUUID() : String(Date.now());
     const taskId = row.id || `TSK-${rawUuid.split('-')[0].toUpperCase()}`;
 
+    const dept = row.department || row.dept || row['department'] || null;
+    const wf = String(row.workflowType || row.workflow_type || row['workflow type'] || row.category || 'video').toLowerCase();
+    const estHours = Number(row.estimatedHours || row.estimated_hours || row['estimated hours'] || row.hours || 8) || 8;
+
     const taskRow = {
       id: taskId,
       title: String(title).trim(),
       client: String(client).trim(),
+      client_name: String(client).trim(),
       stage: String(stage).trim(),
       priority: String(priority).trim(),
-      assignees: [resolvedAssigneeName],
+      assigned_to: resolvedAssigneeName,
+      assignee_name: resolvedAssigneeName,
+      department: dept ? String(dept).trim() : null,
+      category: wf,
+      workflow_type: wf,
+      estimated_hours: estHours,
+      description: String(description || '').trim(),
       due_date: dueDate ? String(dueDate).trim() : null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()

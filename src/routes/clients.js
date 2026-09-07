@@ -350,9 +350,80 @@ router.get('/:id', requireAuth, requireClientOwnership, async (req, res) => {
   res.json(mapClient(client));
 });
 
-// POST Create new client (Manager+ — heads, directors, admins)
+// POST Create new client (Manager+ — heads, directors, admins) with Idempotent Deduplication
 router.post('/', requireAuth, requireManager, async (req, res) => {
   const newClient = req.body;
+  const cleanName = (newClient.name || '').trim();
+  if (!cleanName) {
+    return fail(res, 400, 'Client name is required', 'MISSING_NAME');
+  }
+
+  const rawSpent = newClient.totalSpent !== undefined ? newClient.totalSpent : newClient.total_spent;
+  const parsedSpentNum = typeof rawSpent === 'number' ? rawSpent : parseFloat(String(rawSpent || 0).replace(/[^0-9.]/g, '')) || 0;
+  const formattedSpent = parsedSpentNum > 0 ? `৳${parsedSpentNum.toLocaleString()}` : (rawSpent && String(rawSpent).startsWith('৳') ? String(rawSpent) : '৳0');
+
+  // Check for existing client by exact or case-insensitive name match to prevent duplication
+  let existingClient = null;
+
+  if (isSupabaseConfigured()) {
+    try {
+      const { data: matched } = await supabase
+        .from('clients')
+        .select('*')
+        .ilike('name', cleanName)
+        .maybeSingle();
+      if (matched) existingClient = matched;
+    } catch (e) {}
+  } else {
+    const db = await readDB();
+    existingClient = (db.clients || []).find(c => (c.name || '').trim().toLowerCase() === cleanName.toLowerCase());
+  }
+
+  if (existingClient) {
+    // Merge POCs and update record rather than duplicating
+    const existingPocs = Array.isArray(existingClient.pocs) ? [...existingClient.pocs] : [];
+    const incomingPocs = Array.isArray(newClient.pocs) ? newClient.pocs : [];
+    
+    incomingPocs.forEach(inPoc => {
+      const exists = existingPocs.some(p => (p.name && inPoc.name && p.name.toLowerCase() === inPoc.name.toLowerCase()) || (p.phone && inPoc.phone && p.phone === inPoc.phone));
+      if (!exists && inPoc.name) existingPocs.push(inPoc);
+    });
+
+    const updatePayload = {
+      category: newClient.category || existingClient.category || 'General',
+      email: newClient.email || existingClient.email || '',
+      phone: newClient.phone || existingClient.phone || '',
+      whatsapp: newClient.whatsapp || newClient.phone || existingClient.whatsapp || '',
+      contact_person: newClient.contactPerson || existingClient.contact_person || '',
+      status: newClient.status || existingClient.status || 'Active Retainer',
+      pocs: existingPocs
+    };
+
+    if (parsedSpentNum > 0) {
+      updatePayload.total_spent = formattedSpent;
+    }
+
+    if (isSupabaseConfigured()) {
+      await supabase.from('clients').update(updatePayload).eq('id', existingClient.id);
+      broadcast('client_update', [{ id: existingClient.id, ...updatePayload }]);
+    }
+
+    const db = await readDB();
+    const idx = (db.clients || []).findIndex(c => c.id === existingClient.id);
+    if (idx !== -1) {
+      db.clients[idx] = { ...db.clients[idx], ...updatePayload, totalSpent: updatePayload.total_spent || db.clients[idx].totalSpent };
+      try { writeDB(db); } catch (e) {}
+      broadcast('client_update', db.clients);
+    }
+
+    return res.json({
+      success: true,
+      isExisting: true,
+      client: mapClient({ ...existingClient, ...updatePayload })
+    });
+  }
+
+  // Create brand new client record
   const uniqueSuffix = crypto.randomBytes(3).toString('hex').toUpperCase();
   const newId = newClient.id || `CLI-${Date.now().toString(36).toUpperCase()}-${uniqueSuffix}`;
   newClient.id = newId;
@@ -360,14 +431,14 @@ router.post('/', requireAuth, requireManager, async (req, res) => {
   if (isSupabaseConfigured()) {
     const payload = {
       id: newId,
-      name: newClient.name,
-      contact_person: newClient.contactPerson || '',
+      name: cleanName,
+      contact_person: newClient.contactPerson || (newClient.pocs && newClient.pocs[0]?.name) || '',
       email: newClient.email || '',
-      phone: newClient.phone || '',
-      whatsapp: newClient.whatsapp || '',
+      phone: newClient.phone || (newClient.pocs && newClient.pocs[0]?.phone) || '',
+      whatsapp: newClient.whatsapp || newClient.phone || '',
       status: newClient.status || 'Active Retainer',
       category: newClient.category || 'General',
-      total_spent: '৳0',
+      total_spent: formattedSpent,
       active_campaigns: newClient.activeCampaigns || [],
       pocs: newClient.pocs || []
     };
@@ -378,16 +449,64 @@ router.post('/', requireAuth, requireManager, async (req, res) => {
       const dbSnapshot = await readDB();
       const { processAutomationEvent } = require('../services/automation');
       await processAutomationEvent('client_onboarded', { client: payload }, dbSnapshot, writeDB, broadcast);
-      return res.json({ success: true, client: newClient });
+      return res.json({ success: true, client: mapClient(payload) });
     }
   }
 
   const db = await readDB();
-  newClient.totalSpent = '৳0';
+  newClient.totalSpent = formattedSpent;
+  db.clients = db.clients || [];
   db.clients.push(newClient);
   try { writeDB(db); } catch (e) { console.warn('Local writeDB skipped:', e.message); }
   broadcast('client_update', db.clients);
-  res.json({ success: true, client: newClient });
+  res.json({ success: true, client: mapClient(newClient) });
+});
+
+// POST Administrative Deduplication / Consolidation (/api/clients/cleanup/deduplicate)
+router.post('/cleanup/deduplicate', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    let clients = [];
+    if (isSupabaseConfigured()) {
+      const { data } = await supabase.from('clients').select('*').order('created_at', { ascending: true });
+      clients = data || [];
+    } else {
+      const db = await readDB();
+      clients = db.clients || [];
+    }
+
+    const groupsByName = {};
+    clients.forEach(c => {
+      const key = (c.name || '').trim().toLowerCase();
+      if (!groupsByName[key]) groupsByName[key] = [];
+      groupsByName[key].push(c);
+    });
+
+    let removedCount = 0;
+    const idsToDelete = [];
+
+    for (const [name, group] of Object.entries(groupsByName)) {
+      if (group.length > 1) {
+        // Keep first canonical record, schedule duplicates for deletion
+        const duplicates = group.slice(1);
+        duplicates.forEach(d => idsToDelete.push(d.id));
+        removedCount += duplicates.length;
+      }
+    }
+
+    if (idsToDelete.length > 0) {
+      if (isSupabaseConfigured()) {
+        await supabase.from('clients').delete().in('id', idsToDelete);
+      }
+      const db = await readDB();
+      db.clients = (db.clients || []).filter(c => !idsToDelete.includes(c.id));
+      try { writeDB(db); } catch (e) {}
+      broadcast('clients_update', { removedCount, deletedIds: idsToDelete });
+    }
+
+    return res.json({ success: true, consolidatedCount: removedCount, remainingAccounts: clients.length - removedCount });
+  } catch (err) {
+    return fail(res, 500, 'Deduplication failed: ' + err.message, 'DEDUP_ERROR');
+  }
 });
 
 // PUT Update client (Admin or matching client)

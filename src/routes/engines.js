@@ -16,11 +16,11 @@ const { readDB } = require('../services/db');
 
 // Engine Targets definition ($100k ARR target breakdown)
 const ENGINE_TARGETS = {
-  engine1: { id: 'engine1', name: 'Freelance & Enterprise AI Scale', target: 35000, share: '35%' },
-  engine2: { id: 'engine2', name: 'Dedicated Client Retainers', target: 25000, share: '25%' },
-  engine3: { id: 'engine3', name: 'Digital AI Products & Templates', target: 20000, share: '20%' },
-  engine4: { id: 'engine4', name: 'Affiliate & Partnership Ecosystem', target: 15000, share: '15%' },
-  engine5: { id: 'engine5', name: 'Studio & Micro Media Lab', target: 5000, share: '5%' }
+  engine1: { id: 'engine1', name: 'Micro-SaaS & Proprietary Software', target: 35000, share: '35%' },
+  engine2: { id: 'engine2', name: 'High-Intent Platform Sprints & Gigs', target: 25000, share: '25%' },
+  engine3: { id: 'engine3', name: 'Automated Digital Asset Stores & DigiVault', target: 20000, share: '20%' },
+  engine4: { id: 'engine4', name: 'Vertical AI Operating Systems Retainers', target: 15000, share: '15%' },
+  engine5: { id: 'engine5', name: 'Programmatic AI Video & Media Scale', target: 5000, share: '5%' }
 };
 
 /**
@@ -70,11 +70,11 @@ router.get('/summary', requireAuth, async (req, res) => {
 
       if (isPaid) {
         totalPaidRevenueUSD += amtUSD;
-        const tag = (inv.engine_tag || 'engine2').toLowerCase();
+        const tag = (inv.engine_tag || 'engine4').toLowerCase();
         if (engineTotals[tag] !== undefined) {
           engineTotals[tag] += amtUSD;
         } else {
-          engineTotals['engine2'] += amtUSD; // default retainers
+          engineTotals['engine4'] += amtUSD; // default retainers (Engine 4)
         }
       }
     });

@@ -17,8 +17,16 @@ router.get('/:table', requireAuth, requireManager, async (req, res) => {
     if (isSupabaseConfigured()) {
       const dbTable = table === 'team' ? 'profiles' : table;
       const { data: dbData, error } = await supabase.from(dbTable).select('*');
-      if (error) throw error;
+      if (error) console.warn(`Export Supabase error for ${table}:`, error.message);
       data = dbData || [];
+    }
+
+    if (!data || data.length === 0) {
+      try {
+        const { readDB } = require('../services/db');
+        const db = await readDB();
+        data = db[table] || [];
+      } catch (e) {}
     }
 
     res.setHeader('Content-Type', 'text/csv');

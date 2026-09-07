@@ -22,37 +22,77 @@ window.APP_MODULES.leads = async function(container) {
   };
 
   let leadsData = [];
+  let availableServices = [];
   let searchQuery = '';
   let filterSource = 'all';
   let sortBy = 'score';
   let showLost = false;
   let selectedLead = null;
   let parsedImportLeads = [];
+  let draggedLeadId = null;
+  let currentCurrency = localStorage.getItem('gro10x_currency') || 'BDT';
 
-  // ─── Load Data ──────────────────────────────────────────────────────────────
-  async function loadLeads() {
-    try {
-      const data = await APP_API.get('/leads').catch(() => []);
-      leadsData = Array.isArray(data) ? data : [];
-      render();
-      populateServicesDropdown();
-    } catch (err) {
-      container.innerHTML = `<div style="color:#ef4444;padding:2rem;">Error loading leads: ${err.message}</div>`;
+  function showToast(msg, duration = 3000, type = 'info') {
+    if (typeof window.showToast === 'function') {
+      window.showToast(msg, duration, type);
+    } else {
+      console.log(`[Toast ${type}]: ${msg}`);
     }
   }
 
-  async function populateServicesDropdown() {
+  function formatMoney(amount) {
+    const val = Number(amount) || 0;
+    if (currentCurrency === 'USD') {
+      return '$' + Math.round(val).toLocaleString();
+    }
+    if (val >= 10000000) {
+      return `৳${(val / 10000000).toFixed(2)} Cr`;
+    }
+    if (val >= 100000) {
+      return `৳${(val / 100000).toFixed(1)} Lakh`;
+    }
+    return `৳${val.toLocaleString()}`;
+  }
+
+  // ─── Load Data ──────────────────────────────────────────────────────────────
+  function normalizeStage(stage) {
+    if (!stage) return 'New Inquiry';
+    const s = String(stage).trim().toLowerCase();
+    if (['new', 'new inquiry', 'inquiry', 'pending'].includes(s)) return 'New Inquiry';
+    if (['contacted', 'reached_out'].includes(s)) return 'Contacted';
+    if (['proposal', 'proposal sent', 'proposal_sent', 'pitched'].includes(s)) return 'Proposal Sent';
+    if (['meeting', 'meeting scheduled', 'meeting_scheduled', 'call'].includes(s)) return 'Meeting Scheduled';
+    if (['won', 'won / closed', 'closed', 'won_closed', 'converted'].includes(s)) return 'Won / Closed';
+    if (['lost', 'rejected'].includes(s)) return 'Lost';
+    if (['spam', 'junk'].includes(s)) return 'Spam';
+    return stage;
+  }
+
+  async function loadServices() {
     try {
       const services = await APP_API.get('/services').catch(() => []);
-      const select = document.getElementById('nlService');
-      if (select && Array.isArray(services) && services.length > 0) {
-        select.innerHTML = '<option value="">Select service from catalog...</option>' + services.map(s => `
-          <option value="${String(s.title).replace(/"/g, '&quot;')}">${String(s.title).replace(/</g, '&lt;')} (${String(s.price || 'Quote').replace(/</g, '&lt;')})</option>
-        `).join('') + `
-          <option value="Custom Project">Custom Agency Package</option>
-        `;
+      if (Array.isArray(services) && services.length > 0) {
+        availableServices = services;
       }
     } catch (e) {}
+  }
+
+  async function loadLeads() {
+    try {
+      if (availableServices.length === 0) {
+        await loadServices();
+      }
+      const data = await APP_API.get('/leads').catch(() => []);
+      leadsData = (Array.isArray(data) ? data : []).map(l => ({
+        ...l,
+        stage: normalizeStage(l.stage || l.status),
+        company: l.company || l.name || 'Inquiring Brand',
+        contact_person: l.contact_person || l.name || 'Direct Contact'
+      }));
+      render();
+    } catch (err) {
+      container.innerHTML = `<div style="color:#ef4444;padding:2rem;">Error loading leads: ${err.message}</div>`;
+    }
   }
 
   // ─── Filter & Sort Leads ────────────────────────────────────────────────────
@@ -80,18 +120,18 @@ window.APP_MODULES.leads = async function(container) {
   }
 
   function getLeadsByStage(stage) {
-    return getFilteredLeads().filter(l => l.stage === stage || (stage === 'New Inquiry' && (!l.stage || l.stage === 'New')));
+    return getFilteredLeads().filter(l => normalizeStage(l.stage) === stage);
   }
 
   function getLostLeads() {
-    return getFilteredLeads().filter(l => LOST_STAGES.includes(l.stage));
+    return getFilteredLeads().filter(l => LOST_STAGES.includes(normalizeStage(l.stage)));
   }
 
   // ─── KPI Computation ────────────────────────────────────────────────────────
   function computeKPIs() {
-    const active = leadsData.filter(l => !LOST_STAGES.includes(l.stage) && l.stage !== 'Won / Closed');
-    const won = leadsData.filter(l => l.stage === 'Won / Closed');
-    const lost = leadsData.filter(l => l.stage === 'Lost');
+    const active = leadsData.filter(l => !LOST_STAGES.includes(normalizeStage(l.stage)) && normalizeStage(l.stage) !== 'Won / Closed');
+    const won = leadsData.filter(l => normalizeStage(l.stage) === 'Won / Closed');
+    const lost = leadsData.filter(l => normalizeStage(l.stage) === 'Lost');
     const winRate = (won.length + lost.length) > 0 ? Math.round((won.length / (won.length + lost.length)) * 100) : 0;
     const pipelineVal = active.reduce((s, l) => {
       const v = parseFloat(String(l.value || '0').replace(/[^0-9.]/g, '')) || 0;
@@ -110,21 +150,28 @@ window.APP_MODULES.leads = async function(container) {
     const lostLeads = getLostLeads();
     const today = new Date().toISOString().split('T')[0];
 
-    container.innerHTML = `
-      <!-- Header -->
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem;">
-        <div>
-          <h1 style="font-size:1.6rem; font-weight:900; font-family:var(--font-heading); margin:0 0 0.25rem;">🎯 Leads CRM Pipeline</h1>
-          <div style="font-size:0.85rem; color:var(--text-muted);">Full sales funnel — capture, qualify, convert, and activate clients.</div>
-        </div>
-        <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
-          <button class="btn-secondary" style="font-size:0.8rem;" onclick="window.LEADS_MODULE.openImportModal()">📥 Bulk Import CSV</button>
-          <button class="btn-primary" style="font-size:0.8rem;" onclick="window.LEADS_MODULE.openAddModal()">+ Add Lead</button>
-        </div>
-      </div>
+    const serviceOptions = availableServices.length > 0
+      ? '<option value="">Select service from catalog...</option>' + availableServices.map(s => `
+        <option value="${escapeHTML(s.title)}">${escapeHTML(s.title)} (${escapeHTML(s.price || 'Quote')})</option>
+      `).join('') + '<option value="Custom Agency Package">Custom Agency Package</option>'
+      : `
+        <option value="">Select service...</option>
+        <option>Social Media Retainer</option>
+        <option>Video Production & TVC</option>
+        <option>Branding & Identity</option>
+        <option>Web Development</option>
+        <option>Digital Marketing & Ads</option>
+        <option>Content Production</option>
+        <option>Full Agency Package</option>
+      `;
 
-      <!-- KPI Strip -->
-      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(155px, 1fr)); gap:1rem; margin-bottom:1.5rem;">
+    const kanbanBoardEl = document.getElementById('leadsKanbanBoard');
+    const kpiStripEl = document.getElementById('leadsKpiStrip');
+    const lostArchiveContentEl = document.getElementById('leadsLostArchiveContent');
+    const lostArchiveToggleBtn = document.getElementById('leadsLostArchiveToggleBtn');
+
+    if (kanbanBoardEl && kpiStripEl) {
+      kpiStripEl.innerHTML = `
         <div class="kpi-tile">
           <div class="kpi-label">Active Pipeline</div>
           <div class="kpi-val">${kpi.activeCount}</div>
@@ -132,8 +179,66 @@ window.APP_MODULES.leads = async function(container) {
         </div>
         <div class="kpi-tile">
           <div class="kpi-label">Pipeline Value</div>
-          <div class="kpi-val" style="color:var(--emerald-brand);">৳${kpi.pipelineVal.toLocaleString()}</div>
-          <div style="font-size:0.72rem; color:#10b981;">Estimated Deal Pool</div>
+          <div class="kpi-val" style="color:var(--emerald-brand);">${formatMoney(kpi.pipelineVal)}</div>
+          <div style="font-size:0.72rem; color:#10b981;">Estimated Deal Pool (${currentCurrency})</div>
+        </div>
+        <div class="kpi-tile">
+          <div class="kpi-label">Win Rate</div>
+          <div class="kpi-val" style="color:var(--purple-light);">${kpi.winRate}%</div>
+          <div style="font-size:0.72rem; color:var(--text-muted);">Won vs Lost</div>
+        </div>
+        <div class="kpi-tile">
+          <div class="kpi-label">Avg Lead Score</div>
+          <div class="kpi-val" style="color:${kpi.avgScore >= 70 ? '#10b981' : kpi.avgScore >= 40 ? '#f59e0b' : '#ef4444'};">${kpi.avgScore}</div>
+          <div style="font-size:0.72rem; color:var(--text-muted);">/ 100</div>
+        </div>
+        <div class="kpi-tile">
+          <div class="kpi-label">Follow-Ups Due</div>
+          <div class="kpi-val" style="color:${kpi.followUpsDue > 0 ? '#f59e0b' : 'var(--text-main)'};">${kpi.followUpsDue}</div>
+          <div style="font-size:0.72rem; color:${kpi.followUpsDue > 0 ? '#f59e0b' : 'var(--text-muted)'};">⏰ Overdue / Today</div>
+        </div>
+      `;
+      kanbanBoardEl.innerHTML = STAGES.map(stage => renderColumn(stage)).join('');
+      if (lostArchiveToggleBtn) {
+        lostArchiveToggleBtn.innerHTML = `${showLost ? '▼' : '▶'} 🗄️ Lost & Spam Archive (${lostLeads.length} leads)`;
+      }
+      if (lostArchiveContentEl) {
+        lostArchiveContentEl.innerHTML = showLost ? `
+          <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:0.85rem; margin-top:0.75rem; opacity:0.7;">
+            ${lostLeads.map(l => renderCard(l, true)).join('') || '<div style="color:var(--text-muted); padding:1rem;">No lost/spam leads.</div>'}
+          </div>
+        ` : '';
+      }
+      return;
+    }
+
+    container.innerHTML = `
+      <!-- Header -->
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem;">
+        <div>
+          <h1 style="font-size:1.6rem; font-weight:900; font-family:var(--font-heading); margin:0 0 0.25rem;">🎯 Leads CRM Pipeline</h1>
+          <div style="font-size:0.85rem; color:var(--text-muted);">Full sales funnel — capture, qualify, convert, and activate clients.</div>
+        </div>
+        <div style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
+          <button class="btn-ghost" style="font-size:0.78rem; border:1px solid var(--border-subtle); padding:0.35rem 0.75rem; border-radius:8px; cursor:pointer;" onclick="window.LEADS_MODULE.toggleCurrency()" title="Toggle Currency">
+            💱 <strong>${currentCurrency === 'USD' ? 'USD ($)' : 'BDT (৳)'}</strong>
+          </button>
+          <button class="btn-secondary" style="font-size:0.8rem;" onclick="window.LEADS_MODULE.openImportModal()">📥 Bulk Import CSV</button>
+          <button class="btn-primary" style="font-size:0.8rem;" onclick="window.LEADS_MODULE.openAddModal()">+ Add Lead</button>
+        </div>
+      </div>
+
+      <!-- KPI Strip -->
+      <div id="leadsKpiStrip" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(155px, 1fr)); gap:1rem; margin-bottom:1.5rem;">
+        <div class="kpi-tile">
+          <div class="kpi-label">Active Pipeline</div>
+          <div class="kpi-val">${kpi.activeCount}</div>
+          <div style="font-size:0.72rem; color:var(--text-muted);">Open Leads</div>
+        </div>
+        <div class="kpi-tile">
+          <div class="kpi-label">Pipeline Value</div>
+          <div class="kpi-val" style="color:var(--emerald-brand);">${formatMoney(kpi.pipelineVal)}</div>
+          <div style="font-size:0.72rem; color:#10b981;">Estimated Deal Pool (${currentCurrency})</div>
         </div>
         <div class="kpi-tile">
           <div class="kpi-label">Win Rate</div>
@@ -155,6 +260,7 @@ window.APP_MODULES.leads = async function(container) {
       <!-- Search & Filter Controls -->
       <div style="display:flex; gap:0.75rem; margin-bottom:1.25rem; flex-wrap:wrap; align-items:center;">
         <input
+          id="leadsSearchInput"
           type="text"
           class="input-text"
           placeholder="🔍 Search leads by company or contact..."
@@ -174,20 +280,22 @@ window.APP_MODULES.leads = async function(container) {
       </div>
 
       <!-- Kanban Board -->
-      <div style="display:grid; grid-template-columns:repeat(5, minmax(220px, 1fr)); gap:1rem; overflow-x:auto; padding-bottom:1rem; margin-bottom:1.5rem;">
+      <div id="leadsKanbanBoard" style="display:grid; grid-template-columns:repeat(5, minmax(220px, 1fr)); gap:1rem; overflow-x:auto; padding-bottom:1rem; margin-bottom:1.5rem;">
         ${STAGES.map(stage => renderColumn(stage)).join('')}
       </div>
 
       <!-- Lost / Spam Archive (Collapsed) -->
       <div style="margin-bottom:1.5rem;">
-        <button class="btn-ghost" style="font-size:0.8rem; color:var(--text-muted);" onclick="window.LEADS_MODULE.toggleLost()">
+        <button id="leadsLostArchiveToggleBtn" class="btn-ghost" style="font-size:0.8rem; color:var(--text-muted);" onclick="window.LEADS_MODULE.toggleLost()">
           ${showLost ? '▼' : '▶'} 🗄️ Lost & Spam Archive (${lostLeads.length} leads)
         </button>
-        ${showLost ? `
-          <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:0.85rem; margin-top:0.75rem; opacity:0.7;">
-            ${lostLeads.map(l => renderCard(l, true)).join('') || '<div style="color:var(--text-muted); padding:1rem;">No lost/spam leads.</div>'}
-          </div>
-        ` : ''}
+        <div id="leadsLostArchiveContent">
+          ${showLost ? `
+            <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:0.85rem; margin-top:0.75rem; opacity:0.7;">
+              ${lostLeads.map(l => renderCard(l, true)).join('') || '<div style="color:var(--text-muted); padding:1rem;">No lost/spam leads.</div>'}
+            </div>
+          ` : ''}
+        </div>
       </div>
 
       <!-- Lead Profile Drawer -->
@@ -197,7 +305,7 @@ window.APP_MODULES.leads = async function(container) {
       <div id="leadDrawerBackdrop" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:9998;" onclick="window.LEADS_MODULE.closeDrawer()"></div>
 
       <!-- Add Lead Modal -->
-      <div id="addLeadModal" class="modal-overlay">
+      <div id="addLeadModal" class="modal-overlay" onclick="if(event.target===this) window.LEADS_MODULE.closeAddModal()">
         <div class="modal-content" style="max-width:520px;">
           <div class="modal-header">
             <h3>🎯 Add New Lead</h3>
@@ -228,19 +336,12 @@ window.APP_MODULES.leads = async function(container) {
               <div class="form-group">
                 <label>Service Interested In</label>
                 <select id="nlService" class="input-text">
-                  <option value="">Select service...</option>
-                  <option>Social Media Retainer</option>
-                  <option>Video Production & TVC</option>
-                  <option>Branding & Identity</option>
-                  <option>Web Development</option>
-                  <option>Digital Marketing & Ads</option>
-                  <option>Content Production</option>
-                  <option>Full Agency Package</option>
+                  ${serviceOptions}
                 </select>
               </div>
               <div class="form-group">
-                <label>Budget (BDT)</label>
-                <input type="number" id="nlBudget" class="input-text" placeholder="150000">
+                <label id="nlBudgetLabel">Budget (${currentCurrency === 'USD' ? 'USD $' : 'BDT ৳'})</label>
+                <input type="number" id="nlBudget" class="input-text" placeholder="${currentCurrency === 'USD' ? '1500' : '150000'}">
               </div>
             </div>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.85rem;">
@@ -266,7 +367,7 @@ window.APP_MODULES.leads = async function(container) {
               <textarea id="nlNotes" class="input-text" style="min-height:70px; resize:vertical;" placeholder="Context, referral source, timeline, special requirements..."></textarea>
             </div>
             <div style="text-align:right; margin-top:0.5rem;">
-              <button class="btn-primary" onclick="window.LEADS_MODULE.submitAddLead()">🚀 Add Lead to Pipeline</button>
+              <button id="submitAddLeadBtn" class="btn-primary" onclick="window.LEADS_MODULE.submitAddLead()">🚀 Add Lead to Pipeline</button>
             </div>
           </div>
         </div>
@@ -346,20 +447,26 @@ window.APP_MODULES.leads = async function(container) {
   }
 
   // ─── Render Kanban Column ────────────────────────────────────────────────────
+  // ─── Render Kanban Column ────────────────────────────────────────────────────
   function renderColumn(stage) {
     const color = STAGE_COLORS[stage] || STAGE_COLORS['New Inquiry'];
     const leads = getLeadsByStage(stage);
     return `
-      <div style="background:rgba(255,255,255,0.025); border:1px solid var(--border-subtle); border-radius:14px; overflow:hidden; min-height:200px;">
+      <div class="lead-stage-col"
+           data-stage="${escapeHTML(stage)}"
+           ondragover="window.LEADS_MODULE.handleDragOver(event)"
+           ondragleave="window.LEADS_MODULE.handleDragLeave(event)"
+           ondrop="window.LEADS_MODULE.handleDrop(event, '${escapeHTML(stage)}')"
+           style="background:rgba(255,255,255,0.025); border:1px solid var(--border-subtle); border-radius:14px; overflow:hidden; min-height:240px; display:flex; flex-direction:column; transition:all 0.2s ease;">
         <!-- Column Header -->
         <div style="background:${color.bg}; border-bottom:2px solid ${color.border}; padding:0.75rem 1rem; display:flex; justify-content:space-between; align-items:center;">
           <div style="font-size:0.82rem; font-weight:800; color:${color.border}; text-transform:uppercase; letter-spacing:0.06em;">${stage}</div>
           <div style="background:${color.border}22; color:${color.border}; font-weight:800; font-size:0.75rem; padding:0.15rem 0.5rem; border-radius:999px;">${leads.length}</div>
         </div>
         <!-- Cards -->
-        <div style="display:flex; flex-direction:column; gap:0.6rem; padding:0.75rem;">
+        <div style="display:flex; flex-direction:column; gap:0.6rem; padding:0.75rem; flex:1;">
           ${leads.map(l => renderCard(l, false)).join('')}
-          ${leads.length === 0 ? `<div style="text-align:center; padding:1.5rem; color:var(--text-muted); font-size:0.78rem;">No leads here</div>` : ''}
+          ${leads.length === 0 ? `<div style="text-align:center; padding:2rem 0.5rem; color:var(--text-muted); font-size:0.78rem; border:1px dashed rgba(255,255,255,0.08); border-radius:8px; margin:auto 0;">Drop leads here</div>` : ''}
         </div>
       </div>
     `;
@@ -385,7 +492,12 @@ window.APP_MODULES.leads = async function(container) {
     };
 
     return `
-      <div style="background:rgba(255,255,255,0.04); border:1px solid var(--border-subtle); border-radius:10px; padding:0.75rem; cursor:pointer;"
+      <div class="lead-card"
+           draggable="${!isLost}"
+           data-lead-id="${lead.id}"
+           ondragstart="window.LEADS_MODULE.handleDragStart(event, '${lead.id}')"
+           ondragend="window.LEADS_MODULE.handleDragEnd(event)"
+           style="background:rgba(255,255,255,0.04); border:1px solid var(--border-subtle); border-radius:10px; padding:0.75rem; cursor:pointer; transition:transform 0.15s, box-shadow 0.15s;"
            onclick="window.LEADS_MODULE.openDrawer('${lead.id}')">
         <!-- Score + Age -->
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
@@ -397,9 +509,10 @@ window.APP_MODULES.leads = async function(container) {
         <div style="font-weight:800; font-size:0.88rem; color:var(--text-main); margin-bottom:0.15rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHTML(lead.company || 'Unknown Brand')}</div>
         <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:0.35rem;">👤 ${escapeHTML(lead.contact_person || 'N/A')}</div>
 
-        <!-- Service + Source tags -->
-        <div style="display:flex; gap:0.3rem; flex-wrap:wrap; margin-bottom:0.5rem;">
-          ${lead.service || lead.service_interest ? `<span style="font-size:0.66rem; background:rgba(0,223,137,0.15); color:#00df89; padding:0.1rem 0.35rem; border-radius:4px; font-weight:700;">${escapeHTML(lead.service || lead.service_interest)}</span>` : ''}
+        <!-- Service + Budget + Source tags -->
+        <div style="display:flex; gap:0.3rem; flex-wrap:wrap; margin-bottom:0.5rem; align-items:center;">
+          ${(lead.service || lead.service_interest) ? `<span style="font-size:0.66rem; background:rgba(0,223,137,0.15); color:#00df89; padding:0.1rem 0.35rem; border-radius:4px; font-weight:700;">${escapeHTML(lead.service || lead.service_interest)}</span>` : ''}
+          ${lead.value ? `<span style="font-size:0.66rem; background:rgba(56,189,248,0.15); color:#38bdf8; padding:0.1rem 0.35rem; border-radius:4px; font-weight:700;">${formatMoney(lead.value)}</span>` : ''}
           ${lead.source ? `<span style="font-size:0.66rem; background:rgba(255,255,255,0.06); color:var(--text-muted); padding:0.1rem 0.35rem; border-radius:4px;">${escapeHTML(lead.source.split(' ')[0])}</span>` : ''}
           ${(lead.phone || lead.whatsapp) ? `
             <a href="https://wa.me/${String(lead.phone || lead.whatsapp).replace(/[^0-9]/g, '')}" target="_blank" onclick="event.stopPropagation()" style="font-size:0.66rem; background:rgba(16,185,129,0.2); color:#34d399; padding:0.1rem 0.35rem; border-radius:4px; font-weight:700; text-decoration:none;">
@@ -426,7 +539,7 @@ window.APP_MODULES.leads = async function(container) {
             ` : ''}
             ${nextStage === 'Won / Closed' ? `
               <button class="btn-primary btn-sm" style="flex:1; font-size:0.68rem; padding:0.25rem 0.4rem; background:linear-gradient(135deg,#10b981,#059669);"
-                onclick="window.LEADS_MODULE.convertLead('${lead.id}')">
+                onclick="window.LEADS_MODULE.convertLead('${lead.id}', '${escapeHTML(lead.company || '')}', '${escapeHTML(lead.email || '')}', this)">
                 🏆 Convert to Client
               </button>
             ` : ''}
@@ -474,7 +587,7 @@ window.APP_MODULES.leads = async function(container) {
           <div><strong>Phone:</strong> ${escapeHTML(lead.phone || lead.whatsapp || 'N/A')}</div>
           <div><strong>Email:</strong> ${escapeHTML(lead.email || 'N/A')}</div>
           <div><strong>Service:</strong> ${escapeHTML(lead.service || 'N/A')}</div>
-          <div><strong>Budget:</strong> ${lead.value ? '৳' + parseFloat(String(lead.value).replace(/[^0-9.]/g, '')).toLocaleString() : 'Not specified'}</div>
+          <div><strong>Budget:</strong> ${lead.value ? formatMoney(lead.value) : 'Not specified'}</div>
           <div><strong>Source:</strong> ${escapeHTML(lead.source || 'N/A')}</div>
           ${lead.utm_source ? `<div style="grid-column:1/-1;"><strong>UTM Source:</strong> ${escapeHTML(lead.utm_source)} / ${escapeHTML(lead.utm_medium || '')} / ${escapeHTML(lead.utm_campaign || '')}</div>` : ''}
         </div>
@@ -530,7 +643,7 @@ window.APP_MODULES.leads = async function(container) {
 
       <!-- Danger Zone -->
       <div style="text-align:right;">
-        <button class="btn-ghost" style="font-size:0.75rem; color:#ef4444;" onclick="window.LEADS_MODULE.deleteLead('${lead.id}')">🗑️ Delete Lead</button>
+        <button id="drawerDeleteBtn" class="btn-ghost" style="font-size:0.75rem; color:#ef4444; border:1px solid rgba(239,68,68,0.25); border-radius:6px; padding:0.3rem 0.6rem;" onclick="window.LEADS_MODULE.deleteLead('${lead.id}')">🗑️ Delete Lead</button>
       </div>
     `;
   }
@@ -553,7 +666,76 @@ window.APP_MODULES.leads = async function(container) {
       showLost = !showLost;
       render();
     },
+    toggleCurrency() {
+      currentCurrency = currentCurrency === 'USD' ? 'BDT' : 'USD';
+      localStorage.setItem('gro10x_currency', currentCurrency);
+      window.dispatchEvent(new CustomEvent('gro10x_currency_changed', { detail: { currency: currentCurrency } }));
+      render();
+    },
 
+    // ─── Drag & Drop ──────────────────────────────────────────────────────────
+    handleDragStart(e, id) {
+      draggedLeadId = id;
+      e.dataTransfer.setData('text/plain', id);
+      e.dataTransfer.effectAllowed = 'move';
+      if (e.currentTarget) e.currentTarget.style.opacity = '0.35';
+    },
+
+    handleDragEnd(e) {
+      if (e.currentTarget) e.currentTarget.style.opacity = '1';
+      document.querySelectorAll('.lead-stage-col').forEach(col => {
+        col.style.border = '1px solid var(--border-subtle)';
+        col.style.background = 'rgba(255,255,255,0.025)';
+      });
+    },
+
+    handleDragOver(e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      const col = e.currentTarget.closest('.lead-stage-col');
+      if (col) {
+        col.style.border = '2px dashed #00df89';
+        col.style.background = 'rgba(0, 223, 137, 0.06)';
+      }
+    },
+
+    handleDragLeave(e) {
+      const col = e.currentTarget.closest('.lead-stage-col');
+      if (col) {
+        col.style.border = '1px solid var(--border-subtle)';
+        col.style.background = 'rgba(255,255,255,0.025)';
+      }
+    },
+
+    async handleDrop(e, targetStage) {
+      e.preventDefault();
+      const col = e.currentTarget.closest('.lead-stage-col');
+      if (col) {
+        col.style.border = '1px solid var(--border-subtle)';
+        col.style.background = 'rgba(255,255,255,0.025)';
+      }
+      const id = draggedLeadId || e.dataTransfer.getData('text/plain');
+      draggedLeadId = null;
+      if (!id || !targetStage) return;
+
+      const lead = leadsData.find(l => l.id === id);
+      if (!lead || lead.stage === targetStage) return;
+
+      const prevStage = lead.stage;
+      lead.stage = targetStage;
+      render();
+
+      try {
+        await APP_API.put(`/leads/${id}`, { stage: targetStage });
+        showToast(`Stage updated → ${targetStage}`, 2500, 'success');
+      } catch (err) {
+        lead.stage = prevStage;
+        render();
+        showToast('Failed to update stage: ' + err.message, 4000, 'error');
+      }
+    },
+
+    // ─── Profile Drawer ───────────────────────────────────────────────────────
     openDrawer(id) {
       selectedLead = leadsData.find(l => l.id === id);
       if (!selectedLead) return;
@@ -574,13 +756,115 @@ window.APP_MODULES.leads = async function(container) {
       selectedLead = null;
     },
 
+    // ─── Add Lead Modal ───────────────────────────────────────────────────────
     openAddModal() {
-      document.getElementById('addLeadModal').classList.add('active');
-    },
-    closeAddModal() {
-      document.getElementById('addLeadModal').classList.remove('active');
+      const modal = document.getElementById('addLeadModal');
+      if (!modal) return;
+      modal.classList.add('active');
+      modal.style.display = 'flex';
+
+      const companyEl = document.getElementById('nlCompany');
+      const contactEl = document.getElementById('nlContact');
+      const emailEl = document.getElementById('nlEmail');
+      const phoneEl = document.getElementById('nlPhone');
+      const serviceEl = document.getElementById('nlService');
+      const budgetEl = document.getElementById('nlBudget');
+      const sourceEl = document.getElementById('nlSource');
+      const stageEl = document.getElementById('nlStage');
+      const notesEl = document.getElementById('nlNotes');
+      const submitBtn = document.getElementById('submitAddLeadBtn');
+
+      if (companyEl) { companyEl.value = ''; companyEl.style.borderColor = ''; }
+      if (contactEl) { contactEl.value = ''; contactEl.style.borderColor = ''; }
+      if (emailEl) emailEl.value = '';
+      if (phoneEl) phoneEl.value = '';
+      if (serviceEl) serviceEl.value = '';
+      if (budgetEl) budgetEl.value = '';
+      if (sourceEl) sourceEl.value = 'Manual Entry';
+      if (stageEl) stageEl.value = 'New Inquiry';
+      if (notesEl) notesEl.value = '';
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '🚀 Add Lead to Pipeline';
+      }
+
+      setTimeout(() => companyEl && companyEl.focus(), 60);
     },
 
+    closeAddModal() {
+      const modal = document.getElementById('addLeadModal');
+      if (modal) {
+        modal.classList.remove('active');
+        modal.style.display = 'none';
+      }
+    },
+
+    async submitAddLead() {
+      const companyEl = document.getElementById('nlCompany');
+      const contactEl = document.getElementById('nlContact');
+      const company = companyEl?.value?.trim();
+      const contact = contactEl?.value?.trim();
+
+      if (!company) {
+        if (companyEl) {
+          companyEl.style.borderColor = '#ef4444';
+          companyEl.focus();
+        }
+        return showToast('Company / Brand Name is required.', 3000, 'error');
+      }
+      if (!contact) {
+        if (contactEl) {
+          contactEl.style.borderColor = '#ef4444';
+          contactEl.focus();
+        }
+        return showToast('Contact Person is required.', 3000, 'error');
+      }
+
+      const submitBtn = document.getElementById('submitAddLeadBtn');
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '⏳ Adding Lead to Pipeline...';
+      }
+
+      const payload = {
+        company,
+        contactPerson: contact,
+        email: document.getElementById('nlEmail')?.value?.trim() || '',
+        phone: document.getElementById('nlPhone')?.value?.trim() || '',
+        service: document.getElementById('nlService')?.value || 'General',
+        value: document.getElementById('nlBudget')?.value || '',
+        budget: document.getElementById('nlBudget')?.value || '',
+        currency: currentCurrency,
+        source: document.getElementById('nlSource')?.value || 'Manual Entry',
+        stage: document.getElementById('nlStage')?.value || 'New Inquiry',
+        notes: document.getElementById('nlNotes')?.value?.trim() || ''
+      };
+
+      try {
+        const result = await APP_API.post('/leads', payload);
+        if (result.isDuplicate) {
+          showToast(`⚠️ Notice: Lead is already on file (#${result.duplicateIds?.[0] || 'existing'})`, 4000, 'warning');
+          this.closeAddModal();
+          return;
+        }
+        if (result.success || result.lead) {
+          this.closeAddModal();
+          await loadLeads();
+          showToast(`✅ Lead added to ${payload.stage}!`, 3000, 'success');
+        } else {
+          showToast('Failed to add lead: ' + (result.error || 'Server error'), 4000, 'error');
+        }
+      } catch (err) {
+        showToast('Error adding lead: ' + err.message, 4000, 'error');
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = '🚀 Add Lead to Pipeline';
+        }
+      }
+    },
+
+    // ─── Stage Progression & Actions ──────────────────────────────────────────
     async advanceStage(id, stage, fromDrawer = false) {
       try {
         await APP_API.put(`/leads/${id}`, { stage });
@@ -591,21 +875,35 @@ window.APP_MODULES.leads = async function(container) {
           document.getElementById('leadDrawerContent').innerHTML = renderDrawer(selectedLead);
         }
         render();
-        window.showToast && window.showToast(`Stage updated → ${stage}`, 'success');
+        showToast(`Stage updated → ${stage}`, 2500, 'success');
       } catch (err) {
-        window.showToast && window.showToast('Failed to update stage: ' + err.message, 'error');
+        showToast('Failed to update stage: ' + err.message, 4000, 'error');
       }
     },
 
-    async convertLead(id, company, email, btnEl) {
-      if (!confirm(`Convert lead "${company || id}" into an active Client CRM account? This will mark the lead as Won and create a client record.`)) return;
-      if (btnEl) { btnEl.disabled = true; btnEl.innerText = '⏳ Converting...'; }
+    convertLead(id, company, email, btnEl) {
+      const resultEl = document.getElementById('conversionResult');
+      if (!resultEl) return;
+      resultEl.innerHTML = `
+        <div style="background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.4); border-radius:8px; padding:0.85rem; margin-top:0.5rem;">
+          <div style="font-weight:700; color:#f59e0b; margin-bottom:0.3rem;">Convert "${escapeHTML(company || id)}" to Client CRM?</div>
+          <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:0.6rem;">This marks the lead as Won / Closed and creates an active Client CRM account.</div>
+          <div style="display:flex; gap:0.5rem;">
+            <button class="btn btn-sm btn-primary" style="background:#10b981; font-size:0.75rem; padding:0.25rem 0.65rem;" onclick="window.LEADS_MODULE.executeConvertLead('${id}', '${escapeHTML(company || '')}')">✅ Confirm & Convert</button>
+            <button class="btn btn-sm btn-ghost" style="font-size:0.75rem; padding:0.25rem 0.65rem;" onclick="document.getElementById('conversionResult').innerHTML=''">Cancel</button>
+          </div>
+        </div>
+      `;
+    },
+
+    async executeConvertLead(id, company) {
+      const resultEl = document.getElementById('conversionResult');
+      if (resultEl) resultEl.innerHTML = '<div style="color:var(--text-muted); padding:0.5rem;">⏳ Converting lead into client account...</div>';
       try {
         const result = await APP_API.post(`/leads/${id}/convert`, {});
         const lead = leadsData.find(l => l.id === id);
         if (lead) lead.stage = 'Won / Closed';
 
-        const resultEl = document.getElementById('conversionResult');
         if (resultEl && result.client) {
           resultEl.innerHTML = `
             <div style="background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.3); border-radius:8px; padding:0.75rem;">
@@ -614,12 +912,11 @@ window.APP_MODULES.leads = async function(container) {
             </div>
           `;
         }
-
         render();
-        window.showToast && window.showToast('🏆 Lead converted to Client! CRM account created.', 'success');
+        showToast('🏆 Lead converted to Client! CRM account created.', 3000, 'success');
       } catch (err) {
-        if (btnEl) { btnEl.disabled = false; btnEl.innerText = '🚀 Convert to Client CRM Account'; }
-        window.showToast && window.showToast('Conversion failed: ' + err.message, 'error');
+        if (resultEl) resultEl.innerHTML = `<div style="color:#ef4444; padding:0.5rem;">Conversion failed: ${err.message}</div>`;
+        showToast('Conversion failed: ' + err.message, 4000, 'error');
       }
     },
 
@@ -636,9 +933,9 @@ window.APP_MODULES.leads = async function(container) {
             </div>
           `;
         }
-        window.showToast && window.showToast(result.emailSent ? '📧 Onboarding email sent!' : '🔗 Magic link generated', 'success');
+        showToast(result.emailSent ? '📧 Onboarding email sent!' : '🔗 Magic link generated', 3000, 'success');
       } catch (err) {
-        window.showToast && window.showToast('Onboarding failed: ' + err.message, 'error');
+        showToast('Onboarding failed: ' + err.message, 4000, 'error');
       }
     },
 
@@ -650,9 +947,9 @@ window.APP_MODULES.leads = async function(container) {
         const lead = leadsData.find(l => l.id === id);
         if (lead) lead.follow_up_date = dateVal;
         render();
-        window.showToast && window.showToast(`Follow-up set for ${dateVal}`, 'success');
+        showToast(`Follow-up set for ${dateVal}`, 2500, 'success');
       } catch (err) {
-        window.showToast && window.showToast('Failed to set follow-up', 'error');
+        showToast('Failed to set follow-up', 4000, 'error');
       }
     },
 
@@ -662,54 +959,43 @@ window.APP_MODULES.leads = async function(container) {
         await APP_API.put(`/leads/${id}`, { notes });
         const lead = leadsData.find(l => l.id === id);
         if (lead) lead.notes = notes;
-        window.showToast && window.showToast('Notes saved!', 'success');
+        showToast('Notes saved successfully!', 2500, 'success');
       } catch (err) {
-        window.showToast && window.showToast('Failed to save notes', 'error');
+        showToast('Failed to save notes', 4000, 'error');
       }
     },
 
-    async deleteLead(id) {
-      if (!confirm('Permanently delete this lead? This cannot be undone.')) return;
-      try {
-        await APP_API.delete(`/leads/${id}`);
-        leadsData = leadsData.filter(l => l.id !== id);
-        this.closeDrawer();
-        render();
-        window.showToast && window.showToast('Lead deleted.', 'success');
-      } catch (err) {
-        window.showToast && window.showToast('Delete failed: ' + err.message, 'error');
-      }
-    },
-
-    async submitAddLead() {
-      const company = document.getElementById('nlCompany')?.value?.trim();
-      const contact = document.getElementById('nlContact')?.value?.trim();
-      if (!company || !contact) return window.showToast && window.showToast('Company and contact name are required.', 'error');
-
-      const payload = {
-        company,
-        contactPerson: contact,
-        email: document.getElementById('nlEmail')?.value?.trim() || '',
-        phone: document.getElementById('nlPhone')?.value?.trim() || '',
-        service: document.getElementById('nlService')?.value || 'General',
-        value: document.getElementById('nlBudget')?.value || '',
-        source: document.getElementById('nlSource')?.value || 'Manual Entry',
-        stage: document.getElementById('nlStage')?.value || 'New Inquiry',
-        notes: document.getElementById('nlNotes')?.value?.trim() || ''
-      };
-
-      try {
-        const result = await APP_API.post('/leads', payload);
-        if (result.success || result.lead) {
-          this.closeAddModal();
-          await loadLeads();
-          window.showToast && window.showToast('✅ Lead added to pipeline!', 'success');
-        } else {
-          window.showToast && window.showToast('Failed to add lead.', 'error');
+    deleteLead(id, confirmed = false) {
+      const btn = document.getElementById('drawerDeleteBtn');
+      if (!confirmed) {
+        if (btn) {
+          btn.innerHTML = '⚠️ Click to Confirm Delete';
+          btn.style.color = '#fff';
+          btn.style.background = '#ef4444';
+          btn.onclick = () => window.LEADS_MODULE.deleteLead(id, true);
+          setTimeout(() => {
+            if (btn && btn.isConnected) {
+              btn.innerHTML = '🗑️ Delete Lead';
+              btn.style.color = '#ef4444';
+              btn.style.background = 'none';
+              btn.onclick = () => window.LEADS_MODULE.deleteLead(id, false);
+            }
+          }, 4000);
         }
-      } catch (err) {
-        window.showToast && window.showToast('Error: ' + err.message, 'error');
+        return;
       }
+
+      (async () => {
+        try {
+          await APP_API.delete(`/leads/${id}`);
+          leadsData = leadsData.filter(l => l.id !== id);
+          this.closeDrawer();
+          render();
+          showToast('Lead deleted permanently.', 2500, 'info');
+        } catch (err) {
+          showToast('Delete failed: ' + err.message, 4000, 'error');
+        }
+      })();
     },
 
     openImportModal() {
@@ -905,6 +1191,33 @@ window.APP_MODULES.leads = async function(container) {
       }
     }
   };
+
+  // ─── Global Event Listeners ──────────────────────────────────────────────────
+  window.addEventListener('gro10x_currency_changed', (e) => {
+    if (e.detail && e.detail.currency && e.detail.currency !== currentCurrency) {
+      currentCurrency = e.detail.currency;
+      render();
+    }
+  });
+
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      const addModal = document.getElementById('addLeadModal');
+      if (addModal && addModal.classList.contains('active')) {
+        window.LEADS_MODULE.closeAddModal();
+      }
+      const importModal = document.getElementById('importLeadsModal');
+      if (importModal && importModal.classList.contains('active')) {
+        window.LEADS_MODULE.closeImportModal();
+      }
+    }
+  });
+
+  if (window.APP_API && typeof window.APP_API.on === 'function') {
+    window.APP_API.on('lead_update', () => {
+      loadLeads();
+    });
+  }
 
   // ─── Init ────────────────────────────────────────────────────────────────────
   container.innerHTML = `<div style="padding:3rem; text-align:center; color:var(--text-muted);">⏳ Loading Leads Pipeline...</div>`;

@@ -10,7 +10,7 @@
 const https = require('https');
 const { DEFAULT_SERVICES } = require('../constants/services');
 
-const GEMINI_MODELS = ['gemini-3.6-flash', 'gemini-flash-latest'];
+const GEMINI_MODELS = ['gemini-3.6-flash', 'gemini-flash-latest', 'gemini-2.5-flash'];
 
 /**
  * 10-Point Gig Health Check Engine
@@ -132,7 +132,7 @@ function callGemini(model, prompt, apiKey) {
     const payload = JSON.stringify({
       contents: [{ role: 'user', parts: [{ text: prompt }] }],
       generationConfig: {
-        maxOutputTokens: 3000,
+        maxOutputTokens: 6000,
         temperature: 0.5,
         responseMimeType: 'application/json'
       }
@@ -165,9 +165,9 @@ function callGemini(model, prompt, apiKey) {
     });
 
     req.on('error', reject);
-    req.setTimeout(8000, () => {
+    req.setTimeout(20000, () => {
       req.destroy();
-      reject(new Error(`[Gemini Timeout ${model}]: Request exceeded 8s`));
+      reject(new Error(`[Gemini Timeout ${model}]: Request exceeded 20s`));
     });
 
     req.write(payload);

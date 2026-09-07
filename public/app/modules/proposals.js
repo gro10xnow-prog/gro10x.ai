@@ -17,10 +17,30 @@ window.APP_MODULES = window.APP_MODULES || {};
 window.APP_MODULES['proposals.js'] = {
   proposals: [],
   currentFilter: 'all',
+  searchQuery: '',
+  sortBy: 'newest',
   recognition: null,
   isRecording: false,
+  preRecordingNotes: '',
+  activeGlobalCurrency: localStorage.getItem('gro10x_currency') || 'BDT',
+  targetConvertProposal: null,
+
+  formatMoney(amount, currency = 'BDT') {
+    const num = Number(amount) || 0;
+    if (currency === 'USD') {
+      return '$' + num.toLocaleString();
+    }
+    if (num >= 10000000) {
+      return `৳${(num / 10000000).toFixed(2)} Cr`;
+    }
+    if (num >= 100000) {
+      return `৳${(num / 100000).toFixed(1)} Lakh`;
+    }
+    return `৳${num.toLocaleString()}`;
+  },
 
   async render(container) {
+    this.activeGlobalCurrency = localStorage.getItem('gro10x_currency') || 'BDT';
     container.innerHTML = `
       <div class="proposals-container" style="padding: 24px 0;">
         <!-- Header -->
@@ -33,7 +53,10 @@ window.APP_MODULES['proposals.js'] = {
               AI-assisted voice/context proposal drafting, shareable client links, and 1-tap project conversion.
             </p>
           </div>
-          <div style="display: flex; gap: 12px;">
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <button class="btn btn-outline" id="btnProposalsToggleCurrency" style="display: flex; align-items: center; gap: 6px; padding: 6px 14px; font-size: 13px;" title="Toggle Display Currency">
+              💱 <strong id="proposalsCurrencyLabel">${this.activeGlobalCurrency === 'USD' ? 'USD ($)' : 'BDT (৳)'}</strong>
+            </button>
             <button class="btn btn-primary" id="btnOpenNewProposal" style="display: flex; align-items: center; gap: 8px;">
               <span style="font-size: 16px;">✨</span> New Proposal (AI / Voice)
             </button>
@@ -64,15 +87,27 @@ window.APP_MODULES['proposals.js'] = {
           </div>
         </div>
 
-        <!-- Filter Chips & Search -->
+        <!-- Filter Chips, Search & Sort -->
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 12px;">
-          <div style="display: flex; gap: 8px; flex-wrap: wrap;" id="proposalFilterChips">
+          <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;" id="proposalFilterChips">
             <button class="filter-chip active" data-filter="all">All Proposals</button>
             <button class="filter-chip" data-filter="Draft">Drafts</button>
             <button class="filter-chip" data-filter="Sent">Sent</button>
             <button class="filter-chip" data-filter="Viewed">Viewed</button>
             <button class="filter-chip" data-filter="Accepted">Accepted</button>
             <button class="filter-chip" data-filter="Converted">Converted to Project</button>
+            <span id="proposalsCountBadge" style="font-size: 12px; color: var(--text-dim, #64748b); margin-left: 6px;">Showing 0 of 0</span>
+          </div>
+          <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <div style="position: relative; min-width: 240px;">
+              <input type="text" id="proposalsSearchInput" class="form-input" placeholder="🔍 Search proposals..." style="padding: 6px 12px; font-size: 13px; width: 100%; border-radius: 8px;">
+            </div>
+            <select id="proposalsSortSelect" class="form-input" style="padding: 6px 10px; font-size: 13px; border-radius: 8px; width: auto;">
+              <option value="newest">Sort: Newest First</option>
+              <option value="onetime">Sort: Build Fee (High ↓)</option>
+              <option value="recurring">Sort: Retainer (High ↓)</option>
+              <option value="views">Sort: Most Viewed</option>
+            </select>
           </div>
         </div>
 
@@ -202,6 +237,12 @@ window.APP_MODULES['proposals.js'] = {
                 <div>
                   <label class="form-label" style="font-size: 12px; color: var(--text-dim, #64748b); text-transform: uppercase; font-weight: 600;">Estimated Timeline</label>
                   <input type="text" id="propTimeline" class="form-input" placeholder="e.g. 10–14 Working Days" style="width: 100%;">
+                  <div style="display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap;">
+                    <button type="button" class="btn btn-outline" style="padding: 2px 8px; font-size: 11px;" onclick="document.getElementById('propTimeline').value='7–10 Working Days'">7–10 Days</button>
+                    <button type="button" class="btn btn-outline" style="padding: 2px 8px; font-size: 11px;" onclick="document.getElementById('propTimeline').value='10–14 Working Days'">10–14 Days</button>
+                    <button type="button" class="btn btn-outline" style="padding: 2px 8px; font-size: 11px;" onclick="document.getElementById('propTimeline').value='2–3 Weeks'">2–3 Weeks</button>
+                    <button type="button" class="btn btn-outline" style="padding: 2px 8px; font-size: 11px;" onclick="document.getElementById('propTimeline').value='1 Month'">1 Month</button>
+                  </div>
                 </div>
                 <div>
                   <label class="form-label" style="font-size: 12px; color: var(--text-dim, #64748b); text-transform: uppercase; font-weight: 600;">Valid Until</label>
@@ -227,6 +268,31 @@ window.APP_MODULES['proposals.js'] = {
           </div>
         </div>
 
+        <!-- Convert Proposal to Project Non-Blocking Modal -->
+        <div class="modal-overlay" id="proposalConvertModalOverlay" style="display:none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1001; align-items: center; justify-content: center; padding: 16px;">
+          <div class="modal-card" style="max-width: 520px; width: 100%; background: var(--bg-surface-elevated, #151f32); border: 1px solid var(--border-subtle, rgba(255,255,255,0.1)); border-radius: 16px; padding: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.7);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border-subtle, rgba(255,255,255,0.08)); padding-bottom: 12px;">
+              <h3 style="font-family: 'Outfit', sans-serif; font-size: 18px; color: #fff; margin: 0; display: flex; align-items: center; gap: 8px;">
+                <span>🚀</span> Convert to Production Project
+              </h3>
+              <button class="btn btn-outline" id="btnCloseConvertModal" style="padding: 4px 10px; font-size: 14px;">✕</button>
+            </div>
+            <p style="font-size: 13px; color: var(--text-muted, #94a3b8); margin-bottom: 16px;">
+              This marks the proposal as <strong>Converted</strong> and generates an active delivery ticket in the <strong>Project Pipeline</strong>.
+            </p>
+            <div style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-subtle, rgba(255,255,255,0.08)); border-radius: 10px; padding: 14px; margin-bottom: 20px; font-size: 13px; display: flex; flex-direction: column; gap: 8px;">
+              <div><span style="color:var(--text-dim, #64748b);">Client / Company:</span> <strong id="convModalClient" style="color:#fff;">—</strong></div>
+              <div><span style="color:var(--text-dim, #64748b);">Project Title:</span> <strong id="convModalProject" style="color:var(--text-main, #f8fafc);">—</strong></div>
+              <div><span style="color:var(--text-dim, #64748b);">Investment:</span> <strong id="convModalBudget" style="color:var(--primary, #00df89);">—</strong></div>
+              <div><span style="color:var(--text-dim, #64748b);">Target Timeline:</span> <span id="convModalTimeline" style="color:#06b6d4;">—</span></div>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+              <button type="button" class="btn btn-outline" id="btnCancelConvertModal">Cancel</button>
+              <button type="button" class="btn btn-primary" id="btnExecuteConvert" style="background: #00df89; color: #070b12; font-weight: 700;">🚀 Confirm & Convert to Project</button>
+            </div>
+          </div>
+        </div>
+
       </div>
     `;
 
@@ -246,10 +312,44 @@ window.APP_MODULES['proposals.js'] = {
     }
   },
 
+  toggleCurrency() {
+    this.activeGlobalCurrency = this.activeGlobalCurrency === 'USD' ? 'BDT' : 'USD';
+    localStorage.setItem('gro10x_currency', this.activeGlobalCurrency);
+    window.dispatchEvent(new CustomEvent('gro10x_currency_changed', { detail: { currency: this.activeGlobalCurrency } }));
+    const label = document.getElementById('proposalsCurrencyLabel');
+    if (label) label.textContent = this.activeGlobalCurrency === 'USD' ? 'USD ($)' : 'BDT (৳)';
+    this.updateKPIS();
+    this.renderTable();
+  },
+
   updateKPIS() {
     const total = this.proposals.length;
-    const oneTimeSum = this.proposals.reduce((sum, p) => sum + (Number(p.oneTimeTotal) || 0), 0);
-    const recurringSum = this.proposals.reduce((sum, p) => sum + (Number(p.recurringTotal) || 0), 0);
+    const globalCurr = this.activeGlobalCurrency || 'BDT';
+    const rate = 120; // 1 USD = 120 BDT
+
+    let oneTimeSum = 0;
+    let recurringSum = 0;
+
+    this.proposals.forEach(p => {
+      const pCurr = p.currency || 'BDT';
+      let ot = Number(p.oneTimeTotal) || 0;
+      let rec = Number(p.recurringTotal) || 0;
+
+      if (globalCurr === 'USD') {
+        if (pCurr === 'BDT') {
+          ot = ot / rate;
+          rec = rec / rate;
+        }
+      } else {
+        if (pCurr === 'USD') {
+          ot = ot * rate;
+          rec = rec * rate;
+        }
+      }
+      oneTimeSum += ot;
+      recurringSum += rec;
+    });
+
     const acceptedCount = this.proposals.filter(p => p.status === 'Accepted' || p.status === 'Converted').length;
     const winRate = total > 0 ? Math.round((acceptedCount / total) * 100) : 0;
 
@@ -259,25 +359,62 @@ window.APP_MODULES['proposals.js'] = {
     const elRate = document.getElementById('kpiAcceptedRate');
 
     if (elTotal) elTotal.textContent = total;
-    if (elOneTime) elOneTime.textContent = `৳${oneTimeSum.toLocaleString()}`;
-    if (elRecurring) elRecurring.textContent = `৳${recurringSum.toLocaleString()}/mo`;
+    if (elOneTime) elOneTime.textContent = this.formatMoney(Math.round(oneTimeSum), globalCurr);
+    if (elRecurring) elRecurring.textContent = `${this.formatMoney(Math.round(recurringSum), globalCurr)}/mo`;
     if (elRate) elRate.textContent = `${winRate}%`;
+  },
+
+  getFilteredProposals() {
+    let list = [...this.proposals];
+
+    if (this.currentFilter !== 'all') {
+      list = list.filter(p => p.status === this.currentFilter);
+    }
+
+    if (this.searchQuery) {
+      const q = this.searchQuery.toLowerCase();
+      list = list.filter(p =>
+        (p.id || '').toLowerCase().includes(q) ||
+        (p.clientName || '').toLowerCase().includes(q) ||
+        (p.clientCompany || '').toLowerCase().includes(q) ||
+        (p.projectTitle || '').toLowerCase().includes(q)
+      );
+    }
+
+    if (this.sortBy === 'newest') {
+      list.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+    } else if (this.sortBy === 'onetime') {
+      list.sort((a, b) => (Number(b.oneTimeTotal) || 0) - (Number(a.oneTimeTotal) || 0));
+    } else if (this.sortBy === 'recurring') {
+      list.sort((a, b) => (Number(b.recurringTotal) || 0) - (Number(a.recurringTotal) || 0));
+    } else if (this.sortBy === 'views') {
+      list.sort((a, b) => (Number(b.viewCount) || 0) - (Number(a.viewCount) || 0));
+    }
+
+    return list;
   },
 
   renderTable() {
     const tbody = document.getElementById('proposalsTableBody');
     if (!tbody) return;
 
-    let filtered = this.proposals;
-    if (this.currentFilter !== 'all') {
-      filtered = this.proposals.filter(p => p.status === this.currentFilter);
+    const filtered = this.getFilteredProposals();
+    const countBadge = document.getElementById('proposalsCountBadge');
+    if (countBadge) {
+      countBadge.textContent = `Showing ${filtered.length} of ${this.proposals.length}`;
     }
 
     if (filtered.length === 0) {
       tbody.innerHTML = `
         <tr>
           <td colspan="7" style="padding: 40px; text-align: center; color: var(--text-muted, #94a3b8);">
-            No proposals found in this view. Click <strong>New Proposal</strong> to create one.
+            ${this.searchQuery || this.currentFilter !== 'all' ? `
+              <div style="font-size: 15px; font-weight: 600; color: #fff; margin-bottom: 6px;">No proposals match your search or filter.</div>
+              <div style="font-size: 13px; margin-bottom: 14px;">Try searching for a different keyword or resetting filters.</div>
+              <button class="btn btn-outline" onclick="window.APP_MODULES['proposals.js'].resetFiltersAndSearch()" style="padding: 6px 14px; font-size: 12px;">🔄 Reset Filters & Search</button>
+            ` : `
+              No proposals found in this view. Click <strong>New Proposal</strong> to create one.
+            `}
           </td>
         </tr>
       `;
@@ -335,14 +472,14 @@ window.APP_MODULES['proposals.js'] = {
                 👁️ View
               </a>
               ${p.status !== 'Converted' ? `
-                <button class="btn btn-outline" onclick="window.APP_MODULES['proposals.js'].convertToProject('${p.id}')" title="Convert to Active Project" style="padding: 6px 10px; font-size: 13px; color: var(--primary, #00df89);">
+                <button class="btn btn-outline" onclick="window.APP_MODULES['proposals.js'].openConvertModal('${p.id}')" title="Convert to Active Project" style="padding: 6px 10px; font-size: 13px; color: var(--primary, #00df89);">
                   🚀 Project
                 </button>
               ` : ''}
               <button class="btn btn-outline" onclick="window.APP_MODULES['proposals.js'].editProposal('${p.id}')" title="Edit Proposal" style="padding: 6px 10px; font-size: 13px;">
                 ✏️
               </button>
-              <button class="btn btn-outline" onclick="window.APP_MODULES['proposals.js'].deleteProposal('${p.id}')" title="Delete Proposal" style="padding: 6px 10px; font-size: 13px; color: #ef4444;">
+              <button class="btn btn-outline" id="btnDelProp_${p.id}" onclick="window.APP_MODULES['proposals.js'].deleteProposal('${p.id}')" title="Delete Proposal" style="padding: 6px 10px; font-size: 13px; color: #ef4444;">
                 🗑️
               </button>
             </div>
@@ -352,7 +489,38 @@ window.APP_MODULES['proposals.js'] = {
     }).join('');
   },
 
+  resetFiltersAndSearch() {
+    this.searchQuery = '';
+    this.currentFilter = 'all';
+    this.sortBy = 'newest';
+    const searchInput = document.getElementById('proposalsSearchInput');
+    const sortSelect = document.getElementById('proposalsSortSelect');
+    if (searchInput) searchInput.value = '';
+    if (sortSelect) sortSelect.value = 'newest';
+    document.querySelectorAll('#proposalFilterChips .filter-chip').forEach(c => {
+      c.classList.toggle('active', c.dataset.filter === 'all');
+    });
+    this.renderTable();
+  },
+
   bindEvents(container) {
+    // Currency Toggle in Header
+    document.getElementById('btnProposalsToggleCurrency')?.addEventListener('click', () => {
+      this.toggleCurrency();
+    });
+
+    // Real-time Search Input
+    document.getElementById('proposalsSearchInput')?.addEventListener('input', (e) => {
+      this.searchQuery = e.target.value.trim();
+      this.renderTable();
+    });
+
+    // Sort Selector
+    document.getElementById('proposalsSortSelect')?.addEventListener('change', (e) => {
+      this.sortBy = e.target.value;
+      this.renderTable();
+    });
+
     // Open Modal
     document.getElementById('btnOpenNewProposal')?.addEventListener('click', () => {
       this.openProposalModal();
@@ -376,6 +544,11 @@ window.APP_MODULES['proposals.js'] = {
       }
     });
 
+    // Modal Currency Change Listener
+    document.getElementById('propCurrency')?.addEventListener('change', (e) => {
+      this.handleModalCurrencyChange(e.target.value);
+    });
+
     // Add Dynamic Rows
     document.getElementById('btnAddScopeItem')?.addEventListener('click', () => {
       this.addScopeItemRow();
@@ -397,10 +570,39 @@ window.APP_MODULES['proposals.js'] = {
       this.runAIDraft();
     });
 
+    // Convert Modal Actions
+    document.getElementById('btnCloseConvertModal')?.addEventListener('click', () => {
+      this.closeConvertModal();
+    });
+    document.getElementById('btnCancelConvertModal')?.addEventListener('click', () => {
+      this.closeConvertModal();
+    });
+    document.getElementById('btnExecuteConvert')?.addEventListener('click', () => {
+      this.executeConvertToProject();
+    });
+
     // Form Submit
     document.getElementById('proposalForm')?.addEventListener('submit', (e) => {
       e.preventDefault();
       this.saveProposal();
+    });
+
+    // Window Listeners
+    window.addEventListener('gro10x_currency_changed', (e) => {
+      if (e.detail && e.detail.currency && e.detail.currency !== this.activeGlobalCurrency) {
+        this.activeGlobalCurrency = e.detail.currency;
+        const label = document.getElementById('proposalsCurrencyLabel');
+        if (label) label.textContent = this.activeGlobalCurrency === 'USD' ? 'USD ($)' : 'BDT (৳)';
+        this.updateKPIS();
+        this.renderTable();
+      }
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        this.closeProposalModal();
+        this.closeConvertModal();
+      }
     });
   },
 
@@ -427,7 +629,8 @@ window.APP_MODULES['proposals.js'] = {
         for (let i = 0; i < event.results.length; i++) {
           transcript += event.results[i][0].transcript + ' ';
         }
-        notesArea.value = transcript.trim();
+        const base = this.preRecordingNotes ? this.preRecordingNotes.trim() + '\n' : '';
+        if (notesArea) notesArea.value = base + transcript.trim();
       };
 
       this.recognition.onerror = (err) => {
@@ -436,6 +639,11 @@ window.APP_MODULES['proposals.js'] = {
         if (icon) icon.textContent = '🎤';
         if (label) label.textContent = 'Record Voice';
         if (btn) btn.style.background = '';
+        if (err.error === 'not-allowed') {
+          if (window.showToast) window.showToast('⚠️ Microphone access was blocked. Please grant microphone permission in your browser URL bar.', 'error');
+        } else if (err.error !== 'no-speech') {
+          if (window.showToast) window.showToast('Voice transcription notice: ' + (err.error || 'Stopped'), 'warning');
+        }
       };
 
       this.recognition.onend = () => {
@@ -448,6 +656,7 @@ window.APP_MODULES['proposals.js'] = {
 
     if (!this.isRecording) {
       try {
+        this.preRecordingNotes = notesArea ? notesArea.value : '';
         this.recognition.start();
         this.isRecording = true;
         if (icon) icon.textContent = '🔴';
@@ -566,14 +775,45 @@ window.APP_MODULES['proposals.js'] = {
       document.getElementById('propShareToken').value = '';
       document.getElementById('propTerms').value = '1. 50% advance upon formal kickoff and credentials handover; 50% upon successful UAT sign-off.\n2. Monthly maintenance and AI infrastructure retainer is billed at the beginning of each service cycle.\n3. Usage & API Policy: Standard monthly AI inference volume is included. Any high-volume surges or additional third-party API compute will be billed directly at actual provider costs with full transparent usage telemetry.\n4. Client maintains 100% data sovereignty and confidential control over all user sessions and data.\n5. Standard SLA response time for critical infrastructure triage is under 60 minutes.';
 
+      const defaultCurr = this.activeGlobalCurrency || 'BDT';
+      document.getElementById('propCurrency').value = defaultCurr;
+      const defaultValidDate = new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0];
+      document.getElementById('propValidUntil').value = defaultValidDate;
+      document.getElementById('propTimeline').value = '10–14 Working Days';
+
       // Add starter empty rows
       this.addScopeItemRow('System Architecture & API Integration', '');
-      this.addOneTimeItemRow('Core Build & Setup', '', 45000);
-      this.addRecurringItemRow('AI Inference & Dedicated Hosting', '', 8500, 'Monthly');
+      const defaultOT = defaultCurr === 'USD' ? 400 : 45000;
+      const defaultRec = defaultCurr === 'USD' ? 80 : 8500;
+      this.addOneTimeItemRow('Core Build & Setup', '', defaultOT);
+      this.addRecurringItemRow('AI Inference & Dedicated Hosting', '', defaultRec, 'Monthly');
     }
 
     this.recalculateTotals();
     modal.style.display = 'block';
+  },
+
+  handleModalCurrencyChange(newCurr) {
+    const otInputs = document.querySelectorAll('.ot-amount');
+    const recInputs = document.querySelectorAll('.rec-amount');
+
+    if (newCurr === 'USD') {
+      otInputs.forEach(i => {
+        if (Number(i.value) === 45000) i.value = 400;
+      });
+      recInputs.forEach(i => {
+        if (Number(i.value) === 8500) i.value = 80;
+      });
+    } else {
+      otInputs.forEach(i => {
+        if (Number(i.value) === 400) i.value = 45000;
+      });
+      recInputs.forEach(i => {
+        if (Number(i.value) === 80) i.value = 8500;
+      });
+    }
+
+    this.recalculateTotals();
   },
 
   closeProposalModal() {
@@ -694,20 +934,31 @@ window.APP_MODULES['proposals.js'] = {
 
     if (shareToken) payload.shareToken = shareToken;
 
+    const saveBtn = document.getElementById('btnSaveProposal');
+    if (saveBtn) {
+      saveBtn.disabled = true;
+      saveBtn.textContent = '⏳ Publishing Proposal...';
+    }
+
     try {
       if (editId) {
         await APP_API.patch(`/proposals/${editId}`, payload);
-        if (window.showToast) window.showToast('✅ Proposal updated successfully');
+        if (window.showToast) window.showToast('✅ Proposal updated successfully', 'success');
       } else {
         await APP_API.post('/proposals', payload);
-        if (window.showToast) window.showToast('🚀 Proposal created & link activated!');
+        if (window.showToast) window.showToast('🚀 Proposal created & link activated!', 'success');
       }
 
       this.closeProposalModal();
       await this.loadProposals();
     } catch (err) {
       console.error('Save proposal failed:', err);
-      if (window.showToast) window.showToast('Failed to save proposal', 'error');
+      if (window.showToast) window.showToast('Failed to save proposal: ' + (err.message || 'Server error'), 'error');
+    } finally {
+      if (saveBtn) {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Save & Publish Proposal';
+      }
     }
   },
 
@@ -716,36 +967,114 @@ window.APP_MODULES['proposals.js'] = {
     if (prop) this.openProposalModal(prop);
   },
 
-  async deleteProposal(id) {
-    if (!confirm(`Are you sure you want to delete proposal ${id}?`)) return;
-    try {
-      await APP_API.delete(`/proposals/${id}`);
-      if (window.showToast) window.showToast('Proposal deleted');
-      await this.loadProposals();
-    } catch (err) {
-      if (window.showToast) window.showToast('Failed to delete proposal', 'error');
+  deleteProposal(id, confirmed = false) {
+    const btn = document.getElementById(`btnDelProp_${id}`);
+    if (!confirmed) {
+      if (btn) {
+        btn.innerHTML = '⚠️ Confirm';
+        btn.style.color = '#fff';
+        btn.style.background = '#ef4444';
+        btn.onclick = () => window.APP_MODULES['proposals.js'].deleteProposal(id, true);
+        setTimeout(() => {
+          if (btn && btn.isConnected) {
+            btn.innerHTML = '🗑️';
+            btn.style.color = '#ef4444';
+            btn.style.background = '';
+            btn.onclick = () => window.APP_MODULES['proposals.js'].deleteProposal(id, false);
+          }
+        }, 4000);
+      }
+      return;
     }
+
+    (async () => {
+      try {
+        await APP_API.delete(`/proposals/${id}`);
+        if (window.showToast) window.showToast('Proposal deleted successfully', 'info');
+        await this.loadProposals();
+      } catch (err) {
+        if (window.showToast) window.showToast('Failed to delete proposal: ' + err.message, 'error');
+      }
+    })();
   },
 
   copyShareLink(url) {
-    navigator.clipboard.writeText(url).then(() => {
-      if (window.showToast) window.showToast('🔗 Public proposal link copied to clipboard!');
-    }).catch(() => {
-      prompt('Copy this proposal link:', url);
-    });
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(() => {
+        if (window.showToast) window.showToast('🔗 Public proposal link copied to clipboard!', 'success');
+      }).catch(() => {
+        this.fallbackCopyText(url);
+      });
+    } else {
+      this.fallbackCopyText(url);
+    }
   },
 
-  async convertToProject(id) {
-    if (!confirm(`Convert this proposal into an active production project?`)) return;
+  fallbackCopyText(text) {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.opacity = '0';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
     try {
-      const res = await APP_API.post(`/proposals/${id}/convert-to-project`, {});
+      document.execCommand('copy');
+      if (window.showToast) window.showToast('🔗 Public proposal link copied to clipboard!', 'success');
+    } catch (err) {
+      if (window.showToast) window.showToast('Link: ' + text, 'info');
+    }
+    document.body.removeChild(textArea);
+  },
+
+  openConvertModal(id) {
+    const p = this.proposals.find(x => x.id === id);
+    if (!p) return;
+    this.targetConvertProposal = p;
+    const modal = document.getElementById('proposalConvertModalOverlay');
+    if (!modal) return;
+
+    const clientEl = document.getElementById('convModalClient');
+    const projectEl = document.getElementById('convModalProject');
+    const budgetEl = document.getElementById('convModalBudget');
+    const timelineEl = document.getElementById('convModalTimeline');
+
+    if (clientEl) clientEl.textContent = p.clientName + (p.clientCompany ? ` (${p.clientCompany})` : '');
+    if (projectEl) projectEl.textContent = p.projectTitle || 'AI Project';
+    if (budgetEl) budgetEl.textContent = `${p.currency === 'USD' ? '$' : '৳'}${Number(p.oneTimeTotal || 0).toLocaleString()} (One-Time) + ${p.currency === 'USD' ? '$' : '৳'}${Number(p.recurringTotal || 0).toLocaleString()}/mo Retainer`;
+    if (timelineEl) timelineEl.textContent = p.timeline || '10–14 Working Days';
+
+    modal.style.display = 'flex';
+  },
+
+  closeConvertModal() {
+    const modal = document.getElementById('proposalConvertModalOverlay');
+    if (modal) modal.style.display = 'none';
+    this.targetConvertProposal = null;
+  },
+
+  async executeConvertToProject() {
+    if (!this.targetConvertProposal) return;
+    const p = this.targetConvertProposal;
+    const btn = document.getElementById('btnExecuteConvert');
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = '⏳ Converting to Project...';
+    }
+    try {
+      const res = await APP_API.post(`/proposals/${p.id}/convert-to-project`, {});
       if (res && res.success) {
-        if (window.showToast) window.showToast(`🚀 Converted to Project ${res.projectId}!`);
+        this.closeConvertModal();
+        if (window.showToast) window.showToast(`🚀 Converted to Project ${res.projectId}! Active in Project Pipeline.`, 'success');
         await this.loadProposals();
       }
     } catch (err) {
-      console.error('Conversion failed:', err);
-      if (window.showToast) window.showToast('Failed to convert proposal to project', 'error');
+      if (window.showToast) window.showToast('Failed to convert proposal: ' + err.message, 'error');
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = '🚀 Confirm & Convert to Project';
+      }
     }
   }
 };

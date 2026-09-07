@@ -149,6 +149,10 @@
       "dest": "/public/auth.html"
     },
     {
+      "src": "/sprint(.*)",
+      "dest": "/public/sprint.html"
+    },
+    {
       "src": "/proposal(.*)",
       "dest": "/public/proposal.html"
     },

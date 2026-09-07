@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="color-scheme" content="dark">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GRO10X — Sprint 01: Idea to Reality (Cohort 1)</title>
+  <meta name="description" content="Turn your startup idea into a market-ready prototype in 30 days. 4 founders selected. Tech, network, and capital readiness backed by GRO10X.">
+  
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --font-main: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --bg-dark: #070b12;
+      --card-bg: rgba(15, 23, 42, 0.75);
+      --card-border: rgba(0, 223, 137, 0.2);
+      --card-border-glow: rgba(0, 223, 137, 0.4);
+      --accent-mint: #00df89;
+      --accent-cyan: #06b6d4;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: var(--font-main);
+      min-height: 100vh;
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    /* Subtle background grid & glow */
+    .bg-grid {
+      position: fixed;
+      inset: 0;
+      background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .glow-sphere {
+      position: fixed;
+      width: 500px;
+      height: 500px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0, 223, 137, 0.12) 0%, rgba(6, 182, 212, 0.05) 50%, transparent 70%);
+      filter: blur(80px);
+      pointer-events: none;
+      z-index: 0;
+      top: -100px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 5rem;
+    }
+
+    /* Top Nav */
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 3.5rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    }
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      text-decoration: none;
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: #fff;
+    }
+    .brand-logo span {
+      color: var(--accent-mint);
+    }
+    .badge-cohort {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.35rem 0.85rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      background: rgba(0, 223, 137, 0.1);
+      border: 1px solid rgba(0, 223, 137, 0.3);
+      color: var(--accent-mint);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .badge-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent-mint);
+      box-shadow: 0 0 8px var(--accent-mint);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0% { opacity: 0.4; }
+      50% { opacity: 1; }
+      100% { opacity: 0.4; }
+    }
+
+    /* Hero Section */
+    .hero {
+      text-align: center;
+      margin-bottom: 3.5rem;
+    }
+    .hero h1 {
+      font-size: clamp(2.2rem, 5vw, 3.4rem);
+      font-weight: 900;
+      line-height: 1.15;
+      letter-spacing: -1.5px;
+      margin-bottom: 1.25rem;
+      background: linear-gradient(135deg, #ffffff 30%, #a7f3d0 70%, #00df89 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero p {
+      font-size: clamp(1.05rem, 2vw, 1.25rem);
+      color: var(--text-muted);
+      max-width: 680px;
+      margin: 0 auto 2rem;
+    }
+
+    /* Stat Pills */
+    .stat-row {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 3rem;
+    }
+    .stat-pill {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 0.75rem 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .stat-val {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--accent-mint);
+      font-family: var(--font-mono);
+    }
+    .stat-lbl {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Grid of Pillars */
+    .pillars-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 4rem;
+    }
+    .pillar-card {
+      background: var(--card-bg);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 1.8rem;
+      backdrop-filter: blur(16px);
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .pillar-card:hover {
+      transform: translateY(-3px);
+      border-color: var(--card-border-glow);
+    }
+    .pillar-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      background: rgba(0, 223, 137, 0.1);
+      border: 1px solid rgba(0, 223, 137, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      margin-bottom: 1.2rem;
+    }
+    .pillar-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      color: #fff;
+    }
+    .pillar-desc {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.55;
+    }
+
+    /* Timeline Box */
+    .timeline-box {
+      background: rgba(15, 23, 42, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
+      padding: 2.5rem 2rem;
+      margin-bottom: 4rem;
+    }
+    .timeline-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .timeline-header h2 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 0.4rem;
+    }
+    .timeline-steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      position: relative;
+    }
+    .step-item {
+      position: relative;
+      padding-left: 1rem;
+      border-left: 2px solid rgba(0, 223, 137, 0.3);
+    }
+    .step-badge {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--accent-mint);
+      margin-bottom: 0.3rem;
+    }
+    .step-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.3rem;
+    }
+    .step-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+
+    /* Application Form Wrapper */
+    .form-wrapper {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid var(--card-border);
+      box-shadow: 0 16px 50px rgba(0, 223, 137, 0.08);
+      border-radius: 24px;
+      padding: clamp(1.8rem, 4vw, 3rem);
+      max-width: 720px;
+      margin: 0 auto;
+      backdrop-filter: blur(20px);
+    }
+    .form-head {
+      text-align: center;
+      margin-bottom: 2.2rem;
+    }
+    .form-head h2 {
+      font-size: 1.8rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin-bottom: 0.5rem;
+      color: #fff;
+    }
+    .form-head p {
+      font-size: 0.92rem;
+      color: var(--text-muted);
+    }
+
+    .form-group {
+      margin-bottom: 1.4rem;
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.2rem;
+    }
+    @media (max-width: 640px) {
+      .form-row { grid-template-columns: 1fr; }
+    }
+    label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 0.45rem;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+    label span.req {
+      color: #ef4444;
+    }
+    input, select, textarea {
+      width: 100%;
+      background: rgba(7, 11, 18, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 12px;
+      padding: 0.85rem 1rem;
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.95rem;
+      transition: all 0.2s;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--accent-mint);
+      background: rgba(0, 223, 137, 0.03);
+      box-shadow: 0 0 12px rgba(0, 223, 137, 0.2);
+    }
+    textarea {
+      resize: vertical;
+      min-height: 90px;
+    }
+    select option {
+      background: #0f172a;
+      color: #fff;
+    }
+
+    .btn-submit {
+      width: 100%;
+      background: linear-gradient(135deg, #00df89 0%, #00c9a7 100%);
+      color: #070b12;
+      font-family: inherit;
+      font-size: 1.05rem;
+      font-weight: 800;
+      padding: 1rem;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      margin-top: 1rem;
+      transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    .btn-submit:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 223, 137, 0.35);
+    }
+    .btn-submit:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .form-footer-note {
+      text-align: center;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 1.2rem;
+    }
+
+    /* Success confirmation state */
+    .success-panel {
+      display: none;
+      text-align: center;
+      padding: 2.5rem 1.5rem;
+    }
+    .success-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: rgba(0, 223, 137, 0.15);
+      border: 2px solid var(--accent-mint);
+      color: var(--accent-mint);
+      font-size: 2rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.2rem;
+    }
+    .success-panel h3 {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 0.6rem;
+    }
+    .success-panel p {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      margin-bottom: 1.8rem;
+      line-height: 1.6;
+    }
+    .success-action-box {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 1.2rem;
+      margin-bottom: 1.5rem;
+      text-align: left;
+      font-size: 0.88rem;
+    }
+
+    /* Toast */
+    .error-msg {
+      display: none;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid #ef4444;
+      color: #fca5a5;
+      padding: 0.8rem 1rem;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      margin-bottom: 1.2rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <div class="glow-sphere"></div>
+
+  <div class="container">
+    <!-- Navigation -->
+    <header class="nav">
+      <a href="/" class="brand-logo">
+        GRO<span>10X</span>
+      </a>
+      <div class="badge-cohort">
+        <span class="badge-dot"></span>
+        Cohort 01 • 4 Spots
+      </div>
+    </header>
+
+    <!-- Hero -->
+    <section class="hero">
+      <h1>Turn Your Raw Idea Into a<br>Market-Ready Product in 30 Days</h1>
+      <p>
+        We are selecting 4 ambitious founders. You bring the domain insight and problem — 
+        GRO10X backs you with full-stack technology, market distribution, and angel investor pitch access.
+      </p>
+
+      <div class="stat-row">
+        <div class="stat-pill">
+          <span class="stat-val">30 Days</span>
+          <span class="stat-lbl">Sprint Velocity</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-val">4 Founders</span>
+          <span class="stat-lbl">Strictly Capped</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-val">$0 Dev Cost</span>
+          <span class="stat-lbl">Fully Sponsored</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-val">Demo Day</span>
+          <span class="stat-lbl">Angel Access</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3 Pillars -->
+    <section class="pillars-grid">
+      <div class="pillar-card">
+        <div class="pillar-icon">🛠</div>
+        <h3 class="pillar-title">Production Tech & AI</h3>
+        <p class="pillar-desc">
+          No slow freelancers or messy wireframes. Our engineering team designs, builds, and deploys your high-performance web/mobile product from day one.
+        </p>
+      </div>
+      <div class="pillar-card">
+        <div class="pillar-icon">🤝</div>
+        <h3 class="pillar-title">Pilots & Beta Users</h3>
+        <p class="pillar-desc">
+          We don't launch into a void. We plug your prototype into active ecosystem channels to land your first 50–100 beta users or corporate pilot LOIs.
+        </p>
+      </div>
+      <div class="pillar-card">
+        <div class="pillar-icon">📈</div>
+        <h3 class="pillar-title">Capital & Investor Readiness</h3>
+        <p class="pillar-desc">
+          If unit economics and customer validation hold up, we package your deck and introduce you directly to the Gro10x Capital angel investor network.
+        </p>
+      </div>
+    </section>
+
+    <!-- Timeline -->
+    <section class="timeline-box">
+      <div class="timeline-header">
+        <h2>The 30-Day Venture Blueprint</h2>
+        <p style="color: var(--text-muted); font-size: 0.9rem;">High-intensity, milestone-driven execution</p>
+      </div>
+      <div class="timeline-steps">
+        <div class="step-item">
+          <div class="step-badge">WEEK 01</div>
+          <div class="step-title">Scope & Architecture</div>
+          <div class="step-desc">Problem interview, feature freeze, UX wireframes & database architecture lock.</div>
+        </div>
+        <div class="step-item">
+          <div class="step-badge">WEEKS 02 - 03</div>
+          <div class="step-title">High-Velocity Build</div>
+          <div class="step-desc">Full-stack production development, AI integration, responsive design & internal testing.</div>
+        </div>
+        <div class="step-item">
+          <div class="step-badge">WEEK 04</div>
+          <div class="step-title">Launch & Traction</div>
+          <div class="step-desc">Go-to-market rollout, beta user onboarding, feedback loop & investor pitch deck finalization.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Application Form -->
+    <section class="form-wrapper">
+      <div id="form-container">
+        <div class="form-head">
+          <h2>Apply for Sprint 01</h2>
+          <p>Takes ~3 minutes. No formal business plan or pitch deck required.</p>
+        </div>
+
+        <div id="error-box" class="error-msg"></div>
+
+        <form id="sprint-form" onsubmit="handleSprintSubmit(event)">
+          <!-- Honeypot -->
+          <input type="text" name="website_url" style="display:none" tabindex="-1" autocomplete="off">
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Your Full Name <span class="req">*</span></label>
+              <input type="text" id="founder-name" required placeholder="e.g. Tanvir Ahmed">
+            </div>
+            <div class="form-group">
+              <label>Work Email <span class="req">*</span></label>
+              <input type="email" id="founder-email" required placeholder="name@company.com">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>WhatsApp / Phone <span class="req">*</span></label>
+              <input type="tel" id="founder-phone" required placeholder="+880 17... / +1 ...">
+            </div>
+            <div class="form-group">
+              <label>Startup / Idea Name <span class="req">*</span></label>
+              <input type="text" id="startup-name" required placeholder="e.g. QuickLogistics AI">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>What specific problem are you solving & for whom? <span class="req">*</span></label>
+            <textarea id="idea-problem" required placeholder="Describe the acute pain point and your target customers in 2-3 sentences..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Why are YOU the right person to build this? <span class="req">*</span></label>
+            <textarea id="founder-edge" required placeholder="Your domain expertise, industry background, or personal connection to this problem..."></textarea>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Current Status <span class="req">*</span></label>
+              <select id="idea-stage" required>
+                <option value="Raw Concept">Raw Concept / Idea in mind</option>
+                <option value="Wireframes Ready">Wireframes / Figma Designs ready</option>
+                <option value="Customer Validated">Talked to 10+ potential customers</option>
+                <option value="Domain Expert">Domain Expert seeking technical co-builder</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Weekly Time Commitment <span class="req">*</span></label>
+              <select id="founder-commitment" required>
+                <option value="15-20 hrs/week">15–20 hours/week (Sprint mode)</option>
+                <option value="Full-Time Obsession">Full-Time (30+ hours/week)</option>
+              </select>
+            </div>
+          </div>
+
+          <button type="submit" id="btn-submit" class="btn-submit">
+            Submit Application 🚀
+          </button>
+        </form>
+
+        <p class="form-footer-note">
+          🔒 Your idea is safe with us. We sign NDAs upon selection. Non-selected high-scoring applicants receive a free technical architecture teardown.
+        </p>
+      </div>
+
+      <!-- Success Panel -->
+      <div id="success-panel" class="success-panel">
+        <div class="success-icon">✓</div>
+        <h3>Application Received!</h3>
+        <p>
+          Thank you for applying to GRO10X Sprint 01. Our investment & product evaluation committee reviews submissions on a rolling basis.
+        </p>
+        <div class="success-action-box">
+          <strong style="color: var(--accent-mint); display: block; margin-bottom: 0.3rem;">What happens next:</strong>
+          1. Initial screening of problem-solution fit within 48 hours.<br>
+          2. Shortlisted founders will receive a calendar invite for a 20-minute Technical Fit call.<br>
+          3. All applicants will receive a complimentary Product Architecture & Milestone roadmap.
+        </div>
+        <a href="/" style="color: var(--accent-mint); text-decoration: none; font-weight: 700; font-size: 0.9rem;">← Back to GRO10X Home</a>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    async function handleSprintSubmit(event) {
+      event.preventDefault();
+      const errBox = document.getElementById('error-box');
+      const submitBtn = document.getElementById('btn-submit');
+      errBox.style.display = 'none';
+
+      const name = document.getElementById('founder-name').value.trim();
+      const email = document.getElementById('founder-email').value.trim();
+      const phone = document.getElementById('founder-phone').value.trim();
+      const startup = document.getElementById('startup-name').value.trim();
+      const problem = document.getElementById('idea-problem').value.trim();
+      const edge = document.getElementById('founder-edge').value.trim();
+      const stage = document.getElementById('idea-stage').value;
+      const commitment = document.getElementById('founder-commitment').value;
+
+      if (!name || !email || !phone || !startup || !problem || !edge) {
+        errBox.textContent = 'Please fill out all required fields.';
+        errBox.style.display = 'block';
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Submitting Application...';
+
+      const notesPayload = [
+        `[SPRINT 01 APPLICANT]`,
+        `Startup Concept: ${startup}`,
+        `Current Stage: ${stage}`,
+        `Weekly Commitment: ${commitment}`,
+        `Problem & Audience:\n${problem}`,
+        `Founder Unfair Advantage:\n${edge}`
+      ].join('\n\n');
+
+      const payload = {
+        name: name,
+        contactPerson: name,
+        email: email,
+        phone: phone,
+        whatsapp: phone,
+        company: startup,
+        clientName: startup,
+        source: 'Sprint Cohort 01 - LinkedIn',
+        service: 'Venture Studio Sprint',
+        serviceTitle: 'Sprint 01 Idea to Reality',
+        category: 'Venture Studio',
+        stage: 'New Inquiry',
+        notes: notesPayload,
+        budget: '$0 (Sprint Cohort)',
+        utm_source: new URLSearchParams(window.location.search).get('utm_source') || 'linkedin',
+        utm_campaign: new URLSearchParams(window.location.search).get('utm_campaign') || 'sprint_cohort_1'
+      };
+
+      try {
+        const res = await fetch('/api/leads', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        if (res.ok && (data.success || data.id || data.isDuplicate)) {
+          document.getElementById('form-container').style.display = 'none';
+          document.getElementById('success-panel').style.display = 'block';
+          window.scrollTo({ top: document.querySelector('.form-wrapper').offsetTop - 40, behavior: 'smooth' });
+        } else {
+          errBox.textContent = data.error || 'Unable to submit application. Please try again or message us on WhatsApp.';
+          errBox.style.display = 'block';
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Submit Application 🚀';
+        }
+      } catch (err) {
+        console.error('Submission failed:', err);
+        errBox.textContent = 'Network error. Please check your connection or contact +880 1711-019550.';
+        errBox.style.display = 'block';
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit Application 🚀';
+      }
+    }
+  </script>
+</body>
+</html>

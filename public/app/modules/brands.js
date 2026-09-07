@@ -4501,7 +4501,7 @@ window.APP_MODULES.brands = async function(container) {
           body: JSON.stringify(payload)
         });
         const data = await res.json();
-        if (!data.success) throw new Error(data.error || 'Submission failed');
+        if (!data.success) throw new Error(data.error?.message || (typeof data.error === 'string' ? data.error : null) || 'Submission failed');
 
         if (window.showToast) window.showToast(`🎉 ${productCode} submitted for Admin Review!`, 'success');
         // Patch status in in-memory state — do NOT reload from API
@@ -4574,7 +4574,7 @@ window.APP_MODULES.brands = async function(container) {
           body: JSON.stringify(payload)
         });
         const data = await res.json();
-        if (!data.success) throw new Error(data.error || 'Failed to save Studio draft');
+        if (!data.success) throw new Error(data.error?.message || (typeof data.error === 'string' ? data.error : null) || 'Failed to save Studio draft');
 
         if (window.showToast) window.showToast(`✅ ${tabName === 'all' ? 'All Studio changes' : tabName.toUpperCase()} saved! (${data.studioPercent || 0}% Complete)`, 'success');
 
@@ -4750,7 +4750,7 @@ window.APP_MODULES.brands = async function(container) {
 
         const data = await res.json().catch(() => ({}));
         if (!res.ok || !data.success) {
-          throw new Error(data.error || `HTTP ${res.status} generating access pass`);
+          throw new Error(data.error?.message || (typeof data.error === 'string' ? data.error : null) || `HTTP ${res.status} generating access pass`);
         }
 
         // Patch in-memory state
@@ -4834,7 +4834,7 @@ window.APP_MODULES.brands = async function(container) {
         } catch (e) {
           throw new Error(`Server returned error (${res.status}): ${text.slice(0, 100)}`);
         }
-        if (!data.success) throw new Error(data.error || 'Upload failed');
+        if (!data.success) throw new Error(data.error?.message || (typeof data.error === 'string' ? data.error : null) || 'Upload failed');
 
         window._droppedVaultFile = null;
         window.showToast('✅ Deliverable saved to Vault!', 'success');
@@ -5127,7 +5127,7 @@ window.APP_MODULES.brands = async function(container) {
         } catch (e) {
           throw new Error(`Server returned error (${res.status}): ${text.slice(0, 100)}`);
         }
-        if (!data.success || !data.audit) throw new Error(data.error || 'AI Audit failed');
+        if (!data.success || !data.audit) throw new Error(data.error?.message || (typeof data.error === 'string' ? data.error : null) || 'AI Audit failed');
 
         window.showToast(`🧠 AI Audit complete! Quality Score: ${data.audit.overall_score}/10`, 'success');
 
@@ -5173,7 +5173,7 @@ window.APP_MODULES.brands = async function(container) {
           body: JSON.stringify({ price })
         });
         const data = await res.json();
-        if (!data.success) throw new Error(data.error || 'Failed to update price');
+        if (!data.success) throw new Error(data.error?.message || (typeof data.error === 'string' ? data.error : null) || 'Failed to update price');
 
         window.showToast(`🏷️ Price updated to $${Number(price).toFixed(2)}!`, 'success');
         // Patch price in in-memory state — do NOT reload from API
@@ -5237,7 +5237,7 @@ window.APP_MODULES.brands = async function(container) {
           body: JSON.stringify({ productCode })
         });
         const data = await res.json().catch(() => ({}));
-        if (!res.ok || !data.success) throw new Error(data.error || 'Failed refreshing briefs');
+        if (!res.ok || !data.success) throw new Error(data.error?.message || (typeof data.error === 'string' ? data.error : null) || 'Failed refreshing briefs');
 
         if (state.productsCatalog && state.productsCatalog[brandId]) {
           const prod = state.productsCatalog[brandId].find(p => p.code === productCode);
@@ -5280,7 +5280,7 @@ window.APP_MODULES.brands = async function(container) {
         });
 
         const data = await res.json().catch(() => ({}));
-        if (!res.ok || !data.success) throw new Error(data.error || `Failed uploading ${file.name}`);
+        if (!res.ok || !data.success) throw new Error(data.error?.message || (typeof data.error === 'string' ? data.error : null) || `Failed uploading ${file.name}`);
 
         // Update in-memory state
         if (state.productsCatalog && state.productsCatalog[brandId]) {
@@ -5323,7 +5323,7 @@ window.APP_MODULES.brands = async function(container) {
           body: JSON.stringify({ productCode, rank: slotNum })
         });
         const data = await res.json().catch(() => ({}));
-        if (!res.ok || !data.success) throw new Error(data.error || 'Failed deleting slot');
+        if (!res.ok || !data.success) throw new Error(data.error?.message || (typeof data.error === 'string' ? data.error : null) || 'Failed deleting slot');
 
         if (state.productsCatalog && state.productsCatalog[brandId]) {
           const prod = state.productsCatalog[brandId].find(p => p.code === productCode);
@@ -5601,7 +5601,7 @@ window.APP_MODULES.brands = async function(container) {
         }
 
         const data = await res.json();
-        if (!data.success) throw new Error(data.error || 'Etsy image push failed');
+        if (!data.success) throw new Error(data.error?.message || (typeof data.error === 'string' ? data.error : null) || 'Etsy image push failed');
 
         window.showToast(`🎉 ${data.data.uploadedCount} mockups are now live on Etsy listing #${prod.etsyListingId}!`, 'success');
         if (statusEl) {
@@ -5640,7 +5640,7 @@ window.APP_MODULES.brands = async function(container) {
           })
         });
         const data = await res.json();
-        if (!data.success) throw new Error(data.error || 'Failed to attach file to Etsy');
+        if (!data.success) throw new Error(data.error?.message || (typeof data.error === 'string' ? data.error : null) || 'Failed to attach file to Etsy');
 
         window.showToast(`🎉 PDF Deliverable successfully attached to Etsy listing #${prod.etsyListingId}!`, 'success');
         if (statusEl) {
@@ -5812,7 +5812,7 @@ window.APP_MODULES.brands = async function(container) {
         });
         const data = await res.json();
         if (!data.success || !data.data?.authUrl) {
-          throw new Error(data.error || 'Could not generate OAuth authorization URL');
+          throw new Error(data.error?.message || (typeof data.error === 'string' ? data.error : null) || 'Could not generate OAuth authorization URL');
         }
         window.location.href = data.data.authUrl;
       } catch (err) {
@@ -5848,7 +5848,7 @@ window.APP_MODULES.brands = async function(container) {
           credentials: 'same-origin'
         });
         const data = await res.json();
-        if (!data.success) throw new Error(data.error || 'Health check failed');
+        if (!data.success) throw new Error(data.error?.message || (typeof data.error === 'string' ? data.error : null) || 'Health check failed');
 
         const report = data.data;
         const passBadge = document.getElementById('etsyPassRateBadge');
@@ -5876,7 +5876,7 @@ window.APP_MODULES.brands = async function(container) {
           body: JSON.stringify({ product: prod })
         });
         const data = await res.json();
-        if (!data.success) throw new Error(data.error || 'Failed');
+        if (!data.success) throw new Error(data.error?.message || (typeof data.error === 'string' ? data.error : null) || 'Failed');
 
         const singleReport = {
           brandName: state.brands.find(b => b.id === brandId)?.name,
@@ -6140,7 +6140,7 @@ window.APP_MODULES.brands = async function(container) {
         try {
           const data = JSON.parse(xhr.responseText);
           if (xhr.status >= 400 || !data.success) {
-            throw new Error(data.error || `Upload failed with status ${xhr.status}`);
+            throw new Error(data.error?.message || (typeof data.error === 'string' ? data.error : null) || `Upload failed with status ${xhr.status}`);
           }
 
           if (window.showToast) window.showToast(`✅ Video saved to Cloud Vault (${totalMb} MB)!`, 'success');
@@ -6240,7 +6240,7 @@ window.APP_MODULES.brands = async function(container) {
         }
 
         const data = await res.json();
-        if (!data.success) throw new Error(data.error || 'Video push to Etsy failed');
+        if (!data.success) throw new Error(data.error?.message || (typeof data.error === 'string' ? data.error : null) || 'Video push to Etsy failed');
 
         if (window.showToast) window.showToast(`🎉 Video is now live on Etsy listing #${prod.etsyListingId}!`, 'success');
         if (statusEl) statusEl.innerHTML = `<span style="color:#00df89; font-weight:700;">🎉 Video Live on Etsy listing #${prod.etsyListingId}!</span>`;
@@ -6333,7 +6333,7 @@ window.APP_MODULES.brands = async function(container) {
           body: JSON.stringify({ title, announcement, sale_message })
         });
         const data = await res.json();
-        if (!data.success) throw new Error(data.error || 'Failed updating shop profile');
+        if (!data.success) throw new Error(data.error?.message || (typeof data.error === 'string' ? data.error : null) || 'Failed updating shop profile');
 
         if (window.showToast) window.showToast('✅ Etsy Shop Profile updated successfully!', 'success');
         document.getElementById('shopProfileModal').style.display = 'none';
@@ -6425,7 +6425,7 @@ window.APP_MODULES.brands = async function(container) {
           body: JSON.stringify({ title })
         });
         const data = await res.json();
-        if (!data.success) throw new Error(data.error || 'Failed to create section');
+        if (!data.success) throw new Error(data.error?.message || (typeof data.error === 'string' ? data.error : null) || 'Failed to create section');
 
         if (window.showToast) window.showToast(`✅ Section "${title}" created on Etsy!`, 'success');
         window.BrandsModule.openSectionsModal(brandId);
@@ -6513,7 +6513,7 @@ window.APP_MODULES.brands = async function(container) {
           body: JSON.stringify({ title, price, quantity, description, tags, productCode })
         });
         const data = await res.json();
-        if (!data.success) throw new Error(data.error || 'Failed to update live listing');
+        if (!data.success) throw new Error(data.error?.message || (typeof data.error === 'string' ? data.error : null) || 'Failed to update live listing');
 
         if (window.showToast) window.showToast(`✅ Live Etsy listing #${prod.etsyListingId} updated!`, 'success');
         document.getElementById('editLiveListingModal').style.display = 'none';
@@ -6537,7 +6537,7 @@ window.APP_MODULES.brands = async function(container) {
         });
         const data = await res.json();
         if (!res.ok || data.success === false) {
-          throw new Error(data.error || 'Failed to sync with Etsy shop');
+          throw new Error(data.error?.message || (typeof data.error === 'string' ? data.error : null) || data.message || 'Failed to sync with Etsy shop');
         }
 
         const count = data.data?.reconciledCount ?? data.reconciledCount ?? (data.data?.matchedProducts?.length || 0);
@@ -6580,7 +6580,7 @@ window.APP_MODULES.brands = async function(container) {
           body: JSON.stringify({ productCode })
         });
         const data = await res.json();
-        if (!data.success) throw new Error(data.error || 'Failed to renew listing');
+        if (!data.success) throw new Error(data.error?.message || (typeof data.error === 'string' ? data.error : null) || 'Failed to renew listing');
 
         if (window.showToast) window.showToast(`🔄 Renewed ${prod.code}! $0.20 logged. Expiry extended by 120 days.`, 'success');
         state = await loadBrandsStateFromAPI();
@@ -6606,7 +6606,7 @@ window.APP_MODULES.brands = async function(container) {
           body: JSON.stringify({ productCode })
         });
         const data = await res.json();
-        if (!data.success) throw new Error(data.error || 'Failed to deactivate');
+        if (!data.success) throw new Error(data.error?.message || (typeof data.error === 'string' ? data.error : null) || 'Failed to deactivate');
 
         if (window.showToast) window.showToast(`⏸ Listing ${prod.code} paused on Etsy`, 'info');
         state = await loadBrandsStateFromAPI();
@@ -6630,7 +6630,7 @@ window.APP_MODULES.brands = async function(container) {
           body: JSON.stringify({ productCode })
         });
         const data = await res.json();
-        if (!data.success) throw new Error(data.error || 'Failed to reactivate');
+        if (!data.success) throw new Error(data.error?.message || (typeof data.error === 'string' ? data.error : null) || 'Failed to reactivate');
 
         if (window.showToast) window.showToast(`▶️ Listing ${prod.code} reactivated live on Etsy!`, 'success');
         state = await loadBrandsStateFromAPI();
@@ -6886,7 +6886,7 @@ window.APP_MODULES.brands = async function(container) {
           body: JSON.stringify({ name, niche, type, tagline, target12mo })
         });
         const data = await res.json();
-        if (!data.success) throw new Error(data.error || 'Failed creating brand');
+        if (!data.success) throw new Error(data.error?.message || (typeof data.error === 'string' ? data.error : null) || 'Failed creating brand');
 
         if (window.showToast) window.showToast(`🎉 Created Brand "${name}"!`, 'success');
         document.getElementById('addBrandModal').style.display = 'none';
@@ -7011,7 +7011,7 @@ window.APP_MODULES.brands = async function(container) {
           body: JSON.stringify({ autoActivate: true })
         });
         const data = await res.json();
-        if (!data.success) throw new Error(data.error || 'Bulk publish failed');
+        if (!data.success) throw new Error(data.error?.message || (typeof data.error === 'string' ? data.error : null) || 'Bulk publish failed');
 
         const result = data.data;
         if (logEl) {
@@ -7222,7 +7222,7 @@ window.APP_MODULES.brands = async function(container) {
           })
         });
         const data = await res.json();
-        if (!data.success) throw new Error(data.error || 'Approval failed');
+        if (!data.success) throw new Error(data.error?.message || (typeof data.error === 'string' ? data.error : null) || 'Approval failed');
 
         if (window.showToast) window.showToast(`🎉 ${productCode} QA Approved & set to Live!`, 'success');
         state = await loadBrandsStateFromAPI();
@@ -7277,7 +7277,7 @@ window.APP_MODULES.brands = async function(container) {
           body: JSON.stringify({ productCodes: [prod.code], autoActivate: true, productOverrides: [prod] })
         });
         const data = await res.json();
-        if (!data.success) throw new Error(data.error || 'Failed to publish product');
+        if (!data.success) throw new Error(data.error?.message || (typeof data.error === 'string' ? data.error : null) || 'Failed to publish product');
 
         if (data.data?.publishedCount === 0 && data.data?.errors?.length > 0) {
           const errMsg = data.data.errors[0].reason || 'Pre-listing validation failed';
@@ -7456,7 +7456,7 @@ window.APP_MODULES.brands = async function(container) {
           body: JSON.stringify({ dbmId, targetPct, bonusUsd, note, approved })
         });
         const data = await res.json();
-        if (!data.success) throw new Error(data.error || 'Failed to save incentive');
+        if (!data.success) throw new Error(data.error?.message || (typeof data.error === 'string' ? data.error : null) || 'Failed to save incentive');
 
         if (window.showToast) window.showToast('✅ Mid-month sprint bonus saved & active!', 'success');
         document.getElementById('aiSeoModal').style.display = 'none';
@@ -7476,7 +7476,7 @@ window.APP_MODULES.brands = async function(container) {
           credentials: 'same-origin'
         });
         const data = await res.json();
-        if (!data.success) throw new Error(data.error || 'Evaluation failed');
+        if (!data.success) throw new Error(data.error?.message || (typeof data.error === 'string' ? data.error : null) || 'Evaluation failed');
 
         if (window.showToast) {
           window.showToast('📢 20th Mid-Month evaluation brief generated & sent to Telegram!', 'success');
@@ -7503,7 +7503,7 @@ window.APP_MODULES.brands = async function(container) {
           body: JSON.stringify({ autoPublish: true })
         });
         const data = await res.json();
-        if (!data.success) throw new Error(data.error || 'Approval failed');
+        if (!data.success) throw new Error(data.error?.message || (typeof data.error === 'string' ? data.error : null) || 'Approval failed');
 
         if (window.showToast) window.showToast(`🎉 Product ${productCode} Approved & Published Live!`, 'success');
         state = await loadBrandsStateFromAPI();
@@ -7575,7 +7575,7 @@ window.APP_MODULES.brands = async function(container) {
           body: JSON.stringify({ adminRevisionNote: note })
         });
         const data = await res.json();
-        if (!data.success) throw new Error(data.error || 'Action failed');
+        if (!data.success) throw new Error(data.error?.message || (typeof data.error === 'string' ? data.error : null) || 'Action failed');
 
         if (window.showToast) window.showToast(`📝 Revision requested for ${productCode}`, 'warning');
         state = await loadBrandsStateFromAPI();

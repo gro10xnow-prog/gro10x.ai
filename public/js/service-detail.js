@@ -916,7 +916,7 @@ async function submitServiceBooking(e) {
       feedback.innerHTML = `🎉 <strong>Booking Received!</strong> Our lead engineer will contact you on WhatsApp/Email within 24 hours to begin sprint onboarding.`;
       document.getElementById('serviceBookingForm').reset();
     } else {
-      throw new Error(data.error || 'Failed to submit');
+      throw new Error(data.error?.message || (typeof data.error === 'string' ? data.error : null) || 'Failed to submit');
     }
   } catch (err) {
     feedback.style.display = 'block';

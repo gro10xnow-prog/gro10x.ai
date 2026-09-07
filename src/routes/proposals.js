@@ -347,6 +347,7 @@ router.post('/:id/convert-to-project', requireAuth, requireAdmin, async (req, re
       workflow_type: 'ai_automation',
       status: 'Active',
       budget: Number(proposal.one_time_total || proposal.oneTimeTotal || 0),
+      currency: proposal.currency || 'BDT',
       start_date: new Date().toISOString().split('T')[0],
       due_date: new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0],
       created_at: new Date().toISOString()
@@ -391,7 +392,7 @@ router.post('/:id/convert-to-project', requireAuth, requireAdmin, async (req, re
 // AI PROPOSAL DRAFTING (Gemini Integration)
 // ─────────────────────────────────────────────────────────────────────────────
 
-const GEMINI_MODELS = ['gemini-3.6-flash', 'gemini-flash-latest', 'gemini-3.5-flash-lite'];
+const GEMINI_MODELS = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-2.5-pro', 'gemini-1.5-pro'];
 
 function callGeminiAPI(model, prompt, key) {
   return new Promise((resolve, reject) => {

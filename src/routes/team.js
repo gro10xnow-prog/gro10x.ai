@@ -370,6 +370,9 @@ router.get('/roster', requireAuth, async (req, res) => {
   }
 });
 
+// Alias for EOD reports: GET /api/team/eod forwards to canonical /api/eod handler
+router.use('/eod', require('./eod'));
+
 // ─────────────────────────────────────────────────────────────────────────────
 // GET /api/team/tasks?telegramId=xxx   ← Mini App tasks page
 // ─────────────────────────────────────────────────────────────────────────────
