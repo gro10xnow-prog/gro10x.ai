@@ -49,7 +49,7 @@ Tag a founder who is sitting on a high-potential idea. Let’s bring it to life 
 
 ```markdown
 Here is the direct application link for those ready to submit immediately:
-👉 https://gro10x.ai/sprint
+👉 https://gro10x-ai.vercel.app/sprint
 
 What to expect in the application:
 - Takes under 3 minutes
@@ -69,7 +69,7 @@ Comment "SPRINT" if you'd like us to review your concept on priority! ⚡
 Hey [First Name], thanks for reaching out on the Sprint 01 post! 🚀
 
 Here is the priority application portal:
-👉 https://gro10x.ai/sprint
+👉 https://gro10x-ai.vercel.app/sprint
 
 We’re selecting the 4 founders based on:
 1. Clarity of the problem being solved
