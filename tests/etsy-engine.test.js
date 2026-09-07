@@ -171,6 +171,14 @@ describe('Etsy API Route Endpoints', () => {
     
     expect([200, 400, 401, 403, 500]).toContain(res.status);
   });
+
+  test('POST /api/etsy/brands/999/sync-live-catalog fails gracefully for unconnected store', async () => {
+    const res = await request(app)
+      .post('/api/etsy/brands/999/sync-live-catalog');
+    
+    expect(res.status).toBe(400);
+    expect(res.body.success).toBe(false);
+  });
 });
 
 describe('Etsy Image and Deliverable Streaming Helpers', () => {

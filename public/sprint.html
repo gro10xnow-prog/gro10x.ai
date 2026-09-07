@@ -611,6 +611,15 @@
           2. Shortlisted founders will receive a calendar invite for a 20-minute Technical Fit call.<br>
           3. All applicants will receive a complimentary Product Architecture & Milestone roadmap.
         </div>
+
+        <div style="margin: 1.8rem 0 1.5rem;">
+          <a id="wa-fast-track-btn" href="https://wa.me/8801711019550" target="_blank" style="display:inline-flex; align-items:center; justify-content:center; gap:0.6rem; background:linear-gradient(135deg, #25D366 0%, #128C7E 100%); color:#ffffff; font-weight:800; font-size:1rem; padding:0.95rem 1.6rem; border-radius:14px; text-decoration:none; box-shadow:0 6px 20px rgba(37,211,102,0.35); transition:transform 0.2s;">
+            <span style="font-size:1.2rem;">💬</span>
+            <span>Fast-Track Screening on WhatsApp</span>
+          </a>
+          <div style="font-size:0.78rem; color:var(--text-muted); margin-top:0.5rem;">Skip the queue & introduce your startup directly to our Managing Director</div>
+        </div>
+
         <a href="/" style="color: var(--accent-mint); text-decoration: none; font-weight: 700; font-size: 0.9rem;">← Back to GRO10X Home</a>
       </div>
     </section>
@@ -677,7 +686,13 @@
         });
 
         const data = await res.json();
-        if (res.ok && (data.success || data.id || data.isDuplicate)) {
+        if (res.ok && (data.success || data.id || data.updated || data.isDuplicate)) {
+          const waMsg = encodeURIComponent(`Hi Tanvir, I just applied to GRO10X Sprint 01 with "${startup}"! Looking forward to screening.`);
+          const waBtn = document.getElementById('wa-fast-track-btn');
+          if (waBtn) {
+            waBtn.href = `https://wa.me/8801711019550?text=${waMsg}`;
+          }
+
           document.getElementById('form-container').style.display = 'none';
           document.getElementById('success-panel').style.display = 'block';
           window.scrollTo({ top: document.querySelector('.form-wrapper').offsetTop - 40, behavior: 'smooth' });

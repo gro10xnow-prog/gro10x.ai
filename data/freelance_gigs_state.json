@@ -172,7 +172,7 @@
       },
       "status": "Live",
       "liveUrl": "https://www.fiverr.com/farhan/build-your-pwa-mvp-48h",
-      "updatedAt": "2026-09-06T22:35:29.397Z",
+      "updatedAt": "2026-09-07T11:17:32.075Z",
       "titleBody": "build your web app or pwa mvp in 48 hours",
       "pricingMatrix": {
         "screens": {
@@ -266,98 +266,94 @@
       "category": "mobile-web",
       "platform": "fiverr",
       "gigIndex": 2,
-      "title": "I will build your ai websites & software in rapid sprint",
+      "title": "I will build AI web apps and SaaS platforms in 48 hours",
       "categorySelection": {
         "primary": "Programming & Tech",
-        "sub": "Vibe Coding",
-        "serviceType": "Development & MVP"
+        "sub": "Web Applications"
       },
       "tags": [
-        "ai websites software",
-        "fast delivery",
+        "ai web app",
+        "saas mvp",
         "supabase",
-        "node js",
-        "business solution"
+        "gemini ai",
+        "vercel deployment"
       ],
       "pricing": {
         "basic": {
-          "title": "Core MVP Sprint",
+          "title": "Sprint AI Web Landing",
           "price": 250,
           "deliveryDays": 2,
           "revisions": 2,
-          "description": "1 core feature working solution with responsive UI and live database connection.",
+          "description": "High-speed AI-ready web page deployed on Vercel with integrated Gemini AI form automation.",
           "features": [
-            "1 Core Feature",
-            "Supabase Database Setup",
-            "Responsive UI",
-            "Live Cloud Deployment",
-            "Source Code Handover"
+            "1 Page Web App",
+            "Gemini AI Lead Capture",
+            "Vercel Fast Hosting Setup"
           ]
         },
         "standard": {
-          "title": "Full Business Platform",
+          "title": "Full AI Web App MVP",
           "price": 550,
-          "deliveryDays": 5,
+          "deliveryDays": 4,
           "revisions": 3,
-          "description": "Complete 3-feature platform with auth, dynamic forms, notification triggers, and admin panel.",
+          "description": "Scalable SaaS MVP with Supabase PostgreSQL auth, Node.js backend, and Telegram Bot notifications.",
           "features": [
-            "3 Core Features",
-            "User Authentication",
-            "Notification Webhooks",
-            "Admin Dashboard",
-            "7 Days Support"
+            "Full SaaS MVP Setup",
+            "Supabase Auth & Database",
+            "Node.js Custom Backend",
+            "Telegram Alerts Integration"
           ]
         },
         "premium": {
-          "title": "Enterprise Suite",
-          "price": 1100,
-          "deliveryDays": 8,
+          "title": "Enterprise AI SaaS Sprint",
+          "price": 1200,
+          "deliveryDays": 7,
           "revisions": "Unlimited",
-          "description": "Full production-grade solution with payment gateway, automated digests, and 14 days warranty.",
+          "description": "Complete AI software engine featuring automated workflows, HeyGen video, and full scale deployment.",
           "features": [
-            "Full Architecture",
-            "Payment Integration",
-            "Telegram & Email Alerts",
-            "Documentation & Runbook",
-            "14 Days Support"
+            "Complete AI Platform",
+            "Supabase Auth + DB",
+            "Gemini AI Automation",
+            "HeyGen Avatar Integration",
+            "95+ Core Web Vitals Optimization"
           ]
         }
       },
-      "description": "Are you looking for rapid, reliable engineering for your business? Traditional agencies take months and charge high hourly rates. We engineer clean, cloud-native solutions deployed in days, not months.\n\nWhat We Deliver:\n• Clean, maintainable Node.js and Supabase architecture\n• Fully responsive mobile and desktop user interfaces\n• Fast cloud deployment with SSL and zero downtime\n• Real-time database and secure authentication\n• Complete source code ownership and technical handover\n\nWhy Choose GRO10X:\nWe operate a modern, AI-assisted engineering workflow focused on speed, clear communication, and measurable business outcomes. You get a working live platform quickly to validate and grow your business.\n\nVerified Tech Stack:\nNode.js, Express, Supabase PostgreSQL, Telegram Bot API, and Vercel Edge.\n\nSend us a message with your project scope to get started today!",
+      "description": "Are you looking to launch a high-performance web app or AI platform in days, not months? GRO10X AI Agency builds ultra-fast, production-ready web software tailored for rapid market entry and effortless scalability.\n\nWe combine cutting-edge modern engineering with powerful AI integrations to turn your idea into a live, lead-converting SaaS or web solution fast.\n\nWhat We Build:\n• Ultra-Fast SaaS MVPs & Web Platforms\n• Gemini AI Lead Generation & Dynamic Smart Forms\n• Node.js & Express Scalable Backend Architecture\n• Supabase PostgreSQL Database & Secure Auth\n• Automated Workflows via Google Apps Script & Telegram\n• HeyGen AI Video Experience & CapCut Processing\n• Vercel Deployment with 95+ Core Web Vitals Score\n\nWhy Choose GRO10X?\n• Rapid Execution: Go live in hours or days, not months.\n• Clean Code: Built for high conversion, speed, and growth.\n• End-to-End Automation: Automated leads, alerts, and management.\n\nStop delaying your launch. Order today and deploy your AI web application on an accelerated sprint timeline!",
       "faq": [
         {
-          "q": "How fast can you deliver the project?",
-          "a": "Our sprint approach allows us to deliver basic prototypes in 48 hours and full platforms in 5 to 8 days."
+          "q": "How fast will my AI web app be delivered?",
+          "a": "Our rapid sprint delivery ranges from 48 hours for basic setups to 7 days for complete enterprise platforms."
         },
         {
-          "q": "Do I get full source code ownership?",
-          "a": "Yes, you receive 100% full source code ownership with complete GitHub repository access."
+          "q": "What tech stack do you use for development?",
+          "a": "We use Node.js, Express, Supabase PostgreSQL, Gemini AI, Vercel hosting, and Telegram Bot API for real-time alerts."
         },
         {
-          "q": "Where will the project be hosted?",
-          "a": "We deploy on serverless edge networks like Vercel with automated SSL certificates and high uptime."
+          "q": "Can you integrate custom AI workflows?",
+          "a": "Yes! We integrate Gemini AI for dynamic form processing and Google Apps Script for automated lead workflows."
         },
         {
-          "q": "Can you add custom integrations later?",
-          "a": "Yes, all code is built modularly so you can easily expand features, payment gateways, and APIs."
+          "q": "Will my site be optimized for mobile speed and SEO?",
+          "a": "Absolutely. Every project targets a 95+ Core Web Vitals score on Vercel with responsive mobile-web architecture."
         }
       ],
       "buyerRequirements": [
-        "What is the primary goal and target audience for this project?",
-        "Do you have reference websites, wireframes, or brand assets?",
-        "What are the 1-3 essential features required for the first release?"
+        "Please describe your project vision, target audience, and key required features.",
+        "Do you have existing branding assets, logos, or copy ready?",
+        "Please provide your Vercel, Supabase, or Gemini API keys if you have them ready (we can guide you if needed)."
       ],
       "thumbnailBrief": {
-        "headline": "AI WEBSITES & SOFTWARE",
-        "subheading": "FAST 48-HR SPRINT · NODE.JS + SUPABASE",
+        "headline": "FAST AI WEB APPS",
+        "subheading": "NODE.JS + SUPABASE + GEMINI AI",
         "colorPalette": [
           "#00DF89",
-          "#3B82F6",
-          "#09090B"
+          "#09090B",
+          "#FFFFFF"
         ],
-        "visualStyle": "Dark glassmorphic layout displaying clean dashboard interface and responsive device frames.",
-        "badgeText": "⚡ RAPID SPRINT DELIVERY",
-        "layoutAdvice": "Canva 1280x769 canvas with bold neon green typography on dark background with clean screenshot preview."
+        "visualStyle": "Dark mode futuristic dashboard mockup with neon green accents and lightning fast speed indicators.",
+        "badgeText": "⚡ 48-HOUR SPRINT",
+        "layoutAdvice": "Place bold headline on the left, dark UI device mockup on the right, with the speed badge in the top right corner."
       },
       "healthCheck": {
         "score": 10,
@@ -371,7 +367,7 @@
           {
             "rule": "Title length between 25-80 chars",
             "passed": true,
-            "message": "Title is 56 chars."
+            "message": "Title is 55 chars."
           },
           {
             "rule": "Exactly 5 keyword search tags (<= 20 chars each)",
@@ -381,7 +377,7 @@
           {
             "rule": "Description length between 800-1250 chars",
             "passed": true,
-            "message": "Description length: 867 chars."
+            "message": "Description length: 1031 chars."
           },
           {
             "rule": "No pricing amounts in description body",
@@ -417,8 +413,8 @@
       },
       "status": "Generated",
       "liveUrl": "",
-      "updatedAt": "2026-09-06T22:35:47.371Z",
-      "titleBody": "build your ai websites & software in rapid sprint",
+      "updatedAt": "2026-09-07T11:17:50.008Z",
+      "titleBody": "build AI web apps and SaaS platforms in 48 hours",
       "pricingMatrix": {
         "screens": {
           "basic": 2,

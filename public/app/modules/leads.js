@@ -268,6 +268,9 @@ window.APP_MODULES.leads = async function(container) {
           value="${searchQuery}"
           oninput="window.LEADS_MODULE.setSearch(this.value)"
         >
+        <button type="button" class="btn-ghost" style="font-size:0.78rem; font-weight:700; border:1px solid ${filterSource.toLowerCase().includes('sprint') ? '#c084fc' : 'rgba(168,85,247,0.35)'}; color:#c084fc; background:${filterSource.toLowerCase().includes('sprint') ? 'rgba(168,85,247,0.25)' : 'rgba(168,85,247,0.08)'}; border-radius:8px; padding:0.4rem 0.85rem; cursor:pointer;" onclick="window.LEADS_MODULE.setFilter(window.LEADS_MODULE.getFilter() === 'Sprint' ? 'all' : 'Sprint')">
+          ${filterSource.toLowerCase().includes('sprint') ? '✕ Show All Sources' : '🚀 Sprint 01 Only'}
+        </button>
         <select class="input-text" style="width:auto;" onchange="window.LEADS_MODULE.setFilter(this.value)">
           <option value="all" ${filterSource === 'all' ? 'selected' : ''}>All Sources</option>
           ${sources.map(s => `<option value="${escapeHTML(s)}" ${filterSource === s ? 'selected' : ''}>${escapeHTML(s)}</option>`).join('')}
@@ -511,9 +514,14 @@ window.APP_MODULES.leads = async function(container) {
 
         <!-- Service + Budget + Source tags -->
         <div style="display:flex; gap:0.3rem; flex-wrap:wrap; margin-bottom:0.5rem; align-items:center;">
-          ${(lead.service || lead.service_interest) ? `<span style="font-size:0.66rem; background:rgba(0,223,137,0.15); color:#00df89; padding:0.1rem 0.35rem; border-radius:4px; font-weight:700;">${escapeHTML(lead.service || lead.service_interest)}</span>` : ''}
+          ${(String(lead.source || '').includes('Sprint') || String(lead.service || lead.service_interest || '').includes('Sprint')) ? `
+            <span style="font-size:0.68rem; background:rgba(168,85,247,0.22); color:#c084fc; border:1px solid rgba(168,85,247,0.5); padding:0.12rem 0.45rem; border-radius:4px; font-weight:800; display:inline-flex; align-items:center; gap:0.25rem;">
+              🚀 SPRINT 01
+            </span>
+          ` : ''}
+          ${(lead.service || lead.service_interest) && !String(lead.service || lead.service_interest).includes('Sprint') ? `<span style="font-size:0.66rem; background:rgba(0,223,137,0.15); color:#00df89; padding:0.1rem 0.35rem; border-radius:4px; font-weight:700;">${escapeHTML(lead.service || lead.service_interest)}</span>` : ''}
           ${lead.value ? `<span style="font-size:0.66rem; background:rgba(56,189,248,0.15); color:#38bdf8; padding:0.1rem 0.35rem; border-radius:4px; font-weight:700;">${formatMoney(lead.value)}</span>` : ''}
-          ${lead.source ? `<span style="font-size:0.66rem; background:rgba(255,255,255,0.06); color:var(--text-muted); padding:0.1rem 0.35rem; border-radius:4px;">${escapeHTML(lead.source.split(' ')[0])}</span>` : ''}
+          ${lead.source && !String(lead.source).includes('Sprint') ? `<span style="font-size:0.66rem; background:rgba(255,255,255,0.06); color:var(--text-muted); padding:0.1rem 0.35rem; border-radius:4px;">${escapeHTML(lead.source.split(' ')[0])}</span>` : ''}
           ${(lead.phone || lead.whatsapp) ? `
             <a href="https://wa.me/${String(lead.phone || lead.whatsapp).replace(/[^0-9]/g, '')}" target="_blank" onclick="event.stopPropagation()" style="font-size:0.66rem; background:rgba(16,185,129,0.2); color:#34d399; padding:0.1rem 0.35rem; border-radius:4px; font-weight:700; text-decoration:none;">
               💬 WhatsApp
@@ -616,6 +624,19 @@ window.APP_MODULES.leads = async function(container) {
         </div>
       </div>
 
+      <!-- Sprint 01 Pitch Detail Card -->
+      ${(lead.notes || '').includes('[SPRINT 01 APPLICANT]') ? `
+        <div style="background:linear-gradient(135deg, rgba(168,85,247,0.14), rgba(6,182,212,0.08)); border:1px solid rgba(168,85,247,0.45); border-radius:12px; padding:1.1rem; margin-bottom:1rem; box-shadow:0 4px 20px rgba(168,85,247,0.12);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+            <div style="font-size:0.82rem; font-weight:900; color:#c084fc; text-transform:uppercase; letter-spacing:0.5px; display:flex; align-items:center; gap:0.4rem;">
+              <span>🚀</span> Sprint 01 Application Pitch
+            </div>
+            <span style="font-size:0.7rem; background:rgba(168,85,247,0.25); color:#c084fc; padding:0.15rem 0.55rem; border-radius:999px; font-weight:800; border:1px solid rgba(168,85,247,0.4);">Cohort 01</span>
+          </div>
+          <div style="background:rgba(7,11,18,0.7); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:0.85rem; font-size:0.82rem; line-height:1.6; color:#f1f5f9; white-space:pre-wrap; font-family:inherit;">${escapeHTML(lead.notes.split('---[Previous Notes]:')[0])}</div>
+        </div>
+      ` : ''}
+
       <!-- Internal Notes -->
       <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-subtle); border-radius:12px; padding:1rem; margin-bottom:1rem;">
         <div style="font-size:0.72rem; font-weight:800; color:#10b981; text-transform:uppercase; margin-bottom:0.6rem;">📝 Internal Notes</div>
@@ -626,8 +647,8 @@ window.APP_MODULES.leads = async function(container) {
       </div>
 
       <!-- Primary Action Panel -->
-      <div style="background:linear-gradient(135deg, rgba(16,185,129,0.1), rgba(139,92,246,0.08)); border:1px solid rgba(16,185,129,0.3); border-radius:12px; padding:1rem; margin-bottom:1rem;">
-        <div style="font-size:0.72rem; font-weight:800; color:#10b981; text-transform:uppercase; margin-bottom:0.75rem;">🚀 Client Conversion Actions</div>
+      <div style="background:linear-gradient(135deg, rgba(168,85,247,0.1), rgba(16,185,129,0.08)); border:1px solid rgba(168,85,247,0.3); border-radius:12px; padding:1rem; margin-bottom:1rem;">
+        <div style="font-size:0.72rem; font-weight:800; color:#c084fc; text-transform:uppercase; margin-bottom:0.75rem;">🚀 Client Conversion Actions</div>
         <div style="display:flex; flex-direction:column; gap:0.5rem;">
           <button class="btn-primary" style="text-align:left; padding:0.65rem 1rem; background:linear-gradient(135deg,#10b981,#059669);"
             onclick="window.LEADS_MODULE.convertLead('${lead.id}', '${escapeHTML(lead.company || '')}', '${escapeHTML(lead.email || '')}', this)">
@@ -650,6 +671,9 @@ window.APP_MODULES.leads = async function(container) {
 
   // ─── Module Namespace ────────────────────────────────────────────────────────
   window.LEADS_MODULE = {
+    getFilter() {
+      return filterSource;
+    },
     setSearch(val) {
       searchQuery = val;
       render();

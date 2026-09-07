@@ -157,10 +157,15 @@ router.post('/', leadSubmitLimiter, async (req, res) => {
     });
   }
 
-  // Deduplication check for public visitors (authenticated admins can enter multiple leads for repeat campaigns)
+  // Deduplication check for public visitors
+  const isSprintSubmission = String(req.body.source || '').toLowerCase().includes('sprint') ||
+                             String(req.body.service || '').toLowerCase().includes('sprint') ||
+                             String(req.body.serviceTitle || '').toLowerCase().includes('sprint') ||
+                             String(req.body.notes || '').includes('SPRINT');
+
   if (isSupabaseConfigured()) {
     if (email || phone) {
-      let query = supabase.from('leads').select('id');
+      let query = supabase.from('leads').select('*');
       if (email && phone) {
         query = query.or(`email.eq.${email},phone.eq.${phone}`);
       } else if (email) {
@@ -171,12 +176,58 @@ router.post('/', leadSubmitLimiter, async (req, res) => {
       
       const { data: existing } = await query;
       if (!isAuthenticatedAdmin && existing && existing.length > 0) {
-        return res.status(200).json({
-          success: true,
-          isDuplicate: true,
-          message: 'We already have your inquiry on file! Our Account Director will follow up with you shortly.',
-          duplicateIds: existing.map(e => e.id)
-        });
+        if (isSprintSubmission) {
+          // Founder already exists in CRM — seamlessly update their record with Sprint 01 pitch
+          const target = existing[0];
+          const mergedNotes = req.body.notes 
+            ? `${req.body.notes}\n\n---\n[Previous Notes]:\n${target.notes || 'None'}`
+            : target.notes;
+          
+          const updatePayload = {
+            company: company || target.company,
+            contact_person: contactPerson || target.contact_person,
+            name: contactPerson || company || target.name,
+            service_interest: req.body.service || 'Venture Studio Sprint',
+            source: req.body.source || 'Sprint Cohort 01 - LinkedIn',
+            stage: 'New Inquiry',
+            status: 'new',
+            notes: mergedNotes,
+            score: Math.max(target.score || 50, 75), // Boost score for high-intent sprint submission
+            updated_at: new Date().toISOString()
+          };
+
+          await supabase.from('leads').update(updatePayload).eq('id', target.id);
+          const fullUpdatedLead = { ...target, ...updatePayload };
+          broadcastLeadEvent('lead_update', [fullUpdatedLead]);
+
+          // Priority Telegram alert for updated sprint applicant
+          try {
+            const ownerChatId = process.env.OWNER_TELEGRAM_ID;
+            if (ownerChatId) {
+              const alertMsg =
+                `🚀 *NEW SPRINT 01 APPLICANT (Existing Contact Re-Applied)!*\n\n` +
+                `👤 *${fullUpdatedLead.contact_person || fullUpdatedLead.company}*\n` +
+                `🏢 Startup: *${company || fullUpdatedLead.company}*\n` +
+                `📞 Phone: \`${fullUpdatedLead.phone || 'N/A'}\`\n` +
+                `📧 Email: \`${fullUpdatedLead.email || 'N/A'}\`\n` +
+                `📝 Notes: _${req.body.notes || 'Sprint application received.'}_`;
+              sendTelegramNotification(ownerChatId, alertMsg, null, false);
+            }
+          } catch (_) {}
+
+          return res.status(200).json({
+            success: true,
+            updated: true,
+            lead: fullUpdatedLead
+          });
+        } else {
+          return res.status(200).json({
+            success: true,
+            isDuplicate: true,
+            message: 'We already have your inquiry on file! Our Account Director will follow up with you shortly.',
+            duplicateIds: existing.map(e => e.id)
+          });
+        }
       }
     }
   }

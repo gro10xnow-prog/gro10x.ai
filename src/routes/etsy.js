@@ -1170,7 +1170,11 @@ router.post('/brands/:brandId/sync-live-catalog', requireAuth, asyncHandler(asyn
     const { loadBrandsState, persistBrandsState } = require('./brands');
     const state = await loadBrandsState();
     const brandKey = parseInt(brandId, 10);
-    const catalog = (state.productsCatalog && state.productsCatalog[brandKey]) || [];
+    const brand = (state.brands || []).find(b => b.id === brandKey) || null;
+    if (!state.productsCatalog) state.productsCatalog = {};
+    const catalog = state.productsCatalog[brandKey] || state.productsCatalog[String(brandKey)] || [];
+    state.productsCatalog[brandKey] = catalog;
+    state.productsCatalog[String(brandKey)] = catalog;
 
     let reconciledCount = 0;
     const matched = [];
@@ -1250,6 +1254,7 @@ router.post('/brands/:brandId/sync-live-catalog', requireAuth, asyncHandler(asyn
         matchedProd.submittedBy = matchedProd.submittedBy || 'DVM';
         reconciledCount++;
         matched.push({ code: matchedProd.code, name: matchedProd.name, listingId: lId, price: lPrice });
+      } else {
         // Strategy 5: Auto-import unmatched live Etsy listings into catalog (Brand-Adaptive SKU Prefix & Category)
         const nextIdx = catalog.length + 1;
         const skuPrefix = brand?.skuPrefix || BRAND_SKU_PREFIXES[Number(brandId)] || (brand?.name ? brand.name.substring(0, 3).toUpperCase() : 'PRD');
@@ -1281,6 +1286,10 @@ router.post('/brands/:brandId/sync-live-catalog', requireAuth, asyncHandler(asyn
         matched.push({ code: newCode, name: newProduct.name, listingId: lId, price: lPrice, isNew: true });
       }
     });
+
+    if (brand) {
+      brand.productsLive = catalog.filter(p => p.status === 'Live').length;
+    }
 
     await persistBrandsState(state);
 
