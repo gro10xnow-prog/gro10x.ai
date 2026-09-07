@@ -491,7 +491,7 @@ function saveBrandsStateLocally(state) {
 // ─────────────────────────────────────────────────────────────────────────────
 // CACHE VERSION GUARD — bump this string to force-purge all stale localStorage
 // ─────────────────────────────────────────────────────────────────────────────
-const BRANDS_CACHE_VERSION = 'v2026-08-27c';
+const BRANDS_CACHE_VERSION = 'v2026-09-08a';
 (function purgeStaleLocalCache() {
   try {
     const storedVersion = localStorage.getItem('gro10x_brands_cache_version');
@@ -528,6 +528,17 @@ window.APP_MODULES.brands = async function(container) {
       }
     }
   } catch (_) {}
+
+  // If cache is empty or has 0 live products for Brand 1, load fresh state before first render
+  const cachedBrand1Live = (state.productsCatalog?.['1'] || state.productsCatalog?.[1] || []).filter(p => p.status === 'Live').length;
+  if (cachedBrand1Live === 0) {
+    try {
+      const fresh = await loadBrandsStateFromAPI(true);
+      if (fresh && fresh.brands) {
+        state = fresh;
+      }
+    } catch (_) {}
+  }
   let currentTab = localStorage.getItem('gro10x_brands_active_tab') || 'portfolio';
 
 
