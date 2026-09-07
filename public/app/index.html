@@ -4,10 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GRO10X — Admin Command Center</title>
-  <script src="/js/auth-session.js"></script>
+  <script src="/js/auth-session.js" defer></script>
   <script>
     (function() {
-      GRO10XAuth.requireAuth({ portal: 'admin' });
+      var token = localStorage.getItem('gro10x_token') || sessionStorage.getItem('gro10x_token') || localStorage.getItem('token');
+      if (!token) {
+        window.location.href = '/auth?portal=admin&redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
+        return;
+      }
       var theme = localStorage.getItem('gro10x_theme') || localStorage.getItem('purple_theme') || 'dark';
       document.documentElement.setAttribute('data-theme', theme);
 
@@ -31,8 +35,8 @@
   <link rel="stylesheet" href="/css/shell.css">
   <link rel="stylesheet" href="/css/social-modal.css">
   <link rel="stylesheet" href="/css/social.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
 </head>
 <body>
 

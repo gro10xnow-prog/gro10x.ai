@@ -89,7 +89,7 @@ async function runAudit() {
       const issues = [];
       document.querySelectorAll('button, a[href]').forEach(el => {
         if (el.offsetParent === null || el.getAttribute('aria-hidden') === 'true') return; // hidden
-        const text = el.innerText ? el.innerText.trim() : '';
+        const text = (el.innerText || el.textContent || '').trim();
         const ariaLabel = el.getAttribute('aria-label') || el.getAttribute('aria-labelledby') || el.getAttribute('title');
         const imgAlt = el.querySelector('img')?.getAttribute('alt');
         const accessibleName = text || ariaLabel || imgAlt;

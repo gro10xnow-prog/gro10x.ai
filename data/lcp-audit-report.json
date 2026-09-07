@@ -1,0 +1,282 @@
+{
+  "Agency Homepage [Desktop (Unthrottled)]": {
+    "lcpEntry": {
+      "elementTag": "H1",
+      "elementId": "",
+      "elementClass": "pb-hero-title",
+      "elementText": "Grow 10x Smarter With Custom AI Solutions",
+      "url": "",
+      "startTime": 668,
+      "renderTime": 668,
+      "loadTime": 0,
+      "size": 103068
+    },
+    "breakdown": {
+      "type": "text",
+      "totalLcpMs": 668,
+      "ttfbMs": 24,
+      "ttfbPct": 4,
+      "resourceLoadDelayMs": 0,
+      "resourceLoadDelayPct": 0,
+      "resourceLoadDurationMs": 0,
+      "resourceLoadDurationPct": 0,
+      "elementRenderDelayMs": 644,
+      "elementRenderDelayPct": 96
+    },
+    "timing": {
+      "ttfb": 19,
+      "domContentLoaded": 615,
+      "loadComplete": 754
+    },
+    "issues": [],
+    "fontCheck": {
+      "fontLinksCount": 3,
+      "hasPreconnect": true
+    }
+  },
+  "Agency Homepage [Mobile (Fast 3G + 4x CPU)]": {
+    "lcpEntry": {
+      "elementTag": "P",
+      "elementId": "",
+      "elementClass": "pb-hero-subtitle",
+      "elementText": "We build smart AI apps, automate your marketing, and create high-converting visual workflows — helpi",
+      "url": "",
+      "startTime": 1376,
+      "renderTime": 1376,
+      "loadTime": 0,
+      "size": 38420
+    },
+    "breakdown": {
+      "type": "text",
+      "totalLcpMs": 1376,
+      "ttfbMs": 6,
+      "ttfbPct": 0,
+      "resourceLoadDelayMs": 0,
+      "resourceLoadDelayPct": 0,
+      "resourceLoadDurationMs": 0,
+      "resourceLoadDurationPct": 0,
+      "elementRenderDelayMs": 1370,
+      "elementRenderDelayPct": 100
+    },
+    "timing": {
+      "ttfb": 4,
+      "domContentLoaded": 1394,
+      "loadComplete": 1810
+    },
+    "issues": [],
+    "fontCheck": {
+      "fontLinksCount": 3,
+      "hasPreconnect": true
+    }
+  },
+  "Sprint 01 Campaign [Desktop (Unthrottled)]": {
+    "lcpEntry": {
+      "elementTag": "H1",
+      "elementId": "",
+      "elementClass": "",
+      "elementText": "Turn Your Raw Idea Into a\nMarket-Ready Product in 30 Days",
+      "url": "",
+      "startTime": 368,
+      "renderTime": 368,
+      "loadTime": 0,
+      "size": 132020
+    },
+    "breakdown": {
+      "type": "text",
+      "totalLcpMs": 368,
+      "ttfbMs": 10,
+      "ttfbPct": 3,
+      "resourceLoadDelayMs": 0,
+      "resourceLoadDelayPct": 0,
+      "resourceLoadDurationMs": 0,
+      "resourceLoadDurationPct": 0,
+      "elementRenderDelayMs": 358,
+      "elementRenderDelayPct": 97
+    },
+    "timing": {
+      "ttfb": 8,
+      "domContentLoaded": 292,
+      "loadComplete": 341
+    },
+    "issues": [],
+    "fontCheck": {
+      "fontLinksCount": 3,
+      "hasPreconnect": true
+    }
+  },
+  "Sprint 01 Campaign [Mobile (Fast 3G + 4x CPU)]": {
+    "lcpEntry": {
+      "elementTag": "H1",
+      "elementId": "",
+      "elementClass": "",
+      "elementText": "Turn Your Raw Idea Into a\nMarket-Ready Product in 30 Days",
+      "url": "",
+      "startTime": 748,
+      "renderTime": 748,
+      "loadTime": 0,
+      "size": 57798
+    },
+    "breakdown": {
+      "type": "text",
+      "totalLcpMs": 748,
+      "ttfbMs": 6,
+      "ttfbPct": 1,
+      "resourceLoadDelayMs": 0,
+      "resourceLoadDelayPct": 0,
+      "resourceLoadDurationMs": 0,
+      "resourceLoadDurationPct": 0,
+      "elementRenderDelayMs": 742,
+      "elementRenderDelayPct": 99
+    },
+    "timing": {
+      "ttfb": 4,
+      "domContentLoaded": 731,
+      "loadComplete": 772
+    },
+    "issues": [],
+    "fontCheck": {
+      "fontLinksCount": 3,
+      "hasPreconnect": true
+    }
+  },
+  "Review Room [Desktop (Unthrottled)]": {
+    "lcpEntry": {
+      "elementTag": "H1",
+      "elementId": "",
+      "elementClass": "rr-title",
+      "elementText": "Interactive Deliverables Review Room",
+      "url": "",
+      "startTime": 224,
+      "renderTime": 224,
+      "loadTime": 0,
+      "size": 14368
+    },
+    "breakdown": {
+      "type": "text",
+      "totalLcpMs": 224,
+      "ttfbMs": 9,
+      "ttfbPct": 4,
+      "resourceLoadDelayMs": 0,
+      "resourceLoadDelayPct": 0,
+      "resourceLoadDurationMs": 0,
+      "resourceLoadDurationPct": 0,
+      "elementRenderDelayMs": 215,
+      "elementRenderDelayPct": 96
+    },
+    "timing": {
+      "ttfb": 7,
+      "domContentLoaded": 260,
+      "loadComplete": 410
+    },
+    "issues": [],
+    "fontCheck": {
+      "fontLinksCount": 3,
+      "hasPreconnect": true
+    }
+  },
+  "Review Room [Mobile (Fast 3G + 4x CPU)]": {
+    "lcpEntry": {
+      "elementTag": "H1",
+      "elementId": "",
+      "elementClass": "rr-title",
+      "elementText": "Interactive Deliverables Review Room",
+      "url": "",
+      "startTime": 400,
+      "renderTime": 400,
+      "loadTime": 0,
+      "size": 18048
+    },
+    "breakdown": {
+      "type": "text",
+      "totalLcpMs": 400,
+      "ttfbMs": 5,
+      "ttfbPct": 1,
+      "resourceLoadDelayMs": 0,
+      "resourceLoadDelayPct": 0,
+      "resourceLoadDurationMs": 0,
+      "resourceLoadDurationPct": 0,
+      "elementRenderDelayMs": 395,
+      "elementRenderDelayPct": 99
+    },
+    "timing": {
+      "ttfb": 4,
+      "domContentLoaded": 901,
+      "loadComplete": 1337
+    },
+    "issues": [],
+    "fontCheck": {
+      "fontLinksCount": 3,
+      "hasPreconnect": true
+    }
+  },
+  "Admin Command Center [Desktop (Unthrottled)]": {
+    "lcpEntry": {
+      "elementTag": "SPAN",
+      "elementId": "headerPageTitle",
+      "elementClass": "",
+      "elementText": "📊 Executive Overview",
+      "url": "",
+      "startTime": 444,
+      "renderTime": 444,
+      "loadTime": 0,
+      "size": 3720
+    },
+    "breakdown": {
+      "type": "text",
+      "totalLcpMs": 444,
+      "ttfbMs": 9,
+      "ttfbPct": 2,
+      "resourceLoadDelayMs": 0,
+      "resourceLoadDelayPct": 0,
+      "resourceLoadDurationMs": 0,
+      "resourceLoadDurationPct": 0,
+      "elementRenderDelayMs": 435,
+      "elementRenderDelayPct": 98
+    },
+    "timing": {
+      "ttfb": 8,
+      "domContentLoaded": 468,
+      "loadComplete": 482
+    },
+    "issues": [],
+    "fontCheck": {
+      "fontLinksCount": 3,
+      "hasPreconnect": true
+    }
+  },
+  "Admin Command Center [Mobile (Fast 3G + 4x CPU)]": {
+    "lcpEntry": {
+      "elementTag": "SPAN",
+      "elementId": "headerPageTitle",
+      "elementClass": "",
+      "elementText": "📊 Executive Overview",
+      "url": "",
+      "startTime": 720,
+      "renderTime": 720,
+      "loadTime": 0,
+      "size": 4140
+    },
+    "breakdown": {
+      "type": "text",
+      "totalLcpMs": 720,
+      "ttfbMs": 6,
+      "ttfbPct": 1,
+      "resourceLoadDelayMs": 0,
+      "resourceLoadDelayPct": 0,
+      "resourceLoadDurationMs": 0,
+      "resourceLoadDurationPct": 0,
+      "elementRenderDelayMs": 714,
+      "elementRenderDelayPct": 99
+    },
+    "timing": {
+      "ttfb": 5,
+      "domContentLoaded": 1037,
+      "loadComplete": 1047
+    },
+    "issues": [],
+    "fontCheck": {
+      "fontLinksCount": 3,
+      "hasPreconnect": true
+    }
+  }
+}

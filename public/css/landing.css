@@ -386,6 +386,8 @@ body.pb-landing-body {
 .pb-section {
   padding: 90px 1.5rem;
   position: relative;
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 750px;
 }
 
 .pb-section-dark {

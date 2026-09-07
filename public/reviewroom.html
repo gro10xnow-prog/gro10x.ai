@@ -16,7 +16,7 @@
   <link rel="stylesheet" href="/css/tokens.css">
   <link rel="stylesheet" href="/css/styles.css">
   <link rel="stylesheet" href="/css/shell.css">
-  <script src="/js/auth-session.js"></script>
+  <script src="/js/auth-session.js" defer></script>
   <script>
     (function() {
       // Support Founder (Admin), DBM, Team, and Client session holders without redirect loop (P4-6)
@@ -25,9 +25,11 @@
       if (token || user) {
         return; // Session present, permit access
       }
-      if (window.GRO10XAuth && typeof GRO10XAuth.requireAuth === 'function') {
-        GRO10XAuth.requireAuth({ portal: 'client' });
-      }
+      window.addEventListener('DOMContentLoaded', function() {
+        if (window.GRO10XAuth && typeof GRO10XAuth.requireAuth === 'function') {
+          GRO10XAuth.requireAuth({ portal: 'client' });
+        }
+      });
     })();
   </script>
 </head>
