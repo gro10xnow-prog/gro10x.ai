@@ -4,6 +4,21 @@
 var currentCurrency = localStorage.getItem('gro10x_currency') || 'USD';
 var activeService = null;
 
+// ── UTM & REFERRER ATTRIBUTION CAPTURE ──
+(function initUtmAttribution() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const ref = document.referrer ? document.referrer.toLowerCase() : '';
+    const src = params.get('utm_source') || (ref.includes('linkedin.com') ? 'linkedin' : '');
+    const med = params.get('utm_medium') || (ref.includes('linkedin.com') ? 'founder_profile' : '');
+    const camp = params.get('utm_campaign') || '';
+
+    if (src) sessionStorage.setItem('gro10x_utm_source', src);
+    if (med) sessionStorage.setItem('gro10x_utm_medium', med);
+    if (camp) sessionStorage.setItem('gro10x_utm_campaign', camp);
+  } catch (e) {}
+})();
+
 // ── 2. CANONICAL SERVICE CATALOG ──
 var GRO10X_CATALOG = [
   {
@@ -36,7 +51,13 @@ var GRO10X_CATALOG = [
       { q: "Which platforms do you support?", a: "We build cross-platform apps using React Native and Flutter, ensuring seamless performance on both iOS and Android with a single unified codebase." },
       { q: "Can we integrate our custom AI models?", a: "Yes. We connect via REST APIs, WebSockets, or on-device CoreML / TensorFlow Lite models depending on latency and privacy needs." },
       { q: "Who owns the intellectual property and code?", a: "You do. 100% of the source code, design assets, and intellectual property are transferred to your repository upon completion." }
-    ]
+    ],
+    caseStudyTitle: "How an AI Startup Shipped On-Device Companions on iOS & Android in 28 Days",
+    caseStudyDesc: "Watch how our mobile AI team integrated on-device CoreML & cloud streaming models without paying $40k to legacy agencies.",
+    videoUrl: null,
+    videoPoster: "/images/portfolio/saas.webp",
+    slidesPdfUrl: null,
+    audioOverviewUrl: null
   },
   {
     id: "SVC-002",
@@ -798,6 +819,116 @@ function hydrateServiceDOM(service) {
   document.getElementById('serviceFormId').value = service.id;
   document.getElementById('serviceFormTitle').value = service.title;
 
+  // ── Video & Media Showcase Hydration ──
+  const videoTitleEl = document.getElementById('svcVideoTitle');
+  const videoDescEl = document.getElementById('svcVideoDesc');
+  const videoPlayerWrapper = document.getElementById('svcVideoPlayer');
+  const btnSlides = document.getElementById('btnDownloadSlides');
+  const btnAudio = document.getElementById('btnAudioOverview');
+  const btnInfographic = document.getElementById('btnInfographic');
+
+  const caseTitle = service.caseStudyTitle || `Case Study Breakdown: How We Deploy & Scale ${service.title}`;
+  if (videoTitleEl) videoTitleEl.innerText = caseTitle;
+  if (videoDescEl) {
+    videoDescEl.innerText = service.caseStudyDesc || `Watch the technical walkthrough and real-world client outcome. Built inside our 100% turnkey ${service.deliveryTime} delivery sprint.`;
+  }
+
+  // Handle Video Player: Live video or interactive preview poster
+  if (videoPlayerWrapper) {
+    if (service.videoUrl) {
+      if (service.videoUrl.includes('youtube.com') || service.videoUrl.includes('youtu.be')) {
+        let ytId = '';
+        if (service.videoUrl.includes('youtu.be/')) {
+          ytId = service.videoUrl.split('youtu.be/')[1].split('?')[0];
+        } else if (service.videoUrl.includes('watch?v=')) {
+          ytId = service.videoUrl.split('watch?v=')[1].split('&')[0];
+        } else if (service.videoUrl.includes('embed/')) {
+          ytId = service.videoUrl.split('embed/')[1].split('?')[0];
+        }
+        videoPlayerWrapper.innerHTML = `
+          <iframe 
+            src="https://www.youtube-nocookie.com/embed/${ytId}?rel=0&modestbranding=1" 
+            title="${service.title} Case Study Video" 
+            style="width: 100%; height: 100%; border: none;" 
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+            allowfullscreen>
+          </iframe>
+        `;
+      } else if (service.videoUrl.includes('vimeo.com')) {
+        const vimeoId = service.videoUrl.split('/').pop();
+        videoPlayerWrapper.innerHTML = `
+          <iframe 
+            src="https://player.vimeo.com/video/${vimeoId}" 
+            title="${service.title} Case Study Video" 
+            style="width: 100%; height: 100%; border: none;" 
+            allow="autoplay; fullscreen; picture-in-picture" 
+            allowfullscreen>
+          </iframe>
+        `;
+      } else {
+        videoPlayerWrapper.innerHTML = `
+          <video controls poster="${service.videoPoster || '/images/video-poster.webp'}" style="width: 100%; height: 100%; object-fit: cover;">
+            <source src="${service.videoUrl}" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        `;
+      }
+    } else {
+      // Sleek interactive case study preview banner
+      videoPlayerWrapper.innerHTML = `
+        <a href="#book-section" class="svc-video-preview-poster" style="background: linear-gradient(rgba(7, 11, 18, 0.75), rgba(7, 11, 18, 0.85)), url('/images/video-poster.webp') center/cover no-repeat;">
+          <div class="svc-play-btn-circle">▶</div>
+          <div style="font-family: var(--font-heading); font-size: 1.15rem; font-weight: 800; color: #fff; margin-bottom: 0.35rem;">
+            Watch Case Study & Architecture Breakdown
+          </div>
+          <div style="font-size: 0.84rem; color: var(--brand-primary); font-weight: 700; margin-bottom: 0.25rem;">
+            ⚡ Streaming Daily on LinkedIn & Gro10x Media
+          </div>
+          <div style="font-size: 0.78rem; color: var(--text-muted);">
+            Click to book sprint or request confidential system architecture blueprint →
+          </div>
+        </a>
+      `;
+    }
+  }
+
+  // Multi-Asset Resource links
+  if (btnSlides) {
+    if (service.slidesPdfUrl) {
+      btnSlides.href = service.slidesPdfUrl;
+      btnSlides.target = '_blank';
+    } else {
+      btnSlides.href = '#book-section';
+      btnSlides.removeAttribute('target');
+      btnSlides.onclick = function() {
+        const notes = document.getElementById('bookNotes');
+        if (notes) notes.value = `Requesting 10-Slide Case Deck (PDF) for: ${service.title}`;
+      };
+    }
+  }
+
+  if (btnAudio) {
+    if (service.audioOverviewUrl) {
+      btnAudio.href = service.audioOverviewUrl;
+      btnAudio.target = '_blank';
+    } else {
+      btnAudio.href = '#book-section';
+      btnAudio.removeAttribute('target');
+      btnAudio.onclick = function() {
+        const notes = document.getElementById('bookNotes');
+        if (notes) notes.value = `Requesting NotebookLM Audio Overview for: ${service.title}`;
+      };
+    }
+  }
+
+  if (btnInfographic) {
+    btnInfographic.href = '#book-section';
+    btnInfographic.onclick = function() {
+      const notes = document.getElementById('bookNotes');
+      if (notes) notes.value = `Requesting System Architecture Blueprint for: ${service.title}`;
+    };
+  }
+
   // Overview & Features
   document.getElementById('svcFullDetails').innerText = service.details;
   
@@ -893,6 +1024,14 @@ async function submitServiceBooking(e) {
   btn.innerText = 'Submitting Booking...';
 
   try {
+    const utmSrc = sessionStorage.getItem('gro10x_utm_source') || '';
+    const utmMed = sessionStorage.getItem('gro10x_utm_medium') || '';
+    const utmCamp = sessionStorage.getItem('gro10x_utm_campaign') || '';
+    const isLinkedIn = utmSrc === 'linkedin' || utmMed.includes('linkedin');
+    const sourceLabel = isLinkedIn 
+      ? `LinkedIn Founder Profile (${serviceTitle})`
+      : `Service Detail Page: ${serviceTitle}`;
+
     const res = await fetch('/api/leads', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -903,7 +1042,10 @@ async function submitServiceBooking(e) {
         service_interest: `${serviceTitle} (${serviceId})`,
         notes,
         currency: currentCurrency,
-        source: `Service Detail Page: ${serviceTitle}`
+        source: sourceLabel,
+        utm_source: utmSrc || null,
+        utm_medium: utmMed || null,
+        utm_campaign: utmCamp || null
       })
     });
 

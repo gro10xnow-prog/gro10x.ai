@@ -3,6 +3,21 @@
 // ── 1. GLOBAL CURRENCY & PREFERENCES ──
 var currentCurrency = localStorage.getItem('gro10x_currency') || 'USD';
 
+// ── UTM & REFERRER ATTRIBUTION CAPTURE ──
+(function initUtmAttribution() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const ref = document.referrer ? document.referrer.toLowerCase() : '';
+    const src = params.get('utm_source') || (ref.includes('linkedin.com') ? 'linkedin' : '');
+    const med = params.get('utm_medium') || (ref.includes('linkedin.com') ? 'founder_profile' : '');
+    const camp = params.get('utm_campaign') || '';
+
+    if (src) sessionStorage.setItem('gro10x_utm_source', src);
+    if (med) sessionStorage.setItem('gro10x_utm_medium', med);
+    if (camp) sessionStorage.setItem('gro10x_utm_campaign', camp);
+  } catch (e) {}
+})();
+
 // ── 2. COMPREHENSIVE SERVICE CATALOG MATRIX ──
 var GRO10X_SERVICES = [
   // 📱 Mobile & Web Apps
@@ -632,6 +647,14 @@ async function submitLandingLead(e) {
   btn.innerText = 'Submitting Request...';
 
   try {
+    const utmSrc = sessionStorage.getItem('gro10x_utm_source') || '';
+    const utmMed = sessionStorage.getItem('gro10x_utm_medium') || '';
+    const utmCamp = sessionStorage.getItem('gro10x_utm_campaign') || '';
+    const isLinkedIn = utmSrc === 'linkedin' || utmMed.includes('linkedin');
+    const sourceLabel = isLinkedIn 
+      ? `LinkedIn Founder Profile (Audit Form: ${service || 'General'})` 
+      : 'Landing Page Strategy Audit Form';
+
     const res = await fetch('/api/leads', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -642,7 +665,10 @@ async function submitLandingLead(e) {
         service_interest: service,
         notes,
         currency: currentCurrency,
-        source: 'Landing Page Strategy Audit Form'
+        source: sourceLabel,
+        utm_source: utmSrc || null,
+        utm_medium: utmMed || null,
+        utm_campaign: utmCamp || null
       })
     });
 

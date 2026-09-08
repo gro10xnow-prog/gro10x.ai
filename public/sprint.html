@@ -7,6 +7,12 @@
   <title>GRO10X — Sprint 01: Idea to Reality (Cohort 1)</title>
   <meta name="description" content="Turn your startup idea into a market-ready prototype in 30 days. 4 founders selected. Tech, network, and capital readiness backed by GRO10X.">
   
+  <!-- Favicons & App Icons -->
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="/images/logo-icon-192.png">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="/css/tokens.css">
@@ -263,6 +269,108 @@
       font-size: 0.85rem;
       color: var(--text-muted);
       line-height: 1.45;
+    }
+
+    /* FAQ Section */
+    .faq-section {
+      max-width: 800px;
+      margin: 0 auto 4.5rem;
+    }
+    .faq-header {
+      text-align: center;
+      margin-bottom: 2.2rem;
+    }
+    .faq-header h2 {
+      font-size: 1.8rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: #fff;
+      margin-bottom: 0.5rem;
+    }
+    .faq-header p {
+      font-size: 0.92rem;
+      color: var(--text-muted);
+    }
+    .faq-item {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      margin-bottom: 1rem;
+      overflow: hidden;
+      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+    }
+    .faq-item:hover {
+      border-color: rgba(0, 223, 137, 0.3);
+    }
+    .faq-item.active {
+      border-color: rgba(0, 223, 137, 0.45);
+      background: rgba(15, 23, 42, 0.85);
+      box-shadow: 0 8px 30px rgba(0, 223, 137, 0.06);
+    }
+    .faq-question {
+      width: 100%;
+      padding: 1.25rem 1.5rem;
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-family: inherit;
+      font-size: 1.02rem;
+      font-weight: 700;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      transition: color 0.15s;
+    }
+    .faq-question:hover {
+      color: var(--accent-mint);
+    }
+    .faq-icon {
+      font-size: 1.25rem;
+      color: var(--accent-mint);
+      transition: transform 0.25s ease;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+    .faq-item.active .faq-icon {
+      transform: rotate(45deg);
+    }
+    .faq-answer {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease, padding 0.35s ease;
+      padding: 0 1.5rem;
+      color: var(--text-muted);
+      font-size: 0.92rem;
+      line-height: 1.65;
+    }
+    .faq-item.active .faq-answer {
+      max-height: 500px;
+      padding-bottom: 1.4rem;
+    }
+    .faq-answer strong {
+      color: #f8fafc;
+    }
+    .faq-deal-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      color: var(--accent-mint);
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.85rem;
+      margin-top: 0.75rem;
+      background: rgba(0, 223, 137, 0.1);
+      border: 1px solid rgba(0, 223, 137, 0.25);
+      padding: 0.4rem 0.85rem;
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+    .faq-deal-link:hover {
+      background: rgba(0, 223, 137, 0.2);
+      transform: translateX(2px);
     }
 
     /* Application Form Wrapper */
@@ -524,6 +632,85 @@
       </div>
     </section>
 
+    <!-- Frequently Asked Questions -->
+    <section class="faq-section" id="faq" aria-labelledby="faq-heading">
+      <div class="faq-header">
+        <h2 id="faq-heading">Frequently Asked Questions</h2>
+        <p>Transparent details on equity structure, capital connections, and co-building alignment.</p>
+      </div>
+
+      <div class="faq-list">
+        <!-- FAQ 1: Equity -->
+        <div class="faq-item">
+          <button type="button" class="faq-question" onclick="toggleFaq(this)" aria-expanded="false">
+            <span>If selected, how much equity does GRO10X take?</span>
+            <span class="faq-icon" aria-hidden="true">+</span>
+          </button>
+          <div class="faq-answer">
+            <p>
+              The 30-day build sprint itself is <strong>100% free with zero upfront development cost</strong> from your pocket. 
+            </p>
+            <p style="margin-top: 0.6rem;">
+              If we mutually agree to partner long-term as your venture co-builder, our standard model is a <strong>5% to 8% studio/advisory equity stake</strong> — ensuring the founder/founding team retains <strong>90%+ ownership and full control</strong>.
+            </p>
+            <p style="margin-top: 0.6rem;">
+              The exact equity within that 5%–8% range depends directly on the scope of our investment: technical complexity, AI architecture, UI/UX design, distribution channels, and executive advisory time. Everything is 100% transparent and mutually locked in only after the sprint.
+            </p>
+          </div>
+        </div>
+
+        <!-- FAQ 2: Fundraising & Deal Room -->
+        <div class="faq-item">
+          <button type="button" class="faq-question" onclick="toggleFaq(this)" aria-expanded="false">
+            <span>How does fundraising work, and how connected are you with investors?</span>
+            <span class="faq-icon" aria-hidden="true">+</span>
+          </button>
+          <div class="faq-answer">
+            <p>
+              We back startups with both execution capital and investor syndicate access:
+            </p>
+            <ul style="margin: 0.6rem 0 0.8rem 1.2rem;">
+              <li><strong>Direct Resource Investment:</strong> We first commit our own in-kind sweat capital (covering full-stack engineering, cloud/AI infrastructure, and GTM launch muscle equivalent to ৳5L–৳10L+).</li>
+              <li><strong>GRO10X Capital Syndicate Network:</strong> Through our asset management arm, we maintain an active network of private angel investors, family offices, and business operators.</li>
+              <li><strong>Aligned Fundraising Incentives:</strong> When we help raise or co-raise a round for your startup, our incentives are fully aligned. We take charge of due diligence, unit economics modeling, and investor packaging — with our upside directly tied to successfully closing the capital round.</li>
+            </ul>
+            <div>
+              <a href="https://gro10x-capital-rho.vercel.app/projects/c3a2b3c4-d5e6-7890-abcd-ef1234567890" target="_blank" rel="noopener noreferrer" class="faq-deal-link">
+                <span>👁️ View Live GRO10X Capital Investor Deal Room</span>
+                <span>→</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- FAQ 3: Upfront cost -->
+        <div class="faq-item">
+          <button type="button" class="faq-question" onclick="toggleFaq(this)" aria-expanded="false">
+            <span>Are there any hidden fees or upfront costs for the 30-day sprint?</span>
+            <span class="faq-icon" aria-hidden="true">+</span>
+          </button>
+          <div class="faq-answer">
+            <p>
+              <strong>None.</strong> We do not charge agency retainers, consulting fees, or developer hourly rates for the 4 selected startups. We operate strictly as a venture studio with skin in the game.
+            </p>
+          </div>
+        </div>
+
+        <!-- FAQ 4: What if not selected -->
+        <div class="faq-item">
+          <button type="button" class="faq-question" onclick="toggleFaq(this)" aria-expanded="false">
+            <span>What happens if my startup idea is not selected in the top 4?</span>
+            <span class="faq-icon" aria-hidden="true">+</span>
+          </button>
+          <div class="faq-answer">
+            <p>
+              No application goes to waste. Every founder who applies receives a <strong>complimentary 1-on-1 Product Architecture & MVP Roadmap breakdown</strong> from our engineering team. Additionally, high-scoring applicants qualify for our subsidized fast-track studio package with milestone-based payments and zero agency markup.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- Application Form -->
     <section class="form-wrapper" aria-labelledby="form-heading">
       <div id="form-container">
@@ -627,6 +814,30 @@
   </div>
 
   <script>
+    function toggleFaq(btn) {
+      const item = btn.closest('.faq-item');
+      if (!item) return;
+      const isOpen = item.classList.contains('active');
+
+      // Close other open accordion items
+      document.querySelectorAll('.faq-item.active').forEach(el => {
+        if (el !== item) {
+          el.classList.remove('active');
+          const otherBtn = el.querySelector('.faq-question');
+          if (otherBtn) otherBtn.setAttribute('aria-expanded', 'false');
+        }
+      });
+
+      // Toggle current
+      if (isOpen) {
+        item.classList.remove('active');
+        btn.setAttribute('aria-expanded', 'false');
+      } else {
+        item.classList.add('active');
+        btn.setAttribute('aria-expanded', 'true');
+      }
+    }
+
     async function handleSprintSubmit(event) {
       event.preventDefault();
       const errBox = document.getElementById('error-box');

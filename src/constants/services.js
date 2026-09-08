@@ -39,6 +39,11 @@ const DEFAULT_SERVICES = [
       { q: "Which platforms do you support?", a: "We build cross-platform apps using React Native and Flutter, ensuring seamless performance on both iOS and Android with a single unified codebase." },
       { q: "Can we integrate our custom AI models?", a: "Yes. We connect via REST APIs, WebSockets, or on-device CoreML / TensorFlow Lite models depending on latency and privacy needs." }
     ],
+    caseStudyTitle: "How an AI Startup Shipped On-Device Companions on iOS & Android in 28 Days",
+    videoUrl: null,
+    videoPoster: "/images/video-poster.webp",
+    slidesPdfUrl: null,
+    audioOverviewUrl: null,
     public: true
   },
   {

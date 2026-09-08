@@ -112,3 +112,16 @@ Best,
 [Your Name]
 Founder / Managing Partner, GRO10X
 ```
+
+---
+
+## 5. 🎯 Founder FAQ & Objection Handling (WhatsApp & DM Cheatsheet)
+
+### Q1: "If selected, how much equity are you guys taking?"
+> "The 30-day build sprint has *zero upfront cash cost* from your end. If we both see strong synergy to partner long-term, the *5% to 8% studio/advisory equity* is tailored directly based on our resource commitment — including engineering complexity, AI architecture, UI/UX design, distribution channels, and our executive advisory time. You retain 90%+ control of your company. It is 100% mutually agreed upon after we build trust in the initial sprint."
+
+### Q2: "How well connected are you with investors? Or do you have the fund to invest yourself?"
+> "1. *Direct Resource Investment:* We first commit our own in-kind sweat capital (covering full-stack engineering, cloud/AI infrastructure, and GTM launch muscle equivalent to ৳5L–৳10L+).
+> 2. *Our Investor Network & Deal Room:* Through *GRO10X Capital*, we actively package and showcase high-performing ventures to private angel investors and syndicate partners. You can see a live example of how we structure deals for our investor network here: https://gro10x-capital-rho.vercel.app/projects/c3a2b3c4-d5e6-7890-abcd-ef1234567890
+> 3. *Aligned Fundraising Incentives:* When we help raise or co-raise your round, our incentives are fully aligned. We take charge of due diligence, unit economics modeling, and investor packaging — and our upside is directly tied to successfully closing the capital round."
+
