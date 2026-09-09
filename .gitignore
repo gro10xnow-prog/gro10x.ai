@@ -15,6 +15,7 @@ tmp_test_assets/
 
 # Large assets not needed in repo
 *.pdf
+!public/assets/**/*.pdf
 Screenshot*.png
 scratch/
 .chrome-test-profile/

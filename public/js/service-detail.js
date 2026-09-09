@@ -54,10 +54,11 @@ var GRO10X_CATALOG = [
     ],
     caseStudyTitle: "How an AI Startup Shipped On-Device Companions on iOS & Android in 28 Days",
     caseStudyDesc: "Watch how our mobile AI team integrated on-device CoreML & cloud streaming models without paying $40k to legacy agencies.",
-    videoUrl: null,
-    videoPoster: "/images/portfolio/saas.webp",
-    slidesPdfUrl: null,
-    audioOverviewUrl: null
+    videoUrl: "https://youtu.be/RvNFX5nYDlM",
+    videoPoster: "/images/video-poster.webp",
+    slidesPdfUrl: "/assets/case-studies/svc-001-ai-mobile-apps.pdf",
+    blueprintUrl: "/assets/blueprints/svc-001-ai-mobile-blueprint.pdf",
+    audioOverviewUrl: "https://open.spotify.com/episode/4yHOpQ5t9LRImJJaUxGCiu?si=eSydMHYPSEKZylfv219d0Q"
   },
   {
     id: "SVC-002",
@@ -88,7 +89,14 @@ var GRO10X_CATALOG = [
     faq: [
       { q: "Is the website SEO-ready?", a: "Yes, every page is built with semantic HTML, automated sitemaps, structured schema data, and fast load speeds to ensure top Google rankings." },
       { q: "Can we add user accounts and subscriptions?", a: "Yes, we integrate authentication (Supabase / NextAuth) and payment billing (Stripe) out of the box." }
-    ]
+    ],
+    caseStudyTitle: "Why Your $10,000 Website Isn't Generating Inbound Sales",
+    caseStudyDesc: "Watch how replacing a slow, 40-plugin monolith with sub-second edge architecture and AI form enrichment 3x'd sales pipeline in 21 days.",
+    videoUrl: "https://youtu.be/KB5IHPsJL1U",
+    videoPoster: "/images/video-poster.webp",
+    slidesPdfUrl: "/assets/case-studies/svc-002-ai-websites-software.pdf",
+    blueprintUrl: "/assets/blueprints/svc-002-ai-websites-blueprint.pdf",
+    audioOverviewUrl: "https://open.spotify.com/episode/4sUxfMs6SQLgLt8tkiXecz?si=WfTS4fQuQ1mFq-Yp23KeAg"
   },
   {
     id: "SVC-003",
@@ -892,7 +900,7 @@ function hydrateServiceDOM(service) {
     }
   }
 
-  // Multi-Asset Resource links
+  // Multi-Asset Resource links (Slides, Audio Overview, Blueprint)
   if (btnSlides) {
     if (service.slidesPdfUrl) {
       btnSlides.href = service.slidesPdfUrl;
@@ -907,10 +915,78 @@ function hydrateServiceDOM(service) {
     }
   }
 
+  // Built-in Audio Overview Player
+  const audioCard = document.getElementById('svcAudioPlayerCard');
+  const audioElement = document.getElementById('svcAudioElement');
+  const btnPlayPause = document.getElementById('btnAudioPlayPause');
+  const timeDisplay = document.getElementById('audioTimeDisplay');
+  const progressBar = document.getElementById('audioProgressBar');
+  const progressFill = document.getElementById('audioProgressFill');
+  const btnCloseAudio = document.getElementById('btnCloseAudio');
+
+  function formatAudioTime(secs) {
+    if (isNaN(secs)) return '0:00';
+    const m = Math.floor(secs / 60);
+    const s = Math.floor(secs % 60);
+    return `${m}:${s < 10 ? '0' : ''}${s}`;
+  }
+
   if (btnAudio) {
     if (service.audioOverviewUrl) {
-      btnAudio.href = service.audioOverviewUrl;
-      btnAudio.target = '_blank';
+      btnAudio.href = 'javascript:void(0)';
+      btnAudio.removeAttribute('target');
+      btnAudio.onclick = function(e) {
+        if (e && e.preventDefault) e.preventDefault();
+        if (!audioCard) return;
+
+        const isSpotify = service.audioOverviewUrl.includes('spotify.com');
+        if (isSpotify) {
+          if (audioCard.style.display === 'none') {
+            audioCard.style.display = 'block';
+            if (!audioCard.querySelector('#svcSpotifyIframe')) {
+              const epMatch = service.audioOverviewUrl.match(/episode\/([a-zA-Z0-9]+)/);
+              const embedUrl = epMatch 
+                ? `https://open.spotify.com/embed/episode/${epMatch[1]}?utm_source=generator&theme=0`
+                : service.audioOverviewUrl;
+              audioCard.innerHTML = `
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.75rem;">
+                  <div style="display:flex; align-items:center; gap:0.5rem;">
+                    <span style="font-size:1.1rem;">🎙️</span>
+                    <div>
+                      <div style="font-size:0.84rem; font-weight:800; color:#fff;">Executive Audio Overview</div>
+                      <div style="font-size:0.72rem; color:#1db954; font-weight:700;">Official Spotify Podcast</div>
+                    </div>
+                  </div>
+                  <button id="btnCloseAudio" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:1.1rem; padding:2px 6px;" title="Hide Player">✕</button>
+                </div>
+                <iframe id="svcSpotifyIframe" style="border-radius:12px;" src="${embedUrl}" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+              `;
+              const closeBtn = document.getElementById('btnCloseAudio');
+              if (closeBtn) closeBtn.onclick = () => { audioCard.style.display = 'none'; };
+            }
+          } else {
+            audioCard.style.display = 'none';
+          }
+          return;
+        }
+
+        if (audioElement) {
+          if (audioCard.style.display === 'none' || !audioElement.src.includes(service.audioOverviewUrl)) {
+            audioCard.style.display = 'block';
+            audioElement.src = service.audioOverviewUrl;
+            audioElement.play().catch(() => {});
+            if (btnPlayPause) btnPlayPause.innerText = '⏸';
+          } else {
+            if (audioElement.paused) {
+              audioElement.play().catch(() => {});
+              if (btnPlayPause) btnPlayPause.innerText = '⏸';
+            } else {
+              audioElement.pause();
+              if (btnPlayPause) btnPlayPause.innerText = '▶';
+            }
+          }
+        }
+      };
     } else {
       btnAudio.href = '#book-section';
       btnAudio.removeAttribute('target');
@@ -921,12 +997,61 @@ function hydrateServiceDOM(service) {
     }
   }
 
-  if (btnInfographic) {
-    btnInfographic.href = '#book-section';
-    btnInfographic.onclick = function() {
-      const notes = document.getElementById('bookNotes');
-      if (notes) notes.value = `Requesting System Architecture Blueprint for: ${service.title}`;
+  if (audioElement) {
+    if (btnPlayPause) {
+      btnPlayPause.onclick = function() {
+        if (audioElement.paused) {
+          audioElement.play().catch(() => {});
+          btnPlayPause.innerText = '⏸';
+        } else {
+          audioElement.pause();
+          btnPlayPause.innerText = '▶';
+        }
+      };
+    }
+
+    audioElement.ontimeupdate = function() {
+      if (!audioElement.duration) return;
+      const pct = (audioElement.currentTime / audioElement.duration) * 100;
+      if (progressFill) progressFill.style.width = `${pct}%`;
+      if (timeDisplay) timeDisplay.innerText = `${formatAudioTime(audioElement.currentTime)} / ${formatAudioTime(audioElement.duration)}`;
     };
+
+    audioElement.onended = function() {
+      if (btnPlayPause) btnPlayPause.innerText = '▶';
+      if (progressFill) progressFill.style.width = '0%';
+    };
+
+    if (progressBar) {
+      progressBar.onclick = function(e) {
+        if (!audioElement.duration) return;
+        const rect = progressBar.getBoundingClientRect();
+        const pos = (e.clientX - rect.left) / rect.width;
+        audioElement.currentTime = pos * audioElement.duration;
+      };
+    }
+
+    if (btnCloseAudio) {
+      btnCloseAudio.onclick = function() {
+        audioElement.pause();
+        if (audioCard) audioCard.style.display = 'none';
+        if (btnPlayPause) btnPlayPause.innerText = '▶';
+      };
+    }
+  }
+
+  if (btnInfographic) {
+    if (service.blueprintUrl) {
+      btnInfographic.href = service.blueprintUrl;
+      btnInfographic.target = '_blank';
+    } else {
+      btnInfographic.href = '#book-section';
+      btnInfographic.removeAttribute('target');
+      btnInfographic.onclick = function() {
+        const notes = document.getElementById('bookNotes');
+        if (notes) notes.value = `Requesting System Architecture Blueprint for: ${service.title}`;
+      };
+    }
   }
 
   // Overview & Features

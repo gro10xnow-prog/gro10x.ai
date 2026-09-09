@@ -40,10 +40,11 @@ const DEFAULT_SERVICES = [
       { q: "Can we integrate our custom AI models?", a: "Yes. We connect via REST APIs, WebSockets, or on-device CoreML / TensorFlow Lite models depending on latency and privacy needs." }
     ],
     caseStudyTitle: "How an AI Startup Shipped On-Device Companions on iOS & Android in 28 Days",
-    videoUrl: null,
+    videoUrl: "https://youtu.be/RvNFX5nYDlM",
     videoPoster: "/images/video-poster.webp",
-    slidesPdfUrl: null,
-    audioOverviewUrl: null,
+    slidesPdfUrl: "/assets/case-studies/svc-001-ai-mobile-apps.pdf",
+    audioOverviewUrl: "https://open.spotify.com/episode/4yHOpQ5t9LRImJJaUxGCiu?si=eSydMHYPSEKZylfv219d0Q",
+    blueprintUrl: "/assets/blueprints/svc-001-ai-mobile-blueprint.pdf",
     public: true
   },
   {
@@ -76,6 +77,12 @@ const DEFAULT_SERVICES = [
     faq: [
       { q: "Is the website SEO-ready?", a: "Yes, every page is built with semantic HTML, automated sitemaps, structured schema data, and fast load speeds to ensure top Google rankings." }
     ],
+    caseStudyTitle: "Why Your $10,000 Website Isn't Generating Inbound Sales",
+    videoUrl: "https://youtu.be/KB5IHPsJL1U",
+    videoPoster: "/images/video-poster.webp",
+    slidesPdfUrl: "/assets/case-studies/svc-002-ai-websites-software.pdf",
+    audioOverviewUrl: "https://open.spotify.com/episode/4sUxfMs6SQLgLt8tkiXecz?si=WfTS4fQuQ1mFq-Yp23KeAg",
+    blueprintUrl: "/assets/blueprints/svc-002-ai-websites-blueprint.pdf",
     public: true
   },
   {

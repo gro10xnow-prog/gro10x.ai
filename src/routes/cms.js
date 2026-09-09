@@ -1,5 +1,12 @@
 const express = require('express');
 const router = express.Router();
+const path = require('path');
+const fs = require('fs');
+const multer = require('multer');
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 50 * 1024 * 1024 } // 50MB max limit
+});
 const { requireAuth } = require('../middleware/auth');
 const { requireAdmin } = require('../middleware/rbac');
 const { supabase, isSupabaseConfigured } = require('../services/supabase');
@@ -145,7 +152,7 @@ router.get('/services/:id', async (req, res) => {
 
 // POST /api/cms/services — create a new service
 router.post('/services', requireAuth, requireAdmin, async (req, res) => {
-  const { title, category, price, description, icon, is_public } = req.body;
+  const { title, category, price, description, icon, is_public, videoUrl, videoPoster, slidesPdfUrl, audioOverviewUrl, blueprintUrl, caseStudyTitle, caseStudyDesc } = req.body;
   const rawFeatures = req.body.features || req.body.includedFeatures || [];
   if (!title) return res.status(400).json({ error: 'title is required' });
 
@@ -166,6 +173,13 @@ router.post('/services', requireAuth, requireAdmin, async (req, res) => {
     includedFeatures: parsedFeatures,
     is_public: is_public !== false,
     public: is_public !== false,
+    videoUrl: videoUrl || null,
+    videoPoster: videoPoster || null,
+    slidesPdfUrl: slidesPdfUrl || null,
+    audioOverviewUrl: audioOverviewUrl || null,
+    blueprintUrl: blueprintUrl || null,
+    caseStudyTitle: caseStudyTitle || null,
+    caseStudyDesc: caseStudyDesc || null,
     created_at: new Date().toISOString()
   };
 
@@ -184,7 +198,7 @@ router.post('/services', requireAuth, requireAdmin, async (req, res) => {
 // PUT /api/cms/services/:id — update an existing service
 router.put('/services/:id', requireAuth, requireAdmin, async (req, res) => {
   const { id } = req.params;
-  const { title, category, price, description, icon, is_public } = req.body;
+  const { title, category, price, description, icon, is_public, videoUrl, videoPoster, slidesPdfUrl, audioOverviewUrl, blueprintUrl, caseStudyTitle, caseStudyDesc } = req.body;
   const rawFeatures = req.body.features !== undefined ? req.body.features : req.body.includedFeatures;
 
   const updates = {};
@@ -193,6 +207,13 @@ router.put('/services/:id', requireAuth, requireAdmin, async (req, res) => {
   if (price !== undefined) updates.price = price;
   if (description !== undefined) updates.description = description;
   if (icon !== undefined) updates.icon = icon;
+  if (videoUrl !== undefined) updates.videoUrl = videoUrl;
+  if (videoPoster !== undefined) updates.videoPoster = videoPoster;
+  if (slidesPdfUrl !== undefined) updates.slidesPdfUrl = slidesPdfUrl;
+  if (audioOverviewUrl !== undefined) updates.audioOverviewUrl = audioOverviewUrl;
+  if (blueprintUrl !== undefined) updates.blueprintUrl = blueprintUrl;
+  if (caseStudyTitle !== undefined) updates.caseStudyTitle = caseStudyTitle;
+  if (caseStudyDesc !== undefined) updates.caseStudyDesc = caseStudyDesc;
   if (is_public !== undefined) {
     updates.is_public = is_public;
     updates.public = is_public;
@@ -229,6 +250,63 @@ router.delete('/services/:id', requireAuth, requireAdmin, async (req, res) => {
 
   try { broadcast('cms_update', { serviceDeleted: id }); } catch (e) {}
   return res.json({ success: true, id });
+});
+
+// POST /api/cms/upload — Direct upload of Case Study PDF, Audio, or Blueprint to Supabase Storage
+router.post('/upload', requireAuth, requireAdmin, upload.single('file'), async (req, res) => {
+  if (!req.file) return res.status(400).json({ success: false, error: 'No file uploaded' });
+
+  const file = req.file;
+  const safeName = file.originalname.toLowerCase().replace(/[^a-z0-9._-]/g, '_');
+  const folder = req.body.folder || 'case-studies';
+  const storagePath = `${folder}/${Date.now()}_${safeName}`;
+  let publicUrl = '';
+
+  // 1. Upload to Supabase Storage ('deliverables' public bucket)
+  if (isSupabaseConfigured()) {
+    try {
+      const { error: uploadErr } = await supabase.storage
+        .from('deliverables')
+        .upload(storagePath, file.buffer, {
+          contentType: file.mimetype,
+          upsert: true
+        });
+
+      if (!uploadErr) {
+        const { data } = supabase.storage.from('deliverables').getPublicUrl(storagePath);
+        if (data?.publicUrl) publicUrl = data.publicUrl;
+      } else {
+        console.warn('[CMS Upload] Supabase storage note:', uploadErr.message);
+      }
+    } catch (err) {
+      console.warn('[CMS Upload] Supabase storage exception:', err.message);
+    }
+  }
+
+  // 2. Backup to public/assets/case-studies/
+  try {
+    const localDir = path.join(__dirname, '../../public/assets', folder);
+    if (!fs.existsSync(localDir)) fs.mkdirSync(localDir, { recursive: true });
+    const localFileName = `${Date.now()}_${safeName}`;
+    fs.writeFileSync(path.join(localDir, localFileName), file.buffer);
+    if (!publicUrl) {
+      publicUrl = `/assets/${folder}/${localFileName}`;
+    }
+  } catch (err) {
+    console.warn('[CMS Upload] Local backup note:', err.message);
+  }
+
+  if (!publicUrl) {
+    return res.status(500).json({ success: false, error: 'Failed to save file' });
+  }
+
+  return res.json({
+    success: true,
+    url: publicUrl,
+    filename: file.originalname,
+    size: file.size,
+    mimetype: file.mimetype
+  });
 });
 
 module.exports = router;

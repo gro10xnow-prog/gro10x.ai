@@ -126,7 +126,56 @@ window.APP_MODULES.cms = async function(container) {
               <label for="cmsSvcPublic" style="font-size:0.85rem; font-weight:700; color:var(--text-main); cursor:pointer;">Publish Service to Public Landing Page & Catalog</label>
             </div>
 
-            <div style="display:flex; justify-content:flex-end; gap:0.75rem; margin-top: 0.8rem;">
+            <!-- 🎬 Case Study & NotebookLM Companion Assets -->
+            <div style="margin-top: 1rem; padding-top: 0.85rem; border-top: 1px solid rgba(255,255,255,0.08);">
+              <div style="font-size:0.88rem; font-weight:800; color:var(--brand-primary, #00df89); margin-bottom:0.6rem; display:flex; align-items:center; gap:0.4rem;">
+                <span>🎬</span> Case Study & Companion Assets (NotebookLM Engine)
+              </div>
+              <div class="form-group">
+                <label class="form-label">Case Study Headline</label>
+                <input type="text" id="cmsSvcCaseStudyTitle" placeholder="e.g. How an AI Startup Shipped On-Device in 28 Days" class="input-text" />
+              </div>
+              <div style="display:flex; gap:1rem;">
+                <div class="form-group" style="flex:1;">
+                  <label class="form-label">Video URL (YouTube / Vimeo / MP4)</label>
+                  <input type="text" id="cmsSvcVideoUrl" placeholder="https://www.youtube.com/watch?v=..." class="input-text" />
+                </div>
+                <div class="form-group" style="flex:1;">
+                  <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <label class="form-label">10-Slide PDF Deck</label>
+                    <label style="font-size:0.75rem; color:var(--brand-primary, #00df89); cursor:pointer; font-weight:700;" title="Upload PDF directly to Supabase Storage">
+                      ☁️ Upload PDF
+                      <input type="file" accept=".pdf" style="display:none;" onchange="window.CMS_MODULE.uploadAsset(this, 'cmsSvcPdfUrl', 'case-studies')" />
+                    </label>
+                  </div>
+                  <input type="text" id="cmsSvcPdfUrl" placeholder="https://... or /assets/case-studies/svc-001.pdf" class="input-text" />
+                </div>
+              </div>
+              <div style="display:flex; gap:1rem;">
+                <div class="form-group" style="flex:1;">
+                  <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <label class="form-label">Audio Overview / Podcast</label>
+                    <label style="font-size:0.75rem; color:var(--brand-primary, #00df89); cursor:pointer; font-weight:700;" title="Upload MP3/Audio directly to Supabase Storage">
+                      ☁️ Upload Audio
+                      <input type="file" accept="audio/*,.mp3,.m4a,.wav" style="display:none;" onchange="window.CMS_MODULE.uploadAsset(this, 'cmsSvcAudioUrl', 'audio')" />
+                    </label>
+                  </div>
+                  <input type="text" id="cmsSvcAudioUrl" placeholder="https://... or /assets/audio/..." class="input-text" />
+                </div>
+                <div class="form-group" style="flex:1;">
+                  <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <label class="form-label">System Blueprint / Flowchart</label>
+                    <label style="font-size:0.75rem; color:var(--brand-primary, #00df89); cursor:pointer; font-weight:700;" title="Upload Diagram directly to Supabase Storage">
+                      ☁️ Upload Image/PDF
+                      <input type="file" accept="image/*,.pdf,.svg" style="display:none;" onchange="window.CMS_MODULE.uploadAsset(this, 'cmsSvcBlueprintUrl', 'blueprints')" />
+                    </label>
+                  </div>
+                  <input type="text" id="cmsSvcBlueprintUrl" placeholder="https://... or /assets/blueprints/..." class="input-text" />
+                </div>
+              </div>
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; gap:0.75rem; margin-top: 1rem;">
               <button type="button" class="btn-secondary" onclick="window.CMS_MODULE.closeServiceModal()">Cancel</button>
               <button type="submit" class="btn-primary" id="cmsSubmitBtn">🚀 Save Service Package</button>
             </div>
@@ -263,6 +312,11 @@ window.APP_MODULES.cms = async function(container) {
       document.getElementById('cmsSvcPrice').value = '';
       document.getElementById('cmsSvcDesc').value = '';
       document.getElementById('cmsSvcFeatures').value = '';
+      document.getElementById('cmsSvcCaseStudyTitle').value = '';
+      document.getElementById('cmsSvcVideoUrl').value = '';
+      document.getElementById('cmsSvcPdfUrl').value = '';
+      document.getElementById('cmsSvcAudioUrl').value = '';
+      document.getElementById('cmsSvcBlueprintUrl').value = '';
       document.getElementById('cmsSvcPublic').checked = true;
       document.getElementById('cmsServiceModal').classList.add('active');
     },
@@ -280,6 +334,11 @@ window.APP_MODULES.cms = async function(container) {
       
       const feats = Array.isArray(svc.includedFeatures) ? svc.includedFeatures.join(', ') : (Array.isArray(svc.features) ? svc.features.join(', ') : (svc.includedFeatures || ''));
       document.getElementById('cmsSvcFeatures').value = feats;
+      document.getElementById('cmsSvcCaseStudyTitle').value = svc.caseStudyTitle || '';
+      document.getElementById('cmsSvcVideoUrl').value = svc.videoUrl || '';
+      document.getElementById('cmsSvcPdfUrl').value = svc.slidesPdfUrl || '';
+      document.getElementById('cmsSvcAudioUrl').value = svc.audioOverviewUrl || '';
+      document.getElementById('cmsSvcBlueprintUrl').value = svc.blueprintUrl || '';
       document.getElementById('cmsSvcPublic').checked = svc.public !== false && svc.is_public !== false;
       document.getElementById('cmsServiceModal').classList.add('active');
     },
@@ -288,6 +347,43 @@ window.APP_MODULES.cms = async function(container) {
     },
     closeModal() {
       this.closeServiceModal();
+    },
+    async uploadAsset(fileInput, targetInputId, folder) {
+      const file = fileInput.files && fileInput.files[0];
+      if (!file) return;
+
+      const targetInput = document.getElementById(targetInputId);
+      const originalPlaceholder = targetInput ? targetInput.placeholder : '';
+      if (targetInput) targetInput.placeholder = '⏳ Uploading to Cloud Storage...';
+      if (window.showToast) window.showToast(`Uploading ${file.name} to Cloud Storage...`, 3000, 'info');
+
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('folder', folder || 'case-studies');
+
+        const token = localStorage.getItem('pb_token') || sessionStorage.getItem('pb_token');
+        const res = await fetch('/api/cms/upload', {
+          method: 'POST',
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+          body: formData
+        });
+
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          throw new Error(data.error || 'Upload failed');
+        }
+
+        if (targetInput) {
+          targetInput.value = data.url;
+        }
+        if (window.showToast) window.showToast('✅ Uploaded to Supabase Storage successfully!', 3000, 'success');
+      } catch (err) {
+        if (window.showToast) window.showToast('❌ Upload failed: ' + err.message, 4000, 'error');
+      } finally {
+        if (targetInput) targetInput.placeholder = originalPlaceholder;
+        fileInput.value = '';
+      }
     },
     async saveService(e) {
       if (e && e.preventDefault) e.preventDefault();
@@ -299,6 +395,11 @@ window.APP_MODULES.cms = async function(container) {
       const description = document.getElementById('cmsSvcDesc').value.trim();
       const rawFeatures = document.getElementById('cmsSvcFeatures').value.trim();
       const isPublic = document.getElementById('cmsSvcPublic').checked;
+      const caseStudyTitle = document.getElementById('cmsSvcCaseStudyTitle').value.trim();
+      const videoUrl = document.getElementById('cmsSvcVideoUrl').value.trim();
+      const slidesPdfUrl = document.getElementById('cmsSvcPdfUrl').value.trim();
+      const audioOverviewUrl = document.getElementById('cmsSvcAudioUrl').value.trim();
+      const blueprintUrl = document.getElementById('cmsSvcBlueprintUrl').value.trim();
 
       if (!title || !price) {
         if (window.showToast) window.showToast('Title and price are required.', 'error');
@@ -309,7 +410,22 @@ window.APP_MODULES.cms = async function(container) {
       if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = '⏳ Saving...'; }
 
       const includedFeatures = rawFeatures ? rawFeatures.split(',').map(f => f.trim()) : [];
-      const payload = { title, category, price, description, icon, features: includedFeatures, includedFeatures, is_public: isPublic, public: isPublic };
+      const payload = { 
+        title, 
+        category, 
+        price, 
+        description, 
+        icon, 
+        features: includedFeatures, 
+        includedFeatures, 
+        is_public: isPublic, 
+        public: isPublic,
+        caseStudyTitle: caseStudyTitle || null,
+        videoUrl: videoUrl || null,
+        slidesPdfUrl: slidesPdfUrl || null,
+        audioOverviewUrl: audioOverviewUrl || null,
+        blueprintUrl: blueprintUrl || null
+      };
 
       try {
         if (id) {
