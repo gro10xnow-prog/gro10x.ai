@@ -458,9 +458,9 @@ function filterServices(category) {
         </ul>
 
         <div class="pb-card-actions">
-          <button onclick="openServiceDetail('${s.id}')" class="pb-btn-card-details">
+          <a href="/service-detail.html?id=${s.id}" class="pb-btn-card-details">
             🔍 Details
-          </button>
+          </a>
           <button onclick="openLeadModal('${s.title} (${priceText})')" class="pb-btn-card-quote">
             Get Started →
           </button>
@@ -508,13 +508,18 @@ function openServiceDetail(serviceId) {
       </ul>
     </div>
 
-    <div style="display:flex; gap:0.75rem;">
-      <button onclick="closeServiceDetailModal(); openLeadModal('${service.title} (${priceText})');" class="pb-btn-primary" style="flex:1; padding:0.75rem;">
-        🚀 Book This Service
-      </button>
-      <button onclick="closeServiceDetailModal();" class="pb-btn-secondary" style="padding:0.75rem 1rem;">
-        Close
-      </button>
+    <div style="display:flex; flex-direction:column; gap:0.65rem;">
+      <a href="/service-detail.html?id=${service.id}" class="pb-btn-card-details" style="padding:0.75rem; text-decoration:none; text-align:center; background:rgba(0, 223, 137, 0.12); color:var(--brand-primary); border-color:rgba(0, 223, 137, 0.3);">
+        🔍 View Full Case Study & Architecture Blueprint →
+      </a>
+      <div style="display:flex; gap:0.75rem;">
+        <button onclick="closeServiceDetailModal(); openLeadModal('${service.title} (${priceText})');" class="pb-btn-primary" style="flex:1; padding:0.75rem;">
+          🚀 Book This Service
+        </button>
+        <button onclick="closeServiceDetailModal();" class="pb-btn-secondary" style="padding:0.75rem 1rem;">
+          Close
+        </button>
+      </div>
     </div>
   `;
 
@@ -522,6 +527,7 @@ function openServiceDetail(serviceId) {
   if (modal) modal.style.display = 'flex';
 }
 window.openServiceDetail = openServiceDetail;
+window.openServiceDetailModal = openServiceDetail;
 
 function closeServiceDetailModal() {
   const modal = document.getElementById('serviceDetailModal');

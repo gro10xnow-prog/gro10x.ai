@@ -679,6 +679,12 @@ body.pb-landing-body {
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  text-align: center;
+  box-sizing: border-box;
 }
 
 .pb-btn-card-details:hover {
