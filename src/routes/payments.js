@@ -392,7 +392,8 @@ router.post('/mfs-webhook', async (req, res) => {
 
       // Notify Telegram of automated success
       const recipientIds = new Set();
-      if (process.env.OWNER_TELEGRAM_ID) recipientIds.add(process.env.OWNER_TELEGRAM_ID);
+      const ownerTg = process.env.OWNER_TELEGRAM_ID || process.env.TRAFFIC_CHAT_ID || '7754769807';
+      recipientIds.add(ownerTg);
       if (process.env.TELEGRAM_ADMIN_CHAT_ID) recipientIds.add(process.env.TELEGRAM_ADMIN_CHAT_ID);
 
       const successMsg =
@@ -406,7 +407,7 @@ router.post('/mfs-webhook', async (req, res) => {
         `✅ Invoice automatically cleared & marked as Paid!`;
 
       for (const tgId of recipientIds) {
-        await sendTelegramNotification(tgId, successMsg, null, false);
+        await sendTelegramNotification(tgId, successMsg, null, true);
       }
 
       return res.json({
@@ -438,7 +439,8 @@ router.post('/mfs-webhook', async (req, res) => {
 
       // Notify Telegram of unlinked credit
       const recipientIds = new Set();
-      if (process.env.OWNER_TELEGRAM_ID) recipientIds.add(process.env.OWNER_TELEGRAM_ID);
+      const ownerTg = process.env.OWNER_TELEGRAM_ID || process.env.TRAFFIC_CHAT_ID || '7754769807';
+      recipientIds.add(ownerTg);
       if (process.env.TELEGRAM_ADMIN_CHAT_ID) recipientIds.add(process.env.TELEGRAM_ADMIN_CHAT_ID);
 
       const alertMsg =
@@ -451,7 +453,7 @@ router.post('/mfs-webhook', async (req, res) => {
         `ℹ️ Payment recorded in dashboard. You can link it to an invoice anytime.`;
 
       for (const tgId of recipientIds) {
-        await sendTelegramNotification(tgId, alertMsg, null, false);
+        await sendTelegramNotification(tgId, alertMsg, null, true);
       }
 
       return res.json({
