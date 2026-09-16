@@ -137,7 +137,7 @@ function generateCustomerWhatsAppRejectionLink(order, reason = 'Payment verifica
   const msg = `Salam! Regarding your DigiVault order *${ref}* (${prodName}):\n\n` +
     `❌ We could not verify your payment.\n` +
     `⚠️ *Reason:* ${reason}\n\n` +
-    `Please Send Money to *01312415757* (bKash/Nagad Personal) and send your payment screenshot or TrxID.\n` +
+    `Please Send Money to *01708459008* (bKash/Nagad Personal) and send your payment screenshot or TrxID.\n` +
     `💬 Need help? Reply right here or contact: wa.me/8801889825025`;
   return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`;
 }
@@ -2131,6 +2131,8 @@ router.post('/orders/:id/rate', asyncHandler(async (req, res) => {
 
   return ok(res, { id, customer_rating: numRating, customer_feedback: feedback.trim() }, 'Rating saved');
 }));
+
+router.getOrders = () => inMemoryOrders;
 
 module.exports = router;
 

@@ -40,7 +40,7 @@
 
   <main class="container" style="padding-top: 40px; padding-bottom: 80px; max-width: 900px;">
     <a href="catalog.html" style="font-size: 13px; color: var(--text-muted); display: inline-flex; align-items: center; gap: 6px; margin-bottom: 20px;">
-      ← ক্যাটালগে ফিরে যান
+      <span data-i18n="backToCatalog">← ক্যাটালগে ফিরে যান</span>
     </a>
 
     <div style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 30px;" id="checkoutLayout">
@@ -56,13 +56,13 @@
           </div>
 
           <div style="background: rgba(0,0,0,0.3); border-radius: var(--radius-md); padding: 16px; margin-bottom: 20px;">
-            <div style="font-size: 12px; color: var(--text-muted);">সর্বমোট প্রদেয় মূল্য:</div>
+            <div style="font-size: 12px; color: var(--text-muted);" data-i18n="totalPayable">সর্বমোট প্রদেয় মূল্য:</div>
             <div style="font-size: 32px; font-weight: 900; color: var(--primary);" id="prodPrice">৳২,০০০</div>
-            <div style="font-size: 11px; color: #10b981; font-weight: 700; margin-top: 4px;">✅ সম্পূর্ণ মেয়াদের ওয়ারেন্টি অন্তর্ভুক্ত</div>
+            <div style="font-size: 11px; color: #10b981; font-weight: 700; margin-top: 4px;" data-i18n="fullWarrantyInc">✅ সম্পূর্ণ মেয়াদের ওয়ারেন্টি অন্তর্ভুক্ত</div>
           </div>
 
           <div id="prodNotesBox" style="font-size: 12px; color: var(--text-muted); line-height: 1.5; border-top: 1px dashed var(--border-subtle); padding-top: 14px;">
-            ℹ️ <span id="prodNotes">অর্ডার করার পর ১৫-৩০ মিনিটের মধ্যে ডেলিভারি সম্পন্ন হবে।</span>
+            ℹ️ <span id="prodNotes" data-i18n="deliveryNoticeDefault">অর্ডার করার পর ১৫-৩০ মিনিটের মধ্যে ডেলিভারি সম্পন্ন হবে।</span>
           </div>
         </div>
       </div>
@@ -118,14 +118,14 @@
               <div style="font-size: 12px; color: var(--text-main); line-height: 1.5;">
                 অনুগ্রহ করে নিচের নম্বরে <strong>Send Money</strong> করুন:<br>
                 <div style="display: flex; gap: 8px; align-items: center; margin-top: 6px; position: relative;">
-                  <input type="text" id="inpSendNo" value="01312415757" readonly style="flex: 1; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 8px 12px; color: #fff; font-family: monospace; font-size: 16px; font-weight: 800;" />
+                  <input type="text" id="inpSendNo" value="01708459008" readonly style="flex: 1; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 8px 12px; color: #fff; font-family: monospace; font-size: 16px; font-weight: 800;" />
                   <button type="button" class="btn btn-secondary btn-sm" id="btnCopySendNo" style="padding: 8px 14px; font-weight: 700; white-space: nowrap;">
                     📋 কপি নম্বর
                   </button>
                   <div id="tooltipSendNo" class="dv-tooltip">✓ নম্বর কপি হয়েছে!</div>
                 </div>
                 <span style="font-size: 11px; color: var(--text-muted); display: block; margin-top: 6px;">
-                  (বিকাশ ও নগদ পার্সোনাল নম্বর: 01312-415757)
+                  (বিকাশ ও নগদ পার্সোনাল নম্বর: 01708-459008)
                 </span>
               </div>
             </div>
@@ -441,7 +441,7 @@
                   💳 Send Money নম্বর (বিকাশ ও নগদ পার্সোনাল):
                 </div>
                 <div style="display: flex; gap: 8px; align-items: center; margin-top: 6px;">
-                  <input type="text" value="01312415757" readonly id="inpModalSendNo" style="flex: 1; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 8px 12px; color: #fff; font-family: monospace; font-size: 16px; font-weight: 800;" />
+                  <input type="text" value="01708459008" readonly id="inpModalSendNo" style="flex: 1; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 8px 12px; color: #fff; font-family: monospace; font-size: 16px; font-weight: 800;" />
                   <button type="button" class="btn btn-primary" id="btnCopyPayNo" style="padding: 8px 14px; font-size: 12px; white-space: nowrap;">
                     📋 কপি নম্বর
                   </button>
@@ -471,7 +471,7 @@
           const inp = document.getElementById('inpModalSendNo');
           if (inp) {
             navigator.clipboard.writeText(inp.value);
-            alert('বিকাশ ও নগদ নম্বর কপি করা হয়েছে: 01312415757');
+            alert('বিকাশ ও নগদ নম্বর কপি করা হয়েছে: 01708459008');
           }
         });
       }

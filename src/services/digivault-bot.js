@@ -78,8 +78,8 @@ async function clearSession(chatId) {
 
 // Payment Receiver Numbers (Can be customized via App Settings)
 const PAYMENT_CONFIG = {
-  bkash: process.env.BKASH_NUMBER || '01312415757',
-  nagad: process.env.NAGAD_NUMBER || '01312415757',
+  bkash: process.env.BKASH_NUMBER || '01708459008',
+  nagad: process.env.NAGAD_NUMBER || '01708459008',
   supportPhone: process.env.SUPPORT_WHATSAPP || '+880 1889-825025'
 };
 
@@ -187,6 +187,14 @@ function initDigiVaultBot() {
 
   try {
     digivaultBot = new TelegramBot(token, { polling: isPolling });
+    if (isPolling) {
+      digivaultBot.on('polling_error', (err) => {
+        if (err.code === 'ETELEGRAM' && err.message && err.message.includes('409')) {
+          return; // Ignore concurrent getUpdates conflict from other test/cloud instances
+        }
+        console.warn('[DigiVault Bot] polling note:', err.message || err);
+      });
+    }
     console.log(`✅ [DigiVault Bot] @Digivault20bot initialized (Mode: ${isPolling ? 'Polling' : 'Webhook'})`);
 
     registerBotHandlers(digivaultBot);
